@@ -1,0 +1,136 @@
+/*
+ * Pagini Logare / Înregistrare – fundal plăcut, animație animal, banner promo
+ */
+
+/* Fundal: gradient cald + desene subtile (câini/pisici stilizate) */
+body.auth-page {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #fef9f0 0%, #fce8dc 25%, #f5e6d9 50%, #e8ddd4 75%, #dfd5cc 100%);
+    background-attachment: fixed;
+}
+
+body.auth-page::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cellipse cx='40' cy='45' rx='18' ry='22' fill='%23e8d5c4' fill-opacity='0.25'/%3E%3Cellipse cx='40' cy='28' rx='14' ry='14' fill='%23e8d5c4' fill-opacity='0.25'/%3E%3Cpath d='M28 28 Q26 18 34 14 Q38 12 40 14 Q42 12 46 14 Q54 18 52 28' fill='%23e8d5c4' fill-opacity='0.2'/%3E%3C/svg%3E");
+    background-size: 80px 80px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+body.auth-page #main_wrap {
+    position: relative;
+    z-index: 1;
+}
+
+/* Banner promo */
+.auth-promo-banner {
+    background: linear-gradient(90deg, #c45c3e 0%, #b84a2e 50%, #a63d26 100%);
+    color: #fff;
+    padding: 0.75rem 1.25rem;
+    text-align: center;
+    font-size: 1rem;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    margin-bottom: 1.5rem;
+}
+
+.auth-promo-banner strong {
+    display: block;
+    font-size: 1.05em;
+    margin-bottom: 0.2rem;
+}
+
+.auth-promo-banner a {
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.auth-promo-banner a:hover {
+    color: #ffe0d0;
+}
+
+/* Layout: form + animație pe același rând pe desktop */
+.auth-content-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.auth-form-box {
+    flex: 1 1 320px;
+    background: rgba(255, 255, 255, 0.92);
+    padding: 1.75rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.auth-animation-box {
+    flex: 0 1 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+}
+
+/* Animație cățel – container */
+.pet-animation {
+    width: 200px;
+    height: 200px;
+    position: relative;
+}
+
+.pet-animation svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+}
+
+/* Animații CSS pentru SVG */
+.pet-animation .bounce {
+    animation: auth-bounce 2s ease-in-out infinite;
+}
+
+.pet-animation .wag {
+    transform-origin: 58% 45%;
+    animation: auth-wag 1.2s ease-in-out infinite;
+}
+
+.pet-animation .blink {
+    animation: auth-blink 3s ease-in-out infinite;
+}
+
+@keyframes auth-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+
+@keyframes auth-wag {
+    0%, 100% { transform: rotate(-8deg); }
+    50% { transform: rotate(8deg); }
+}
+
+@keyframes auth-blink {
+    0%, 45%, 55%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .auth-animation-box {
+        min-height: 200px;
+        order: -1;
+    }
+    .pet-animation {
+        width: 160px;
+        height: 160px;
+    }
+}

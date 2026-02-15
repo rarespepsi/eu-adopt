@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Logare | Adopt a Pet</title>
+	<link rel="stylesheet" href="{% static 'css/style.css' %}" />
+	<link rel="stylesheet" href="{% static 'css/auth-pages.css' %}" />
+	<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+</head>
+<body class="content_left scheme_red auth-page">
+	<section id="main_wrap">
+		<header class="wrapper" id="header">
+			<div class="container">
+				<div id="main_menu" class="clearfix">
+					<a href="{% url 'home' %}" title="Adopt a Pet" class="the_logo_link">
+						<img src="{% static 'images/rescuelogo.png' %}" alt="Adopt a Pet" id="logo" height="40" width="101.5" />
+					</a>
+					<nav id="menu_wrap">
+						<ul id="menu-main-menu" class="menu">
+							<li><a href="{% url 'home' %}">Acasă</a></li>
+							<li><a href="{% url 'pets_all' %}">Animale</a></li>
+							<li><a href="{% url 'contact' %}">Contact</a></li>
+							<li><a href="{% url 'termeni' %}">Termeni și condiții</a></li>
+						</ul>
+					</nav>
+				</div>
+			</div>
+		</header>
+		<section class="wrapper" id="main_content">
+			<div class="container clearfix">
+				<div class="auth-promo-banner">
+					<strong>🐾 Adoptă un prieten pe viață</strong>
+					Vizitează <a href="{% url 'pets_all' %}">animalele disponibile</a> și dă șansa unei adopții fericite.
+				</div>
+				<div class="auth-content-wrap">
+					<div class="auth-form-box">
+						<section class="page">
+							<h2 class="entry-title">Logare</h2>
+							<div class="entry-content clearfix">
+								{% if form.errors %}
+									<p class="errornote">Utilizatorul sau parola sunt incorecte. Încercați din nou.</p>
+								{% endif %}
+								{% if next %}
+									{% if user.is_authenticated %}
+										<p>Contul dvs. nu are acces la această pagină.</p>
+									{% endif %}
+								{% endif %}
+								<form method="post" action="{% url 'login' %}" class="login-form" style="max-width: 320px;">
+									{% csrf_token %}
+									<p>
+										<label for="id_username">Utilizator</label><br />
+										{{ form.username }}
+									</p>
+									<p>
+										<label for="id_password">Parolă</label><br />
+										{{ form.password }}
+									</p>
+									<input type="hidden" name="next" value="{{ next }}" />
+									<p><button type="submit" class="button">Intră în cont</button></p>
+								</form>
+								<p>Nu aveți cont? <a href="{% url 'signup' %}">Înregistrați-vă</a> (oricine poate crea cont cu adresa de email).</p>
+								<p><a href="{% url 'home' %}">Înapoi la prima pagină</a></p>
+							</div>
+						</section>
+					</div>
+					<div class="auth-animation-box">
+						<div class="pet-animation">
+							<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+								<!-- Cățel stilizat – corp bounce -->
+								<g class="bounce">
+									<!-- Corp -->
+									<ellipse cx="60" cy="72" rx="28" ry="22" fill="#d4a574" stroke="#b8956a" stroke-width="1.5"/>
+									<!-- Cap -->
+									<circle cx="60" cy="42" r="26" fill="#d4a574" stroke="#b8956a" stroke-width="1.5"/>
+									<!-- Urechi -->
+									<ellipse cx="38" cy="28" rx="10" ry="16" fill="#c4956a" transform="rotate(-25 38 28)"/>
+									<ellipse cx="82" cy="28" rx="10" ry="16" fill="#c4956a" transform="rotate(25 82 28)"/>
+									<!-- Bot -->
+									<ellipse cx="60" cy="48" rx="8" ry="6" fill="#e8c9a8"/>
+									<!-- Ochii – blink -->
+									<g class="blink">
+										<ellipse cx="50" cy="38" rx="4" ry="5" fill="#2c1810"/>
+										<ellipse cx="70" cy="38" rx="4" ry="5" fill="#2c1810"/>
+										<circle cx="52" cy="37" r="1" fill="#fff"/>
+										<circle cx="72" cy="37" r="1" fill="#fff"/>
+									</g>
+									<!-- Coadă – wag -->
+									<path class="wag" d="M88 62 Q110 50 108 72 Q106 90 88 82 Z" fill="#c4956a" stroke="#b8956a" stroke-width="1"/>
+								</g>
+							</svg>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		<footer id="footer" class="wrapper">
+			<div class="container">
+				<div id="post_footer">
+					<div id="site_info" class="clearfix">
+						<div class="right">&copy; Adopt a Pet</div>
+					</div>
+				</div>
+			</div>
+		</footer>
+	</section>
+</body>
+</html>

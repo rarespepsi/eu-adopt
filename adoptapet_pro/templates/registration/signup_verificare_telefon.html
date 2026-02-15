@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Verificare telefon | Adopt a Pet</title>
+	<link rel="stylesheet" href="{% static 'css/style.css' %}" />
+	<link rel="stylesheet" href="{% static 'css/auth-pages.css' %}" />
+	<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+	<style>
+		.sms-code-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 1em 0; }
+		.sms-code-row input { width: 2.5em; min-width: 2.5em; text-align: center; font-size: 1.3em; padding: 0.4em; border: 1px solid #888; border-radius: 4px; }
+	</style>
+</head>
+<body class="content_left scheme_red auth-page">
+	<section id="main_wrap">
+		<header class="wrapper" id="header">
+			<div class="container">
+				<div id="main_menu" class="clearfix">
+					<a href="{% url 'home' %}" title="Adopt a Pet" class="the_logo_link">
+						<img src="{% static 'images/rescuelogo.png' %}" alt="Adopt a Pet" id="logo" height="40" width="101.5" />
+					</a>
+					<nav id="menu_wrap">
+						<ul id="menu-main-menu" class="menu">
+							<li><a href="{% url 'home' %}">Acasă</a></li>
+							<li><a href="{% url 'pets_all' %}">Animale</a></li>
+							<li><a href="{% url 'contact' %}">Contact</a></li>
+							<li><a href="{% url 'termeni' %}">Termeni și condiții</a></li>
+							<li><a href="{% url 'login' %}">Logare</a></li>
+						</ul>
+					</nav>
+				</div>
+			</div>
+		</header>
+		<section class="wrapper" id="main_content">
+			<div class="container clearfix">
+				<div class="auth-promo-banner">
+					<strong>🐾 Adoptă un prieten pe viață</strong>
+					Vizitează <a href="{% url 'pets_all' %}">animalele disponibile</a> și dă șansa unei adopții fericite.
+				</div>
+				<div class="posts-wrap">
+					<section class="page">
+						<h2 class="entry-title">Verificare telefon</h2>
+						<div class="entry-content clearfix">
+							<p>Am trimis un cod de <strong>6 cifre</strong> pe SMS la numărul <strong>{{ phone_masked }}</strong>. Introduceți codul mai jos pentru a valida contul. Fără cod introdus corect, contul nu este valid.</p>
+							{% if messages %}
+								<ul class="messagelist">
+									{% for message in messages %}
+										<li class="{{ message.tags }}">{{ message }}</li>
+									{% endfor %}
+								</ul>
+							{% endif %}
+							<div style="max-width: 420px; padding: 1.25em; border: 2px solid #c9b896; border-radius: 6px; background: #f8f4e8;">
+								<h3 style="margin-top: 0; margin-bottom: 0.75em;">Validare membru – cod primit prin SMS</h3>
+								<form method="post" action="{% url 'signup_verificare_telefon' %}" id="verify-form" class="login-form">
+									{% csrf_token %}
+									<p style="margin-bottom: 0.35em; font-weight: bold;">Introduceți cele 6 cifre din SMS:</p>
+									<div class="sms-code-row">
+									<input type="text" name="sms_code_1" id="id_sms_code_1" maxlength="1" size="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" aria-label="Cifra 1" />
+									<input type="text" name="sms_code_2" id="id_sms_code_2" maxlength="1" size="1" pattern="[0-9]" inputmode="numeric" aria-label="Cifra 2" />
+									<input type="text" name="sms_code_3" id="id_sms_code_3" maxlength="1" size="1" pattern="[0-9]" inputmode="numeric" aria-label="Cifra 3" />
+									<input type="text" name="sms_code_4" id="id_sms_code_4" maxlength="1" size="1" pattern="[0-9]" inputmode="numeric" aria-label="Cifra 4" />
+									<input type="text" name="sms_code_5" id="id_sms_code_5" maxlength="1" size="1" pattern="[0-9]" inputmode="numeric" aria-label="Cifra 5" />
+									<input type="text" name="sms_code_6" id="id_sms_code_6" maxlength="1" size="1" pattern="[0-9]" inputmode="numeric" aria-label="Cifra 6" />
+								</div>
+									<p style="margin-top: 1em;">
+										<button type="submit" class="button">Validează și activează contul</button>
+									</p>
+								</form>
+							</div>
+						</div>
+					</section>
+				</div>
+			</div>
+		</section>
+		<footer id="footer" class="wrapper">
+			<div class="container">
+				<div id="post_footer">
+					<div id="site_info" class="clearfix">
+						<div class="right">&copy; Adopt a Pet</div>
+					</div>
+				</div>
+			</div>
+		</footer>
+	</section>
+</body>
+</html>

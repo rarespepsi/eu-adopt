@@ -1,0 +1,84 @@
+{% load static %}
+{% load anunturi_extras %}
+<!DOCTYPE html>
+<html lang="ro">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>{% if success %}Validare reușită{% else %}Link invalid{% endif %} | Adopt a Pet</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+		<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+	</head>
+	<body class="content_left scheme_red">
+		<section id="main_wrap">
+			<header class="wrapper" id="header">
+				<div class="container">
+					<div id="main_menu" class="clearfix">
+						<div class="clearfix">
+							<a href="{% url 'home' %}" title="Adopt a Pet" class="the_logo_link">
+								<img src="{% static 'images/rescuelogo.png' %}" alt="Adopt a Pet" id="logo" height="40" width="101.5" />
+							</a>
+							<nav id="menu_wrap">
+								<div class="menu-main-menu-container">
+									<ul id="menu-main-menu" class="menu">
+										<li><a href="{% url 'home' %}">Acasă</a></li>
+										<li><a href="{% url 'pets_all' %}">Animale</a></li>
+										<li><a href="{% url 'contact' %}">Contact</a></li>
+										<li><a href="{% url 'termeni' %}">Termeni și condiții</a></li>
+										{% if user.is_authenticated %}
+										{% if user|in_group:"Asociație" %}<li><a href="{% url 'cont_ong' %}">Cont</a></li>{% else %}<li><a href="{% url 'cont_profil' %}">Cont</a></li>{% endif %}
+										<li><a href="{% url 'logout' %}">Ieșire</a></li>
+										{% else %}
+										<li><a href="{% url 'signup' %}">Înregistrare</a></li>
+										<li><a href="{% url 'login' %}">Logare</a></li>
+										{% endif %}
+									</ul>
+								</div>
+							</nav>
+						</div>
+					</div>
+				</div>
+			</header>
+			<section class="wrapper" id="main_content">
+				<div class="container clearfix">
+					<div class="posts-wrap">
+						<section class="page">
+							<h2 class="entry-title">{% if success %}Validare reușită{% else %}Link invalid{% endif %}</h2>
+							<div class="entry-content clearfix">
+								{% if success %}
+									<p><strong>Mulțumim!</strong></p>
+									<p>Ați validat cererea de adopție pentru <strong>{{ pet.nume }}</strong>.</p>
+									<p>Datele adoptatorului au fost trimise pe emailul asociației. Adoptatorul a primit, de asemenea, datele dvs. de contact și vă poate contacta direct.</p>
+									<p><a href="{% url 'home' %}" class="button">Înapoi la prima pagină</a></p>
+								{% else %}
+									<p>{{ error }}</p>
+									<p>Dacă problema persistă, contactați platforma.</p>
+									<p><a href="{% url 'home' %}" class="button">Înapoi la prima pagină</a></p>
+								{% endif %}
+							</div>
+						</section>
+					</div>
+				</div>
+			</section>
+			<footer id="footer" class="wrapper">
+				<div class="container">
+					<div id="post_footer">
+						<div id="site_info" class="clearfix">
+							<div class="left footer_menu_wrap clearfix">
+								<ul id="menu-footer-menu" class="menu">
+									<li><a href="{% url 'home' %}">Acasă</a></li>
+									<li><a href="{% url 'pets_all' %}">Toate animalele</a></li>
+									<li><a href="{% url 'contact' %}">Contact</a></li>
+									<li><a href="{% url 'termeni' %}">Termeni și condiții</a></li>
+								</ul>
+							</div>
+							<div class="right">&copy; Adopt a Pet</div>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</section>
+		<script type="text/javascript" src="{% static 'includes/js/jquery-1.11.1.min.js' %}"></script>
+		<script type="text/javascript" src="{% static 'includes/js/jquery.mobilemenu.js' %}"></script>
+	</body>
+</html>

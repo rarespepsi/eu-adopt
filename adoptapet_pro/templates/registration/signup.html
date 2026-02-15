@@ -1,0 +1,229 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Înregistrare | Adopt a Pet</title>
+	<link rel="stylesheet" href="{% static 'css/style.css' %}" />
+	<link rel="stylesheet" href="{% static 'css/auth-pages.css' %}" />
+	<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+	<style>
+		.reg-block { margin: 1em 0; padding: 1em; border: 1px solid #ccc; border-radius: 4px; }
+		.reg-block.hidden { display: none; }
+	</style>
+</head>
+<body class="content_left scheme_red auth-page">
+	<section id="main_wrap">
+		<header class="wrapper" id="header">
+			<div class="container">
+				<div id="main_menu" class="clearfix">
+					<a href="{% url 'home' %}" title="Adopt a Pet" class="the_logo_link">
+						<img src="{% static 'images/rescuelogo.png' %}" alt="Adopt a Pet" id="logo" height="40" width="101.5" />
+					</a>
+					<nav id="menu_wrap">
+						<ul id="menu-main-menu" class="menu">
+							<li><a href="{% url 'home' %}">Acasă</a></li>
+							<li><a href="{% url 'pets_all' %}">Animale</a></li>
+							<li><a href="{% url 'contact' %}">Contact</a></li>
+							<li><a href="{% url 'termeni' %}">Termeni și condiții</a></li>
+							<li><a href="{% url 'login' %}">Logare</a></li>
+						</ul>
+					</nav>
+				</div>
+			</div>
+		</header>
+		<section class="wrapper" id="main_content">
+			<div class="container clearfix">
+				<div class="auth-promo-banner">
+					<strong>🐾 Adoptă un prieten pe viață</strong>
+					Vizitează <a href="{% url 'pets_all' %}">animalele disponibile</a> și dă șansa unei adopții fericite.
+				</div>
+				<div class="auth-content-wrap">
+					<div class="auth-form-box">
+						<div class="posts-wrap">
+					<section class="page">
+						<h2 class="entry-title">Înregistrare</h2>
+						<div class="entry-content clearfix">
+							<p>Alegeți tipul de cont; vor apărea câmpurile de identificare cerute pentru categoria selectată.</p>
+							{% if form.errors %}
+								<p class="errornote">Corectați erorile de mai jos.</p>
+							{% endif %}
+							<form method="post" action="{% url 'signup' %}" id="signup-form" class="login-form" style="max-width: 520px;">
+								{% csrf_token %}
+								<p>
+									<label>Tip cont *</label><br />
+									<ul class="radiolist" style="list-style: none; padding-left: 0; margin: 0.5em 0;">
+										{% for choice in form.tip_cont %}
+										<li><label>{{ choice.tag }} {{ choice.choice_label }}</label></li>
+										{% endfor %}
+									</ul>
+									{% if form.tip_cont.errors %}<span class="form-error">{{ form.tip_cont.errors.0 }}</span>{% endif %}
+								</p>
+								<div id="block-subtip" class="reg-block hidden" style="margin-left: 1.5em;">
+									<strong>Precizați (categoria 2):</strong>
+									<ul class="radiolist" style="list-style: none; padding-left: 0; margin: 0.5em 0;">
+										{% for value, label in form.fields.tip_org_organizatie.choices %}
+										{% if value %}
+										<li><label><input type="radio" name="tip_org_organizatie" value="{{ value }}" {% if form.tip_org_organizatie.value == value %}checked="checked"{% endif %} /> {{ label }}</label></li>
+										{% endif %}
+										{% endfor %}
+									</ul>
+									{% if form.tip_org_organizatie.errors %}<span class="form-error">{{ form.tip_org_organizatie.errors.0 }}</span>{% endif %}
+								</div>
+								<div id="block-subtip-ong" class="reg-block hidden" style="margin-left: 1.5em;">
+									<strong>Precizați (categoria 3):</strong>
+									<ul class="radiolist" style="list-style: none; padding-left: 0; margin: 0.5em 0;">
+										{% for value, label in form.fields.tip_org_ong.choices %}
+										{% if value %}
+										<li><label><input type="radio" name="tip_org_ong" value="{{ value }}" {% if form.tip_org_ong.value == value %}checked="checked"{% endif %} /> {{ label }}</label></li>
+										{% endif %}
+										{% endfor %}
+									</ul>
+									{% if form.tip_org_ong.errors %}<span class="form-error">{{ form.tip_org_ong.errors.0 }}</span>{% endif %}
+								</div>
+
+								<p>
+									<label for="id_username">Utilizator *</label><br />
+									{{ form.username }}
+									{% if form.username.errors %}<span class="form-error">{{ form.username.errors.0 }}</span>{% endif %}
+								</p>
+								<p>
+									<label for="id_email">Email *</label><br />
+									{{ form.email }}
+									{% if form.email.errors %}<span class="form-error">{{ form.email.errors.0 }}</span>{% endif %}
+								</p>
+								<p>
+									<label for="id_password1">Parolă *</label><br />
+									{{ form.password1 }}
+									{% if form.password1.errors %}<span class="form-error">{{ form.password1.errors.0 }}</span>{% endif %}
+								</p>
+								<p>
+									<label for="id_password2">Confirmare parolă *</label><br />
+									{{ form.password2 }}
+									{% if form.password2.errors %}<span class="form-error">{{ form.password2.errors.0 }}</span>{% endif %}
+								</p>
+
+								<div id="block-pf" class="reg-block">
+									<strong>Date persoană fizică</strong>
+									<p><label for="id_nume">Nume *</label><br />{{ form.nume }}{% if form.nume.errors %} <span class="form-error">{{ form.nume.errors.0 }}</span>{% endif %}</p>
+									<p><label for="id_prenume">Prenume *</label><br />{{ form.prenume }}{% if form.prenume.errors %} <span class="form-error">{{ form.prenume.errors.0 }}</span>{% endif %}</p>
+									<p><label for="id_telefon">Telefon *</label><br />{{ form.telefon }}{% if form.telefon.errors %} <span class="form-error">{{ form.telefon.errors.0 }}</span>{% endif %}</p>
+									<p><label for="id_oras">Oraș / Localitate *</label><br />{{ form.oras }}{% if form.oras.errors %} <span class="form-error">{{ form.oras.errors.0 }}</span>{% endif %}</p>
+								</div>
+
+								<div id="block-org" class="reg-block hidden">
+									<strong>Date identificare (verificabile: CUI/CIF, nr. registru)</strong>
+									<p><label for="id_denumire_legala">Denumire (firmă / asociație / PFA) *</label><br />{{ form.denumire_legala }}{% if form.denumire_legala.errors %} <span class="form-error">{{ form.denumire_legala.errors.0 }}</span>{% endif %}</p>
+									<p><label for="id_cui">CUI / CIF *</label><br />{{ form.cui }}{% if form.cui.errors %} <span class="form-error">{{ form.cui.errors.0 }}</span>{% endif %}<br /><small>{{ form.fields.cui.help_text }}</small></p>
+									<p><label for="id_numar_registru">Nr. registru</label><br />{{ form.numar_registru }}<br /><small>{{ form.fields.numar_registru.help_text }}</small></p>
+									<p><label for="id_judet">Județ *</label><br />{{ form.judet }}{% if form.judet.errors %} <span class="form-error">{{ form.judet.errors.0 }}</span>{% endif %}</p>
+									<p><label for="id_oras_org">Oraș / Localitate (sediu)</label><br />{{ form.oras_org }}</p>
+									<p><label for="id_email_contact">Email contact</label><br />{{ form.email_contact }}</p>
+									<p><label for="id_telefon_org">Telefon</label><br />{{ form.telefon_org }}</p>
+									<p id="p-reprezentant"><label for="id_reprezentant_legal">Persoană de contact (SRL/PFA) *</label><br />{{ form.reprezentant_legal }}{% if form.reprezentant_legal.errors %} <span class="form-error">{{ form.reprezentant_legal.errors.0 }}</span>{% endif %}</p>
+									<p id="p-responsabil"><label for="id_persoana_responsabila_adoptii">Persoană de contact (ONG / Asociație / Fundație) *</label><br />{{ form.persoana_responsabila_adoptii }}{% if form.persoana_responsabila_adoptii.errors %} <span class="form-error">{{ form.persoana_responsabila_adoptii.errors.0 }}</span>{% endif %}</p>
+								</div>
+
+								<div class="reg-block" style="margin-top: 1.5em; padding: 1em; background: #f8f4e8; border: 1px solid #c9b896;">
+									<strong>Validare membru (SMS)</strong>
+									<p style="margin: 0.5em 0 0 0;">După ce trimiți formularul, vei primi pe SMS un <strong>cod de 6 cifre</strong>. Vei fi dus automat la pagina <strong>«Verificare telefon»</strong>, unde introduci fiecare cifră în câte o casetă și apeși <strong>Validează</strong>. Fără cod introdus corect, contul nu este valid.</p>
+									<p style="margin: 0.5em 0 0 0;">Ai trimis deja formularul? <a href="{% url 'signup_verificare_telefon' %}">Introdu codul SMS aici</a>.</p>
+								</div>
+
+								<p style="margin-top: 1em;"><button type="submit" class="button">Creează cont</button></p>
+							</form>
+							<p>Aveți deja cont? <a href="{% url 'login' %}">Intrați în cont</a>.</p>
+							<p><a href="{% url 'home' %}">Înapoi la prima pagină</a></p>
+						</div>
+					</section>
+						</div>
+					</div>
+					<div class="auth-animation-box">
+						<div class="pet-animation">
+							<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+								<!-- Pisică stilizată – corp bounce -->
+								<g class="bounce">
+									<ellipse cx="60" cy="74" rx="24" ry="18" fill="#e8b88a" stroke="#c9a070" stroke-width="1.5"/>
+									<circle cx="60" cy="44" r="24" fill="#e8b88a" stroke="#c9a070" stroke-width="1.5"/>
+									<path d="M36 22 L44 8 L52 22 Z" fill="#d4a574" stroke="#c9a070" stroke-width="1"/>
+									<path d="M68 22 L76 8 L84 22 Z" fill="#d4a574" stroke="#c9a070" stroke-width="1"/>
+									<ellipse cx="60" cy="50" rx="6" ry="5" fill="#f0d0b0"/>
+									<g class="blink">
+										<ellipse cx="50" cy="40" rx="3" ry="4" fill="#2c1810"/>
+										<ellipse cx="70" cy="40" rx="3" ry="4" fill="#2c1810"/>
+										<circle cx="51" cy="39" r="0.8" fill="#fff"/>
+										<circle cx="71" cy="39" r="0.8" fill="#fff"/>
+									</g>
+									<path class="wag" d="M82 68 Q98 58 100 78 Q102 92 84 86 Z" fill="#d4a574" stroke="#c9a070" stroke-width="1" transform-origin="60 77"/>
+								</g>
+							</svg>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		<footer id="footer" class="wrapper">
+			<div class="container">
+				<div id="post_footer">
+					<div id="site_info" class="clearfix">
+						<div class="right">&copy; Adopt a Pet</div>
+					</div>
+				</div>
+			</div>
+		</footer>
+	</section>
+	<script>
+	(function() {
+		var form = document.getElementById('signup-form');
+		if (!form) return;
+		var blockPf = document.getElementById('block-pf');
+		var blockOrg = document.getElementById('block-org');
+		var blockSubtip = document.getElementById('block-subtip');
+		var blockSubtipOng = document.getElementById('block-subtip-ong');
+		var pReprezentant = document.getElementById('p-reprezentant');
+		var pResponsabil = document.getElementById('p-responsabil');
+
+		function updateBlocks() {
+			var tip = (form.querySelector('input[name="tip_cont"]:checked') || {}).value;
+			if (tip === 'pf') {
+				blockPf.classList.remove('hidden');
+				blockOrg.classList.add('hidden');
+				blockSubtip.classList.add('hidden');
+				blockSubtipOng.classList.add('hidden');
+			} else if (tip === 'srl_pfa_af') {
+				blockPf.classList.add('hidden');
+				blockOrg.classList.remove('hidden');
+				blockSubtip.classList.remove('hidden');
+				blockSubtipOng.classList.add('hidden');
+				pReprezentant.style.display = 'block';
+				pResponsabil.style.display = 'none';
+			} else if (tip === 'ong') {
+				blockPf.classList.add('hidden');
+				blockOrg.classList.remove('hidden');
+				blockSubtip.classList.add('hidden');
+				blockSubtipOng.classList.remove('hidden');
+				pReprezentant.style.display = 'none';
+				pResponsabil.style.display = 'block';
+			} else {
+				blockPf.classList.add('hidden');
+				blockOrg.classList.add('hidden');
+				blockSubtip.classList.add('hidden');
+				blockSubtipOng.classList.add('hidden');
+			}
+		}
+
+		form.querySelectorAll('input[name="tip_cont"]').forEach(function(inp) {
+			inp.addEventListener('change', updateBlocks);
+		});
+		form.querySelectorAll('input[name="tip_org_organizatie"]').forEach(function(inp) {
+			inp.addEventListener('change', updateBlocks);
+		});
+		form.querySelectorAll('input[name="tip_org_ong"]').forEach(function(inp) {
+			inp.addEventListener('change', updateBlocks);
+		});
+		updateBlocks();
+	})();
+	</script>
+</body>
+</html>

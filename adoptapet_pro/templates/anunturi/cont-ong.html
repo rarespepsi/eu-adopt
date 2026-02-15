@@ -1,0 +1,107 @@
+{% load static %}
+{% load anunturi_extras %}
+<!DOCTYPE html>
+<html lang="ro">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>Contul asociației | Adopt a Pet</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+		<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+	</head>
+	<body class="content_left scheme_red">
+		<section id="main_wrap">
+			<header class="wrapper" id="header">
+				<div class="container">
+					<div id="main_menu" class="clearfix">
+						<div class="clearfix">
+							<a href="{% url 'home' %}" title="Adopt a Pet" class="the_logo_link">
+								<img src="{% static 'images/rescuelogo.png' %}" alt="Adopt a Pet" id="logo" height="40" width="101.5" />
+							</a>
+							<nav id="menu_wrap">
+								<div class="menu-main-menu-container">
+									<ul id="menu-main-menu" class="menu">
+										<li><a href="{% url 'home' %}">Acasă</a></li>
+										<li><a href="{% url 'pets_all' %}">Animale</a></li>
+										<li><a href="{% url 'contact' %}">Contact</a></li>
+										<li><a href="{% url 'termeni' %}">Termeni și condiții</a></li>
+										{% if user.is_authenticated %}
+										<li><a href="{% url 'cont_ong' %}" class="current_page">Cont</a></li>
+										<li><a href="{% url 'logout' %}">Ieșire</a></li>
+										{% else %}
+										<li><a href="{% url 'signup' %}">Înregistrare</a></li>
+										<li><a href="{% url 'login' %}">Logare</a></li>
+										{% endif %}
+									</ul>
+								</div>
+							</nav>
+						</div>
+					</div>
+				</div>
+			</header>
+			<section class="wrapper" id="main_content">
+				<div class="container clearfix">
+					<div class="posts-wrap">
+						<section class="page">
+							<h2 class="entry-title">Contul asociației</h2>
+							<div class="entry-content clearfix">
+								{% if messages %}
+								<ul class="adoption-messages">
+									{% for message in messages %}
+									<li class="message-{{ message.tags }}">{{ message }}</li>
+									{% endfor %}
+								</ul>
+								{% endif %}
+								{% if profile %}
+								<h3>Date organizație</h3>
+								<dl class="org-details" style="margin-bottom: 1.5em;">
+									{% if profile.tip_organizatie == 'srl' %}
+										<dt>Denumire firmă</dt><dd>{{ profile.denumire_legala|default:"—" }}</dd>
+										<dt>CUI</dt><dd>{{ profile.cui|default:"—" }}</dd>
+										<dt>Nr. Registrul Comerțului (J..../..../....)</dt><dd>{{ profile.numar_registru|default:"—" }}</dd>
+										<dt>Sediu social (oraș + județ)</dt><dd>{% if profile.oras or profile.judet %}{{ profile.oras }}{% if profile.oras and profile.judet %} – {% endif %}{{ profile.get_judet_display|default:profile.judet }}{% else %}—{% endif %}</dd>
+										<dt>Email contact</dt><dd>{{ profile.email|default:"—" }}</dd>
+										<dt>Telefon</dt><dd>{{ profile.telefon|default:"—" }}</dd>
+										<dt>Persoană de contact</dt><dd>{{ profile.reprezentant_legal|default:"—" }}</dd>
+									{% else %}
+										<dt>Denumire asociație</dt><dd>{{ profile.denumire_legala|default:"—" }}</dd>
+										<dt>CIF</dt><dd>{{ profile.cui|default:"—" }}</dd>
+										<dt>Nr. registru asociații și fundații</dt><dd>{{ profile.numar_registru|default:"—" }}</dd>
+										<dt>Localitate + județ</dt><dd>{% if profile.oras or profile.judet %}{{ profile.oras }}{% if profile.oras and profile.judet %} – {% endif %}{{ profile.get_judet_display|default:profile.judet }}{% else %}—{% endif %}</dd>
+										<dt>Email</dt><dd>{{ profile.email|default:"—" }}</dd>
+										<dt>Telefon</dt><dd>{{ profile.telefon|default:"—" }}</dd>
+										<dt>Persoană de contact</dt><dd>{{ profile.persoana_responsabila_adoptii|default:"—" }}</dd>
+									{% endif %}
+								</dl>
+								{% endif %}
+								<p><a href="{% url 'cont_ong_adauga' %}" class="button">Adaugă animal</a></p>
+								<h3>Animalele dvs. pe site</h3>
+								{% if pets %}
+								<ul style="list-style: none; padding: 0;">
+									{% for pet in pets %}
+									<li style="margin-bottom: 0.75em; padding: 0.5em; background: #f9f9f9; border-left: 4px solid #1597d3;">
+										<a href="{% url 'pets_single' pet.pk %}"><strong>{{ pet.nume }}</strong></a>
+										– {{ pet.get_tip_display }}, {{ pet.rasa }}, {{ pet.get_status_display }}
+									</li>
+									{% endfor %}
+								</ul>
+								{% else %}
+								<p>Nu aveți încă animale înscrise. Apăsați „Adaugă animal” pentru a adăuga primul.</p>
+								{% endif %}
+							</div>
+						</section>
+					</div>
+				</div>
+			</section>
+			<footer id="footer" class="wrapper">
+				<div class="container">
+					<div id="post_footer">
+						<div id="site_info" class="clearfix">
+							<div class="right">&copy; Adopt a Pet</div>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</section>
+	</body>
+</html>

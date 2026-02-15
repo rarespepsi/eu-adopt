@@ -1,0 +1,86 @@
+{% load static %}
+{% load anunturi_extras %}
+<!DOCTYPE html>
+<html lang="ro">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>Adaugă animal | Adopt a Pet</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+		<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+	</head>
+	<body class="content_left scheme_red">
+		<section id="main_wrap">
+			<header class="wrapper" id="header">
+				<div class="container">
+					<div id="main_menu" class="clearfix">
+						<div class="clearfix">
+							<a href="{% url 'home' %}" title="Adopt a Pet" class="the_logo_link">
+								<img src="{% static 'images/rescuelogo.png' %}" alt="Adopt a Pet" id="logo" height="40" width="101.5" />
+							</a>
+							<nav id="menu_wrap">
+								<div class="menu-main-menu-container">
+									<ul id="menu-main-menu" class="menu">
+										<li><a href="{% url 'home' %}">Acasă</a></li>
+										<li><a href="{% url 'pets_all' %}">Animale</a></li>
+										<li><a href="{% url 'contact' %}">Contact</a></li>
+										<li><a href="{% url 'termeni' %}">Termeni și condiții</a></li>
+										{% if user.is_authenticated %}
+										<li><a href="{% url 'cont_ong' %}">Cont</a></li>
+										<li><a href="{% url 'logout' %}">Ieșire</a></li>
+										{% else %}
+										<li><a href="{% url 'signup' %}">Înregistrare</a></li>
+										<li><a href="{% url 'login' %}">Logare</a></li>
+										{% endif %}
+									</ul>
+								</div>
+							</nav>
+						</div>
+					</div>
+				</div>
+			</header>
+			<section class="wrapper" id="main_content">
+				<div class="container clearfix">
+					<div class="posts-wrap">
+						<section class="page">
+							<h2 class="entry-title">Adaugă animal</h2>
+							<div class="entry-content clearfix">
+								{% if messages %}
+								<ul class="adoption-messages">
+									{% for message in messages %}
+									<li class="message-{{ message.tags }}">{{ message }}</li>
+									{% endfor %}
+								</ul>
+								{% endif %}
+								<form method="post" action="{% url 'cont_ong_adauga' %}" enctype="multipart/form-data" class="adoption-form-wrap">
+									{% csrf_token %}
+									{% for field in form %}
+									<p>
+										<label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label><br />
+										{{ field }}
+										{% if field.errors %}<span class="form-error">{{ field.errors.0 }}</span>{% endif %}
+									</p>
+									{% endfor %}
+									{% if form.non_field_errors %}<ul class="form-errors">{{ form.non_field_errors }}</ul>{% endif %}
+									<p>
+										<button type="submit" class="button">Salvează animalul</button>
+										<a href="{% url 'cont_ong' %}" class="button" style="margin-left: 0.5em;">Anulare</a>
+									</p>
+								</form>
+							</div>
+						</section>
+					</div>
+				</div>
+			</section>
+			<footer id="footer" class="wrapper">
+				<div class="container">
+					<div id="post_footer">
+						<div id="site_info" class="clearfix">
+							<div class="right">&copy; Adopt a Pet</div>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</section>
+	</body>
+</html>

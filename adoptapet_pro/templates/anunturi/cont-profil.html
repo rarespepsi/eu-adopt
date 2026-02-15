@@ -1,0 +1,148 @@
+{% load static %}
+{% load anunturi_extras %}
+<!DOCTYPE html>
+<html lang="ro">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>Profilul meu | Adopt a Pet</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+		<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+		<style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}</style>
+	</head>
+	<body class="content_left scheme_red">
+		<section id="main_wrap">
+			<header class="wrapper" id="header">
+				<div class="container">
+					<div id="main_menu" class="clearfix">
+						<div class="clearfix">
+							<a href="{% url 'home' %}" title="Adopt a Pet" class="the_logo_link">
+								<img src="{% static 'images/rescuelogo.png' %}" alt="Adopt a Pet" id="logo" height="40" width="101.5" />
+							</a>
+							<nav id="menu_wrap">
+								<div class="menu-main-menu-container">
+									<ul id="menu-main-menu" class="menu">
+										<li><a href="{% url 'home' %}">Acasă</a></li>
+										<li><a href="{% url 'pets_all' %}">Animale</a></li>
+										<li><a href="{% url 'contact' %}">Contact</a></li>
+										<li><a href="{% url 'termeni' %}">Termeni și condiții</a></li>
+										{% if user.is_authenticated %}
+										{% if user|in_group:"Asociație" %}<li><a href="{% url 'cont_ong' %}">Cont ONG</a></li>{% endif %}
+										<li><a href="{% url 'cont_profil' %}" class="current_page">Cont</a></li>
+										<li><a href="{% url 'logout' %}">Ieșire</a></li>
+										{% else %}
+										<li><a href="{% url 'signup' %}">Înregistrare</a></li>
+										<li><a href="{% url 'login' %}">Logare</a></li>
+										{% endif %}
+									</ul>
+								</div>
+							</nav>
+						</div>
+					</div>
+				</div>
+			</header>
+			<section class="wrapper" id="main_content">
+				<div class="container clearfix">
+					<div class="posts-wrap">
+						<section class="page">
+							<h2 class="entry-title">Profilul meu (persoană fizică)</h2>
+							<div class="entry-content clearfix">
+								{% if user.is_authenticated and not user|in_group:"Asociație" %}
+								<p><a href="{% url 'cont_adauga_animal' %}" class="button">Adaugă animal (max 2 anunțuri pe lună)</a></p>
+								{% endif %}
+								{% if messages %}
+								<ul class="adoption-messages">
+									{% for message in messages %}
+									<li class="message-{{ message.tags }}">{{ message }}</li>
+									{% endfor %}
+								</ul>
+								{% endif %}
+								<p>Completați datele de contact și opțional încărcați maxim 3 poze (fiecare max 2 MB).</p>
+								<form method="post" action="{% url 'cont_profil' %}" enctype="multipart/form-data" class="profile-form">
+									{% csrf_token %}
+									<table class="form-table" style="border: 0;">
+										<tr>
+											<th>{{ form.nume.label }}</th>
+											<td>{{ form.nume }}{% if form.nume.errors %} <span class="error">{{ form.nume.errors.0 }}</span>{% endif %}</td>
+										</tr>
+										<tr>
+											<th>{{ form.prenume.label }}</th>
+											<td>{{ form.prenume }}{% if form.prenume.errors %} <span class="error">{{ form.prenume.errors.0 }}</span>{% endif %}</td>
+										</tr>
+										<tr>
+											<th>{{ form.telefon.label }}</th>
+											<td>
+												{{ form.telefon }}{% if form.telefon.errors %} <span class="error">{{ form.telefon.errors.0 }}</span>{% endif %}
+												<p class="telefon-sms-hint" style="margin: 0.5em 0 0 0; font-size: 0.95em; color: #555;">La acest număr veți primi prin SMS un cod de 6 cifre. Introduceți codul în cele 6 casete de mai jos (secțiunea „Verificare telefon”).</p>
+											</td>
+										</tr>
+										<tr>
+											<th>{{ form.oras.label }}</th>
+											<td>{{ form.oras }}{% if form.oras.errors %} <span class="error">{{ form.oras.errors.0 }}</span>{% endif %}</td>
+										</tr>
+										<tr>
+											<th>{{ form.email.label }}</th>
+											<td>{{ form.email }}{% if form.email.errors %} <span class="error">{{ form.email.errors.0 }}</span>{% endif %}</td>
+										</tr>
+										<tr>
+											<th>{{ form.poza_1.label }}</th>
+											<td>
+												{% if profile.poza_1 %}<p style="margin-bottom: 0.5em;"><img src="{{ profile.poza_1.url }}" alt="Poza 1" style="max-width: 120px; max-height: 120px;" /></p>{% endif %}
+												{{ form.poza_1 }}{% if form.poza_1.errors %} <span class="error">{{ form.poza_1.errors.0 }}</span>{% endif %}
+											</td>
+										</tr>
+										<tr>
+											<th>{{ form.poza_2.label }}</th>
+											<td>
+												{% if profile.poza_2 %}<p style="margin-bottom: 0.5em;"><img src="{{ profile.poza_2.url }}" alt="Poza 2" style="max-width: 120px; max-height: 120px;" /></p>{% endif %}
+												{{ form.poza_2 }}{% if form.poza_2.errors %} <span class="error">{{ form.poza_2.errors.0 }}</span>{% endif %}
+											</td>
+										</tr>
+										<tr>
+											<th>{{ form.poza_3.label }}</th>
+											<td>
+												{% if profile.poza_3 %}<p style="margin-bottom: 0.5em;"><img src="{{ profile.poza_3.url }}" alt="Poza 3" style="max-width: 120px; max-height: 120px;" /></p>{% endif %}
+												{{ form.poza_3 }}{% if form.poza_3.errors %} <span class="error">{{ form.poza_3.errors.0 }}</span>{% endif %}
+											</td>
+										</tr>
+									</table>
+									<hr style="margin: 1.5em 0;" />
+									<div style="padding: 1em; border: 2px solid #c9b896; border-radius: 6px; background: #f8f4e8;">
+									<h3 style="margin-top: 0; margin-bottom: 0.5em;">Validare membru – verificare telefon (SMS)</h3>
+									{% if profile.phone_verified %}
+									<p style="margin-bottom: 0.75em; color: green;"><strong>✓ Telefon verificat.</strong> Formularul de membru este finalizat.</p>
+									{% else %}
+									<p style="margin-bottom: 0.75em;">Apăsați <strong>Validare</strong> pentru a primi pe SMS (la numărul de telefon de mai sus) un cod de <strong>6 cifre</strong>. Introduceți fiecare cifră în câte o casetă, apoi apăsați din nou <strong>Validare</strong> pentru a finaliza.</p>
+									<p style="margin-bottom: 0.35em; font-weight: bold;">Cod primit prin SMS (6 cifre):</p>
+									<div class="sms-code-row" style="margin-bottom: 1em; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+										<input type="text" name="sms_code_1" id="id_sms_code_1" maxlength="1" size="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" aria-label="Cifra 1" style="width: 2.5em; min-width: 2.5em; text-align: center; font-size: 1.3em; padding: 0.4em; border: 1px solid #888; border-radius: 4px;" />
+										<input type="text" name="sms_code_2" id="id_sms_code_2" maxlength="1" size="1" pattern="[0-9]" inputmode="numeric" aria-label="Cifra 2" style="width: 2.5em; min-width: 2.5em; text-align: center; font-size: 1.3em; padding: 0.4em; border: 1px solid #888; border-radius: 4px;" />
+										<input type="text" name="sms_code_3" id="id_sms_code_3" maxlength="1" size="1" pattern="[0-9]" inputmode="numeric" aria-label="Cifra 3" style="width: 2.5em; min-width: 2.5em; text-align: center; font-size: 1.3em; padding: 0.4em; border: 1px solid #888; border-radius: 4px;" />
+										<input type="text" name="sms_code_4" id="id_sms_code_4" maxlength="1" size="1" pattern="[0-9]" inputmode="numeric" aria-label="Cifra 4" style="width: 2.5em; min-width: 2.5em; text-align: center; font-size: 1.3em; padding: 0.4em; border: 1px solid #888; border-radius: 4px;" />
+										<input type="text" name="sms_code_5" id="id_sms_code_5" maxlength="1" size="1" pattern="[0-9]" inputmode="numeric" aria-label="Cifra 5" style="width: 2.5em; min-width: 2.5em; text-align: center; font-size: 1.3em; padding: 0.4em; border: 1px solid #888; border-radius: 4px;" />
+										<input type="text" name="sms_code_6" id="id_sms_code_6" maxlength="1" size="1" pattern="[0-9]" inputmode="numeric" aria-label="Cifra 6" style="width: 2.5em; min-width: 2.5em; text-align: center; font-size: 1.3em; padding: 0.4em; border: 1px solid #888; border-radius: 4px;" />
+									</div>
+									<p style="margin-bottom: 1em;">
+										<button type="submit" name="action" value="validare" class="button">Validare</button>
+									</p>
+									{% endif %}
+									</div>
+									<p style="margin-top: 1em;"><button type="submit" class="button">Salvează profilul</button></p>
+								</form>
+							</div>
+						</section>
+					</div>
+				</div>
+			</section>
+			<footer id="footer" class="wrapper">
+				<div class="container">
+					<div id="post_footer">
+						<div id="site_info" class="clearfix">
+							<div class="right">&copy; Adopt a Pet</div>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</section>
+	</body>
+</html>

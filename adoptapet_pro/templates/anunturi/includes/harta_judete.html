@@ -1,0 +1,12 @@
+<aside class="widget widget-harta-judete">
+	<h4 class="widgettitle">Alege județul</h4>
+	<p class="widget-harta-desc">Apasă pe județ pentru animale din zona ta.</p>
+	<div class="harta-judete-wrap">
+		<div class="harta-judete-list">
+			{% for slug, nume in judet_choices %}
+			<a href="{% url 'pets_all' %}?judet={{ slug }}" class="harta-judet-link" title="Animale în {{ nume }}">{{ nume }}</a>
+			{% endfor %}
+		</div>
+	</div>
+	<a href="{% url 'pets_all' %}" class="harta-toate">Toate animalele &rarr;</a>
+</aside>
