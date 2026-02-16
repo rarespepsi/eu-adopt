@@ -3309,7 +3309,8 @@ input[type="submit"].button_red,
 	    float: left;
 	    border-left: 1px solid #EFEFEF;
 	    padding-left: 20px;
-	    max-height: 220px;
+	    max-height: none;
+	    min-height: 120px;
 	    height: auto;
 	}
 
@@ -3647,7 +3648,7 @@ input[type="submit"].button_red,
 
 	#friends_wrap {
 	    padding-left: 30px;
-	    max-height: 220px;
+	    max-height: none;
 	}
 
 	.single_latest_friend,

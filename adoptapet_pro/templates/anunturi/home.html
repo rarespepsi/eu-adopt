@@ -38,23 +38,11 @@
 							<nav id="menu_wrap">
 								<div class="menu-main-menu-container">
 									<ul id="menu-main-menu" class="menu">
-										<li><a href="/" class="current_page">Home</a></li>
-										<li><a href="#" >Our Pets +</a>
-											<ul class="sub-menu">
-												<li><a href="pets-all.html" >All Pets</a></li>
-												<li><a href="pets-animal.html" >Cats</a></li>
-												<li><a href="pets-animal.html" >Dogs</a></li>
-											</ul>
-										</li>
-										<li><a href="#" >Page Templates +</a>
-											<ul class="sub-menu">
-												<li><a href="page.html" >Standard Page</a></li>
-												<li><a href="page-full.html" >Full Width</a></li>
-												<li><a href="page-contact.html" >Contact</a></li>
-												<li><a href="page-extras.html" >Extras</a></li>
-											</ul>
-										</li>
-										<li><a href="blog.html" >Blog</a></li>
+										<li><a href="{% url 'home' %}" class="current_page">Acasă</a></li>
+										<li><a href="{% url 'pets_all' %}">Animale</a></li>
+										<li><a href="{% url 'contact' %}">Contact</a></li>
+										<li><a href="{% url 'login' %}">Logare</a></li>
+										<li><a href="{% url 'signup' %}">Înregistrare</a></li>
 									</ul>
 								</div>
 							</nav>
@@ -88,55 +76,56 @@
 					<div id="featured_pets">
 						<h3>Pets of the Month</h3>
 						<div id="featured_inner" class="clearfix">
+							{% for pet in featured_pets %}
 							<div class="single_pet">
-								<a href="pets-single.html" title="Charlie">
-									<img width="400" height="200" src="{% static 'images/pets/charlie-400x200.jpg' %}" class="attachment-pet_month" alt="Charlie" />
+								<a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}">
+									{% if pet.imagine %}
+										<img width="400" height="200" src="{{ pet.imagine.url }}" class="attachment-pet_month" alt="{{ pet.nume }}" />
+									{% elif pet.imagine_fallback %}
+										<img width="400" height="200" src="{% static pet.imagine_fallback %}" class="attachment-pet_month" alt="{{ pet.nume }}" />
+									{% else %}
+										<img width="400" height="200" src="{% static 'images/pets/charlie-400x200.jpg' %}" class="attachment-pet_month" alt="{{ pet.nume }}" />
+									{% endif %}
 								</a>
 								<div class="mask">
-									<h2>Charlie</h2>
-									<p>Charlie is such a lover!</p>
-									<a href="pets-single.html" title="Charlie" class="more_featured">Learn More About This Pet</a>
+									<h2>{{ pet.nume }}</h2>
+									<p>{% if pet.descriere %}{{ pet.descriere|truncatewords:15 }}{% else %}Cunoaște-l pe {{ pet.nume }}{% endif %}</p>
+									<a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}" class="more_featured">Află mai multe</a>
 								</div>
 							</div>
+							{% empty %}
 							<div class="single_pet">
-								<a href="pets-single.html" title="Shorty">
-									<img width="400" height="200" src="{% static 'images/pets/shorty1-400x200.jpg' %}" class="attachment-pet_month" alt="shorty1" />
+								<a href="{% url 'pets_all' %}" title="Animale">
+									<img width="400" height="200" src="{% static 'images/pets/charlie-400x200.jpg' %}" class="attachment-pet_month" alt="Animale" />
 								</a>
 								<div class="mask">
-									<h2>Shorty</h2>
-									<p>Shorty has one ear that is always floppy, but that's okay by us!</p>
-									<a href="pets-single.html" title="Shorty" class="more_featured">Learn More About This Pet</a>
+									<h2>Animale disponibile</h2>
+									<p>Vizitează galeria noastră</p>
+									<a href="{% url 'pets_all' %}" class="more_featured">Vezi toate animalele</a>
 								</div>
 							</div>
+							{% endfor %}
 						</div>
 					</div>
 					<div id="home_latest_friends" class="clearfix">
 						<h4 class="entry-title" id="latest-friends-title">Our Newest Friends</h4>
 						<div id="friends_wrap" class="clearfix">
-							<a href="pets-single.html" class="single_latest_friend">
-								<img width="180" height="180" src="{% static 'images/pets/charlie-180x180.jpg' %}" class="attachment-small_pet" alt="Charlie" />
+							{% for pet in latest_pets %}
+							<a href="{% url 'pets_single' pet.pk %}" class="single_latest_friend">
+								{% if pet.imagine %}
+									<img width="180" height="180" src="{{ pet.imagine.url }}" class="attachment-small_pet" alt="{{ pet.nume }}" />
+								{% elif pet.imagine_fallback %}
+									<img width="180" height="180" src="{% static pet.imagine_fallback %}" class="attachment-small_pet" alt="{{ pet.nume }}" />
+								{% else %}
+									<img width="180" height="180" src="{% static 'images/pets/charlie-180x180.jpg' %}" class="attachment-small_pet" alt="{{ pet.nume }}" />
+								{% endif %}
 							</a>
-							<a href="pets-single.html" class="single_latest_friend">
-								<img width="180" height="180" src="{% static 'images/pets/archie1-180x180.jpg' %}" class="attachment-small_pet" alt="Archie" />
+							{% empty %}
+							<a href="{% url 'pets_all' %}" class="single_latest_friend">
+								<img width="180" height="180" src="{% static 'images/pets/charlie-180x180.jpg' %}" class="attachment-small_pet" alt="Animale" />
 							</a>
-							<a href="pets-single.html" class="single_latest_friend">
-								<img width="180" height="180" src="{% static 'images/pets/mudi-180x180.jpg' %}" class="attachment-small_pet" alt="Mudi" />
-							</a>
-							<a href="pets-single.html" class="single_latest_friend">
-								<img width="180" height="180" src="{% static 'images/pets/chance1-180x180.jpg' %}" class="attachment-small_pet" alt="Chance" />
-							</a>
-							<a href="pets-single.html" class="single_latest_friend">
-								<img width="180" height="180" src="{% static 'images/pets/happy1-180x180.jpg' %}" class="attachment-small_pet" alt="Happy" />
-							</a>
-							<a href="pets-single.html" class="single_latest_friend">
-								<img width="180" height="180" src="{% static 'images/pets/nora1-180x180.jpg' %}" class="attachment-small_pet" alt="Nora" />
-							</a>
-							<a href="pets-single.html" class="single_latest_friend">
-								<img width="180" height="180" src="{% static 'images/pets/inga1-180x180.jpg' %}" class="attachment-small_pet" alt="Inga" />
-							</a>
-							<a href="pets-single.html" class="single_latest_friend">
-								<img width="180" height="180" src="{% static 'images/pets/ollie-180x180.jpg' %}" class="attachment-small_pet" alt="Ollie" />
-							</a>
+							<p style="clear:both; padding-top:10px;">Momentan nu există animale. <a href="{% url 'pets_all' %}">Vezi toate</a>.</p>
+							{% endfor %}
 						</div>
 					</div>
 					<section id="home_widgets">

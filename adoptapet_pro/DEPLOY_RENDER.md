@@ -73,6 +73,8 @@ git push -u origin main
 | `ALLOWED_HOSTS` | `eu-adopt.onrender.com,eu-adopt.ro,www.eu-adopt.ro` |
 | `RENDER` | `true` |
 
+**Email** (opțional – pentru cereri adopție): vezi **GHID_EMAIL.md**. Variabile: `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL`.
+
 ### Pasul 7: Deploy
 
 1. Click **Create Web Service**
@@ -94,11 +96,16 @@ python manage.py createsuperuser
 
 1. În Render: Web Service → **Settings** → **Custom Domains**
 2. **Add Custom Domain** → `eu-adopt.ro`
-3. Render îți va arăta valorile DNS de setat
-4. Mergi la **registrar-ul** unde ai cumpărat eu-adopt.ro
-5. Adaugă înregistrările:
-   - **A Record:** `@` → (IP-ul din Render)
-   - **CNAME:** `www` → `eu-adopt.onrender.com`
+3. Render îți va arăta valorile DNS de setat (ex: A Record, CNAME)
+4. Mergi la **ROTLD** (pentru .ro): https://portal.rotld.ro – autentificare cu parola primită la înregistrare
+5. Găsești zona DNS pentru eu-adopt.ro și adaugi înregistrările (valorile Render):
+
+| Hostname | Tip | Target / Value |
+|----------|-----|----------------|
+| `www` | CNAME | `eu-adopt.onrender.com` |
+| `@` (root) | **A record** | `216.24.57.1` |
+
+*Pentru root (@), unele provideri DNS (inclusiv ROTLD) nu acceptă CNAME – folosești A record cu IP-ul de mai sus.*
 6. Așteaptă propagarea DNS (până la 48h, de obicei < 1h)
 7. În Render: adaugă și `www.eu-adopt.ro` ca custom domain
 8. Actualizează `ALLOWED_HOSTS` să includă `eu-adopt.ro,www.eu-adopt.ro`

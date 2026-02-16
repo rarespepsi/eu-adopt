@@ -114,3 +114,25 @@ MEDIA_ROOT = os.environ.get('MEDIA_ROOT') or ('/tmp/media' if os.environ.get('RE
 
 # CSRF - pentru domeniul Render
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://*.onrender.com').split(',')
+
+# Auth redirects
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
+
+# ========== EMAIL ==========
+# Folosit la: cereri adopție (→ ONG), validare adopție, follow-up post-adopție.
+# Vezi GHID_EMAIL.md pentru setup Gmail / SendGrid / etc.
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@eu-adopt.ro')
+
+if os.environ.get('EMAIL_HOST'):
+    # Producție: trimite email real (setează variabile în Render)
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'true').lower() in ('1', 'true', 'yes')
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+else:
+    # Local / fără config: afișează emailurile în consolă (nu trimite)
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

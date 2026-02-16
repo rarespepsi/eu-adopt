@@ -35,24 +35,11 @@
 							<nav id="menu_wrap">
 								<div class="menu-main-menu-container">
 									<ul id="menu-main-menu" class="menu">
-										<li><a href="{% url 'home' %}">Home</a></li>
-										<li><a href="#" class="current_page">Our Pets +</a>
-											<ul class="sub-menu">
-												<li><a href="{% url 'pets_all' %}" class="current_page">All Pets</a></li>
-												<li><a href="#">Cats</a></li>
-                                                <li><a href="#">Dogs</a></li>
-
-											</ul>
-										</li>
-										<li><a href="#" >Page Templates +</a>
-											<ul class="sub-menu">
-												<li><a href="page.html" >Standard Page</a></li>
-												<li><a href="page-full.html" >Full Width</a></li>
-												<li><a href="page-contact.html" >Contact</a></li>
-												<li><a href="page-extras.html" >Extras</a></li>
-											</ul>
-										</li>
-										<li><a href="blog.html" >Blog</a></li>
+										<li><a href="{% url 'home' %}">Acasă</a></li>
+										<li><a href="{% url 'pets_all' %}" class="current_page">Animale</a></li>
+										<li><a href="{% url 'contact' %}">Contact</a></li>
+										<li><a href="{% url 'login' %}">Logare</a></li>
+										<li><a href="{% url 'signup' %}">Înregistrare</a></li>
 									</ul>
 								</div>
 							</nav>
@@ -69,6 +56,19 @@
 				</div>
 			</header>
 			<section class="wrapper" id="main_content">
+				<div id="slider_wrap">
+					<ul class="slides">
+						<li class="slide_image_wrap">
+							<img width="2880" height="1000" src="{% static 'images/slide1.jpg' %}" alt="Slide" />
+						</li>
+						<li class="slide_image_wrap">
+							<img width="2880" height="1000" src="{% static 'images/slide2.jpg' %}" alt="Slide" />
+						</li>
+						<li class="slide_image_wrap">
+							<img width="2880" height="1000" src="{% static 'images/slide3.jpg' %}" alt="Slide" />
+						</li>
+					</ul>
+				</div>
 				<div class="container clearfix">
 					<div class="posts-wrap">
 						<section class="page">
@@ -85,195 +85,32 @@
 								<li><a href="pets-animal.html">Dogs</a></li>
 							</ul>
 							<section id="all_pets_wrap">
+								{% for pet in pets %}
 								<article class="rescue_pet">
 									<div class="entry-content clearfix">
-										<a href="pets-single.html">
-										<img width="275" height="275" src="{% static 'images/pets/archie1-275x275.jpg' %}" class="attachment-pet_single_large" alt="Archie" />
+										<a href="{% url 'pets_single' pet.pk %}">
+										{% if pet.imagine %}
+											<img width="275" height="275" src="{{ pet.imagine.url }}" class="attachment-pet_single_large" alt="{{ pet.nume }}" />
+										{% elif pet.imagine_fallback %}
+											<img width="275" height="275" src="{% static pet.imagine_fallback %}" class="attachment-pet_single_large" alt="{{ pet.nume }}" />
+										{% else %}
+											<img width="275" height="275" src="{% static 'images/pets/charlie-275x275.jpg' %}" class="attachment-pet_single_large" alt="{{ pet.nume }}" />
+										{% endif %}
 										</a>
-										<h2 class="entry-title pet-name-title"><a href="pets-single.html" title="Archie">Archie</a></h2>
+										<h2 class="entry-title pet-name-title"><a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}">{{ pet.nume }}</a></h2>
 										<div class="breed">
-											<a href="pets-animal.html">Border Collie</a> - Young - Male
+											{{ pet.rasa }} - {{ pet.get_varsta_display }} - {{ pet.get_sex_display }}{% if pet.marime %} - {{ pet.get_marime_display }}{% endif %}
 										</div>
 										<div class="pet_info clearfix">
-											<span>Adoptable</span>
-											<span>Large</span>
-											<span>Spayed/Neutered</span>
-											<span>Up-to-date with routine shots</span>
-											<span>House trained</span>
-											<span>Prefers No Cats</span>
+											<span>{{ pet.get_status_display }}</span>
+											{% if pet.tags %}<span>{{ pet.tags }}</span>{% endif %}
 										</div>
 									</div>
 								</article>
-								<article class="rescue_pet">
-									<div class="entry-content clearfix">
-										<a href="pets-single.html">
-											<img width="275" height="275" src="{% static 'images/pets/candy1-275x275.jpeg' %}" class="attachment-pet_single_large" alt="Candy" />
-										</a>
-										<h2 class="entry-title pet-name-title"><a href="pets-single.html" title="Candy">Candy</a></h2>
-										<div class="breed">
-											<a href="pets-animal.html">Maltese</a> - Baby - Female
-										</div>
-										<div class="pet_info clearfix">
-											<span>Adoptable</span>
-											<span>Small</span>
-											<span>Spayed/Neutered</span>
-											<span>Up-to-date with routine shots</span>
-											<span>House trained</span>
-											<span>Prefers No Dogs</span>
-										</div>
-									</div>
-								</article>
-								<article class="rescue_pet">
-									<div class="entry-content clearfix">
-										<a href="pets-single.html">
-											<img width="275" height="275" src="{% static 'images/pets/chance1-275x275.jpg' %}" class="attachment-pet_single_large" alt="Chance" />
-										</a>
-										<h2 class="entry-title pet-name-title"><a href="pets-single.html" title="Chance">Chance</a></h2>
-										<div class="breed">
-											<a href="pets-animal.html">Weimaraner</a> - Baby - Male
-										</div>
-										<div class="pet_info clearfix">
-											<span>Adoptable</span>
-											<span>Small</span>
-											<span>Up-to-date with routine shots</span>
-											<span>House trained</span>
-										</div>
-									</div>
-								</article>
-								<article class="rescue_pet">
-									<div class="entry-content clearfix">
-										<a href="pets-single.html">
-											<img width="275" height="275" src="{% static 'images/pets/charlie-275x275.jpg' %}" class="attachment-pet_single_large" alt="Charlie" />
-										</a>
-										<h2 class="entry-title pet-name-title"><a href="pets-single.html" title="Charlie">Charlie</a></h2>
-										<div class="breed">
-											<a href="pets-animal.html">Basque Shepherd Dog</a> - Young - Male
-										</div>
-										<div class="pet_info clearfix">
-											<span>Adoptable</span>
-											<span>Large</span>
-											<span>Spayed/Neutered</span>
-											<span>Up-to-date with routine shots</span>
-											<span>House trained</span>
-										</div>
-									</div>
-								</article>
-								<article class="rescue_pet">
-									<div class="entry-content clearfix">
-										<a href="pets-single.html">
-											<img width="275" height="275" src="{% static 'images/pets/chester2-275x275.jpg' %}" class="attachment-pet_single_large" alt="chester2" />
-										</a>
-										<h2 class="entry-title pet-name-title"><a href="pets-single.html" title="Chester">Chester</a></h2>
-										<div class="breed">
-											<a href="pets-animal.html">American Shorthair</a> - <a href="pets-animal.html">Tuxedo</a> -
-											Adult -
-											Male
-										</div>
-										<div class="pet_info clearfix">
-											<span>Adoptable</span>
-											<span>Medium</span>
-											<span>Spayed/Neutered</span>
-											<span>Up-to-date with routine shots</span>
-											<span>House trained</span>
-											<span>Special Needs</span>
-										</div>
-									</div>
-								</article>
-								<article class="rescue_pet">
-									<div class="entry-content clearfix">
-										<a href="pets-single.html">
-											<img width="275" height="275" src="{% static 'images/pets/cindy1-275x275.jpg' %}" class="attachment-pet_single_large" alt="Cindy" />
-										</a>
-										<h2 class="entry-title pet-name-title"><a href="pets-single.html" title="Cinderella">Cinderella</a></h2>
-										<div class="breed">
-											<a href="pets-animal.html">American Shorthair</a> - <a href="pets-animal.html">Calico</a> - Adult - Female
-										</div>
-										<div class="pet_info clearfix">
-											<span>Adoptable</span>
-											<span>Large</span>
-											<span>Spayed/Neutered</span>
-											<span>Up-to-date with routine shots</span>
-											<span>House trained</span>
-										</div>
-									</div>
-								</article>
-								<article class="rescue_pet">
-									<div class="entry-content clearfix">
-										<a href="pets-single.html">
-											<img width="275" height="275" src="{% static 'images/pets/grissom1-275x275.jpg' %}" class="attachment-pet_single_large" alt="IMG_0095 4" />
-										</a>
-										<h2 class="entry-title pet-name-title"><a href="pets-single.html" title="Grissom">Grissom</a></h2>
-										<div class="breed">
-											<a href="pets-animal.html">Border Collie</a> - Adult - Male
-										</div>
-										<div class="pet_info clearfix">
-											<span>Adoptable</span>
-											<span>Extra Large</span>
-											<span>Spayed/Neutered</span>
-											<span>Up-to-date with routine shots</span>
-											<span>House trained</span>
-											<span>Prefers No Cats</span>
-										</div>
-									</div>
-								</article>
-								<article class="rescue_pet">
-									<div class="entry-content clearfix">
-										<a href="pets-single.html">
-											<img width="275" height="275" src="{% static 'images/pets/happy1-275x275.jpg' %}" class="attachment-pet_single_large" alt="happy1" />
-										</a>
-										<h2 class="entry-title pet-name-title"><a href="pets-single.html" title="Happy">Happy</a></h2>
-										<div class="breed">
-											<a href="pets-animal.html">Calico</a> - <a href="pets-animal.html">Domestic Longhair</a> - Adult - Female
-										</div>
-										<div class="pet_info clearfix">
-											<span>Adoptable</span>
-											<span>Medium</span>
-											<span>Spayed/Neutered</span>
-											<span>Up-to-date with routine shots</span>
-											<span>House trained</span>
-										</div>
-									</div>
-								</article>
-								<article class="rescue_pet">
-									<div class="entry-content clearfix">
-										<a href="pets-single.html">
-											<img width="275" height="275" src="{% static 'images/pets/inga1-275x275.jpg' %}" class="attachment-pet_single_large" alt="inga" />
-										</a>
-										<h2 class="entry-title pet-name-title"><a href="pets-single.html" title="Inga">Inga</a></h2>
-										<div class="breed">
-											<a href="pets-animal.html">Golden Retreiver</a> - Young - Female
-										</div>
-										<div class="pet_info clearfix">
-											<span>Adoptable</span>
-											<span>Spayed/Neutered</span>
-											<span>Up-to-date with routine shots</span>
-											<span>House trained</span>
-											<span>Prefers No Cats</span>
-											<span>Prefers No Dogs</span>
-											<span>Prefers No Kids</span>
-										</div>
-									</div>
-								</article>
-								<article class="rescue_pet">
-									<div class="entry-content clearfix">
-										<a href="pets-single.html">
-										<img width="275" height="275" src="{% static 'images/pets/JazzyGirlAverill-1-275x275.jpg' %}" class="attachment-pet_single_large" alt="JazzyGirlAverill-4" />	
-										</a>
-										<h2 class="entry-title pet-name-title"><a href="pets-single.html" title="Jazzy Girl">Jazzy Girl</a></h2>
-										<div class="breed">
-											<a href="pets-animal.html">Shar-Pei</a> - Adult - Female
-										</div>
-										<div class="pet_info clearfix">
-											<span class="ex">Adoption Pending</span>
-											<span>Large</span>
-											<span>Spayed/Neutered</span>
-											<span>Up-to-date with routine shots</span>
-											<span>House trained</span>
-											<span>Prefers No Cats</span>
-										</div>
-									</div>
-								</article>
-								<div class="navigation clearfix">
+								{% empty %}
+								<p>Momentan nu există animale disponibile pentru adopție.</p>
+								{% endfor %}
+																<div class="navigation clearfix">
 									<div class="nav-prev"><a href="#">&larr; Older Entries</a></div>
 									<div class="nav-next"><a href="#">Newer Entries &rarr;</a></div>
 								</div>
