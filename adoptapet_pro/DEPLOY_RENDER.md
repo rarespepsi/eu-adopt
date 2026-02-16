@@ -58,8 +58,9 @@ git push -u origin main
    - **Region:** Frankfurt
    - **Branch:** `main`
    - **Runtime:** Python 3
-   - **Build Command:** `pip install -r requirements.txt && python manage.py collectstatic --noinput`
-   - **Start Command:** `gunicorn platforma.wsgi:application`
+   - **Build Command:** `./build.sh` (sau: `pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py seed_demo_pets && python manage.py collectstatic --noinput`)
+   - **Pre-Deploy Command:** `python manage.py migrate --noinput && python manage.py seed_demo_pets`
+   - **Start Command:** `bash start.sh` (sau doar `gunicorn platforma.wsgi:application`)
 
 ### Pasul 6: Variabile de mediu (Environment Variables)
 
@@ -72,8 +73,11 @@ git push -u origin main
 | `DEBUG` | `False` |
 | `ALLOWED_HOSTS` | `eu-adopt.onrender.com,eu-adopt.ro,www.eu-adopt.ro` |
 | `RENDER` | `true` |
+| `CLOUDINARY_URL` | *(obligatoriu – pozele nu se mai pierd)* |
 
-**Email** (opțional – pentru cereri adopție): vezi **GHID_EMAIL.md**. Variabile: `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL`.
+**CLOUDINARY_URL:** Cont gratuit pe cloudinary.com → Dashboard → Settings → Product Environment Credentials → copiază „Environment variable” (ex: `cloudinary://123:abc@nume-cloud`).
+
+**Email** (opțional): `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL`.
 
 ### Pasul 7: Deploy
 
@@ -81,16 +85,16 @@ git push -u origin main
 2. Așteaptă 5–10 minute (build + deploy)
 3. Site-ul va fi live la `https://eu-adopt.onrender.com`
 
-### Pasul 8: Migrări și superuser
-
-După primul deploy reușit:
+### Pasul 8: Superuser (după primul deploy)
 
 1. În Render: Web Service → **Shell**
-2. Rulează:
-```bash
-python manage.py migrate
-python manage.py createsuperuser
-```
+2. Rulează: `python manage.py createsuperuser`
+
+### Animalele au dispărut?
+
+1. Render → Web Service → **Shell**
+2. Rulează: `python manage.py seed_demo_pets`
+3. Reîncarcă site-ul – animalele revin imediat.
 
 ### Pasul 9: Conectează domeniul eu-adopt.ro
 

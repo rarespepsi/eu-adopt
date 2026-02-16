@@ -80,7 +80,7 @@
 							<div class="single_pet">
 								<a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}">
 									{% if pet.imagine %}
-										<img width="400" height="200" src="{{ pet.imagine.url }}" class="attachment-pet_month" alt="{{ pet.nume }}" />
+										<img width="400" height="200" src="{{ pet.imagine.url }}" class="attachment-pet_month" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
 									{% elif pet.imagine_fallback %}
 										<img width="400" height="200" src="{% static pet.imagine_fallback %}" class="attachment-pet_month" alt="{{ pet.nume }}" />
 									{% else %}
@@ -113,7 +113,7 @@
 							{% for pet in latest_pets %}
 							<a href="{% url 'pets_single' pet.pk %}" class="single_latest_friend">
 								{% if pet.imagine %}
-									<img width="180" height="180" src="{{ pet.imagine.url }}" class="attachment-small_pet" alt="{{ pet.nume }}" />
+									<img width="180" height="180" src="{{ pet.imagine.url }}" class="attachment-small_pet" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-180x180.jpg' %}';this.onerror=null;" />
 								{% elif pet.imagine_fallback %}
 									<img width="180" height="180" src="{% static pet.imagine_fallback %}" class="attachment-small_pet" alt="{{ pet.nume }}" />
 								{% else %}

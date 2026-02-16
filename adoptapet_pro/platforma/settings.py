@@ -19,7 +19,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.c
 # Application definition
 
 INSTALLED_APPS = [
-     'django.contrib.admin',
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -108,7 +108,6 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Media files (uploads - poze animale etc.)
-# Pe Render: disco ephemeral, folosește /tmp (pozele se pierd la redeploy)
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.environ.get('MEDIA_ROOT') or ('/tmp/media' if os.environ.get('RENDER') else str(BASE_DIR / 'media'))
 

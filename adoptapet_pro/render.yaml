@@ -1,0 +1,14 @@
+# Configurare deploy Render - EU Adopt
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: eu-adopt
+    runtime: python
+    buildCommand: ./build.sh
+    preDeployCommand: python manage.py migrate --noinput && python manage.py seed_demo_pets
+    startCommand: bash start.sh
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: RENDER
+        value: "true"

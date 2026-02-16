@@ -90,7 +90,7 @@
 									<div class="entry-content clearfix">
 										<a href="{% url 'pets_single' pet.pk %}">
 										{% if pet.imagine %}
-											<img width="275" height="275" src="{{ pet.imagine.url }}" class="attachment-pet_single_large" alt="{{ pet.nume }}" />
+											<img width="275" height="275" src="{{ pet.imagine.url }}" class="attachment-pet_single_large" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-275x275.jpg' %}';this.onerror=null;" />
 										{% elif pet.imagine_fallback %}
 											<img width="275" height="275" src="{% static pet.imagine_fallback %}" class="attachment-pet_single_large" alt="{{ pet.nume }}" />
 										{% else %}

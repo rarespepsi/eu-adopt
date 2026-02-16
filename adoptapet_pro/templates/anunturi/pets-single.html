@@ -43,7 +43,7 @@
 								<div class="pet-single-detail clearfix">
 									<div class="pet-image">
 										{% if pet.imagine %}
-											<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" class="attachment-pet_single_large" width="275" height="275" />
+											<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" class="attachment-pet_single_large" width="275" height="275" onerror="this.src='{% static 'images/pets/charlie-275x275.jpg' %}';this.onerror=null;" />
 										{% elif pet.imagine_fallback %}
 											<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" class="attachment-pet_single_large" width="275" height="275" />
 										{% else %}

@@ -36,6 +36,7 @@ Documentul tău central unde notezi toate programele, conturile, domeniile și t
 | **PostgreSQL** | Baza de date (pe Render) | gestionat în Render |
 | **PowerShell** | Terminal pentru comenzi | în Cursor sau Windows |
 | **UptimeRobot** | Ține site-ul treaz (cold start) | https://uptimerobot.com |
+| **Cloudinary** | Poze animale (nu se pierd la redeploy) | https://console.cloudinary.com |
 | _adaugă altele..._ | | |
 
 ---
@@ -91,6 +92,7 @@ Documentul tău central unde notezi toate programele, conturile, domeniile și t
 | GitHub repo | https://github.com/rarespepsi/eu-adopt |
 | Render dashboard | https://dashboard.render.com |
 | UptimeRobot | https://uptimerobot.com |
+| Cloudinary | https://console.cloudinary.com |
 
 ---
 
@@ -103,6 +105,9 @@ _(scrie aici orice nu ține în tabel – parole NU, doar amintiri gen „parola
 - Proiect local: `c:\Users\USER\Desktop\adoptapet_pro`
 - **ROTLD** (pentru .ro): https://portal.rotld.ro – acolo setezi DNS-ul pentru eu-adopt.ro (parola e în emailul de înregistrare)
 - **DNS eu-adopt.ro (Render):** `www` CNAME → `eu-adopt.onrender.com` | `@` A record → `216.24.57.1`
+- **Cloudinary:** CLOUDINARY_URL în Render Environment (pozele merg în cloud)
+- **Start Command Render:** `gunicorn platforma.wsgi:application` (nu pune migrate/seed în Start – rulează în build)
+- **Animale dispar:** build-ul rulează `seed_demo_pets`; dacă lipsesc, Manual Deploy din Render
 
 ---
 
