@@ -111,9 +111,27 @@ Pe planul **Free** al Render, pozele încărcate de utilizatori **se pierd la fi
 
 ---
 
+## Dacă pagina se încarcă foarte lent sau nu se încarcă (cold start)
+
+Pe planul **Free**, Render oprește serviciul după ~15 min de inactivitate. La primul acces după ce s-a oprit, „trezirea” poate dura **30 sec – 2 minute** (sau chiar mai mult).
+
+**Soluție gratuită – UptimeRobot (ține site-ul treaz):**
+1. Mergi la **https://uptimerobot.com** și creează cont gratuit
+2. **Add New Monitor**
+3. **Monitor Type:** HTTP(s)
+4. **URL:** `https://eu-adopt.onrender.com/health/`
+5. **Monitoring Interval:** 5 minute (sau 10 min pe plan free)
+6. **Create Monitor**
+
+UptimeRobot va face request la site la fiecare 5–10 min → serviciul rămâne treaz → paginile se încarcă rapid.
+
+**Alternativă:** încarcă din nou pagina după 1–2 min – cold start-ul poate dura.
+
+---
+
 ## Dacă ceva nu merge
 
 - **Build failed:** verifică că `requirements.txt` e în root
 - **Application failed to start:** verifică Start Command și logs
 - **Static files lipsesc:** build command trebuie să ruleze `collectstatic`
-- **502 Bad Gateway:** așteaptă 1–2 min – serviciul free pornește la primul request
+- **502 Bad Gateway / timeout:** așteaptă 1–2 min – serviciul free pornește la primul request
