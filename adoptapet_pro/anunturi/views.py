@@ -6,20 +6,46 @@ from django.views.generic import TemplateView
 from .models import Pet, AdoptionRequest, UserProfile, OngProfile
 from .forms import AdoptionRequestForm, UserRegistrationForm, UserProfileForm
 from .adoption_platform import platform_validation_passes, send_adoption_request_to_ong
+from .contest_service import get_active_contest, get_contest_leaderboard, get_remaining_days
 
 
 def home(request):
-    featured = Pet.objects.filter(featured=True, status="adoptable")[:4]
-    latest = Pet.objects.filter(status="adoptable").order_by("-data_adaugare")[:8]
+    featured = list(Pet.objects.filter(featured=True, status="adoptable")[:6])
+    latest_qs = Pet.objects.filter(status="adoptable").order_by("-data_adaugare")
+    latest = list(latest_qs[:14])
+    # Dacă sunt mai puțin de 6 la Animalele lunii, completăm până la 6 (2x3) cu cele mai noi
+    if len(featured) < 6:
+        ids = {p.pk for p in featured}
+        available = list(latest_qs.exclude(pk__in=ids))
+        # Dacă nu sunt suficiente, repetăm din cele disponibile
+        import itertools
+        if available:
+            for p in itertools.islice(itertools.cycle(available), 6 - len(featured)):
+                featured.append(p)
+        else:
+            # Dacă nu există deloc animale, repetăm din featured
+            if featured:
+                for p in itertools.islice(itertools.cycle(featured), 6 - len(featured)):
+                    featured.append(p)
+    latest = latest[:14]
     # Poze pentru burtiera mică (bandă deasupra slider-ului mare); dacă sunt puține, le dublăm
     strip_pets = list(Pet.objects.filter(status="adoptable").order_by("-data_adaugare")[:40])
     if strip_pets and len(strip_pets) < 12:
         import itertools
         strip_pets = list(itertools.islice(itertools.cycle(strip_pets), 24))
+    
+    # Date concurs
+    contest = get_active_contest()
+    remaining_days = get_remaining_days(contest) if contest else 0
+    top_users = get_contest_leaderboard(limit=10, contest=contest) if contest else []
+    
     return render(request, "anunturi/home.html", {
         "featured_pets": featured,
         "latest_pets": latest,
         "strip_pets": strip_pets,
+        "contest": contest,
+        "remaining_days": remaining_days,
+        "top_users": top_users,
     })
 
 
@@ -31,10 +57,16 @@ def pets_all(request):
     vip = request.GET.get("vip")
     if vip == "1":
         qs = qs.filter(featured=True)
+    # Poze pentru burtiera mică (bandă deasupra slider-ului mare); dacă sunt puține, le dublăm
+    strip_pets = list(Pet.objects.filter(status="adoptable").order_by("-data_adaugare")[:40])
+    if strip_pets and len(strip_pets) < 12:
+        import itertools
+        strip_pets = list(itertools.islice(itertools.cycle(strip_pets), 24))
     return render(request, "anunturi/pets-all.html", {
         "pets": qs,
         "current_tip": tip,
         "current_vip": vip,
+        "strip_pets": strip_pets,
     })
 
 
@@ -74,8 +106,14 @@ def adoption_request_submit(request, pk):
 
 
 def signup_view(request):
+    # Dacă utilizatorul este deja autentificat, redirecționează către profilul său
     if request.user.is_authenticated:
-        return redirect("home")
+        from django.contrib.auth.models import Group
+        is_ong = request.user.groups.filter(name="Asociație").exists()
+        if is_ong:
+            return redirect("cont_ong")
+        else:
+            return redirect("cont_profil")
     if request.method == "POST":
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
@@ -108,6 +146,35 @@ def signup_view(request):
     else:
         form = UserRegistrationForm()
     return render(request, "registration/signup.html", {"form": form})
+
+
+def signup_verificare_telefon_view(request):
+    """Pagina de introducere cod SMS pentru validare telefon. (Implementare completă: trimitere SMS și validare.)"""
+    phone_masked = request.session.get("signup_phone_masked", "***")
+    if request.method == "POST":
+        # TODO: validare cod SMS și activare cont
+        messages.info(request, "Funcția de validare SMS va fi activată în curând.")
+        return redirect("home")
+    return render(
+        request,
+        "registration/signup_verificare_telefon.html",
+        {"phone_masked": phone_masked},
+    )
+
+
+def cont_view(request):
+    """Pagina principală de cont - direcționează către profilul corespunzător"""
+    if not request.user.is_authenticated:
+        return redirect("login")
+    
+    # Verifică dacă utilizatorul e în grupul "Asociație"
+    from django.contrib.auth.models import Group
+    is_ong = request.user.groups.filter(name="Asociație").exists()
+    
+    if is_ong:
+        return redirect("cont_ong")
+    else:
+        return redirect("cont_profil")
 
 
 def cont_profil_view(request):
@@ -151,3 +218,4 @@ def cont_ong_adauga_view(request):
 
 contact_view = TemplateView.as_view(template_name="anunturi/contact.html")
 termeni_view = TemplateView.as_view(template_name="anunturi/termeni.html")
+schema_site_view = TemplateView.as_view(template_name="anunturi/schema-site.html")

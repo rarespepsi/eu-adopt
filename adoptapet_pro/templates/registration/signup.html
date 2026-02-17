@@ -9,8 +9,27 @@
 	<link rel="stylesheet" href="{% static 'css/auth-pages.css' %}" />
 	<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
 	<style>
-		.reg-block { margin: 1em 0; padding: 1em; border: 1px solid #ccc; border-radius: 4px; }
-		.reg-block.hidden { display: none; }
+		.reg-block { 
+			margin: 1em 0; 
+			padding: 1em; 
+			border: 1px solid #ccc; 
+			border-radius: 4px; 
+			background: #f9f9f9;
+		}
+		.reg-block.hidden { 
+			display: none !important; 
+		}
+		.radiolist label {
+			display: block;
+			padding: 0.5em 0;
+			cursor: pointer;
+		}
+		.radiolist input[type="radio"] {
+			margin-right: 0.5em;
+		}
+		.radiolist li {
+			margin-bottom: 0.25em;
+		}
 	</style>
 </head>
 <body class="content_left scheme_red auth-page">
@@ -19,7 +38,7 @@
 			<div class="container">
 				<div id="main_menu" class="clearfix">
 					<a href="{% url 'home' %}" title="Adopt a Pet" class="the_logo_link">
-						<img src="{% static 'images/rescuelogo.png' %}" alt="Adopt a Pet" id="logo" height="40" width="101.5" />
+						<img src="{% static 'images/eu-adopt-logo-original.jpeg' %}" alt="EU Adopt" id="logo" height="40" />
 					</a>
 					<nav id="menu_wrap">
 						<ul id="menu-main-menu" class="menu">
@@ -45,27 +64,43 @@
 					<section class="page">
 						<h2 class="entry-title">Înregistrare</h2>
 						<div class="entry-content clearfix">
-							<p>Alegeți tipul de cont; vor apărea câmpurile de identificare cerute pentru categoria selectată.</p>
+							<p><strong>Alegeți tipul de cont:</strong></p>
+							<p style="font-size: 0.9em; color: #666;">Vor apărea câmpurile de identificare cerute pentru categoria selectată.</p>
 							{% if form.errors %}
 								<p class="errornote">Corectați erorile de mai jos.</p>
 							{% endif %}
 							<form method="post" action="{% url 'signup' %}" id="signup-form" class="login-form" style="max-width: 520px;">
 								{% csrf_token %}
-								<p>
-									<label>Tip cont *</label><br />
-									<ul class="radiolist" style="list-style: none; padding-left: 0; margin: 0.5em 0;">
-										{% for choice in form.tip_cont %}
-										<li><label>{{ choice.tag }} {{ choice.choice_label }}</label></li>
-										{% endfor %}
+								<div style="background: #fff; padding: 1em; border: 2px solid #d32f2f; border-radius: 6px; margin-bottom: 1.5em;">
+									<label style="font-weight: bold; font-size: 1.1em; display: block; margin-bottom: 0.75em;">Tip cont *</label>
+									<ul class="radiolist" style="list-style: none; padding-left: 0; margin: 0;">
+										<li style="margin-bottom: 0.75em; padding: 0.5em; background: #f5f5f5; border-radius: 4px;">
+											<label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
+												<input type="radio" name="tip_cont" value="pf" id="id_tip_cont_0" checked="checked" />
+												<span style="margin-left: 0.5em; font-weight: 500;">1. Persoană fizică</span>
+											</label>
+										</li>
+										<li style="margin-bottom: 0.75em; padding: 0.5em; background: #f5f5f5; border-radius: 4px;">
+											<label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
+												<input type="radio" name="tip_cont" value="srl_pfa_af" id="id_tip_cont_1" />
+												<span style="margin-left: 0.5em; font-weight: 500;">2. SRL / PFA</span>
+											</label>
+										</li>
+										<li style="margin-bottom: 0.75em; padding: 0.5em; background: #f5f5f5; border-radius: 4px;">
+											<label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
+												<input type="radio" name="tip_cont" value="ong" id="id_tip_cont_2" />
+												<span style="margin-left: 0.5em; font-weight: 500;">3. ONG / Asociație / Fundație</span>
+											</label>
+										</li>
 									</ul>
-									{% if form.tip_cont.errors %}<span class="form-error">{{ form.tip_cont.errors.0 }}</span>{% endif %}
-								</p>
+									{% if form.tip_cont.errors %}<span class="form-error" style="color: #d32f2f; font-size: 0.9em;">{{ form.tip_cont.errors.0 }}</span>{% endif %}
+								</div>
 								<div id="block-subtip" class="reg-block hidden" style="margin-left: 1.5em;">
 									<strong>Precizați (categoria 2):</strong>
 									<ul class="radiolist" style="list-style: none; padding-left: 0; margin: 0.5em 0;">
 										{% for value, label in form.fields.tip_org_organizatie.choices %}
 										{% if value %}
-										<li><label><input type="radio" name="tip_org_organizatie" value="{{ value }}" {% if form.tip_org_organizatie.value == value %}checked="checked"{% endif %} /> {{ label }}</label></li>
+										<li><label><input type="radio" name="tip_org_organizatie" value="{{ value }}" {% if form.tip_org_organizatie.value and form.tip_org_organizatie.value == value %}checked="checked"{% endif %} /> {{ label }}</label></li>
 										{% endif %}
 										{% endfor %}
 									</ul>
@@ -76,7 +111,7 @@
 									<ul class="radiolist" style="list-style: none; padding-left: 0; margin: 0.5em 0;">
 										{% for value, label in form.fields.tip_org_ong.choices %}
 										{% if value %}
-										<li><label><input type="radio" name="tip_org_ong" value="{{ value }}" {% if form.tip_org_ong.value == value %}checked="checked"{% endif %} /> {{ label }}</label></li>
+										<li><label><input type="radio" name="tip_org_ong" value="{{ value }}" {% if form.tip_org_ong.value and form.tip_org_ong.value == value %}checked="checked"{% endif %} /> {{ label }}</label></li>
 										{% endif %}
 										{% endfor %}
 									</ul>
@@ -185,7 +220,9 @@
 		var pResponsabil = document.getElementById('p-responsabil');
 
 		function updateBlocks() {
-			var tip = (form.querySelector('input[name="tip_cont"]:checked') || {}).value;
+			var tipInput = form.querySelector('input[name="tip_cont"]:checked');
+			var tip = tipInput ? tipInput.value : '';
+			
 			if (tip === 'pf') {
 				blockPf.classList.remove('hidden');
 				blockOrg.classList.add('hidden');
@@ -196,16 +233,17 @@
 				blockOrg.classList.remove('hidden');
 				blockSubtip.classList.remove('hidden');
 				blockSubtipOng.classList.add('hidden');
-				pReprezentant.style.display = 'block';
-				pResponsabil.style.display = 'none';
+				if (pReprezentant) pReprezentant.style.display = 'block';
+				if (pResponsabil) pResponsabil.style.display = 'none';
 			} else if (tip === 'ong') {
 				blockPf.classList.add('hidden');
 				blockOrg.classList.remove('hidden');
 				blockSubtip.classList.add('hidden');
 				blockSubtipOng.classList.remove('hidden');
-				pReprezentant.style.display = 'none';
-				pResponsabil.style.display = 'block';
+				if (pReprezentant) pReprezentant.style.display = 'none';
+				if (pResponsabil) pResponsabil.style.display = 'block';
 			} else {
+				// Niciun tip selectat - ascunde toate blocurile
 				blockPf.classList.add('hidden');
 				blockOrg.classList.add('hidden');
 				blockSubtip.classList.add('hidden');
@@ -213,6 +251,7 @@
 			}
 		}
 
+		// Adaugă event listeners pentru toate radio buttons
 		form.querySelectorAll('input[name="tip_cont"]').forEach(function(inp) {
 			inp.addEventListener('change', updateBlocks);
 		});
@@ -222,6 +261,8 @@
 		form.querySelectorAll('input[name="tip_org_ong"]').forEach(function(inp) {
 			inp.addEventListener('change', updateBlocks);
 		});
+		
+		// Inițializează starea la încărcarea paginii
 		updateBlocks();
 	})();
 	</script>
