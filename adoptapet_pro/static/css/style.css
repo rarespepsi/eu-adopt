@@ -1346,6 +1346,10 @@ h3.search_title {
         -ms-filter: "progid: DXImageTransform.Microsoft.Alpha(Opacity=0)";
         filter: alpha(opacity=0);
         opacity: 0;
+        pointer-events: none;
+    }
+    .single_pet:hover .mask {
+        pointer-events: auto;
     }
 
     .single_pet h2 {
@@ -1483,6 +1487,8 @@ a.more_featured:active {
     overflow: hidden;
     background: #e0e0e0;
     position: relative;
+    border-bottom: 5px solid #222;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .burtiera_mica_track {
@@ -1582,6 +1588,111 @@ a.more_featured:active {
     aspect-ratio: 1;
     object-fit: cover;
     display: block;
+}
+
+/* Pagina 1 (Acasă): forțare layout curat ca pe pagina 2 – peste orice media query */
+body.page-home #featured_pets {
+    display: block !important;
+    width: 100% !important;
+    clear: both !important;
+    margin-top: 40px !important;
+}
+body.page-home #featured_inner {
+    display: grid !important;
+    grid-template-columns: 280px 280px !important;
+    grid-template-rows: 160px 160px !important;
+    grid-auto-rows: 0 !important;
+    overflow: hidden !important;
+    gap: 24px 24px !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+}
+body.page-home #featured_pets .single_pet {
+    margin: 0 !important;
+    width: 280px !important;
+    height: 160px !important;
+    box-sizing: border-box !important;
+}
+body.page-home #featured_pets .single_pet:nth-child(1) { grid-column: 1; grid-row: 1 !important; }
+body.page-home #featured_pets .single_pet:nth-child(2) { grid-column: 2; grid-row: 1 !important; }
+body.page-home #featured_pets .single_pet:nth-child(3) { grid-column: 1; grid-row: 2 !important; }
+body.page-home #featured_pets .single_pet:nth-child(4) { grid-column: 2; grid-row: 2 !important; }
+body.page-home #featured_pets .single_pet:nth-child(n+5) { display: none !important; }
+/* Subfereastra la hover: calibrată la dimensiunile cardului, butonul galben centrat */
+body.page-home #featured_pets .single_pet .mask {
+    width: 100% !important;
+    height: 100% !important;
+    left: 0 !important;
+    top: 0 !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding: 6px 12px 18px 12px !important;
+    overflow: visible !important;
+}
+body.page-home #featured_pets .single_pet .mask h2 {
+    margin: 0 0 2px 0 !important;
+    padding: 0 !important;
+    font-size: 14px !important;
+    line-height: 1.15 !important;
+}
+body.page-home #featured_pets .single_pet .mask p {
+    margin: 0 0 8px 0 !important;
+    padding: 0 !important;
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+}
+body.page-home #featured_pets .single_pet .mask a.more_featured {
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+}
+body.page-home #home_latest_friends {
+    display: block !important;
+    width: 100% !important;
+    clear: both !important;
+    margin-top: 32px !important;
+    margin-right: 0 !important;
+    overflow: visible !important;
+}
+body.page-home #latest-friends-title {
+    float: none !important;
+    width: 100% !important;
+    margin: 0 0 16px 0 !important;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #EFEFEF;
+    text-align: left !important;
+}
+body.page-home #friends_wrap {
+    float: none !important;
+    border-left: none !important;
+    padding-left: 0 !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 16px !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    min-height: 0 !important;
+}
+body.page-home #friends_wrap::before,
+body.page-home #friends_wrap::after {
+    display: none !important;
+}
+body.page-home .single_latest_friend {
+    margin: 0 !important;
+    display: block !important;
+    visibility: visible !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+}
+body.page-home .single_latest_friend:first-child,
+body.page-home .single_latest_friend:nth-child(5n),
+body.page-home .single_latest_friend:nth-child(n) {
+    clear: none !important;
+    float: none !important;
 }
 
 /* === Slider Area (burtiera mare – bandă stabilă sus) === */
