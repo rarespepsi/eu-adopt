@@ -59,22 +59,57 @@
 				</div>
 			</header>
 			<section class="wrapper" id="main_content">
+				<!-- Burtiera mică: bandă cu poze care rulează, deasupra slider-ului mare -->
+				<div id="burtiera_mica" class="burtiera_mica_wrap">
+					<div class="burtiera_mica_track">
+						{% for pet in strip_pets %}
+						<a href="{% url 'pets_single' pet.pk %}" class="burtiera_mica_img" title="{{ pet.nume }}">
+							{% if pet.imagine %}
+							<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+							{% elif pet.imagine_fallback %}
+							<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" />
+							{% else %}
+							<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="{{ pet.nume }}" />
+							{% endif %}
+						</a>
+						{% empty %}
+						{% for i in "123456789012" %}
+						<a href="{% url 'pets_all' %}" class="burtiera_mica_img"><img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="Animale" /></a>
+						{% endfor %}
+						{% endfor %}
+						{% for pet in strip_pets %}
+						<a href="{% url 'pets_single' pet.pk %}" class="burtiera_mica_img" title="{{ pet.nume }}">
+							{% if pet.imagine %}
+							<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+							{% elif pet.imagine_fallback %}
+							<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" />
+							{% else %}
+							<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="{{ pet.nume }}" />
+							{% endif %}
+						</a>
+						{% empty %}
+						{% for i in "123456789012" %}
+						<a href="{% url 'pets_all' %}" class="burtiera_mica_img"><img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="Animale" /></a>
+						{% endfor %}
+						{% endfor %}
+					</div>
+				</div>
 				<div id="slider_wrap">
 					<ul class="slides">
 						<li class="slide_image_wrap">
-							<img width="2880" height="1000" src="{% static 'images/slide1.jpg' %}" alt="This is a slide" />
+							<img width="2880" height="1000" src="{% static 'images/slide1.jpg' %}" alt="Slide 1" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
 						</li>
 						<li class="slide_image_wrap">
-							<img width="2880" height="1000" src="{% static 'images/slide2.jpg' %}" alt="This is a slide" />
+							<img width="2880" height="1000" src="{% static 'images/slide2.jpg' %}" alt="Slide 2" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
 						</li>
 						<li class="slide_image_wrap">
-							<img width="2880" height="1000" src="{% static 'images/slide3.jpg' %}" alt="This is a slide" />
+							<img width="2880" height="1000" src="{% static 'images/slide3.jpg' %}" alt="Slide 3" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
 						</li>
 					</ul>
 				</div>
-				<div class="container clearfix">
+				<div class="container clearfix home_page_sections">
 					<div id="featured_pets">
-						<h3>Pets of the Month</h3>
+						<h3>Animalele lunii</h3>
 						<div id="featured_inner" class="clearfix">
 							{% for pet in featured_pets %}
 							<div class="single_pet">
@@ -108,7 +143,7 @@
 						</div>
 					</div>
 					<div id="home_latest_friends" class="clearfix">
-						<h4 class="entry-title" id="latest-friends-title">Our Newest Friends</h4>
+						<h4 class="entry-title" id="latest-friends-title">Cele mai noi animale</h4>
 						<div id="friends_wrap" class="clearfix">
 							{% for pet in latest_pets %}
 							<a href="{% url 'pets_single' pet.pk %}" class="single_latest_friend">
@@ -127,71 +162,6 @@
 							<p style="clear:both; padding-top:10px;">Momentan nu există animale. <a href="{% url 'pets_all' %}">Vezi toate</a>.</p>
 							{% endfor %}
 						</div>
-					</div>
-					<section id="home_widgets">
-						<div id="home_widget_wrap" class="banner_widget_count2 rescue_email_banner clearfix">
-							<aside class="widget">
-								<h3 class="widgettitle">Welcome To Rescue</h3>
-								<div class="textwidget">
-									<p>Rescue is a HTML template for animal shelters. Easily display all of the pets available at your shelter.
-									</p>
-									<p>In this area you can display as many blocks of information that you like; simply chance the <em>banner_widget_count2</em> class to accomidate the number of info blocks you have here, from 1 to 5, or more than that can be <em>banner_widget_overflow</em> and the blocks will resize accordingly.
-									</p>
-								</div>
-							</aside>
-							<aside class="widget rescue_email_capture_wrap">
-								<h3 class="widgettitle">Join Our Newsletter</h3>
-								<div class="textwidget">Get the latest updates on our furry friends!</div>
-								<div id="rescue_email_capture">
-									<form name="rescue_email_capture" method="post" action="#">
-										<input name="rescue-name" type="text" title="Name" Placeholder="Name"  />
-										<input name="rescue-email" type="text" title="Email" Placeholder="Email" />
-										<input name="Submit" type="submit" value="Submit" class="rescue-email-capture-submit" />
-									</form>
-								</div>
-							</aside>
-						</div>
-					</section>
-					<div class="posts-wrap">
-						<section id="home_latest_posts" class="clearfix">
-							<h4 class="entry-title" id="latest-posts-title">Latest Posts</h4>
-							<article class="first_latest">
-								<a href="blog-single.html" title="Meet Charlie">
-									<img width="600" height="240" src="{% static 'images/pets/charlie-600x240.jpg' %}" class="attachment-big_latest" alt="Meet Charlie" />
-								</a>
-								<h4><a href="blog-single.html" title="Meet Charlie">Meet Charlie</a></h4>
-								<div class="meta">
-									February 24, 2013
-								</div>
-								<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Morbi commodo, ipsum sed pharetra gravida, orci magna rhoncus neque, id pulvinar odio lorem non turpis. Nullam sit amet enim. Suspendisse id velit vitae ligula volutpat condimentum. Aliquam erat volutpat. Sed quis velit. Nulla facilisi. Nulla libero. Vivamus pharetra posuere sapien.
-								</p>
-								<a href="blog-single.html" title="Meet Charlie">Read More &raquo;</a>
-							</article>
-							<article class="single_latest">
-									<a href="blog-single.html" title="Meet Cindy" class="single_latest_img_link">
-									<img width="275" height="110" src="{% static 'images/pets/cindy1-275x110.jpg' %}" class="attachment-single_latest" alt="Meet Cindy" />
-								</a>
-								<h4><a href="blog-single.html" title="Meet Cindy">Meet Cindy</a></h4>
-								<div class="meta">
-									January 24, 2013
-								</div>
-								<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Morbi commodo, ipsum sed pharetra gravida, orci magna rhoncus neque, id pulvinar odio lorem non turpis. Nullam sit amet enim. Suspendisse id velit vitae ligula volutpat condimentum. Aliquam erat volutpat. Sed quis velit. Nulla facilisi. Nulla libero. Vivamus pharetra posuere sapien.
-								</p>
-								<a href="blog-single.html" title="Meet Cindy">Read More &raquo;</a>
-							</article>
-							<article class="single_latest">
-								<a href="blog-single.html" title="Meet Chester" class="single_latest_img_link">
-									<img width="275" height="110" src="{% static 'images/pets/chester1-275x110.jpg' %}" class="attachment-single_latest" alt="Meet Chester" />
-								</a>
-								<h4><a href="blog-single.html" title="Meet Chester">Meet Chester</a></h4>
-								<div class="meta">
-									January 23, 2013
-								</div>
-								<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Morbi commodo, ipsum sed pharetra gravida, orci magna rhoncus neque, id pulvinar odio lorem non turpis. Nullam sit amet enim. Suspendisse id velit vitae ligula volutpat condimentum. Aliquam erat volutpat. Sed quis velit. Nulla facilisi. Nulla libero. Vivamus pharetra posuere sapien.
-								</p>
-								<a href="blog-single.html" title="Meet Chester">Read More &raquo;</a>
-							</article>
-						</section>
 					</div>
 					<div id="sidebar" >
 						<aside id="socnets_wrap" class="clearfix">

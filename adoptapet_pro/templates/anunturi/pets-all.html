@@ -72,17 +72,19 @@
 				<div class="container clearfix">
 					<div class="posts-wrap">
 						<section class="page">
-							<h2 class="entry-title">All Pets</h2>
+							<h2 class="entry-title">Animale disponibile</h2>
 							<div class="clearfix">
 								<div class="entry-content clearfix">
-									<p>This page template lists all of the pets available at your shelter and even has the ability to drill down into specific animal types. It&#8217;s completely optional, but here if you want to use it.
-									</p>
+									<p>Alege un tip pentru a filtra animalele disponibile pentru adopție.</p>
 								</div>
 							</div>
-							<ul id="animal_list" class="clearfix">
-								<li>View Only:</li>
-								<li><a href="pets-animal.html">Cats</a></li>
-								<li><a href="pets-animal.html">Dogs</a></li>
+							<ul id="animal_list" class="clearfix animal_filter_list">
+								<li class="filter_label">Filtrează:</li>
+								<li><a href="{% url 'pets_all' %}" class="{% if not current_tip and not current_vip %}active{% endif %}">Toate</a></li>
+								<li><a href="{% url 'pets_all' %}?tip=dog" class="{% if current_tip == 'dog' %}active{% endif %}">Câini</a></li>
+								<li><a href="{% url 'pets_all' %}?tip=cat" class="{% if current_tip == 'cat' %}active{% endif %}">Pisici</a></li>
+								<li><a href="{% url 'pets_all' %}?tip=other" class="{% if current_tip == 'other' %}active{% endif %}">Altele</a></li>
+								<li><a href="{% url 'pets_all' %}?vip=1" class="{% if current_vip %}active{% endif %}">Animale VIP / Lunii</a></li>
 							</ul>
 							<section id="all_pets_wrap">
 								{% for pet in pets %}

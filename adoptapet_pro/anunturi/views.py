@@ -11,15 +11,31 @@ from .adoption_platform import platform_validation_passes, send_adoption_request
 def home(request):
     featured = Pet.objects.filter(featured=True, status="adoptable")[:4]
     latest = Pet.objects.filter(status="adoptable").order_by("-data_adaugare")[:8]
+    # Poze pentru burtiera mică (bandă deasupra slider-ului mare); dacă sunt puține, le dublăm
+    strip_pets = list(Pet.objects.filter(status="adoptable").order_by("-data_adaugare")[:40])
+    if strip_pets and len(strip_pets) < 12:
+        import itertools
+        strip_pets = list(itertools.islice(itertools.cycle(strip_pets), 24))
     return render(request, "anunturi/home.html", {
         "featured_pets": featured,
         "latest_pets": latest,
+        "strip_pets": strip_pets,
     })
 
 
 def pets_all(request):
-    pets = Pet.objects.filter(status="adoptable").order_by("-data_adaugare")
-    return render(request, "anunturi/pets-all.html", {"pets": pets})
+    qs = Pet.objects.filter(status="adoptable").order_by("-data_adaugare")
+    tip = request.GET.get("tip")
+    if tip in ("dog", "cat", "other"):
+        qs = qs.filter(tip=tip)
+    vip = request.GET.get("vip")
+    if vip == "1":
+        qs = qs.filter(featured=True)
+    return render(request, "anunturi/pets-all.html", {
+        "pets": qs,
+        "current_tip": tip,
+        "current_vip": vip,
+    })
 
 
 def pets_single(request, pk):

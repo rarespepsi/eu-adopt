@@ -12,11 +12,11 @@ jQuery(function($) {
 			start: function(slider) {
 				if (slider.count == 1) {
 					$('.flex-control-nav, .flex-direction-nav').hide();
-				} 
+				}
 			},
 			animation: "slide",
 			slideshowSpeed: 8000,
-			smoothHeight: true
+			smoothHeight: false
 		});		
 	
 	});
