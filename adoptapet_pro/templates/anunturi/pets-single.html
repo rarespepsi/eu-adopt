@@ -17,7 +17,7 @@
 					<div id="main_menu" class="clearfix">
 						<div class="clearfix">
 							<a href="{% url 'home' %}" title="Adopt a Pet" class="the_logo_link">
-								<img src="{% static 'images/rescuelogo.png' %}" alt="Adopt a Pet" id="logo" height="40" width="101.5" />
+								<img src="{% static 'images/eu-adopt-logo-original.jpeg' %}" alt="EU Adopt" id="logo" height="40" />
 							</a>
 							<nav id="menu_wrap">
 								<div class="menu-main-menu-container">
@@ -26,7 +26,7 @@
 										<li><a href="{% url 'pets_all' %}">Animale</a></li>
 										<li><a href="{% url 'contact' %}">Contact</a></li>
 										<li><a href="{% url 'login' %}">Logare</a></li>
-										<li><a href="{% url 'signup' %}">Înregistrare</a></li>
+										<li><a href="{% url 'register' %}">Înregistrare</a></li>
 									</ul>
 								</div>
 							</nav>
@@ -49,6 +49,22 @@
 										{% else %}
 											<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="{{ pet.nume }}" class="attachment-pet_single_large" width="275" height="275" />
 										{% endif %}
+										{% with page_url=request.build_absolute_uri %}
+										{% with share_text="Vezi acest animal pentru adopție pe EU-ADOPT:" %}
+										{% with email_subject="EU-ADOPT – Animal pentru adopție" %}
+										{% with email_body=share_text|add:" "|add:page_url %}
+										<div class="share-bar">
+											<h5 class="share-bar-label">Distribuie</h5>
+											<a href="https://api.whatsapp.com/send?text={{ share_text|urlencode }}%20{{ page_url|urlencode }}" target="_blank" rel="noopener noreferrer" class="share-btn share-wa" title="WhatsApp">WhatsApp</a>
+											<a href="https://www.facebook.com/sharer/sharer.php?u={{ page_url|urlencode }}" target="_blank" rel="noopener noreferrer" class="share-btn share-fb" title="Facebook">Facebook</a>
+											<a href="mailto:?subject={{ email_subject|urlencode }}&body={{ email_body|urlencode }}" class="share-btn share-mail" title="Trimite pe email">Email</a>
+											<button type="button" class="share-btn share-copy" id="copyLinkBtn" title="Copiază link">Copiază link</button>
+											<div class="share-bar-note">Pentru Instagram/TikTok: apasă „Copiază link” și lipește în postare/Story.</div>
+										</div>
+										{% endwith %}
+										{% endwith %}
+										{% endwith %}
+										{% endwith %}
 									</div>
 									<div class="pet-info">
 										<div class="breed">{{ pet.get_tip_display }} – {{ pet.rasa }} – {{ pet.get_varsta_display }} – {{ pet.get_sex_display }}{% if pet.marime %} – {{ pet.get_marime_display }}{% endif %}</div>
@@ -95,5 +111,38 @@
 				</div>
 			</footer>
 		</section>
+		{% with page_url=request.build_absolute_uri %}
+		<script>
+		(function() {
+			const pageUrl = "{{ page_url|escapejs }}";
+			const btn = document.getElementById("copyLinkBtn");
+			if (!btn) return;
+			btn.addEventListener("click", async function() {
+				try {
+					await navigator.clipboard.writeText(pageUrl);
+					const old = btn.textContent;
+					btn.textContent = "Copiat!";
+					setTimeout(function() { btn.textContent = old; }, 1200);
+				} catch (e) {
+					// fallback
+					var ta = document.createElement('textarea');
+					ta.value = pageUrl;
+					ta.style.position = 'fixed';
+					ta.style.left = '-9999px';
+					document.body.appendChild(ta);
+					ta.select();
+					try {
+						document.execCommand('copy');
+						var old = btn.textContent;
+						btn.textContent = 'Copiat!';
+						setTimeout(function() { btn.textContent = old; }, 1200);
+					} finally {
+						document.body.removeChild(ta);
+					}
+				}
+			});
+		})();
+		</script>
+		{% endwith %}
 	</body>
 </html>

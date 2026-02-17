@@ -4,23 +4,21 @@ Code and stuff you need for the Rescue template
 */
 
 jQuery(function($) {
-	
-	$(window).load(function(){
-
-		// THE SLIDER
-		$('#slider_wrap').flexslider({
-			start: function(slider) {
-				if (slider.count == 1) {
-					$('.flex-control-nav, .flex-direction-nav').hide();
-				}
-			},
-			animation: "slide",
-			slideshowSpeed: 8000,
-			smoothHeight: false
-		});		
-	
+	// Slider pornit la ready, nu la window.load – ca pagina să nu rămână blocată pe fonturi/Maps
+	$(document).ready(function(){
+		if ($('#slider_wrap').length && $('#slider_wrap .slides li').length) {
+			$('#slider_wrap').flexslider({
+				start: function(slider) {
+					if (slider.count == 1) {
+						$('.flex-control-nav, .flex-direction-nav').hide();
+					}
+				},
+				animation: "slide",
+				slideshowSpeed: 8000,
+				smoothHeight: false
+			});
+		}
 	});
-	
 });
 
 jQuery(document).ready(function($){

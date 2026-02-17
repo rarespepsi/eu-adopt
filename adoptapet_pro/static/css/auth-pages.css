@@ -123,6 +123,31 @@ body.auth-page #main_wrap {
     50% { opacity: 0.3; }
 }
 
+/* Buton principal pentru "Creează cont" pe pagina de login */
+.auth-register-cta {
+    margin: 1.25rem 0;
+}
+.button-large {
+    display: inline-block;
+    padding: 14px 28px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+}
+.button-primary {
+    background: #d32f2f;
+    color: #fff;
+    border: none;
+}
+.button-primary:hover {
+    background: #b71c1c;
+    color: #fff;
+    text-decoration: none;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .auth-animation-box {

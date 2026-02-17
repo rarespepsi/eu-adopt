@@ -17,7 +17,7 @@
 					<div id="main_menu" class="clearfix">
 						<div class="clearfix">
 							<a href="{% url 'home' %}" title="Adopt a Pet" class="the_logo_link">
-								<img src="{% static 'images/rescuelogo.png' %}" alt="Adopt a Pet" id="logo" height="40" width="101.5" />
+								<img src="{% static 'images/eu-adopt-logo-original.jpeg' %}" alt="EU Adopt" id="logo" height="40" />
 							</a>
 							<nav id="menu_wrap">
 								<div class="menu-main-menu-container">
@@ -31,7 +31,7 @@
 										<li><a href="{% url 'cont_profil' %}" class="current_page">Cont</a></li>
 										<li><a href="{% url 'logout' %}">Ieșire</a></li>
 										{% else %}
-										<li><a href="{% url 'signup' %}">Înregistrare</a></li>
+										<li><a href="{% url 'register' %}">Înregistrare</a></li>
 										<li><a href="{% url 'login' %}">Logare</a></li>
 										{% endif %}
 									</ul>

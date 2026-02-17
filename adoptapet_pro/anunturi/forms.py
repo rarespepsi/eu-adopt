@@ -5,6 +5,7 @@ from django.contrib.auth.forms import UserCreationForm
 from .models import (
     AdoptionRequest,
     Pet,
+    Profile,
     UserProfile,
     OngProfile,
     PostAdoptionVerificationResponse,
@@ -160,6 +161,131 @@ class UserRegistrationForm(UserCreationForm):
         user.email = self.cleaned_data["email"].strip().lower()
         if commit:
             user.save()
+        return user
+
+
+# ----- Noul flux de înregistrare: PF / SRL / ONG -----
+
+class RegisterPFForm(UserCreationForm):
+    """Persoană fizică: first_name, last_name, email, phone, password."""
+    email = forms.EmailField(label="Email", required=True)
+    first_name = forms.CharField(label="Prenume", max_length=150, required=True)
+    last_name = forms.CharField(label="Nume", max_length=150, required=True)
+    phone = forms.CharField(label="Telefon", max_length=30, required=True)
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "first_name", "last_name", "password1", "password2")
+        labels = {"username": "Utilizator (pentru autentificare)"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].help_text = "Folosiți email sau un nume de utilizator unic."
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data["email"].strip().lower()
+        if not user.username:
+            user.username = user.email
+        if commit:
+            user.save()
+            Profile.objects.get_or_create(user=user, defaults={"account_type": "individual", "phone": self.cleaned_data.get("phone", "")})
+            UserProfile.objects.get_or_create(user=user, defaults={
+                "nume": self.cleaned_data.get("last_name", ""),
+                "prenume": self.cleaned_data.get("first_name", ""),
+                "telefon": self.cleaned_data.get("phone", ""),
+                "email": user.email,
+            })
+        return user
+
+
+class RegisterSRLForm(UserCreationForm):
+    """SRL / Firmă: company_name, CUI, registration_number, contact_person, email, phone, password."""
+    email = forms.EmailField(label="Email", required=True)
+    company_name = forms.CharField(label="Denumire firmă", max_length=200, required=True)
+    cui = forms.CharField(label="CUI", max_length=20, required=True)
+    registration_number = forms.CharField(label="Nr. registru", max_length=80, required=False)
+    contact_person = forms.CharField(label="Persoană de contact", max_length=120, required=True)
+    phone = forms.CharField(label="Telefon", max_length=30, required=True)
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "password1", "password2")
+        labels = {"username": "Utilizator (pentru autentificare)"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].required = False
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data["email"].strip().lower()
+        if not user.username:
+            user.username = user.email
+        user.first_name = self.cleaned_data.get("contact_person", "")[:150]
+        if commit:
+            user.save()
+            Profile.objects.get_or_create(user=user, defaults={
+                "account_type": "company",
+                "phone": self.cleaned_data.get("phone", ""),
+                "company_name": self.cleaned_data.get("company_name", ""),
+                "cui": self.cleaned_data.get("cui", ""),
+                "registration_number": self.cleaned_data.get("registration_number", ""),
+                "contact_person": self.cleaned_data.get("contact_person", ""),
+            })
+            OngProfile.objects.get_or_create(user=user, defaults={
+                "denumire_legala": self.cleaned_data.get("company_name", ""),
+                "cui": self.cleaned_data.get("cui", ""),
+                "numar_registru": self.cleaned_data.get("registration_number", ""),
+                "reprezentant_legal": self.cleaned_data.get("contact_person", ""),
+                "email": user.email,
+                "telefon": self.cleaned_data.get("phone", ""),
+                "tip_organizatie": "srl",
+            })
+        return user
+
+
+class RegisterONGForm(UserCreationForm):
+    """ONG: organization_name, legal_registration_number, representative_name, email, phone, password."""
+    email = forms.EmailField(label="Email", required=True)
+    organization_name = forms.CharField(label="Denumire organizație", max_length=200, required=True)
+    legal_registration_number = forms.CharField(label="Nr. înregistrare", max_length=80, required=True)
+    representative_name = forms.CharField(label="Reprezentant legal", max_length=120, required=True)
+    phone = forms.CharField(label="Telefon", max_length=30, required=True)
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "password1", "password2")
+        labels = {"username": "Utilizator (pentru autentificare)"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].required = False
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data["email"].strip().lower()
+        if not user.username:
+            user.username = user.email
+        user.first_name = self.cleaned_data.get("representative_name", "")[:150]
+        if commit:
+            user.save()
+            Profile.objects.get_or_create(user=user, defaults={
+                "account_type": "ngo",
+                "phone": self.cleaned_data.get("phone", ""),
+                "organization_name": self.cleaned_data.get("organization_name", ""),
+                "legal_registration_number": self.cleaned_data.get("legal_registration_number", ""),
+                "representative_name": self.cleaned_data.get("representative_name", ""),
+            })
+            OngProfile.objects.get_or_create(user=user, defaults={
+                "denumire_legala": self.cleaned_data.get("organization_name", ""),
+                "numar_registru": self.cleaned_data.get("legal_registration_number", ""),
+                "persoana_responsabila_adoptii": self.cleaned_data.get("representative_name", ""),
+                "reprezentant_legal": self.cleaned_data.get("representative_name", ""),
+                "email": user.email,
+                "telefon": self.cleaned_data.get("phone", ""),
+                "tip_organizatie": "ong",
+            })
         return user
 
 

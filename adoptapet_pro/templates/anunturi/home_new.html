@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}EU Adopt - Acasă{% endblock %}
+
+{% block body_class %}page-home{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'includes/js/flexslider.css' %}" type="text/css" media="all" />
+<link rel="stylesheet" href="{% static 'includes/fancybox/jquery.fancybox.css' %}" type="text/css" />
+<link href='https://fonts.googleapis.com/css?family=Merriweather:300' rel='stylesheet' type='text/css' media='print' onload="this.media='all'">
+{% endblock %}
+
+{% block content %}
+<!-- Widget Concurs - fix pe partea stângă -->
+{% if contest %}
+<div id="contest_widget" class="contest-widget-fixed" data-contest-end="{{ contest.end_date|date:'c' }}">
+	<div class="contest-widget-content">
+		<!-- STATE A: Title + Countdown + Dog -->
+		<div class="contest-header" id="contestHeader">
+			<h2 class="contest-title">🐾 CONCURS EU-ADOPT</h2>
+			<div class="contest-countdown" id="contestCountdown">
+				Mai sunt <span id="remainingDays">{{ remaining_days }}</span> zile
+			</div>
+			<div class="contest-dog-animation" id="contestDogAnimation">
+				<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="dog-svg">
+					<!-- Dog body -->
+					<ellipse cx="50" cy="60" rx="25" ry="20" fill="#8B4513" class="dog-body"/>
+					<!-- Dog head -->
+					<circle cx="50" cy="35" r="18" fill="#D2691E" class="dog-head"/>
+					<!-- Dog ears -->
+					<ellipse cx="38" cy="25" rx="6" ry="12" fill="#654321" class="dog-ear dog-ear-left"/>
+					<ellipse cx="62" cy="25" rx="6" ry="12" fill="#654321" class="dog-ear dog-ear-right"/>
+					<!-- Dog eyes -->
+					<circle cx="45" cy="32" r="2" fill="#000" class="dog-eye dog-eye-left"/>
+					<circle cx="55" cy="32" r="2" fill="#000" class="dog-eye dog-eye-right"/>
+					<!-- Dog nose -->
+					<ellipse cx="50" cy="38" rx="2" ry="1.5" fill="#000" class="dog-nose"/>
+					<!-- Dog paw (animated) -->
+					<ellipse cx="50" cy="75" rx="8" ry="6" fill="#654321" class="dog-paw"/>
+					<!-- Attention arrow/pointer (subtle) -->
+					<path d="M 50 85 L 50 95 L 45 90 Z" fill="#d32f2f" opacity="0.6" class="attention-pointer"/>
+				</svg>
+			</div>
+		</div>
+		<!-- STATE B: Prize -->
+		<div class="contest-prize-section" id="contestPrizeSection" style="display: none;">
+			{% if contest.prize_image %}
+			<img src="{{ contest.prize_image.url }}" alt="{{ contest.prize_title|default:'Premiul concursului' }}" class="contest-prize-image" loading="lazy" />
+			{% endif %}
+			<div class="contest-prize-text">Premiul concursului</div>
+		</div>
+		<!-- Leaderboard -->
+		<div class="contest-leaderboard">
+			<h3 class="leaderboard-title">Top 10</h3>
+			<div class="leaderboard-scroll">
+				<ul class="leaderboard-list">
+					{% for entry in top_users %}
+					<li class="leaderboard-item">
+						<span class="leaderboard-position">{{ entry.position }}.</span>
+						<span class="leaderboard-username">{{ entry.user.username }}</span>
+						<span class="leaderboard-points">— {{ entry.points }} puncte</span>
+					</li>
+					{% empty %}
+					<li class="leaderboard-item">Niciun participant încă</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+{% endif %}
+
+<!-- Home page specific content (slider, featured pets, etc.) -->
+<div id="burtiera_wrap">
+	<div id="burtiera">
+		{% for pet in strip_pets %}
+		<a href="{% url 'pets_single' pet.pk %}" class="burtiera_mica_img" title="{{ pet.nume }}">
+			{% if pet.imagine %}
+			<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+			{% elif pet.imagine_fallback %}
+			<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" />
+			{% else %}
+			<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="{{ pet.nume }}" />
+			{% endif %}
+		</a>
+		{% empty %}
+		{% for i in "123456789012" %}
+		<a href="{% url 'pets_all' %}" class="burtiera_mica_img"><img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="Animale" /></a>
+		{% endfor %}
+		{% endfor %}
+		{% for pet in strip_pets %}
+		<a href="{% url 'pets_single' pet.pk %}" class="burtiera_mica_img" title="{{ pet.nume }}">
+			{% if pet.imagine %}
+			<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+			{% elif pet.imagine_fallback %}
+			<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" />
+			{% else %}
+			<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="{{ pet.nume }}" />
+			{% endif %}
+		</a>
+		{% empty %}
+		{% for i in "123456789012" %}
+		<a href="{% url 'pets_all' %}" class="burtiera_mica_img"><img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="Animale" /></a>
+		{% endfor %}
+		{% endfor %}
+	</div>
+</div>
+<div id="slider_wrap">
+	<ul class="slides">
+		<li class="slide_image_wrap">
+			<img width="2880" height="1000" src="{% static 'images/slide1.jpg' %}" alt="Slide 1" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+		</li>
+		<li class="slide_image_wrap">
+			<img width="2880" height="1000" src="{% static 'images/slide2.jpg' %}" alt="Slide 2" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+		</li>
+		<li class="slide_image_wrap">
+			<img width="2880" height="1000" src="{% static 'images/slide3.jpg' %}" alt="Slide 3" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+		</li>
+	</ul>
+</div>
+<div class="container clearfix home_page_sections">
+	<div id="featured_pets">
+		<h3>Animalele lunii</h3>
+		<div id="featured_inner" class="clearfix">
+			{% for pet in featured_pets %}
+			<div class="single_pet">
+				<a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}">
+					{% if pet.imagine %}
+						<img width="400" height="200" src="{{ pet.imagine.url }}" class="attachment-pet_month" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+					{% elif pet.imagine_fallback %}
+						<img width="400" height="200" src="{% static pet.imagine_fallback %}" class="attachment-pet_month" alt="{{ pet.nume }}" />
+					{% else %}
+						<img width="400" height="200" src="{% static 'images/pets/charlie-400x200.jpg' %}" class="attachment-pet_month" alt="{{ pet.nume }}" />
+					{% endif %}
+				</a>
+				<div class="mask">
+					<h2>{{ pet.nume }}</h2>
+					<p>{% if pet.descriere %}{{ pet.descriere|truncatewords:15 }}{% else %}Cunoaște-l pe {{ pet.nume }}{% endif %}</p>
+					<a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}" class="more_featured">Află mai multe</a>
+				</div>
+			</div>
+			{% empty %}
+			<div class="single_pet">
+				<a href="{% url 'pets_all' %}" title="Animale">
+					<img width="400" height="200" src="{% static 'images/pets/charlie-400x200.jpg' %}" class="attachment-pet_month" alt="Animale" />
+				</a>
+				<div class="mask">
+					<h2>Animale disponibile</h2>
+					<p>Vizitează galeria noastră</p>
+					<a href="{% url 'pets_all' %}" class="more_featured">Vezi toate animalele</a>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+	<div id="home_latest_friends" class="clearfix">
+		<h4 class="entry-title" id="latest-friends-title">Cele mai noi animale</h4>
+		<div id="friends_wrap" class="clearfix">
+			{% for pet in latest_pets %}
+			<a href="{% url 'pets_single' pet.pk %}" class="single_latest_friend">
+				{% if pet.imagine %}
+					<img width="180" height="180" src="{{ pet.imagine.url }}" class="attachment-small_pet" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-180x180.jpg' %}';this.onerror=null;" />
+				{% elif pet.imagine_fallback %}
+					<img width="180" height="180" src="{% static pet.imagine_fallback %}" class="attachment-small_pet" alt="{{ pet.nume }}" />
+				{% else %}
+					<img width="180" height="180" src="{% static 'images/pets/charlie-180x180.jpg' %}" class="attachment-small_pet" alt="{{ pet.nume }}" />
+				{% endif %}
+			</a>
+			{% empty %}
+			<a href="{% url 'pets_all' %}" class="single_latest_friend">
+				<img width="180" height="180" src="{% static 'images/pets/charlie-180x180.jpg' %}" class="attachment-small_pet" alt="Animale" />
+			</a>
+			<p style="clear:both; padding-top:10px;">Momentan nu există animale. <a href="{% url 'pets_all' %}">Vezi toate</a>.</p>
+			{% endfor %}
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript" src="{% static 'includes/js/jquery-1.11.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'includes/fancybox/jquery.fancybox.js' %}"></script>
+<script type="text/javascript" src="{% static 'includes/js/jquery.flexslider-min.js' %}"></script>
+<script type="text/javascript" src="{% static 'includes/js/jquery.mobilemenu.js' %}"></script>
+<script type="text/javascript" src="{% static 'includes/js/rescue.js' %}"></script>
+{% if contest %}
+<script>
+(function() {
+	'use strict';
+	
+	var widget = document.getElementById('contest_widget');
+	if (!widget) return;
+	
+	var headerSection = document.querySelector('.contest-header');
+	var prizeSection = document.getElementById('contestPrizeSection');
+	var remainingDaysEl = document.getElementById('remainingDays');
+	var dogAnimation = document.getElementById('contestDogAnimation');
+	
+	if (!headerSection || !prizeSection || !remainingDaysEl) return;
+	
+	var showPrize = false;
+	var contestEndDate = new Date(widget.getAttribute('data-contest-end'));
+	var pulseInterval = null;
+	var contentInterval = null;
+	var countdownInterval = null;
+	var isTabActive = true;
+	
+	document.addEventListener('visibilitychange', function() {
+		isTabActive = !document.hidden;
+		if (isTabActive) {
+			resumeAnimations();
+		} else {
+			pauseAnimations();
+		}
+	});
+	
+	function pauseAnimations() {
+		if (dogAnimation) {
+			dogAnimation.style.animationPlayState = 'paused';
+		}
+	}
+	
+	function resumeAnimations() {
+		if (dogAnimation) {
+			dogAnimation.style.animationPlayState = 'running';
+		}
+	}
+	
+	function calculateRemainingDays() {
+		var now = new Date();
+		var diff = contestEndDate - now;
+		if (diff <= 0) {
+			return 0;
+		}
+		return Math.ceil(diff / (1000 * 60 * 60 * 24));
+	}
+	
+	function updateCountdown() {
+		if (!isTabActive) return;
+		var days = calculateRemainingDays();
+		if (remainingDaysEl) {
+			remainingDaysEl.textContent = days;
+		}
+	}
+	
+	function toggleContent() {
+		if (!isTabActive) return;
+		
+		if (showPrize) {
+			prizeSection.classList.remove('show');
+			setTimeout(function() {
+				prizeSection.style.display = 'none';
+				headerSection.classList.remove('hidden');
+				headerSection.style.display = 'block';
+			}, 500);
+		} else {
+			headerSection.classList.add('hidden');
+			setTimeout(function() {
+				headerSection.style.display = 'none';
+				prizeSection.style.display = 'block';
+				setTimeout(function() {
+					prizeSection.classList.add('show');
+				}, 50);
+			}, 500);
+		}
+		showPrize = !showPrize;
+	}
+	
+	function triggerPulse() {
+		if (!isTabActive) return;
+		widget.classList.add('pulse');
+		setTimeout(function() {
+			widget.classList.remove('pulse');
+		}, 600);
+	}
+	
+	function initDogAnimation() {
+		if (!dogAnimation) return;
+		
+		if ('IntersectionObserver' in window) {
+			var observer = new IntersectionObserver(function(entries) {
+				entries.forEach(function(entry) {
+					if (entry.isIntersecting) {
+						dogAnimation.style.opacity = '1';
+					}
+				});
+			}, { threshold: 0.1 });
+			
+			observer.observe(dogAnimation);
+			dogAnimation.style.opacity = '0';
+			dogAnimation.style.transition = 'opacity 0.5s ease';
+		}
+	}
+	
+	updateCountdown();
+	initDogAnimation();
+	contentInterval = setInterval(toggleContent, 5000);
+	countdownInterval = setInterval(updateCountdown, 3600000);
+	pulseInterval = setInterval(triggerPulse, 15000);
+	
+	window.addEventListener('beforeunload', function() {
+		if (contentInterval) clearInterval(contentInterval);
+		if (countdownInterval) clearInterval(countdownInterval);
+		if (pulseInterval) clearInterval(pulseInterval);
+	});
+})();
+</script>
+{% endif %}
+{% endblock %}

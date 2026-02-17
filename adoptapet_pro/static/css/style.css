@@ -402,13 +402,266 @@ h3.search_title {
     width: 100% !important;
 }
 
+/* === SETĂRI LOGO SALVATE (pentru revenire dacă e nevoie) ===
 .the_logo_link {
 	float: left;
 }
+#logo {
+	display:block;
+	max-width: 300px !important;
+	max-height: 75px !important;
+	width: auto !important;
+	height: auto !important;
+	background-color: #FFFFFF !important;
+	padding: 4px 8px;
+	box-sizing: border-box;
+}
+.the_logo_link {
+	background-color: #FFFFFF !important;
+	max-width: 300px;
+	float: left !important;
+	margin-left: -20px !important;
+}
+=== SFÂRȘIT SETĂRI SALVATE === */
+
+/* Logo poziționat în stânga slider-ului mare, sub burtiera mică - formă circulară */
+.the_logo_link {
+	position: absolute !important;
+	left: -360px !important; /* 10cm mai la stânga */
+	top: 184px !important; /* Ridicat cu încă 3mm (195px - 11px ≈ 184px) */
+	z-index: 10 !important;
+	background-color: transparent !important;
+	padding: 0 !important;
+	border-radius: 50% !important;
+	box-shadow: none !important;
+	overflow: visible !important;
+	width: 320px !important;
+	height: 320px !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+/* 12 stele albastre în cerc la marginea siglei (conform steagului UE) - cercul micșorat cu 1 cm */
+.the_logo_link::before {
+	content: '';
+	position: absolute;
+	width: 260px !important;
+	height: 260px !important;
+	border-radius: 50%;
+	background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20300%20300%27%3E%3Cg%3E%3Cpath%20d%3D%22M254.0%2C160.0L251.6%2C153.2L244.5%2C153.1L250.2%2C148.8L248.1%2C141.9L254.0%2C146.0L259.9%2C141.9L257.8%2C148.8L263.5%2C153.1L256.4%2C153.2Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M235.1%2C210.7L236.4%2C203.6L230.3%2C199.9L237.4%2C199.0L239.0%2C192.1L242.1%2C198.5L249.2%2C197.9L244.0%2C202.8L246.8%2C209.4L240.5%2C206.0Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M193.3%2C245.1L198.0%2C239.6L194.6%2C233.4L201.2%2C236.2L206.1%2C230.9L205.5%2C238.1L211.9%2C241.1L205.0%2C242.7L204.1%2C249.8L200.4%2C243.7Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M140.0%2C254.0L146.8%2C251.6L146.9%2C244.5L151.2%2C250.2L158.1%2C248.1L154.0%2C254.0L158.1%2C259.9L151.2%2C257.8L146.9%2C263.5L146.8%2C256.4Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M89.3%2C235.1L96.4%2C236.4L100.1%2C230.3L101.0%2C237.4L107.9%2C239.0L101.5%2C242.1L102.1%2C249.2L97.2%2C244.0L90.6%2C246.8L94.0%2C240.5Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M54.9%2C193.3L60.4%2C198.0L66.6%2C194.6L63.8%2C201.2L69.1%2C206.1L61.9%2C205.5L58.9%2C211.9L57.3%2C205.0L50.2%2C204.1L56.3%2C200.4Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M46.0%2C140.0L48.4%2C146.8L55.5%2C146.9L49.8%2C151.2L51.9%2C158.1L46.0%2C154.0L40.1%2C158.1L42.2%2C151.2L36.5%2C146.9L43.6%2C146.8Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M64.9%2C89.3L63.6%2C96.4L69.7%2C100.1L62.6%2C101.0L61.0%2C107.9L57.9%2C101.5L50.8%2C102.1L56.0%2C97.2L53.2%2C90.6L59.5%2C94.0Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M106.7%2C54.9L102.0%2C60.4L105.4%2C66.6L98.8%2C63.8L93.9%2C69.1L94.5%2C61.9L88.1%2C58.9L95.0%2C57.3L95.9%2C50.2L99.6%2C56.3Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M160.0%2C46.0L153.2%2C48.4L153.1%2C55.5L148.8%2C49.8L141.9%2C51.9L146.0%2C46.0L141.9%2C40.1L148.8%2C42.2L153.1%2C36.5L153.2%2C43.6Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M210.7%2C64.9L203.6%2C63.6L199.9%2C69.7L199.0%2C62.6L192.1%2C61.0L198.5%2C57.9L197.9%2C50.8L202.8%2C56.0L209.4%2C53.2L206.0%2C59.5Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M245.1%2C106.7L239.6%2C102.0L233.4%2C105.4L236.2%2C98.8L230.9%2C93.9L238.1%2C94.5L241.1%2C88.1L242.7%2C95.0L249.8%2C95.9L243.7%2C99.6Z%22%20fill%3D%22%23003399%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 3;
+	pointer-events: none;
+}
+
+
+
 
 #logo {
 	display:block;
-	max-width: 100%;
+	width: 229px !important;
+	height: 229px !important;
+	object-fit: contain !important;
+	background-color: #FFFFFF !important;
+	padding: 0 !important;
+	box-sizing: border-box;
+	border-radius: 50% !important;
+	position: relative;
+	z-index: 2;
+	margin: auto;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+}
+
+/* Marker "1home" pentru identificare - provizoriu (doar pe pagina home) */
+body.page-home .the_logo_link:not(.the_logo_link_contact):not(.the_logo_link_contact_left)::after {
+	content: '1home' !important;
+	position: absolute !important;
+	top: 50% !important;
+	left: 50% !important;
+	transform: translate(-50%, -50%) !important;
+	font-size: 40px !important;
+	font-weight: bold !important;
+	color: red !important;
+	z-index: 100 !important;
+	background: rgba(255, 255, 255, 0.9) !important;
+	padding: 10px 20px !important;
+	border-radius: 10px !important;
+	border: 3px solid red !important;
+	pointer-events: none !important;
+	text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
+}
+
+/* Marker "1animale" pentru identificare - provizoriu (doar pe pagina animale) */
+body.page-animale .the_logo_link:not(.the_logo_link_contact):not(.the_logo_link_contact_left)::after {
+	content: '1animale' !important;
+	position: absolute !important;
+	top: 50% !important;
+	left: 50% !important;
+	transform: translate(-50%, -50%) !important;
+	font-size: 40px !important;
+	font-weight: bold !important;
+	color: red !important;
+	z-index: 100 !important;
+	background: rgba(255, 255, 255, 0.9) !important;
+	padding: 10px 20px !important;
+	border-radius: 10px !important;
+	border: 3px solid red !important;
+	pointer-events: none !important;
+	text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
+}
+
+/* Sigla pe pagina de contact - pe partea stângă */
+.the_logo_link_contact_left {
+	position: absolute !important;
+	left: 983px !important; /* Mutat cu 29 cm la dreapta față de poziția inițială */
+	top: 12px !important; /* Aceeași linie cu logo-ul din dreapta */
+	z-index: 10 !important;
+	background-color: transparent !important;
+	padding: 0 !important;
+	border-radius: 50% !important;
+	box-shadow: none !important;
+	overflow: visible !important;
+	width: 320px !important;
+	height: 320px !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+
+/* Stelele pentru sigla de contact din stânga */
+.the_logo_link_contact_left::before {
+	content: '';
+	position: absolute;
+	width: 260px !important;
+	height: 260px !important;
+	border-radius: 50%;
+	background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20300%20300%27%3E%3Cg%3E%3Cpath%20d%3D%22M254.0%2C160.0L251.6%2C153.2L244.5%2C153.1L250.2%2C148.8L248.1%2C141.9L254.0%2C146.0L259.9%2C141.9L257.8%2C148.8L263.5%2C153.1L256.4%2C153.2Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M235.1%2C210.7L236.4%2C203.6L230.3%2C199.9L237.4%2C199.0L239.0%2C192.1L242.1%2C198.5L249.2%2C197.9L244.0%2C202.8L246.8%2C209.4L240.5%2C206.0Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M193.3%2C245.1L198.0%2C239.6L194.6%2C233.4L201.2%2C236.2L206.1%2C230.9L205.5%2C238.1L211.9%2C241.1L205.0%2C242.7L204.1%2C249.8L200.4%2C243.7Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M140.0%2C254.0L146.8%2C251.6L146.9%2C244.5L151.2%2C250.2L158.1%2C248.1L154.0%2C254.0L158.1%2C259.9L151.2%2C257.8L146.9%2C273.5L146.8%2C266.4Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M89.3%2C235.1L96.4%2C236.4L100.1%2C230.3L101.0%2C237.4L107.9%2C239.0L101.5%2C242.1L102.1%2C249.2L97.2%2C244.0L90.6%2C246.8L94.0%2C240.5Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M54.9%2C193.3L60.4%2C198.0L66.6%2C194.6L63.8%2C201.2L69.1%2C206.1L61.9%2C205.5L58.9%2C211.9L57.3%2C205.0L50.2%2C204.1L56.3%2C200.4Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M46.0%2C140.0L48.4%2C146.8L55.5%2C146.9L49.8%2C151.2L51.9%2C158.1L46.0%2C154.0L40.1%2C158.1L42.2%2C151.2L36.5%2C146.9L43.6%2C146.8Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M64.9%2C89.3L63.6%2C96.4L69.7%2C100.1L62.6%2C101.0L61.0%2C107.9L57.9%2C101.5L50.8%2C102.1L56.0%2C97.2L53.2%2C90.6L59.5%2C94.0Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M106.7%2C54.9L102.0%2C60.4L105.4%2C66.6L98.8%2C63.8L93.9%2C69.1L94.5%2C61.9L88.1%2C58.9L95.0%2C57.3L95.9%2C50.2L99.6%2C56.3Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M160.0%2C46.0L153.2%2C48.4L153.1%2C55.5L148.8%2C49.8L141.9%2C51.9L146.0%2C46.0L141.9%2C40.1L148.8%2C42.2L153.1%2C36.5L153.2%2C43.6Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M210.7%2C64.9L203.6%2C63.6L199.9%2C69.7L199.0%2C62.6L192.1%2C61.0L198.5%2C57.9L197.9%2C50.8L202.8%2C56.0L209.4%2C53.2L206.0%2C59.5Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M245.1%2C106.7L239.6%2C102.0L233.4%2C105.4L236.2%2C98.8L230.9%2C93.9L238.1%2C94.5L241.1%2C88.1L242.7%2C95.0L249.8%2C95.9L243.7%2C99.6Z%22%20fill%3D%22%23003399%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%); /* Fără oglindă pentru logo-ul din stânga */
+	z-index: 3;
+	pointer-events: none;
+}
+
+#logo_contact_left {
+	display:block;
+	width: 229px !important;
+	height: 229px !important;
+	object-fit: contain !important;
+	background-color: #FFFFFF !important;
+	padding: 0 !important;
+	box-sizing: border-box;
+	border-radius: 50% !important;
+	position: relative;
+	z-index: 2;
+	margin: auto;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+}
+
+/* Marker "2contact" pentru identificare - provizoriu */
+.the_logo_link_contact_left::after {
+	content: '2contact' !important;
+	position: absolute !important;
+	top: 50% !important;
+	left: 50% !important;
+	transform: translate(-50%, -50%) !important;
+	font-size: 40px !important;
+	font-weight: bold !important;
+	color: red !important;
+	z-index: 100 !important;
+	background: rgba(255, 255, 255, 0.9) !important;
+	padding: 10px 20px !important;
+	border-radius: 10px !important;
+	border: 3px solid red !important;
+	pointer-events: none !important;
+	text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
+}
+
+/* Sigla pe pagina de contact - în oglindă și pe partea dreaptă */
+.the_logo_link_contact {
+	position: absolute !important;
+	right: -567px !important; /* 15 cm la dreapta de marginea containerului */
+	top: 12px !important; /* Aceeași linie cu logo-ul din stânga */
+	z-index: 10 !important;
+	background-color: transparent !important;
+	padding: 0 !important;
+	border-radius: 50% !important;
+	box-shadow: none !important;
+	overflow: visible !important;
+	width: 320px !important;
+	height: 320px !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	transform: scaleX(-1) !important; /* Oglindă orizontală */
+}
+
+/* Permite overflow pentru container-ul de pe pagina de contact */
+#main_content .container {
+	overflow: visible !important;
+}
+
+/* Stelele pentru sigla de contact - în oglindă */
+.the_logo_link_contact::before {
+	content: '';
+	position: absolute;
+	width: 260px !important;
+	height: 260px !important;
+	border-radius: 50%;
+	background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20300%20300%27%3E%3Cg%3E%3Cpath%20d%3D%22M254.0%2C160.0L251.6%2C153.2L244.5%2C153.1L250.2%2C148.8L248.1%2C141.9L254.0%2C146.0L259.9%2C141.9L257.8%2C148.8L263.5%2C153.1L256.4%2C153.2Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M235.1%2C210.7L236.4%2C203.6L230.3%2C199.9L237.4%2C199.0L239.0%2C192.1L242.1%2C198.5L249.2%2C197.9L244.0%2C202.8L246.8%2C209.4L240.5%2C206.0Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M193.3%2C245.1L198.0%2C239.6L194.6%2C233.4L201.2%2C236.2L206.1%2C230.9L205.5%2C238.1L211.9%2C241.1L205.0%2C242.7L204.1%2C249.8L200.4%2C243.7Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M140.0%2C254.0L146.8%2C251.6L146.9%2C244.5L151.2%2C250.2L158.1%2C248.1L154.0%2C254.0L158.1%2C259.9L151.2%2C257.8L146.9%2C263.5L146.8%2C256.4Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M89.3%2C235.1L96.4%2C236.4L100.1%2C230.3L101.0%2C237.4L107.9%2C239.0L101.5%2C242.1L102.1%2C249.2L97.2%2C244.0L90.6%2C246.8L94.0%2C240.5Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M54.9%2C193.3L60.4%2C198.0L66.6%2C194.6L63.8%2C201.2L69.1%2C206.1L61.9%2C205.5L58.9%2C211.9L57.3%2C205.0L50.2%2C204.1L56.3%2C200.4Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M46.0%2C140.0L48.4%2C146.8L55.5%2C146.9L49.8%2C151.2L51.9%2C158.1L46.0%2C154.0L40.1%2C158.1L42.2%2C151.2L36.5%2C146.9L43.6%2C146.8Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M64.9%2C89.3L63.6%2C96.4L69.7%2C100.1L62.6%2C101.0L61.0%2C107.9L57.9%2C101.5L50.8%2C102.1L56.0%2C97.2L53.2%2C90.6L59.5%2C94.0Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M106.7%2C54.9L102.0%2C60.4L105.4%2C66.6L98.8%2C63.8L93.9%2C69.1L94.5%2C61.9L88.1%2C58.9L95.0%2C57.3L95.9%2C50.2L99.6%2C56.3Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M160.0%2C46.0L153.2%2C48.4L153.1%2C55.5L148.8%2C49.8L141.9%2C51.9L146.0%2C46.0L141.9%2C40.1L148.8%2C42.2L153.1%2C36.5L153.2%2C43.6Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M210.7%2C64.9L203.6%2C63.6L199.9%2C69.7L199.0%2C62.6L192.1%2C61.0L198.5%2C57.9L197.9%2C50.8L202.8%2C56.0L209.4%2C53.2L206.0%2C59.5Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M245.1%2C106.7L239.6%2C102.0L233.4%2C105.4L236.2%2C98.8L230.9%2C93.9L238.1%2C94.5L241.1%2C88.1L242.7%2C95.0L249.8%2C95.9L243.7%2C99.6Z%22%20fill%3D%22%23003399%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%) scaleX(-1); /* Oglindă și pentru stele */
+	z-index: 3;
+	pointer-events: none;
+}
+
+/* Marker "1contact" pentru identificare - provizoriu */
+.the_logo_link_contact::after {
+	content: '1contact' !important;
+	position: absolute !important;
+	top: 50% !important;
+	left: 50% !important;
+	transform: translate(-50%, -50%) scaleX(-1) !important; /* Oglindă pentru a se potrivi cu logo-ul */
+	font-size: 40px !important;
+	font-weight: bold !important;
+	color: red !important;
+	z-index: 100 !important;
+	background: rgba(255, 255, 255, 0.9) !important;
+	padding: 10px 20px !important;
+	border-radius: 10px !important;
+	border: 3px solid red !important;
+	pointer-events: none !important;
+	text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
+}
+
+#logo_contact {
+	display:block;
+	width: 229px !important;
+	height: 229px !important;
+	object-fit: contain !important;
+	background-color: #FFFFFF !important;
+	padding: 0 !important;
+	box-sizing: border-box;
+	border-radius: 50% !important;
+	position: relative;
+	z-index: 2;
+	margin: auto;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+	transform: scaleX(-1); /* Oglindă orizontală */
 }
 
 .the_logo_link h1 {
@@ -1519,6 +1772,21 @@ a.more_featured:active {
     display: block;
 }
 
+/* Sigla pe burtieră - circulară cu fundal alb */
+#burtiera_mica .burtiera_logo {
+    background-color: #FFFFFF;
+    border-radius: 50%;
+    padding: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+#burtiera_mica .burtiera_logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
+}
+
 @keyframes burtiera_mica_scroll {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }
@@ -1596,29 +1864,31 @@ body.page-home #featured_pets {
     width: 100% !important;
     clear: both !important;
     margin-top: 40px !important;
+    padding: 12px !important;
 }
 body.page-home #featured_inner {
     display: grid !important;
-    grid-template-columns: 280px 280px !important;
+    grid-template-columns: repeat(3, 1fr) !important;
     grid-template-rows: 160px 160px !important;
-    grid-auto-rows: 0 !important;
-    overflow: hidden !important;
-    gap: 24px 24px !important;
-    width: fit-content !important;
-    max-width: 100% !important;
+    gap: 16px 16px !important;
+    width: 100% !important;
+    max-width: 900px !important;
     margin: 0 auto !important;
 }
 body.page-home #featured_pets .single_pet {
     margin: 0 !important;
-    width: 280px !important;
+    width: 100% !important;
+    max-width: 280px !important;
     height: 160px !important;
     box-sizing: border-box !important;
 }
 body.page-home #featured_pets .single_pet:nth-child(1) { grid-column: 1; grid-row: 1 !important; }
 body.page-home #featured_pets .single_pet:nth-child(2) { grid-column: 2; grid-row: 1 !important; }
-body.page-home #featured_pets .single_pet:nth-child(3) { grid-column: 1; grid-row: 2 !important; }
-body.page-home #featured_pets .single_pet:nth-child(4) { grid-column: 2; grid-row: 2 !important; }
-body.page-home #featured_pets .single_pet:nth-child(n+5) { display: none !important; }
+body.page-home #featured_pets .single_pet:nth-child(3) { grid-column: 3; grid-row: 1 !important; }
+body.page-home #featured_pets .single_pet:nth-child(4) { grid-column: 1; grid-row: 2 !important; }
+body.page-home #featured_pets .single_pet:nth-child(5) { grid-column: 2; grid-row: 2 !important; }
+body.page-home #featured_pets .single_pet:nth-child(6) { grid-column: 3; grid-row: 2 !important; }
+body.page-home #featured_pets .single_pet:nth-child(n+7) { display: none !important; }
 /* Subfereastra la hover: calibrată la dimensiunile cardului, butonul galben centrat */
 body.page-home #featured_pets .single_pet .mask {
     width: 100% !important;
@@ -1671,7 +1941,7 @@ body.page-home #friends_wrap {
     border-left: none !important;
     padding-left: 0 !important;
     display: grid !important;
-    grid-template-columns: repeat(4, 1fr) !important;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
     gap: 16px !important;
     max-width: 100% !important;
     overflow: visible !important;
@@ -2241,6 +2511,61 @@ ul.slides {
 
 .pet_info span.ex:hover:before {
     color: #C20606
+}
+
+/* Share bar (single pet page, under image) */
+.share-bar {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #EFEFEF;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+.share-bar .share-bar-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    margin-right: 4px;
+    width: 100%;
+    margin-bottom: 4px;
+}
+.share-bar h5.share-bar-label {
+    margin: 0 0 8px 0;
+    padding: 0;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    width: 100%;
+}
+.share-bar .share-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    background: #f0f0f0;
+    color: #333;
+    font-family: inherit;
+}
+.share-bar .share-btn:hover {
+    text-decoration: none;
+    opacity: 0.9;
+}
+.share-bar .share-fb { background: #1877f2; color: #fff; }
+.share-bar .share-wa { background: #25d366; color: #fff; }
+.share-bar .share-mail { background: #666; color: #fff; }
+.share-bar .share-copy { background: #555; color: #fff; }
+.share-bar-note {
+    margin-top: 8px;
+    font-size: 0.9em;
+    opacity: 0.85;
+    color: #666;
+    width: 100%;
+    font-style: italic;
 }
 
 /* ============================================== ARCHIVE ============================================== */
@@ -4362,5 +4687,446 @@ body.show-skeleton #footer {
 body.show-skeleton #footer::before {
 	content: "8. SUBSOL";
 	position: absolute; top: 8px; left: 8px;
-	background: #95a5a6; color: #fff; font-size: 12px; padding: 4px 10px; z-index: 9999;
+}
+
+/* ============================================== CONTEST WIDGET ============================================== */
+
+.contest-widget-fixed {
+	position: fixed;
+	left: 20px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 300px;
+	background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+	border: 1px solid #e0e0e0;
+	border-radius: 12px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+	z-index: 1000;
+	max-height: 85vh;
+	overflow: hidden;
+	transition: transform 0.3s ease;
+}
+
+.contest-widget-fixed:hover {
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.contest-widget-content {
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+}
+
+.contest-header {
+	text-align: center;
+	margin-bottom: 16px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid #e8e8e8;
+	opacity: 1;
+	transition: opacity 0.5s ease-in-out;
+}
+
+.contest-header.hidden {
+	opacity: 0;
+	position: absolute;
+	pointer-events: none;
+}
+
+.contest-title {
+	font-size: 20px;
+	font-weight: 700;
+	color: #2c3e50;
+	margin: 0 0 12px 0;
+	letter-spacing: 0.5px;
+	line-height: 1.3;
+}
+
+.contest-countdown {
+	font-size: 15px;
+	color: #555;
+	font-weight: 600;
+	margin-bottom: 12px;
+}
+
+.contest-countdown #remainingDays {
+	color: #d32f2f;
+	font-size: 22px;
+	font-weight: 700;
+	display: inline-block;
+	min-width: 30px;
+}
+
+/* Dog Animation Container */
+.contest-dog-animation {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin: 8px 0;
+	height: 100px;
+	position: relative;
+}
+
+.dog-svg {
+	width: 100px;
+	height: 100px;
+	transform-origin: center bottom;
+}
+
+/* Dog Animation Keyframes */
+@keyframes dogBounce {
+	0%, 100% { transform: translateY(0) scale(1); }
+	25% { transform: translateY(-8px) scale(1.05); }
+	50% { transform: translateY(-4px) scale(1.02); }
+	75% { transform: translateY(-6px) scale(1.03); }
+}
+
+@keyframes pawWave {
+	0%, 100% { transform: translateY(0) rotate(0deg); }
+	50% { transform: translateY(-5px) rotate(5deg); }
+}
+
+@keyframes earWiggle {
+	0%, 100% { transform: rotate(0deg); }
+	25% { transform: rotate(-8deg); }
+	75% { transform: rotate(8deg); }
+}
+
+@keyframes attentionPulse {
+	0%, 100% { opacity: 0.6; transform: translateY(0); }
+	50% { opacity: 0.9; transform: translateY(-3px); }
+}
+
+.dog-body {
+	animation: dogBounce 2s ease-in-out infinite;
+}
+
+.dog-head {
+	animation: dogBounce 2s ease-in-out infinite;
+	animation-delay: 0.1s;
+}
+
+.dog-paw {
+	animation: pawWave 1.5s ease-in-out infinite;
+	transform-origin: center top;
+}
+
+.dog-ear-left {
+	animation: earWiggle 2.5s ease-in-out infinite;
+	transform-origin: center bottom;
+}
+
+.dog-ear-right {
+	animation: earWiggle 2.5s ease-in-out infinite;
+	animation-delay: 0.3s;
+	transform-origin: center bottom;
+}
+
+.attention-pointer {
+	animation: attentionPulse 1.5s ease-in-out infinite;
+	transform-origin: center top;
+}
+
+/* Prize Section */
+.contest-prize-section {
+	text-align: center;
+	margin-bottom: 16px;
+	padding: 16px;
+	background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+	border-radius: 8px;
+	opacity: 0;
+	transition: opacity 0.5s ease-in-out;
+	position: absolute;
+	width: calc(100% - 40px);
+	pointer-events: none;
+}
+
+.contest-prize-section.show {
+	opacity: 1;
+	pointer-events: auto;
+	position: relative;
+}
+
+.contest-prize-image {
+	max-width: 100%;
+	height: auto;
+	border-radius: 8px;
+	margin-bottom: 10px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.contest-prize-text {
+	font-size: 15px;
+	font-weight: 600;
+	color: #d32f2f;
+	letter-spacing: 0.3px;
+}
+
+/* Leaderboard */
+.contest-leaderboard {
+	margin-top: 16px;
+	flex: 1;
+	min-height: 0;
+}
+
+.leaderboard-title {
+	font-size: 16px;
+	font-weight: 700;
+	color: #2c3e50;
+	margin: 0 0 12px 0;
+	text-align: center;
+	border-bottom: 2px solid #e8e8e8;
+	padding-bottom: 10px;
+	letter-spacing: 0.5px;
+}
+
+.leaderboard-scroll {
+	max-height: 300px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding-right: 4px;
+}
+
+.leaderboard-scroll::-webkit-scrollbar {
+	width: 4px;
+}
+
+.leaderboard-scroll::-webkit-scrollbar-track {
+	background: #f1f1f1;
+	border-radius: 2px;
+}
+
+.leaderboard-scroll::-webkit-scrollbar-thumb {
+	background: #ccc;
+	border-radius: 2px;
+}
+
+.leaderboard-scroll::-webkit-scrollbar-thumb:hover {
+	background: #999;
+}
+
+.leaderboard-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.leaderboard-item {
+	display: flex;
+	align-items: center;
+	padding: 10px 6px;
+	border-bottom: 1px solid #f0f0f0;
+	font-size: 13px;
+	transition: background-color 0.2s ease;
+}
+
+.leaderboard-item:hover {
+	background-color: #f8f9fa;
+	border-radius: 4px;
+}
+
+.leaderboard-item:last-child {
+	border-bottom: none;
+}
+
+.leaderboard-position {
+	font-weight: 700;
+	color: #d32f2f;
+	min-width: 28px;
+	margin-right: 8px;
+	font-size: 14px;
+}
+
+.leaderboard-username {
+	flex: 1;
+	color: #2c3e50;
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.leaderboard-points {
+	color: #666;
+	font-size: 12px;
+	margin-left: 8px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+/* Pulse Animation (every 15 seconds) */
+@keyframes subtlePulse {
+	0%, 100% { transform: scale(1); }
+	50% { transform: scale(1.02); }
+}
+
+.contest-widget-fixed.pulse {
+	animation: subtlePulse 0.6s ease-in-out;
+}
+
+/* Responsive: hide on screens < 1024px */
+@media (max-width: 1023px) {
+	.contest-widget-fixed {
+		display: none;
+	}
+}
+
+/* ============================================== GLOBAL SIDEBARS ============================================== */
+
+/* Global Layout Wrapper */
+.global-layout-wrapper {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+	position: relative;
+}
+
+/* Main Content Area */
+.main-content-area {
+	flex: 1 1 auto;
+	min-width: 0; /* Prevents flex item overflow */
+}
+
+/* Global Sidebars */
+.global-sidebar {
+	width: 280px;
+	flex-shrink: 0;
+}
+
+.global-sidebar-left {
+	order: 1;
+}
+
+.main-content-area {
+	order: 2;
+}
+
+.global-sidebar-right {
+	order: 3;
+}
+
+/* Sidebar Box Component */
+.sidebar-box {
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	padding: 15px;
+	margin-bottom: 20px;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.sidebar-box:hover {
+	box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+	transform: translateY(-2px);
+}
+
+.sidebar-box-image {
+	margin-bottom: 12px;
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.sidebar-box-image img {
+	width: 100%;
+	height: auto;
+	display: block;
+	transition: transform 0.3s ease;
+}
+
+.sidebar-box:hover .sidebar-box-image img {
+	transform: scale(1.05);
+}
+
+.sidebar-box-content {
+	text-align: left;
+}
+
+.sidebar-box-title {
+	font-size: 16px;
+	font-weight: bold;
+	margin: 0 0 10px 0;
+	color: #333;
+	line-height: 1.4;
+}
+
+.sidebar-box-text {
+	font-size: 14px;
+	line-height: 1.6;
+	color: #666;
+	margin-bottom: 12px;
+}
+
+.sidebar-box-action {
+	margin-top: 12px;
+}
+
+.sidebar-box-button {
+	display: inline-block;
+	background: #d32f2f;
+	color: #fff;
+	padding: 8px 16px;
+	border-radius: 4px;
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: 500;
+	transition: background 0.3s ease;
+}
+
+.sidebar-box-button:hover {
+	background: #b71c1c;
+	text-decoration: none;
+	color: #fff;
+}
+
+/* Animation Classes */
+.sidebar-box.box-pulse {
+	animation: subtlePulse 3s ease-in-out infinite;
+}
+
+.sidebar-box.box-fade {
+	animation: fadeInOut 4s ease-in-out infinite;
+}
+
+@keyframes subtlePulse {
+	0%, 100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.95;
+		transform: scale(1.01);
+	}
+}
+
+@keyframes fadeInOut {
+	0%, 100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.8;
+	}
+}
+
+/* Responsive: Hide sidebars on mobile/tablet */
+@media (max-width: 1023px) {
+	.global-sidebar {
+		display: none;
+	}
+	
+	.main-content-area {
+		width: 100%;
+		order: 1;
+	}
+}
+
+/* Responsive: Adjust sidebar width on medium screens */
+@media (min-width: 1024px) and (max-width: 1279px) {
+	.global-sidebar {
+		width: 240px;
+	}
+}
+
+/* Ensure container doesn't break layout */
+.container.clearfix.global-layout-wrapper {
+	max-width: 100%;
 }

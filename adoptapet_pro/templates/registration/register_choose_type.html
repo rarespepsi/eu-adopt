@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Alege tipul contului | EU Adopt{% endblock %}
+
+{% block body_class %}auth-page register-choose{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth-pages.css' %}" />
+<style>
+.register-cards { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; margin: 2rem 0; }
+.register-card {
+	background: #fff; border: 2px solid #e0e0e0; border-radius: 12px;
+	padding: 1.5rem; max-width: 280px; text-align: center;
+	transition: border-color 0.2s, box-shadow 0.2s;
+}
+.register-card:hover { border-color: #d32f2f; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.register-card .card-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+.register-card h3 { margin: 0 0 0.5rem; font-size: 1.25rem; }
+.register-card p { font-size: 0.9rem; color: #666; margin: 0 0 1rem; line-height: 1.4; }
+.register-card .button { display: inline-block; background: #d32f2f; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500; }
+.register-card .button:hover { background: #b71c1c; color: #fff; }
+.page-register-choose h2 { text-align: center; margin-bottom: 0.5rem; }
+.page-register-choose .subtitle { text-align: center; color: #666; margin-bottom: 2rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-content-wrap page-register-choose">
+	<h2 class="entry-title">Alege tipul contului</h2>
+	<p class="subtitle">Selectați categoria care vă descrie pentru a continua cu înregistrarea.</p>
+	<div class="register-cards">
+		<div class="register-card">
+			<div class="card-icon">👤</div>
+			<h3>Persoană Fizică (PF)</h3>
+			<p>Cont personal pentru adoptanți sau persoane care doresc să interacționeze cu platforma.</p>
+			<a href="{% url 'register_pf' %}" class="button">Continuă</a>
+		</div>
+		<div class="register-card">
+			<div class="card-icon">🏢</div>
+			<h3>Persoană Juridică (SRL / Firmă)</h3>
+			<p>Cont pentru firme (SRL) care oferă servicii sau colaborează cu asociațiile.</p>
+			<a href="{% url 'register_srl' %}" class="button">Continuă</a>
+		</div>
+		<div class="register-card">
+			<div class="card-icon">🤝</div>
+			<h3>Asociație / Fundație (ONG)</h3>
+			<p>Cont pentru ONG-uri, asociații și fundații care publică animale pentru adopție.</p>
+			<a href="{% url 'register_ong' %}" class="button">Continuă</a>
+		</div>
+	</div>
+	<p style="text-align: center;"><a href="{% url 'login' %}">Am deja cont – autentificare</a></p>
+	<p style="text-align: center;"><a href="{% url 'home' %}">Înapoi la prima pagină</a></p>
+</div>
+{% endblock %}

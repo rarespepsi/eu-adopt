@@ -15,19 +15,19 @@
         <link rel="stylesheet" href="{% static 'includes/fancybox/jquery.fancybox.css' %}" type="text/css" media="screen" />
 
 		<!-- The next line calls the font for the headings from Google. You can customize this at Google.com/fonts */ -->
-		<link href='http://fonts.googleapis.com/css?family=Merriweather:300' rel='stylesheet' type='text/css'>
+		<link href='https://fonts.googleapis.com/css?family=Merriweather:300' rel='stylesheet' type='text/css' media='print' onload="this.media='all'">
 		
 		<!-- The Favicon -->
 		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
 	</head>
-	<body class="content_left scheme_red">
+	<body class="content_left scheme_red page-animale">
 		<section id="main_wrap">
 			<header class="wrapper" id="header">
 				<div class="container">
 					<div id="main_menu" class="clearfix">
 						<div class="clearfix">
 							<a href="{% url 'home' %}" title="Rescue" class="the_logo_link">
-								<img src="{% static 'images/rescuelogo.png' %}" alt="Rescue" id="logo" height="40" width="101.5" />
+								<img src="{% static 'images/eu-adopt-logo-original.jpeg' %}" alt="EU Adopt" id="logo" height="40" />
 							</a>
 							<div id="search_wrap">
 								<div id="search_link"></div>
@@ -39,7 +39,7 @@
 										<li><a href="{% url 'pets_all' %}" class="current_page">Animale</a></li>
 										<li><a href="{% url 'contact' %}">Contact</a></li>
 										<li><a href="{% url 'login' %}">Logare</a></li>
-										<li><a href="{% url 'signup' %}">Înregistrare</a></li>
+										<li><a href="{% url 'register' %}">Înregistrare</a></li>
 									</ul>
 								</div>
 							</nav>
@@ -56,18 +56,44 @@
 				</div>
 			</header>
 			<section class="wrapper" id="main_content">
-				<div id="slider_wrap">
-					<ul class="slides">
-						<li class="slide_image_wrap">
-							<img width="2880" height="1000" src="{% static 'images/slide1.jpg' %}" alt="Slide" />
-						</li>
-						<li class="slide_image_wrap">
-							<img width="2880" height="1000" src="{% static 'images/slide2.jpg' %}" alt="Slide" />
-						</li>
-						<li class="slide_image_wrap">
-							<img width="2880" height="1000" src="{% static 'images/slide3.jpg' %}" alt="Slide" />
-						</li>
-					</ul>
+				<!-- Burtiera mică: bandă cu poze care rulează, cu sigla în stânga -->
+				<div id="burtiera_mica" class="burtiera_mica_wrap">
+					<div class="burtiera_mica_track">
+						<!-- Sigla în locul primei poze -->
+						<a href="{% url 'home' %}" class="burtiera_mica_img burtiera_logo" title="EU Adopt">
+							<img src="{% static 'images/eu-adopt-logo-original.jpeg' %}" alt="EU Adopt" />
+						</a>
+						{% for pet in strip_pets %}
+						<a href="{% url 'pets_single' pet.pk %}" class="burtiera_mica_img" title="{{ pet.nume }}">
+							{% if pet.imagine %}
+							<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+							{% elif pet.imagine_fallback %}
+							<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" />
+							{% else %}
+							<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="{{ pet.nume }}" />
+							{% endif %}
+						</a>
+						{% empty %}
+						{% for i in "123456789012" %}
+						<a href="{% url 'pets_all' %}" class="burtiera_mica_img"><img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="Animale" /></a>
+						{% endfor %}
+						{% endfor %}
+						{% for pet in strip_pets %}
+						<a href="{% url 'pets_single' pet.pk %}" class="burtiera_mica_img" title="{{ pet.nume }}">
+							{% if pet.imagine %}
+							<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+							{% elif pet.imagine_fallback %}
+							<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" />
+							{% else %}
+							<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="{{ pet.nume }}" />
+							{% endif %}
+						</a>
+						{% empty %}
+						{% for i in "123456789012" %}
+						<a href="{% url 'pets_all' %}" class="burtiera_mica_img"><img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="Animale" /></a>
+						{% endfor %}
+						{% endfor %}
+					</div>
 				</div>
 				<div class="container clearfix">
 					<div class="posts-wrap">
@@ -112,9 +138,22 @@
 								{% empty %}
 								<p>Momentan nu există animale disponibile pentru adopție.</p>
 								{% endfor %}
-																<div class="navigation clearfix">
-									<div class="nav-prev"><a href="#">&larr; Older Entries</a></div>
-									<div class="nav-next"><a href="#">Newer Entries &rarr;</a></div>
+								<div class="navigation clearfix">
+									<div class="nav-prev">
+										{% if page_obj.has_previous %}
+										<a href="{% url 'pets_all' %}{% if pagination_query %}?{{ pagination_query }}&{% else %}?{% endif %}page={{ page_obj.previous_page_number }}">&larr; Pagina anterioară</a>
+										{% else %}
+										<span class="nav-disabled">&larr; Pagina anterioară</span>
+										{% endif %}
+									</div>
+									<div class="nav-next">
+										{% if page_obj.has_next %}
+										<a href="{% url 'pets_all' %}{% if pagination_query %}?{{ pagination_query }}&{% else %}?{% endif %}page={{ page_obj.next_page_number }}">Pagina următoare &rarr;</a>
+										{% else %}
+										<span class="nav-disabled">Pagina următoare &rarr;</span>
+										{% endif %}
+									</div>
+									<div class="nav-info">Pagina {{ page_obj.number }} din {{ page_obj.paginator.num_pages }}</div>
 								</div>
 							</section>
 						</section>
@@ -151,24 +190,17 @@
 								<div class="the_hours"><label>Friday</label>9:00 am - 8:00 pm</div>
 								<div class="the_hours"><label>Saturday</label>10:00 am - 12:00 pm</div>
 								<div class="the_hours no_border"><label>Sunday</label>Closed</div>
-								<script type='text/javascript' src='http://maps.google.com/maps/api/js?sensor=false&#038;ver=3.9.1'></script>
+								<script type='text/javascript' src='https://maps.googleapis.com/maps/api/js?sensor=false' async defer></script>
 								<div class="pw_map_canvas" id="dcs_map_rescue" style="height: 200px; width: 100%"></div>
 								<script type="text/javascript">
-								var rescue_map;
 								function pw_run_rescue_map(){
+									if (typeof google === 'undefined' || !document.getElementById("dcs_map_rescue")) return;
 									var location = new google.maps.LatLng("41.8621253", "-87.6167867");
-									var map_options = {
-										zoom: 15,
-										center: location,
-										mapTypeId: google.maps.MapTypeId.ROADMAP
-									}
-									rescue_map = new google.maps.Map(document.getElementById("dcs_map_rescue"), map_options);
-									var marker = new google.maps.Marker({
-										position: location,
-										map: rescue_map
-									});
+									var map_options = { zoom: 15, center: location, mapTypeId: google.maps.MapTypeId.ROADMAP };
+									var rescue_map = new google.maps.Map(document.getElementById("dcs_map_rescue"), map_options);
+									new google.maps.Marker({ position: location, map: rescue_map });
 								}
-								pw_run_rescue_map();
+								window.addEventListener('load', function(){ setTimeout(pw_run_rescue_map, 500); });
 								</script>
 							</div>
 							<div class="business_location">

@@ -94,10 +94,12 @@ Ambele tipuri sunt **clienți** – se înscriu ca membri, respectă regulile (c
 
 ## Wish list – funcționalități
 
-### Concurs / laudă membru – cele mai multe adopții
-- **Pe pagină, un script / secțiune** în care **lăudăm membrul** cu **cele mai multe adopții** – gen **concurs**: clasament (top membri după număr de adopții), evidențierea primului loc, eventual și locurile 2–3.
+### Concurs pe site – câștigător = cel cu cele mai multe distribuiri ale câinilor
+- **⏳ FĂCEM LA FINAL** – după ce terminăm de așezat site-ul; nu implementăm acum. (Când citești wish list-ul, amintește-ți: concursul vine la final.)
+- **Concurs pe site**: **câștigătorul** este **membrul care are cele mai multe distribuiri** (adopții) **ale câinilor** – adică clasament după numărul de câini adoptați/plasați de fiecare membru.
+- **Pe pagină, un script / secțiune** în care **lăudăm membrul** cu **cele mai multe adopții** – clasament (top membri după număr de adopții de câini), evidențierea primului loc, eventual și locurile 2–3.
 - **Exemple de recunoaștere / recompense** afișate sau oferite: ex. „A primit 10 saci cu mâncare!”, donații de mâncare, produse sau premii de la parteneri pentru membrii de top. Secțiunea poate afișa și ce a „câștigat” membrul (saci mâncare, etc.) ca motiv de celebrare și încurajare.
-- *Implementare:* clasament calculat după numărul de animale cu status „adopted” per membru; bloc pe home sau pagină dedicată „Top membri” / „Concurs”; opțional perioade (lunar, anual) și recompense reale (mâncare, etc.) în parteneriat cu sponsori.
+- *Implementare:* clasament calculat după numărul de **câini** (tip = câine) cu status „adopted” per membru; bloc pe home sau pagină dedicată „Top membri” / „Concurs”; opțional perioade (lunar, anual) și recompense reale (mâncare, etc.) în parteneriat cu sponsori.
 
 ### Pentru promovare (prioritate mare)
 - **Link unic per animal** – ușor de partajat pe Facebook, WhatsApp, e-mail (ex: site.ro/pets/123/).

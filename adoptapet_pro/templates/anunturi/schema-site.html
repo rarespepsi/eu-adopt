@@ -1,0 +1,407 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schema Site - Casute și Spații</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .schema-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .page-section {
+            margin-bottom: 50px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fafafa;
+        }
+        
+        .page-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #003399;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #003399;
+        }
+        
+        .header-area {
+            background: #e0e0e0;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .content-area {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .post-box {
+            background: #fff;
+            border: 2px dashed #003399;
+            border-radius: 6px;
+            padding: 20px;
+            min-height: 150px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .post-box-number {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #003399;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .post-box-label {
+            color: #666;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .ad-box {
+            background: #fff3cd;
+            border: 2px dashed #ffc107;
+            border-radius: 6px;
+            padding: 20px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #856404;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .banner-area {
+            background: #d1ecf1;
+            border: 2px dashed #0c5460;
+            border-radius: 6px;
+            padding: 30px;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #0c5460;
+            font-weight: bold;
+        }
+        
+        .footer-area {
+            background: #e0e0e0;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .grid-7-rows {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .legend {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 30px;
+        }
+        
+        .legend h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        .legend-color.post { background: #fff; border: 2px dashed #003399; }
+        .legend-color.ad { background: #fff3cd; border: 2px dashed #ffc107; }
+        .legend-color.banner { background: #d1ecf1; border: 2px dashed #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="schema-container">
+        <h1>📋 Schema Site - Casute și Spații</h1>
+        
+        <!-- PAGINA HOME -->
+        <div class="page-section">
+            <div class="page-title">🏠 Pagina Home</div>
+            
+            <div class="header-area">HEADER (Meniu + Logo)</div>
+            
+            <div class="banner-area">BANNER PRINCIPAL / SLIDER</div>
+            
+            <div class="content-area">
+                <div class="main-content">
+                    <div class="grid-2">
+                        <div class="post-box">
+                            <div class="post-box-number">1</div>
+                            <div class="post-box-label">Post Câine 1</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">2</div>
+                            <div class="post-box-label">Post Câine 2</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">3</div>
+                            <div class="post-box-label">Post Câine 3</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">4</div>
+                            <div class="post-box-label">Post Câine 4</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar">
+                    <div class="ad-box">RECLAMĂ 1<br/>(Sidebar)</div>
+                    <div class="ad-box">RECLAMĂ 2<br/>(Sidebar)</div>
+                </div>
+            </div>
+            
+            <div class="footer-area">FOOTER</div>
+        </div>
+        
+        <!-- PAGINA ANIMALE -->
+        <div class="page-section">
+            <div class="page-title">🐾 Pagina Animale (Toate Animalele)</div>
+            
+            <div class="header-area">HEADER (Meniu + Logo)</div>
+            
+            <div class="banner-area">BURTIERA MICĂ (Strip Banner cu Logo)</div>
+            
+            <div class="content-area">
+                <div class="main-content">
+                    <div class="grid-7-rows">
+                        <div class="post-box">
+                            <div class="post-box-number">1</div>
+                            <div class="post-box-label">Post Câine</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">2</div>
+                            <div class="post-box-label">Post Câine</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">3</div>
+                            <div class="post-box-label">Post Câine</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">4</div>
+                            <div class="post-box-label">Post Câine</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">5</div>
+                            <div class="post-box-label">Post Câine</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">6</div>
+                            <div class="post-box-label">Post Câine</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">7</div>
+                            <div class="post-box-label">Post Câine</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">8</div>
+                            <div class="post-box-label">Post Câine</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">9</div>
+                            <div class="post-box-label">Post Câine</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">10</div>
+                            <div class="post-box-label">Post Câine</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">11</div>
+                            <div class="post-box-label">Post Câine</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">12</div>
+                            <div class="post-box-label">Post Câine</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">13</div>
+                            <div class="post-box-label">Post Câine</div>
+                        </div>
+                        <div class="post-box">
+                            <div class="post-box-number">14</div>
+                            <div class="post-box-label">Post Câine</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar">
+                    <div class="ad-box">RECLAMĂ 1<br/>(Sidebar)</div>
+                    <div class="ad-box">RECLAMĂ 2<br/>(Sidebar)</div>
+                    <div class="ad-box">RECLAMĂ 3<br/>(Sidebar)</div>
+                </div>
+            </div>
+            
+            <div class="footer-area">FOOTER</div>
+        </div>
+        
+        <!-- PAGINA CONTACT -->
+        <div class="page-section">
+            <div class="page-title">📞 Pagina Contact</div>
+            
+            <div class="header-area">HEADER (Meniu - fără Logo)</div>
+            
+            <div class="content-area">
+                <div class="main-content">
+                    <div class="post-box full-width">
+                        <div class="post-box-number">1</div>
+                        <div class="post-box-label">Conținut Contact<br/>(Text informații)</div>
+                    </div>
+                </div>
+                
+                <div class="sidebar">
+                    <div class="ad-box">RECLAMĂ 1<br/>(Sidebar)</div>
+                    <div class="ad-box">RECLAMĂ 2<br/>(Sidebar)</div>
+                </div>
+            </div>
+            
+            <div class="footer-area">FOOTER</div>
+        </div>
+        
+        <!-- PAGINA DETALII ANIMAL -->
+        <div class="page-section">
+            <div class="page-title">🐕 Pagina Detalii Animal (Single Pet)</div>
+            
+            <div class="header-area">HEADER (Meniu + Logo)</div>
+            
+            <div class="content-area">
+                <div class="main-content">
+                    <div class="post-box full-width">
+                        <div class="post-box-number">1</div>
+                        <div class="post-box-label">Detalii Animal<br/>(Poze + Informații)</div>
+                    </div>
+                    <div class="post-box full-width">
+                        <div class="post-box-number">2</div>
+                        <div class="post-box-label">Formular Contact</div>
+                    </div>
+                </div>
+                
+                <div class="sidebar">
+                    <div class="ad-box">RECLAMĂ 1<br/>(Sidebar)</div>
+                    <div class="ad-box">RECLAMĂ 2<br/>(Sidebar)</div>
+                    <div class="post-box">
+                        <div class="post-box-number">3</div>
+                        <div class="post-box-label">Alte Animale<br/>(Recomandate)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-area">FOOTER</div>
+        </div>
+        
+        <!-- LEGENDA -->
+        <div class="legend">
+            <h3>📌 Legendă</h3>
+            <div class="legend-item">
+                <div class="legend-color post"></div>
+                <span>Casută Postare Câine (numerotată)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color ad"></div>
+                <span>Spațiu Reclamă</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color banner"></div>
+                <span>Banner / Burtieră</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

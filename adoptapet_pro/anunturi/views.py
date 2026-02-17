@@ -1,10 +1,18 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.auth import login
 from django.views.generic import TemplateView
 
-from .models import Pet, AdoptionRequest, UserProfile, OngProfile
-from .forms import AdoptionRequestForm, UserRegistrationForm, UserProfileForm
+from .models import Pet, AdoptionRequest, Profile, UserProfile, OngProfile
+from .forms import (
+    AdoptionRequestForm,
+    UserRegistrationForm,
+    UserProfileForm,
+    RegisterPFForm,
+    RegisterSRLForm,
+    RegisterONGForm,
+)
 from .adoption_platform import platform_validation_passes, send_adoption_request_to_ong
 from .contest_service import get_active_contest, get_contest_leaderboard, get_remaining_days
 
@@ -49,6 +57,9 @@ def home(request):
     })
 
 
+PETS_PER_PAGE = 12
+
+
 def pets_all(request):
     qs = Pet.objects.filter(status="adoptable").order_by("-data_adaugare")
     tip = request.GET.get("tip")
@@ -57,16 +68,30 @@ def pets_all(request):
     vip = request.GET.get("vip")
     if vip == "1":
         qs = qs.filter(featured=True)
+    paginator = Paginator(qs, PETS_PER_PAGE)
+    page_number = request.GET.get("page", 1)
+    try:
+        page_number = max(1, int(page_number))
+    except (TypeError, ValueError):
+        page_number = 1
+    page_obj = paginator.get_page(page_number)
+    # Query string pentru linkuri paginare (păstrăm tip, vip, fără page)
+    q = request.GET.copy()
+    if "page" in q:
+        q.pop("page")
+    pagination_query = q.urlencode()
     # Poze pentru burtiera mică (bandă deasupra slider-ului mare); dacă sunt puține, le dublăm
     strip_pets = list(Pet.objects.filter(status="adoptable").order_by("-data_adaugare")[:40])
     if strip_pets and len(strip_pets) < 12:
         import itertools
         strip_pets = list(itertools.islice(itertools.cycle(strip_pets), 24))
     return render(request, "anunturi/pets-all.html", {
-        "pets": qs,
+        "page_obj": page_obj,
+        "pets": page_obj.object_list,
         "current_tip": tip,
         "current_vip": vip,
         "strip_pets": strip_pets,
+        "pagination_query": pagination_query,
     })
 
 
@@ -162,19 +187,78 @@ def signup_verificare_telefon_view(request):
     )
 
 
+def register_choose_type(request):
+    """Pasul 1: Alege tipul contului (PF, SRL, ONG)."""
+    if request.user.is_authenticated:
+        return redirect("cont")
+    return render(request, "registration/register_choose_type.html")
+
+
+def register_pf(request):
+    """Înregistrare Persoană Fizică."""
+    if request.user.is_authenticated:
+        return redirect("cont")
+    if request.method == "POST":
+        form = RegisterPFForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, "Cont creat. Bine ați venit!")
+            return redirect("cont")
+    else:
+        form = RegisterPFForm()
+    return render(request, "registration/register_pf.html", {"form": form})
+
+
+def register_srl(request):
+    """Înregistrare SRL / Firmă."""
+    if request.user.is_authenticated:
+        return redirect("cont")
+    if request.method == "POST":
+        form = RegisterSRLForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, "Cont firmă creat. Bine ați venit!")
+            return redirect("cont")
+    else:
+        form = RegisterSRLForm()
+    return render(request, "registration/register_srl.html", {"form": form})
+
+
+def register_ong(request):
+    """Înregistrare ONG / Asociație / Fundație."""
+    if request.user.is_authenticated:
+        return redirect("cont")
+    if request.method == "POST":
+        form = RegisterONGForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, "Cont organizație creat. Bine ați venit!")
+            return redirect("cont")
+    else:
+        form = RegisterONGForm()
+    return render(request, "registration/register_ong.html", {"form": form})
+
+
 def cont_view(request):
     """Pagina principală de cont - direcționează către profilul corespunzător"""
     if not request.user.is_authenticated:
         return redirect("login")
-    
-    # Verifică dacă utilizatorul e în grupul "Asociație"
-    from django.contrib.auth.models import Group
-    is_ong = request.user.groups.filter(name="Asociație").exists()
-    
-    if is_ong:
-        return redirect("cont_ong")
-    else:
+    # Preferăm Profile.account_type dacă există
+    profile = getattr(request.user, "profile", None)
+    if profile:
+        if profile.account_type == "ngo":
+            return redirect("cont_ong")
+        if profile.account_type == "company":
+            return redirect("cont_ong")  # SRL folosește aceeași zonă ONG pentru animale
         return redirect("cont_profil")
+    # Fallback: grupul Asociație
+    from django.contrib.auth.models import Group
+    if request.user.groups.filter(name="Asociație").exists():
+        return redirect("cont_ong")
+    return redirect("cont_profil")
 
 
 def cont_profil_view(request):

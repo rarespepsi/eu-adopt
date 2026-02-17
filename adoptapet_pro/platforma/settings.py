@@ -6,14 +6,28 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Încarcă variabile din .env (dacă există)
+load_dotenv(BASE_DIR / ".env")
 
 # Environment variables for production (Render)
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-#!76zwfds$te^uzw+*ubc7z6wypgng6&74x91u@-$n@5m7=lsv')
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('1', 'true', 'yes')
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')
+
+# Site public: False = vizitatorii văd „Site în pregătire”; True = site normal.
+# Când ești gata: setează SITE_PUBLIC=True în .env sau pe Render (variabilă de mediu).
+SITE_PUBLIC = os.environ.get('SITE_PUBLIC', 'False').lower() in ('1', 'true', 'yes')
+
+# Link secret ca doar tu să vezi site-ul când e în pregătire.
+# Setează MAINTENANCE_SECRET în .env (ex: un cuvânt lung, greu de ghicit).
+# Pe laptop deschizi o dată: https://site.ro/acces-pregatire/ACEST_CUVANT/
+# Doar browserul acela va avea acces (cookie 30 zile).
+MAINTENANCE_SECRET = os.environ.get('MAINTENANCE_SECRET', '')
 
 
 # Application definition
@@ -37,6 +51,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'platforma.maintenance.MaintenanceMiddleware',
+    'anunturi.referral_middleware.ReferralTrackingMiddleware',
 ]
 
 ROOT_URLCONF = 'platforma.urls'
@@ -51,6 +67,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'anunturi.context_processors.sidebar_boxes',
             ],
         },
     },

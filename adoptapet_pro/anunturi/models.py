@@ -154,6 +154,46 @@ class OngProfile(models.Model):
         verbose_name_plural = "Profili ONG / Adăposturi"
 
 
+ACCOUNT_TYPE_CHOICES = [
+    ("individual", "Persoană fizică"),
+    ("company", "Persoană juridică (SRL / Firmă)"),
+    ("ngo", "Asociație / Fundație"),
+]
+
+
+class Profile(models.Model):
+    """
+    Profil unificat OneToOne cu User. account_type determină tipul contului.
+    Date suplimentare în funcție de tip.
+    """
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
+    )
+    account_type = models.CharField(
+        max_length=20,
+        choices=ACCOUNT_TYPE_CHOICES,
+        default="individual",
+    )
+    # Comune / individual
+    phone = models.CharField(blank=True, max_length=30, verbose_name="Telefon")
+    # Company (SRL)
+    company_name = models.CharField(blank=True, max_length=200, verbose_name="Denumire firmă")
+    cui = models.CharField(blank=True, max_length=20, verbose_name="CUI")
+    registration_number = models.CharField(blank=True, max_length=80, verbose_name="Nr. registru")
+    contact_person = models.CharField(blank=True, max_length=120, verbose_name="Persoană de contact")
+    # ONG
+    organization_name = models.CharField(blank=True, max_length=200, verbose_name="Denumire organizație")
+    legal_registration_number = models.CharField(blank=True, max_length=80, verbose_name="Nr. înregistrare")
+    representative_name = models.CharField(blank=True, max_length=120, verbose_name="Reprezentant legal")
+
+    class Meta:
+        verbose_name = "Profil"
+        verbose_name_plural = "Profili"
+
+    def __str__(self):
+        return f"{self.user.get_username()} ({self.get_account_type_display()})"
+
+
 class UserProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user_profile"
@@ -171,3 +211,47 @@ class UserProfile(models.Model):
     class Meta:
         verbose_name = "Profil persoană fizică"
         verbose_name_plural = "Profili persoane fizice"
+
+
+def contest_prize_upload_to(instance, filename):
+    return f"contest_prizes/{filename}"
+
+
+class Contest(models.Model):
+    name = models.CharField(max_length=200, verbose_name="Nume concurs")
+    start_date = models.DateTimeField(verbose_name="Data început")
+    end_date = models.DateTimeField(verbose_name="Data sfârșit")
+    prize_title = models.CharField(max_length=200, blank=True, verbose_name="Titlu premiu")
+    prize_image = models.ImageField(blank=True, null=True, upload_to=contest_prize_upload_to, verbose_name="Imagine premiu")
+    is_active = models.BooleanField(default=True, verbose_name="Activ")
+
+    class Meta:
+        verbose_name = "Concurs"
+        verbose_name_plural = "Concursuri"
+        ordering = ["-start_date"]
+
+    def __str__(self):
+        return self.name
+
+
+class ReferralVisit(models.Model):
+    ref_code = models.CharField(max_length=100, db_index=True, verbose_name="Cod referral")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="referral_visits",
+        verbose_name="Utilizator"
+    )
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Data vizită")
+    ip_hash = models.CharField(max_length=64, db_index=True, verbose_name="Hash IP")
+    counted = models.BooleanField(default=False, db_index=True, verbose_name="Contorizat")
+
+    class Meta:
+        verbose_name = "Vizită referral"
+        verbose_name_plural = "Vizite referral"
+        ordering = ["-timestamp"]
+        indexes = [
+            models.Index(fields=["ref_code", "ip_hash", "timestamp"]),
+            models.Index(fields=["user", "counted"]),
+        ]
+
+    def __str__(self):
+        return f"{self.ref_code} - {self.user.username} - {self.timestamp}"
