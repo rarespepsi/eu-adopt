@@ -1,0 +1,17 @@
+---
+description: Pagina home – setările actuale sunt considerate foarte bune, păstrează-le la modificări
+alwaysApply: true
+---
+
+# Referință setări pagină home
+
+**Setările actuale ale paginii home sunt memorate ca foarte bune.** La orice modificare pe home (CSS, template-uri, slot-uri), păstrează aceste valori dacă utilizatorul nu cere explicit altceva.
+
+Referință detaliată: **HOME_SETTINGS_REFERENCE.md** (rădăcina proiectului).
+
+- **Sidebar-uri**: gap 2px, înălțime `calc(100vh - 64px)`, slot-uri A6/A7/A8 (stânga) și A12/A13/A14 (dreapta) cu flex 1.28, padding slot 6px.
+- **A2 – sigla**: vizibilă, poziție `left: -0.75cm`, `top: calc(50% + 1.25cm)`, `transform: translateY(-50%)`; slider max-height 260px.
+- **A3 – animale lunii**: poze `object-fit: cover`, link full-cell (position absolute, 100% width/height).
+- **Fișier principal**: `static/css/home-sidebar-compact.css` (încărcat ultimul pentru home).
+
+Nu schimba pozițiile sau proporțiile acestor elemente fără cerere explicită.

@@ -1,3 +1,10 @@
+# ⚠️ FIȘIER VECHI – CONȚINUT CENTRALIZAT
+
+**📚 Acest fișier a fost centralizat în `DOCUMENTATIE_CENTRALIZATA.md`**  
+**Nu mai actualiza acest fișier – folosește fișierul centralizat pentru a evita duplicarea informațiilor.**
+
+---
+
 # Pași: să vezi doar tu site-ul (pas cu pas)
 
 ## Pas 1 – Instalează pachetul pentru .env

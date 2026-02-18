@@ -18,25 +18,180 @@ from .contest_service import get_active_contest, get_contest_leaderboard, get_re
 
 
 def home(request):
-    featured = list(Pet.objects.filter(featured=True, status="adoptable")[:6])
-    latest_qs = Pet.objects.filter(status="adoptable").order_by("-data_adaugare")
-    latest = list(latest_qs[:14])
-    # Dacă sunt mai puțin de 6 la Animalele lunii, completăm până la 6 (2x3) cu cele mai noi
-    if len(featured) < 6:
+    # Contori pentru navbar A0
+    active_animals = Pet.objects.filter(status="adoptable").count()
+    adopted_animals = Pet.objects.filter(status="adopted").count()
+    
+    # A3 - Animals of the Month (4x2 grid = 8 animale)
+    featured = list(Pet.objects.filter(featured=True, status="adoptable")[:8])
+    # Completăm până la 8 dacă sunt mai puține
+    if len(featured) < 8:
         ids = {p.pk for p in featured}
-        available = list(latest_qs.exclude(pk__in=ids))
-        # Dacă nu sunt suficiente, repetăm din cele disponibile
+        available = list(Pet.objects.filter(status="adoptable").exclude(pk__in=ids).order_by("-data_adaugare"))
         import itertools
         if available:
-            for p in itertools.islice(itertools.cycle(available), 6 - len(featured)):
+            for p in itertools.islice(itertools.cycle(available), 8 - len(featured)):
                 featured.append(p)
+        elif featured:
+            for p in itertools.islice(itertools.cycle(featured), 8 - len(featured)):
+                featured.append(p)
+    
+    # A4 - New Entries grid (7 columns, unlimited rows)
+    # Algorithm: Build complete rows only, mix fillers naturally
+    import itertools
+    
+    # 1. Build primary list: ACTIVE animals (unique, newest first)
+    active_list = list(Pet.objects.filter(status="adoptable").order_by("-data_adaugare"))
+    active_ids = {p.pk for p in active_list}
+    
+    # 2. Build filler pools (can repeat across sessions but not adjacent)
+    processing_pool = [p for p in Pet.objects.filter(status="pending").order_by("-data_adaugare") if p.pk not in active_ids]
+    adopted_pool = [p for p in Pet.objects.filter(status="adopted").order_by("-data_adaugare") if p.pk not in active_ids]
+    showcase_pool = [p for p in Pet.objects.filter(status="showcase_archive").order_by("-data_adaugare") if p.pk not in active_ids]
+    
+    # 3. Build rows: each row must be FULL (7 items) or not exist
+    new_entries = []
+    used_ids = set()
+    active_index = 0
+    
+    def get_filler_from_pool(pool, avoid_pet_id=None):
+        """Get next filler from pool, prefer unused, avoid specific pet if needed"""
+        if not pool:
+            return None
+        
+        # Try unused first
+        for pet in pool:
+            if pet.pk not in used_ids and pet.pk != avoid_pet_id:
+                return pet
+        
+        # Allow reuse if needed (but avoid same pet as last)
+        for pet in pool:
+            if pet.pk != avoid_pet_id:
+                return pet
+        
+        return None
+    
+    # Build complete rows
+    while active_index < len(active_list):
+        row = []
+        row_processing_count = 0
+        last_filler_pet_id = None
+        
+        # Fill row with active animals first
+        while len(row) < 7 and active_index < len(active_list):
+            pet = active_list[active_index]
+            if pet.pk not in used_ids:
+                row.append(pet)
+                used_ids.add(pet.pk)
+            active_index += 1
+        
+        # If row is incomplete, fill with mix strategy
+        if len(row) < 7:
+            needed = 7 - len(row)
+            
+            # Determine mix pattern based on row composition
+            # If only 1 active item, use balanced mix (not all processing)
+            if len(row) == 1:
+                # Balanced mix: processing, adopted, showcase, processing, adopted, showcase
+                mix_pattern = ['processing', 'adopted', 'showcase', 'processing', 'adopted', 'showcase']
+            else:
+                # Normal mix with max 2 processing per row
+                mix_pattern = ['processing', 'adopted', 'showcase', 'adopted', 'showcase', 'processing']
+            
+            # Fill remaining slots
+            for slot_idx in range(needed):
+                # Get desired type from mix pattern
+                pattern_idx = slot_idx % len(mix_pattern)
+                desired_type = mix_pattern[pattern_idx]
+                
+                # Avoid adjacent duplicates (skip if same type as last filler)
+                if last_filler_pet_id:
+                    last_pet = next((p for p in row if p.pk == last_filler_pet_id), None)
+                    if last_pet:
+                        last_type = last_pet.status
+                        if (desired_type == 'processing' and last_type == 'pending') or \
+                           (desired_type == 'adopted' and last_type == 'adopted') or \
+                           (desired_type == 'showcase' and last_type == 'showcase_archive'):
+                            # Try next type in pattern
+                            pattern_idx = (pattern_idx + 1) % len(mix_pattern)
+                            desired_type = mix_pattern[pattern_idx]
+                
+                # Check processing limit (max 2 per row)
+                if desired_type == 'processing' and row_processing_count >= 2:
+                    # Try other types
+                    for alt_type in ['adopted', 'showcase']:
+                        if alt_type in mix_pattern:
+                            desired_type = alt_type
+                            break
+                    if desired_type == 'processing':
+                        # Can't add more processing, try other types
+                        for alt_type in ['adopted', 'showcase']:
+                            pet = get_filler_from_pool(
+                                adopted_pool if alt_type == 'adopted' else showcase_pool,
+                                last_filler_pet_id
+                            )
+                            if pet:
+                                row.append(pet)
+                                used_ids.add(pet.pk)
+                                last_filler_pet_id = pet.pk
+                                break
+                        else:
+                            # No fillers available, stop filling this row
+                            break
+                        continue
+                
+                # Get filler item
+                pool = None
+                if desired_type == 'processing':
+                    pool = processing_pool
+                elif desired_type == 'adopted':
+                    pool = adopted_pool
+                elif desired_type == 'showcase':
+                    pool = showcase_pool
+                
+                pet = get_filler_from_pool(pool, last_filler_pet_id)
+                
+                if pet:
+                    row.append(pet)
+                    used_ids.add(pet.pk)
+                    last_filler_pet_id = pet.pk
+                    if desired_type == 'processing':
+                        row_processing_count += 1
+                else:
+                    # Try any available filler type as fallback
+                    for fallback_type in ['adopted', 'showcase', 'processing']:
+                        fallback_pool = None
+                        if fallback_type == 'processing':
+                            fallback_pool = processing_pool
+                        elif fallback_type == 'adopted':
+                            fallback_pool = adopted_pool
+                        elif fallback_type == 'showcase':
+                            fallback_pool = showcase_pool
+                        
+                        if fallback_pool:
+                            pet = get_filler_from_pool(fallback_pool, last_filler_pet_id)
+                            if pet:
+                                row.append(pet)
+                                used_ids.add(pet.pk)
+                                last_filler_pet_id = pet.pk
+                                if fallback_type == 'processing':
+                                    row_processing_count += 1
+                                break
+                    else:
+                        # No fillers available, stop filling this row
+                        break
+            
+            # Only add row if it's complete (7 items)
+            if len(row) == 7:
+                new_entries.extend(row)
+            else:
+                # Incomplete row, stop building
+                break
         else:
-            # Dacă nu există deloc animale, repetăm din featured
-            if featured:
-                for p in itertools.islice(itertools.cycle(featured), 6 - len(featured)):
-                    featured.append(p)
-    latest = latest[:14]
-    # Poze pentru burtiera mică (bandă deasupra slider-ului mare); dacă sunt puține, le dublăm
+            # Row is complete with active animals only
+            new_entries.extend(row)
+    
+    # A1 - Moving animal strip (scroll)
     strip_pets = list(Pet.objects.filter(status="adoptable").order_by("-data_adaugare")[:40])
     if strip_pets and len(strip_pets) < 12:
         import itertools
@@ -48,9 +203,11 @@ def home(request):
     top_users = get_contest_leaderboard(limit=10, contest=contest) if contest else []
     
     return render(request, "anunturi/home.html", {
-        "featured_pets": featured,
-        "latest_pets": latest,
-        "strip_pets": strip_pets,
+        "active_animals": active_animals,
+        "adopted_animals": adopted_animals,
+        "featured_pets": featured[:8],  # A3 - Animals of the Month (4x2)
+        "new_entries": new_entries,  # A4 - New Entries grid
+        "strip_pets": strip_pets,  # A1 - Moving strip
         "contest": contest,
         "remaining_days": remaining_days,
         "top_users": top_users,

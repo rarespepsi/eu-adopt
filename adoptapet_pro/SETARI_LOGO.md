@@ -1,3 +1,10 @@
+# ⚠️ FIȘIER VECHI – CONȚINUT CENTRALIZAT
+
+**📚 Acest fișier a fost centralizat în `DOCUMENTATIE_CENTRALIZATA.md`**  
+**Nu mai actualiza acest fișier – folosește fișierul centralizat pentru a evita duplicarea informațiilor.**
+
+---
+
 # Setări Logo - Documentație
 
 ## Configurație Generală Logo
@@ -31,7 +38,7 @@
 - `z-index: 10`
 
 ### Identificare Provizorie
-- Text: "1home" (roșu, centrat pe logo)
+- ~~Text: "1home" (roșu, centrat pe logo)~~ **ELIMINAT**
 - Clasă body: `page-home`
 
 ### CSS Selector
@@ -47,7 +54,7 @@ body.page-home .the_logo_link:not(.the_logo_link_contact):not(.the_logo_link_con
 - Similar cu pagina home (verifică CSS pentru `.the_logo_link`)
 
 ### Identificare Provizorie
-- Text: "1animale" (roșu, centrat pe logo)
+- ~~Text: "1animale" (roșu, centrat pe logo)~~ **ELIMINAT**
 - Clasă body: `page-animale`
 
 ### CSS Selector
@@ -68,7 +75,7 @@ body.page-animale .the_logo_link:not(.the_logo_link_contact):not(.the_logo_link_
 - **Top**: `12px`
 - **Clasă**: `.the_logo_link_contact_left`
 - **ID**: `#logo_contact_left`
-- **Identificare**: Text "2contact" (provizoriu)
+- **Identificare**: ~~Text "2contact" (provizoriu)~~ **ELIMINAT**
 - **Stele**: Normal (fără oglindă)
 
 ### Logo 2 (Din Dreapta, Oglindit)
@@ -76,7 +83,7 @@ body.page-animale .the_logo_link:not(.the_logo_link_contact):not(.the_logo_link_
 - **Top**: `12px`
 - **Clasă**: `.the_logo_link_contact`
 - **ID**: `#logo_contact`
-- **Identificare**: Text "1contact" (provizoriu)
+- **Identificare**: ~~Text "1contact" (provizoriu)~~ **ELIMINAT**
 - **Transform**: `scaleX(-1)` (oglindă orizontală)
 - **Stele**: Oglindite (`transform: translate(-50%, -50%) scaleX(-1)`)
 
@@ -102,12 +109,12 @@ body.page-animale .the_logo_link:not(.the_logo_link_contact):not(.the_logo_link_
 - Pointer events: none
 
 ### Texturi pe Pagini
-- Home: "1home"
-- Animale: "1animale"
-- Contact Logo 1: "1contact"
-- Contact Logo 2: "2contact"
+- ~~Home: "1home"~~ **ELIMINAT**
+- ~~Animale: "1animale"~~ **ELIMINAT**
+- ~~Contact Logo 1: "1contact"~~ **ELIMINAT**
+- ~~Contact Logo 2: "2contact"~~ **ELIMINAT**
 
-**NOTĂ**: Aceste texturi sunt provizorii pentru comunicare și vor fi eliminate la finalizare.
+**NOTĂ**: Aceste texturi provizorii au fost eliminate din CSS.
 
 ---
 
@@ -135,7 +142,7 @@ body.page-animale .the_logo_link:not(.the_logo_link_contact):not(.the_logo_link_
 
 ## Pași pentru Finalizare
 
-1. Elimină toate texturile provizorii ("1home", "1animale", "1contact", "2contact")
+1. ✅ **COMPLETAT**: Elimină toate texturile provizorii ("1home", "1animale", "1contact", "2contact")
 2. Verifică pozițiile finale ale logo-urilor pe toate paginile
 3. Asigură-te că logo-urile sunt corect poziționate și vizibile
 4. Testează pe diferite rezoluții de ecran

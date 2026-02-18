@@ -1,3 +1,10 @@
+# ⚠️ FIȘIER VECHI – CONȚINUT CENTRALIZAT
+
+**📚 Acest fișier a fost centralizat în `DOCUMENTATIE_CENTRALIZATA.md`**  
+**Nu mai actualiza acest fișier – folosește fișierul centralizat pentru a evita duplicarea informațiilor.**
+
+---
+
 # Istoric conversații / Lucrări făcute în proiect
 
 Acest fișier rezumă ce s-a discutat și implementat în sesiunile de lucru (conversațiile din Cursor nu se salvează automat; acest document servește ca referință).

@@ -1,3 +1,10 @@
+# ⚠️ FIȘIER VECHI – CONȚINUT CENTRALIZAT
+
+**📚 Acest fișier a fost centralizat în `DOCUMENTATIE_CENTRALIZATA.md`**  
+**Nu mai actualiza acest fișier – folosește fișierul centralizat pentru a evita duplicarea informațiilor.**
+
+---
+
 # Modificări EU Adopt – istoric pentru backup
 
 **Scop:** Toate modificările făcute la proiect sunt notate aici. Când site-ul merge, actualizează acest fișier și fă backup (commit + push).

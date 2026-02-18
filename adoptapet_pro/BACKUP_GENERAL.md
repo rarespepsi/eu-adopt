@@ -1,3 +1,10 @@
+# ⚠️ FIȘIER VECHI – CONȚINUT CENTRALIZAT
+
+**📚 Acest fișier a fost centralizat în `DOCUMENTATIE_CENTRALIZATA.md`**  
+**Nu mai actualiza acest fișier – folosește fișierul centralizat pentru a evita duplicarea informațiilor.**
+
+---
+
 # Backup general EU Adopt – februarie 2026
 
 **Fișier pentru recuperare. NU conține parole. Citește acest fișier într-o conversație nouă dacă ai nevoie de orientare.**

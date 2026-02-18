@@ -1,0 +1,233 @@
+/* 
+ * HOME-only CSS override loaded LAST
+ * Compress vertical spacing of sidebar slots so A6–A17 fit in first viewport
+ */
+
+/* reduce vertical gaps in sidebars */
+body.page-home .sidebar-left [data-slot],
+body.page-home .sidebar-right [data-slot]{
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+}
+
+/* remove extra internal spacing */
+body.page-home .sidebar-left,
+body.page-home .sidebar-right{
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+/* both sidebars: 3 wide slots, 2px between them */
+body.page-home .sidebar-left,
+body.page-home .sidebar-right{
+    gap: 2px !important;
+}
+
+/* make slot containers more compact */
+body.page-home .sidebar-left .slot-container,
+body.page-home .sidebar-right .slot-container{
+    padding: 6px !important;
+    min-height: auto !important;
+}
+
+/* LEFT + RIGHT column: larger slots, small gap, no hiding */
+body.page-home .sidebar-left,
+body.page-home .sidebar-right{
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+    overflow: visible !important;
+    align-self: stretch !important;
+    height: 100% !important;
+}
+
+/* Stânga: coloana pe înălțimea primului ecran, cele 3 casete umplu spațiul */
+body.page-home .sidebar-left{
+    height: calc(100vh - 64px) !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+}
+
+body.page-home .sidebar-left .slot-container,
+body.page-home .sidebar-left .slot,
+body.page-home .sidebar-right .slot-container,
+body.page-home .sidebar-right .slot{
+    width: 100% !important;
+    min-height: 120px !important;
+    height: auto !important;
+    position: relative !important;
+    flex-shrink: 0 !important;
+}
+
+/* remove fixed slot-wide height so slots can grow consistently */
+body.page-home .sidebar-left .slot-container.slot-wide,
+body.page-home .sidebar-right .slot-container.slot-wide{
+    min-height: 120px !important;
+}
+
+/* A6: înălțime redusă cu încă 20% (flex 1.28) - SUPRASCRIE TOATE regulile de mai sus */
+body.page-home .sidebar-left #A6,
+body.page-home .sidebar-left #A6.slot-container,
+body.page-home .sidebar-left #A6.slot-container.slot-wide{
+    flex: 1.28 1 0 !important;
+    min-height: 0 !important;
+    flex-shrink: 1 !important;
+    flex-grow: 1.28 !important;
+    flex-basis: 0 !important;
+    width: 100% !important;
+    position: relative !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+body.page-home .sidebar-left #A6 .sidebar-box{
+    height: 100% !important;
+    min-height: 0 !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* A7 și A8: aceeași dimensiune ca A6 (flex 1.28) - SUPRASCRIE flex-shrink: 0 */
+body.page-home .sidebar-left #A7,
+body.page-home .sidebar-left #A8,
+body.page-home .sidebar-left #A7.slot-container,
+body.page-home .sidebar-left #A8.slot-container,
+body.page-home .sidebar-left #A7.slot-container.slot-wide,
+body.page-home .sidebar-left #A8.slot-container.slot-wide{
+    flex: 1.28 1 0 !important;
+    min-height: 0 !important;
+    flex-shrink: 1 !important;
+    flex-grow: 1.28 !important;
+    flex-basis: 0 !important;
+    width: 100% !important;
+    position: relative !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+body.page-home .sidebar-left #A7 .sidebar-box,
+body.page-home .sidebar-left #A8 .sidebar-box{
+    height: 100% !important;
+    min-height: 0 !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Dreapta: A12, A13, A14 - aceeași dimensiune ca A6/A7/A8 (flex 1.28) */
+body.page-home .sidebar-right{
+    height: calc(100vh - 64px) !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+}
+
+body.page-home .sidebar-right #A12,
+body.page-home .sidebar-right #A13,
+body.page-home .sidebar-right #A14,
+body.page-home .sidebar-right #A12.slot-container,
+body.page-home .sidebar-right #A13.slot-container,
+body.page-home .sidebar-right #A14.slot-container,
+body.page-home .sidebar-right #A12.slot-container.slot-wide,
+body.page-home .sidebar-right #A13.slot-container.slot-wide,
+body.page-home .sidebar-right #A14.slot-container.slot-wide{
+    flex: 1.28 1 0 !important;
+    min-height: 0 !important;
+    flex-shrink: 1 !important;
+    flex-grow: 1.28 !important;
+    flex-basis: 0 !important;
+    width: 100% !important;
+    position: relative !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+body.page-home .sidebar-right #A12 .sidebar-box,
+body.page-home .sidebar-right #A13 .sidebar-box,
+body.page-home .sidebar-right #A14 .sidebar-box{
+    height: 100% !important;
+    min-height: 0 !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* remove hidden spacer heights */
+body.page-home .sidebar-left *,
+body.page-home .sidebar-right *{
+    line-height: normal !important;
+}
+
+/* A2 - micșorează puțin înălțimea pozelor din slider */
+body.page-home #A2 #slider_wrap,
+body.page-home #A2 #slider_wrap .flexslider,
+body.page-home #A2 #slider_wrap .flex-viewport,
+body.page-home #A2 #slider_wrap .slides,
+body.page-home #A2 #slider_wrap .slide_image_wrap,
+body.page-home #A2 #slider_wrap .slide_image_wrap img{
+    max-height: 260px !important;
+    height: 260px !important;
+    min-height: 260px !important;
+}
+body.page-home #A2 #slider_wrap .slide_image_wrap img{
+    object-fit: cover !important;
+}
+
+/* A2 - afișează sigla rotundă cu stele (suprascrie display: none) */
+body.page-home #A2 .hero-logo,
+body.page-home #A2 .the_logo_link,
+body.page-home #A2 #logo_hero{
+    display: block !important;
+}
+
+/* A2 - centrează sigla spre stânga, 0,75 cm în afara A2, cu 1,25 cm mai jos */
+body.page-home #A2 .hero-logo{
+    left: -0.75cm !important;
+    top: calc(50% + 1.25cm) !important;
+    transform: translateY(-50%) !important;
+    margin-left: 0 !important;
+}
+body.page-home #A2 .hero-logo .the_logo_link{
+    left: 0 !important;
+    margin-left: 0 !important;
+}
+
+/* A3 - poza la fel ca caseta: umple întreaga celulă */
+body.page-home #A3 .single_pet > a{
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+}
+body.page-home #A3 .single_pet img{
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    display: block !important;
+}
+
+/* Responsive: small screens – smaller gap and slot min-height */
+@media (max-width: 768px) {
+    body.page-home .sidebar-left,
+    body.page-home .sidebar-right{
+        gap: 8px !important;
+    }
+    body.page-home .sidebar-left .slot-container,
+    body.page-home .sidebar-left .slot,
+    body.page-home .sidebar-right .slot-container,
+    body.page-home .sidebar-right .slot{
+        min-height: 90px !important;
+    }
+}
+
+/* Ensure A6, A7, A8 (and all sidebar slots) stay visible at all breakpoints */
+body.page-home .sidebar-left #A6,
+body.page-home .sidebar-left #A7,
+body.page-home .sidebar-left #A8,
+body.page-home .sidebar-right #A12,
+body.page-home .sidebar-right #A13,
+body.page-home .sidebar-right #A14{
+    display: block !important;
+}

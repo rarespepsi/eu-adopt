@@ -37,7 +37,12 @@ class Pet(models.Model):
     VARSTA_CHOICES = [("baby", "Baby"), ("young", "Young"), ("adult", "Adult")]
     SEX_CHOICES = [("male", "Male"), ("female", "Female")]
     MARIME_CHOICES = [("small", "Small"), ("medium", "Medium"), ("large", "Large"), ("xlarge", "Extra Large")]
-    STATUS_CHOICES = [("adoptable", "Adoptable"), ("pending", "Adoption Pending"), ("adopted", "Adopted")]
+    STATUS_CHOICES = [
+        ("adoptable", "Adoptable"), 
+        ("pending", "Adoption Pending"), 
+        ("adopted", "Adopted"),
+        ("showcase_archive", "Showcase Archive")  # Visual buffer, not adoptable, not searchable
+    ]
     JUDET_CHOICES = JUDET_CHOICES
 
     nume = models.CharField(max_length=100)

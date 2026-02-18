@@ -35,13 +35,28 @@
 <body class="content_left scheme_red {% block body_class %}{% endblock %}">
 	<section id="main_wrap">
 		{% block header %}
-		<header class="wrapper" id="header">
+		<!-- A0 - Navbar principal (Acasă / Animale / etc) -->
+		<header id="A0" data-slot="A0">
 			<div class="container">
 				<div id="main_menu" class="clearfix">
 					<div class="clearfix">
 						<a href="{% url 'home' %}" title="EU Adopt" class="the_logo_link">
 							<img src="{% static 'images/eu-adopt-logo-original.jpeg' %}" alt="EU Adopt" id="logo" height="40" />
 						</a>
+						{% if request.resolver_match.url_name == 'home' %}
+						<div class="animal-counter-navbar">
+							<div class="counter-item">
+								<span class="counter-icon">🐶</span>
+								<span class="counter-label">În site:</span>
+								<span class="counter-value">{{ active_animals|default:0 }}</span>
+							</div>
+							<div class="counter-item">
+								<span class="counter-icon">🏠</span>
+								<span class="counter-label">Home:</span>
+								<span class="counter-value">{{ adopted_animals|default:0 }}</span>
+							</div>
+						</div>
+						{% endif %}
 						<div id="search_wrap">
 							<div id="search_link"></div>
 						</div>

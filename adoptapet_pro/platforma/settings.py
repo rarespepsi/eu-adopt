@@ -134,7 +134,9 @@ CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://*.onrende
 # Auth redirects
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
-LOGOUT_REDIRECT_URL = "home"
+# După logout redirecționăm la login (nu la home), ca în mod „site în pregătire”
+# utilizatorul să vadă login, nu ecranul 503.
+LOGOUT_REDIRECT_URL = "login"
 
 # ========== EMAIL ==========
 # Folosit la: cereri adopție (→ ONG), validare adopție, follow-up post-adopție.

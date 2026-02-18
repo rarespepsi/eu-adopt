@@ -6,9 +6,11 @@
 {% block body_class %}page-home{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home-skeleton.css' %}" type="text/css" media="all" />
 <link rel="stylesheet" href="{% static 'includes/js/flexslider.css' %}" type="text/css" media="all" />
 <link rel="stylesheet" href="{% static 'includes/fancybox/jquery.fancybox.css' %}" type="text/css" />
 <link href="https://fonts.googleapis.com/css?family=Merriweather:300" rel="stylesheet" type="text/css" media="print" onload="this.media='all'" />
+<link rel="stylesheet" href="{% static 'css/home-sidebar-compact.css' %}" type="text/css" media="all" />
 {% endblock %}
 
 {% block content %}
@@ -60,144 +62,199 @@
 	</div>
 </div>
 {% endif %}
-<!-- Burtiera mică -->
-<div id="burtiera_mica" class="burtiera_mica_wrap" data-slot="HOME_M1">
-	<span class="slot-marker">HOME_M1</span>
-	<div class="burtiera_mica_track">
-		{% for pet in strip_pets %}
-		<a href="{% url 'pets_single' pet.pk %}" class="burtiera_mica_img" title="{{ pet.nume }}">
-			{% if pet.imagine %}
-			<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
-			{% elif pet.imagine_fallback %}
-			<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" />
-			{% else %}
-			<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="{{ pet.nume }}" />
-			{% endif %}
-		</a>
-		{% empty %}
-		{% for i in "123456789012" %}
-		<a href="{% url 'pets_all' %}" class="burtiera_mica_img"><img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="Animale" /></a>
-		{% endfor %}
-		{% endfor %}
-		{% for pet in strip_pets %}
-		<a href="{% url 'pets_single' pet.pk %}" class="burtiera_mica_img" title="{{ pet.nume }}">
-			{% if pet.imagine %}
-			<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
-			{% elif pet.imagine_fallback %}
-			<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" />
-			{% else %}
-			<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="{{ pet.nume }}" />
-			{% endif %}
-		</a>
-		{% empty %}
-		{% for i in "123456789012" %}
-		<a href="{% url 'pets_all' %}" class="burtiera_mica_img"><img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="Animale" /></a>
-		{% endfor %}
-		{% endfor %}
-	</div>
-</div>
-<div id="slider_wrap" data-slot="HOME_M2">
-	<span class="slot-marker">HOME_M2</span>
-	<ul class="slides">
-		<li class="slide_image_wrap">
-			<img width="2880" height="1000" src="{% static 'images/slide1.jpg' %}" alt="Slide 1" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
-		</li>
-		<li class="slide_image_wrap">
-			<img width="2880" height="1000" src="{% static 'images/slide2.jpg' %}" alt="Slide 2" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
-		</li>
-		<li class="slide_image_wrap">
-			<img width="2880" height="1000" src="{% static 'images/slide3.jpg' %}" alt="Slide 3" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
-		</li>
-	</ul>
-</div>
-<div class="container clearfix home_page_sections" data-slot="HOME_M3">
-	<span class="slot-marker">HOME_M3</span>
-	<div id="featured_pets">
-		<h3>Animalele lunii</h3>
-		<div id="featured_inner" class="clearfix">
-			{% for pet in featured_pets %}
-			<div class="single_pet">
-				<a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}">
+<!-- CENTER CONTENT - Scrollable -->
+<div class="container clearfix home_page_sections">
+	<!-- Center stack wrapper for A1-A5 -->
+	<div class="center-stack">
+	<!-- A1 - Banda cursivă animale (sub navbar) - INSIDE center container -->
+	<div id="A1" class="slot-container slot" data-slot="A1">
+		<div id="burtiera_mica" class="burtiera_mica_wrap">
+			<div class="burtiera_mica_track">
+				{% for pet in strip_pets %}
+				<a href="{% url 'pets_single' pet.pk %}" class="burtiera_mica_img" title="{{ pet.nume }}" data-pet-id="{{ pet.pk }}" data-pet-status="{{ pet.status }}">
 					{% if pet.imagine %}
-					<img width="400" height="200" src="{{ pet.imagine.url }}" class="attachment-pet_month" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+					<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
 					{% elif pet.imagine_fallback %}
-					<img width="400" height="200" src="{% static pet.imagine_fallback %}" class="attachment-pet_month" alt="{{ pet.nume }}" />
+					<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" />
 					{% else %}
-					<img width="400" height="200" src="{% static 'images/pets/charlie-400x200.jpg' %}" class="attachment-pet_month" alt="{{ pet.nume }}" />
+					<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="{{ pet.nume }}" />
+					{% endif %}
+					<!-- Status overlay -->
+					{% if pet.status == "adoptable" %}
+					<div class="status-overlay status-active" title="Disponibil pentru adopție">
+						<div class="status-animation-bone"></div>
+					</div>
+					{% elif pet.status == "adopted" %}
+					<div class="status-overlay status-adopted" title="Adoptat">
+						<div class="status-badge-adopted">ADOPTAT</div>
+						<div class="status-animation-hearts"></div>
+					</div>
+					{% elif pet.status == "pending" %}
+					<div class="status-overlay status-pending" title="În procedură">
+						<div class="status-badge-pending">ÎN PROCEDURĂ</div>
+					</div>
 					{% endif %}
 				</a>
-				<div class="mask">
-					<h2>{{ pet.nume }}</h2>
-					<p>{% if pet.descriere %}{{ pet.descriere|truncatewords:15 }}{% else %}Cunoaște-l pe {{ pet.nume }}{% endif %}</p>
-					<a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}" class="more_featured">Află mai multe</a>
-				</div>
-			</div>
-			{% empty %}
-			<div class="single_pet">
-				<a href="{% url 'pets_all' %}" title="Animale">
-					<img width="400" height="200" src="{% static 'images/pets/charlie-400x200.jpg' %}" class="attachment-pet_month" alt="Animale" />
+				{% empty %}
+				{% for i in "123456789012" %}
+				<a href="{% url 'pets_all' %}" class="burtiera_mica_img"><img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="Animale" /></a>
+				{% endfor %}
+				{% endfor %}
+				{% for pet in strip_pets %}
+				<a href="{% url 'pets_single' pet.pk %}" class="burtiera_mica_img" title="{{ pet.nume }}" data-pet-id="{{ pet.pk }}" data-pet-status="{{ pet.status }}">
+					{% if pet.imagine %}
+					<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+					{% elif pet.imagine_fallback %}
+					<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" />
+					{% else %}
+					<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="{{ pet.nume }}" />
+					{% endif %}
+					<!-- Status overlay -->
+					{% if pet.status == "adoptable" %}
+					<div class="status-overlay status-active" title="Disponibil pentru adopție">
+						<div class="status-animation-bone"></div>
+					</div>
+					{% elif pet.status == "adopted" %}
+					<div class="status-overlay status-adopted" title="Adoptat">
+						<div class="status-badge-adopted">ADOPTAT</div>
+						<div class="status-animation-hearts"></div>
+					</div>
+					{% elif pet.status == "pending" %}
+					<div class="status-overlay status-pending" title="În procedură">
+						<div class="status-badge-pending">ÎN PROCEDURĂ</div>
+					</div>
+					{% endif %}
 				</a>
-				<div class="mask">
-					<h2>Animale disponibile</h2>
-					<p>Vizitează galeria noastră</p>
-					<a href="{% url 'pets_all' %}" class="more_featured">Vezi toate animalele</a>
-				</div>
+				{% empty %}
+				{% for i in "123456789012" %}
+				<a href="{% url 'pets_all' %}" class="burtiera_mica_img"><img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="Animale" /></a>
+				{% endfor %}
+				{% endfor %}
 			</div>
-			{% endfor %}
 		</div>
 	</div>
-	<div id="home_latest_friends" class="clearfix">
-		<h4 class="entry-title" id="latest-friends-title">Cele mai noi animale</h4>
-		<div id="friends_wrap" class="clearfix">
-			{% for pet in latest_pets %}
-			<a href="{% url 'pets_single' pet.pk %}" class="single_latest_friend">
-				{% if pet.imagine %}
-				<img width="180" height="180" src="{{ pet.imagine.url }}" class="attachment-small_pet" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-180x180.jpg' %}';this.onerror=null;" />
-				{% elif pet.imagine_fallback %}
-				<img width="180" height="180" src="{% static pet.imagine_fallback %}" class="attachment-small_pet" alt="{{ pet.nume }}" />
-				{% else %}
-				<img width="180" height="180" src="{% static 'images/pets/charlie-180x180.jpg' %}" class="attachment-small_pet" alt="{{ pet.nume }}" />
-				{% endif %}
-			</a>
+	<!-- A2 - Banner prezentare + siglă -->
+	<div id="A2" class="slot-container slot" data-slot="A2">
+		<div id="slider_wrap">
+			<div class="hero-logo">
+				<a href="{% url 'home' %}" title="EU Adopt" class="the_logo_link">
+					<img src="{% static 'images/eu-adopt-logo-original.jpeg' %}" alt="EU Adopt" id="logo_hero" />
+				</a>
+			</div>
+			<ul class="slides">
+				<li class="slide_image_wrap">
+					<img width="2880" height="1000" src="{% static 'images/slide1.jpg' %}" alt="Slide 1" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+				</li>
+				<li class="slide_image_wrap">
+					<img width="2880" height="1000" src="{% static 'images/slide2.jpg' %}" alt="Slide 2" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+				</li>
+				<li class="slide_image_wrap">
+					<img width="2880" height="1000" src="{% static 'images/slide3.jpg' %}" alt="Slide 3" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+				</li>
+			</ul>
+		</div>
+	</div>
+	
+	<!-- A3 - "Animalele lunii" (grid 2 rânduri x 3 coloane) -->
+	<div id="A3" class="slot-container slot" data-slot="A3">
+		<div id="featured_pets">
+			<h3>Animalele lunii</h3>
+			<div id="featured_inner" class="clearfix featured-grid-2x3">
+				{% for pet in featured_pets %}
+				<div class="single_pet featured-pet-card" data-pet-id="{{ pet.pk }}" data-pet-status="{{ pet.status }}">
+					<a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}">
+						{% if pet.imagine %}
+						<img width="400" height="200" src="{{ pet.imagine.url }}" class="attachment-pet_month" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';this.onerror=null;" />
+						{% elif pet.imagine_fallback %}
+						<img width="400" height="200" src="{% static pet.imagine_fallback %}" class="attachment-pet_month" alt="{{ pet.nume }}" />
+						{% else %}
+						<img width="400" height="200" src="{% static 'images/pets/charlie-400x200.jpg' %}" class="attachment-pet_month" alt="{{ pet.nume }}" />
+						{% endif %}
+						<!-- Status overlay -->
+						{% if pet.status == "adoptable" %}
+						<div class="status-overlay status-active">
+							<div class="status-animation-bone"></div>
+						</div>
+						{% elif pet.status == "adopted" %}
+						<div class="status-overlay status-adopted">
+							<div class="status-badge-adopted">ADOPTAT</div>
+							<div class="status-animation-hearts"></div>
+						</div>
+						{% elif pet.status == "pending" %}
+						<div class="status-overlay status-pending">
+							<div class="status-badge-pending">ÎN PROCEDURĂ</div>
+						</div>
+						{% endif %}
+					</a>
+					<div class="mask">
+						<h2>{{ pet.nume }}</h2>
+						<p>{% if pet.descriere %}{{ pet.descriere|truncatewords:15 }}{% else %}Cunoaște-l pe {{ pet.nume }}{% endif %}</p>
+						<a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}" class="more_featured">Află mai multe</a>
+					</div>
+				</div>
+				{% empty %}
+				<div class="single_pet featured-pet-card">
+					<a href="{% url 'pets_all' %}" title="Animale">
+						<img width="400" height="200" src="{% static 'images/pets/charlie-400x200.jpg' %}" class="attachment-pet_month" alt="Animale" />
+					</a>
+					<div class="mask">
+						<h2>Animale disponibile</h2>
+						<p>Vizitează galeria noastră</p>
+						<a href="{% url 'pets_all' %}" class="more_featured">Vezi toate animalele</a>
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+	
+	<!-- A4 - "New Entry" / cele mai noi animale (grid principal scroll) -->
+	<div id="A4" class="slot-container slot" data-slot="A4">
+		<div id="new_entries_grid" class="new-entries-grid-7cols">
+			{% for pet in new_entries %}
+			<div class="new-entry-card" data-pet-id="{{ pet.pk }}" data-pet-status="{{ pet.status }}">
+				<a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}">
+					{% if pet.imagine %}
+					<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-180x180.jpg' %}';this.onerror=null;" />
+					{% elif pet.imagine_fallback %}
+					<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" />
+					{% else %}
+					<img src="{% static 'images/pets/charlie-180x180.jpg' %}" alt="{{ pet.nume }}" />
+					{% endif %}
+					<!-- Status overlay -->
+					{% if pet.status == "adoptable" %}
+					<div class="status-overlay status-active">
+						<div class="status-animation-bone"></div>
+					</div>
+					{% elif pet.status == "adopted" %}
+					<div class="status-overlay status-adopted">
+						<div class="status-badge-adopted">ADOPTAT</div>
+						<div class="status-animation-hearts"></div>
+					</div>
+					{% elif pet.status == "pending" %}
+					<div class="status-overlay status-pending">
+						<div class="status-badge-pending">ÎN PROCEDURĂ</div>
+					</div>
+					{% elif pet.status == "showcase_archive" %}
+					<div class="status-overlay status-archive">
+						<div class="status-badge-archive">POVESTE</div>
+					</div>
+					{% endif %}
+					<div class="pet-name-overlay">{{ pet.nume }}</div>
+				</a>
+			</div>
 			{% empty %}
-			<a href="{% url 'pets_all' %}" class="single_latest_friend">
-				<img width="180" height="180" src="{% static 'images/pets/charlie-180x180.jpg' %}" class="attachment-small_pet" alt="Animale" />
-			</a>
 			<p style="clear:both; padding-top:10px;">Momentan nu există animale. <a href="{% url 'pets_all' %}">Vezi toate</a>.</p>
 			{% endfor %}
 		</div>
 	</div>
-	<div id="sidebar">
-		<aside id="socnets_wrap" class="clearfix">
-			<div id="socnets">
-				<a href="#" title="Twitter" class="socnet-twitter"></a>
-				<a href="#" title="Facebook" class="socnet-facebook"></a>
-				<a href="#" title="Google+" class="socnet-google"></a>
-				<a href="#" title="Flickr" class="socnet-flickr"></a>
-				<a href="#" title="Tumblr" class="socnet-tumblr"></a>
-				<a href="#" title="Vimeo" class="socnet-vimeo"></a>
-				<a href="#" title="YouTube" class="socnet-youtube"></a>
-			</div>
-		</aside>
-		<aside class="widget">
-			<div class="widget_hours"><h4 class="widgettitle">Program</h4>
-				<div class="the_hours"><label>Luni</label>9:00 - 20:00</div>
-				<div class="the_hours"><label>Marți</label>9:00 - 20:00</div>
-				<div class="the_hours"><label>Miercuri</label>9:00 - 20:00</div>
-				<div class="the_hours"><label>Joi</label>9:00 - 20:00</div>
-				<div class="the_hours"><label>Vineri</label>9:00 - 20:00</div>
-				<div class="the_hours"><label>Sâmbătă</label>10:00 - 12:00</div>
-				<div class="the_hours no_border"><label>Duminică</label>Închis</div>
-			</div>
-		</aside>
-		<aside class="widget">
-			<h4 class="widgettitle">Categorii</h4>
-			<ul>
-				<li><a href="{% url 'pets_all' %}" title="Animale">Animale</a></li>
-				<li><a href="{% url 'contact' %}" title="Contact">Contact</a></li>
-			</ul>
-		</aside>
+	
+	<!-- A5 - Burtieră parteneri (logo + linkuri) -->
+	<div id="A5" class="slot-container slot" data-slot="A5">
+		<!-- Slot A5 content - suport: imagine / video / animație -->
 	</div>
+	</div>
+	<!-- End center-stack wrapper -->
 </div>
 {% endblock %}
 
@@ -207,6 +264,97 @@
 <script type="text/javascript" src="{% static 'includes/js/jquery.flexslider-min.js' %}"></script>
 <script type="text/javascript" src="{% static 'includes/js/jquery.mobilemenu.js' %}"></script>
 <script type="text/javascript" src="{% static 'includes/js/rescue.js' %}"></script>
+<script type="text/javascript">
+// VIP Stacked Mode Toggle
+// To activate VIP mode, add class 'vip-mode' to body: document.body.classList.add('vip-mode')
+// To deactivate: document.body.classList.remove('vip-mode')
+// VIP mode merges: LEFT (A9+A10+A11), RIGHT (A15+A16+A17)
+(function() {
+	'use strict';
+	// VIP mode can be activated by adding 'vip-mode' class to body
+	// Example: document.body.classList.add('vip-mode');
+	console.log('Slot system A0-A17 initialized. VIP mode: add class "vip-mode" to body.');
+})();
+
+// Calculate A0 + A1 height dynamically for sticky sidebars
+(function() {
+	'use strict';
+	if (document.body.classList.contains('page-home')) {
+		// A0 is fixed at 70px height
+		document.documentElement.style.setProperty('--a0-height', '70px');
+		
+		// A1 is fixed at 56px height (comfortable fixed height)
+		document.documentElement.style.setProperty('--a1-height', '56px');
+		
+		// Calculate total header height
+		var a0Height = 70;
+		var a1Height = 56;
+		var totalHeight = a0Height + a1Height;
+		document.documentElement.style.setProperty('--header-total-height', totalHeight + 'px');
+	}
+})();
+
+// Adoption Celebration Animation (ONCE PER SESSION)
+(function() {
+	'use strict';
+	
+	// Check if celebration already shown in this session
+	var celebrationShown = sessionStorage.getItem('adoptionCelebrationShown');
+	if (celebrationShown === 'true') {
+		// Already shown - just add green frames to adopted cards
+		document.querySelectorAll('[data-pet-status="adopted"]').forEach(function(card) {
+			if (!card.querySelector('.adopted-card-frame')) {
+				var frame = document.createElement('div');
+				frame.className = 'adopted-card-frame';
+				card.appendChild(frame);
+			}
+		});
+		return;
+	}
+	
+	// Check if there are adopted animals on the page
+	var adoptedCards = document.querySelectorAll('[data-pet-status="adopted"]');
+	if (adoptedCards.length === 0) {
+		return; // No adopted animals, no celebration
+	}
+	
+	// Show big celebration animation ONCE
+	var celebration = document.createElement('div');
+	celebration.className = 'adoption-celebration';
+	celebration.innerHTML = '<div class="adoption-celebration-content">' +
+		'<div class="celebration-icon">🎉</div>' +
+		'<h2>Felicitări!</h2>' +
+		'<p>Un animal a fost adoptat!</p>' +
+		'<p style="font-size: 16px; opacity: 0.9;">Mulțumim pentru că ai făcut diferența!</p>' +
+		'</div>';
+	
+	document.body.appendChild(celebration);
+	
+	// Mark as shown in session
+	sessionStorage.setItem('adoptionCelebrationShown', 'true');
+	
+	// Remove celebration after 4 seconds
+	setTimeout(function() {
+		celebration.style.animation = 'fade-in-celebration 0.5s ease-in reverse';
+		setTimeout(function() {
+			if (celebration.parentNode) {
+				celebration.parentNode.removeChild(celebration);
+			}
+		}, 500);
+	}, 4000);
+	
+	// Add green frames to all adopted cards (after celebration)
+	setTimeout(function() {
+		adoptedCards.forEach(function(card) {
+			if (!card.querySelector('.adopted-card-frame')) {
+				var frame = document.createElement('div');
+				frame.className = 'adopted-card-frame';
+				card.appendChild(frame);
+			}
+		});
+	}, 4500);
+})();
+</script>
 {% if contest %}
 <script>
 (function() {
@@ -285,4 +433,81 @@
 })();
 </script>
 {% endif %}
+
+<!-- HOME Layout Measurement Script -->
+<script>
+// Run: measureHomeLayout() in console
+(function() {
+	if (typeof window.measureHomeLayout === 'undefined') {
+		window.measureHomeLayout = function() {
+			console.clear();
+			const px = n => Math.round(n) + "px";
+			const r = el => el ? el.getBoundingClientRect() : null;
+
+			const viewportW = window.innerWidth;
+			const viewportH = window.innerHeight;
+
+			const A1 = document.querySelector("#A1");
+			const A2 = document.querySelector("#A2");
+			const left = document.querySelector("#A6")?.closest(".sidebar-left") || 
+			             document.querySelector(".sidebar-left") || null;
+			const right = document.querySelector("#A12")?.closest(".sidebar-right") || 
+			              document.querySelector(".sidebar-right") || null;
+			const center = A1?.closest(".main-content") || 
+			               document.querySelector(".main-content") || null;
+			const wrapper = center?.parentElement || 
+			                document.querySelector("#main_content .layout") || null;
+
+			function logBox(name, el){
+				if(!el){ console.log(name + ": NOT FOUND"); return; }
+				const b = r(el);
+				const cs = getComputedStyle(el);
+				console.log(name, {
+					w: px(b.width), 
+					h: px(b.height),
+					ml: cs.marginLeft, 
+					mr: cs.marginRight,
+					pl: cs.paddingLeft, 
+					pr: cs.paddingRight,
+					display: cs.display, 
+					position: cs.position,
+					left: px(b.left),
+					right: px(b.right)
+				});
+			}
+
+			console.log("=== HOME LAYOUT MEASUREMENT ===");
+			console.log("Viewport:", viewportW+"px × "+viewportH+"px");
+			console.log("");
+
+			logBox("WRAPPER (.layout)", wrapper);
+			logBox("LEFT (.sidebar-left)", left);
+			logBox("CENTER (.main-content)", center);
+			logBox("RIGHT (.sidebar-right)", right);
+			logBox("A1", A1);
+			logBox("A2", A2);
+
+			// Calculate sum
+			if (left && center && right) {
+				const leftW = r(left).width;
+				const centerW = r(center).width;
+				const rightW = r(right).width;
+				const wrapperW = wrapper ? r(wrapper).width : 0;
+				const sum = leftW + centerW + rightW;
+				
+				console.log("");
+				console.log("=== CALCULATION ===");
+				console.log("Left width:", px(leftW));
+				console.log("Center width:", px(centerW));
+				console.log("Right width:", px(rightW));
+				console.log("Sum (left + center + right):", px(sum));
+				console.log("Wrapper width:", px(wrapperW));
+				console.log("Difference:", px(wrapperW - sum));
+				console.log("Viewport width:", px(viewportW));
+			}
+		};
+		console.log("✅ Measurement function loaded. Run: measureHomeLayout()");
+	}
+})();
+</script>
 {% endblock %}

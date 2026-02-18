@@ -1,3 +1,10 @@
+# ⚠️ FIȘIER VECHI – CONȚINUT CENTRALIZAT
+
+**📚 Acest fișier a fost centralizat în `DOCUMENTATIE_CENTRALIZATA.md`**  
+**Nu mai actualiza acest fișier – folosește fișierul centralizat pentru a evita duplicarea informațiilor.**
+
+---
+
 # Agenda proiecte & programe – EU Adopt (și altele)
 
 Documentul tău central unde notezi toate programele, conturile, domeniile și taskurile importante. **Actualizează-l pe măsură ce adaugi lucruri noi.**

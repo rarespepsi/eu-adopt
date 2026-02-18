@@ -1,6 +1,13 @@
-# Acces doar tu când site-ul e „în pregătire”
+# ⚠️ FIȘIER VECHI – CONȚINUT CENTRALIZAT
 
-Când `SITE_PUBLIC = False`, doar tu poți vedea site-ul de pe laptop (restul văd „Site în pregătire”).
+**📚 Acest fișier a fost centralizat în `DOCUMENTATIE_CENTRALIZATA.md`**  
+**Nu mai actualiza acest fișier – folosește fișierul centralizat pentru a evita duplicarea informațiilor.**
+
+---
+
+# Acces doar tu când site-ul e „în pregătire"
+
+Când `SITE_PUBLIC = False`, doar tu poți vedea site-ul de pe laptop (restul văd „Site în pregătire").
 
 ## Pași
 
@@ -19,7 +26,7 @@ Când `SITE_PUBLIC = False`, doar tu poți vedea site-ul de pe laptop (restul v�
    ```
    (înlocuiește `siteul-tau.ro` cu domeniul tău și `Ma1nt3nanc3-2025` cu codul din `.env`.)
 
-4. După ce intri pe acel link, se setează un **cookie** în browser. De atunci, **doar pe acel laptop** (acel browser) vei vedea site-ul normal. Toți ceilalți vizitatori vor vedea „Site în pregătire”.
+4. După ce intri pe acel link, se setează un **cookie** în browser. De atunci, **doar pe acel laptop** (acel browser) vei vedea site-ul normal. Toți ceilalți vizitatori vor vedea „Site în pregătire".
 
 - Cookie-ul e valabil **30 de zile**. După expirare, deschizi din nou link-ul secret pe laptop.
 - **Nu partaja** link-ul (conține codul secret). Dacă vrei să vezi site-ul și de pe telefon, poți folosi același link acolo (se va seta cookie și pe telefon).

@@ -1,0 +1,22 @@
+---
+description: Creează punct de undo (tag + UNDO.md) după o pauză mare în conversație
+alwaysApply: true
+---
+
+# Undo la pauză lungă
+
+Când **lucrați activ** la proiect și utilizatorul **nu mai trimite niciun mesaj timp de ~30 de minute** (inactivitate în sesiune) – atunci creează punctul de undo. **Nu** crea undo când utilizatorul anunță că se oprește (ex. „închid”, „e ora de somn”, „pa”) – acolo e sfârșit de sesiune, nu pauză.
+
+1. **Creează un tag Git** cu dată și oră:
+   - Format tag: `undo-point-AAAA-MM-DD-HHMM` (ex: undo-point-2026-02-17-2239)
+   - Folosește data și ora curentă (sau cea indicată de context).
+   - Comandă: `git tag -a undo-point-AAAA-MM-DD-HHMM -m "Punct cunoscut DD month AAAA HH:MM - [scurt rezumat modificări]"`
+
+2. **Actualizează `UNDO.md`** din rădăcina proiectului:
+   - Actualizează **Tag** cu noul nume.
+   - Actualizează **Data și ora** (ex: 17 februarie 2026, 22:39).
+   - Păstrează instrucțiunile de revenire (checkout / reset --hard) cu noul tag.
+
+3. **Nu șterge** tag-urile vechi – utilizatorul poate avea mai multe puncte de întoarcere.
+
+Repo-ul Git poate fi la `c:\Users\USER\Desktop` (rădăcină); proiectul în `adoptapet_pro`. Rulează comenzile din rădăcina repo-ului.

@@ -61,6 +61,12 @@ select {
     font-family: Helvetica,Arial,Verdana,sans-serif;
 }
 
+/* Ensure html doesn't have overflow that breaks sticky */
+html {
+	overflow-x: hidden !important;
+	overflow-y: visible !important;
+}
+
 a {
     text-decoration: none;
     outline: none;
@@ -391,10 +397,226 @@ h3.search_title {
 	background-color: #343434;
 }
 
+/* ============================================== FREEZE FIX — A0 + SIDE PANELS ============================================== */
+
+/* 1) Set viewport layout heights */
+html, body {
+	height: 100% !important;
+}
+
+body.page-home {
+	height: 100vh !important;
+	overflow: hidden !important; /* Prevent body scroll */
+	display: flex !important;
+	flex-direction: column !important;
+}
+
+/* Page wrapper for home page */
+body.page-home #main_wrap {
+	display: flex !important;
+	flex-direction: column !important;
+	height: 100vh !important;
+	min-height: 100vh !important;
+}
+
+/* Ensure no parent container forces A0 to expand */
+body.page-home #main_wrap > * {
+	flex-grow: 0 !important;
+}
+
+body.page-home #A0 {
+	flex-grow: 0 !important;
+	flex-shrink: 0 !important;
+}
+
+/* ============================================== UPDATE TASK — FIXARE LAYOUT HOME ============================================== */
+
+/* 1️⃣ A0 și A1 SCOASE din grid layout - FREEZE (sticky) */
+#A0 {
+	position: sticky !important;
+	top: 0 !important;
+	z-index: 2000 !important;
+	height: 64px !important;
+	min-height: 64px !important;
+	max-height: 64px !important;
+	width: 100% !important;
+	background-color: #343434 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+	overflow: hidden !important;
+	flex-shrink: 0 !important;
+}
+
+/* A0 container trebuie să fie full width */
+#A0.wrapper,
+#A0 {
+	width: 100% !important;
+	max-width: 100% !important;
+	padding: 0 !important;
+	margin: 0 !important;
+}
+
+/* Ensure no parent of A0 has overflow */
+body.page-home #main_wrap,
+body.page-home section {
+	overflow: visible !important;
+}
+
+/* Logo în A0 nu trebuie să scrolleze */
+#A0 .the_logo_link,
+#A0 #logo {
+	position: relative !important;
+	transform: none !important;
+	height: 45px !important;
+	max-height: 45px !important;
+	width: auto !important;
+}
+
+/* A0 SIZE CORRECTION — REDUCE HEIGHT BY 75% */
+/* Force compact navbar - remove all expansion rules */
+#A0 .container {
+	padding: 0 15px !important;
+	margin: 0 auto !important;
+	height: 70px !important;
+	min-height: 70px !important;
+	max-height: 70px !important;
+	display: flex !important;
+	align-items: center !important;
+	overflow: hidden !important;
+}
+
+#A0 #main_menu {
+	padding: 0 !important;
+	margin: 0 !important;
+	line-height: 70px !important;
+	height: 70px !important;
+	min-height: 70px !important;
+	max-height: 70px !important;
+	display: flex !important;
+	align-items: center !important;
+	flex-grow: 0 !important;
+	flex-shrink: 0 !important;
+}
+
+#A0 #main_menu .clearfix {
+	padding: 0 !important;
+	margin: 0 !important;
+	height: 70px !important;
+	display: flex !important;
+	align-items: center !important;
+	flex-grow: 0 !important;
+	flex-shrink: 0 !important;
+}
+
+#A0 #logo {
+	height: 45px !important;
+	max-height: 45px !important;
+	width: auto !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+#A0 #menu_wrap {
+	min-height: auto !important;
+	height: auto !important;
+	margin: 0 10px 0 0 !important;
+	padding: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+}
+
+#A0 #main_menu ul {
+	height: auto !important;
+	min-height: auto !important;
+	line-height: 70px !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+}
+
+#A0 #main_menu ul li {
+	line-height: 70px !important;
+	margin: 0 0 0 15px !important;
+	padding: 0 !important;
+	font-size: 13px !important;
+	height: auto !important;
+	display: flex !important;
+	align-items: center !important;
+}
+
+#A0 #main_menu ul li a {
+	line-height: 70px !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+}
+
+#A0 .animal-counter-navbar {
+	gap: 8px !important;
+	margin-left: 15px !important;
+	font-size: 12px !important;
+	line-height: 70px !important;
+	height: 70px !important;
+	display: flex !important;
+	align-items: center !important;
+	flex-grow: 0 !important;
+	flex-shrink: 0 !important;
+}
+
+#A0 .animal-counter-navbar .counter-item {
+	gap: 4px !important;
+	display: flex !important;
+	align-items: center !important;
+	line-height: 1.2 !important;
+}
+
+#A0 .animal-counter-navbar .counter-icon {
+	font-size: 14px !important;
+	line-height: 1 !important;
+}
+
+#A0 .animal-counter-navbar .counter-label,
+#A0 .animal-counter-navbar .counter-value {
+	line-height: 1.2 !important;
+}
+
+/* Remove search form expansion */
+#A0 #searchform_wrap {
+	padding: 0 !important;
+	margin: 0 !important;
+	height: auto !important;
+	max-height: 70px !important;
+	overflow: hidden !important;
+}
+
+#A0 #searchform {
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+/* Prevent any grid/flex expansion */
+#A0 * {
+	flex-grow: 0 !important;
+}
+
+#A0 .container > * {
+	flex-grow: 0 !important;
+	flex-shrink: 0 !important;
+}
+
 #main_wrap {
     width: 100%;
     margin: auto;
     overflow: hidden;
+}
+
+/* Override for home page - no overflow on wrapper */
+body.page-home #main_wrap {
+    overflow: visible !important;
 }
 
 #header-sticky-wrapper {
@@ -478,42 +700,16 @@ h3.search_title {
 	box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
 }
 
-/* Marker "1home" pentru identificare - provizoriu (doar pe pagina home) */
-body.page-home .the_logo_link:not(.the_logo_link_contact):not(.the_logo_link_contact_left)::after {
-	content: '1home' !important;
-	position: absolute !important;
-	top: 50% !important;
-	left: 50% !important;
-	transform: translate(-50%, -50%) !important;
-	font-size: 40px !important;
-	font-weight: bold !important;
-	color: red !important;
-	z-index: 100 !important;
-	background: rgba(255, 255, 255, 0.9) !important;
-	padding: 10px 20px !important;
-	border-radius: 10px !important;
-	border: 3px solid red !important;
-	pointer-events: none !important;
-	text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
+/* P1) Logo must exist ONLY once - hide logo from A2 (hero) on home page */
+body.page-home #A2 .hero-logo,
+body.page-home #A2 .the_logo_link,
+body.page-home #A2 #logo_hero {
+	display: none !important;
 }
 
-/* Marker "1animale" pentru identificare - provizoriu (doar pe pagina animale) */
-body.page-animale .the_logo_link:not(.the_logo_link_contact):not(.the_logo_link_contact_left)::after {
-	content: '1animale' !important;
-	position: absolute !important;
-	top: 50% !important;
-	left: 50% !important;
-	transform: translate(-50%, -50%) !important;
-	font-size: 40px !important;
-	font-weight: bold !important;
-	color: red !important;
-	z-index: 100 !important;
-	background: rgba(255, 255, 255, 0.9) !important;
-	padding: 10px 20px !important;
-	border-radius: 10px !important;
-	border: 3px solid red !important;
-	pointer-events: none !important;
-	text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
+/* Keep logo only in A0 navbar */
+body.page-home #A0 .the_logo_link {
+	display: block !important;
 }
 
 /* Sigla pe pagina de contact - pe partea stângă */
@@ -568,24 +764,6 @@ body.page-animale .the_logo_link:not(.the_logo_link_contact):not(.the_logo_link_
 	box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
 }
 
-/* Marker "2contact" pentru identificare - provizoriu */
-.the_logo_link_contact_left::after {
-	content: '2contact' !important;
-	position: absolute !important;
-	top: 50% !important;
-	left: 50% !important;
-	transform: translate(-50%, -50%) !important;
-	font-size: 40px !important;
-	font-weight: bold !important;
-	color: red !important;
-	z-index: 100 !important;
-	background: rgba(255, 255, 255, 0.9) !important;
-	padding: 10px 20px !important;
-	border-radius: 10px !important;
-	border: 3px solid red !important;
-	pointer-events: none !important;
-	text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
-}
 
 /* Sigla pe pagina de contact - în oglindă și pe partea dreaptă */
 .the_logo_link_contact {
@@ -629,24 +807,6 @@ body.page-animale .the_logo_link:not(.the_logo_link_contact):not(.the_logo_link_
 	pointer-events: none;
 }
 
-/* Marker "1contact" pentru identificare - provizoriu */
-.the_logo_link_contact::after {
-	content: '1contact' !important;
-	position: absolute !important;
-	top: 50% !important;
-	left: 50% !important;
-	transform: translate(-50%, -50%) scaleX(-1) !important; /* Oglindă pentru a se potrivi cu logo-ul */
-	font-size: 40px !important;
-	font-weight: bold !important;
-	color: red !important;
-	z-index: 100 !important;
-	background: rgba(255, 255, 255, 0.9) !important;
-	padding: 10px 20px !important;
-	border-radius: 10px !important;
-	border: 3px solid red !important;
-	pointer-events: none !important;
-	text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
-}
 
 #logo_contact {
 	display:block;
@@ -706,7 +866,7 @@ body.page-animale .the_logo_link:not(.the_logo_link_contact):not(.the_logo_link_
 }
 
     #footer .container {
-        padding: 30px 0 0
+        padding: px 0 0
     }
 
 #footer_widgets {
@@ -1742,6 +1902,14 @@ a.more_featured:active {
     position: relative;
     border-bottom: 5px solid #222;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Ensure A1 burtiera has no extra spacing */
+#A1 #burtiera_mica {
+	margin: 0 !important;
+	padding: 0 !important;
 }
 
 .burtiera_mica_track {
@@ -1866,31 +2034,43 @@ body.page-home #featured_pets {
     margin-top: 40px !important;
     padding: 12px !important;
 }
-body.page-home #featured_inner {
+/* A3 - Animals of the Month: EXACTLY 2 rows × 4 columns */
+body.page-home #A3 #featured_inner.featured-grid-2x3 {
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    grid-template-rows: 160px 160px !important;
-    gap: 16px 16px !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    grid-template-rows: repeat(2, auto) !important;
+    gap: 20px !important;
     width: 100% !important;
-    max-width: 900px !important;
+    max-width: 100% !important;
     margin: 0 auto !important;
 }
-body.page-home #featured_pets .single_pet {
+body.page-home #A3 .single_pet {
     margin: 0 !important;
     width: 100% !important;
-    max-width: 280px !important;
-    height: 160px !important;
     box-sizing: border-box !important;
+    position: relative !important;
+    aspect-ratio: 1 / 1 !important;
+    overflow: hidden !important;
 }
-body.page-home #featured_pets .single_pet:nth-child(1) { grid-column: 1; grid-row: 1 !important; }
-body.page-home #featured_pets .single_pet:nth-child(2) { grid-column: 2; grid-row: 1 !important; }
-body.page-home #featured_pets .single_pet:nth-child(3) { grid-column: 3; grid-row: 1 !important; }
-body.page-home #featured_pets .single_pet:nth-child(4) { grid-column: 1; grid-row: 2 !important; }
-body.page-home #featured_pets .single_pet:nth-child(5) { grid-column: 2; grid-row: 2 !important; }
-body.page-home #featured_pets .single_pet:nth-child(6) { grid-column: 3; grid-row: 2 !important; }
-body.page-home #featured_pets .single_pet:nth-child(n+7) { display: none !important; }
-/* Subfereastra la hover: calibrată la dimensiunile cardului, butonul galben centrat */
-body.page-home #featured_pets .single_pet .mask {
+body.page-home #A3 .single_pet img {
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+body.page-home #A3 .featured-grid-2x3 .single_pet:nth-child(1) { grid-column: 1; grid-row: 1 !important; }
+body.page-home #A3 .featured-grid-2x3 .single_pet:nth-child(2) { grid-column: 2; grid-row: 1 !important; }
+body.page-home #A3 .featured-grid-2x3 .single_pet:nth-child(3) { grid-column: 3; grid-row: 1 !important; }
+body.page-home #A3 .featured-grid-2x3 .single_pet:nth-child(4) { grid-column: 4; grid-row: 1 !important; }
+body.page-home #A3 .featured-grid-2x3 .single_pet:nth-child(5) { grid-column: 1; grid-row: 2 !important; }
+body.page-home #A3 .featured-grid-2x3 .single_pet:nth-child(6) { grid-column: 2; grid-row: 2 !important; }
+body.page-home #A3 .featured-grid-2x3 .single_pet:nth-child(7) { grid-column: 3; grid-row: 2 !important; }
+body.page-home #A3 .featured-grid-2x3 .single_pet:nth-child(8) { grid-column: 4; grid-row: 2 !important; }
+body.page-home #A3 .featured-grid-2x3 .single_pet:nth-child(n+9) { display: none !important; }
+
+/* Subfereastra la hover pentru A3: calibrată la dimensiunile cardului pătrat */
+body.page-home #A3 .single_pet .mask {
     width: 100% !important;
     height: 100% !important;
     left: 0 !important;
@@ -1902,7 +2082,8 @@ body.page-home #featured_pets .single_pet .mask {
     align-items: center !important;
     text-align: center !important;
     padding: 6px 12px 18px 12px !important;
-    overflow: visible !important;
+    overflow: hidden !important;
+    position: absolute !important;
 }
 body.page-home #featured_pets .single_pet .mask h2 {
     margin: 0 0 2px 0 !important;
@@ -2116,6 +2297,136 @@ ul.slides {
         display: block;
     }
     /* După ce FlexSlider înconjoară cu .flexslider, .slides nu mai e copil direct – FlexSlider controlează display */
+
+/* Logo peste hero image - poziționat pe stânga, centrat vertical */
+.hero-logo {
+    position: absolute;
+    left: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 320px;
+    height: 320px;
+}
+
+.hero-logo a {
+    display: block;
+    text-decoration: none;
+}
+
+/* Sigla rotundă în hero: override poziție (nu left: -360px) - păstrăm dimensiunile originale */
+.hero-logo .the_logo_link {
+    left: 0 !important;
+    top: 0 !important;
+    transform: none !important;
+    width: 320px !important;
+    height: 320px !important;
+}
+
+/* Stelele pentru sigla rotundă în hero - păstrăm dimensiunile originale */
+.hero-logo .the_logo_link::before {
+    width: 260px !important;
+    height: 260px !important;
+    /* Păstrăm același background-image cu stelele din .the_logo_link::before */
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20300%20300%27%3E%3Cg%3E%3Cpath%20d%3D%22M254.0%2C160.0L251.6%2C153.2L244.5%2C153.1L250.2%2C148.8L248.1%2C141.9L254.0%2C146.0L259.9%2C141.9L257.8%2C148.8L263.5%2C153.1L256.4%2C153.2Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M235.1%2C210.7L236.4%2C203.6L230.3%2C199.9L237.4%2C199.0L239.0%2C192.1L242.1%2C198.5L249.2%2C197.9L244.0%2C202.8L246.8%2C209.4L240.5%2C206.0Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M193.3%2C245.1L198.0%2C239.6L194.6%2C233.4L201.2%2C236.2L206.1%2C230.9L205.5%2C238.1L211.9%2C241.1L205.0%2C242.7L204.1%2C249.8L200.4%2C243.7Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M140.0%2C254.0L146.8%2C251.6L146.9%2C244.5L151.2%2C250.2L158.1%2C248.1L154.0%2C254.0L158.1%2C259.9L151.2%2C257.8L146.9%2C263.5L146.8%2C256.4Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M89.3%2C235.1L96.4%2C236.4L100.1%2C230.3L101.0%2C237.4L107.9%2C239.0L101.5%2C242.1L102.1%2C249.2L97.2%2C244.0L90.6%2C246.8L94.0%2C240.5Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M54.9%2C193.3L60.4%2C198.0L66.6%2C194.6L63.8%2C201.2L69.1%2C206.1L61.9%2C205.5L58.9%2C211.9L57.3%2C205.0L50.2%2C204.1L56.3%2C200.4Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M46.0%2C140.0L48.4%2C146.8L55.5%2C146.9L49.8%2C151.2L51.9%2C158.1L46.0%2C154.0L40.1%2C158.1L42.2%2C151.2L36.5%2C146.9L43.6%2C146.8Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M64.9%2C89.3L63.6%2C96.4L69.7%2C100.1L62.6%2C101.0L61.0%2C107.9L57.9%2C101.5L50.8%2C102.1L56.0%2C97.2L53.2%2C90.6L59.5%2C94.0Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M106.7%2C54.9L102.0%2C60.4L105.4%2C66.6L98.8%2C63.8L93.9%2C69.1L94.5%2C61.9L88.1%2C58.9L95.0%2C57.3L95.9%2C50.2L99.6%2C56.3Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M160.0%2C46.0L153.2%2C48.4L153.1%2C55.5L148.8%2C49.8L141.9%2C51.9L146.0%2C46.0L141.9%2C40.1L148.8%2C42.2L153.1%2C36.5L153.2%2C43.6Z%22%20fill%3D%22%23003399%22%2F%3E%3Cpath%20d%3D%22M210.7%2C64.9L203.6%2C63.6L199.9%2C69.7L199.0%2C62.6L192.1%2C61.0L198.5%2C57.9L197.9%2C50.8L202.8%2C56.0L209.4%2C53.2L206.0%2C59.5Z%22%20fill%3D%22%23FFD700%22%2F%3E%3Cpath%20d%3D%22M245.1%2C106.7L239.6%2C102.0L233.4%2C105.4L236.2%2C98.8L230.9%2C93.9L238.1%2C94.5L241.1%2C88.1L242.7%2C95.0L249.8%2C95.9L243.7%2C99.6Z%22%20fill%3D%22%23003399%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    border-radius: 50% !important;
+}
+
+/* Imaginea siglei rotunde în hero - același stil și dimensiuni ca #logo (229px) */
+.hero-logo .the_logo_link img,
+#logo_hero {
+    display: block !important;
+    width: 229px !important;
+    height: 229px !important;
+    border-radius: 50% !important;
+    object-fit: contain !important;
+    background-color: #FFFFFF !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    z-index: 2 !important;
+    margin: auto !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+}
+
+/* Text "1home" roșu pe sigla de pe pagina home (identificare) */
+body.page-home .the_logo_link:not(.the_logo_link_contact):not(.the_logo_link_contact_left)::after {
+    content: '1home' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 40px !important;
+    font-weight: bold !important;
+    color: red !important;
+    z-index: 100 !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    padding: 10px 20px !important;
+    border-radius: 10px !important;
+    border: 3px solid red !important;
+    pointer-events: none !important;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
+}
+
+/* Text "1animale" roșu pe sigla de pe pagina Animale (identificare) */
+body.page-animale .the_logo_link:not(.the_logo_link_contact):not(.the_logo_link_contact_left)::after {
+    content: '1animale' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 40px !important;
+    font-weight: bold !important;
+    color: red !important;
+    z-index: 100 !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    padding: 10px 20px !important;
+    border-radius: 10px !important;
+    border: 3px solid red !important;
+    pointer-events: none !important;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
+}
+
+/* Text "2contact" roșu pe sigla contact din stânga (identificare) */
+.the_logo_link_contact_left::after {
+    content: '2contact' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 40px !important;
+    font-weight: bold !important;
+    color: red !important;
+    z-index: 100 !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    padding: 10px 20px !important;
+    border-radius: 10px !important;
+    border: 3px solid red !important;
+    pointer-events: none !important;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
+}
+
+/* Text "1contact" roșu pe sigla contact din dreapta, oglindită (identificare) */
+.the_logo_link_contact::after {
+    content: '1contact' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) scaleX(-1) !important;
+    font-size: 40px !important;
+    font-weight: bold !important;
+    color: red !important;
+    z-index: 100 !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    padding: 10px 20px !important;
+    border-radius: 10px !important;
+    border: 3px solid red !important;
+    pointer-events: none !important;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
+}
 
 /* ============================================== POSTS ============================================== */
 
@@ -3758,7 +4069,7 @@ input[type="submit"].button_red,
 	}
 
 	#footer .container {
-	    padding: 40px 0 0;
+	    padding:0px 0 0;
 	    width: 700px;
 	}
 
@@ -5130,3 +5441,729 @@ body.show-skeleton #footer::before {
 .container.clearfix.global-layout-wrapper {
 	max-width: 100%;
 }
+
+/* ============================================== SLOT SYSTEM A0-A17 ============================================== */
+
+/* Slot structure: 
+ * A0-A5: Center content (scrollable)
+ * A6-A11: Left sidebar (fixed/freeze)
+ * A12-A17: Right sidebar (fixed/freeze)
+ */
+
+[data-slot] {
+	position: relative;
+	min-height: 100px;
+}
+
+.slot-container {
+	display: block;
+	width: 100%;
+	margin-bottom: 20px;
+}
+
+.slot-container[data-slot^="A"] {
+	display: block;
+	width: 100%;
+}
+
+/* Center slots (A0-A5) - scrollable */
+body.page-home .main-content .slot-container[data-slot^="A"] {
+	min-height: 100px;
+}
+
+/* ============================================== A1 STRIP FIX — REMOVE EMPTY SPACE + FREEZE UNDER A0 ============================================== */
+/* A1 este acum în afara layout-ului, deci nu mai avem nevoie de reguli pentru sibling-uri */
+
+/* 6️⃣ FIX A1 DIMENSIUNE - Elimină spații goale între A0, A1 și conținut */
+body.page-home .main-content .container.clearfix.home_page_sections {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+	margin-bottom: 0 !important;
+}
+
+body.page-home #A2 {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
+
+/* Remove padding from main_content container on home page */
+body.page-home #main_content .container {
+	padding: 0 !important;
+	margin: 0 !important;
+}
+
+/* Ensure main-content has no padding that creates space */
+body.page-home .main-content {
+	padding-top: 0 !important;
+	margin-top: 0 !important;
+}
+
+/* Remove any margin/padding from first slot after A1 */
+body.page-home .main-content .slot-container[data-slot="A2"],
+body.page-home #A2 {
+	margin-top: 4px !important;
+	padding-top: 0 !important;
+	margin-bottom: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+/* Ensure slider_wrap has no extra spacing */
+body.page-home #A2 #slider_wrap {
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+/* 2️⃣ FREEZE (sticky) pentru A1 - lipit direct sub A0 */
+#A1 {
+	position: sticky !important;
+	top: 64px !important; /* A0 height */
+	z-index: 1999 !important;
+	height: 56px !important;
+	min-height: 56px !important;
+	max-height: none !important; /* NU folosi max-height restrictiv */
+	width: 100% !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	background-color: #e0e0e0 !important;
+	display: block !important;
+}
+
+/* Elimină orice margin/padding între A0 și A1 */
+#A0 + #A1 {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
+
+/* A1 trebuie să ocupe toată lățimea și să fie vizibil */
+#A1 #burtiera_mica,
+#A1 .burtiera_mica_wrap {
+	margin: 0 !important;
+	padding: 0 !important;
+	height: 56px !important;
+	min-height: 56px !important;
+	width: 100% !important;
+	display: block !important;
+}
+
+#A1 #burtiera_mica {
+	height: 56px !important;
+	min-height: 56px !important;
+	width: 100% !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+#A1 .burtiera_mica_track {
+	height: 56px !important;
+	min-height: 56px !important;
+	width: max-content !important;
+}
+
+#A1 .burtiera_mica_img {
+	height: 56px !important;
+	width: auto !important;
+	min-width: 100px !important;
+}
+
+/* Standardized sidebar slot height - ELIMINAT max-height și overflow hidden */
+body.page-home .sidebar-left .slot-container[data-slot^="A"],
+body.page-home .sidebar-right .slot-container[data-slot^="A"] {
+	min-height: 200px;
+	/* FĂRĂ max-height restrictiv */
+	/* FĂRĂ overflow hidden */
+	/* margin-bottom este gestionat de gap: 12px */
+}
+
+body.page-home .sidebar-left .slot-container,
+body.page-home .sidebar-right .slot-container {
+	width: 100%;
+}
+
+/* Universal media support per slot */
+[data-slot] img,
+[data-slot] video {
+	max-width: 100%;
+	height: auto;
+	display: block;
+}
+
+[data-slot] video {
+	width: 100%;
+}
+
+/* Animation support */
+[data-slot] .slot-animation {
+	width: 100%;
+	height: auto;
+}
+
+/* ============================================== FIXED SIDEBARS (FREEZE) ============================================== */
+
+/* 3️⃣ GRID PRINCIPAL - NU seta height fix pe layout */
+body.page-home #main_content {
+	flex: 1 !important;
+	display: flex !important;
+	flex-direction: column !important;
+	min-height: 0 !important; /* IMPORTANT for internal scrolling */
+	overflow: hidden !important;
+	position: relative !important;
+}
+
+body.page-home #main_content .layout {
+	display: grid !important;
+	grid-template-columns: 260px 1fr 260px !important;
+	gap: 0 !important;
+	/* NU seta height fix */
+	min-height: 0 !important;
+	flex: 1 !important;
+}
+
+/* Calculate A0 height dynamically using CSS variable */
+body.page-home {
+	--a0-height: 70px; /* Default, will be updated by JS if needed */
+}
+
+/* Calculate A0 + A1 combined height (70px + 56px = 126px) */
+body.page-home {
+	--a0-height: 70px;
+	--a1-height: 56px; /* Comfortable fixed height */
+	--header-total-height: calc(var(--a0-height) + var(--a1-height));
+}
+
+/* 4️⃣ SIDEBAR STÂNGA — TOATE SLOTURILE (A6-A11) */
+/* NOTE: Overridden by home-skeleton.css - sidebars are FROZEN (no scroll) */
+body.page-home .sidebar-left {
+	position: sticky !important;
+	top: 120px !important; /* A0 (64px) + A1 (56px) = 120px */
+	height: calc(100vh - 120px) !important;
+	overflow: hidden !important; /* FROZEN - NO SCROLL */
+	z-index: 100 !important;
+	background-color: #FCFCFC !important;
+	padding: 12px !important;
+	flex-shrink: 0 !important;
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 12px !important;
+}
+
+/* 5️⃣ SIDEBAR DREAPTA — TOATE SLOTURILE (A12-A17) */
+/* NOTE: Overridden by home-skeleton.css - sidebars are FROZEN (no scroll) */
+body.page-home .sidebar-right {
+	position: sticky !important;
+	top: 120px !important; /* A0 (64px) + A1 (56px) = 120px */
+	height: calc(100vh - 120px) !important;
+	overflow: hidden !important; /* FROZEN - NO SCROLL */
+	z-index: 100 !important;
+	background-color: #FCFCFC !important;
+	padding: 12px !important;
+	flex-shrink: 0 !important;
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 12px !important;
+}
+
+/* Sidebar slots - toate vizibile */
+body.page-home .sidebar-left .slot-container,
+body.page-home .sidebar-right .slot-container {
+	width: 100% !important;
+	min-height: 200px !important;
+	/* FĂRĂ max-height restrictiv */
+	margin-bottom: 0 !important; /* gap handles spacing */
+}
+
+/* 6️⃣ SCROLL DOAR PE CONȚINUTUL CENTRAL */
+body.page-home .main-content {
+	height: calc(100vh - 120px) !important; /* A0 + A1 = 120px */
+	overflow-y: auto !important;
+	overflow-x: hidden !important;
+	min-width: 0 !important;
+	position: relative !important;
+	flex: 1 !important;
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+	width: auto !important;
+}
+
+/* ============================================== VIP STACKED MODE ============================================== */
+
+/* VIP mode: LEFT VIP = A9 + A10 + A11 merged */
+body.page-home.vip-mode .sidebar-left .slot-container[data-slot="A9"]:not(.vip-stacked-left),
+body.page-home.vip-mode .sidebar-left .slot-container[data-slot="A10"],
+body.page-home.vip-mode .sidebar-left .slot-container[data-slot="A11"] {
+	display: none !important;
+}
+
+body.page-home.vip-mode .sidebar-left .vip-stacked-left {
+	display: block !important;
+	min-height: 600px;
+	max-height: none;
+}
+
+/* VIP mode: RIGHT VIP = A15 + A16 + A17 merged */
+body.page-home.vip-mode .sidebar-right .slot-container[data-slot="A15"]:not(.vip-stacked-right),
+body.page-home.vip-mode .sidebar-right .slot-container[data-slot="A16"],
+body.page-home.vip-mode .sidebar-right .slot-container[data-slot="A17"] {
+	display: none !important;
+}
+
+body.page-home.vip-mode .sidebar-right .vip-stacked-right {
+	display: block !important;
+	min-height: 600px;
+	max-height: none;
+}
+
+/* Prevent layout jump when VIP activates - same dimensions */
+body.page-home.vip-mode .sidebar-left,
+body.page-home.vip-mode .sidebar-right {
+	width: 260px !important; /* Same width, no resize */
+}
+
+body.page-home.vip-mode .main-content {
+	margin-left: 260px !important;
+	margin-right: 260px !important;
+	width: calc(100% - 520px) !important; /* Same margins, no jump */
+}
+
+/* Smooth transition when VIP mode activates */
+body.page-home .sidebar-left,
+body.page-home .sidebar-right,
+body.page-home .main-content {
+	transition: none; /* No transition to prevent jump */
+}
+
+/* ============================================== RESPONSIVE ============================================== */
+
+@media (max-width: 900px) {
+	/* On mobile, reset freeze behavior */
+	html, body {
+		height: auto !important;
+	}
+	
+	body.page-home {
+		height: auto !important;
+		overflow: visible !important;
+		display: block !important;
+	}
+	
+	body.page-home #main_wrap {
+		display: block !important;
+		height: auto !important;
+	}
+	
+	body.page-home #main_content {
+		flex: none !important;
+		display: block !important;
+		overflow: visible !important;
+	}
+	
+	body.page-home #main_content .layout {
+		display: grid !important;
+		grid-template-columns: 1fr !important;
+		min-height: auto !important;
+	}
+	
+	/* On mobile, sidebars become normal (not fixed) */
+	body.page-home .sidebar-left,
+	body.page-home .sidebar-right {
+		position: relative !important;
+		top: auto !important;
+		width: 100% !important;
+		height: auto !important;
+		overflow: visible !important;
+	}
+	
+	body.page-home .main-content {
+		margin-left: 0 !important;
+		margin-right: 0 !important;
+		width: 100% !important;
+		height: auto !important;
+		overflow: visible !important;
+	}
+	
+	/* Show all slots in VIP mode on mobile */
+	body.page-home.vip-mode .sidebar-left [data-slot="A9"],
+	body.page-home.vip-mode .sidebar-left [data-slot="A10"],
+	body.page-home.vip-mode .sidebar-left [data-slot="A11"],
+	body.page-home.vip-mode .sidebar-right [data-slot="A15"],
+	body.page-home.vip-mode .sidebar-right [data-slot="A16"],
+	body.page-home.vip-mode .sidebar-right [data-slot="A17"] {
+		display: block;
+	}
+}
+
+/* ============================================== A0 - NAVBAR ANIMAL COUNTER ============================================== */
+
+.animal-counter-navbar {
+	display: inline-flex;
+	align-items: center;
+	gap: 16px;
+	margin-left: 20px;
+	font-size: 13px;
+	line-height: 1.4;
+}
+
+.animal-counter-navbar .counter-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	white-space: nowrap;
+}
+
+.animal-counter-navbar .counter-icon {
+	font-size: 16px;
+	line-height: 1;
+}
+
+.animal-counter-navbar .counter-label {
+	color: #393939;
+	font-weight: normal;
+}
+
+.animal-counter-navbar .counter-value {
+	color: #1597d3;
+	font-weight: bold;
+}
+
+@media (max-width: 768px) {
+	.animal-counter-navbar {
+		font-size: 11px;
+		gap: 10px;
+		margin-left: 10px;
+	}
+	.animal-counter-navbar .counter-icon {
+		font-size: 14px;
+	}
+}
+
+/* ============================================== A4 - NEW ENTRIES GRID (7 COLUMNS) ============================================== */
+
+.new-entries-grid-7cols {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 12px;
+	width: 100%;
+	margin-top: 32px;
+}
+
+.new-entry-card {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 1;
+	overflow: hidden;
+	border-radius: 4px;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.new-entry-card:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.new-entry-card a {
+	display: block;
+	width: 100%;
+	height: 100%;
+	position: relative;
+}
+
+.new-entry-card img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.new-entry-card .pet-name-overlay {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+	color: #fff;
+	padding: 8px 6px 6px;
+	font-size: 11px;
+	font-weight: bold;
+	text-align: center;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+@media (max-width: 1200px) {
+	.new-entries-grid-7cols {
+		grid-template-columns: repeat(5, 1fr);
+	}
+}
+
+@media (max-width: 900px) {
+	.new-entries-grid-7cols {
+		grid-template-columns: repeat(4, 1fr);
+	}
+}
+
+@media (max-width: 600px) {
+	.new-entries-grid-7cols {
+		grid-template-columns: repeat(3, 1fr);
+	}
+}
+
+@media (max-width: 400px) {
+	.new-entries-grid-7cols {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+/* ============================================== STATUS OVERLAYS & ANIMATIONS ============================================== */
+
+.status-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	pointer-events: none;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.status-badge-adopted,
+.status-badge-pending,
+.status-badge-archive {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	background: rgba(0,0,0,0.75);
+	color: #fff;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 10px;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	z-index: 11;
+}
+
+.status-badge-adopted {
+	background: rgba(76, 175, 80, 0.9);
+	animation: pulse-green 2s ease-in-out infinite;
+}
+
+.status-badge-pending {
+	background: rgba(255, 152, 0, 0.9);
+}
+
+.status-badge-archive {
+	background: rgba(158, 158, 158, 0.9);
+}
+
+@keyframes pulse-green {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.7; }
+}
+
+/* Active status - Bone animation */
+.status-animation-bone {
+	width: 40px;
+	height: 40px;
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 20 Q60 20 65 30 Q70 40 65 50 Q70 60 65 70 Q60 80 50 80 Q40 80 35 70 Q30 60 35 50 Q30 40 35 30 Q40 20 50 20 Z" fill="rgba(255,255,255,0.8)" stroke="rgba(255,193,7,0.9)" stroke-width="2"/></svg>');
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	animation: float-bone 3s ease-in-out infinite;
+	opacity: 0.6;
+}
+
+@keyframes float-bone {
+	0%, 100% { transform: translateY(0) rotate(0deg); }
+	50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+/* Adopted status - Hearts animation */
+.status-animation-hearts {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+.status-animation-hearts::before,
+.status-animation-hearts::after {
+	content: '❤️';
+	position: absolute;
+	font-size: 20px;
+	animation: float-heart 2s ease-in-out infinite;
+	opacity: 0.7;
+}
+
+.status-animation-hearts::before {
+	left: 20%;
+	top: 20%;
+	animation-delay: 0s;
+}
+
+.status-animation-hearts::after {
+	right: 20%;
+	top: 30%;
+	animation-delay: 1s;
+}
+
+@keyframes float-heart {
+	0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; }
+	50% { transform: translateY(-15px) scale(1.2); opacity: 1; }
+}
+
+/* Success status - Happy dog animation */
+.status-animation-success {
+	width: 50px;
+	height: 50px;
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(255,193,7,0.3)" stroke="rgba(255,193,7,0.9)" stroke-width="2"/><circle cx="40" cy="45" r="5" fill="rgba(0,0,0,0.8)"/><circle cx="60" cy="45" r="5" fill="rgba(0,0,0,0.8)"/><path d="M35 60 Q50 70 65 60" stroke="rgba(0,0,0,0.8)" stroke-width="3" fill="none" stroke-linecap="round"/></svg>');
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	animation: bounce-happy 1.5s ease-in-out infinite;
+}
+
+@keyframes bounce-happy {
+	0%, 100% { transform: translateY(0) scale(1); }
+	50% { transform: translateY(-8px) scale(1.1); }
+}
+
+/* ============================================== ADOPTION CELEBRATION ANIMATION (ONCE PER SESSION) ============================================== */
+
+.adoption-celebration {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0,0,0,0.7);
+	z-index: 9999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+	animation: fade-in-celebration 0.5s ease-in;
+}
+
+.adoption-celebration-content {
+	text-align: center;
+	color: #fff;
+	animation: scale-celebration 0.6s ease-out;
+}
+
+.adoption-celebration-content h2 {
+	font-size: 48px;
+	margin-bottom: 20px;
+	color: #4CAF50;
+	text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.adoption-celebration-content .celebration-icon {
+	font-size: 80px;
+	animation: bounce-celebration 1s ease-in-out infinite;
+	margin-bottom: 20px;
+}
+
+.adoption-celebration-content p {
+	font-size: 24px;
+	margin-bottom: 10px;
+}
+
+@keyframes fade-in-celebration {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes scale-celebration {
+	from { transform: scale(0.5); opacity: 0; }
+	to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bounce-celebration {
+	0%, 100% { transform: translateY(0) scale(1); }
+	50% { transform: translateY(-20px) scale(1.2); }
+}
+
+/* Green animated frame for adopted cards (after big celebration) */
+.adopted-card-frame {
+	position: absolute;
+	top: -2px;
+	left: -2px;
+	right: -2px;
+	bottom: -2px;
+	border: 3px solid #4CAF50;
+	border-radius: 4px;
+	animation: pulse-frame 2s ease-in-out infinite;
+	pointer-events: none;
+	z-index: 9;
+}
+
+@keyframes pulse-frame {
+	0%, 100% { border-color: #4CAF50; box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+	50% { border-color: #66BB6A; box-shadow: 0 0 0 8px rgba(76, 175, 80, 0); }
+}
+/* ===============================
+   EUADOPT6 — HOME FINAL SPACING FIX
+   =============================== */
+
+   body.page-home #main_content,
+   body.page-home #main_content .container,
+   body.page-home .container,
+   body.page-home #content,
+   body.page-home #wrapper{
+	   padding-top: 0 !important;
+	   padding-bottom: 0 !important;
+	   margin-top: 0 !important;
+	   margin-bottom: 0 !important;
+   }
+   /* EUADOPT6 TEST — remove big bottom space */
+
+#main_content,
+#main_content .container,
+.container,
+#wrapper,
+#content{
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+#site_info,
+#site_info > div{
+    padding: 2px 0 !important;
+    margin: 0 !important;
+    line-height: 18px !important;
+}
+/* HOME – fix spatiu footer */
+body.page-home #footer,
+body.page-home #post_footer,
+body.page-home #site_info{
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+body.page-home #site_info:before,
+body.page-home #site_info:after{
+  content: none !important;
+  display: none !important;
+}
+
+body.page-home #site_info .right{
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: 18px !important;
+}
+
+
+   
+   
+   

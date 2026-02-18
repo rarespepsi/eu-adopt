@@ -1,0 +1,638 @@
+/* ============================================== HOME LAYOUT SKELETON - FIXED STRUCTURE A0-A17 ============================================== */
+/* Non-negotiable rules:
+ * 1) A0 and A1 are sticky (freeze) at the top with ZERO gap between them
+ * 2) Below A0+A1, page is a 3-column layout: left sidebar (freeze), center (scroll), right sidebar (freeze)
+ * 3) Only the center column scrolls (overflow-y: auto). Sidebars do NOT scroll.
+ * 4) Remove any margins/paddings causing vertical gaps between A0–A1–A2
+ * 5) Use explicit IDs A0–A17 in DOM. No duplicates.
+ */
+
+/* ============================================== GLOBAL RESET FOR HOME PAGE ============================================== */
+body.page-home {
+	margin: 0 !important;
+	padding: 0 !important;
+	height: 100vh !important;
+	overflow: hidden !important;
+	display: flex !important;
+	flex-direction: column !important;
+}
+
+body.page-home #main_wrap {
+	display: flex !important;
+	flex-direction: column !important;
+	height: 100vh !important;
+	overflow: hidden !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+/* ============================================== A0 - NAVBAR (STICKY TOP) ============================================== */
+#A0 {
+	position: sticky !important;
+	top: 0 !important;
+	z-index: 2000 !important;
+	height: 64px !important;
+	min-height: 64px !important;
+	max-height: 64px !important;
+	width: 100% !important;
+	background-color: #343434 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+	overflow: hidden !important;
+	flex-shrink: 0 !important;
+	box-sizing: border-box !important;
+}
+
+/* A0 internal elements - compact */
+#A0 .container {
+	margin: 0 !important;
+	padding: 0 20px !important;
+	width: 100% !important;
+	max-width: 100% !important;
+	height: 64px !important;
+	display: flex !important;
+	align-items: center !important;
+	box-sizing: border-box !important;
+}
+
+#A0 #main_menu {
+	margin: 0 !important;
+	padding: 0 !important;
+	height: 64px !important;
+	display: flex !important;
+	align-items: center !important;
+}
+
+#A0 #logo,
+#A0 img {
+	height: 45px !important;
+	max-height: 45px !important;
+	width: auto !important;
+	margin: 0 !important;
+}
+
+#A0 .animal-counter-navbar {
+	margin-left: 20px !important;
+	margin-right: 20px !important;
+	font-size: 13px !important;
+}
+
+#A0 ul.menu {
+	margin: 0 !important;
+	padding: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+	height: 64px !important;
+}
+
+#A0 ul.menu li {
+	margin: 0 10px !important;
+	padding: 0 !important;
+}
+
+#A0 ul.menu li a {
+	font-size: 14px !important;
+	line-height: 64px !important;
+	padding: 0 !important;
+}
+
+/* ============================================== A1 - STRIP (STICKY BELOW A0, INSIDE CENTER COLUMN) ============================================== */
+/* A1 is now inside center container, so it matches center column width */
+/* Height increased by 2cm (approximately 75px total) to fill gap */
+body.page-home .main-content #A1 {
+	position: relative !important; /* Disable sticky - no phantom space */
+	top: auto !important; /* Remove sticky offset */
+	z-index: auto !important;
+	height: 140px !important; /* Real height increase - no transform */
+	min-height: 140px !important;
+	max-height: 140px !important;
+	width: 100% !important; /* 100% of center column, not full viewport */
+	margin: 0 !important;
+	padding: 0 !important;
+	background-color: #e0e0e0 !important;
+	display: block !important;
+	overflow: hidden !important; /* Hide overflow */
+	box-sizing: border-box !important;
+}
+
+/* A1 should be first element in center container - ZERO spacing from top */
+body.page-home .main-content .container.clearfix.home_page_sections #A1:first-child {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+	margin-bottom: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+/* A1 must start at the very top of main-content - no gap */
+body.page-home .main-content #A1:first-child,
+body.page-home .main-content > .container.clearfix.home_page_sections > #A1:first-child {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
+
+/* Override any default slot-container spacing for A1 */
+body.page-home .main-content #A1.slot-container {
+	margin-bottom: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+/* A1 internal elements - fill A1 height (140px) */
+#A1 #burtiera_mica,
+#A1 .burtiera_mica_wrap {
+	margin: 0 !important;
+	padding: 0 !important;
+	height: 100% !important; /* Fill A1 height */
+	min-height: 100% !important;
+	max-height: 100% !important;
+	width: 100% !important;
+	display: flex !important;
+	align-items: center !important;
+	box-sizing: border-box !important;
+}
+
+#A1 .burtiera_mica_track {
+	height: 100% !important; /* Fill parent height */
+	width: max-content !important;
+	display: flex !important;
+	align-items: center !important; /* Vertically center images */
+}
+
+#A1 .burtiera_mica_img {
+	height: 100% !important; /* Fill track height */
+	width: auto !important;
+	min-width: 100px !important;
+	display: flex !important;
+	align-items: center !important; /* Vertically center image */
+}
+
+/* ============================================== MAIN CONTENT WRAPPER (3-COLUMN LAYOUT) ============================================== */
+body.page-home #main_content {
+	flex: 1 !important;
+	display: flex !important;
+	flex-direction: column !important;
+	min-height: 0 !important;
+	overflow: hidden !important;
+	position: relative !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	margin-top: 0 !important; /* ZERO gap from A0 */
+	padding-top: 0 !important; /* ZERO gap from A0 */
+	height: calc(100vh - 64px) !important; /* 100vh - A0(64px) only, A1 is inside */
+	box-sizing: border-box !important;
+}
+
+/* Remove wrapper padding/margin - ZERO gap from A0 */
+body.page-home #main_content.wrapper {
+	margin: 0 !important;
+	padding: 0 !important;
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+	width: 100% !important; /* Override .wrapper width restrictions */
+	max-width: 100% !important;
+}
+
+/* Ensure no gap between A0 and #main_content */
+body.page-home #A0 + #main_content,
+body.page-home #A0 + section#main_content {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
+
+/* ============================================== 3-COLUMN GRID LAYOUT ============================================== */
+body.page-home #main_content .layout {
+	display: grid !important;
+	grid-template-columns: 260px 1fr 260px !important;
+	gap: 0 !important;
+	height: 100% !important;
+	min-height: 0 !important;
+	flex: 1 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	width: 100% !important; /* Ensure full width */
+	max-width: 100% !important; /* No max-width limit */
+	box-sizing: border-box !important;
+}
+
+/* ============================================== LEFT SIDEBAR (FREEZE, NO SCROLL) - DOUBLE HEIGHT ============================================== */
+body.page-home .sidebar-left {
+	position: sticky !important;
+	top: 64px !important; /* Below A0(64px) only, A1 is in center column */
+	height: calc((100vh - 64px) * 2) !important; /* DOUBLE height */
+	min-height: calc((100vh - 64px) * 2) !important;
+	overflow: hidden !important; /* NO SCROLL - frozen */
+	overflow-y: hidden !important;
+	overflow-x: hidden !important;
+	z-index: 100 !important;
+	background-color: #FCFCFC !important;
+	padding: 12px !important;
+	flex-shrink: 0 !important;
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 12px !important;
+	margin: 0 !important;
+	box-sizing: border-box !important;
+}
+
+/* ============================================== RIGHT SIDEBAR (FREEZE, NO SCROLL) - DOUBLE HEIGHT ============================================== */
+body.page-home .sidebar-right {
+	position: sticky !important;
+	top: 64px !important; /* Below A0(64px) only, A1 is in center column */
+	height: calc((100vh - 64px) * 2) !important; /* DOUBLE height */
+	min-height: calc((100vh - 64px) * 2) !important;
+	overflow: hidden !important; /* NO SCROLL - frozen */
+	overflow-y: hidden !important;
+	overflow-x: hidden !important;
+	z-index: 100 !important;
+	background-color: #FCFCFC !important;
+	padding: 12px !important;
+	flex-shrink: 0 !important;
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 12px !important;
+	margin: 0 !important;
+	box-sizing: border-box !important;
+}
+
+/* Sidebar slots - all visible (A6-A11 left, A12-A17 right) */
+body.page-home .sidebar-left .slot-container,
+body.page-home .sidebar-right .slot-container {
+	width: 100% !important;
+	min-height: 200px !important;
+	margin-bottom: 0 !important; /* gap handles spacing */
+	box-sizing: border-box !important;
+}
+
+/* ============================================== CENTER COLUMN (SCROLLABLE) ============================================== */
+body.page-home .main-content {
+	height: 100% !important;
+	min-height: 0 !important;
+	overflow-y: auto !important; /* ONLY center scrolls */
+	overflow-x: hidden !important;
+	min-width: 0 !important;
+	position: relative !important;
+	flex: 1 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	padding-top: 0 !important; /* ZERO gap from A0 */
+	margin-top: 0 !important; /* ZERO gap from A0 */
+	width: auto !important;
+	box-sizing: border-box !important;
+}
+
+/* Remove gaps between A0-A1-A2 - ZERO spacing from top */
+body.page-home .main-content .container.clearfix.home_page_sections {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+	margin-bottom: 0 !important;
+	padding-bottom: 0 !important;
+	width: 100% !important; /* Override .container width: 940px from style.css:382 */
+	max-width: 100% !important; /* Ensure full width */
+	margin-left: 0 !important; /* Override margin: auto */
+	margin-right: 0 !important;
+}
+
+/* Ensure container starts immediately - no gap from main-content top */
+body.page-home .main-content > .container.clearfix.home_page_sections {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
+
+/* ============================================== ZERO GAP BETWEEN A1 AND A2 ============================================== */
+/* Step 1: Override .slot-container margin-bottom: 20px from style.css for A1 and A2 */
+
+/* A1 - no bottom spacing */
+#A1 {
+	margin-bottom: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+/* A2 - no top spacing */
+#A2 {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
+
+/* Override .slot-container margin-bottom: 20px for A1 and A2 */
+.slot-container[data-slot="A1"],
+.slot-container[data-slot="A2"] {
+	margin-top: 0 !important;
+	margin-bottom: 0 !important;
+}
+
+/* Override .home_page_sections spacing */
+.home_page_sections {
+	padding-top: 0 !important;
+	margin-top: 0 !important;
+}
+
+/* Step 2: Specific overrides for slot-container class - override margin-bottom: 20px */
+body.page-home .main-content #A1.slot-container {
+	margin-bottom: 0 !important;
+	padding-bottom: 0 !important;
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
+
+body.page-home .main-content #A2.slot-container {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+	margin-bottom: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+/* Step 3: Direct sibling rule - A2 immediately after A1 with 0px gap */
+body.page-home .main-content #A1 + #A2,
+body.page-home .main-content #A1.slot-container + #A2.slot-container,
+body.page-home .main-content .slot-container[data-slot="A1"] + .slot-container[data-slot="A2"] {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+	gap: 0 !important;
+}
+
+/* Step 4: Ensure no transform or position offset creates gap */
+body.page-home .main-content #A2 {
+	transform: none !important;
+	position: relative !important;
+	top: 0 !important;
+}
+
+/* Step 5: Override any inherited spacing from parent containers */
+body.page-home .main-content .container.clearfix.home_page_sections > #A1,
+body.page-home .main-content .container.clearfix.home_page_sections > #A2 {
+	margin-top: 0 !important;
+	margin-bottom: 0 !important;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+/* ============================================== ENSURE NO VERTICAL GAPS ============================================== */
+/* Remove any spacing that could create gaps */
+body.page-home #A0,
+body.page-home #A1,
+body.page-home #main_content,
+body.page-home #main_content .layout,
+body.page-home .main-content,
+body.page-home .sidebar-left,
+body.page-home .sidebar-right {
+	margin-top: 0 !important;
+	margin-bottom: 0 !important;
+}
+
+/* Remove wrapper padding */
+body.page-home #main_content.wrapper .container {
+	padding: 0 !important;
+	margin: 0 !important;
+}
+
+/* ============================================== COMPLETE GAP REMOVAL BETWEEN A1 AND A2 ============================================== */
+/* CSS override loaded last to ensure it takes precedence */
+
+.home_page_sections > #A1,
+.home_page_sections > #A2 {
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+#A1 {
+	margin-bottom: 0 !important;
+}
+
+#A2 {
+	margin-top: 0 !important;
+}
+
+#A1 + #A2 {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
+
+.home_page_sections {
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+/* ============================================== CENTER-STACK WRAPPER - FLEX COLUMN FOR A1-A5 ============================================== */
+/* HOME-only CSS override loaded last to ensure A2 touches A1 with 0px gap */
+
+.center-stack {
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 0 !important;
+}
+
+/* Fix EXACT element: .slot-container margin-bottom: 20px from style.css:5459 */
+.center-stack > .slot-container {
+	margin-bottom: 0 !important; /* Override margin-bottom: 20px */
+	margin-top: 0 !important;
+	padding: 0 !important;
+}
+
+.center-stack > #A1,
+.center-stack > #A2 {
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+/* A1 normal flow - no sticky positioning to avoid phantom space */
+body.page-home .main-content .center-stack > #A1 {
+	position: relative !important; /* Normal flow */
+	top: auto !important;
+	z-index: auto !important;
+}
+
+/* Ensure A1 is in normal flow */
+.center-stack > #A1 {
+	position: relative !important; /* Normal flow */
+	top: auto !important;
+	margin-bottom: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+
+/* ============================================== TEMP DEBUG CSS - IDENTIFY GAP SOURCE ============================================== */
+/* HOME only, loaded last to visualize elements */
+
+#A1 {
+	outline: 4px solid red !important;
+}
+
+#A2 {
+	outline: 4px solid blue !important;
+}
+
+.home_page_sections {
+	outline: 4px solid lime !important;
+}
+
+#slider_wrap {
+	outline: 4px solid orange !important;
+}
+
+#burtiera_mica {
+	outline: 4px solid purple !important;
+}
+
+/* ============================================== A1 REAL HEIGHT INCREASE - NO TRANSFORM ============================================== */
+/* Restore normal sizing and increase REAL height instead of transform */
+/* HOME-only CSS override loaded last - Disable A1 positioning to remove phantom space */
+
+#A1 {
+	position: relative !important;
+	top: auto !important;
+	height: 140px !important;
+	overflow: hidden !important;
+}
+
+/* ============================================== A2 SLIDER - REMOVE TOP EMPTY SPACE ============================================== */
+/* HOME-only CSS override loaded last - Remove top empty space inside A2 slider */
+
+#A2 {
+	line-height: 0 !important;
+}
+
+#A2 #slider_wrap {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
+
+#A2 .flex-viewport {
+	margin-top: 0 !important;
+}
+
+#A2 .slides {
+	margin-top: 0 !important;
+}
+
+#A1 .burtiera_mica_wrap,
+#A1 .burtiera_mica_track,
+#A1 .burtiera_mica_img {
+	height: 100% !important;
+	display: flex !important;
+	align-items: center !important;
+}
+
+#A1 .burtiera_mica_img img {
+	height: 100% !important;
+	width: auto !important;
+	object-fit: cover !important;
+	transform: none !important;
+}
+
+/* ============================================== FOOTER - SLIM BAR (1CM HEIGHT) ============================================== */
+/* CSS override loaded last - Reduce global footer height to slim bar */
+
+footer,
+.site-footer,
+#footer {
+	padding-top: 5px !important;
+	padding-bottom: 5px !important;
+	margin: 0 !important;
+	min-height: 20px !important;
+}
+
+footer p,
+.site-footer p {
+	margin: 0 !important;
+	line-height: 20px !important;
+}
+
+/* ============================================== FOOTER - REMOVE EXCESSIVE SPACING ============================================== */
+/* CSS override loaded LAST - Remove excessive spacing from footer */
+
+footer {
+	margin-top: 0 !important;
+	padding-top: 5px !important;
+	padding-bottom: 5px !important;
+	margin-top: 0 !important;
+	height: auto !important;
+	position: static !important;
+	bottom: auto !important;
+}
+
+footer * {
+	margin-top: 0 !important;
+	margin-bottom: 0 !important;
+}
+
+/* Ensure last row in A4 is fully visible above footer */
+#A4 {
+	padding-bottom: 20px !important;
+}
+
+/* ============================================== REMOVE FORCED PAGE HEIGHT - ENABLE SCROLLING ============================================== */
+/* GLOBAL CSS override loaded last - Remove forced page height that blocks scrolling and hides last row */
+
+html, body {
+	height: auto !important;
+	min-height: 100% !important;
+	overflow-y: auto !important;
+}
+
+.home_page_sections {
+	height: auto !important;
+	min-height: unset !important;
+}
+
+body.page-home {
+	overflow: auto !important;
+}
+
+/* ============================================== RESPONSIVE OVERRIDE (Mobile) ============================================== */
+@media (max-width: 900px) {
+	/* Reset sticky on mobile - allow natural scroll */
+	body.page-home {
+		height: auto !important;
+		overflow: visible !important;
+	}
+	
+	body.page-home #main_wrap {
+		height: auto !important;
+		overflow: visible !important;
+	}
+	
+	body.page-home #A0,
+	body.page-home #A1 {
+		position: relative !important;
+	}
+	
+	body.page-home .sidebar-left,
+	body.page-home .sidebar-right {
+		position: relative !important;
+		height: auto !important;
+		overflow: visible !important;
+	}
+	
+	body.page-home #main_content .layout {
+		grid-template-columns: 1fr !important;
+	}
+	
+	body.page-home .main-content {
+		height: auto !important;
+		overflow: visible !important;
+	}
+}
+
+/* ============================================== COPYRIGHT BAR (#site_info) - SLIM HEIGHT ============================================== */
+/* CSS override loaded LAST - Reduce copyright bar to slim height */
+
+#site_info {
+	margin-top: 0 !important;
+	padding-top: 5px !important;
+	padding-bottom: 5px !important;
+	height: auto !important;
+}#site_info > div {
+	margin: 0 !important;
+	padding: 0 !important;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+	line-height: 20px !important;
+}
+
+
+#site_info > div {
+	padding: 0 !important;
+	margin: 0 !important;
+	line-height: 20px !important;
+}
