@@ -17,11 +17,27 @@ git reset --hard undo-point-2026-02-22-1600
 3. Gata. Proiectul e exact ca la momentul acelui tag. Modificările făcute după tag se pierd.
 
 **Tag-uri disponibile:** `git tag -l`  
-**Cel mai recent (final zi 1 martie – Transport):** `undo-point-2026-03-01-2359`
+**Cel mai recent (Home – badge-uri casete, 6 martie 2026):** `undo-point-2026-03-06-2200`
 
 ---
 
-# Punct actual – final de zi 1 martie 2026 (Transport)
+# Punct – Home badge-uri casete (6 martie 2026)
+
+**Tag:** `undo-point-2026-03-06-2200`  
+**Data:** 6 martie 2026, 22:00  
+**Conține:** Home – badge-uri numerotate doar pentru staff: A1, A2.1–A2.9, A3, A4, A5.1–A5.3, A6.1–A6.3; A2 poze centrate în casetă; A1 cu poze din featured+strip, A2 shuffle la fiecare încărcare; bloc `extra_css_after` în base; Transport cu fundal, API județ/oraș, link Google Maps. **A4:** badge mic, fără bandă albastră și fără scroll.
+
+**Revenire la acest punct:**
+```bash
+cd c:\Users\USER\Desktop\adoptapet_pro
+git checkout main
+git reset --hard undo-point-2026-03-06-2200
+```
+⚠️ Modificările făcute după acest tag se pierd.
+
+---
+
+# Punct – final de zi 1 martie 2026 (Transport)
 
 **Tag:** `undo-point-2026-03-01-2359`  
 **Data și ora:** 1 martie 2026, 23:59  
