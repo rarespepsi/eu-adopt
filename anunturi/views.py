@@ -397,17 +397,26 @@ def home(request):
             # Row is complete with active animals only
             new_entries.extend(row)
     
-    # A1 - Moving animal strip + hero slider (3–4 poze fundal)
+    # A1 – poze cu animale (câini/pisici) din proiect – ca să vezi cum se văd în casetă
+    A1_HERO_IMAGES = [
+        "images/pets/charlie-400x200.jpg",
+        "images/pets/chester1-600x240.jpg",
+        "images/pets/cindy1-600x240.jpg",
+        "images/pets/shorty1-400x200.jpg",
+        "images/pets/charlie-600x240.jpg",
+        "images/pets/archie1-275x275.jpg",
+        "images/pets/candy1-275x275.jpeg",
+        "images/pets/chance1-275x275.jpg",
+        "images/pets/grissom1-275x275.jpg",
+        "images/pets/winston1-275x275.jpg",
+    ]
+    hero_slider_images = A1_HERO_IMAGES
     strip_pets = list(Pet.objects.filter(status="adoptable").exclude(adoption_status="adopted").order_by("-data_adaugare")[:40])
     if strip_pets and len(strip_pets) < 12:
         import itertools
         strip_pets = list(itertools.islice(itertools.cycle(strip_pets), 24))
-    # A1 – alte poze: mai întâi featured (animale lunii), apoi restul din strip
-    featured_ids = {p.pk for p in featured}
-    a1_candidates = list(featured) + [p for p in strip_pets if p.pk not in featured_ids]
-    hero_slider_pets = a1_candidates[:4] if a1_candidates else strip_pets[:4]
 
-    # A2 (16) + col stânga (3) + col dreapta (3) = 22 poze câini în casete
+    # A2 (4×3 = 12) + col stânga (3) + col dreapta (3) = 18 poze; A2 ca P2 – 4 coloane × 3 rânduri
     import itertools as it
     import random
     pool_ids = {p.pk for p in featured}
@@ -419,11 +428,11 @@ def home(request):
     if len(slot_pool) < 22 and slot_pool:
         slot_pool = list(it.islice(it.cycle(slot_pool), 22))
     random.shuffle(slot_pool)  # A2 și coloanele laterale – poze diferite la fiecare încărcare
-    a2_pets = slot_pool[:16]
-    left_col_pets = slot_pool[16:19]
-    right_col_pets = slot_pool[19:22]
+    a2_pets = slot_pool[:12]   # 4×3 casete ca P2
+    left_col_pets = slot_pool[12:15]
+    right_col_pets = slot_pool[15:18]
     # Pad cu None dacă nu avem suficiente (template afișează fallback)
-    while len(a2_pets) < 16:
+    while len(a2_pets) < 12:
         a2_pets.append(None)
     while len(left_col_pets) < 3:
         left_col_pets.append(None)
@@ -453,8 +462,8 @@ def home(request):
         "adopted_animals": adopted_animals,
         "featured_pets": featured[:8],  # A3 - Animals of the Month (4x2)
         "new_entries": new_entries,  # A4 - New Entries grid
-        "strip_pets": strip_pets,  # A1 - Moving strip
-        "hero_slider_pets": hero_slider_pets,
+        "strip_pets": strip_pets,
+        "hero_slider_images": hero_slider_images,  # A1 – 10 poze dedicate (câini/pisici)
         "a2_pets": a2_pets,
         "left_col_pets": left_col_pets,
         "right_col_pets": right_col_pets,
@@ -586,15 +595,8 @@ def pets_all(request):
         qs = qs.filter(marime__in=["small", "medium"])
     elif locuinta == "curte":
         qs = qs.filter(marime__in=["medium", "large", "xlarge"])
-    # Listă random pentru P2: până la 16 căsuțe (4x4), din toată lista filtrată (nu doar pagina curentă).
-    # Dacă sunt mai puține animale, le repetăm ciclic ca să umplem toate cele 16 sloturi.
-    pets_for_p2 = []
-    qs_for_p2_base = list(qs[:60])
-    if qs_for_p2_base:
-        import random
-        import itertools
-        random.shuffle(qs_for_p2_base)
-        pets_for_p2 = list(itertools.islice(itertools.cycle(qs_for_p2_base), 16))
+    # P2 = toate animalele din listă (filtrată), grid 4 coloane × N rânduri, cu scroll
+    pets_for_p2 = list(qs)
 
     paginator = Paginator(qs, PETS_PER_PAGE)
     page_number = request.GET.get("page", 1)

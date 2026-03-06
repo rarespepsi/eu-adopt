@@ -21,6 +21,16 @@
 			body.page-animale #main_content .container,
 			body.page-animale .animale-layout-with-filters,
 			body.page-animale .animale-filters-left { margin-top: 0 !important; padding-top: 0 !important; }
+			/* Poze în casete: umplu 100%, fără goluri stânga/dreapta (P1, P3 benzi) */
+			#PW .pt-strip-item--p1 img,
+			#PW .pt-strip-item--p3 img {
+				width: 100% !important; height: 100% !important;
+				min-width: 100% !important; min-height: 100% !important;
+				max-width: none !important;
+				object-fit: cover !important;
+				object-position: center center !important;
+				display: block !important;
+			}
 		</style>
         <link rel="stylesheet" href="{% static 'includes/js/flexslider.css' %}" type="text/css" media="all" />
         <link rel="stylesheet" href="{% static 'includes/fancybox/jquery.fancybox.css' %}" type="text/css" media="screen" />
@@ -193,26 +203,24 @@
 							</div>
 						</div>
 						<div class="pt-cell pt-cell-2">
-							<div class="pt-p2-20grid" aria-label="12 părți egale">
-								{% for i in "123456789012" %}
-									{% with pet=p2_pets|get_at_index:forloop.counter0 %}
+							<div class="pt-p2-20grid" aria-label="Listă animale – toate din site">
+								{% for pet in p2_pets %}
 										<div class="pt-p2-20cell">
 											{% if user.is_authenticated and user.username == "adrian" %}
 											<span class="pt-p2-20num">P2.{{ forloop.counter }}</span>
 											{% endif %}
-											{% if pet %}
-												<a href="{% url 'pets_single' pet.pk %}" class="pt-p2-20bg-link" title="{{ pet.nume }}">
-													{% if pet.imagine %}
-														<span class="pt-p2-20bg" style="background-image: url('{{ pet.imagine.url }}');"></span>
-													{% elif pet.imagine_fallback %}
-														<span class="pt-p2-20bg" style="background-image: url('{% static pet.imagine_fallback %}');"></span>
-													{% else %}
-														<span class="pt-p2-20bg pt-p2-20bg--empty">{{ pet.nume }}</span>
-													{% endif %}
-												</a>
-											{% endif %}
+											<a href="{% url 'pets_single' pet.pk %}" class="pt-p2-20bg-link" title="{{ pet.nume }}">
+												{% if pet.imagine %}
+													<span class="pt-p2-20bg" style="background-image: url('{{ pet.imagine.url }}');"></span>
+												{% elif pet.imagine_fallback %}
+													<span class="pt-p2-20bg" style="background-image: url('{% static pet.imagine_fallback %}');"></span>
+												{% else %}
+													<span class="pt-p2-20bg pt-p2-20bg--empty">{{ pet.nume }}</span>
+												{% endif %}
+											</a>
 										</div>
-									{% endwith %}
+								{% empty %}
+									<div class="pt-p2-20cell pt-p2-20cell--empty-msg">Niciun animal în această selecție.</div>
 								{% endfor %}
 							</div>
 						</div>

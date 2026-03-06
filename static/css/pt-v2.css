@@ -128,11 +128,15 @@
   word-break: break-word;
 }
 
+/* P1: poza umple caseta (suprascrie body.page-animale img height:auto din style.css) */
 #PW .pt-strip-item--p1 img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  display: block !important;
   vertical-align: top;
 }
 
@@ -276,7 +280,7 @@
   color: #ffffff;
 }
 
-/* P2 = centru mijloc – casete numerotate (4x3 pe desktop) */
+/* P2 = centru – toate animalele; vizibil 4×3 (aceleași dimensiuni ca înainte), restul sub cu scroll */
 #PW .pt-cell-2 {
   grid-row: 2;
   grid-column: 2;
@@ -284,16 +288,20 @@
   align-items: stretch;
   justify-content: stretch;
   padding: 4px;
-  overflow: hidden;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Înălțime rând = (zone vizibilă - padding - gap) / 3 → exact 3 rânduri vizibile, casete neschimbate */
+  --pt2-row-h: calc((100% - 8px) / 3);
 }
 
 #PW .pt-p2-20grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4 coloane */
-  grid-template-rows: repeat(3, 1fr);    /* 3 rânduri */
+  grid-template-columns: repeat(4, 1fr) !important; /* 4 coloane, fix */
+  grid-auto-rows: var(--pt2-row-h);
   gap: 2px;
   width: 100%;
-  height: 100%;
+  height: auto;
 }
 
 #PW .pt-p2-20cell {
@@ -301,11 +309,20 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  overflow: hidden;
   background: rgba(255, 255, 255, 0.5);
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 600;
   color: #333;
+}
+
+#PW .pt-p2-20cell--empty-msg {
+  grid-column: 1 / -1;
+  padding: 1rem;
+  justify-content: center;
+  color: #666;
+  font-weight: normal;
 }
 
 #PW .pt-p2-20num {
@@ -316,32 +333,21 @@
   color: #666;
 }
 
-/* Poze ca background în P2 – nu schimbă dimensiunea casetei (totul este absolut în interior) */
+/* Poze ca background în P2 – umplere fără goluri la margini (overflow: hidden taie excesul) */
 #PW .pt-p2-20bg-link {
   position: absolute;
-  inset: 0;
+  inset: -2px;
   display: block;
   text-decoration: none;
 }
 
 #PW .pt-p2-20bg {
   position: absolute;
-  inset: 0;
+  inset: -2px;
   display: block;
-  /* Umplem complet caseta cu poză (fără benzi albe). Poza este deja standardizată landscape la upload. */
   background-size: cover;
-  /* Deplasat mai sus, ca să prindem mai mult din partea superioară (capul) în majoritatea pozelor */
-  background-position: center 15%;
-  background-repeat: no-repeat;
-  transition: transform 0.2s ease-out, background-size 0.2s ease-out, background-position 0.2s ease-out;
-}
-
-/* La hover: mărim poza peste dimensiunea casetei și afișăm cât mai mult din ea.
-   Poza iese vizual în afara casetei, dar P2 rămâne cu aceleași dimensiuni (4x3, fără scroll). */
-#PW .pt-p2-20bg-link:hover .pt-p2-20bg {
-  transform: scale(1.4);
-  background-size: contain;
   background-position: center center;
+  background-repeat: no-repeat;
 }
 
 #PW .pt-p2-20bg--empty {
@@ -443,11 +449,15 @@
   position: relative;
 }
 
+/* P3: poza umple caseta (suprascrie body.page-animale img height:auto din style.css) */
 #PW .pt-strip-item--p3 img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  display: block !important;
   vertical-align: top;
 }
 
@@ -522,6 +532,13 @@
 }
 #PW .pt-strip-item .pt-scale-mark {
   position: relative;
+}
+
+/* P2 responsive: 4 coloane până la mobil îngust, apoi 2 */
+@media (max-width: 31.25em) {
+  #PW .pt-p2-20grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* Responsive PW: tablet + mobil */

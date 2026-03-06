@@ -103,6 +103,8 @@ def create_placeholder_images(static_root: Path) -> None:
         "chester1-275x110.jpg",
     ]
     needed_slides = ["slide1.jpg", "slide2.jpg", "slide3.jpg"]
+    # A1 – 10 poze dedicate hero (câini/pisici), dimensiune casetă A1 (landscape 800×400)
+    needed_hero_a1 = [f"hero_a1_{i:02d}.jpg" for i in range(1, 11)]
 
     def ensure_image(dir_path: Path, name: str, default_size=(275, 275)) -> None:
         fpath = dir_path / name
@@ -118,12 +120,16 @@ def create_placeholder_images(static_root: Path) -> None:
         elif "275x110" in name:
             w, h = 275, 110
         elif "slide" in name:
-            w, h = 800, 400  # slide mai mic decât 2880x1000 pentru placeholder
+            w, h = 800, 400
+        elif "hero_a1_" in name:
+            w, h = 800, 400  # dimensiune A1 (landscape)
         img = Image.new("RGB", (w, h), color=(210, 180, 140))
         img.save(fpath, "JPEG", quality=85)
         print(f"  Creat placeholder: {name}")
 
     for name in needed_pets:
+        ensure_image(pets_dir, name)
+    for name in needed_hero_a1:
         ensure_image(pets_dir, name)
     for name in needed_slides:
         ensure_image(images_dir, name)

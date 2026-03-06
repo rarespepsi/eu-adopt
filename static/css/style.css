@@ -2652,6 +2652,15 @@ body.page-animale img {
 	max-width: 100% !important;
 	height: auto !important;
 }
+/* PT (#PW): pozele umplu caseta, fără goluri stânga/dreapta (anulează regula de mai sus) */
+body.page-animale #PW img {
+	width: 100% !important;
+	height: 100% !important;
+	max-width: none !important;
+	object-fit: cover !important;
+	object-position: center center !important;
+	display: block !important;
+}
 #all_pets_wrap.pets-grid img.attachment-pet_single_large {
 	width: 100% !important;
 	height: 100% !important;
@@ -6680,4 +6689,35 @@ body.page-cont-ong .my-pets-grid .breed { font-size: 12px; color: #666; }
   width: 64px !important;
   height: 80px !important;
   flex-shrink: 0;
+}
+
+/* ========== POZE – umplere casetă (cover), inclusiv portret în casetă lată ========== */
+/* Fără goluri stânga/dreapta: poza (portret sau landscape) umple 100%, e centrată, tăiată cu cover */
+#PW .pt-strip-item--p1 img,
+#PW .pt-strip-item--p3 img,
+body.page-animale #PW img,
+.pet-photo-anim img,
+.pet-image-with-back .pet-image img,
+.pet-related-card img,
+#all_pets_wrap.pets-grid img.attachment-pet_single_large {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  max-width: none !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  display: block !important;
+}
+/* Portret în casetă: umple containerul + 2px blead ca la P2 (fără dungi albe la margini) */
+#PW .pt-strip-item--p1 img,
+#PW .pt-strip-item--p3 img,
+.pet-photo-anim img,
+.pet-image-with-back .pet-image img {
+  position: absolute !important;
+  inset: -2px !important;
+  top: -2px !important;
+  left: -2px !important;
+  right: -2px !important;
+  bottom: -2px !important;
 }
