@@ -1,0 +1,63 @@
+# Home – setări corecte (punct de restart) – SETARE FINALĂ SALVATĂ
+
+**→ Setările finale sunt în același format ca la A0: `.cursor/rules/home-detalii-finale-restart.mdc` (citește acel fișier).**
+
+**Stare salvată:** Pagina home (home_v2) – setare finală confirmată. Toate valorile de mai jos sunt cele corecte. La erori sau „reparări” care stric home (bandă albastră, scroll, A4 dezlipit), revii la aceste valori.
+
+---
+
+## Regulă obligatorie: nu modifica layout-ul home când nu lucrezi la home
+
+- **Layout-ul home (A5, A1, A6, A4, fără scroll, fără bară albastră)** nu se atinge când faci modificări pe navbar A0, pagini Animale/Contact/Cont, formulare etc.
+- Modificări pentru **home** se fac **doar** în `static/css/home_v2.css` și template-ul `templates/anunturi/home_v2.html`, și **doar** când utilizatorul cere explicit schimbări la pagina de home.
+
+---
+
+## Ce este memorat (SETARE FINALĂ)
+
+### Viewport – fără scroll
+- **#main_wrap:** `height: 100vh`, `min-height: 100vh`, `overflow: hidden`, flex column. Totul (A0 + A5/A1/A6 + A4) încadrat în ecran, fără scroll.
+- **#main_content:** `flex: 1 1 auto`, `min-height: 0`, `padding-top: 0` (fără spațiu sub A0).
+
+### A5, A1, A6 lipite de A0 (fără bară albastră)
+- **navbar-a0-secured.css:** `body:not(.page-home):not(.page-home-v2) #main_content { padding-top: var(--nav-height); }` — pe page-home-v2 NU se aplică padding-top, deci A5, A1, A6 sunt lipite de A0.
+- **home_v2.css:** `#main_content` cu `padding-top: 0`, `margin-top: 0`; `#main_content .layout` cu `margin-top: 0`, `padding-top: 0`.
+
+### A4 – banda „#EuAdopt#NuCumpar!#”
+- **Lipită de fundul lui A5, A3, A6** – fără gap: `#A4` cu `margin: 0`, `flex-shrink: 0`, fără margin-top negativ.
+- **Fundal:** `#f5e642` (galben). Text negru, marquee 45s.
+- **Fără scroll** – banda vizibilă în același viewport, nu jos la pagină.
+
+### Containere lipite
+- **Gap zero** între A0, #main_content, A4 și între A5, A1, A6: `gap: 0`, `margin: 0`, `padding: 0` pe #main_wrap, #main_content, .layout, .home-v2, .home-v2-three-cols, #A1–#A6, #A4.
+- **Fundal albastru** (#004B93) pe body, #main_wrap, #main_content, .layout, .home-v2 (spațiile între casete rămân albastre, nu albe).
+
+### Coloane home
+- **.home-v2-three-cols:** grid 3 coloane: `var(--side-col-width)` | 1fr | `var(--side-col-width)`; `min-height: calc(100vh - var(--nav-height) - 65px)`; `flex: 1`.
+- **A5** stânga, **A1** (centru, cu A2, A3), **A6** dreapta. Sidebar-urile vechi (.sidebar-left, .sidebar-right) ascunse pe home_v2.
+- **A5 și A6 – valori salvate:** #A5/#A6: width 100%, height 100%, min-height 0, flex column, overflow hidden, background red. Grid coloane: minmax(120px, var(--side-col-width)) | minmax(0, 1fr) | minmax(120px, var(--side-col-width)) ca A5/A6 să rămână vizibile. .home-v2-side-inner: grid 3×1fr, gap 0, padding 0. Complet în HOME_SETTINGS_REFERENCE.md.
+
+### Variabile (în home_v2.css pe body.page-home-v2)
+- `--side-col-width`, `--side-col-width-tablet`, `--gap-v2`, `--font-title`, `--font-body`, `--nav-height` moștenit de la body.
+
+---
+
+## Unde e implementat (surse de adevăr)
+
+- **CSS home:** `static/css/home_v2.css` – reguli pentru `.page-home-v2`, #A4, #A5, #A1, #A2, #A3, #A6, .home-v2-three-cols, layout fără scroll.
+- **Excepția navbar (fără bară albastră):** `static/css/navbar-a0-secured.css` – selectorul `body:not(.page-home):not(.page-home-v2) #main_content` pentru padding-top.
+- **Template:** `templates/anunturi/home_v2.html` – blocuri content și footer (A4 cu textul #EuAdopt#NuCumpar!#).
+- **Body class:** pagina home folosește `body_class = page-home-v2`.
+
+---
+
+## La erori
+
+Revenim la acest punct: refacem valorile din `home_v2.css` și din `navbar-a0-secured.css` (excepția page-home-v2) conform secțiunii „Ce este memorat” de mai sus. Nu reparăm layout-ul home din alte fișiere (ex. style.css) fără a verifica impactul pe home.
+
+---
+
+## Referință scurtă
+
+- **HOME_SETTINGS_REFERENCE.md** – document extensiv (inclusiv home_v2).
+- **home-settings-reference.mdc** – regulă Cursor: păstrează setările home la modificări pe alte zone.

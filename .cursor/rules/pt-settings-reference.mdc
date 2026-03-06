@@ -1,0 +1,27 @@
+---
+description: Pagina PT (Prietenul tău) – setările actuale sunt memorate, păstrează-le la modificări
+alwaysApply: true
+---
+
+# Referință setări pagină PT (Prietenul tău)
+
+**Setările actuale ale paginii PT (/pets-all) sunt memorate ca foarte bune.** La orice modificare pe PT (CSS, template-uri, layout, responsive), păstrează aceste valori dacă utilizatorul nu cere explicit altceva.
+
+Referință detaliată: **PT_SETTINGS_REFERENCE.md** (rădăcina proiectului).
+
+### Layout și scroll
+- **#main_wrap:** `height: 100dvh`, `overflow: hidden`, **`padding-bottom: 0 !important`** (fără bandă sub P3).
+- Scroll **doar** în P2 (listă animale); body fără scroll pe desktop/tabletă.
+
+### Grid PW
+- **.pt-grid:** `grid-template-columns: 0.26fr 3.24fr 0.5fr`; `grid-template-rows: minmax(72px, 0.28125fr) 2.4375fr minmax(72px, 0.28125fr)`; P1/P3 min 72px.
+
+### Responsive (breakpoint-uri în em, ca home v2)
+- **56.25em (≈900px):** 4 coloane P2; nu modifica P1/P3.
+- **37.5em (≈600px):** 3 coloane P2; `grid-template-rows: 72px 1fr 72px`; P1/P3 fix 72px.
+- **31.25em (≈500px):** layout stivuit, 2 coloane P2, hamburger P4 vizibil.
+
+### Fișier principal
+- **CSS:** `static/css/pt-v2.css`
+
+Nu schimba breakpoint-urile (em), înălțimile fixe P1/P3 la 37.5em, nici `padding-bottom: 0` pe #main_wrap fără cerere explicită.

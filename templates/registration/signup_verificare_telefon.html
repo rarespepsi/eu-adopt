@@ -1,0 +1,155 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Completează profil și verificare telefon | EU Adopt</title>
+	<link rel="stylesheet" href="{% static 'css/style.css' %}" />
+	<link rel="stylesheet" href="{% static 'css/auth-pages.css' %}" />
+	<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+	<style>
+		.sms-code-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 1em 0; }
+		.sms-code-row input { width: 2.5em; min-width: 2.5em; text-align: center; font-size: 1.3em; padding: 0.4em; border: 1px solid #888; border-radius: 4px; }
+		.profile-form .form-error-summary { background: #f8d7da; border: 2px solid #c00; color: #721c24; padding: 0.75em 1em; margin-bottom: 1em; border-radius: 6px; }
+		.profile-form .form-error-summary ul { margin: 0; padding-left: 1.25em; }
+		.profile-form .error, .profile-form span.error { color: #c00; font-weight: bold; }
+		.profile-form tr.field-error th { color: #c00; }
+		.profile-form tr.field-error input, .profile-form tr.field-error textarea, .profile-form tr.field-error select { border: 2px solid #c00 !important; background: #fff5f5 !important; }
+	</style>
+</head>
+<body class="content_left scheme_red page-signup-verificare-telefon auth-page">
+	<section id="main_wrap">
+		{% include "components/navbar_a0.html" %}
+		<section class="wrapper" id="main_content">
+			<div class="container clearfix">
+				<div class="auth-promo-banner">
+					<strong>🐾 Adoptă un prieten pe viață</strong>
+					Vizitează <a href="{% url 'pets_all' %}">prietenii tăi disponibili</a> și dă șansa unei adopții fericite.
+				</div>
+				<div class="posts-wrap">
+					<section class="page">
+						<h2 class="entry-title">Completează profil și verificare telefon</h2>
+						<div class="entry-content clearfix">
+							<p>Completați datele de mai jos (nume, telefon, localitate, poză opțională). La acest număr de telefon veți primi un cod SMS de 6 cifre – introduceți codul în casetele de la final pentru a finaliza înregistrarea. <strong>Toate categoriile</strong> (persoană fizică, SRL, ONG) trec prin același pas.</p>
+							{% if messages %}
+								<ul class="messagelist">
+									{% for message in messages %}
+										<li class="{{ message.tags }}">{{ message }}</li>
+									{% endfor %}
+								</ul>
+							{% endif %}
+							<form method="post" action="{% url 'signup_verificare_telefon' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}" enctype="multipart/form-data" class="profile-form" id="form-erori-anchor">
+								{% csrf_token %}
+								{% if next_url %}<input type="hidden" name="next" value="{{ next_url }}" />{% endif %}
+								{% if form.errors %}
+									<div id="form-erori" class="form-error-summary" role="alert">
+										<strong>Verificați erorile de mai jos:</strong>
+										<ul>
+											{% for field in form %}
+												{% for err in field.errors %}<li>{{ field.label }}: {{ err }}</li>{% endfor %}
+											{% endfor %}
+											{% for err in form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+										</ul>
+									</div>
+								{% endif %}
+								<table class="form-table" style="border: 0;">
+									<tr class="{% if form.nume.errors %}field-error{% endif %}">
+										<th>{{ form.nume.label }}</th>
+										<td>{{ form.nume }}{% if form.nume.errors %} <span class="error">{{ form.nume.errors.0 }}</span>{% endif %}</td>
+									</tr>
+									<tr class="{% if form.prenume.errors %}field-error{% endif %}">
+										<th>{{ form.prenume.label }}</th>
+										<td>{{ form.prenume }}{% if form.prenume.errors %} <span class="error">{{ form.prenume.errors.0 }}</span>{% endif %}</td>
+									</tr>
+									<tr class="{% if form.telefon.errors %}field-error{% endif %}">
+										<th>{{ form.telefon.label }}</th>
+										<td>
+											{{ form.telefon }}{% if form.telefon.errors %} <span class="error">{{ form.telefon.errors.0 }}</span>{% endif %}
+											<p class="telefon-sms-hint" style="margin: 0.5em 0 0 0; font-size: 0.95em; color: #555;">La acest număr veți primi codul SMS de 6 cifre. Introduceți codul în casetele de mai jos.</p>
+										</td>
+									</tr>
+									<tr class="{% if form.oras.errors %}field-error{% endif %}">
+										<th>{{ form.oras.label }}</th>
+										<td>{{ form.oras }}{% if form.oras.errors %} <span class="error">{{ form.oras.errors.0 }}</span>{% endif %}</td>
+									</tr>
+									<tr class="{% if form.judet.errors %}field-error{% endif %}">
+										<th>{{ form.judet.label }}</th>
+										<td>{{ form.judet }}{% if form.judet.errors %} <span class="error">{{ form.judet.errors.0 }}</span>{% endif %}</td>
+									</tr>
+									<tr class="{% if form.email.errors %}field-error{% endif %}">
+										<th>{{ form.email.label }}</th>
+										<td>{{ form.email }}{% if form.email.errors %} <span class="error">{{ form.email.errors.0 }}</span>{% endif %}</td>
+									</tr>
+									<tr class="{% if form.poza_1.errors %}field-error{% endif %}">
+										<th>{{ form.poza_1.label }}</th>
+										<td>
+											{% if profile.poza_1 %}<p style="margin-bottom: 0.5em;"><img src="{{ profile.poza_1.url }}" alt="Poza" style="max-width: 120px; max-height: 120px;" /></p>{% endif %}
+											{{ form.poza_1 }}{% if form.poza_1.errors %} <span class="error">{{ form.poza_1.errors.0 }}</span>{% endif %}
+										</td>
+									</tr>
+								</table>
+								{% if is_org and org_form %}
+								<hr style="margin: 1.5em 0;" />
+								<h3 style="margin-bottom: 0.75em;">Date obligatorii organizație (SRL / ONG)</h3>
+								<p class="help" style="margin-bottom: 1em;">Completați adresele și CUI-ul; bifați dacă sunteți adăpost public. Fără aceste date nu puteți continua.</p>
+								<table class="form-table" style="border: 0;">
+									<tr><th colspan="2"><strong>Adresă legală (sediu)</strong></th></tr>
+									<tr class="{% if org_form.legal_street.errors %}field-error{% endif %}"><th>{{ org_form.legal_street.label }}</th><td>{{ org_form.legal_street }}{% if org_form.legal_street.errors %} <span class="error">{{ org_form.legal_street.errors.0 }}</span>{% endif %}</td></tr>
+									<tr class="{% if org_form.legal_number.errors %}field-error{% endif %}"><th>{{ org_form.legal_number.label }}</th><td>{{ org_form.legal_number }}{% if org_form.legal_number.errors %} <span class="error">{{ org_form.legal_number.errors.0 }}</span>{% endif %}</td></tr>
+									<tr class="{% if org_form.legal_locality.errors %}field-error{% endif %}"><th>{{ org_form.legal_locality.label }}</th><td>{{ org_form.legal_locality }}{% if org_form.legal_locality.errors %} <span class="error">{{ org_form.legal_locality.errors.0 }}</span>{% endif %}</td></tr>
+									<tr class="{% if org_form.legal_judet.errors %}field-error{% endif %}"><th>{{ org_form.legal_judet.label }}</th><td>{{ org_form.legal_judet }}{% if org_form.legal_judet.errors %} <span class="error">{{ org_form.legal_judet.errors.0 }}</span>{% endif %}</td></tr>
+									<tr class="{% if org_form.legal_country.errors %}field-error{% endif %}"><th>{{ org_form.legal_country.label }}</th><td>{{ org_form.legal_country }}{% if org_form.legal_country.errors %} <span class="error">{{ org_form.legal_country.errors.0 }}</span>{% endif %}</td></tr>
+									<tr class="{% if org_form.legal_postal_code.errors %}field-error{% endif %}"><th>{{ org_form.legal_postal_code.label }}</th><td>{{ org_form.legal_postal_code }}{% if org_form.legal_postal_code.errors %} <span class="error">{{ org_form.legal_postal_code.errors.0 }}</span>{% endif %}</td></tr>
+									<tr><th colspan="2"><strong>Adresă locație – Prietenul tău (unde sunt câinii)</strong></th></tr>
+									<tr class="{% if org_form.pickup_street.errors %}field-error{% endif %}"><th>{{ org_form.pickup_street.label }}</th><td>{{ org_form.pickup_street }}{% if org_form.pickup_street.errors %} <span class="error">{{ org_form.pickup_street.errors.0 }}</span>{% endif %}</td></tr>
+									<tr class="{% if org_form.pickup_number.errors %}field-error{% endif %}"><th>{{ org_form.pickup_number.label }}</th><td>{{ org_form.pickup_number }}{% if org_form.pickup_number.errors %} <span class="error">{{ org_form.pickup_number.errors.0 }}</span>{% endif %}</td></tr>
+									<tr class="{% if org_form.pickup_locality.errors %}field-error{% endif %}"><th>{{ org_form.pickup_locality.label }}</th><td>{{ org_form.pickup_locality }}{% if org_form.pickup_locality.errors %} <span class="error">{{ org_form.pickup_locality.errors.0 }}</span>{% endif %}</td></tr>
+									<tr class="{% if org_form.pickup_judet.errors %}field-error{% endif %}"><th>{{ org_form.pickup_judet.label }}</th><td>{{ org_form.pickup_judet }}{% if org_form.pickup_judet.errors %} <span class="error">{{ org_form.pickup_judet.errors.0 }}</span>{% endif %}</td></tr>
+									<tr class="{% if org_form.pickup_country.errors %}field-error{% endif %}"><th>{{ org_form.pickup_country.label }}</th><td>{{ org_form.pickup_country }}{% if org_form.pickup_country.errors %} <span class="error">{{ org_form.pickup_country.errors.0 }}</span>{% endif %}</td></tr>
+									<tr class="{% if org_form.pickup_postal_code.errors %}field-error{% endif %}"><th>{{ org_form.pickup_postal_code.label }}</th><td>{{ org_form.pickup_postal_code }}{% if org_form.pickup_postal_code.errors %} <span class="error">{{ org_form.pickup_postal_code.errors.0 }}</span>{% endif %}</td></tr>
+									<tr><th colspan="2"><strong>Identificare și adăpost</strong></th></tr>
+									<tr class="{% if org_form.cui.errors %}field-error{% endif %}"><th>{{ org_form.cui.label }}</th><td>{{ org_form.cui }}{% if org_form.cui.errors %} <span class="error">{{ org_form.cui.errors.0 }}</span>{% endif %} <small>Cu sau fără prefix RO</small></td></tr>
+									<tr class="{% if org_form.adapost_public.errors %}field-error{% endif %}"><th>{{ org_form.adapost_public.label }}</th><td>{{ org_form.adapost_public }}{% if org_form.adapost_public.errors %} <span class="error">{{ org_form.adapost_public.errors.0 }}</span>{% endif %}</td></tr>
+								</table>
+								{% endif %}
+								<hr style="margin: 1.5em 0;" />
+								<div style="padding: 1em; border: 2px solid #c9b896; border-radius: 6px; background: #f8f4e8;">
+									<h3 style="margin-top: 0; margin-bottom: 0.5em;">Validare membru – cod SMS</h3>
+									{% if sms_sent %}
+									<p style="margin-bottom: 0.75em;">Am trimis un cod de <strong>6 cifre</strong> la numărul <strong>{{ phone_masked }}</strong>. Introduceți cele 6 cifre mai jos (în development: <strong>111111</strong>) și apăsați butonul.</p>
+									{% else %}
+									<p style="margin-bottom: 0.75em;">Completați numărul de telefon în tabelul de mai sus, apoi apăsați butonul <strong>Trimite SMS</strong> pentru a primi codul. După ce primiți codul, introduceți cele 6 cifre și apăsați din nou butonul.</p>
+									{% endif %}
+									<p style="margin-bottom: 0.35em; font-weight: bold;">Cod primit prin SMS (6 cifre):</p>
+									<div class="sms-code-row">
+										<input type="text" name="sms_code_1" id="id_sms_code_1" maxlength="1" size="1" inputmode="numeric" autocomplete="one-time-code" aria-label="Cifra 1" />
+										<input type="text" name="sms_code_2" id="id_sms_code_2" maxlength="1" size="1" inputmode="numeric" aria-label="Cifra 2" />
+										<input type="text" name="sms_code_3" id="id_sms_code_3" maxlength="1" size="1" inputmode="numeric" aria-label="Cifra 3" />
+										<input type="text" name="sms_code_4" id="id_sms_code_4" maxlength="1" size="1" inputmode="numeric" aria-label="Cifra 4" />
+										<input type="text" name="sms_code_5" id="id_sms_code_5" maxlength="1" size="1" inputmode="numeric" aria-label="Cifra 5" />
+										<input type="text" name="sms_code_6" id="id_sms_code_6" maxlength="1" size="1" inputmode="numeric" aria-label="Cifra 6" />
+									</div>
+								</div>
+								<p style="margin-top: 1em;"><button type="submit" class="button" formnovalidate>{% if sms_sent %}Validează cod 6 cifre{% else %}Trimite SMS{% endif %}</button></p>
+							</form>
+						</div>
+					</section>
+				</div>
+			</div>
+		</section>
+		<footer id="footer" class="wrapper">
+			<div class="container">
+				<div id="post_footer">
+					<div id="site_info" class="clearfix">
+						<div class="right">&copy; EU Adopt</div>
+					</div>
+				</div>
+			</div>
+		</footer>
+	</section>
+	{% if form.errors %}
+	<script>document.getElementById("form-erori") && document.getElementById("form-erori").scrollIntoView({ behavior: "smooth", block: "start" });</script>
+	{% endif %}
+</body>
+</html>

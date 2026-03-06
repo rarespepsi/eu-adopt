@@ -1,0 +1,356 @@
+{% load static %}
+{% load anunturi_extras %}
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Adaugă câini în serie | Adopt a Pet</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+	<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+	<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}" type="text/css" media="screen" />
+	<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+	<style>
+		.bulk-form-wrap .form-error, .bulk-form-wrap span.form-error { color: #c00; font-weight: bold; }
+		.bulk-form-wrap label { display: block; margin-top: 0.5em; font-weight: 600; }
+		.bulk-form-wrap input[type="text"], .bulk-form-wrap input[type="email"], .bulk-form-wrap input[type="number"],
+		.bulk-form-wrap input[type="file"], .bulk-form-wrap select, .bulk-form-wrap textarea { width: 100%; max-width: 100%; padding: 6px 8px; box-sizing: border-box; }
+		.bulk-common { background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #dee2e6; }
+		.bulk-common h3 { margin: 0 0 0.75rem 0; font-size: 1.1rem; }
+		.bulk-dog-card { background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+		.bulk-dog-card h4 { margin: 0 0 0.75rem 0; font-size: 1rem; color: #333; }
+		.bulk-dog-card .form-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 0.5rem; }
+		.bulk-dog-card .form-row.full { grid-template-columns: 1fr; }
+		.bulk-dog-card .photo-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: flex-start; }
+		.bulk-dog-card .photo-cell { flex: 0 0 120px; }
+		.bulk-dog-card .preview-box { width: 100px; height: 100px; border: 2px solid #ddd; background: #f5f5f5; border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-top: 4px; }
+		.bulk-dog-card .preview-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+		.bulk-dog-card .preview-placeholder { color: #999; font-size: 0.75rem; text-align: center; padding: 4px; }
+		.bulk-form-wrap .checkbox-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.5rem; align-items: center; }
+		.bulk-form-wrap .checkbox-row label { display: inline; margin-top: 0; font-weight: 500; }
+		#btn-add-dog { margin-bottom: 1rem; }
+		.bulk-form-wrap .form-actions { margin-top: 1rem; }
+		.adapost-public-locked { opacity: 0.8; pointer-events: none; }
+	</style>
+</head>
+<body class="content_left scheme_red page-cont-bulk-add-dogs">
+	<section id="main_wrap">
+		{% include "components/navbar_a0.html" %}
+		<section class="wrapper" id="main_content">
+			<div class="container clearfix">
+				<div class="posts-wrap">
+					<section class="page">
+						<h2 class="entry-title">Adaugă câini în serie</h2>
+						<div class="entry-content clearfix">
+							{% if messages %}
+							<ul class="adoption-messages">
+								{% for message in messages %}
+								<li class="message-{{ message.tags }}">{{ message }}</li>
+								{% endfor %}
+							</ul>
+							{% endif %}
+							<p>Completați <strong>datele comune</strong> (se aplică la toți câinii din această sesiune), apoi adăugați carduri pentru fiecare câine. Minim 3 poze per câine. Pentru adăpost public, CIP, carnet și sterilizat sunt obligatorii.</p>
+
+							<form method="post" action="{% url 'cont_bulk_add_dogs' %}" enctype="multipart/form-data" class="bulk-form-wrap" id="bulk-form">
+								{% csrf_token %}
+								<input type="hidden" name="dog_count" id="dog_count" value="{{ dog_count|default:1 }}" />
+
+								<div class="bulk-common">
+									<h3>Date comune (organizație)</h3>
+									{% for key, msg in common_errors.items %}
+										{% if key != "form_errors" %}<p class="form-error">{{ msg }}</p>{% endif %}
+									{% endfor %}
+									{% if common_errors.form_errors %}
+										<ul class="form-error">{% for m in common_errors.form_errors %}<li>{{ m }}</li>{% endfor %}</ul>
+									{% endif %}
+
+									<div class="form-row full">
+										<label for="id_common_judet">Județ *</label>
+										<select name="common_judet" id="id_common_judet" required>
+											<option value="">— Alegeți —</option>
+											{% for val, label in judet_choices %}
+											<option value="{{ val }}" {% if common_data.common_judet == val %}selected{% endif %}>{{ label }}</option>
+											{% endfor %}
+										</select>
+									</div>
+									<div class="form-row full">
+										<label for="id_common_localitate">Localitate</label>
+										<input type="text" name="common_localitate" id="id_common_localitate" value="{{ common_data.common_localitate|default:'' }}" placeholder="Oraș / sat" />
+									</div>
+									<div class="form-row full">
+										<label for="id_common_adresa">Adresa completă a organizației (legal) *</label>
+										<input type="text" name="common_adresa" id="id_common_adresa" value="{{ common_data.common_adresa|default:'' }}" required placeholder="Stradă, nr., localitate" />
+									</div>
+									<div class="form-row full">
+										<label for="id_common_pickup">Locație ridicare câine / locație fizică</label>
+										<input type="text" name="common_pickup" id="id_common_pickup" value="{{ common_data.common_pickup|default:'' }}" placeholder="Dacă e diferită de sediul legal" />
+									</div>
+									<div class="form-row full">
+										<label for="id_common_phone">Telefon contact *</label>
+										<input type="text" name="common_phone" id="id_common_phone" value="{{ common_data.common_phone|default:'' }}" required />
+									</div>
+									<div class="form-row full">
+										<label for="id_common_email">Email contact *</label>
+										<input type="email" name="common_email" id="id_common_email" value="{{ common_data.common_email|default:'' }}" required />
+									</div>
+									<div class="form-row full">
+										<label>Sunteți adăpost public? *</label>
+										<div class="checkbox-row">
+											<label><input type="radio" name="common_adapost_public" value="da" id="id_adapost_da" {% if common_data.common_adapost_public == 'da' %}checked{% endif %} /> DA</label>
+											<label><input type="radio" name="common_adapost_public" value="nu" id="id_adapost_nu" {% if common_data.common_adapost_public == 'nu' or not common_data.common_adapost_public %}checked{% endif %} /> NU</label>
+										</div>
+										{% if common_errors.common_adapost_public %}<span class="form-error">{{ common_errors.common_adapost_public }}</span>{% endif %}
+									</div>
+								</div>
+
+								<h3 style="margin: 1rem 0 0.5rem;">Câini</h3>
+								<button type="button" class="button" id="btn-add-dog">+ Adaugă încă un câine</button>
+
+								<div id="bulk-dog-cards">
+									{% for i in ""|ljust:dog_count %}
+									<div class="bulk-dog-card" data-index="{{ forloop.counter0 }}">
+										<h4>Câine {{ forloop.counter }}</h4>
+										{% with idx=forloop.counter0 %}
+										{% with errs=dog_errors|get_item:idx %}
+										{% if errs %}<ul class="form-error">{% for e in errs %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+										{% endwith %}
+										{% endwith %}
+										{% with dv=dog_values|get_at_index:forloop.counter0 %}
+										<div class="form-row">
+											<div><label>Nume câine *</label><input type="text" name="dog_{{ forloop.counter0 }}_nume" value="{{ dv.nume }}" required /></div>
+											<div>
+												<label>Specie</label>
+												<select name="dog_{{ forloop.counter0 }}_tip">
+													{% for val, label in tip_choices %}<option value="{{ val }}" {% if dv.tip == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+												</select>
+											</div>
+											<div>
+												<label>Sex *</label>
+												<select name="dog_{{ forloop.counter0 }}_sex" required>
+													{% for val, label in sex_choices %}<option value="{{ val }}" {% if dv.sex == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+												</select>
+											</div>
+											<div><label>Vârstă (ani) *</label><input type="number" name="dog_{{ forloop.counter0 }}_age_years" value="{{ dv.age_years }}" min="0" max="20" step="1" required /></div>
+											<div>
+												<label>Talie</label>
+												<select name="dog_{{ forloop.counter0 }}_marime">
+													<option value="">—</option>
+													{% for val, label in marime_choices %}<option value="{{ val }}" {% if dv.marime == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+												</select>
+											</div>
+										</div>
+										<div class="form-row full">
+											<label>Descriere scurtă</label>
+											<textarea name="dog_{{ forloop.counter0 }}_descriere" rows="2" maxlength="500" placeholder="Max 500 caractere">{{ dv.descriere }}</textarea>
+										</div>
+										<div class="form-row full photo-row">
+											<div class="photo-cell">
+												<label>Poza 1 *</label>
+												<input type="file" name="dog_{{ forloop.counter0 }}_imagine" accept="image/*" class="dog-photo-input" data-preview="p1" required />
+												<div class="preview-box" data-preview="p1"><span class="preview-placeholder">Preview</span><img src="" alt="" style="display:none;" /></div>
+											</div>
+											<div class="photo-cell">
+												<label>Poza 2 *</label>
+												<input type="file" name="dog_{{ forloop.counter0 }}_imagine_2" accept="image/*" class="dog-photo-input" data-preview="p2" required />
+												<div class="preview-box" data-preview="p2"><span class="preview-placeholder">Preview</span><img src="" alt="" style="display:none;" /></div>
+											</div>
+											<div class="photo-cell">
+												<label>Poza 3 *</label>
+												<input type="file" name="dog_{{ forloop.counter0 }}_imagine_3" accept="image/*" class="dog-photo-input" data-preview="p3" required />
+												<div class="preview-box" data-preview="p3"><span class="preview-placeholder">Preview</span><img src="" alt="" style="display:none;" /></div>
+											</div>
+										</div>
+										<div class="checkbox-row sanitare-row">
+											<label><input type="checkbox" name="dog_{{ forloop.counter0 }}_sterilizat" class="sanitare-sterilizat" {% if dv.sterilizat %}checked{% endif %} /> Sterilizat</label>
+											<label><input type="checkbox" name="dog_{{ forloop.counter0 }}_cip_check" class="sanitare-cip-check" /> CIP</label>
+											<input type="text" name="dog_{{ forloop.counter0 }}_cip" value="{{ dv.cip }}" placeholder="Nr. CIP" class="sanitare-cip-nr" style="max-width:120px;" />
+											<label><input type="checkbox" name="dog_{{ forloop.counter0 }}_vaccin_check" class="sanitare-vaccin" /> Vaccin</label>
+											<input type="hidden" name="dog_{{ forloop.counter0 }}_vaccin" class="sanitare-vaccin-nr" value="{{ dv.vaccin }}" />
+											<label><input type="checkbox" name="dog_{{ forloop.counter0 }}_carnet_check" class="sanitare-carnet" /> Carnet sănătate</label>
+											<input type="text" name="dog_{{ forloop.counter0 }}_carnet_sanatate" value="{{ dv.carnet_sanatate }}" placeholder="Detalii" class="sanitare-carnet-nr" style="max-width:140px;" />
+										</div>
+										{% endwith %}
+									</div>
+									{% empty %}
+									<div class="bulk-dog-card" data-index="0">
+										<h4>Câine 1</h4>
+										<div class="form-row">
+											<div><label>Nume câine *</label><input type="text" name="dog_0_nume" required /></div>
+											<div><label>Specie</label><select name="dog_0_tip">{% for val, label in tip_choices %}<option value="{{ val }}">{{ label }}</option>{% endfor %}</select></div>
+											<div><label>Sex *</label><select name="dog_0_sex" required>{% for val, label in sex_choices %}<option value="{{ val }}">{{ label }}</option>{% endfor %}</select></div>
+											<div><label>Vârstă (ani) *</label><input type="number" name="dog_0_age_years" min="0" max="20" step="1" required /></div>
+											<div><label>Talie</label><select name="dog_0_marime"><option value="">—</option>{% for val, label in marime_choices %}<option value="{{ val }}">{{ label }}</option>{% endfor %}</select></div>
+										</div>
+										<div class="form-row full"><label>Descriere scurtă</label><textarea name="dog_0_descriere" rows="2" maxlength="500"></textarea></div>
+										<div class="form-row full photo-row">
+											<div class="photo-cell"><label>Poza 1 *</label><input type="file" name="dog_0_imagine" accept="image/*" class="dog-photo-input" data-preview="p1" required /><div class="preview-box" data-preview="p1"><span class="preview-placeholder">Preview</span><img src="" alt="" style="display:none;" /></div></div>
+											<div class="photo-cell"><label>Poza 2 *</label><input type="file" name="dog_0_imagine_2" accept="image/*" class="dog-photo-input" data-preview="p2" required /><div class="preview-box" data-preview="p2"><span class="preview-placeholder">Preview</span><img src="" alt="" style="display:none;" /></div></div>
+											<div class="photo-cell"><label>Poza 3 *</label><input type="file" name="dog_0_imagine_3" accept="image/*" class="dog-photo-input" data-preview="p3" required /><div class="preview-box" data-preview="p3"><span class="preview-placeholder">Preview</span><img src="" alt="" style="display:none;" /></div></div>
+										</div>
+										<div class="checkbox-row sanitare-row">
+											<label><input type="checkbox" name="dog_0_sterilizat" class="sanitare-sterilizat" /> Sterilizat</label>
+											<label><input type="checkbox" name="dog_0_cip_check" class="sanitare-cip-check" /> CIP</label>
+											<input type="text" name="dog_0_cip" placeholder="Nr. CIP" class="sanitare-cip-nr" style="max-width:120px;" />
+											<label><input type="checkbox" name="dog_0_vaccin_check" class="sanitare-vaccin" /> Vaccin</label>
+											<input type="hidden" name="dog_0_vaccin" class="sanitare-vaccin-nr" value="" />
+											<label><input type="checkbox" name="dog_0_carnet_check" class="sanitare-carnet" /> Carnet sănătate</label>
+											<input type="text" name="dog_0_carnet_sanatate" placeholder="Detalii" class="sanitare-carnet-nr" style="max-width:140px;" />
+										</div>
+									</div>
+									{% endfor %}
+								</div>
+
+								<div class="form-actions">
+									<button type="submit" class="button">Salvează toți câinii</button>
+									<a href="{% url 'cont_ong' %}" class="button" style="margin-left: 0.5em;">Anulare</a>
+								</div>
+							</form>
+						</div>
+					</section>
+				</div>
+			</div>
+		</section>
+		<footer id="footer" class="wrapper">
+			<div class="container"><div id="post_footer"><div id="site_info" class="clearfix"><div class="right">&copy; Adopt a Pet</div></div></div></div>
+		</footer>
+	</section>
+	<script>
+	(function() {
+		var form = document.getElementById("bulk-form");
+		var cardsContainer = document.getElementById("bulk-dog-cards");
+		var dogCountInput = document.getElementById("dog_count");
+		var btnAdd = document.getElementById("btn-add-dog");
+		var adapostDa = document.getElementById("id_adapost_da");
+
+		function getCardTemplate() {
+			var first = cardsContainer.querySelector(".bulk-dog-card");
+			return first ? first.cloneNode(true) : null;
+		}
+
+		function updateCardIndex(card, index) {
+			card.setAttribute("data-index", index);
+			card.querySelector("h4").textContent = "Câine " + (index + 1);
+			card.querySelectorAll("[name]").forEach(function(el) {
+				var name = el.getAttribute("name");
+				if (name && name.indexOf("dog_") === 0) {
+					var rest = name.slice(4);
+					var num = rest.replace(/^[0-9]+_/, "");
+					var numIdx = rest.indexOf("_");
+					var suffix = numIdx >= 0 ? rest.slice(numIdx) : "";
+					el.setAttribute("name", "dog_" + index + suffix);
+				}
+			});
+			card.querySelectorAll("input[type=text], input[type=number], textarea, select").forEach(function(el) {
+				if (el.type !== "file" && el.name && el.name.indexOf("dog_") === 0) { el.value = ""; }
+			});
+			card.querySelectorAll("input[type=file]").forEach(function(el) { el.value = ""; });
+			card.querySelectorAll(".preview-box img").forEach(function(img) { img.src = ""; img.style.display = "none"; });
+			card.querySelectorAll(".preview-placeholder").forEach(function(p) { p.style.display = ""; });
+			card.querySelectorAll(".sanitare-sterilizat, .sanitare-cip-check, .sanitare-vaccin, .sanitare-carnet").forEach(function(cb) { cb.checked = false; });
+			card.querySelectorAll(".sanitare-cip-nr, .sanitare-carnet-nr").forEach(function(t) { t.value = ""; });
+			applyAdapostLock(card);
+			bindPhotoPreviews(card);
+		}
+
+		function applyAdapostLock(card) {
+			var row = card ? card.querySelector(".sanitare-row") : null;
+			var rows = card ? [row] : document.querySelectorAll(".sanitare-row");
+			if (!rows.length) rows = document.querySelectorAll(".sanitare-row");
+			var isPublic = adapostDa && adapostDa.checked;
+			rows.forEach(function(r) {
+				if (!r) return;
+				if (isPublic) {
+					r.classList.add("adapost-public-locked");
+					r.querySelectorAll(".sanitare-sterilizat").forEach(function(cb) { cb.checked = true; cb.disabled = true; });
+					r.querySelectorAll(".sanitare-cip-check").forEach(function(cb) { cb.checked = true; cb.disabled = true; });
+					r.querySelectorAll(".sanitare-carnet").forEach(function(cb) { cb.checked = true; cb.disabled = true; });
+					r.querySelectorAll(".sanitare-cip-nr").forEach(function(inp) { inp.required = true; inp.disabled = false; });
+					r.querySelectorAll(".sanitare-carnet-nr").forEach(function(inp) { inp.required = true; inp.disabled = false; });
+				} else {
+					r.classList.remove("adapost-public-locked");
+					r.querySelectorAll(".sanitare-sterilizat, .sanitare-cip-check, .sanitare-carnet").forEach(function(cb) { cb.disabled = false; });
+					r.querySelectorAll(".sanitare-cip-nr, .sanitare-carnet-nr").forEach(function(inp) { inp.required = false; inp.disabled = false; });
+				}
+			});
+		}
+
+		function bindPhotoPreviews(card) {
+			var root = card || document;
+			root.querySelectorAll(".dog-photo-input").forEach(function(input) {
+				if (input._bound) return;
+				input._bound = true;
+				input.addEventListener("change", function() {
+					var box = input.closest(".photo-cell").querySelector(".preview-box");
+					var img = box ? box.querySelector("img") : null;
+					var ph = box ? box.querySelector(".preview-placeholder") : null;
+					var file = input.files && input.files[0];
+					if (file && file.type.indexOf("image") !== -1) {
+						var r = new FileReader();
+						r.onload = function() {
+							if (img) { img.src = r.result; img.style.display = "block"; }
+							if (ph) ph.style.display = "none";
+						};
+						r.readAsDataURL(file);
+					} else {
+						if (img) { img.src = ""; img.style.display = "none"; }
+						if (ph) ph.style.display = "";
+					}
+				});
+			});
+		}
+
+		function syncCipCarnetFromCheckboxes(card) {
+			card.querySelectorAll(".sanitare-cip-check").forEach(function(cb) {
+				var nr = card.querySelector("input[name='" + card.querySelector("[name^=dog_]").name.replace(/_cip_check$/, "_cip") + "']");
+				if (!nr) return;
+				var name = nr.getAttribute("name");
+				if (cb.checked && !nr.value) nr.value = "Da";
+				if (!cb.checked && nr.value === "Da") nr.value = "";
+			});
+			card.querySelectorAll(".sanitare-carnet").forEach(function(cb) {
+				var inp = card.querySelector("input[name='" + cb.name.replace("_check", "_sanatate") + "']");
+				if (!inp) inp = card.querySelector("input[name='" + cb.name.replace("_check", "_sanatate").replace("_sanatate", "_carnet_sanatate") + "']");
+				var carn = card.querySelector("[name$='_carnet_sanatate']");
+				if (carn && cb.checked && !carn.value) carn.value = "Da";
+				if (carn && !cb.checked && carn.value === "Da") carn.value = "";
+			});
+		}
+
+		btnAdd.addEventListener("click", function() {
+			var template = getCardTemplate();
+			if (!template) return;
+			var nextIndex = cardsContainer.querySelectorAll(".bulk-dog-card").length;
+			updateCardIndex(template, nextIndex);
+			cardsContainer.appendChild(template);
+			dogCountInput.value = nextIndex + 1;
+		});
+
+		if (adapostDa) {
+			adapostDa.addEventListener("change", function() { applyAdapostLock(); });
+			document.getElementById("id_adapost_nu").addEventListener("change", function() { applyAdapostLock(); });
+		}
+		applyAdapostLock();
+		bindPhotoPreviews();
+
+		form.addEventListener("submit", function() {
+			document.querySelectorAll(".sanitare-cip-check").forEach(function(cb) {
+				var card = cb.closest(".bulk-dog-card");
+				var cipInp = card.querySelector("input[name='" + cb.name.replace("_check", "") + "']");
+				if (cipInp && cb.checked && !cipInp.value) cipInp.value = "Da";
+			});
+			document.querySelectorAll(".sanitare-carnet").forEach(function(cb) {
+				var card = cb.closest(".bulk-dog-card");
+				var carn = card.querySelector("input[name$='_carnet_sanatate']");
+				if (carn && cb.checked && !carn.value) carn.value = "Da";
+			});
+			document.querySelectorAll(".sanitare-vaccin").forEach(function(cb) {
+				if (cb.type !== "checkbox") return;
+				var card = cb.closest(".bulk-dog-card");
+				var vacc = card.querySelector("input.sanitare-vaccin-nr");
+				if (!vacc) vacc = card.querySelector("input[name$='_vaccin']");
+				if (vacc) vacc.value = cb.checked ? "Da" : "";
+			});
+		});
+	})();
+	</script>
+</body>
+</html>

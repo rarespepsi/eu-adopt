@@ -1,0 +1,12 @@
+---
+description: Politica verificare – cine are nevoie de verificare
+alwaysApply: true
+---
+
+# Verificare profil și SMS
+
+- **Utilizatori neautentificați (vizitatori)**: nu au nevoie de nici o verificare. Pot naviga liber pe site (liste animale, fișe animale, pagini statice). La acțiuni (adopt, wishlist etc.) sunt redirecționați la login, nu la verificare telefon.
+- **Utilizatori autentificați**: pentru acțiuni care contează (trimitere cerere adopție, postare animale, wishlist) este obligatorie **verificarea completă**: date profil și **verificare telefon prin SMS**. Fără acestea nu pot adopta, posta sau folosi wishlist.
+- **Excepție**: userul cu username `adrian` (cont admin/probă) este considerat verificat peste tot; nu se impun restricții pentru el.
+
+Nu introduce fluxuri sau mesaje care sugerează că adoptiile sau postările sunt posibile fără verificare completă (în afară de excepția de mai sus).

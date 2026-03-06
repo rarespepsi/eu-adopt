@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Autentificare | EU Adopt{% endblock %}
+
+{% block body_class %}page-login auth-page{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth-pages.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="auth-content-wrap">
+	<div class="auth-form-box">
+		<section class="page">
+			<h2 class="entry-title">Autentificare</h2>
+			<div class="entry-content clearfix">
+				{% if form.errors %}
+					<p class="errornote">Utilizatorul sau parola sunt incorecte. Încercați din nou.</p>
+				{% endif %}
+				{% if next %}
+					{% if user.is_authenticated %}
+						<p>Contul dvs. nu are acces la această pagină.</p>
+					{% endif %}
+				{% endif %}
+				<form method="post" action="{% url 'login' %}" class="login-form" style="max-width: 320px;">
+					{% csrf_token %}
+					<p>
+						<label for="id_username">Utilizator / Email</label><br />
+						{{ form.username }}
+					</p>
+					<p>
+						<label for="id_password">Parolă</label><br />
+						<span class="password-field-wrap">
+							{{ form.password }}
+							<button type="button" class="password-toggle" title="Arată parola" aria-label="Arată parola" tabindex="-1">
+								<svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+								<svg class="icon-eye-off" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+							</button>
+						</span>
+					</p>
+					<input type="hidden" name="next" value="{{ next }}" />
+					<p><button type="submit" class="button">Intră în cont</button></p>
+					<p style="margin-top: 0.75em;"><a href="{% url 'password_reset' %}">Am uitat parola</a></p>
+				</form>
+				<p class="auth-register-cta" style="margin-top: 1em;">
+					Nu ai cont? <a href="{% url 'register' %}" class="button button-primary">Creează cont</a>
+				</p>
+				<p><a href="{% url 'home' %}">Înapoi la prima pagină</a></p>
+			</div>
+		</section>
+	</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/auth-form-errors.js' %}"></script>
+<script>
+(function() {
+	var wrap = document.querySelector('.password-field-wrap');
+	if (!wrap) return;
+	var input = wrap.querySelector('input');
+	var btn = wrap.querySelector('.password-toggle');
+	var eye = wrap.querySelector('.icon-eye');
+	var eyeOff = wrap.querySelector('.icon-eye-off');
+	if (!input || !btn) return;
+	btn.addEventListener('click', function() {
+		if (input.type === 'password') {
+			input.type = 'text';
+			btn.title = 'Ascunde parola';
+			btn.setAttribute('aria-label', 'Ascunde parola');
+			if (eye) eye.style.display = 'none';
+			if (eyeOff) eyeOff.style.display = '';
+		} else {
+			input.type = 'password';
+			btn.title = 'Arată parola';
+			btn.setAttribute('aria-label', 'Arată parola');
+			if (eye) eye.style.display = '';
+			if (eyeOff) eyeOff.style.display = 'none';
+		}
+	});
+})();
+</script>
+{% endblock %}

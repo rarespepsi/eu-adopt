@@ -1,0 +1,158 @@
+{% load static %}
+{# LoginRequiredModal – modal reutilizabil pentru acțiuni care necesită autentificare (Adopt, Wishlist, Transport, etc.) #}
+<div id="login-required-modal-overlay" class="login-required-overlay" aria-hidden="true" role="dialog" aria-labelledby="login-required-modal-title">
+	<div id="login-required-modal" class="login-required-modal" role="document">
+		<h2 id="login-required-modal-title" class="login-required-modal-title">Continuă adopția</h2>
+		<p class="login-required-modal-message">Pentru a continua, creează un cont gratuit (durează 30 secunde).</p>
+		<div class="login-required-modal-actions">
+			<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" class="login-required-btn login-required-btn-login">Login</a>
+			<a href="{% url 'register' %}?next={{ request.get_full_path|urlencode }}" class="login-required-btn login-required-btn-register">Creează cont</a>
+		</div>
+		<button type="button" class="login-required-close" aria-label="Închide" title="Închide">&times;</button>
+	</div>
+</div>
+<style>
+.login-required-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 10001;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+.login-required-overlay.is-visible {
+	opacity: 1;
+	visibility: visible;
+}
+.login-required-modal {
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+	padding: 1.75rem 2rem;
+	max-width: 420px;
+	width: calc(100% - 2rem);
+	position: relative;
+	transform: scale(0.95);
+	transition: transform 0.25s ease;
+}
+.login-required-overlay.is-visible .login-required-modal {
+	transform: scale(1);
+}
+.login-required-modal-title {
+	margin: 0 0 0.75rem;
+	font-size: 1.35rem;
+	font-weight: 600;
+	color: #1a1a1a;
+}
+.login-required-modal-message {
+	margin: 0 0 1.5rem;
+	color: #444;
+	line-height: 1.5;
+	font-size: 1rem;
+}
+.login-required-modal-actions {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+.login-required-btn {
+	display: inline-block;
+	padding: 0.6rem 1.25rem;
+	border-radius: 8px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background 0.2s, color 0.2s;
+}
+.login-required-btn-login {
+	background: #343434;
+	color: #fff;
+	border: 2px solid #343434;
+}
+.login-required-btn-login:hover {
+	background: #222;
+	color: #fff;
+	border-color: #222;
+}
+.login-required-btn-register {
+	background: #fff;
+	color: #343434;
+	border: 2px solid #343434;
+}
+.login-required-btn-register:hover {
+	background: #343434;
+	color: #fff;
+}
+.login-required-close {
+	position: absolute;
+	top: 0.75rem;
+	right: 0.75rem;
+	background: none;
+	border: none;
+	font-size: 1.5rem;
+	line-height: 1;
+	color: #666;
+	cursor: pointer;
+	padding: 0.25rem;
+	transition: color 0.2s;
+}
+.login-required-close:hover {
+	color: #1a1a1a;
+}
+/* Icon lock on guest-only buttons (added by templates) */
+.login-required-lock-icon {
+	opacity: 0.85;
+	font-size: 0.85em;
+	vertical-align: middle;
+	margin-right: 0.2em;
+}
+</style>
+<script>
+(function() {
+	'use strict';
+	var overlay = document.getElementById('login-required-modal-overlay');
+	var modal = document.getElementById('login-required-modal');
+	var closeBtn = modal && modal.querySelector('.login-required-close');
+	function isGuest() {
+		return document.body.getAttribute('data-user-authenticated') !== 'true';
+	}
+	function showModal() {
+		if (!overlay) return;
+		overlay.classList.add('is-visible');
+		overlay.setAttribute('aria-hidden', 'false');
+		document.body.style.overflow = 'hidden';
+		if (closeBtn) closeBtn.focus();
+	}
+	function hideModal() {
+		if (!overlay) return;
+		overlay.classList.remove('is-visible');
+		overlay.setAttribute('aria-hidden', 'true');
+		document.body.style.overflow = '';
+	}
+	document.body.addEventListener('click', function(e) {
+		if (!isGuest()) return;
+		var trigger = e.target.closest('[data-require-login]');
+		if (!trigger) return;
+		// Doar click direct pe butonul restricționat (sau pe copilul lui imediat), nu pe orice element din pagină
+		if (e.target !== trigger && e.target.parentNode !== trigger) return;
+		var tag = trigger.tagName && trigger.tagName.toUpperCase();
+		var href = (tag === 'A' && trigger.getAttribute('href')) || '';
+		if (href && href !== '#' && href.indexOf('javascript:') !== 0) return;
+		e.preventDefault();
+		e.stopPropagation();
+		showModal();
+	}, true);
+	if (overlay) {
+		overlay.addEventListener('click', function(e) {
+			if (e.target === overlay) hideModal();
+		});
+	}
+	if (closeBtn) closeBtn.addEventListener('click', hideModal);
+	document.addEventListener('keydown', function(e) {
+		if (e.key === 'Escape' && overlay && overlay.classList.contains('is-visible')) hideModal();
+	});
+})();
+</script>

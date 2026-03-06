@@ -1,0 +1,58 @@
+{% load static %}
+{% load anunturi_extras %}
+<!DOCTYPE html>
+<html lang="ro">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>Contact | Adopt a Pet</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+		<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+		<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}" type="text/css" media="screen" />
+		<link rel="stylesheet" href="{% static 'css/scales-overlay.css' %}" type="text/css" media="all" />
+		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+	</head>
+	<body class="content_left scheme_red page-contact">
+		<section id="main_wrap">
+			{% include "components/navbar_a0.html" %}
+			<section class="wrapper page-with-scales" id="main_content" style="position: relative; min-height: 100%;">
+				<div id="CW" class="container clearfix">
+					<div class="posts-wrap">
+						<section class="page">
+							<h2 class="entry-title">Contact</h2>
+							<div class="entry-content clearfix">
+								<p><strong>Cum adopți</strong></p>
+								<p>Pentru a adopta un animal, contactați direct adăpostul sau asociația care a publicat anunțul. Pe fiecare pagină de animal veți găsi datele de contact ale membrului care îngrijește animalul.</p>
+								<p><strong>Contact platformă</strong></p>
+								<p>Pentru întrebări despre site, parteneriate sau suport tehnic, puteți ne contacta la:</p>
+								<ul>
+									<li>E-mail: contact.euadopt@gmail.com</li>
+									<li>Telefon: <em>(completați numărul)</em></li>
+								</ul>
+								<p>Adresa: <em>(completați adresa dacă doriți)</em></p>
+							</div>
+						</section>
+					</div>
+				</div>
+				{% include "components/scales_overlay.html" %}
+			</section>
+			<footer id="footer" class="wrapper">
+				<div class="container">
+					<div id="post_footer">
+						<div id="site_info" class="clearfix">
+							<div class="left footer_menu_wrap clearfix">
+								<ul id="menu-footer-menu" class="menu">
+									<li><a href="{% url 'home' %}">Acasă</a></li>
+									<li><a href="{% url 'pets_all' %}">Toți prietenii tăi</a></li>
+									<li><a href="{% url 'contact' %}">Contact</a></li>
+								</ul>
+							</div>
+							<div class="right">&copy; Adopt a Pet</div>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</section>
+		<script type="text/javascript" src="{% static 'includes/js/jquery-1.11.1.min.js' %}"></script>
+		<script type="text/javascript" src="{% static 'includes/js/jquery.mobilemenu.js' %}"></script>
+	</body>
+</html>

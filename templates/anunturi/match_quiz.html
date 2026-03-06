@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Potrivirea perfectă | EU Adopt{% endblock %}
+{% block body_class %}page-match-quiz{% endblock %}
+
+{% block content %}
+<div class="match-quiz-wrap">
+	<h2 class="entry-title">🐾 Potrivirea perfectă</h2>
+	<p class="match-quiz-intro">Completează scurtul chestionar și îți vom sugera animale potrivite profilului tău.</p>
+	<form method="post" action="{% url 'match_quiz' %}" class="match-quiz-form">
+		{% csrf_token %}
+		<div class="match-quiz-fields">
+			<div class="match-quiz-row">
+				<label for="id_housing">{{ form.housing.label }}</label>
+				{{ form.housing }}
+				{% if form.housing.errors %}<span class="match-quiz-error">{{ form.housing.errors.0 }}</span>{% endif %}
+			</div>
+			<div class="match-quiz-row">
+				<label for="id_experience">{{ form.experience.label }}</label>
+				{{ form.experience }}
+				{% if form.experience.errors %}<span class="match-quiz-error">{{ form.experience.errors.0 }}</span>{% endif %}
+			</div>
+			<div class="match-quiz-row">
+				<label for="id_activity_level">{{ form.activity_level.label }}</label>
+				{{ form.activity_level }}
+				{% if form.activity_level.errors %}<span class="match-quiz-error">{{ form.activity_level.errors.0 }}</span>{% endif %}
+			</div>
+			<div class="match-quiz-row">
+				<label for="id_time_available">{{ form.time_available.label }}</label>
+				{{ form.time_available }}
+				{% if form.time_available.errors %}<span class="match-quiz-error">{{ form.time_available.errors.0 }}</span>{% endif %}
+			</div>
+			<div class="match-quiz-row">
+				<label for="id_size_preference">{{ form.size_preference.label }}</label>
+				{{ form.size_preference }}
+				{% if form.size_preference.errors %}<span class="match-quiz-error">{{ form.size_preference.errors.0 }}</span>{% endif %}
+			</div>
+			<div class="match-quiz-row">
+				<label for="id_age_preference">{{ form.age_preference.label }}</label>
+				{{ form.age_preference }}
+				{% if form.age_preference.errors %}<span class="match-quiz-error">{{ form.age_preference.errors.0 }}</span>{% endif %}
+			</div>
+			<div class="match-quiz-row match-quiz-checkboxes">
+				{{ form.has_kids }} <label for="id_has_kids">{{ form.has_kids.label }}</label>
+				{% if form.has_kids.errors %}<span class="match-quiz-error">{{ form.has_kids.errors.0 }}</span>{% endif %}
+			</div>
+			<div class="match-quiz-row match-quiz-checkboxes">
+				{{ form.has_cat }} <label for="id_has_cat">{{ form.has_cat.label }}</label>
+				{% if form.has_cat.errors %}<span class="match-quiz-error">{{ form.has_cat.errors.0 }}</span>{% endif %}
+			</div>
+			<div class="match-quiz-row match-quiz-checkboxes">
+				{{ form.has_dog }} <label for="id_has_dog">{{ form.has_dog.label }}</label>
+				{% if form.has_dog.errors %}<span class="match-quiz-error">{{ form.has_dog.errors.0 }}</span>{% endif %}
+			</div>
+		</div>
+		<div class="match-quiz-actions">
+			<button type="submit" class="match-quiz-submit">Vezi potrivirile</button>
+			<a href="{% url 'pets_all' %}" class="match-quiz-cancel">Înapoi la animale</a>
+		</div>
+	</form>
+</div>
+<style>
+.match-quiz-wrap { max-width: 640px; margin: 0 auto; padding: 1.5rem 1rem; }
+.match-quiz-intro { color: #555; margin-bottom: 1.5rem; }
+.match-quiz-form { background: #f9f9f9; padding: 1.5rem; border-radius: 12px; border: 1px solid #eee; }
+.match-quiz-fields { display: flex; flex-direction: column; gap: 1rem; }
+.match-quiz-row label { display: block; font-weight: 600; margin-bottom: 0.35rem; color: #333; }
+.match-quiz-row select { width: 100%; max-width: 100%; padding: 8px 10px; font-size: 1rem; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+.match-quiz-checkboxes { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.match-quiz-checkboxes label { margin-bottom: 0; display: inline; font-weight: 500; }
+.match-quiz-error { color: #c62828; font-size: 0.9rem; display: block; margin-top: 0.25rem; }
+.match-quiz-actions { margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
+.match-quiz-submit { padding: 10px 24px; background: #c62828; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+.match-quiz-submit:hover { background: #b71c1c; }
+.match-quiz-cancel { color: #666; text-decoration: none; font-size: 0.95rem; }
+.match-quiz-cancel:hover { text-decoration: underline; }
+</style>
+{% endblock %}

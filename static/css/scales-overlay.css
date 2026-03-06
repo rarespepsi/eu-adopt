@@ -1,0 +1,111 @@
+/*
+ * Scale overlay – orientare în cm. Folosit pe Servicii, Transport, Shop, Contact.
+ * Nu ocupă spațiu, nu schimbă dimensiuni; mereu vizibile deasupra conținutului (pointer-events: none).
+ * Wrapper-ul trebuie să aibă clasa .page-with-scales și position: relative.
+ */
+
+.page-with-scales {
+	position: relative !important;
+}
+
+/* Scala de jos: de la stânga până la limita din dreapta */
+.page-with-scales .servicii-scale-bottom-wrap {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 1.2cm;
+	height: 1.2cm;
+	overflow: hidden;
+	pointer-events: none;
+	z-index: 99999;
+}
+
+.page-with-scales .servicii-scale-bottom {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100cm;
+	height: 1.2cm;
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+	background: rgba(0, 75, 147, 0.2);
+	border-top: 1px solid #004B93;
+	font-size: 0.35cm;
+	color: #004B93;
+	box-sizing: border-box;
+}
+
+.page-with-scales .servicii-scale-bottom .sw-scale-cell {
+	flex: 0 0 1cm;
+	width: 1cm;
+	min-width: 1cm;
+	max-width: 1cm;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	border-left: 1px solid rgba(0, 75, 147, 0.5);
+}
+
+.page-with-scales .servicii-scale-bottom .sw-scale-cell:first-child { border-left: none; }
+
+.page-with-scales .servicii-scale-bottom .sw-scale-cell.sw-scale-cm {
+	flex: 0 0 auto;
+	width: auto;
+	min-width: 0;
+	max-width: none;
+	padding: 0 0.2cm;
+	border: none;
+	font-weight: bold;
+}
+
+/* Scala verticală: oprită la limita de jos a navbar (override pe Servicii: top: var(--nav-height)) */
+.page-with-scales .servicii-scale-right-wrap {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 1.2cm;
+	overflow: hidden;
+	pointer-events: none;
+	z-index: 99999;
+}
+
+.page-with-scales .servicii-scale-right {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	left: 0;
+	width: 1.2cm;
+	height: 100%;
+	display: flex;
+	flex-direction: column-reverse;
+	align-items: center;
+	background: rgba(0, 75, 147, 0.2);
+	border-left: 1px solid #004B93;
+	font-size: 0.35cm;
+	color: #004B93;
+	box-sizing: border-box;
+}
+
+.page-with-scales .servicii-scale-right .sw-scale-cell {
+	flex: 1 1 0;
+	min-height: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	border-top: 1px solid rgba(0, 75, 147, 0.5);
+}
+
+.page-with-scales .servicii-scale-right .sw-scale-cell:first-child { border-top: none; }
+
+.page-with-scales .servicii-scale-right .sw-scale-cell.sw-scale-cm {
+	flex: 0 0 auto;
+	height: auto;
+	min-height: 0;
+	padding: 0.2cm 0;
+	border: none;
+}

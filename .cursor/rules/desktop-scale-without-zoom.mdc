@@ -1,0 +1,39 @@
+---
+description: Procedură – reduce scalarea vizuală pe desktop fără zoom/transform
+alwaysApply: false
+---
+
+# Scalare vizuală desktop fără zoom/transform
+
+Când se cere să reduci „scalarea vizuală” pe desktop (efect similar cu ~80% zoom), **NU** folosi:
+- `zoom`
+- `transform: scale`
+- trucuri de scalare în browser
+
+## Procedură
+
+1. **Elimină** orice `zoom` sau `transform: scale` de pe body/pagina respectivă.
+
+2. **Limită lățimea conținutului principal** (doar desktop):
+   - Găsește wrapper-ul principal (ex. `.main-content` pe HOME, sau `.container` / `.layout`).
+   - În `@media (min-width: 1200px)`:
+   ```css
+   body.page-XXX .main-content {
+       max-width: 1200px !important;
+       margin-left: auto !important;
+       margin-right: auto !important;
+   }
+   ```
+
+3. **Reducere ușoară a spațiului** (~10–15%) în secțiunile relevante (A2, A3, A4 etc.):
+   - În același `@media (min-width: 1200px)`:
+   - Micșorează `gap`, `margin-top`, `padding` cu ~10–15%.
+   - **NU** schimba structura grid (număr coloane/rânduri).
+
+4. **Doar desktop**: toate modificările în `@media (min-width: 1200px)`; mobil și tabletă rămân neschimbate.
+
+5. **Fișier**: de obicei `static/css/home-sidebar-compact.css` pentru HOME sau fișierul CSS principal al paginii.
+
+## Referință implementare
+
+- HOME: `home-sidebar-compact.css` – bloc final „DESKTOP ONLY (min-width: 1200px)” cu max-width pe `.main-content` și spacing redus pentru A2, A3, A4.

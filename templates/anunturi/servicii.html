@@ -1,0 +1,851 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Servicii | EU Adopt{% endblock %}
+{% block body_class %}page-servicii{% endblock %}
+
+{% block extra_css %}
+<style>
+	/*
+	 * Regulă: de la lățimea de jos a navbar-ului în jos.
+	 * Wrapper-ul #SW este tot de la limita de jos a navbar-ului; banda și conținutul respectă aceeași limită.
+	 */
+	/* Pagină full: navbar + SW = tot viewport-ul */
+	body.page-servicii #main_wrap {
+		display: flex !important;
+		flex-direction: column !important;
+		height: 100vh !important;
+		min-height: 100vh !important;
+		overflow: hidden !important;
+		width: 100% !important;
+		max-width: 100vw !important;
+	}
+	/* SW: wrapper de la limita de jos a navbar-ului în jos; fără border/margin sus ca banda să fie lipită de navbar */
+	body.page-servicii #SW {
+		flex: 1 1 auto !important;
+		min-height: 0 !important;
+		width: 100% !important;
+		max-width: 100% !important;
+		margin-top: 0 !important;
+		padding-top: var(--nav-height, 56px) !important;
+		border: none !important;
+		box-sizing: border-box;
+		overflow: hidden;
+		position: relative;
+		display: flex !important;
+		flex-direction: column !important;
+	}
+	/* Banda: lipită de limita de jos a navbar (fără margin); aceleași dimensiuni ca pe PT */
+	body.page-servicii .servicii-strip-wrap {
+		flex: 0 0 9.375%;
+		min-height: 72px;
+		width: 100%;
+		margin: 0 !important;
+		padding: 0 !important;
+		overflow: hidden;
+		background: #1565c0;
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	body.page-servicii .servicii-strip-track {
+		display: flex;
+		flex-wrap: nowrap;
+		height: 100%;
+		width: max-content;
+		box-sizing: border-box;
+		animation: servicii-strip 40s linear infinite;
+	}
+	body.page-servicii .servicii-strip-track:hover {
+		animation-play-state: paused;
+	}
+	@keyframes servicii-strip {
+		0% { transform: translateX(0); }
+		100% { transform: translateX(-33.333%); }
+	}
+	@keyframes servicii-strip-reverse {
+		0% { transform: translateX(-33.333%); }
+		100% { transform: translateX(0); }
+	}
+	body.page-servicii .servicii-strip-bottom .servicii-strip-track {
+		animation-name: servicii-strip-reverse;
+	}
+	body.page-servicii .servicii-strip-item {
+		flex-shrink: 0;
+		width: 100px;
+		height: 100%;
+		min-height: 72px;
+		display: block;
+		margin: 0 2px 0 0;
+		padding: 0;
+		overflow: hidden;
+		box-sizing: border-box;
+		background: rgba(255,255,255,0.2);
+	}
+	body.page-servicii .servicii-strip-item img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		vertical-align: top;
+	}
+	body.page-servicii .servicii-strip-no-img {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+		min-height: 72px;
+		background: #e0e0e0;
+		font-size: 0.75rem;
+		color: #333;
+		text-align: center;
+	}
+	body.page-servicii #SW .servicii-below-strip {
+		flex: 1 1 auto;
+		min-height: 0;
+		position: relative;
+		overflow: auto;
+	}
+	/* Container stânga între benzi: lățime 3 cm, vizibil; interior 3 containere lipite (vertical) */
+	body.page-servicii .servicii-left-between {
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 3cm;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		padding: 0;
+		gap: 0;
+		overflow: hidden;
+		border-top: 3mm solid rgba(0, 75, 147, 0.55);
+		border-bottom: 3mm solid rgba(0, 75, 147, 0.55);
+		border-left: none;
+		border-right: 1.5mm solid rgba(0, 75, 147, 0.55);
+	}
+	body.page-servicii .servicii-left-between .servicii-pub1,
+	body.page-servicii .servicii-left-between .servicii-pub2,
+	body.page-servicii .servicii-left-between .servicii-pub3 {
+		flex: 1 1 0;
+		min-height: 0;
+		height: 0;
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
+	body.page-servicii .servicii-left-between .servicii-pub1,
+	body.page-servicii .servicii-left-between .servicii-pub2,
+	body.page-servicii .servicii-left-between .servicii-pub3 { background: transparent; }
+	/* Borduri de demarcare între cele 3 casete (2.1, 2.2, 2.3) – culoare fundal */
+	body.page-servicii .servicii-left-between .servicii-pub2,
+	body.page-servicii .servicii-left-between .servicii-pub3 {
+		border-top: 1.5mm solid rgba(0, 75, 147, 0.55);
+	}
+	/* Container 1: selector județ (precompletat din profil), lipit de sus */
+	body.page-servicii .servicii-pub1 {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		padding-top: 0 !important;
+		margin-top: 0 !important;
+	}
+	body.page-servicii .servicii-judet-select-wrap {
+		flex: 0 0 auto;
+		margin: 0 !important;
+		padding: 0 !important;
+		margin-top: -0.2rem !important;
+		width: 100%;
+	}
+	body.page-servicii .servicii-judet-select-wrap select {
+		width: 100%;
+		max-width: 100%;
+		margin: 0;
+		padding: 0.15rem 0.2rem;
+		font-size: 1rem;
+		font-weight: 800;
+		line-height: 1.2;
+		border: 1px solid rgba(0, 75, 147, 0.5);
+		background: #fff;
+		color: #1a237e;
+		box-sizing: border-box;
+		cursor: pointer;
+		text-align: center;
+		text-align-last: center;
+	}
+	body.page-servicii .sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0,0,0,0);
+		border: 0;
+	}
+	/* Container dreapta între benzi: 3 cm, gol, fundal galben */
+	body.page-servicii .servicii-right-between {
+		position: absolute;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		width: 3cm;
+		box-sizing: border-box;
+		background: transparent;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-top: 3mm solid rgba(0, 75, 147, 0.55);
+		border-bottom: 3mm solid rgba(0, 75, 147, 0.55);
+		border-left: 1.5mm solid rgba(0, 75, 147, 0.55);
+		border-right: none;
+	}
+	body.page-servicii .servicii-pub-ad {
+		display: block;
+		flex: 1 1 0;
+		min-height: 0;
+		height: 100%;
+		overflow: hidden;
+	}
+	body.page-servicii .servicii-pub-ad img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center;
+		display: block;
+	}
+	body.page-servicii .servicii-slot7-ad {
+		display: block;
+		width: 100%;
+		height: 100%;
+		min-height: 0;
+		overflow: hidden;
+	}
+	body.page-servicii .servicii-slot7-ad img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center;
+		display: block;
+	}
+	/* Spațiu central: 3 containere egale pe orizontală (între stânga 3cm și dreapta 3cm, fără goluri) */
+	body.page-servicii .servicii-central-wrap {
+		position: absolute;
+		left: 3cm;
+		right: 3cm;
+		top: 0;
+		bottom: 0;
+		display: flex;
+		flex-direction: row;
+		gap: 0;
+		overflow: hidden;
+	}
+	body.page-servicii .servicii-central-wrap .servicii-centru-1,
+	body.page-servicii .servicii-central-wrap .servicii-centru-2,
+	body.page-servicii .servicii-central-wrap .servicii-centru-3 {
+		flex: 1 1 0;
+		min-width: 0;
+		min-height: 0;
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
+	body.page-servicii .servicii-central-wrap .servicii-centru-1,
+	body.page-servicii .servicii-central-wrap .servicii-centru-2,
+	body.page-servicii .servicii-central-wrap .servicii-centru-3 { background: transparent; }
+	/* Chenar 3mm/1.5mm – aceeași culoare ca fundalul titlului (nume serviciu) */
+	body.page-servicii .servicii-central-wrap .servicii-centru-1 {
+		border-top: 3mm solid #e57373;
+		border-bottom: 3mm solid #e57373;
+		border-left: 1.5mm solid #e57373;
+		border-right: 1.5mm solid #e57373;
+	}
+	body.page-servicii .servicii-central-wrap .servicii-centru-2 {
+		border-top: 3mm solid #64b5f6;
+		border-bottom: 3mm solid #64b5f6;
+		border-left: 1.5mm solid #64b5f6;
+		border-right: 1.5mm solid #64b5f6;
+	}
+	body.page-servicii .servicii-central-wrap .servicii-centru-3 {
+		border-top: 3mm solid #81c784;
+		border-bottom: 3mm solid #81c784;
+		border-left: 1.5mm solid #81c784;
+		border-right: 1.5mm solid #81c784;
+	}
+	body.page-servicii .servicii-central-wrap .servicii-centru-1 { border-left: none; }
+	body.page-servicii .servicii-central-wrap .servicii-centru-2 { border-left: none; border-right: none; }
+	body.page-servicii .servicii-central-wrap .servicii-centru-3 { border-right: none; }
+	/* Titlu sus în casetele 4, 5, 6 */
+	body.page-servicii .servicii-central-wrap .servicii-centru-1,
+	body.page-servicii .servicii-central-wrap .servicii-centru-2,
+	body.page-servicii .servicii-central-wrap .servicii-centru-3 {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+	}
+	body.page-servicii .servicii-centru-titlu {
+		flex: 0 0 auto;
+		margin: 0;
+		padding: 0.35rem 0.4rem;
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: #1a237e;
+		text-align: center;
+		line-height: 1.2;
+	}
+	/* Fundal vizibil: veterinar roșu, magazine albastru, frumusețe verde */
+	body.page-servicii .servicii-centru-1 .servicii-centru-titlu {
+		background: #e57373;
+		color: #fff;
+	}
+	body.page-servicii .servicii-centru-2 .servicii-centru-titlu {
+		background: #64b5f6;
+		color: #fff;
+	}
+	body.page-servicii .servicii-centru-3 .servicii-centru-titlu {
+		background: #81c784;
+		color: #fff;
+	}
+	/* Doar desktop: scroll în interiorul casetelor 3, 4, 5 – layout fix, fără scroll pe pagină */
+	@media (min-width: 56.25em) {
+		body.page-servicii .servicii-centru-1 .slot-scroll,
+		body.page-servicii .servicii-centru-2 .slot-scroll,
+		body.page-servicii .servicii-centru-3 .slot-scroll {
+			flex: 1 1 0;
+			min-height: 0;
+			overflow-y: auto;
+			overflow-x: hidden;
+		}
+		/* Fundal scrollbar = culoarea titlului; bara culisantă = culoare de contrast */
+		body.page-servicii .servicii-centru-1 .slot-scroll {
+			scrollbar-color: #1a237e #e57373;
+		}
+		body.page-servicii .servicii-centru-1 .slot-scroll::-webkit-scrollbar-track { background: #e57373; }
+		body.page-servicii .servicii-centru-1 .slot-scroll::-webkit-scrollbar-thumb { background: #1a237e; border-radius: 4px; }
+		body.page-servicii .servicii-centru-2 .slot-scroll {
+			scrollbar-color: #1a237e #64b5f6;
+		}
+		body.page-servicii .servicii-centru-2 .slot-scroll::-webkit-scrollbar-track { background: #64b5f6; }
+		body.page-servicii .servicii-centru-2 .slot-scroll::-webkit-scrollbar-thumb { background: #1a237e; border-radius: 4px; }
+		body.page-servicii .servicii-centru-3 .slot-scroll {
+			scrollbar-color: #1a237e #81c784;
+		}
+		body.page-servicii .servicii-centru-3 .slot-scroll::-webkit-scrollbar-track { background: #81c784; }
+		body.page-servicii .servicii-centru-3 .slot-scroll::-webkit-scrollbar-thumb { background: #1a237e; border-radius: 4px; }
+		body.page-servicii .servicii-centru-1 .slot-scroll::-webkit-scrollbar,
+		body.page-servicii .servicii-centru-2 .slot-scroll::-webkit-scrollbar,
+		body.page-servicii .servicii-centru-3 .slot-scroll::-webkit-scrollbar { width: 10px; }
+	}
+	/* Casete 3, 4, 5: 3×2 pe prima pagină, 12 itemi (2 rânduri scroll) */
+	body.page-servicii .servicii-centru-1 .servicii-centru-cards,
+	body.page-servicii .servicii-centru-2 .servicii-centru-cards,
+	body.page-servicii .servicii-centru-3 .servicii-centru-cards {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		grid-template-rows: 1fr 1fr;
+		grid-auto-rows: 33.333vh;
+		gap: 0;
+		padding: 0;
+		margin: 0;
+		height: calc(100% + 2 * 33.333vh);
+		min-height: 100%;
+		box-sizing: border-box;
+	}
+	body.page-servicii .servicii-centru-card {
+		min-width: 0;
+		min-height: 0;
+		border: none;
+		background: transparent;
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+	/* Card minimal: logo, nume, badge, o linie descriere; hover doar evidențiere */
+	body.page-servicii .servicii-card-minimal {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-start;
+		padding: 0.35rem;
+		cursor: pointer;
+		transition: background 0.2s ease, box-shadow 0.2s ease;
+		border-radius: 6px;
+	}
+	body.page-servicii .servicii-card-minimal:hover {
+		background: rgba(255, 255, 255, 0.5);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+	}
+	body.page-servicii .servicii-card-logo {
+		width: 100%;
+		aspect-ratio: 1;
+		min-height: 0;
+		overflow: hidden;
+		border-radius: 4px;
+		flex-shrink: 0;
+		border: 3px solid rgba(0, 0, 0, 0.2);
+		box-sizing: border-box;
+	}
+	body.page-servicii .servicii-card-logo img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		vertical-align: top;
+	}
+	body.page-servicii .servicii-card-badge {
+		display: inline-block;
+		font-size: 0.7rem;
+		color: #1a237e;
+		margin-top: 0.15rem;
+		text-align: center;
+	}
+	body.page-servicii .servicii-card-short-desc {
+		font-size: 0.7rem;
+		line-height: 1.25;
+		margin: 0.25rem 0 0;
+		text-align: center;
+		display: -webkit-box;
+		-webkit-line-clamp: 1;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+	/* Îmbunătățiri vizuale carduri 3, 4, 5 – doar efecte, fără schimbări grid/dimensiuni */
+	body.page-servicii .card-serviciu {
+		position: relative;
+		cursor: pointer;
+		transition: all 0.25s ease;
+	}
+	body.page-servicii .card-serviciu:hover {
+		transform: translateY(-6px);
+		box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+	}
+	/* La hover, fundal card = același cu titlul casetei (în spatele pozei / spațiul gol) */
+	body.page-servicii .servicii-centru-1 .card-serviciu:hover {
+		background: #e57373;
+	}
+	body.page-servicii .servicii-centru-2 .card-serviciu:hover {
+		background: #64b5f6;
+	}
+	body.page-servicii .servicii-centru-3 .card-serviciu:hover {
+		background: #81c784;
+	}
+	body.page-servicii .card-serviciu:active {
+		transform: scale(0.97);
+	}
+	body.page-servicii .card-serviciu img {
+		transition: transform 0.4s ease;
+	}
+	body.page-servicii .card-serviciu:hover img {
+		transform: scale(1.05);
+	}
+	body.page-servicii .badge-offer {
+		position: absolute;
+		top: 8px;
+		left: 8px;
+		background: #ff6b6b;
+		color: #fff;
+		padding: 4px 8px;
+		border-radius: 8px;
+		font-size: 12px;
+		font-weight: 600;
+		z-index: 1;
+	}
+	body.page-servicii .card-serviciu .servicii-card-logo {
+		position: relative;
+	}
+	body.page-servicii .card-serviciu .servicii-card-logo::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(to top, rgba(0,0,0,0.35), rgba(0,0,0,0.05));
+		opacity: 0;
+		transition: opacity 0.25s ease;
+		pointer-events: none;
+		border-radius: 4px;
+	}
+	body.page-servicii .card-serviciu:hover .servicii-card-logo::after {
+		opacity: 1;
+	}
+	body.page-servicii .card-serviciu .servicii-card-badge {
+		margin-top: 0.25rem;
+	}
+	/* Detail Panel: overlay estompat; poziția panelului setată din JS după casetă */
+	body.page-servicii .servicii-detail-overlay {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.4);
+		z-index: 10000;
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity 0.25s ease, visibility 0.25s ease;
+	}
+	body.page-servicii .servicii-detail-overlay.is-open {
+		opacity: 1;
+		visibility: visible;
+	}
+	body.page-servicii .servicii-detail-panel {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 420px;
+		max-width: 100%;
+		background: #fff;
+		box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+		transform: translateX(100%);
+		transition: transform 0.3s ease;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+	body.page-servicii .servicii-detail-overlay.is-open .servicii-detail-panel {
+		transform: translateX(0);
+	}
+	body.page-servicii .servicii-detail-close {
+		position: absolute;
+		top: 0.5rem;
+		right: 0.5rem;
+		width: 2rem;
+		height: 2rem;
+		border: none;
+		background: rgba(0, 0, 0, 0.08);
+		font-size: 1.5rem;
+		line-height: 1;
+		cursor: pointer;
+		z-index: 2;
+		border-radius: 4px;
+		color: #333;
+		padding: 0;
+	}
+	body.page-servicii .servicii-detail-close:hover {
+		background: rgba(0, 0, 0, 0.12);
+	}
+	body.page-servicii .servicii-detail-content {
+		padding: 1.25rem 1.5rem 2rem;
+		overflow-y: auto;
+		flex: 1 1 auto;
+	}
+	body.page-servicii .servicii-detail-head {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin-bottom: 0.75rem;
+	}
+	body.page-servicii .servicii-detail-image {
+		width: 120px;
+		height: 120px;
+		object-fit: cover;
+		border-radius: 8px;
+		flex-shrink: 0;
+		border: 2px solid rgba(0, 75, 147, 0.2);
+	}
+	body.page-servicii .servicii-detail-discount {
+		display: inline-block;
+		background: #ff6b6b;
+		color: #fff;
+		padding: 4px 10px;
+		border-radius: 8px;
+		font-size: 0.875rem;
+		font-weight: 600;
+	}
+	body.page-servicii .servicii-detail-title {
+		margin: 0 0 0.75rem;
+		font-size: 1.25rem;
+		font-weight: 700;
+		color: #1a237e;
+	}
+	body.page-servicii .servicii-detail-description,
+	body.page-servicii .servicii-detail-includes,
+	body.page-servicii .servicii-detail-location,
+	body.page-servicii .servicii-detail-validity,
+	body.page-servicii .servicii-detail-conditions {
+		margin: 0 0 0.5rem;
+		font-size: 0.9rem;
+		line-height: 1.45;
+		color: #333;
+	}
+	body.page-servicii .servicii-detail-section {
+		margin-bottom: 1rem;
+	}
+	body.page-servicii .servicii-detail-section strong {
+		display: block;
+		margin-bottom: 0.25rem;
+		font-size: 0.85rem;
+		color: #1a237e;
+	}
+	body.page-servicii .servicii-detail-cta {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		margin-top: 1.25rem;
+		padding: calc(0.75rem + 0.25cm) 1.25rem;
+		min-height: calc(2.5rem + 0.5cm);
+		font-size: 1rem;
+		font-weight: 700;
+		background: #004B93;
+		color: #fff;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		text-align: center;
+		box-sizing: border-box;
+	}
+	body.page-servicii .servicii-detail-cta:hover {
+		background: #003a73;
+	}
+	@media (max-width: 56.24em) {
+		body.page-servicii .servicii-detail-panel {
+			max-width: 100%;
+		}
+	}
+</style>
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section id="SW" class="servicii-wrapper">
+	<!-- Banda sus: câini -->
+	<div class="servicii-strip-wrap" aria-label="Banda sus">
+		<div class="servicii-strip-track">
+			{% for pet in strip_pets %}
+				<a href="{% url 'pets_single' pet.pk %}" class="servicii-strip-item" title="{{ pet.nume }}">
+					{% if pet.imagine %}<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" loading="lazy">{% elif pet.imagine_fallback %}<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" loading="lazy">{% else %}<span class="servicii-strip-no-img">{{ pet.nume }}</span>{% endif %}
+				</a>
+			{% empty %}
+				<span class="servicii-strip-item servicii-strip-no-img">—</span>
+			{% endfor %}
+			{% for pet in strip_pets %}
+				<a href="{% url 'pets_single' pet.pk %}" class="servicii-strip-item" title="{{ pet.nume }}">
+					{% if pet.imagine %}<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" loading="lazy">{% elif pet.imagine_fallback %}<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" loading="lazy">{% else %}<span class="servicii-strip-no-img">{{ pet.nume }}</span>{% endif %}
+				</a>
+			{% empty %}
+				<span class="servicii-strip-item servicii-strip-no-img">—</span>
+			{% endfor %}
+			{% for pet in strip_pets %}
+				<a href="{% url 'pets_single' pet.pk %}" class="servicii-strip-item" title="{{ pet.nume }}">
+					{% if pet.imagine %}<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" loading="lazy">{% elif pet.imagine_fallback %}<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" loading="lazy">{% else %}<span class="servicii-strip-no-img">{{ pet.nume }}</span>{% endif %}
+				</a>
+			{% empty %}
+				<span class="servicii-strip-item servicii-strip-no-img">—</span>
+			{% endfor %}
+		</div>
+	</div>
+	<div class="servicii-below-strip">
+		<aside class="servicii-left-between" aria-label="Zonă stânga între benzi">
+			<div class="servicii-pub1" id="pub1">
+			<div class="servicii-judet-select-wrap">
+				<label for="servicii-judet" class="sr-only">Județ</label>
+				<select id="servicii-judet" name="judet" class="servicii-judet-select" aria-label="Selectează județul">
+					{% for value, label in judet_choices %}
+					<option value="{{ value }}"{% if value == selected_judet %} selected{% endif %}>{{ label }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="servicii-pub-ad"><a href="{{ servicii_test_link }}"><img src="{{ slot2_ads.0.url }}" alt="{{ slot2_ads.0.title }}" loading="lazy"></a></div>
+			</div>
+			<div class="servicii-pub2" id="pub2"><a href="#" class="servicii-pub-ad"><img src="{{ slot2_ads.1.url }}" alt="{{ slot2_ads.1.title }}" loading="lazy"></a></div>
+			<div class="servicii-pub3" id="pub3"><a href="{{ servicii_test_link }}" class="servicii-pub-ad"><img src="{{ slot2_ads.2.url }}" alt="{{ slot2_ads.2.title }}" loading="lazy"></a></div>
+		</aside>
+		<aside class="servicii-right-between" aria-label="Zonă dreapta între benzi">
+			<a href="{{ servicii_test_link }}" class="servicii-slot7-ad" title="{{ slot7_ad.title }}"><img src="{{ slot7_ad.url }}" alt="{{ slot7_ad.title }}" loading="lazy"></a>
+		</aside>
+		<div class="servicii-central-wrap">
+			<div class="servicii-centru-1" id="centru1">
+				<div class="servicii-centru-titlu">Cabinete veterinare</div>
+				<div class="slot-scroll">
+				<div class="servicii-centru-cards">
+					{% for item in slot3_offers %}
+					<div class="servicii-centru-card servicii-card-minimal card-serviciu" role="button" tabindex="0" data-slot="3" data-title="{{ item.panel_title|default:'' }}" data-description="{{ item.panel_description|default:'' }}" data-includes="{{ item.panel_includes|default:'' }}" data-location="{{ item.panel_location|default:'' }}" data-validity="{{ item.panel_validity|default:'' }}" data-conditions="{{ item.panel_conditions|default:'' }}" data-discount="{{ item.badge|default:'' }}" data-image="{{ item.logo_url|default:'' }}" aria-label="Deschide detaliile: {{ item.name }}">
+						<span class="badge-offer">{{ item.badge }}</span>
+						<div class="servicii-card-logo"><img src="{{ item.logo_url }}" alt="" loading="lazy"></div>
+						<span class="servicii-card-badge">Partener Eu-adopt</span>
+						<p class="servicii-card-short-desc">{{ item.short_desc }}</p>
+					</div>
+					{% empty %}
+					<div class="servicii-centru-card"></div><div class="servicii-centru-card"></div><div class="servicii-centru-card"></div><div class="servicii-centru-card"></div><div class="servicii-centru-card"></div><div class="servicii-centru-card"></div>
+					{% endfor %}
+				</div>
+				</div>
+			</div>
+			<div class="servicii-centru-2" id="centru2">
+				<div class="servicii-centru-titlu">Magazine specializate</div>
+				<div class="slot-scroll">
+				<div class="servicii-centru-cards">
+					{% for item in slot4_offers %}
+					<div class="servicii-centru-card servicii-card-minimal card-serviciu" role="button" tabindex="0" data-slot="4" data-title="{{ item.panel_title|default:'' }}" data-description="{{ item.panel_description|default:'' }}" data-includes="{{ item.panel_includes|default:'' }}" data-location="{{ item.panel_location|default:'' }}" data-validity="{{ item.panel_validity|default:'' }}" data-conditions="{{ item.panel_conditions|default:'' }}" data-discount="{{ item.badge|default:'' }}" data-image="{{ item.logo_url|default:'' }}" aria-label="Deschide detaliile: {{ item.name }}">
+						<span class="badge-offer">{{ item.badge }}</span>
+						<div class="servicii-card-logo"><img src="{{ item.logo_url }}" alt="" loading="lazy"></div>
+						<span class="servicii-card-badge">Partener Eu-adopt</span>
+						<p class="servicii-card-short-desc">{{ item.short_desc }}</p>
+					</div>
+					{% empty %}
+					<div class="servicii-centru-card"></div><div class="servicii-centru-card"></div><div class="servicii-centru-card"></div><div class="servicii-centru-card"></div><div class="servicii-centru-card"></div><div class="servicii-centru-card"></div>
+					{% endfor %}
+				</div>
+				</div>
+			</div>
+			<div class="servicii-centru-3" id="centru3">
+				<div class="servicii-centru-titlu">Saloane cosmetica Vet</div>
+				<div class="slot-scroll">
+				<div class="servicii-centru-cards">
+					{% for item in slot5_offers %}
+					<div class="servicii-centru-card servicii-card-minimal card-serviciu" role="button" tabindex="0" data-slot="5" data-title="{{ item.panel_title|default:'' }}" data-description="{{ item.panel_description|default:'' }}" data-includes="{{ item.panel_includes|default:'' }}" data-location="{{ item.panel_location|default:'' }}" data-validity="{{ item.panel_validity|default:'' }}" data-conditions="{{ item.panel_conditions|default:'' }}" data-discount="{{ item.badge|default:'' }}" data-image="{{ item.logo_url|default:'' }}" aria-label="Deschide detaliile: {{ item.name }}">
+						<span class="badge-offer">{{ item.badge }}</span>
+						<div class="servicii-card-logo"><img src="{{ item.logo_url }}" alt="" loading="lazy"></div>
+						<span class="servicii-card-badge">Partener Eu-adopt</span>
+						<p class="servicii-card-short-desc">{{ item.short_desc }}</p>
+					</div>
+					{% empty %}
+					<div class="servicii-centru-card"></div><div class="servicii-centru-card"></div><div class="servicii-centru-card"></div><div class="servicii-centru-card"></div><div class="servicii-centru-card"></div><div class="servicii-centru-card"></div>
+					{% endfor %}
+				</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Banda jos: câini (animatie inversă) -->
+	<div class="servicii-strip-wrap servicii-strip-bottom" aria-label="Banda jos">
+		<div class="servicii-strip-track">
+			{% for pet in strip_pets %}
+				<a href="{% url 'pets_single' pet.pk %}" class="servicii-strip-item" title="{{ pet.nume }}">
+					{% if pet.imagine %}<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" loading="lazy">{% elif pet.imagine_fallback %}<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" loading="lazy">{% else %}<span class="servicii-strip-no-img">{{ pet.nume }}</span>{% endif %}
+				</a>
+			{% empty %}
+				<span class="servicii-strip-item servicii-strip-no-img">—</span>
+			{% endfor %}
+			{% for pet in strip_pets %}
+				<a href="{% url 'pets_single' pet.pk %}" class="servicii-strip-item" title="{{ pet.nume }}">
+					{% if pet.imagine %}<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" loading="lazy">{% elif pet.imagine_fallback %}<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" loading="lazy">{% else %}<span class="servicii-strip-no-img">{{ pet.nume }}</span>{% endif %}
+				</a>
+			{% empty %}
+				<span class="servicii-strip-item servicii-strip-no-img">—</span>
+			{% endfor %}
+			{% for pet in strip_pets %}
+				<a href="{% url 'pets_single' pet.pk %}" class="servicii-strip-item" title="{{ pet.nume }}">
+					{% if pet.imagine %}<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" loading="lazy">{% elif pet.imagine_fallback %}<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" loading="lazy">{% else %}<span class="servicii-strip-no-img">{{ pet.nume }}</span>{% endif %}
+				</a>
+			{% empty %}
+				<span class="servicii-strip-item servicii-strip-no-img">—</span>
+			{% endfor %}
+		</div>
+	</div>
+	<!-- Detail Panel ofertă (desktop: slide-in dreapta; mobil: fullscreen). Poza din panou = poza din fișa de user a clientului. -->
+	<div id="servicii-detail-overlay" class="servicii-detail-overlay" aria-hidden="true" data-user-photo="{{ servicii_user_photo_url|default:'' }}">
+		<div class="servicii-detail-panel" role="dialog" aria-labelledby="servicii-detail-title" aria-modal="true">
+			<button type="button" class="servicii-detail-close" aria-label="Închide">&times;</button>
+			<div class="servicii-detail-content">
+				<div class="servicii-detail-head" style="display:none;">
+					<img id="servicii-detail-image" class="servicii-detail-image" src="" alt="" role="presentation">
+					<span id="servicii-detail-discount" class="servicii-detail-discount"></span>
+				</div>
+				<h2 id="servicii-detail-title" class="servicii-detail-title"></h2>
+				<div class="servicii-detail-description"></div>
+				<div class="servicii-detail-section">
+					<strong>Ce include</strong>
+					<p class="servicii-detail-includes"></p>
+				</div>
+				<div class="servicii-detail-section">
+					<strong>Locație / contact</strong>
+					<p class="servicii-detail-location"></p>
+				</div>
+				<div class="servicii-detail-section">
+					<strong>Perioadă valabilitate</strong>
+					<p class="servicii-detail-validity"></p>
+				</div>
+				<div class="servicii-detail-section">
+					<strong>Condiții utilizare</strong>
+					<p class="servicii-detail-conditions"></p>
+				</div>
+				<button type="button" class="servicii-detail-cta">DORESC OFERTA</button>
+			</div>
+		</div>
+	</div>
+	<script>
+	(function() {
+		var overlay = document.getElementById('servicii-detail-overlay');
+		if (!overlay) return;
+		var panel = overlay.querySelector('.servicii-detail-panel');
+		var closeBtn = overlay.querySelector('.servicii-detail-close');
+		var titleEl = panel.querySelector('#servicii-detail-title');
+		var descEl = panel.querySelector('.servicii-detail-description');
+		var includesEl = panel.querySelector('.servicii-detail-includes');
+		var locationEl = panel.querySelector('.servicii-detail-location');
+		var validityEl = panel.querySelector('.servicii-detail-validity');
+		var conditionsEl = panel.querySelector('.servicii-detail-conditions');
+		var detailHead = panel.querySelector('.servicii-detail-head');
+		var detailImage = panel.querySelector('#servicii-detail-image');
+		var detailDiscount = panel.querySelector('#servicii-detail-discount');
+
+		function openPanel(card) {
+			var slot = card.getAttribute('data-slot');
+			titleEl.textContent = card.getAttribute('data-title') || '';
+			descEl.textContent = card.getAttribute('data-description') || '';
+			includesEl.textContent = card.getAttribute('data-includes') || '';
+			locationEl.textContent = card.getAttribute('data-location') || '';
+			validityEl.textContent = card.getAttribute('data-validity') || '';
+			conditionsEl.textContent = card.getAttribute('data-conditions') || '';
+			var discount = card.getAttribute('data-discount') || '';
+			var userPhotoUrl = (overlay.getAttribute('data-user-photo') || '').trim();
+			if (detailHead) {
+				detailHead.style.display = (userPhotoUrl || discount) ? 'flex' : 'none';
+				if (detailImage) {
+					if (userPhotoUrl) {
+						detailImage.src = userPhotoUrl;
+						detailImage.alt = 'Poza ta din fișa de profil';
+						detailImage.style.display = '';
+					} else {
+						detailImage.style.display = 'none';
+						detailImage.removeAttribute('src');
+					}
+				}
+				if (detailDiscount) { detailDiscount.textContent = discount; detailDiscount.style.display = discount ? '' : 'none'; }
+			}
+			var centru1 = document.getElementById('centru1');
+			var centru2 = document.getElementById('centru2');
+			panel.style.right = '';
+			panel.style.left = '';
+			if (slot === '3' && centru1) {
+				var r1 = centru1.getBoundingClientRect();
+				panel.style.left = r1.right + 'px';
+				panel.style.right = 'auto';
+			} else if (slot === '5' && centru2) {
+				var r2 = centru2.getBoundingClientRect();
+				panel.style.left = r2.left + 'px';
+				panel.style.right = 'auto';
+			} else {
+				panel.style.right = '0';
+				panel.style.left = 'auto';
+			}
+			overlay.classList.add('is-open');
+			overlay.setAttribute('aria-hidden', 'false');
+			panel.setAttribute('aria-hidden', 'false');
+		}
+		function closePanel() {
+			overlay.classList.remove('is-open');
+			overlay.setAttribute('aria-hidden', 'true');
+			if (panel) panel.setAttribute('aria-hidden', 'true');
+		}
+		overlay.addEventListener('click', function(e) {
+			if (e.target === overlay) closePanel();
+		});
+		if (closeBtn) closeBtn.addEventListener('click', closePanel);
+		document.addEventListener('keydown', function(e) {
+			if (e.key === 'Escape' && overlay.classList.contains('is-open')) closePanel();
+		});
+		document.body.addEventListener('click', function(e) {
+			var card = e.target.closest('.servicii-card-minimal');
+			if (!card) return;
+			e.preventDefault();
+			openPanel(card);
+		});
+		document.body.addEventListener('keydown', function(e) {
+			if (e.key !== 'Enter' && e.key !== ' ') return;
+			var card = e.target.closest('.servicii-card-minimal');
+			if (!card) return;
+			e.preventDefault();
+			openPanel(card);
+		});
+	})();
+	</script>
+</section>
+{% endblock %}

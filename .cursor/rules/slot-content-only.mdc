@@ -1,0 +1,13 @@
+---
+description: Layout slots — change only slot content, never layout positions
+alwaysApply: true
+---
+
+# Slot layout rule
+
+**We do NOT modify layout positions.** We only change **content inside slots**.
+
+- **Allowed**: Changing what is rendered inside a slot (e.g. sidebar_left.html, sidebar_right.html, or blocks that output into HOME_M1, HOME_M2, HOME_M3).
+- **Not allowed**: Moving columns, changing grid structure, drag/drop reordering of slots, changing sidebar/main positions, or any CSS/HTML that changes where slots sit on the page.
+
+Slot IDs (e.g. HOME_L1, HOME_R1, HOME_M1) and their positions in the 3-column layout are fixed. Only the content within each slot may be updated.

@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+	<meta charset="utf-8" />
+	<title>Cerere adopție – {{ pet.nume }} | EU-ADOPT</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+	<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+	<style>
+		.adopt-form-page { max-width: 520px; margin: 2rem auto; padding: 1.5rem; }
+		.adopt-form-page h1 { font-size: 1.35rem; margin-bottom: 1rem; }
+		.adopt-form-page .pet-photo { width: 120px; height: 120px; object-fit: cover; border-radius: 12px; display: block; margin-bottom: 0.75rem; }
+		.adopt-form-page .adoption-form { margin-top: 1rem; }
+		.adopt-form-page .adoption-form p { margin-bottom: 0.75rem; }
+		.adopt-form-page .button { padding: 0.6rem 1.25rem; background: #c62828; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+		.adopt-form-page .button:hover { background: #b71c1c; }
+		.adopt-form-page .back-link { display: inline-block; margin-top: 1rem; font-size: 0.9rem; color: #666; }
+		.adopt-form-errors { list-style: none; padding: 0; margin: 0 0 1rem; color: #b71c1c; font-weight: 600; }
+	</style>
+</head>
+<body class="content_left scheme_red">
+	<section id="main_wrap">
+		{% include "components/navbar_a0.html" %}
+		<section class="wrapper" id="main_content">
+			<div class="container clearfix">
+				<div class="adopt-form-page">
+					<h1>🐾 Cerere de adopție – {{ pet.nume }}</h1>
+					{% if pet.imagine %}
+						<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" class="pet-photo" />
+					{% elif pet.imagine_fallback %}
+						<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" class="pet-photo" />
+					{% else %}
+						<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="{{ pet.nume }}" class="pet-photo" />
+					{% endif %}
+					{% if pet.adoption_status == "reserved" or pet.is_reserved %}
+						<p><strong>Animalul este în curs de adopție.</strong> Poți intra pe lista de așteptare – completează formularul și vei fi contactat dacă adopția curentă nu se finalizează.</p>
+					{% else %}
+						<p><strong>Crezi că vă potriviți?</strong> Completează formularul și echipa te va contacta pentru următorii pași.</p>
+					{% endif %}
+					{% if adoption_form.non_field_errors %}
+						<ul class="adoption-form-errors">
+							{% for err in adoption_form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+						</ul>
+					{% endif %}
+					<form method="post" action="{% url 'adoption_request_submit' pet.pk %}" class="adoption-form">
+						{% csrf_token %}
+						<input type="hidden" name="from_adopt_page" value="1" />
+						{{ adoption_form.as_p }}
+						<p><button type="submit" class="button">{% if pet.adoption_status == "reserved" or pet.is_reserved %}Intră pe lista de așteptare{% else %}Trimite cererea{% endif %}</button></p>
+					</form>
+					<a href="{% url 'pets_single' pet.pk %}" class="back-link">← Înapoi la {{ pet.nume }}</a>
+				</div>
+			</div>
+		</section>
+		<footer id="footer" class="wrapper">
+			<div class="container"><div id="post_footer"><div id="site_info" class="clearfix"><div class="right">&copy; EU-ADOPT</div></div></div></div>
+		</footer>
+	</section>
+</body>
+</html>

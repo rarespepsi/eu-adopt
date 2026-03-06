@@ -1,0 +1,14 @@
+# Scală overlay – rămâne vizibilă peste tot
+
+**Scala (jos + dreapta, în cm) este pentru orientare și rămâne vizibilă pe toate paginile unde e instalată.**
+
+## Pagini cu scală
+- Servicii, Transport, Shop, Contact (wrapper cu clasa `.page-with-scales`).
+
+## La construcții noi pe aceste pagini
+- Conținutul nou (containere, blocuri, carduri etc.) **nu** trebuie să aibă `z-index` mai mare decât scala (99999). Altfel scala ar fi acoperită.
+- Scala este overlay: `pointer-events: none`, nu ocupă spațiu; rămâne mereu deasupra pentru orientare.
+
+## Referință
+- SETTINGS_REFERENCE.md – secțiunea „Scală overlay – orientare în cm”.
+- CSS: `static/css/scales-overlay.css`; include: `templates/components/scales_overlay.html`.

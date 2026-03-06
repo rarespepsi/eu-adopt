@@ -1,0 +1,73 @@
+# Home – detalii finale (punct de restart) – SETARE FINALĂ SALVATĂ
+
+**Stare salvată:** Pagina home (home_v2) – setare finală confirmată. Toate valorile de mai jos sunt cele corecte. La erori sau „reparări” care stric home (bandă albastră, scroll, A4 dezlipit, casete care dispar), revii la aceste valori.
+
+**Același rol ca `.cursor/rules/a0-detalii-finale-restart.mdc` pentru A0.**
+
+---
+
+## Regulă obligatorie: nu modifica layout-ul home când nu lucrezi la home
+
+- **Layout-ul home** nu se atinge când faci modificări pe navbar A0, pagini Animale/Contact/Cont, formulare etc.
+- Modificări pentru **home** se fac **doar** în `static/css/home_v2.css`, template-ul `templates/anunturi/home_v2.html` (inclusiv blocul `<style>` din el), și **doar** când utilizatorul cere explicit schimbări la pagina de home.
+
+---
+
+## Ce este memorat (SETARE FINALĂ)
+
+### Viewport – fără scroll
+- **#main_wrap:** `height: 100vh`, `min-height: 100vh`, `overflow: hidden`, flex column.
+- **#main_content:** `flex: 1 1 auto`, `min-height: 0`, `padding-top: 0`, `margin-top: 0`.
+
+### Coloane stânga/dreapta (A5 / A6) – ID-uri unice
+- **Nu folosim #A5 / #A6** în template (sidebar-ul din base are deja #A6 → conflict). Folosim **#home-col-left** (stânga) și **#home-col-right** (dreapta).
+- **#home-cols-wrap:** `display: grid`, `grid-template-columns: 200px 1fr 200px`, `width: 100%`, `min-height: 60vh`, `flex: 1`.
+- **#home-col-left, #home-col-right:** `display: flex`, `flex-direction: column`, `min-width: 200px`, `width: 100%`, `background: #c00`, `padding: 6px`, `box-sizing: border-box`.
+
+### Câte 3 casete vizibile în fiecare coloană
+- **.home-v2-side-inner** (în home-col-left și home-col-right): `display: grid`, `grid-template-rows: repeat(3, 1fr)`, **`gap: 8px`**, `padding: 0`, `flex: 1`, `min-height: 0`, `height: 100%`, `width: 100%`.
+- **.home-v2-slot-white:** `background: #fff`, **`min-height: 70px`**, **`border: 2px solid #999`**, **`border-radius: 4px`**, `box-sizing: border-box`.
+- Fiecare coloană conține **3 div-uri** cu clasa `home-v2-slot home-v2-slot-white` (3 casete albe cu chenar, separate prin gap).
+
+### A1 și A2 – dimensiuni FIXE (NU SE MODIFICĂ)
+- Din salvare: **#A1** — `flex-shrink: 0` în .home-v2-center; `height: auto`, `min-height: 0`. **#A2** — `flex: 1 1 auto`, `min-height: 0`, `overflow-y: auto`, `overflow-x: hidden`. Nu adăuga min-height/height/flex pe A1; nu schimba flex/min-height pe A2. La mutare conținut: păstrezi dimensiunile; dacă nu încape, **micșorezi obiectul mutat**, nu containerul.
+
+### A5, A1, A6 lipite de A0 (fără bară albastră)
+- **navbar-a0-secured.css:** `body:not(.page-home):not(.page-home-v2) #main_content { padding-top: var(--nav-height); }` — pe page-home-v2 NU se aplică padding-top.
+- **home_v2.css:** `#main_content` cu `padding-top: 0`, `margin-top: 0`; `#main_content .layout` cu `margin-top: 0`, `padding-top: 0`.
+
+### A4 – banda „#EuAdopt#NuCumpar!#”
+- `#A4`: `margin: 0`, `flex-shrink: 0`, fundal `#f5e642`, text negru, marquee 45s.
+
+### Containere, fundal
+- Gap/margin/padding zero între A0, #main_content, A4; fundal albastru **#004B93** pe body, #main_wrap, #main_content, .layout, .home-v2.
+
+### Punct de referință – dimensiuni și acțiuni home (memorat)
+- **A1 – hero:** `.hero-v2` — `padding: 2px 0` (A1 neschimbat, fără mărire); `display: flex`, `align-items: center`, `min-height: 0`. Centrarea siglelor fără a mări A1; dacă nu încape, se **micșorează casetele sigle**, nu A1.
+- **Sigle – distanță de laturi:** `.hero-v2-inner` — `padding-left: 0.5cm`, `padding-right: 0.5cm` (sigla EU Adopt la 0,5 cm de latura stângă A1, sigla transport la 0,5 cm de latura dreaptă A1).
+- **Sigla EU Adopt:** `.hero-v2-logo` — `transform: translateY(-0.3mm)`. `.hero-v2-logo-img` — `width/height: var(--hero-logo-size)`.
+- **Sigla transport (autocar):** `.hero-v2-transport-badge` — `width/height: calc(var(--hero-badge-size) + 3mm)`.
+- **„Animalele lunii”:** în **A2**, primul element (nu în A1); clasa `hero-v2-subtitle A2-subtitle`; `margin: 0 0 0.5rem`, centrat, font `var(--font-title)`, font-weight 600.
+- **A5/A6 – casete colorate:** clase `home-v2-slot-bg1` (roșu #e53935), `home-v2-slot-bg2` (galben #fdd835), `home-v2-slot-bg3` (verde #43a047) pe cele 3 sloturi din fiecare coloană.
+
+---
+
+## Unde e implementat (surse de adevăr)
+
+- **Template:** `templates/anunturi/home_v2.html` – structură .home-v2 > #home-cols-wrap > #home-col-left | .home-v2-center | #home-col-right; **bloc `<style>`** cu regulile pentru #home-cols-wrap, #home-col-left, #home-col-right și cele 3 casete.
+- **CSS:** `static/css/home_v2.css` – viewport, #main_content, A4, fundal, layout.
+- **Navbar (excepție):** `static/css/navbar-a0-secured.css` – `body:not(.page-home):not(.page-home-v2) #main_content` pentru padding-top; `body.page-home-v2 #A0` position relative.
+- **Body class:** `page-home-v2`.
+
+---
+
+## La erori
+
+Revenim la acest punct: refacem valorile din `home_v2.html` (inclusiv blocul `<style>`), `home_v2.css` și excepția din `navbar-a0-secured.css` conform secțiunii „Ce este memorat” de mai sus.
+
+---
+
+## Referință scurtă
+
+- **HOME_SETTINGS_REFERENCE.md** – document extensiv.
+- **home-settings-reference.mdc** – regulă Cursor: păstrează setările home la modificări pe alte zone.

@@ -1,0 +1,26 @@
+# Responsive – casete vechi (fără să schimbi containerele noi)
+
+Când uniformizăm pagini pentru responsive, respectă:
+
+## 1) Identificare elemente cu dimensiuni FIXE
+- `width`/`height` în px în CSS
+- Atribute `width`/`height` pe `<img>` în HTML
+- `style="width:…px; height:…px"` inline
+- Clase vechi care forțează 260px / 300px etc.
+- Orice „fixed sidebar” care nu respectă noul grid
+
+## 2) Ce NU atingem
+- Containerele noi (A0, A1, A2, A3, A4, A5, A6) și grid-ul lor.
+- Doar conținutul / casetele vechi din interior se adaptează.
+
+## 3) Regulă de conversie (peste tot unde e fix)
+- În loc de `width: XXXpx` → `width: 100%; max-width: <valoare rezonabilă>;` (unde e cazul)
+- În loc de `height: XXXpx` → `height: auto;` (sau `aspect-ratio` dacă e card cu imagine)
+- Imagini (carduri): `max-width: 100%; height: auto; object-fit: cover;`
+- Elimină atributele `width`/`height` de pe `<img>` dacă rup layoutul; pune controlul în CSS.
+
+## 4) Sidebars (A5, A6)
+- Toate cardurile din A5 și A6: `width: 100%` în interior, fără valori fixe.
+- Spațiere: fluidă (ex. `var(--gap-v2)` sau `clamp`), nu px fix.
+
+Aplicăm această regulă pe toate paginile când ajungem la ele.

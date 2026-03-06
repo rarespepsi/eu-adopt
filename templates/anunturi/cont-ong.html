@@ -1,0 +1,177 @@
+{% load static %}
+{% load anunturi_extras %}
+<!DOCTYPE html>
+<html lang="ro">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>Contul asociației | Adopt a Pet</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+		<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+		<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}" type="text/css" media="screen" />
+		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+	</head>
+	<body class="content_left scheme_red page-cont-ong">
+		<section id="main_wrap">
+			{% include "components/navbar_a0.html" %}
+			<section class="wrapper" id="main_content">
+				<div class="container clearfix">
+					<div class="cont-ong-layout">
+						<!-- Stânga: poza + date organizație -->
+						<div class="cont-ong-user-block">
+							<div class="cont-ong-user-photo-wrap">
+								{% if user_photo %}
+									<img src="{{ user_photo.url }}" alt="" class="cont-ong-user-photo" />
+								{% else %}
+									<div class="cont-ong-user-photo user-photo-placeholder" aria-hidden="true">
+										<svg class="placeholder-bust" viewBox="0 0 64 80" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="22" r="14" fill="currentColor" opacity="0.4"/><path d="M16 80c0-18 7.2-32 16-32s16 14 16 32H16z" fill="currentColor" opacity="0.4"/></svg>
+									</div>
+								{% endif %}
+								<span class="cont-ong-username">{{ user.username }}</span>
+							</div>
+							{% if profile %}
+							<div class="cont-ong-org-details-wrap">
+								<h3 style="margin: 1em 0 0.5em; font-size: 1rem;">Date organizație</h3>
+								<dl class="org-details" style="margin: 0; font-size: 0.9rem;">
+									{% if profile.tip_organizatie == 'srl' %}
+										<dt>Denumire firmă</dt><dd>{{ profile.denumire_legala|default:"—" }}</dd>
+										<dt>CUI</dt><dd>{{ profile.cui|default:"—" }}</dd>
+										<dt>Sediu</dt><dd>{% if profile.oras or profile.judet %}{{ profile.oras }}{% if profile.oras and profile.judet %} – {% endif %}{{ profile.get_judet_display|default:profile.judet }}{% else %}—{% endif %}</dd>
+										<dt>Email</dt><dd>{{ profile.email|default:"—" }}</dd>
+										<dt>Telefon</dt><dd>{{ profile.telefon|default:"—" }}</dd>
+										<dt>Contact</dt><dd>{{ profile.reprezentant_legal|default:"—" }}</dd>
+									{% else %}
+										<dt>Denumire asociație</dt><dd>{{ profile.denumire_legala|default:"—" }}</dd>
+										<dt>CIF</dt><dd>{{ profile.cui|default:"—" }}</dd>
+										<dt>Localitate</dt><dd>{% if profile.oras or profile.judet %}{{ profile.oras }}{% if profile.oras and profile.judet %} – {% endif %}{{ profile.get_judet_display|default:profile.judet }}{% else %}—{% endif %}</dd>
+										<dt>Email</dt><dd>{{ profile.email|default:"—" }}</dd>
+										<dt>Telefon</dt><dd>{{ profile.telefon|default:"—" }}</dd>
+										<dt>Contact</dt><dd>{{ profile.persoana_responsabila_adoptii|default:"—" }}</dd>
+									{% endif %}
+								</dl>
+							</div>
+							{% endif %}
+						</div>
+						<!-- Dreapta: buton + animale pe 4 coloane -->
+						<div class="posts-wrap cont-ong-caseta">
+							<section class="page">
+								<div class="cont-mypet-header">
+									<h2 class="entry-title">Contul {% if profile %}{{ profile.denumire_legala|default:user.get_full_name|default:user.username }}{% else %}{{ user.get_full_name|default:user.username }}{% endif %}</h2>
+									<div class="cont-mypet-counters">
+										<button type="button" class="cont-mypet-filter active" data-filter="all" aria-pressed="true">{{ pets_count_total }} prieteni</button>
+										<button type="button" class="cont-mypet-filter" data-filter="in-procedura" aria-pressed="false">{{ pets_count_in_procedura }} în procedura de adoptie</button>
+										<button type="button" class="cont-mypet-filter" data-filter="adopted" aria-pressed="false">{{ pets_count_adopted }} adoptate</button>
+									</div>
+								</div>
+								<div class="entry-content clearfix">
+									{% if messages %}
+									<ul class="adoption-messages">
+										{% for message in messages %}
+										<li class="message-{{ message.tags }}">{{ message }}</li>
+										{% endfor %}
+									</ul>
+									{% endif %}
+									{% if not user|in_group:"Colaborator" %}
+									<p><a href="{% url 'my_posted_pets' %}" class="button">Câinii mei + cereri</a> <a href="{% url 'cont_ong_adauga' %}" class="button">Adaugă animal</a> <a href="{% url 'cont_bulk_add_dogs' %}" class="button">Adaugă câini în serie</a></p>
+									{% endif %}
+									{% if rezervari_active %}
+									<section class="rezervari-active-section" style="margin-bottom: 2rem;">
+										<h3 style="margin: 0 0 0.75rem;">Rezervări active</h3>
+										<ul class="rezervari-active-list" style="list-style: none; margin: 0; padding: 0;">
+											{% for req in rezervari_active %}
+											<li class="rezervari-active-item" style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; background: #fafafa;">
+												<strong>{{ req.pet.nume }}</strong> – {{ req.nume_complet }} ({{ req.email }})
+												<div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+													<form method="post" action="{% url 'adoption_finalize' req.pk %}" style="display:inline;" class="js-finalize-form" data-pet-name="{{ req.pet.nume }}">
+														{% csrf_token %}
+														<input type="hidden" name="confirm" value="1" />
+														<input type="hidden" name="next" value="{% url 'cont_ong' %}" />
+														<button type="submit" class="button" style="background: #2e7d32;">Adopție finalizată</button>
+													</form>
+													<form method="post" action="{% url 'adoption_cancel_reservation' req.pk %}" style="display:inline;">
+														{% csrf_token %}
+														<input type="hidden" name="next" value="{% url 'cont_ong' %}" />
+														<button type="submit" class="button" style="background: #c62828;">Anulează rezervarea</button>
+													</form>
+													<a href="{% url 'pets_single' req.pet.pk %}" class="button" style="background: #555;">Vezi animalul</a>
+												</div>
+											</li>
+											{% endfor %}
+										</ul>
+									</section>
+									{% endif %}
+									{% if pets %}
+									<h3 style="margin-top: 1.5em;">Prietenii tăi</h3>
+									<div id="my_pets_grid" class="pets-grid my-pets-grid mypet-filter-all">
+										{% for pet in pets %}
+										<article class="rescue_pet pet-card" data-pet-id="{{ pet.pk }}" data-status="{{ pet.status }}" data-in-procedura="{% if pet.pk in pets_in_procedura_ids %}1{% else %}0{% endif %}">
+											<div class="entry-content clearfix">
+												<div class="pet-card-img-wrap">
+													<a href="{% url 'pets_single' pet.pk %}" class="pet-card-link">
+														{% if pet.imagine %}
+														<img src="{{ pet.imagine.url }}" class="attachment-pet_single_large pet-card-img" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-275x275.jpg' %}';this.onerror=null;" />
+														{% elif pet.imagine_fallback %}
+														<img src="{% static pet.imagine_fallback %}" class="attachment-pet_single_large pet-card-img" alt="{{ pet.nume }}" />
+														{% else %}
+														<img src="{% static 'images/pets/charlie-275x275.jpg' %}" class="attachment-pet_single_large pet-card-img" alt="{{ pet.nume }}" />
+														{% endif %}
+														<span class="pet-card-hover-overlay">VEZI POVESTEA MEA ❤️</span>
+													</a>
+												</div>
+												<div class="pet-card-body">
+													<h2 class="entry-title pet-name-title"><a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}">{{ pet.nume }}</a></h2>
+													<div class="breed">{{ pet.rasa }}{% if pet.varsta_aproximativa is not None %} – {{ pet.get_varsta_aproximativa_display }}{% endif %}</div>
+													<div class="pet_info clearfix"><span>{{ pet.get_status_display }}</span></div>
+												</div>
+											</div>
+										</article>
+										{% endfor %}
+									</div>
+									{% else %}
+									<p style="margin-top: 1em; color: #666;">Nu aveți încă prieteni înregistrați.</p>
+									{% endif %}
+								</div>
+							</section>
+						</div>
+					</div>
+				</div>
+			</section>
+			<footer id="footer" class="wrapper">
+				<div class="container">
+					<div id="post_footer">
+						<div id="site_info" class="clearfix">
+							<div class="right">&copy; Adopt a Pet</div>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</section>
+		<script>
+		(function() {
+			// Confirmare la „Adopție finalizată”
+			document.querySelectorAll(".js-finalize-form").forEach(function(form) {
+				form.addEventListener("submit", function(e) {
+					var petName = form.getAttribute("data-pet-name") || "acest animal";
+					if (!confirm("Sigur marcați adopția pentru " + petName + " ca finalizată? Adoptatorul va fi notificat.")) {
+						e.preventDefault();
+					}
+				});
+			});
+			var grid = document.getElementById("my_pets_grid");
+			if (!grid) return;
+			var buttons = document.querySelectorAll(".cont-mypet-filter");
+			buttons.forEach(function(btn) {
+				btn.addEventListener("click", function() {
+					var filter = this.getAttribute("data-filter");
+					buttons.forEach(function(b) { b.classList.remove("active"); b.setAttribute("aria-pressed", "false"); });
+					this.classList.add("active");
+					this.setAttribute("aria-pressed", "true");
+					grid.classList.remove("mypet-filter-all", "mypet-filter-in-procedura", "mypet-filter-adopted");
+					if (filter === "all") grid.classList.add("mypet-filter-all");
+					else if (filter === "in-procedura") grid.classList.add("mypet-filter-in-procedura");
+					else if (filter === "adopted") grid.classList.add("mypet-filter-adopted");
+				});
+			});
+		})();
+		</script>
+	</body>
+</html>

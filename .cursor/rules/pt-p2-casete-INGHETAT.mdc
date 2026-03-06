@@ -1,0 +1,40 @@
+---
+description: Dimensiunea casetelor din P2 pe pagina Prietenul tău este înghețată; nu se modifică decât cu parolă.
+alwaysApply: true
+---
+
+# PT – P2 casete 4x3 ÎNGHEȚATE (doar cu parolă)
+
+- **Context:** Pagina Prietenul tău (PT) `/pets-all`, body `page-animale`, template `templates/anunturi/pets-all.html`, CSS principal `static/css/pt-v2.css`.
+- **Zona P2:** grila centrală din PW: selectorii `#PW .pt-cell-2`, `#PW .pt-p2-20grid`, `#PW .pt-p2-20cell`, `#PW .pt-p2-20num`.
+- **Layout actual considerat corect:** 4 coloane × 3 rânduri, toate perfect înscrise în P2.
+  - `#PW .pt-p2-20grid { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr); gap: 2px; width: 100%; height: 100%; }`
+  - Casetele au stilul „debug” simplu din fișier (background semi-transparent, border-radius 4px, font mic).
+
+## Regula
+
+- **NU modifici dimensiunile casetelor din P2** (nici direct, nici indirect) **fără parolă Home/PT.**
+- Asta include:
+  - schimbarea `grid-template-columns` / `grid-template-rows` pe `#PW .pt-p2-20grid`;
+  - adăugarea de `margin`, `padding`, `border`, `box-shadow` sau alte proprietăți pe `.pt-p2-20cell` care fac caseta să nu mai încapă în 4x3 perfect;
+  - orice `height`, `min-height`, `aspect-ratio` sau transformări care fac casetele mai mari / mai mici decât varianta de referință;
+  - adăugarea de conținut (imagini, texte, overlay) care schimbă înălțimea fizică a P2 sau rupe grila 4x3.
+
+## Ce ai voie fără parolă
+
+- Doar **conținut minim, non-invaziv**, care NU schimbă deloc dimensiunea casetei:
+  - de exemplu, numerotarea P2.1–P2.12 exact cum este acum;
+  - mici ajustări de culoare sau font **fără** să schimbe padding/margini/dimensiuni.
+
+## Modificări DOAR CU PAROLĂ
+
+- Orice modificare care afectează:
+  - layout-ul P2 (număr coloane/rânduri, gap, înălțime P2);
+  - dimensiunea vizuală a casetelor din P2;
+  - transformarea casetelor în carduri cu poze, overlay, badge-uri etc.
+
+**Dacă utilizatorul cere expres o schimbare în P2:**
+1. Cere parola Home/PT (fișier `.cursor/home-pt-parola.txt`).
+2. Verifică parola.
+3. Doar dacă este corectă, poți modifica setările din `pt-v2.css` / `pets-all.html` pentru P2.
+

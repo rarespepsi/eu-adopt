@@ -1,0 +1,16 @@
+---
+description: Setări proiect memorate – auth (login email/username), navbar A0, mentenanță
+alwaysApply: true
+---
+
+# Referință setări proiect
+
+**Setările proiectului sunt documentate și de păstrat** la modificări ulterioare, dacă utilizatorul nu cere explicit altceva.
+
+Referință detaliată: **SETTINGS_REFERENCE.md** (rădăcina proiectului).
+
+- **Login:** câmp „Utilizator / Email” acceptă username SAU email; backend `anunturi.auth_backends.EmailOrUsernameModelBackend`.
+- **Navbar A0:** același pe toate paginile via `components/navbar_a0.html`; nu duplica meniul în alte template-uri.
+- **Mentenanță:** SITE_PUBLIC, MAINTENANCE_SECRET, acces staff/superuser sau ?k= sau cookie.
+
+Nu schimba aceste comportamente fără cerere explicită.

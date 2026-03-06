@@ -1,0 +1,544 @@
+/* PT debug layout 1–5 (după schița userului) */
+
+#PW {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  min-height: 300px;
+}
+
+#PW .pt-grid {
+  display: grid;
+  /* P4 micșorat cu încă ~25% pe lățime, restul dat lui P2 */
+  grid-template-columns: 0.26fr 3.24fr 0.5fr;
+  /* P1 și P3: min 72px ca benzile de poze să se vadă; centrul ia restul */
+  grid-template-rows: minmax(72px, 0.28125fr) 2.4375fr minmax(72px, 0.28125fr);
+  gap: 0;
+  height: 100%;
+  min-height: 300px;
+}
+
+#PW .pt-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+/* P1 = bandă sus cu poze (stânga → dreapta); la hover oprește, la click → pagina animalului */
+#PW .pt-cell-1 {
+  grid-row: 1;
+  grid-column: 1 / 4;
+  background: #1565c0;
+  border: 2px solid #000;
+  overflow: hidden;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+  min-height: 72px;
+}
+
+#PW .pt-strip-wrap {
+  width: 100%;
+  height: 100%;
+  min-height: 72px;
+  overflow: hidden;
+  position: relative;
+  display: block;
+}
+
+/* Fundal vizibil pe benzile de poze */
+#PW .pt-strip-wrap.pt-strip-p1 {
+  background: #1565c0;
+}
+
+#PW .pt-strip-wrap.pt-strip-p3 {
+  background: #2e7d32;
+}
+
+#PW .pt-strip-track {
+  display: flex;
+  flex-wrap: nowrap;
+  height: 100%;
+  width: max-content;
+  box-sizing: border-box;
+}
+
+#PW .pt-strip-track:hover {
+  animation-play-state: paused;
+}
+
+/* P1: mișcare stânga → dreapta (track se deplasează la stânga) */
+#PW .pt-strip-track--p1 {
+  animation: pt-strip-p1 40s linear infinite;
+}
+
+@keyframes pt-strip-p1 {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Casete P1: lățime normală, înălțime egală cu banda */
+#PW .pt-strip-item--p1 {
+  flex-shrink: 0;
+  /* aceeași lățime ca P3, pentru coerență vizuală între benzi */
+  width: 200px;
+  height: 100%;
+  min-height: 72px;
+  display: block;
+  margin: 0 2px 0 0;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.2);
+  position: relative; /* pentru poziționarea corectă a numerelor pt-strip-num în P1 */
+}
+
+/* Casete permanente cu anunț în benzile P1/P3 */
+/* P1: fundal roșu, scris galben */
+#PW .pt-strip-item--p1.pt-strip-disclaimer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem 0.25rem;
+  background: #b71c1c;
+  color: #ffeb3b;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
+}
+/* P3: fundal galben, scris roșu (rămâne ca înainte) */
+#PW .pt-strip-item--p3.pt-strip-disclaimer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem 0.25rem;
+  background: #ffeb3b;
+  color: #b71c1c;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+#PW .pt-strip-item--p1 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  vertical-align: top;
+}
+
+#PW .pt-strip-no-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 72px;
+  background: #e0e0e0;
+  font-size: 0.75rem;
+  color: #333;
+  text-align: center;
+}
+
+/* P4 = coloană stânga la mijloc */
+#PW .pt-cell-4 {
+  grid-row: 2;
+  grid-column: 1;
+  background: #8e24aa;
+  border: 2px solid #000;
+  padding: 4px;
+  align-items: flex-start; /* conținutul P4 lipit de marginea de sus */
+  font-size: 1rem; /* resetează font-size mare de pe .pt-cell pentru caseta de filtre */
+}
+
+/* Interior P4: 3 casete orizontale (filtru, buton, publi) */
+#PW .pt-p4-inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#PW .pt-p4-box {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #222;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 6px;
+}
+
+#PW .pt-p4-box-filters {
+  /* cedează puțin spațiu butonului mărit (~50% înălțime în plus) */
+  flex: 0.28 1 0;
+  background: rgba(255, 255, 255, 0.9);
+  align-items: center;
+  justify-content: flex-start;
+}
+/* P4.1: conținutul centrat în casetă */
+#PW .pt-p4-box-filters #P3,
+#PW .pt-p4-box-filters .pet-filters-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+#PW .pt-p4-box-filters .p3-title {
+  text-align: center;
+  width: 100%;
+}
+/* P4.1: doar butoanele și casetele de căutare micșorate cu 15%; caseta rămâne la dimensiuni inițiale */
+#PW .pt-p4-box-filters .p3-tip-butoane {
+  transform: scale(0.85);
+  transform-origin: top center;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 0.4rem !important;
+  gap: 0.35rem !important;
+  justify-content: center;
+}
+#PW .pt-p4-box-filters .p3-filters-grid {
+  transform: scale(0.85);
+  transform-origin: top center;
+  gap: 0.4rem !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+#PW .pt-p4-box-filters form#filtre-animale {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+#PW .pt-p4-box-filters .p3-reset-link {
+  margin-top: 0.25rem;
+}
+#PW .pt-p4-box-filters .p3-filter-cell label,
+#PW .pt-p4-box-filters .p3-filter-cell select {
+  font-size: 0.85em;
+}
+#PW .pt-p4-box-filters .p3-tip-butoane a {
+  font-size: 0.85em !important;
+  padding: 0.2rem 0.15rem !important;
+}
+
+#PW .pt-p4-box-match {
+  /* caseta butonului primește +50% înălțime față de înainte */
+  flex: 0.24 1 0;
+  background: #c62828;
+  color: #fff;
+}
+
+#PW .pt-p4-box-ads {
+  /* P4.3 cedează cealaltă jumătate din spațiu butonului */
+  flex: 2.48 1 0;
+  background: #fff8e1;
+}
+
+/* Tabs filtre: Toate / Câini / Pisici / Altele */
+#PW .pt-filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+#PW .pt-filter-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #c62828;
+  background: #ffffff;
+  color: #c62828;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+#PW .pt-filter-tab.is-active {
+  background: #c62828;
+  color: #ffffff;
+}
+
+/* P2 = centru mijloc – casete numerotate (4x3 pe desktop) */
+#PW .pt-cell-2 {
+  grid-row: 2;
+  grid-column: 2;
+  background: #fbc02d;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 4px;
+  overflow: hidden;
+}
+
+#PW .pt-p2-20grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 coloane */
+  grid-template-rows: repeat(3, 1fr);    /* 3 rânduri */
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+}
+
+#PW .pt-p2-20cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #333;
+}
+
+#PW .pt-p2-20num {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  font-size: 0.65rem;
+  color: #666;
+}
+
+/* Poze ca background în P2 – nu schimbă dimensiunea casetei (totul este absolut în interior) */
+#PW .pt-p2-20bg-link {
+  position: absolute;
+  inset: 0;
+  display: block;
+  text-decoration: none;
+}
+
+#PW .pt-p2-20bg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  /* Umplem complet caseta cu poză (fără benzi albe). Poza este deja standardizată landscape la upload. */
+  background-size: cover;
+  /* Deplasat mai sus, ca să prindem mai mult din partea superioară (capul) în majoritatea pozelor */
+  background-position: center 15%;
+  background-repeat: no-repeat;
+  transition: transform 0.2s ease-out, background-size 0.2s ease-out, background-position 0.2s ease-out;
+}
+
+/* La hover: mărim poza peste dimensiunea casetei și afișăm cât mai mult din ea.
+   Poza iese vizual în afara casetei, dar P2 rămâne cu aceleași dimensiuni (4x3, fără scroll). */
+#PW .pt-p2-20bg-link:hover .pt-p2-20bg {
+  transform: scale(1.4);
+  background-size: contain;
+  background-position: center center;
+}
+
+#PW .pt-p2-20bg--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  padding: 2px;
+  box-sizing: border-box;
+  color: #333;
+  background: #ffe082;
+  text-align: center;
+}
+
+/* P5 = coloană dreapta la mijloc – 4 casete publicitate numerotate */
+#PW .pt-cell-5 {
+  grid-row: 2;
+  grid-column: 3;
+  background: #d32f2f;
+  border: 2px solid #000;
+  padding: 4px;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+#PW .pt-p5-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+}
+
+#PW .pt-p5-slot {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #fff8e1;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #8d6e63;
+  text-align: center;
+}
+
+#PW .pt-p5-num {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+#PW .pt-p5-label {
+  padding: 0 6px;
+}
+
+/* P3 = bandă jos cu poze (dreapta → stânga); la hover oprește, la click → pagina producător/produs */
+#PW .pt-cell-3 {
+  grid-row: 3;
+  grid-column: 1 / 4;
+  background: #2e7d32;
+  border: 2px solid #000;
+  overflow: hidden;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+  min-height: 72px;
+}
+
+/* P3: mișcare dreapta → stânga (track se deplasează la dreapta) */
+#PW .pt-strip-track--p3 {
+  animation: pt-strip-p3 45s linear infinite;
+}
+
+@keyframes pt-strip-p3 {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+/* Casete P3: dublu lățime față de P1, aceeași înălțime */
+#PW .pt-strip-item--p3 {
+  flex-shrink: 0;
+  width: 200px;
+  height: 100%;
+  min-height: 72px;
+  display: block;
+  margin: 0 2px 0 0;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.2);
+  position: relative;
+}
+
+#PW .pt-strip-item--p3 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  vertical-align: top;
+}
+
+#PW .pt-strip-item--p3 .pt-strip-no-img {
+  min-height: 72px;
+}
+
+/* P3: scoatem scala gradată de pe poze (rămâne doar caseta/numărul) */
+#PW .pt-strip-item--p3 .pt-strip-scale {
+  display: none !important;
+}
+
+/* P1: scoatem scala gradată de pe poze (rămâne doar caseta/numărul) */
+#PW .pt-strip-item--p1 .pt-strip-scale {
+  display: none !important;
+}
+
+/* Cifră mare pe fiecare poză din benzi (P1/P3) – centrată, la jumătatea înălțimii */
+#PW .pt-strip-item--p1 .pt-strip-num,
+#PW .pt-strip-item--p3 .pt-strip-num {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.75rem, 4vw, 4rem);
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.6);
+  pointer-events: none;
+}
+
+/* Scară gradată în mm pe stânga pozelor (P1 și P3) – de jos în sus, numerotată */
+#PW .pt-strip-item .pt-strip-scale {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 3px 0;
+  background: linear-gradient(to right, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.2) 70%, transparent 100%);
+  border-right: 1px solid rgba(255,255,255,0.5);
+  pointer-events: none;
+  z-index: 2;
+}
+#PW .pt-strip-item .pt-scale-mark {
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 0 2px #000, 0 1px 2px rgba(0,0,0,0.9);
+  padding-right: 2px;
+}
+#PW .pt-strip-item .pt-scale-mark::before {
+  content: "";
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 1px;
+  background: rgba(255,255,255,0.9);
+  margin-right: 2px;
+}
+#PW .pt-strip-item .pt-scale-mark {
+  position: relative;
+}
+
+/* Responsive PW: tablet + mobil */
+@media (max-width: 767.98px) {
+  /* Stack all casete vertical, fără scroll lateral */
+  #PW .pt-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    height: auto;
+  }
+
+  #PW .pt-cell-3,
+  #PW .pt-cell-1,
+  #PW .pt-cell-4,
+  #PW .pt-cell-2,
+  #PW .pt-cell-5 {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Animale (Analiza) | EU Adopt (Admin){% endblock %}
+{% block body_class %}page-analiza page-analiza-animale{% endblock %}
+
+{% block extra_css %}
+<style>
+body.page-analiza .sidebar-left,
+body.page-analiza .sidebar-right { display: none !important; }
+body.page-analiza .layout { display: block !important; grid-template-columns: 1fr !important; }
+body.page-analiza .main-content { width: 100% !important; max-width: 100% !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container clearfix" style="max-width: 960px; margin: 0 auto; padding: 2rem 20px;">
+	<h1 class="entry-title" style="margin-bottom: 1rem;">Animale</h1>
+	<p style="color: #666; margin-bottom: 1rem;"><a href="{% url 'analiza' %}">← Înapoi la Analiza</a></p>
+
+	<form method="get" action="{% url 'analiza_animale' %}" style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+		<div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+			<div><label>Data de la</label><input type="date" name="data_from" value="{{ filters.data_from }}" style="padding: 0.4rem;" /></div>
+			<div><label>Data până la</label><input type="date" name="data_to" value="{{ filters.data_to }}" style="padding: 0.4rem;" /></div>
+			<div>
+				<label>Status</label>
+				<select name="status_pet" style="padding: 0.4rem;">
+					<option value="">— Toate —</option>
+					{% for val, label in pet_status_choices %}
+					<option value="{{ val }}" {% if filters.status_pet == val %}selected{% endif %}>{{ label }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div>
+				<label>Tip</label>
+				<select name="tip_pet" style="padding: 0.4rem;">
+					<option value="">— Toate —</option>
+					{% for val, label in pet_tip_choices %}
+					<option value="{{ val }}" {% if filters.tip_pet == val %}selected{% endif %}>{{ label }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div>
+				<label>Județ</label>
+				<select name="judet" style="padding: 0.4rem;">
+					<option value="">— Toate —</option>
+					{% for val, label in judet_choices %}
+					<option value="{{ val }}" {% if filters.judet == val %}selected{% endif %}>{{ label }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<button type="submit" class="button">Aplică</button>
+		</div>
+	</form>
+
+	<table style="width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e0e0e0;">
+		<thead>
+			<tr style="background: #f5f5f5;">
+				<th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #e0e0e0;">Nume</th>
+				<th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #e0e0e0;">Tip</th>
+				<th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #e0e0e0;">Status</th>
+				<th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #e0e0e0;">Data adăugare</th>
+				<th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #e0e0e0;">Acțiuni</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for p in animale %}
+			<tr style="border-bottom: 1px solid #eee;">
+				<td style="padding: 0.75rem;">{{ p.nume }}</td>
+				<td style="padding: 0.75rem;">{{ p.get_tip_display }}</td>
+				<td style="padding: 0.75rem;">{{ p.get_status_display }}</td>
+				<td style="padding: 0.75rem;">{{ p.data_adaugare|date:"d.m.Y H:i" }}</td>
+				<td style="padding: 0.75rem;"><a href="{% url 'pets_single' pk=p.pk %}">Vezi</a></td>
+			</tr>
+			{% empty %}
+			<tr><td colspan="5" style="padding: 1.5rem; color: #666;">Niciun animal găsit.</td></tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	{% if page_obj.has_other_pages %}
+	<div style="margin-top: 1rem;">
+		{% if page_obj.has_previous %}
+		<a href="?page={{ page_obj.previous_page_number }}{% if filters.data_from %}&data_from={{ filters.data_from }}{% endif %}{% if filters.data_to %}&data_to={{ filters.data_to }}{% endif %}{% if filters.status_pet %}&status_pet={{ filters.status_pet }}{% endif %}{% if filters.tip_pet %}&tip_pet={{ filters.tip_pet }}{% endif %}{% if filters.judet %}&judet={{ filters.judet }}{% endif %}">← Anterior</a>
+		{% endif %}
+		<span>Pagina {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+		{% if page_obj.has_next %}
+		<a href="?page={{ page_obj.next_page_number }}{% if filters.data_from %}&data_from={{ filters.data_from }}{% endif %}{% if filters.data_to %}&data_to={{ filters.data_to }}{% endif %}{% if filters.status_pet %}&status_pet={{ filters.status_pet }}{% endif %}{% if filters.tip_pet %}&tip_pet={{ filters.tip_pet }}{% endif %}{% if filters.judet %}&judet={{ filters.judet }}{% endif %}">Următor →</a>
+		{% endif %}
+	</div>
+	{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+	<meta charset="utf-8" />
+	<title>Întreabă despre {{ pet.nume }} | EU-ADOPT</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+	<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+</head>
+<body class="content_left scheme_red page-pet-ask">
+	<section id="main_wrap">
+		{% include "components/navbar_a0.html" %}
+		<section class="wrapper" id="main_content">
+			<div class="container clearfix">
+				<div class="posts-wrap">
+					<section class="page">
+						<h2 class="entry-title">Întreabă despre {{ pet.nume }}</h2>
+						<div class="entry-content clearfix">
+							<p><a href="{% url 'pets_single' pet.pk %}">&larr; Înapoi la {{ pet.nume }}</a></p>
+							<p>Aici vei putea pune întrebări despre <strong>{{ pet.nume }}</strong> și un asistent va răspunde pe baza informațiilor despre acest animal.</p>
+							<p><em>Funcționalitatea de chat AI va fi conectată aici – întrebări doar despre câinele afișat.</em></p>
+						</div>
+					</section>
+				</div>
+			</div>
+		</section>
+		<footer id="footer" class="wrapper">
+			<div class="container">
+				<div id="post_footer">
+					<div id="site_info" class="clearfix">
+						<div class="right">&copy; EU-ADOPT</div>
+					</div>
+				</div>
+			</div>
+		</footer>
+	</section>
+</body>
+</html>

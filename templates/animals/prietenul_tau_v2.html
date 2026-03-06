@@ -1,0 +1,91 @@
+{% load static %}
+{# Prietenul tău v2 – pagină nouă, izolată. Placeholder data only, no DB. Suffix _v2. #}
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+	<title>Prietenul tău v2 | EU Adopt</title>
+	<link rel="stylesheet" href="{% static 'css/prietenul-tau-v2.css' %}" type="text/css" media="all" />
+</head>
+<body class="page-prietenul-tau-v2">
+	<main class="ptv2-wrap">
+		<div class="ptv2-container">
+			<header class="ptv2-header">
+				<h1 class="ptv2-title">Prietenul tău</h1>
+				<p class="ptv2-subtitle">Caută prietenul tău – animale disponibile pentru adopție.</p>
+			</header>
+
+			<section class="ptv2-grid" aria-label="Listă animale">
+				<!-- Placeholder cards – no DB connection yet -->
+				<article class="ptv2-card">
+					<div class="ptv2-card-img-wrap">
+						<div class="ptv2-card-img ptv2-placeholder-img" aria-hidden="true"></div>
+						<span class="ptv2-card-badge ptv2-badge-available">Disponibil</span>
+					</div>
+					<div class="ptv2-card-body">
+						<h2 class="ptv2-card-name">Rex</h2>
+						<p class="ptv2-card-meta">Vârstă: 2 ani</p>
+						<p class="ptv2-card-meta">Locație: Iași</p>
+					</div>
+				</article>
+				<article class="ptv2-card">
+					<div class="ptv2-card-img-wrap">
+						<div class="ptv2-card-img ptv2-placeholder-img" aria-hidden="true"></div>
+						<span class="ptv2-card-badge ptv2-badge-reserved">Rezervat</span>
+					</div>
+					<div class="ptv2-card-body">
+						<h2 class="ptv2-card-name">Luna</h2>
+						<p class="ptv2-card-meta">Vârstă: 1 an</p>
+						<p class="ptv2-card-meta">Locație: București</p>
+					</div>
+				</article>
+				<article class="ptv2-card">
+					<div class="ptv2-card-img-wrap">
+						<div class="ptv2-card-img ptv2-placeholder-img" aria-hidden="true"></div>
+						<span class="ptv2-card-badge ptv2-badge-available">Disponibil</span>
+					</div>
+					<div class="ptv2-card-body">
+						<h2 class="ptv2-card-name">Max</h2>
+						<p class="ptv2-card-meta">Vârstă: 3 ani</p>
+						<p class="ptv2-card-meta">Locație: Cluj</p>
+					</div>
+				</article>
+				<article class="ptv2-card">
+					<div class="ptv2-card-img-wrap">
+						<div class="ptv2-card-img ptv2-placeholder-img" aria-hidden="true"></div>
+						<span class="ptv2-card-badge ptv2-badge-adopted">Adoptat</span>
+					</div>
+					<div class="ptv2-card-body">
+						<h2 class="ptv2-card-name">Azor</h2>
+						<p class="ptv2-card-meta">Vârstă: 4 ani</p>
+						<p class="ptv2-card-meta">Locație: Timișoara</p>
+					</div>
+				</article>
+				<article class="ptv2-card">
+					<div class="ptv2-card-img-wrap">
+						<div class="ptv2-card-img ptv2-placeholder-img" aria-hidden="true"></div>
+						<span class="ptv2-card-badge ptv2-badge-available">Disponibil</span>
+					</div>
+					<div class="ptv2-card-body">
+						<h2 class="ptv2-card-name">Pufi</h2>
+						<p class="ptv2-card-meta">Vârstă: 6 luni</p>
+						<p class="ptv2-card-meta">Locație: Brașov</p>
+					</div>
+				</article>
+				<article class="ptv2-card">
+					<div class="ptv2-card-img-wrap">
+						<div class="ptv2-card-img ptv2-placeholder-img" aria-hidden="true"></div>
+						<span class="ptv2-card-badge ptv2-badge-reserved">Rezervat</span>
+					</div>
+					<div class="ptv2-card-body">
+						<h2 class="ptv2-card-name">Miti</h2>
+						<p class="ptv2-card-meta">Vârstă: 1 an</p>
+						<p class="ptv2-card-meta">Locație: Constanța</p>
+					</div>
+				</article>
+			</section>
+		</div>
+	</main>
+</body>
+</html>

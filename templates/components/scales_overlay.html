@@ -1,0 +1,21 @@
+{% load static %}
+<!-- Scale overlay: orientare cm, nu ocupă spațiu, vizibilă peste conținut -->
+<div class="servicii-scale-bottom-wrap" aria-hidden="true" title="Scală în cm">
+	<div class="servicii-scale-bottom">
+		{% for row in "0123456789" %}
+			{% for col in "0123456789" %}
+				{% widthratio forloop.parentloop.counter0 1 10 as base %}
+				<span class="sw-scale-cell">{{ base|add:forloop.counter0 }}</span>
+			{% endfor %}
+		{% endfor %}
+		<span class="sw-scale-cell sw-scale-cm">cm</span>
+	</div>
+</div>
+<div class="servicii-scale-right-wrap" aria-hidden="true" title="Scală în cm">
+	<div class="servicii-scale-right">
+		{% for i in "012345678901234567890" %}
+		<span class="sw-scale-cell">{{ forloop.counter0 }}</span>
+		{% endfor %}
+		<span class="sw-scale-cell sw-scale-cm">cm</span>
+	</div>
+</div>

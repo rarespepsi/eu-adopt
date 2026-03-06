@@ -1,0 +1,21 @@
+---
+description: Nu modifica A0 (navbar) când lucrezi la alte pagini sau la alte funcționalități. Setările A0 sunt finale și izolate.
+globs: 
+  - "**/*.css"
+  - "**/*.html"
+---
+
+# A0 – nu modifica dacă task-ul nu e despre navbar
+
+**Regulă:** Când modifici site-ul (CSS, template-uri) pentru **altceva** decât bara de navigare (navbar) – de ex. layout fluid, overflow, pagini Animale/Servicii/Contact, footer, formulare – **nu adăuga și nu schimba** reguli care afectează:
+
+- `#A0`, `#A0 .container`, `#A0 #main_menu`
+- `.a0-left`, `.a0-search-right`, `#menu_wrap` în contextul A0
+- Variabila `--nav-height` pe `body` (dacă e folosită doar pentru A0)
+
+**Unde sunt setările finale A0 (singura sursă de adevăr):**
+- `static/css/navbar-a0-secured.css` – toate regulile A0; setare finală salvată (contor -6cm, meniu 1cm, container 7cm/6cm).
+
+**De ce:** Setările A0 sunt salvate ca finale. Modificări făcute „în treacăt” (ex. la fluid sau overflow) au dus la butoane tăiate sau layout stricat. A0 se modifică **doar** când utilizatorul cere explicit schimbări la navbar / bara de sus.
+
+Detalii complete: **a0-detalii-finale-restart.mdc**.

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Transport – We Come To You | EU Adopt{% endblock %}
+{% block body_class %}page-transport{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/transport.css' %}" type="text/css" media="all" />
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper transport-main-content" id="main_content">
+	<div id="TW" class="transport-page tw-layout" aria-label="Conținut pagină Transport">
+		<div id="T1" class="tw-caseta tw-caseta-stanga" aria-label="T1 – casetă stânga 25%">
+			<div class="tw-t1-inner">
+				<h2 class="tw-t1-title">Transport veterinar – România</h2>
+				{% if transport_submitted %}
+					<div class="tw-transport-result" role="status">
+						{% if transport_result == 'in_oras' %}
+							<p class="tw-result-msg tw-result-success">Vă mulțumim, avem {{ transport_count }} colaboratori. Unul dintre ei vă va contacta în cel mai scurt timp. Pe email veți primi datele de contact.</p>
+						{% elif transport_result == 'in_judet' %}
+							<p class="tw-result-msg">Ne pare rău, nu avem colaboratori în orașul {{ transport_oras }}, dar avem colaboratori în județ. Veți primi pe email datele colaboratorului care acceptă comanda. De aici în colo este treaba colaboratorului și a userului dacă se înțeleg.</p>
+						{% elif transport_result == 'in_tara' %}
+							<p class="tw-result-msg">Ne pare rău, nu avem niciun colaborator în Județul {{ transport_judet_label }}. Dar dacă vă ajută, transmitem cererea unui colaborator care se deplasează în țară. Veți primi pe email datele de contact.</p>
+						{% else %}
+							<p class="tw-result-msg">Ne pare rău, nu avem colaboratori în zona selectată momentan. Vă vom anunța când vor fi disponibili.</p>
+						{% endif %}
+						<p class="tw-result-note">Nu afișăm niciodată datele de contact ale colaboratorilor pe pagină – le primiți doar pe email după ce un colaborator acceptă comanda.</p>
+						<a href="{% url 'transport' %}" class="tw-result-another">Altă cerere</a>
+					</div>
+				{% else %}
+				<p class="tw-t1-desc">Comandă transport: selectează județul, orașul și completează detaliile. Cererea este transmisă colaboratorilor; primul care acceptă primește datele de contact.</p>
+				<div class="tw-transport-form-wrap {% if not user.is_authenticated %}tw-require-login{% endif %}" data-login-url="{% url 'login' %}?next={{ request.path }}" data-user-judet="{{ user_judet|default:'' }}" data-user-oras="{{ user_oras|default:'' }}" data-ro-location="1" data-ro-user-judet="{{ user_judet|default:'' }}" data-ro-user-oras="{{ user_oras|default:'' }}">
+					<form class="tw-transport-form" action="{% url 'transport' %}" method="post" id="tw-transport-form">
+						{% csrf_token %}
+						<div class="tw-form-group">
+							<label for="tw-judet">Județ unde ai nevoie de transport <span class="tw-required">*</span></label>
+							<select name="judet" id="tw-judet" required data-ro-county>
+								{% for value, label in judet_choices %}
+									<option value="{{ value }}" {% if user_judet == value %}selected{% endif %}>{{ label }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="tw-form-group tw-oras-wrap">
+							<label for="tw-oras">Oraș / localitate <span class="tw-required">*</span></label>
+							<select name="oras" id="tw-oras" required disabled aria-describedby="tw-oras-hint" data-ro-city data-ro-city-name="oras">
+								<option value="">— Alege mai întâi județul —</option>
+							</select>
+							<input type="text" id="tw-oras-manual" class="tw-oras-manual" placeholder="Introdu orașul / localitatea" style="display:none;" aria-describedby="tw-oras-hint" data-ro-city-manual data-ro-city-name="oras" />
+							<span class="tw-field-hint" id="tw-oras-hint" data-ro-city-hint></span>
+						</div>
+						<div class="tw-form-group">
+							<label for="plecare_input">Plecare <span class="tw-required">*</span></label>
+							<input type="text" name="plecare" id="plecare_input" placeholder="Localitate, adresă sau punct de plecare" required autocomplete="off" data-places="1" data-lat-target="#plecare_lat" data-lng-target="#plecare_lng" />
+							<input type="hidden" name="plecare_lat" id="plecare_lat" />
+							<input type="hidden" name="plecare_lng" id="plecare_lng" />
+							<span class="tw-field-hint">Verificat prin Google Maps</span>
+						</div>
+						<div class="tw-form-group">
+							<label for="sosire_input">Sosire <span class="tw-required">*</span></label>
+							<input type="text" name="sosire" id="sosire_input" placeholder="Localitate, adresă sau punct de sosire" required autocomplete="off" data-places="1" data-lat-target="#sosire_lat" data-lng-target="#sosire_lng" />
+							<input type="hidden" name="sosire_lat" id="sosire_lat" />
+							<input type="hidden" name="sosire_lng" id="sosire_lng" />
+							<span class="tw-field-hint">Verificat prin Google Maps</span>
+						</div>
+						<div class="tw-form-group">
+							<label for="tw-data">Data dorită</label>
+							<input type="date" name="data_transport" id="tw-data" required />
+						</div>
+						<div class="tw-form-group">
+							<label for="tw-nr-caini">Număr câini de transportat</label>
+							<input type="number" name="nr_caini" id="tw-nr-caini" min="1" max="99" value="1" />
+						</div>
+						<div class="tw-form-group tw-form-actions">
+							<button type="submit" class="tw-btn-submit">Trimite cererea</button>
+						</div>
+					</form>
+					{% if not user.is_authenticated %}
+					<div class="tw-form-login-overlay" aria-hidden="true">
+						<span class="tw-form-login-msg">Vă rugăm să vă logați pentru a completa și trimite cererea.</span>
+						<a href="{% url 'login' %}?next={{ request.path }}" class="tw-form-login-btn">Autentificare</a>
+					</div>
+					{% endif %}
+				</div>
+				{% endif %}
+			</div>
+		</div>
+		<div id="T2" class="tw-caseta tw-caseta-dreapta" aria-label="T2 – casetă dreapta 75%">
+			<div class="tw-t2-wrap">
+				<header class="tw-t2-header">
+					<h2 class="tw-t2-title">Fii parte din drumul lor!</h2>
+					<p class="tw-t2-subtitle">Fii primul care ne ajută în proiect!</p>
+				</header>
+				<div class="tw-t2-shell">
+					<div class="tw-t2-center-card transport-caseta" aria-label="Proiect WE COME TO YOU">
+						<span class="transport-caseta-nr">C</span>
+						<div class="tw-t2-center-img">
+							<img src="{% static 'images/transport/transport_03.jpeg' %}" alt="Autocar EU-ADOPT" />
+						</div>
+						<div class="tw-t2-center-text">
+							<div class="tw-t2-center-title">Proiect</div>
+							<div class="tw-t2-center-tagline">WE COME TO YOU</div>
+						</div>
+					</div>
+					<div class="tw-t2-around-grid" aria-label="Facilități autocar EU-ADOPT">
+						<div class="tw-t2-item tw-t2-item-1">
+							<div class="tw-t2-item-img"><img src="{% static 'images/transport/transport_02.jpeg' %}" alt="Facilitate autocar 1" /></div>
+							<div class="tw-t2-item-label">Confort la bord</div>
+						</div>
+						<div class="tw-t2-item tw-t2-item-2">
+							<div class="tw-t2-item-img"><img src="{% static 'images/transport/transport_01.jpeg' %}" alt="Facilitate autocar 2" /></div>
+							<div class="tw-t2-item-label">Autocar EU-ADOPT</div>
+						</div>
+						<div class="tw-t2-item tw-t2-item-3">
+							<div class="tw-t2-item-img"><img src="{% static 'images/transport/transport_04.jpeg' %}" alt="Facilitate autocar 3" /></div>
+							<div class="tw-t2-item-label">Facilități moderne</div>
+						</div>
+						<div class="tw-t2-item tw-t2-item-4">
+							<div class="tw-t2-item-img"><img src="{% static 'images/transport/transport_05.jpeg' %}" alt="Facilitate autocar 4" /></div>
+							<div class="tw-t2-item-label">Asistență VET</div>
+						</div>
+						<div class="tw-t2-item tw-t2-item-5">
+							<div class="tw-t2-item-img"><img src="{% static 'images/transport/transport_facilitati.png' %}" alt="Facilități în interior" /></div>
+							<div class="tw-t2-item-label">Facilități în interior</div>
+						</div>
+						<div class="tw-t2-item tw-t2-item-6">
+							<div class="tw-t2-item-img"><img src="{% static 'images/transport/transport_autocar_exterior.png' %}" alt="Autocar EU-ADOPT exterior" /></div>
+							<div class="tw-t2-item-label">Autocar EU-ADOPT</div>
+						</div>
+						<div class="tw-t2-item tw-t2-item-7">
+							<div class="tw-t2-item-img"><img src="{% static 'images/transport/transport_06.jpeg' %}" alt="Transport sus" /></div>
+							<div class="tw-t2-item-label">Transport</div>
+						</div>
+						<div class="tw-t2-item tw-t2-item-8">
+							<div class="tw-t2-item-img"><img src="{% static 'images/transport/transport_07.jpeg' %}" alt="Transport jos" /></div>
+							<div class="tw-t2-item-label">Transport</div>
+						</div>
+					</div>
+				</div>
+				<div class="tw-cages-link-wrap">
+					<a href="{% url 'cages' %}" class="tw-cages-link">Sponsorizează o cușcă – vezi harta cuștilor</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+{% endblock main_wrap_after_header %}
+
+{% block extra_js %}
+<script>window.RO_COUNTIES_CITIES_URL = '{% url "ro_counties_cities_json" %}';</script>
+<script src="{% static 'js/ro-location.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,33 @@
+---
+description: Idei principale proiect – citite la fiecare conversație nouă
+alwaysApply: true
+---
+
+# Idei principale proiect (referință la fiecare chat)
+
+La fiecare conversație nouă, respectă aceste puncte. Pentru detalii complete: **REFERINTA_PROIECT.md**.
+
+## Pagini și convenții
+- **Home** = doar `home_v2.html`, body class `page-home-v2`. Nu folosi `body.page-home` pentru setări live.
+- **PT (Prietenul tău)** = `pets-all.html`, filtrele sunt în **P3** (sidebar stânga).
+- **Match quiz:** `/match/quiz/`, `/match/results/`; sesiune `match_quiz_draft` pentru nelogat; la login cu draft → salvare în UserMatchProfile + redirect la rezultate.
+
+## Ce nu modificăm
+- Pozițiile sloturilor/coloanelor (doar conținutul din sloturi).
+- Layout-ul A1/A2 pe home (vezi HOME_SETTINGS_REFERENCE.md).
+- Navbar A0 (decât la task explicit pentru navbar).
+
+## Ce respectăm
+- Filtre PT: live (fără buton Aplică); vârstă = slider dublu 0–20 pe `age_years`; implicit 0–20 = fără filtru vârstă.
+- Postare animal: formular cu secțiuni (Identitate, Locație, Sănătate, Comportament, Poveste, Media); min 3 poze; câmp obligatoriu `age_years` (0–20).
+- Nu încărca `pets-all-debug.css` pe PT (eliminat – fără borduri colorate).
+
+## Unde sunt lucrurile
+- View home → `anunturi.views.home`, template `home_v2.html`.
+- View PT → `anunturi.views.pets_all`; filtre în sesiune `SESSION_KEY_PETS_ALL_FILTERS`.
+- Formular postare → `PetAdaugaForm`, `PET_ADAUGA_SECTIONS` în `forms.py`.
+- Match → `match_quiz_view`, `match_results_view`; `compute_matches()` în `match_utils.py`.
+
+## La nevoie de mai mult context
+- Citește **REFERINTA_PROIECT.md** pentru ce e făcut, decizii, tabel tehnic.
+- Idei/taskuri amânate → **ARHIVA_IDEI_TASKURI_SI_PROPUNERI.md**.

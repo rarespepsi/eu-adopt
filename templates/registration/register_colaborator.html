@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Înregistrare Colaborator | EU Adopt{% endblock %}
+
+{% block body_class %}page-register-colaborator auth-page{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth-pages.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="auth-content-wrap">
+	<div class="auth-form-box">
+		<section class="page">
+			<h2 class="entry-title">Înregistrare – Colaborator</h2>
+			<div class="entry-content clearfix">
+				<p>Formularul pentru cont Colaborator este în pregătire. Vă rugăm reveniți în curând sau <a href="{% url 'contact' %}">contactați-ne</a>.</p>
+				<p><a href="{% url 'register' %}">Înapoi la alegerea tipului de cont</a></p>
+				<p><a href="{% url 'home' %}">Înapoi la prima pagină</a></p>
+			</div>
+		</section>
+	</div>
+</div>
+{% endblock %}

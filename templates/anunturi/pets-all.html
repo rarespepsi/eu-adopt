@@ -1,0 +1,371 @@
+{% load static %}
+{% load anunturi_extras %}
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>Rescue | An Animal Shelter PHP &amp; HTML Template</title>
+		<meta name="Keywords" content=" " />
+		<meta name="Description" content=" " />
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+		
+		<!-- CSS -->
+		<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+		<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}" type="text/css" media="screen" />
+		<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}" type="text/css" media="screen" />
+		<style>
+			/* P3 lipit de burtiera cu poze – fără spațiu, ridicat */
+			body.page-animale #burtiera_mica,
+			body.page-animale .burtiera_mica_wrap { margin-bottom: 0 !important; }
+			body.page-animale #main_content .container,
+			body.page-animale .animale-layout-with-filters,
+			body.page-animale .animale-filters-left { margin-top: 0 !important; padding-top: 0 !important; }
+		</style>
+        <link rel="stylesheet" href="{% static 'includes/js/flexslider.css' %}" type="text/css" media="all" />
+        <link rel="stylesheet" href="{% static 'includes/fancybox/jquery.fancybox.css' %}" type="text/css" media="screen" />
+
+		<!-- The next line calls the font for the headings from Google. You can customize this at Google.com/fonts */ -->
+		<link href='https://fonts.googleapis.com/css?family=Merriweather:300' rel='stylesheet' type='text/css' media='print' onload="this.media='all'">
+		
+		<!-- The Favicon -->
+		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+	</head>
+	<body class="content_left scheme_red page-animale" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
+		<section id="main_wrap">
+			{% include "components/navbar_a0.html" %}
+			<section class="wrapper" id="main_content">
+				<main id="PW">
+					<div class="pt-grid">
+						<div class="pt-cell pt-cell-1">
+							<div class="pt-strip-wrap pt-strip-p1" aria-label="Banda poze animale">
+								<div class="pt-strip-track pt-strip-track--p1">
+									{% for pet in strip_pets %}
+										<a href="{% url 'pets_single' pet.pk %}" class="pt-strip-item pt-strip-item--p1" title="{{ pet.nume }}">
+											{% if pet.imagine %}
+												<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" loading="lazy">
+											{% elif pet.imagine_fallback %}
+												<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" loading="lazy">
+											{% else %}
+												<span class="pt-strip-no-img">{{ pet.nume }}</span>
+											{% endif %}
+											<span class="pt-strip-num" aria-hidden="true">{{ forloop.counter }}</span>
+											<div class="pt-strip-scale" aria-hidden="true"><span class="pt-scale-mark">0</span><span class="pt-scale-mark">5</span><span class="pt-scale-mark">10</span><span class="pt-scale-mark">15</span><span class="pt-scale-mark">20</span></div>
+										</a>
+										{% if forloop.counter == 10 or forloop.counter == 20 or forloop.counter == 30 or forloop.counter == 40 %}
+										<span class="pt-strip-item pt-strip-item--p1 pt-strip-disclaimer">
+											EU-ADOPT este un proiect independent dedicat adopțiilor de animale și nu reprezintă o inițiativă oficială a instituțiilor Uniunii Europene.
+										</span>
+										{% endif %}
+									{% empty %}
+										<span class="pt-strip-item pt-strip-item--p1 pt-strip-no-img">—</span>
+										<span class="pt-strip-item pt-strip-item--p1 pt-strip-no-img">—</span>
+									{% endfor %}
+									{% for pet in strip_pets %}
+										<a href="{% url 'pets_single' pet.pk %}" class="pt-strip-item pt-strip-item--p1" title="{{ pet.nume }}">
+											{% if pet.imagine %}
+												<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" loading="lazy">
+											{% elif pet.imagine_fallback %}
+												<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" loading="lazy">
+											{% else %}
+												<span class="pt-strip-no-img">{{ pet.nume }}</span>
+											{% endif %}
+											<span class="pt-strip-num" aria-hidden="true">{{ forloop.counter }}</span>
+											<div class="pt-strip-scale" aria-hidden="true"><span class="pt-scale-mark">0</span><span class="pt-scale-mark">5</span><span class="pt-scale-mark">10</span><span class="pt-scale-mark">15</span><span class="pt-scale-mark">20</span></div>
+										</a>
+										{% if forloop.counter == 10 or forloop.counter == 20 or forloop.counter == 30 or forloop.counter == 40 %}
+										<span class="pt-strip-item pt-strip-item--p1 pt-strip-disclaimer">
+											EU-ADOPT este un proiect independent dedicat adopțiilor de animale și nu reprezintă o inițiativă oficială a instituțiilor Uniunii Europene.
+										</span>
+										{% endif %}
+									{% empty %}
+										<span class="pt-strip-item pt-strip-item--p1 pt-strip-no-img">—</span>
+										<span class="pt-strip-item pt-strip-item--p1 pt-strip-no-img">—</span>
+									{% endfor %}
+								</div>
+							</div>
+						</div>
+						<div class="pt-cell pt-cell-4">
+							<div class="pt-p4-inner">
+								<div class="pt-p4-box pt-p4-box-filters">
+									<div id="P3" class="pet-filters-box p3-caseta-independenta" data-slot="P3">
+										<p class="p3-title">
+											Caută prietenul tău
+										</p>
+
+										<ul id="animal_list" class="p3-tip-butoane clearfix animal_filter_list">
+											<li>
+												<a href="{% url 'pets_all' %}"
+												   class="{% if not current_tip %}active{% endif %}">
+													<span class="p3-btn-label">Toate</span>
+													<span class="p3-btn-count">{{ total_all }}</span>
+												</a>
+											</li>
+											<li>
+												<a href="{% url 'pets_all' %}?tip=dog"
+												   class="{% if current_tip == 'dog' %}active{% endif %}">
+													<span class="p3-btn-label">Câini</span>
+													<span class="p3-btn-count">{{ total_dogs }}</span>
+												</a>
+											</li>
+											<li>
+												<a href="{% url 'pets_all' %}?tip=cat"
+												   class="{% if current_tip == 'cat' %}active{% endif %}">
+													<span class="p3-btn-label">Pisici</span>
+													<span class="p3-btn-count">{{ total_cats }}</span>
+												</a>
+											</li>
+											<li>
+												<a href="{% url 'pets_all' %}?tip=other"
+												   class="{% if current_tip == 'other' %}active{% endif %}">
+													<span class="p3-btn-label">Altele</span>
+													<span class="p3-btn-count">{{ total_other }}</span>
+												</a>
+											</li>
+										</ul>
+
+										<form method="get" action="{% url 'pets_all' %}" id="filtre-animale">
+											<input type="hidden" name="tip" value="{{ current_tip|default_if_none:'' }}">
+											<div class="p3-filters-grid">
+												<div class="p3-filter-cell">
+													<label for="id_judet">Județ</label>
+													<select name="judet" id="id_judet">
+														<option value="">— Toate —</option>
+														{% for val, label in pet_judet_choices %}
+															<option value="{{ val }}" {% if current_judet == val %}selected{% endif %}>{{ label }}</option>
+														{% endfor %}
+													</select>
+												</div>
+												<div class="p3-filter-cell">
+													<label for="id_marime">Talie</label>
+													<select name="marime" id="id_marime">
+														<option value="">— Toate —</option>
+														{% for val, label in pet_marime_choices %}
+															<option value="{{ val }}" {% if current_marime == val %}selected{% endif %}>{{ label }}</option>
+														{% endfor %}
+													</select>
+												</div>
+												<div class="p3-filter-cell">
+													<label for="id_varsta">Vârstă</label>
+													<select name="varsta" id="id_varsta">
+														<option value="">— Toate —</option>
+														{% for val, label in pet_varsta_choices %}
+															<option value="{{ val }}" {% if current_varsta == val|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+														{% endfor %}
+													</select>
+												</div>
+												<div class="p3-filter-cell">
+													<label for="id_sex">Sex</label>
+													<select name="sex" id="id_sex">
+														<option value="">— Toate —</option>
+														{% for val, label in pet_sex_choices %}
+															<option value="{{ val }}" {% if current_sex == val %}selected{% endif %}>{{ label }}</option>
+														{% endfor %}
+													</select>
+												</div>
+											</div>
+											<a href="{% url 'pets_all' %}?reset=1" class="p3-reset-link">Resetează filtre</a>
+										</form>
+
+										<script>
+										(function() {
+											var form = document.getElementById('filtre-animale');
+											if (!form) return;
+											var selects = form.querySelectorAll('select');
+											for (var i = 0; i < selects.length; i++) {
+												selects[i].addEventListener('change', function() { form.submit(); });
+											}
+										})();
+										</script>
+									</div>
+								</div>
+								<div class="pt-p4-box pt-p4-box-match">
+									<div class="p3-btn-below">
+										<a href="/match/quiz/"
+										   class="p3-below-btn matching-open-btn p3-match-btn"
+										   title="Găsește-ți sufletul pereche"
+										   style="display:flex;align-items:center;justify-content:center;width:100%;box-sizing:border-box;text-align:center;text-decoration:none;background:#c62828;color:#fff;font-weight:700;font-size:clamp(8px,0.75vw,14px);min-height:30px;padding:6px 16px;border-radius:8px;line-height:1.2;white-space:nowrap;">
+											Găsește-ți sufletul pereche
+										</a>
+									</div>
+								</div>
+								<div class="pt-p4-box pt-p4-box-ads">Publicitate (P4.3)</div>
+							</div>
+						</div>
+						<div class="pt-cell pt-cell-2">
+							<div class="pt-p2-20grid" aria-label="12 părți egale">
+								{% for i in "123456789012" %}
+									{% with pet=p2_pets|get_at_index:forloop.counter0 %}
+										<div class="pt-p2-20cell">
+											{% if user.is_authenticated and user.username == "adrian" %}
+											<span class="pt-p2-20num">P2.{{ forloop.counter }}</span>
+											{% endif %}
+											{% if pet %}
+												<a href="{% url 'pets_single' pet.pk %}" class="pt-p2-20bg-link" title="{{ pet.nume }}">
+													{% if pet.imagine %}
+														<span class="pt-p2-20bg" style="background-image: url('{{ pet.imagine.url }}');"></span>
+													{% elif pet.imagine_fallback %}
+														<span class="pt-p2-20bg" style="background-image: url('{% static pet.imagine_fallback %}');"></span>
+													{% else %}
+														<span class="pt-p2-20bg pt-p2-20bg--empty">{{ pet.nume }}</span>
+													{% endif %}
+												</a>
+											{% endif %}
+										</div>
+									{% endwith %}
+								{% endfor %}
+							</div>
+						</div>
+						<div class="pt-cell pt-cell-5">
+							<div class="pt-p5-grid" aria-label="Publicitate dreapta">
+								{% for _ in "1234" %}
+									<div class="pt-p5-slot">
+										<span class="pt-p5-num">{{ forloop.counter }}</span>
+										<span class="pt-p5-label">Publicitate {{ forloop.counter }}</span>
+									</div>
+								{% endfor %}
+							</div>
+						</div>
+						<div class="pt-cell pt-cell-3">
+							<div class="pt-strip-wrap pt-strip-p3" aria-label="Banda publicitate / producători">
+								<div class="pt-strip-track pt-strip-track--p3">
+									{% for pet in strip_pets %}
+										<a href="{% url 'pets_single' pet.pk %}" class="pt-strip-item pt-strip-item--p3" title="{{ pet.nume }}">
+											{% if pet.imagine %}
+												<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" loading="lazy">
+											{% elif pet.imagine_fallback %}
+												<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" loading="lazy">
+											{% else %}
+												<span class="pt-strip-no-img">{{ pet.nume }}</span>
+											{% endif %}
+											<span class="pt-strip-num" aria-hidden="true">{{ forloop.counter }}</span>
+										</a>
+										{% if forloop.counter == 10 or forloop.counter == 20 or forloop.counter == 30 or forloop.counter == 40 %}
+										<span class="pt-strip-item pt-strip-item--p3 pt-strip-disclaimer">
+											EU-ADOPT este un proiect independent dedicat adopțiilor de animale și nu reprezintă o inițiativă oficială a instituțiilor Uniunii Europene.
+										</span>
+										{% endif %}
+									{% empty %}
+										<span class="pt-strip-item pt-strip-item--p3 pt-strip-no-img">—</span>
+										<span class="pt-strip-item pt-strip-item--p3 pt-strip-no-img">—</span>
+									{% endfor %}
+									{% for pet in strip_pets %}
+										<a href="{% url 'pets_single' pet.pk %}" class="pt-strip-item pt-strip-item--p3" title="{{ pet.nume }}">
+											{% if pet.imagine %}
+												<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" loading="lazy">
+											{% elif pet.imagine_fallback %}
+												<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" loading="lazy">
+											{% else %}
+												<span class="pt-strip-no-img">{{ pet.nume }}</span>
+											{% endif %}
+											<span class="pt-strip-num" aria-hidden="true">{{ forloop.counter }}</span>
+										</a>
+										{% if forloop.counter == 10 or forloop.counter == 20 or forloop.counter == 30 or forloop.counter == 40 %}
+										<span class="pt-strip-item pt-strip-item--p3 pt-strip-disclaimer">
+											EU-ADOPT este un proiect independent dedicat adopțiilor de animale și nu reprezintă o inițiativă oficială a instituțiilor Uniunii Europene.
+										</span>
+										{% endif %}
+									{% empty %}
+										<span class="pt-strip-item pt-strip-item--p3 pt-strip-no-img">—</span>
+										<span class="pt-strip-item pt-strip-item--p3 pt-strip-no-img">—</span>
+									{% endfor %}
+								</div>
+							</div>
+						</div>
+					</div>
+				</main>
+			</section>
+		</section>
+		<div id="matching-modal" class="matching-modal" aria-hidden="true">
+			<div class="matching-modal-backdrop"></div>
+			<div class="matching-modal-content">
+				<h3>🐾 Potrivirea perfectă</h3>
+				<p class="matching-modal-intro">Răspunde la câteva întrebări și îți vom arăta câinii care se potrivesc cel mai bine.</p>
+				<form id="matching-form" class="matching-form">
+					<div class="matching-field">
+						<label>Locuință</label>
+						<select name="locuinta">
+							<option value="">— Oricare —</option>
+							<option value="apartament">Apartament</option>
+							<option value="curte">Casă cu curte</option>
+						</select>
+					</div>
+					<div class="matching-field">
+						<label>Ai copii?</label>
+						<select name="tags_copii">
+							<option value="">— Oricare —</option>
+							<option value="1">Da</option>
+							<option value="0">Nu</option>
+						</select>
+					</div>
+					<div class="matching-field">
+						<label>Nivel activitate</label>
+						<select name="activitate">
+							<option value="">— Oricare —</option>
+							<option value="low">Scăzut</option>
+							<option value="medium">Mediu</option>
+							<option value="high">Ridicat</option>
+						</select>
+					</div>
+					<div class="matching-field">
+						<label>Experiență cu câini</label>
+						<select name="experienta">
+							<option value="">— Oricare —</option>
+							<option value="da">Da</option>
+							<option value="nu">Nu (prima dată)</option>
+						</select>
+					</div>
+					<div class="matching-buttons">
+						<button type="submit" class="matching-submit-btn">Aplică filtre</button>
+						<button type="button" class="matching-close-btn">Anulare</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		<script type="text/javascript" src="{% static 'includes/js/jquery-1.11.1.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'includes/fancybox/jquery.fancybox.js' %}"></script>
+        <!-- <script type="text/javascript" src="{% static 'includes/js/jquery.sticky.js' %}"></script> -->
+        <script type="text/javascript" src="{% static 'includes/js/jquery.flexslider-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'includes/js/jquery.mobilemenu.js' %}"></script>
+        <script type="text/javascript" src="{% static 'includes/js/rescue.js' %}"></script>
+		<script>
+		(function() {
+			var openBtns = document.querySelectorAll(".matching-open-btn");
+			var modal = document.getElementById("matching-modal");
+			var form = document.getElementById("matching-form");
+			var closeBtn = modal ? modal.querySelector(".matching-close-btn") : null;
+			var backdrop = modal ? modal.querySelector(".matching-modal-backdrop") : null;
+			var baseUrl = "{% url 'pets_all' %}";
+			if (modal) {
+				openBtns.forEach(function(btn) {
+					btn.addEventListener("click", function() {
+						modal.setAttribute("aria-hidden", "false");
+						modal.classList.add("matching-modal-open");
+					});
+				});
+			}
+			function closeModal() {
+				if (modal) {
+					modal.setAttribute("aria-hidden", "true");
+					modal.classList.remove("matching-modal-open");
+				}
+			}
+			if (closeBtn) closeBtn.addEventListener("click", closeModal);
+			if (backdrop) backdrop.addEventListener("click", closeModal);
+			if (form) {
+				form.addEventListener("submit", function(e) {
+					e.preventDefault();
+					var fd = new FormData(form);
+					var params = ["tip=dog"];
+					["locuinta","tags_copii","activitate","experienta"].forEach(function(k) {
+						var v = fd.get(k);
+						if (v && v !== "0") params.push(k + "=" + encodeURIComponent(v));
+					});
+					window.location.href = baseUrl + "?" + params.join("&");
+				});
+			}
+		})();
+		</script>
+		{% include "components/login_required_modal.html" %}
+	</body>
+</html>

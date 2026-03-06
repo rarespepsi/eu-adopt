@@ -1,0 +1,20 @@
+---
+description: Pagina home – setările actuale sunt considerate foarte bune, păstrează-le la modificări
+alwaysApply: true
+---
+
+# Referință setări pagină home
+
+**Setările actuale ale paginii home sunt memorate ca foarte bune.** La orice modificare pe home (CSS, template-uri, slot-uri), păstrează aceste valori dacă utilizatorul nu cere explicit altceva.
+
+Referință detaliată: **HOME_SETTINGS_REFERENCE.md** (rădăcina proiectului).  
+**Setări finale home (același rol ca A0):** **.cursor/rules/home-detalii-finale-restart.mdc** – punct de restart, setare finală salvată.
+
+### Home V2 (curent)
+- **Fișier principal:** `static/css/home_v2.css` (încărcat pe pagina home).
+- **Fără scroll:** #main_wrap `height: 100vh`, `overflow: hidden`; #main_content `flex: 1 1 auto`, `padding-top: 0`.
+- **Fără bară albastră sub A0:** în navbar-a0-secured.css: `body:not(.page-home):not(.page-home-v2) #main_content` pentru padding-top.
+- **A4** banda „#EuAdopt#NuCumpar!#”: lipită de fundul lui A5, A3, A6; `margin: 0`, `flex-shrink: 0`; fundal #f5e642.
+- **Containere lipite**, fundal albastru #004B93; grid 3 coloane A5 | A1 (A2, A3) | A6.
+
+Nu schimba pozițiile, scroll-ul sau lipirea A4 fără cerere explicită.

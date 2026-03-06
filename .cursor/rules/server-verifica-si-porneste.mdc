@@ -1,0 +1,24 @@
+---
+description: Verifică permanent dacă serverul Django rulează; dacă e oprit, pornește-l automat fără să aștepți comanda utilizatorului.
+alwaysApply: true
+---
+
+# Server Django – verificare și pornire automată
+
+**Regulă:** Verifică periodic dacă serverul de development Django (`python manage.py runserver`) rulează. Când constați că serverul este oprit, **pornește-l imediat**, fără să aștepți ca utilizatorul să ceră „pornește serverul”.
+
+## Cum procedezi
+
+1. **La începutul sesiunii sau când e relevant** (ex. după ce utilizatorul a lucrat la proiect, a deschis pagini, sau nu a mai interacționat o vreme): verifică dacă există un proces `runserver` activ (ex. verifică terminalele sau rulează o comandă de verificare).
+2. **Dacă serverul nu rulează:** pornește-l în background din directorul proiectului: `Set-Location c:\Users\USER\Desktop\adoptapet_pro; python manage.py runserver` (sau echivalent pentru shell-ul folosit).
+3. **Nu aștepta** ca utilizatorul să spună „pornește serverul” – dacă vezi că e oprit, pornește-l.
+
+## Proiect
+
+- **Cale proiect:** `c:\Users\USER\Desktop\adoptapet_pro`
+- **Comandă pornire:** `python manage.py runserver` (din directorul proiectului)
+- **URL local:** http://127.0.0.1:8000/
+
+## Notă
+
+Dacă nu poți verifica automat (ex. lipsesc permisiuni sau tool-uri), la prima ocazie când utilizatorul lucrează la proiect și e plauzibil că vrea să vadă site-ul, pornește serverul proactiv.

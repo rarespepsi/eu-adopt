@@ -1,0 +1,32 @@
+{% load static %}
+<div class="sidebar-box {% if box.animation_class %}{{ box.animation_class }}{% endif %}">
+	{% if box.image %}
+	<div class="sidebar-box-image">
+		{% if box.link_url %}
+			<a href="{{ box.link_url }}" title="{{ box.title }}">
+				<img src="{% if box.image|slice:':4' == 'http' %}{{ box.image }}{% else %}{% static box.image %}{% endif %}" alt="{{ box.title }}" />
+			</a>
+		{% else %}
+			<img src="{% if box.image|slice:':4' == 'http' %}{{ box.image }}{% else %}{% static box.image %}{% endif %}" alt="{{ box.title }}" />
+		{% endif %}
+	</div>
+	{% endif %}
+	
+	<div class="sidebar-box-content">
+		{% if box.title %}
+		<h3 class="sidebar-box-title">{{ box.title }}</h3>
+		{% endif %}
+		
+		{% if box.text %}
+		<div class="sidebar-box-text">
+			{{ box.text|safe }}
+		</div>
+		{% endif %}
+		
+		{% if box.link_url and box.button_text %}
+		<div class="sidebar-box-action">
+			<a href="{{ box.link_url }}" class="sidebar-box-button">{{ box.button_text }}</a>
+		</div>
+		{% endif %}
+	</div>
+</div>

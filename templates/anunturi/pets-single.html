@@ -1,0 +1,749 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ro">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>{{ pet.nume }} | Adopt a Pet</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+		<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+		<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}" type="text/css" media="screen" />
+		<link rel="stylesheet" href="{% static 'includes/js/flexslider.css' %}" type="text/css" media="all" />
+		<link rel="stylesheet" href="{% static 'includes/fancybox/jquery.fancybox.css' %}" type="text/css" media="screen" />
+		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+		<style>
+			.back-to-friends-btn {
+				display: inline-flex;
+				flex-direction: column;
+				align-items: center;
+				text-decoration: none;
+				margin: 1.5rem 0;
+				cursor: pointer;
+				border: none;
+				background: none;
+				transition: transform 0.2s;
+			}
+			.back-to-friends-btn:hover { transform: scale(1.05); }
+			.back-to-friends-bubble {
+				position: relative;
+				display: inline-block;
+				padding: 0.5rem 1rem;
+				background: #fff;
+				border: 2px solid #c62828;
+				border-radius: 12px;
+				color: #c62828;
+				font-weight: 700;
+				font-size: 0.9rem;
+				white-space: nowrap;
+				margin-bottom: 4px;
+				box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			}
+			.back-to-friends-bubble::after {
+				content: '';
+				position: absolute;
+				left: 50%;
+				bottom: -10px;
+				margin-left: -10px;
+				border: 10px solid transparent;
+				border-top-color: #c62828;
+			}
+			.back-to-friends-bubble::before {
+				content: '';
+				position: absolute;
+				left: 50%;
+				bottom: -6px;
+				margin-left: -8px;
+				border: 8px solid transparent;
+				border-top-color: #fff;
+				z-index: 1;
+			}
+			.back-to-friends-dog {
+				font-size: 3rem;
+				line-height: 1;
+			}
+			.pet-image-with-back {
+				display: flex;
+				align-items: stretch;
+				gap: 1rem;
+				flex-wrap: wrap;
+				margin-bottom: 1rem;
+			}
+			.pet-image-with-back .pet-image-col {
+				display: flex;
+				flex-direction: column;
+				gap: 0.5rem;
+				flex-shrink: 0;
+			}
+			.pet-adopt-cta-under-photo {
+				margin-top: 0.5rem;
+				display: block;
+			}
+			.pet-adopt-cta-under-photo .pet-hero-cta {
+				display: inline-block;
+				width: 100%;
+				max-width: 237px;
+				text-align: center;
+				padding: 0.5rem 1rem;
+				font-size: 0.95rem;
+				background: #c62828;
+				color: #fff;
+				font-weight: 700;
+				text-decoration: none;
+				border-radius: 8px;
+				border: none;
+				box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+				transition: background 0.2s;
+			}
+			.pet-adopt-cta-under-photo .pet-hero-cta:hover { background: #b71c1c; color: #fff; }
+			.pet-adopt-cta-under-photo .pet-hero-cta-disabled {
+				display: inline-block;
+				width: 100%;
+				max-width: 237px;
+				text-align: center;
+				padding: 0.5rem 1rem;
+				font-size: 0.95rem;
+				background: #e0e0e0;
+				color: #666;
+				font-weight: 600;
+				border-radius: 8px;
+				cursor: default;
+			}
+			.pet-pending-notice {
+				background: #b71c1c;
+				color: #fff;
+				padding: 1rem 1.25rem;
+				border-radius: 8px;
+				font-weight: 700;
+				font-size: 1rem;
+				line-height: 1.35;
+				text-align: center;
+				box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+				max-width: 275px;
+			}
+			.adoption-form-errors {
+				list-style: none;
+				margin: 0 0 1rem;
+				padding: 1rem;
+				background: #ffebee;
+				border: 1px solid #c62828;
+				border-radius: 8px;
+				color: #b71c1c;
+				font-weight: 600;
+			}
+			.adoption-form-errors li { margin: 0; }
+			.pet-sticky-aplica-btn-disabled, .pet-hero-cta-disabled {
+				opacity: 0.7;
+				cursor: not-allowed;
+				pointer-events: none;
+			}
+			.pet-your-request-notice {
+				margin: 0.75rem 0 0;
+				padding: 0.5rem 0.75rem;
+				background: #e8f5e9;
+				border-radius: 6px;
+				font-size: 0.9rem;
+				color: #2e7d32;
+			}
+			.pet-badge-adopted-msg { background: #e0e0e0; color: #333; }
+			.pet-badge-unavailable-msg { background: #ffebee; color: #c62828; }
+			.pet-badge-rezervat-msg { background: #e65100; color: #fff; }
+			.pet-image-with-back .pet-image {
+				flex-shrink: 0;
+				width: 275px;
+				display: flex;
+				min-height: 0;
+				position: relative;
+			}
+			.pet-te-plac-wrap { position: absolute; bottom: 8px; right: 8px; z-index: 5; }
+			.pet-te-plac-btn {
+				display: inline-block;
+				padding: 6px 12px;
+				background: rgba(255,255,255,0.95);
+				color: #c62828;
+				border-radius: 8px;
+				font-weight: 600;
+				font-size: 0.9rem;
+				text-decoration: none;
+				box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+			}
+			.pet-te-plac-btn:hover { background: #fff; color: #b71c1c; }
+			.pet-te-plac-btn.pet-te-plac-active { background: #c62828; color: #fff; }
+			.pet-te-plac-btn.pet-te-plac-active:hover { background: #b71c1c; color: #fff; }
+			.pet-image-with-back .pet-image img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				display: block;
+			}
+			.pet-gallery-extra {
+				display: flex;
+				gap: 0.5rem;
+				margin-top: 0.5rem;
+				flex-wrap: wrap;
+			}
+			.pet-gallery-extra .pet-extra-thumb {
+				width: 80px;
+				height: 80px;
+				object-fit: cover;
+				border-radius: 6px;
+				border: 1px solid #e5e5e5;
+			}
+			.pet-image-with-back .back-to-friends-btn {
+				flex-shrink: 0;
+				margin: 0;
+			}
+			.pet-image-with-back .share-bar {
+				flex-basis: 100%;
+				width: 100%;
+			}
+			.pet-single-right-col {
+				display: flex;
+				flex-direction: column;
+				align-items: flex-start;
+				gap: 1rem;
+				flex-shrink: 0;
+			}
+			.pet-single-right-box {
+				width: 280px;
+				max-width: 100%;
+				background: #f5f5f5;
+				border-radius: 10px;
+				padding: 1rem;
+				border: 1px solid #e5e5e5;
+			}
+			.pet-single-topics {
+				list-style: none;
+				margin: 1rem 0 0;
+				padding: 0;
+				font-size: 0.9rem;
+				line-height: 1.6;
+				color: #333;
+			}
+			.pet-single-topics li {
+				margin: 0.25rem 0;
+				padding-left: 0.75rem;
+				position: relative;
+			}
+			.pet-single-topics li::before {
+				content: "•";
+				position: absolute;
+				left: 0;
+				color: #c62828;
+			}
+			.pet-single-ask-row {
+				margin-top: 1rem;
+				padding-top: 1rem;
+				background: #e8f0f8;
+				margin-left: -1rem;
+				margin-right: -1rem;
+				margin-bottom: -1rem;
+				padding: 1rem;
+				border-radius: 0 0 10px 10px;
+				text-align: center;
+			}
+			.pet-single-ask-btn {
+				display: inline-block;
+				background: #c62828;
+				color: #fff;
+				font-weight: 700;
+				font-size: 0.95rem;
+				padding: 0.6rem 1.2rem;
+				border-radius: 8px;
+				text-decoration: none;
+				transition: background 0.2s, transform 0.2s;
+			}
+			.pet-single-ask-btn:hover {
+				background: #a01e1e;
+				color: #fff;
+				transform: scale(1.02);
+			}
+			.pet-hero-card {
+				width: 100%;
+				background: #fff;
+				border: 1px solid #e5e5e5;
+				border-radius: 10px;
+				padding: 1rem;
+				margin-bottom: 1rem;
+			}
+			.pet-hero-card h3 {
+				margin: 0 0 0.5rem;
+				font-size: 1rem;
+				color: #333;
+			}
+			.pet-hero-card .pet-hero-meta {
+				font-size: 0.9rem;
+				color: #555;
+				line-height: 1.5;
+				margin-bottom: 0.5rem;
+			}
+			.pet-hero-card .pet-hero-traits {
+				font-size: 0.85rem;
+				color: #666;
+				margin-bottom: 1rem;
+			}
+			.pet-hero-cta {
+				display: inline-block;
+				background: #c62828;
+				color: #fff !important;
+				font-weight: 700;
+				font-size: 0.95rem;
+				padding: 0.6rem 1.2rem;
+				border-radius: 8px;
+				text-decoration: none;
+				transition: background 0.2s, transform 0.2s;
+			}
+			.pet-hero-cta:hover {
+				background: #a01e1e;
+				color: #fff !important;
+				transform: scale(1.02);
+			}
+			.pet-story-block {
+				width: 100%;
+				margin-bottom: 1rem;
+			}
+			.pet-story-block h4 {
+				margin: 0 0 0.5rem;
+				font-size: 0.95rem;
+				color: #333;
+			}
+			.pet-story-block p {
+				margin: 0;
+				font-size: 0.9rem;
+				color: #555;
+				line-height: 1.5;
+				max-width: 100%;
+			}
+			.pet-form-intro {
+				text-align: center;
+				padding: 1rem 0;
+				margin-bottom: 1rem;
+			}
+			.pet-form-intro p {
+				margin: 0;
+				font-size: 0.95rem;
+				color: #555;
+				line-height: 1.5;
+			}
+			.pet-form-intro strong { color: #c62828; }
+			.pet-related-section {
+				margin-top: 2rem;
+				padding-top: 1.5rem;
+				border-top: 1px solid #e5e5e5;
+			}
+			.pet-related-section h4 {
+				margin: 0 0 1rem;
+				font-size: 1rem;
+				color: #333;
+			}
+			.pet-related-cards {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 1rem;
+			}
+			.pet-related-card {
+				width: calc(25% - 0.75rem);
+				min-width: 120px;
+				text-align: center;
+				text-decoration: none;
+				color: inherit;
+			}
+			.pet-related-card img {
+				width: 100%;
+				aspect-ratio: 1;
+				object-fit: cover;
+				border-radius: 8px;
+				border: 1px solid #e5e5e5;
+			}
+			.pet-related-card span {
+				display: block;
+				margin-top: 0.25rem;
+				font-size: 0.85rem;
+				font-weight: 600;
+			}
+			.pet-related-card:hover img {
+				border-color: #c62828;
+			}
+			@media (prefers-reduced-motion: no-preference) {
+				html { scroll-behavior: smooth; }
+				body.page-pet-single .posts-wrap .page {
+					animation: petPageEnter 0.3s ease-out;
+				}
+				@keyframes petPageEnter {
+					from { opacity: 0; transform: translateY(12px); }
+					to { opacity: 1; transform: translateY(0); }
+				}
+			}
+			@media (prefers-reduced-motion: reduce) {
+				body.page-pet-single .posts-wrap .page { animation: none; }
+			}
+			.pet-sticky-aplica-btn {
+				position: fixed;
+				right: 20px;
+				top: 50%;
+				transform: translateY(-50%);
+				z-index: 100;
+				display: inline-block;
+				padding: 12px 20px;
+				background: #c62828;
+				color: #fff !important;
+				font-weight: 700;
+				font-size: 0.9rem;
+				border-radius: 8px;
+				text-decoration: none !important;
+				box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+				transition: background 0.25s, transform 0.25s, box-shadow 0.25s;
+			}
+			.pet-sticky-aplica-btn:hover {
+				background: #a01e1e;
+				transform: translateY(-50%) scale(1.03);
+				box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+				color: #fff !important;
+			}
+			.pet-sanitar-box {
+				margin-top: 1rem;
+				padding: 1rem;
+				background: #f0f8f0;
+				border: 1px solid #c8e6c9;
+				border-radius: 8px;
+			}
+			.pet-sanitar-box h4 {
+				margin: 0 0 0.5rem;
+				font-size: 0.95rem;
+				color: #2e7d32;
+			}
+			.pet-sanitar-box ul {
+				margin: 0;
+				padding-left: 1.25rem;
+				font-size: 0.9rem;
+				color: #333;
+				line-height: 1.6;
+			}
+		</style>
+	</head>
+	<body class="content_left scheme_red page-pet-single" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
+		<section id="main_wrap">
+			{% include "components/navbar_a0.html" %}
+		<section class="wrapper" id="main_content">
+				<div class="container clearfix">
+					<div class="posts-wrap">
+						<section class="page">
+							<h2 class="entry-title">{{ pet.nume }}</h2>
+							<div class="entry-content clearfix">
+								<div class="pet-single-detail clearfix">
+										<div class="pet-image-with-back">
+										<div class="pet-image-col">
+										{% if pet.adoption_status == "reserved" or pet.is_reserved %}
+										<div class="pet-pending-notice pet-badge-rezervat-msg" role="alert">REZERVAT / În curs</div>
+										{% if user_adoption_request %}
+										<div class="pet-pending-notice" style="margin-top: 4px; font-size: 0.9rem;">Poziția ta în coadă: {{ user_adoption_request.queue_position }}</div>
+										{% endif %}
+										{% elif pet.has_active_requests %}
+										<div class="pet-pending-notice" role="alert">
+											REZERVAT / În curs
+											{% if user_adoption_request %}
+											<br><strong>Poziția ta în coadă: {{ user_adoption_request.queue_position }}</strong>
+											{% endif %}
+										</div>
+										{% endif %}
+										{% if pet.adoption_status == "adopted" %}
+										<div class="pet-pending-notice pet-badge-adopted-msg" role="alert">Adoptat</div>
+										{% elif pet.adoption_status == "unavailable" %}
+										<div class="pet-pending-notice pet-badge-unavailable-msg" role="alert">Indisponibil</div>
+										{% endif %}
+										<div class="pet-image pet-photo-anim">
+											{% if pet.imagine %}
+												<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" class="attachment-pet_single_large" width="275" height="275" onerror="this.src='{% static 'images/pets/charlie-275x275.jpg' %}';this.onerror=null;" />
+											{% elif pet.imagine_fallback %}
+												<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" class="attachment-pet_single_large" width="275" height="275" />
+											{% else %}
+												<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="{{ pet.nume }}" class="attachment-pet_single_large" width="275" height="275" />
+											{% endif %}
+											<div class="pet-te-plac-wrap">
+												{% if user.is_authenticated %}
+													{% if pet.pk in wishlist_pet_ids %}
+													<a href="{% url 'wishlist_toggle' pet.pk %}?action=remove" class="pet-te-plac-btn pet-te-plac-active" title="Scoate din lista mea">❤️ În lista mea</a>
+													{% else %}
+													<a href="{% url 'wishlist_toggle' pet.pk %}" class="pet-te-plac-btn" title="Adaugă la lista mea">🤍 Te plac</a>
+													{% endif %}
+												{% else %}
+													<a href="{% url 'login' %}?next={% url 'wishlist' %}" class="pet-te-plac-btn" title="Adaugă la lista mea (autentificare)">🤍 <span class="login-required-lock-icon">🔒</span> Te plac</a>
+												{% endif %}
+											</div>
+										</div>
+										<div class="pet-adopt-cta-under-photo">
+											{% if user_adoption_request %}
+												<span class="pet-hero-cta pet-hero-cta-disabled" title="Ai deja o cerere">Ai deja o cerere: {{ user_adoption_request.get_status_display }}</span>
+											{% elif pet.adoption_status == "reserved" or pet.is_reserved %}
+												{% if request.user.is_authenticated %}
+												<a href="{% url 'adoption_form_page' pet.pk %}" class="pet-hero-cta" target="_blank" rel="noopener">🐾 Intră pe lista de așteptare</a>
+												{% else %}
+												<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" class="pet-hero-cta">🔒 Intră pe lista de așteptare</a>
+												{% endif %}
+											{% elif pet.adoption_status == "available" or pet.has_active_requests %}
+												{% if request.user.is_authenticated %}
+												<a href="{% url 'adoption_form_page' pet.pk %}" class="pet-hero-cta" target="_blank" rel="noopener">🐾 {% if pet.has_active_requests %}Aplică (rezervă){% else %}{% if pet.sex == 'female' %}Vreau s-o cunosc{% else %}Vreau să îl adopt{% endif %}{% endif %}</a>
+												{% else %}
+												<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" class="pet-hero-cta">🔒 {% if pet.has_active_requests %}Aplică (rezervă){% else %}{% if pet.sex == 'female' %}Vreau s-o cunosc{% else %}Vreau să îl adopt{% endif %}{% endif %}</a>
+												{% endif %}
+											{% else %}
+												<span class="pet-hero-cta pet-hero-cta-disabled" title="Momentan indisponibil">Momentan indisponibil</span>
+											{% endif %}
+										</div>
+										{% if pet.imagine_2 or pet.imagine_3 %}
+										<div class="pet-gallery-extra">
+											{% if pet.imagine_2 %}
+												<img src="{{ pet.imagine_2.url }}" alt="{{ pet.nume }} 2" class="pet-extra-thumb" onerror="this.style.display='none';" />
+											{% endif %}
+											{% if pet.imagine_3 %}
+												<img src="{{ pet.imagine_3.url }}" alt="{{ pet.nume }} 3" class="pet-extra-thumb" onerror="this.style.display='none';" />
+											{% endif %}
+										</div>
+										{% endif %}
+										</div>
+										<div class="pet-single-right-col">
+											<a href="{% url 'pets_all' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" class="back-to-friends-btn" title="Înapoi la Prietenul tău">
+												<span class="back-to-friends-bubble">ÎNAPOI LA PRIETENII MEI</span>
+												<span class="back-to-friends-dog" aria-hidden="true">🐕</span>
+											</a>
+											<div class="pet-single-right-box">
+											<div class="pet-hero-card">
+												<h3>🐾 {{ pet.nume }} caută familie</h3>
+												<div class="pet-hero-meta">📍 {% if pet.judet %}{{ pet.get_judet_display }}{% else %}—{% endif %}<br />{% if pet.sex == 'male' %}♂{% else %}♀{% endif %} {{ pet.get_sex_display }}{% if pet.varsta_aproximativa is not None %} • {{ pet.get_varsta_aproximativa_display }}{% endif %}{% if pet.marime %} • {{ pet.get_marime_display }}{% endif %}</div>
+												{% if pet.tags %}<div class="pet-hero-traits">❤️ {{ pet.tags }}</div>{% endif %}
+											</div>
+											{% if user_adoption_request %}
+											<p class="pet-your-request-notice">Ai deja o cerere pentru acest câine: <strong>{{ user_adoption_request.get_status_display }}</strong>. Poziția ta în coadă: <strong>{{ user_adoption_request.queue_position }}</strong>.</p>
+											{% endif %}
+											{% if pet.descriere %}
+											<div class="pet-story-block">
+												<h4>🐾 Povestea mea</h4>
+												<p>{{ pet.descriere|truncatewords:40 }}</p>
+											</div>
+											{% endif %}
+											<ul class="pet-single-topics">
+												<li>🏠 Viața cu mine</li>
+												<li>🍖 Ce îmi place să mănânc</li>
+												<li>🏃 De câtă mișcare am nevoie</li>
+												<li>😊 Cum mă acomodez acasă</li>
+												<li>⚠️ La ce trebuie să fii atent</li>
+											</ul>
+											<div class="pet-single-ask-row">
+												<a href="{% url 'pet_ask' pet.pk %}" class="pet-single-ask-btn">ÎNTREABĂ DESPRE MINE!</a>
+											</div>
+											</div>
+										</div>
+										{% with page_url=request.build_absolute_uri %}
+										{% with share_text="Vezi acest animal pentru adopție pe EU-ADOPT:" %}
+										{% with email_subject="EU-ADOPT – Animal pentru adopție" %}
+										{% with email_body=share_text|add:" "|add:page_url %}
+										<div class="share-bar">
+											<h5 class="share-bar-label">Distribuie</h5>
+											<a href="https://api.whatsapp.com/send?text={{ share_text|urlencode }}%20{{ page_url|urlencode }}" target="_blank" rel="noopener noreferrer" class="share-btn share-wa" title="WhatsApp">WhatsApp</a>
+											<a href="https://www.facebook.com/sharer/sharer.php?u={{ page_url|urlencode }}" target="_blank" rel="noopener noreferrer" class="share-btn share-fb" title="Facebook">Facebook</a>
+											<a href="mailto:?subject={{ email_subject|urlencode }}&body={{ email_body|urlencode }}" class="share-btn share-mail" title="Trimite pe email">Email</a>
+											<button type="button" class="share-btn share-copy" id="copyLinkBtn" title="Copiază link">Copiază link</button>
+											<div class="share-bar-note">Pentru Instagram/TikTok: apasă „Copiază link” și lipește în postare/Story.</div>
+										</div>
+										{% endwith %}
+										{% endwith %}
+										{% endwith %}
+										{% endwith %}
+									</div>
+									<div class="pet-info">
+										<div class="breed">{{ pet.get_tip_display }} – {{ pet.rasa }}{% if pet.varsta_aproximativa is not None %} – {{ pet.get_varsta_aproximativa_display }}{% endif %} – {{ pet.get_sex_display }}{% if pet.marime %} – {{ pet.get_marime_display }}{% endif %}</div>
+										<div class="pet_info clearfix">
+											<span>{{ pet.get_status_display }}</span>
+											{% if pet.tags %}{{ pet.tags }}{% endif %}
+										</div>
+										{% if pet.descriere %}
+											<p>{{ pet.descriere|linebreaks }}</p>
+										{% endif %}
+										{% with rec_text=pet.generate_recommendation_text %}
+										{% if rec_text %}
+											<div class="pet-recommendation-box" style="margin-top:1rem; padding:1rem; background:#f0f7f0; border-radius:8px; border-left:4px solid #2e7d32;">
+												<h4 style="margin:0 0 0.5rem 0; font-size:1rem;">✨ Recomandare</h4>
+												<p style="margin:0;">Acest animal este recomandat pentru: <strong>{{ rec_text }}</strong>.</p>
+											</div>
+										{% endif %}
+										{% endwith %}
+										{% if pet.descriere_personalitate %}
+											<div class="pet-descriere-personalitate" style="margin-top:1rem;">
+												<h4 style="margin:0 0 0.5rem 0; font-size:1rem;">😊 Despre personalitate</h4>
+												<p style="margin:0;">{{ pet.descriere_personalitate|linebreaks }}</p>
+											</div>
+										{% endif %}
+									</div>
+									{% if pet.sterilizat is not None or pet.cip or pet.carnet_sanatate or pet.vaccin %}
+									<div class="pet-sanitar-box">
+										<h4>🏥 Sanitar</h4>
+										<ul>
+											{% if pet.sterilizat is not None %}
+											<li><strong>Sterilizat/Castrat:</strong> {% if pet.sterilizat %}Da{% else %}Nu{% endif %}</li>
+											{% endif %}
+											{% if pet.cip %}
+											<li><strong>CIP:</strong> {{ pet.cip }}</li>
+											{% endif %}
+											{% if pet.carnet_sanatate %}
+											<li><strong>Carnet de sănătate:</strong> {{ pet.carnet_sanatate }}</li>
+											{% endif %}
+											{% if pet.vaccin %}
+											<li><strong>Vaccin:</strong> {{ pet.vaccin }}</li>
+											{% endif %}
+										</ul>
+									</div>
+									{% endif %}
+								</div>
+
+								{% if messages %}
+								<ul class="adoption-messages">
+									{% for message in messages %}
+									<li class="message-{{ message.tags }}">{{ message }}</li>
+									{% endfor %}
+								</ul>
+								{% endif %}
+
+								{% if is_owner and pet_cereri %}
+								<section class="pet-cereri-owner" style="margin-bottom: 2rem;">
+									<h3>Cereri adopție</h3>
+									<ul style="list-style: none; margin: 0; padding: 0;">
+										{% for req in pet_cereri %}
+										<li style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; margin-bottom: 0.5rem; background: #fafafa;">
+											{{ req.nume_complet }} – {{ req.email }} ({{ req.get_status_display }})
+											{% if pet.adoption_status == "reserved" and req.status == "approved" or pet.adoption_status == "reserved" and req.status == "approved_ong" %}
+											<div style="margin-top: 0.5rem;">
+												<form method="post" action="{% url 'adoption_finalize' req.pk %}" style="display:inline;" class="js-finalize-form-pet" data-pet-name="{{ pet.nume }}">
+													{% csrf_token %}
+													<input type="hidden" name="confirm" value="1" />
+													<input type="hidden" name="next" value="{{ request.path }}" />
+													<button type="submit" class="button" style="background: #2e7d32;">Adopție finalizată</button>
+												</form>
+												<form method="post" action="{% url 'adoption_cancel_reservation' req.pk %}" style="display:inline;">
+													{% csrf_token %}
+													<input type="hidden" name="next" value="{{ request.path }}" />
+													<button type="submit" class="button" style="background: #c62828;">Anulează rezervarea</button>
+												</form>
+											</div>
+											{% endif %}
+										</li>
+										{% endfor %}
+									</ul>
+								</section>
+								{% endif %}
+
+								{% if related_pets %}
+								<div class="pet-related-section">
+									<h4>🐾 Poate îți place și…</h4>
+									<div class="pet-related-cards">
+										{% for r in related_pets %}
+										<a href="{% url 'pets_single' r.pk %}" class="pet-related-card" title="{{ r.nume }}">
+											{% if r.imagine %}
+												<img src="{{ r.imagine.url }}" alt="{{ r.nume }}" onerror="this.src='{% static 'images/pets/charlie-275x275.jpg' %}';this.onerror=null;" />
+											{% elif r.imagine_fallback %}
+												<img src="{% static r.imagine_fallback %}" alt="{{ r.nume }}" />
+											{% else %}
+												<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="{{ r.nume }}" />
+											{% endif %}
+											<span>{{ r.nume }}</span>
+										</a>
+										{% endfor %}
+									</div>
+								</div>
+								{% endif %}
+								<div id="visited-pets-section" class="pet-related-section pet-visited-section" data-current-pet-id="{{ pet.pk }}" data-fallback-img="{% static 'images/pets/charlie-275x275.jpg' %}">
+									<h4>🐾 Prietenii pe care i-ai vizitat</h4>
+									<div id="visited-pets-cards" class="pet-related-cards"></div>
+								</div>
+							</div>
+						</section>
+					</div>
+				</div>
+			</section>
+			<footer id="footer" class="wrapper">
+				<div class="container">
+					<div id="post_footer">
+						<div id="site_info" class="clearfix">
+							<div class="right">&copy; Adopt a Pet</div>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</section>
+		{% with page_url=request.build_absolute_uri %}
+		<script>
+		(function() {
+			document.querySelectorAll(".js-finalize-form-pet").forEach(function(form) {
+				form.addEventListener("submit", function(e) {
+					var petName = form.getAttribute("data-pet-name") || "acest animal";
+					if (!confirm("Sigur marcați adopția pentru " + petName + " ca finalizată? Adoptatorul va fi notificat.")) {
+						e.preventDefault();
+					}
+				});
+			});
+			const pageUrl = "{{ page_url|escapejs }}";
+			const btn = document.getElementById("copyLinkBtn");
+			if (btn) {
+				btn.addEventListener("click", async function() {
+					try {
+						await navigator.clipboard.writeText(pageUrl);
+						const old = btn.textContent;
+						btn.textContent = "Copiat!";
+						setTimeout(function() { btn.textContent = old; }, 1200);
+					} catch (e) {
+						var ta = document.createElement('textarea');
+						ta.value = pageUrl;
+						ta.style.position = 'fixed';
+						ta.style.left = '-9999px';
+						document.body.appendChild(ta);
+						ta.select();
+						try {
+							document.execCommand('copy');
+							btn.textContent = 'Copiat!';
+							setTimeout(function() { btn.textContent = btn.getAttribute('data-original') || 'Copiază link'; }, 1200);
+						} finally { document.body.removeChild(ta); }
+					}
+				});
+			}
+			// Visited pets: localStorage + API
+			var visitedSection = document.getElementById("visited-pets-section");
+			var visitedCards = document.getElementById("visited-pets-cards");
+			if (visitedSection && visitedCards) {
+				var currentId = parseInt(visitedSection.getAttribute("data-current-pet-id") || "0", 10);
+				var key = "eu_adopt_visited_ids";
+				try {
+					var stored = localStorage.getItem(key);
+					var ids = stored ? JSON.parse(stored) : [];
+					if (currentId && ids.indexOf(currentId) === -1) {
+						ids.unshift(currentId);
+						ids = ids.slice(0, 10);
+						localStorage.setItem(key, JSON.stringify(ids));
+					}
+					var toFetch = ids.filter(function(id) { return id && id !== currentId; }).slice(0, 5);
+					if (toFetch.length) {
+						var xhr = new XMLHttpRequest();
+						xhr.open("GET", "{% url 'api_pets_by_ids' %}?ids=" + toFetch.join(","));
+						xhr.onload = function() {
+							if (xhr.status === 200) {
+								try {
+									var data = JSON.parse(xhr.responseText);
+									if (data.pets && data.pets.length) {
+										var html = "";
+										for (var i = 0; i < data.pets.length; i++) {
+											var p = data.pets[i];
+											var fallback = visitedSection.getAttribute("data-fallback-img") || "/static/images/pets/charlie-275x275.jpg";
+										html += '<a href="' + (p.link || '/pet/' + p.id + '/') + '" class="pet-related-card" title="' + (p.nume || '').replace(/"/g, '&quot;') + '"><img src="' + (p.imagine_url || fallback) + '" alt="' + (p.nume || '').replace(/"/g, '&quot;') + '" onerror="this.src=\'' + fallback + '\';" /><span>' + (p.nume || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span></a>';
+										}
+										visitedCards.innerHTML = html;
+									} else { visitedSection.style.display = "none"; }
+								} catch (e) { visitedSection.style.display = "none"; }
+							} else { visitedSection.style.display = "none"; }
+						};
+						xhr.onerror = function() { visitedSection.style.display = "none"; };
+						xhr.send();
+					} else { visitedSection.style.display = "none"; }
+				} catch (e) { visitedSection.style.display = "none"; }
+			}
+		})();
+		</script>
+		{% endwith %}
+		{% include "components/login_required_modal.html" %}
+	</body>
+</html>

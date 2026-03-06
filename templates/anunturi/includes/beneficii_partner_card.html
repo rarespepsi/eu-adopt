@@ -1,0 +1,38 @@
+{% load static %}
+<div class="beneficii-card {% if category_claim %}beneficii-card-disabled{% endif %}">
+	<div class="beneficii-card-inner">
+		{% if partner.logo %}
+		<div class="beneficii-card-logo"><img src="{{ partner.logo.url }}" alt="{{ partner.name }}" /></div>
+		{% else %}
+		<div class="beneficii-card-logo beneficii-card-logo-placeholder">🐾</div>
+		{% endif %}
+		<h4 class="beneficii-card-name">{{ partner.name }}</h4>
+		{% if partner.city or partner.county %}
+		<p class="beneficii-card-location">{{ partner.city }}{% if partner.city and partner.county %}, {% endif %}{% if partner.county %}{{ partner.get_county_display }}{% endif %}</p>
+		{% endif %}
+		{% if partner.offer_text %}
+		<p class="beneficii-card-offer">{{ partner.offer_text }}</p>
+		{% endif %}
+		<div class="beneficii-card-actions">
+			{% if partner.url %}
+			<p class="beneficii-card-link"><a href="{{ partner.url }}" target="_blank" rel="noopener noreferrer" class="button button-small">Vezi oferta</a></p>
+			{% endif %}
+			{% if category_claim %}
+				{% if category_claim.partner_id == partner.pk %}
+					<span class="beneficii-card-chosen">Cupon ales</span>
+				{% else %}
+					<span class="beneficii-card-btn-disabled">Ai ales deja un cupon din această categorie.</span>
+				{% endif %}
+			{% elif has_finalized %}
+				<form method="post" action="{% url 'beneficii_adoptie' %}" class="beneficii-claim-form">
+					{% csrf_token %}
+					<input type="hidden" name="action" value="claim" />
+					<input type="hidden" name="partner_id" value="{{ partner.pk }}" />
+					<button type="submit" class="button beneficii-claim-btn">Alege cuponul</button>
+				</form>
+			{% else %}
+				<button type="button" class="button beneficii-claim-btn" disabled>Alege cuponul</button>
+			{% endif %}
+		</div>
+	</div>
+</div>

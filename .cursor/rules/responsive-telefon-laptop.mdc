@@ -1,0 +1,29 @@
+# Responsive – același site perfect pe telefon și laptop
+
+Ca site-ul să meargă bine **atât pe telefon cât și pe laptop**, folosim **un singur layout care se adaptează** – fără versiuni separate. Reguli de lucru:
+
+## 1) Unități fluide (nu px fix)
+- **Fonturi**: `clamp(min, preferat, max)` sau `rem`/`em`, ca la zoom sau ecran mic să se scaleze.
+- **Spațieri** (padding, gap, margin): `var(--gap-v2)` sau `clamp(...)` – nu `16px` fix.
+- **Dimensiuni** (logo, butoane, carduri): `width: 100%`, `max-width: <rezonabil>`, `height: auto` unde e cazul.
+
+## 2) Layout care se „rupe” la lățimi fixe
+- **Breakpoints în `em`** (ex. `37.5em`, `56.25em`), nu în px – la zoom în browser layout-ul răspunde corect.
+- **Mobil**: o coloană, elemente stivuite, meniu compact.
+- **Tabletă**: 2 coloane unde are sens.
+- **Laptop**: 3–4 coloane, sidebare vizibile – **fără valori fixe** (ex. `min(200px, 25vw)` în loc de `200px`).
+
+## 3) Imagini și conținut
+- Imagini: `max-width: 100%`, `height: auto`, `object-fit: cover` – să nu iasă din ecran și să nu deformeze.
+- Fără `width`/`height` fixe pe `<img>` care să suprascrie layoutul; controlul în CSS.
+
+## 4) Verificare pe ambele
+- **Laptop**: zoom 100%, redimensionare fereastră – nimic să nu rămână rigid.
+- **Telefon/tabletă**: test în DevTools (Device Toolbar) sau pe dispozitiv real – același conținut, doar aranjat pe coloane mai înguste; butoane/linkuri ușor de apăsat (min ~44px înălțime).
+
+## Rezumat
+Un singur HTML/CSS; totul fluid și cu breakpoints în em. Dacă e corect pe laptop (fără dimensiuni fixe) **și** testăm pe lățimi mici, va fi corect și pe telefon și pe laptop.
+
+---
+
+**Notă:** Când utilizatorul cere „vizualizare pe alte dispozitive” sau similar, se referă la aceste reguli (fluid, adaptare la zoom/dispozitiv), nu la layout-uri separate mobile/desktop.

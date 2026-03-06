@@ -1,0 +1,16 @@
+---
+description: Reguli pentru pozele încărcate de colaboratori – format, dimensiuni, mărime fișier
+alwaysApply: false
+---
+
+# Poze colaboratori – referință
+
+La lucruri care țin de **upload de imagini** (formulare, validări, help text, documentație pentru colaboratori), folosește **REGULI_POZE_COLABORATORI.md** din rădăcina proiectului.
+
+**Rezumat:**
+- **Format:** JPG (recomandat), PNG, WebP.
+- **Dimensiuni:** 800–1200 px lățime, 600–900 px înălțime pentru poze animale; 400–800 px pentru profil.
+- **Mărime fișier:** max 2–3 MB recomandat, până la 5 MB acceptabil.
+- **Mobil:** nu e nevoie de poze speciale; site-ul le afișează responsive (max-width: 100%, object-fit: cover).
+
+Nu modifica aceste valori fără cerere explicită; la validări noi în backend (ImageField, clean), aliniază-te la REGULI_POZE_COLABORATORI.md.

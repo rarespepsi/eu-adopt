@@ -1,0 +1,10 @@
+---
+description: La întrebări (?) răspunde întâi, apoi așteaptă start înainte de comenzi
+alwaysApply: true
+---
+
+# Regulă: întrebări → răspuns → apoi start pentru comenzi
+
+- **Când apare semnul întrebării (?)** în mesajul utilizatorului: răspunde **obligatoriu** la întrebări.
+- **După ce ai răspuns:** așteaptă confirmarea utilizatorului (**„start”** sau alt semn clar) înainte de a executa comenzi sau acțiuni (ex. modificări de cod, commit, tag, etc.).
+- Dacă nu există întrebări în mesaj, poți proceda normal; regula se aplică când utilizatorul pune întrebări și vrea să decidă când „pornești” execuția.

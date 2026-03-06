@@ -1,0 +1,21 @@
+# Plan mobil – A0 și A4 (după finalizarea desktop)
+
+**Decizie:** Pe mobil, contorul și căutarea **nu sunt necesare în A0**.
+
+## Ce facem pe mobil
+
+1. **A0 (navbar)**  
+   - **Ascundem** contorul (În grija noastră / Adoptați) și căsuța de căutare + lupă din A0.  
+   - A0 rămâne doar cu meniul (Acasă, Animale, etc.) – eventual compact sau pe două rânduri.
+
+2. **A4 (footer)**  
+   - **Mutăm** contorul și căutarea în A4, **în locul barei** (sau deasupra/sub barei cu sloganul `#EuAdopt#NuCumpar!#`).  
+   - Pe mobil, utilizatorul vede contorul și căutarea în zona A4, nu în navbar.
+
+## Când implementăm
+
+După ce versiunea **desktop** este finalizată. Atunci adăugăm media queries (breakpoint mobil, ex. `max-width: 37.5em`) și:
+- în A0: `display: none` (sau echivalent) pentru contor și pentru blocul de căutare;
+- în A4: afișăm acolo contorul și căutarea (HTML/CSS pentru mobil), eventual în locul sau lângă bara de slogan.
+
+Aplicăm acest plan când ajungem la etapa „mobil”.

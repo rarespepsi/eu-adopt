@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Alege tipul contului | EU Adopt{% endblock %}
+
+{% block body_class %}page-register-choose-type auth-page register-choose{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth-pages.css' %}" />
+<style>
+.register-cards {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 14px;
+	margin: 2cm 0 2rem 0;
+	max-width: 960px;
+	margin-left: auto;
+	margin-right: auto;
+}
+@media (max-width: 991px) {
+	.register-cards { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 575px) {
+	.register-cards { grid-template-columns: 1fr; }
+}
+.register-card {
+	background: #fff;
+	border: 2px solid #e0e0e0;
+	border-radius: 12px;
+	padding: 1.5rem;
+	text-align: center;
+	transition: border-color 0.2s, box-shadow 0.2s;
+}
+.register-card:hover { border-color: #d32f2f; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.register-card .card-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+.register-card h3 { margin: 0 0 0.5rem; font-size: 1.25rem; }
+.register-card p { font-size: 0.9rem; color: #666; margin: 0 0 1rem; line-height: 1.4; }
+.register-card .btn-continua {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	width: 100%;
+	box-sizing: border-box;
+	text-align: center;
+	background: #d32f2f;
+	color: #fff !important;
+	padding: 12px 20px;
+	border-radius: 6px;
+	text-decoration: none !important;
+	font-weight: 600;
+	line-height: 1.2;
+	border: none;
+}
+.register-card .btn-continua:hover { background: #b71c1c; color: #fff !important; }
+.page-register-choose .auth-content-wrap { text-align: center; }
+.page-register-choose h2.entry-title { text-align: center; margin: 2cm auto 0.5rem auto; width: 100%; }
+.page-register-choose .subtitle { text-align: center; color: #666; margin-top: 0; margin-bottom: 2rem; margin-left: 6cm; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-content-wrap page-register-choose">
+	<h2 class="entry-title">Alege tipul contului</h2>
+	<p class="subtitle">Selectați categoria care vă descrie pentru a continua cu înregistrarea.</p>
+	<div class="register-cards">
+		<div class="register-card">
+			<div class="card-icon">👤</div>
+			<h3>Persoană fizică</h3>
+			<p>Cont personal pentru adoptatori sau persoane care doresc să interacționeze cu platforma.</p>
+			<a href="{% url 'register_pf' %}" class="button btn-continua">Continuă</a>
+		</div>
+		<div class="register-card">
+			<div class="card-icon">🏢</div>
+			<h3>Adăpost / ONG / Firmă</h3>
+			<p>SRL/SA, ONG, asociații, fundații, adăposturi publice sau private.</p>
+			<br />
+			<a href="{% url 'register_organizatie' %}" class="button btn-continua">Continuă</a>
+		</div>
+		<div class="register-card">
+			<div class="card-icon">🤲</div>
+			<h3>Cabinet / Magazin / Servicii</h3>
+			<p>Cabinete veterinar, toaletarePet, magazine și alți parteneri.</p>
+			<a href="{% url 'register_colaborator' %}" class="button btn-continua">Continuă</a>
+		</div>
+	</div>
+	<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; max-width: 960px; margin: 0 auto;">
+		<div></div>
+		<div style="text-align: center;">
+			<p style="margin: 0.5em 0;"><a href="{% url 'login' %}">Am deja cont – autentificare</a></p>
+			<p style="margin: 0.5em 0;"><a href="{% url 'home' %}">Înapoi la prima pagină</a></p>
+		</div>
+		<div></div>
+	</div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<style>
+#footer .footer-strip-wrap { overflow: hidden; margin-bottom: 0.75rem; width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; }
+#footer .footer-strip-wrap .footer-strip-track { padding: 0 2rem; }
+#footer .footer-strip-track { display: flex; width: max-content; animation: footer-strip-scroll 40s linear infinite; }
+#footer .footer-strip-track:hover { animation-play-state: paused; }
+#footer .footer-strip-item { flex-shrink: 0; width: 80px; height: 80px; margin: 0 6px; display: flex; align-items: center; justify-content: center; position: relative; cursor: default; }
+#footer .footer-strip-item img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.2s ease; }
+#footer .footer-strip-item:hover img { transform: scale(1.35); }
+#footer .footer-strip-item.footer-strip-pet:hover .footer-strip-msg { opacity: 1; }
+#footer .footer-strip-msg { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: #fff; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 2; }
+@keyframes footer-strip-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+</style>
+<footer id="footer" class="wrapper">
+	<div class="container">
+		<div class="footer-strip-wrap">
+			<div class="footer-strip-track">
+				{% for pet in footer_strip_pets %}
+				<span class="footer-strip-item footer-strip-pet" title="Vă rugăm să vă logați">
+					{% if pet.imagine %}<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-275x275.jpg' %}';this.onerror=null;" />
+					{% elif pet.imagine_fallback %}<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" />
+					{% else %}<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="{{ pet.nume }}" />{% endif %}
+					<span class="footer-strip-msg">Vă rugăm să vă logați</span>
+				</span>
+				{% endfor %}
+				{% for pet in footer_strip_pets %}
+				<span class="footer-strip-item footer-strip-pet" title="Vă rugăm să vă logați">
+					{% if pet.imagine %}<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-275x275.jpg' %}';this.onerror=null;" />
+					{% elif pet.imagine_fallback %}<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" />
+					{% else %}<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="{{ pet.nume }}" />{% endif %}
+					<span class="footer-strip-msg">Vă rugăm să vă logați</span>
+				</span>
+				{% endfor %}
+			</div>
+		</div>
+		<div id="post_footer">
+			<div id="site_info" class="clearfix">
+				<div class="right">&copy; EU Adopt</div>
+			</div>
+		</div>
+	</div>
+</footer>
+{% endblock %}

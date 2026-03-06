@@ -1,0 +1,22 @@
+---
+description: PAGINA HOME ESTE BLOCATĂ – NU MODIFICA NIMIC. HOME = doar home_v2.
+alwaysApply: true
+---
+
+# Pagina Home – BLOCATĂ LA MODIFICĂRI
+
+**NU INTERVENI CU NIMIC PE PAGINA HOME. ESTE BLOCATĂ.**
+
+## HOME = doar home_v2 (nu amesteca cu „home vechi”)
+
+- **Pagina home live:** un singur template – **`templates/anunturi/home_v2.html`** – body class **`page-home-v2`**.
+- **La setări A0 sau layout home:** folosește **doar** selectorul **`body.page-home-v2`** în CSS. **Nu** folosi `body.page-home` – nu există template/view care să seteze `page-home`; home vechi a fost eliminat.
+- **Referință setări:** `HOME_SETTINGS_REFERENCE.md`.
+
+- **Interzis:** orice modificare la template-uri, CSS, view-uri sau conținut care ține **doar** de pagina home (Acasă).
+- **Fișiere blocate:** `templates/anunturi/home_v2.html`, `static/css/home_v2.css`, și regulile din `style.css` / `navbar-a0-secured.css` care se aplică pe **`body.page-home-v2`** (A1, A2, A3, A4, A5, A6, layout home).
+- **View:** funcția `home()` din `anunturi/views.py` – randare **doar** `home_v2.html`.
+
+**Excepție:** doar dacă utilizatorul cere **explicit și clar** o modificare pe pagina home, atunci o faci; altfel **nu atingi** home.
+
+A0 (navbar) se poate modifica pentru **alte pagini** (ex. Prietenul tău); regulile A0 **pe home** (`body.page-home-v2 #A0`) **nu se schimbă** fără cerere explicită.

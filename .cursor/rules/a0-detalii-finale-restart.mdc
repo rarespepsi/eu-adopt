@@ -1,0 +1,37 @@
+# A0 – detalii finale (punct de restart) – SETARE FINALĂ SALVATĂ
+
+**SALVARE NAVBAR PERFECT PE TOATE PAGINILE** – date pentru modificare greșeli navbar: **NAVBAR_SALVARE_PERFECT_REFERINTA.md** (rădăcina proiectului). La orice greșeală navbar, revii la valorile din acel fișier.
+
+**Stare salvată:** A0 – setare finală confirmată de utilizator. Toate valorile de mai jos sunt cele corecte. La erori sau „reparări” care stric A0, revii la aceste valori.
+
+---
+
+## Regulă obligatorie: nu modifica A0 când nu lucrezi la A0
+
+- **A0 nu se atinge** când faci modificări pe alte pagini, layout fluid, overflow, footer, formulare, animale, servicii etc.
+- Modifici reguli A0 **doar** în `static/css/navbar-a0-secured.css` și **doar** când utilizatorul cere explicit modificări la **navbar / bara de sus / A0**.
+
+---
+
+## Ce este memorat (SETARE FINALĂ)
+
+- **Poziție:** A0 în flux (relative) pe home, lipit de A1. Pe alte pagini: fixed top.
+- **Aspect:** Fundal `#343434`, text alb/gri deschis, font 13px meniu, current_page galben (#FFC107).
+- **Stânga – contor:** `margin-left: -6cm`; label 13px, value 22px bold alb. (1cm la dreapta față de -7cm.)
+- **Centru – meniu (Acasă, Animale, etc.):** `#A0 #menu_wrap` și `#A0 #menu_wrap.a0-right`: **margin-left: 1cm**. Spațiu mic între butoane: `margin-left: calc(var(--gap-v2)/4)`, padding `calc(var(--btn-padding-h)/3)`.
+- **Dreapta:** Căutare + lupă la `right: -6cm`; input fundal rgba(0,0,0,0.2), text alb.
+- **Înălțime:** `--nav-height` fluid (ex. clamp(48px, 10vw, 64px)).
+- **Container A0:** `#A0 .container`: **padding-left: 7cm**, **padding-right: 6cm** (ca contor și căutare să nu fie tăiate).
+
+## Unde e implementat (singura sursă de adevăr)
+
+- **Toate paginile:** `static/css/navbar-a0-secured.css` – **singurul fișier** cu reguli #A0. Nu există reguli A0 în style.css sau home_v2.css pentru aceste detalii.
+- **HTML:** `templates/components/navbar_a0.html` – comun tuturor paginilor.
+
+## La erori
+
+Revenim la acest punct: refacem valorile din `navbar-a0-secured.css` conform secțiunii „Ce este memorat” de mai sus. Nu reparăm A0 din alte fișiere.
+
+## Mobil
+
+Pe mobil: contor și căutare se ascund din A0 și se mută în A4. Plan: `mobile-a0-a4-plan.mdc`.

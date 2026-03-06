@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}EU Adopt – Acasă{% endblock %}
+
+{% block body_class %}page-home-v2{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home_v2.css' %}" type="text/css" media="all" />
+{% endblock %}
+
+{% block content %}
+<div class="home-v2">
+	<div id="home-cols-wrap" class="home-v2-three-cols">
+		<div id="home-col-left" class="home-v2-side home-v2-side-left">
+			<div class="home-v2-side-inner">
+				{% for partner in left_sidebar_partners %}
+				<div class="home-v2-slot home-v2-slot-white home-v2-slot-img home-v2-slot-partener">
+					{% if partner %}
+					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener">
+						{% if partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
+						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.name }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+					</a>
+					{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+		<div class="home-v2-center">
+			<div id="A1">
+				<header class="hero-v2">
+					<div class="hero-v2-bg" aria-hidden="true">
+						{% for pet in hero_slider_pets %}
+						<div class="hero-v2-slide">
+							{% if pet.imagine %}
+							<img src="{{ pet.imagine.url }}" alt="" class="hero-v2-bg-img" />
+							{% elif pet.imagine_fallback %}
+							<img src="{% static pet.imagine_fallback %}" alt="" class="hero-v2-bg-img" />
+							{% else %}
+							<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" class="hero-v2-bg-img" />
+							{% endif %}
+						</div>
+						{% empty %}
+						<div class="hero-v2-slide"><img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" class="hero-v2-bg-img" /></div>
+						{% endfor %}
+					</div>
+					<div class="hero-v2-inner">
+						<div class="hero-v2-logo">
+							<a href="{% url 'home' %}" title="EU Adopt">
+								<img src="{% static 'images/logo-final-cu-stele.png' %}" alt="EU Adopt" class="hero-v2-logo-img" />
+							</a>
+						</div>
+						<div class="hero-v2-transport">
+							<a href="{% url 'transport' %}" class="hero-v2-transport-badge" title="Transport – We come to you">
+								<img src="{% static 'images/transport/sigla1.jpeg' %}" alt="EU Adopt Transport" onerror="this.style.display='none'" />
+							</a>
+						</div>
+					</div>
+					<a href="{% url 'pets_all' %}" class="hero-v2-cta-animale" title="Vezi prietenii tăi">Hai la noi!</a>
+				</header>
+			</div>
+			<div id="A2">
+				<div class="A2-casete-wrap">
+					{% for pet in a2_pets %}
+					<div class="A2-slot">
+						{% if pet %}
+						<a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}">
+							{% if pet.imagine %}<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" />
+							{% elif pet.imagine_fallback %}<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" />
+							{% else %}<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="{{ pet.nume }}" />{% endif %}
+						</a>
+						{% else %}<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="" />{% endif %}
+					</div>
+					{% endfor %}
+				</div>
+			</div>
+			<div id="A3">
+				<div class="mission-bar-v2" aria-label="Info adopții">
+					<span class="mission-bar-v2-item">În grija noastră: <strong>{{ adopted_animals|default:0 }}</strong> adoptați</span>
+					<span class="mission-bar-v2-item">🐾 <span class="mission-bar-v2-count">{{ active_dogs_count|default:active_animals }}</span> câini caută casă chiar acum</span>
+					<a href="{% url 'transport' %}" class="mission-bar-v2-link">❤️ Fii parte din drum →</a>
+				</div>
+			</div>
+		</div>
+		<div id="home-col-right" class="home-v2-side home-v2-side-right">
+			<div class="home-v2-side-inner">
+				{% for partner in right_sidebar_partners %}
+				<div class="home-v2-slot home-v2-slot-white home-v2-slot-img home-v2-slot-partener">
+					{% if partner %}
+					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener">
+						{% if partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
+						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.name }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+					</a>
+					{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<footer id="A4" class="wrapper">
+	<div class="a4-mobile-counter" aria-hidden="true">
+		<div class="animal-counter-navbar a4-counter-inner">
+			<div class="counter-item">
+				<span class="counter-icon">🐶</span>
+				<span class="counter-label">În grija noastră:</span>
+				<span class="counter-value">{{ active_animals|default:0 }}</span>
+			</div>
+			<div class="counter-item">
+				<span class="counter-icon">🏠</span>
+				<span class="counter-label">Adoptați:</span>
+				<span class="counter-value">{{ adopted_animals|default:0 }}</span>
+			</div>
+		</div>
+	</div>
+	<div class="container">
+		<div id="post_footer">
+			<div id="site_info" class="clearfix">
+				<div class="footer-euadopt-text">
+					<span class="footer-euadopt-strip">
+						#EuAdopt#NuCumpar!#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						#EuAdopt#NuCumpar!#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						#EuAdopt#NuCumpar!#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						#EuAdopt#NuCumpar!#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						#EuAdopt#NuCumpar!#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						#EuAdopt#NuCumpar!#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						#EuAdopt#NuCumpar!#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						#EuAdopt#NuCumpar!#
+					</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</footer>
+{% endblock %}
