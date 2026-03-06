@@ -17,7 +17,23 @@ git reset --hard undo-point-2026-02-22-1600
 3. Gata. Proiectul e exact ca la momentul acelui tag. Modificările făcute după tag se pierd.
 
 **Tag-uri disponibile:** `git tag -l`  
-**Cel mai recent (Home – badge-uri casete, 6 martie 2026):** `undo-point-2026-03-06-2200`
+**Cel mai recent (6 martie 2026, final zi):** `undo-point-2026-03-06-2359`
+
+---
+
+# Punct – final zi 6 martie 2026 (P2 toate animalele, scroll 4×3)
+
+**Tag:** `undo-point-2026-03-06-2359`  
+**Data:** 6 martie 2026, 23:59  
+**Conține:** P2 – toate animalele din site în grid 4 coloane × N rânduri, vizibil 4×3 (aceleași dimensiuni casete), scroll în P2; A2 (Home) 4×3; regula casete-a2-p2.mdc; view p2_pets = list(qs). Casete P2 neschimbate (--pt2-row-h), 4 coloane până la 31.25em.
+
+**Revenire la acest punct:**
+```bash
+cd c:\Users\USER\Desktop\adoptapet_pro
+git checkout main
+git reset --hard undo-point-2026-03-06-2359
+```
+⚠️ Modificările făcute după acest tag se pierd.
 
 ---
 
