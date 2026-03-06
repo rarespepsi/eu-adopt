@@ -556,22 +556,35 @@ body.page-home-v2 #A2 .A2-slot:nth-child(3n+2) {
 body.page-home-v2 #A2 .A2-slot:nth-child(3n+3) {
     background: #d8d8d8 !important;
 }
-/* A2 – poze: width 100%, height auto; gridul controlează dimensiunea celulei, nu imaginile */
+/* A2 – poza din fișa câinelui: umple caseta, centrată; link = container, img = poziționare absolută */
 body.page-home-v2 #A2 .A2-slot {
     background: #eee !important;
+    position: relative !important;
 }
+body.page-home-v2 #A2 .A2-slot .A2-slot-link,
 body.page-home-v2 #A2 .A2-slot a {
+    position: absolute !important;
+    inset: 0 !important;
     display: block !important;
     width: 100% !important;
     height: 100% !important;
-    min-height: 0 !important;
+    overflow: hidden !important;
 }
+body.page-home-v2 #A2 .A2-slot .A2-slot-img,
 body.page-home-v2 #A2 .A2-slot img {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
     width: 100% !important;
     height: 100% !important;
-    display: block !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    transform: translate(-50%, -50%) !important;
     object-fit: cover !important;
-    object-position: center center !important;
+    object-position: 50% 50% !important;
+    display: block !important;
 }
 
 /* A2 – nu folosește sliderul vechi (#slider_wrap, .flexslider); doar grid 4×4 cu imagini */
@@ -889,9 +902,41 @@ body.page-home-v2 #home-col-right {
     min-width: 0;
     max-width: 100%;
 }
-body.page-home-v2 img {
+/* Imagini generale pe HOME – dimensiune naturală; EXCEPTIE: grid A2 (poze câini) umple 100% caseta */
+body.page-home-v2 img:not(.hero-v2-bg-img) {
     max-width: 100%;
     height: auto;
+    display: block;
+}
+/* Grid HOME A2 – același fix: link și img poziționare absolută, imagine centrată în casetă */
+body.page-home-v2 #A2 .A2-casete-wrap .A2-slot {
+    position: relative !important;
+    overflow: hidden !important;
+}
+body.page-home-v2 #A2 .A2-casete-wrap .A2-slot .A2-slot-link,
+body.page-home-v2 #A2 .A2-casete-wrap .A2-slot a {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+body.page-home-v2 #A2 .A2-casete-wrap .A2-slot .A2-slot-img,
+body.page-home-v2 #A2 .A2-casete-wrap .A2-slot img {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    transform: translate(-50%, -50%) !important;
+    object-fit: cover !important;
+    object-position: 50% 50% !important;
+    display: block !important;
 }
 
 /* A3 – la varianta de 3 coloane (≤90em): doar „Fii parte din drum”, fără contoare */

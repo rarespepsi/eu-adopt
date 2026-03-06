@@ -9,6 +9,24 @@
 <link rel="stylesheet" href="{% static 'css/home_v2.css' %}" type="text/css" media="all" />
 {% endblock %}
 
+{% block extra_css_after %}
+<style>
+/* A2 – poze centrate în casetă (încărcat după navbar ca să aibă prioritate) */
+body.page-home-v2 #A2 .A2-slot { position: relative !important; overflow: hidden !important; }
+body.page-home-v2 #A2 .A2-slot a { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; display: block !important; }
+body.page-home-v2 #A2 .A2-slot img { position: absolute !important; top: 50% !important; left: 50% !important; width: 100% !important; height: 100% !important; min-width: 100% !important; min-height: 100% !important; max-width: none !important; max-height: none !important; transform: translate(-50%, -50%) !important; object-fit: cover !important; object-position: 50% 50% !important; display: block !important; }
+/* Badge-uri casete (A1, A2, A3, A4, A5.1–3, A6.1–3) – doar pentru staff; A4 fără bandă albastră și fără scroll */
+body.page-home-v2 #A1, body.page-home-v2 #A2, body.page-home-v2 #A3, body.page-home-v2 #A4, body.page-home-v2 .home-v2-slot { position: relative; }
+body.page-home-v2 .home-slot-badge { position: absolute; top: 4px; right: 4px; z-index: 100; }
+body.page-home-v2 #A4 { overflow: hidden !important; }
+body.page-home-v2 #A4 .home-slot-badge-a4 {
+	position: absolute !important; top: 2px !important; right: 2px !important;
+	font-size: 8px !important; padding: 1px 3px !important; line-height: 1 !important;
+	min-width: 0 !important; min-height: 0 !important;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="home-v2">
 	<div id="home-cols-wrap" class="home-v2-three-cols">
@@ -16,6 +34,7 @@
 			<div class="home-v2-side-inner">
 				{% for partner in left_sidebar_partners %}
 				<div class="home-v2-slot home-v2-slot-white home-v2-slot-img home-v2-slot-partener">
+					{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A5.{{ forloop.counter }}</span>{% endif %}
 					{% if partner %}
 					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener">
 						{% if partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
@@ -28,6 +47,7 @@
 		</div>
 		<div class="home-v2-center">
 			<div id="A1">
+				{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A1</span>{% endif %}
 				<header class="hero-v2">
 					<div class="hero-v2-bg" aria-hidden="true">
 						{% for pet in hero_slider_pets %}
@@ -63,18 +83,20 @@
 				<div class="A2-casete-wrap">
 					{% for pet in a2_pets %}
 					<div class="A2-slot">
+						{% if user.is_staff and forloop.counter <= 9 %}<span class="slot-marker home-slot-badge" aria-hidden="true">A2.{{ forloop.counter }}</span>{% endif %}
 						{% if pet %}
-						<a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}">
-							{% if pet.imagine %}<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" />
-							{% elif pet.imagine_fallback %}<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" />
-							{% else %}<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="{{ pet.nume }}" />{% endif %}
+						<a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}" class="A2-slot-link">
+							{% if pet.imagine %}<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" class="A2-slot-img" />
+							{% elif pet.imagine_fallback %}<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" class="A2-slot-img" />
+							{% else %}<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="{{ pet.nume }}" class="A2-slot-img" />{% endif %}
 						</a>
-						{% else %}<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="" />{% endif %}
+						{% else %}<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="" class="A2-slot-img" />{% endif %}
 					</div>
 					{% endfor %}
 				</div>
 			</div>
 			<div id="A3">
+				{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A3</span>{% endif %}
 				<div class="mission-bar-v2" aria-label="Info adopții">
 					<span class="mission-bar-v2-item">În grija noastră: <strong>{{ adopted_animals|default:0 }}</strong> adoptați</span>
 					<span class="mission-bar-v2-item">🐾 <span class="mission-bar-v2-count">{{ active_dogs_count|default:active_animals }}</span> câini caută casă chiar acum</span>
@@ -86,6 +108,7 @@
 			<div class="home-v2-side-inner">
 				{% for partner in right_sidebar_partners %}
 				<div class="home-v2-slot home-v2-slot-white home-v2-slot-img home-v2-slot-partener">
+					{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A6.{{ forloop.counter }}</span>{% endif %}
 					{% if partner %}
 					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener">
 						{% if partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
@@ -103,6 +126,7 @@
 
 {% block footer %}
 <footer id="A4" class="wrapper">
+	{% if user.is_staff %}<span class="slot-marker home-slot-badge home-slot-badge-a4" aria-hidden="true">A4</span>{% endif %}
 	<div class="a4-mobile-counter" aria-hidden="true">
 		<div class="animal-counter-navbar a4-counter-inner">
 			<div class="counter-item">

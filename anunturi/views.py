@@ -402,10 +402,14 @@ def home(request):
     if strip_pets and len(strip_pets) < 12:
         import itertools
         strip_pets = list(itertools.islice(itertools.cycle(strip_pets), 24))
-    hero_slider_pets = strip_pets[:4]  # A1 – 3–4 poze care se schimbă la câteva secunde, siglele peste
+    # A1 – alte poze: mai întâi featured (animale lunii), apoi restul din strip
+    featured_ids = {p.pk for p in featured}
+    a1_candidates = list(featured) + [p for p in strip_pets if p.pk not in featured_ids]
+    hero_slider_pets = a1_candidates[:4] if a1_candidates else strip_pets[:4]
 
     # A2 (16) + col stânga (3) + col dreapta (3) = 22 poze câini în casete
     import itertools as it
+    import random
     pool_ids = {p.pk for p in featured}
     slot_pool = list(featured)
     for p in strip_pets:
@@ -414,6 +418,7 @@ def home(request):
             pool_ids.add(p.pk)
     if len(slot_pool) < 22 and slot_pool:
         slot_pool = list(it.islice(it.cycle(slot_pool), 22))
+    random.shuffle(slot_pool)  # A2 și coloanele laterale – poze diferite la fiecare încărcare
     a2_pets = slot_pool[:16]
     left_col_pets = slot_pool[16:19]
     right_col_pets = slot_pool[19:22]

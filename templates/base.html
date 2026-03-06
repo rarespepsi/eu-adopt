@@ -32,6 +32,7 @@
 	</style>
 	{% block extra_css %}{% endblock %}
 	<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}" type="text/css" media="screen" />
+	{% block extra_css_after %}{% endblock %}
 </head>
 <body class="content_left scheme_red {% block body_class %}{% endblock %}" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
 	<section id="main_wrap">

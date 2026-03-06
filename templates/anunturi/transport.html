@@ -55,6 +55,7 @@
 							<input type="hidden" name="plecare_lat" id="plecare_lat" />
 							<input type="hidden" name="plecare_lng" id="plecare_lng" />
 							<span class="tw-field-hint">Verificat prin Google Maps</span>
+							<a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer" class="tw-maps-link" id="plecare_maps_link" title="Deschide în Google Maps">🗺️ Deschide în Google Maps</a>
 						</div>
 						<div class="tw-form-group">
 							<label for="sosire_input">Sosire <span class="tw-required">*</span></label>
@@ -62,6 +63,7 @@
 							<input type="hidden" name="sosire_lat" id="sosire_lat" />
 							<input type="hidden" name="sosire_lng" id="sosire_lng" />
 							<span class="tw-field-hint">Verificat prin Google Maps</span>
+							<a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer" class="tw-maps-link" id="sosire_maps_link" title="Deschide în Google Maps">🗺️ Deschide în Google Maps</a>
 						</div>
 						<div class="tw-form-group">
 							<label for="tw-data">Data dorită</label>
@@ -149,4 +151,64 @@
 {% block extra_js %}
 <script>window.RO_COUNTIES_CITIES_URL = '{% url "ro_counties_cities_json" %}';</script>
 <script src="{% static 'js/ro-location.js' %}"></script>
+{% if google_maps_api_key %}
+<script>
+(function() {
+	var key = '{{ google_maps_api_key|escapejs }}';
+	if (!key) return;
+	var script = document.createElement('script');
+	script.src = 'https://maps.googleapis.com/maps/api/js?key=' + key + '&libraries=places&callback=transportPlacesReady';
+	script.async = true;
+	script.defer = true;
+	window.transportPlacesReady = function() {
+		if (typeof google === 'undefined' || !google.maps || !google.maps.places) return;
+		var autocompleteOpts = { types: ['establishment', 'geocode'] };
+		var plecareInput = document.getElementById('plecare_input');
+		var sosireInput = document.getElementById('sosire_input');
+		if (plecareInput) {
+			var ac1 = new google.maps.places.Autocomplete(plecareInput, autocompleteOpts);
+			ac1.addListener('place_changed', function() {
+				var place = ac1.getPlace();
+				if (place && place.geometry) {
+					document.getElementById('plecare_lat').value = place.geometry.location.lat();
+					document.getElementById('plecare_lng').value = place.geometry.location.lng();
+				}
+				updateMapsLink('plecare_maps_link', plecareInput.value);
+			});
+		}
+		if (sosireInput) {
+			var ac2 = new google.maps.places.Autocomplete(sosireInput, autocompleteOpts);
+			ac2.addListener('place_changed', function() {
+				var place = ac2.getPlace();
+				if (place && place.geometry) {
+					document.getElementById('sosire_lat').value = place.geometry.location.lat();
+					document.getElementById('sosire_lng').value = place.geometry.location.lng();
+				}
+				updateMapsLink('sosire_maps_link', sosireInput.value);
+			});
+		}
+		function updateMapsLink(id, q) {
+			var link = document.getElementById(id);
+			if (link && q) link.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+		}
+		plecareInput && plecareInput.addEventListener('input', function() { updateMapsLink('plecare_maps_link', plecareInput.value); });
+		sosireInput && sosireInput.addEventListener('input', function() { updateMapsLink('sosire_maps_link', sosireInput.value); });
+	};
+	document.head.appendChild(script);
+})();
+</script>
+{% else %}
+<script>
+(function() {
+	function updateMapsLink(id, q) {
+		var link = document.getElementById(id);
+		if (link && q) link.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+	}
+	var plecareInput = document.getElementById('plecare_input');
+	var sosireInput = document.getElementById('sosire_input');
+	if (plecareInput) plecareInput.addEventListener('input', function() { updateMapsLink('plecare_maps_link', plecareInput.value); });
+	if (sosireInput) sosireInput.addEventListener('input', function() { updateMapsLink('sosire_maps_link', sosireInput.value); });
+})();
+</script>
+{% endif %}
 {% endblock %}

@@ -4,15 +4,23 @@
  */
 
 /*
- * TW = același rol ca PW (PT) și SW (Servicii): de la navbar până în josul paginii.
- * T1 și T2 stau în interiorul TW.
+ * Fundal pagină Transport – vizibil pe tot ecranul
  */
+body.page-transport {
+	background: #e8ecf0;
+}
 body.page-transport #main_wrap {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
 	min-height: 100vh;
+	background: #e8ecf0;
 }
+
+/*
+ * TW = același rol ca PW (PT) și SW (Servicii): de la navbar până în josul paginii.
+ * T1 și T2 stau în interiorul TW.
+ */
 
 body.page-transport .transport-main-content#main_content {
 	width: 100%;
@@ -25,7 +33,7 @@ body.page-transport .transport-main-content#main_content {
 	flex-direction: column;
 }
 
-/* TW: aceleași dimensiuni ca PW, SW – de la limita de jos a navbar până în fundul paginii */
+/* TW: aceleași dimensiuni ca PW, SW – de la limita de jos a navbar până în fundul paginii; fundal vizibil */
 body.page-transport #TW.tw-layout {
 	height: calc(100vh - var(--nav-h, 64px));
 	display: flex;
@@ -38,6 +46,7 @@ body.page-transport #TW.tw-layout {
 	border: none;
 	flex: 1 1 auto;
 	min-height: 0;
+	background: #e8ecf0;
 }
 
 body.page-transport #TW .tw-caseta {
@@ -53,12 +62,14 @@ body.page-transport #T1.tw-caseta-stanga {
 	flex: 0 0 25%;
 	background: #f8f9fa;
 	border-right: 1px solid #dee2e6;
+	box-shadow: 2px 0 8px rgba(0,0,0,0.06);
 }
 
 body.page-transport #T2.tw-caseta-dreapta {
 	flex: 1 1 75%;
 	min-width: 0;
 	background: #fff;
+	box-shadow: -2px 0 8px rgba(0,0,0,0.06);
 }
 
 .tw-t1-inner {
@@ -97,6 +108,14 @@ body.page-transport #T2.tw-caseta-dreapta {
 	border-radius: 6px;
 }
 .tw-field-hint { font-size: 0.7rem; color: #6c757d; }
+.tw-maps-link {
+	display: inline-block;
+	margin-top: 0.25rem;
+	font-size: 0.8rem;
+	color: #003399;
+	text-decoration: none;
+}
+.tw-maps-link:hover { text-decoration: underline; }
 .tw-form-actions { margin-top: 0.5rem; }
 .tw-btn-submit {
 	padding: 0.5rem 1rem;
