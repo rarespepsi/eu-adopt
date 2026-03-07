@@ -1,0 +1,90 @@
+/**
+ * Sistem general afișare imagini câini – A2 (HOME), P2 (Prietenul tău), fișa câinelui (pet-single).
+ * Reguli comune: container overflow hidden; imagine umple caseta (cover, center).
+ * NU se folosesc: background-size contain, max-width, max-height.
+ */
+
+/* ========== A2 (HOME) – REGULĂ FINALĂ – singura sursă pentru .A2-slot și .A2-slot-link ========== */
+/* Container: fundal neutru gri – dacă poza nu umple (portrait/crop imperfect), spațiul rămâne gri, nu alb */
+body.page-home-v2 #A2 .A2-slot,
+body.page-home-v2 #A2 .A2-casete-wrap .A2-slot {
+	background: transparent !important;
+	overflow: hidden !important;
+	transform: none !important;
+}
+/* .A2-slot-link (a): regula finală – display block, 100% 100%, background cover center. Suprascrie orice: contain, height:auto, max-width, max-height, transform scale. */
+body.page-home-v2 #A2 .A2-slot .A2-slot-link,
+body.page-home-v2 #A2 .A2-slot a.A2-slot-link,
+body.page-home-v2 #A2 .A2-casete-wrap .A2-slot .A2-slot-link,
+body.page-home-v2 #A2 .A2-casete-wrap .A2-slot a.A2-slot-link {
+	display: block !important;
+	width: 100% !important;
+	height: 100% !important;
+	position: absolute !important;
+	inset: 0 !important;
+	background-size: cover !important;
+	background-position: center center !important;
+	background-repeat: no-repeat !important;
+	/* Anulează orice regulă care ar strica afișarea (contain, height:auto, max-width, max-height, transform) */
+	max-width: none !important;
+	max-height: none !important;
+	min-width: 100% !important;
+	min-height: 100% !important;
+	transform: none !important;
+	text-decoration: none !important;
+	overflow: hidden !important;
+}
+body.page-home-v2 #A2 .A2-slot .A2-slot-link:hover,
+body.page-home-v2 #A2 .A2-slot a.A2-slot-link:hover,
+body.page-home-v2 #A2 .A2-casete-wrap .A2-slot .A2-slot-link:hover,
+body.page-home-v2 #A2 .A2-casete-wrap .A2-slot a.A2-slot-link:hover {
+	transform: none !important;
+}
+/* Casetă goală (fără pet / fără poză) – span umple slotul */
+body.page-home-v2 #A2 .A2-slot .A2-slot-empty,
+body.page-home-v2 #A2 .A2-slot > span.A2-slot-empty {
+	position: absolute !important;
+	inset: 0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	font-size: 0.7rem !important;
+	color: #333 !important;
+	background: #ffe082 !important;
+}
+
+/* ========== P2 (Prietenul tău – listă 4×3) ========== */
+body.page-animale #PW .pt-p2-20cell {
+	overflow: hidden !important;
+	aspect-ratio: 4 / 3 !important;  /* casetă mereu landscape */
+}
+body.page-animale #PW .pt-p2-20bg {
+	position: absolute !important;
+	top: 0 !important;
+	left: 0 !important;
+	right: 0 !important;
+	bottom: 0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	min-width: 100% !important;
+	min-height: 100% !important;
+	max-width: none !important;
+	max-height: none !important;
+	background-size: cover !important;
+	background-position: center center !important;
+	background-repeat: no-repeat !important;
+}
+
+/* ========== Fișa câinelui (pet-single – 3 poze stivuite) ========== */
+.pet-fisa-slot {
+	overflow: hidden !important;
+}
+.pet-fisa-slot img {
+	width: 100% !important;
+	height: 100% !important;
+	object-fit: cover !important;
+	object-position: center center !important;
+	display: block !important;
+}

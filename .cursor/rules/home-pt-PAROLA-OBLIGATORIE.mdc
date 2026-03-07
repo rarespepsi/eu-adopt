@@ -1,30 +1,31 @@
 ---
-description: HOME și PT – modificări DOAR după parolă. Alte accesuri anulate. Stare înghețată.
+description: HOME, PT și NAVBAR – modificări DOAR după parolă. Alte accesuri anulate. Stare înghețată.
 alwaysApply: true
 ---
 
-# Home și Prietenul tău – PAROLĂ OBLIGATORIE
+# Home, Prietenul tău (PT) și Navbar – PAROLĂ OBLIGATORIE
 
-**Modificările pe Home și pe Prietenul tău (PT) se fac DOAR CU PAROLĂ. De acum, doar cu parolă intri.**
+**Modificările pe Home, pe Prietenul tău (PT) și pe Navbar (A0) se fac DOAR CU PAROLĂ. Aceeași regulă pentru toate trei. De acum, doar cu parolă intri.**
 
 ## Alte accesuri anulate
 
-- **Nu există alt mod** de a modifica Home sau PT. Orice cerere de modificare pe aceste pagini necesită parolă.
+- **Nu există alt mod** de a modifica Home, PT sau Navbar. Orice cerere de modificare pe aceste zone necesită parolă.
 - Aprobare verbală, „da”, „ok” sau alte formulări **nu înlocuiesc** parola. Doar parola corectă din `.cursor/home-pt-parola.txt` autorizează modificarea.
-- Setările Home și PT sunt **înghețate**; se modifică doar după introducerea și verificarea parolei.
+- Setările Home, PT și Navbar sunt **înghețate**; se modifică doar după introducerea și verificarea parolei.
 
 ## Regulă obligatorie
 
 Înainte de ORICE modificare care afectează:
 - **Home** (template `home_v2.html`, CSS `home_v2.css`, reguli `body.page-home-v2`, A1, A2, A3, A4, A5, A6, layout home)
 - **Prietenul tău / PT** (template `pets-all.html`, CSS `pt-v2.css`, reguli `body.page-animale`, layout PT)
-- **Navbar (A0)** în măsura în care afectează aspectul sau pozițiile pe Home sau PT (inclusiv reguli din `navbar-a0-secured.css` pentru `body.page-home-v2` sau `body.page-animale`)
+- **Navbar (A0)** – orice modificare: template `navbar_a0.html`, CSS `navbar-a0-secured.css`, linkuri din meniu, structură sau aspect (aceeași regulă ca Home și PT)
 
 trebuie să:
 
-1. **Cer parola:** „Modificările pe Home și Prietenul tău necesită parolă. Introdu parola de autorizare.”
-2. **Verific parola:** citesc fișierul `.cursor/home-pt-parola.txt` și compar cu ce a introdus utilizatorul. Dacă parola lipsește sau nu corespunde, nu fac modificarea și cer parola.
-3. **Dacă parola este corectă** – execut modificarea cerută. **Dacă parola lipsește sau este greșită** – refuz modificarea.
+1. **Cer parola specificând pagina:** „Modificările pe **Home** necesită parola de autorizare.” sau „Modificările pe **Prietenul tău (PT)** necesită parola de autorizare.” sau „Modificările pe **Navbar** necesită parola de autorizare.” – astfel utilizatorul știe exact ce pagină se va modifica.
+2. **Nu cer parola pentru PT și apoi modific Home** (sau invers). Parola se cere strict pentru pagina care se modifică.
+3. **Verific parola:** citesc fișierul `.cursor/home-pt-parola.txt` și compar cu ce a introdus utilizatorul. Dacă parola lipsește sau nu corespunde, nu fac modificarea și cer parola.
+4. **Dacă parola este corectă** – execut modificarea cerută **doar pe pagina pentru care s-a cerut parola**. **Dacă parola lipsește sau este greșită** – refuz modificarea.
 
 ## Ce înseamnă „modificare”
 
@@ -32,8 +33,8 @@ Orice schimbare de:
 - layout, grid, poziționare, CSS care afectează Home sau PT;
 - template-uri `home_v2.html`, `pets-all.html`;
 - fișiere `home_v2.css`, `pt-v2.css`;
-- reguli din `navbar-a0-secured.css` sau `style.css` care țintesc `body.page-home-v2` sau `body.page-animale`.
+- **Navbar:** template `templates/components/navbar_a0.html`, fișier `navbar-a0-secured.css`, orice link sau element din meniul A0.
 
 ## Nu se modifică fără parolă
 
-Fără parolă introdusă și verificată – **nu ating** niciun fișier sau regulă care afectează Home sau PT. Întâi cer parola.
+Fără parolă introdusă și verificată – **nu ating** niciun fișier sau regulă care afectează Home, PT sau Navbar. Întâi cer parola. **Nu miști un milimetru sau o culoare pe Home fără parolă.**

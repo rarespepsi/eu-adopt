@@ -17,7 +17,23 @@ git reset --hard undo-point-2026-02-22-1600
 3. Gata. Proiectul e exact ca la momentul acelui tag. Modificările făcute după tag se pierd.
 
 **Tag-uri disponibile:** `git tag -l`  
-**Cel mai recent (6 martie 2026, final zi):** `undo-point-2026-03-06-2359`
+**Cel mai recent (6 martie 2026, HOME stabil):** `undo-point-2026-03-06-1250`
+
+---
+
+# Punct – HOME stabil (6 martie 2026)
+
+**Tag:** `undo-point-2026-03-06-1250`  
+**Data:** 6 martie 2026  
+**Conține:** HOME stabil. A2 fără fundal roșu (background transparent pe sloturi). Regulă parolă: cerere parolă cu pagina specificată (Home / PT / Navbar); nu se modifică Home fără parolă (nici un milimetru sau culoare). pet-images-common.css, home-pt-PAROLA-OBLIGATORIE.mdc actualizat.
+
+**Revenire la acest punct:**
+```bash
+cd c:\Users\USER\Desktop\adoptapet_pro
+git checkout main
+git reset --hard undo-point-2026-03-06-1250
+```
+⚠️ Modificările făcute după acest tag se pierd.
 
 ---
 
