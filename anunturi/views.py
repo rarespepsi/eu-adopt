@@ -416,7 +416,7 @@ def home(request):
         import itertools
         strip_pets = list(itertools.islice(itertools.cycle(strip_pets), 24))
 
-    # A2 (4×3 = 12) + col stânga (3) + col dreapta (3) = 18 poze; A2 ca P2 – 4 coloane × 3 rânduri
+    # A2 (4×3 = 12) + col stânga (3) + col dreapta (3) = 18 poze
     import itertools as it
     import random
     pool_ids = {p.pk for p in featured}
@@ -427,11 +427,10 @@ def home(request):
             pool_ids.add(p.pk)
     if len(slot_pool) < 22 and slot_pool:
         slot_pool = list(it.islice(it.cycle(slot_pool), 22))
-    random.shuffle(slot_pool)  # A2 și coloanele laterale – poze diferite la fiecare încărcare
-    a2_pets = slot_pool[:12]   # 4×3 casete ca P2
+    random.shuffle(slot_pool)
+    a2_pets = slot_pool[:12]
     left_col_pets = slot_pool[12:15]
     right_col_pets = slot_pool[15:18]
-    # Pad cu None dacă nu avem suficiente (template afișează fallback)
     while len(a2_pets) < 12:
         a2_pets.append(None)
     while len(left_col_pets) < 3:
@@ -472,7 +471,7 @@ def home(request):
         "contest": contest,
         "remaining_days": remaining_days,
         "top_users": top_users,
-        "a2_slots": range(16),  # A2 – 4×4
+        "a2_slots": range(12),
     })
 
 

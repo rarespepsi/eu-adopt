@@ -280,49 +280,66 @@
   color: #ffffff;
 }
 
-/* P2 = centru – toate animalele; vizibil 4×3 (aceleași dimensiuni ca înainte), restul sub cu scroll */
+/* P2 – 4 coloane vizibile, chenar clar, scroll în dreapta */
 #PW .pt-cell-2 {
   grid-row: 2;
   grid-column: 2;
-  background: #fbc02d;
-  align-items: stretch;
-  justify-content: stretch;
-  padding: 4px;
+  background: transparent;
+  padding: 8px;
   min-height: 0;
-  overflow-x: hidden;
+  min-width: 0;
   overflow-y: auto;
-  /* Înălțime rând = (zone vizibilă - padding - gap) / 3 → exact 3 rânduri vizibile, casete neschimbate */
-  --pt2-row-h: calc((100% - 8px) / 3);
+  overflow-x: hidden;
 }
 
-#PW .pt-p2-20grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr) !important; /* 4 coloane, fix */
-  grid-auto-rows: var(--pt2-row-h);
-  gap: 2px;
+body.page-animale #PW .pt-cell-2 {
+  min-width: 0;
+}
+
+#PW .pt-p2-slot-scroll {
+  display: block;
   width: 100%;
-  height: auto;
+  min-width: 0;
+}
+
+body.page-animale #PW .pt-p2-20grid,
+#PW .pt-p2-20grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-auto-rows: 140px;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 #PW .pt-p2-20cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.5);
   border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #333;
+  background: #eee;
+  border: 2px solid #333;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 #PW .pt-p2-20cell--empty-msg {
   grid-column: 1 / -1;
   padding: 1rem;
-  justify-content: center;
+  text-align: center;
   color: #666;
-  font-weight: normal;
+}
+
+#PW .pt-p2-20cifra {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  font-weight: 700;
+  color: red;
+  z-index: 1;
+  pointer-events: none;
 }
 
 #PW .pt-p2-20num {
@@ -331,22 +348,22 @@
   left: 2px;
   font-size: 0.65rem;
   color: #666;
+  z-index: 1;
 }
 
-/* Poze ca background în P2 – umplere fără goluri la margini (overflow: hidden taie excesul) */
 #PW .pt-p2-20bg-link {
   position: absolute;
-  inset: -2px;
+  inset: 0;
   display: block;
   text-decoration: none;
 }
 
 #PW .pt-p2-20bg {
   position: absolute;
-  inset: -2px;
+  inset: 0;
   display: block;
   background-size: cover;
-  background-position: center center;
+  background-position: center;
   background-repeat: no-repeat;
 }
 
@@ -355,11 +372,8 @@
   align-items: center;
   justify-content: center;
   font-size: 0.7rem;
-  padding: 2px;
-  box-sizing: border-box;
   color: #333;
   background: #ffe082;
-  text-align: center;
 }
 
 /* P5 = coloană dreapta la mijloc – 4 casete publicitate numerotate */
@@ -532,13 +546,6 @@
 }
 #PW .pt-strip-item .pt-scale-mark {
   position: relative;
-}
-
-/* P2 responsive: 4 coloane până la mobil îngust, apoi 2 */
-@media (max-width: 31.25em) {
-  #PW .pt-p2-20grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 /* Responsive PW: tablet + mobil */

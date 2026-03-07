@@ -5,34 +5,29 @@ alwaysApply: true
 
 # Casete A2 (Home) și P2 (PT)
 
-**Reguli de păstrat** la orice modificare pe gridurile de casete din zona centrală pe Home și pe Prietenul tău.
+**A2 și P2 au același model de așezare: 4×3** (4 coloane × 3 rânduri). La orice modificare pe aceste griduri se păstrează acest model.
 
 ---
 
-## A2 – Home (grid poze animale)
+## Model comun 4×3
 
-- **Pagina:** Home (`body.page-home-v2`), template `home_v2.html`, CSS `home_v2.css` + bloc inline în template.
-- **Structură (ca P2):** `#A2` → `.A2-casete-wrap` → `.A2-slot` (×12 = 4×3) → `<a class="A2-slot-link">` → `<span class="A2-slot-bg">` cu `style="background-image: url('...');"` (sau `.A2-slot-bg--empty` fără poză).
-- **Grid (ca P2):** 4 coloane × 3 rânduri, `gap: 2px`.
-- **Layout casetă:** `aspect-ratio: 4 / 3`, `overflow: hidden`, `position: relative` pe `.A2-slot`; link `inset: -2px`; span cu `background-size: cover`, `background-position: center center`.
-- **Responsive:** 4×3 desktop și tabletă (56.25em); 3×4 la 37.5em; tot 12 casete vizibile.
-- **Nu modifica:** raportul 4:3, overflow hidden pe slot/link, blead -2px pe link; păstrează același model ca P2 (background-image pe span).
+- **A2 (Home):** 4 coloane × 3 rânduri = 12 casete vizibile; view trimite 12 animale (`a2_pets`); CSS `grid-template-columns: repeat(4, 1fr)`, `grid-template-rows: repeat(3, 1fr)`; sloturi 13+ ascunse.
+- **P2 (PT):** 4 coloane × 3 rânduri vizibile; restul rândurilor (toate animalele) cu scroll în P2; CSS `grid-template-columns: repeat(4, 1fr)`, `grid-auto-rows: var(--pt2-row-h)`; gap 2px pe ambele.
+- **Nu se schimbă** numărul de coloane/rânduri (4×3) fără parolă.
 
 ---
 
-## P2 – PT (toate animalele, 4 coloane × N rânduri, scroll)
+## A2 – Home
+
+- **Pagina:** Home (`body.page-home-v2`), template `home_v2.html`, CSS `home_v2.css`.
+- **Modificări pe Home:** DOAR CU PAROLĂ (`.cursor/home-pt-parola.txt`).
+
+---
+
+## P2 – PT
 
 - **Pagina:** Prietenul tău (`body.page-animale`), template `pets-all.html`, CSS `pt-v2.css`.
-- **Conținut:** Toate animalele din baza de date (filtrate de user) – nu doar 12; grid cu scroll vertical.
-- **Structură:** `#PW` → `.pt-cell-2` (overflow-y: auto) → `.pt-p2-20grid` → pentru fiecare pet: `.pt-p2-20cell` → `<a class="pt-p2-20bg-link">` → `<span class="pt-p2-20bg">` (background-image).
-- **Layout:**
-  - Grid: `grid-template-columns: repeat(4, 1fr)`, `grid-auto-rows: minmax(160px, 1fr)`, `gap: 2px`, `height: auto` (rânduri la infinit).
-  - Celulă P2: `position: relative`, `overflow: hidden`, `border-radius: 4px`.
-- **Scroll:** Doar în P2: `.pt-cell-2` are `overflow-y: auto`, `min-height: 0`; sub primele rânduri se continuă cu toate animalele.
-- **Poză în casetă:** Fundal `background-size: cover`, `background-position: center center`; **blead** `inset: -2px` pe link/bg.
-- **Fără hover:** Nu există zoom/scale la hover pe P2.
-- **Responsive:** 4 coloane desktop; 3 coloane la 37.5em; 2 coloane la 31.25em.
-- **Nu modifica:** `inset: -2px` pe link/bg, `overflow-y: auto` pe `.pt-cell-2`, `grid-auto-rows`; nu readăuga zoom la hover.
+- **Modificări pe PT:** DOAR CU PAROLĂ.
 
 ---
 

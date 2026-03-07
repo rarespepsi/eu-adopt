@@ -472,15 +472,14 @@ body.page-home-v2 .home-v2-center #A3 {
     flex-shrink: 0 !important;
 }
 
-/* A2 – 4×3 casete ca P2 (4 coloane × 3 rânduri), gap 2px */
+/* A2 – 4×3 casete */
 body.page-home-v2 #A2 .A2-casete-wrap {
     display: grid !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    grid-template-rows: repeat(3, 1fr) !important;
     gap: 2px !important;
     padding: 0 !important;
     border: none !important;
-    border-radius: 0.25rem !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
     min-height: 0 !important;
@@ -489,7 +488,6 @@ body.page-home-v2 #A2 .A2-casete-wrap {
     width: 100% !important;
     max-width: 100% !important;
 }
-/* A2 slot – aceleași dimensiuni ca P2: grid 1fr×1fr, fără aspect-ratio, border-radius 4px */
 body.page-home-v2 #A2 .A2-slot {
     background: #fff !important;
     min-height: 0 !important;
@@ -504,7 +502,6 @@ body.page-home-v2 #A2 .A2-slot {
 body.page-home-v2 #A2 .A2-slot:nth-child(n+13) {
     display: none !important;
 }
-/* A2 – tabletă (<=900px): tot 4×3 ca P2 */
 @media (max-width: 56.25em) {
     body.page-home-v2 .home-v2-center,
     body.page-home-v2 #A2,
@@ -514,15 +511,14 @@ body.page-home-v2 #A2 .A2-slot:nth-child(n+13) {
         min-width: 0 !important;
     }
     body.page-home-v2 #A2 .A2-casete-wrap {
-        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-        grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-rows: repeat(3, 1fr) !important;
         gap: 2px !important;
     }
     body.page-home-v2 #A2 .A2-slot:nth-child(n+13) {
         display: none !important;
     }
 }
-/* A2 – mobil (<=600px): 3 coloane ca P2, 12 casete */
 @media (max-width: 37.5em) {
     body.page-home-v2 .home-v2-center,
     body.page-home-v2 #A2,
@@ -532,8 +528,8 @@ body.page-home-v2 #A2 .A2-slot:nth-child(n+13) {
         min-width: 0 !important;
     }
     body.page-home-v2 #A2 .A2-casete-wrap {
-        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-        grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        grid-template-rows: repeat(4, 1fr) !important;
         gap: 2px !important;
     }
     body.page-home-v2 #A2 .A2-slot:nth-child(n+13) {
