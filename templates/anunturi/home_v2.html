@@ -6,30 +6,13 @@
 {% block body_class %}page-home-v2{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/home_v2.css' %}?v=ref" type="text/css" media="all" />
+<link rel="stylesheet" href="{% static 'css/home_v2.css' %}?v=a2" type="text/css" media="all" />
 {% endblock %}
 
-{% block extra_css_after %}
-<style>
-/* A2 – poze centrate în casetă (încărcat după navbar ca să aibă prioritate) */
-body.page-home-v2 #A2 .A2-slot { position: relative !important; overflow: hidden !important; }
-body.page-home-v2 #A2 .A2-slot a { position: absolute !important; inset: -2px !important; display: block !important; overflow: hidden !important; text-decoration: none !important; }
-body.page-home-v2 #A2 .A2-slot .A2-slot-bg { position: absolute !important; inset: 0 !important; display: block !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
-body.page-home-v2 #A2 .A2-slot .A2-slot-bg--empty { background: #ffe082 !important; display: flex !important; align-items: center !important; justify-content: center !important; font-size: 0.7rem !important; padding: 2px !important; color: #333 !important; }
-/* Badge-uri casete (A1, A2, A3, A4, A5.1–3, A6.1–3) – doar pentru staff; A4 fără bandă albastră și fără scroll */
-body.page-home-v2 #A1, body.page-home-v2 #A2, body.page-home-v2 #A3, body.page-home-v2 #A4, body.page-home-v2 .home-v2-slot { position: relative; }
-body.page-home-v2 .home-slot-badge { position: absolute; top: 4px; right: 4px; z-index: 100; }
-body.page-home-v2 #A4 { overflow: hidden !important; }
-body.page-home-v2 #A4 .home-slot-badge-a4 {
-	position: absolute !important; top: 2px !important; right: 2px !important;
-	font-size: 8px !important; padding: 1px 3px !important; line-height: 1 !important;
-	min-width: 0 !important; min-height: 0 !important;
-}
-</style>
-{% endblock %}
+{% block extra_css_after %}{% endblock %}
 
 {% block content %}
-<div class="home-v2">
+<div id="AW" class="home-v2">
 	<div id="home-cols-wrap" class="home-v2-three-cols">
 		<div id="home-col-left" class="home-v2-side home-v2-side-left">
 			<div class="home-v2-side-inner">
@@ -80,12 +63,10 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
 					<div class="A2-slot">
 						{% if user.is_staff and forloop.counter <= 12 %}<span class="slot-marker home-slot-badge" aria-hidden="true">A2.{{ forloop.counter }}</span>{% endif %}
 						{% if pet %}
-						<a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}" class="A2-slot-link" aria-label="Vezi {{ pet.nume }}">
-							{% if pet.imagine %}<span class="A2-slot-bg" style="background-image: url('{{ pet.imagine.url }}');" aria-hidden="true"></span>
-							{% elif pet.imagine_fallback %}<span class="A2-slot-bg" style="background-image: url('{% static pet.imagine_fallback %}');" aria-hidden="true"></span>
-							{% else %}<span class="A2-slot-bg A2-slot-bg--empty">{{ pet.nume }}</span>{% endif %}
+						<a href="{% url 'pets_single' pet.pk %}" title="{{ pet.nume }}" class="A2-slot-link" aria-label="Vezi {{ pet.nume }}"{% if pet.imagine %} style="background-image: url('{{ pet.imagine.url }}');"{% elif pet.imagine_fallback %} style="background-image: url('{% static pet.imagine_fallback %}');"{% endif %}>
+							{% if not pet.imagine and not pet.imagine_fallback %}<span class="A2-slot-empty">{{ pet.nume }}</span>{% endif %}
 						</a>
-						{% else %}<span class="A2-slot-bg A2-slot-bg--empty" aria-hidden="true"></span>{% endif %}
+						{% else %}<span class="A2-slot-empty" aria-hidden="true"></span>{% endif %}
 					</div>
 					{% endfor %}
 				</div>
@@ -141,14 +122,8 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
 			<div id="site_info" class="clearfix">
 				<div class="footer-euadopt-text">
 					<span class="footer-euadopt-strip">
-						#EuAdopt#NuCumpar!#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						#EuAdopt#NuCumpar!#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						#EuAdopt#NuCumpar!#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						#EuAdopt#NuCumpar!#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						#EuAdopt#NuCumpar!#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						#EuAdopt#NuCumpar!#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						#EuAdopt#NuCumpar!#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						#EuAdopt#NuCumpar!#
+						#EuAdopt #NuCumpar — EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană sau de instituțiile sale. — #EuAdopt #NuCumpar &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						#EuAdopt #NuCumpar — EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană sau de instituțiile sale. — #EuAdopt #NuCumpar &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 					</span>
 				</div>
 			</div>

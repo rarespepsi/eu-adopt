@@ -1,27 +1,28 @@
 ---
-description: HOME și PT (Prietenul tău) – NIMENI nu modifică navbar/layout fără aprobare explicită a utilizatorului
+description: HOME, PT și NAVBAR – NIMENI nu modifică fără parolă. Aceeași regulă pentru toate trei.
 alwaysApply: true
 ---
 
-# Home și PT – modificări DOAR cu aprobare explicită
+# Home, PT și Navbar – modificări DOAR cu parolă
 
-**NIMENI nu are voie să lucreze fără aprobare pe cele 2 pagini: Home și Prietenul tău (PT).**
+**NIMENI nu are voie să modifice Home, Prietenul tău (PT) sau Navbarul fără parolă. Aceeași regulă pentru toate trei.**
 
-## Pagini protejate
+## Zone protejate (parolă obligatorie)
 - **Home** = `page-home-v2` (template `home_v2.html`, CSS `home_v2.css`, reguli `body.page-home-v2`)
 - **PT (Prietenul tău)** = `page-animale` (template `pets-all.html`, CSS `pt-v2.css`, reguli `body.page-animale`)
+- **Navbar (A0)** = template `navbar_a0.html`, CSS `navbar-a0-secured.css`, orice modificare la meniu, linkuri, structură sau aspect A0
 
-## Ce este interzis fără cerere explicită a utilizatorului
-- Orice modificare la **navbar (A0)** care afectează Home sau PT: în `navbar-a0-secured.css` nu se schimbă, nu se șterg și nu se supra-scriu regulile pentru `body.page-home-v2 #A0` și `body.page-animale #A0`.
+## Ce este interzis fără parolă
+- Orice modificare la **Navbar (A0)** – inclusiv adăugare/ștergere linkuri în `navbar_a0.html`, reguli în `navbar-a0-secured.css`.
 - Orice modificare la **layout, grid, scroll, wrapper** pe Home sau PT (inclusiv `#main_wrap`, `#main_content`, sloturi, coloane).
-- Adăugarea de reguli noi care, prin selector sau ordine CSS, alterează aspectul sau poziționarea navbar-ului pe Home sau PT.
+- Adăugarea de reguli noi care alterează aspectul sau poziționarea navbar-ului, Home sau PT.
 
 ## Regula de aur
-Când se lucrează la **alte pagini** (ex. Servicii, Contact): modificările se fac **doar** cu selectori care țintesc acea pagină (ex. `body.page-servicii`). **Nu** se modifică regulile comune `#A0` în așa fel încât să se rupă Home sau PT.
+Când se lucrează la **alte pagini** (ex. Servicii, Contact): modificările se fac **doar** cu selectori care țintesc acea pagină (ex. `body.page-servicii`). **Nu** se modifică Home, PT sau Navbar fără parolă.
 
 ## Unde sunt setările de referință
 - Home: `HOME_SETTINGS_REFERENCE.md`, `.cursor/rules/home-BLOCAT-NU-MODIFICA.mdc`, `home-detalii-finale-restart.mdc`
 - PT: `PT_SETTINGS_REFERENCE.md`, `.cursor/rules/pt-settings-reference.mdc`
-- Navbar (A0): `static/css/navbar-a0-secured.css`, `a0-detalii-finale-restart.mdc`
+- Navbar (A0): `static/css/navbar-a0-secured.css`, `templates/components/navbar_a0.html`, `a0-detalii-finale-restart.mdc`
 
-**Parolă obligatorie – singurul acces:** orice modificare pe Home sau PT se face DOAR după ce utilizatorul introduce parola de autorizare. Nu există alte forme de „aprobare” – doar parola. Regula completă: `.cursor/rules/home-pt-PAROLA-OBLIGATORIE.mdc`. Fără parolă corectă – refuz modificarea.
+**Parolă obligatorie – singurul acces:** orice modificare pe Home, PT sau Navbar se face DOAR după ce utilizatorul introduce parola de autorizare. Nu există alte forme de „aprobare” – doar parola. Regula completă: `.cursor/rules/home-pt-PAROLA-OBLIGATORIE.mdc`. Fără parolă corectă – refuz modificarea.

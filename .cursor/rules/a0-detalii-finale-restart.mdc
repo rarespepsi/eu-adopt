@@ -9,7 +9,8 @@
 ## Regulă obligatorie: nu modifica A0 când nu lucrezi la A0
 
 - **A0 nu se atinge** când faci modificări pe alte pagini, layout fluid, overflow, footer, formulare, animale, servicii etc.
-- Modifici reguli A0 **doar** în `static/css/navbar-a0-secured.css` și **doar** când utilizatorul cere explicit modificări la **navbar / bara de sus / A0**.
+- Modifici reguli A0 **doar** în `static/css/navbar-a0-secured.css` (și template `navbar_a0.html`) și **doar** când utilizatorul cere explicit modificări la **navbar / bara de sus / A0**.
+- **Navbar = aceeași regulă ca Home și PT:** orice modificare la A0 se face **DOAR CU PAROLĂ** (`.cursor/home-pt-parola.txt`). Fără parolă – refuz. Vezi **HOME-PT-CU-PAROLA.mdc**.
 
 ---
 

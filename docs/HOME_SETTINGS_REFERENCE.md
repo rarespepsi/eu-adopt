@@ -57,7 +57,6 @@
 - **Sigle – padding față de laturile A1:** `.hero-v2-inner` — `padding-left: 0.5cm`, `padding-right: 0.5cm` (EU Adopt la 0,5 cm de stânga, transport la 0,5 cm de dreapta).
 - **Sigla EU Adopt:** `.hero-v2-logo` — `transform: translateY(-0.3mm)`; logo-img cu `var(--hero-logo-size)`.
 - **Sigla transport:** `.hero-v2-transport-badge` — `width` și `height`: `calc(var(--hero-badge-size) + 3mm)`.
-- **„Animalele lunii”:** în **A2** (primul element), clase `hero-v2-subtitle A2-subtitle`; margin `0 0 0.5rem`, text centrat.
 - **A5/A6 – 3 casete colorate:** `home-v2-slot-bg1` (#e53935), `home-v2-slot-bg2` (#fdd835), `home-v2-slot-bg3` (#43a047).
 
 ### A1 – buton „Hai la noi!” (memorat)

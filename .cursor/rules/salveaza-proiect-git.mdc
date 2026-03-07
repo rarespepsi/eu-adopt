@@ -1,0 +1,58 @@
+---
+description: La "SALVEAZA PROIECT" – parolă obligatorie, apoi git add, commit, push; fără -f, reset --hard, clean -fd
+alwaysApply: false
+---
+
+# SALVEAZA PROIECT – procedură obligatorie
+
+Când utilizatorul spune exact **„SALVEAZA PROIECT”**, **ceri întâi parola**. Fără parolă corectă **nu** execuți niciun pas git.
+
+---
+
+## Parolă obligatorie
+
+- **Înainte** de orice pas (add, commit, push): **ceri parola** de autorizare.
+- Verificare: parola este în **`.cursor/home-pt-parola.txt`** – o citești și o compari cu ce a furnizat utilizatorul.
+- **Dacă parola lipsește sau nu corespunde:** nu execuți procedura; îi spui că parola este obligatorie sau incorectă.
+- **Dacă parola este corectă:** execuți pașii de mai jos, în ordine.
+
+---
+
+## Înainte de orice git
+
+**Verifică că repo-ul este cel corect al proiectului** (rădăcina proiectului real, ex. `c:\Users\USER\Desktop\adoptapet_pro`), **nu** Desktop-ul sau alt folder.
+
+- Dacă repo-ul **nu** este cel corect: **te oprești** și îl anunți.
+- Apoi execuți pașii doar din rădăcina proiectului real.
+
+---
+
+## Pașii (în ordine, după parolă corectă)
+
+1. **Verifică că ești în rădăcina proiectului real** (ex. `adoptapet_pro`).
+2. **Rulează:** `git add .`
+3. **Creează commit** cu mesaj clar, pe baza a ce s-a lucrat în sesiunea curentă.
+   - Exemple: `git commit -m "HOME reparat"` sau `git commit -m "Transport API actualizat"`
+4. **Rulează:** `git push`
+5. **La final spui clar:**
+   - commit message-ul folosit
+   - dacă push-ul a reușit
+   - ce fișiere importante au fost modificate
+
+---
+
+## Reguli obligatorii
+
+- **NU** folosi: `git push -f`
+- **NU** folosi: `git reset --hard`
+- **NU** folosi: `git clean -fd`
+- Dacă există **eroare la push**: te oprești și îi spui **exact** eroarea.
+- Dacă **nu există modificări** de commit: îi spui clar: **„Nu există modificări de salvat.”**
+- **„SALVEAZA PROIECT”** înseamnă: **ceri parolă** → verifici → apoi **git add + commit + push** (nu doar salvare în fișiere). Fără parolă corectă nu execuți nimic.
+
+---
+
+## Referință
+
+- Proiect: `c:\Users\USER\Desktop\adoptapet_pro`
+- Comenzi: din rădăcina proiectului (unde e `.git`).

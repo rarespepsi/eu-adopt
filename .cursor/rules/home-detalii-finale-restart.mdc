@@ -47,7 +47,6 @@
 - **Sigle – distanță de laturi:** `.hero-v2-inner` — `padding-left: 0.5cm`, `padding-right: 0.5cm` (sigla EU Adopt la 0,5 cm de latura stângă A1, sigla transport la 0,5 cm de latura dreaptă A1).
 - **Sigla EU Adopt:** `.hero-v2-logo` — `transform: translateY(-0.3mm)`. `.hero-v2-logo-img` — `width/height: var(--hero-logo-size)`.
 - **Sigla transport (autocar):** `.hero-v2-transport-badge` — `width/height: calc(var(--hero-badge-size) + 3mm)`.
-- **„Animalele lunii”:** în **A2**, primul element (nu în A1); clasa `hero-v2-subtitle A2-subtitle`; `margin: 0 0 0.5rem`, centrat, font `var(--font-title)`, font-weight 600.
 - **A5/A6 – casete colorate:** clase `home-v2-slot-bg1` (roșu #e53935), `home-v2-slot-bg2` (galben #fdd835), `home-v2-slot-bg3` (verde #43a047) pe cele 3 sloturi din fiecare coloană.
 
 ---

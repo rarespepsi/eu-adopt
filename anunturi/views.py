@@ -1,7 +1,9 @@
+import io
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.http import urlencode
+from django.core.files.uploadedfile import SimpleUploadedFile
 from urllib.parse import quote
 from django.templatetags.static import static
 from django.core.paginator import Paginator
@@ -416,21 +418,13 @@ def home(request):
         import itertools
         strip_pets = list(itertools.islice(itertools.cycle(strip_pets), 24))
 
-    # A2 (4×3 = 12) + col stânga (3) + col dreapta (3) = 18 poze
-    import itertools as it
+    # A2 (4×3 = 12): interogare separată, fără duplicare – ultimii câini intrati, fiecare o singură dată
     import random
-    pool_ids = {p.pk for p in featured}
-    slot_pool = list(featured)
-    for p in strip_pets:
-        if p.pk not in pool_ids and len(slot_pool) < 22:
-            slot_pool.append(p)
-            pool_ids.add(p.pk)
-    if len(slot_pool) < 22 and slot_pool:
-        slot_pool = list(it.islice(it.cycle(slot_pool), 22))
-    random.shuffle(slot_pool)
-    a2_pets = slot_pool[:12]
-    left_col_pets = slot_pool[12:15]
-    right_col_pets = slot_pool[15:18]
+    a2_queryset = list(Pet.objects.filter(status="adoptable").exclude(adoption_status="adopted").order_by("-data_adaugare")[:40])
+    random.shuffle(a2_queryset)
+    a2_pets = a2_queryset[:12]
+    left_col_pets = a2_queryset[12:15]
+    right_col_pets = a2_queryset[15:18]
     while len(a2_pets) < 12:
         a2_pets.append(None)
     while len(left_col_pets) < 3:
@@ -1740,6 +1734,127 @@ def _unique_slug_for_pet(nume):
     return slug
 
 
+# Caseta A2/P2: 4 col × 3 rânduri → caseta landscape, raport 4:3 (lățime:înălțime)
+CASETA_OUTPUT_W = 800
+CASETA_OUTPUT_H = 600
+PET_IMAGE_MAX_PIXELS = 2_000_000  # 2 MP max per poză
+
+
+def _crop_upload_to_caseta(uploaded_file, scale, cx, cy, box_w, box_h, img_w, img_h):
+    """
+    Cropează imaginea la raport 4:3 (landscape, ca A2/P2) folosind pan/zoom din formular.
+    Returnează SimpleUploadedFile 800×600 sau None la eroare.
+    """
+    try:
+        from PIL import Image, ImageOps
+    except ImportError:
+        return None
+    if not uploaded_file or not img_w or not img_h or not scale or scale <= 0:
+        return None
+    try:
+        img = Image.open(uploaded_file).convert("RGB")
+        img = ImageOps.exif_transpose(img)
+        w, h = img.size
+    except Exception:
+        return None
+    # Regiunea vizibilă în coordonate imagine (pan/zoom)
+    vis_w = max(10, box_w / float(scale))
+    vis_h = max(10, box_h / float(scale))
+    center_x = w / 2.0 - float(cx) / scale
+    center_y = h / 2.0 - float(cy) / scale
+    left = max(0, min(w - vis_w, center_x - vis_w / 2))
+    top = max(0, min(h - vis_h, center_y - vis_h / 2))
+    right = min(w, left + vis_w)
+    bottom = min(h, top + vis_h)
+    crop_w = right - left
+    crop_h = bottom - top
+    if crop_w <= 0 or crop_h <= 0:
+        return None
+    # Extragem un dreptunghi 4:3 (landscape) centrat în regiunea vizibilă
+    target_ratio = 4 / 3
+    if crop_w / crop_h > target_ratio:
+        out_h = crop_h
+        out_w = int(round(out_h * target_ratio))
+    else:
+        out_w = int(crop_w)
+        out_h = int(round(out_w / target_ratio))
+    out_w = max(10, min(out_w, w))
+    out_h = max(10, min(out_h, h))
+    cx_crop = left + crop_w / 2
+    cy_crop = top + crop_h / 2
+    x0 = int(round(cx_crop - out_w / 2))
+    y0 = int(round(cy_crop - out_h / 2))
+    x0 = max(0, min(w - out_w, x0))
+    y0 = max(0, min(h - out_h, y0))
+    cropped = img.crop((x0, y0, x0 + out_w, y0 + out_h))
+    out = cropped.resize((CASETA_OUTPUT_W, CASETA_OUTPUT_H), Image.Resampling.LANCZOS)
+    buf = io.BytesIO()
+    out.save(buf, format="JPEG", quality=88, optimize=True)
+    buf.seek(0)
+    name = (uploaded_file.name or "image.jpg").rsplit(".", 1)[0] + "_caseta.jpg"
+    return SimpleUploadedFile(name, buf.read(), content_type="image/jpeg")
+
+
+def _apply_caseta_crop_to_request(request, box_w=267, box_h=200):
+    """
+    Dacă POST conține crop pentru poze, cropează fișierele și returnează un FILES
+    care poate fi pasat la formular. Altfel returnează request.FILES.
+    """
+    if not request.FILES or request.method != "POST":
+        return request.FILES
+    field_map = [("imagine", "1"), ("imagine_2", "2"), ("imagine_3", "3")]
+    new_files = {}
+    for field_name, suffix in field_map:
+        f = request.FILES.get(field_name)
+        if not f:
+            continue
+        scale = request.POST.get(f"imagine_{suffix}_scale")
+        cx = request.POST.get(f"imagine_{suffix}_cx")
+        cy = request.POST.get(f"imagine_{suffix}_cy")
+        iw = request.POST.get(f"imagine_{suffix}_iw")
+        ih = request.POST.get(f"imagine_{suffix}_ih")
+        try:
+            scale = float(scale) if scale else 1.0
+            cx = float(cx) if cx else 0.0
+            cy = float(cy) if cy else 0.0
+            iw = int(iw) if iw else 0
+            ih = int(ih) if ih else 0
+        except (TypeError, ValueError):
+            continue
+        if iw <= 0 or ih <= 0:
+            continue
+        cropped = _crop_upload_to_caseta(f, scale, cx, cy, box_w, box_h, iw, ih)
+        if cropped:
+            new_files[field_name] = cropped
+    if not new_files:
+        return request.FILES
+    from django.utils.datastructures import MultiValueDict
+    files = MultiValueDict()
+    for k in request.FILES:
+        files.setlist(k, request.FILES.getlist(k))
+    for k, v in new_files.items():
+        files.setlist(k, [v])
+    return files
+
+
+def _validate_pet_images_max_mp(request):
+    """Verifică că pozele încărcate nu depășesc PET_IMAGE_MAX_PIXELS (2 MP). Returnează (True, None) sau (False, mesaj_eroare)."""
+    for key in ("imagine", "imagine_2", "imagine_3"):
+        f = request.FILES.get(key)
+        if not f:
+            continue
+        try:
+            from PIL import Image
+            img = Image.open(f)
+            w, h = img.size
+            if w * h > PET_IMAGE_MAX_PIXELS:
+                return False, f"Poza „{key.replace('_', ' ').title()}” depășește 2 megapixeli. Încărcați o imagine mai mică."
+            f.seek(0)
+        except Exception:
+            pass
+    return True, None
+
+
 @require_phone_verified
 def cont_adauga_animal_view(request):
     """Fișă înregistrare animal pentru persoană fizică. Max 4 animale pe lună per user. Necesită telefon verificat."""
@@ -1757,7 +1872,13 @@ def cont_adauga_animal_view(request):
         return redirect("cont_profil")
 
     if request.method == "POST":
-        form = PetAdaugaForm(request.POST, request.FILES)
+        ok_mp, err_mp = _validate_pet_images_max_mp(request)
+        if not ok_mp:
+            form = PetAdaugaForm(request.POST, request.FILES)
+            form.add_error("imagine", err_mp)
+        else:
+            files = _apply_caseta_crop_to_request(request, box_w=267, box_h=200)
+            form = PetAdaugaForm(request.POST, files)
         if form.is_valid():
             if count_luna >= 4:
                 messages.warning(request, "Ați atins limita de 4 prieteni în luna curentă. Încercați luna viitoare.")
@@ -1791,7 +1912,13 @@ def cont_ong_adauga_view(request):
         return redirect("admin:anunturi_pet_add")
 
     if request.method == "POST":
-        form = PetAdaugaForm(request.POST, request.FILES)
+        ok_mp, err_mp = _validate_pet_images_max_mp(request)
+        if not ok_mp:
+            form = PetAdaugaForm(request.POST, request.FILES)
+            form.add_error("imagine", err_mp)
+        else:
+            files = _apply_caseta_crop_to_request(request, box_w=267, box_h=200)
+            form = PetAdaugaForm(request.POST, files)
         if form.is_valid():
             pet = form.save(commit=False)
             contact = _get_contact_for_pet_from_user(request.user)

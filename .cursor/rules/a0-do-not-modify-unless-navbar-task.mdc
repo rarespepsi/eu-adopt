@@ -18,4 +18,6 @@ globs:
 
 **De ce:** Setările A0 sunt salvate ca finale. Modificări făcute „în treacăt” (ex. la fluid sau overflow) au dus la butoane tăiate sau layout stricat. A0 se modifică **doar** când utilizatorul cere explicit schimbări la navbar / bara de sus.
 
+**Parolă obligatorie:** Modificări la Navbar (A0) necesită aceeași parolă ca pentru Home și PT (`.cursor/home-pt-parola.txt`). Fără parolă – refuz modificarea. Vezi **HOME-PT-CU-PAROLA.mdc** și **home-pt-PAROLA-OBLIGATORIE.mdc**.
+
 Detalii complete: **a0-detalii-finale-restart.mdc**.

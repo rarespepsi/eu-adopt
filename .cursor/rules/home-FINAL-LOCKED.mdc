@@ -1,0 +1,36 @@
+---
+description: HOME (AW) este FINAL și LOCKED – structură, design, stil. Doar excepțiile listate sunt permise.
+alwaysApply: true
+---
+
+# HOME (AW) – FINAL ȘI LOCKED
+
+**Pagina Home este definitivă și blocată la nivel de structură, design și stil.**
+
+## Nu se modifică
+
+- Layout-ul
+- Secțiunile
+- Ordinea elementelor
+- Dimensiunile
+- Culorile
+- Spațierile
+- Animațiile
+- HTML-ul sau CSS-ul paginii Home
+
+Orice schimbare vizuală sau de structură pe Home este interzisă, cu excepția celor permise mai jos.
+
+## Sunt permise doar
+
+- **Încărcarea / înlocuirea imaginilor** (conținut media, fără schimbare de layout sau stil)
+- **Legarea la date dinamice** (surse de date, variabile template, fără schimbare de aspect)
+- **Testarea fluxului și a butoanelor** (verificări funcționale)
+- **Corectarea strictă a bugurilor funcționale reale**, fără schimbări vizuale
+
+Modificări pe Home care nu intră în aceste categorii nu se fac. Pentru orice altceva pe Home (layout, design, CSS, HTML) se aplică regula de parolă: modificări doar cu parola de autorizare.
+
+## Referințe
+
+- Template: `templates/anunturi/home_v2.html`
+- CSS: `static/css/home_v2.css`, reguli `body.page-home-v2`, A1–A6
+- Reguli parolă: `home-pt-PAROLA-OBLIGATORIE.mdc`, `HOME-PT-CU-PAROLA.mdc`

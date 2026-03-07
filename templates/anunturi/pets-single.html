@@ -7,6 +7,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
 		<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
 		<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}" type="text/css" media="screen" />
+		<link rel="stylesheet" href="{% static 'css/pet-images-common.css' %}?v=3" type="text/css" media="screen" />
 		<link rel="stylesheet" href="{% static 'includes/js/flexslider.css' %}" type="text/css" media="all" />
 		<link rel="stylesheet" href="{% static 'includes/fancybox/jquery.fancybox.css' %}" type="text/css" media="screen" />
 		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
@@ -173,6 +174,37 @@
 				height: 100%;
 				object-fit: cover;
 				display: block;
+			}
+			.pet-fisa-three-photos { width: 280px; max-width: 100%; }
+			.pet-fisa-slots {
+				display: flex;
+				flex-direction: column;
+				gap: 0.75rem;
+				margin-bottom: 0.75rem;
+			}
+			.pet-fisa-slot {
+				position: relative;
+				width: 100%;
+				aspect-ratio: 4 / 3;
+				overflow: hidden;
+				background: #f0f0f0;
+				border-radius: 8px;
+				border: 1px solid #e0e0e0;
+			}
+			.pet-fisa-slot img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				display: block;
+			}
+			.pet-fisa-slot-empty {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 100%;
+				height: 100%;
+				color: #999;
+				font-size: 0.9rem;
 			}
 			.pet-gallery-extra {
 				display: flex;
@@ -430,7 +462,7 @@
 							<div class="entry-content clearfix">
 								<div class="pet-single-detail clearfix">
 										<div class="pet-image-with-back">
-										<div class="pet-image-col">
+										<div class="pet-image-col pet-fisa-three-photos">
 										{% if pet.adoption_status == "reserved" or pet.is_reserved %}
 										<div class="pet-pending-notice pet-badge-rezervat-msg" role="alert">REZERVAT / În curs</div>
 										{% if user_adoption_request %}
@@ -449,25 +481,45 @@
 										{% elif pet.adoption_status == "unavailable" %}
 										<div class="pet-pending-notice pet-badge-unavailable-msg" role="alert">Indisponibil</div>
 										{% endif %}
-										<div class="pet-image pet-photo-anim">
-											{% if pet.imagine %}
-												<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" class="attachment-pet_single_large" width="275" height="275" onerror="this.src='{% static 'images/pets/charlie-275x275.jpg' %}';this.onerror=null;" />
-											{% elif pet.imagine_fallback %}
-												<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" class="attachment-pet_single_large" width="275" height="275" />
-											{% else %}
-												<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="{{ pet.nume }}" class="attachment-pet_single_large" width="275" height="275" />
-											{% endif %}
-											<div class="pet-te-plac-wrap">
-												{% if user.is_authenticated %}
-													{% if pet.pk in wishlist_pet_ids %}
-													<a href="{% url 'wishlist_toggle' pet.pk %}?action=remove" class="pet-te-plac-btn pet-te-plac-active" title="Scoate din lista mea">❤️ În lista mea</a>
-													{% else %}
-													<a href="{% url 'wishlist_toggle' pet.pk %}" class="pet-te-plac-btn" title="Adaugă la lista mea">🤍 Te plac</a>
-													{% endif %}
+										<div class="pet-fisa-slots">
+											<div class="pet-fisa-slot pet-photo-anim">
+												{% if pet.imagine %}
+													<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" class="attachment-pet_single_large" onerror="this.src='{% static 'images/pets/charlie-275x275.jpg' %}';this.onerror=null;" />
+												{% elif pet.imagine_fallback %}
+													<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" class="attachment-pet_single_large" />
 												{% else %}
-													<a href="{% url 'login' %}?next={% url 'wishlist' %}" class="pet-te-plac-btn" title="Adaugă la lista mea (autentificare)">🤍 <span class="login-required-lock-icon">🔒</span> Te plac</a>
+													<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="{{ pet.nume }}" class="attachment-pet_single_large" />
 												{% endif %}
 											</div>
+											<div class="pet-fisa-slot pet-photo-anim">
+												{% if pet.imagine_2 %}
+													<img src="{{ pet.imagine_2.url }}" alt="{{ pet.nume }} 2" class="attachment-pet_single_large" onerror="this.style.display='none';" />
+												{% elif pet.imagine_fallback %}
+													<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }} 2" class="attachment-pet_single_large" />
+												{% else %}
+													<span class="pet-fisa-slot-empty">Poza 2</span>
+												{% endif %}
+											</div>
+											<div class="pet-fisa-slot pet-photo-anim">
+												{% if pet.imagine_3 %}
+													<img src="{{ pet.imagine_3.url }}" alt="{{ pet.nume }} 3" class="attachment-pet_single_large" onerror="this.style.display='none';" />
+												{% elif pet.imagine_fallback %}
+													<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }} 3" class="attachment-pet_single_large" />
+												{% else %}
+													<span class="pet-fisa-slot-empty">Poza 3</span>
+												{% endif %}
+											</div>
+										</div>
+										<div class="pet-te-plac-wrap">
+											{% if user.is_authenticated %}
+												{% if pet.pk in wishlist_pet_ids %}
+												<a href="{% url 'wishlist_toggle' pet.pk %}?action=remove" class="pet-te-plac-btn pet-te-plac-active" title="Scoate din lista mea">❤️ În lista mea</a>
+												{% else %}
+												<a href="{% url 'wishlist_toggle' pet.pk %}" class="pet-te-plac-btn" title="Adaugă la lista mea">🤍 Te plac</a>
+												{% endif %}
+											{% else %}
+												<a href="{% url 'login' %}?next={% url 'wishlist' %}" class="pet-te-plac-btn" title="Adaugă la lista mea (autentificare)">🤍 <span class="login-required-lock-icon">🔒</span> Te plac</a>
+											{% endif %}
 										</div>
 										<div class="pet-adopt-cta-under-photo">
 											{% if user_adoption_request %}
@@ -488,16 +540,6 @@
 												<span class="pet-hero-cta pet-hero-cta-disabled" title="Momentan indisponibil">Momentan indisponibil</span>
 											{% endif %}
 										</div>
-										{% if pet.imagine_2 or pet.imagine_3 %}
-										<div class="pet-gallery-extra">
-											{% if pet.imagine_2 %}
-												<img src="{{ pet.imagine_2.url }}" alt="{{ pet.nume }} 2" class="pet-extra-thumb" onerror="this.style.display='none';" />
-											{% endif %}
-											{% if pet.imagine_3 %}
-												<img src="{{ pet.imagine_3.url }}" alt="{{ pet.nume }} 3" class="pet-extra-thumb" onerror="this.style.display='none';" />
-											{% endif %}
-										</div>
-										{% endif %}
 										</div>
 										<div class="pet-single-right-col">
 											<a href="{% url 'pets_all' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" class="back-to-friends-btn" title="Înapoi la Prietenul tău">

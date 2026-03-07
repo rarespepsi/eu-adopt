@@ -29,26 +29,39 @@ body.page-home-v2 #A1 {
     min-height: 0 !important;
     max-height: none !important;
 }
-/* A4 (footer) – cât mai compact, dar cu același font @EUAdopt */
+/* A4 (footer) – bandă largă: ticker pe aproape toată lățimea utilă */
 body.page-home-v2 #A4,
 body.page-home-v2 #A4 #footer {
     padding-top: 2px !important;
     padding-bottom: 2px !important;
-    padding-left: var(--gap-v2) !important;
-    padding-right: var(--gap-v2) !important;
-    font-size: var(--font-body) !important; /* mărimea textului rămâne neschimbată */
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+    font-size: var(--font-body) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
 body.page-home-v2 #A4 .container,
 body.page-home-v2 #A4 #post_footer {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
     border-top: none !important;
     margin-top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
 body.page-home-v2 #A4 #site_info {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
     line-height: 1.2 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
 body.page-home-v2 #A4 .footer-euadopt-text {
     display: block !important;
@@ -61,16 +74,19 @@ body.page-home-v2 #A4 .footer-euadopt-text {
     font-size: 1.2em;
     min-height: 1.5em;
     line-height: 1.4;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
-/* Zone minime hasurate în stânga/dreapta A4 – rezervă pentru sloganuri viitoare */
+/* Zone hasurate reduse – mai mult spațiu pentru ticker */
 body.page-home-v2 #A4 .footer-euadopt-text::before,
 body.page-home-v2 #A4 .footer-euadopt-text::after {
     content: "";
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 1rem; /* spațiu minim */
-    opacity: 0.15;
+    width: 4px;
+    opacity: 0.12;
     background-image: repeating-linear-gradient(
         135deg,
         rgba(0, 0, 0, 0.35),
@@ -88,7 +104,7 @@ body.page-home-v2 #A4 .footer-euadopt-text::after {
 }
 body.page-home-v2 #A4 .footer-euadopt-strip {
     display: inline-block;
-    animation: euadopt-marquee 45s linear infinite;
+    animation: euadopt-marquee 22.5s linear infinite;
 }
 @keyframes euadopt-marquee {
     0% {
@@ -490,9 +506,11 @@ body.page-home-v2 #A2 .A2-casete-wrap {
 }
 body.page-home-v2 #A2 .A2-slot {
     background: #fff !important;
+    position: relative !important;
     min-height: 0 !important;
     min-width: 0 !important;
-    max-width: 100% !important;
+    width: 100% !important;
+    height: 100% !important;
     border: none !important;
     border-radius: 4px !important;
     box-sizing: border-box !important;
@@ -546,35 +564,14 @@ body.page-home-v2 #A2 .A2-slot:nth-child(3n+2) {
 body.page-home-v2 #A2 .A2-slot:nth-child(3n+3) {
     background: #d8d8d8 !important;
 }
-/* A2 – casete ca pe P2: link + span cu background-image, blead -2px, fără dungi albe */
+/* A2 – casete: slot umple celula grid; .A2-slot-link (a) stilizat doar în pet-images-common.css */
 body.page-home-v2 #A2 .A2-slot {
     background: #eee !important;
     position: relative !important;
-}
-body.page-home-v2 #A2 .A2-slot .A2-slot-link,
-body.page-home-v2 #A2 .A2-slot a {
-    position: absolute !important;
-    inset: -2px !important;
-    display: block !important;
     overflow: hidden !important;
-    text-decoration: none !important;
-}
-body.page-home-v2 #A2 .A2-slot .A2-slot-bg {
-    position: absolute !important;
-    inset: 0 !important;
-    display: block !important;
-    background-size: cover !important;
-    background-position: center center !important;
-    background-repeat: no-repeat !important;
-}
-body.page-home-v2 #A2 .A2-slot .A2-slot-bg--empty {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-size: 0.7rem !important;
-    padding: 2px !important;
-    color: #333 !important;
-    background: #ffe082 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
 }
 
 /* A2 – nu folosește sliderul vechi (#slider_wrap, .flexslider); doar grid 4×4 cu imagini */
@@ -697,16 +694,6 @@ body.page-home-v2 #A2 .slides {
     justify-content: center;
     min-width: 0;
 }
-/* Animalele lunii – acum în A2, la început; scrisul EU Adopt rămâne în A1 */
-body.page-home-v2 #A2 .hero-v2-subtitle.A2-subtitle {
-    margin: 0 0 0.5rem;
-    padding: 0;
-    width: 100%;
-    text-align: center;
-    font-size: var(--font-title);
-    font-weight: 600;
-    color: inherit;
-}
 .hero-v2-cta-btn {
     display: inline-block;
     padding: var(--btn-padding-v) var(--btn-padding-h);
@@ -787,7 +774,6 @@ body.page-home-v2 #A2 .hero-v2-subtitle.A2-subtitle {
     text-decoration: underline;
 }
 
-/* B) Secțiune Animalele lunii */
 .section-v2 {
     padding: calc(var(--gap-v2) * 2) 0;
 }
@@ -905,35 +891,13 @@ body.page-home-v2 img:not(.hero-v2-bg-img):not(.A2-slot-img):not(.slot-img-fit) 
     max-width: 100%;
     display: block;
 }
-/* Grid HOME A2 – casete ca P2: link inset -2px, span .A2-slot-bg cu background-size cover */
+/* Grid HOME A2 – slot; .A2-slot-link (a) doar în pet-images-common.css */
 body.page-home-v2 #A2 .A2-casete-wrap .A2-slot {
     position: relative !important;
     overflow: hidden !important;
-}
-body.page-home-v2 #A2 .A2-casete-wrap .A2-slot .A2-slot-link,
-body.page-home-v2 #A2 .A2-casete-wrap .A2-slot a {
-    position: absolute !important;
-    inset: -2px !important;
-    display: block !important;
-    overflow: hidden !important;
-    text-decoration: none !important;
-}
-body.page-home-v2 #A2 .A2-casete-wrap .A2-slot .A2-slot-bg {
-    position: absolute !important;
-    inset: 0 !important;
-    display: block !important;
-    background-size: cover !important;
-    background-position: center center !important;
-    background-repeat: no-repeat !important;
-}
-body.page-home-v2 #A2 .A2-casete-wrap .A2-slot .A2-slot-bg--empty {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-size: 0.7rem !important;
-    padding: 2px !important;
-    color: #333 !important;
-    background: #ffe082 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
 }
 
 /* A3 – la varianta de 3 coloane (≤90em): doar „Fii parte din drum”, fără contoare */
@@ -1100,3 +1064,40 @@ body.page-home-v2 #A2 .A2-casete-wrap .A2-slot .A2-slot-bg--empty {
     }
 }
 
+/* ========== Reguli mutate din extra_css_after (HOME) – A2 + badge + A4 ========== */
+/* A2 – poze umplere completă casetă, fără margini albe */
+body.page-home-v2 #A2 .A2-slot {
+    position: relative !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+}
+/* .A2-slot a / .A2-slot-link: doar în pet-images-common.css */
+/* Badge-uri casete (A1, A2, A3, A4, A5.1–3, A6.1–3) – doar pentru staff; A4 fără bandă albastră și fără scroll */
+body.page-home-v2 #A1,
+body.page-home-v2 #A2,
+body.page-home-v2 #A3,
+body.page-home-v2 #A4,
+body.page-home-v2 .home-v2-slot {
+    position: relative;
+}
+body.page-home-v2 .home-slot-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 100;
+}
+body.page-home-v2 #A4 {
+    overflow: hidden !important;
+}
+body.page-home-v2 #A4 .home-slot-badge-a4 {
+    position: absolute !important;
+    top: 2px !important;
+    right: 2px !important;
+    font-size: 8px !important;
+    padding: 1px 3px !important;
+    line-height: 1 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+}

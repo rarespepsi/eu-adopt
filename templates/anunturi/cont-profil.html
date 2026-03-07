@@ -36,9 +36,12 @@
 			@media (max-width: 1200px) { .cont-profil-right .my-pets-grid.pets-grid { grid-template-columns: repeat(3, 1fr); } }
 			@media (max-width: 900px) { body.page-cont-profil #main_content .container { padding-left: 15px !important; } .cont-profil-left { flex: 0 0 100%; margin-left: 0; } .cont-profil-right .my-pets-grid.pets-grid { grid-template-columns: repeat(2, 1fr); } }
 			@media (max-width: 480px) { .cont-profil-right .my-pets-grid.pets-grid { grid-template-columns: 1fr; } }
+			/* Mw: container de la navbar în jos – chenar verde pentru vizibilitate */
+			body.page-cont-profil #Mw { border: 8px solid #00cc00; min-height: 100vh; box-sizing: border-box; }
 		</style>
 	</head>
 	<body class="content_left scheme_red page-cont-profil">
+		<div id="Mw">
 		<section id="main_wrap">
 			{% include "components/navbar_a0.html" %}
 			<section class="wrapper" id="main_content">
@@ -222,6 +225,7 @@
 				</div>
 			</footer>
 		</section>
+		</div>
 		<script>
 		(function() {
 			var grid = document.getElementById("my_pets_grid");

@@ -273,11 +273,13 @@ class Pet(models.Model):
         verbose_name="Rezervat pentru cererea",
     )
 
+    # Raport casetă A2/P2: 4 col × 3 rânduri → caseta e landscape, lățime/înălțime = 4/3
+    CASETA_ASPECT = 4 / 3  # width / height (landscape)
+
     def _ensure_landscape_image(self, field_name: str, target_size=(1200, 900)):
         """
-        Transformă imaginea asociată câmpului într-un canvas landscape fix (ex. 1200x900),
-        păstrând întreaga poză (fără crop agresiv): imaginea este încadrată cu 'letterbox'
-        dacă raportul nu este landscape. Nu face nimic dacă Pillow nu este disponibil.
+        Transformă imaginea la canvas landscape (1200x900) cu letterbox, dacă nu e deja 4:3.
+        Dacă imaginea are raport 4:3 (caseta A2/P2), o lăsăm neschimbată (a fost cropped la upload).
         """
         if Image is None or ImageOps is None:
             return
@@ -289,20 +291,22 @@ class Pet(models.Model):
         except Exception:
             return
         try:
-            # Normalizăm orientarea după EXIF (dacă există) ca să nu fie întoarse
             img = ImageOps.exif_transpose(img)
         except Exception:
             pass
         try:
-            # Construim un canvas landscape cu raport fix (ex. 4:3) și încadrăm poza complet în el
+            w, h = img.size
+            if h > 0:
+                aspect = w / h
+                if abs(aspect - self.CASETA_ASPECT) < 0.02:
+                    return
             canvas_w, canvas_h = target_size
-            img = ImageOps.contain(img, target_size)  # micșorăm dacă e foarte mare, păstrăm raportul
+            img = ImageOps.contain(img, target_size)
             background = Image.new("RGB", target_size, (245, 245, 245))
             offset = ((canvas_w - img.width) // 2, (canvas_h - img.height) // 2)
             background.paste(img, offset)
             background.save(image_field.path, optimize=True, quality=85)
         except Exception:
-            # Dacă ceva eșuează, nu stricăm upload-ul
             return
 
     def has_active_requests(self):

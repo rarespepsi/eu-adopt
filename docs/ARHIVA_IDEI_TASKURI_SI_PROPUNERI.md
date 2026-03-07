@@ -24,6 +24,13 @@
 
 ---
 
+## Poze A2 – diagnostic și crop (martie 2026)
+
+- **Problema rămasă** la unele poze în A2 nu este în layoutul A2, ci în **fișierul imaginii**: margini albe, subiect prea mic, canvas prea mare, încadrare slabă. Nu se modifică A2 global.
+- **Soluția corectă pentru viitor:** sistem de **crop manual la upload** (drag + zoom + salvare poziție). Este deja implementat: preview cu drag/zoom în formularul „Adaugă animal”, câmpuri ascunse (scale, cx, cy, iw, ih), backend `_apply_caseta_crop_to_request` + `_crop_upload_to_caseta` (ieșire 800×600, 4:3). Referință detaliată: **`docs/POZE_A2_SI_CROP_REFERINTA.md`**.
+
+---
+
 ## 1. Din conversații recente (de reținut / făcut altă dată)
 
 ### Taskuri memorate
@@ -112,6 +119,7 @@
 | `HOME_SETTINGS_REFERENCE.md` | Setări pagină home – referință. |
 | `SETARI_LOGO.md` | Setări logo. |
 | `AGENDA_PROIECTE.md` | Agenda proiecte, programe, domenii, reminder-uri. |
+| `POZE_A2_SI_CROP_REFERINTA.md` | Diagnostic: poze A2 problema = fișier sursă; soluție crop manual la upload (referință tehnică). |
 
 ---
 
