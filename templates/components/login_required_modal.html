@@ -5,8 +5,8 @@
 		<h2 id="login-required-modal-title" class="login-required-modal-title">Continuă adopția</h2>
 		<p class="login-required-modal-message">Pentru a continua, creează un cont gratuit (durează 30 secunde).</p>
 		<div class="login-required-modal-actions">
-			<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" class="login-required-btn login-required-btn-login">Login</a>
-			<a href="{% url 'register' %}?next={{ request.get_full_path|urlencode }}" class="login-required-btn login-required-btn-register">Creează cont</a>
+			<a href="{% url 'home' %}?next={{ request.get_full_path|urlencode }}" class="login-required-btn login-required-btn-login">Login</a>
+			<a href="{% url 'home' %}?next={{ request.get_full_path|urlencode }}" class="login-required-btn login-required-btn-register">Creează cont</a>
 		</div>
 		<button type="button" class="login-required-close" aria-label="Închide" title="Închide">&times;</button>
 	</div>

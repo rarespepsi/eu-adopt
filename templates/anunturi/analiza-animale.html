@@ -16,9 +16,9 @@ body.page-analiza .main-content { width: 100% !important; max-width: 100% !impor
 {% block content %}
 <div class="container clearfix" style="max-width: 960px; margin: 0 auto; padding: 2rem 20px;">
 	<h1 class="entry-title" style="margin-bottom: 1rem;">Animale</h1>
-	<p style="color: #666; margin-bottom: 1rem;"><a href="{% url 'analiza' %}">← Înapoi la Analiza</a></p>
+	<p style="color: #666; margin-bottom: 1rem;"><a href="{% url 'home' %}">← Înapoi la Analiza</a></p>
 
-	<form method="get" action="{% url 'analiza_animale' %}" style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+	<form method="get" action="{% url 'home' %}" style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
 		<div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
 			<div><label>Data de la</label><input type="date" name="data_from" value="{{ filters.data_from }}" style="padding: 0.4rem;" /></div>
 			<div><label>Data până la</label><input type="date" name="data_to" value="{{ filters.data_to }}" style="padding: 0.4rem;" /></div>

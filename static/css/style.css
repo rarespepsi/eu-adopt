@@ -1581,184 +1581,6 @@ a.more_featured:active {
     opacity: 1;
 }
 
-/* === Burtiera mică: bandă cu poze care rulează (deasupra slider-ului mare) === */
-/* Înălțime: container = track = casete poze – 72px; content-box ca border/padding să nu reducă spațiul vizibil. */
-#burtiera_mica {
-    width: 100%;
-    height: 72px;
-    overflow: hidden;
-    background: #e0e0e0;
-    position: relative;
-    border-bottom: 5px solid #222;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    margin: 0 !important;
-    padding: 0 !important;
-    box-sizing: content-box;
-}
-
-/* Ensure A1 burtiera has no extra spacing */
-#A1 #burtiera_mica {
-	margin: 0 !important;
-	padding: 0 !important;
-}
-
-.burtiera_mica_track {
-    display: flex;
-    flex-wrap: nowrap;
-    height: 100%;
-    min-height: 72px;
-    width: max-content;
-    animation: burtiera_mica_scroll 35s linear infinite;
-    box-sizing: border-box;
-}
-
-.burtiera_mica_track:hover {
-    animation-play-state: paused;
-}
-
-#burtiera_mica .burtiera_mica_img {
-    flex-shrink: 0;
-    display: block;
-    width: 100px;
-    height: 72px;
-    margin: 0 2px 0 0;
-    padding: 0;
-    overflow: hidden;
-    box-sizing: border-box;
-}
-
-#burtiera_mica .burtiera_mica_img img {
-    width: 100%;
-    height: 100%;
-    min-height: 72px;
-    object-fit: cover;
-    display: block;
-    vertical-align: top;
-}
-
-/* Sigla pe burtieră - circulară cu fundal alb */
-#burtiera_mica .burtiera_logo {
-    background-color: #FFFFFF;
-    border-radius: 50%;
-    padding: 2px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-#burtiera_mica .burtiera_logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    border-radius: 50%;
-}
-
-@keyframes burtiera_mica_scroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-}
-
-/* Burtiera jos (PT): caseta 72px + 3mm, poze mărite cu 3mm (coborâte, nu ridicate) */
-body.page-animale #burtiera_jos.burtiera_jos_wrap {
-	position: fixed;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	width: 100%;
-	height: calc(72px + 3mm);
-	overflow: hidden;
-	background: transparent;
-	border: none !important;
-	border-top: none !important;
-	box-shadow: none;
-	outline: none;
-	box-sizing: border-box;
-	margin: 0;
-	margin-top: -56px;
-	padding: 0 !important;
-	z-index: 100;
-}
-body.page-animale #main_wrap {
-	padding-bottom: calc(72px + 3mm) !important;
-	border-bottom: none !important;
-}
-/* Fără margin/padding pe body care să creeze spațiu între main_wrap și bara de jos */
-body.page-animale {
-	margin-bottom: 0 !important;
-	padding-bottom: 0 !important;
-}
-body.page-animale #main_content,
-body.page-animale #main_content .container,
-body.page-animale #main_content .animale-layout-with-filters {
-	border-bottom: none !important;
-	outline: none !important;
-}
-body.page-animale section.wrapper,
-body.page-animale #main_wrap section {
-	border-bottom: none !important;
-	box-shadow: none !important;
-	outline: none !important;
-}
-body.page-animale #burtiera_jos.burtiera_jos_wrap::before,
-body.page-animale #burtiera_jos.burtiera_jos_wrap::after {
-	display: none !important;
-}
-/* Zero padding/margin pe toți copiii barei – să nu rămână spațiu între P5 și poze */
-body.page-animale #burtiera_jos.burtiera_jos_wrap,
-body.page-animale #burtiera_jos .burtiera_jos_track,
-body.page-animale #burtiera_jos .burtiera_jos_img,
-body.page-animale #burtiera_jos .burtiera_jos_img * {
-	padding-top: 0 !important;
-	padding-bottom: 0 !important;
-}
-body.page-animale .burtiera_jos_track {
-	display: flex;
-	flex-wrap: nowrap;
-	align-items: stretch;
-	height: calc(72px + 3mm);
-	min-height: calc(72px + 3mm);
-	width: max-content;
-	padding: 0 !important;
-	margin: 0;
-	margin-top: -2mm;
-	animation: burtiera_mica_scroll 35s linear infinite;
-	box-sizing: border-box;
-}
-body.page-animale .burtiera_jos_track:hover {
-	animation-play-state: paused;
-}
-body.page-animale #burtiera_jos .burtiera_jos_img {
-	flex-shrink: 0;
-	display: block;
-	width: 100px;
-	height: calc(72px + 3mm);
-	min-height: calc(72px + 3mm);
-	margin: 0 2px 0 0;
-	padding: 0 !important;
-	overflow: hidden;
-	box-sizing: border-box;
-}
-body.page-animale #burtiera_jos .burtiera_jos_img img {
-	width: 100%;
-	height: calc(72px + 3mm);
-	min-height: calc(72px + 3mm);
-	padding: 0;
-	margin: 0;
-	object-fit: cover;
-	display: block;
-	vertical-align: top;
-}
-body.page-animale #burtiera_jos .burtiera_jos_img .pets-all-no-img {
-	display: block;
-	width: 100%;
-	height: calc(72px + 3mm);
-	min-height: calc(72px + 3mm);
-	line-height: calc(72px + 3mm);
-	text-align: center;
-	padding: 0 !important;
-	margin: 0;
-	background: #ddd;
-	box-sizing: border-box;
-}
-
 /* === Pagina de acasă: ordine clară – Animalele lunii deasupra, Cele mai noi dedesubt === */
 
 .home_page_sections #featured_pets {
@@ -1825,7 +1647,7 @@ body.page-animale #burtiera_jos .burtiera_jos_img .pets-all-no-img {
     display: block;
 }
 
-/* === Slider Area (burtiera mare – bandă stabilă sus) === */
+/* === Slider Area (bandă stabilă sus) === */
 
 #slider_wrap {
     background: #E8E8E8 url("../images/loading.gif") no-repeat center center;
@@ -1961,7 +1783,7 @@ ul.slides {
     display: block;
 }
 
-    /* Înainte de JS: când .slides e copil direct al #slider_wrap, arătăm doar primul slide (burtiera vizibilă) */
+    /* Înainte de JS: când .slides e copil direct al #slider_wrap, arătăm doar primul slide */
     #slider_wrap > ul.slides > li {
         display: none;
     }
@@ -2652,15 +2474,6 @@ body.page-animale img {
 	max-width: 100% !important;
 	height: auto !important;
 }
-/* PT (#PW): pozele umplu caseta, fără goluri stânga/dreapta (anulează regula de mai sus) */
-body.page-animale #PW img {
-	width: 100% !important;
-	height: 100% !important;
-	max-width: none !important;
-	object-fit: cover !important;
-	object-position: center center !important;
-	display: block !important;
-}
 #all_pets_wrap.pets-grid img.attachment-pet_single_large {
 	width: 100% !important;
 	height: 100% !important;
@@ -2669,20 +2482,6 @@ body.page-animale #PW img {
 body.page-animale {
 	-webkit-text-size-adjust: 100%;
 	-webkit-tap-highlight-color: transparent;
-}
-body.page-animale #burtiera_mica,
-body.page-animale .burtiera_mica_wrap {
-	margin: 0 !important;
-	margin-bottom: 0 !important;
-	padding: 0 !important;
-	border: none !important;
-}
-/* P3 lipit de burtiera cu poze – containerul imediat după burtieră, fără spațiu; ridicat */
-body.page-animale #burtiera_mica + .container,
-body.page-animale #burtiera_mica + .container .animale-layout-with-filters,
-body.page-animale #burtiera_mica + .container .animale-filters-left {
-	margin-top: 0 !important;
-	padding-top: 0 !important;
 }
 body.page-animale #main_content .container {
 	width: 100%;
@@ -2699,7 +2498,7 @@ body.page-animale #main_content .container {
 	box-sizing: border-box;
 	overflow: visible;
 }
-/* Înălțime rând: viewport minus burtiera sus (72px), minus banda jos (72px), minus navbar (~80px) – P5 se oprește la bandă */
+/* Înălțime rând: viewport minus bande și navbar – P5 se oprește la bandă */
 body.page-animale #main_content .container > .animale-layout-with-filters {
 	margin-top: 0 !important;
 	margin-bottom: 0 !important;
@@ -3113,42 +2912,6 @@ body.page-animale .posts-wrap .page > h2.entry-title .animale-totale-caini-pisic
 		grid-template-columns: repeat(3, 1fr) !important;
 		gap: 1rem !important;
 	}
-	body.page-animale #burtiera_mica,
-	body.page-animale .burtiera_mica_wrap,
-	body.page-animale .burtiera_mica_track {
-		min-height: 52px !important;
-		max-height: 52px !important;
-	}
-	body.page-animale .burtiera_mica_img {
-		height: 52px !important;
-		min-height: 52px !important;
-		max-height: 52px !important;
-	}
-	/* PT burtiera jos + P5 – tabletă 56.25em */
-	body.page-animale #burtiera_jos.burtiera_jos_wrap {
-		height: calc(52px + 3mm) !important;
-	}
-	body.page-animale #main_wrap {
-		padding-bottom: calc(52px + 3mm) !important;
-	}
-	body.page-animale .burtiera_jos_track {
-		height: calc(52px + 3mm) !important;
-		min-height: calc(52px + 3mm) !important;
-		margin-top: -2mm !important;
-	}
-	body.page-animale #burtiera_jos .burtiera_jos_img {
-		height: calc(52px + 3mm) !important;
-		min-height: calc(52px + 3mm) !important;
-		width: 90px !important;
-	}
-	body.page-animale #burtiera_jos .burtiera_jos_img img,
-	body.page-animale #burtiera_jos .burtiera_jos_img .pets-all-no-img {
-		height: calc(52px + 3mm) !important;
-		min-height: calc(52px + 3mm) !important;
-	}
-	body.page-animale #burtiera_jos .burtiera_jos_img .pets-all-no-img {
-		line-height: calc(52px + 3mm) !important;
-	}
 	body.page-animale .p3-container-below {
 		top: 0 !important;
 		min-height: 100px !important;
@@ -3209,20 +2972,6 @@ body.page-animale .posts-wrap .page > h2.entry-title .animale-totale-caini-pisic
 		font-size: 0.9rem !important;
 		margin-bottom: 0.75rem !important;
 	}
-	body.page-animale #burtiera_mica {
-		min-height: 48px !important;
-		max-height: 48px !important;
-	}
-	body.page-animale .burtiera_mica_wrap,
-	body.page-animale .burtiera_mica_track {
-		min-height: 48px !important;
-		max-height: 48px !important;
-	}
-	body.page-animale .burtiera_mica_img {
-		height: 48px !important;
-		min-height: 48px !important;
-		max-height: 48px !important;
-	}
 	body.page-animale .pets-grid-nav.navigation {
 		display: flex !important;
 		flex-wrap: wrap !important;
@@ -3240,31 +2989,6 @@ body.page-animale .posts-wrap .page > h2.entry-title .animale-totale-caini-pisic
 		width: 100% !important;
 		text-align: center !important;
 		order: 3 !important;
-	}
-	/* PT burtiera jos + P5 – mobil 37.5em */
-	body.page-animale #burtiera_jos.burtiera_jos_wrap {
-		height: calc(48px + 3mm) !important;
-	}
-	body.page-animale #main_wrap {
-		padding-bottom: calc(48px + 3mm) !important;
-	}
-	body.page-animale .burtiera_jos_track {
-		height: calc(48px + 3mm) !important;
-		min-height: calc(48px + 3mm) !important;
-		margin-top: -2mm !important;
-	}
-	body.page-animale #burtiera_jos .burtiera_jos_img {
-		height: calc(48px + 3mm) !important;
-		min-height: calc(48px + 3mm) !important;
-		width: 80px !important;
-	}
-	body.page-animale #burtiera_jos .burtiera_jos_img img,
-	body.page-animale #burtiera_jos .burtiera_jos_img .pets-all-no-img {
-		height: calc(48px + 3mm) !important;
-		min-height: calc(48px + 3mm) !important;
-	}
-	body.page-animale #burtiera_jos .burtiera_jos_img .pets-all-no-img {
-		line-height: calc(48px + 3mm) !important;
 	}
 	body.page-animale .p3-container-below {
 		top: 0 !important;
@@ -3292,31 +3016,6 @@ body.page-animale .posts-wrap .page > h2.entry-title .animale-totale-caini-pisic
 		font-size: 1.25rem !important;
 		padding: 10px 12px !important;
 		min-height: 48px !important;
-	}
-	/* PT burtiera jos + P5 – ecrane foarte mici 24em */
-	body.page-animale #burtiera_jos.burtiera_jos_wrap {
-		height: calc(44px + 3mm) !important;
-	}
-	body.page-animale #main_wrap {
-		padding-bottom: calc(44px + 3mm) !important;
-	}
-	body.page-animale .burtiera_jos_track {
-		height: calc(44px + 3mm) !important;
-		min-height: calc(44px + 3mm) !important;
-		margin-top: -2mm !important;
-	}
-	body.page-animale #burtiera_jos .burtiera_jos_img {
-		height: calc(44px + 3mm) !important;
-		min-height: calc(44px + 3mm) !important;
-		width: 70px !important;
-	}
-	body.page-animale #burtiera_jos .burtiera_jos_img img,
-	body.page-animale #burtiera_jos .burtiera_jos_img .pets-all-no-img {
-		height: calc(44px + 3mm) !important;
-		min-height: calc(44px + 3mm) !important;
-	}
-	body.page-animale #burtiera_jos .burtiera_jos_img .pets-all-no-img {
-		line-height: calc(44px + 3mm) !important;
 	}
 	body.page-animale .p3-container-below {
 		top: 0 !important;
@@ -6060,37 +5759,6 @@ body.show-skeleton #footer::before {
 	padding: 0 !important;
 	background-color: #e0e0e0 !important;
 	display: block !important;
-}
-
-/* A1 trebuie să ocupe toată lățimea și să fie vizibil */
-#A1 #burtiera_mica,
-#A1 .burtiera_mica_wrap {
-	margin: 0 !important;
-	padding: 0 !important;
-	height: 56px !important;
-	min-height: 56px !important;
-	width: 100% !important;
-	display: block !important;
-}
-
-#A1 #burtiera_mica {
-	height: 56px !important;
-	min-height: 56px !important;
-	width: 100% !important;
-	margin: 0 !important;
-	padding: 0 !important;
-}
-
-#A1 .burtiera_mica_track {
-	height: 56px !important;
-	min-height: 56px !important;
-	width: max-content !important;
-}
-
-#A1 .burtiera_mica_img {
-	height: 56px !important;
-	width: auto !important;
-	min-width: 100px !important;
 }
 
 /* Universal media support per slot */

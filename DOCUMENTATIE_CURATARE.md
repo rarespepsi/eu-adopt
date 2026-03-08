@@ -82,8 +82,13 @@ După acești pași, nu mai există două/trei surse pentru același layout (nav
 
 În fiecare `_archive` există README.md care explică conținutul. Fișierele pot fi restaurate când se vor folosi din nou paginile respective.
 
-### 3.3 Opțional – curățare viitoare
-- **style.css** conține încă clase legacy (ex. `pets-all-no-img`, `burtiera_jos`) nefolosite de pt.html. Poți curăța la o refactorizare mai mare.
+### 3.4 Scoatere elemente vechi cu salvare ca material de informare (martie 2026)
+
+- **Rute URL:** Rutele placeholder (servicii, transport, shop, login, contact, analiza, wishlist, cont, profil etc.) au fost scoase din `home/urls.py`. Rămân active doar: `''` (home), `pets/`, `pets/<int:pk>/`. Lista completă a rutelor scoase este în `_archive/URLS_PLACEHOLDER_ARCHIVED.md`.
+- **CSS burtiera și layout animale vechi:** Regulile pentru `#burtiera_mica`, `#burtiera_jos`, `#A1 #burtiera_mica`, `#burtiera_mica + .container` și regulile burtiera din @media (56.25em, 37.5em, 24em) au fost scoase din `style.css` și salvate în `static/css/_archive/style-old-burtiera-animale-layout.css` (doar referință, nu este încărcat).
+
+### 3.5 Opțional – curățare viitoare
+- **style.css** mai poate conține clase legacy nefolosite de pt.html (ex. `pets-all-no-img`). Burtiera a fost deja arhivată.
 
 ---
 

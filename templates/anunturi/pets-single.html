@@ -518,7 +518,7 @@
 												<a href="{% url 'wishlist_toggle' pet.pk %}" class="pet-te-plac-btn" title="Adaugă la lista mea">🤍 Te plac</a>
 												{% endif %}
 											{% else %}
-												<a href="{% url 'login' %}?next={% url 'wishlist' %}" class="pet-te-plac-btn" title="Adaugă la lista mea (autentificare)">🤍 <span class="login-required-lock-icon">🔒</span> Te plac</a>
+												<a href="{% url 'home' %}?next={% url 'pets_all' %}" class="pet-te-plac-btn" title="Adaugă la lista mea (autentificare)">🤍 <span class="login-required-lock-icon">🔒</span> Te plac</a>
 											{% endif %}
 										</div>
 										<div class="pet-adopt-cta-under-photo">
@@ -528,13 +528,13 @@
 												{% if request.user.is_authenticated %}
 												<a href="{% url 'adoption_form_page' pet.pk %}" class="pet-hero-cta" target="_blank" rel="noopener">🐾 Intră pe lista de așteptare</a>
 												{% else %}
-												<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" class="pet-hero-cta">🔒 Intră pe lista de așteptare</a>
+												<a href="{% url 'home' %}?next={{ request.get_full_path|urlencode }}" class="pet-hero-cta">🔒 Intră pe lista de așteptare</a>
 												{% endif %}
 											{% elif pet.adoption_status == "available" or pet.has_active_requests %}
 												{% if request.user.is_authenticated %}
 												<a href="{% url 'adoption_form_page' pet.pk %}" class="pet-hero-cta" target="_blank" rel="noopener">🐾 {% if pet.has_active_requests %}Aplică (rezervă){% else %}{% if pet.sex == 'female' %}Vreau s-o cunosc{% else %}Vreau să îl adopt{% endif %}{% endif %}</a>
 												{% else %}
-												<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" class="pet-hero-cta">🔒 {% if pet.has_active_requests %}Aplică (rezervă){% else %}{% if pet.sex == 'female' %}Vreau s-o cunosc{% else %}Vreau să îl adopt{% endif %}{% endif %}</a>
+												<a href="{% url 'home' %}?next={{ request.get_full_path|urlencode }}" class="pet-hero-cta">🔒 {% if pet.has_active_requests %}Aplică (rezervă){% else %}{% if pet.sex == 'female' %}Vreau s-o cunosc{% else %}Vreau să îl adopt{% endif %}{% endif %}</a>
 												{% endif %}
 											{% else %}
 												<span class="pet-hero-cta pet-hero-cta-disabled" title="Momentan indisponibil">Momentan indisponibil</span>
