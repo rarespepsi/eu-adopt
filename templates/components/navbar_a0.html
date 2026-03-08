@@ -24,7 +24,7 @@
 							<li><a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="current_page"{% endif %}>Acasă</a></li>
 							<li><a href="{% url 'pets_all' %}" {% if request.resolver_match.url_name == 'pets_all' %}class="current_page"{% endif %}>Prietenul tău</a></li>
 							<li><a href="{% url 'servicii' %}" {% if request.resolver_match.url_name == 'servicii' %}class="current_page"{% endif %}>Servicii</a></li>
-							<li><a href="{% url 'home' %}">Transport</a></li>
+							<li><a href="{% url 'transport' %}" {% if request.resolver_match.url_name == 'transport' %}class="current_page"{% endif %}>Transport</a></li>
 							<li><a href="{% url 'home' %}">Shop</a></li>
 							<li><a href="{% url 'home' %}">Contact</a></li>
 							{% if user.is_authenticated %}

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Transport | EU Adopt{% endblock %}
+{% block body_class %}page-transport{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=1" type="text/css" media="screen" />
+<style>
+	/* TW la fel ca PW/SW: fără scroll pagină, dimensiuni fixe în viewport */
+	body.page-transport { overflow: hidden !important; height: 100vh !important; }
+	body.page-transport #main_wrap {
+		min-height: 0 !important;
+		height: 100vh !important;
+		max-height: 100vh !important;
+		display: flex !important;
+		flex-direction: column !important;
+		padding: 0 !important;
+		margin: 0 !important;
+		overflow: hidden !important;
+	}
+	body.page-transport #main_content {
+		min-height: 0 !important;
+		flex: 1 1 0 !important;
+		display: flex !important;
+		flex-direction: column !important;
+		overflow: hidden !important;
+		padding: 0 !important;
+		margin: 0 !important;
+		width: 100% !important;
+		max-width: 100% !important;
+	}
+	body.page-transport #main_content #TW {
+		height: 100% !important;
+		max-height: 100% !important;
+		min-height: 0 !important;
+		flex: 1 1 0 !important;
+		display: flex !important;
+		flex-direction: column !important;
+		overflow: hidden !important;
+	}
+</style>
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<main id="TW" class="transport-wrapper" aria-label="Conținut Transport">
+		<div class="tw-row">
+			<div id="T1" class="tw-cell" data-slot="T1">
+				<div class="t1-inner">
+					<h2 class="t1-title">Transport veterinar – România</h2>
+					<p class="t1-intro">Cererea este transmisă colaboratorilor, primul care acceptă primește datele.</p>
+					<form class="t1-form" action="#" method="post">
+						<div class="t1-field t1-caseta t1-row-inline">
+							<label class="t1-label">JUDET</label>
+							<select class="t1-select" name="judet"><option value="">—</option><option value="neamt">Neamț</option></select>
+						</div>
+						<div class="t1-field t1-caseta t1-row-inline">
+							<label class="t1-label">ORAȘ / LOCALITATE</label>
+							<select class="t1-select" name="oras"><option value="">—</option><option value="piatra-neamt">Piatra-Neamț</option></select>
+						</div>
+						<div class="t1-field t1-caseta">
+							<div class="t1-label-row">
+								<label class="t1-label">PUNCT PLECARE</label>
+								<a href="#" class="t1-link">ALEGE DE PE HARTĂ – PLECARE</a>
+							</div>
+							<input type="text" class="t1-input" name="plecare" placeholder="Ex: Str. Lalelelor 10, Iași" />
+						</div>
+						<div class="t1-field t1-caseta">
+							<div class="t1-label-row">
+								<label class="t1-label">PUNCT SOSIRE</label>
+								<a href="#" class="t1-link">ALEGE DE PE HARTĂ – SOSIRE</a>
+							</div>
+							<input type="text" class="t1-input" name="sosire" placeholder="Ex: Bd Unirii 15, București" />
+						</div>
+						<div class="t1-field t1-caseta t1-row-inline t1-data-ora">
+							<label class="t1-label">DATA ȘI ORA</label>
+							<div class="t1-date-ora-wrap">
+								<div class="t1-input-wrap">
+									<input type="text" class="t1-input t1-input-date" name="data" placeholder="mm/dd/yyyy" />
+									<span class="t1-cal-icon" aria-hidden="true">📅</span>
+								</div>
+								<input type="time" class="t1-input t1-input-time" name="ora" value="12:00" />
+							</div>
+						</div>
+						<div class="t1-field t1-caseta t1-row-inline">
+							<label class="t1-label">NR. CÂINI</label>
+							<input type="number" class="t1-input t1-input-num" name="nr_caini" value="1" min="1" />
+						</div>
+						<button type="submit" class="t1-submit">TRIMITE CEREREA</button>
+					</form>
+				</div>
+			</div>
+			<div id="T2" class="tw-cell" data-slot="T2">
+				<div class="t2-inner">
+					<!-- Hub: centrul acestui div = centrul casetei centrale; inelul folosește același punct -->
+					<div class="t2-hub">
+						<div class="t2-center">
+							<img src="{% static 'images/transport/servicii/central.jpeg' %}" alt="" class="t2-center-img" />
+						</div>
+						<div class="t2-circles">
+						<div class="t2-circle t2-circle--1"><img src="{% static 'images/transport/servicii/servicii_1.jpeg' %}" alt="" /><span class="t2-circle-nr">1</span></div>
+						<div class="t2-circle t2-circle--2"><img src="{% static 'images/transport/servicii/servicii_2.jpeg' %}" alt="" /><span class="t2-circle-nr">2</span></div>
+						<div class="t2-circle t2-circle--3"><img src="{% static 'images/transport/servicii/servicii_3.jpeg' %}" alt="" /><span class="t2-circle-nr">3</span></div>
+						<div class="t2-circle t2-circle--4"><img src="{% static 'images/transport/servicii/servicii_4.jpeg' %}" alt="" /><span class="t2-circle-nr">4</span></div>
+						<div class="t2-circle t2-circle--5"><img src="{% static 'images/transport/servicii/servicii_5.jpeg' %}" alt="" /><span class="t2-circle-nr">5</span></div>
+						<div class="t2-circle t2-circle--6"><img src="{% static 'images/transport/servicii/servicii_6.jpeg' %}" alt="" /><span class="t2-circle-nr">6</span></div>
+						<div class="t2-circle t2-circle--7"><img src="{% static 'images/transport/servicii/servicii_7.jpeg' %}" alt="" /><span class="t2-circle-nr">7</span></div>
+						<div class="t2-circle t2-circle--8"><img src="{% static 'images/transport/servicii/servicii_8.jpeg' %}" alt="" /><span class="t2-circle-nr">8</span></div>
+						<div class="t2-circle t2-circle--9"><img src="{% static 'images/transport/servicii/servicii_9.jpeg' %}" alt="" /><span class="t2-circle-nr">9</span></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+	var fundalUrls = [
+		"{% static 'images/transport/fundal_1.jpg' %}",
+		"{% static 'images/transport/fundal_2.jpg' %}",
+		"{% static 'images/transport/fundal_3.jpg' %}",
+		"{% static 'images/transport/fundal_4.jpg' %}"
+	];
+	function setRandomFundal() {
+		var url = fundalUrls[Math.floor(Math.random() * fundalUrls.length)];
+		var tw = document.getElementById('TW');
+		var row = tw && tw.querySelector('.tw-row');
+		if (row) {
+			row.style.backgroundImage = 'url(' + url + ')';
+		}
+	}
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', setRandomFundal);
+	} else {
+		setRandomFundal();
+	}
+	setInterval(setRandomFundal, 60 * 60 * 1000);
+})();
+</script>
+{% endblock %}

@@ -151,6 +151,11 @@ def servicii_view(request):
     return render(request, "anunturi/servicii.html", {"strip_pets": strip_pets})
 
 
+def transport_view(request):
+    """Pagina Transport – wrapper TW, layout ca PW/SW."""
+    return render(request, "anunturi/transport.html", {})
+
+
 def dog_profile_view(request, pk):
     dog = next((d for d in DEMO_DOGS if d["id"] == pk), None)
     if not dog:

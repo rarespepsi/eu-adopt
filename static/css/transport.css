@@ -1,0 +1,332 @@
+/* Transport – TW wrapper (dimensiuni ca PW/SW); fundalul e pe .tw-row ca să acopere T1+T2 dintr-o bucată */
+#TW.transport-wrapper {
+	width: 100% !important;
+	max-width: 100% !important;
+	margin: 0 !important;
+	padding: 0;
+	box-sizing: border-box;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+}
+
+/* Rând cu 2 casete – fundal comun pe acest rând (imaginea acoperă T1 și T2 dintr-o bucată) */
+#TW .tw-row {
+	display: flex;
+	flex-direction: row;
+	flex: 1 1 0;
+	min-height: 0;
+	width: 100%;
+	gap: 0;
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+#TW .tw-cell {
+	min-width: 0;
+	min-height: 0;
+	border: 3px solid #000;
+	box-sizing: border-box;
+	position: relative;
+}
+/* T1 = 1/3, T2 = 2/3 din TW */
+#TW #T1.tw-cell {
+	flex: 0 0 auto;
+	width: max-content;
+	max-width: 100%;
+	min-width: 0;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	background: rgba(255, 255, 255, 0.04);
+	backdrop-filter: blur(1px);
+	border-color: #999;
+}
+#TW #T1.tw-cell .t1-inner {
+	flex: 1 1 0;
+	min-height: 0;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-evenly;
+	align-items: stretch;
+	width: 100%;
+}
+#TW #T2.tw-cell {
+	flex: 2 2 0;
+	background: transparent;
+	border-color: #2e7d32;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+#TW #T2 .t2-inner {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 0;
+	min-height: 0;
+}
+/* Hub: centrul lui = centrul casetei centrale; inelul e poziționat relativ la acest punct */
+#TW #T2 .t2-hub {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 0;
+	min-height: 0;
+}
+#TW #T2 .t2-center {
+	width: min(36vmin, 210px);
+	height: min(36vmin, 210px);
+	min-width: 144px;
+	min-height: 144px;
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+	background: #fff;
+	flex-shrink: 0;
+}
+#TW #T2 .t2-center-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* Cercuri în jurul centrului casetei centrale; centrul inelului = centrul .t2-hub = centrul casetei */
+#TW #T2 .t2-center { position: relative; z-index: 2; }
+#TW #T2 .t2-circles {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	transform: translate(45px, 49px); /* centru inel față de hub: 1,2cm → 45px, 1,3cm → 49px */
+}
+/* Poziționare relativă la centrul hub-ului (centrul casetei centrale) */
+#TW #T2 .t2-circle {
+	transform-origin: center center;
+}
+#TW #T2 .t2-circle {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: min(14vmin, 90px);
+	height: min(14vmin, 90px);
+	margin-left: min(-7vmin, -45px);
+	margin-top: min(-7vmin, -45px);
+	border-radius: 50%;
+	overflow: hidden;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+	pointer-events: auto;
+}
+#TW #T2 .t2-circle img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+#TW #T2 .t2-circle-nr {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	font-size: min(5vmin, 28px);
+	font-weight: 800;
+	color: #fff;
+	text-shadow: 0 0 4px #000, 0 0 8px #000, 1px 1px 2px #000;
+	line-height: 1;
+	z-index: 1;
+}
+/* Poziție pe inel + contrarotație ca cifra/poza să rămână drepte. Raza: -247.5% - 38px (38px ≈ +1cm). */
+#TW #T2 .t2-circle--1 { transform: translate(-50%, -50%) rotate(0deg) translateY(calc(-247.5% - 38px)) rotate(0deg); }
+#TW #T2 .t2-circle--2 { transform: translate(-50%, -50%) rotate(40deg) translateY(calc(-247.5% - 38px)) rotate(-40deg); }
+#TW #T2 .t2-circle--3 { transform: translate(-50%, -50%) rotate(80deg) translateY(calc(-247.5% - 38px)) rotate(-80deg); }
+#TW #T2 .t2-circle--4 { transform: translate(-50%, -50%) rotate(120deg) translateY(calc(-247.5% - 38px)) rotate(-120deg); }
+#TW #T2 .t2-circle--5 { transform: translate(-50%, -50%) rotate(160deg) translateY(calc(-247.5% - 38px)) rotate(-160deg); }
+#TW #T2 .t2-circle--6 { transform: translate(-50%, -50%) rotate(200deg) translateY(calc(-247.5% - 38px)) rotate(-200deg); }
+#TW #T2 .t2-circle--7 { transform: translate(-50%, -50%) rotate(240deg) translateY(calc(-247.5% - 38px)) rotate(-240deg); }
+#TW #T2 .t2-circle--8 { transform: translate(-50%, -50%) rotate(280deg) translateY(calc(-247.5% - 38px)) rotate(-280deg); }
+#TW #T2 .t2-circle--9 { transform: translate(-50%, -50%) rotate(320deg) translateY(calc(-247.5% - 38px)) rotate(-320deg); }
+
+/* T1 – formular transport, redus ~25% (minim lizibil) */
+#TW #T1 .t1-inner {
+	padding: 0 0.42rem 0.38rem 0.42rem;
+	box-sizing: border-box;
+	background: transparent;
+	border-radius: 4px;
+	width: 100%;
+	min-width: 0;
+}
+#TW #T1 .t1-title {
+	margin: 0 0 0.26rem;
+	padding: 0.2rem 0.22rem;
+	min-height: 3.2rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: #0a0a0a;
+	background: rgba(255, 255, 255, 0.4);
+	border-radius: 3px;
+	box-sizing: border-box;
+	flex-shrink: 0;
+	text-align: center;
+}
+#TW #T1 .t1-intro {
+	margin: 0 0 0.3rem;
+	padding: 0.22rem 0.22rem;
+	font-size: 0.6rem;
+	line-height: 1.25;
+	color: #0a0a0a;
+	background: rgba(255, 255, 255, 0.4);
+	border-radius: 3px;
+	box-sizing: border-box;
+	flex-shrink: 0;
+}
+#TW #T1 .t1-form {
+	display: contents;
+}
+#TW #T1 .t1-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.05rem;
+	min-width: 0;
+}
+#TW #T1 .t1-caseta {
+	min-width: 0;
+	padding: 0.26rem 0.28rem;
+	background: rgba(255, 255, 255, 0.4);
+	border: 1px solid rgba(0, 0, 0, 0.15);
+	border-radius: 4px;
+	box-sizing: border-box;
+}
+#TW #T1 .t1-row-inline {
+	flex-direction: row;
+	align-items: center;
+	gap: 0.35rem;
+}
+#TW #T1 .t1-row-inline .t1-label { margin-bottom: 0; flex-shrink: 0; }
+#TW #T1 .t1-row-inline .t1-input-wrap { flex: 1 1 0; min-width: 0; }
+#TW #T1 .t1-row-inline .t1-select { flex: 1 1 0; min-width: 0; }
+#TW #T1 .t1-row-inline .t1-input-num { width: 2rem; flex-shrink: 0; }
+#TW #T1 .t1-label-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.2rem;
+	flex-wrap: wrap;
+}
+#TW #T1 .t1-label-row .t1-label { margin-bottom: 0; flex-shrink: 0; }
+#TW #T1 .t1-label-row .t1-link {
+	margin-top: 0;
+	min-width: 0;
+	flex: 1 1 auto;
+	text-align: right;
+}
+#TW #T1 .t1-label {
+	display: inline-block;
+	padding: 0.05rem 0.15rem;
+	font-size: 0.55rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+	color: #0a0a0a;
+	margin-bottom: 0;
+	background: rgba(255, 255, 255, 0.4);
+	border-radius: 2px;
+	box-sizing: border-box;
+}
+#TW #T1 .t1-select,
+#TW #T1 .t1-input {
+	width: 100%;
+	min-width: 0;
+	max-width: 100%;
+	padding: 0.22rem 0.26rem;
+	font-size: 0.6rem;
+	color: #0a0a0a;
+	border: 1px solid rgba(0, 0, 0, 0.25);
+	border-radius: 3px;
+	box-sizing: border-box;
+	background: rgba(255, 255, 255, 0.4);
+}
+#TW #T1 .t1-input::placeholder {
+	color: #1a1a1a;
+	opacity: 0.9;
+}
+#TW #T1 .t1-hint {
+	margin: 0;
+	font-size: 0.5rem;
+	color: #1a1a1a;
+}
+#TW #T1 .t1-link {
+	font-size: 0.55rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	color: #1565c0;
+	text-decoration: none;
+	margin-top: 0;
+	display: inline-block;
+}
+#TW #T1 .t1-link:hover { text-decoration: underline; }
+#TW #T1 .t1-input-wrap {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+#TW #T1 .t1-date-ora-wrap {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	flex: 1 1 0;
+	min-width: 0;
+}
+#TW #T1 .t1-date-ora-wrap .t1-input-wrap {
+	flex: 2 2 0;
+	min-width: 0;
+}
+#TW #T1 .t1-input-date {
+	width: 100%;
+	padding-right: 0.75rem;
+	font-size: 0.5rem;
+	box-sizing: border-box;
+}
+#TW #T1 .t1-cal-icon {
+	position: absolute;
+	right: 0.15rem;
+	pointer-events: none;
+	font-size: 0.5rem;
+}
+#TW #T1 .t1-input-time {
+	flex: 1 1 0;
+	min-width: 0;
+	font-size: 0.5rem;
+	padding: 0.18rem 0.2rem;
+	box-sizing: border-box;
+}
+#TW #T1 .t1-input-num { width: 2rem; }
+#TW #T1 .t1-submit {
+	flex-shrink: 0;
+	width: 100%;
+	min-width: 0;
+	margin-top: 0.2rem;
+	padding: 0.38rem 0.34rem;
+	font-size: 0.6rem;
+	font-weight: 700;
+	color: #fff;
+	background: rgba(21, 101, 192, 0.7);
+	border: none;
+	border-radius: 3px;
+	cursor: pointer;
+	text-align: center;
+	line-height: 1.2;
+	box-sizing: border-box;
+}
+#TW #T1 .t1-submit:hover { background: rgba(13, 71, 161, 0.85); }
