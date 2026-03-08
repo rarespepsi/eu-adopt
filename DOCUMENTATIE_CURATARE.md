@@ -4,6 +4,15 @@
 
 ---
 
+## HOME ȘI PT ÎNGHEȚATE – REGULĂ OBLIGATORIE
+
+**HOME și PT (Prietenul tău) sunt securizate.** Nu se modifică **NIMIC** la HOME sau la PT (nici direct, nici indirect). Singura excepție: utilizatorul cere explicit o modificare **și** furnizează parola (confirmarea). Parola trebuie **cerută explicit** de asistent înainte de orice editare.
+
+- **HOME:** `.cursor/rules/HOME_INGHETAT.mdc` – zero modificări fără parolă cerută și furnizată.
+- **PT:** `.cursor/rules/PT_INGHETAT.mdc` – zero modificări fără parolă cerută și furnizată.
+
+---
+
 ## Reguli proiect – vechi nu trebuie să ne încurce
 
 **De aplicat mereu, pe viitor:**

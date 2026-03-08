@@ -91,9 +91,16 @@ def home_view(request):
                 })
         p2_pets = p2_list[:12]
         p2_pets_rest = p2_list[12:]
+        # P1 și P3: benzi cu poze (aceleași imagini demo, repetate pentru strip)
+        strip_pets = []
+        for i, d in enumerate(cycle(DEMO_DOGS)):
+            if i >= 20:
+                break
+            strip_pets.append({"imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE)})
         return render(request, "anunturi/pt.html", {
             "p2_pets": p2_pets,
             "p2_pets_rest": p2_pets_rest,
+            "strip_pets": strip_pets,
         })
 
     is_home = request.resolver_match.url_name == "home"
@@ -133,6 +140,16 @@ def home_view(request):
         "adopted_animals": 0,
         "active_animals": len(DEMO_DOGS),
     })
+
+def servicii_view(request):
+    """Pagina Servicii – S1/S3 benzi ca PT, strip_pets pentru poze."""
+    strip_pets = []
+    for i, d in enumerate(cycle(DEMO_DOGS)):
+        if i >= 20:
+            break
+        strip_pets.append({"imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE)})
+    return render(request, "anunturi/servicii.html", {"strip_pets": strip_pets})
+
 
 def dog_profile_view(request, pk):
     dog = next((d for d in DEMO_DOGS if d["id"] == pk), None)

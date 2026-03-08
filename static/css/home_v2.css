@@ -6,7 +6,10 @@
 body {
     overflow-x: hidden;
 }
+/* HOME fără scroll – totul în viewport, burtiera încapă în AW */
 body.page-home-v2 {
+    overflow: hidden !important;
+    height: 100vh !important;
     --gap-v2: clamp(0.5rem, 2vw, 1rem);
     --font-title: clamp(1rem, 2vw + 0.75rem, 1.5rem);
     --font-body: clamp(0.875rem, 1vw + 0.65rem, 1.0625rem);
@@ -114,6 +117,74 @@ body.page-home-v2 #A4 .footer-euadopt-strip {
         transform: translateX(-50%);
     }
 }
+
+/* Burtiera de jos pe HOME – nu mărește AW, fără scroll */
+body.page-home-v2 #AW.home-v2 {
+    min-height: 0 !important;
+}
+/* A3 rămâne lipit de burtiera (A4) – fără gap */
+body.page-home-v2 #home-burtiera-galbena.home-v2-burtiera-disclaimer {
+    flex-shrink: 0 !important;
+    width: 100%;
+    max-width: 100%;
+    background: #ffeb3b;
+    color: #1a1a1a;
+    padding: 0.5rem 1rem;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    box-sizing: border-box;
+    border-top: 2px solid #f9a825;
+}
+/* Text care circulă pe burtiera (marquee) */
+body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-marquee-wrap {
+    overflow: hidden !important;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-marquee-track {
+    display: inline-flex !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+    animation: home-burtiera-marquee 35s linear infinite;
+    padding-right: 3rem;
+}
+body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-marquee-track:hover {
+    animation-play-state: paused;
+}
+body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-text {
+    margin: 0;
+    padding-right: 4rem;
+    flex-shrink: 0;
+    font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+    font-weight: 700;
+    line-height: 1.35;
+}
+@keyframes home-burtiera-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* Burtiera vizibilă pe tabletă și telefon – font lizibil, nu se ascunde */
+@media (max-width: 56.25em) {
+    body.page-home-v2 #home-burtiera-galbena.home-v2-burtiera-disclaimer {
+        min-height: 2.5rem;
+        padding: 0.4rem 0.75rem;
+    }
+    body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-text {
+        font-size: 0.75rem;
+    }
+}
+@media (max-width: 37.5em) {
+    body.page-home-v2 #home-burtiera-galbena.home-v2-burtiera-disclaimer {
+        min-height: 2.25rem;
+        padding: 0.35rem 0.5rem;
+    }
+    body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-text {
+        font-size: 0.7rem;
+    }
+}
+
 /* Pagina complet încadrată în ecran – A6 nu iese din pagină la dreapta */
 body.page-home-v2,
 body.page-home-v2 #main_wrap {
@@ -179,6 +250,7 @@ body.page-home-v2 .home-v2-three-cols {
     gap: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
+    box-sizing: border-box !important;
 }
 body.page-home-v2 .home-v2-center {
     gap: 0 !important;
@@ -263,12 +335,12 @@ body.page-home-v2 .home-v2 {
     flex-direction: column !important;
     min-height: 100% !important;
 }
-/* Grid flexibil: coloane laterale și centru – fără dimensiuni fixe */
+/* Grid flexibil: coloane laterale și centru; se micșorează când e burtiera ca AW să rămână în viewport */
 body.page-home-v2 .home-v2-three-cols {
-    flex: 1 !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
     display: grid !important;
     grid-template-columns: minmax(0, var(--side-col-width)) minmax(0, 1fr) minmax(0, var(--side-col-width)) !important;
-    min-height: calc(100vh - var(--nav-height) - 4rem) !important;
     align-items: stretch !important;
 }
 /* Tableta: coloane laterale mai înguste */
@@ -497,13 +569,14 @@ body.page-home-v2 .home-v2-center #A2 {
     min-width: 0 !important;
     overflow: hidden !important;
 }
+/* A2 se micșorează ca burtiera să încapă în AW, fără scroll */
 body.page-home-v2 .main-content #A2 {
-    min-height: 420px !important;
+    min-height: 0 !important;
     min-width: 0 !important;
     overflow: hidden !important;
 }
 body.page-home-v2 .main-content #A2 .A2-casete-wrap {
-    min-height: 420px !important;
+    min-height: 0 !important;
 }
 body.page-home-v2 .home-v2-center #A3 {
     flex-shrink: 0 !important;
@@ -923,13 +996,13 @@ body.page-home-v2 img:not(.hero-v2-bg-img):not(.A2-slot-img):not(.slot-img-fit) 
         display: none !important;
     }
     body.page-home-v2 .home-v2-three-cols {
-        min-height: auto !important;
+        min-height: 0 !important;
     }
+    /* Fără scroll pe HOME – AW în viewport, burtiera încapă */
     body.page-home-v2 #main_wrap {
-        min-height: 100vh;
-        height: auto !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        overflow: hidden !important;
     }
     body.page-home-v2 .hero-v2-inner {
         flex-direction: column;

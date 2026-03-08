@@ -44,11 +44,10 @@
 			<div id="P1" class="pt-cell pt-cell-1" data-slot="P1">
 				<div class="pt-strip-wrap pt-strip-p1" aria-label="Banda poze animale">
 					<div class="pt-strip-track pt-strip-track--p1">
-						{% for i in "12345678901234567890" %}
-						<span class="pt-strip-item pt-strip-item--p1 pt-strip-no-img">—</span>
-						{% endfor %}
-						<span class="pt-strip-item pt-strip-item--p1 pt-strip-disclaimer">EU-ADOPT – adopții responsabile</span>
-						{% for i in "12345678901234567890" %}
+						{% for pet in strip_pets %}
+						<span class="pt-strip-item pt-strip-item--p1"><img src="{% static pet.imagine_fallback %}" alt="" loading="lazy" /></span>
+						{% if forloop.counter|divisibleby:10 %}<span class="pt-strip-item pt-strip-item--p1 pt-strip-disclaimer">Adoptă, nu cumpăra.</span>{% endif %}
+						{% empty %}
 						<span class="pt-strip-item pt-strip-item--p1 pt-strip-no-img">—</span>
 						{% endfor %}
 					</div>
@@ -132,11 +131,10 @@
 			<div id="P3" class="pt-cell pt-cell-3" data-slot="P3">
 				<div class="pt-strip-wrap pt-strip-p3" aria-label="Banda poze animale">
 					<div class="pt-strip-track pt-strip-track--p3">
-						{% for i in "12345678901234567890" %}
-						<span class="pt-strip-item pt-strip-item--p3 pt-strip-no-img">—</span>
-						{% endfor %}
-						<span class="pt-strip-item pt-strip-item--p3 pt-strip-disclaimer">EU-ADOPT – adopții responsabile</span>
-						{% for i in "12345678901234567890" %}
+						{% for pet in strip_pets %}
+						<span class="pt-strip-item pt-strip-item--p3"><img src="{% static pet.imagine_fallback %}" alt="" loading="lazy" /></span>
+						{% if forloop.counter|divisibleby:10 %}<span class="pt-strip-item pt-strip-item--p3 pt-strip-disclaimer">Adoptă, nu cumpăra.</span>{% endif %}
+						{% empty %}
 						<span class="pt-strip-item pt-strip-item--p3 pt-strip-no-img">—</span>
 						{% endfor %}
 					</div>

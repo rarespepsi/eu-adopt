@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Servicii | EU Adopt{% endblock %}
+{% block body_class %}page-servicii{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=1" type="text/css" media="screen" />
+<style>
+	/* La fel ca PT: main_wrap, main_content, apoi SW cu aceleași dimensiuni ca PW */
+	body.page-servicii #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
+	body.page-servicii #main_content { min-height: 0 !important; display: flex !important; flex-direction: column !important; flex: 1 1 0 !important; overflow: hidden !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
+	body.page-servicii #main_content #SW {
+		height: calc(100vh - var(--nav-h, 64px)) !important;
+		max-height: calc(100vh - var(--nav-h, 64px)) !important;
+		min-height: 0 !important;
+		display: flex !important;
+		flex-direction: column !important;
+		overflow: hidden !important;
+	}
+</style>
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<main id="SW" class="servicii-wrapper" aria-label="Conținut Servicii">
+		<div class="sw-grid">
+			<div id="S1" class="sw-cell sw-cell-1" data-slot="S1">
+				<div class="sw-strip-wrap sw-strip-s1" aria-label="Banda poze">
+					<div class="sw-strip-track sw-strip-track--s1">
+						{% for pet in strip_pets %}
+						<span class="sw-strip-item sw-strip-item--s1"><img src="{% static pet.imagine_fallback %}" alt="" loading="lazy" /></span>
+						{% if forloop.counter|divisibleby:10 %}<span class="sw-strip-item sw-strip-item--s1 sw-strip-disclaimer">Adoptă, nu cumpăra.</span>{% endif %}
+						{% empty %}
+						<span class="sw-strip-item sw-strip-item--s1 sw-strip-no-img">—</span>
+						{% endfor %}
+					</div>
+				</div>
+			</div>
+			<div id="S2" class="sw-cell sw-cell-4" data-slot="S2">
+				<div class="sw-s4-inner">
+					<div class="sw-s2-filter-judet">
+						<button type="button" class="sw-s2-judet-btn">JUDET</button>
+					</div>
+					<div class="sw-s4-box sw-s4-box-filters" id="S2.1" data-slot="S2.1"><span class="sw-s4-label">S2.1</span></div>
+					<div class="sw-s4-box sw-s4-box-match" id="S2.2" data-slot="S2.2"><span class="sw-s4-label">S2.2</span></div>
+					<div class="sw-s4-box sw-s4-box-ads" id="S2.3" data-slot="S2.3"><span class="sw-s4-label">S2.3</span></div>
+				</div>
+			</div>
+			<div id="S2-mid" class="sw-cell sw-cell-2" data-slot="S2-mid">
+				<div class="sw-s2-inner">
+					<div class="sw-s2-box sw-s2-box-1" id="S3" data-slot="S3">
+						<div class="sw-s2-1-band">CABINETE VETERINARE</div>
+						<div class="sw-s2-1-body">
+							<div class="sw-s2-1-grid">
+								{% for i in "123456789012345678901234" %}
+								<div class="sw-s2-1-cell" data-slot="S3.{{ forloop.counter }}"><span class="sw-s3-cell-label">S3.{{ forloop.counter }}</span></div>
+								{% endfor %}
+							</div>
+						</div>
+					</div>
+					<div class="sw-s2-box sw-s2-box-1" id="S4" data-slot="S4">
+						<div class="sw-s2-1-band">MAGAZINE DE SPECIALITATE</div>
+						<div class="sw-s2-1-body">
+							<div class="sw-s2-1-grid">
+								{% for i in "123456789012345678901234" %}
+								<div class="sw-s2-1-cell" data-slot="S4.{{ forloop.counter }}"><span class="sw-s3-cell-label">S4.{{ forloop.counter }}</span></div>
+								{% endfor %}
+							</div>
+						</div>
+					</div>
+					<div class="sw-s2-box sw-s2-box-1" id="S5" data-slot="S5">
+						<div class="sw-s2-1-band">SALOANE COSMETICA VET</div>
+						<div class="sw-s2-1-body">
+							<div class="sw-s2-1-grid">
+								{% for i in "123456789012345678901234" %}
+								<div class="sw-s2-1-cell" data-slot="S5.{{ forloop.counter }}"><span class="sw-s3-cell-label">S5.{{ forloop.counter }}</span></div>
+								{% endfor %}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="S6" class="sw-cell sw-cell-5" data-slot="S6">
+				<div class="sw-s5-grid">
+					<div class="sw-s5-slot" id="S6.1" data-slot="S6.1"><span class="sw-s6-label">S6.1</span></div>
+					<div class="sw-s5-slot" id="S6.2" data-slot="S6.2"><span class="sw-s6-label">S6.2</span></div>
+				</div>
+			</div>
+			<div id="S7" class="sw-cell sw-cell-3" data-slot="S7">
+				<div class="sw-strip-wrap sw-strip-s3" aria-label="Banda poze">
+					<div class="sw-strip-track sw-strip-track--s3">
+						{% for pet in strip_pets %}
+						<span class="sw-strip-item sw-strip-item--s3"><img src="{% static pet.imagine_fallback %}" alt="" loading="lazy" /></span>
+						{% if forloop.counter|divisibleby:10 %}<span class="sw-strip-item sw-strip-item--s3 sw-strip-disclaimer">Adoptă, nu cumpăra.</span>{% endif %}
+						{% empty %}
+						<span class="sw-strip-item sw-strip-item--s3 sw-strip-no-img">—</span>
+						{% endfor %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+</section>
+{% endblock %}
