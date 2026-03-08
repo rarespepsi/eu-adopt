@@ -8,8 +8,9 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt1" type="text/css" media="screen" />
 <style>
-	/* #PW fix în viewport între P1 și P3: înălțime limitată la viewport, flex ca grid-ul să împartă spațiul */
-	body.page-pt #main_content { min-height: 0; display: flex !important; flex-direction: column !important; }
+	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
+	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
+	body.page-pt #main_content { min-height: 0 !important; display: flex !important; flex-direction: column !important; flex: 1 1 0 !important; overflow: hidden !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
 	body.page-pt #main_content #PW {
 		height: calc(100vh - var(--nav-h, 64px)) !important;
 		max-height: calc(100vh - var(--nav-h, 64px)) !important;
@@ -17,6 +18,14 @@
 		display: flex !important;
 		flex-direction: column !important;
 		overflow: hidden !important;
+	}
+	/* P2: scroll doar în .pt-p2-scroll; casete 4×3 vizibile, restul la scroll (trec sub P3) */
+	body.page-pt #PW .pt-cell-2 { min-height: 0 !important; overflow: hidden !important; }
+	body.page-pt #PW .pt-p2-scroll {
+		min-height: 0 !important;
+		overflow-y: auto !important;
+		overflow-x: hidden !important;
+		-webkit-overflow-scrolling: touch;
 	}
 	#PW .pt-strip-item--p1 img,
 	#PW .pt-strip-item--p3 img {
@@ -137,15 +146,4 @@
 	</main>
 </section>
 
-{% block footer %}
-<footer id="footer" class="wrapper">
-	<div class="container">
-		<div id="post_footer">
-			<div id="site_info" class="clearfix">
-				<div class="right">&copy; EU Adopt</div>
-			</div>
-		</div>
-	</div>
-</footer>
-{% endblock %}
 {% endblock main_wrap_after_header %}

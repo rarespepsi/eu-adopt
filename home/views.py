@@ -5,6 +5,7 @@ REGULĂ: Orice modificare în home (punct, virgulă, orice) doar cu aprobarea ti
 """
 import random
 from copy import deepcopy
+from itertools import cycle
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils import timezone
@@ -55,18 +56,44 @@ def home_view(request):
         except (ValueError, TypeError):
             pass
     if request.resolver_match.url_name == "pets_all":
-        # P2: doar 4×3 vizibile în viewport, nimic sub P3 (fără scroll/rest)
-        p2_visible = []
+        # P2: toți câinii activi; rândurile în funcție de număr; ultimul rând complet (4) prin repetare
+        p2_list = []
         for d in DEMO_DOGS:
-            p2_visible.append({
+            p2_list.append({
                 "pk": d["id"],
                 "nume": d["nume"],
                 "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
                 "traits": (d.get("traits") or [])[:2],
             })
+        n = len(p2_list)
+        need = (4 - n % 4) % 4  # completează ultimul rând la 4 (repetă câini din listă)
+        if need and p2_list:
+            for i, d in enumerate(cycle(DEMO_DOGS)):
+                if i >= need:
+                    break
+                p2_list.append({
+                    "pk": d["id"],
+                    "nume": d["nume"],
+                    "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
+                    "traits": (d.get("traits") or [])[:2],
+                })
+        # Demo: ~10 rânduri în scroll (40 celule); când vine DB, lista vine de acolo
+        if p2_list and len(p2_list) <= 12:
+            extra = 40
+            for i, d in enumerate(cycle(DEMO_DOGS)):
+                if i >= extra:
+                    break
+                p2_list.append({
+                    "pk": d["id"],
+                    "nume": d["nume"],
+                    "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
+                    "traits": (d.get("traits") or [])[:2],
+                })
+        p2_pets = p2_list[:12]
+        p2_pets_rest = p2_list[12:]
         return render(request, "anunturi/pt.html", {
-            "p2_pets": p2_visible,
-            "p2_pets_rest": [],
+            "p2_pets": p2_pets,
+            "p2_pets_rest": p2_pets_rest,
         })
 
     is_home = request.resolver_match.url_name == "home"

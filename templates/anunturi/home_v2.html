@@ -94,37 +94,6 @@
 </div>
 {% endblock %}
 
-{% block footer %}
-<footer id="A4" class="wrapper">
-	{% if user.is_staff %}<span class="slot-marker home-slot-badge home-slot-badge-a4" aria-hidden="true">A4</span>{% endif %}
-	<div class="a4-mobile-counter" aria-hidden="true">
-		<div class="animal-counter-navbar a4-counter-inner">
-			<div class="counter-item">
-				<span class="counter-icon">🐶</span>
-				<span class="counter-label">În grija noastră:</span>
-				<span class="counter-value">{{ active_animals|default:0 }}</span>
-			</div>
-			<div class="counter-item">
-				<span class="counter-icon">🏠</span>
-				<span class="counter-label">Adoptați:</span>
-				<span class="counter-value">{{ adopted_animals|default:0 }}</span>
-			</div>
-		</div>
-	</div>
-	<div class="container">
-		<div id="post_footer">
-			<div id="site_info" class="clearfix">
-				<div class="footer-euadopt-text">
-					<span class="footer-euadopt-strip">
-						#EuAdopt #NuCumpar — EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană sau de instituțiile sale. — #EuAdopt #NuCumpar &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						#EuAdopt #NuCumpar — EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană sau de instituțiile sale. — #EuAdopt #NuCumpar &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					</span>
-				</div>
-			</div>
-		</div>
-	</div>
-</footer>
-{% endblock %}
 
 {% block extra_js %}
 {% if a2_quote_pool %}
