@@ -1,0 +1,84 @@
+{% load static %}
+{% load anunturi_extras %}
+<!DOCTYPE html>
+<html lang="ro">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>Căutare{% if query %}: {{ query }}{% endif %} | Adopt a Pet</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+		<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+		<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}" type="text/css" media="screen" />
+		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+	</head>
+	<body class="content_left scheme_red page-cauta">
+		<section id="main_wrap">
+			{% include "components/navbar_a0.html" %}
+			<section class="wrapper" id="main_content">
+				<div class="container clearfix">
+					<div class="posts-wrap">
+						<section class="page">
+							<h2 class="entry-title">Căutare în site</h2>
+							<div class="entry-content clearfix">
+								<form method="get" action="{% url 'site_search' %}" class="search-results-form" style="margin-bottom: 1.5rem;">
+									<label for="s2" class="sr-only">Căutare</label>
+									<input type="search" name="s" id="s2" value="{{ query }}" placeholder="Nume animal, adăpost sau colaborator..." style="padding: 0.5rem 0.75rem; width: 100%; max-width: 400px;" />
+									<button type="submit" class="button" style="margin-left: 0.5rem;">Caută</button>
+								</form>
+								{% if query %}
+									{% if not pets and not orgs and not collaborators %}
+										<p>Nu am găsit rezultate pentru „<strong>{{ query }}</strong>”. Căutarea se face după <strong>nume animal</strong>, <strong>nume societate/adăpost</strong> și <strong>nume colaborator</strong>.</p>
+									{% else %}
+										{% if pets %}
+											<h3>Prietenul tău ({{ pets|length }})</h3>
+											<ul class="search-results-list">
+												{% for pet in pets %}
+												<li style="margin-bottom: 0.5rem;">
+													<a href="{% url 'pets_single' pet.pk %}">{{ pet.nume }}</a>
+													{% if pet.rasa %} – {{ pet.rasa }}{% endif %}
+													<span style="color: #666; font-size: 0.9em;">({{ pet.get_status_display }})</span>
+												</li>
+												{% endfor %}
+											</ul>
+										{% endif %}
+										{% if orgs %}
+											<h3>Societăți / Adăposturi ({{ orgs|length }})</h3>
+											<ul class="search-results-list">
+												{% for op in orgs %}
+												<li style="margin-bottom: 0.5rem;">
+													<strong>{{ op.denumire_legala|default:"—" }}</strong>
+													{% if op.oras or op.judet %} – {{ op.oras }}{% if op.oras and op.judet %}, {% endif %}{{ op.get_judet_display|default:op.judet }}{% endif %}
+												</li>
+												{% endfor %}
+											</ul>
+										{% endif %}
+										{% if collaborators %}
+											<h3>Colaboratori ({{ collaborators|length }})</h3>
+											<ul class="search-results-list">
+												{% for u in collaborators %}
+												<li style="margin-bottom: 0.5rem;">
+													{% if u.get_full_name %}{{ u.get_full_name }}{% else %}{{ u.username }}{% endif %}
+												</li>
+												{% endfor %}
+											</ul>
+										{% endif %}
+									{% endif %}
+								{% else %}
+									<p>Introduceți în caseta de mai sus un termen de căutare. Rezultatele pot include <strong>Prietenul tău</strong> (după nume), <strong>societăți/adăposturi</strong> (după denumire sau contact) și <strong>colaboratori</strong> (după nume).</p>
+								{% endif %}
+							</div>
+						</section>
+					</div>
+				</div>
+			</section>
+			<footer id="footer" class="wrapper">
+				<div class="container">
+					<div id="post_footer">
+						<div id="site_info" class="clearfix">
+							<div class="right">&copy; Adopt a Pet</div>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</section>
+	</body>
+</html>

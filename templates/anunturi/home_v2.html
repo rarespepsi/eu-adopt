@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}EU Adopt – Acasă{% endblock %}
+
+{% block body_class %}page-home-v2{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home_v2.css' %}?v=a2" type="text/css" media="all" />
+{% endblock %}
+
+{% block extra_css_after %}{% endblock %}
+
+{% block content %}
+<div id="AW" class="home-v2">
+	<div id="home-cols-wrap" class="home-v2-three-cols">
+		<div id="home-col-left" class="home-v2-side home-v2-side-left">
+			<div class="home-v2-side-inner">
+				{% for partner in left_sidebar_partners %}
+				<div class="home-v2-slot home-v2-slot-white home-v2-slot-img home-v2-slot-partener">
+					{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A5.{{ forloop.counter }}</span>{% endif %}
+					{% if partner %}
+					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener">
+						{% if partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
+						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.name }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+					</a>
+					{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+		<div class="home-v2-center">
+			<div id="A1">
+				{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A1</span>{% endif %}
+				<header class="hero-v2">
+					<div class="hero-v2-bg" aria-hidden="true">
+						{% for hero_path in hero_slider_images %}
+						<div class="hero-v2-slide">
+							<img src="{% static hero_path %}" alt="" class="hero-v2-bg-img" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';" />
+						</div>
+						{% empty %}
+						<div class="hero-v2-slide"><img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" class="hero-v2-bg-img" /></div>
+						{% endfor %}
+					</div>
+					<div class="hero-v2-inner">
+						<div class="hero-v2-logo">
+							<a href="{% url 'home' %}" title="EU Adopt">
+								<img src="{% static 'images/logo-final-cu-stele.png' %}" alt="EU Adopt" class="hero-v2-logo-img" />
+							</a>
+						</div>
+						<div class="hero-v2-transport">
+							<a href="{% url 'transport' %}" class="hero-v2-transport-badge" title="Transport – We come to you">
+								<img src="{% static 'images/transport/sigla1.jpeg' %}" alt="EU Adopt Transport" onerror="this.style.display='none'" />
+							</a>
+						</div>
+					</div>
+					<a href="{% url 'pets_all' %}" class="hero-v2-cta-animale" title="Vezi prietenii tăi">Hai la noi!</a>
+				</header>
+			</div>
+			<div id="A2">
+				{% if a2_quote_pool %}{{ a2_quote_pool|json_script:"a2QuotePool" }}{% endif %}
+				<div class="A2-casete-wrap" role="list" aria-label="12 câini disponibili pentru adopție">
+					{% for pet in a2_pets %}
+					{% include "anunturi/includes/dog_card.html" with pet=pet a2_compact=a2_compact|default:False %}
+					{% endfor %}
+				</div>
+			</div>
+			<div id="A3">
+				{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A3</span>{% endif %}
+				<div class="mission-bar-v2" aria-label="Info adopții">
+					<span class="mission-bar-v2-item">În grija noastră: <strong>{{ adopted_animals|default:0 }}</strong> adoptați</span>
+					<span class="mission-bar-v2-item">🐾 <span class="mission-bar-v2-count">{{ active_animals|default:0 }}</span> animale caută casă chiar acum</span>
+					<a href="{% url 'transport' %}" class="mission-bar-v2-link">❤️ Fii parte din drum →</a>
+				</div>
+			</div>
+		</div>
+		<div id="home-col-right" class="home-v2-side home-v2-side-right">
+			<div class="home-v2-side-inner">
+				{% for partner in right_sidebar_partners %}
+				<div class="home-v2-slot home-v2-slot-white home-v2-slot-img home-v2-slot-partener">
+					{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A6.{{ forloop.counter }}</span>{% endif %}
+					{% if partner %}
+					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener">
+						{% if partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
+						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.name }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+					</a>
+					{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<footer id="A4" class="wrapper">
+	{% if user.is_staff %}<span class="slot-marker home-slot-badge home-slot-badge-a4" aria-hidden="true">A4</span>{% endif %}
+	<div class="a4-mobile-counter" aria-hidden="true">
+		<div class="animal-counter-navbar a4-counter-inner">
+			<div class="counter-item">
+				<span class="counter-icon">🐶</span>
+				<span class="counter-label">În grija noastră:</span>
+				<span class="counter-value">{{ active_animals|default:0 }}</span>
+			</div>
+			<div class="counter-item">
+				<span class="counter-icon">🏠</span>
+				<span class="counter-label">Adoptați:</span>
+				<span class="counter-value">{{ adopted_animals|default:0 }}</span>
+			</div>
+		</div>
+	</div>
+	<div class="container">
+		<div id="post_footer">
+			<div id="site_info" class="clearfix">
+				<div class="footer-euadopt-text">
+					<span class="footer-euadopt-strip">
+						#EuAdopt #NuCumpar — EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană sau de instituțiile sale. — #EuAdopt #NuCumpar &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						#EuAdopt #NuCumpar — EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană sau de instituțiile sale. — #EuAdopt #NuCumpar &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</footer>
+{% endblock %}
+
+{% block extra_js %}
+{% if a2_quote_pool %}
+<script>
+(function() {
+	var el = document.getElementById('a2QuotePool');
+	if (!el) return;
+	var pool;
+	try { pool = JSON.parse(el.textContent); } catch (e) { return; }
+	if (!Array.isArray(pool) || !pool.length) return;
+	var quotes = document.querySelectorAll('#A2 .dog-card-quote[data-quote-rotate]');
+	if (!quotes.length) return;
+	function pick() { return pool[Math.floor(Math.random() * pool.length)]; }
+	function rotate() {
+		for (var i = 0; i < quotes.length; i++) quotes[i].textContent = pick();
+	}
+	setInterval(rotate, 3000);
+})();
+</script>
+{% endif %}
+{% endblock %}

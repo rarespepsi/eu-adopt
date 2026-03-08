@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+	<meta charset="utf-8" />
+	<title>Cerere trimisă | EU-ADOPT</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+	<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}" type="text/css" media="screen" />
+	<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+	<style>
+		.adoption-sent-box {
+			max-width: 560px;
+			margin: 2rem auto;
+			padding: 2rem;
+			background: #e8f5e9;
+			border: 2px solid #2e7d32;
+			border-radius: 12px;
+			text-align: center;
+		}
+		.adoption-sent-box h2 { color: #1b5e20; margin-top: 0; }
+		.adoption-sent-box .pet-name { font-weight: 700; }
+		.adoption-sent-links { margin-top: 1.5rem; }
+		.adoption-sent-links a {
+			display: inline-block;
+			margin: 0 0.5rem;
+			padding: 0.5rem 1rem;
+			background: #2e7d32;
+			color: #fff;
+			text-decoration: none;
+			border-radius: 8px;
+		}
+		.adoption-sent-links a:hover { background: #1b5e20; }
+		.adoption-thankyou-caseta {
+			width: 15cm;
+			max-width: 100%;
+			height: 7cm;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 1rem;
+			margin: 2rem auto;
+			padding: 1rem;
+			background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+			border: 3px solid #2e7d32;
+			border-radius: 16px;
+			box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+		}
+		.adoption-thankyou-caseta .caseta-photo {
+			width: 100px;
+			height: 100px;
+			object-fit: cover;
+			border-radius: 12px;
+			flex-shrink: 0;
+		}
+		.adoption-thankyou-caseta .caseta-text { text-align: center; }
+		.adoption-thankyou-caseta .caseta-slogan { font-size: 1.35rem; font-weight: 800; color: #1b5e20; margin: 0 0 0.5rem; }
+		.adoption-thankyou-caseta .caseta-close {
+			display: inline-block;
+			margin-top: 0.75rem;
+			padding: 0.5rem 1.25rem;
+			background: #2e7d32;
+			color: #fff;
+			text-decoration: none;
+			border-radius: 8px;
+			font-weight: 600;
+		}
+		.adoption-thankyou-caseta .caseta-close:hover { background: #1b5e20; color: #fff; }
+	</style>
+</head>
+<body class="content_left scheme_red page-adoption-sent">
+	<section id="main_wrap">
+		{% include "components/navbar_a0.html" %}
+		<section class="wrapper" id="main_content">
+			<div class="container clearfix">
+				<div class="posts-wrap">
+					<section class="page">
+						{% if show_caseta %}
+						<div class="adoption-thankyou-caseta">
+							{% if pet.imagine %}
+								<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" class="caseta-photo" />
+							{% elif pet.imagine_fallback %}
+								<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" class="caseta-photo" />
+							{% else %}
+								<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="{{ pet.nume }}" class="caseta-photo" />
+							{% endif %}
+							<div class="caseta-text">
+								<p class="caseta-slogan">Mulțumesc din suflet!</p>
+								<p style="margin: 0; color: #333;">Cererea ta pentru <strong>{{ pet.nume }}</strong> a fost trimisă.</p>
+								<a href="{% url 'pets_single' pet.pk %}" class="caseta-close">Închide</a>
+							</div>
+						</div>
+						{% else %}
+						<div class="adoption-sent-box">
+							<h2>✓ Cerere trimisă</h2>
+							<p>Cererea ta de adopție pentru <span class="pet-name">{{ pet.nume }}</span> a fost înregistrată.</p>
+							<p><strong>Poziția ta în listă: {{ adoption_request.queue_position }}</strong></p>
+							<p>Proprietarul animalului a fost notificat și te va contacta în curând.</p>
+							<div class="adoption-sent-links">
+								<a href="{% url 'pets_single' pet.pk %}">Vezi {{ pet.nume }}</a>
+								<a href="{% url 'pets_all' %}">Toți prietenii tăi</a>
+								<a href="{% url 'home' %}">Pagina principală</a>
+							</div>
+						</div>
+						{% endif %}
+					</section>
+				</div>
+			</div>
+		</section>
+		<footer id="footer" class="wrapper">
+			<div class="container">
+				<div id="post_footer">
+					<div id="site_info" class="clearfix">
+						<div class="right">&copy; EU-ADOPT</div>
+					</div>
+				</div>
+			</div>
+		</footer>
+	</section>
+</body>
+</html>

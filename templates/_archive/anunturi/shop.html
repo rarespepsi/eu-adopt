@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Shop | EU Adopt{% endblock %}
+{% block body_class %}page-shop{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/scales-overlay.css' %}" type="text/css" media="all" />
+{% endblock %}
+
+{% block content %}
+<div id="ShW" class="shop-page page-with-scales container clearfix" style="max-width: 1100px; margin: 0 auto; padding: 2rem 20px; position: relative; min-height: 100%;">
+	<h1 class="entry-title" style="margin-bottom: 0.5rem;">Shop</h1>
+	<p style="color: #666; margin-bottom: 2rem;">Produse recomandate și personalizate pentru tine și pentru cei adoptați.</p>
+
+	<section class="shop-section" style="margin-bottom: 3rem;">
+		<h2 style="font-size: 1.35rem; margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 2px solid #c62828;">Produse recomandate</h2>
+		<div class="shop-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem;">
+			<div class="shop-card" style="background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+				<div style="height: 180px; background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); display: flex; align-items: center; justify-content: center; color: #999;">Imagine</div>
+				<div style="padding: 1rem;">
+					<h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Produs recomandat 1</h3>
+					<p style="margin: 0 0 0.75rem; color: #666; font-size: 0.9rem;">Descriere scurtă.</p>
+					<p style="margin: 0 0 0.75rem; font-weight: 700; color: #c62828;">— lei</p>
+					<a href="#" class="button" style="display: inline-block; padding: 0.5rem 1rem; font-size: 0.9rem;">Vezi</a>
+				</div>
+			</div>
+			<div class="shop-card" style="background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+				<div style="height: 180px; background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); display: flex; align-items: center; justify-content: center; color: #999;">Imagine</div>
+				<div style="padding: 1rem;">
+					<h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Produs recomandat 2</h3>
+					<p style="margin: 0 0 0.75rem; color: #666; font-size: 0.9rem;">Descriere scurtă.</p>
+					<p style="margin: 0 0 0.75rem; font-weight: 700; color: #c62828;">— lei</p>
+					<a href="#" class="button" style="display: inline-block; padding: 0.5rem 1rem; font-size: 0.9rem;">Vezi</a>
+				</div>
+			</div>
+			<div class="shop-card" style="background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+				<div style="height: 180px; background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); display: flex; align-items: center; justify-content: center; color: #999;">Imagine</div>
+				<div style="padding: 1rem;">
+					<h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Produs recomandat 3</h3>
+					<p style="margin: 0 0 0.75rem; color: #666; font-size: 0.9rem;">Descriere scurtă.</p>
+					<p style="margin: 0 0 0.75rem; font-weight: 700; color: #c62828;">— lei</p>
+					<a href="#" class="button" style="display: inline-block; padding: 0.5rem 1rem; font-size: 0.9rem;">Vezi</a>
+				</div>
+			</div>
+			<div class="shop-card" style="background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+				<div style="height: 180px; background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); display: flex; align-items: center; justify-content: center; color: #999;">Imagine</div>
+				<div style="padding: 1rem;">
+					<h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Produs recomandat 4</h3>
+					<p style="margin: 0 0 0.75rem; color: #666; font-size: 0.9rem;">Descriere scurtă.</p>
+					<p style="margin: 0 0 0.75rem; font-weight: 700; color: #c62828;">— lei</p>
+					<a href="#" class="button" style="display: inline-block; padding: 0.5rem 1rem; font-size: 0.9rem;">Vezi</a>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section class="shop-section" style="margin-bottom: 2rem;">
+		<h2 style="font-size: 1.35rem; margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 2px solid #c62828;">Produse personalizate</h2>
+		<div class="shop-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem;">
+			<div class="shop-card" style="background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+				<div style="height: 180px; background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); display: flex; align-items: center; justify-content: center; color: #999;">Personalizat</div>
+				<div style="padding: 1rem;">
+					<h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Produs personalizat 1</h3>
+					<p style="margin: 0 0 0.75rem; color: #666; font-size: 0.9rem;">Descriere scurtă.</p>
+					<p style="margin: 0 0 0.75rem; font-weight: 700; color: #c62828;">— lei</p>
+					<a href="#" class="button" style="display: inline-block; padding: 0.5rem 1rem; font-size: 0.9rem;">Vezi</a>
+				</div>
+			</div>
+			<div class="shop-card" style="background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+				<div style="height: 180px; background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); display: flex; align-items: center; justify-content: center; color: #999;">Personalizat</div>
+				<div style="padding: 1rem;">
+					<h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Produs personalizat 2</h3>
+					<p style="margin: 0 0 0.75rem; color: #666; font-size: 0.9rem;">Descriere scurtă.</p>
+					<p style="margin: 0 0 0.75rem; font-weight: 700; color: #c62828;">— lei</p>
+					<a href="#" class="button" style="display: inline-block; padding: 0.5rem 1rem; font-size: 0.9rem;">Vezi</a>
+				</div>
+			</div>
+			<div class="shop-card" style="background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+				<div style="height: 180px; background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); display: flex; align-items: center; justify-content: center; color: #999;">Personalizat</div>
+				<div style="padding: 1rem;">
+					<h3 style="margin: 0 0 0.5rem; font-size: 1rem;">Produs personalizat 3</h3>
+					<p style="margin: 0 0 0.75rem; color: #666; font-size: 0.9rem;">Descriere scurtă.</p>
+					<p style="margin: 0 0 0.75rem; font-weight: 700; color: #c62828;">— lei</p>
+					<a href="#" class="button" style="display: inline-block; padding: 0.5rem 1rem; font-size: 0.9rem;">Vezi</a>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	{% include "components/scales_overlay.html" %}
+</div>
+{% endblock %}

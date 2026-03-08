@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Beneficii după adopție | EU Adopt{% endblock %}
+{% block body_class %}page-beneficii-adoptie{% endblock %}
+
+{% block content %}
+<div class="beneficii-page">
+	<h2 class="entry-title">Beneficii după adopție</h2>
+	<p class="beneficii-intro">Pentru bucuria că ai adoptat, partenerii EU-Adopt îți oferă cupoane de reducere. Poți alege câte UN cupon din fiecare categorie.</p>
+	{% if not has_finalized %}
+	<p class="beneficii-no-adoption">Cupoanele se activează după o adopție aprobată.</p>
+	{% endif %}
+
+	{% if messages %}
+	<ul class="adoption-messages beneficii-messages">
+		{% for message in messages %}
+		<li class="message-{{ message.tags }}">{{ message }}</li>
+		{% endfor %}
+	</ul>
+	{% endif %}
+
+	<!-- A) Servicii veterinare -->
+	<section class="beneficii-section" aria-labelledby="sec-vet">
+		<h3 id="sec-vet" class="beneficii-section-title">Servicii veterinare</h3>
+		{% with claim=claims_by_category.vet category_key="vet" partners=partners_vet %}
+		{% if claim %}
+		<p class="beneficii-chosen-msg">Ai ales deja un cupon din această categorie: <strong>{{ claim.partner.name }}</strong>.
+			<form method="post" action="{% url 'beneficii_adoptie' %}" class="beneficii-renounce-form" style="display:inline;">
+				{% csrf_token %}
+				<input type="hidden" name="action" value="renounce" />
+				<input type="hidden" name="category" value="{{ BENEFICIARY_CATEGORY_VET }}" />
+				<button type="submit" class="button button-small beneficii-renounce-btn">Renunță la cupon</button>
+			</form>
+		</p>
+		{% endif %}
+		<div class="beneficii-cards-grid">
+			{% for partner in partners %}
+			{% include "anunturi/includes/beneficii_partner_card.html" with partner=partner category_claim=claim category_key="vet" has_finalized=has_finalized %}
+			{% endfor %}
+		</div>
+		{% endwith %}
+	</section>
+
+	<!-- B) Grooming / frizerie -->
+	<section class="beneficii-section" aria-labelledby="sec-grooming">
+		<h3 id="sec-grooming" class="beneficii-section-title">Grooming / frizerie</h3>
+		{% with claim=claims_by_category.grooming category_key="grooming" partners=partners_grooming %}
+		{% if claim %}
+		<p class="beneficii-chosen-msg">Ai ales deja un cupon din această categorie: <strong>{{ claim.partner.name }}</strong>.
+			<form method="post" action="{% url 'beneficii_adoptie' %}" class="beneficii-renounce-form" style="display:inline;">
+				{% csrf_token %}
+				<input type="hidden" name="action" value="renounce" />
+				<input type="hidden" name="category" value="{{ BENEFICIARY_CATEGORY_GROOMING }}" />
+				<button type="submit" class="button button-small beneficii-renounce-btn">Renunță la cupon</button>
+			</form>
+		</p>
+		{% endif %}
+		<div class="beneficii-cards-grid">
+			{% for partner in partners %}
+			{% include "anunturi/includes/beneficii_partner_card.html" with partner=partner category_claim=claim category_key="grooming" has_finalized=has_finalized %}
+			{% endfor %}
+		</div>
+		{% endwith %}
+	</section>
+
+	<!-- C) Magazine animale -->
+	<section class="beneficii-section" aria-labelledby="sec-shop">
+		<h3 id="sec-shop" class="beneficii-section-title">Magazine – Prietenul tău</h3>
+		{% with claim=claims_by_category.shop category_key="shop" partners=partners_shop %}
+		{% if claim %}
+		<p class="beneficii-chosen-msg">Ai ales deja un cupon din această categorie: <strong>{{ claim.partner.name }}</strong>.
+			<form method="post" action="{% url 'beneficii_adoptie' %}" class="beneficii-renounce-form" style="display:inline;">
+				{% csrf_token %}
+				<input type="hidden" name="action" value="renounce" />
+				<input type="hidden" name="category" value="{{ BENEFICIARY_CATEGORY_SHOP }}" />
+				<button type="submit" class="button button-small beneficii-renounce-btn">Renunță la cupon</button>
+			</form>
+		</p>
+		{% endif %}
+		<div class="beneficii-cards-grid">
+			{% for partner in partners %}
+			{% include "anunturi/includes/beneficii_partner_card.html" with partner=partner category_claim=claim category_key="shop" has_finalized=has_finalized %}
+			{% endfor %}
+		</div>
+		{% endwith %}
+	</section>
+</div>
+
+<style>
+.beneficii-page { padding: 1rem 0 2rem; }
+.beneficii-intro { font-size: 1rem; color: #333; margin-bottom: 0.5rem; max-width: 42em; }
+.beneficii-no-adoption { font-size: 0.95rem; color: #b00; margin-bottom: 1.5rem; }
+.beneficii-messages { margin: 0 0 1rem; padding: 0; list-style: none; }
+.beneficii-messages .message-success { color: #0a6b0a; }
+.beneficii-messages .message-error { color: #b00; }
+.beneficii-messages .message-info { color: #055; }
+.beneficii-section { margin-bottom: 2.5rem; }
+.beneficii-section-title { margin: 0 0 0.75rem; font-size: 1.25rem; }
+.beneficii-chosen-msg { margin: 0 0 0.75rem; font-size: 0.95rem; color: #333; }
+.beneficii-renounce-form { margin-left: 0.5rem; }
+.beneficii-renounce-btn { font-size: 0.85rem; }
+.beneficii-cards-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 1rem;
+	margin-top: 0.5rem;
+}
+.beneficii-card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; background: #fff; }
+.beneficii-card-logo { height: 60px; margin-bottom: 0.5rem; }
+.beneficii-card-logo img { max-height: 100%; max-width: 120px; object-fit: contain; }
+.beneficii-card-logo-placeholder { font-size: 2rem; opacity: 0.7; }
+.beneficii-card-name { margin: 0 0 0.25rem; font-size: 1.1rem; }
+.beneficii-card-location { margin: 0 0 0.5rem; font-size: 0.9rem; color: #666; }
+.beneficii-card-offer { margin: 0 0 0.75rem; font-size: 0.95rem; color: #333; }
+.beneficii-card-actions { margin-top: 0.5rem; }
+.beneficii-card-chosen { font-size: 0.9rem; color: #0a6b0a; font-weight: 500; }
+.beneficii-card-btn-disabled { font-size: 0.85rem; color: #888; }
+.beneficii-card-link { margin: 0.5rem 0 0; font-size: 0.85rem; }
+.beneficii-card-link a { color: #055; }
+.beneficii-card-disabled { opacity: 0.85; }
+.beneficii-claim-btn:disabled { cursor: not-allowed; opacity: 0.7; }
+@media (max-width: 480px) {
+	.beneficii-cards-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% load static %}
+{% load anunturi_extras %}
+
+{% block title %}Adaugă animal | EU Adopt{% endblock %}
+
+{% block extra_css %}
+<style>
+	.profile-form .form-error-summary { background: #f8d7da; border: 2px solid #c00; color: #721c24; padding: 0.75em 1em; margin-bottom: 1em; border-radius: 6px; }
+	.profile-form .error, .profile-form span.error { color: #c00; font-weight: bold; }
+	.profile-form label { display: block; margin-top: 0.75em; font-weight: 600; }
+	.profile-form input[type="text"], .profile-form input[type="email"], .profile-form input[type="file"], .profile-form select, .profile-form textarea { width: 100%; max-width: 100%; padding: 6px 8px; box-sizing: border-box; }
+	.profile-form .form-three-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; align-items: start; margin-bottom: 1rem; margin-left: -5cm; }
+	.profile-form .form-three-cols .form-col-1 { margin-left: 0; }
+	.profile-form .form-col-label { display: block; font-weight: 700; margin-bottom: 0.5rem; font-size: 0.95rem; color: #333; }
+	.profile-form .form-col .form-field { margin-bottom: 0.6em; }
+	.profile-form .form-actions { grid-column: 1 / -1; margin-top: 0.5rem; }
+	@media (max-width: 900px) { .profile-form .form-three-cols { grid-template-columns: 1fr; } }
+	.form-with-previews { display: flex; gap: 0; align-items: flex-start; margin: 1cm; }
+	.form-photo-previews { flex-shrink: 0; width: 267px; display: flex; flex-direction: column; gap: 0.75rem; margin-left: -12cm; }
+	.form-photo-previews .preview-box { width: 267px; height: 200px; border: 2px solid #ddd; background: #f5f5f5; border-radius: 8px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+	.form-photo-previews .preview-box img {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%) scale(1);
+		transform-origin: center center;
+		display: none;
+		max-width: none;
+		max-height: none;
+		user-select: none;
+		-webkit-user-drag: none;
+		cursor: grab;
+	}
+	.form-photo-previews .preview-box img.is-dragging { cursor: grabbing; }
+	.form-photo-previews .preview-placeholder { color: #999; font-size: 0.9rem; }
+	.form-with-previews .form-main { flex: 1; min-width: 0; margin-left: 2cm; margin-right: -15cm; padding-left: 5cm; box-sizing: border-box; height: calc(200px * 3 + 0.75rem * 2); overflow-y: auto; overflow-x: visible; display: flex; flex-direction: column; }
+	.form-with-previews .form-main .form-three-cols { flex: 1; min-height: 0; align-content: start; }
+	@media (max-width: 900px) { .form-with-previews { flex-direction: column; } .form-with-previews .form-main { height: auto; } .form-photo-previews { flex-direction: row; width: 100%; flex-wrap: wrap; } .form-photo-previews .preview-box { width: 200px; height: 150px; } }
+	.form-section { margin-bottom: 1.5rem; }
+	.form-section-title { font-size: 1.1rem; margin: 0 0 0.75rem 0; padding-bottom: 0.35rem; border-bottom: 1px solid #ddd; color: #333; }
+	.form-section .form-field { margin-bottom: 0.75em; }
+	.form-section .helptext { display: block; font-size: 0.85rem; color: #666; margin-top: 0.25rem; }
+</style>
+{% endblock %}
+
+{% block body_class %}page-cont-adauga-animal{% endblock %}
+
+{% block content %}
+<div class="container clearfix">
+	<div class="posts-wrap">
+		<section class="page">
+			<h2 class="entry-title">Adaugă animal (fișă înregistrare)</h2>
+			<div class="entry-content clearfix profile-form">
+				{% if messages %}
+				<ul class="adoption-messages">
+					{% for message in messages %}
+					<li class="message-{{ message.tags }}">{{ message }}</li>
+					{% endfor %}
+				</ul>
+				{% endif %}
+				<p>Completați datele animalului. Câmpurile marcate cu * sunt obligatorii. Sunt necesare minim 3 poze.</p>
+				<div class="form-with-previews">
+					<aside class="form-photo-previews" aria-label="Previzualizare poze">
+						<div class="preview-box" id="preview-box-1"><span class="preview-placeholder">Poza 1</span><img id="preview-img-1" src="" alt="" style="display:none;"></div>
+						<div class="preview-box" id="preview-box-2"><span class="preview-placeholder">Poza 2</span><img id="preview-img-2" src="" alt="" style="display:none;"></div>
+						<div class="preview-box" id="preview-box-3"><span class="preview-placeholder">Poza 3</span><img id="preview-img-3" src="" alt="" style="display:none;"></div>
+					</aside>
+					<div class="form-main">
+						<form method="post" action="{% url 'cont_adauga_animal' %}" enctype="multipart/form-data" class="profile-form" id="form-adauga-animal">
+							{% csrf_token %}
+							<input type="hidden" name="imagine_1_scale" id="imagine_1_scale" value="1" />
+							<input type="hidden" name="imagine_1_cx" id="imagine_1_cx" value="0" />
+							<input type="hidden" name="imagine_1_cy" id="imagine_1_cy" value="0" />
+							<input type="hidden" name="imagine_1_iw" id="imagine_1_iw" value="0" />
+							<input type="hidden" name="imagine_1_ih" id="imagine_1_ih" value="0" />
+							<input type="hidden" name="imagine_2_scale" id="imagine_2_scale" value="1" />
+							<input type="hidden" name="imagine_2_cx" id="imagine_2_cx" value="0" />
+							<input type="hidden" name="imagine_2_cy" id="imagine_2_cy" value="0" />
+							<input type="hidden" name="imagine_2_iw" id="imagine_2_iw" value="0" />
+							<input type="hidden" name="imagine_2_ih" id="imagine_2_ih" value="0" />
+							<input type="hidden" name="imagine_3_scale" id="imagine_3_scale" value="1" />
+							<input type="hidden" name="imagine_3_cx" id="imagine_3_cx" value="0" />
+							<input type="hidden" name="imagine_3_cy" id="imagine_3_cy" value="0" />
+							<input type="hidden" name="imagine_3_iw" id="imagine_3_iw" value="0" />
+							<input type="hidden" name="imagine_3_ih" id="imagine_3_ih" value="0" />
+							{% if form.non_field_errors %}
+							<div class="form-error-summary">{{ form.non_field_errors }}</div>
+							{% endif %}
+							{% for section_title, section_fields in form_sections %}
+							<div class="form-section">
+								<h3 class="form-section-title">{{ section_title }}</h3>
+								{% for field in section_fields %}
+								<div class="form-field">
+									<label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+									{{ field }}
+									{% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+									{% if field.errors %}<span class="error">{{ field.errors.0 }}</span>{% endif %}
+								</div>
+								{% endfor %}
+							</div>
+							{% endfor %}
+							<p class="form-actions">
+								<button type="submit" class="button">Salvează animalul</button>
+								<a href="{% url 'cont' %}" class="button" style="margin-left: 0.5em;">Anulare</a>
+							</p>
+						</form>
+					</div>
+				</div>
+			</div>
+		</section>
+	</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+	var inputs = [
+		document.getElementById("id_imagine"),
+		document.getElementById("id_imagine_2"),
+		document.getElementById("id_imagine_3")
+	];
+	var boxes = [
+		document.getElementById("preview-box-1"),
+		document.getElementById("preview-box-2"),
+		document.getElementById("preview-box-3")
+	];
+	var imgs = [
+		document.getElementById("preview-img-1"),
+		document.getElementById("preview-img-2"),
+		document.getElementById("preview-img-3")
+	];
+	var placeholders = boxes.map(function(b) { return b && b.querySelector(".preview-placeholder"); });
+
+	var states = [
+		{ scale: 1, x: 0, y: 0 },
+		{ scale: 1, x: 0, y: 0 },
+		{ scale: 1, x: 0, y: 0 }
+	];
+	var imgSizes = [{ w: 0, h: 0 }, { w: 0, h: 0 }, { w: 0, h: 0 }];
+	var BOX_W = 267, BOX_H = 200;
+
+	function applyTransform(i) {
+		var img = imgs[i];
+		if (!img) return;
+		var s = states[i];
+		img.style.transform = "translate(calc(-50% + " + s.x + "px), calc(-50% + " + s.y + "px)) scale(" + s.scale + ")";
+	}
+
+	function resetState(i) {
+		states[i] = { scale: 1, x: 0, y: 0 };
+		applyTransform(i);
+	}
+
+	function onFile(i) {
+		var input = inputs[i], img = imgs[i], box = boxes[i], ph = placeholders[i];
+		if (!input || !img || !box) return;
+		var file = input.files && input.files[0];
+		if (file && file.type.indexOf("image") !== -1) {
+			var r = new FileReader();
+			r.onload = function() {
+				img.src = r.result;
+				img.style.display = "block";
+				if (ph) ph.style.display = "none";
+				resetState(i);
+				imgSizes[i] = { w: 0, h: 0 };
+			};
+			r.readAsDataURL(file);
+		} else {
+			img.src = "";
+			img.style.display = "none";
+			if (ph) ph.style.display = "";
+			resetState(i);
+		}
+	}
+
+	for (var i = 0; i < 3; i++) {
+		if (inputs[i]) {
+			(function(ii) {
+				inputs[ii].addEventListener("change", function() { onFile(ii); });
+			})(i);
+		}
+	}
+
+	var activeIndex = null;
+	var startX = 0, startY = 0;
+	var originX = 0, originY = 0;
+
+	function onMouseDown(e, i) {
+		var img = imgs[i];
+		if (!img || img.style.display === "none") return;
+		e.preventDefault();
+		activeIndex = i;
+		img.classList.add("is-dragging");
+		startX = e.clientX;
+		startY = e.clientY;
+		originX = states[i].x;
+		originY = states[i].y;
+		window.addEventListener("mousemove", onMouseMove);
+		window.addEventListener("mouseup", onMouseUp);
+	}
+
+	function onMouseMove(e) {
+		if (activeIndex === null) return;
+		e.preventDefault();
+		var dx = e.clientX - startX;
+		var dy = e.clientY - startY;
+		var s = states[activeIndex];
+		s.x = originX + dx;
+		s.y = originY + dy;
+		applyTransform(activeIndex);
+	}
+
+	function onMouseUp(e) {
+		if (activeIndex === null) return;
+		var img = imgs[activeIndex];
+		if (img) img.classList.remove("is-dragging");
+		activeIndex = null;
+		window.removeEventListener("mousemove", onMouseMove);
+		window.removeEventListener("mouseup", onMouseUp);
+	}
+
+	function onWheel(e, i) {
+		var img = imgs[i];
+		if (!img || img.style.display === "none") return;
+		e.preventDefault();
+		var s = states[i];
+		var delta = e.deltaY < 0 ? 0.1 : -0.1;
+		var nextScale = s.scale + delta;
+		if (nextScale < 0.5) nextScale = 0.5;
+		if (nextScale > 3) nextScale = 3;
+		s.scale = nextScale;
+		applyTransform(i);
+	}
+
+	for (var j = 0; j < 3; j++) {
+		if (!boxes[j]) continue;
+		(function(ii) {
+			boxes[ii].addEventListener("mousedown", function(e) { onMouseDown(e, ii); });
+			boxes[ii].addEventListener("wheel", function(e) { onWheel(e, ii); }, { passive: false });
+			if (imgs[ii]) imgs[ii].addEventListener("load", function() {
+				imgSizes[ii] = { w: this.naturalWidth || 0, h: this.naturalHeight || 0 };
+			});
+		})(j);
+	}
+
+	var form = document.getElementById("form-adauga-animal");
+	if (form) {
+		form.addEventListener("submit", function() {
+			for (var i = 0; i < 3; i++) {
+				var s = states[i], sz = imgSizes[i];
+				var scaleEl = document.getElementById("imagine_" + (i+1) + "_scale");
+				var cxEl = document.getElementById("imagine_" + (i+1) + "_cx");
+				var cyEl = document.getElementById("imagine_" + (i+1) + "_cy");
+				var iwEl = document.getElementById("imagine_" + (i+1) + "_iw");
+				var ihEl = document.getElementById("imagine_" + (i+1) + "_ih");
+				if (scaleEl) scaleEl.value = s.scale;
+				if (cxEl) cxEl.value = s.x;
+				if (cyEl) cyEl.value = s.y;
+				if (iwEl) iwEl.value = sz && sz.w ? sz.w : (imgs[i] && imgs[i].naturalWidth ? imgs[i].naturalWidth : 0);
+				if (ihEl) ihEl.value = sz && sz.h ? sz.h : (imgs[i] && imgs[i].naturalHeight ? imgs[i].naturalHeight : 0);
+			}
+		});
+	}
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% load static %}
+{# Full card: photo + name/age/desc/button. Compact (A2 cover): photo + quote only, link via Prietenul tau so back returns there. #}
+{% if a2_compact and pet.quote %}
+<a href="{% url 'pets_all' %}?go={{ pet.pk }}" class="A2-slot-link dog-card-link dog-card-compact" aria-label="Vezi {{ pet.nume }}">
+	<article class="dog-card">
+		<figure class="dog-card-photo" aria-hidden="true">
+			{% if pet.imagine %}
+			<img src="{{ pet.imagine.url }}" alt="" />
+			{% elif pet.imagine_fallback %}
+			<img src="{% static pet.imagine_fallback %}" alt="" />
+			{% else %}
+			<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" />
+			{% endif %}
+		</figure>
+		<span class="dog-card-overlay" aria-hidden="true"></span>
+		<p class="dog-card-quote" data-quote-rotate>{{ pet.quote }}</p>
+	</article>
+</a>
+{% else %}
+<a href="{% url 'pets_single' pet.pk %}" class="A2-slot-link dog-card-link" aria-label="Vezi profil {{ pet.nume }}">
+	<article class="dog-card">
+		<figure class="dog-card-photo" aria-hidden="true">
+			{% if pet.imagine %}
+			<img src="{{ pet.imagine.url }}" alt="" />
+			{% elif pet.imagine_fallback %}
+			<img src="{% static pet.imagine_fallback %}" alt="" />
+			{% else %}
+			<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" />
+			{% endif %}
+		</figure>
+		<div class="dog-card-body">
+			<h3 class="dog-card-name">{{ pet.nume }}</h3>
+			<span class="dog-card-age">{{ pet.varsta }}</span>
+			<p class="dog-card-desc">{{ pet.descriere }}</p>
+			<span class="dog-card-btn">Vezi profil</span>
+		</div>
+	</article>
+</a>
+{% endif %}

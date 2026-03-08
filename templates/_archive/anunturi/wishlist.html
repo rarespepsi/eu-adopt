@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Lista mea – Te plac | EU Adopt{% endblock %}
+{% block body_class %}page-wishlist{% endblock %}
+
+{% block content %}
+<div id="TeW" class="wishlist-page">
+	<h2 class="entry-title">❤️ Lista mea (Te plac)</h2>
+	<p class="wishlist-intro">Animalele pe care le-ai marcat cu „Te plac”. Poți scoate oricare din listă apăsând „Scoate din listă” lângă poză.</p>
+	{% if favorites %}
+	<ul class="wishlist-list">
+		{% for fav in favorites %}
+		<li class="wishlist-item">
+			<div class="wishlist-item-img">
+				<a href="{% url 'pets_single' fav.pet.pk %}">
+					{% if fav.pet.imagine %}
+						<img src="{{ fav.pet.imagine.url }}" alt="{{ fav.pet.nume }}" onerror="this.src='{% static 'images/pets/charlie-275x275.jpg' %}';this.onerror=null;" />
+					{% elif fav.pet.imagine_fallback %}
+						<img src="{% static fav.pet.imagine_fallback %}" alt="{{ fav.pet.nume }}" />
+					{% else %}
+						<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="{{ fav.pet.nume }}" />
+					{% endif %}
+				</a>
+			</div>
+			<div class="wishlist-item-info">
+				<h3><a href="{% url 'pets_single' fav.pet.pk %}">{{ fav.pet.nume }}</a></h3>
+				<p class="wishlist-item-meta">{{ fav.pet.get_tip_display }} – {{ fav.pet.rasa }}{% if fav.pet.varsta_aproximativa is not None %} – {{ fav.pet.get_varsta_aproximativa_display }}{% endif %} – {{ fav.pet.get_sex_display }}{% if fav.pet.judet %} – {{ fav.pet.get_judet_display }}{% endif %}</p>
+				<p class="wishlist-item-status">
+					{% if fav.pet.status == 'adoptable' %}<span class="wishlist-status-badge status-disponibil">Disponibil</span>{% elif fav.pet.status == 'adopted' %}<span class="wishlist-status-badge status-adoptat">Adoptat</span>{% elif fav.pet.status == 'pending' %}<span class="wishlist-status-badge status-rezervat">Rezervat</span>{% else %}<span class="wishlist-status-badge status-altul">{{ fav.pet.get_status_display }}</span>{% endif %}
+				</p>
+				<p><a href="{% url 'pets_single' fav.pet.pk %}" class="button button-small">Vezi fișa</a></p>
+			</div>
+			<div class="wishlist-item-remove">
+				<a href="{% url 'wishlist_toggle' fav.pet.pk %}?action=remove&next={% url 'wishlist' %}" class="wishlist-remove-btn" title="Scoate din listă">Scoate din listă</a>
+			</div>
+		</li>
+		{% endfor %}
+	</ul>
+	<p><a href="{% url 'pets_all' %}">Caută alte animale</a></p>
+	{% else %}
+	<p class="wishlist-empty">Nu ai adăugat încă niciun animal la „Te plac”. Mergi la <a href="{% url 'pets_all' %}">Animale</a> și apasă „Te plac” pe pozele care îți plac.</p>
+	{% endif %}
+</div>
+<style>
+.wishlist-page { padding: 1rem 0; }
+.wishlist-intro { color: #555; margin-bottom: 1.5rem; }
+.wishlist-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1rem; }
+.wishlist-item {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	padding: 1rem;
+	background: #f9f9f9;
+	border-radius: 10px;
+	border: 1px solid #eee;
+	flex-wrap: wrap;
+}
+.wishlist-item-img { flex-shrink: 0; width: 120px; height: 120px; border-radius: 8px; overflow: hidden; }
+.wishlist-item-img img { width: 100%; height: 100%; object-fit: cover; }
+.wishlist-item-info { flex: 1; min-width: 180px; }
+.wishlist-item-info h3 { margin: 0 0 0.35rem; font-size: 1.15rem; }
+.wishlist-item-info h3 a { color: #333; }
+.wishlist-item-meta { margin: 0 0 0.5rem; font-size: 0.9rem; color: #666; }
+.wishlist-item-remove { flex-shrink: 0; }
+.wishlist-remove-btn {
+	display: inline-block;
+	padding: 8px 14px;
+	background: #e0e0e0;
+	color: #333;
+	border-radius: 6px;
+	font-size: 0.9rem;
+	text-decoration: none;
+	font-weight: 600;
+}
+.wishlist-remove-btn:hover { background: #d32f2f; color: #fff; }
+.wishlist-empty { color: #666; padding: 2rem; background: #f5f5f5; border-radius: 8px; }
+.wishlist-item-status { margin: 0.25rem 0; }
+.wishlist-status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; }
+.wishlist-status-badge.status-disponibil { background: #e8f5e9; color: #2e7d32; }
+.wishlist-status-badge.status-adoptat { background: #fff3e0; color: #e65100; }
+.wishlist-status-badge.status-rezervat { background: #e3f2fd; color: #1565c0; }
+.wishlist-status-badge.status-altul { background: #f5f5f5; color: #616161; }
+</style>
+{% endblock %}

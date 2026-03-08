@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ro">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>Câinii mei | EU-Adopt</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+		<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+		<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}" type="text/css" media="screen" />
+		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+		<style>
+			.my-posted-pets-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+			.my-posted-pets-table th, .my-posted-pets-table td { border: 1px solid #e0e0e0; padding: 0.5rem 0.75rem; text-align: left; vertical-align: middle; }
+			.my-posted-pets-table th { background: #f5f5f5; font-weight: 600; }
+			.my-posted-pets-table .pet-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; }
+			.my-posted-pets-table .status-available { color: #2e7d32; }
+			.my-posted-pets-table .status-reserved { color: #e65100; }
+			.my-posted-pets-table .status-adopted { color: #555; }
+			.my-posted-pets-actions { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+			.my-posted-pets-actions form { display: inline; }
+			.my-posted-pets-actions .button { font-size: 0.85rem; padding: 0.35rem 0.6rem; }
+			.cereri-box { margin: 1.5rem 0; padding: 1rem; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 8px; }
+			.cereri-box h4 { margin: 0 0 0.75rem; }
+			.cereri-list { list-style: none; margin: 0; padding: 0; }
+			.cereri-list li { padding: 0.5rem 0; border-bottom: 1px solid #eee; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+			.cereri-list li:last-child { border-bottom: none; }
+		</style>
+	</head>
+	<body class="content_left scheme_red page-my-posted-pets">
+		<section id="main_wrap">
+			{% include "components/navbar_a0.html" %}
+			<section class="wrapper" id="main_content">
+				<div class="container clearfix">
+					<div class="posts-wrap">
+						<section class="page">
+							<h2 class="entry-title">Câinii mei + cereri adopție</h2>
+							<p><a href="{% url 'cont_ong' %}" class="button">Înapoi la cont</a> <a href="{% url 'cont_ong_adauga' %}" class="button">Adaugă animal</a></p>
+							{% if messages %}
+							<ul class="adoption-messages">
+								{% for message in messages %}
+								<li class="message-{{ message.tags }}">{{ message }}</li>
+								{% endfor %}
+							</ul>
+							{% endif %}
+							<table class="my-posted-pets-table">
+								<thead>
+									<tr>
+										<th>Poză</th>
+										<th>Nume</th>
+										<th>Status</th>
+										<th>Nr. cereri (PENDING + WAITLIST)</th>
+										<th>Cererea activă (APPROVED)</th>
+										<th>Acțiuni</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for pet, data in pets_with_data %}
+									<tr>
+										<td>
+											{% if pet.imagine %}
+											<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" class="pet-thumb" />
+											{% elif pet.imagine_fallback %}
+											<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" class="pet-thumb" />
+											{% else %}
+											<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="" class="pet-thumb" />
+											{% endif %}
+										</td>
+										<td><a href="{% url 'pets_single' pet.pk %}">{{ pet.nume }}</a></td>
+										<td>
+											<span class="status-{{ pet.adoption_status }}">{{ pet.get_adoption_status_display }}</span>
+										</td>
+										<td>{{ data.count_pending_waitlist }}</td>
+										<td>
+											{% if data.approved %}
+											{{ data.approved.nume_complet }} – {{ data.approved.telefon }} / {{ data.approved.email }}
+											{% else %}
+											—
+											{% endif %}
+										</td>
+										<td>
+											<div class="my-posted-pets-actions">
+												{% if pet.adoption_status == "available" %}
+													<a href="{% url 'my_posted_pets' %}?pet={{ pet.pk }}" class="button">Vezi cereri</a>
+												{% elif pet.adoption_status == "reserved" and data.approved %}
+													<form method="post" action="{% url 'adoption_finalize' data.approved.pk %}" style="display:inline;" class="js-finalize-mypets" data-pet-name="{{ pet.nume }}">
+														{% csrf_token %}
+														<input type="hidden" name="confirm" value="1" />
+														<input type="hidden" name="next" value="{% url 'my_posted_pets' %}" />
+														<button type="submit" class="button" style="background:#2e7d32;">Adopție finalizată</button>
+													</form>
+													<form method="post" action="{% url 'adoption_cancel_reservation' data.approved.pk %}" style="display:inline;">
+														{% csrf_token %}
+														<input type="hidden" name="next" value="{% url 'my_posted_pets' %}" />
+														<button type="submit" class="button" style="background:#c62828;">Anulează rezervarea</button>
+													</form>
+												{% elif pet.adoption_status == "adopted" %}
+													<span style="color:#888;">—</span>
+												{% endif %}
+												<a href="{% url 'pets_single' pet.pk %}" class="button">Vezi animalul</a>
+											</div>
+										</td>
+									</tr>
+									{% empty %}
+									<tr><td colspan="6">Nu aveți prieteni postați.</td></tr>
+									{% endfor %}
+								</tbody>
+							</table>
+							{% if show_requests_pet and show_requests_data %}
+							<div class="cereri-box">
+								<h4>Cereri pentru {{ show_requests_pet.nume }} (PENDING / WAITLIST)</h4>
+								<a href="{% url 'my_posted_pets' %}">Închide</a>
+								{% if show_requests_data.pending_waitlist %}
+								<ul class="cereri-list">
+									{% for req in show_requests_data.pending_waitlist %}
+									<li>
+										<span>{{ req.nume_complet }} – {{ req.email }} – {{ req.telefon }} ({{ req.get_status_display }}, {{ req.data_cerere|date:"d.m.Y H:i" }})</span>
+										<form method="post" action="{% url 'adoption_accept_request' req.pk %}">
+											{% csrf_token %}
+											<input type="hidden" name="next" value="{% url 'my_posted_pets' %}" />
+											<button type="submit" class="button" style="background:#2e7d32;">Acceptă</button>
+										</form>
+									</li>
+									{% endfor %}
+								</ul>
+								{% else %}
+								<p>Nu există cereri în așteptare.</p>
+								{% endif %}
+							</div>
+							{% endif %}
+						</section>
+					</div>
+				</div>
+			</section>
+			<footer id="footer" class="wrapper">
+				<div class="container">
+					<div id="post_footer">
+						<div id="site_info" class="clearfix">
+							<div class="right">&copy; EU-Adopt</div>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</section>
+		<script>
+		(function() {
+			document.querySelectorAll(".js-finalize-mypets").forEach(function(form) {
+				form.addEventListener("submit", function(e) {
+					var petName = form.getAttribute("data-pet-name") || "acest animal";
+					if (!confirm("Sigur marcați adopția pentru " + petName + " ca finalizată? Adoptatorul va fi notificat.")) {
+						e.preventDefault();
+					}
+				});
+			});
+		})();
+		</script>
+	</body>
+</html>

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Înregistrare Persoană Fizică | EU Adopt{% endblock %}
+
+{% block body_class %}page-register-pf auth-page{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth-pages.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="auth-content-wrap">
+	<div class="auth-form-box">
+		<section class="page">
+			<h2 class="entry-title">Înregistrare – Persoană Fizică</h2>
+			<div class="entry-content clearfix">
+				{% if form.errors %}
+					<p class="errornote">Corectați erorile de mai jos.</p>
+				{% endif %}
+				<form method="post" action="{% url 'register_pf' %}" class="login-form" style="max-width: 400px;" enctype="multipart/form-data">
+					{% csrf_token %}
+					<p><label for="id_username">Utilizator (opțional)</label><br />{{ form.username }}{% if form.username.errors %} <span class="form-error">{{ form.username.errors.0 }}</span>{% endif %}<br /><small>{{ form.username.help_text }}</small></p>
+					<p><label for="id_email">Email *</label><br />{{ form.email }}{% if form.email.errors %} <span class="form-error">{{ form.email.errors.0 }}</span>{% endif %}</p>
+					<p><label for="id_first_name">Prenume *</label><br />{{ form.first_name }}{% if form.first_name.errors %} <span class="form-error">{{ form.first_name.errors.0 }}</span>{% endif %}</p>
+					<p><label for="id_last_name">Nume *</label><br />{{ form.last_name }}{% if form.last_name.errors %} <span class="form-error">{{ form.last_name.errors.0 }}</span>{% endif %}</p>
+					<p><label for="id_phone">Telefon *</label><br />{{ form.phone }}{% if form.phone.errors %} <span class="form-error">{{ form.phone.errors.0 }}</span>{% endif %}</p>
+					<div data-ro-location="1" data-ro-county-selector="#id_judet" data-ro-city-output="#id_oras">
+					<p><label for="id_judet">Județ *</label><br />{{ form.judet }}{% if form.judet.errors %} <span class="form-error">{{ form.judet.errors.0 }}</span>{% endif %}</p>
+					<p class="oras-row">
+						<label for="id_oras">Oraș / Localitate (comună) *</label><br />
+						<select id="id_oras_list" class="oras-list-select" data-ro-city style="display:none; margin-bottom: 0.5rem; width: 100%; max-width: 400px;" aria-label="Alege oraș din listă"><option value="">— Alege județul mai întâi —</option></select>
+						{{ form.oras }}{% if form.oras.errors %} <span class="form-error">{{ form.oras.errors.0 }}</span>{% endif %}
+						<small class="oras-hint" data-ro-city-hint style="display:none;">Pentru acest județ introduceți localitatea mai sus.</small>
+					</p>
+					</div>
+					<p><label for="id_password1">Parolă *</label><br />{{ form.password1 }}{% if form.password1.errors %} <span class="form-error">{{ form.password1.errors.0 }}</span>{% endif %}</p>
+					<p><label for="id_password2">Confirmare parolă *</label><br />{{ form.password2 }}{% if form.password2.errors %} <span class="form-error">{{ form.password2.errors.0 }}</span>{% endif %}</p>
+					<p><label for="id_poza_1">Poză profil (opțional)</label><br />{{ form.poza_1 }}{% if form.poza_1.errors %} <span class="form-error">{{ form.poza_1.errors.0 }}</span>{% endif %}</p>
+					<p class="accept-termeni-row"><label for="id_accept_termeni">{{ form.accept_termeni }} Accept <a href="{% url 'termeni' %}" target="_blank" rel="noopener">termenii și condițiile</a> *</label>{% if form.accept_termeni.errors %} <span class="form-error">{{ form.accept_termeni.errors.0 }}</span>{% endif %}</p>
+					<p class="accept-termeni-row"><label for="id_accept_gdpr">{{ form.accept_gdpr }} Accept prelucrarea datelor conform GDPR *</label>{% if form.accept_gdpr.errors %} <span class="form-error">{{ form.accept_gdpr.errors.0 }}</span>{% endif %}</p>
+					<p><label for="id_email_opt_in_wishlist">{{ form.email_opt_in_wishlist }} Notificări email EU-Adopt (wishlist)</label><br /><small>{{ form.email_opt_in_wishlist.help_text }}</small></p>
+					<div class="match-quiz-optional-block">
+						<p><strong>Opțional – Profil de potrivire</strong></p>
+						<p>După crearea contului poți completa <a href="{% url 'match_quiz' %}" target="_blank" rel="noopener">chestionarul „Potrivirea perfectă”</a> pentru a primi sugestii de animale potrivite. Nu este obligatoriu.</p>
+					</div>
+					<p><button type="submit" class="button">Creează cont</button></p>
+				</form>
+				<p><a href="{% url 'register' %}">Înapoi la alegerea tipului de cont</a></p>
+				<p><a href="{% url 'home' %}">Înapoi la prima pagină</a></p>
+			</div>
+		</section>
+	</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/auth-form-errors.js' %}"></script>
+<script>window.RO_COUNTIES_CITIES_URL = '{% url "ro_counties_cities_json" %}';</script>
+<script src="{% static 'js/ro-location.js' %}"></script>
+{% endblock %}

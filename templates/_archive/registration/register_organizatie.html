@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Înregistrare – Adăpost / ONG / Firmă | EU Adopt{% endblock %}
+
+{% block body_class %}page-register-organizatie auth-page{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth-pages.css' %}" />
+<style>
+.organizatie-buttons { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin: 2rem 0; }
+.organizatie-buttons a {
+	display: inline-flex; align-items: center; justify-content: center;
+	min-width: 200px; padding: 14px 24px;
+	background: #d32f2f; color: #fff !important;
+	border-radius: 8px; text-decoration: none !important; font-weight: 600;
+	transition: background 0.2s;
+}
+.organizatie-buttons a:hover { background: #b71c1c; color: #fff !important; }
+.organizatie-back { text-align: center; margin-top: 1.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-content-wrap">
+	<div class="auth-form-box">
+		<section class="page">
+			<h2 class="entry-title">Înregistrare – Adăpost / ONG / Firmă</h2>
+			<div class="entry-content clearfix">
+				<p style="text-align: center;">Alegeți tipul de organizație pentru a continua.</p>
+				<div class="organizatie-buttons">
+					<a href="{% url 'register_srl' %}">SRL / SA</a>
+					<a href="{% url 'register_ong' %}">ONG / Asociație</a>
+				</div>
+				<p class="organizatie-back"><a href="{% url 'register' %}">Înapoi la alegerea tipului de cont</a></p>
+				<p style="text-align: center;"><a href="{% url 'home' %}">Înapoi la prima pagină</a></p>
+			</div>
+		</section>
+	</div>
+</div>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Analiza | EU Adopt (Admin){% endblock %}
+{% block body_class %}page-analiza{% endblock %}
+
+{% block extra_css %}
+<style>
+body.page-analiza .sidebar-left,
+body.page-analiza .sidebar-right {
+	display: none !important;
+}
+body.page-analiza .layout {
+	display: block !important;
+	grid-template-columns: 1fr !important;
+}
+body.page-analiza .main-content {
+	width: 100% !important;
+	max-width: 100% !important;
+}
+.analiza-stats a:hover,
+.analiza-status-membri a:hover {
+	box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="AnW" class="container clearfix" style="max-width: 960px; margin: 0 auto; padding: 2rem 20px;">
+	<h1 class="entry-title" style="margin-bottom: 1.5rem;">Analiza</h1>
+	<p style="color: #666; margin-bottom: 1.5rem;">Pagina este vizibilă doar în contul de administrator. Folosește filtrele pentru a limita perioada și tipurile de date.</p>
+
+	<form method="get" action="{% url 'analiza' %}" class="analiza-filters" style="background: #f5f5f5; padding: 1.25rem; border-radius: 8px; margin-bottom: 2rem;">
+		<h2 style="margin-top: 0; font-size: 1.1rem;">Filtre</h2>
+		<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; align-items: end;">
+			<div>
+				<label for="id_data_from">Data de la</label>
+				<input type="date" name="data_from" id="id_data_from" value="{{ filters.data_from }}" style="width: 100%; padding: 0.4rem;" />
+			</div>
+			<div>
+				<label for="id_data_to">Data până la</label>
+				<input type="date" name="data_to" id="id_data_to" value="{{ filters.data_to }}" style="width: 100%; padding: 0.4rem;" />
+			</div>
+			<div>
+				<label for="id_status_pet">Status animal</label>
+				<select name="status_pet" id="id_status_pet" style="width: 100%; padding: 0.4rem;">
+					<option value="">— Toate —</option>
+					{% for val, label in pet_status_choices %}
+					<option value="{{ val }}" {% if filters.status_pet == val %}selected{% endif %}>{{ label }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div>
+				<label for="id_tip_pet">Tip animal</label>
+				<select name="tip_pet" id="id_tip_pet" style="width: 100%; padding: 0.4rem;">
+					<option value="">— Toate —</option>
+					{% for val, label in pet_tip_choices %}
+					<option value="{{ val }}" {% if filters.tip_pet == val %}selected{% endif %}>{{ label }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div>
+				<label for="id_judet">Județ</label>
+				<select name="judet" id="id_judet" style="width: 100%; padding: 0.4rem;">
+					<option value="">— Toate —</option>
+					{% for val, label in judet_choices %}
+					<option value="{{ val }}" {% if filters.judet == val %}selected{% endif %}>{{ label }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div>
+				<label for="id_status_cerere">Status cerere adopție</label>
+				<select name="status_cerere" id="id_status_cerere" style="width: 100%; padding: 0.4rem;">
+					<option value="">— Toate —</option>
+					{% for val, label in cerere_status_choices %}
+					<option value="{{ val }}" {% if filters.status_cerere == val %}selected{% endif %}>{{ label }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div>
+				<button type="submit" class="button" style="padding: 0.5rem 1rem;">Aplică filtre</button>
+				<a href="{% url 'analiza' %}" style="margin-left: 0.5rem;">Resetează</a>
+			</div>
+		</div>
+	</form>
+
+	<div class="analiza-stats" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+		<a href="{% url 'membri' %}" style="text-decoration: none; color: inherit; display: block; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #666;">Membri (total)</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.membri_total }}</div>
+		</a>
+		<a href="{% url 'membri' %}?data_from={{ filters.data_from }}&data_to={{ filters.data_to }}" style="text-decoration: none; color: inherit; display: block; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #666;">Membri (după filtre)</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.membri_filtrat }}</div>
+		</a>
+		<a href="{% url 'analiza_animale' %}" style="text-decoration: none; color: inherit; display: block; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #666;">Animale (total)</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.animale_total }}</div>
+		</a>
+		<a href="{% url 'analiza_animale' %}?data_from={{ filters.data_from }}&data_to={{ filters.data_to }}&status_pet={{ filters.status_pet }}&tip_pet={{ filters.tip_pet }}&judet={{ filters.judet }}" style="text-decoration: none; color: inherit; display: block; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #666;">Animale (după filtre)</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.animale_filtrat }}</div>
+		</a>
+		<a href="{% url 'analiza_animale' %}?status_pet=adoptable&data_from={{ filters.data_from }}&data_to={{ filters.data_to }}" style="text-decoration: none; color: inherit; display: block; background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #2e7d32;">Câini / animale intrați (adoptable)</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.intrati_filtrat }}</div>
+		</a>
+		<a href="{% url 'analiza_animale' %}?status_pet=adopted&data_from={{ filters.data_from }}&data_to={{ filters.data_to }}" style="text-decoration: none; color: inherit; display: block; background: #fff3e0; border: 1px solid #ffe0b2; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #e65100;">Câini / animale ieșiți (adoptate)</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.iesiti_filtrat }}</div>
+		</a>
+		<a href="{% url 'analiza_animale' %}?status_pet=pending" style="text-decoration: none; color: inherit; display: block; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #666;">În procedură (pending)</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.animale_in_procedura }}</div>
+		</a>
+		<a href="{% url 'analiza_animale' %}?status_pet=showcase_archive" style="text-decoration: none; color: inherit; display: block; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #666;">Showcase / arhivă</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.animale_showcase }}</div>
+		</a>
+		<a href="{% url 'analiza_cereri' %}" style="text-decoration: none; color: inherit; display: block; background: #e3f2fd; border: 1px solid #bbdefb; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #1565c0;">Cereri adopție (total)</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.cereri_total }}</div>
+		</a>
+		<a href="{% url 'analiza_cereri' %}?data_from={{ filters.data_from }}&data_to={{ filters.data_to }}&status_cerere={{ filters.status_cerere }}" style="text-decoration: none; color: inherit; display: block; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #666;">Cereri (după filtre)</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.cereri_filtrat }}</div>
+		</a>
+		<a href="{% url 'analiza_cereri' %}?status_cerere=new" style="text-decoration: none; color: inherit; display: block; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #666;">Cereri nouă</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.cereri_noua }}</div>
+		</a>
+		<a href="{% url 'analiza_cereri' %}?status_cerere=approved_platform" style="text-decoration: none; color: inherit; display: block; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #666;">Aprobate platformă</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.cereri_aprobate_platforma }}</div>
+		</a>
+		<a href="{% url 'analiza_cereri' %}?status_cerere=approved_ong" style="text-decoration: none; color: inherit; display: block; background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #2e7d32;">Validate ONG</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.cereri_validate_ong }}</div>
+		</a>
+		<a href="{% url 'analiza_cereri' %}?status_cerere=rejected" style="text-decoration: none; color: inherit; display: block; background: #ffebee; border: 1px solid #ffcdd2; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #c62828;">Refuzate</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.cereri_refuzate }}</div>
+		</a>
+	</div>
+
+	<h2 style="margin: 2rem 0 1rem; font-size: 1.2rem; border-bottom: 1px solid #e0e0e0; padding-bottom: 0.5rem;">Status membri</h2>
+	<div class="analiza-status-membri" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+		<a href="{% url 'membri' %}?status=activi" style="text-decoration: none; color: inherit; display: block; background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #2e7d32;">Activi</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.membri_activi }}</div>
+		</a>
+		<a href="{% url 'membri' %}?status=inactivi" style="text-decoration: none; color: inherit; display: block; background: #fff3e0; border: 1px solid #ffe0b2; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #e65100;">Inactivi</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.membri_inactivi }}</div>
+		</a>
+		<a href="{% url 'membri' %}?status=staff" style="text-decoration: none; color: inherit; display: block; background: #e3f2fd; border: 1px solid #bbdefb; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #1565c0;">Staff</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.membri_staff }}</div>
+		</a>
+		<a href="{% url 'membri' %}?status=superuser" style="text-decoration: none; color: inherit; display: block; background: #f3e5f5; border: 1px solid #e1bee7; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #7b1fa2;">Superuser</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.membri_superuser }}</div>
+		</a>
+		<a href="{% url 'membri' %}?status=nelogati" style="text-decoration: none; color: inherit; display: block; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #666;">Nici măcar o dată logați</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.membri_nelogati_niciodata }}</div>
+		</a>
+		<a href="{% url 'membri' %}?status=cu_profil" style="text-decoration: none; color: inherit; display: block; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; transition: box-shadow 0.2s;">
+			<div style="font-size: 0.85rem; color: #666;">Cu profil completat</div>
+			<div style="font-size: 1.75rem; font-weight: 700;">{{ stats.membri_cu_profil }}</div>
+		</a>
+</div>
+{% endblock %}

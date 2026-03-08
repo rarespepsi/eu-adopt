@@ -1,0 +1,77 @@
+{% load static %}
+{% load anunturi_extras %}
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+	<title>{% block title %}EU Adopt{% endblock %}</title>
+	<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+	<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
+	<style>
+		.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr) 260px; gap: 0; min-height: 200px; }
+		.layout .sidebar-left { min-width: 0; }
+		.layout .main-content { min-width: 0; }
+		.layout .sidebar-right { min-width: 0; }
+		@media (max-width: 900px) {
+			.layout { grid-template-columns: 1fr; }
+			.layout .sidebar-left, .layout .sidebar-right { order: 2; }
+			.layout .main-content { order: 1; }
+		}
+		/* Development: visible slot labels – do not change layout */
+		[data-slot] { position: relative; }
+		.slot-marker {
+			position: absolute; top: 4px; right: 4px;
+			font-size: 10px; font-family: monospace;
+			background: #1a1a1a; color: #fff; padding: 3px 6px;
+			border-radius: 3px; z-index: 100;
+			opacity: 1;
+			box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+			pointer-events: none;
+		}
+	</style>
+	{% block extra_css %}{% endblock %}
+	<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}" type="text/css" media="screen" />
+	<link rel="stylesheet" href="{% static 'css/pet-images-common.css' %}?v=3" type="text/css" media="screen" />
+	{% block extra_css_after %}{% endblock %}
+</head>
+<body class="content_left scheme_red {{ body_class|default:'' }} {% block body_class %}{% endblock %}" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
+	<section id="main_wrap">
+		{% block header %}
+		{% include "components/navbar_a0.html" %}
+		{% endblock %}
+
+		{% block main_wrap_after_header %}
+		<section class="wrapper" id="main_content">
+			{% block home_top_strip %}{% endblock %}
+			<div class="layout">
+				<aside class="sidebar-left">
+					{% include "components/sidebar_left.html" %}
+				</aside>
+				<main class="main-content">
+					{% block content %}
+					{% endblock %}
+				</main>
+				<aside class="sidebar-right">
+					{% include "components/sidebar_right.html" %}
+				</aside>
+			</div>
+		</section>
+
+		{% block footer %}
+		<footer id="footer" class="wrapper">
+			<div class="container">
+				<div id="post_footer">
+					<div id="site_info" class="clearfix">
+						<div class="right">&copy; EU Adopt</div>
+					</div>
+				</div>
+			</div>
+		</footer>
+		{% endblock %}
+		{% endblock main_wrap_after_header %}
+	</section>
+	{% include "components/login_required_modal.html" %}
+	{% block extra_js %}{% endblock %}
+</body>
+</html>

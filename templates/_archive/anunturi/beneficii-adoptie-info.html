@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Beneficii după adopție | EU Adopt{% endblock %}
+{% block body_class %}page-beneficii-adoptie{% endblock %}
+
+{% block content %}
+<div class="beneficii-info-page">
+	<h2 class="entry-title">Beneficii după adopție</h2>
+	<p class="beneficii-info-message">Beneficiile sunt disponibile doar după finalizarea unei adopții.</p>
+	<p><a href="{% url 'pets_all' %}" class="button">Vezi prietenii tăi</a></p>
+</div>
+<style>
+.beneficii-info-page { padding: 2rem 0; max-width: 36em; }
+.beneficii-info-message { margin: 1rem 0 1.5rem; color: #444; font-size: 1.05rem; }
+</style>
+{% endblock %}

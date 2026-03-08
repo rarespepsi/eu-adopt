@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dezabonare notificări wishlist | EU Adopt{% endblock %}
+{% block body_class %}page-wishlist-unsubscribe{% endblock %}
+
+{% block content %}
+<div class="auth-content-wrap" style="max-width: 500px; margin: 2rem auto;">
+	<div class="auth-form-box">
+		<section class="page">
+			<h2 class="entry-title">Notificări wishlist</h2>
+			<div class="entry-content clearfix">
+				{% if success %}
+					<p>Te-ai dezabonat de la notificările email pentru lista „Te plac”. Nu vei mai primi reminderuri sau știri despre animalele salvate.</p>
+					<p><a href="{% url 'home' %}">Înapoi la prima pagină</a> · <a href="{% url 'wishlist' %}">Lista mea</a></p>
+				{% else %}
+					<p>Link invalid sau expirat. Dacă dorești să te dezabonezi, folosește linkul din ultimul email primit sau dezactivează notificările din <a href="{% url 'cont_profil' %}">Contul meu</a>.</p>
+					<p><a href="{% url 'home' %}">Înapoi la prima pagină</a></p>
+				{% endif %}
+			</div>
+		</section>
+	</div>
+</div>
+{% endblock %}

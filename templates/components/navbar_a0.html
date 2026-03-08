@@ -1,0 +1,61 @@
+{% load static %}
+<!-- A0 - Navbar principal (Acasă / Animale / etc) - același pe toate paginile -->
+<header id="A0" data-slot="A0">
+	<div class="container">
+		<div id="main_menu" class="clearfix">
+			<div class="clearfix a0-bar-inner">
+				<div class="a0-left">
+					<div class="animal-counter-navbar a0-counters-left">
+						<div class="counter-item">
+							<span class="counter-icon">🐶</span>
+							<span class="counter-label">În grija noastră:</span>
+							<span class="counter-value">{{ active_animals|default:0 }}</span>
+						</div>
+						<div class="counter-item">
+							<span class="counter-icon">🏠</span>
+							<span class="counter-label">Adoptați:</span>
+							<span class="counter-value">{{ adopted_animals|default:0 }}</span>
+						</div>
+					</div>
+				</div>
+				<nav id="menu_wrap" class="a0-right">
+					<div class="menu-main-menu-container">
+						<ul id="menu-main-menu" class="menu">
+							<li><a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="current_page"{% endif %}>Acasă</a></li>
+							<li><a href="{% url 'pets_all' %}" {% if request.resolver_match.url_name == 'pets_all' %}class="current_page"{% endif %}>Prietenul tău</a></li>
+							<li><a href="{% url 'servicii' %}" {% if request.resolver_match.url_name == 'servicii' %}class="current_page"{% endif %}>Servicii</a></li>
+							<li><a href="{% url 'transport' %}" {% if request.resolver_match.url_name == 'transport' %}class="current_page"{% endif %}>Transport</a></li>
+							<li><a href="{% url 'shop' %}" {% if request.resolver_match.url_name == 'shop' %}class="current_page"{% endif %}>Shop</a></li>
+							<li><a href="{% url 'contact' %}" {% if request.resolver_match.url_name == 'contact' %}class="current_page"{% endif %}>Contact</a></li>
+							{% if user.is_authenticated %}
+								{% if user.is_staff %}<li><a href="{% url 'analiza' %}" {% if request.resolver_match.url_name == 'analiza' %}class="current_page"{% endif %}>Analiza</a></li>{% endif %}
+								<li><a href="{% url 'cont' %}" {% if request.resolver_match.url_name == 'cont' or request.resolver_match.url_name == 'cont_profil' or request.resolver_match.url_name == 'cont_ong' %}class="current_page"{% endif %}>👤 {{ user.username }}</a></li>
+								<li><a href="{% url 'cont' %}" {% if request.resolver_match.url_name == 'cont' or request.resolver_match.url_name == 'cont_profil' or request.resolver_match.url_name == 'cont_ong' %}class="current_page"{% endif %}>❤️ MyPets</a></li>
+								<li><a href="{% url 'my_wishlist' %}" {% if request.resolver_match.url_name == 'wishlist' %}class="current_page"{% endif %}>❤️ Te plac ({{ wishlist_count|default:0 }})</a></li>
+								<li><a href="{% url 'logout' %}">Logout</a></li>
+								{% if request.resolver_match.url_name == 'home' %}<li><a href="{% url 'termeni' %}">Termeni și condiții</a></li>{% endif %}
+							{% else %}
+								<li><a href="{% url 'login' %}">Intră</a></li>
+								{% if request.resolver_match.url_name == 'home' %}<li><a href="{% url 'termeni' %}">Termeni și condiții</a></li>{% endif %}
+							{% endif %}
+						</ul>
+					</div>
+				</nav>
+				<div class="a0-search-right" id="a0_search_right">
+					<div class="a0-search-form-inline">
+						<form method="get" id="searchform" action="{% url 'site_search' %}">
+							<div class="a0-search-input-wrap">
+								<input type="search" class="search_input" id="s" name="s" placeholder="Căutare..." aria-label="Căutare" autocomplete="off" />
+								<button type="submit" class="a0-search-submit" title="Caută (Enter)" aria-label="Caută"><span class="a0-search-enter-icon" aria-hidden="true"></span></button>
+								<ul id="a0_search_history" class="a0-search-history" role="listbox" aria-label="Ultimele căutări"></ul>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+			<div id="searchform_wrap" aria-hidden="true" style="display:none;">
+				<form method="get" id="searchform_fallback" action="{% url 'site_search' %}"><div><input type="search" name="s" id="s_fallback" placeholder="Căutare..." /></div></form>
+			</div>
+		</div>
+	</div>
+</header>

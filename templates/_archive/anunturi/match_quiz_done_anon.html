@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Potriviri găsite | EU Adopt{% endblock %}
+{% block body_class %}page-match-done-anon{% endblock %}
+
+{% block content %}
+<div class="match-done-anon-wrap">
+	<h2 class="entry-title">🐾 Am găsit {{ match_count }} potriviri</h2>
+	<p class="match-done-anon-msg">Te rugăm să te autentifici (sau să creezi un cont) pentru a vedea lista de animale potrivite profilului tău.</p>
+	<p class="match-done-anon-actions">
+		<a href="{{ login_url }}" class="match-done-anon-btn">Autentificare</a>
+		<a href="{% url 'pets_all' %}" class="match-done-anon-link">Înapoi la animale</a>
+	</p>
+</div>
+<style>
+.match-done-anon-wrap { max-width: 540px; margin: 0 auto; padding: 2rem 1rem; text-align: center; }
+.match-done-anon-msg { color: #555; margin: 1rem 0 1.5rem; font-size: 1.05rem; }
+.match-done-anon-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; align-items: center; }
+.match-done-anon-btn { display: inline-block; padding: 12px 28px; background: #c62828; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600; }
+.match-done-anon-btn:hover { background: #b71c1c; color: #fff; }
+.match-done-anon-link { color: #666; text-decoration: none; }
+.match-done-anon-link:hover { text-decoration: underline; }
+</style>
+{% endblock %}

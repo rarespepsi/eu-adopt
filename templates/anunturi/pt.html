@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Prietenul tău | EU Adopt{% endblock %}
+
+{% block body_class %}page-pt page-animale{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt1" type="text/css" media="screen" />
+<style>
+	/* #PW fix în viewport între P1 și P3: înălțime limitată la viewport, flex ca grid-ul să împartă spațiul */
+	body.page-pt #main_content { min-height: 0; display: flex !important; flex-direction: column !important; }
+	body.page-pt #main_content #PW {
+		height: calc(100vh - var(--nav-h, 64px)) !important;
+		max-height: calc(100vh - var(--nav-h, 64px)) !important;
+		min-height: 0 !important;
+		display: flex !important;
+		flex-direction: column !important;
+		overflow: hidden !important;
+	}
+	#PW .pt-strip-item--p1 img,
+	#PW .pt-strip-item--p3 img {
+		width: 100% !important; height: 100% !important;
+		min-width: 100% !important; min-height: 100% !important;
+		object-fit: cover !important; object-position: center center !important;
+		display: block !important;
+	}
+</style>
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<main id="PW">
+		<div class="pt-grid">
+			<div id="P1" class="pt-cell pt-cell-1" data-slot="P1">
+				<div class="pt-strip-wrap pt-strip-p1" aria-label="Banda poze animale">
+					<div class="pt-strip-track pt-strip-track--p1">
+						{% for i in "12345678901234567890" %}
+						<span class="pt-strip-item pt-strip-item--p1 pt-strip-no-img">—</span>
+						{% endfor %}
+						<span class="pt-strip-item pt-strip-item--p1 pt-strip-disclaimer">EU-ADOPT – adopții responsabile</span>
+						{% for i in "12345678901234567890" %}
+						<span class="pt-strip-item pt-strip-item--p1 pt-strip-no-img">—</span>
+						{% endfor %}
+					</div>
+				</div>
+			</div>
+
+			<div id="P4" class="pt-cell pt-cell-4" data-slot="P4">
+				<div class="pt-p4-inner">
+					<div class="pt-p4-box pt-p4-box-filters" id="P4.1" data-slot="P4.1">
+						<div class="pet-filters-box p3-caseta-independenta">
+							<p class="p3-title">Caută prietenul tău</p>
+							<ul class="p3-tip-butoane clearfix animal_filter_list">
+								<li><a href="#" class="active"><span class="p3-btn-label">Toate</span><span class="p3-btn-count">—</span></a></li>
+								<li><a href="#"><span class="p3-btn-label">Câini</span><span class="p3-btn-count">—</span></a></li>
+								<li><a href="#"><span class="p3-btn-label">Pisici</span><span class="p3-btn-count">—</span></a></li>
+								<li><a href="#"><span class="p3-btn-label">Altele</span><span class="p3-btn-count">—</span></a></li>
+							</ul>
+							<form method="get" action="{% url 'pets_all' %}" id="filtre-animale" class="pt-p4-filtre-form">
+								<div class="p3-filters-grid">
+									<div class="p3-filter-cell">
+										<label for="id_judet_pt">Județ</label>
+										<select name="judet" id="id_judet_pt">
+											<option value="">— Toate —</option>
+										</select>
+									</div>
+									<div class="p3-filter-cell">
+										<label for="id_marime_pt">Talie</label>
+										<select name="marime" id="id_marime_pt">
+											<option value="">— Toate —</option>
+										</select>
+									</div>
+									<div class="p3-filter-cell">
+										<label for="id_varsta_pt">Vârstă</label>
+										<select name="varsta" id="id_varsta_pt">
+											<option value="">— Toate —</option>
+										</select>
+									</div>
+									<div class="p3-filter-cell">
+										<label for="id_sex_pt">Sex</label>
+										<select name="sex" id="id_sex_pt">
+											<option value="">— Toate —</option>
+										</select>
+									</div>
+								</div>
+								<a href="{% url 'pets_all' %}" class="p3-reset-link">Resetează filtre</a>
+							</form>
+						</div>
+					</div>
+					<div class="pt-p4-box pt-p4-box-match" id="P4.2" data-slot="P4.2">
+						<a href="#" class="pt-p4-btn-match" title="Găsește-ți sufletul pereche">Găsește-mi perechea</a>
+					</div>
+					<div class="pt-p4-box pt-p4-box-ads" id="P4.3" data-slot="P4.3"><span class="pt-p4-placeholder">P4.3</span></div>
+				</div>
+			</div>
+
+			<div id="P2" class="pt-cell pt-cell-2" data-slot="P2" aria-label="Listă animale – 4 coloane × 3 rânduri vizibile, scroll vertical">
+				<div class="pt-p2-scroll">
+					<div class="pt-p2-grid" role="list">
+						{% for pet in p2_pets %}
+						<div class="pt-p2-cell pt-p2-card-cell" role="listitem">
+							{% include "anunturi/includes/pt_p2_card.html" with pet=pet %}
+						</div>
+						{% endfor %}
+						{% for pet in p2_pets_rest %}
+						<div class="pt-p2-cell pt-p2-card-cell" role="listitem">
+							{% include "anunturi/includes/pt_p2_card.html" with pet=pet %}
+						</div>
+						{% endfor %}
+					</div>
+				</div>
+			</div>
+
+			<div id="P5" class="pt-cell pt-cell-5" data-slot="P5">
+				<div class="pt-p5-grid">
+					<div class="pt-p5-slot" id="P5.1" data-slot="P5.1"><span class="pt-p5-label">P5.1</span></div>
+					<div class="pt-p5-slot" id="P5.2" data-slot="P5.2"><span class="pt-p5-label">P5.2</span></div>
+					<div class="pt-p5-slot" id="P5.3" data-slot="P5.3"><span class="pt-p5-label">P5.3</span></div>
+				</div>
+			</div>
+
+			<div id="P3" class="pt-cell pt-cell-3" data-slot="P3">
+				<div class="pt-strip-wrap pt-strip-p3" aria-label="Banda poze animale">
+					<div class="pt-strip-track pt-strip-track--p3">
+						{% for i in "12345678901234567890" %}
+						<span class="pt-strip-item pt-strip-item--p3 pt-strip-no-img">—</span>
+						{% endfor %}
+						<span class="pt-strip-item pt-strip-item--p3 pt-strip-disclaimer">EU-ADOPT – adopții responsabile</span>
+						{% for i in "12345678901234567890" %}
+						<span class="pt-strip-item pt-strip-item--p3 pt-strip-no-img">—</span>
+						{% endfor %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+</section>
+
+{% block footer %}
+<footer id="footer" class="wrapper">
+	<div class="container">
+		<div id="post_footer">
+			<div id="site_info" class="clearfix">
+				<div class="right">&copy; EU Adopt</div>
+			</div>
+		</div>
+	</div>
+</footer>
+{% endblock %}
+{% endblock main_wrap_after_header %}
