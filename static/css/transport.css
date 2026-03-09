@@ -71,6 +71,7 @@
 	justify-content: center;
 	min-width: 0;
 	min-height: 0;
+	position: relative;
 }
 /* Hub: centrul lui = centrul casetei centrale; inelul e poziționat relativ la acest punct */
 #TW #T2 .t2-hub {
@@ -93,12 +94,42 @@
 	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
 	background: #fff;
 	flex-shrink: 0;
+	display: block;
+	cursor: pointer;
 }
 #TW #T2 .t2-center-img {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
 	display: block;
+}
+
+/* Titlu deasupra inelului, fără să afecteze poziția acestuia */
+#TW #T2 .t2-title {
+	position: absolute;
+	top: 0.5rem;
+	left: 50%;
+	transform: translateX(-50%);
+	margin: 0;
+	padding: 0.15rem 0.6rem;
+	font-size: 1.25rem;
+	font-weight: 800;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.55);
+	border-radius: 999px;
+	white-space: nowrap;
+	z-index: 3;
+}
+
+#TW #T2 .t2-title a {
+	color: inherit;
+	text-decoration: none;
+	display: inline-block;
+}
+#TW #T2 .t2-title a:hover {
+	text-decoration: underline;
 }
 
 /* Cercuri în jurul centrului casetei centrale; centrul inelului = centrul .t2-hub = centrul casetei */
@@ -108,6 +139,8 @@
 	inset: 0;
 	pointer-events: none;
 	transform: translate(45px, 49px); /* centru inel față de hub: 1,2cm → 45px, 1,3cm → 49px */
+	background: transparent; /* fundalul original (imaginea .tw-row) se vede în jurul cercurilor */
+	z-index: 10; /* peste sigla centrală ca casetele la hover să apară și peste centru */
 }
 /* Poziționare relativă la centrul hub-ului (centrul casetei centrale) */
 #TW #T2 .t2-circle {
@@ -122,30 +155,155 @@
 	margin-left: min(-7vmin, -45px);
 	margin-top: min(-7vmin, -45px);
 	border-radius: 50%;
-	overflow: hidden;
+	overflow: visible; /* lăsăm eticheta să iasă sub cerc ca „picior” */
 	box-shadow: 0 2px 8px rgba(0,0,0,0.25);
 	pointer-events: auto;
+	background: transparent; /* fără fundal negru – se vede fundalul paginii */
+	z-index: 1;
+}
+#TW #T2 .t2-circle:hover {
+	z-index: 100; /* caseta activă peste cercuri vecine și sigla centrală */
+}
+#TW #T2 .t2-extra-circle {
+	position: absolute;
+	top: 0.8rem;
+	left: 0.8rem;
+	width: min(24vmin, 150px);  /* mai mare, pentru text circular mai aerisit */
+	height: min(24vmin, 150px);
+	border-radius: 50%;
+	background: rgba(255, 193, 7, 0.95);
+	box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	color: #1a1a1a;
+	text-decoration: none;
+	cursor: pointer;
+	font-weight: 800;
+	z-index: 50;
+}
+#TW #T2 .t2-extra-circle-img {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 60%;
+	height: 60%;
+	transform: translate(-50%, -50%);
+	border-radius: 50%;
+	object-fit: cover;
+	box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.95); /* inel galben în jurul capului */
+	z-index: 1;
+}
+#TW #T2 .t2-extra-circle-svg {
+	position: relative;
+	width: 96%;
+	height: 96%;
+	z-index: 2;
+	animation: t2-extra-circle-rotate 20s linear infinite;
+}
+#TW #T2 .t2-extra-circle-text {
+	font-size: 11px; /* ~10% mai mare decât înainte */
+	letter-spacing: 0.7px; /* păstrăm spațiul mai strâns între litere/cuvinte */
+	text-transform: none; /* păstrăm majuscula doar la începutul fiecărui cuvânt, cum e în text */
+	fill: #1a1a1a;
+	font-weight: 800;
+}
+
+@keyframes t2-extra-circle-rotate {
+	from { transform: rotate(0deg); }
+	to   { transform: rotate(360deg); }
 }
 #TW #T2 .t2-circle img {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
 	display: block;
+	border-radius: 50%; /* imaginea tăiată la cerc, nu pătrat – nu se vede fundal negru în colțuri */
 }
+/* Cifră în cerc – ușor de schimbat (poziție, imagine, text) după număr */
 #TW #T2 .t2-circle-nr {
 	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	font-size: min(5vmin, 28px);
+	top: 2px;
+	right: 2px;
+	z-index: 2;
+	width: 1.1em;
+	height: 1.1em;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.6rem;
 	font-weight: 800;
 	color: #fff;
-	text-shadow: 0 0 4px #000, 0 0 8px #000, 1px 1px 2px #000;
+	background: rgba(0, 0, 0, 0.65);
+	border-radius: 50%;
 	line-height: 1;
-	z-index: 1;
+	box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+#TW #T2 .t2-circle-label {
+	position: absolute;
+	left: 50%;
+	top: 100%; /* lipită imediat sub cerc, ca un „picior” */
+	transform: translate(-50%, 0.12rem);
+	padding: 0.12rem 0.32rem;
+	font-size: 0.55rem;
+	font-weight: 600;
+	color: #1a1a1a;
+	background: rgba(255, 193, 7, 0.95);
+	border-radius: 4px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+	white-space: nowrap;
+	max-width: 140%;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+/* Casetă albă cu descriere la hover – dreptunghiulară, text pe 2–3 rânduri, mărime dublă, deasupra vecinilor */
+#TW #T2 .t2-circle-tooltip {
+	position: absolute;
+	left: 50%;
+	top: 100%;
+	transform: translate(-50%, 0.35rem);
+	z-index: 10; /* peste conținutul cercului; cercul la hover are z-index 100 */
+	width: 22em;
+	max-width: 22em;
+	padding: 0.7rem 1rem;
+	font-size: 1.16rem;
+	line-height: 1.35;
+	color: #1a1a1a;
+	background: rgba(255, 193, 7, 0.95);
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+	white-space: normal;
+	text-align: center;
+	pointer-events: none;
+	visibility: hidden;
+	opacity: 0;
+	transition: visibility 0.15s, opacity 0.15s;
+}
+/* 9, 1, 2 – caseta dedesubt (implicit) */
+#TW #T2 .t2-circle--1 .t2-circle-tooltip,
+#TW #T2 .t2-circle--2 .t2-circle-tooltip,
+#TW #T2 .t2-circle--9 .t2-circle-tooltip {
+	top: 100%;
+	transform: translate(-50%, 0.35rem);
+}
+/* 5, 6 – caseta deasupra */
+#TW #T2 .t2-circle--5 .t2-circle-tooltip,
+#TW #T2 .t2-circle--6 .t2-circle-tooltip {
+	top: auto;
+	bottom: 100%;
+	transform: translate(-50%, -0.35rem);
+}
+#TW #T2 .t2-circle:hover .t2-circle-tooltip {
+	visibility: visible;
+	opacity: 1;
+}
+#TW #T2 .t2-circle--5:hover .t2-circle-tooltip,
+#TW #T2 .t2-circle--6:hover .t2-circle-tooltip {
+	transform: translate(-50%, -0.35rem);
 }
 /* Poziție pe inel + contrarotație ca cifra/poza să rămână drepte. Raza: -247.5% - 38px (38px ≈ +1cm). */
-#TW #T2 .t2-circle--1 { transform: translate(-50%, -50%) rotate(0deg) translateY(calc(-247.5% - 38px)) rotate(0deg); }
+#TW #T2 .t2-circle--1 { transform: translate(-50%, -50%) rotate(0deg) translateY(calc(-205% - 38px)) rotate(0deg); }
 #TW #T2 .t2-circle--2 { transform: translate(-50%, -50%) rotate(40deg) translateY(calc(-247.5% - 38px)) rotate(-40deg); }
 #TW #T2 .t2-circle--3 { transform: translate(-50%, -50%) rotate(80deg) translateY(calc(-247.5% - 38px)) rotate(-80deg); }
 #TW #T2 .t2-circle--4 { transform: translate(-50%, -50%) rotate(120deg) translateY(calc(-247.5% - 38px)) rotate(-120deg); }
@@ -154,6 +312,58 @@
 #TW #T2 .t2-circle--7 { transform: translate(-50%, -50%) rotate(240deg) translateY(calc(-247.5% - 38px)) rotate(-240deg); }
 #TW #T2 .t2-circle--8 { transform: translate(-50%, -50%) rotate(280deg) translateY(calc(-247.5% - 38px)) rotate(-280deg); }
 #TW #T2 .t2-circle--9 { transform: translate(-50%, -50%) rotate(320deg) translateY(calc(-247.5% - 38px)) rotate(-320deg); }
+
+/* T3 – casetă liberă în dreapta lui T2 (fundal comun pe .tw-row) */
+#TW #T3.tw-cell {
+	/* Lățime apropiată de coloana P4 (~0.75fr din 6fr ≈ 12.5% din lățime) */
+	flex: 0 0 12.5%;
+	max-width: 14%;
+	min-width: 0;
+	min-height: 0;
+	border: 3px solid #000;
+	border-left-color: #2e7d32;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+#TW #T3 .t3-inner {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: flex-start;
+	gap: 0.25rem;
+	padding: 0.4rem 0.3rem 0.3rem;
+	background: transparent; /* fundal din .tw-row */
+	box-sizing: border-box;
+}
+#TW #T3 .t3-title {
+	margin: 0 0 0.25rem;
+	font-size: 0.8rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	text-align: center;
+	color: #ffffff;
+	background: #0050b5; /* albastru tip Pepsi */
+	padding: 0.25rem 0.4rem;
+	border-radius: 4px;
+	text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+#TW #T3 .t3-box {
+	flex: 1 1 auto;
+	min-height: 0;
+	border-radius: 6px;
+	background: rgba(255, 255, 255, 0.35);
+	box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+	box-sizing: border-box;
+}
+#TW #T3 .t3-box-1 { /* rezervat viitor: ex. reclame text */ }
+#TW #T3 .t3-box-2 { /* rezervat viitor: ex. logo-uri parteneri */ }
+#TW #T3 .t3-box-3 { /* rezervat viitor: ex. CTA sau info legală */ }
 
 /* T1 – formular transport, redus ~25% (minim lizibil) */
 #TW #T1 .t1-inner {
@@ -267,15 +477,18 @@
 	color: #1a1a1a;
 }
 #TW #T1 .t1-link {
-	font-size: 0.55rem;
-	font-weight: 600;
+	font-size: 0.7rem; /* mai mare, mai vizibil */
+	font-weight: 700;
 	text-transform: uppercase;
-	color: #1565c0;
+	color: #ff1744; /* roșu mai aprins, foarte vizibil */
 	text-decoration: none;
 	margin-top: 0;
 	display: inline-block;
 }
-#TW #T1 .t1-link:hover { text-decoration: underline; }
+#TW #T1 .t1-link:hover {
+	text-decoration: underline;
+	color: #d50000; /* roșu aprins, ușor mai închis la hover */
+}
 #TW #T1 .t1-input-wrap {
 	position: relative;
 	display: flex;
@@ -330,3 +543,103 @@
 	box-sizing: border-box;
 }
 #TW #T1 .t1-submit:hover { background: rgba(13, 71, 161, 0.85); }
+
+/* ========== Mobil – pagină Transport ========== */
+@media (max-width: 768px) {
+	body.page-transport { overflow-y: auto !important; overflow-x: hidden !important; }
+	body.page-transport #main_wrap { overflow: visible !important; min-height: 100vh; }
+	body.page-transport #main_content { overflow-y: auto !important; overflow-x: hidden !important; flex: 1 1 auto !important; }
+	body.page-transport #main_content #TW { overflow: visible !important; height: auto !important; max-height: none !important; flex: 1 1 auto !important; }
+	#TW .tw-row {
+		flex-direction: column;
+		overflow: visible;
+		min-height: 0;
+	}
+	#TW #T1.tw-cell {
+		width: 100%;
+		max-width: 100%;
+		flex: 0 0 auto;
+		min-height: 120px;
+	}
+	#TW #T2.tw-cell {
+		flex: 1 1 0;
+		min-height: 200px;
+	}
+	#TW #T3.tw-cell {
+		flex: 0 0 auto;
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
+		min-height: 80px;
+	}
+	#TW #T2 .t2-title {
+		font-size: 0.85rem;
+		white-space: normal;
+		text-align: center;
+		max-width: 90%;
+		padding: 0.25rem 0.5rem;
+	}
+	#TW #T2 .t2-center {
+		width: min(28vmin, 140px);
+		height: min(28vmin, 140px);
+		min-width: 100px;
+		min-height: 100px;
+	}
+	#TW #T2 .t2-circles {
+		transform: translate(30px, 35px);
+	}
+	#TW #T2 .t2-circle {
+		width: min(10vmin, 56px);
+		height: min(10vmin, 56px);
+		margin-left: min(-5vmin, -28px);
+		margin-top: min(-5vmin, -28px);
+	}
+	#TW #T2 .t2-circle-label {
+		font-size: 0.45rem;
+		padding: 0.08rem 0.2rem;
+		max-width: 120%;
+	}
+	#TW #T2 .t2-circle-tooltip {
+		width: 16em;
+		max-width: 90vw;
+		font-size: 0.9rem;
+		padding: 0.5rem 0.6rem;
+	}
+	#TW #T2 .t2-extra-circle {
+		width: min(18vmin, 100px);
+		height: min(18vmin, 100px);
+		top: 0.4rem;
+		left: 0.4rem;
+	}
+	#TW #T2 .t2-extra-circle-text {
+		font-size: 8px;
+	}
+	#TW #T1 .t1-row-inline {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	#TW #T1 .t1-row-inline .t1-input-num {
+		width: 100%;
+		max-width: 4rem;
+	}
+	#TW #T1 .t1-title { font-size: 0.95rem; min-height: 2.5rem; }
+	#TW #T1 .t1-intro { font-size: 0.55rem; }
+	#TW #T1 .t1-label, #TW #T1 .t1-select, #TW #T1 .t1-input { font-size: 0.65rem; }
+	#TW #T1 .t1-link { font-size: 0.65rem; }
+	#TW #T1 .t1-submit {
+		min-height: 44px;
+		font-size: 0.7rem;
+		padding: 0.5rem;
+	}
+	#TW #T3 .t3-title { font-size: 0.7rem; }
+	#TW #T3 .t3-inner {
+		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.35rem;
+	}
+	#TW #T3 .t3-box {
+		flex: 1 1 80px;
+		min-height: 50px;
+	}
+}

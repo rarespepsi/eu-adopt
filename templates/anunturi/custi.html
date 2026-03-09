@@ -1,0 +1,762 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Harta cuștilor autocarului | EU Adopt{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/custi.css' %}?v=1" type="text/css" media="screen" />
+<style>
+	/* Asigurăm fundalul unic cu poza de cuști pe tot TWW */
+	#TWW.custi-page {
+		display: flex;
+		flex-direction: column;
+		position: relative; /* pentru overlay-ul de donație */
+		background: url("{% static 'images/transport/custi-autocar.png' %}") center/cover no-repeat;
+	}
+	#TWW .tww-strip {
+		width: 100%;
+		flex-shrink: 0;
+	}
+	#TWW .tww-strip--top {
+		flex: 0 0 8%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: transparent;
+		border-bottom: none;
+	}
+	#TWW .tww-strip--main {
+		flex: 1 1 auto;
+		background: transparent; /* la fel, fără fundal separat */
+		border-top: none;
+	}
+
+	/* Centrare titlu + text, butoane pe un rând stânga/dreapta */
+	#TWW .tww-top-inner {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.12rem;
+	}
+	/* Fundal discret în ton cu pagina ca titlul și subtitlul să se vadă bine */
+	#TWW .tww-top-title {
+		margin: 0;
+		padding: 0.15rem 0.5rem;
+		font-size: 1.15rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		color: #ffffff;
+		text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+		background: rgba(180, 40, 50, 0.75);
+		border-radius: 6px;
+	}
+	#TWW .tww-top-subtitle {
+		margin: 0;
+		padding: 0.1rem 0.4rem;
+		font-size: 0.78rem;
+		font-weight: 500;
+		color: #ffffff;
+		text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+		background: rgba(180, 40, 50, 0.7);
+		border-radius: 6px;
+	}
+	#TWW .tww-top-actions {
+		width: 100%;
+		max-width: none;
+		padding: 0 0.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: space-between; /* trei zone: stânga / mijloc / dreapta */
+		gap: 0.5rem;
+	}
+	/* Stânga: buton centrat deasupra casetelor din stânga (aceeași lățime ca grupul de casete) */
+	#TWW .tww-top-actions-left {
+		flex: 0 0 180px;
+		display: flex;
+		justify-content: center;
+	}
+	/* Mijloc: Donează centrat pe rând */
+	#TWW .tww-top-actions-center {
+		flex: 1;
+		display: flex;
+		justify-content: center;
+	}
+	/* Dreapta: buton centrat deasupra casetelor din dreapta */
+	#TWW .tww-top-actions-right {
+		flex: 0 0 180px;
+		display: flex;
+		justify-content: center;
+	}
+	#TWW .tww-top-btn {
+		display: inline-block;
+		padding: 0.25rem 0.9rem;
+		border-radius: 999px;
+		background: rgba(21, 101, 192, 0.9);
+		color: #fff;
+		font-size: 0.8rem;
+		font-weight: 700;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+
+	/* Layout TWW2: umple înălțimea până la limita TWW */
+	#TWW .tww-strip--main {
+		display: flex;
+		align-items: stretch;
+		justify-content: center;
+		min-height: 0;
+		overflow: hidden;
+		flex: 1 1 auto;
+	}
+
+	#TWW .tww-main-layout {
+		width: 100%;
+		max-width: none;
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0;
+		padding: 0.3rem 0.5rem;
+		margin-top: 4%;
+		box-sizing: border-box;
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	#TWW .tww-custi-labels {
+		flex: 0 0 auto;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 2rem;
+		padding: 0 0.5rem 0.2rem;
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: #fff;
+		text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+	}
+	#TWW .tww-custi-labels .tww-label-left,
+	#TWW .tww-custi-labels .tww-label-right {
+		flex: 0 0 200px;
+		min-width: 200px;
+		text-align: center;
+	}
+	#TWW .tww-cages-wrap {
+		flex: 1 1 0;
+		min-height: 0;
+		display: flex;
+		justify-content: space-between;
+		align-items: stretch;
+		gap: 2rem;
+	}
+
+	#TWW .tww-side {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		flex: 0 0 200px;
+		min-width: 200px;
+		min-height: 0;
+	}
+	#TWW .tww-row {
+		display: flex;
+		flex-direction: row;
+		gap: 0.35rem;
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	#TWW .tww-row .tww-slot {
+		flex: 1 1 0;
+		min-width: 85px;
+		min-height: 26px;
+	}
+
+	#TWW .tww-slot {
+		flex: 1 1 0;
+		margin: 0.06rem 0;
+		padding: 0.2rem 0.3rem;
+		border-radius: 4px;
+		/* casetă semi-transparentă cu blur pe fundal, culoare controlată din JS */
+		background: var(--slot-bg, rgba(220, 53, 69, 0.6)); /* roșu mai aprins implicit */
+		backdrop-filter: blur(3px);
+		-webkit-backdrop-filter: blur(3px);
+		color: #111;
+		font-size: 0.7rem; /* text puțin mai mic */
+		font-weight: 700;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		cursor: pointer;
+		--fill: 0%;
+	}
+
+	/* Bara de donații în interiorul fiecărei casete (nu schimbăm dimensiunile) */
+	#TWW .tww-slot::after {
+		content: "";
+		position: absolute;
+		left: 4px;
+		right: 4px;
+		bottom: 4px;
+		height: 4px;
+		border-radius: 999px;
+		background: rgba(0,0,0,0.12); /* fundal gol */
+	}
+	#TWW .tww-slot::before {
+		content: "";
+		position: absolute;
+		left: 4px;
+		bottom: 4px;
+		height: 4px;
+		border-radius: 999px;
+		/* culoare controlată din JS: aceeași nuanță cu caseta, puțin mai închisă */
+		background: var(--bar-color, #b0b0b0);
+		width: var(--fill, 0%);
+	}
+
+	/* Caseta centrală de donație – overlay peste TWW1+TWW2 (controlată din JS) */
+	#TWW .tww-donate-modal {
+		position: absolute;
+		inset: 0;
+		background: rgba(0,0,0,0.55);
+		display: none;
+		align-items: center;
+		justify-content: center;
+		z-index: 20;
+	}
+	/* Modal se poate deschide fie prin JS (.is-open), fie direct cu ancora #tww-donate-modal (:target) */
+	#tww-donate-modal:target,
+	#TWW .tww-donate-modal.is-open {
+		display: flex;
+	}
+	#TWW .tww-donate-content {
+		background: #ffffff;
+		color: #111;
+		min-width: 260px;
+		max-width: 420px;
+		padding: 1rem 1.2rem;
+		border-radius: 8px;
+		box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+		position: relative;
+		display: flex;
+		flex-direction: row;
+		transition: max-width 0.25s ease;
+	}
+	#TWW .tww-donate-content.is-expanded {
+		max-width: 560px;
+	}
+	#TWW .tww-donate-form {
+		min-width: 260px;
+		flex-shrink: 0;
+	}
+	#TWW .tww-donate-thanks {
+		width: 0;
+		overflow: hidden;
+		opacity: 0;
+		transition: width 0.25s ease, opacity 0.2s ease;
+		border-left: 1px solid #eee;
+		padding-left: 0;
+		margin-left: 0;
+	}
+	#TWW .tww-donate-content.is-expanded .tww-donate-thanks {
+		width: 200px;
+		min-width: 200px;
+		opacity: 1;
+		padding-left: 1rem;
+		margin-left: 0.75rem;
+	}
+	#TWW .tww-donate-thanks h3 {
+		margin: 0 0 0.5rem;
+		font-size: 1rem;
+		color: #1565c0;
+	}
+	#TWW .tww-donate-donors {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		font-size: 0.78rem;
+		color: #444;
+		line-height: 1.5;
+	}
+	#TWW .tww-donate-donors li {
+		margin-bottom: 0.2rem;
+		white-space: nowrap;
+	}
+	#TWW .tww-donate-flag {
+		width: 20px;
+		height: auto;
+		vertical-align: middle;
+		margin-right: 0.35rem;
+	}
+	#TWW .tww-donate-close {
+		position: absolute;
+		top: 0.4rem;
+		right: 0.5rem;
+		width: 1.4rem;
+		height: 1.4rem;
+		border-radius: 999px;
+		border: none;
+		background: transparent;
+		color: #555;
+		font-size: 1rem;
+		line-height: 1;
+		cursor: pointer;
+	}
+	#TWW .tww-donate-close:hover {
+		background: rgba(0,0,0,0.06);
+		color: #000;
+	}
+	#TWW .tww-donate-content h2 {
+		margin: 0 0 0.5rem;
+		font-size: 1.1rem;
+		text-align: center;
+	}
+	#TWW .tww-donate-valori {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 0.6rem;
+		font-size: 0.85rem;
+	}
+	#TWW .tww-donate-valoare-col {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		flex: 1;
+	}
+	#TWW .tww-donate-valoare-col .tww-donate-label {
+		font-weight: 500;
+		margin-bottom: 0.2rem;
+	}
+	#TWW .tww-donate-cifra {
+		white-space: nowrap;
+	}
+	#TWW .tww-donate-progress {
+		position: relative;
+		width: 100%;
+		height: 6px;
+		border-radius: 999px;
+		background: rgba(0,0,0,0.12);
+		overflow: hidden;
+		margin: 0.2rem 0 0.6rem;
+	}
+	#TWW .tww-donate-progress::before {
+		content: "";
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: var(--modal-fill, 0%);
+		/* culoare controlată din JS, sincron cu bara cuștii selectate */
+		background: var(--modal-bar-color, #b0b0b0);
+	}
+	#TWW .tww-donate-content label {
+		display: block;
+		font-size: 0.8rem;
+		margin-bottom: 0;
+	}
+	#TWW .tww-donate-sum-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		margin-bottom: 0.25rem;
+	}
+	#TWW .tww-donate-altă-wrap {
+		width: 80px;
+		text-align: center;
+		font-size: 0.75rem;
+		color: #333;
+		flex-shrink: 0;
+	}
+	#TWW .tww-donate-presets {
+		display: flex;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
+		margin-bottom: 0.6rem;
+	}
+	#TWW .tww-donate-presets button {
+		padding: 0.2rem 0.6rem;
+		font-size: 0.8rem;
+		border-radius: 999px;
+		border: none;
+		cursor: pointer;
+		background: #1565c0;
+		color: #ffffff;
+		font-weight: 700;
+	}
+	#TWW .tww-donate-presets button:hover {
+		background: #0d47a1;
+	}
+	#TWW .tww-donate-presets button.active {
+		box-shadow: 0 0 0 2px #fff;
+		background: #0d47a1;
+	}
+	#TWW .tww-donate-presets input[type="number"] {
+		width: 80px;
+		box-sizing: border-box;
+		padding: 0.2rem 0.3rem;
+		font-size: 0.85rem;
+		border-radius: 999px;
+		border: 1px solid #1565c0;
+		text-align: center;
+		background: #ffffff;
+		color: #000000;
+	}
+	#TWW .tww-donate-presets input[type="number"].active {
+		border: 2px solid #1565c0;
+		box-shadow: 0 0 0 1px #0d47a1;
+	}
+	#TWW .tww-donate-actions {
+		display: flex;
+		justify-content: center;
+		gap: 0.5rem;
+	}
+	#TWW .tww-donate-actions button {
+		padding: 0.25rem 0.8rem;
+		font-size: 0.8rem;
+		border-radius: 999px;
+		border: none;
+		cursor: pointer;
+	}
+	#TWW .tww-donate-actions button[data-variant="primary"] {
+		background: #1565c0;
+		color: #fff;
+	}
+
+	/* Casetă pătrată la limita de jos TWW, centrată */
+	#TWW .tww-strip--bottom {
+		flex: 0 0 auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.4rem 0;
+		background: transparent;
+	}
+	#TWW .tww-bottom-box {
+		width: 140px;
+		height: 140px;
+		min-width: 140px;
+		min-height: 140px;
+		background: rgba(220, 53, 69, 0.9); /* roșu aprins, ca la cuști */
+		backdrop-filter: blur(4px);
+		border-radius: 8px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		padding: 0.5rem;
+		box-sizing: border-box;
+		color: #fff;
+		font-size: 0.75rem;
+		line-height: 1.35;
+	}
+	#TWW .tww-bottom-box .tww-bottom-text {
+		text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+	}
+</style>
+{% endblock %}
+
+{% block body_class %}page-custi{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<main id="TWW" class="custi-page" aria-label="Harta cuștilor autocarului">
+		<div class="tww-strip tww-strip--top" aria-label="Bandă sus TWW">
+			<div class="tww-top-inner">
+				<h1 class="tww-top-title">Autocarul EU-ADOPT – Sponsorizează o cușcă</h1>
+				<p class="tww-top-subtitle">Fiecare loc oferă siguranță și condiții unui suflet în drum spre casă. Alege o cușcă și sprijină să îndeplinim proiectul!</p>
+				<div class="tww-top-actions">
+					<div class="tww-top-actions-left"><a href="{% url 'pets_all' %}" class="tww-top-btn">Înapoi la Prietenii tăi</a></div>
+					<div class="tww-top-actions-center"><a href="#" class="tww-top-btn tww-top-btn--donate">Donează pentru servicii medicale și hrană</a></div>
+					<div class="tww-top-actions-right"><a href="{% url 'transport' %}" class="tww-top-btn">Înapoi la Transport</a></div>
+				</div>
+			</div>
+		</div>
+		<div class="tww-strip tww-strip--main" aria-label="Zona principală TWW">
+			<div class="tww-main-layout">
+				<div class="tww-custi-labels">
+					<span class="tww-label-left">Cuști stânga</span>
+					<span class="tww-label-right">Cuști dreapta</span>
+				</div>
+				<div class="tww-cages-wrap">
+				<div class="tww-side tww-side--left">
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L1</a><a href="#tww-donate-modal" class="tww-slot">L2</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L3</a><a href="#tww-donate-modal" class="tww-slot">L4</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L5</a><a href="#tww-donate-modal" class="tww-slot">L6</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L7</a><a href="#tww-donate-modal" class="tww-slot">L8</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L9</a><a href="#tww-donate-modal" class="tww-slot">L10</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L11</a><a href="#tww-donate-modal" class="tww-slot">L12</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L13</a><a href="#tww-donate-modal" class="tww-slot">L14</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L15</a><a href="#tww-donate-modal" class="tww-slot">L16</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L17</a><a href="#tww-donate-modal" class="tww-slot">L18</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L19</a><a href="#tww-donate-modal" class="tww-slot">L20</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L21</a><a href="#tww-donate-modal" class="tww-slot">L22</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L23</a><a href="#tww-donate-modal" class="tww-slot">L24</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L25</a><a href="#tww-donate-modal" class="tww-slot">L26</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L27</a><a href="#tww-donate-modal" class="tww-slot">L28</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L29</a><a href="#tww-donate-modal" class="tww-slot">L30</a></div>
+				</div>
+				<div class="tww-side tww-side--right">
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L31</a><a href="#tww-donate-modal" class="tww-slot">L32</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L33</a><a href="#tww-donate-modal" class="tww-slot">L34</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L35</a><a href="#tww-donate-modal" class="tww-slot">L36</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L37</a><a href="#tww-donate-modal" class="tww-slot">L38</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L39</a><a href="#tww-donate-modal" class="tww-slot">L40</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L41</a><a href="#tww-donate-modal" class="tww-slot">L42</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L43</a><a href="#tww-donate-modal" class="tww-slot">L44</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L45</a><a href="#tww-donate-modal" class="tww-slot">L46</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L47</a><a href="#tww-donate-modal" class="tww-slot">L48</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L49</a><a href="#tww-donate-modal" class="tww-slot">L50</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L51</a><a href="#tww-donate-modal" class="tww-slot">L52</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L53</a><a href="#tww-donate-modal" class="tww-slot">L54</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L55</a><a href="#tww-donate-modal" class="tww-slot">L56</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L57</a><a href="#tww-donate-modal" class="tww-slot">L58</a></div>
+					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot">L59</a><a href="#tww-donate-modal" class="tww-slot">L60</a></div>
+				</div>
+				</div>
+			</div>
+		</div>
+		<div class="tww-strip tww-strip--bottom" aria-label="Caseta text jos">
+			<div class="tww-bottom-box">
+				<span class="tww-bottom-text">Ajută la construcția proiectului<br />We COME TO YOU<br />Alege o cușcă și fii sponsorul ei!</span>
+			</div>
+		</div>
+		<div class="tww-donate-modal" id="tww-donate-modal">
+			<div class="tww-donate-content" id="tww-donate-content">
+				<button type="button" id="tww-donate-close" class="tww-donate-close" aria-label="Închide">×</button>
+				<div class="tww-donate-form">
+					<h2>Donatie pentru loc <span id="tww-donate-loc"></span></h2>
+					<div class="tww-donate-valori">
+						<div class="tww-donate-valoare-col"><span class="tww-donate-label">Valoare cușcă</span><span class="tww-donate-cifra"><strong id="tww-donate-5000">5.000</strong> lei</span></div>
+						<div class="tww-donate-valoare-col"><span class="tww-donate-label">Valoare rămasă</span><span class="tww-donate-cifra"><span id="tww-donate-ramasa">5.000</span> lei</span></div>
+					</div>
+					<div class="tww-donate-progress"></div>
+					<div class="tww-donate-sum-row">
+						<label for="tww-donate-suma">Sumă de donat (lei)</label>
+						<span class="tww-donate-altă-wrap">Altă sumă</span>
+					</div>
+					<div class="tww-donate-presets">
+						<button type="button" data-amount="25">25</button>
+						<button type="button" data-amount="50">50</button>
+						<button type="button" data-amount="100">100</button>
+						<input type="number" id="tww-donate-suma" min="25" max="5000" step="25" value="50" />
+					</div>
+					<div class="tww-donate-actions">
+						<button type="button" id="tww-donate-confirm" data-variant="primary">Donează</button>
+					</div>
+				</div>
+				<div class="tww-donate-thanks">
+					<h3>Mulțumim</h3>
+					<ul class="tww-donate-donors">
+						<li><img src="https://flagcdn.com/w20/ro.png" alt="" class="tww-donate-flag" /> Maria P.</li>
+						<li><img src="https://flagcdn.com/w20/md.png" alt="" class="tww-donate-flag" /> Ion M.</li>
+						<li><img src="https://flagcdn.com/w20/ro.png" alt="" class="tww-donate-flag" /> Elena D.</li>
+						<li><img src="https://flagcdn.com/w20/de.png" alt="" class="tww-donate-flag" /> Andrei S.</li>
+						<li><img src="https://flagcdn.com/w20/it.png" alt="" class="tww-donate-flag" /> Ana M.</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</main>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var modal = document.getElementById('tww-donate-modal');
+  if (!modal) return;
+
+  var donateContent = document.getElementById('tww-donate-content');
+  var locSpan = document.getElementById('tww-donate-loc');
+  var ramasaSpan = document.getElementById('tww-donate-ramasa');
+  var closeBtn = document.getElementById('tww-donate-close');
+  var confirmBtn = document.getElementById('tww-donate-confirm');
+  var sumaInput = document.getElementById('tww-donate-suma');
+  var presetBtns = modal.querySelectorAll('.tww-donate-presets button[data-amount]');
+  var modalProgress = modal.querySelector('.tww-donate-progress');
+
+  function expandDonateBox() {
+    if (donateContent) donateContent.classList.add('is-expanded');
+  }
+
+  var currentSlot = null;
+  var amounts = {};
+  // Sume demo predefinite pentru a vedea barele umplute (roșu / galben / verde)
+  var initialAmounts = {
+    'L1': 500,
+    'L2': 1250,
+    'L3': 2600,
+    'L4': 4000,
+    'L5': 2500,
+    'L6': 800,
+    'L7': 3400,
+    'L8': 1000,
+    'L9': 4800,
+    'L10': 5000,
+    'L11': 3200,
+    'L12': 3900,
+    'L14': 2100,
+    'L15': 4400,
+    'L16': 1250,
+    'L18': 700,
+    'L20': 3700,
+    'L22': 750,
+    'L25': 2900,
+    'L28': 4100,
+    'L30': 1500,
+    'L33': 2300,
+    'L35': 4600,
+    'L37': 3000,
+    'L39': 550,
+    'L40': 3850,
+    'L42': 2700,
+    'L45': 4200,
+    'L48': 3550,
+    'L50': 5000,
+    'L52': 1200,
+    'L55': 4300,
+    'L58': 3100,
+    'L60': 1500
+  };
+
+  function getColorsForPercent(percent) {
+    // 0–50% roșu (inclusiv zero donații), 50–75% galben, >75% verde
+    if (percent <= 50) {
+      return {
+        slotBg: 'rgba(220, 53, 69, 0.8)',   // roșu deschis, mult mai intens
+        bar: '#b02130'                      // roșu mai închis
+      };
+    } else if (percent <= 75) {
+      return {
+        slotBg: 'rgba(255, 193, 7, 0.35)',   // galben deschis
+        bar: '#b28704'                       // galben mai închis
+      };
+    } else {
+      return {
+        slotBg: 'rgba(25, 135, 84, 0.35)',   // verde deschis
+        bar: '#145c43'                       // verde mai închis
+      };
+    }
+  }
+
+  function updateModalProgressFromValue(val) {
+    if (!modalProgress) return;
+    var v = parseInt(val, 10);
+    var percent = (!isNaN(v) && v > 0) ? Math.max(0, Math.min(100, (v / 5000) * 100)) : 0;
+    modalProgress.style.setProperty('--modal-fill', percent + '%');
+    var colors = getColorsForPercent(percent);
+    modalProgress.style.setProperty('--modal-bar-color', colors.bar);
+  }
+
+  function setPresetActive(amount) {
+    presetBtns.forEach(function(btn) {
+      btn.classList.toggle('active', parseInt(btn.getAttribute('data-amount'), 10) === amount);
+    });
+    if (sumaInput) sumaInput.classList.remove('active');
+  }
+  function setCustomActive() {
+    presetBtns.forEach(function(btn) { btn.classList.remove('active'); });
+    if (sumaInput) sumaInput.classList.add('active');
+  }
+
+  function openForSlot(slot) {
+    currentSlot = slot;
+    var loc = slot.textContent.trim();
+    locSpan.textContent = loc;
+    if (amounts[loc] !== undefined) {
+      sumaInput.value = amounts[loc];
+    } else {
+      sumaInput.value = 50;
+    }
+    var donated = amounts[loc] || 0;
+    var ramasa = Math.max(0, 5000 - donated);
+    if (ramasaSpan) ramasaSpan.textContent = ramasa.toLocaleString('ro-RO');
+    updateModalProgressFromValue(sumaInput.value);
+    var val = parseInt(sumaInput.value, 10);
+    if (val === 25 || val === 50 || val === 100) setPresetActive(val);
+    else setCustomActive();
+    modal.classList.add('is-open');
+  }
+
+  function closeModal() {
+    modal.classList.remove('is-open');
+    if (donateContent) donateContent.classList.remove('is-expanded');
+    currentSlot = null;
+  }
+
+  document.querySelectorAll('#TWW .tww-slot').forEach(function(slot) {
+    var loc = slot.textContent.trim();
+    var percent;
+    if (initialAmounts[loc] !== undefined) {
+      var demoVal = initialAmounts[loc];
+      amounts[loc] = demoVal;
+      percent = Math.max(0, Math.min(100, (demoVal / 5000) * 100));
+    } else {
+      percent = 0; // fără donații = roșu (0–50%)
+    }
+    slot.style.setProperty('--fill', percent + '%');
+    var colors = getColorsForPercent(percent);
+    slot.style.setProperty('--slot-bg', colors.slotBg);
+    slot.style.setProperty('--bar-color', colors.bar);
+
+    slot.addEventListener('click', function(e) {
+      e.preventDefault();
+      openForSlot(this);
+    });
+  });
+
+  presetBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var amount = parseInt(this.getAttribute('data-amount'), 10);
+      if (!isNaN(amount) && amount > 0) {
+        sumaInput.value = amount;
+        updateModalProgressFromValue(amount);
+        setPresetActive(amount);
+        sumaInput.blur();
+        expandDonateBox();
+      }
+    });
+  });
+
+  if (sumaInput) {
+    sumaInput.addEventListener('focus', function() {
+      setCustomActive();
+      expandDonateBox();
+    });
+    sumaInput.addEventListener('input', function() {
+      updateModalProgressFromValue(this.value);
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function() {
+      closeModal();
+    });
+  }
+
+  confirmBtn.addEventListener('click', function() {
+    if (!currentSlot) { closeModal(); return; }
+    var loc = currentSlot.textContent.trim();
+    var val = parseInt(sumaInput.value, 10);
+    if (!isNaN(val) && val > 0) {
+      amounts[loc] = val;
+      var percent = Math.max(0, Math.min(100, (val / 5000) * 100));
+      currentSlot.style.setProperty('--fill', percent + '%');
+      var colors = getColorsForPercent(percent);
+      currentSlot.style.setProperty('--slot-bg', colors.slotBg);
+      currentSlot.style.setProperty('--bar-color', colors.bar);
+    }
+    updateModalProgressFromValue(val);
+    closeModal();
+  });
+});
+</script>
+{% endblock %}
+

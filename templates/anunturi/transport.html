@@ -39,6 +39,12 @@
 		flex-direction: column !important;
 		overflow: hidden !important;
 	}
+	@media (max-width: 768px) {
+		body.page-transport { overflow-y: auto !important; overflow-x: hidden !important; }
+		body.page-transport #main_wrap { overflow: visible !important; min-height: 100vh !important; }
+		body.page-transport #main_content { overflow-y: auto !important; overflow-x: hidden !important; }
+		body.page-transport #main_content #TW { overflow: visible !important; height: auto !important; max-height: none !important; }
+	}
 </style>
 {% endblock %}
 
@@ -93,23 +99,80 @@
 			</div>
 			<div id="T2" class="tw-cell" data-slot="T2">
 				<div class="t2-inner">
+					{% include "components/transport_bulina.html" %}
+					<h2 class="t2-title">
+						<a href="{% url 'custi' %}">FII PARTE DIN DRUM · Harta autocar</a>
+					</h2>
 					<!-- Hub: centrul acestui div = centrul casetei centrale; inelul folosește același punct -->
 					<div class="t2-hub">
-						<div class="t2-center">
+						<a href="{% url 'custi' %}" class="t2-center">
 							<img src="{% static 'images/transport/servicii/central.jpeg' %}" alt="" class="t2-center-img" />
-						</div>
+						</a>
 						<div class="t2-circles">
-						<div class="t2-circle t2-circle--1"><img src="{% static 'images/transport/servicii/servicii_1.jpeg' %}" alt="" /><span class="t2-circle-nr">1</span></div>
-						<div class="t2-circle t2-circle--2"><img src="{% static 'images/transport/servicii/servicii_2.jpeg' %}" alt="" /><span class="t2-circle-nr">2</span></div>
-						<div class="t2-circle t2-circle--3"><img src="{% static 'images/transport/servicii/servicii_3.jpeg' %}" alt="" /><span class="t2-circle-nr">3</span></div>
-						<div class="t2-circle t2-circle--4"><img src="{% static 'images/transport/servicii/servicii_4.jpeg' %}" alt="" /><span class="t2-circle-nr">4</span></div>
-						<div class="t2-circle t2-circle--5"><img src="{% static 'images/transport/servicii/servicii_5.jpeg' %}" alt="" /><span class="t2-circle-nr">5</span></div>
-						<div class="t2-circle t2-circle--6"><img src="{% static 'images/transport/servicii/servicii_6.jpeg' %}" alt="" /><span class="t2-circle-nr">6</span></div>
-						<div class="t2-circle t2-circle--7"><img src="{% static 'images/transport/servicii/servicii_7.jpeg' %}" alt="" /><span class="t2-circle-nr">7</span></div>
-						<div class="t2-circle t2-circle--8"><img src="{% static 'images/transport/servicii/servicii_8.jpeg' %}" alt="" /><span class="t2-circle-nr">8</span></div>
-						<div class="t2-circle t2-circle--9"><img src="{% static 'images/transport/servicii/servicii_9.jpeg' %}" alt="" /><span class="t2-circle-nr">9</span></div>
+						<div class="t2-circle t2-circle--1">
+							<span class="t2-circle-nr">1</span>
+							<img src="{% static 'images/transport/servicii/servicii_1.jpeg' %}" alt="" />
+							<span class="t2-circle-label">Transport internațional</span>
+							<span class="t2-circle-tooltip">Transport sigur al animalelor în țară și peste graniță, cu vehicul dedicat.</span>
+						</div>
+						<div class="t2-circle t2-circle--2">
+							<span class="t2-circle-nr">2</span>
+							<img src="{% static 'images/transport/servicii/servicii_2.jpeg' %}" alt="" />
+							<span class="t2-circle-label">Facilități la interior</span>
+							<span class="t2-circle-tooltip">60 de locuri special amenajate pentru transport în siguranță.</span>
+						</div>
+						<div class="t2-circle t2-circle--3">
+							<span class="t2-circle-nr">3</span>
+							<img src="{% static 'images/transport/servicii/servicii_3.jpeg' %}" alt="" />
+							<span class="t2-circle-label">Ventilație / căldură</span>
+							<span class="t2-circle-tooltip">Aer condiționat și încălzire pentru temperatură constantă în drum.</span>
+						</div>
+						<div class="t2-circle t2-circle--4">
+							<span class="t2-circle-nr">4</span>
+							<img src="{% static 'images/transport/servicii/servicii_4.jpeg' %}" alt="" />
+							<span class="t2-circle-label">Localizare GPS</span>
+							<span class="t2-circle-tooltip">Urmărire în timp real a traseului și a locației vehiculului.</span>
+						</div>
+						<div class="t2-circle t2-circle--5">
+							<span class="t2-circle-nr">5</span>
+							<img src="{% static 'images/transport/servicii/servicii_5.jpeg' %}" alt="" />
+							<span class="t2-circle-label">VET · Asistență VET</span>
+							<span class="t2-circle-tooltip">Veterinar la bord sau asistență veterinară la cerere în timpul transportului.</span>
+						</div>
+						<div class="t2-circle t2-circle--6">
+							<span class="t2-circle-nr">6</span>
+							<img src="{% static 'images/transport/servicii/servicii_6.jpeg' %}" alt="" />
+							<span class="t2-circle-label">Popas hrană</span>
+							<span class="t2-circle-tooltip">Opriri regulate pentru apă, mâncare și odihnă pe traseu.</span>
+						</div>
+						<div class="t2-circle t2-circle--7">
+							<span class="t2-circle-nr">7</span>
+							<img src="{% static 'images/transport/servicii/servicii_3.jpeg' %}" alt="" />
+							<span class="t2-circle-label">Confort individual</span>
+							<span class="t2-circle-tooltip">Fiecare animal are cușcă proprie pentru siguranță și liniște.</span>
+						</div>
+						<div class="t2-circle t2-circle--8">
+							<span class="t2-circle-nr">8</span>
+							<img src="{% static 'images/transport/servicii/servicii_8.jpeg' %}" alt="" />
+							<span class="t2-circle-label">Medical VET</span>
+							<span class="t2-circle-tooltip">Echipament și tratament medical veterinar disponibil în timpul călătoriei.</span>
+						</div>
+						<div class="t2-circle t2-circle--9">
+							<span class="t2-circle-nr">9</span>
+							<img src="{% static 'images/transport/servicii/servicii_9.jpeg' %}" alt="" />
+							<span class="t2-circle-label">Toaletare VET</span>
+							<span class="t2-circle-tooltip">Toaletare și îngrijire veterinară la cerere în pauzele de drum.</span>
+						</div>
 						</div>
 					</div>
+				</div>
+			</div>
+			<div id="T3" class="tw-cell" data-slot="T3">
+				<div class="t3-inner">
+					<h3 class="t3-title">Pentru transport...</h3>
+					<div class="t3-box t3-box-1" data-slot="T3.1"></div>
+					<div class="t3-box t3-box-2" data-slot="T3.2"></div>
+					<div class="t3-box t3-box-3" data-slot="T3.3"></div>
 				</div>
 			</div>
 		</div>

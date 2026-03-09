@@ -156,6 +156,10 @@ def transport_view(request):
     return render(request, "anunturi/transport.html", {})
 
 
+def custi_view(request):
+    """Pagina cuștilor / harta cuștilor autocarului."""
+    return render(request, "anunturi/custi.html", {})
+
 def dog_profile_view(request, pk):
     dog = next((d for d in DEMO_DOGS if d["id"] == pk), None)
     if not dog:
