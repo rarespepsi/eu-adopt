@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Intră în cont – EU-ADOPT{% endblock %}
+{% block body_class %}page-login{% endblock %}
+
+{% block extra_css %}
+<style>
+	body.page-login #main_wrap {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		padding: 0;
+		margin: 0;
+		background: transparent;
+	}
+	body.page-login #main_content {
+		flex: 1 1 auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 1.5rem 1rem;
+		background: transparent !important;
+		box-shadow: none !important;
+	}
+	.login-card {
+		width: 100%;
+		max-width: 420px;
+		background: #ffffff;
+		border-radius: 16px;
+		box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+		padding: 1.75rem 1.5rem 1.5rem;
+		box-sizing: border-box;
+	}
+	.login-card h1 {
+		margin: 0 0 1rem;
+		font-size: 1.3rem;
+		font-weight: 800;
+		color: #e53935;
+		text-align: center;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+	.login-card p {
+		margin: 0 0 1rem;
+		font-size: 0.9rem;
+		color: #555;
+		text-align: center;
+	}
+	.login-field {
+		margin-bottom: 0.9rem;
+	}
+	.login-field label {
+		display: block;
+		margin-bottom: 0.25rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: #555;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+	}
+	.login-field input {
+		width: 100%;
+		padding: 0.45rem 0.55rem;
+		border-radius: 8px;
+		border: 1px solid #ccc;
+		font-size: 0.9rem;
+		box-sizing: border-box;
+	}
+	.login-actions {
+		margin-top: 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.login-submit {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		padding: 0.55rem 0.75rem;
+		border-radius: 999px;
+		border: none;
+		background: #2e7d32;
+		color: #fff;
+		font-weight: 700;
+		font-size: 0.95rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		cursor: pointer;
+	}
+	.login-submit:hover {
+		background: #1b5e20;
+	}
+	.login-links {
+		font-size: 0.8rem;
+		text-align: center;
+	}
+	.login-links a {
+		color: #1565c0;
+		text-decoration: none;
+		font-weight: 600;
+	}
+	.login-links a:hover {
+		text-decoration: underline;
+	}
+</style>
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<main aria-label="Autentificare EU-ADOPT">
+		<div class="login-card">
+			<h1>Intră în cont</h1>
+			<p>Autentificare simplă pentru a-ți gestiona anunțurile și preferințele.</p>
+			<form method="post" action="#">
+				{% csrf_token %}
+				<div class="login-field">
+					<label for="id_email">Email</label>
+					<input type="email" id="id_email" name="email" autocomplete="email" required />
+				</div>
+				<div class="login-field">
+					<label for="id_password">Parolă</label>
+					<input type="password" id="id_password" name="password" autocomplete="current-password" required />
+				</div>
+				<div class="login-actions">
+					<button type="submit" class="login-submit">Intră</button>
+					<div class="login-links">
+						<a href="{% url 'forgot_password' %}">Ți-ai uitat parola?</a> · <a href="{% url 'signup_choose_type' %}">Creează cont nou</a>
+					</div>
+				</div>
+			</form>
+		</div>
+	</main>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+	var fundalUrls = [
+		"{% static 'images/transport/fundal_1.jpg' %}",
+		"{% static 'images/transport/fundal_2.jpg' %}",
+		"{% static 'images/transport/fundal_3.jpg' %}",
+		"{% static 'images/transport/fundal_4.jpg' %}"
+	];
+	function setRandomFundal() {
+		var url = fundalUrls[Math.floor(Math.random() * fundalUrls.length)];
+		var el = document.body;
+		if (el) {
+			el.style.backgroundImage = 'url(' + url + ')';
+			el.style.backgroundSize = 'cover';
+			el.style.backgroundPosition = 'center';
+			el.style.backgroundRepeat = 'no-repeat';
+			el.style.backgroundAttachment = 'fixed';
+		}
+	}
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', setRandomFundal);
+	} else {
+		setRandomFundal();
+	}
+	setInterval(setRandomFundal, 60 * 60 * 1000);
+})();
+</script>
+{% endblock %}
+

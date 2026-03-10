@@ -844,6 +844,7 @@ svg {
         color: #CBCBCB;
         display: block;
         padding: 0;
+        text-align: center;
     }
 
 	    #main_menu a:hover,

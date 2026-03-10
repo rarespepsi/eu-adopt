@@ -3,6 +3,12 @@ from . import views
 
 urlpatterns = [
     path('', views.home_view, name='home'),
+    path('login/', views.login_view, name='login'),
+    path('login/forgot-password/', views.forgot_password_view, name='forgot_password'),
+    path('signup/alege-tip/', views.signup_choose_type_view, name='signup_choose_type'),
+    path('signup/persoana-fizica/', views.signup_pf_view, name='signup_pf'),
+    path('signup/organizatie/', views.signup_organizatie_view, name='signup_organizatie'),
+    path('signup/colaborator/', views.signup_colaborator_view, name='signup_colaborator'),
     path('servicii/', views.servicii_view, name='servicii'),
     path('transport/', views.transport_view, name='transport'),
 

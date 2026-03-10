@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Înregistrare Persoană Fizică – EU-ADOPT{% endblock %}
+{% block body_class %}page-login{% endblock %}
+
+{% block extra_css %}
+<style>
+	body.page-login {
+		min-height: 100vh;
+	}
+	body.page-login #main_wrap {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		padding: 0;
+		margin: 0;
+		background: transparent;
+	}
+	body.page-login #main_content {
+		flex: 1 1 auto;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 0.75rem 1rem 0.75rem 0;
+		background: transparent !important;
+		box-shadow: none !important;
+		min-height: 0;
+		overflow-y: auto;
+	}
+	.signup-main {
+		width: 100%;
+		max-width: 1040px;
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+		gap: 1rem;
+		flex-wrap: wrap;
+		margin-left: -10cm;
+	}
+	.signup-poza-stanga {
+		flex: 0 0 auto;
+		width: 140px;
+		height: 140px;
+		background: rgba(255, 255, 255, 0.72);
+		border: 1px solid rgba(255, 255, 255, 0.5);
+		border-radius: 10px;
+		padding: 0.5rem;
+		box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		align-items: stretch;
+	}
+	.signup-poza-stanga label {
+		display: block;
+		margin-bottom: 0.35rem;
+		font-size: 0.65rem;
+		font-weight: 600;
+		color: #555;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		line-height: 1.2;
+	}
+	.signup-poza-stanga .signup-poza-regula {
+		margin: 0 0 0.35rem;
+		font-size: 0.6rem;
+		color: #666;
+		line-height: 1.2;
+	}
+	.signup-poza-stanga input[type="file"] {
+		font-size: 0.7rem;
+		width: 100%;
+		margin-top: auto;
+	}
+	.signup-form-wrap {
+		flex: 1 1 400px;
+		min-width: 0;
+		margin-left: 4cm;
+	}
+	.signup-casete-row {
+		display: flex;
+		gap: 1rem;
+		justify-content: center;
+		align-items: stretch;
+		flex-wrap: wrap;
+	}
+	.signup-caseta {
+		flex: 1 1 300px;
+		min-width: 280px;
+		max-width: 500px;
+		background: rgba(255, 255, 255, 0.72);
+		border-radius: 12px;
+		box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+		border: 1px solid rgba(255, 255, 255, 0.5);
+		padding: 1rem 1.25rem;
+		box-sizing: border-box;
+		max-height: calc(100vh - var(--nav-h, 64px) - 5rem);
+		overflow-y: auto;
+	}
+	.signup-caseta h2 {
+		margin: 0 0 0.6rem;
+		font-size: 1rem;
+		font-weight: 800;
+		color: #e53935;
+		text-align: center;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+	.signup-form-header {
+		text-align: center;
+		margin-bottom: 0.75rem;
+	}
+	.signup-form-header h1 {
+		margin: 0 0 0.35rem;
+		font-size: 1.15rem;
+		font-weight: 800;
+		color: #e53935;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+	.signup-form-header .signup-intro {
+		margin: 0;
+		font-size: 0.8rem;
+		color: #555;
+	}
+	.signup-field {
+		margin-bottom: 0.5rem;
+	}
+	.signup-field-box {
+		border: 1px solid rgba(255, 255, 255, 0.6);
+		border-radius: 8px;
+		padding: 0.5rem 0.65rem;
+		background: rgba(255, 255, 255, 0.5);
+		margin-bottom: 0.5rem;
+	}
+	.signup-field-box:last-child {
+		margin-bottom: 0;
+	}
+	.signup-field label {
+		display: block;
+		margin-bottom: 0.15rem;
+		font-size: 0.72rem;
+		font-weight: 600;
+		color: #555;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+	}
+	.signup-field input {
+		width: 100%;
+		padding: 0.35rem 0.45rem;
+		border-radius: 6px;
+		border: 1px solid #ccc;
+		font-size: 0.85rem;
+		box-sizing: border-box;
+	}
+	.signup-actions {
+		margin-top: 0.5rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+	.signup-submit {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		padding: 0.45rem 0.75rem;
+		border-radius: 999px;
+		border: none;
+		background: #d32f2f;
+		color: #fff;
+		font-weight: 700;
+		font-size: 0.88rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		cursor: pointer;
+	}
+	.signup-submit:hover {
+		background: #e53935;
+	}
+	.signup-small {
+		font-size: 0.8rem;
+		color: #555;
+		text-align: center;
+	}
+	.signup-small a {
+		color: #1565c0;
+		font-weight: 600;
+		text-decoration: none;
+	}
+	.signup-small a:hover {
+		text-decoration: underline;
+	}
+	.signup-optional-note {
+		font-size: 0.7rem;
+		color: #555;
+		text-align: center;
+		margin: 0.25rem 0 0;
+		line-height: 1.3;
+	}
+	.signup-optional-note strong {
+		color: #e53935;
+	}
+</style>
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<main aria-label="Înregistrare Persoană Fizică EU-ADOPT" class="signup-main">
+		<div class="signup-poza-stanga">
+			<label for="id_poza_1">Poză profil (opțional)</label>
+			<p class="signup-poza-regula">JPG sau PNG, max 2 MB.</p>
+			<input type="file" id="id_poza_1" name="poza_1" accept="image/jpeg,image/png" form="signup-pf-form" data-max-mb="2" />
+		</div>
+		<div class="signup-form-wrap">
+			<div class="signup-form-header">
+				<h1>Înregistrare Persoană Fizică</h1>
+				<p class="signup-intro">Completează datele de bază pentru a crea un cont personal.</p>
+			</div>
+			<form id="signup-pf-form" method="post" action="#" enctype="multipart/form-data" autocomplete="off">
+				{% csrf_token %}
+				<div class="signup-casete-row">
+				<div class="signup-caseta">
+					<h2>Date de identificare</h2>
+					<div class="signup-field signup-field-box">
+						<label for="id_last_name">Nume *</label>
+						<input type="text" id="id_last_name" name="last_name" required autocomplete="off" />
+					</div>
+					<div class="signup-field signup-field-box">
+						<label for="id_first_name">Prenume *</label>
+						<input type="text" id="id_first_name" name="first_name" required autocomplete="off" />
+					</div>
+					<div class="signup-field signup-field-box">
+						<label for="id_email">Email *</label>
+						<input type="email" id="id_email" name="email" required autocomplete="off" />
+					</div>
+					<div class="signup-field signup-field-box">
+						<label for="id_phone">Telefon *</label>
+						<input type="tel" id="id_phone" name="phone" required autocomplete="off" />
+					</div>
+					<div class="signup-field signup-field-box">
+						<label for="id_oras">Oraș / Localitate *</label>
+						<input type="text" id="id_oras" name="oras" required autocomplete="off" />
+					</div>
+				</div>
+				<div class="signup-caseta">
+					<h2>Parolă și acorduri</h2>
+					<div class="signup-field signup-field-box">
+						<label for="id_password1">Parolă *</label>
+						<input type="password" id="id_password1" name="password1" required autocomplete="off" />
+					</div>
+					<div class="signup-field signup-field-box">
+						<label for="id_password2">Confirmare parolă *</label>
+						<input type="password" id="id_password2" name="password2" required autocomplete="off" />
+					</div>
+					<div class="signup-field signup-field-box">
+						<label>
+							<input type="checkbox" id="id_accept_termeni" name="accept_termeni" required />
+							Accept termenii și condițiile *
+						</label>
+					</div>
+					<div class="signup-field signup-field-box">
+						<label>
+							<input type="checkbox" id="id_accept_gdpr" name="accept_gdpr" required />
+							Accept prelucrarea datelor conform GDPR *
+						</label>
+					</div>
+					<div class="signup-field signup-field-box">
+						<label>
+							<input type="checkbox" id="id_email_opt_in_wishlist" name="email_opt_in_wishlist" />
+							Notificări email EU-Adopt (wishlist)
+						</label>
+					</div>
+					<div class="signup-actions" style="margin-top:0.75rem;">
+						<button type="submit" class="signup-submit">Creează cont</button>
+						<p class="signup-small">
+							<a href="{% url 'signup_choose_type' %}">Înapoi la alegerea tipului de cont</a> ·
+							<a href="{% url 'home' %}">Prima pagină</a>
+						</p>
+					</div>
+				</div>
+				</div>
+			</form>
+		</div>
+	</main>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+	var fundalUrls = [
+		"{% static 'images/transport/fundal_1.jpg' %}",
+		"{% static 'images/transport/fundal_2.jpg' %}",
+		"{% static 'images/transport/fundal_3.jpg' %}",
+		"{% static 'images/transport/fundal_4.jpg' %}"
+	];
+	function setRandomFundal() {
+		var url = fundalUrls[Math.floor(Math.random() * fundalUrls.length)];
+		var el = document.body;
+		if (el) {
+			el.style.backgroundImage = 'url(' + url + ')';
+			el.style.backgroundSize = 'cover';
+			el.style.backgroundPosition = 'center';
+			el.style.backgroundRepeat = 'no-repeat';
+			el.style.backgroundAttachment = 'fixed';
+		}
+	}
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', setRandomFundal);
+	} else {
+		setRandomFundal();
+	}
+	setInterval(setRandomFundal, 60 * 60 * 1000);
+})();
+</script>
+<script>
+(function() {
+	var form = document.getElementById('signup-pf-form');
+	var fileInput = document.getElementById('id_poza_1');
+	var checkTermeni = document.getElementById('id_accept_termeni');
+	var checkGdpr = document.getElementById('id_accept_gdpr');
+	if (!form) return;
+	var maxMb = fileInput ? parseInt(fileInput.getAttribute('data-max-mb') || '2', 10) : 2;
+	var maxBytes = maxMb * 1024 * 1024;
+	var allowedTypes = ['image/jpeg', 'image/png'];
+	form.addEventListener('submit', function(e) {
+		if (checkTermeni && !checkTermeni.checked) {
+			e.preventDefault();
+			alert('Trebuie să accepți termenii și condițiile pentru a crea cont.');
+			return;
+		}
+		if (checkGdpr && !checkGdpr.checked) {
+			e.preventDefault();
+			alert('Trebuie să accepți prelucrarea datelor conform GDPR pentru a crea cont.');
+			return;
+		}
+		if (fileInput && fileInput.files && fileInput.files[0]) {
+			var file = fileInput.files[0];
+			if (allowedTypes.indexOf(file.type) === -1) {
+				e.preventDefault();
+				alert('Poza profil: acceptăm doar JPG sau PNG.');
+				fileInput.value = '';
+				return;
+			}
+			if (file.size > maxBytes) {
+				e.preventDefault();
+				alert('Poza profil: dimensiunea maximă este ' + maxMb + ' MB.');
+				fileInput.value = '';
+				return;
+			}
+		}
+	});
+})();
+</script>
+{% endblock %}
+

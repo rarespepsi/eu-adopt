@@ -35,7 +35,7 @@
 								<li><a href="{% url 'home' %}">Logout</a></li>
 								{% if request.resolver_match.url_name == 'home' %}<li><a href="{% url 'home' %}">Termeni și condiții</a></li>{% endif %}
 							{% else %}
-								<li><a href="{% url 'home' %}">Intră</a></li>
+								<li><a href="{% url 'login' %}">Intră</a></li>
 								{% if request.resolver_match.url_name == 'home' %}<li><a href="{% url 'home' %}">Termeni și condiții</a></li>{% endif %}
 							{% endif %}
 						</ul>

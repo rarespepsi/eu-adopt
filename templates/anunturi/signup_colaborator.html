@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Înregistrare Cabinet / Magazin / Servicii – EU-ADOPT{% endblock %}
+{% block body_class %}page-login{% endblock %}
+
+{% block extra_css %}
+<style>
+	body.page-login #main_wrap {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		padding: 0;
+		margin: 0;
+		background: transparent;
+	}
+	body.page-login #main_content {
+		flex: 1 1 auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 1.5rem 1rem;
+		background: transparent !important;
+		box-shadow: none !important;
+	}
+	.signup-form-card {
+		width: 100%;
+		max-width: 560px;
+		background: rgba(255, 255, 255, 0.96);
+		border-radius: 16px;
+		box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+		padding: 1.75rem 1.5rem 1.5rem;
+		box-sizing: border-box;
+	}
+	.signup-form-card h1 {
+		margin: 0 0 0.75rem;
+		font-size: 1.35rem;
+		font-weight: 800;
+		color: #e53935;
+		text-align: center;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+	.signup-form-card p.signup-intro {
+		margin: 0 0 1rem;
+		font-size: 0.9rem;
+		color: #555;
+		text-align: center;
+	}
+	.signup-field {
+		margin-bottom: 0.75rem;
+	}
+	.signup-field label {
+		display: block;
+		margin-bottom: 0.25rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: #555;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+	}
+	.signup-field input {
+		width: 100%;
+		padding: 0.45rem 0.55rem;
+		border-radius: 8px;
+		border: 1px solid #ccc;
+		font-size: 0.9rem;
+		box-sizing: border-box;
+	}
+	.signup-actions {
+		margin-top: 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.signup-submit {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		padding: 0.6rem 0.85rem;
+		border-radius: 999px;
+		border: none;
+		background: #d32f2f;
+		color: #fff;
+		font-weight: 700;
+		font-size: 0.95rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		cursor: pointer;
+	}
+	.signup-submit:hover {
+		background: #e53935;
+	}
+	.signup-small {
+		font-size: 0.8rem;
+		color: #555;
+		text-align: center;
+	}
+	.signup-small a {
+		color: #1565c0;
+		font-weight: 600;
+		text-decoration: none;
+	}
+	.signup-small a:hover {
+		text-decoration: underline;
+	}
+</style>
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<main aria-label="Înregistrare Cabinet / Magazin / Servicii EU-ADOPT">
+		<div class="signup-form-card">
+			<h1>Înregistrare Cabinet / Magazin / Servicii</h1>
+			<p class="signup-intro">Formular pentru parteneri: cabinete veterinare, magazine, servicii pentru animale.</p>
+			<form method="post" action="#">
+				{% csrf_token %}
+				<div class="signup-field">
+					<label for="id_denumire">Denumire partener</label>
+					<input type="text" id="id_denumire" name="denumire" required />
+				</div>
+				<div class="signup-field">
+					<label for="id_cui">CUI / CIF</label>
+					<input type="text" id="id_cui" name="cui" required />
+				</div>
+				<div class="signup-field">
+					<label for="id_email">Email contact</label>
+					<input type="email" id="id_email" name="email" autocomplete="email" required />
+				</div>
+				<div class="signup-field">
+					<label for="id_telefon">Telefon</label>
+					<input type="tel" id="id_telefon" name="telefon" required />
+				</div>
+				<div class="signup-field">
+					<label for="id_parola1">Parolă</label>
+					<input type="password" id="id_parola1" name="parola1" required />
+				</div>
+				<div class="signup-field">
+					<label for="id_parola2">Confirmare parolă</label>
+					<input type="password" id="id_parola2" name="parola2" required />
+				</div>
+				<div class="signup-actions">
+					<button type="submit" class="signup-submit">Creează cont</button>
+					<p class="signup-small">
+						<a href="{% url 'signup_choose_type' %}">Înapoi la alegerea tipului de cont</a> ·
+						<a href="{% url 'home' %}">Prima pagină</a>
+					</p>
+				</div>
+			</form>
+		</div>
+	</main>
+</section>
+{% endblock %}
+

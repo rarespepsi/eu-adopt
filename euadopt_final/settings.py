@@ -117,3 +117,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = ['static']
+
+# Fișiere încărcate de utilizatori (ex: poză profil)
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'

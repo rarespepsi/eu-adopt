@@ -141,6 +141,37 @@ def home_view(request):
         "active_animals": len(DEMO_DOGS),
     })
 
+
+def login_view(request):
+    """Pagina de autentificare (placeholder simplu)."""
+    return render(request, "anunturi/login.html", {})
+
+
+def forgot_password_view(request):
+    """Pagina de resetare parolă (placeholder simplu)."""
+    return render(request, "anunturi/forgot_password.html", {})
+
+
+def signup_choose_type_view(request):
+    """Pagina de alegere tip cont (persoană fizică / firmă / ONG / colaborator)."""
+    return render(request, "anunturi/signup_choose_type.html", {})
+
+
+def signup_pf_view(request):
+    """Formular înregistrare – Persoană fizică (UI simplu, fără logică încă)."""
+    return render(request, "anunturi/signup_pf.html", {})
+
+
+def signup_organizatie_view(request):
+    """Formular înregistrare – Adăpost / ONG / Firmă (UI simplu, fără logică încă)."""
+    return render(request, "anunturi/signup_organizatie.html", {})
+
+
+def signup_colaborator_view(request):
+    """Formular înregistrare – Cabinet / Magazin / Servicii (UI simplu, fără logică încă)."""
+    return render(request, "anunturi/signup_colaborator.html", {})
+
+
 def servicii_view(request):
     """Pagina Servicii – S1/S3 benzi ca PT, strip_pets pentru poze."""
     strip_pets = []

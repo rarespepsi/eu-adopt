@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Alege tipul de cont – EU-ADOPT{% endblock %}
+{% block body_class %}page-login{% endblock %}
+
+{% block extra_css %}
+<style>
+	body.page-login #main_wrap {
+		display: flex;
+		flex-direction: column;
+		min-height: 100vh;
+		background: transparent;
+	}
+	body.page-login #main_content {
+		flex: 1 1 auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 0;
+		padding: 1rem 0;
+		background: transparent !important;
+		box-shadow: none !important;
+	}
+	body.page-login {
+		min-height: 100vh;
+	}
+	body.page-login #main_content main {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	.signup-choose-page {
+		max-width: 960px;
+		margin: 0 auto;
+		padding: 0 1rem;
+	}
+	.signup-rules-box {
+		width: 100%;
+		box-sizing: border-box;
+		margin-top: 1.5rem;
+		background: #f9f9f9;
+		border: 1px solid #e0e0e0;
+		border-radius: 8px;
+		padding: 1rem 1.25rem;
+		text-align: center;
+	}
+	.signup-rules-box h2 {
+		margin: 0 0 0.5rem;
+		font-size: 0.95rem;
+		font-weight: 700;
+		color: #e53935;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+	.signup-rules-box p {
+		margin: 0;
+		font-size: 0.8rem;
+		color: #555;
+		line-height: 1.4;
+	}
+	.signup-rules-box p + p {
+		margin-top: 0.35rem;
+	}
+	.signup-rules-box .signup-rules-termeni {
+		margin-top: 0.5rem;
+		text-align: center;
+	}
+	.signup-rules-box h3.signup-rules-main {
+		margin: 0 0 0.4rem;
+		font-size: 0.95rem;
+		color: #c62828;
+		font-weight: 700;
+		text-transform: uppercase;
+	}
+	.signup-rules-box .signup-rules-main {
+		color: #c62828;
+		font-weight: 700;
+		text-transform: uppercase;
+		font-size: 0.85rem;
+	}
+	.signup-rules-box a {
+		color: #1565c0;
+		font-weight: 600;
+	}
+	.signup-choose-page h1 {
+		margin: 0 0 0.5rem;
+		font-size: 1.4rem;
+		font-weight: 800;
+		color: #e53935;
+		text-align: center;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+	.signup-choose-page .intro {
+		margin: 0 0 1.25rem;
+		font-size: 0.9rem;
+		color: #555;
+		text-align: center;
+	}
+	.signup-cards {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 1.5rem;
+		margin-top: 1.5rem;
+	}
+	@media (max-width: 900px) {
+		.signup-cards {
+			grid-template-columns: 1fr;
+		}
+	}
+	.signup-card {
+		border: 2px solid #e0e0e0;
+		border-radius: 12px;
+		padding: 1.25rem 1rem 1rem;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		background: #ffffff;
+	}
+	.signup-card-icon {
+		font-size: 2rem;
+		margin-bottom: 0.75rem;
+	}
+	.signup-card h2 {
+		margin: 0 0 0.4rem;
+		font-size: 1rem;
+		font-weight: 800;
+		color: #333;
+	}
+	.signup-card p {
+		margin: 0 0 0.75rem;
+		font-size: 0.85rem;
+		color: #555;
+	}
+	.signup-card .signup-card-btn {
+		margin-top: auto;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.45rem 1.3rem;
+		border-radius: 6px;
+		border: none;
+		background: #d32f2f;
+		color: #fff;
+		font-size: 0.9rem;
+		font-weight: 700;
+		cursor: pointer;
+		text-transform: uppercase;
+		text-decoration: none;
+	}
+	.signup-card .signup-card-btn:hover {
+		background: #e53935;
+	}
+	.signup-back {
+		margin: 1.25rem auto 0;
+		padding: 0.5rem 0.75rem;
+		font-size: 0.9rem;
+		text-align: center;
+		background: rgba(249, 249, 249, 0.95);
+		border: 1px solid #e0e0e0;
+		border-radius: 8px;
+		box-sizing: border-box;
+		display: block;
+		width: fit-content;
+	}
+	.signup-back a {
+		color: #1565c0;
+		text-decoration: none;
+		font-weight: 600;
+	}
+	.signup-back a:hover {
+		text-decoration: underline;
+	}
+	/* Fără linie sub linkurile de jos */
+	body.page-login #main_wrap,
+	body.page-login #main_content,
+	body.page-login .wrapper,
+	body.page-login .signup-choose-page,
+	body.page-login .signup-back {
+		border-bottom: none !important;
+	}
+	body.page-login .signup-back::after {
+		display: none !important;
+	}
+</style>
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<main aria-label="Alege tipul de cont EU-ADOPT">
+		<div class="signup-choose-page">
+			<h1>Alege tipul contului</h1>
+			<p class="intro">Selectați categoria care vă descrie pentru a continua cu înregistrarea.</p>
+
+			<div class="signup-cards">
+				<div class="signup-card">
+					<div class="signup-card-icon">👤</div>
+					<h2>Persoană fizică</h2>
+					<p>Cont personal pentru adoptatori sau persoane care doresc să interacționeze cu platforma.</p>
+					<a href="{% url 'signup_pf' %}" class="signup-card-btn">Continuă</a>
+				</div>
+				<div class="signup-card">
+					<div class="signup-card-icon">🏠</div>
+					<h2>Adăpost / ONG / Firmă</h2>
+					<p>SRL/SA, ONG, asociații, fundații, adăposturi publice sau private.</p>
+					<a href="{% url 'signup_organizatie' %}" class="signup-card-btn">Continuă</a>
+				</div>
+				<div class="signup-card">
+					<div class="signup-card-icon">🖐️</div>
+					<h2>Cabinet / Magazin / Servicii</h2>
+					<p>Cabinete veterinare, toaletare pet, magazine și alți parteneri.</p>
+					<a href="{% url 'signup_colaborator' %}" class="signup-card-btn">Continuă</a>
+				</div>
+			</div>
+
+			<div class="signup-rules-box" aria-label="Regulile site-ului">
+				<h2>REGULI SITE</h2>
+				<h3 class="signup-rules-main">REGULA PRINCIPALĂ</h3>
+				<p class="signup-rules-main">Pe această platformă NU se vând și NU se cumpără animale.</p>
+				<p class="signup-rules-main">Animalele listate sunt oferite exclusiv pentru adopție.</p>
+				<p class="signup-rules-main">Orice încercare de comercializare sau negociere de preț duce la ștergerea definitivă a contului.</p>
+				<p>Înainte de înregistrare, vă rugăm să citiți regulamentul și termenii și condițiile platformei. Prin crearea unui cont, acceptați aceste reguli.</p>
+				<p class="signup-rules-termeni"><a href="#">Termeni și condiții</a></p>
+			</div>
+
+			<div class="signup-back">
+				<a href="{% url 'login' %}">Am deja cont — autentificare</a><br />
+				<a href="{% url 'home' %}">Înapoi la prima pagină</a>
+			</div>
+		</div>
+	</main>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+	var fundalUrls = [
+		"{% static 'images/transport/fundal_1.jpg' %}",
+		"{% static 'images/transport/fundal_2.jpg' %}",
+		"{% static 'images/transport/fundal_3.jpg' %}",
+		"{% static 'images/transport/fundal_4.jpg' %}"
+	];
+	function setRandomFundal() {
+		var url = fundalUrls[Math.floor(Math.random() * fundalUrls.length)];
+		var el = document.body;
+		if (el) {
+			el.style.backgroundImage = 'url(' + url + ')';
+			el.style.backgroundSize = 'cover';
+			el.style.backgroundPosition = 'center';
+			el.style.backgroundRepeat = 'no-repeat';
+			el.style.backgroundAttachment = 'fixed';
+		}
+	}
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', setRandomFundal);
+	} else {
+		setRandomFundal();
+	}
+	setInterval(setRandomFundal, 60 * 60 * 1000);
+})();
+</script>
+{% endblock %}
