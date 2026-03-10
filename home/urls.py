@@ -7,6 +7,7 @@ urlpatterns = [
     path('transport/', views.transport_view, name='transport'),
 
     path('custi/', views.custi_view, name='custi'),
+    path('shop/', views.shop_view, name='shop'),
 
     path('pets/', views.home_view, name='pets_all'),
     path('pets/<int:pk>/', views.dog_profile_view, name='pets_single'),
