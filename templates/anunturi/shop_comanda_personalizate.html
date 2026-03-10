@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Comandă produse personalizate – Shop EU-ADOPT{% endblock %}
+{% block body_class %}page-shop page-shop-comanda{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/shop.css' %}?v=1" type="text/css" media="screen" />
+<style>
+	.shop-comanda-page { max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+	.shop-comanda-page h1 { color: #b71c1c; font-size: 1.4rem; margin-bottom: 1rem; }
+	.shop-comanda-page p { margin-bottom: 1rem; line-height: 1.5; color: #333; }
+	.shop-comanda-page .back { display: inline-block; margin-top: 1.5rem; padding: 0.5rem 1rem; background: #ffca28; color: #4e342e; font-weight: 700; text-decoration: none; border-radius: 8px; }
+	.shop-comanda-page .back:hover { background: #ffb300; }
+</style>
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<main id="SHW" aria-label="Shop EU-ADOPT – Comandă produse personalizate">
+		<div class="shop-comanda-page">
+			<h1>Comandă produse personalizate pentru animale de companie</h1>
+			<p>Tricouri, hanorace, șepci, zgărzi gravate, medalioane cu nume, tag-uri QR și multe alte idei cadou – personalizate pentru prietenul tău.</p>
+			<p>Pentru comenzi și oferte personalizate, contactați-ne (formular sau email va fi disponibil aici).</p>
+			<a href="{% url 'shop' %}" class="back">← Înapoi la Shop</a>
+		</div>
+	</main>
+</section>
+{% endblock %}

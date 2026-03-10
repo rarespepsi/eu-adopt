@@ -166,6 +166,16 @@ def shop_view(request):
     return render(request, "anunturi/shop.html", {})
 
 
+def shop_comanda_personalizate_view(request):
+    """Pagina simplă de comandă produse personalizate (tricouri, șepci, zgărzi gravate etc.)."""
+    return render(request, "anunturi/shop_comanda_personalizate.html", {})
+
+
+def shop_magazin_foto_view(request):
+    """Pagina magazin foto – cumpără poze de la ONG-uri."""
+    return render(request, "anunturi/shop_magazin_foto.html", {})
+
+
 def dog_profile_view(request, pk):
     dog = next((d for d in DEMO_DOGS if d["id"] == pk), None)
     if not dog:

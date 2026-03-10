@@ -47,7 +47,15 @@
 				</div>
 			</div>
 			<div class="shw-row shw-row-middle">
-				<div class="shw-row-middle-box shw-row-middle-left"></div>
+				<div class="shw-row-middle-box shw-row-middle-left">
+					<div class="shw-side-inner-grid">
+						<div class="shw-side-inner-box">SH4.1</div>
+						<a href="{% url 'shop_magazin_foto' %}" class="shw-side-inner-box shw4-announcement shw4-link">
+							Cumpără o poză de la un ONG și ajută-i să salveze un suflet!!!
+						</a>
+						<div class="shw-side-inner-box">SH4.3</div>
+					</div>
+				</div>
 				<div class="shw-row-middle-center">
 					<!-- SHOP TABS -->
 					<div class="shop-tabs-wrap">
@@ -432,9 +440,31 @@
 						</div>
 					</div>
 				</div>
-				<div class="shw-row-middle-box shw-row-middle-right"></div>
+				<div class="shw-row-middle-box shw-row-middle-right">
+					<div class="shw-side-inner-grid">
+						<div class="shw-side-inner-box">SH5.1</div>
+						<div class="shw-side-inner-box">SH5.2</div>
+						<div class="shw-side-inner-box">SH5.3</div>
+					</div>
+				</div>
 			</div>
-			<div class="shw-row shw-row-bottom"></div>
+			<a href="{% url 'shop_comanda_personalizate' %}" class="shw-row shw-row-bottom shw-bottom-link" aria-label="Comandă produse personalizate">
+				<div class="shw-bottom-marquee">
+					<span class="shw-bottom-track">
+						<span class="shw-bottom-text">
+							Produse personalizate pentru prietenul tău: tricouri, hanorace, șepci, zgărzi gravate, medalioane cu nume, tag-uri QR și multe alte idei cadou pentru animale de companie.
+							<span class="shw-bottom-sentence-sep">•</span>
+							<span class="shw-bottom-profit">Profitul rezultat din vânzarea de produse personalizate este redirecționat către hrană pentru animale!</span>
+						</span>
+						<span class="shw-bottom-sep">•</span>
+						<span class="shw-bottom-text">
+							Produse personalizate pentru prietenul tău: tricouri, hanorace, șepci, zgărzi gravate, medalioane cu nume, tag-uri QR și multe alte idei cadou pentru animale de companie.
+							<span class="shw-bottom-sentence-sep">•</span>
+							<span class="shw-bottom-profit">Profitul rezultat din vânzarea de produse personalizate este redirecționat către hrană pentru animale!</span>
+						</span>
+					</span>
+				</div>
+			</a>
 		</div>
 	</main>
 </section>
@@ -495,6 +525,30 @@ document.addEventListener("DOMContentLoaded", function () {
   balanceGrid("#dogs", "shop-grid-dogs");             // SH2.1 – CÂINI
   balanceGrid("#cats", "shop-grid-cats");             // SH2.2 – PISICI
   balanceGrid("#accessories", "shop-grid-accessories"); // SH2.3 – ACCESORII
+
+  // Fundal Shop – aceleași 4 imagini ca la Transport, aplicate pe SHW
+  (function () {
+    var fundalUrls = [
+      "{% static 'images/transport/fundal_1.jpg' %}",
+      "{% static 'images/transport/fundal_2.jpg' %}",
+      "{% static 'images/transport/fundal_3.jpg' %}",
+      "{% static 'images/transport/fundal_4.jpg' %}"
+    ];
+
+    function setRandomFundalShop() {
+      var url = fundalUrls[Math.floor(Math.random() * fundalUrls.length)];
+      var shw = document.getElementById("SHW");
+      if (shw) {
+        shw.style.backgroundImage = "url(" + url + ")";
+        shw.style.backgroundSize = "cover";
+        shw.style.backgroundPosition = "center";
+        shw.style.backgroundRepeat = "no-repeat";
+      }
+    }
+
+    setRandomFundalShop();
+    setInterval(setRandomFundalShop, 60 * 60 * 1000);
+  })();
 });
 </script>
 {% endblock %}

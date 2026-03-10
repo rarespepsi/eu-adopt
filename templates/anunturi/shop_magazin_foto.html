@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Magazin foto – EU-ADOPT{% endblock %}
+{% block body_class %}page-shop page-shop-foto{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/shop.css' %}?v=1" type="text/css" media="screen" />
+<style>
+	.shop-foto-page {
+		max-width: 840px;
+		margin: 2rem auto;
+		padding: 0 1rem;
+	}
+	.shop-foto-page h1 {
+		color: #b71c1c;
+		font-size: 1.5rem;
+		margin-bottom: 1rem;
+	}
+	.shop-foto-page p {
+		margin-bottom: 1rem;
+		line-height: 1.5;
+		color: #333;
+	}
+	.shop-foto-page .back-link {
+		display: inline-block;
+		margin-top: 1.5rem;
+		padding: 0.5rem 1rem;
+		background: #ffca28;
+		color: #4e342e;
+		font-weight: 700;
+		text-decoration: none;
+		border-radius: 8px;
+	}
+	.shop-foto-page .back-link:hover {
+		background: #ffb300;
+	}
+</style>
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<main id="SHW" aria-label="Shop EU-ADOPT – Magazin foto ONG">
+		<div class="shop-foto-page">
+			<h1>Magazin foto – sprijină ONG-urile prin achiziția de poze</h1>
+			<p>Cumpără o poză de la un ONG și ajută-i să salveze un suflet.</p>
+			<p>Vom avea licitații de poze, concursuri de distribuire imagini și alte campanii creative prin care pozele tale preferate devin șansa unui animal la o viață mai bună.</p>
+			<p>(Conținutul final al magazinului foto va fi configurat ulterior – acum este doar o pagină de destinație funcțională.)</p>
+			<a href="{% url 'shop' %}" class="back-link">← Înapoi la Shop</a>
+		</div>
+	</main>
+</section>
+{% endblock %}
+
