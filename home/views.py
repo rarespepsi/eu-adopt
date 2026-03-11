@@ -130,6 +130,7 @@ def home_view(request):
         a2_pets.append(pet)
 
     hero_slider_images = HERO_SLIDER_IMAGES[:5]
+    show_welcome_demo = request.GET.get("welcome_demo") == "1"
     return render(request, "anunturi/home_v2.html", {
         "a2_pets": a2_pets,
         "a2_quote_pool": A2_QUOTE_POOL,
@@ -139,12 +140,44 @@ def home_view(request):
         "hero_slider_images": hero_slider_images,
         "adopted_animals": 0,
         "active_animals": len(DEMO_DOGS),
+        "show_welcome_demo": show_welcome_demo,
     })
 
 
+def logout_view(request):
+    """Delogare și redirect la Home."""
+    from django.contrib.auth import logout as auth_logout
+    from django.shortcuts import redirect
+    auth_logout(request)
+    return redirect("home")
+
+
 def login_view(request):
-    """Pagina de autentificare (placeholder simplu)."""
-    return render(request, "anunturi/login.html", {})
+    """Pagina de autentificare – acceptă email sau username."""
+    from django.contrib.auth import authenticate, login as auth_login
+    from django.contrib.auth import get_user_model
+    error = None
+    login_value = ""
+    if request.method == "POST":
+        login_value = (request.POST.get("login") or "").strip()
+        password = request.POST.get("password") or ""
+        if not login_value or not password:
+            error = "Completează Email/Utilizator și parola."
+        else:
+            User = get_user_model()
+            username = login_value
+            if "@" in login_value:
+                user_by_email = User.objects.filter(email__iexact=login_value).first()
+                if user_by_email:
+                    username = user_by_email.username
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                auth_login(request, user)
+                next_url = request.GET.get("next") or request.POST.get("next") or "/"
+                from django.shortcuts import redirect
+                return redirect(next_url)
+            error = "Email/Utilizator sau parolă incorectă."
+    return render(request, "anunturi/login.html", {"error": error, "login_value": login_value})
 
 
 def forgot_password_view(request):

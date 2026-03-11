@@ -70,8 +70,8 @@ body:not(.page-home-v2):not(.page-animale) #main_content {
 #A0 .container {
 	width: 100% !important;
 	max-width: 100% !important;
-	padding-left: 5cm !important;
-	padding-right: 6cm !important;
+	padding-left: 11.8125rem !important;
+	padding-right: 14.175rem !important;
 	height: var(--nav-height) !important;
 	min-height: var(--nav-height) !important;
 	max-height: var(--nav-height) !important;
@@ -113,21 +113,21 @@ body:not(.page-home-v2):not(.page-animale) #main_content {
 /* Contor la marginea navbar (absolute left -5cm în zona de padding) */
 #A0 #main_menu .a0-left {
 	position: absolute !important;
-	left: -5cm !important;
+	left: -11.8125rem !important;
 	top: 0 !important;
 	margin-left: 0 !important;
-	padding-left: 0.3cm !important;
+	padding-left: 0.70875rem !important;
 	display: flex !important;
 	align-items: center !important;
 	height: 100% !important;
-	max-width: 9cm !important;
+	max-width: 21.2625rem !important;
 	width: auto !important;
 	pointer-events: none !important;
 }
 #A0 #main_menu .a0-left .animal-counter-navbar { pointer-events: auto !important; }
 #A0 #main_menu .a0-search-right {
 	position: absolute !important;
-	right: -6.5cm !important; /* cu 0,5cm la stânga față de -7cm */
+	right: -15.35625rem !important; /* cu 0,5cm la stânga față de -7cm */
 	display: flex !important;
 	align-items: center !important;
 	flex-direction: row-reverse !important;
@@ -137,7 +137,7 @@ body:not(.page-home-v2):not(.page-animale) #main_content {
 	transform: none !important;
 	min-height: auto !important;
 	height: auto !important;
-	margin: 0 0 0 3cm !important; /* Acasă până la Termeni: cu 1cm la stânga (contor și căutare nemiscate) */
+	margin: 0 0 0 7.0875rem !important; /* Acasă până la Termeni (ex 3cm) */
 	padding: 0 !important;
 	display: flex !important;
 	align-items: center !important;
@@ -154,8 +154,8 @@ body:not(.page-home-v2):not(.page-animale) #main_content {
 	padding: 0 !important;
 }
 #A0 #main_menu .a0-search-form-inline #searchform #s {
-	width: 5cm !important;
-	min-width: 5cm !important;
+width: 11.8125rem !important;
+		min-width: 11.8125rem !important;
 	height: 32px !important;
 	padding: 0 28px 0 6px !important;
 	font-size: 13px !important;
@@ -170,9 +170,9 @@ body:not(.page-home-v2):not(.page-animale) #main_content {
 	color: rgba(255,255,255,0.6) !important;
 }
 #A0 #main_menu .a0-search-right.a0-search-expanded .a0-search-form-inline #searchform #s {
-	width: 15cm !important;
-	max-width: min(15cm, 40vw) !important;
-	min-width: 4cm !important;
+width: 35.4375rem !important;
+		max-width: min(35.4375rem, 40vw) !important;
+		min-width: 9.45rem !important;
 }
 #A0 #main_menu .a0-search-form-inline .a0-search-input-wrap {
 	position: relative !important;
@@ -290,7 +290,7 @@ body:not(.page-home-v2):not(.page-animale) #main_content {
 	color: #FFD54F !important;
 	background: rgba(255,193,7,0.35) !important;
 }
-#A0 #menu_wrap.a0-right { margin: 0 0 0 3cm !important; }
+#A0 #menu_wrap.a0-right { margin: 0 0 0 7.0875rem !important; }
 
 /* Contor stânga/dreapta */
 #A0 .animal-counter-navbar {

@@ -27,17 +27,34 @@
 							<li><a href="{% url 'transport' %}" {% if request.resolver_match.url_name == 'transport' %}class="current_page"{% endif %}>Transport</a></li>
 							<li><a href="{% url 'shop' %}" {% if request.resolver_match.url_name == 'shop' %}class="current_page"{% endif %}>Shop</a></li>
 							<li><a href="{% url 'home' %}">Contact</a></li>
+							{% if user.is_authenticated and user.is_staff %}
+								<li><a href="{% url 'home' %}">Analiza</a></li>
+							{% endif %}
 							{% if user.is_authenticated %}
-								{% if user.is_staff %}<li><a href="{% url 'home' %}">Analiza</a></li>{% endif %}
 								<li><a href="{% url 'home' %}">👤 {{ user.username }}</a></li>
-								<li><a href="{% url 'home' %}">❤️ MyPets</a></li>
-								<li><a href="{% url 'home' %}">❤️ Te plac ({{ wishlist_count|default:0 }})</a></li>
-								<li><a href="{% url 'home' %}">Logout</a></li>
-								{% if request.resolver_match.url_name == 'home' %}<li><a href="{% url 'home' %}">Termeni și condiții</a></li>{% endif %}
+							{% else %}
+								<li><a href="{% url 'login' %}">Contul meu</a></li>
+							{% endif %}
+							<li>
+								{% if user.is_authenticated %}
+									<a href="{% url 'home' %}">MyPet</a>
+								{% else %}
+									<a href="{% url 'login' %}">MyPet</a>
+								{% endif %}
+							</li>
+							<li>
+								{% if user.is_authenticated %}
+									<a href="{% url 'home' %}">❤️ I Love ({{ wishlist_count|default:0 }})</a>
+								{% else %}
+									<a href="{% url 'login' %}">❤️ I Love</a>
+								{% endif %}
+							</li>
+							{% if user.is_authenticated %}
+								<li><a href="{% url 'logout' %}">Logout</a></li>
 							{% else %}
 								<li><a href="{% url 'login' %}">Intră</a></li>
-								{% if request.resolver_match.url_name == 'home' %}<li><a href="{% url 'home' %}">Termeni și condiții</a></li>{% endif %}
 							{% endif %}
+							{% if request.resolver_match.url_name == 'home' %}<li><a href="{% url 'home' %}">Termeni și condiții</a></li>{% endif %}
 						</ul>
 					</div>
 				</nav>

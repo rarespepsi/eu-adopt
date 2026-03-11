@@ -5,29 +5,42 @@
 {% block body_class %}page-login{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/w-cadru.css' %}?v=1" type="text/css" media="screen" />
 <style>
 	body.page-login {
 		min-height: 100vh;
 	}
 	body.page-login #main_wrap {
-		min-height: 100vh;
-		display: flex;
-		flex-direction: column;
-		padding: 0;
-		margin: 0;
+		min-height: 100vh !important;
+		display: flex !important;
+		flex-direction: column !important;
+		padding: 0 !important;
+		margin: 0 !important;
 		background: transparent;
 	}
 	body.page-login #main_content {
-		flex: 1 1 auto;
-		display: flex;
-		flex-direction: column;
+		min-height: 0 !important;
+		display: flex !important;
+		flex-direction: column !important;
+		flex: 1 1 0 !important;
+		overflow: hidden !important;
+		padding: 0 !important;
+		margin: 0 !important;
+		width: 100% !important;
+		max-width: 100% !important;
+		background: transparent !important;
+		box-shadow: none !important;
+	}
+	body.page-login #main_content #W {
+		height: calc(100vh - var(--nav-h, 64px)) !important;
+		max-height: calc(100vh - var(--nav-h, 64px)) !important;
+		min-height: 0 !important;
+		display: flex !important;
+		flex-direction: column !important;
+		overflow: auto !important;
 		align-items: center;
 		justify-content: center;
 		padding: 0.75rem 1rem 0.75rem 0;
-		background: transparent !important;
-		box-shadow: none !important;
-		min-height: 0;
-		overflow-y: auto;
 	}
 	.signup-main {
 		width: 100%;
@@ -37,7 +50,7 @@
 		align-items: flex-start;
 		gap: 1rem;
 		flex-wrap: wrap;
-		margin-left: -10cm;
+		margin-left: -6.25rem;
 	}
 	.signup-poza-stanga {
 		flex: 0 0 auto;
@@ -78,7 +91,7 @@
 	.signup-form-wrap {
 		flex: 1 1 400px;
 		min-width: 0;
-		margin-left: 4cm;
+		margin-left: 2.5rem;
 	}
 	.signup-casete-row {
 		display: flex;
@@ -156,6 +169,24 @@
 		font-size: 0.85rem;
 		box-sizing: border-box;
 	}
+	.signup-phone-row {
+		display: flex;
+		gap: 0.35rem;
+	}
+	.signup-phone-prefix {
+		flex: 0 0 90px;
+	}
+	.signup-phone-number {
+		flex: 1 1 auto;
+	}
+	.signup-phone-prefix select {
+		width: 100%;
+		padding: 0.35rem 0.45rem;
+		border-radius: 6px;
+		border: 1px solid #ccc;
+		font-size: 0.8rem;
+		box-sizing: border-box;
+	}
 	.signup-actions {
 		margin-top: 0.5rem;
 		display: flex;
@@ -204,11 +235,152 @@
 	.signup-optional-note strong {
 		color: #e53935;
 	}
+	/* Overlay verificare SMS */
+	.signup-main-blurred {
+		filter: blur(3px);
+		pointer-events: none;
+	}
+	.signup-sms-overlay-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.55);
+		display: none;
+		align-items: center;
+		justify-content: center;
+		z-index: 1000;
+	}
+	.signup-sms-overlay {
+		max-width: 420px;
+		width: 90%;
+		background: rgba(255, 255, 255, 0.96);
+		border-radius: 14px;
+		box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+		padding: 1.25rem 1.5rem 1.1rem;
+		box-sizing: border-box;
+	}
+	.signup-sms-title {
+		margin: 0 0 0.4rem;
+		font-size: 1rem;
+		font-weight: 800;
+		color: #e53935;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+	.signup-sms-text {
+		margin: 0 0 0.6rem;
+		font-size: 0.85rem;
+		color: #444;
+		line-height: 1.4;
+	}
+	.signup-sms-code-label {
+		font-size: 0.78rem;
+		font-weight: 600;
+		color: #555;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		margin-bottom: 0.25rem;
+		display: block;
+	}
+	.signup-sms-code-input {
+		width: 100%;
+		padding: 0.4rem 0.55rem;
+		border-radius: 8px;
+		border: 1px solid #ccc;
+		font-size: 1rem;
+		letter-spacing: 0.3em;
+		text-align: center;
+		box-sizing: border-box;
+	}
+	.signup-sms-actions {
+		margin-top: 0.75rem;
+		display: flex;
+		justify-content: space-between;
+		gap: 0.5rem;
+		align-items: center;
+	}
+	.signup-sms-btn-primary {
+		flex: 1 1 auto;
+		padding: 0.45rem 0.7rem;
+		border-radius: 999px;
+		border: none;
+		background: #d32f2f;
+		color: #fff;
+		font-weight: 700;
+		font-size: 0.9rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.signup-sms-btn-primary:disabled {
+		opacity: 0.6;
+		cursor: default;
+	}
+	.signup-sms-hint {
+		font-size: 0.7rem;
+		color: #666;
+		margin-top: 0.25rem;
+	}
+	/* Overlay notă de bun venit */
+	.signup-welcome-overlay-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.55);
+		display: none;
+		align-items: center;
+		justify-content: center;
+		z-index: 1100;
+	}
+	.signup-welcome-overlay {
+		max-width: 640px;
+		width: 92%;
+		max-height: 80vh;
+		background: rgba(255, 255, 255, 0.97);
+		border-radius: 16px;
+		box-shadow: 0 10px 36px rgba(0, 0, 0, 0.4);
+		padding: 1.5rem 1.75rem 1.25rem;
+		box-sizing: border-box;
+		overflow-y: auto;
+	}
+	.signup-welcome-title {
+		margin: 0 0 0.6rem;
+		font-size: 1.05rem;
+		font-weight: 800;
+		color: #e53935;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		text-align: center;
+	}
+	.signup-welcome-text p {
+		margin: 0 0 0.6rem;
+		font-size: 0.9rem;
+		color: #444;
+		line-height: 1.5;
+	}
+	.signup-welcome-text ul {
+		margin: 0 0 0.6rem 1.2rem;
+		padding: 0;
+		font-size: 0.9rem;
+		color: #444;
+		line-height: 1.5;
+	}
+	.signup-welcome-text li {
+		margin-bottom: 0.25rem;
+	}
+	.signup-welcome-close {
+		margin-top: 0.4rem;
+		text-align: center;
+		font-size: 0.75rem;
+		color: #666;
+	}
 </style>
 {% endblock %}
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
+	<div id="W" aria-label="Cadru principal">
 	<main aria-label="Înregistrare Persoană Fizică EU-ADOPT" class="signup-main">
 		<div class="signup-poza-stanga">
 			<label for="id_poza_1">Poză profil (opțional)</label>
@@ -222,6 +394,11 @@
 			</div>
 			<form id="signup-pf-form" method="post" action="#" enctype="multipart/form-data" autocomplete="off">
 				{% csrf_token %}
+				<!-- Formular dummy ascuns ca Chrome să nu umple câmpurile reale cu user/parolă salvate -->
+				<div style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true">
+					<input type="text" name="username_fake" tabindex="-1" autocomplete="username">
+					<input type="password" name="password_fake" tabindex="-1" autocomplete="current-password">
+				</div>
 				<div class="signup-casete-row">
 				<div class="signup-caseta">
 					<h2>Date de identificare</h2>
@@ -239,22 +416,40 @@
 					</div>
 					<div class="signup-field signup-field-box">
 						<label for="id_phone">Telefon *</label>
-						<input type="tel" id="id_phone" name="phone" required autocomplete="off" />
+						<div class="signup-phone-row">
+							<div class="signup-phone-prefix">
+								<select id="id_phone_country" name="phone_country" required>
+									<option value="+40" selected>RO +40</option>
+									<option value="+39">IT +39</option>
+									<option value="+33">FR +33</option>
+									<option value="+49">DE +49</option>
+									<option value="+44">UK +44</option>
+									<option value="+34">ES +34</option>
+									<option value="+43">AT +43</option>
+									<option value="+41">CH +41</option>
+									<option value="+1">US +1</option>
+									<option value="+000">Alt cod…</option>
+								</select>
+							</div>
+							<div class="signup-phone-number">
+								<input type="tel" id="id_phone" name="phone" required autocomplete="tel-national" />
+							</div>
+						</div>
 					</div>
 					<div class="signup-field signup-field-box">
 						<label for="id_oras">Oraș / Localitate *</label>
-						<input type="text" id="id_oras" name="oras" required autocomplete="off" />
+						<input type="text" id="id_oras" name="oras" required autocomplete="address-level2" />
 					</div>
 				</div>
 				<div class="signup-caseta">
 					<h2>Parolă și acorduri</h2>
 					<div class="signup-field signup-field-box">
 						<label for="id_password1">Parolă *</label>
-						<input type="password" id="id_password1" name="password1" required autocomplete="off" />
+						<input type="password" id="id_password1" name="password1" required autocomplete="new-password" />
 					</div>
 					<div class="signup-field signup-field-box">
 						<label for="id_password2">Confirmare parolă *</label>
-						<input type="password" id="id_password2" name="password2" required autocomplete="off" />
+						<input type="password" id="id_password2" name="password2" required autocomplete="new-password" />
 					</div>
 					<div class="signup-field signup-field-box">
 						<label>
@@ -286,37 +481,55 @@
 			</form>
 		</div>
 	</main>
+	</div>
 </section>
+<div class="signup-sms-overlay-backdrop" id="signup-sms-backdrop" aria-hidden="true">
+	<div class="signup-sms-overlay">
+		<h2 class="signup-sms-title">Verificare număr de telefon</h2>
+		<p class="signup-sms-text" id="signup-sms-text">
+			Ți-am trimis un cod SMS de 6 cifre la numărul introdus în formular. Te rugăm să îl scrii mai jos pentru a continua crearea contului EU-Adopt.
+		</p>
+		<label for="id_sms_code" class="signup-sms-code-label">Cod SMS (6 cifre)</label>
+		<input type="text" id="id_sms_code" class="signup-sms-code-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" />
+		<div class="signup-sms-actions">
+			<button type="button" class="signup-sms-btn-primary" id="signup-sms-confirm-btn">
+				Accesează
+			</button>
+		</div>
+		<p class="signup-sms-hint">
+			Pentru testare acum, codul acceptat este <strong>111111</strong>. Mai târziu vom folosi SMS real.
+		</p>
+	</div>
+</div>
+<div class="signup-welcome-overlay-backdrop" id="signup-welcome-backdrop" aria-hidden="true">
+	<div class="signup-welcome-overlay">
+		<h2 class="signup-welcome-title">Bine ai venit în EU-Adopt</h2>
+		<div class="signup-welcome-text">
+			<p>
+				Aici nu se vând și nu se cumpără animale. Aici încercăm, împreună, să le găsim o casă
+				și un om care să le iubească.
+			</p>
+			<p>Pe EU-Adopt poți:</p>
+			<ul>
+				<li>să descoperi animale din ONG-uri și adăposturi care așteaptă o familie;</li>
+				<li>să sprijini ONG-urile cumpărând o poză sau un obiect stilizat în Shop – contribuția ta merge la ei;</li>
+				<li>să primești mici beneficii la fiecare adopție confirmată, ca semn de mulțumire pentru ajutor;</li>
+				<li>să distribui animale pe rețelele sociale și să crești atât șansele lor la o casă,
+					cât și șansele tale la premii lunare.</li>
+			</ul>
+			<p>
+				Fiecare vizită și fiecare distribuire poate schimba povestea unui animal. Îți mulțumim că ești aici.
+			</p>
+		</div>
+		<div class="signup-welcome-close">
+			(Închide această notă și continuă în EU-Adopt.)
+		</div>
+	</div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-(function() {
-	var fundalUrls = [
-		"{% static 'images/transport/fundal_1.jpg' %}",
-		"{% static 'images/transport/fundal_2.jpg' %}",
-		"{% static 'images/transport/fundal_3.jpg' %}",
-		"{% static 'images/transport/fundal_4.jpg' %}"
-	];
-	function setRandomFundal() {
-		var url = fundalUrls[Math.floor(Math.random() * fundalUrls.length)];
-		var el = document.body;
-		if (el) {
-			el.style.backgroundImage = 'url(' + url + ')';
-			el.style.backgroundSize = 'cover';
-			el.style.backgroundPosition = 'center';
-			el.style.backgroundRepeat = 'no-repeat';
-			el.style.backgroundAttachment = 'fixed';
-		}
-	}
-	if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', setRandomFundal);
-	} else {
-		setRandomFundal();
-	}
-	setInterval(setRandomFundal, 60 * 60 * 1000);
-})();
-</script>
+{% include 'anunturi/includes/fundal_random_script.html' %}
 <script>
 (function() {
 	var form = document.getElementById('signup-pf-form');
@@ -353,7 +566,143 @@
 				return;
 			}
 		}
+		// aici, în loc să trimitem formularul la server,
+		// deschidem verificarea prin SMS (cod 6 cifre).
+		e.preventDefault();
+		var main = document.querySelector('.signup-main');
+		var backdrop = document.getElementById('signup-sms-backdrop');
+		var smsText = document.getElementById('signup-sms-text');
+		if (main) {
+			main.classList.add('signup-main-blurred');
+		}
+		if (backdrop) {
+			backdrop.style.display = 'flex';
+		}
+		// actualizăm textul cu numărul ales
+		var prefix = document.getElementById('id_phone_country');
+		var phone = document.getElementById('id_phone');
+		if (smsText && prefix && phone) {
+			var nr = (prefix.value || '') + ' ' + (phone.value || '');
+			smsText.textContent = 'Ți-am trimis un cod SMS de 6 cifre la numărul ' + nr.trim() + '. Te rugăm să îl scrii mai jos pentru a continua crearea contului EU-Adopt.';
+		}
 	});
+})();
+</script>
+<script>
+(function() {
+	// Forțăm golirea câmpurilor sensibile la încărcarea paginii,
+	// ca să nu mai apară valori vechi / parole salvate de browser.
+	function clearSignupInputs() {
+		var ids = [
+			'id_last_name',
+			'id_first_name',
+			'id_email',
+			'id_phone',
+			'id_oras',
+			'id_password1',
+			'id_password2'
+		];
+		function reallyClear() {
+			ids.forEach(function(id) {
+				var el = document.getElementById(id);
+				if (el) {
+					el.value = '';
+				}
+			});
+		}
+		// Chrome aplică autofill după load; curățăm de mai multe ori
+		reallyClear();
+		setTimeout(reallyClear, 100);
+		setTimeout(reallyClear, 400);
+		setTimeout(reallyClear, 1000);
+		setTimeout(reallyClear, 2500);
+	}
+	window.addEventListener('load', function() { clearSignupInputs(); });
+	function prefillDemoUser() {
+		// Date demo, doar pentru testarea rapidă a fluxului PF
+		var demo = {
+			last_name: "Popescu",
+			first_name: "Ana",
+			email: "ana.popescu@example.com",
+			oras: "București",
+			phone_country: "+40",
+			phone: "753017424"
+		};
+		var el;
+		el = document.getElementById('id_last_name'); if (el && !el.value) el.value = demo.last_name;
+		el = document.getElementById('id_first_name'); if (el && !el.value) el.value = demo.first_name;
+		el = document.getElementById('id_email'); if (el && !el.value) el.value = demo.email;
+		el = document.getElementById('id_oras'); if (el && !el.value) el.value = demo.oras;
+		el = document.getElementById('id_phone_country'); if (el) el.value = demo.phone_country;
+		el = document.getElementById('id_phone'); if (el && !el.value) el.value = demo.phone;
+		el = document.getElementById('id_password1'); if (el && !el.value) el.value = "ParolaTest123!";
+		el = document.getElementById('id_password2'); if (el && !el.value) el.value = "ParolaTest123!";
+		el = document.getElementById('id_accept_termeni'); if (el) el.checked = true;
+		el = document.getElementById('id_accept_gdpr'); if (el) el.checked = true;
+	}
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', function() {
+			clearSignupInputs();
+			setTimeout(prefillDemoUser, 2000);
+		});
+	} else {
+		clearSignupInputs();
+		setTimeout(prefillDemoUser, 2000);
+	}
+})();
+</script>
+<script>
+(function() {
+	var confirmBtn = document.getElementById('signup-sms-confirm-btn');
+	var codeInput = document.getElementById('id_sms_code');
+	var backdrop = document.getElementById('signup-sms-backdrop');
+	function handleConfirm() {
+		if (!codeInput || !backdrop) return;
+		var code = (codeInput.value || '').trim();
+		if (code !== '111111') {
+			alert('Cod SMS incorect. Te rugăm să încerci din nou.');
+			codeInput.focus();
+			return;
+		}
+		// cod corect – simulăm crearea contului și mesajul de final
+		var main = document.querySelector('.signup-main');
+		if (main) {
+			main.classList.remove('signup-main-blurred');
+		}
+		backdrop.style.display = 'none';
+		// Mesaj scurt: cont creat + confirmare pe email
+		var firstNameEl = document.getElementById('id_first_name');
+		var lastNameEl = document.getElementById('id_last_name');
+		var emailEl = document.getElementById('id_email');
+		var usernamePreview = '';
+		if (firstNameEl && lastNameEl) {
+			var fn = (firstNameEl.value || '').trim();
+			var ln = (lastNameEl.value || '').trim();
+			var initial = ln ? ln.charAt(0).toUpperCase() : '';
+			usernamePreview = (fn || '').toLowerCase();
+			if (initial) {
+				usernamePreview += '.' + initial.toLowerCase();
+			}
+		}
+		var emailTxt = emailEl && emailEl.value ? emailEl.value.trim() : 'adresa ta de email';
+		alert('Userul „' + (usernamePreview || 'tău') + '” a fost creat.\n' +
+			'Un email a fost trimis la adresa ' + emailTxt + '.\n' +
+			'Vă rugăm să confirmați contul din linkul primit pe mail.\n\n' +
+			'Pentru probă acum, după ce apeși OK te vom duce direct pe pagina Home cu nota de bun venit.');
+		// pentru probă: după OK mergem pe Home cu nota de bun venit
+		window.location.href = "{% url 'home' %}?welcome_demo=1";
+	}
+	if (confirmBtn) {
+		confirmBtn.addEventListener('click', handleConfirm);
+	}
+	if (codeInput) {
+		codeInput.addEventListener('keydown', function(e) {
+			if (e.key === 'Enter') {
+				e.preventDefault();
+				handleConfirm();
+			}
+		});
+	}
 })();
 </script>
 {% endblock %}

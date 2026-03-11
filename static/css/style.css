@@ -2875,7 +2875,7 @@ body.page-animale .animale-layout-with-filters .posts-wrap {
 
 /* Titlul "Animale disponibile": coborât 0,5 cm, mai gros și mai vizibil; contor Câini/Pisici în continuare, aceleași dimensiuni */
 body.page-animale .posts-wrap .page > h2.entry-title {
-	margin-top: 0.5cm !important;
+	margin-top: 1.18125rem !important;
 	font-weight: 800 !important;
 	font-size: 1.75rem !important;
 	color: #1a1a1a !important;
@@ -2907,7 +2907,7 @@ body.page-animale .posts-wrap .page > h2.entry-title .animale-totale-caini-pisic
 	}
 	body.page-animale .posts-wrap .page > h2.entry-title {
 		font-size: 1.5rem !important;
-		margin-top: 0.35cm !important;
+		margin-top: 0.826875rem !important;
 	}
 	body.page-animale #all_pets_wrap.pets-grid {
 		grid-template-columns: repeat(3, 1fr) !important;
@@ -2960,7 +2960,7 @@ body.page-animale .posts-wrap .page > h2.entry-title .animale-totale-caini-pisic
 	}
 	body.page-animale .posts-wrap .page > h2.entry-title {
 		font-size: 1.35rem !important;
-		margin-top: 0.25cm !important;
+		margin-top: 0.590625rem !important;
 	}
 	body.page-animale #all_pets_wrap.pets-grid {
 		grid-template-columns: repeat(2, 1fr) !important;
@@ -6172,7 +6172,7 @@ body.page-cont-ong #main_content .container {
 body.page-cont-ong .cont-ong-user-block {
   flex: 0 0 auto;
   margin-top: 1rem;
-  margin-left: -11cm;
+  margin-left: -25.9875rem;
 }
 @media (max-width: 900px) {
   body.page-cont-ong .cont-ong-user-block { margin-left: 0; }

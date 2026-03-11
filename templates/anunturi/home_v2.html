@@ -7,6 +7,59 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/home_v2.css' %}?v=a2" type="text/css" media="all" />
+<style>
+	.home-welcome-overlay-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.55);
+		display: none;
+		align-items: center;
+		justify-content: center;
+		z-index: 9999;
+	}
+	.home-welcome-overlay {
+		max-width: 640px;
+		width: 92%;
+		max-height: 80vh;
+		background: rgba(255, 255, 255, 0.97);
+		border-radius: 16px;
+		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+		padding: 1.6rem 1.9rem 1.3rem;
+		box-sizing: border-box;
+		overflow-y: auto;
+	}
+	.home-welcome-title {
+		margin: 0 0 0.6rem;
+		font-size: 1.05rem;
+		font-weight: 800;
+		color: #e53935;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		text-align: center;
+	}
+	.home-welcome-text p {
+		margin: 0 0 0.6rem;
+		font-size: 0.9rem;
+		color: #444;
+		line-height: 1.5;
+	}
+	.home-welcome-text ul {
+		margin: 0 0 0.6rem 1.2rem;
+		padding: 0;
+		font-size: 0.9rem;
+		color: #444;
+		line-height: 1.5;
+	}
+	.home-welcome-text li {
+		margin-bottom: 0.25rem;
+	}
+	.home-welcome-close {
+		margin-top: 0.4rem;
+		text-align: center;
+		font-size: 0.75rem;
+		color: #666;
+	}
+</style>
 {% endblock %}
 
 {% block extra_css_after %}{% endblock %}
@@ -100,6 +153,33 @@
 		</div>
 	</div>
 </div>
+{% if show_welcome_demo %}
+<div class="home-welcome-overlay-backdrop" id="home-welcome-backdrop" aria-hidden="true">
+	<div class="home-welcome-overlay">
+		<h2 class="home-welcome-title">Bine ai venit în EU-Adopt</h2>
+		<div class="home-welcome-text">
+			<p>
+				Aici nu se vând și nu se cumpără animale. Aici încercăm, împreună, să le găsim o casă
+				și un om care să le iubească.
+			</p>
+			<p>Pe EU-Adopt poți:</p>
+			<ul>
+				<li>să descoperi animale din ONG-uri și adăposturi care așteaptă o familie;</li>
+				<li>să sprijini ONG-urile cumpărând o poză sau un obiect stilizat în Shop – contribuția ta merge la ei;</li>
+				<li>să primești mici beneficii la fiecare adopție confirmată, ca semn de mulțumire pentru ajutor;</li>
+				<li>să distribui animale pe rețelele sociale și să crești atât șansele lor la o casă,
+					cât și șansele tale la premii lunare.</li>
+			</ul>
+			<p>
+				Fiecare vizită și fiecare distribuire poate schimba povestea unui animal. Îți mulțumim că ești aici.
+			</p>
+		</div>
+		<div class="home-welcome-close">
+			(Închide această notă și continuă în EU-Adopt.)
+		</div>
+	</div>
+</div>
+{% endif %}
 {% endblock %}
 
 
@@ -119,6 +199,19 @@
 		for (var i = 0; i < quotes.length; i++) quotes[i].textContent = pick();
 	}
 	setInterval(rotate, 3000);
+})();
+</script>
+{% endif %}
+{% if show_welcome_demo %}
+<script>
+(function() {
+	var backdrop = document.getElementById('home-welcome-backdrop');
+	if (!backdrop) return;
+	// arătăm caseta imediat la încărcare
+	backdrop.style.display = 'flex';
+	backdrop.addEventListener('click', function() {
+		backdrop.style.display = 'none';
+	});
 })();
 </script>
 {% endif %}

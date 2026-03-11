@@ -123,7 +123,20 @@
 			<div id="P5" class="pt-cell pt-cell-5" data-slot="P5">
 				<div class="pt-p5-grid">
 					<div class="pt-p5-slot" id="P5.1" data-slot="P5.1"><span class="pt-p5-label">P5.1</span></div>
-					<div class="pt-p5-slot" id="P5.2" data-slot="P5.2"><span class="pt-p5-label">P5.2</span></div>
+					<div class="pt-p5-slot pt-p5-slot-user" id="P5.2" data-slot="P5.2">
+						<div class="pt-p5-user-card">
+							<div class="pt-p5-user-avatar">
+								{% if request.user.is_authenticated and request.user.profile.poza_1 %}
+								<img src="{{ request.user.profile.poza_1.url }}" alt="Poza ta de profil" />
+								{% else %}
+								<img src="{% static 'images/avatars/user_placeholder.png' %}" alt="Utilizator EU-Adopt" />
+								{% endif %}
+								<div class="pt-p5-user-badge">
+									<span class="pt-p5-user-badge-text">A distribuit de 55 de ori!</span>
+								</div>
+							</div>
+						</div>
+					</div>
 					<div class="pt-p5-slot" id="P5.3" data-slot="P5.3"><span class="pt-p5-label">P5.3</span></div>
 				</div>
 			</div>
