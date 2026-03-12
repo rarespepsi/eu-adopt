@@ -114,6 +114,7 @@ body.page-home-v2 #A2 .dog-card-link:not(.dog-card-compact) .dog-card {
 }
 body.page-home-v2 #A2 .dog-card-link:not(.dog-card-compact) .dog-card-photo {
 	display: block !important;
+	position: relative !important;
 	width: 100% !important;
 	flex: 0 0 auto !important;
 	height: 150px !important;
