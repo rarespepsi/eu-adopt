@@ -290,7 +290,28 @@ width: 35.4375rem !important;
 	color: #FFD54F !important;
 	background: rgba(255,193,7,0.35) !important;
 }
-#A0 #menu_wrap.a0-right { margin: 0 0 0 7.0875rem !important; }
+
+/* CTA: "Intră" mai vizibil (doar când nu e logat) */
+#A0 #main_menu ul li a.a0-login-cta {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	line-height: 1 !important;
+	padding: 0.32rem 0.7rem !important;
+	border-radius: 999px !important;
+	background: #d32f2f !important;
+	color: #fff !important;
+	font-weight: 800 !important;
+	letter-spacing: 0.01em !important;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.25) !important;
+}
+#A0 #main_menu ul li a.a0-login-cta:hover {
+	background: #e53935 !important;
+}
+
+/* Dacă textul "Intră / Fă cont" cere spațiu, mutăm meniul și căutarea puțin spre dreapta */
+#A0 #menu_wrap.a0-right { margin: 0 0 0 8.26875rem !important; }
+#A0 #main_menu .a0-search-right { right: -17.71875rem !important; }
 
 /* Contor stânga/dreapta */
 #A0 .animal-counter-navbar {

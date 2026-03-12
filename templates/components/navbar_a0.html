@@ -26,25 +26,27 @@
 							<li><a href="{% url 'servicii' %}" {% if request.resolver_match.url_name == 'servicii' %}class="current_page"{% endif %}>Servicii</a></li>
 							<li><a href="{% url 'transport' %}" {% if request.resolver_match.url_name == 'transport' %}class="current_page"{% endif %}>Transport</a></li>
 							<li><a href="{% url 'shop' %}" {% if request.resolver_match.url_name == 'shop' %}class="current_page"{% endif %}>Shop</a></li>
-							<li><a href="{% url 'home' %}">Contact</a></li>
 							{% if user.is_authenticated and user.is_staff %}
 								<li><a href="{% url 'home' %}">Analiza</a></li>
 							{% endif %}
 							{% if user.is_authenticated %}
-								<li><a href="{% url 'home' %}">👤 {{ user.username }}</a></li>
+								<li><a href="{% url 'account' %}">👤 {{ user.username }}</a></li>
 							{% else %}
-								<li><a href="{% url 'login' %}">Contul meu</a></li>
 							{% endif %}
 							<li>
 								{% if user.is_authenticated %}
-									<a href="{% url 'home' %}">MyPet</a>
+									{% if user.account_profile.role == 'collaborator' %}
+										<a href="{% url 'home' %}">Magazinul meu</a>
+									{% else %}
+										<a href="{% url 'home' %}">MyPet</a>
+									{% endif %}
 								{% else %}
 									<a href="{% url 'login' %}">MyPet</a>
 								{% endif %}
 							</li>
 							<li>
 								{% if user.is_authenticated %}
-									<a href="{% url 'home' %}">❤️ I Love ({{ wishlist_count|default:0 }})</a>
+									<a href="{% url 'i_love' %}">❤️ I Love (<span data-wishlist-count>{{ wishlist_count|default:0 }}</span>)</a>
 								{% else %}
 									<a href="{% url 'login' %}">❤️ I Love</a>
 								{% endif %}
@@ -52,9 +54,10 @@
 							{% if user.is_authenticated %}
 								<li><a href="{% url 'logout' %}">Logout</a></li>
 							{% else %}
-								<li><a href="{% url 'login' %}">Intră</a></li>
+								<li><a href="{% url 'login' %}" class="a0-login-cta">Intră / Fă cont</a></li>
 							{% endif %}
-							{% if request.resolver_match.url_name == 'home' %}<li><a href="{% url 'home' %}">Termeni și condiții</a></li>{% endif %}
+							<li><a href="{% url 'home' %}">Termeni și condiții</a></li>
+							<li><a href="{% url 'home' %}">Contact</a></li>
 						</ul>
 					</div>
 				</nav>

@@ -9,7 +9,11 @@ from itertools import cycle
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils import timezone
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
 from .data import DEMO_DOGS, DEMO_DOG_IMAGE, A2_QUOTE_POOL, HERO_SLIDER_IMAGES
+from .models import WishlistItem
 
 # A2 selection: 12 dogs. New (added in last 24h) first, then fill randomly from PT. Never empty if any available.
 A2_SLOT_COUNT = 12
@@ -97,10 +101,14 @@ def home_view(request):
             if i >= 20:
                 break
             strip_pets.append({"imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE)})
+        wishlist_ids = set()
+        if request.user.is_authenticated:
+            wishlist_ids = set(WishlistItem.objects.filter(user=request.user).values_list("animal_id", flat=True))
         return render(request, "anunturi/pt.html", {
             "p2_pets": p2_pets,
             "p2_pets_rest": p2_pets_rest,
             "strip_pets": strip_pets,
+            "wishlist_ids": wishlist_ids,
         })
 
     is_home = request.resolver_match.url_name == "home"
@@ -131,6 +139,9 @@ def home_view(request):
 
     hero_slider_images = HERO_SLIDER_IMAGES[:5]
     show_welcome_demo = request.GET.get("welcome_demo") == "1"
+    wishlist_ids = set()
+    if request.user.is_authenticated:
+        wishlist_ids = set(WishlistItem.objects.filter(user=request.user).values_list("animal_id", flat=True))
     return render(request, "anunturi/home_v2.html", {
         "a2_pets": a2_pets,
         "a2_quote_pool": A2_QUOTE_POOL,
@@ -141,6 +152,7 @@ def home_view(request):
         "adopted_animals": 0,
         "active_animals": len(DEMO_DOGS),
         "show_welcome_demo": show_welcome_demo,
+        "wishlist_ids": wishlist_ids,
     })
 
 
@@ -246,3 +258,68 @@ def dog_profile_view(request, pk):
         dog = {"id": pk, "nume": "—", "varsta": "—", "descriere": ""}
     ctx = {"pet": {"pk": dog["id"], "nume": dog["nume"], "varsta": dog["varsta"], "descriere": dog["descriere"], "imagine_fallback": dog.get("imagine_fallback", DEMO_DOG_IMAGE)}}
     return render(request, "anunturi/pets-single.html", ctx)
+
+
+def account_view(request):
+    """Pagina cont utilizator: date completate la înscriere + rol."""
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login')}?next={reverse('account')}")
+
+    user = request.user
+    account_profile = getattr(user, "account_profile", None)
+    user_profile = getattr(user, "profile", None)
+    return render(request, "anunturi/account.html", {
+        "account_profile": account_profile,
+        "user_profile": user_profile,
+    })
+
+
+def i_love_view(request):
+    """Pagina I Love: câinii pe care userul i-a marcat cu inimioară."""
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login')}?next={reverse('i_love')}")
+
+    ids = list(WishlistItem.objects.filter(user=request.user).order_by("-created_at").values_list("animal_id", flat=True))
+    by_id = {d["id"]: d for d in DEMO_DOGS}
+    pets = []
+    for animal_id in ids:
+        d = by_id.get(animal_id)
+        if d:
+            pets.append({
+                "pk": d["id"],
+                "nume": d["nume"],
+                "varsta": d.get("varsta", ""),
+                "descriere": d.get("descriere", ""),
+                "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
+            })
+    return render(request, "anunturi/i_love.html", {"pets": pets, "wishlist_ids": set(ids)})
+
+
+@require_POST
+@csrf_protect
+def wishlist_toggle_view(request):
+    """Toggle inimioară pentru un animal."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"ok": False, "error": "login_required"}, status=401)
+    try:
+        animal_id = int((request.POST.get("animal_id") or "").strip())
+    except Exception:
+        return JsonResponse({"ok": False, "error": "invalid_animal_id"}, status=400)
+
+    obj = WishlistItem.objects.filter(user=request.user, animal_id=animal_id).first()
+    if obj:
+        obj.delete()
+        active = False
+    else:
+        WishlistItem.objects.create(user=request.user, animal_id=animal_id)
+        active = True
+
+    wish_count = WishlistItem.objects.filter(animal_id=animal_id).count()
+    user_wishlist_count = WishlistItem.objects.filter(user=request.user).count()
+    return JsonResponse({
+        "ok": True,
+        "active": active,
+        "animal_id": animal_id,
+        "wish_count": wish_count,
+        "user_wishlist_count": user_wishlist_count,
+    })

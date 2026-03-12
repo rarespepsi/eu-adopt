@@ -104,6 +104,41 @@
 	.login-links a:hover {
 		text-decoration: underline;
 	}
+	.login-error-box {
+		display: block;
+		margin: 0 0 0.75rem;
+		padding: 0.55rem 0.7rem;
+		border-radius: 10px;
+		background: rgba(198, 40, 40, 0.08);
+		border: 1px solid rgba(198, 40, 40, 0.25);
+		color: #b71c1c;
+		font-size: 0.88rem;
+		line-height: 1.35;
+		text-align: left;
+	}
+	.login-error-box strong {
+		font-weight: 800;
+	}
+	.login-pass-tools {
+		margin-top: 0.35rem;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0.5rem;
+	}
+	.login-pass-toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.8rem;
+		color: #444;
+		cursor: pointer;
+		user-select: none;
+	}
+	.login-pass-toggle input {
+		width: auto;
+		margin: 0;
+	}
 </style>
 {% endblock %}
 
@@ -115,7 +150,11 @@
 			<p>Autentificare simplă pentru a-ți gestiona anunțurile și preferințele.</p>
 			<form method="post" action="{% url 'login' %}">
 				{% csrf_token %}
-				{% if error %}<p class="login-error" style="color:#c62828;font-size:0.85rem;margin-bottom:0.5rem;">{{ error }}</p>{% endif %}
+				{% if error %}
+					<div class="login-error-box" role="alert">
+						<strong>Autentificare eșuată.</strong> {{ error }}
+					</div>
+				{% endif %}
 				<div class="login-field">
 					<label for="id_login">Email / Utilizator</label>
 					<input type="text" id="id_login" name="login" value="{{ login_value|default:'' }}" placeholder="email sau nume utilizator" autocomplete="username" required />
@@ -123,11 +162,17 @@
 				<div class="login-field">
 					<label for="id_password">Parolă</label>
 					<input type="password" id="id_password" name="password" autocomplete="current-password" required />
+					<div class="login-pass-tools">
+						<label class="login-pass-toggle">
+							<input type="checkbox" id="login_show_pass" />
+							<span>Arată parola</span>
+						</label>
+					</div>
 				</div>
 				<div class="login-actions">
-					<button type="submit" class="login-submit">Intră</button>
+					<button type="submit" class="login-submit">Intră / Fă cont</button>
 					<div class="login-links">
-						<a href="{% url 'forgot_password' %}">Ți-ai uitat parola?</a> · <a href="{% url 'signup_choose_type' %}">Creează cont nou</a>
+						<a href="{% url 'forgot_password' %}">Ți-ai uitat parola?</a> · <a href="{% url 'signup_choose_type' %}">Creează cont (PF / ONG / Colaborator)</a>
 					</div>
 				</div>
 			</form>
@@ -146,10 +191,27 @@
 		if (loginEl && !loginEl.value) { loginEl.value = 'testuser1'; }
 		if (passEl && !passEl.value) { passEl.value = 'Test1234!'; }
 	}
+	function initShowPass() {
+		var cb = document.getElementById('login_show_pass');
+		var passEl = document.getElementById('id_password');
+		if (!cb || !passEl) return;
+		cb.addEventListener('change', function() {
+			passEl.type = cb.checked ? 'text' : 'password';
+		});
+	}
+	function onReady() {
+		// Prefill demo doar la cerere explicită: /login/?demo=1
+		try {
+			if (window.location && window.location.search && window.location.search.indexOf('demo=1') !== -1) {
+				prefillLoginDemo();
+			}
+		} catch (e) {}
+		initShowPass();
+	}
 	if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', prefillLoginDemo);
+		document.addEventListener('DOMContentLoaded', onReady);
 	} else {
-		prefillLoginDemo();
+		onReady();
 	}
 })();
 </script>

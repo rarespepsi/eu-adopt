@@ -34,6 +34,29 @@ body {
 	--btn-padding-h: clamp(12px, 3vw, 24px);
 }
 
+/* Wishlist heart – overlay on dog photos */
+.wish-btn {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	width: 34px;
+	height: 34px;
+	border-radius: 999px;
+	border: 1px solid rgba(255,255,255,0.65);
+	background: rgba(0,0,0,0.22);
+	backdrop-filter: blur(4px);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	color: #FFD54F; /* contur galben */
+	z-index: 5;
+}
+.wish-btn svg { width: 18px; height: 18px; pointer-events: none; }
+.wish-btn .wish-heart { fill: transparent; stroke: currentColor; stroke-width: 2; }
+.wish-btn.is-active { color: #d32f2f; background: rgba(255,255,255,0.75); border-color: rgba(0,0,0,0.08); }
+.wish-btn.is-active .wish-heart { fill: #d32f2f; stroke: #d32f2f; }
+
 /* ============================================== FONTS ============================================== */
 
 @font-face {

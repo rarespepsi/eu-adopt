@@ -18,7 +18,8 @@
 			.layout .sidebar-left, .layout .sidebar-right { order: 2; }
 			.layout .main-content { order: 1; }
 		}
-		/* Development: visible slot labels – do not change layout */
+		/* Development: visible slot labels – doar pentru admin Adrian */
+		{% if user.is_authenticated and user.username == 'adrian' %}
 		[data-slot] { position: relative; }
 		.slot-marker {
 			position: absolute; top: 4px; right: 4px;
@@ -29,9 +30,12 @@
 			box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 			pointer-events: none;
 		}
+		{% else %}
+		.slot-marker { display: none !important; }
+		{% endif %}
 	</style>
 	{% block extra_css %}{% endblock %}
-	<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}" type="text/css" media="screen" />
+	<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}?v=20260312" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/pet-images-common.css' %}?v=3" type="text/css" media="screen" />
 	{% block extra_css_after %}{% endblock %}
 </head>
@@ -61,6 +65,7 @@
 		{% endblock main_wrap_after_header %}
 	</section>
 	{% include "components/login_required_modal.html" %}
+	<script src="{% static 'js/wishlist.js' %}?v=1"></script>
 	{% block extra_js %}{% endblock %}
 </body>
 </html>

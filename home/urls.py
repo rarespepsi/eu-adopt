@@ -10,6 +10,9 @@ urlpatterns = [
     path('signup/persoana-fizica/', views.signup_pf_view, name='signup_pf'),
     path('signup/organizatie/', views.signup_organizatie_view, name='signup_organizatie'),
     path('signup/colaborator/', views.signup_colaborator_view, name='signup_colaborator'),
+    path('cont/', views.account_view, name='account'),
+    path('i-love/', views.i_love_view, name='i_love'),
+    path('wishlist/toggle/', views.wishlist_toggle_view, name='wishlist_toggle'),
     path('servicii/', views.servicii_view, name='servicii'),
     path('transport/', views.transport_view, name='transport'),
 

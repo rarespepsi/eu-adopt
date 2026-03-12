@@ -1,5 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.utils import timezone
 
 
 class UserProfile(models.Model):
@@ -34,6 +38,150 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.get_full_name() or self.user.username
+
+
+class AccountProfile(models.Model):
+    """
+    Profil comun pentru toți userii (PF / ONG+SRL / Colaborator).
+    Folosit pentru roluri + reguli UI.
+    """
+
+    ROLE_PF = "pf"
+    ROLE_ORG = "org"
+    ROLE_COLLAB = "collaborator"
+
+    ROLE_CHOICES = [
+        (ROLE_PF, "Persoană fizică"),
+        (ROLE_ORG, "ONG / Adăpost / Firmă"),
+        (ROLE_COLLAB, "Colaborator (servicii / produse)"),
+    ]
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="account_profile",
+    )
+    role = models.CharField("Rol cont", max_length=20, choices=ROLE_CHOICES, default=ROLE_PF)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Profil cont (rol)"
+        verbose_name_plural = "Profile cont (roluri)"
+
+    def __str__(self):
+        return f"{self.user.username} ({self.role})"
+
+    @property
+    def can_post_animals(self) -> bool:
+        return self.role in {self.ROLE_PF, self.ROLE_ORG}
+
+    @property
+    def can_adopt_animals(self) -> bool:
+        return self.role in {self.ROLE_PF, self.ROLE_ORG}
+
+    @property
+    def can_post_services(self) -> bool:
+        return self.role == self.ROLE_COLLAB
+
+
+class AnimalListing(models.Model):
+    """
+    Anunț/postare animal (bază pentru MyPet).
+
+    Regula PF: max 3 animale postate pe lună calendaristică.
+    (ONG/Org nu are limită aici; limitele se pot adăuga ulterior.)
+    """
+
+    SPECIES_CHOICES = [
+        ("dog", "Câine"),
+        ("cat", "Pisică"),
+        ("other", "Alt"),
+    ]
+
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="animal_listings")
+    name = models.CharField("Nume", max_length=120, blank=True)
+    species = models.CharField("Specie", max_length=20, choices=SPECIES_CHOICES, default="dog")
+    is_published = models.BooleanField("Publicat", default=True)
+    created_at = models.DateTimeField("Creat la", auto_now_add=True)
+    updated_at = models.DateTimeField("Actualizat la", auto_now=True)
+
+    class Meta:
+        verbose_name = "Anunț animal"
+        verbose_name_plural = "Anunțuri animale"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.name or f"Animal #{self.pk}"
+
+    @staticmethod
+    def _month_bounds(dt):
+        start = dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        if start.month == 12:
+            end = start.replace(year=start.year + 1, month=1)
+        else:
+            end = start.replace(month=start.month + 1)
+        return start, end
+
+    def clean(self):
+        super().clean()
+        # Aplicăm limita doar la crearea unui anunț nou.
+        if self.pk:
+            return
+
+        role = None
+        try:
+            role = self.owner.account_profile.role
+        except Exception:
+            role = None
+
+        if role != AccountProfile.ROLE_PF:
+            return
+
+        now = timezone.now()
+        start, end = self._month_bounds(now)
+        posted_this_month = AnimalListing.objects.filter(owner=self.owner, created_at__gte=start, created_at__lt=end).count()
+        limit = 3
+        if posted_this_month >= limit:
+            raise ValidationError(f"Limită PF: maxim {limit} animale postate pe lună.")
+
+    def save(self, *args, **kwargs):
+        # Asigurăm că regula se aplică și dacă cineva salvează din cod/admin fără form validation.
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+
+class WishlistItem(models.Model):
+    """
+    Wishlist / I Love: inimioara pentru un animal.
+    Pentru moment folosim animal_id (ID-ul demo) – ulterior se poate lega direct la AnimalListing.
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wishlist_items")
+    animal_id = models.IntegerField("ID animal")
+    created_at = models.DateTimeField("Adăugat la", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Wishlist item"
+        verbose_name_plural = "Wishlist items"
+        unique_together = [("user", "animal_id")]
+        indexes = [
+            models.Index(fields=["animal_id"]),
+            models.Index(fields=["user", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user} ♥ {self.animal_id}"
+
+
+@receiver(post_save, sender=User)
+def ensure_account_profile(sender, instance: User, created: bool, **kwargs):
+    """
+    Creează automat un AccountProfile pentru orice user.
+    Default: PF (până când signup ONG/Colaborator devine backend real și setează rolul).
+    """
+    if created:
+        AccountProfile.objects.get_or_create(user=instance)
 
 
 class UserAdoption(models.Model):

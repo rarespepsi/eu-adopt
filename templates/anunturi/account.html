@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Contul meu – EU-ADOPT{% endblock %}
+{% block body_class %}page-account{% endblock %}
+
+{% block content %}
+<section aria-label="Contul meu">
+	<div class="login-card" style="max-width: 760px;">
+		<h1 style="margin-bottom:0.5rem;">Contul meu</h1>
+		<p style="margin-bottom:1rem;">Datele tale de înscriere și rolul contului.</p>
+
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+			<div style="border:1px solid #eee;border-radius:12px;padding:0.9rem;">
+				<h2 style="margin:0 0 0.5rem;font-size:0.95rem;color:#e53935;text-transform:uppercase;letter-spacing:0.05em;">Identificare</h2>
+				<p style="margin:0.25rem 0;"><strong>User:</strong> {{ user.username }}</p>
+				<p style="margin:0.25rem 0;"><strong>Email:</strong> {{ user.email|default:"—" }}</p>
+				<p style="margin:0.25rem 0;"><strong>Nume:</strong> {{ user.get_full_name|default:"—" }}</p>
+			</div>
+
+			<div style="border:1px solid #eee;border-radius:12px;padding:0.9rem;">
+				<h2 style="margin:0 0 0.5rem;font-size:0.95rem;color:#e53935;text-transform:uppercase;letter-spacing:0.05em;">Rol cont</h2>
+				{% if account_profile %}
+					<p style="margin:0.25rem 0;"><strong>Rol:</strong> {{ account_profile.get_role_display }}</p>
+					<p style="margin:0.25rem 0;"><strong>Postează animale:</strong> {{ account_profile.can_post_animals|yesno:"Da,Nu" }}</p>
+					<p style="margin:0.25rem 0;"><strong>Adoptă animale:</strong> {{ account_profile.can_adopt_animals|yesno:"Da,Nu" }}</p>
+					<p style="margin:0.25rem 0;"><strong>Postează servicii/produse:</strong> {{ account_profile.can_post_services|yesno:"Da,Nu" }}</p>
+				{% else %}
+					<p style="margin:0.25rem 0;">—</p>
+				{% endif %}
+			</div>
+		</div>
+
+		<div style="margin-top:1rem;border:1px solid #eee;border-radius:12px;padding:0.9rem;">
+			<h2 style="margin:0 0 0.5rem;font-size:0.95rem;color:#e53935;text-transform:uppercase;letter-spacing:0.05em;">Date completate la înscriere (PF)</h2>
+			{% if user_profile %}
+				<p style="margin:0.25rem 0;"><strong>Telefon:</strong> {{ user_profile.phone|default:"—" }}</p>
+				<p style="margin:0.25rem 0;"><strong>Oraș:</strong> {{ user_profile.oras|default:"—" }}</p>
+				<p style="margin:0.25rem 0;"><strong>Accept termeni:</strong> {{ user_profile.accept_termeni|yesno:"Da,Nu" }}</p>
+				<p style="margin:0.25rem 0;"><strong>Accept GDPR:</strong> {{ user_profile.accept_gdpr|yesno:"Da,Nu" }}</p>
+			{% else %}
+				<p style="margin:0.25rem 0;">Nu există încă profil PF salvat în baza de date pentru acest cont.</p>
+			{% endif %}
+		</div>
+
+		<div style="margin-top:1rem;text-align:center;">
+			<a href="{% url 'home' %}" class="login-submit" style="background:#d32f2f;display:inline-flex;text-decoration:none;padding:0.55rem 1.2rem;">Înapoi la prima pagină</a>
+		</div>
+	</div>
+</section>
+{% endblock %}
+
