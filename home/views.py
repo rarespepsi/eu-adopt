@@ -11,9 +11,10 @@ from django.urls import reverse
 from django.utils import timezone
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
 from .data import DEMO_DOGS, DEMO_DOG_IMAGE, A2_QUOTE_POOL, HERO_SLIDER_IMAGES
-from .models import WishlistItem
+from .models import WishlistItem, AnimalListing, UserAdoption
 
 # A2 selection: 12 dogs. New (added in last 24h) first, then fill randomly from PT. Never empty if any available.
 A2_SLOT_COUNT = 12
@@ -272,6 +273,98 @@ def account_view(request):
         "account_profile": account_profile,
         "user_profile": user_profile,
     })
+
+
+@login_required
+def mypet_view(request):
+    """
+    Pagina MyPet – deocamdată doar un wrapper gol MW,
+    sub navbar, fără alte benzi sau layout-uri speciale.
+    """
+    user = request.user
+    active_animals = AnimalListing.objects.filter(owner=user, is_published=True).count()
+    adopted_animals = UserAdoption.objects.filter(user=user, status="completed").count()
+    return render(request, "anunturi/mypet.html", {
+        "active_animals": active_animals,
+        "adopted_animals": adopted_animals,
+    })
+
+
+@login_required
+def mypet_add_view(request):
+    """
+    Formular simplu pentru a adăuga un pet nou.
+    În pasul următor vom rafina câmpurile și layout-ul fișei.
+    """
+    user = request.user
+    profile = getattr(user, "profile", None)
+    default_city = getattr(profile, "oras", "") if profile else ""
+    default_county = ""
+
+    age_choices = [
+        "<1 an",
+        "1 an",
+        "2 ani",
+        "3 ani",
+        "4 ani",
+        "5 ani",
+        "6 ani",
+        "7 ani",
+        "8 ani",
+        "9 ani",
+        "10+ ani",
+    ]
+
+    if request.method == "POST":
+        name = (request.POST.get("name") or "").strip()
+        species = (request.POST.get("species") or "dog").strip() or "dog"
+        size = (request.POST.get("size") or "").strip()
+        age_label = (request.POST.get("age_label") or "").strip()
+        city = (request.POST.get("city") or "").strip()
+        county = (request.POST.get("county") or "").strip()
+        error = None
+        if not name:
+            error = "Te rugăm să completezi numele câinelui."
+        if not age_label:
+            error = "Te rugăm să alegi vârsta estimată."
+        if not error:
+            try:
+                AnimalListing.objects.create(
+                    owner=user,
+                    name=name,
+                    species=species,
+                    size=size,
+                    age_label=age_label,
+                    city=city,
+                    county=county,
+                    is_published=True,
+                )
+                return redirect("mypet")
+            except Exception as exc:
+                error = str(exc)
+        ctx = {
+            "error": error,
+            "name": name,
+            "species": species,
+            "size": size,
+            "age_label": age_label,
+            "city": city or default_city,
+            "county": county or default_county,
+            "age_choices": age_choices,
+        }
+        return render(request, "anunturi/mypet_add.html", ctx)
+
+    ctx = {
+        "error": None,
+        "name": "",
+        "species": "dog",
+        "size": "",
+        "age_label": "",
+        "city": default_city,
+        "county": default_county,
+        "age_choices": age_choices,
+    }
+    return render(request, "anunturi/mypet_add.html", ctx)
 
 
 def i_love_view(request):

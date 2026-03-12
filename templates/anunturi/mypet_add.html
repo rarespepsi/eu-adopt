@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Adaugă un pet | MyPet{% endblock %}
+
+{% block body_class %}page-mypet{% endblock %}
+
+{% block content %}
+<section id="MW" class="mypet-wrap">
+	<div class="mypet-inner-layout">
+		<div class="mypet-m1" data-slot="M1">
+			<div class="mypet-m1-list">
+				<div class="mypet-m1-card" data-slot="M1.1">M1.1</div>
+				<div class="mypet-m1-card" data-slot="M1.2">M1.2</div>
+				<div class="mypet-m1-card" data-slot="M1.3">M1.3</div>
+				<div class="mypet-m1-card" data-slot="M1.4">M1.4</div>
+			</div>
+		</div>
+		<div class="mypet-main-area">
+			<div class="mypet-main-top" data-slot="bara-butoane">
+				<div class="mypet-main-top-left">Fișa câine</div>
+				<div class="mypet-main-top-right">
+					<button type="submit" form="mypet-add-form" class="mypet-btn mypet-btn-primary mypet-btn-save-dog">
+						Salvează câine
+					</button>
+					<a href="{% url 'mypet' %}" class="mypet-btn mypet-btn-secondary mypet-btn-back-mypet">
+						Înapoi la MyPet
+					</a>
+				</div>
+			</div>
+			<div class="mypet-main-body" data-slot="M2-body">
+				<div class="mypet-m2" data-slot="M2">
+					<div class="mypet-m2-col" data-slot="M2.1">M2.1</div>
+					<div class="mypet-m2-col" data-slot="M2.2">M2.2</div>
+					<div class="mypet-m2-col" data-slot="M2.3">M2.3</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+{% endblock %}
+
+{% block extra_css_after %}
+<style>
+	body.page-mypet #main_wrap,
+	body.page-mypet #main_content {
+		min-height: 100vh;
+		margin: 0;
+		padding: 0;
+	}
+	/* Pentru fișa PET: layout pe o singură coloană, fără sidebar-uri */
+	body.page-mypet .layout {
+		display: block;
+	}
+	body.page-mypet .sidebar-left,
+	body.page-mypet .sidebar-right {
+		display: none !important;
+	}
+	body.page-mypet .main-content {
+		width: 100% !important;
+		max-width: 100% !important;
+	}
+	.mypet-wrap {
+		height: calc(100vh - var(--nav-h, 64px));
+		display: flex;
+		align-items: stretch;
+		justify-content: stretch;
+		padding: 0;
+		box-sizing: border-box;
+		overflow: hidden;
+		background: transparent; /* MW rămâne plin, dar fără fundal verde */
+	}
+	/* pe pagina de fișă PET, ascundem complet casetele din stânga (M1.1–M1.3) */
+	body.page-mypet .sidebar-left {
+		display: none !important;
+	}
+	.mypet-inner-layout {
+		display: flex;
+		width: 100%;
+		height: 100%;
+		box-sizing: border-box;
+	}
+	.mypet-m1 {
+		/* Lățime M1 redusă cu ~25% față de 22% (≈16.5%) */
+		flex: 0 0 16.5%;
+		max-width: 16.5%;
+		height: 100%;
+		background: rgba(255, 241, 118, 0.95);
+		border-right: 1px solid #ccc;
+		box-sizing: border-box;
+		display: flex;
+		align-items: stretch;   /* casetele se întind pe toată înălțimea M1 */
+		justify-content: stretch; /* și pe toată lățimea M1 */
+	}
+	.mypet-main-area {
+		/* restul de spațiu (~83.5%) pentru M2 */
+		flex: 1 1 83.5%;
+		height: 100%;
+		background: transparent;
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+	}
+	.mypet-main-top {
+		/* casetă Bara butoane – înălțime fixă ~1cm */
+		flex: 0 0 1cm;
+		max-height: 1cm;
+		background: rgba(0, 0, 0, 0.06);
+		border-bottom: 1px solid #ccc;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+	}
+	.mypet-main-top-left {
+		flex: 1 1 auto;
+		padding-left: 0.4rem;
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: #333;
+		line-height: 1cm; /* textul „Fișa câine” are aceeași înălțime vizuală ca butoanele */
+	}
+	.mypet-main-top-right {
+		flex: 0 0 auto;
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		padding-right: 0.75rem;
+		box-sizing: border-box;
+	}
+	.mypet-btn-save-dog {
+		font-size: 0.8rem;
+		padding: 0.25rem 0.8rem;
+		margin-right: 0.5rem; /* distanță clară între butoane, spre stânga, fără a depăși MW */
+	}
+	.mypet-main-body {
+		flex: 1 1 auto;
+		min-height: 0;
+		background: transparent;
+		display: flex;
+		align-items: stretch;
+		justify-content: stretch;
+		padding: 0; /* fără spațiu între bara butoane și M2 */
+		box-sizing: border-box;
+	}
+	.mypet-m2 {
+		flex: 1 1 auto;
+		border: 1px solid #c62828; /* chenar M2 subțire */
+		box-sizing: border-box;
+		background: #fff;
+		display: flex;
+		align-items: stretch;
+		justify-content: stretch;
+	}
+	/* Coloană M1 – 3 casete verticale, stil apropiat de PT */
+	/* M1 – bandă stânga cu 4 casete orizontale egale */
+	.mypet-m1-list {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		width: 100%;
+		box-sizing: border-box;
+		gap: 0;          /* fără spații între casete – umplu perfect M1 */
+	}
+	.mypet-m1-card {
+		flex: 1 1 0;     /* 4 casete egale pe înălțimea lui M1 */
+		min-height: 0;
+		background: rgba(255, 248, 225, 0.9);
+		border-radius: 0;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: #444;
+	}
+	/* culori diferite ca să le vezi clar acum */
+	.mypet-m1-card:nth-child(1) { background: rgba(255, 241, 118, 0.95); }
+	.mypet-m1-card:nth-child(2) { background: rgba(200, 230, 201, 0.95); }
+	.mypet-m1-card:nth-child(3) { background: rgba(187, 222, 251, 0.95); }
+	.mypet-m1-card:nth-child(4) { background: rgba(255, 224, 178, 0.95); }
+	.mypet-m2-col {
+		flex: 1 1 0;
+		border-right: 1px solid #c62828; /* linii de demarcație subțiri */
+		box-sizing: border-box;
+		display: flex;
+		align-items: flex-start;
+		justify-content: center;
+		font-weight: 700;
+		font-size: 0.9rem;
+		color: #c62828;
+		padding-top: 0.25rem;
+	}
+	.mypet-m2-col:last-child {
+		border-right: none;
+	}
+	}
+	.mypet-add-subtitle {
+		margin: 0;
+		font-size: 0.75rem;
+		line-height: 1.25;
+		color: #555;
+	}
+	.mypet-add-box-row {
+		display: grid;
+		grid-template-columns: 2fr 1fr 1fr;
+		height: auto;
+		max-height: calc(100vh - var(--nav-h, 64px) - 3.2rem);
+		gap: 0;
+	}
+	.mypet-add-topbar {
+		display: grid;
+		grid-template-columns: 2fr 1fr 1fr;
+		gap: 0;
+		margin-bottom: 0;
+	}
+	.mypet-add-topcell {
+		min-height: 22px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 8px;
+		box-sizing: border-box;
+	}
+	.mypet-topcell-main {
+		background: #c62828;
+		color: #fff;
+		font-size: 0.9rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+	}
+	.mypet-topcell-btn {
+		background: transparent;
+	}
+	.mypet-add-box {
+		background: rgba(255, 248, 225, 0.9);
+		border-radius: 8px;
+		padding: 0.3rem 0.4rem;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+	/* Pe fișa PET scoatem orice efect de hover/mișcare moștenit din alte CSS-uri */
+	body.page-mypet .mypet-add-topcell,
+	body.page-mypet .mypet-add-box,
+	body.page-mypet .mypet-add-topcell:hover,
+	body.page-mypet .mypet-add-box:hover {
+		transition: none !important;
+		transform: none !important;
+		box-shadow: none !important;
+	}
+	/* Culori distincte pentru cele 3 casete, ca să fie ușor de văzut */
+	.mypet-add-box-row .mypet-add-box:nth-child(1) {
+		background: rgba(255, 241, 118, 0.95);
+		overflow: hidden; /* fără scroll vizibil în M1 */
+	}
+	.mypet-add-box-row .mypet-add-box:nth-child(2) {
+		background: rgba(200, 230, 201, 0.95);
+	}
+	.mypet-add-box-row .mypet-add-box:nth-child(3) {
+		background: rgba(187, 222, 251, 0.95);
+	}
+	.mypet-add-error {
+		margin-bottom: 0.4rem;
+		padding: 0.35rem 0.5rem;
+		background: #ffebee;
+		color: #b71c1c;
+		border-radius: 6px;
+		font-size: 0.85rem;
+	}
+	.mypet-add-form {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+	.mypet-add-field label {
+		display: block;
+		font-size: 0.8rem;
+		font-weight: 600;
+		margin-bottom: 0.2rem;
+		color: #444;
+	}
+	.mypet-add-field input,
+	.mypet-add-field select {
+		width: 100%;
+		box-sizing: border-box;
+		padding: 0.25rem 0.4rem;
+		font-size: 0.8rem;
+		border-radius: 6px;
+		border: 1px solid #ccc;
+	}
+	.mypet-add-actions {
+		margin-top: 1rem;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+	.mypet-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.4rem 0.9rem;
+		border-radius: 999px;
+		font-size: 0.85rem;
+		font-weight: 700;
+		text-decoration: none;
+		border: 1px solid transparent;
+		cursor: pointer;
+	}
+	.mypet-btn-primary {
+		background: #2e7d32;
+		color: #fff;
+	}
+	.mypet-btn-secondary {
+		background: #fff8e1;
+		color: #5d4037;
+		border-color: #ffcc80;
+	}
+</style>
+{% endblock %}
+

@@ -36,9 +36,9 @@
 							<li>
 								{% if user.is_authenticated %}
 									{% if user.account_profile.role == 'collaborator' %}
-										<a href="{% url 'home' %}">Magazinul meu</a>
+										<a href="{% url 'mypet' %}">Magazinul meu</a>
 									{% else %}
-										<a href="{% url 'home' %}">MyPet</a>
+										<a href="{% url 'mypet' %}">MyPet</a>
 									{% endif %}
 								{% else %}
 									<a href="{% url 'login' %}">MyPet</a>

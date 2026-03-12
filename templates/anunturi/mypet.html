@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}MyPet | EU Adopt{% endblock %}
+
+{% block body_class %}page-mypet{% endblock %}
+
+{% block content %}
+<section id="MW" class="mypet-wrap">
+	<div class="mypet-inner">
+		<div class="mypet-actions">
+			<a href="{% url 'mypet' %}" class="mypet-btn mypet-btn-primary">My pets</a>
+			<a href="{% url 'mypet_add' %}" class="mypet-btn mypet-btn-secondary">Adaugă un pet</a>
+		</div>
+	</div>
+</section>
+{% endblock %}
+
+{% block extra_css_after %}
+<style>
+	/* MW = tot ce este sub navbar, până jos în ecran, fără scroll suplimentar */
+	body.page-mypet #main_wrap,
+	body.page-mypet #main_content {
+		min-height: 0;
+		margin: 0;
+		padding: 0;
+	}
+	#mypet_wrap,
+	.mypet-wrap {
+		height: calc(100vh - var(--nav-h, 64px));
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+	.mypet-inner {
+		width: 100%;
+		max-width: 960px;
+		height: 100%;
+		box-sizing: border-box;
+	}
+	/* Doar pe MyPet: evidențiem caseta mamă din stânga (A6–A8) ca să o vezi clar */
+	body.page-mypet .sidebar-left {
+		background: rgba(255, 248, 225, 0.9);
+		box-shadow: inset 0 0 0 2px rgba(255, 193, 7, 0.9);
+	}
+	/* A6–A8 în sidebar-left: lipite vertical, fără spații goale între ele, păstrând dimensiunile pe lățime */
+	body.page-mypet .sidebar-left {
+		display: flex;
+		flex-direction: column;
+	}
+	body.page-mypet .sidebar-left .slot-container {
+		flex: 1 1 0;
+		margin: 0;
+	}
+	body.page-mypet .sidebar-left .sidebar-box {
+		height: 100%;
+	}
+	/* Casetele din stânga (mâncare câini) – micșorate astfel încât cele 3 să încapă în MW fără scroll */
+	body.page-mypet #A6 .sidebar-ad-img,
+	body.page-mypet #A7 .sidebar-ad-img,
+	body.page-mypet #A8 .sidebar-ad-img {
+		width: 100%;
+		height: 80px;
+		object-fit: cover;
+		display: block;
+	}
+	body.page-mypet #A6 .sidebar-box,
+	body.page-mypet #A7 .sidebar-box,
+	body.page-mypet #A8 .sidebar-box {
+		padding: 2px 0;
+	}
+	.mypet-actions {
+		margin: 0 auto;
+		padding-top: 0.5rem;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		justify-content: center;
+	}
+	.mypet-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.4rem 0.9rem;
+		border-radius: 999px;
+		font-size: 0.85rem;
+		font-weight: 700;
+		text-decoration: none;
+		border: 1px solid transparent;
+		cursor: default;
+	}
+	.mypet-btn-primary {
+		background: #2e7d32;
+		color: #fff;
+	}
+	.mypet-btn-secondary {
+		background: #fff8e1;
+		color: #5d4037;
+		border-color: #ffcc80;
+	}
+</style>
+{% endblock %}
+
