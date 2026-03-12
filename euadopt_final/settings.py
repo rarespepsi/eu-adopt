@@ -121,13 +121,19 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = ['static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# WhiteNoise: servește static în producție (Render) fără Nginx separat
+# Fișiere încărcate de utilizatori (ex: poză profil)
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# WhiteNoise + stocare fișiere (Django 6: STORAGES cu cheie "default" pentru upload-uri)
 STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": MEDIA_ROOT,
+        },
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     }
 }
-
-# Fișiere încărcate de utilizatori (ex: poză profil)
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'

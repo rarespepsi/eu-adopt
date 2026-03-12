@@ -25,4 +25,5 @@ urlpatterns = [
     path('shop/magazin-foto/', views.shop_magazin_foto_view, name='shop_magazin_foto'),
 
     path('pets/', views.home_view, name='pets_all'),
+    path('pet/<int:pk>/', views.pet_public_view, name='pet_public'),
 ]

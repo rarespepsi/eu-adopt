@@ -1,0 +1,424 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+	<meta charset="UTF-8">
+	<title>{{ pet.name|default:"Câine pentru adopție" }} – Fișă adoptator</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
+	<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}" type="text/css" media="screen" />
+	<style>
+		body {
+			margin: 0;
+			font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+			background: #e8f5e9;
+			color: #263238;
+		}
+		.page-wrap {
+			min-height: 100vh;
+			display: flex;
+			flex-direction: column;
+		}
+		.pet-sheet-wrap {
+			flex: 1 1 auto;
+			display: flex;
+			align-items: flex-start;
+			justify-content: center;
+			padding: 3.4rem 0.5rem 0.1rem;
+		}
+		.pet-sheet {
+			background: #ffffff;
+			border-radius: 16px;
+			box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+			max-width: 100%;
+			width: 100%;
+			padding: 1.5rem 2rem 0.7rem;
+			box-sizing: border-box;
+		}
+		.pet-header {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 1.5rem;
+			align-items: stretch;
+			border-bottom: 1px solid #e0e0e0;
+			padding-bottom: 1.25rem;
+			margin-bottom: 1.25rem;
+		}
+		.pet-photos {
+			flex: 0 0 280px;
+			max-width: 100%;
+			display: flex;
+			flex-direction: column;
+			gap: 0.75rem;
+		}
+		.pet-photos-outer-box {
+			background: #e8f5e9;
+			border-radius: 12px;
+			border: 1px solid #c8e6c9;
+			padding: 0.75rem;
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+			height: 100%;
+		}
+		.pet-photo-main,
+		.pet-photo-side {
+			position: relative;
+			border-radius: 12px;
+			overflow: hidden;
+			background: #c8e6c9;
+			flex: 1 1 0;
+			min-height: 0;
+		}
+		.pet-photo-main img,
+		.pet-photo-side img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			display: block;
+		}
+		.pet-photo-placeholder {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100%;
+			color: #607d8b;
+			font-size: 0.9rem;
+			padding: 0.5rem;
+			text-align: center;
+		}
+		.pet-badge {
+			position: absolute;
+			left: 0.75rem;
+			bottom: 0.75rem;
+			background: rgba(0,77,64,0.85);
+			color: #e8f5e9;
+			padding: 0.15rem 0.6rem;
+			border-radius: 999px;
+			font-size: 0.7rem;
+			letter-spacing: 0.05em;
+			text-transform: uppercase;
+		}
+		.pet-main-info {
+			flex: 1 1 260px;
+			min-width: 0;
+		}
+		.pet-title-row {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: baseline;
+			gap: 0.5rem;
+			margin-bottom: 0.25rem;
+		}
+		.pet-name {
+			font-size: 1.8rem;
+			font-weight: 800;
+			letter-spacing: 0.02em;
+		}
+		.pet-subtitle {
+			font-size: 0.95rem;
+			color: #607d8b;
+		}
+		.pet-meta-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+			gap: 0.4rem 0.8rem;
+			margin-top: 0.4rem;
+		}
+		.meta-pill {
+			font-size: 0.82rem;
+			background: #f5f5f5;
+			border-radius: 999px;
+			padding: 0.3rem 0.75rem;
+			border: 1px solid #e0e0e0;
+		}
+		.meta-label {
+			font-weight: 600;
+			margin-right: 0.25rem;
+		}
+		.btn-adopt-main {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0.45rem 1.2rem;
+			border-radius: 999px;
+			border: none;
+			cursor: pointer;
+			background: #c62828;
+			color: #ffffff;
+			font-weight: 700;
+			font-size: 0.9rem;
+			margin-top: 0.5rem;
+			margin-bottom: 0.25rem;
+		}
+		.btn-adopt-main:hover {
+			background: #b71c1c;
+		}
+		.status-pill {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.25rem;
+			font-size: 0.82rem;
+			font-weight: 600;
+			padding: 0.3rem 0.75rem;
+			border-radius: 999px;
+			margin-top: 0.5rem;
+			background: #ffecb3;
+			color: #e65100;
+			border: 1px solid #ffe082;
+		}
+		.pet-body-blocks {
+			margin-top: 1rem;
+			display: grid;
+			grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+			gap: 1rem 1.25rem;
+		}
+		@media (max-width: 900px) {
+			.pet-body-blocks {
+				grid-template-columns: 1fr;
+			}
+		}
+		.block {
+			background: #f9fbe7;
+			border-radius: 12px;
+			border: 1px solid #e6ee9c;
+			padding: 0.9rem 1rem;
+			margin-bottom: 0.75rem;
+		}
+		.block h2 {
+			margin: 0 0 0.5rem;
+			font-size: 1rem;
+			color: #33691e;
+		}
+		.block p {
+			margin: 0;
+			font-size: 0.9rem;
+			line-height: 1.6;
+			white-space: pre-line;
+		}
+		.health-list {
+			margin: 0.2rem 0 0;
+			padding-left: 1.1rem;
+			font-size: 0.88rem;
+		}
+		.health-list li {
+			margin: 0.15rem 0;
+		}
+		.traits-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+			gap: 0.4rem 0.6rem;
+			margin-top: 0.25rem;
+		}
+		.trait-pill {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.3rem;
+			font-size: 0.82rem;
+			padding: 0.3rem 0.6rem;
+			border-radius: 999px;
+			background: #e8f5e9;
+			color: #1b5e20;
+			border: 1px solid #c8e6c9;
+		}
+		.trait-pill span.icon {
+			font-size: 0.95rem;
+		}
+		.sheet-footer-note {
+			margin-top: 0.3rem;
+			font-size: 0.78rem;
+			color: #78909c;
+			text-align: right;
+		}
+		.pet-toolbar {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 0.75rem;
+			margin-bottom: 0.75rem;
+			font-size: 0.85rem;
+			color: #455a64;
+		}
+		.pet-toolbar-actions {
+			display: flex;
+			gap: 0.4rem;
+			flex-wrap: wrap;
+		}
+		.btn-light {
+			border-radius: 999px;
+			border: 1px solid #cfd8dc;
+			background: #ffffff;
+			padding: 0.35rem 1.1rem;
+			font-size: 0.82rem;
+			cursor: pointer;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.3rem;
+			color: #0d47a1;
+			font-weight: 600;
+		}
+		@media print {
+			body {
+				background: #ffffff;
+			}
+			.pet-sheet-wrap {
+				padding: 0;
+			}
+			.pet-sheet {
+				max-width: 100%;
+				border-radius: 0;
+				box-shadow: none;
+				padding: 1.2rem 1.2rem 0.8rem;
+			}
+			.pet-toolbar {
+				display: none;
+			}
+		}
+	</style>
+</head>
+<body>
+<div class="page-wrap">
+	{% include "components/navbar_a0.html" %}
+	<div class="pet-sheet-wrap">
+		<div class="pet-sheet">
+			<div class="pet-toolbar">
+				<div>Fișă pentru adoptator</div>
+				<div class="pet-toolbar-actions">
+					<button type="button" class="btn-light" onclick="window.print()"><span>🖨️</span><span>PRINT</span></button>
+				</div>
+			</div>
+
+			<div class="pet-header">
+				<div class="pet-photos">
+					<div class="pet-photos-outer-box">
+						<div class="pet-photo-main">
+							{% if pet.photo_1 %}
+								<img src="{{ pet.photo_1.url }}" alt="Poză 1 {{ pet.name }}">
+							{% else %}
+								<div class="pet-photo-placeholder">Poză 1 – adaugă din MyPet.</div>
+							{% endif %}
+							<span class="pet-badge">EU-ADOPT</span>
+						</div>
+						<div class="pet-photo-side">
+							{% if pet.photo_2 %}
+								<img src="{{ pet.photo_2.url }}" alt="Poză 2 {{ pet.name }}">
+							{% else %}
+								<div class="pet-photo-placeholder">Poză 2 – (profil, joacă, plimbare).</div>
+							{% endif %}
+						</div>
+						<div class="pet-photo-side">
+							{% if pet.photo_3 %}
+								<img src="{{ pet.photo_3.url }}" alt="Poză 3 {{ pet.name }}">
+							{% else %}
+								<div class="pet-photo-placeholder">Poză 3 – spațiu pentru încă o imagine.</div>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+				<div class="pet-main-info">
+					<div class="pet-title-row">
+						<div class="pet-name">
+							{% if pet.name %}{{ pet.name }}{% else %}Câine pentru adopție{% endif %}
+						</div>
+						<div class="pet-subtitle">Fișă pentru viitorul adoptator</div>
+					</div>
+					<div class="pet-meta-grid">
+						<div class="meta-pill">
+							<span class="meta-label">Specie:</span>
+							{% if pet.get_species_display %}{{ pet.get_species_display }}{% else %}Câine{% endif %}
+						</div>
+						{% if pet.age_label %}
+						<div class="meta-pill">
+							<span class="meta-label">Vârstă:</span>{{ pet.age_label }}
+						</div>
+						{% endif %}
+						{% if pet.size %}
+						<div class="meta-pill">
+							<span class="meta-label">Talie:</span>{{ pet.size }}
+						</div>
+						{% endif %}
+						{% if pet.color %}
+						<div class="meta-pill">
+							<span class="meta-label">Culoare:</span>{{ pet.color }}
+						</div>
+						{% endif %}
+						{% if pet.city or pet.county %}
+						<div class="meta-pill">
+							<span class="meta-label">Locație:</span>
+							{% if pet.city %}{{ pet.city }}{% endif %}
+							{% if pet.city and pet.county %}, {% endif %}
+							{% if pet.county %}{{ pet.county }}{% endif %}
+						</div>
+						{% endif %}
+					</div>
+					<button type="button" class="btn-adopt-main">VREAU SĂ ADOPT!</button>
+					<span class="status-pill">Disponibil pentru adopție</span>
+
+					<div class="pet-body-blocks">
+						<div>
+							<div class="block">
+								<h2>🐶 Cine sunt și povestea mea</h2>
+								<p>
+									{% if pet.about_pet %}
+										{{ pet.about_pet }}
+									{% else %}
+										Aici poți povesti, din MyPet, cine este acest câine, de unde vine și cum este viața lui acum.
+									{% endif %}
+								</p>
+							</div>
+							<div class="block">
+								<h2>🏠 Viața de zi cu zi</h2>
+								<p>
+									Notează (în MyPet / la discuție cu adoptatorul) cum se comportă în casă, la plimbare, în mașină, cu alți câini sau copii, cât timp poate sta singur etc.
+								</p>
+							</div>
+						</div>
+						<div>
+							<div class="block">
+								<h2>🏥 Stare de sănătate</h2>
+								<ul class="health-list">
+									<li><strong>Sterilizat:</strong> {% if pet.sterilized %}Da{% else %}Nu / Necunoscut{% endif %}</li>
+									<li><strong>Vaccinat:</strong> {% if pet.vaccinated %}Da{% else %}Nu / Necunoscut{% endif %}</li>
+									<li><strong>Carnet de sănătate:</strong> {% if pet.has_health_book %}Da{% else %}Nu / Necunoscut{% endif %}</li>
+									<li><strong>CIP:</strong> {% if pet.has_chip %}Da{% else %}Nu / Necunoscut{% endif %}</li>
+									{% if pet.medical_issues %}
+									<li><strong>Alte informații medicale:</strong><br>{{ pet.medical_issues }}</li>
+									{% endif %}
+								</ul>
+							</div>
+							<div class="block">
+								<h2>✨ Personalitate și potrivire</h2>
+								<div class="traits-grid">
+									{% if pet.trait_playful %}<div class="trait-pill"><span class="icon">🎾</span>Jucăuș</div>{% endif %}
+									{% if pet.trait_affectionate %}<div class="trait-pill"><span class="icon">💞</span>Iubitor</div>{% endif %}
+									{% if pet.trait_protective %}<div class="trait-pill"><span class="icon">🛡️</span>Protector</div>{% endif %}
+									{% if pet.trait_energetic %}<div class="trait-pill"><span class="icon">⚡</span>Energic</div>{% endif %}
+									{% if pet.trait_calm %}<div class="trait-pill"><span class="icon">🌙</span>Liniștit</div>{% endif %}
+									{% if pet.trait_good_with_kids %}<div class="trait-pill"><span class="icon">👶</span>Bun cu copii</div>{% endif %}
+									{% if pet.trait_good_with_dogs %}<div class="trait-pill"><span class="icon">🐕</span>Bun cu alți câini</div>{% endif %}
+									{% if pet.trait_good_with_cats %}<div class="trait-pill"><span class="icon">🐈</span>Bun cu pisici</div>{% endif %}
+									{% if pet.trait_house_trained %}<div class="trait-pill"><span class="icon">🏡</span>Obișnuit în casă</div>{% endif %}
+									{% if pet.trait_leash_trained %}<div class="trait-pill"><span class="icon">🦮</span>Merge frumos în lesă</div>{% endif %}
+									{% if pet.trait_low_barker %}<div class="trait-pill"><span class="icon">🔈</span>Nu latră excesiv</div>{% endif %}
+									{% if pet.trait_apartment_ok %}<div class="trait-pill"><span class="icon">🏢</span>Potrivit pentru apartament</div>{% endif %}
+									{% if pet.trait_adapts_easily %}<div class="trait-pill"><span class="icon">🔄</span>Se adaptează ușor</div>{% endif %}
+									{% if pet.trait_ok_left_alone %}<div class="trait-pill"><span class="icon">⏰</span>Poate sta singur o perioadă</div>{% endif %}
+									{% if pet.trait_needs_experienced_owner %}<div class="trait-pill"><span class="icon">🎓</span>Necesită stăpân cu experiență</div>{% endif %}
+									{% if pet.trait_good_for_yard %}<div class="trait-pill"><span class="icon">🌳</span>Bun pentru curte</div>{% endif %}
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="sheet-footer-note">
+				Fișă pentru adoptator – EU-ADOPT • ID intern: {{ pet.pk }}
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
+

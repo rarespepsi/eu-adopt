@@ -773,3 +773,12 @@ def wishlist_toggle_view(request):
         "wish_count": wish_count,
         "user_wishlist_count": user_wishlist_count,
     })
+
+
+def pet_public_view(request, pk: int):
+    """
+    Fișa câinelui pentru adoptator – pagină separată.
+    Trage datele din AnimalListing (MyPet).
+    """
+    pet = get_object_or_404(AnimalListing, pk=pk, is_published=True)
+    return render(request, "anunturi/pet_public.html", {"pet": pet})
