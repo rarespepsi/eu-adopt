@@ -7,40 +7,301 @@
 
 {% block content %}
 <section id="MW" class="mypet-wrap">
-	<div class="mypet-inner-layout">
-		<div class="mypet-m1" data-slot="M1">
-			<div class="mypet-m1-list">
-				<div class="mypet-m1-card" data-slot="M1.1">M1.1</div>
-				<div class="mypet-m1-card" data-slot="M1.2">M1.2</div>
-				<div class="mypet-m1-card" data-slot="M1.3">M1.3</div>
-				<div class="mypet-m1-card" data-slot="M1.4">M1.4</div>
-			</div>
-		</div>
-		<div class="mypet-main-area">
-			<div class="mypet-main-top" data-slot="bara-butoane">
-				<div class="mypet-main-top-left">Fișa câine</div>
-				<div class="mypet-main-top-right">
-					<button type="submit" form="mypet-add-form" class="mypet-btn mypet-btn-primary mypet-btn-save-dog">
-						Salvează câine
-					</button>
-					<a href="{% url 'mypet' %}" class="mypet-btn mypet-btn-secondary mypet-btn-back-mypet">
-						Înapoi la MyPet
-					</a>
+	<form method="post" enctype="multipart/form-data" class="mypet-add-form-wrap">
+		{% csrf_token %}
+		<div class="mypet-inner-layout">
+			<div class="mypet-m1" data-slot="M1">
+				<div class="mypet-m1-list">
+					<div class="mypet-m1-card mypet-photo-card" data-slot="M1.1" data-photo-name="photo_1">
+						<div class="mypet-photo-label">Poză 1</div>
+						<div class="mypet-photo-requirements">Max 2 Mpx, JPG sau PNG</div>
+						<div class="mypet-photo-upload">
+							<input type="file" name="photo_1" accept="image/jpeg,image/png" class="mypet-photo-input">
+						</div>
+						<div class="mypet-photo-crop" aria-hidden="true">
+							<div class="mypet-photo-crop-box"><img src="" alt="" class="mypet-photo-crop-img"></div>
+							<div class="mypet-photo-crop-actions">
+								<button type="button" class="mypet-photo-crop-confirm">Confirmă</button>
+								<button type="button" class="mypet-photo-crop-cancel">Schimbă poza</button>
+							</div>
+						</div>
+						<div class="mypet-photo-done" aria-hidden="true">
+							<img src="" alt="" class="mypet-photo-done-preview">
+							<button type="button" class="mypet-photo-done-change">Schimbă poza</button>
+						</div>
+					</div>
+					<div class="mypet-m1-card mypet-photo-card" data-slot="M1.2" data-photo-name="photo_2">
+						<div class="mypet-photo-label">Poză 2</div>
+						<div class="mypet-photo-requirements">Max 2 Mpx, JPG sau PNG</div>
+						<div class="mypet-photo-upload">
+							<input type="file" name="photo_2" accept="image/jpeg,image/png" class="mypet-photo-input">
+						</div>
+						<div class="mypet-photo-crop" aria-hidden="true">
+							<div class="mypet-photo-crop-box"><img src="" alt="" class="mypet-photo-crop-img"></div>
+							<div class="mypet-photo-crop-actions">
+								<button type="button" class="mypet-photo-crop-confirm">Confirmă</button>
+								<button type="button" class="mypet-photo-crop-cancel">Schimbă poza</button>
+							</div>
+						</div>
+						<div class="mypet-photo-done" aria-hidden="true">
+							<img src="" alt="" class="mypet-photo-done-preview">
+							<button type="button" class="mypet-photo-done-change">Schimbă poza</button>
+						</div>
+					</div>
+					<div class="mypet-m1-card mypet-photo-card" data-slot="M1.3" data-photo-name="photo_3">
+						<div class="mypet-photo-label">Poză 3</div>
+						<div class="mypet-photo-requirements">Max 2 Mpx, JPG sau PNG</div>
+						<div class="mypet-photo-upload">
+							<input type="file" name="photo_3" accept="image/jpeg,image/png" class="mypet-photo-input">
+						</div>
+						<div class="mypet-photo-crop" aria-hidden="true">
+							<div class="mypet-photo-crop-box"><img src="" alt="" class="mypet-photo-crop-img"></div>
+							<div class="mypet-photo-crop-actions">
+								<button type="button" class="mypet-photo-crop-confirm">Confirmă</button>
+								<button type="button" class="mypet-photo-crop-cancel">Schimbă poza</button>
+							</div>
+						</div>
+						<div class="mypet-photo-done" aria-hidden="true">
+							<img src="" alt="" class="mypet-photo-done-preview">
+							<button type="button" class="mypet-photo-done-change">Schimbă poza</button>
+						</div>
+					</div>
+					<div class="mypet-m1-card mypet-m1-status" data-slot="M1.4">
+						<div class="mypet-status-title">Checklist fișă</div>
+						<ul class="mypet-status-list">
+							<li class="mypet-status-item mypet-status-item--photo">
+								<span class="mypet-status-light"></span>
+								<span class="mypet-status-label">Poză principală</span>
+							</li>
+							<li class="mypet-status-item mypet-status-item--base">
+								<span class="mypet-status-light"></span>
+								<span class="mypet-status-label">Date de bază</span>
+							</li>
+							<li class="mypet-status-item mypet-status-item--match">
+								<span class="mypet-status-light"></span>
+								<span class="mypet-status-label">Potrivire adoptator</span>
+							</li>
+						</ul>
+					</div>
 				</div>
 			</div>
-			<div class="mypet-main-body" data-slot="M2-body">
-				<div class="mypet-m2" data-slot="M2">
-					<div class="mypet-m2-col" data-slot="M2.1">M2.1</div>
-					<div class="mypet-m2-col" data-slot="M2.2">M2.2</div>
-					<div class="mypet-m2-col" data-slot="M2.3">M2.3</div>
+			<div class="mypet-main-area">
+				<div class="mypet-main-topbar" data-slot="M2-topbar">
+					<div class="mypet-main-topbar-buttons">
+						<button type="button" class="mypet-topbar-btn" disabled>FISA PET</button>
+						<div class="mypet-main-topbar-right">
+							<button type="submit" class="mypet-topbar-btn mypet-topbar-btn-primary">SALVEAZA PET</button>
+							<a href="{% url 'mypet' %}" class="mypet-topbar-btn mypet-topbar-btn-secondary">Inapoi la My pet</a>
+						</div>
+					</div>
+				</div>
+				<div class="mypet-main-body" data-slot="M2-body">
+					<div class="mypet-m2" data-slot="M2">
+						<div class="mypet-m2-col" data-slot="M2.1">
+							<div class="mypet-add-box-row">
+								<div class="mypet-add-box">
+									<p class="mypet-add-subtitle">Date de bază</p>
+									{% if error %}
+										<div class="mypet-add-error">{{ error }}</div>
+									{% endif %}
+									<div class="mypet-add-form">
+										<div class="mypet-add-field">
+											<label for="id_name">Nume pet *</label>
+											<input id="id_name" type="text" name="name" value="{{ name }}">
+										</div>
+										<div class="mypet-add-field">
+											<label for="id_species">Specie</label>
+											<select id="id_species" name="species">
+												<option value="dog"{% if species == "dog" %} selected{% endif %}>Câine</option>
+												<option value="cat"{% if species == "cat" %} selected{% endif %}>Pisică</option>
+												<option value="other"{% if species == "other" %} selected{% endif %}>Alt</option>
+											</select>
+										</div>
+										<div class="mypet-add-field">
+											<label for="id_age_label">Vârstă aproximativă *</label>
+											<select id="id_age_label" name="age_label">
+												<option value="" disabled{% if not age_label %} selected{% endif %} hidden>Alege</option>
+												{% for age in age_choices %}
+													<option value="{{ age }}"{% if age_label == age %} selected{% endif %}>{{ age }}</option>
+												{% endfor %}
+											</select>
+										</div>
+										<div class="mypet-add-field">
+											<label for="id_size">Talie *</label>
+											<select id="id_size" name="size">
+												<option value="" disabled{% if not size %} selected{% endif %} hidden>Alege</option>
+												<option value="mică"{% if size == "mică" %} selected{% endif %}>Mică</option>
+												<option value="medie"{% if size == "medie" %} selected{% endif %}>Medie</option>
+												<option value="mare"{% if size == "mare" %} selected{% endif %}>Mare</option>
+											</select>
+										</div>
+										<div class="mypet-add-field">
+											<label for="id_color">Culoare</label>
+											<select id="id_color" name="color">
+												<option value="" disabled{% if not color %} selected{% endif %} hidden>Alege</option>
+												<option value="alb"{% if color == "alb" %} selected{% endif %}>Alb</option>
+												<option value="negru"{% if color == "negru" %} selected{% endif %}>Negru</option>
+												<option value="maro"{% if color == "maro" %} selected{% endif %}>Maro</option>
+												<option value="mixt"{% if color == "mixt" %} selected{% endif %}>Mixt / tigrat</option>
+											</select>
+										</div>
+										<div class="mypet-add-field">
+											<label for="id_sterilized">Sterilizat</label>
+											<select id="id_sterilized" name="sterilized">
+												<option value="" disabled{% if not sterilized_choice %} selected{% endif %} hidden>Alege</option>
+												<option value="yes"{% if sterilized_choice == "yes" %} selected{% endif %}>Da</option>
+												<option value="no"{% if sterilized_choice == "no" %} selected{% endif %}>Nu</option>
+											</select>
+										</div>
+										<div class="mypet-add-field">
+											<label for="id_vaccinated">Vaccinat</label>
+											<select id="id_vaccinated" name="vaccinated">
+												<option value="" disabled{% if not vaccinated_choice %} selected{% endif %} hidden>Alege</option>
+												<option value="yes"{% if vaccinated_choice == "yes" %} selected{% endif %}>Da</option>
+												<option value="no"{% if vaccinated_choice == "no" %} selected{% endif %}>Nu</option>
+											</select>
+										</div>
+										<div class="mypet-add-field">
+											<label for="id_health_book">Carnet de sănătate</label>
+											<select id="id_health_book" name="health_book">
+												<option value="" disabled{% if not health_book_choice %} selected{% endif %} hidden>Alege</option>
+												<option value="yes"{% if health_book_choice == "yes" %} selected{% endif %}>Da</option>
+												<option value="no"{% if health_book_choice == "no" %} selected{% endif %}>Nu</option>
+											</select>
+										</div>
+										<div class="mypet-add-field">
+											<label for="id_chip">CIP</label>
+											<select id="id_chip" name="chip">
+												<option value="" disabled{% if not chip_choice %} selected{% endif %} hidden>Alege</option>
+												<option value="yes"{% if chip_choice == "yes" %} selected{% endif %}>Da</option>
+												<option value="no"{% if chip_choice == "no" %} selected{% endif %}>Nu</option>
+											</select>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="mypet-m2-col" data-slot="M2.2">
+							<div class="mypet-add-box-row">
+								<div class="mypet-add-box">
+									<p class="mypet-add-subtitle">Date de bază (locație)</p>
+									<div class="mypet-add-form">
+										<div class="mypet-add-field">
+											<label for="id_sex">Sex</label>
+											<select id="id_sex" name="sex">
+												<option value="" disabled{% if not sex %} selected{% endif %} hidden>Alege</option>
+												<option value="mascul"{% if sex == "mascul" %} selected{% endif %}>Mascul</option>
+												<option value="femelă"{% if sex == "femelă" %} selected{% endif %}>Femelă</option>
+												<option value="necunoscut"{% if sex == "necunoscut" %} selected{% endif %}>Necunoscut</option>
+											</select>
+										</div>
+										<div class="mypet-add-field">
+											<label for="id_weight">Greutate (aprox.)</label>
+											<input id="id_weight" type="text" name="weight" value="{{ weight }}">
+										</div>
+										<div class="mypet-add-field">
+											<label for="id_county">Județ</label>
+											<input id="id_county" type="text" name="county" value="{{ county }}">
+										</div>
+										<div class="mypet-add-field">
+											<label for="id_city">Oraș / Localitate</label>
+											<input id="id_city" type="text" name="city" value="{{ city }}">
+										</div>
+										<div class="mypet-add-field mypet-add-field-medical">
+											<label for="id_medical_issues">Probleme medicale</label>
+											<textarea id="id_medical_issues" name="medical_issues" rows="1">{{ medical_issues }}</textarea>
+										</div>
+										<div class="mypet-add-field mypet-add-field-about">
+											<label for="id_about_pet">Cine sunt și de unde sunt</label>
+											<textarea id="id_about_pet" name="about_pet" rows="4">{{ about_pet }}</textarea>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="mypet-m2-col" data-slot="M2.3">
+							<div class="mypet-add-box-row">
+								<div class="mypet-add-box">
+									<p class="mypet-add-subtitle">Detalii potrivire adoptator</p>
+									<div class="mypet-add-form mypet-add-form-traits">
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_playful" {% if trait_playful %}checked{% endif %}>
+											<span>Jucăuș</span>
+										</label>
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_affectionate" {% if trait_affectionate %}checked{% endif %}>
+											<span>Iubitor</span>
+										</label>
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_protective" {% if trait_protective %}checked{% endif %}>
+											<span>Protector</span>
+										</label>
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_energetic" {% if trait_energetic %}checked{% endif %}>
+											<span>Energic</span>
+										</label>
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_calm" {% if trait_calm %}checked{% endif %}>
+											<span>Liniștit</span>
+										</label>
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_good_with_kids" {% if trait_good_with_kids %}checked{% endif %}>
+											<span>Bun cu copii</span>
+										</label>
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_good_with_dogs" {% if trait_good_with_dogs %}checked{% endif %}>
+											<span>Bun cu alți câini</span>
+										</label>
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_good_with_cats" {% if trait_good_with_cats %}checked{% endif %}>
+											<span>Bun cu pisici</span>
+										</label>
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_house_trained" {% if trait_house_trained %}checked{% endif %}>
+											<span>Obișnuit în casă</span>
+										</label>
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_leash_trained" {% if trait_leash_trained %}checked{% endif %}>
+											<span>Obișnuit cu lesa</span>
+										</label>
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_low_barker" {% if trait_low_barker %}checked{% endif %}>
+											<span>Nu latră excesiv</span>
+										</label>
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_apartment_ok" {% if trait_apartment_ok %}checked{% endif %}>
+											<span>Potrivit pentru apartament</span>
+										</label>
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_adapts_easily" {% if trait_adapts_easily %}checked{% endif %}>
+											<span>Se adaptează ușor</span>
+										</label>
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_ok_left_alone" {% if trait_ok_left_alone %}checked{% endif %}>
+											<span>Tolerează să stea singur</span>
+										</label>
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_needs_experienced_owner" {% if trait_needs_experienced_owner %}checked{% endif %}>
+											<span>Necesită experiență cu câini</span>
+										</label>
+										<label class="mypet-add-trait">
+											<input type="checkbox" name="trait_good_for_yard" {% if trait_good_for_yard %}checked{% endif %}>
+											<span>Bun la curte</span>
+										</label>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
+	</form>
 </section>
 {% endblock %}
 
 {% block extra_css_after %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
 <style>
 	body.page-mypet #main_wrap,
 	body.page-mypet #main_content {
@@ -93,7 +354,7 @@
 		justify-content: stretch; /* și pe toată lățimea M1 */
 	}
 	.mypet-main-area {
-		/* restul de spațiu (~83.5%) pentru M2 */
+		/* restul de spațiu (~83.5%) pentru M2 (topbar + corp M2) */
 		flex: 1 1 83.5%;
 		height: 100%;
 		background: transparent;
@@ -101,36 +362,55 @@
 		flex-direction: column;
 		box-sizing: border-box;
 	}
-	.mypet-main-top {
-		/* casetă Bara butoane – înălțime fixă ~1cm */
-		flex: 0 0 1cm;
-		max-height: 1cm;
-		background: rgba(0, 0, 0, 0.06);
-		border-bottom: 1px solid #ccc;
-		box-sizing: border-box;
+	.mypet-add-form-wrap {
+		height: 100%;
 		display: flex;
-		align-items: center;
+		flex-direction: column;
 	}
-	.mypet-main-top-left {
-		flex: 1 1 auto;
-		padding-left: 0.4rem;
-		font-size: 0.8rem;
-		font-weight: 700;
-		color: #333;
-		line-height: 1cm; /* textul „Fișa câine” are aceeași înălțime vizuală ca butoanele */
-	}
-	.mypet-main-top-right {
+	/* Casetă subțire între navbar și M2 – înălțime fixă (dublată față de varianta inițială), fără a afecta M1 */
+	.mypet-main-topbar {
 		flex: 0 0 auto;
-		display: flex;
-		justify-content: flex-end;
-		align-items: center;
-		padding-right: 0.75rem;
+		height: 1cm;
+		max-height: 2.4rem;
+		min-height: 1.6rem;
+		background: rgba(255, 248, 225, 0.9);
+		border-bottom: 1px solid #c62828;
 		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		padding: 0 0.75rem;
 	}
-	.mypet-btn-save-dog {
-		font-size: 0.8rem;
-		padding: 0.25rem 0.8rem;
-		margin-right: 0.5rem; /* distanță clară între butoane, spre stânga, fără a depăși MW */
+	.mypet-main-topbar-buttons {
+		display: inline-flex;
+		align-items: stretch;
+		width: 100%;
+		height: 100%;
+		gap: 0.4rem;
+	}
+	.mypet-main-topbar-right {
+		margin-left: auto;
+		display: inline-flex;
+		align-items: stretch;
+		gap: 0.4rem;
+	}
+	.mypet-topbar-btn {
+		min-width: 1.8rem;
+		height: 100%;
+		padding: 0 1rem;
+		border-radius: 999px;
+		border: 1px solid #c62828;
+		background: transparent;
+		color: #c62828;
+		font-size: 0.9rem;
+		line-height: 1.1;
+		font-weight: 700;
+		cursor: default;
+		opacity: 0.6;
+		box-sizing: border-box;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 	}
 	.mypet-main-body {
 		flex: 1 1 auto;
@@ -139,7 +419,7 @@
 		display: flex;
 		align-items: stretch;
 		justify-content: stretch;
-		padding: 0; /* fără spațiu între bara butoane și M2 */
+		padding: 0;
 		box-sizing: border-box;
 	}
 	.mypet-m2 {
@@ -162,38 +442,168 @@
 		gap: 0;          /* fără spații între casete – umplu perfect M1 */
 	}
 	.mypet-m1-card {
-		flex: 1 1 0;     /* 4 casete egale pe înălțimea lui M1 */
+		flex: 1 1 0;     /* bază: casete egale pe înălțimea lui M1 */
 		min-height: 0;
 		background: rgba(255, 248, 225, 0.9);
 		border-radius: 0;
 		box-sizing: border-box;
 		display: flex;
-		align-items: center;
-		justify-content: center;
+		flex-direction: column;
+		align-items: stretch;
+		justify-content: stretch;
+		padding: 0.25rem 0.35rem;
 		font-size: 0.75rem;
 		font-weight: 600;
 		color: #444;
+	}
+	.mypet-photo-card.has-done {
+		padding: 0; /* fără bandă sus când poza este mare */
+	}
+	/* Ajustare înălțimi: primele 3 casete de poze puțin mai înalte, M1.4 puțin mai mică, ca spațiul total M1 să rămână neschimbat */
+	.mypet-m1-card[data-slot="M1.1"],
+	.mypet-m1-card[data-slot="M1.2"],
+	.mypet-m1-card[data-slot="M1.3"] {
+		flex: 1.1 1 0;
+	}
+	.mypet-m1-card[data-slot="M1.4"] {
+		flex: 0.7 1 0;
 	}
 	/* culori diferite ca să le vezi clar acum */
 	.mypet-m1-card:nth-child(1) { background: rgba(255, 241, 118, 0.95); }
 	.mypet-m1-card:nth-child(2) { background: rgba(200, 230, 201, 0.95); }
 	.mypet-m1-card:nth-child(3) { background: rgba(187, 222, 251, 0.95); }
 	.mypet-m1-card:nth-child(4) { background: rgba(255, 224, 178, 0.95); }
+	.mypet-m1-status {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: stretch;
+		font-size: 0.75rem;
+	}
+	.mypet-status-title {
+		font-weight: 800;
+		text-align: center;
+		margin-bottom: 0.25rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: #c62828;
+	}
+	.mypet-status-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+	}
+	.mypet-status-item {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		align-items: center;
+		column-gap: 0.35rem;
+	}
+	.mypet-status-light {
+		width: 0.6rem;
+		height: 0.6rem;
+		border-radius: 999px;
+		background: #b0bec5;
+		border: 1px solid #78909c;
+		box-shadow: 0 0 0 1px rgba(255,255,255,0.6);
+	}
+	.mypet-status-item--photo .mypet-status-light { background: #ef5350; border-color: #b71c1c; }
+	.mypet-status-item--base .mypet-status-light { background: #ffca28; border-color: #ff8f00; }
+	.mypet-status-item--match .mypet-status-light { background: #66bb6a; border-color: #2e7d32; }
+	.mypet-status-label {
+		font-size: 0.75rem;
+		color: #333;
+	}
+	.mypet-photo-label {
+		margin-bottom: 0.1rem;
+		text-align: center;
+	}
+	.mypet-photo-requirements {
+		font-size: 0.65rem;
+		color: #555;
+		text-align: center;
+		margin-bottom: 0.25rem;
+	}
+	.mypet-photo-upload { display: flex; justify-content: center; }
+	.mypet-photo-upload input[type="file"] { font-size: 0.7rem; }
+	.mypet-photo-crop,
+	.mypet-photo-done { display: none; flex-direction: column; flex: 1; min-height: 0; }
+	.mypet-photo-card.has-crop .mypet-photo-upload,
+	.mypet-photo-card.has-done .mypet-photo-upload { display: none; }
+	.mypet-photo-card.has-crop .mypet-photo-crop { display: flex; }
+	.mypet-photo-card.has-done .mypet-photo-done { display: flex; }
+	.mypet-photo-card.has-crop .mypet-photo-done,
+	.mypet-photo-card.has-done .mypet-photo-crop { display: none; }
+	.mypet-photo-card.has-done .mypet-photo-label,
+	.mypet-photo-card.has-done .mypet-photo-requirements { display: none; }
+	.mypet-photo-crop-box {
+		flex: 1;
+		min-height: 80px;
+		overflow: hidden;
+		background: #333;
+		position: relative;
+		max-height: 140px;
+		width: 100%;
+	}
+	.mypet-photo-crop-box .mypet-photo-crop-img { display: block; width: 100%; height: 100%; object-fit: contain; }
+	.mypet-photo-crop-actions {
+		display: flex;
+		gap: 0.25rem;
+		justify-content: center;
+		margin-top: 0.2rem;
+		flex-shrink: 0;
+	}
+	.mypet-photo-crop-actions button {
+		font-size: 0.7rem;
+		padding: 0.2rem 0.5rem;
+		border-radius: 4px;
+		border: 1px solid #c62828;
+		background: #fff;
+		color: #c62828;
+		cursor: pointer;
+	}
+	.mypet-photo-crop-actions .mypet-photo-crop-confirm { background: #c62828; color: #fff; }
+	.mypet-photo-done-preview {
+		flex: 1;
+		min-height: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center center;
+		display: block;
+	}
+	.mypet-photo-done-change {
+		font-size: 0.7rem;
+		margin-top: 0.2rem;
+		padding: 0.2rem 0.5rem;
+		border-radius: 4px;
+		border: 1px solid #666;
+		background: transparent;
+		cursor: pointer;
+		color: #444;
+	}
+	.mypet-m1-card input[type="file"] {
+		font-size: 0.7rem;
+		align-self: center;
+	}
 	.mypet-m2-col {
 		flex: 1 1 0;
 		border-right: 1px solid #c62828; /* linii de demarcație subțiri */
 		box-sizing: border-box;
 		display: flex;
-		align-items: flex-start;
-		justify-content: center;
+		flex-direction: column;
+		align-items: stretch;
+		justify-content: stretch; /* coloanele M2.1–M2.3 se întind complet pe înălțime */
 		font-weight: 700;
 		font-size: 0.9rem;
 		color: #c62828;
-		padding-top: 0.25rem;
+		padding-top: 0; /* fără spațiu liber între topbar și „casetele” 1, 2, 3 */
 	}
 	.mypet-m2-col:last-child {
 		border-right: none;
-	}
 	}
 	.mypet-add-subtitle {
 		margin: 0;
@@ -202,10 +612,9 @@
 		color: #555;
 	}
 	.mypet-add-box-row {
-		display: grid;
-		grid-template-columns: 2fr 1fr 1fr;
-		height: auto;
-		max-height: calc(100vh - var(--nav-h, 64px) - 3.2rem);
+		display: flex;
+		flex: 1 1 auto;
+		height: 100%;
 		gap: 0;
 	}
 	.mypet-add-topbar {
@@ -240,6 +649,7 @@
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
+		flex: 1 1 auto;
 		min-height: 0;
 	}
 	/* Pe fișa PET scoatem orice efect de hover/mișcare moștenit din alte CSS-uri */
@@ -291,11 +701,41 @@
 		border-radius: 6px;
 		border: 1px solid #ccc;
 	}
+	.mypet-add-field-medical textarea,
+	.mypet-add-field-about textarea {
+		width: 100%;
+		box-sizing: border-box;
+		padding: 0.25rem 0.4rem;
+		font-size: 0.8rem;
+		border-radius: 6px;
+		border: 1px solid #ccc;
+		resize: none;
+		line-height: 1.2;
+	}
+	.mypet-add-field-medical textarea {
+		height: 4rem;
+	}
+	.mypet-add-field-about textarea {
+		height: 8rem; /* „Cine sunt” este dublu față de „Probleme medicale” */
+	}
 	.mypet-add-actions {
 		margin-top: 1rem;
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
+	}
+	.mypet-topbar-btn-primary {
+		background: #c62828;
+		color: #fff;
+		border-color: #c62828;
+		opacity: 1;
+	}
+	.mypet-topbar-btn-secondary {
+		background: #fff8e1;
+		color: #5d4037;
+		border-color: #ffcc80;
+		opacity: 1;
+		text-decoration: none;
 	}
 	.mypet-btn {
 		display: inline-flex;
@@ -319,5 +759,94 @@
 		border-color: #ffcc80;
 	}
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+<script>
+(function() {
+	var CROP_ASPECT = 4 / 3;
+
+	function initPhotoCards() {
+		document.querySelectorAll('.mypet-photo-card').forEach(function(card) {
+			var input = card.querySelector('.mypet-photo-input');
+			var cropWrap = card.querySelector('.mypet-photo-crop');
+			var cropBox = card.querySelector('.mypet-photo-crop-box');
+			var cropImg = card.querySelector('.mypet-photo-crop-img');
+			var doneWrap = card.querySelector('.mypet-photo-done');
+			var donePreview = card.querySelector('.mypet-photo-done-preview');
+			var cropper = null;
+
+			function showUpload() {
+				card.classList.remove('has-crop', 'has-done');
+				input.value = '';
+				if (cropper) { cropper.destroy(); cropper = null; }
+				if (cropImg.src && cropImg.src.indexOf('blob:') === 0) { URL.revokeObjectURL(cropImg.src); } cropImg.src = '';
+				if (donePreview.src && donePreview.src.indexOf('blob:') === 0) { URL.revokeObjectURL(donePreview.src); } donePreview.src = '';
+			}
+
+			function showCrop(file) {
+				var url = URL.createObjectURL(file);
+				card.classList.remove('has-done');
+				card.classList.add('has-crop');
+				if (cropper) { cropper.destroy(); cropper = null; }
+				cropImg.onload = function() {
+					cropImg.onload = null;
+					cropper = new Cropper(cropImg, {
+						aspectRatio: CROP_ASPECT,
+						viewMode: 1,
+						dragMode: 'move',
+						autoCropArea: 0.8,
+						restore: false,
+						guides: true,
+						center: true,
+						highlight: false,
+						cropBoxMovable: true,
+						cropBoxResizable: true
+					});
+				};
+				cropImg.src = url;
+			}
+
+			function showDone(blob) {
+				card.classList.remove('has-crop');
+				card.classList.add('has-done');
+				donePreview.src = URL.createObjectURL(blob);
+				if (cropper) { cropper.destroy(); cropper = null; }
+				URL.revokeObjectURL(cropImg.src);
+				var name = input.getAttribute('name');
+				var file = new File([blob], (name || 'photo') + '.jpg', { type: 'image/jpeg' });
+				var dt = new DataTransfer();
+				dt.items.add(file);
+				input.files = dt.files;
+			}
+
+			input.addEventListener('change', function() {
+				var file = input.files && input.files[0];
+				if (!file || !file.type.match(/^image\/(jpeg|png)$/)) return;
+				showCrop(file);
+			});
+
+			card.querySelector('.mypet-photo-crop-confirm').addEventListener('click', function() {
+				if (!cropper) return;
+				var canvas = cropper.getCroppedCanvas({ maxWidth: 1600, maxHeight: 1200, imageSmoothingQuality: 'high' });
+				if (!canvas) return;
+				canvas.toBlob(function(blob) {
+					if (blob) showDone(blob);
+				}, 'image/jpeg', 0.9);
+			});
+
+			card.querySelector('.mypet-photo-crop-cancel').addEventListener('click', showUpload);
+			card.querySelector('.mypet-photo-done-change').addEventListener('click', showUpload);
+		});
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initPhotoCards);
+	} else {
+		initPhotoCards();
+	}
+})();
+</script>
 {% endblock %}
 

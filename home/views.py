@@ -6,7 +6,7 @@ REGULĂ: Orice modificare în home (punct, virgulă, orice) doar cu aprobarea ti
 import random
 from copy import deepcopy
 from itertools import cycle
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.http import JsonResponse
@@ -16,9 +16,11 @@ from django.views.decorators.csrf import csrf_protect
 from .data import DEMO_DOGS, DEMO_DOG_IMAGE, A2_QUOTE_POOL, HERO_SLIDER_IMAGES
 from .models import WishlistItem, AnimalListing, UserAdoption
 
-# A2 selection: 12 dogs. New (added in last 24h) first, then fill randomly from PT. Never empty if any available.
+# A2 selection: 12 câini.
+# Regula nouă: NEW = câini adăugați în ultimele 7 zile (din MyPet/AnimalListing),
+# apoi completăm aleator din rest (inclusiv câini mai vechi) dacă nu avem suficienți.
 A2_SLOT_COUNT = 12
-A2_NEW_HOURS = 24
+A2_NEW_HOURS = 24 * 7
 
 
 def select_a2_dogs(available_dogs, limit=A2_SLOT_COUNT):
@@ -54,46 +56,67 @@ def select_a2_dogs(available_dogs, limit=A2_SLOT_COUNT):
 
 
 def home_view(request):
-    if request.resolver_match.url_name == "pets_all" and request.GET.get("go"):
-        try:
-            pk = int(request.GET.get("go"))
-            return redirect(reverse("pets_single", args=[pk]))
-        except (ValueError, TypeError):
-            pass
     if request.resolver_match.url_name == "pets_all":
         # P2: toți câinii activi; rândurile în funcție de număr; ultimul rând complet (4) prin repetare
+        qs = AnimalListing.objects.filter(is_published=True).order_by("-created_at")
         p2_list = []
-        for d in DEMO_DOGS:
-            p2_list.append({
-                "pk": d["id"],
-                "nume": d["nume"],
-                "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
-                "traits": (d.get("traits") or [])[:2],
-            })
-        n = len(p2_list)
-        need = (4 - n % 4) % 4  # completează ultimul rând la 4 (repetă câini din listă)
-        if need and p2_list:
-            for i, d in enumerate(cycle(DEMO_DOGS)):
-                if i >= need:
-                    break
+        if qs.exists():
+            base_items = []
+            for a in qs:
+                base_items.append({
+                    "pk": a.pk,
+                    "nume": a.name or f"Pet #{a.pk}",
+                    "imagine": a.photo_1,
+                })
+            # pornim de la lista de bază
+            p2_list = list(base_items)
+            n = len(p2_list)
+            need = (4 - n % 4) % 4  # completează ultimul rând la 4 (repetă câini din listă)
+            if need and p2_list:
+                for i, item in enumerate(cycle(base_items)):
+                    if i >= need:
+                        break
+                    p2_list.append(item)
+            # ~10 rânduri în scroll (40 celule) – repetăm câinii existenți
+            if p2_list and len(p2_list) <= 12:
+                extra = 40
+                for i, item in enumerate(cycle(base_items)):
+                    if i >= extra:
+                        break
+                    p2_list.append(item)
+        else:
+            # Fallback demo (vechiul comportament) dacă nu avem încă animale reale
+            for d in DEMO_DOGS:
                 p2_list.append({
                     "pk": d["id"],
                     "nume": d["nume"],
                     "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
                     "traits": (d.get("traits") or [])[:2],
                 })
-        # Demo: ~10 rânduri în scroll (40 celule); când vine DB, lista vine de acolo
-        if p2_list and len(p2_list) <= 12:
-            extra = 40
-            for i, d in enumerate(cycle(DEMO_DOGS)):
-                if i >= extra:
-                    break
-                p2_list.append({
-                    "pk": d["id"],
-                    "nume": d["nume"],
-                    "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
-                    "traits": (d.get("traits") or [])[:2],
-                })
+            n = len(p2_list)
+            need = (4 - n % 4) % 4  # completează ultimul rând la 4 (repetă câini din listă)
+            if need and p2_list:
+                for i, d in enumerate(cycle(DEMO_DOGS)):
+                    if i >= need:
+                        break
+                    p2_list.append({
+                        "pk": d["id"],
+                        "nume": d["nume"],
+                        "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
+                        "traits": (d.get("traits") or [])[:2],
+                    })
+            # Demo: ~10 rânduri în scroll (40 celule)
+            if p2_list and len(p2_list) <= 12:
+                extra = 40
+                for i, d in enumerate(cycle(DEMO_DOGS)):
+                    if i >= extra:
+                        break
+                    p2_list.append({
+                        "pk": d["id"],
+                        "nume": d["nume"],
+                        "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
+                        "traits": (d.get("traits") or [])[:2],
+                    })
         p2_pets = p2_list[:12]
         p2_pets_rest = p2_list[12:]
         # P1 și P3: benzi cu poze (aceleași imagini demo, repetate pentru strip)
@@ -114,14 +137,29 @@ def home_view(request):
 
     is_home = request.resolver_match.url_name == "home"
 
-    # Available dogs for PT (Prietenul tău); demo: use DEMO_DOGS with default added_at so all are "old"
+    # Available dogs pentru PT (Prietenul tău) + A2.
+    # 1) Preferăm animale reale din AnimalListing (is_published=True).
+    # 2) Dacă nu există încă, folosim fallback DEMO_DOGS (comportament vechi).
     available_for_pt = []
     now = timezone.now()
-    for d in DEMO_DOGS:
-        row = deepcopy(d)
-        if "added_at" not in row:
-            row["added_at"] = now - timezone.timedelta(hours=A2_NEW_HOURS + 1)
-        available_for_pt.append(row)
+    real_qs = AnimalListing.objects.filter(is_published=True).order_by("-created_at")
+    if real_qs.exists():
+        for a in real_qs:
+            row = {
+                "id": a.pk,
+                "nume": a.name or f"Pet #{a.pk}",
+                "varsta": a.age_label or "",
+                "descriere": "",
+                "imagine": a.photo_1,
+                "added_at": a.created_at,
+            }
+            available_for_pt.append(row)
+    else:
+        for d in DEMO_DOGS:
+            row = deepcopy(d)
+            if "added_at" not in row:
+                row["added_at"] = now - timezone.timedelta(hours=A2_NEW_HOURS + 1)
+            available_for_pt.append(row)
 
     # A2: 12 dogs – new (last 24h) first, then fill randomly from PT
     a2_selected = select_a2_dogs(available_for_pt, limit=A2_SLOT_COUNT)
@@ -130,8 +168,9 @@ def home_view(request):
         pet = {
             "pk": d["id"],
             "nume": d["nume"],
-            "varsta": d["varsta"],
-            "descriere": d["descriere"],
+            "varsta": d.get("varsta", ""),
+            "descriere": d.get("descriere", ""),
+            "imagine": d.get("imagine"),
             "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
         }
         if is_home:
@@ -143,6 +182,9 @@ def home_view(request):
     wishlist_ids = set()
     if request.user.is_authenticated:
         wishlist_ids = set(WishlistItem.objects.filter(user=request.user).values_list("animal_id", flat=True))
+    # Pentru A3: număr animale active – dacă avem reale, le numărăm din AnimalListing.
+    active_animals_count = real_qs.count() if real_qs.exists() else len(DEMO_DOGS)
+
     return render(request, "anunturi/home_v2.html", {
         "a2_pets": a2_pets,
         "a2_quote_pool": A2_QUOTE_POOL,
@@ -151,7 +193,7 @@ def home_view(request):
         "right_sidebar_partners": [None, None, None],
         "hero_slider_images": hero_slider_images,
         "adopted_animals": 0,
-        "active_animals": len(DEMO_DOGS),
+        "active_animals": active_animals_count,
         "show_welcome_demo": show_welcome_demo,
         "wishlist_ids": wishlist_ids,
     })
@@ -252,15 +294,6 @@ def shop_magazin_foto_view(request):
     """Pagina magazin foto – cumpără poze de la ONG-uri."""
     return render(request, "anunturi/shop_magazin_foto.html", {})
 
-
-def dog_profile_view(request, pk):
-    dog = next((d for d in DEMO_DOGS if d["id"] == pk), None)
-    if not dog:
-        dog = {"id": pk, "nume": "—", "varsta": "—", "descriere": ""}
-    ctx = {"pet": {"pk": dog["id"], "nume": dog["nume"], "varsta": dog["varsta"], "descriere": dog["descriere"], "imagine_fallback": dog.get("imagine_fallback", DEMO_DOG_IMAGE)}}
-    return render(request, "anunturi/pets-single.html", ctx)
-
-
 def account_view(request):
     """Pagina cont utilizator: date completate la înscriere + rol."""
     if not request.user.is_authenticated:
@@ -282,11 +315,26 @@ def mypet_view(request):
     sub navbar, fără alte benzi sau layout-uri speciale.
     """
     user = request.user
-    active_animals = AnimalListing.objects.filter(owner=user, is_published=True).count()
+    qs = AnimalListing.objects.filter(owner=user).order_by("-created_at")
+    pets = []
+    for a in qs:
+        love_count = WishlistItem.objects.filter(animal_id=a.pk).count()
+        pets.append({
+            "pk": a.pk,
+            "name": a.name or f"Pet #{a.pk}",
+            "species": a.get_species_display(),
+            "age_label": a.age_label,
+            "city": a.city,
+            "is_published": a.is_published,
+            "photo_1": a.photo_1,
+            "love_count": love_count,
+        })
+    active_animals = qs.filter(is_published=True).count()
     adopted_animals = UserAdoption.objects.filter(user=user, status="completed").count()
     return render(request, "anunturi/mypet.html", {
         "active_animals": active_animals,
         "adopted_animals": adopted_animals,
+        "pets": pets,
     })
 
 
@@ -319,26 +367,92 @@ def mypet_add_view(request):
         name = (request.POST.get("name") or "").strip()
         species = (request.POST.get("species") or "dog").strip() or "dog"
         size = (request.POST.get("size") or "").strip()
+        color = (request.POST.get("color") or "").strip()
         age_label = (request.POST.get("age_label") or "").strip()
         city = (request.POST.get("city") or "").strip()
         county = (request.POST.get("county") or "").strip()
+        sex = (request.POST.get("sex") or "").strip()
+        weight = (request.POST.get("weight") or "").strip()
+        medical_issues = (request.POST.get("medical_issues") or "").strip()
+        about_pet = (request.POST.get("about_pet") or "").strip()
+        sterilized_choice = (request.POST.get("sterilized") or "").strip()
+        vaccinated_choice = (request.POST.get("vaccinated") or "").strip()
+        health_book_choice = (request.POST.get("health_book") or "").strip()
+        chip_choice = (request.POST.get("chip") or "").strip()
+        trait_playful = bool(request.POST.get("trait_playful"))
+        trait_affectionate = bool(request.POST.get("trait_affectionate"))
+        trait_protective = bool(request.POST.get("trait_protective"))
+        trait_energetic = bool(request.POST.get("trait_energetic"))
+        trait_calm = bool(request.POST.get("trait_calm"))
+        trait_good_with_kids = bool(request.POST.get("trait_good_with_kids"))
+        trait_good_with_dogs = bool(request.POST.get("trait_good_with_dogs"))
+        trait_good_with_cats = bool(request.POST.get("trait_good_with_cats"))
+        trait_house_trained = bool(request.POST.get("trait_house_trained"))
+        trait_leash_trained = bool(request.POST.get("trait_leash_trained"))
+        trait_low_barker = bool(request.POST.get("trait_low_barker"))
+        trait_apartment_ok = bool(request.POST.get("trait_apartment_ok"))
+        trait_adapts_easily = bool(request.POST.get("trait_adapts_easily"))
+        trait_ok_left_alone = bool(request.POST.get("trait_ok_left_alone"))
+        trait_needs_experienced_owner = bool(request.POST.get("trait_needs_experienced_owner"))
+        trait_good_for_yard = bool(request.POST.get("trait_good_for_yard"))
+        photo_1 = request.FILES.get("photo_1")
+        photo_2 = request.FILES.get("photo_2")
+        photo_3 = request.FILES.get("photo_3")
         error = None
         if not name:
             error = "Te rugăm să completezi numele câinelui."
-        if not age_label:
+        elif not size:
+            error = "Te rugăm să completezi talia (mică/medie/mare)."
+        elif not age_label:
             error = "Te rugăm să alegi vârsta estimată."
         if not error:
             try:
-                AnimalListing.objects.create(
+                sterilized = sterilized_choice == "yes"
+                vaccinated = vaccinated_choice == "yes"
+                has_health_book = health_book_choice == "yes"
+                has_chip = chip_choice == "yes"
+                listing = AnimalListing.objects.create(
                     owner=user,
                     name=name,
                     species=species,
                     size=size,
+                    color=color,
                     age_label=age_label,
                     city=city,
                     county=county,
+                    sterilized=sterilized,
+                    vaccinated=vaccinated,
+                    has_health_book=has_health_book,
+                    has_chip=has_chip,
+                    trait_playful=trait_playful,
+                    trait_affectionate=trait_affectionate,
+                    trait_protective=trait_protective,
+                    trait_energetic=trait_energetic,
+                    trait_calm=trait_calm,
+                    trait_good_with_kids=trait_good_with_kids,
+                    trait_good_with_dogs=trait_good_with_dogs,
+                    trait_good_with_cats=trait_good_with_cats,
+                    trait_house_trained=trait_house_trained,
+                    trait_leash_trained=trait_leash_trained,
+                    trait_low_barker=trait_low_barker,
+                    trait_apartment_ok=trait_apartment_ok,
+                    trait_adapts_easily=trait_adapts_easily,
+                    trait_ok_left_alone=trait_ok_left_alone,
+                    trait_needs_experienced_owner=trait_needs_experienced_owner,
+                    trait_good_for_yard=trait_good_for_yard,
+                    medical_issues=medical_issues,
+                    about_pet=about_pet,
                     is_published=True,
                 )
+                # Atașăm pozele dacă există (maxim 3)
+                if photo_1:
+                    listing.photo_1 = photo_1
+                if photo_2:
+                    listing.photo_2 = photo_2
+                if photo_3:
+                    listing.photo_3 = photo_3
+                if photo_1 or photo_2 or photo_3:
+                    listing.save()
                 return redirect("mypet")
             except Exception as exc:
                 error = str(exc)
@@ -347,10 +461,35 @@ def mypet_add_view(request):
             "name": name,
             "species": species,
             "size": size,
+            "color": color,
+            "sex": sex,
+            "weight": weight,
+            "medical_issues": medical_issues,
+            "about_pet": about_pet,
             "age_label": age_label,
             "city": city or default_city,
             "county": county or default_county,
             "age_choices": age_choices,
+            "sterilized_choice": sterilized_choice,
+            "vaccinated_choice": vaccinated_choice,
+            "health_book_choice": health_book_choice,
+            "chip_choice": chip_choice,
+            "trait_playful": trait_playful,
+            "trait_affectionate": trait_affectionate,
+            "trait_protective": trait_protective,
+            "trait_energetic": trait_energetic,
+            "trait_calm": trait_calm,
+            "trait_good_with_kids": trait_good_with_kids,
+            "trait_good_with_dogs": trait_good_with_dogs,
+            "trait_good_with_cats": trait_good_with_cats,
+            "trait_house_trained": trait_house_trained,
+            "trait_leash_trained": trait_leash_trained,
+            "trait_low_barker": trait_low_barker,
+            "trait_apartment_ok": trait_apartment_ok,
+            "trait_adapts_easily": trait_adapts_easily,
+            "trait_ok_left_alone": trait_ok_left_alone,
+            "trait_needs_experienced_owner": trait_needs_experienced_owner,
+            "trait_good_for_yard": trait_good_for_yard,
         }
         return render(request, "anunturi/mypet_add.html", ctx)
 
@@ -359,13 +498,231 @@ def mypet_add_view(request):
         "name": "",
         "species": "dog",
         "size": "",
+        "color": "",
+        "sex": "",
+        "weight": "",
+        "medical_issues": "",
+        "about_pet": "",
         "age_label": "",
         "city": default_city,
         "county": default_county,
         "age_choices": age_choices,
+        "sterilized_choice": "",
+        "vaccinated_choice": "",
+        "health_book_choice": "",
+        "chip_choice": "",
+        "trait_playful": False,
+        "trait_affectionate": False,
+        "trait_protective": False,
+        "trait_energetic": False,
+        "trait_calm": False,
+        "trait_good_with_kids": False,
+        "trait_good_with_dogs": False,
+        "trait_good_with_cats": False,
+        "trait_house_trained": False,
+        "trait_leash_trained": False,
+        "trait_low_barker": False,
+        "trait_apartment_ok": False,
+        "trait_adapts_easily": False,
+        "trait_ok_left_alone": False,
+        "trait_needs_experienced_owner": False,
+        "trait_good_for_yard": False,
     }
     return render(request, "anunturi/mypet_add.html", ctx)
 
+
+@login_required
+def mypet_edit_view(request, pk: int):
+    """
+    Editare fișă existentă pentru un pet din MyPet.
+    Refolosim același template ca la adăugare, cu câmpurile precompletate.
+    """
+    user = request.user
+    listing = get_object_or_404(AnimalListing, pk=pk, owner=user)
+
+    profile = getattr(user, "profile", None)
+    default_city = getattr(profile, "oras", "") if profile else ""
+    default_county = ""
+
+    age_choices = [
+        "<1 an",
+        "1 an",
+        "2 ani",
+        "3 ani",
+        "4 ani",
+        "5 ani",
+        "6 ani",
+        "7 ani",
+        "8 ani",
+        "9 ani",
+        "10+ ani",
+    ]
+
+    if request.method == "POST":
+        name = (request.POST.get("name") or "").strip()
+        species = (request.POST.get("species") or "dog").strip() or "dog"
+        size = (request.POST.get("size") or "").strip()
+        color = (request.POST.get("color") or "").strip()
+        age_label = (request.POST.get("age_label") or "").strip()
+        city = (request.POST.get("city") or "").strip()
+        county = (request.POST.get("county") or "").strip()
+        sex = (request.POST.get("sex") or "").strip()
+        weight = (request.POST.get("weight") or "").strip()
+        medical_issues = (request.POST.get("medical_issues") or "").strip()
+        about_pet = (request.POST.get("about_pet") or "").strip()
+        sterilized_choice = (request.POST.get("sterilized") or "").strip()
+        vaccinated_choice = (request.POST.get("vaccinated") or "").strip()
+        health_book_choice = (request.POST.get("health_book") or "").strip()
+        chip_choice = (request.POST.get("chip") or "").strip()
+        trait_playful = bool(request.POST.get("trait_playful"))
+        trait_affectionate = bool(request.POST.get("trait_affectionate"))
+        trait_protective = bool(request.POST.get("trait_protective"))
+        trait_energetic = bool(request.POST.get("trait_energetic"))
+        trait_calm = bool(request.POST.get("trait_calm"))
+        trait_good_with_kids = bool(request.POST.get("trait_good_with_kids"))
+        trait_good_with_dogs = bool(request.POST.get("trait_good_with_dogs"))
+        trait_good_with_cats = bool(request.POST.get("trait_good_with_cats"))
+        trait_house_trained = bool(request.POST.get("trait_house_trained"))
+        trait_leash_trained = bool(request.POST.get("trait_leash_trained"))
+        trait_low_barker = bool(request.POST.get("trait_low_barker"))
+        trait_apartment_ok = bool(request.POST.get("trait_apartment_ok"))
+        trait_adapts_easily = bool(request.POST.get("trait_adapts_easily"))
+        trait_ok_left_alone = bool(request.POST.get("trait_ok_left_alone"))
+        trait_needs_experienced_owner = bool(request.POST.get("trait_needs_experienced_owner"))
+        trait_good_for_yard = bool(request.POST.get("trait_good_for_yard"))
+        photo_1 = request.FILES.get("photo_1")
+        photo_2 = request.FILES.get("photo_2")
+        photo_3 = request.FILES.get("photo_3")
+
+        error = None
+        if not name:
+            error = "Te rugăm să completezi numele câinelui."
+        elif not size:
+            error = "Te rugăm să completezi talia (mică/medie/mare)."
+        elif not age_label:
+            error = "Te rugăm să alegi vârsta estimată."
+
+        if not error:
+            try:
+                listing.name = name
+                listing.species = species
+                listing.size = size
+                listing.color = color
+                listing.age_label = age_label
+                listing.city = city
+                listing.county = county
+                listing.medical_issues = medical_issues
+                listing.about_pet = about_pet
+
+                listing.sterilized = (sterilized_choice == "yes")
+                listing.vaccinated = (vaccinated_choice == "yes")
+                listing.has_health_book = (health_book_choice == "yes")
+                listing.has_chip = (chip_choice == "yes")
+
+                listing.trait_playful = trait_playful
+                listing.trait_affectionate = trait_affectionate
+                listing.trait_protective = trait_protective
+                listing.trait_energetic = trait_energetic
+                listing.trait_calm = trait_calm
+                listing.trait_good_with_kids = trait_good_with_kids
+                listing.trait_good_with_dogs = trait_good_with_dogs
+                listing.trait_good_with_cats = trait_good_with_cats
+                listing.trait_house_trained = trait_house_trained
+                listing.trait_leash_trained = trait_leash_trained
+                listing.trait_low_barker = trait_low_barker
+                listing.trait_apartment_ok = trait_apartment_ok
+                listing.trait_adapts_easily = trait_adapts_easily
+                listing.trait_ok_left_alone = trait_ok_left_alone
+                listing.trait_needs_experienced_owner = trait_needs_experienced_owner
+                listing.trait_good_for_yard = trait_good_for_yard
+
+                # Poze: dacă userul încarcă ceva nou, înlocuim; altfel păstrăm
+                if photo_1:
+                    listing.photo_1 = photo_1
+                if photo_2:
+                    listing.photo_2 = photo_2
+                if photo_3:
+                    listing.photo_3 = photo_3
+
+                listing.save()
+                return redirect("mypet")
+            except Exception as exc:
+                error = str(exc)
+
+        ctx = {
+            "error": error,
+            "name": name,
+            "species": species,
+            "size": size,
+            "color": color,
+            "sex": sex,
+            "weight": weight,
+            "medical_issues": medical_issues,
+            "about_pet": about_pet,
+            "age_label": age_label,
+            "city": city or default_city,
+            "county": county or default_county,
+            "age_choices": age_choices,
+            "sterilized_choice": sterilized_choice,
+            "vaccinated_choice": vaccinated_choice,
+            "health_book_choice": health_book_choice,
+            "chip_choice": chip_choice,
+            "trait_playful": trait_playful,
+            "trait_affectionate": trait_affectionate,
+            "trait_protective": trait_protective,
+            "trait_energetic": trait_energetic,
+            "trait_calm": trait_calm,
+            "trait_good_with_kids": trait_good_with_kids,
+            "trait_good_with_dogs": trait_good_with_dogs,
+            "trait_good_with_cats": trait_good_with_cats,
+            "trait_house_trained": trait_house_trained,
+            "trait_leash_trained": trait_leash_trained,
+            "trait_low_barker": trait_low_barker,
+            "trait_apartment_ok": trait_apartment_ok,
+            "trait_adapts_easily": trait_adapts_easily,
+            "trait_ok_left_alone": trait_ok_left_alone,
+            "trait_needs_experienced_owner": trait_needs_experienced_owner,
+            "trait_good_for_yard": trait_good_for_yard,
+        }
+        return render(request, "anunturi/mypet_add.html", ctx)
+
+    # GET: precompletăm din listing
+    ctx = {
+        "error": None,
+        "name": listing.name,
+        "species": listing.species or "dog",
+        "size": listing.size,
+        "color": listing.color,
+        "sex": "",
+        "weight": "",
+        "medical_issues": listing.medical_issues,
+        "about_pet": listing.about_pet,
+        "age_label": listing.age_label,
+        "city": listing.city or default_city,
+        "county": listing.county or default_county,
+        "age_choices": age_choices,
+        "sterilized_choice": "yes" if listing.sterilized else "no" if listing.sterilized is not None else "",
+        "vaccinated_choice": "yes" if listing.vaccinated else "no" if listing.vaccinated is not None else "",
+        "health_book_choice": "yes" if listing.has_health_book else "no" if listing.has_health_book is not None else "",
+        "chip_choice": "yes" if listing.has_chip else "no" if listing.has_chip is not None else "",
+        "trait_playful": listing.trait_playful,
+        "trait_affectionate": listing.trait_affectionate,
+        "trait_protective": listing.trait_protective,
+        "trait_energetic": listing.trait_energetic,
+        "trait_calm": listing.trait_calm,
+        "trait_good_with_kids": listing.trait_good_with_kids,
+        "trait_good_with_dogs": listing.trait_good_with_dogs,
+        "trait_good_with_cats": listing.trait_good_with_cats,
+        "trait_house_trained": listing.trait_house_trained,
+        "trait_leash_trained": listing.trait_leash_trained,
+        "trait_low_barker": listing.trait_low_barker,
+        "trait_apartment_ok": listing.trait_apartment_ok,
+        "trait_adapts_easily": listing.trait_adapts_easily,
+        "trait_ok_left_alone": listing.trait_ok_left_alone,
+        "trait_needs_experienced_owner": listing.trait_needs_experienced_owner,
+        "trait_good_for_yard": listing.trait_good_for_yard,
+    }
+    return render(request, "anunturi/mypet_add.html", ctx)
 
 def i_love_view(request):
     """Pagina I Love: câinii pe care userul i-a marcat cu inimioară."""

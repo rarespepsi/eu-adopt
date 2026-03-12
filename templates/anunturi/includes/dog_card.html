@@ -1,7 +1,7 @@
 {% load static %}
 {# Full card: photo + name/age/desc/button. Compact (A2 cover): photo + quote only, link via Prietenul tau so back returns there. #}
 {% if a2_compact and pet.quote %}
-<a href="{% url 'pets_all' %}?go={{ pet.pk }}" class="A2-slot-link dog-card-link dog-card-compact" aria-label="Vezi {{ pet.nume }}">
+<a href="#" onclick="return false;" class="A2-slot-link dog-card-link dog-card-compact" aria-label="Vezi {{ pet.nume }}">
 	<article class="dog-card">
 		<figure class="dog-card-photo" aria-hidden="true">
 			<button type="button" class="wish-btn {% if wishlist_ids and pet.pk in wishlist_ids %}is-active{% endif %}" data-animal-id="{{ pet.pk }}" aria-pressed="{% if wishlist_ids and pet.pk in wishlist_ids %}true{% else %}false{% endif %}">
@@ -22,7 +22,7 @@
 	</article>
 </a>
 {% else %}
-<a href="{% url 'pets_single' pet.pk %}" class="A2-slot-link dog-card-link" aria-label="Vezi profil {{ pet.nume }}">
+<a href="#" onclick="return false;" class="A2-slot-link dog-card-link" aria-label="Vezi profil {{ pet.nume }}">
 	<article class="dog-card">
 		<figure class="dog-card-photo" aria-hidden="true">
 			<button type="button" class="wish-btn {% if wishlist_ids and pet.pk in wishlist_ids %}is-active{% endif %}" data-animal-id="{{ pet.pk }}" aria-pressed="{% if wishlist_ids and pet.pk in wishlist_ids %}true{% else %}false{% endif %}">

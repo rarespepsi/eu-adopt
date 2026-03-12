@@ -1,5 +1,5 @@
 {% load static %}
-<a href="{% url 'pets_single' pet.pk %}" class="pt-p2-card-link" title="Vezi {{ pet.nume }}" aria-label="Vezi profil {{ pet.nume }}">
+<div class="pt-p2-card-link" aria-label="{{ pet.nume }}">
 	<div class="pt-p2-card-photo-wrap" aria-hidden="true">
 		<div class="pt-p2-card-photo">
 			<button type="button" class="wish-btn {% if wishlist_ids and pet.pk in wishlist_ids %}is-active{% endif %}" data-animal-id="{{ pet.pk }}" aria-pressed="{% if wishlist_ids and pet.pk in wishlist_ids %}true{% else %}false{% endif %}" style="top:6px;right:6px;">
@@ -7,7 +7,9 @@
 					<path class="wish-heart" d="M12 21s-7-4.6-10-9.2C-0.3 7.9 2.1 4 6 4c2 0 3.4 1.1 4 2 0.6-0.9 2-2 4-2 3.9 0 6.3 3.9 4 7.8C19 16.4 12 21 12 21z"/>
 				</svg>
 			</button>
-			{% if pet.imagine_fallback %}
+			{% if pet.imagine %}
+			<img src="{{ pet.imagine.url }}" alt="" />
+			{% elif pet.imagine_fallback %}
 			<img src="{% static pet.imagine_fallback %}" alt="" />
 			{% else %}
 			<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" />
@@ -15,4 +17,4 @@
 		</div>
 		<span class="pt-p2-card-name pt-p2-card-name--overlay">{{ pet.nume }}</span>
 	</div>
-</a>
+</div>

@@ -13,6 +13,7 @@ urlpatterns = [
     path('cont/', views.account_view, name='account'),
     path('mypet/', views.mypet_view, name='mypet'),
     path('mypet/add/', views.mypet_add_view, name='mypet_add'),
+    path('mypet/<int:pk>/edit/', views.mypet_edit_view, name='mypet_edit'),
     path('i-love/', views.i_love_view, name='i_love'),
     path('wishlist/toggle/', views.wishlist_toggle_view, name='wishlist_toggle'),
     path('servicii/', views.servicii_view, name='servicii'),
@@ -24,5 +25,4 @@ urlpatterns = [
     path('shop/magazin-foto/', views.shop_magazin_foto_view, name='shop_magazin_foto'),
 
     path('pets/', views.home_view, name='pets_all'),
-    path('pets/<int:pk>/', views.dog_profile_view, name='pets_single'),
 ]

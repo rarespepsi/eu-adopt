@@ -12,6 +12,54 @@
 			<a href="{% url 'mypet' %}" class="mypet-btn mypet-btn-primary">My pets</a>
 			<a href="{% url 'mypet_add' %}" class="mypet-btn mypet-btn-secondary">Adaugă un pet</a>
 		</div>
+		<div class="mypet-list-wrap">
+			{% if pets %}
+				<div class="mypet-list-head">
+					<span class="mypet-list-col mypet-list-col-index"></span>
+					<span class="mypet-list-col mypet-list-col-main">Animalele mele active</span>
+					<span class="mypet-list-col">Vârstă</span>
+					<span class="mypet-list-col">Locație</span>
+					<span class="mypet-list-col">Stare</span>
+					<span class="mypet-list-col mypet-list-col-actions"></span>
+				</div>
+				<div class="mypet-list-body">
+					{% for pet in pets %}
+						<div class="mypet-list-row">
+							<div class="mypet-list-index">
+								{{ forloop.counter }}
+							</div>
+							<div class="mypet-list-main">
+								<div class="mypet-list-photo">
+									{% if pet.photo_1 %}
+										<img src="{{ pet.photo_1.url }}" alt="{{ pet.name }}" class="mypet-list-photo-img">
+									{% else %}
+										<span class="mypet-list-photo-placeholder">{{ pet.name|first|upper }}</span>
+									{% endif %}
+								</div>
+								<div class="mypet-list-text">
+									<div class="mypet-list-name">{{ pet.name }}</div>
+									<div class="mypet-list-species">{{ pet.species }}</div>
+								</div>
+							</div>
+							<div class="mypet-list-col">{{ pet.age_label }}</div>
+							<div class="mypet-list-col">{{ pet.city }}</div>
+							<div class="mypet-list-col">
+								{% if pet.is_published %}Activ{% else %}Ascuns{% endif %}
+							</div>
+							<div class="mypet-list-col mypet-list-col-actions">
+								<a href="{% url 'mypet_edit' pet.pk %}" class="mypet-list-edit-btn">Modifică</a>
+								<button type="button" class="mypet-list-love-btn">
+									I Love <span class="mypet-list-love-heart">❤</span>
+									<span class="mypet-list-love-count">{{ pet.love_count }}</span>
+								</button>
+							</div>
+						</div>
+					{% endfor %}
+				</div>
+			{% else %}
+				<p class="mypet-empty">Nu ai încă niciun pet adăugat. Apasă „Adaugă un pet” pentru a crea prima fișă.</p>
+			{% endif %}
+		</div>
 	</div>
 </section>
 {% endblock %}
@@ -40,6 +88,16 @@
 		max-width: 960px;
 		height: 100%;
 		box-sizing: border-box;
+	}
+	/* Pe MyPet apropiem caseta cu poza de M1, fără să schimbăm M1 */
+	body.page-mypet .main-content {
+		padding-left: 0;
+		padding-right: 0.75rem;
+		margin-left: -4.5rem; /* lipim și mai mult de M1, fără să modificăm M1 */
+	}
+	/* Pe MyPet micșorăm coloana stângă (M1.1–M1.3) la ~50% din lățimea de bază */
+	body.page-mypet .layout {
+		grid-template-columns: 130px minmax(0, 1fr) 260px;
 	}
 	/* Doar pe MyPet: evidențiem caseta mamă din stânga (A6–A8) ca să o vezi clar */
 	body.page-mypet .sidebar-left {
@@ -100,6 +158,135 @@
 		background: #fff8e1;
 		color: #5d4037;
 		border-color: #ffcc80;
+	}
+	.mypet-list-wrap {
+		margin-top: 1rem;
+		height: calc(100% - 3rem);
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		overflow: hidden;
+	}
+	.mypet-list-head {
+		display: grid;
+		grid-template-columns: auto 2fr 1fr 1fr 1fr auto;
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: #5d4037;
+		padding: 0.2rem 0.4rem;
+		border-bottom: 1px solid #e0e0e0;
+	}
+	.mypet-list-body {
+		flex: 1 1 auto;
+		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding-right: 0.2rem;
+	}
+	.mypet-list-row {
+		display: grid;
+		grid-template-columns: auto 2fr 1fr 1fr 1fr auto;
+		align-items: center;
+		font-size: 0.8rem;
+		padding: 0.25rem 0.4rem;
+		border-radius: 8px;
+		background: #fffdf6;
+		box-shadow: 0 0 0 1px #ffe0b2;
+		box-sizing: border-box;
+		transition: none !important;
+		transform: none !important;
+	}
+	.mypet-list-row:hover {
+		background: #fffdf6 !important;
+		box-shadow: 0 0 0 1px #ffe0b2 !important;
+		transform: none !important;
+	}
+	.mypet-list-main {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		background: #e8f5e9;
+		border-radius: 6px;
+		padding: 0.15rem 0.4rem;
+	}
+	.mypet-list-photo {
+		width: 54px;   /* dreptunghi vizibil, nu doar pătrățel mic */
+		height: 36px;
+		border-radius: 6px;
+		background: #ffe0b2;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+	}
+	.mypet-list-photo-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+	.mypet-list-photo-placeholder {
+		display: inline-block;
+		font-weight: 800;
+		color: #5d4037;
+		font-size: 0.9rem;
+	}
+	.mypet-list-text {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+	.mypet-list-name {
+		font-weight: 700;
+		font-size: 0.85rem;
+	}
+	.mypet-list-species {
+		font-size: 0.7rem;
+		color: #757575;
+	}
+	.mypet-list-col-index,
+	.mypet-list-index {
+		text-align: center;
+		font-size: 0.8rem;
+		color: #555;
+		width: 1.5rem;
+	}
+	.mypet-list-col-actions {
+		text-align: right;
+	}
+	.mypet-list-edit-btn {
+		padding: 0.18rem 0.6rem;
+		font-size: 0.7rem;
+		border-radius: 999px;
+		border: 1px solid #c62828;
+		background: #fff;
+		color: #c62828;
+		cursor: pointer;
+	}
+	.mypet-list-love-btn {
+		margin-left: 0.25rem;
+		padding: 0.18rem 0.5rem;
+		font-size: 0.7rem;
+		border-radius: 999px;
+		border: 1px solid #ff6f00;
+		background: #fff8e1;
+		color: #e65100;
+		cursor: default;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.15rem;
+	}
+	.mypet-list-love-heart {
+		color: #e53935;
+		font-size: 0.8rem;
+	}
+	.mypet-empty {
+		margin-top: 1.5rem;
+		font-size: 0.85rem;
+		color: #555;
+		text-align: center;
 	}
 </style>
 {% endblock %}
