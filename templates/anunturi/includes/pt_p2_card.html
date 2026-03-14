@@ -7,12 +7,10 @@
 					<path class="wish-heart" d="M12 21s-7-4.6-10-9.2C-0.3 7.9 2.1 4 6 4c2 0 3.4 1.1 4 2 0.6-0.9 2-2 4-2 3.9 0 6.3 3.9 4 7.8C19 16.4 12 21 12 21z"/>
 				</svg>
 			</button>
-			{% if pet.photo_1 %}
-			<img src="{{ pet.photo_1.url }}" alt="" />
-			{% elif pet.photo_2 %}
-			<img src="{{ pet.photo_2.url }}" alt="" />
-			{% elif pet.photo_3 %}
-			<img src="{{ pet.photo_3.url }}" alt="" />
+			{% if pet.imagine %}
+			<img src="{{ pet.imagine.url }}" alt="" />
+			{% elif pet.imagine_fallback %}
+			<img src="{% static pet.imagine_fallback %}" alt="" />
 			{% else %}
 			<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" />
 			{% endif %}
