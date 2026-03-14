@@ -1,0 +1,664 @@
+/*
+ * =============================================================================
+ * A0 (NAVBAR) – SALVARE NAVBAR PERFECT PE TOATE PAGINILE
+ * =============================================================================
+ * DATE PENTRU MODIFICARE GREȘELI NAVBAR – referință: NAVBAR_SALVARE_PERFECT_REFERINTA.md
+ *
+ * VALORI SALVATE (revenir la acestea la orice greșeală):
+ *   - #A0 .container: padding-left 5cm, padding-right 6cm
+ *   - .a0-left (contor): position absolute, left -5cm, padding-left 0.3cm, max-width 9cm
+ *   - #menu_wrap: margin-left 3cm (Acasă → Termeni)
+ *   - Căutare: right -6.5cm
+ *
+ * REGULĂ: Modifică DOAR la cerere explicită. La erori navbar, refă din NAVBAR_SALVARE_PERFECT_REFERINTA.md
+ * =============================================================================
+ */
+
+/* Ensure no parent of A0 has overflow pe home (HOME = doar page-home-v2) */
+body.page-home-v2 #main_wrap,
+body.page-home-v2 section {
+	overflow: visible !important;
+}
+
+/* 1) Pe pagini normale: A0 fix în top (excepție: home = page-home-v2, Prietenul tău = A0 în flux) */
+body:not(.page-home-v2):not(.page-animale) #A0 {
+	position: fixed !important;
+	top: 0 !important;
+	left: 0 !important;
+	right: 0 !important;
+	z-index: 2000 !important;
+	height: var(--nav-height) !important;
+	min-height: var(--nav-height) !important;
+	max-height: var(--nav-height) !important;
+	width: 100% !important;
+	background-color: #343434 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+	overflow: visible !important;
+	flex-shrink: 0 !important;
+}
+/* padding-top doar pe pagini unde navbar e fix (nu pe home = page-home-v2, nici pe Prietenul tău) */
+body:not(.page-home-v2):not(.page-animale) #main_content {
+	padding-top: var(--nav-height) !important;
+}
+
+/* 2) A0 comun – toate paginile */
+#A0 {
+	z-index: 2000 !important;
+	height: var(--nav-height) !important;
+	min-height: var(--nav-height) !important;
+	max-height: var(--nav-height) !important;
+	width: 100% !important;
+	background-color: #343434 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+	overflow: visible !important;
+	flex-shrink: 0 !important;
+	flex-grow: 0 !important;
+}
+#A0.wrapper,
+#A0 {
+	width: 100% !important;
+	max-width: 100% !important;
+}
+
+/* 3) Container A0 – totul mutat 5cm la stânga: contor la margine, butoane la 5cm */
+#A0 .container {
+	width: 100% !important;
+	max-width: 100% !important;
+	padding-left: 11.8125rem !important;
+	padding-right: 14.175rem !important;
+	height: var(--nav-height) !important;
+	min-height: var(--nav-height) !important;
+	max-height: var(--nav-height) !important;
+	display: flex !important;
+	align-items: center !important;
+	overflow: visible !important;
+	box-sizing: border-box !important;
+	margin: 0 auto !important;
+}
+/* Același layout pe toate paginile: contor 2cm de la stânga, butoane nemiscate */
+#A0 #main_menu {
+	padding: 0 !important;
+	margin: 0 !important;
+	line-height: var(--nav-height) !important;
+	height: var(--nav-height) !important;
+	min-height: var(--nav-height) !important;
+	max-height: var(--nav-height) !important;
+	display: flex !important;
+	align-items: center !important;
+	flex-grow: 0 !important;
+	flex-shrink: 0 !important;
+	overflow: visible !important;
+}
+#A0 #main_menu .clearfix.a0-bar-inner {
+	width: 100% !important;
+	justify-content: flex-start !important;
+	position: relative !important;
+	line-height: var(--nav-height) !important;
+	height: var(--nav-height) !important;
+	min-height: var(--nav-height) !important;
+	max-height: var(--nav-height) !important;
+}
+#A0 #main_menu .a0-bar-inner {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: flex-start !important;
+	position: relative !important;
+}
+/* Contor la marginea navbar (absolute left -5cm în zona de padding) */
+#A0 #main_menu .a0-left {
+	position: absolute !important;
+	left: -11.8125rem !important;
+	top: 0 !important;
+	margin-left: 0 !important;
+	padding-left: 0.70875rem !important;
+	display: flex !important;
+	align-items: center !important;
+	height: 100% !important;
+	max-width: 21.2625rem !important;
+	width: auto !important;
+	pointer-events: none !important;
+}
+#A0 #main_menu .a0-left .animal-counter-navbar { pointer-events: auto !important; }
+#A0 #main_menu .a0-search-right {
+	position: absolute !important;
+	right: -15.35625rem !important; /* cu 0,5cm la stânga față de -7cm */
+	display: flex !important;
+	align-items: center !important;
+	flex-direction: row-reverse !important;
+	gap: 6px !important;
+}
+#A0 #menu_wrap {
+	transform: none !important;
+	min-height: auto !important;
+	height: auto !important;
+	margin: 0 0 0 7.0875rem !important; /* Acasă până la Termeni (ex 3cm) */
+	padding: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+	overflow: visible !important;
+}
+#A0 #main_menu .a0-search-right #search_wrap { float: none !important; }
+#A0 #main_menu .a0-search-form-inline {
+	display: flex !important;
+	align-items: center !important;
+}
+#A0 #main_menu .a0-search-form-inline #searchform {
+	display: flex !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+#A0 #main_menu .a0-search-form-inline #searchform #s {
+width: 11.8125rem !important;
+		min-width: 11.8125rem !important;
+	height: 32px !important;
+	padding: 0 28px 0 6px !important;
+	font-size: 13px !important;
+	border: 1px solid rgba(255,255,255,0.3) !important;
+	border-radius: 4px !important;
+	background: rgba(0,0,0,0.2) !important;
+	color: #fff !important;
+	transition: width 0.25s ease !important;
+	box-sizing: border-box !important;
+}
+#A0 #main_menu .a0-search-form-inline #searchform #s::placeholder {
+	color: rgba(255,255,255,0.6) !important;
+}
+#A0 #main_menu .a0-search-right.a0-search-expanded .a0-search-form-inline #searchform #s {
+width: 35.4375rem !important;
+		max-width: min(35.4375rem, 40vw) !important;
+		min-width: 9.45rem !important;
+}
+#A0 #main_menu .a0-search-form-inline .a0-search-input-wrap {
+	position: relative !important;
+	display: inline-block !important;
+}
+#A0 #main_menu .a0-search-form-inline .a0-search-submit {
+	position: absolute !important;
+	top: 50% !important;
+	right: 4px !important;
+	width: 22px !important;
+	height: 22px !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	transform: translateY(-50%) !important;
+	border: none !important;
+	border-radius: 3px !important;
+	background: rgba(255,255,255,0.15) !important;
+	color: #fff !important;
+	cursor: pointer !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+#A0 #main_menu .a0-search-form-inline .a0-search-submit:hover {
+	background: rgba(255,255,255,0.3) !important;
+}
+#A0 #main_menu .a0-search-form-inline .a0-search-enter-icon {
+	display: inline-block !important;
+	width: 12px !important;
+	height: 12px !important;
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 4v7l-5 5M9 11h10'/%3E%3C/svg%3E") no-repeat center !important;
+	background-size: contain !important;
+}
+#A0 #main_menu .a0-search-form-inline .a0-search-history {
+	display: none !important;
+	position: absolute !important;
+	top: 100% !important;
+	left: 0 !important;
+	right: 0 !important;
+	margin: 2px 0 0 !important;
+	padding: 4px 0 !important;
+	list-style: none !important;
+	background: rgba(20,20,20,0.98) !important;
+	border: 1px solid rgba(255,255,255,0.2) !important;
+	border-radius: 4px !important;
+	box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+	max-height: 200px !important;
+	overflow-y: auto !important;
+	z-index: 1000 !important;
+}
+#A0 #main_menu .a0-search-form-inline .a0-search-history li {
+	padding: 6px 10px !important;
+	font-size: 13px !important;
+	color: #eee !important;
+	cursor: pointer !important;
+}
+#A0 #main_menu .a0-search-form-inline .a0-search-history li:hover {
+	background: rgba(255,255,255,0.1) !important;
+}
+#A0 #main_menu .clearfix {
+	padding: 0 !important;
+	margin: 0 !important;
+	height: var(--nav-height) !important;
+	display: flex !important;
+	align-items: center !important;
+	flex-grow: 0 !important;
+	flex-shrink: 0 !important;
+}
+
+/* Meniu – liste și linkuri */
+#A0 #main_menu ul {
+	height: auto !important;
+	min-height: auto !important;
+	overflow: visible !important;
+	line-height: var(--nav-height) !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+}
+#A0 #main_menu ul li {
+	line-height: var(--nav-height) !important;
+	margin: 0 0 0 15px !important;
+	overflow: visible !important;
+	padding: 0 !important;
+	font-size: 13px !important;
+	height: auto !important;
+	display: flex !important;
+	align-items: center !important;
+}
+#A0 #main_menu ul li a {
+	line-height: var(--nav-height) !important;
+	padding: 0 calc(var(--btn-padding-h) / 3) !important;
+	margin: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+	color: rgba(255,255,255,0.95) !important;
+	font-size: 13px !important; /* același pe Home și Animale (și toate paginile) */
+}
+#A0 #main_menu ul li {
+	margin-left: calc(var(--gap-v2) / 4) !important;
+}
+#A0 #main_menu ul li a.current_page,
+#A0 #main_menu a.current_page {
+	color: #FFC107 !important;
+	font-weight: 700 !important;
+	text-decoration: none !important;
+	background: rgba(255,193,7,0.2) !important;
+	padding: 0 10px !important;
+	border-radius: 6px !important;
+	line-height: 36px !important;
+}
+#A0 #main_menu ul li a.current_page:hover,
+#A0 #main_menu a.current_page:hover {
+	color: #FFD54F !important;
+	background: rgba(255,193,7,0.35) !important;
+}
+
+/* CTA: "Intră" mai vizibil (doar când nu e logat) */
+#A0 #main_menu ul li a.a0-login-cta {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	line-height: 1 !important;
+	padding: 0.32rem 0.7rem !important;
+	border-radius: 999px !important;
+	background: #d32f2f !important;
+	color: #fff !important;
+	font-weight: 800 !important;
+	letter-spacing: 0.01em !important;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.25) !important;
+}
+#A0 #main_menu ul li a.a0-login-cta:hover {
+	background: #e53935 !important;
+}
+
+/* Dacă textul "Intră / Fă cont" cere spațiu, mutăm meniul și căutarea puțin spre dreapta */
+#A0 #menu_wrap.a0-right { margin: 0 0 0 8.26875rem !important; }
+#A0 #main_menu .a0-search-right { right: -17.71875rem !important; }
+
+/* Contor stânga/dreapta */
+#A0 .animal-counter-navbar {
+	gap: 8px !important;
+	margin-left: 15px !important;
+	font-size: 12px !important;
+	line-height: var(--nav-height) !important;
+	height: var(--nav-height) !important;
+	display: flex !important;
+	align-items: center !important;
+	flex-grow: 0 !important;
+	flex-shrink: 0 !important;
+}
+#A0 .animal-counter-navbar .counter-item {
+	gap: 6px !important;
+	display: flex !important;
+	align-items: center !important;
+	line-height: 1.2 !important;
+}
+#A0 .animal-counter-navbar.a0-counters-left .counter-value,
+#A0 .animal-counter-navbar.a0-counters-right .counter-value {
+	font-size: 22px !important;
+	font-weight: 800 !important;
+	line-height: 1.2 !important;
+	min-width: 1.4em !important;
+	text-align: center !important;
+	color: #fff !important;
+	text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+}
+#A0 .animal-counter-navbar.a0-counters-left .counter-label,
+#A0 .animal-counter-navbar.a0-counters-right .counter-label {
+	font-size: 13px !important;
+	color: rgba(255,255,255,0.95) !important;
+	font-weight: 600 !important;
+}
+#A0 .animal-counter-navbar.a0-counters-left .counter-icon,
+#A0 .animal-counter-navbar.a0-counters-right .counter-icon {
+	font-size: 20px !important;
+	line-height: 1 !important;
+}
+#A0 .animal-counter-navbar.a0-counters-left {
+	margin-left: 0 !important;
+	background: transparent !important;
+	gap: 2px !important;
+	flex-direction: column !important;
+	align-items: flex-start !important;
+	justify-content: center !important;
+}
+#A0 .animal-counter-navbar.a0-counters-left .counter-item {
+	display: flex !important;
+	align-items: center !important;
+	gap: 6px !important;
+	line-height: 1.2 !important;
+}
+#A0 .animal-counter-navbar.a0-counters-left .counter-label {
+	font-size: 13px !important;
+	color: rgba(255,255,255,0.95) !important;
+	font-weight: 600 !important;
+}
+#A0 .animal-counter-navbar.a0-counters-left .counter-value {
+	font-size: 22px !important;
+	font-weight: 800 !important;
+	color: #fff !important;
+	text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+}
+
+#A0 .animal-counter-navbar.a0-counters-left .counter-icon {
+	font-size: 20px !important;
+}
+
+/* Toate contoarele (A0, A4 etc.) – același font peste tot */
+.animal-counter-navbar .counter-label,
+.animal-counter-navbar .counter-value,
+.a4-mobile-counter .counter-label,
+.a4-mobile-counter .counter-value,
+.a4-counter-inner .counter-label,
+.a4-counter-inner .counter-value {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif !important;
+}
+
+#A0 .animal-counter-navbar.a0-counters-right {
+	gap: 12px !important;
+	margin-left: 18px !important;
+	margin-right: 0 !important;
+	flex-shrink: 0 !important;
+	font-size: 14px !important;
+	line-height: var(--nav-height) !important;
+	height: var(--nav-height) !important;
+	display: flex !important;
+	align-items: center !important;
+	flex-grow: 0 !important;
+	flex-shrink: 0 !important;
+	padding: 0 16px !important;
+	background: rgba(0,0,0,0.15) !important;
+	border-radius: 10px !important;
+	color: rgba(255,255,255,0.95) !important;
+}
+#A0 .animal-counter-navbar .counter-label,
+#A0 .animal-counter-navbar .counter-value {
+	line-height: 1.2 !important;
+}
+
+/* User dropdown în A0 */
+#A0 .user-menu-dropdown { position: relative !important; overflow: visible !important; }
+#A0 .user-menu-trigger { text-decoration: none !important; cursor: pointer; }
+#A0 .user-menu-dropdown:hover .user-menu-trigger { text-decoration: none !important; }
+#A0 #main_menu ul li.user-menu-dropdown ul.user-dropdown-menu {
+	display: none !important;
+	position: absolute !important;
+	left: 100% !important;
+	top: 0 !important;
+	margin: 0 !important;
+	padding: 0 0 0 6px !important;
+	list-style: none !important;
+	height: var(--nav-height) !important;
+	min-height: var(--nav-height) !important;
+	width: auto !important;
+	align-items: center !important;
+	flex-direction: row !important;
+	flex-wrap: nowrap !important;
+	background: #343434 !important;
+	box-shadow: 2px 0 10px rgba(0,0,0,0.4) !important;
+	z-index: 99999 !important;
+	border-radius: 0 8px 8px 0 !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+}
+#A0 .user-menu-dropdown:hover ul.user-dropdown-menu,
+#A0 .user-menu-dropdown .user-menu-trigger:hover + ul.user-dropdown-menu {
+	display: flex !important;
+}
+#A0 #main_menu ul li.user-menu-dropdown ul.user-dropdown-menu li {
+	float: none !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	width: auto !important;
+	min-width: 0 !important;
+	line-height: var(--nav-height) !important;
+	height: var(--nav-height) !important;
+	border: none !important;
+}
+#A0 #main_menu ul li.user-menu-dropdown ul.user-dropdown-menu li a {
+	padding: 0 14px !important;
+	display: block !important;
+	white-space: nowrap !important;
+	line-height: var(--nav-height) !important;
+	height: var(--nav-height) !important;
+	font-size: 14px !important;
+	color: #E0E0E0 !important;
+	text-decoration: none !important;
+	border: none !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+}
+#A0 #main_menu ul li.user-menu-dropdown ul.user-dropdown-menu li a:hover {
+	background: rgba(255,255,255,0.15) !important;
+	color: #fff !important;
+}
+#A0 .user-dropdown-menu { min-width: 0; }
+#A0 #main_menu .user-menu-dropdown ul.user-dropdown-menu {
+	top: 0 !important;
+}
+#A0 #main_menu .user-menu-dropdown ul.user-dropdown-menu li {
+	width: auto !important;
+}
+#A0 #main_menu .a0-bar-inner,
+#A0 #menu_wrap { overflow: visible !important; }
+#A0 .menu-main-menu-container { overflow: visible !important; }
+#A0 #menu-main-menu { overflow: visible !important; }
+
+/* Wishlist badge, search wrap, flex */
+#A0 .wishlist-nav-box.a0-wishlist-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin-left: 12px;
+	padding: 6px 12px;
+	background: rgba(0,0,0,0.2);
+	border-radius: 8px;
+	line-height: 1.2;
+	font-size: 13px;
+	font-weight: 600;
+	color: rgba(255,255,255,0.95);
+	text-decoration: none;
+}
+#A0 .wishlist-nav-box.a0-wishlist-badge:hover {
+	color: rgba(255,255,255,1);
+	background: rgba(0,0,0,0.3);
+}
+#A0 .wishlist-nav-box .wishlist-nav-label { white-space: nowrap; }
+#A0 .wishlist-nav-box .wishlist-nav-count {
+	min-width: 1.4em;
+	text-align: center;
+	font-size: 18px;
+	font-weight: 800;
+}
+#A0 #searchform_wrap {
+	padding: 0 !important;
+	margin: 0 !important;
+	height: auto !important;
+	max-height: var(--nav-height) !important;
+	overflow: hidden !important;
+}
+#A0 #searchform { margin: 0 !important; padding: 0 !important; }
+#A0 * { flex-grow: 0 !important; }
+#A0 .container > * {
+	flex-grow: 0 !important;
+	flex-shrink: 0 !important;
+}
+
+/* A0 + A1 – fără decalaj */
+#A0 + #A1 {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
+
+/* ========== HOME (page-home-v2) – doar poziție în flux; restul A0 = reguli globale ========== */
+body.page-home-v2 #A0 {
+	position: relative !important;
+	top: auto !important;
+}
+
+/* ========== PRIETENUL TĂU (page-animale) – grafica, așezare, culori, casete ca pe home; funcțiile rămân cele de pe Prietenul tău ========== */
+body.page-animale #A0 {
+	position: relative !important;
+	top: auto !important;
+}
+/* Restul regulilor A0 (culori, padding, font, current_page etc.) se aplică de la regulile globale #A0 – același aspect ca pe home. */
+
+/* ========== A0 RESPONSIVE – mobil (meniu hamburger) ========== */
+/* Hamburger – vizibil doar pe ecrane mici */
+#A0 .a0-mobile-trigger {
+	display: none !important;
+	margin: 0 !important;
+	padding: 10px 12px !important;
+	border: none !important;
+	background: transparent !important;
+	color: #fff !important;
+	cursor: pointer !important;
+	flex-shrink: 0 !important;
+	align-items: center !important;
+	justify-content: center !important;
+	border-radius: 6px !important;
+}
+#A0 .a0-mobile-trigger:hover {
+	background: rgba(255,255,255,0.1) !important;
+}
+#A0 .a0-hamburger {
+	display: block !important;
+	width: 22px !important;
+	height: 18px !important;
+	position: relative !important;
+}
+#A0 .a0-hamburger::before,
+#A0 .a0-hamburger::after {
+	content: "" !important;
+	position: absolute !important;
+	left: 0 !important;
+	right: 0 !important;
+	height: 2px !important;
+	background: currentColor !important;
+	border-radius: 1px !important;
+}
+#A0 .a0-hamburger::before { top: 0 !important; }
+#A0 .a0-hamburger::after { bottom: 0 !important; }
+#A0 .a0-hamburger {
+	background: linear-gradient(to bottom, transparent 7px, currentColor 7px, currentColor 11px, transparent 11px) !important;
+	background-clip: padding-box !important;
+}
+
+@media (max-width: 37.5em) {
+	/* Prag ~600px – același ca home_v2 mobil */
+	#A0 .a0-mobile-trigger {
+		display: flex !important;
+	}
+	#A0 .container {
+		padding-left: 12px !important;
+		padding-right: 12px !important;
+		flex-wrap: nowrap !important;
+	}
+	#A0 #main_menu {
+		width: 100% !important;
+		justify-content: space-between !important;
+		position: relative !important;
+	}
+	#A0 #main_menu .a0-bar-inner {
+		width: 100% !important;
+		justify-content: flex-end !important;
+	}
+	#A0 .a0-left {
+		display: none !important; /* contor ascuns în bara principală pe mobil */
+	}
+	#A0 .a0-search-right {
+		position: static !important;
+		right: auto !important;
+		margin-left: auto !important;
+	}
+	#A0 #main_menu .a0-search-form-inline #searchform #s {
+		width: 120px !important;
+		min-width: 80px !important;
+		max-width: 40vw !important;
+	}
+	/* Meniul – ascuns implicit, deschis la click pe hamburger */
+	#A0 #menu_wrap {
+		position: fixed !important;
+		top: var(--nav-height) !important;
+		left: 0 !important;
+		right: 0 !important;
+		bottom: 0 !important;
+		margin: 0 !important;
+		width: 100% !important;
+		max-height: calc(100vh - var(--nav-height)) !important;
+		overflow-y: auto !important;
+		background: #343434 !important;
+		display: none !important;
+		flex-direction: column !important;
+		align-items: stretch !important;
+		justify-content: flex-start !important;
+		z-index: 1999 !important;
+		padding: 16px 0 !important;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+	}
+	#A0.a0-nav-open #menu_wrap {
+		display: flex !important;
+	}
+	#A0 #menu_wrap .menu-main-menu-container {
+		width: 100% !important;
+	}
+	#A0 #main_menu ul.menu {
+		flex-direction: column !important;
+		align-items: stretch !important;
+		padding: 0 12px !important;
+	}
+	#A0 #main_menu ul.menu li {
+		margin: 0 !important;
+		border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+	}
+	#A0 #main_menu ul.menu li a {
+		display: block !important;
+		padding: 14px 12px !important;
+		line-height: 1.3 !important;
+		font-size: 15px !important;
+	}
+}
+
+@media (min-width: 37.501em) {
+	#A0.a0-nav-open #menu_wrap {
+		display: flex !important; /* păstrăm meniul normal pe desktop chiar dacă clasa rămâne */
+	}
+}

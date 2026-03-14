@@ -1,0 +1,272 @@
+/*
+ * Pagini Logare / Înregistrare – fundal plăcut, animație animal, banner promo
+ */
+
+/* Fundal: gradient cald + desene subtile (câini/pisici stilizate) */
+body.auth-page {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #fef9f0 0%, #fce8dc 25%, #f5e6d9 50%, #e8ddd4 75%, #dfd5cc 100%);
+    background-attachment: fixed;
+}
+
+body.auth-page::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cellipse cx='40' cy='45' rx='18' ry='22' fill='%23e8d5c4' fill-opacity='0.25'/%3E%3Cellipse cx='40' cy='28' rx='14' ry='14' fill='%23e8d5c4' fill-opacity='0.25'/%3E%3Cpath d='M28 28 Q26 18 34 14 Q38 12 40 14 Q42 12 46 14 Q54 18 52 28' fill='%23e8d5c4' fill-opacity='0.2'/%3E%3C/svg%3E");
+    background-size: 80px 80px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+body.auth-page #main_wrap {
+    position: relative;
+    z-index: 1;
+}
+
+/* Banner promo */
+.auth-promo-banner {
+    background: linear-gradient(90deg, #c45c3e 0%, #b84a2e 50%, #a63d26 100%);
+    color: #fff;
+    padding: 0.75rem 1.25rem;
+    text-align: center;
+    font-size: 1rem;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    margin-bottom: 1.5rem;
+}
+
+.auth-promo-banner strong {
+    display: block;
+    font-size: 1.05em;
+    margin-bottom: 0.2rem;
+}
+
+.auth-promo-banner a {
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.auth-promo-banner a:hover {
+    color: #ffe0d0;
+}
+
+/* Layout: form + animație pe același rând pe desktop */
+.auth-content-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.auth-form-box {
+    flex: 1 1 320px;
+    background: rgba(255, 255, 255, 0.92);
+    padding: 1.75rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.auth-animation-box {
+    flex: 0 1 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+}
+
+/* Animație cățel – container */
+.pet-animation {
+    width: 200px;
+    height: 200px;
+    position: relative;
+}
+
+.pet-animation svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+}
+
+/* Animații CSS pentru SVG */
+.pet-animation .bounce {
+    animation: auth-bounce 2s ease-in-out infinite;
+}
+
+.pet-animation .wag {
+    transform-origin: 58% 45%;
+    animation: auth-wag 1.2s ease-in-out infinite;
+}
+
+.pet-animation .blink {
+    animation: auth-blink 3s ease-in-out infinite;
+}
+
+@keyframes auth-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+
+@keyframes auth-wag {
+    0%, 100% { transform: rotate(-8deg); }
+    50% { transform: rotate(8deg); }
+}
+
+@keyframes auth-blink {
+    0%, 45%, 55%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Caseta parolă cu buton ochi (arată/ascunde) */
+.password-field-wrap {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    max-width: 320px;
+}
+.password-field-wrap input {
+    padding-right: 42px !important;
+    width: 100%;
+    box-sizing: border-box;
+}
+.password-toggle {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #666;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.password-toggle:hover {
+    color: #333;
+    background: rgba(0,0,0,0.06);
+}
+.password-toggle:focus {
+    outline: 2px solid #d32f2f;
+    outline-offset: 2px;
+}
+.password-toggle svg {
+    pointer-events: none;
+}
+
+/* Buton principal pentru "Creează cont" pe pagina de login */
+.auth-register-cta {
+    margin: 1.25rem 0;
+}
+.auth-register-cta .button.button-large.button-primary {
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.button-large {
+    display: inline-block;
+    padding: 14px 28px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+}
+.button-primary {
+    background: #d32f2f;
+    color: #fff;
+    border: none;
+}
+.button-primary:hover {
+    background: #b71c1c;
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Erori de validare – literă roșie (CUI/email/user/telefon dublat, completare, logare incorectă) */
+body.auth-page .form-error,
+body.auth-page span.form-error,
+body.auth-page .entry-content .form-error,
+body.auth-page .login-form .form-error {
+    color: #c00 !important;
+    font-weight: bold !important;
+    background: #fff0f0 !important;
+    padding: 0.25em 0.5em !important;
+    border-radius: 4px !important;
+    border: 1px solid #c00 !important;
+    display: inline-block !important;
+    margin-top: 0.25em !important;
+}
+/* Mesaj la logare: "Utilizatorul sau parola sunt incorecte" + orice errornote */
+body.auth-page .errornote,
+body.auth-page p.errornote,
+body.auth-page .entry-content .errornote {
+    color: #c00 !important;
+    font-weight: bold !important;
+    background: #fff0f0 !important;
+    padding: 0.5em 0.75em !important;
+    border-radius: 6px !important;
+    border: 2px solid #c00 !important;
+    margin-bottom: 1em !important;
+}
+/* Lista de erori Django (dacă e folosită) */
+body.auth-page .errorlist,
+body.auth-page ul.errorlist li {
+    color: #c00 !important;
+    font-weight: bold !important;
+}
+/* Câmp cu eroare – border roșu pe input */
+.auth-page .login-form p:has(.form-error) input,
+.auth-page .login-form p:has(.form-error) select {
+    border-color: #c00 !important;
+    background: #fff8f8 !important;
+}
+
+/* Termeni și condiții la înregistrare */
+.accept-termeni-row {
+    margin: 1rem 0;
+}
+.accept-termeni-row label {
+    display: inline;
+    cursor: pointer;
+}
+.accept-termeni-row a {
+    text-decoration: underline;
+}
+
+/* Bloc opțional – profil potrivire (link chestionar) la înregistrare */
+.match-quiz-optional-block {
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+.match-quiz-optional-block p { margin: 0 0 0.35rem; }
+.match-quiz-optional-block p:last-child { margin-bottom: 0; }
+.match-quiz-optional-block a { font-weight: 600; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .auth-animation-box {
+        min-height: 200px;
+        order: -1;
+    }
+    .pet-animation {
+        width: 160px;
+        height: 160px;
+    }
+}

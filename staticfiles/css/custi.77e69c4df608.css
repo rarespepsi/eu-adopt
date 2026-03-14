@@ -1,0 +1,210 @@
+/* Fixăm pagina cuști la aceleași dimensiuni ca TW (fără scroll) */
+body.page-custi {
+\toverflow: hidden !important;
+\theight: 100vh !important;
+}
+
+body.page-custi #main_wrap {
+\tmin-height: 0 !important;
+\theight: 100vh !important;
+\tmax-height: 100vh !important;
+\tdisplay: flex !important;
+\tflex-direction: column !important;
+\tpadding: 0 !important;
+\tmargin: 0 !important;
+\toverflow: hidden !important;
+}
+
+body.page-custi #main_content {
+\tmin-height: 0 !important;
+\tflex: 1 1 0 !important;
+\tdisplay: flex !important;
+\tflex-direction: column !important;
+\toverflow: hidden !important;
+\tpadding: 0 !important;
+\tmargin: 0 !important;
+\twidth: 100% !important;
+\tmax-width: 100% !important;
+}
+
+body.page-custi #main_content #TWW {
+\theight: 100% !important;
+\tmax-height: 100% !important;
+\tmin-height: 0 !important;
+\tflex: 1 1 0 !important;
+\tdisplay: flex !important;
+\tflex-direction: column !important;
+\toverflow: hidden !important;
+}
+
+#TWW.custi-page {
+	width: 100%;
+	max-width: 100%;
+	height: calc(100vh - var(--nav-height));
+	min-height: calc(100vh - var(--nav-height));
+	max-height: calc(100vh - var(--nav-height));
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: flex-start;
+	/* Fără fundal (poza cu cuști o punem la final) */
+	background: none;
+	color: #fff;
+	overflow: hidden; /* TWW nu are scroll intern; doar pagina, dacă e nevoie */
+}
+
+/* Două casete verticale în TWW: top = 1/10, main = rest */
+.tww-strip {
+\twidth: 100%;
+\tflex-shrink: 0;
+}
+
+.tww-strip--top {
+\tflex: 0 0 10%; /* 1/10 din înălțimea TWW */
+\tdisplay: flex;
+\talign-items: center;
+\tjustify-content: center;
+\t/* casetă roșie provizorie – doar pentru layout */
+\tbackground: #dc3545;
+\tborder-bottom: 2px solid #ffffff;
+}
+
+.tww-top-inner {
+\ttext-align: center;
+\tpadding: 0 1.5rem;
+\tmax-width: 900px;
+\tmargin: 0 auto;
+\tdisplay: flex;
+\tflex-direction: column;
+\talign-items: center;
+}
+
+.tww-top-title {
+\tmargin: 0;
+\tfont-size: 1.3rem;
+\tfont-weight: 800;
+\ttext-transform: uppercase;
+}
+
+.tww-top-subtitle {
+\tmargin: 0.2rem 0 0.4rem;
+\tfont-size: 0.85rem;
+\tfont-weight: 500;
+}
+
+.tww-top-actions {
+\tdisplay: flex;
+\talign-items: center;
+\tjustify-content: space-between;
+\tgap: 0.75rem;
+\twidth: 100%;
+\tmax-width: 520px;
+\tmargin: 0 auto;
+}
+
+.tww-top-btn {
+\tdisplay: inline-block;
+\tpadding: 0.25rem 0.9rem;
+\tborder-radius: 999px;
+\tbackground: rgba(21, 101, 192, 0.9);
+\tcolor: #fff;
+\tfont-size: 0.8rem;
+\tfont-weight: 700;
+\ttext-decoration: none;
+\twhite-space: nowrap;
+}
+
+.tww-top-btn:hover {
+\tbackground: rgba(13, 71, 161, 0.95);
+}
+
+.tww-strip--main {
+\tflex: 1 1 auto; /* restul de 9/10 */
+\t/* casetă albastră provizorie – doar pentru layout */
+\tbackground: #0d6efd;
+\tborder-top: 2px solid #ffffff;
+}
+
+/* Casetă orizontală sus cu titlu + buton – ~1/8 din înălțimea TWW */
+.tww-hero {
+	flex: 0 0 12.5%; /* aproximativ 1/8 din înălțime */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.6rem 0.8rem 0; /* fără spațiu dedesubt – lipit de caseta cu poză */
+	background: linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0.2));
+	box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+
+.tww-hero-inner {
+	max-width: 900px;
+	text-align: center;
+}
+
+.tww-title {
+	margin: 0 0 0.25rem;
+	font-size: 1.35rem;
+	font-weight: 800;
+}
+
+.tww-subtitle {
+	margin: 0 0 0.5rem;
+	font-size: 0.9rem;
+	font-weight: 500;
+}
+
+.tww-back-btn {
+	display: inline-block;
+	padding: 0.4rem 1.2rem;
+	border-radius: 999px;
+	background: #1565c0;
+	color: #fff;
+	font-size: 0.85rem;
+	font-weight: 700;
+	text-decoration: none;
+	box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.tww-back-btn:hover {
+	background: #0d47a1;
+}
+
+/* Zona de jos pentru harta cuștilor */
+.tww-main {
+	flex: 1 1 auto;
+	display: flex;
+	align-items: stretch;
+	justify-content: stretch;
+	padding: 0; /* fără spațiu în jurul pozei */
+	overflow: hidden; /* fără scroll interior în TWW */
+}
+
+.tww-main-inner {
+	flex: 1 1 auto;
+	max-width: 100%;
+	width: 100%;
+	height: 100%; /* umple toată caseta disponibilă sub titlu */
+	border-radius: 0;
+	overflow: hidden;
+	position: relative;
+	/* fundal cu custi-autocar pe toată caseta */
+	background: url("../images/transport/custi-autocar.d0c8da13e24e.png") center/cover no-repeat;
+	box-shadow: none;
+}
+
+.tww-main-overlay {
+	position: absolute;
+	inset: 0;
+	background: none;
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+	padding: 0.8rem;
+}
+
+.tww-main-overlay p {
+	max-width: 800px;
+	font-size: 0.9rem;
+	text-align: center;
+	margin: 0;
+}
