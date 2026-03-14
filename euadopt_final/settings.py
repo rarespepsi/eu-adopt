@@ -23,9 +23,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-wu12p^yxl^qac$r@#16ts1c%l23=h$lfz5_v%yqx!8v^8y@q@p'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "eu-adopt.ro",
+    "www.eu-adopt.ro",
+    ".onrender.com",
+    "127.0.0.1",
+    "localhost"
+]
 
 
 # Application definition
@@ -121,13 +127,19 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = ['static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# WhiteNoise: servește static în producție (Render) fără Nginx separat
+# Fișiere încărcate de utilizatori (ex: poză profil)
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# WhiteNoise + stocare fișiere (Django 6: STORAGES cu cheie "default" pentru upload-uri)
 STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": MEDIA_ROOT,
+        },
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     }
 }
-
-# Fișiere încărcate de utilizatori (ex: poză profil)
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
