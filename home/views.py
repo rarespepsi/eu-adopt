@@ -104,7 +104,10 @@ def home_view(request):
             strip_pets.append({"imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE)})
         wishlist_ids = set()
         if request.user.is_authenticated:
-            wishlist_ids = set(WishlistItem.objects.filter(user=request.user).values_list("animal_id", flat=True))
+            try:
+                wishlist_ids = set(WishlistItem.objects.filter(user=request.user).values_list("animal_id", flat=True))
+            except Exception:
+                pass
         return render(request, "anunturi/pt.html", {
             "p2_pets": p2_pets,
             "p2_pets_rest": p2_pets_rest,
@@ -142,7 +145,10 @@ def home_view(request):
     show_welcome_demo = request.GET.get("welcome_demo") == "1"
     wishlist_ids = set()
     if request.user.is_authenticated:
-        wishlist_ids = set(WishlistItem.objects.filter(user=request.user).values_list("animal_id", flat=True))
+        try:
+            wishlist_ids = set(WishlistItem.objects.filter(user=request.user).values_list("animal_id", flat=True))
+        except Exception:
+            pass
     return render(request, "anunturi/home_v2.html", {
         "a2_pets": a2_pets,
         "a2_quote_pool": A2_QUOTE_POOL,
