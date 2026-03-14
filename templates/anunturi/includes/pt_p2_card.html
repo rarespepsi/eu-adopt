@@ -1,5 +1,5 @@
 {% load static %}
-<a href="{% url 'pet_public' pet.pk %}" class="pt-p2-card-link" aria-label="Vezi profil {{ pet.nume }}">
+<a href="{% url 'pets_single' pet.pk %}" class="pt-p2-card-link" aria-label="Vezi profil {{ pet.nume }}">
 	<div class="pt-p2-card-photo-wrap" aria-hidden="true">
 		<div class="pt-p2-card-photo">
 			<button type="button" class="wish-btn {% if wishlist_ids and pet.pk in wishlist_ids %}is-active{% endif %}" data-animal-id="{{ pet.pk }}" aria-pressed="{% if wishlist_ids and pet.pk in wishlist_ids %}true{% else %}false{% endif %}" style="top:6px;right:6px;">

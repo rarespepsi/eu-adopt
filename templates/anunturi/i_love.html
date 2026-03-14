@@ -12,7 +12,7 @@
 	<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;">
 		{% for pet in pets %}
 			<div style="border:1px solid #eee;border-radius:12px;overflow:hidden;background:#fff;position:relative;">
-				<a href="{% url 'pet_public' pet.pk %}" style="display:block;text-decoration:none;color:inherit;">
+				<a href="{% url 'pets_single' pet.pk %}" style="display:block;text-decoration:none;color:inherit;">
 					<img src="{% static pet.imagine_fallback %}" alt="" style="width:100%;height:160px;object-fit:cover;display:block;" />
 					<div style="padding:0.75rem;">
 						<div style="font-weight:800;">{{ pet.nume }}</div>
