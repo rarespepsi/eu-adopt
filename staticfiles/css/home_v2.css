@@ -1,0 +1,1152 @@
+/*
+ * HOME V2 – refăcut după HOME_SETTINGS_REFERENCE.md (setare finală salvată).
+ * Fără zoom, transform: scale, html { zoom }.
+ * A2: responsive, fără scroll intern; scroll doar pe pagină.
+ */
+body {
+    overflow-x: hidden;
+}
+/* HOME fără scroll – totul în viewport, burtiera încapă în AW */
+body.page-home-v2 {
+    overflow: hidden !important;
+    height: 100vh !important;
+    --gap-v2: clamp(0.5rem, 2vw, 1rem);
+    --font-title: clamp(1rem, 2vw + 0.75rem, 1.5rem);
+    --font-body: clamp(0.875rem, 1vw + 0.65rem, 1.0625rem);
+    --radius-v2: clamp(0.25rem, 1vw, 0.5rem);
+    --hero-logo-size: clamp(3.75rem, 12vw, 7.5rem);
+    --hero-logo-inner-extra: 16mm; /* poza câinelui: mărime în plus față de cerc; ajustezi cu plus/minus mm la cerere */
+    --hero-badge-size: clamp(3.125rem, 10vw, 6.25rem);
+    --btn-padding-v: clamp(0.5rem, 1.5vw, 0.75rem);
+    --btn-padding-h: clamp(0.75rem, 3vw, 1.5rem);
+    --side-col-width: clamp(5rem, 25vw, 15rem);
+    --side-col-width-tablet: clamp(4rem, 18vw, 10rem);
+}
+
+/* A0 (navbar) pe home – setări mutate în navbar-a0-secured.css (SECURIZAT). Nu modifica #A0 aici. */
+/* A1 – dimensiuni din salvare undo-point-2026-02-22-1600 (după colorare casete). NU SE MODIFICĂ. */
+body.page-home-v2 #A1 {
+    position: static !important;
+    top: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+}
+/* A4 (footer) – bandă largă: ticker pe aproape toată lățimea utilă */
+body.page-home-v2 #A4,
+body.page-home-v2 #A4 #footer {
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+    font-size: var(--font-body) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+body.page-home-v2 #A4 .container,
+body.page-home-v2 #A4 #post_footer {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    border-top: none !important;
+    margin-top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+body.page-home-v2 #A4 #site_info {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    line-height: 1.2 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+body.page-home-v2 #A4 .footer-euadopt-text {
+    display: block !important;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    margin: 0;
+    color: #000000;
+    font-weight: 700;
+    font-size: 1.2em;
+    min-height: 1.5em;
+    line-height: 1.4;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+/* Zone hasurate reduse – mai mult spațiu pentru ticker */
+body.page-home-v2 #A4 .footer-euadopt-text::before,
+body.page-home-v2 #A4 .footer-euadopt-text::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    opacity: 0.12;
+    background-image: repeating-linear-gradient(
+        135deg,
+        rgba(0, 0, 0, 0.35),
+        rgba(0, 0, 0, 0.35) 2px,
+        transparent 2px,
+        transparent 4px
+    );
+    pointer-events: none;
+}
+body.page-home-v2 #A4 .footer-euadopt-text::before {
+    left: 0;
+}
+body.page-home-v2 #A4 .footer-euadopt-text::after {
+    right: 0;
+}
+body.page-home-v2 #A4 .footer-euadopt-strip {
+    display: inline-block;
+    animation: euadopt-marquee 22.5s linear infinite;
+}
+@keyframes euadopt-marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Burtiera de jos pe HOME – nu mărește AW, fără scroll */
+body.page-home-v2 #AW.home-v2 {
+    min-height: 0 !important;
+}
+/* A3 rămâne lipit de burtiera (A4) – fără gap */
+body.page-home-v2 #home-burtiera-galbena.home-v2-burtiera-disclaimer {
+    flex-shrink: 0 !important;
+    width: 100%;
+    max-width: 100%;
+    background: #ffeb3b;
+    color: #1a1a1a;
+    padding: 0.5rem 1rem;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    box-sizing: border-box;
+    border-top: 2px solid #f9a825;
+}
+/* Text care circulă pe burtiera (marquee) */
+body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-marquee-wrap {
+    overflow: hidden !important;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-marquee-track {
+    display: inline-flex !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+    animation: home-burtiera-marquee 35s linear infinite;
+    padding-right: 3rem;
+}
+body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-marquee-track:hover {
+    animation-play-state: paused;
+}
+body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-text {
+    margin: 0;
+    padding-right: 4rem;
+    flex-shrink: 0;
+    font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+    font-weight: 700;
+    line-height: 1.35;
+}
+@keyframes home-burtiera-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* Burtiera vizibilă pe tabletă și telefon – font lizibil, nu se ascunde */
+@media (max-width: 56.25em) {
+    body.page-home-v2 #home-burtiera-galbena.home-v2-burtiera-disclaimer {
+        min-height: 2.5rem;
+        padding: 0.4rem 0.75rem;
+    }
+    body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-text {
+        font-size: 0.75rem;
+    }
+}
+@media (max-width: 37.5em) {
+    body.page-home-v2 #home-burtiera-galbena.home-v2-burtiera-disclaimer {
+        min-height: 2.25rem;
+        padding: 0.35rem 0.5rem;
+    }
+    body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-text {
+        font-size: 0.7rem;
+    }
+}
+
+/* Pagina complet încadrată în ecran – A6 nu iese din pagină la dreapta */
+body.page-home-v2,
+body.page-home-v2 #main_wrap {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    width: 100% !important;
+}
+body.page-home-v2 #main_content,
+body.page-home-v2 .layout,
+body.page-home-v2 .main-content,
+body.page-home-v2 .home-v2,
+body.page-home-v2 .home-v2-three-cols {
+    max-width: 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+body.page-home-v2 #A4 {
+    background: #f5e642 !important;
+}
+/* Contor mutat în A4 pe mobil (ascuns pe desktop) */
+body.page-home-v2 .a4-mobile-counter {
+    display: none !important;
+}
+body.page-home-v2 #A1,
+body.page-home-v2 #A3 {
+    background: #6b4f7a !important; /* violet închis */
+}
+body.page-home-v2 #A3 .mission-bar-v2 {
+    background: #6b4f7a !important;
+    color: rgba(255,255,255,0.95) !important;
+    border-bottom-color: rgba(255,255,255,0.2) !important;
+}
+body.page-home-v2 #A3 .mission-bar-v2-link {
+    color: #fff !important;
+}
+body.page-home-v2 #A3 .mission-bar-v2-link:hover {
+    color: rgba(255,255,255,0.85) !important;
+}
+body.page-home-v2 #A2 {
+    background: #fff !important;
+}
+/* FUNDAL HOME – tot albastru: body, wrapper, spații între casete/containere */
+body.page-home-v2,
+body.page-home-v2 #main_wrap,
+body.page-home-v2 #main_content,
+body.page-home-v2 .main-content,
+body.page-home-v2 .layout,
+body.page-home-v2 .home-v2 {
+    background: #004B93 !important; /* albastru Pepsi */
+}
+
+/* ========== Spațiu zero între containere – lipite perfect ========== */
+body.page-home-v2 #main_wrap {
+    gap: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+body.page-home-v2 #main_content,
+body.page-home-v2 .layout,
+body.page-home-v2 .main-content,
+body.page-home-v2 .home-v2,
+body.page-home-v2 .home-v2-three-cols {
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+body.page-home-v2 .home-v2-center {
+    gap: 0 !important;
+}
+body.page-home-v2 #A1,
+body.page-home-v2 #A2,
+body.page-home-v2 #A3,
+body.page-home-v2 #A5,
+body.page-home-v2 #A6 {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+body.page-home-v2 #A4 {
+    margin: 0 !important;
+    margin-top: 0 !important; /* referință: fără margin-top negativ */
+    flex-shrink: 0 !important; /* banda lipită de fundul lui A5, A3, A6 – fără gap */
+}
+body.page-home-v2 .home-v2-center {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* ========== PAS 1: A0 sus, A5/A1/A6 LIPITE de A0, A4 lipit de fund – totul în viewport, FĂRĂ SCROLL ========== */
+/* (Din discuții: lipit A5, A1, A6 de A0 – fără bară albastră între navbar și conținut) */
+body.page-home-v2 #main_wrap {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    overflow: hidden !important;
+}
+body.page-home-v2 #main_content {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+body.page-home-v2 #main_content .layout {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+body.page-home-v2 #main_content .container {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Ascundere sidebare vechi; layout o coloană pentru zona principală */
+body.page-home-v2 .layout {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    grid-template-columns: 1fr !important;
+}
+body.page-home-v2 .layout .main-content {
+    min-height: 100% !important;
+}
+body.page-home-v2 .sidebar-left,
+body.page-home-v2 .sidebar-right {
+    display: none !important;
+}
+body.page-home-v2 .main-content {
+    max-width: 100% !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+}
+body.page-home-v2 .home-v2 {
+    width: 100% !important;
+    min-width: 100% !important;
+}
+
+/* ========== PAS 2: Container principal 3 coloane (A5 | centru A1,A2,A3 | A6) ========== */
+body.page-home-v2 .home-v2 {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 100% !important;
+}
+/* Grid flexibil: coloane laterale și centru; se micșorează când e burtiera ca AW să rămână în viewport */
+body.page-home-v2 .home-v2-three-cols {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, var(--side-col-width)) minmax(0, 1fr) minmax(0, var(--side-col-width)) !important;
+    align-items: stretch !important;
+}
+/* Tableta: coloane laterale mai înguste */
+@media (max-width: 56.25em) {
+    body.page-home-v2 .home-v2-three-cols {
+        grid-template-columns: minmax(0, var(--side-col-width-tablet)) minmax(0, 1fr) minmax(0, var(--side-col-width-tablet)) !important;
+    }
+}
+/* Mobil: o coloană – centru sus, apoi col-left, apoi col-right (containerele se aranjează vertical) */
+@media (max-width: 37.5em) {
+    body.page-home-v2 .home-v2-three-cols {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto auto auto !important;
+    }
+    body.page-home-v2 .home-v2-three-cols .home-v2-center {
+        order: 1;
+    }
+    body.page-home-v2 .home-v2-three-cols #A5,
+    body.page-home-v2 .home-v2-three-cols #home-col-left {
+        order: 2;
+    }
+    body.page-home-v2 .home-v2-three-cols #A6,
+    body.page-home-v2 .home-v2-three-cols #home-col-right {
+        order: 3;
+    }
+    body.page-home-v2 #A5,
+    body.page-home-v2 #A6,
+    body.page-home-v2 #home-col-left,
+    body.page-home-v2 #home-col-right {
+        min-height: 0 !important;
+    }
+    body.page-home-v2 .home-v2-side-inner {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+    }
+}
+/* A5 și A6 = valorile din salvarea home (HOME_SETTINGS_REFERENCE.md) */
+body.page-home-v2 #A5,
+body.page-home-v2 #A6 {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-self: stretch !important;
+    overflow: hidden !important;
+    background: red !important;
+}
+/* A5/A6 să nu se strângă la 0 – coloanele rămân vizibile */
+body.page-home-v2 .home-v2-side {
+    min-width: 0 !important;
+}
+body.page-home-v2 .home-v2-three-cols > #A5,
+body.page-home-v2 .home-v2-three-cols > #A6,
+body.page-home-v2 .home-v2-three-cols > #home-col-left,
+body.page-home-v2 .home-v2-three-cols > #home-col-right {
+    min-width: 0 !important;
+}
+/* A5/A6 – ID-uri home-col-left/right: 3 casete par una singură (fără distanțe) */
+body.page-home-v2 #home-col-left,
+body.page-home-v2 #home-col-right {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    background: #c00 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+body.page-home-v2 #home-col-left .home-v2-side-inner,
+body.page-home-v2 #home-col-right .home-v2-side-inner {
+    display: grid !important;
+    grid-template-rows: repeat(3, 1fr) !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+    border: 2px solid #999 !important;
+    border-radius: 4px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+body.page-home-v2 #home-col-left .home-v2-slot-white,
+body.page-home-v2 #home-col-right .home-v2-slot-white {
+    background: #fff !important;
+    min-height: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+/* A5/A6 – fundaluri colorate pe casete (pentru vizualizare așezare) */
+body.page-home-v2 #home-col-left .home-v2-slot-bg1,
+body.page-home-v2 #home-col-right .home-v2-slot-bg1 {
+    background: #e53935 !important; /* roșu */
+}
+body.page-home-v2 #home-col-left .home-v2-slot-bg2,
+body.page-home-v2 #home-col-right .home-v2-slot-bg2 {
+    background: #fdd835 !important; /* galben aprins */
+}
+body.page-home-v2 #home-col-left .home-v2-slot-bg3,
+body.page-home-v2 #home-col-right .home-v2-slot-bg3 {
+    background: #43a047 !important; /* verde */
+}
+body.page-home-v2 #home-col-left .home-v2-slot-white img,
+body.page-home-v2 #home-col-right .home-v2-slot-white img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+/* A5/A6 – parteneri: imaginea se încadrează în casetă (întreagă, fără tăieri) */
+body.page-home-v2 #home-col-left .home-v2-slot-partener,
+body.page-home-v2 #home-col-right .home-v2-slot-partener {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #f5f5f5 !important;
+}
+body.page-home-v2 #home-col-left .home-v2-slot-partener a,
+body.page-home-v2 #home-col-right .home-v2-slot-partener a {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 6px !important;
+    box-sizing: border-box !important;
+}
+body.page-home-v2 #home-col-left .slot-img-fit,
+body.page-home-v2 #home-col-right .slot-img-fit {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    display: block !important;
+}
+body.page-home-v2 #home-col-left .home-v2-slot-img a,
+body.page-home-v2 #home-col-right .home-v2-slot-img a {
+    display: flex !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+/* A5 și A6: 3 casete egale, lipite de laturi – conform salvării */
+body.page-home-v2 .home-v2-side-inner {
+    display: grid !important;
+    grid-template-rows: repeat(3, 1fr) !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+}
+body.page-home-v2 #A5 .sidebar-ad-wrap,
+body.page-home-v2 #A6 .sidebar-ad-wrap,
+body.page-home-v2 #A5 .sidebar-box,
+body.page-home-v2 #A6 .sidebar-box {
+    min-height: 0 !important;
+    min-width: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    overflow: hidden !important;
+    display: flex !important;
+    width: 100% !important;
+}
+/* Casete A5/A6 – sloturi simple */
+body.page-home-v2 #A5 .home-v2-slot,
+body.page-home-v2 #A6 .home-v2-slot {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+}
+body.page-home-v2 #A5 .home-v2-slot-white,
+body.page-home-v2 #A6 .home-v2-slot-white {
+    background: #fff !important;
+}
+body.page-home-v2 #A5 .home-v2-slot-label,
+body.page-home-v2 #A6 .home-v2-slot-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+}
+body.page-home-v2 #A5 .sidebar-ad-link,
+body.page-home-v2 #A6 .sidebar-ad-link {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+}
+body.page-home-v2 #A5 .sidebar-ad-img,
+body.page-home-v2 #A6 .sidebar-ad-img {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    object-fit: cover !important;
+}
+
+/* ========== PAS 3: A1, A2 – DIMENSIUNI DIN SALVARE undo-point-2026-02-22-1600. NU SE MODIFICĂ. ========== */
+body.page-home-v2 .home-v2-center {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+}
+body.page-home-v2 .home-v2-center #A1 {
+    flex-shrink: 0 !important;
+}
+/* A2 – container central; scroll în .A2-casete-wrap pentru expansiune viitoare */
+body.page-home-v2 .home-v2-center #A2 {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+}
+/* A2 se micșorează ca burtiera să încapă în AW, fără scroll */
+body.page-home-v2 .main-content #A2 {
+    min-height: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+}
+body.page-home-v2 .main-content #A2 .A2-casete-wrap {
+    min-height: 0 !important;
+}
+body.page-home-v2 .home-v2-center #A3 {
+    flex-shrink: 0 !important;
+}
+
+/* A2 – strict 4 coloane × 3 rânduri, 12 casete */
+body.page-home-v2 #A2 .A2-casete-wrap {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    grid-template-rows: repeat(3, 1fr) !important;
+    grid-auto-rows: minmax(0, 1fr) !important;
+    grid-auto-columns: minmax(0, 1fr) !important;
+    gap: 2px !important;
+    padding: 0 !important;
+    border: none !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+body.page-home-v2 #A2 .A2-casete-wrap > .dog-card-link {
+    display: block !important;
+    position: relative !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+    border-radius: 6px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    background: transparent !important;
+}
+@media (max-width: 56.25em) {
+    body.page-home-v2 .home-v2-center,
+    body.page-home-v2 #A2,
+    body.page-home-v2 #A2 .A2-casete-wrap {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+    body.page-home-v2 #A2 .A2-casete-wrap {
+        grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-rows: repeat(3, 1fr) !important;
+        gap: 2px !important;
+    }
+}
+@media (max-width: 37.5em) {
+    body.page-home-v2 .home-v2-center,
+    body.page-home-v2 #A2,
+    body.page-home-v2 #A2 .A2-casete-wrap {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+    body.page-home-v2 #A2 .A2-casete-wrap {
+        grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-rows: repeat(3, 1fr) !important;
+        gap: 2px !important;
+    }
+}
+/* A2 – nu folosește sliderul vechi (#slider_wrap, .flexslider); doar grid 4×3 */
+body.page-home-v2 #A2 #slider_wrap,
+body.page-home-v2 #A2 .flexslider,
+body.page-home-v2 #A2 .slides {
+    display: none !important;
+}
+
+/* Container central – fluid */
+.home-v2 .container-v2 {
+    max-width: min(1320px, calc(100% - 2 * var(--gap-v2)));
+    margin: 0 auto;
+    padding-left: var(--gap-v2);
+    padding-right: var(--gap-v2);
+}
+
+/* A) HERO HEADER full width – fundal cu poze care se schimbă, siglele peste */
+.hero-v2 {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    min-height: 0;
+    background: #eef2f5;
+    border-bottom: 1px solid #e0e6ea;
+    padding: 1mm 0;
+    overflow: hidden;
+}
+.hero-v2-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+.hero-v2-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    animation: hero-v2-slide 6s infinite;
+}
+.hero-v2-slide:nth-child(1) { animation-delay: 0s; }
+.hero-v2-slide:nth-child(2) { animation-delay: 2s; }
+.hero-v2-slide:nth-child(3) { animation-delay: 4s; }
+.hero-v2-slide:nth-child(4) { animation-delay: 0s; }
+.hero-v2-slide:nth-child(5) { animation-delay: 2s; }
+.hero-v2-slide:nth-child(6) { animation-delay: 4s; }
+.hero-v2-slide:nth-child(7) { animation-delay: 0s; }
+.hero-v2-slide:nth-child(8) { animation-delay: 2s; }
+.hero-v2-slide:nth-child(9) { animation-delay: 4s; }
+.hero-v2-slide:nth-child(10) { animation-delay: 0s; }
+.hero-v2-bg-img {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+@keyframes hero-v2-slide {
+    0% { opacity: 0; }
+    4% { opacity: 1; }
+    30% { opacity: 1; }
+    34% { opacity: 0; }
+    100% { opacity: 0; }
+}
+.hero-v2-inner {
+    position: relative;
+    z-index: 1;
+    max-width: min(1320px, calc(100% - 2 * var(--gap-v2)));
+    margin: 0 auto;
+    padding-left: 0.5mm;  /* cercul: 0,5 mm până la latura stângă a A1 */
+    padding-right: 0.5cm; /* sigla transport – 0,5 cm de latura dreaptă A1 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-v2);
+    flex-wrap: wrap;
+    width: 100%;
+}
+.hero-v2-logo {
+    flex-shrink: 0;
+    transform: translate(4mm, -0.3mm);
+    /* cercul micșorat cu încă 1mm */
+    width: calc(var(--hero-logo-size) - 3mm + 4px);
+    height: calc(var(--hero-logo-size) - 3mm + 4px);
+    border-radius: 50%;
+    overflow: hidden;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.hero-v2-logo a {
+    /* linkul = pătratul marit, nu se strânge; cercul (parent) taie ce depășește */
+    display: block;
+    width: calc(var(--hero-logo-size) + var(--hero-logo-inner-extra) - 3mm);
+    height: calc(var(--hero-logo-size) + var(--hero-logo-inner-extra) - 3mm);
+    min-width: calc(var(--hero-logo-size) + var(--hero-logo-inner-extra) - 3mm);
+    min-height: calc(var(--hero-logo-size) + var(--hero-logo-inner-extra) - 3mm);
+    flex-shrink: 0;
+}
+.hero-v2-logo-img {
+    display: block;
+    /* poza câinelui: pătratul marit -3mm; cercul (containerul) taie ce depășește */
+    width: calc(var(--hero-logo-size) + var(--hero-logo-inner-extra) - 3mm);
+    height: calc(var(--hero-logo-size) + var(--hero-logo-inner-extra) - 3mm);
+    min-width: calc(var(--hero-logo-size) + var(--hero-logo-inner-extra) - 3mm);
+    min-height: calc(var(--hero-logo-size) + var(--hero-logo-inner-extra) - 3mm);
+    flex-shrink: 0;
+    /* poza câinelui: poziție; 0,5mm stânga, vertical centrat */
+    transform: translate(-0.5mm, 0);
+    object-fit: cover;
+    object-position: center center;
+    border-radius: 0;
+}
+.hero-v2-cta {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+}
+.hero-v2-cta-btn {
+    display: inline-block;
+    padding: var(--btn-padding-v) var(--btn-padding-h);
+    font-size: var(--font-body);
+    font-weight: 700;
+    color: #fff;
+    background: #1597d3;
+    border-radius: var(--radius-v2);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.2s ease;
+}
+.hero-v2-cta-btn:hover {
+    background: #1279b0;
+}
+.hero-v2-transport {
+    flex-shrink: 0;
+}
+.hero-v2-transport-badge {
+    display: block;
+    width: calc(var(--hero-badge-size) + 3mm);
+    height: calc(var(--hero-badge-size) + 3mm);
+    border-radius: 50%;
+    overflow: hidden;
+    background: #fff;
+}
+.hero-v2-transport-badge img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* A1 – buton central „Hai la noi!” la 0,5 cm de limita de jos, către pagina animale */
+.hero-v2-cta-animale {
+    position: absolute !important;
+    bottom: 0.5cm !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 2;
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    background: #004B93 !important;
+    color: #f5e642 !important;
+    font-weight: 700;
+    font-size: var(--font-body);
+    text-decoration: none;
+    border-radius: var(--radius-v2);
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.hero-v2-cta-animale:hover {
+    background: #003a70 !important;
+    color: #fff !important;
+}
+
+/* Mission bar sub hero */
+.mission-bar-v2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--gap-v2);
+    padding: var(--btn-padding-v) var(--gap-v2);
+    background: #fff;
+    border-bottom: 1px solid #e0e6ea;
+    font-size: var(--font-body);
+    color: #444;
+}
+.mission-bar-v2-item {
+    white-space: nowrap;
+}
+.mission-bar-v2-link {
+    color: #1597d3;
+    font-weight: 700;
+    text-decoration: none;
+}
+.mission-bar-v2-link:hover {
+    text-decoration: underline;
+}
+
+.section-v2 {
+    padding: calc(var(--gap-v2) * 2) 0;
+}
+.section-v2-title {
+    font-size: var(--font-title);
+    font-weight: 700;
+    margin: 0 0 var(--gap-v2);
+    text-align: center;
+    color: #1f2937;
+}
+
+/* Grid responsive: desktop 4, tabletă 2, mobil 1 */
+.featured-grid-v2 {
+    display: grid;
+    gap: var(--gap-v2);
+    grid-template-columns: 1fr;
+}
+@media (min-width: 37.5em) {
+    .featured-grid-v2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (min-width: 56.25em) {
+    .featured-grid-v2 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.featured-card-v2 {
+    margin: 0;
+}
+.featured-card-v2-link {
+    display: block;
+    position: relative;
+    border-radius: var(--radius-v2);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    background: #f5f5f5;
+    aspect-ratio: 2 / 1;
+}
+.featured-card-v2-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.featured-card-v2-name {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: var(--btn-padding-v) var(--gap-v2);
+    background: linear-gradient(transparent, rgba(0,0,0,0.6));
+    color: #fff;
+    font-size: var(--font-body);
+    font-weight: 600;
+}
+
+/* C) Reclame – desktop 3, tabletă 2, mobil 1 */
+.promo-grid-v2 {
+    display: grid;
+    gap: var(--gap-v2);
+    grid-template-columns: 1fr;
+}
+@media (min-width: 31.25em) {
+    .promo-grid-v2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (min-width: 56.25em) {
+    .promo-grid-v2 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.promo-card-v2 {
+    margin: 0;
+}
+.promo-card-v2-link {
+    display: block;
+    border-radius: var(--radius-v2);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    background: #f5f5f5;
+}
+.promo-card-v2-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    aspect-ratio: 2 / 1;
+}
+
+/* ========== Compatibilitate mobil, tabletă, dispozitive mici ========== */
+/* Toate containerele și casetele se adaptează; fără overflow orizontal; touch-friendly */
+body.page-home-v2 {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+}
+body.page-home-v2 .home-v2,
+body.page-home-v2 .home-v2-three-cols,
+body.page-home-v2 .home-v2-center,
+body.page-home-v2 #A1,
+body.page-home-v2 #A2,
+body.page-home-v2 #A3,
+body.page-home-v2 #A5,
+body.page-home-v2 #A6,
+body.page-home-v2 #home-col-left,
+body.page-home-v2 #home-col-right {
+    min-width: 0;
+    max-width: 100%;
+}
+/* Imagini generale pe HOME – nu forța height:auto pe sloturi (A2, A5, A6 au reguli cover mai jos) */
+body.page-home-v2 img:not(.hero-v2-bg-img):not(.A2-slot-img):not(.slot-img-fit) {
+    max-width: 100%;
+    display: block;
+}
+/* A3 – la varianta de 3 coloane (≤90em): doar „Fii parte din drum”, fără contoare */
+@media (max-width: 90em) {
+    body.page-home-v2 #A3 .mission-bar-v2 .mission-bar-v2-item {
+        display: none !important;
+    }
+    body.page-home-v2 #A3 .mission-bar-v2 {
+        justify-content: center;
+        padding: var(--btn-padding-v) var(--gap-v2);
+        flex-wrap: nowrap !important;
+    }
+    body.page-home-v2 #A3 .mission-bar-v2-link {
+        margin: 0;
+        white-space: nowrap !important;
+    }
+}
+
+/* Tableta (până la 900px) – coloane laterale mai înguste; siglele A1 cu 2 cm; A3 doar buton */
+@media (max-width: 56.25em) {
+    body.page-home-v2 .hero-v2-inner {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2cm;
+    }
+    body.page-home-v2 .hero-v2-cta-btn {
+        min-height: 2.75rem;
+        padding: 0.75rem var(--btn-padding-h);
+    }
+    body.page-home-v2 #A3 .mission-bar-v2 .mission-bar-v2-item {
+        display: none !important;
+    }
+}
+
+/* Mobil (până la 600px) – o coloană, centru sus, A5 și A6 jos; A3 doar buton */
+@media (max-width: 37.5em) {
+    body.page-home-v2 #A3 .mission-bar-v2 .mission-bar-v2-item {
+        display: none !important;
+    }
+    body.page-home-v2 .home-v2-three-cols {
+        min-height: 0 !important;
+    }
+    /* Fără scroll pe HOME – AW în viewport, burtiera încapă */
+    body.page-home-v2 #main_wrap {
+        height: 100vh !important;
+        min-height: 100vh !important;
+        overflow: hidden !important;
+    }
+    body.page-home-v2 .hero-v2-inner {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    body.page-home-v2 .hero-v2-cta {
+        order: 1;
+        width: 100%;
+    }
+    body.page-home-v2 .hero-v2-logo {
+        order: 0;
+    }
+    /* La 1 coloană: ascundem sigla transport ca nu se încalce cu logo-ul */
+    body.page-home-v2 .hero-v2-transport {
+        display: none !important;
+    }
+    body.page-home-v2 .hero-v2-cta-btn {
+        display: block;
+        width: 100%;
+        max-width: 17.5rem;
+        margin: 0 auto;
+        min-height: 3rem;
+        line-height: 1.3;
+        white-space: normal;
+    }
+    body.page-home-v2 .mission-bar-v2 {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: var(--gap-v2);
+    }
+    body.page-home-v2 .mission-bar-v2-link {
+        display: inline-block;
+        min-height: 2.75rem;
+        line-height: 2.75rem;
+        padding: 0 var(--gap-v2);
+    }
+    body.page-home-v2 #A5 .home-v2-side-inner,
+    body.page-home-v2 #A6 .home-v2-side-inner,
+    body.page-home-v2 #home-col-left .home-v2-side-inner,
+    body.page-home-v2 #home-col-right .home-v2-side-inner {
+        grid-template-rows: none !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: var(--gap-v2) !important;
+        padding: var(--gap-v2) !important;
+    }
+    body.page-home-v2 #A5 .home-v2-slot,
+    body.page-home-v2 #A6 .home-v2-slot,
+    body.page-home-v2 #home-col-left .home-v2-slot,
+    body.page-home-v2 #home-col-right .home-v2-slot {
+        min-height: 0;
+    }
+    /* Contor mutat din A0 în A4 – vizibil doar pe mobil */
+    body.page-home-v2 .a4-mobile-counter {
+        display: flex !important;
+        justify-content: center !important;
+        padding: 10px 12px !important;
+        background: #c4a8d4 !important; /* violet mai închis */
+        color: #2d2238 !important;
+    }
+    body.page-home-v2 .a4-mobile-counter .a4-counter-inner {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 12px 20px !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+    body.page-home-v2 .a4-mobile-counter .counter-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        font-size: 13px !important;
+    }
+    body.page-home-v2 .a4-mobile-counter .counter-label {
+        color: #4a3a5c !important;
+        font-weight: 600 !important;
+    }
+    body.page-home-v2 .a4-mobile-counter .counter-value {
+        font-size: 20px !important;
+        font-weight: 800 !important;
+        color: #2d2238 !important;
+    }
+    body.page-home-v2 .a4-mobile-counter .counter-icon {
+        font-size: 18px !important;
+    }
+}
+
+/* Telefoane foarte mici (până la 384px) – padding redus, font lizibil */
+@media (max-width: 24em) {
+    body.page-home-v2 {
+        --gap-v2: 6px;
+    }
+    body.page-home-v2 .container-v2,
+    body.page-home-v2 .hero-v2-inner {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    body.page-home-v2 .section-v2-title {
+        font-size: clamp(0.9rem, 4vw, 1.1rem);
+    }
+    body.page-home-v2 #A5 .home-v2-side-inner,
+    body.page-home-v2 #A6 .home-v2-side-inner,
+    body.page-home-v2 #home-col-left .home-v2-side-inner,
+    body.page-home-v2 #home-col-right .home-v2-side-inner {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Zone sigure pentru dispozitive cu notch / safe area */
+@supports (padding: env(safe-area-inset-left)) {
+    body.page-home-v2 {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+    body.page-home-v2 #A4 {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* ========== Reguli mutate din extra_css_after (HOME) – badge + A4 ========== */
+/* Badge-uri casete (A1, A2, A3, A4, A5.1–3, A6.1–3) – doar pentru staff; A4 fără bandă albastră și fără scroll */
+body.page-home-v2 #A1,
+body.page-home-v2 #A2,
+body.page-home-v2 #A3,
+body.page-home-v2 #A4,
+body.page-home-v2 .home-v2-slot {
+    position: relative;
+}
+body.page-home-v2 .home-slot-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 100;
+}
+body.page-home-v2 #A4 {
+    overflow: hidden !important;
+}
+body.page-home-v2 #A4 .home-slot-badge-a4 {
+    position: absolute !important;
+    top: 2px !important;
+    right: 2px !important;
+    font-size: 8px !important;
+    padding: 1px 3px !important;
+    line-height: 1 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+}

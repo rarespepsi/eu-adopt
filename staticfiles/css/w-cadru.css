@@ -1,0 +1,15 @@
+/* Cadru general W – aceleași dimensiuni ca HW (home), PW (PT), SW (Servicii), SHW (Shop):
+   ocupă tot cadrul vizibil sub navbar (100% lățime, înălțime = viewport minus navbar). */
+#W {
+	width: 100% !important;
+	max-width: 100% !important;
+	margin: 0 !important;
+	padding: 0;
+	box-sizing: border-box;
+	height: calc(100vh - var(--nav-h, 64px)) !important;
+	max-height: calc(100vh - var(--nav-h, 64px)) !important;
+	min-height: 0 !important;
+	display: flex !important;
+	flex-direction: column !important;
+	overflow: hidden !important;
+}
