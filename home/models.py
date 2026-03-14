@@ -13,6 +13,7 @@ class UserProfile(models.Model):
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     phone = models.CharField("Telefon", max_length=20, blank=True)
+    judet = models.CharField("Județ", max_length=120, blank=True)
     oras = models.CharField("Oraș / Localitate", max_length=120, blank=True)
     poza_1 = models.ImageField(
         "Poză profil",
@@ -62,6 +63,7 @@ class AccountProfile(models.Model):
         related_name="account_profile",
     )
     role = models.CharField("Rol cont", max_length=20, choices=ROLE_CHOICES, default=ROLE_PF)
+    is_public_shelter = models.BooleanField("Adăpost public", default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -106,6 +108,40 @@ class AnimalListing(models.Model):
     age_label = models.CharField("Vârstă (eticheta)", max_length=20, blank=True)
     city = models.CharField("Oraș / Localitate", max_length=120, blank=True)
     county = models.CharField("Județ", max_length=120, blank=True)
+
+    # Poze (cale în DB, fișierul în MEDIA; la lansare putem folosi Cloudinary)
+    photo_1 = models.ImageField("Poza 1", upload_to="animals/", blank=True, null=True)
+    photo_2 = models.ImageField("Poza 2", upload_to="animals/", blank=True, null=True)
+    photo_3 = models.ImageField("Poza 3", upload_to="animals/", blank=True, null=True)
+
+    # Date suplimentare din fișă
+    color = models.CharField("Culoare", max_length=80, blank=True)
+    sterilizat = models.CharField("Sterilizat", max_length=10, blank=True)
+    vaccinat = models.CharField("Vaccinat", max_length=10, blank=True)
+    carnet_sanatate = models.CharField("Carnet sănătate", max_length=10, blank=True)
+    cip = models.CharField("CIP", max_length=10, blank=True)
+    sex = models.CharField("Sex", max_length=10, blank=True)
+    greutate_aprox = models.CharField("Greutate (aprox.)", max_length=30, blank=True)
+    probleme_medicale = models.TextField("Probleme medicale", blank=True)
+    cine_sunt = models.TextField("Cine sunt și de unde sunt", blank=True)
+
+    # Trăsături potrivire adoptator (15 bife)
+    trait_jucaus = models.BooleanField("Jucăuș", default=False)
+    trait_iubitor = models.BooleanField("Iubitor", default=False)
+    trait_protector = models.BooleanField("Protector", default=False)
+    trait_energic = models.BooleanField("Energetic", default=False)
+    trait_linistit = models.BooleanField("Liniștit", default=False)
+    trait_bun_copii = models.BooleanField("Bun cu copii", default=False)
+    trait_bun_caini = models.BooleanField("Bun cu alți câini", default=False)
+    trait_bun_pisici = models.BooleanField("Bun cu pisici", default=False)
+    trait_obisnuit_casa = models.BooleanField("Obișnuit în casă", default=False)
+    trait_obisnuit_lesa = models.BooleanField("Obișnuit cu lesa", default=False)
+    trait_nu_latla = models.BooleanField("Nu latră excesiv", default=False)
+    trait_apartament = models.BooleanField("Potrivit pentru apartament", default=False)
+    trait_se_adapteaza = models.BooleanField("Se adaptează ușor", default=False)
+    trait_tolereaza_singur = models.BooleanField("Tolerează să stea singur", default=False)
+    trait_necesita_experienta = models.BooleanField("Necesită experiență cu câini", default=False)
+
     is_published = models.BooleanField("Publicat", default=True)
     created_at = models.DateTimeField("Creat la", auto_now_add=True)
     updated_at = models.DateTimeField("Actualizat la", auto_now=True)

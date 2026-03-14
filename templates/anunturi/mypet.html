@@ -12,34 +12,217 @@
 			<a href="{% url 'mypet' %}" class="mypet-btn mypet-btn-primary">My pets</a>
 			<a href="{% url 'mypet_add' %}" class="mypet-btn mypet-btn-secondary">Adaugă un pet</a>
 		</div>
+		<div class="mypet-table-wrap">
+			<table class="mypet-table" aria-label="Lista animalelor mele">
+				<colgroup>
+					<col class="mypet-col-nr" />
+					<col class="mypet-col-photo" />
+					<col class="mypet-col-name" />
+					<col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" />
+					<col class="mypet-col-date" /><col class="mypet-col-date" />
+					<col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" />
+				</colgroup>
+				<thead>
+					<tr>
+						<th class="mypet-th mypet-th-nr"><span class="mypet-th-v">Nr</span></th>
+						<th class="mypet-th mypet-th-photo"><span class="mypet-th-v">Poză</span></th>
+						<th class="mypet-th mypet-th-name"><span class="mypet-th-v">Nume</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Sex</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Vârstă</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Talie</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Sterilizat</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">I love</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">În curs</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Adoptat</span></th>
+						<th class="mypet-th mypet-th-date"><span class="mypet-th-v">Data in</span></th>
+						<th class="mypet-th mypet-th-date"><span class="mypet-th-v">Data out</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 5</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 6</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 7</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 8</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 9</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 10</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 11</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 12</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 13</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 14</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 15</span></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for pet in pets %}
+					<tr class="mypet-row">
+						<td class="mypet-td mypet-td-nr">{{ forloop.counter }}</td>
+						<td class="mypet-td mypet-td-photo">
+							{% if pet %}
+								{% if pet.photo_1 %}
+								<a href="{% url 'mypet_edit' pet.pk %}" class="mypet-photo-link"><img src="{{ pet.photo_1.url }}" alt="{{ pet.name|default:'' }}" class="mypet-row-photo" /></a>
+								{% else %}
+								<a href="{% url 'mypet_edit' pet.pk %}" class="mypet-photo-link mypet-photo-empty">—</a>
+								{% endif %}
+							{% else %}
+								<span class="mypet-photo-empty">—</span>
+							{% endif %}
+						</td>
+						<td class="mypet-td mypet-td-name">{% if pet %}<a href="{% url 'mypet_edit' pet.pk %}">{{ pet.name|default:"—" }}</a>{% else %}—{% endif %}</td>
+						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.sex|default:"—" }}{% else %}—{% endif %}</td>
+						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.age_label|default:"—" }}{% else %}—{% endif %}</td>
+						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.size|default:"—" }}{% else %}—{% endif %}</td>
+						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.sterilizat|default:"—" }}{% else %}—{% endif %}</td>
+						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-date">{% if pet and pet.created_at %}{{ pet.created_at|date:"d.m.Y" }}{% else %}—{% endif %}</td>
+						<td class="mypet-td mypet-td-date">—</td>
+						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-narrow">—</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
 	</div>
 </section>
 {% endblock %}
 
 {% block extra_css_after %}
 <style>
-	/* MW = tot ce este sub navbar, până jos în ecran, fără scroll suplimentar */
+	/* MW = de la casetele din stânga până la limita ecranului dreapta, fără scroll orizontal */
 	body.page-mypet #main_wrap,
 	body.page-mypet #main_content {
 		min-height: 0;
 		margin: 0;
 		padding: 0;
 	}
+	body.page-mypet .sidebar-right {
+		display: none !important;
+	}
+	body.page-mypet .layout {
+		grid-template-columns: 260px 1fr !important;
+	}
+	body.page-mypet .layout .main-content {
+		flex: 1 1 0;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		max-width: none;
+		padding-right: 0 !important;
+		margin-right: 0 !important;
+	}
 	#mypet_wrap,
 	.mypet-wrap {
 		height: calc(100vh - var(--nav-h, 64px));
 		display: flex;
-		align-items: center;
-		justify-content: center;
+		flex-direction: column;
+		align-items: stretch;
+		justify-content: flex-start;
 		padding: 0;
 		box-sizing: border-box;
 		overflow: hidden;
+		width: 100%;
 	}
 	.mypet-inner {
 		width: 100%;
-		max-width: 960px;
+		max-width: none;
 		height: 100%;
 		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		padding: 0.15rem 0.1rem 0.15rem 0.15rem;
+		overflow: hidden;
+		min-height: 0;
+	}
+	.mypet-table-wrap {
+		flex: 1 1 0;
+		min-height: 85vh;
+		width: 100%;
+		min-width: 0;
+		overflow: auto;
+		box-sizing: border-box;
+		margin-top: 0.25rem;
+		border: 2px solid #d2b27a;
+		border-radius: 8px;
+		background: #fffef7;
+		box-sizing: border-box;
+	}
+	.mypet-table {
+		width: 100%;
+		table-layout: fixed;
+		border-collapse: collapse;
+		font-size: 0.8rem;
+	}
+	.mypet-col-nr { width: 2.5rem; }
+	.mypet-col-photo { width: 120px; }
+	.mypet-col-name { width: 9rem; }
+	.mypet-col-narrow { width: 2.5rem; }
+	.mypet-col-date { width: 4.5rem; }
+	.mypet-th {
+		background: #5c3c00;
+		color: #fff;
+		padding: 0.2rem 0.25rem;
+		text-align: center;
+		vertical-align: bottom;
+		white-space: nowrap;
+	}
+	.mypet-th-v,
+	.mypet-th-vertical {
+		display: inline-block;
+		writing-mode: vertical-rl;
+		text-orientation: mixed;
+		transform: rotate(180deg);
+		line-height: 1.2;
+		padding: 0.35rem 0;
+	}
+	.mypet-th-nr { min-width: 2rem; }
+	.mypet-th-photo { width: 120px; min-width: 120px; }
+	.mypet-th-name { min-width: 9rem; }
+	.mypet-th-narrow { min-width: 2.5rem; }
+	.mypet-th-date { min-width: 4rem; }
+	.mypet-td {
+		padding: 0.2rem 0.35rem;
+		border-bottom: 1px solid #eee;
+		vertical-align: middle;
+		font-size: 0.8rem;
+	}
+	.mypet-td-nr { text-align: center; font-weight: 600; color: #5c3c00; min-width: 2rem; }
+	.mypet-td-photo { padding: 0.25rem; text-align: center; width: 120px; min-width: 120px; vertical-align: middle; }
+	.mypet-td-name { min-width: 9rem; }
+	.mypet-td-narrow { min-width: 2.5rem; text-align: center; }
+	.mypet-td-date { min-width: 4rem; font-size: 0.75rem; white-space: nowrap; }
+	.mypet-row-photo {
+		display: block;
+		width: 120px;
+		height: 60px;
+		object-fit: cover;
+		border-radius: 4px;
+	}
+	.mypet-photo-link {
+		display: inline-block;
+		text-decoration: none;
+	}
+	.mypet-photo-empty {
+		display: inline-block;
+		width: 120px;
+		height: 60px;
+		line-height: 60px;
+		background: #f5f5f5;
+		color: #999;
+		border-radius: 4px;
+		font-size: 0.9rem;
+	}
+	.mypet-row:hover { background: #fff8e1; }
+	.mypet-table tbody tr:first-child td {
+		background: #e3f2fd;
+		border: 1px solid #90caf9;
 	}
 	/* Doar pe MyPet: evidențiem caseta mamă din stânga (A6–A8) ca să o vezi clar */
 	body.page-mypet .sidebar-left {
@@ -102,5 +285,23 @@
 		border-color: #ffcc80;
 	}
 </style>
+<script>
+(function() {
+	function measureRight() {
+		var wrap = document.querySelector('.mypet-table-wrap');
+		var table = document.querySelector('.mypet-table');
+		if (!wrap || !table) return;
+		var wrapRect = wrap.getBoundingClientRect();
+		var tableRect = table.getBoundingClientRect();
+		var viewportRight = window.innerWidth;
+		var tableRight = tableRect.right;
+		var dist = Math.round(viewportRight - tableRight);
+		console.log('MyPet: Spațiu liber în dreapta până la limita ecranului: ' + dist + ' px (lățime tabel: ' + Math.round(tableRect.width) + ' px)');
+	}
+	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', measureRight);
+	else measureRight();
+	setTimeout(measureRight, 500);
+})();
+</script>
 {% endblock %}
 

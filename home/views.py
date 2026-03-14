@@ -14,7 +14,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
 from .data import DEMO_DOGS, DEMO_DOG_IMAGE, A2_QUOTE_POOL, HERO_SLIDER_IMAGES
-from .models import WishlistItem, AnimalListing, UserAdoption
+from .models import WishlistItem, AnimalListing, UserAdoption, AccountProfile
 
 # A2 selection: 12 dogs. New (added in last 24h) first, then fill randomly from PT. Never empty if any available.
 A2_SLOT_COUNT = 12
@@ -278,13 +278,20 @@ def account_view(request):
 @login_required
 def mypet_view(request):
     """
-    Pagina MyPet – deocamdată doar un wrapper gol MW,
-    sub navbar, fără alte benzi sau layout-uri speciale.
+    Pagina MyPet – listă animale ale userului (un rând per câine).
     """
     user = request.user
+    pets = list(
+        AnimalListing.objects.filter(owner=user)
+        .order_by("-id")[:50]
+    )
+    # Minim 20 rânduri pentru a vedea scroll-ul
+    while len(pets) < 20:
+        pets.append(None)
     active_animals = AnimalListing.objects.filter(owner=user, is_published=True).count()
     adopted_animals = UserAdoption.objects.filter(user=user, status="completed").count()
     return render(request, "anunturi/mypet.html", {
+        "pets": pets,
         "active_animals": active_animals,
         "adopted_animals": adopted_animals,
     })
@@ -298,8 +305,15 @@ def mypet_add_view(request):
     """
     user = request.user
     profile = getattr(user, "profile", None)
+    account_profile = getattr(user, "account_profile", None)
     default_city = getattr(profile, "oras", "") if profile else ""
-    default_county = ""
+    default_county = getattr(profile, "judet", "") if profile else ""
+    is_public_shelter = bool(
+        account_profile
+        and account_profile.role == AccountProfile.ROLE_ORG
+        and getattr(account_profile, "is_public_shelter", False)
+    )
+    default_med = "da" if is_public_shelter else ""
 
     age_choices = [
         "<1 an",
@@ -322,6 +336,18 @@ def mypet_add_view(request):
         age_label = (request.POST.get("age_label") or "").strip()
         city = (request.POST.get("city") or "").strip()
         county = (request.POST.get("county") or "").strip()
+        color = (request.POST.get("color") or "").strip()
+        sterilizat = (request.POST.get("sterilizat") or "").strip()
+        vaccinat = (request.POST.get("vaccinat") or "").strip()
+        carnet_sanatate = (request.POST.get("carnet_sanatate") or "").strip()
+        cip = (request.POST.get("cip") or "").strip()
+        sex = (request.POST.get("sex") or "").strip()
+        greutate_aprox = (request.POST.get("greutate_aprox") or "").strip()
+        probleme_medicale = (request.POST.get("probleme_medicale") or "").strip()
+        cine_sunt = (request.POST.get("cine_sunt") or "").strip()
+        # Trăsături (checkboxes: prezente în POST când sunt bifate)
+        def trait(name):
+            return name in request.POST
         error = None
         if not name:
             error = "Te rugăm să completezi numele câinelui."
@@ -329,7 +355,7 @@ def mypet_add_view(request):
             error = "Te rugăm să alegi vârsta estimată."
         if not error:
             try:
-                AnimalListing.objects.create(
+                listing = AnimalListing.objects.create(
                     owner=user,
                     name=name,
                     species=species,
@@ -337,9 +363,36 @@ def mypet_add_view(request):
                     age_label=age_label,
                     city=city,
                     county=county,
+                    color=color,
+                    sterilizat=sterilizat,
+                    vaccinat=vaccinat,
+                    carnet_sanatate=carnet_sanatate,
+                    cip=cip,
+                    sex=sex,
+                    greutate_aprox=greutate_aprox,
+                    probleme_medicale=probleme_medicale,
+                    cine_sunt=cine_sunt,
+                    photo_1=request.FILES.get("photo_1"),
+                    photo_2=request.FILES.get("photo_2"),
+                    photo_3=request.FILES.get("photo_3"),
+                    trait_jucaus=trait("trait_jucaus"),
+                    trait_iubitor=trait("trait_iubitor"),
+                    trait_protector=trait("trait_protector"),
+                    trait_energic=trait("trait_energic"),
+                    trait_linistit=trait("trait_linistit"),
+                    trait_bun_copii=trait("trait_bun_copii"),
+                    trait_bun_caini=trait("trait_bun_caini"),
+                    trait_bun_pisici=trait("trait_bun_pisici"),
+                    trait_obisnuit_casa=trait("trait_obisnuit_casa"),
+                    trait_obisnuit_lesa=trait("trait_obisnuit_lesa"),
+                    trait_nu_latla=trait("trait_nu_latla"),
+                    trait_apartament=trait("trait_apartament"),
+                    trait_se_adapteaza=trait("trait_se_adapteaza"),
+                    trait_tolereaza_singur=trait("trait_tolereaza_singur"),
+                    trait_necesita_experienta=trait("trait_necesita_experienta"),
                     is_published=True,
                 )
-                return redirect("mypet")
+                return redirect("mypet_edit", pk=listing.pk)
             except Exception as exc:
                 error = str(exc)
         ctx = {
@@ -350,7 +403,35 @@ def mypet_add_view(request):
             "age_label": age_label,
             "city": city or default_city,
             "county": county or default_county,
+            "color": color,
+            "sterilizat": sterilizat or default_med,
+            "vaccinat": vaccinat or default_med,
+            "carnet_sanatate": carnet_sanatate or default_med,
+            "cip": cip or default_med,
+            "sex": sex,
+            "greutate_aprox": greutate_aprox,
+            "probleme_medicale": probleme_medicale,
+            "cine_sunt": cine_sunt,
             "age_choices": age_choices,
+            "has_photo_1": False,
+            "has_photo_2": False,
+            "has_photo_3": False,
+            "listing": None,
+            "trait_jucaus": trait("trait_jucaus"),
+            "trait_iubitor": trait("trait_iubitor"),
+            "trait_protector": trait("trait_protector"),
+            "trait_energic": trait("trait_energic"),
+            "trait_linistit": trait("trait_linistit"),
+            "trait_bun_copii": trait("trait_bun_copii"),
+            "trait_bun_caini": trait("trait_bun_caini"),
+            "trait_bun_pisici": trait("trait_bun_pisici"),
+            "trait_obisnuit_casa": trait("trait_obisnuit_casa"),
+            "trait_obisnuit_lesa": trait("trait_obisnuit_lesa"),
+            "trait_nu_latla": trait("trait_nu_latla"),
+            "trait_apartament": trait("trait_apartament"),
+            "trait_se_adapteaza": trait("trait_se_adapteaza"),
+            "trait_tolereaza_singur": trait("trait_tolereaza_singur"),
+            "trait_necesita_experienta": trait("trait_necesita_experienta"),
         }
         return render(request, "anunturi/mypet_add.html", ctx)
 
@@ -362,7 +443,208 @@ def mypet_add_view(request):
         "age_label": "",
         "city": default_city,
         "county": default_county,
+        "color": "",
+        "sterilizat": default_med,
+        "vaccinat": default_med,
+        "carnet_sanatate": default_med,
+        "cip": default_med,
+        "sex": "",
+        "greutate_aprox": "",
+        "probleme_medicale": "",
+        "cine_sunt": "",
         "age_choices": age_choices,
+        "has_photo_1": False,
+        "has_photo_2": False,
+        "has_photo_3": False,
+        "listing": None,
+        "trait_jucaus": False,
+        "trait_iubitor": False,
+        "trait_protector": False,
+        "trait_energic": False,
+        "trait_linistit": False,
+        "trait_bun_copii": False,
+        "trait_bun_caini": False,
+        "trait_bun_pisici": False,
+        "trait_obisnuit_casa": False,
+        "trait_obisnuit_lesa": False,
+        "trait_nu_latla": False,
+        "trait_apartament": False,
+        "trait_se_adapteaza": False,
+        "trait_tolereaza_singur": False,
+        "trait_necesita_experienta": False,
+    }
+    return render(request, "anunturi/mypet_add.html", ctx)
+
+
+@login_required
+def mypet_edit_view(request, pk):
+    """Editare fișă pet existent."""
+    user = request.user
+    listing = AnimalListing.objects.filter(owner=user, pk=pk).first()
+    if not listing:
+        return redirect("mypet")
+
+    profile = getattr(user, "profile", None)
+    account_profile = getattr(user, "account_profile", None)
+    default_city = getattr(profile, "oras", "") if profile else ""
+    default_county = getattr(profile, "judet", "") if profile else ""
+    is_public_shelter = bool(
+        account_profile
+        and account_profile.role == AccountProfile.ROLE_ORG
+        and getattr(account_profile, "is_public_shelter", False)
+    )
+    default_med = "da" if is_public_shelter else ""
+
+    age_choices = [
+        "<1 an", "1 an", "2 ani", "3 ani", "4 ani", "5 ani",
+        "6 ani", "7 ani", "8 ani", "9 ani", "10+ ani",
+    ]
+
+    if request.method == "POST":
+        name = (request.POST.get("name") or "").strip()
+        species = (request.POST.get("species") or "dog").strip() or "dog"
+        size = (request.POST.get("size") or "").strip()
+        age_label = (request.POST.get("age_label") or "").strip()
+        city = (request.POST.get("city") or "").strip()
+        county = (request.POST.get("county") or "").strip()
+        color = (request.POST.get("color") or "").strip()
+        sterilizat = (request.POST.get("sterilizat") or "").strip()
+        vaccinat = (request.POST.get("vaccinat") or "").strip()
+        carnet_sanatate = (request.POST.get("carnet_sanatate") or "").strip()
+        cip = (request.POST.get("cip") or "").strip()
+        sex = (request.POST.get("sex") or "").strip()
+        greutate_aprox = (request.POST.get("greutate_aprox") or "").strip()
+        probleme_medicale = (request.POST.get("probleme_medicale") or "").strip()
+        cine_sunt = (request.POST.get("cine_sunt") or "").strip()
+
+        def trait(name):
+            return name in request.POST
+
+        error = None
+        if not name:
+            error = "Te rugăm să completezi numele câinelui."
+        if not age_label:
+            error = "Te rugăm să alegi vârsta estimată."
+        if not error:
+            try:
+                listing.name = name
+                listing.species = species
+                listing.size = size
+                listing.age_label = age_label
+                listing.city = city
+                listing.county = county
+                listing.color = color
+                listing.sterilizat = sterilizat
+                listing.vaccinat = vaccinat
+                listing.carnet_sanatate = carnet_sanatate
+                listing.cip = cip
+                listing.sex = sex
+                listing.greutate_aprox = greutate_aprox
+                listing.probleme_medicale = probleme_medicale
+                listing.cine_sunt = cine_sunt
+                if request.FILES.get("photo_1"):
+                    listing.photo_1 = request.FILES.get("photo_1")
+                if request.FILES.get("photo_2"):
+                    listing.photo_2 = request.FILES.get("photo_2")
+                if request.FILES.get("photo_3"):
+                    listing.photo_3 = request.FILES.get("photo_3")
+                listing.trait_jucaus = trait("trait_jucaus")
+                listing.trait_iubitor = trait("trait_iubitor")
+                listing.trait_protector = trait("trait_protector")
+                listing.trait_energic = trait("trait_energic")
+                listing.trait_linistit = trait("trait_linistit")
+                listing.trait_bun_copii = trait("trait_bun_copii")
+                listing.trait_bun_caini = trait("trait_bun_caini")
+                listing.trait_bun_pisici = trait("trait_bun_pisici")
+                listing.trait_obisnuit_casa = trait("trait_obisnuit_casa")
+                listing.trait_obisnuit_lesa = trait("trait_obisnuit_lesa")
+                listing.trait_nu_latla = trait("trait_nu_latla")
+                listing.trait_apartament = trait("trait_apartament")
+                listing.trait_se_adapteaza = trait("trait_se_adapteaza")
+                listing.trait_tolereaza_singur = trait("trait_tolereaza_singur")
+                listing.trait_necesita_experienta = trait("trait_necesita_experienta")
+                listing.save()
+                return redirect("mypet")
+            except Exception as exc:
+                error = str(exc)
+
+        ctx = {
+            "listing": listing,
+            "error": error,
+            "name": name,
+            "species": species,
+            "size": size,
+            "age_label": age_label,
+            "city": city or default_city,
+            "county": county or default_county,
+            "color": color,
+            "sterilizat": sterilizat or default_med,
+            "vaccinat": vaccinat or default_med,
+            "carnet_sanatate": carnet_sanatate or default_med,
+            "cip": cip or default_med,
+            "sex": sex,
+            "greutate_aprox": greutate_aprox,
+            "probleme_medicale": probleme_medicale,
+            "cine_sunt": cine_sunt,
+            "age_choices": age_choices,
+            "has_photo_1": bool(listing.photo_1),
+            "has_photo_2": bool(listing.photo_2),
+            "has_photo_3": bool(listing.photo_3),
+            "trait_jucaus": listing.trait_jucaus,
+            "trait_iubitor": listing.trait_iubitor,
+            "trait_protector": listing.trait_protector,
+            "trait_energic": listing.trait_energic,
+            "trait_linistit": listing.trait_linistit,
+            "trait_bun_copii": listing.trait_bun_copii,
+            "trait_bun_caini": listing.trait_bun_caini,
+            "trait_bun_pisici": listing.trait_bun_pisici,
+            "trait_obisnuit_casa": listing.trait_obisnuit_casa,
+            "trait_obisnuit_lesa": listing.trait_obisnuit_lesa,
+            "trait_nu_latla": listing.trait_nu_latla,
+            "trait_apartament": listing.trait_apartament,
+            "trait_se_adapteaza": listing.trait_se_adapteaza,
+            "trait_tolereaza_singur": listing.trait_tolereaza_singur,
+            "trait_necesita_experienta": listing.trait_necesita_experienta,
+        }
+        return render(request, "anunturi/mypet_add.html", ctx)
+
+    ctx = {
+        "listing": listing,
+        "error": None,
+        "name": listing.name or "",
+        "species": listing.species or "dog",
+        "size": listing.size or "",
+        "age_label": listing.age_label or "",
+        "city": listing.city or default_city,
+        "county": listing.county or default_county,
+        "color": listing.color or "",
+        "sterilizat": listing.sterilizat or default_med,
+        "vaccinat": listing.vaccinat or default_med,
+        "carnet_sanatate": listing.carnet_sanatate or default_med,
+        "cip": listing.cip or default_med,
+        "sex": listing.sex or "",
+        "greutate_aprox": listing.greutate_aprox or "",
+        "probleme_medicale": listing.probleme_medicale or "",
+        "cine_sunt": listing.cine_sunt or "",
+        "age_choices": age_choices,
+        "has_photo_1": bool(listing.photo_1),
+        "has_photo_2": bool(listing.photo_2),
+        "has_photo_3": bool(listing.photo_3),
+        "trait_jucaus": listing.trait_jucaus,
+        "trait_iubitor": listing.trait_iubitor,
+        "trait_protector": listing.trait_protector,
+        "trait_energic": listing.trait_energic,
+        "trait_linistit": listing.trait_linistit,
+        "trait_bun_copii": listing.trait_bun_copii,
+        "trait_bun_caini": listing.trait_bun_caini,
+        "trait_bun_pisici": listing.trait_bun_pisici,
+        "trait_obisnuit_casa": listing.trait_obisnuit_casa,
+        "trait_obisnuit_lesa": listing.trait_obisnuit_lesa,
+        "trait_nu_latla": listing.trait_nu_latla,
+        "trait_apartament": listing.trait_apartament,
+        "trait_se_adapteaza": listing.trait_se_adapteaza,
+        "trait_tolereaza_singur": listing.trait_tolereaza_singur,
+        "trait_necesita_experienta": listing.trait_necesita_experienta,
     }
     return render(request, "anunturi/mypet_add.html", ctx)
 
