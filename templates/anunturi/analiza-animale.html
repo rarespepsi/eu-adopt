@@ -41,13 +41,14 @@ body.page-analiza .main-content { width: 100% !important; max-width: 100% !impor
 				</select>
 			</div>
 			<div>
-				<label>Județ</label>
-				<select name="judet" style="padding: 0.4rem;">
-					<option value="">— Toate —</option>
-					{% for val, label in judet_choices %}
-					<option value="{{ val }}" {% if filters.judet == val %}selected{% endif %}>{{ label }}</option>
-					{% endfor %}
-				</select>
+				<label for="analiza-judet">Județ</label>
+				<input type="text" id="analiza-judet" name="judet" list="county-list-analiza" placeholder="— Toate — sau alege județul" autocomplete="off" value="{{ filters.judet|default:'' }}" style="padding: 0.4rem; min-width: 180px;" />
+				{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-analiza" %}
+			</div>
+			<div>
+				<label for="analiza-oras">Oraș / Localitate</label>
+				<input type="text" id="analiza-oras" name="oras" list="city-list-analiza" placeholder="— Toate — sau alege județul mai întâi" autocomplete="off" value="{{ filters.oras|default:'' }}" style="padding: 0.4rem; min-width: 180px;" />
+				<datalist id="city-list-analiza"></datalist>
 			</div>
 			<button type="submit" class="button">Aplică</button>
 		</div>
@@ -90,4 +91,40 @@ body.page-analiza .main-content { width: 100% !important; max-width: 100% !impor
 	</div>
 	{% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+	var localitiesByCounty = {};
+	var countyNames = ["Alba","Arad","Argeș","Bacău","Bihor","Bistrița-Năsăud","Botoșani","Brăila","Brașov","București","Buzău","Călărași","Caraș-Severin","Cluj","Constanța","Covasna","Dâmbovița","Dolj","Galați","Giurgiu","Gorj","Harghita","Hunedoara","Ialomița","Iași","Ilfov","Maramureș","Mehedinți","Mureș","Neamț","Olt","Prahova","Sălaj","Satu Mare","Sibiu","Suceava","Teleorman","Timiș","Tulcea","Vâlcea","Vaslui","Vrancea"];
+	function matchCounty(val) {
+		if (!val) return null;
+		val = String(val).trim();
+		for (var i = 0; i < countyNames.length; i++) if (countyNames[i].toLowerCase() === val.toLowerCase()) return countyNames[i];
+		return null;
+	}
+	function updateCityList() {
+		var countyInput = document.getElementById("analiza-judet");
+		var cityList = document.getElementById("city-list-analiza");
+		if (!countyInput || !cityList) return;
+		var county = matchCounty(countyInput.value);
+		cityList.innerHTML = "";
+		if (county && localitiesByCounty[county]) {
+			var list = localitiesByCounty[county];
+			for (var i = 0; i < list.length; i++) { var opt = document.createElement("option"); opt.value = list[i]; cityList.appendChild(opt); }
+		}
+	}
+	fetch("{% static 'data/ro_counties_cities.json' %}").then(function(r) { return r.json(); }).then(function(data) {
+		for (var k in data) localitiesByCounty[k] = data[k];
+		updateCityList();
+	}).catch(function() {});
+	var countyInput = document.getElementById("analiza-judet");
+	if (countyInput) {
+		countyInput.addEventListener("input", updateCityList);
+		countyInput.addEventListener("change", updateCityList);
+		updateCityList();
+	}
+})();
+</script>
 {% endblock %}

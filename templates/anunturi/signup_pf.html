@@ -149,6 +149,10 @@
 		background: rgba(255, 255, 255, 0.5);
 		margin-bottom: 0.5rem;
 	}
+	.signup-pwd-wrap .signup-pwd-inner { position: relative; display: block; }
+	.signup-pwd-wrap .signup-pwd-inner input { padding-right: 2rem; box-sizing: border-box; width: 100%; }
+	.signup-pwd-eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; cursor: pointer; opacity: 0.6; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>') center/contain no-repeat; }
+	.signup-pwd-eye:hover { opacity: 1; }
 	.signup-field-box:last-child {
 		margin-bottom: 0;
 	}
@@ -392,8 +396,15 @@
 				<h1>Înregistrare Persoană Fizică</h1>
 				<p class="signup-intro">Completează datele de bază pentru a crea un cont personal.</p>
 			</div>
-			<form id="signup-pf-form" method="post" action="#" enctype="multipart/form-data" autocomplete="off">
+			<form id="signup-pf-form" method="post" action="{% url 'signup_pf' %}" enctype="multipart/form-data" autocomplete="off">
 				{% csrf_token %}
+				{% if signup_errors %}
+				<div class="signup-errors" role="alert" style="background:#ffebee;border:1px solid #c62828;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;">
+					<ul style="margin:0;padding-left:1.25rem;">
+						{% for err in signup_errors %}<li>{{ err }}</li>{% endfor %}
+					</ul>
+				</div>
+				{% endif %}
 				<!-- Formular dummy ascuns ca Chrome să nu umple câmpurile reale cu user/parolă salvate -->
 				<div style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true">
 					<input type="text" name="username_fake" tabindex="-1" autocomplete="username">
@@ -404,68 +415,80 @@
 					<h2>Date de identificare</h2>
 					<div class="signup-field signup-field-box">
 						<label for="id_last_name">Nume *</label>
-						<input type="text" id="id_last_name" name="last_name" required autocomplete="off" />
+						<input type="text" id="id_last_name" name="last_name" required autocomplete="off" value="{% if form_prefill %}{{ form_prefill.last_name|default:'' }}{% endif %}" />
 					</div>
 					<div class="signup-field signup-field-box">
 						<label for="id_first_name">Prenume *</label>
-						<input type="text" id="id_first_name" name="first_name" required autocomplete="off" />
+						<input type="text" id="id_first_name" name="first_name" required autocomplete="off" value="{% if form_prefill %}{{ form_prefill.first_name|default:'' }}{% endif %}" />
 					</div>
 					<div class="signup-field signup-field-box">
 						<label for="id_email">Email *</label>
-						<input type="email" id="id_email" name="email" required autocomplete="off" />
+						<input type="email" id="id_email" name="email" required autocomplete="off" value="{% if form_prefill %}{{ form_prefill.email|default:'' }}{% endif %}" />
 					</div>
 					<div class="signup-field signup-field-box">
 						<label for="id_phone">Telefon *</label>
 						<div class="signup-phone-row">
 							<div class="signup-phone-prefix">
 								<select id="id_phone_country" name="phone_country" required>
-									<option value="+40" selected>RO +40</option>
-									<option value="+39">IT +39</option>
-									<option value="+33">FR +33</option>
-									<option value="+49">DE +49</option>
-									<option value="+44">UK +44</option>
-									<option value="+34">ES +34</option>
-									<option value="+43">AT +43</option>
-									<option value="+41">CH +41</option>
-									<option value="+1">US +1</option>
-									<option value="+000">Alt cod…</option>
+									<option value="+40" {% if not form_prefill or form_prefill.phone_country == '+40' %}selected{% endif %}>RO +40</option>
+									<option value="+39" {% if form_prefill and form_prefill.phone_country == '+39' %}selected{% endif %}>IT +39</option>
+									<option value="+33" {% if form_prefill and form_prefill.phone_country == '+33' %}selected{% endif %}>FR +33</option>
+									<option value="+49" {% if form_prefill and form_prefill.phone_country == '+49' %}selected{% endif %}>DE +49</option>
+									<option value="+44" {% if form_prefill and form_prefill.phone_country == '+44' %}selected{% endif %}>UK +44</option>
+									<option value="+34" {% if form_prefill and form_prefill.phone_country == '+34' %}selected{% endif %}>ES +34</option>
+									<option value="+43" {% if form_prefill and form_prefill.phone_country == '+43' %}selected{% endif %}>AT +43</option>
+									<option value="+41" {% if form_prefill and form_prefill.phone_country == '+41' %}selected{% endif %}>CH +41</option>
+									<option value="+1" {% if form_prefill and form_prefill.phone_country == '+1' %}selected{% endif %}>US +1</option>
+									<option value="+000" {% if form_prefill and form_prefill.phone_country == '+000' %}selected{% endif %}>Alt cod…</option>
 								</select>
 							</div>
 							<div class="signup-phone-number">
-								<input type="tel" id="id_phone" name="phone" required autocomplete="tel-national" />
+								<input type="tel" id="id_phone" name="phone" required autocomplete="tel-national" value="{% if form_prefill %}{{ form_prefill.phone|default:'' }}{% endif %}" />
 							</div>
 						</div>
 					</div>
 					<div class="signup-field signup-field-box">
+						<label for="id_judet">Județ *</label>
+						<input type="text" id="id_judet" name="judet" required autocomplete="off" list="county-list-pf" value="{% if form_prefill %}{{ form_prefill.judet|default:'' }}{% endif %}" />
+						{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-pf" %}
+					</div>
+					<div class="signup-field signup-field-box">
 						<label for="id_oras">Oraș / Localitate *</label>
-						<input type="text" id="id_oras" name="oras" required autocomplete="address-level2" />
+						<input type="text" id="id_oras" name="oras" required autocomplete="off" list="city-list-pf" value="{% if form_prefill %}{{ form_prefill.oras|default:'' }}{% endif %}" />
+						<datalist id="city-list-pf"></datalist>
 					</div>
 				</div>
 				<div class="signup-caseta">
 					<h2>Parolă și acorduri</h2>
-					<div class="signup-field signup-field-box">
+					<div class="signup-field signup-field-box signup-pwd-wrap">
 						<label for="id_password1">Parolă *</label>
-						<input type="password" id="id_password1" name="password1" required autocomplete="new-password" />
+						<span class="signup-pwd-inner">
+							<input type="password" id="id_password1" name="password1" required autocomplete="new-password" />
+							<span class="signup-pwd-eye" data-pwd="id_password1" title="Arată parola" aria-label="Arată parola" role="button" tabindex="0"></span>
+						</span>
 					</div>
-					<div class="signup-field signup-field-box">
+					<div class="signup-field signup-field-box signup-pwd-wrap">
 						<label for="id_password2">Confirmare parolă *</label>
-						<input type="password" id="id_password2" name="password2" required autocomplete="new-password" />
+						<span class="signup-pwd-inner">
+							<input type="password" id="id_password2" name="password2" required autocomplete="new-password" />
+							<span class="signup-pwd-eye" data-pwd="id_password2" title="Arată parola" aria-label="Arată parola" role="button" tabindex="0"></span>
+						</span>
 					</div>
 					<div class="signup-field signup-field-box">
 						<label>
-							<input type="checkbox" id="id_accept_termeni" name="accept_termeni" required />
+							<input type="checkbox" id="id_accept_termeni" name="accept_termeni" required {% if form_prefill and form_prefill.accept_termeni %}checked{% endif %} />
 							Accept termenii și condițiile *
 						</label>
 					</div>
 					<div class="signup-field signup-field-box">
 						<label>
-							<input type="checkbox" id="id_accept_gdpr" name="accept_gdpr" required />
+							<input type="checkbox" id="id_accept_gdpr" name="accept_gdpr" required {% if form_prefill and form_prefill.accept_gdpr %}checked{% endif %} />
 							Accept prelucrarea datelor conform GDPR *
 						</label>
 					</div>
 					<div class="signup-field signup-field-box">
 						<label>
-							<input type="checkbox" id="id_email_opt_in_wishlist" name="email_opt_in_wishlist" />
+							<input type="checkbox" id="id_email_opt_in_wishlist" name="email_opt_in_wishlist" {% if form_prefill and form_prefill.email_opt_in_wishlist %}checked{% endif %} />
 							Notificări email EU-Adopt (wishlist)
 						</label>
 					</div>
@@ -598,6 +621,7 @@
 			'id_first_name',
 			'id_email',
 			'id_phone',
+			'id_judet',
 			'id_oras',
 			'id_password1',
 			'id_password2'
@@ -624,6 +648,7 @@
 			last_name: "Popescu",
 			first_name: "Ana",
 			email: "ana.popescu@example.com",
+			judet: "București",
 			oras: "București",
 			phone_country: "+40",
 			phone: "753017424"
@@ -632,6 +657,7 @@
 		el = document.getElementById('id_last_name'); if (el && !el.value) el.value = demo.last_name;
 		el = document.getElementById('id_first_name'); if (el && !el.value) el.value = demo.first_name;
 		el = document.getElementById('id_email'); if (el && !el.value) el.value = demo.email;
+		el = document.getElementById('id_judet'); if (el && !el.value) el.value = demo.judet;
 		el = document.getElementById('id_oras'); if (el && !el.value) el.value = demo.oras;
 		el = document.getElementById('id_phone_country'); if (el) el.value = demo.phone_country;
 		el = document.getElementById('id_phone'); if (el && !el.value) el.value = demo.phone;
@@ -649,6 +675,53 @@
 		clearSignupInputs();
 		setTimeout(prefillDemoUser, 2000);
 	}
+})();
+</script>
+<script>
+(function() {
+	var localitiesByCounty = {};
+	var countyNames = ["Alba","Arad","Argeș","Bacău","Bihor","Bistrița-Năsăud","Botoșani","Brăila","Brașov","București","Buzău","Călărași","Caraș-Severin","Cluj","Constanța","Covasna","Dâmbovița","Dolj","Galați","Giurgiu","Gorj","Harghita","Hunedoara","Ialomița","Iași","Ilfov","Maramureș","Mehedinți","Mureș","Neamț","Olt","Prahova","Sălaj","Satu Mare","Sibiu","Suceava","Teleorman","Timiș","Tulcea","Vâlcea","Vaslui","Vrancea"];
+	function matchCounty(val) {
+		if (!val) return null;
+		val = String(val).trim();
+		for (var i = 0; i < countyNames.length; i++) if (countyNames[i].toLowerCase() === val.toLowerCase()) return countyNames[i];
+		return null;
+	}
+	function updateCityList() {
+		var countyInput = document.getElementById("id_judet");
+		var cityList = document.getElementById("city-list-pf");
+		if (!countyInput || !cityList) return;
+		var county = matchCounty(countyInput.value);
+		cityList.innerHTML = "";
+		if (county && localitiesByCounty[county]) {
+			var list = localitiesByCounty[county];
+			for (var i = 0; i < list.length; i++) { var opt = document.createElement("option"); opt.value = list[i]; cityList.appendChild(opt); }
+		}
+	}
+	fetch("{% static 'data/ro_counties_cities.json' %}").then(function(r) { return r.json(); }).then(function(data) {
+		for (var k in data) localitiesByCounty[k] = data[k];
+		updateCityList();
+	}).catch(function() {});
+	var countyInput = document.getElementById("id_judet");
+	if (countyInput) {
+		countyInput.addEventListener("input", updateCityList);
+		countyInput.addEventListener("change", updateCityList);
+		updateCityList();
+	}
+})();
+</script>
+<script>
+(function() {
+	document.querySelectorAll('.signup-pwd-eye').forEach(function(eye) {
+		var id = eye.getAttribute('data-pwd');
+		var input = document.getElementById(id);
+		if (!input) return;
+		eye.addEventListener('mouseenter', function() { input.type = 'text'; });
+		eye.addEventListener('mouseleave', function() { input.type = 'password'; });
+		eye.addEventListener('click', function() {
+			input.type = input.type === 'password' ? 'text' : 'password';
+		});
+	});
 })();
 </script>
 <script>

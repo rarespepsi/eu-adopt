@@ -150,6 +150,7 @@
 			<p>Autentificare simplă pentru a-ți gestiona anunțurile și preferințele.</p>
 			<form method="post" action="{% url 'login' %}">
 				{% csrf_token %}
+				<input type="hidden" name="next" value="{{ request.GET.next|default:'' }}" />
 				{% if error %}
 					<div class="login-error-box" role="alert">
 						<strong>Autentificare eșuată.</strong> {{ error }}

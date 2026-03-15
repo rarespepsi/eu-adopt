@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Verificare SMS – EU-ADOPT{% endblock %}
+{% block body_class %}page-login{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/w-cadru.css' %}?v=1" type="text/css" media="screen" />
+<style>
+	body.page-login #main_wrap { min-height: 100vh; display: flex; flex-direction: column; }
+	body.page-login #main_content { flex: 1; display: flex; align-items: center; justify-content: center; }
+	.signup-sms-box { max-width: 400px; margin: 0 auto; padding: 1.5rem; background: #fff; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+	.signup-sms-box h2 { margin: 0 0 1rem; font-size: 1.25rem; }
+	.signup-sms-box .sms-error { color: #c62828; margin-bottom: 0.75rem; font-size: 0.9rem; }
+	.signup-sms-box input[type="text"] { width: 100%; padding: 0.6rem; margin-bottom: 1rem; box-sizing: border-box; }
+	.signup-sms-box button { padding: 0.5rem 1.25rem; cursor: pointer; }
+	.signup-sms-box .signup-sms-back { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; }
+	.signup-sms-box .signup-sms-back a { display: inline-block; color: #0d47a1; font-weight: 600; text-decoration: none; font-size: 1rem; padding: 0.35rem 0; }
+	.signup-sms-box .signup-sms-back a:hover { text-decoration: underline; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="signup-sms-box">
+	<h2>Verificare SMS</h2>
+	<p>Introdu codul primit prin SMS (pentru test folosește <strong>111111</strong>).</p>
+	{% if sms_error %}<p class="sms-error">{{ sms_error }}</p>{% endif %}
+	<form method="post" action="{% url 'signup_verificare_sms' %}">
+		{% csrf_token %}
+		<input type="text" name="sms_code" placeholder="Cod SMS" maxlength="10" autocomplete="off" required />
+		<button type="submit">Trimite</button>
+	</form>
+	<p class="signup-sms-back"><a href="{{ back_url|default:'#' }}">← Înapoi la fișa de înregistrare</a></p>
+</div>
+{% endblock %}

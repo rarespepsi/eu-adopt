@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -130,6 +131,15 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Fișiere încărcate de utilizatori (ex: poză profil)
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Email – verificare cont (real)
+# Pentru trimitere reală: setează EMAIL_BACKEND pe 'django.core.mail.backends.smtp.EmailBackend'
+# și EMAIL_HOST, EMAIL_PORT, EMAIL_USE_TLS, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
+EMAIL_BACKEND = os.environ.get(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend'
+)
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@eu-adopt.ro')
 
 # WhiteNoise + stocare fișiere (Django 6: STORAGES cu cheie "default" pentru upload-uri)
 STORAGES = {

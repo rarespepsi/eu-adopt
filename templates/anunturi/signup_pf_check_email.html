@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Verifică email-ul – EU-ADOPT{% endblock %}
+{% block body_class %}page-login{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/w-cadru.css' %}?v=1" type="text/css" media="screen" />
+<style>
+	body.page-login #main_wrap { min-height: 100vh; display: flex; flex-direction: column; }
+	body.page-login #main_content { flex: 1; display: flex; align-items: center; justify-content: center; }
+	.signup-check-email { max-width: 480px; margin: 0 auto; padding: 1.5rem; text-align: center; }
+	.signup-check-email h2 { margin: 0 0 0.75rem; font-size: 1.25rem; }
+	.signup-check-email p { margin: 0.5rem 0; }
+	.signup-check-email .signup-check-back { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; }
+	.signup-check-email .signup-check-back a { display: inline-block; color: #0d47a1; font-weight: 600; text-decoration: none; font-size: 1rem; padding: 0.35rem 0; }
+	.signup-check-email .signup-check-back a:hover { text-decoration: underline; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="signup-check-email">
+	<h2>Verifică email-ul</h2>
+	<p>Am trimis un link de activare la <strong>{{ email }}</strong>.</p>
+	<p>Deschide emailul și apasă pe link pentru a-ți activa contul.</p>
+	<p><a href="{% url 'home' %}">Înapoi la pagina principală</a></p>
+	<p class="signup-check-back"><a href="{{ back_url|default:'/' }}">← Înapoi la fișa de înregistrare</a></p>
+</div>
+{% endblock %}

@@ -18,6 +18,41 @@
 		flex-direction: column !important;
 		overflow: hidden !important;
 	}
+	/* Filtru: Județ deasupra, Oraș/Loc dedesubt; S2.1–S2.3 micșorate ca să încapă */
+	#SW .sw-s2-filter-row {
+		flex: 0 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		padding: 4px 2px;
+		min-height: 0;
+	}
+	#SW .sw-s2-filter-judet,
+	#SW .sw-s2-filter-oras {
+		flex: 0 0 auto;
+		min-width: 0;
+		display: flex;
+		align-items: stretch;
+	}
+	#SW .sw-s2-filter-btn {
+		width: 100%;
+		padding: 0.35rem 0.5rem;
+		font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+		font-weight: 700;
+		text-transform: uppercase;
+		background: #e3f2fd;
+		color: #1565c0;
+		border: 1px solid #1565c0;
+		border-radius: 6px;
+		box-sizing: border-box;
+	}
+	/* S2.1, S2.2, S2.3 mai mici ca să încapă cele două butoane de filtru */
+	#SW .sw-s4-box-filters,
+	#SW .sw-s4-box-match,
+	#SW .sw-s4-box-ads {
+		flex: 1 1 0;
+		min-height: 0;
+	}
 </style>
 {% endblock %}
 
@@ -39,8 +74,15 @@
 			</div>
 			<div id="S2" class="sw-cell sw-cell-4" data-slot="S2">
 				<div class="sw-s4-inner">
-					<div class="sw-s2-filter-judet">
-						<button type="button" class="sw-s2-judet-btn">JUDET</button>
+					<div class="sw-s2-filter-row">
+						<div class="sw-s2-filter-judet">
+							<input type="text" id="sw-judet" class="sw-s2-filter-btn" list="county-list-servicii" placeholder="Județ" autocomplete="off" aria-label="Județ" />
+							{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-servicii" %}
+						</div>
+						<div class="sw-s2-filter-oras">
+							<input type="text" id="sw-oras" class="sw-s2-filter-btn" list="city-list-servicii" placeholder="Oras/Loc" autocomplete="off" aria-label="Oraș / Localitate" />
+							<datalist id="city-list-servicii"></datalist>
+						</div>
 					</div>
 					<div class="sw-s4-box sw-s4-box-filters" id="S2.1" data-slot="S2.1"><span class="sw-s4-label">S2.1</span></div>
 					<div class="sw-s4-box sw-s4-box-match" id="S2.2" data-slot="S2.2"><span class="sw-s4-label">S2.2</span></div>
@@ -102,4 +144,40 @@
 		</div>
 	</main>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+	var localitiesByCounty = {};
+	var countyNames = ["Alba","Arad","Argeș","Bacău","Bihor","Bistrița-Năsăud","Botoșani","Brăila","Brașov","București","Buzău","Călărași","Caraș-Severin","Cluj","Constanța","Covasna","Dâmbovița","Dolj","Galați","Giurgiu","Gorj","Harghita","Hunedoara","Ialomița","Iași","Ilfov","Maramureș","Mehedinți","Mureș","Neamț","Olt","Prahova","Sălaj","Satu Mare","Sibiu","Suceava","Teleorman","Timiș","Tulcea","Vâlcea","Vaslui","Vrancea"];
+	function matchCounty(val) {
+		if (!val) return null;
+		val = String(val).trim();
+		for (var i = 0; i < countyNames.length; i++) if (countyNames[i].toLowerCase() === val.toLowerCase()) return countyNames[i];
+		return null;
+	}
+	function updateCityList() {
+		var countyInput = document.getElementById("sw-judet");
+		var cityList = document.getElementById("city-list-servicii");
+		if (!countyInput || !cityList) return;
+		var county = matchCounty(countyInput.value);
+		cityList.innerHTML = "";
+		if (county && localitiesByCounty[county]) {
+			var list = localitiesByCounty[county];
+			for (var i = 0; i < list.length; i++) { var opt = document.createElement("option"); opt.value = list[i]; cityList.appendChild(opt); }
+		}
+	}
+	fetch("{% static 'data/ro_counties_cities.json' %}").then(function(r) { return r.json(); }).then(function(data) {
+		for (var k in data) localitiesByCounty[k] = data[k];
+		updateCityList();
+	}).catch(function() {});
+	var countyInput = document.getElementById("sw-judet");
+	if (countyInput) {
+		countyInput.addEventListener("input", updateCityList);
+		countyInput.addEventListener("change", updateCityList);
+		updateCityList();
+	}
+})();
+</script>
 {% endblock %}

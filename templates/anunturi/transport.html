@@ -58,12 +58,14 @@
 					<p class="t1-intro">Cererea este transmisă colaboratorilor, primul care acceptă primește datele.</p>
 					<form class="t1-form" action="#" method="post">
 						<div class="t1-field t1-caseta t1-row-inline">
-							<label class="t1-label">JUDET</label>
-							<select class="t1-select" name="judet"><option value="">—</option><option value="neamt">Neamț</option></select>
+							<label class="t1-label" for="tw-judet">JUDET</label>
+							<input type="text" class="t1-input" id="tw-judet" name="judet" list="county-list-tw" placeholder="Alege sau scrie județul" autocomplete="off" />
+							{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-tw" %}
 						</div>
 						<div class="t1-field t1-caseta t1-row-inline">
-							<label class="t1-label">ORAȘ / LOCALITATE</label>
-							<select class="t1-select" name="oras"><option value="">—</option><option value="piatra-neamt">Piatra-Neamț</option></select>
+							<label class="t1-label" for="tw-oras">ORAȘ / LOCALITATE</label>
+							<input type="text" class="t1-input" id="tw-oras" name="oras" list="city-list-tw" placeholder="Alege mai întâi județul" autocomplete="off" />
+							<datalist id="city-list-tw"></datalist>
 						</div>
 						<div class="t1-field t1-caseta">
 							<div class="t1-label-row">
@@ -203,6 +205,39 @@
 		setRandomFundal();
 	}
 	setInterval(setRandomFundal, 60 * 60 * 1000);
+})();
+</script>
+<script>
+(function() {
+	var localitiesByCounty = {};
+	var countyNames = ["Alba","Arad","Argeș","Bacău","Bihor","Bistrița-Năsăud","Botoșani","Brăila","Brașov","București","Buzău","Călărași","Caraș-Severin","Cluj","Constanța","Covasna","Dâmbovița","Dolj","Galați","Giurgiu","Gorj","Harghita","Hunedoara","Ialomița","Iași","Ilfov","Maramureș","Mehedinți","Mureș","Neamț","Olt","Prahova","Sălaj","Satu Mare","Sibiu","Suceava","Teleorman","Timiș","Tulcea","Vâlcea","Vaslui","Vrancea"];
+	function matchCounty(val) {
+		if (!val) return null;
+		val = String(val).trim();
+		for (var i = 0; i < countyNames.length; i++) if (countyNames[i].toLowerCase() === val.toLowerCase()) return countyNames[i];
+		return null;
+	}
+	function updateCityList() {
+		var countyInput = document.getElementById("tw-judet");
+		var cityList = document.getElementById("city-list-tw");
+		if (!countyInput || !cityList) return;
+		var county = matchCounty(countyInput.value);
+		cityList.innerHTML = "";
+		if (county && localitiesByCounty[county]) {
+			var list = localitiesByCounty[county];
+			for (var i = 0; i < list.length; i++) { var opt = document.createElement("option"); opt.value = list[i]; cityList.appendChild(opt); }
+		}
+	}
+	fetch("{% static 'data/ro_counties_cities.json' %}").then(function(r) { return r.json(); }).then(function(data) {
+		for (var k in data) localitiesByCounty[k] = data[k];
+		updateCityList();
+	}).catch(function() {});
+	var countyInput = document.getElementById("tw-judet");
+	if (countyInput) {
+		countyInput.addEventListener("input", updateCityList);
+		countyInput.addEventListener("change", updateCityList);
+		updateCityList();
+	}
 })();
 </script>
 {% endblock %}

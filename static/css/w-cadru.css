@@ -13,3 +13,10 @@
 	flex-direction: column !important;
 	overflow: hidden !important;
 }
+
+/* Caseta CUI/CIF restrânsă la formularele signup ONG și Colaborator */
+body.page-login input#id_cui,
+body.page-login input#id_cui_col {
+	max-width: 12em;
+	box-sizing: border-box;
+}
