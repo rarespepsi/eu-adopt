@@ -213,6 +213,33 @@
 	.signup-org-field-box:last-child {
 		margin-bottom: 0;
 	}
+	/* RO + CUI/CIF pe un singur rând, textul în casete (nu deasupra) */
+	.signup-org-field-box.signup-org-cui-row {
+		display: flex !important;
+		flex-direction: row !important;
+		flex-wrap: nowrap !important;
+		align-items: center !important;
+		gap: 0.5rem !important;
+	}
+	.signup-org-cui-stanga,
+	.signup-org-cui-dreapta {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 0.35rem;
+		min-width: 0;
+		box-sizing: border-box;
+	}
+	.signup-org-cui-stanga { flex: 0 0 26%; font-size: 0.75rem; min-width: 4.5rem; }
+	.signup-org-cui-stanga select { font-size: 0.75rem; padding: 0.25rem 0.35rem; min-width: 0; }
+	.signup-org-cui-dreapta { flex: 1 1 74%; max-width: 74%; }
+	.signup-org-cui-row .signup-org-cui-stanga label,
+	.signup-org-cui-row .signup-org-cui-dreapta label {
+		display: inline !important;
+		margin-bottom: 0 !important;
+		flex-shrink: 0;
+	}
+	.signup-org-cui-dreapta input#id_cui { max-width: 70%; box-sizing: border-box; flex: 1; min-width: 0; }
 	.signup-org-field label {
 		display: block;
 		margin-bottom: 0.06rem;
@@ -598,9 +625,18 @@
 							<label for="id_denumire_societate">Denumire societate</label>
 							<input type="text" id="id_denumire_societate" name="denumire_societate" value="{% if form_prefill %}{{ form_prefill.denumire_societate|default:'' }}{% endif %}" />
 						</div>
-						<div class="signup-org-field signup-org-field-box">
-							<label for="id_cui">CUI / CIF *</label>
-							<input type="text" id="id_cui" name="cui" required value="{% if form_prefill %}{{ form_prefill.cui|default:'' }}{% endif %}" />
+						<div class="signup-org-field signup-org-field-box signup-org-cui-row">
+							<div class="signup-org-cui-stanga">
+								<label for="id_cui_ro_org">RO</label>
+								<select id="id_cui_ro_org" name="cui_cu_ro" aria-label="Cu sau Fără">
+									<option value="nu" {% if form_prefill and form_prefill.cui_cu_ro == 'nu' %}selected{% endif %}>Fără</option>
+									<option value="da" {% if form_prefill and form_prefill.cui_cu_ro == 'da' %}selected{% endif %}>Cu</option>
+								</select>
+							</div>
+							<div class="signup-org-cui-dreapta">
+								<label for="id_cui">CUI / CIF *</label>
+								<input type="text" id="id_cui" name="cui" required value="{% if form_prefill %}{{ form_prefill.cui|default:'' }}{% endif %}" />
+							</div>
 						</div>
 						<div class="signup-org-field signup-org-field-box">
 							<label for="id_pers_contact">Persoană de contact *</label>

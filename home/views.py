@@ -511,6 +511,12 @@ def signup_organizatie_view(request):
             ctx["signup_errors"] = ["Acest email este deja folosit. Te rugăm folosește alt email."]
         data = _get_signup_pending(request)
         if data and data.get("role") == "org":
+            if "cui_cu_ro" not in data and data.get("cui") and (data.get("cui") or "").upper().startswith("RO"):
+                data = dict(data)
+                data["cui_cu_ro"] = "da"
+            elif "cui_cu_ro" not in data:
+                data = dict(data)
+                data["cui_cu_ro"] = "nu"
             ctx["form_prefill"] = data
         return render(request, "anunturi/signup_organizatie.html", ctx)
 
@@ -518,6 +524,9 @@ def signup_organizatie_view(request):
     denumire = (request.POST.get("denumire") or "").strip()
     denumire_societate = (request.POST.get("denumire_societate") or "").strip()
     cui = (request.POST.get("cui") or "").strip()
+    cui_cu_ro = (request.POST.get("cui_cu_ro") or "nu").strip().lower()
+    if cui_cu_ro == "da" and cui and not cui.upper().startswith("RO"):
+        cui = "RO" + cui
     pers_contact = (request.POST.get("pers_contact") or "").strip()
     email = (request.POST.get("email") or "").strip().lower()
     telefon = (request.POST.get("telefon") or "").strip()
@@ -564,6 +573,7 @@ def signup_organizatie_view(request):
             "denumire": denumire,
             "denumire_societate": denumire_societate,
             "cui": cui,
+            "cui_cu_ro": cui_cu_ro if cui_cu_ro in ("da", "nu") else "nu",
             "pers_contact": pers_contact,
             "email": email,
             "telefon": telefon,
@@ -581,6 +591,7 @@ def signup_organizatie_view(request):
         "denumire": denumire,
         "denumire_societate": denumire_societate,
         "cui": cui,
+        "cui_cu_ro": cui_cu_ro if cui_cu_ro in ("da", "nu") else "nu",
         "pers_contact": pers_contact,
         "email": email,
         "telefon": telefon.strip(),
@@ -608,6 +619,9 @@ def signup_colaborator_view(request):
             ctx["signup_errors"] = errs
         data = _get_signup_pending(request)
         if data and data.get("role") == "collaborator":
+            if "cui_cu_ro" not in data:
+                data = dict(data)
+                data["cui_cu_ro"] = "da" if (data.get("cui") or "").upper().startswith("RO") else "nu"
             ctx["form_prefill"] = data
         return render(request, "anunturi/signup_colaborator.html", ctx)
 
@@ -615,6 +629,9 @@ def signup_colaborator_view(request):
     denumire = (request.POST.get("denumire") or "").strip()
     denumire_societate = (request.POST.get("denumire_societate") or "").strip()
     cui = (request.POST.get("cui") or "").strip()
+    cui_cu_ro = (request.POST.get("cui_cu_ro") or "nu").strip().lower()
+    if cui_cu_ro == "da" and cui and not cui.upper().startswith("RO"):
+        cui = "RO" + cui
     pers_contact = (request.POST.get("pers_contact") or "").strip()
     email = (request.POST.get("email") or "").strip().lower()
     telefon = (request.POST.get("telefon") or "").strip()
@@ -660,6 +677,7 @@ def signup_colaborator_view(request):
             "denumire": denumire,
             "denumire_societate": denumire_societate,
             "cui": cui,
+            "cui_cu_ro": cui_cu_ro if cui_cu_ro in ("da", "nu") else "nu",
             "pers_contact": pers_contact,
             "judet": judet,
             "oras": oras,
@@ -677,6 +695,7 @@ def signup_colaborator_view(request):
         "denumire": denumire,
         "denumire_societate": denumire_societate,
         "cui": cui,
+        "cui_cu_ro": cui_cu_ro if cui_cu_ro in ("da", "nu") else "nu",
         "pers_contact": pers_contact,
         "email": email,
         "telefon": telefon.strip(),

@@ -14,9 +14,30 @@
 	overflow: hidden !important;
 }
 
-/* Caseta CUI/CIF restrânsă la formularele signup ONG și Colaborator */
-body.page-login input#id_cui,
-body.page-login input#id_cui_col {
-	max-width: 12em;
+/* Rând CUI: casetă stânga 20%, CUI/CIF restrâns 80% – nu mărim și nu mutăm alte casete */
+.signup-org-cui-row,
+.signup-col-cui-row {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	align-items: flex-end;
+	gap: 0.5rem;
+}
+.signup-org-cui-stanga,
+.signup-col-cui-stanga {
+	flex: 0 0 20%;
+	min-width: 0;
+	box-sizing: border-box;
+}
+.signup-org-cui-dreapta,
+.signup-col-cui-dreapta {
+	flex: 1 1 80%;
+	min-width: 0;
+	box-sizing: border-box;
+}
+/* CUI/CIF restrâns cu 20% (80% din lățimea disponibilă) */
+.signup-org-cui-dreapta input#id_cui,
+.signup-col-cui-dreapta input#id_cui_col {
+	max-width: 80%;
 	box-sizing: border-box;
 }
