@@ -25,13 +25,26 @@ def _phone_digits(phone_str):
     return "".join(c for c in str(phone_str) if c.isdigit())
 
 
+def _phone_normalize_for_compare(digits):
+    """Normalizează cifrele pentru comparare: 0753017424 (10 cifre) = 40753017424 (prefix RO)."""
+    if not digits or len(digits) < 9:
+        return digits
+    # România: 10 cifre începând cu 0 → 40 + 9 cifre
+    if len(digits) == 10 and digits[0] == "0":
+        return "40" + digits[1:]
+    if len(digits) == 9 and digits[0] in "67":
+        return "4" + digits  # 4 + 9 cifre = 40 + 9
+    return digits
+
+
 def _phone_already_used(phone_input):
-    """True dacă există deja un UserProfile cu același număr (comparat doar pe cifre)."""
-    norm = _phone_digits(phone_input)
+    """True dacă există deja un UserProfile cu același număr (comparat pe cifre normalizate)."""
+    norm = _phone_normalize_for_compare(_phone_digits(phone_input))
     if not norm:
         return False
     for p in UserProfile.objects.exclude(phone="").exclude(phone__isnull=True):
-        if _phone_digits(p.phone) == norm:
+        other = _phone_normalize_for_compare(_phone_digits(p.phone))
+        if other and other == norm:
             return True
     return False
 
@@ -333,26 +346,99 @@ def _redirect_for_role(role, param):
     return reverse("signup_choose_type")
 
 
+# Prescurtări județe (2 litere) pentru username la duplicate
+_JUDET_CODES = {
+    "alba": "AB", "arad": "AR", "arges": "AG", "bacau": "BC", "bihor": "BH",
+    "bistrita-nasaud": "BN", "bistrita": "BN", "botosani": "BT", "braila": "BR",
+    "buzau": "BZ", "caras-severin": "CS", "cluj": "CJ", "constanta": "CT",
+    "covasna": "CV", "dambovita": "DB", "dolj": "DJ", "galati": "GL",
+    "giurgiu": "GR", "gorj": "GJ", "harghita": "HR", "hunedoara": "HD",
+    "ialomita": "IL", "iasi": "IS", "ilfov": "IF", "maramures": "MM",
+    "mehedinti": "MH", "mures": "MS", "neamt": "NT", "olt": "OT",
+    "prahova": "PH", "salaj": "SJ", "satu mare": "SM", "sibiu": "SB",
+    "suceava": "SV", "teleorman": "TR", "timis": "TM", "tulcea": "TL",
+    "valcea": "VL", "vrancea": "VS", "bucuresti": "B",
+}
+
+
+def _judet_to_code(judet):
+    """Returnează cod 2 litere pentru județ (ex: Neamț -> NT)."""
+    if not (judet and isinstance(judet, str)):
+        return "XX"
+    key = judet.strip().lower().replace("ă", "a").replace("â", "a").replace("î", "i").replace("ș", "s").replace("ț", "t")
+    key = "".join(c for c in key if c.isalnum() or c in " -")
+    key = key.replace(" ", "-").replace("--", "-").strip("-")
+    return _JUDET_CODES.get(key, (key[:2] if len(key) >= 2 else key + "X").upper())
+
+
+def _normalize_username_base(s):
+    """Doar litere și cifre, fără spații/diacritice, pentru username."""
+    if not s or not isinstance(s, str):
+        return ""
+    s = s.strip()
+    s = s.replace("ă", "a").replace("â", "a").replace("î", "i").replace("ș", "s").replace("ț", "t")
+    return "".join(c for c in s if c.isalnum())
+
+
+def _make_signup_username(data, role):
+    """PF: Prenume+Nume. ONG: denumire organizație. Colab: denumire societate (fallback denumire). La duplicate: + _XX (cod județ 2 litere)."""
+    if role == "pf":
+        prenume = (data.get("first_name") or "").strip()
+        nume = (data.get("last_name") or "").strip()
+        base = _normalize_username_base(prenume) + _normalize_username_base(nume)
+    elif role == "org":
+        base = _normalize_username_base(data.get("denumire") or "")
+    else:
+        base = _normalize_username_base(data.get("denumire_societate") or data.get("denumire") or "")
+    if not base:
+        base = "User"
+    judet_code = _judet_to_code(data.get("judet") or "")
+    User = get_user_model()
+    username = base
+    if User.objects.filter(username=username).exists():
+        username = f"{base}_{judet_code}"
+    n = 1
+    while User.objects.filter(username=username).exists():
+        username = f"{base}_{judet_code}{n}"
+        n += 1
+        if n > 99:
+            break
+    return username
+
+
 def signup_verificare_sms_view(request):
     """Pas SMS comun pentru PF, ONG, Colaborator: cod 111111, creare user (inactiv), email cu link, redirect verifică email."""
     data = _get_signup_pending(request)
     if not data:
+        if request.GET.get("preview") == "1":
+            import time
+            return render(
+                request,
+                "anunturi/signup_pf_sms.html",
+                {"email": "", "back_url": reverse("signup_choose_type"), "expires_at": int(time.time()) + 300},
+            )
         return redirect(reverse("signup_choose_type"))
 
     role = data.get("role", "pf")
     email = (data.get("email") or "").strip().lower()
 
     if request.method != "POST":
+        import time
+        if "signup_sms_at" not in request.session:
+            request.session["signup_sms_at"] = time.time()
+        expires_at = int(request.session["signup_sms_at"]) + 300
         back_url = _redirect_for_role(role, "")
-        return render(request, "anunturi/signup_pf_sms.html", {"email": email, "back_url": back_url})
+        return render(request, "anunturi/signup_pf_sms.html", {"email": email, "back_url": back_url, "expires_at": expires_at})
 
     sms_code = (request.POST.get("sms_code") or "").strip()
     if sms_code != "111111":
+        import time
+        expires_at = int(request.session.get("signup_sms_at", time.time())) + 300
         back_url = _redirect_for_role(role, "")
         return render(
             request,
             "anunturi/signup_pf_sms.html",
-            {"email": email, "sms_error": "Cod invalid. Folosește 111111 pentru verificare.", "back_url": back_url},
+            {"email": email, "sms_error": "Cod invalid. Folosește 111111 pentru verificare.", "back_url": back_url, "expires_at": expires_at},
         )
 
     if role == "pf":
@@ -371,13 +457,7 @@ def signup_verificare_sms_view(request):
         request.session.pop("signup_pf_pending", None)
         return redirect(_redirect_for_role(role, "email") + "?email_taken=1")
 
-    username = email
-    if User.objects.filter(username=username).exists():
-        base = email.split("@")[0]
-        for i in range(1, 100):
-            username = f"{base}{i}"
-            if not User.objects.filter(username=username).exists():
-                break
+    username = _make_signup_username(data, role)
 
     if role == "pf":
         user = User.objects.create_user(
@@ -441,27 +521,47 @@ def signup_verificare_sms_view(request):
         profile.email_opt_in_wishlist = data.get("email_opt_in", False)
         profile.save()
 
-    from django.core.signing import Signer
+    from django.core.signing import TimestampSigner
     from django.core.mail import send_mail
+    from django.core.cache import cache
     from urllib.parse import quote
+    import uuid
 
-    signer = Signer()
+    signer = TimestampSigner()
     token = signer.sign(user.pk)
-    verify_url = request.build_absolute_uri(reverse("signup_verify_email")) + "?token=" + quote(token)
+    waiting_id = str(uuid.uuid4())
+    request.session["signup_waiting_id"] = waiting_id
+    cache.set("signup_waiting_" + waiting_id, "pending", timeout=600)
+    verify_url = (
+        request.build_absolute_uri(reverse("signup_verify_email"))
+        + "?token=" + quote(token)
+        + "&waiting_id=" + quote(waiting_id)
+    )
+    plain_msg = f"Bună ziua,\n\nApasă pe link pentru a-ți activa contul:\n{verify_url}\n\nDacă nu ai creat cont, poți ignora acest email."
+    html_msg = (
+        f'<p>Bună ziua,</p>'
+        f'<p>Apasă pe link pentru a-ți activa contul:<br/>'
+        f'<a href="{verify_url}" style="color:#1565c0;font-weight:bold;">Activează contul</a></p>'
+        f'<p>Dacă linkul nu merge, copiază în browser:</p><p style="word-break:break-all;">{verify_url}</p>'
+        f'<p>Dacă nu ai creat cont, poți ignora acest email.</p>'
+    )
     try:
         send_mail(
             subject="Verificare email – EU-Adopt",
-            message=f"Bună ziua,\n\nApasă pe link pentru a-ți activa contul:\n{verify_url}\n\nDacă nu ai creat cont, poți ignora acest email.",
+            message=plain_msg,
             from_email=None,
             recipient_list=[email],
             fail_silently=False,
+            html_message=html_msg,
         )
     except Exception:
         pass
 
+    import time
+    request.session["signup_link_created_at"] = time.time()
     request.session.pop("signup_pending", None)
     request.session.pop("signup_pf_pending", None)
-    return redirect(reverse("signup_pf_check_email") + f"?email={email}")
+    return redirect(reverse("signup_pf_check_email") + f"?email={quote(email)}")
 
 
 def signup_pf_sms_view(request):
@@ -470,15 +570,25 @@ def signup_pf_sms_view(request):
 
 
 def signup_pf_check_email_view(request):
-    """Pagina 'Verifică email-ul – am trimis un link la ...'."""
+    """Pagina 'Verifică email-ul – am trimis un link la ...'. Dacă există waiting_id, JS face polling ca la activare din alt device să logheze aici."""
+    import time
     email = request.GET.get("email", "")
-    return render(request, "anunturi/signup_pf_check_email.html", {"email": email, "back_url": reverse("signup_choose_type")})
+    waiting_id = request.session.get("signup_waiting_id", "")
+    created = request.session.get("signup_link_created_at") or time.time()
+    expires_at = int(created) + 300
+    return render(
+        request,
+        "anunturi/signup_pf_check_email.html",
+        {"email": email, "waiting_id": waiting_id, "back_url": reverse("signup_choose_type"), "expires_at": expires_at},
+    )
 
 
 def signup_verify_email_view(request):
-    """Link din email: verifică token, activează user, login, redirect home cu welcome."""
+    """Link din email: verifică token, activează user, login pe acest device; dacă e waiting_id, pune one_time_token pentru tab-ul de pe laptop."""
     from django.core.signing import Signer
     from django.contrib.auth import login as auth_login
+    from django.core.cache import cache
+    import uuid
 
     token = request.GET.get("token", "")
     if not token:
@@ -498,17 +608,71 @@ def signup_verify_email_view(request):
     user.is_active = True
     user.save()
     auth_login(request, user)
+
+    waiting_id = (request.GET.get("waiting_id") or "").strip()
+    if waiting_id:
+        one_time_token = str(uuid.uuid4())
+        cache.set("signup_waiting_" + waiting_id, one_time_token, timeout=300)
+        cache.set("signup_onetime_" + one_time_token, user.pk, timeout=300)
+
+    return render(request, "anunturi/signup_activated.html")
+
+
+def signup_check_activation_status_view(request):
+    """Polling de pe pagina 'Verifică email': dacă userul a apăsat linkul (ex. de pe telefon), returnăm one_time_token ca tab-ul să facă complete-login."""
+    from django.core.cache import cache
+    from django.http import JsonResponse
+
+    waiting_id = (request.GET.get("waiting_id") or "").strip()
+    if not waiting_id:
+        return JsonResponse({"activated": False})
+    val = cache.get("signup_waiting_" + waiting_id)
+    if val is None or val == "pending":
+        return JsonResponse({"activated": False})
+    return JsonResponse({"activated": True, "one_time_token": val})
+
+
+def signup_complete_login_view(request):
+    """După activare din alt device: loghează cu one_time_token și redirect home."""
+    from django.core.cache import cache
+    from django.contrib.auth import login as auth_login
+
+    token = (request.GET.get("token") or "").strip()
+    if not token:
+        return redirect(reverse("home"))
+    user_pk = cache.get("signup_onetime_" + token)
+    if not user_pk:
+        return redirect(reverse("home"))
+    User = get_user_model()
+    try:
+        user = User.objects.get(pk=user_pk)
+    except User.DoesNotExist:
+        return redirect(reverse("home"))
+    cache.delete("signup_onetime_" + token)
+    if request.session.get("signup_waiting_id"):
+        request.session.pop("signup_waiting_id", None)
+    auth_login(request, user)
     return redirect(reverse("home") + "?welcome=1")
+
+
+def _no_cache_response(response):
+    """Evită cache-ul paginii ca la refresh mesajele de eroare să dispară."""
+    response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response["Pragma"] = "no-cache"
+    return response
 
 
 def signup_organizatie_view(request):
     """Formular înregistrare – Adăpost / ONG / Firmă. La POST: validează, salvează în sesiune, redirect SMS. La GET: prefill din sesiune dacă user a dat Back din SMS."""
     if request.method != "POST":
         ctx = {}
+        field_errors_get = {}
         if request.GET.get("phone_taken"):
-            ctx["signup_errors"] = ["Acest număr de telefon este deja folosit. Te rugăm folosește alt număr."]
+            field_errors_get["telefon"] = "Acest număr de telefon este deja folosit. Te rugăm folosește alt număr."
         if request.GET.get("email_taken"):
-            ctx["signup_errors"] = ["Acest email este deja folosit. Te rugăm folosește alt email."]
+            field_errors_get["email"] = "Acest email este deja folosit. Te rugăm folosește alt email."
+        if field_errors_get:
+            ctx["field_errors"] = field_errors_get
         data = _get_signup_pending(request)
         if data and data.get("role") == "org":
             if "cui_cu_ro" not in data and data.get("cui") and (data.get("cui") or "").upper().startswith("RO"):
@@ -518,7 +682,7 @@ def signup_organizatie_view(request):
                 data = dict(data)
                 data["cui_cu_ro"] = "nu"
             ctx["form_prefill"] = data
-        return render(request, "anunturi/signup_organizatie.html", ctx)
+        return _no_cache_response(render(request, "anunturi/signup_organizatie.html", ctx))
 
     User = get_user_model()
     denumire = (request.POST.get("denumire") or "").strip()
@@ -540,35 +704,35 @@ def signup_organizatie_view(request):
     is_public_shelter_val = (request.POST.get("is_public_shelter") or "").strip()
     is_public_shelter = is_public_shelter_val == "yes"
 
-    errors = []
+    field_errors = {}
     if is_public_shelter_val not in ("yes", "no"):
-        errors.append("Trebuie să alegi una dintre variante: Sunt adăpost public / Nu sunt adăpost public.")
+        field_errors["is_public_shelter"] = "Trebuie să alegi una dintre variante: Sunt adăpost public / Nu sunt adăpost public."
     if not email:
-        errors.append("Email obligatoriu.")
-    if User.objects.filter(email=email).exists():
-        errors.append("Acest email este deja folosit.")
+        field_errors["email"] = "Email obligatoriu."
+    elif User.objects.filter(email=email).exists():
+        field_errors["email"] = "Acest email este deja folosit."
     if not denumire:
-        errors.append("Denumirea organizației este obligatorie.")
+        field_errors["denumire"] = "Denumirea organizației este obligatorie."
     if not pers_contact:
-        errors.append("Persoana de contact este obligatorie.")
+        field_errors["pers_contact"] = "Persoana de contact este obligatorie."
     if not telefon:
-        errors.append("Telefonul este obligatoriu.")
-    if _phone_already_used(telefon):
-        errors.append("Acest număr de telefon este deja folosit.")
+        field_errors["telefon"] = "Telefonul este obligatoriu."
+    elif _phone_already_used(telefon):
+        field_errors["telefon"] = "Acest număr de telefon este deja folosit."
     if not judet:
-        errors.append("Județul este obligatoriu.")
+        field_errors["judet"] = "Județul este obligatoriu."
     if not oras:
-        errors.append("Orașul / localitatea este obligatorie.")
+        field_errors["oras"] = "Orașul / localitatea este obligatorie."
     if len(parola1) < 8:
-        errors.append("Parola trebuie să aibă cel puțin 8 caractere.")
-    if parola1 != parola2:
-        errors.append("Parolele nu coincid.")
+        field_errors["parola"] = "Parola trebuie să aibă cel puțin 8 caractere."
+    elif parola1 != parola2:
+        field_errors["parola"] = "Parolele nu coincid."
     if not accept_termeni:
-        errors.append("Trebuie să accepți termenii și condițiile.")
+        field_errors["accept_termeni"] = "Trebuie să accepți termenii și condițiile."
     if not accept_gdpr:
-        errors.append("Trebuie să accepți prelucrarea datelor conform GDPR.")
+        field_errors["accept_gdpr"] = "Trebuie să accepți prelucrarea datelor conform GDPR."
 
-    if errors:
+    if field_errors:
         prefill = {
             "denumire": denumire,
             "denumire_societate": denumire_societate,
@@ -584,7 +748,7 @@ def signup_organizatie_view(request):
             "email_opt_in": email_opt_in,
             "is_public_shelter": is_public_shelter if is_public_shelter_val in ("yes", "no") else None,
         }
-        return render(request, "anunturi/signup_organizatie.html", {"signup_errors": errors, "form_prefill": prefill})
+        return _no_cache_response(render(request, "anunturi/signup_organizatie.html", {"field_errors": field_errors, "form_prefill": prefill}))
 
     request.session["signup_pending"] = {
         "role": "org",

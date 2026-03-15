@@ -111,6 +111,16 @@
 	.signup-org-tip-nota.visible {
 		display: block;
 	}
+	.signup-field-err {
+		margin: 0.2rem 0 0;
+		padding: 0.25rem 0.35rem;
+		font-size: 0.7rem;
+		font-weight: 600;
+		color: #b71c1c;
+		background: #ffebee;
+		border: 1px solid #c62828;
+		border-radius: 4px;
+	}
 	@keyframes signup-org-tip-flash {
 		0%, 100% { filter: brightness(1); background-color: rgba(255, 241, 118, 0.9); }
 		50% { filter: brightness(1.35); background-color: rgba(255, 235, 59, 0.98); }
@@ -504,6 +514,18 @@
 		}
 		if (publicYes) publicYes.addEventListener('change', hideTipNota);
 		if (publicNo) publicNo.addEventListener('change', hideTipNota);
+		// Sincronizare bifă Sunt/Nu sunt (în afara formularului) cu câmpul ascuns din formular, ca la submit să se trimită is_public_shelter.
+		function syncPublicShelterToHidden() {
+			var h = document.getElementById('id_is_public_shelter_submit');
+			if (!h) return;
+			if (publicYes && publicYes.checked) { h.value = 'yes'; return; }
+			if (publicNo && publicNo.checked) { h.value = 'no'; return; }
+			h.value = '';
+		}
+		if (publicYes) publicYes.addEventListener('change', syncPublicShelterToHidden);
+		if (publicNo) publicNo.addEventListener('change', syncPublicShelterToHidden);
+		syncPublicShelterToHidden();
+		form.addEventListener('submit', syncPublicShelterToHidden);
 		// Formularul se trimite la server; validarea (adăpost, email, telefon etc.) se face acolo și toate erorile apar împreună.
 		function onSmsConfirm() {
 			var code = smsCodeInput ? (smsCodeInput.value || '').trim() : '';
@@ -590,26 +612,20 @@
 					<span>Sunt adăpost public</span>
 				</span>
 				<span class="signup-org-public-option">
-					<input type="radio" id="id_is_public_shelter_no" name="is_public_shelter" value="no" {% if form_prefill and not form_prefill.is_public_shelter %}checked{% endif %} />
+					<input type="radio" id="id_is_public_shelter_no" name="is_public_shelter" value="no" {% if form_prefill and form_prefill.is_public_shelter == False %}checked{% endif %} />
 					<span>Nu sunt adăpost public</span>
 				</span>
 			</label>
-			<p id="signup-org-tip-nota" class="signup-org-tip-nota" role="alert">Este obligatoriu să alegi una dintre cele două variante.</p>
+			<p id="signup-org-tip-nota" class="signup-org-tip-nota {% if field_errors and field_errors.is_public_shelter %}visible{% endif %}" role="alert">{% if field_errors and field_errors.is_public_shelter %}{{ field_errors.is_public_shelter }}{% else %}Este obligatoriu să alegi una dintre cele două variante.{% endif %}</p>
 		</div>
 		<div class="signup-org-form-wrap">
 			<div class="signup-org-header">
 				<h1>Înregistrare Adăpost / ONG / Firmă</h1>
 				<p class="signup-intro">Completează datele de bază pentru organizația ta.</p>
-				{% if signup_errors %}
-				<div class="signup-errors" role="alert" style="background:#ffebee;border:1px solid #c62828;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;">
-					<ul style="margin:0;padding-left:1.25rem;">
-						{% for err in signup_errors %}<li>{{ err }}</li>{% endfor %}
-					</ul>
-				</div>
-				{% endif %}
 			</div>
 			<form method="post" action="{% url 'signup_organizatie' %}" autocomplete="off">
 				{% csrf_token %}
+				<input type="hidden" name="is_public_shelter" id="id_is_public_shelter_submit" value="{% if form_prefill and form_prefill.is_public_shelter %}yes{% elif form_prefill and form_prefill.is_public_shelter == False %}no{% endif %}" />
 				<div style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true">
 					<input type="text" name="username_fake" tabindex="-1" autocomplete="username">
 					<input type="password" name="password_fake" tabindex="-1" autocomplete="current-password">
@@ -620,6 +636,7 @@
 						<div class="signup-org-field signup-org-field-box">
 							<label for="id_denumire">Denumire organizație *</label>
 							<input type="text" id="id_denumire" name="denumire" required value="{% if form_prefill %}{{ form_prefill.denumire|default:'' }}{% endif %}" />
+							{% if field_errors and field_errors.denumire %}<p class="signup-field-err" role="alert">{{ field_errors.denumire }}</p>{% endif %}
 						</div>
 						<div class="signup-org-field signup-org-field-box">
 							<label for="id_denumire_societate">Denumire societate</label>
@@ -641,15 +658,18 @@
 						<div class="signup-org-field signup-org-field-box">
 							<label for="id_pers_contact">Persoană de contact *</label>
 							<input type="text" id="id_pers_contact" name="pers_contact" required value="{% if form_prefill %}{{ form_prefill.pers_contact|default:'' }}{% endif %}" />
+							{% if field_errors and field_errors.pers_contact %}<p class="signup-field-err" role="alert">{{ field_errors.pers_contact }}</p>{% endif %}
 						</div>
 						<div class="signup-org-field signup-org-field-box">
 							<label for="id_judet">Județ *</label>
 							<input type="text" id="id_judet" name="judet" required autocomplete="off" list="county-list-org" value="{% if form_prefill %}{{ form_prefill.judet|default:'' }}{% endif %}" />
+							{% if field_errors and field_errors.judet %}<p class="signup-field-err" role="alert">{{ field_errors.judet }}</p>{% endif %}
 							{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-org" %}
 						</div>
 						<div class="signup-org-field signup-org-field-box">
 							<label for="id_oras">Oraș / Localitate *</label>
 							<input type="text" id="id_oras" name="oras" required autocomplete="off" list="city-list-org" value="{% if form_prefill %}{{ form_prefill.oras|default:'' }}{% endif %}" />
+							{% if field_errors and field_errors.oras %}<p class="signup-field-err" role="alert">{{ field_errors.oras }}</p>{% endif %}
 							<datalist id="city-list-org"></datalist>
 						</div>
 					</div>
@@ -658,10 +678,12 @@
 						<div class="signup-org-field signup-org-field-box">
 							<label for="id_email">Email contact *</label>
 							<input type="email" id="id_email" name="email" required autocomplete="off" value="{% if form_prefill %}{{ form_prefill.email|default:'' }}{% endif %}" />
+							{% if field_errors and field_errors.email %}<p class="signup-field-err" role="alert">{{ field_errors.email }}</p>{% endif %}
 						</div>
 						<div class="signup-org-field signup-org-field-box">
 							<label for="id_telefon">Telefon *</label>
 							<input type="tel" id="id_telefon" name="telefon" required autocomplete="tel-national" value="{% if form_prefill %}{{ form_prefill.telefon|default:'' }}{% endif %}" />
+							{% if field_errors and field_errors.telefon %}<p class="signup-field-err" role="alert">{{ field_errors.telefon }}</p>{% endif %}
 						</div>
 						<div class="signup-org-field signup-org-field-box signup-pwd-wrap">
 							<label for="id_parola1">Parolă *</label>
@@ -669,6 +691,7 @@
 								<input type="password" id="id_parola1" name="parola1" required autocomplete="new-password" />
 								<span class="signup-pwd-eye" data-pwd="id_parola1" title="Arată parola" aria-label="Arată parola" role="button" tabindex="0"></span>
 							</span>
+							{% if field_errors and field_errors.parola %}<p class="signup-field-err" role="alert">{{ field_errors.parola }}</p>{% endif %}
 						</div>
 						<div class="signup-org-field signup-org-field-box signup-pwd-wrap">
 							<label for="id_parola2">Confirmare parolă *</label>
@@ -683,12 +706,14 @@
 									<span>Accept termenii și condițiile *</span>
 									<input type="checkbox" id="id_accept_termeni_org" name="accept_termeni_org" required {% if form_prefill and form_prefill.accept_termeni %}checked{% endif %} />
 								</label>
+								{% if field_errors and field_errors.accept_termeni %}<p class="signup-field-err" role="alert">{{ field_errors.accept_termeni }}</p>{% endif %}
 							</div>
 							<div class="signup-org-field signup-org-field-box">
 								<label class="signup-org-bifa-row">
 									<span>Accept prelucrarea datelor conform GDPR *</span>
 									<input type="checkbox" id="id_accept_gdpr_org" name="accept_gdpr_org" required {% if form_prefill and form_prefill.accept_gdpr %}checked{% endif %} />
 								</label>
+								{% if field_errors and field_errors.accept_gdpr %}<p class="signup-field-err" role="alert">{{ field_errors.accept_gdpr }}</p>{% endif %}
 							</div>
 							<div class="signup-org-field signup-org-field-box">
 								<label class="signup-org-bifa-row">

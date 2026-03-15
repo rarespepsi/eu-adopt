@@ -47,10 +47,10 @@ INSTALLED_APPS = [
     'home.apps.HomeConfig',
 ]
 
-# Când SITE_PUBLIC e False (sau lipsește), vizitatorii văd doar „Site în lucru”. Când e True, site-ul e public.
+# „Site în lucru” doar când SITE_PUBLIC e explicit False (ex. pe Render). Dacă lipsește (ex. local), site-ul e normal.
 import os as _os
-_site_public = _os.environ.get('SITE_PUBLIC', 'false').strip().lower()
-MAINTENANCE_MODE = _site_public not in ('1', 'true', 'da', 'yes')
+_site_public = _os.environ.get('SITE_PUBLIC', '').strip().lower()
+MAINTENANCE_MODE = _site_public in ('0', 'false', 'no', 'nu')
 
 MIDDLEWARE = [
     'euadopt_final.maintenance_middleware.MaintenanceMiddleware',
@@ -95,6 +95,12 @@ DATABASES = {
     }
 }
 
+# Cache pentru waiting_id / one-time login (activare din mail pe alt device)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

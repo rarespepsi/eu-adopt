@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Cont activat – EU-ADOPT{% endblock %}
+{% block body_class %}page-login page-activated{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/w-cadru.css' %}?v=1" type="text/css" media="screen" />
+<style>
+	body.page-activated #main_wrap { min-height: 100vh; display: flex; flex-direction: column; padding: 0; margin: 0; }
+	body.page-activated #main_content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+	body.page-activated .layout { display: block; }
+	body.page-activated .sidebar-left,
+	body.page-activated .sidebar-right { display: none; }
+	.signup-activated {
+		width: 100%;
+		max-width: 480px;
+		margin: 0 auto;
+		padding: 2rem 1.5rem;
+		text-align: center;
+		background: #e8f5e9;
+		border: 1px solid #4caf50;
+		border-radius: 12px;
+		box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+	}
+	.signup-activated h2 { margin: 0 0 1rem; font-size: 1.35rem; color: #2e7d32; }
+	.signup-activated p { margin: 0.5rem 0; font-size: 1rem; color: #333; }
+	.signup-activated a { color: #1565c0; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="signup-activated">
+	<h2>Cont activat</h2>
+	<p>Contul tău a fost activat și ești autentificat.</p>
+	<p>Ești redirecționat către pagina principală...</p>
+	<p><a href="{% url 'home' %}?welcome=1">Apasă aici dacă nu ești redirecționat</a></p>
+</div>
+<script>
+	setTimeout(function() {
+		window.location.href = "{% url 'home' %}?welcome=1";
+	}, 2000);
+</script>
+<meta http-equiv="refresh" content="2; url={% url 'home' %}?welcome=1">
+{% endblock %}

@@ -7,15 +7,26 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/w-cadru.css' %}?v=1" type="text/css" media="screen" />
 <style>
-	body.page-login #main_wrap { min-height: 100vh; display: flex; flex-direction: column; }
-	body.page-login #main_content { flex: 1; display: flex; align-items: center; justify-content: center; }
-	.signup-sms-box { max-width: 400px; margin: 0 auto; padding: 1.5rem; background: #fff; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-	.signup-sms-box h2 { margin: 0 0 1rem; font-size: 1.25rem; }
-	.signup-sms-box .sms-error { color: #c62828; margin-bottom: 0.75rem; font-size: 0.9rem; }
-	.signup-sms-box input[type="text"] { width: 100%; padding: 0.6rem; margin-bottom: 1rem; box-sizing: border-box; }
-	.signup-sms-box button { padding: 0.5rem 1.25rem; cursor: pointer; }
-	.signup-sms-box .signup-sms-back { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; }
-	.signup-sms-box .signup-sms-back a { display: inline-block; color: #0d47a1; font-weight: 600; text-decoration: none; font-size: 1rem; padding: 0.35rem 0; }
+	body.page-login { overflow: hidden; }
+	body.page-login #main_wrap { height: 100vh; display: flex; flex-direction: column; overflow: hidden; background: transparent; }
+	body.page-login #main_content { background: transparent !important; box-shadow: none !important; }
+	body.page-login .layout { min-height: 0; display: block; background: transparent; }
+	body.page-login .wrapper { background: transparent !important; }
+	body.page-login .main-content { background: transparent; }
+	body.page-login .sidebar-left,
+	body.page-login .sidebar-right { display: none; }
+	body.page-login .main-content { max-width: 100%; }
+	body.page-login .main-content { display: flex; justify-content: center; align-items: center; max-height: inherit; width: 100%; }
+	body.page-login #main_content { flex: 1; min-height: 0; max-height: calc(100vh - 140px); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+	.signup-sms-box { max-width: 400px; margin: auto; padding: 1rem; background: #f0f0f0; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); text-align: center; }
+	.signup-sms-box h2 { margin: 0 0 0.5rem; font-size: 1.15rem; }
+	.signup-sms-box p { margin: 0 0 0.5rem; }
+	.signup-sms-box .sms-error { color: #c62828; margin-bottom: 0.5rem; font-size: 0.9rem; }
+	.signup-sms-box form { display: flex; flex-direction: column; align-items: center; }
+	.signup-sms-box input[type="text"] { width: 100%; padding: 0.45rem 0.5rem; margin-bottom: 0.5rem; box-sizing: border-box; }
+	.signup-sms-box button { padding: 0.4rem 1.25rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+	.signup-sms-box .signup-sms-back { margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+	.signup-sms-box .signup-sms-back a { display: inline-block; color: #0d47a1; font-weight: 600; text-decoration: none; font-size: 0.95rem; padding: 0.25rem 0; }
 	.signup-sms-box .signup-sms-back a:hover { text-decoration: underline; }
 </style>
 {% endblock %}
@@ -23,7 +34,8 @@
 {% block content %}
 <div class="signup-sms-box">
 	<h2>Verificare SMS</h2>
-	<p>Introdu codul primit prin SMS (pentru test folosește <strong>111111</strong>).</p>
+	<p>Introdu codul primit prin SMS (pentru test folosește <strong>111111</strong>). Codul este valabil 5 minute.</p>
+	{% if expires_at %}{% include 'anunturi/includes/countdown_5min.html' with expires_at=expires_at label="Cod valabil" %}{% endif %}
 	{% if sms_error %}<p class="sms-error">{{ sms_error }}</p>{% endif %}
 	<form method="post" action="{% url 'signup_verificare_sms' %}">
 		{% csrf_token %}
@@ -32,4 +44,5 @@
 	</form>
 	<p class="signup-sms-back"><a href="{{ back_url|default:'#' }}">← Înapoi la fișa de înregistrare</a></p>
 </div>
+{% include 'anunturi/includes/fundal_random_script.html' %}
 {% endblock %}

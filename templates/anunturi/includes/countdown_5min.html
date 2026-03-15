@@ -1,0 +1,34 @@
+{% comment %}expires_at = Unix timestamp (secunde) când expiră. label = text scurt ex. "Cod valabil" sau "Link valabil" {% endcomment %}
+<div class="countdown-5min" data-expires="{{ expires_at }}">
+	<span class="countdown-5min-label">{{ label|default:"Valabil" }}</span>
+	<span class="countdown-5min-clock" aria-live="polite">05:00</span>
+</div>
+<style>
+	.countdown-5min { margin: 0.75rem 0; padding: 0.4rem 0.6rem; background: #1a1a1a; border-radius: 6px; display: inline-block; font-family: "Courier New", Consolas, monospace; }
+	.countdown-5min-label { color: #888; font-size: 0.75rem; margin-right: 0.5rem; }
+	.countdown-5min-clock { color: #0f0; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.15em; }
+	.countdown-5min.expirat .countdown-5min-clock { color: #f44; }
+</style>
+<script>
+(function() {
+	var wrap = document.querySelector('.countdown-5min[data-expires]');
+	if (!wrap) return;
+	var clock = wrap.querySelector('.countdown-5min-clock');
+	var expiresAt = parseInt(wrap.getAttribute('data-expires'), 10) * 1000;
+	function pad(n) { return n < 10 ? '0' + n : '' + n; }
+	function update() {
+		var now = Date.now();
+		var left = Math.max(0, Math.floor((expiresAt - now) / 1000));
+		if (left <= 0) {
+			clock.textContent = '00:00';
+			wrap.classList.add('expirat');
+			return;
+		}
+		var m = Math.floor(left / 60);
+		var s = left % 60;
+		clock.textContent = pad(m) + ':' + pad(s);
+		setTimeout(update, 1000);
+	}
+	update();
+})();
+</script>

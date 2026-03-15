@@ -2,17 +2,36 @@
 {% load static %}
 
 {% block title %}Verifică email-ul – EU-ADOPT{% endblock %}
-{% block body_class %}page-login{% endblock %}
+{% block body_class %}page-login page-check-email{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/w-cadru.css' %}?v=1" type="text/css" media="screen" />
 <style>
-	body.page-login #main_wrap { min-height: 100vh; display: flex; flex-direction: column; }
-	body.page-login #main_content { flex: 1; display: flex; align-items: center; justify-content: center; }
-	.signup-check-email { max-width: 480px; margin: 0 auto; padding: 1.5rem; text-align: center; }
-	.signup-check-email h2 { margin: 0 0 0.75rem; font-size: 1.25rem; }
-	.signup-check-email p { margin: 0.5rem 0; }
-	.signup-check-email .signup-check-back { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; }
+	body.page-check-email { overflow: hidden; }
+	body.page-check-email #main_wrap { height: 100vh; min-height: 100vh; display: flex; flex-direction: column; padding: 0; margin: 0; overflow: hidden; background: transparent; }
+	body.page-check-email #main_content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 1.5rem; box-shadow: none; background: transparent !important; }
+	body.page-check-email .layout { display: block; background: transparent; }
+	body.page-check-email .wrapper { background: transparent !important; }
+	body.page-check-email .main-content { max-width: 100%; background: transparent; }
+	body.page-check-email .sidebar-left,
+	body.page-check-email .sidebar-right { display: none; }
+	.signup-check-email {
+		width: 100%;
+		max-width: 480px;
+		margin: 0 auto;
+		padding: 2rem 1.5rem;
+		text-align: center;
+		background: #f0f0f0;
+		border-radius: 12px;
+		box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+		border: 1px solid #e8e8e8;
+		box-sizing: border-box;
+	}
+	.signup-check-email h2 { margin: 0 0 1rem; font-size: 1.35rem; font-weight: 700; color: #333; }
+	.signup-check-email p { margin: 0.5rem 0; font-size: 1rem; color: #555; line-height: 1.5; }
+	.signup-check-email p a { color: #1565c0; font-weight: 600; text-decoration: none; }
+	.signup-check-email p a:hover { text-decoration: underline; }
+	.signup-check-email .signup-check-back { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; }
 	.signup-check-email .signup-check-back a { display: inline-block; color: #0d47a1; font-weight: 600; text-decoration: none; font-size: 1rem; padding: 0.35rem 0; }
 	.signup-check-email .signup-check-back a:hover { text-decoration: underline; }
 </style>
@@ -22,8 +41,29 @@
 <div class="signup-check-email">
 	<h2>Verifică email-ul</h2>
 	<p>Am trimis un link de activare la <strong>{{ email }}</strong>.</p>
-	<p>Deschide emailul și apasă pe link pentru a-ți activa contul.</p>
-	<p><a href="{% url 'home' %}">Înapoi la pagina principală</a></p>
-	<p class="signup-check-back"><a href="{{ back_url|default:'/' }}">← Înapoi la fișa de înregistrare</a></p>
+	<p>Deschide emailul și apasă pe link pentru a-ți activa contul. Linkul este valabil 5 minute.</p>
+	{% if expires_at %}{% include 'anunturi/includes/countdown_5min.html' with expires_at=expires_at label="Link valabil" %}{% endif %}
+	<p class="signup-check-back"><a href="{{ back_url|default:'/' }}">Vreau o fișă nouă de înregistrare</a></p>
 </div>
+{% if waiting_id %}
+<script>
+(function() {
+	var waitingId = "{{ waiting_id|escapejs }}";
+	var completeLoginUrl = "{% url 'signup_complete_login' %}";
+	var statusUrl = "{% url 'signup_check_activation_status' %}?waiting_id=" + encodeURIComponent(waitingId);
+	var interval = setInterval(function() {
+		fetch(statusUrl, { credentials: 'same-origin' })
+			.then(function(r) { return r.json(); })
+			.then(function(data) {
+				if (data.activated && data.one_time_token) {
+					clearInterval(interval);
+					window.location.href = completeLoginUrl + "?token=" + encodeURIComponent(data.one_time_token);
+				}
+			})
+			.catch(function() {});
+	}, 2000);
+})();
+</script>
+{% endif %}
+{% include 'anunturi/includes/fundal_random_script.html' %}
 {% endblock %}
