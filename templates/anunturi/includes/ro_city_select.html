@@ -1,0 +1,7 @@
+{% comment %}
+Dropdown orașe – se completează din JS în funcție de județul selectat (RO_ORASE_BY_JUDET).
+Folosește: {% include "anunturi/includes/ro_city_select.html" with select_id="id_oras_pf" select_name="oras" current=form_prefill.oras profile_editable=edit_errors %}
+{% endcomment %}
+<select id="{{ select_id|default:'id_oras' }}" name="{{ select_name|default:'oras' }}" required class="profil-field {{ select_class|default:'' }}" {% if not profile_editable %}disabled{% endif %} data-current-oras="{{ current|default:'' }}">
+	<option value="">—— Alege orașul ——</option>
+</select>

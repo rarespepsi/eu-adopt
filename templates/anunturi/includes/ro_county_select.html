@@ -1,0 +1,48 @@
+{% comment %}
+Dropdown județe România. Folosește: {% include "anunturi/includes/ro_county_select.html" with select_id="id_judet_pf" select_name="judet" current=form_prefill.judet %}
+{% endcomment %}
+<select id="{{ select_id|default:'id_judet' }}" name="{{ select_name|default:'judet' }}" required class="profil-field {{ select_class|default:'' }}" {% if not profile_editable %}disabled{% endif %}>
+	<option value="">—— Alege județul ——</option>
+	<option value="Alba" {% if current == "Alba" %}selected{% endif %}>Alba</option>
+	<option value="Arad" {% if current == "Arad" %}selected{% endif %}>Arad</option>
+	<option value="Argeș" {% if current == "Argeș" %}selected{% endif %}>Argeș</option>
+	<option value="Bacău" {% if current == "Bacău" %}selected{% endif %}>Bacău</option>
+	<option value="Bihor" {% if current == "Bihor" %}selected{% endif %}>Bihor</option>
+	<option value="Bistrița-Năsăud" {% if current == "Bistrița-Năsăud" %}selected{% endif %}>Bistrița-Năsăud</option>
+	<option value="Botoșani" {% if current == "Botoșani" %}selected{% endif %}>Botoșani</option>
+	<option value="Brăila" {% if current == "Brăila" %}selected{% endif %}>Brăila</option>
+	<option value="Brașov" {% if current == "Brașov" %}selected{% endif %}>Brașov</option>
+	<option value="București" {% if current == "București" %}selected{% endif %}>București</option>
+	<option value="Buzău" {% if current == "Buzău" %}selected{% endif %}>Buzău</option>
+	<option value="Călărași" {% if current == "Călărași" %}selected{% endif %}>Călărași</option>
+	<option value="Caraș-Severin" {% if current == "Caraș-Severin" %}selected{% endif %}>Caraș-Severin</option>
+	<option value="Cluj" {% if current == "Cluj" %}selected{% endif %}>Cluj</option>
+	<option value="Constanța" {% if current == "Constanța" %}selected{% endif %}>Constanța</option>
+	<option value="Covasna" {% if current == "Covasna" %}selected{% endif %}>Covasna</option>
+	<option value="Dâmbovița" {% if current == "Dâmbovița" %}selected{% endif %}>Dâmbovița</option>
+	<option value="Dolj" {% if current == "Dolj" %}selected{% endif %}>Dolj</option>
+	<option value="Galați" {% if current == "Galați" %}selected{% endif %}>Galați</option>
+	<option value="Giurgiu" {% if current == "Giurgiu" %}selected{% endif %}>Giurgiu</option>
+	<option value="Gorj" {% if current == "Gorj" %}selected{% endif %}>Gorj</option>
+	<option value="Harghita" {% if current == "Harghita" %}selected{% endif %}>Harghita</option>
+	<option value="Hunedoara" {% if current == "Hunedoara" %}selected{% endif %}>Hunedoara</option>
+	<option value="Ialomița" {% if current == "Ialomița" %}selected{% endif %}>Ialomița</option>
+	<option value="Iași" {% if current == "Iași" %}selected{% endif %}>Iași</option>
+	<option value="Ilfov" {% if current == "Ilfov" %}selected{% endif %}>Ilfov</option>
+	<option value="Maramureș" {% if current == "Maramureș" %}selected{% endif %}>Maramureș</option>
+	<option value="Mehedinți" {% if current == "Mehedinți" %}selected{% endif %}>Mehedinți</option>
+	<option value="Mureș" {% if current == "Mureș" %}selected{% endif %}>Mureș</option>
+	<option value="Neamț" {% if current == "Neamț" %}selected{% endif %}>Neamț</option>
+	<option value="Olt" {% if current == "Olt" %}selected{% endif %}>Olt</option>
+	<option value="Prahova" {% if current == "Prahova" %}selected{% endif %}>Prahova</option>
+	<option value="Sălaj" {% if current == "Sălaj" %}selected{% endif %}>Sălaj</option>
+	<option value="Satu Mare" {% if current == "Satu Mare" %}selected{% endif %}>Satu Mare</option>
+	<option value="Sibiu" {% if current == "Sibiu" %}selected{% endif %}>Sibiu</option>
+	<option value="Suceava" {% if current == "Suceava" %}selected{% endif %}>Suceava</option>
+	<option value="Teleorman" {% if current == "Teleorman" %}selected{% endif %}>Teleorman</option>
+	<option value="Timiș" {% if current == "Timiș" %}selected{% endif %}>Timiș</option>
+	<option value="Tulcea" {% if current == "Tulcea" %}selected{% endif %}>Tulcea</option>
+	<option value="Vâlcea" {% if current == "Vâlcea" %}selected{% endif %}>Vâlcea</option>
+	<option value="Vaslui" {% if current == "Vaslui" %}selected{% endif %}>Vaslui</option>
+	<option value="Vrancea" {% if current == "Vrancea" %}selected{% endif %}>Vrancea</option>
+</select>

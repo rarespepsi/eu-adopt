@@ -175,6 +175,7 @@ def home_view(request):
         a2_pets.append(pet)
 
     hero_slider_images = HERO_SLIDER_IMAGES[:5]
+    # Notă bun venit: welcome=1 (după activare cont); welcome_demo=1 e legacy
     show_welcome_demo = request.GET.get("welcome_demo") == "1" or request.GET.get("welcome") == "1"
     wishlist_ids = set()
     if request.user.is_authenticated:
@@ -229,12 +230,99 @@ def login_view(request):
                 from django.shortcuts import redirect
                 return redirect(next_url)
             error = "Email/Utilizator sau parolă incorectă."
-    return render(request, "anunturi/login.html", {"error": error, "login_value": login_value})
+    return render(request, "anunturi/login.html", {
+        "error": error,
+        "login_value": login_value,
+        "password_reset_success": request.GET.get("password_reset") == "1",
+    })
 
 
 def forgot_password_view(request):
-    """Pagina de resetare parolă (placeholder simplu)."""
-    return render(request, "anunturi/forgot_password.html", {})
+    """Trimite link de resetare parolă pe email. Nu dezvăluie dacă emailul există în sistem."""
+    from django.core.signing import TimestampSigner
+    from django.core.mail import send_mail
+    from urllib.parse import quote
+
+    ctx = {"success": False, "error": None, "submitted_email": ""}
+    if request.GET.get("expired"):
+        ctx["error"] = "Linkul a expirat. Solicită un link nou mai jos."
+    elif request.GET.get("invalid"):
+        ctx["error"] = "Link invalid sau deja folosit. Solicită un link nou mai jos."
+    if request.method == "POST":
+        email = (request.POST.get("email") or "").strip().lower()
+        if not email:
+            ctx["error"] = "Introdu adresa de email."
+        else:
+            User = get_user_model()
+            user = User.objects.filter(email__iexact=email).first()
+            if user:
+                signer = TimestampSigner()
+                token = signer.sign(user.pk)
+                reset_url = (
+                    request.build_absolute_uri(reverse("reset_password"))
+                    + "?token=" + quote(token)
+                )
+                plain = f"Bună ziua,\n\nLink pentru resetarea parolei:\n{reset_url}\n\nLinkul este valabil 1 oră. Dacă nu ai solicitat resetarea, ignoră acest email."
+                html = (
+                    f'<p>Bună ziua,</p>'
+                    f'<p><a href="{reset_url}" style="color:#1565c0;font-weight:bold;">Resetează parola</a></p>'
+                    f'<p>Linkul este valabil 1 oră. Dacă nu ai solicitat resetarea, ignoră acest email.</p>'
+                )
+                try:
+                    send_mail(
+                        subject="Resetare parolă – EU-Adopt",
+                        message=plain,
+                        from_email=None,
+                        recipient_list=[user.email],
+                        fail_silently=False,
+                        html_message=html,
+                    )
+                except Exception:
+                    ctx["error"] = "Nu am putut trimite emailul. Încearcă din nou mai târziu."
+                    ctx["submitted_email"] = email
+                    return render(request, "anunturi/forgot_password.html", ctx)
+            ctx["success"] = True
+        ctx["submitted_email"] = email
+    return render(request, "anunturi/forgot_password.html", ctx)
+
+
+def reset_password_view(request):
+    """Pagina de setare parolă nouă (link din email). Token valabil 1 oră."""
+    from django.core.signing import TimestampSigner
+    from django.core.signing import SignatureExpired
+
+    token = (request.GET.get("token") or request.POST.get("token") or "").strip()
+    if not token:
+        return redirect(reverse("forgot_password") + "?invalid=1")
+
+    signer = TimestampSigner()
+    try:
+        user_pk = signer.unsign(token, max_age=3600)
+    except SignatureExpired:
+        return redirect(reverse("forgot_password") + "?expired=1")
+    except Exception:
+        return redirect(reverse("forgot_password") + "?invalid=1")
+
+    User = get_user_model()
+    try:
+        user = User.objects.get(pk=user_pk)
+    except User.DoesNotExist:
+        return redirect(reverse("forgot_password") + "?invalid=1")
+
+    error = None
+    if request.method == "POST":
+        password1 = request.POST.get("password1") or ""
+        password2 = request.POST.get("password2") or ""
+        if len(password1) < 8:
+            error = "Parola trebuie să aibă cel puțin 8 caractere."
+        elif password1 != password2:
+            error = "Parolele nu coincid."
+        else:
+            user.set_password(password1)
+            user.save()
+            return redirect(reverse("login") + "?password_reset=1")
+
+    return render(request, "anunturi/reset_password.html", {"token": token, "error": error})
 
 
 def signup_choose_type_view(request):
@@ -745,7 +833,8 @@ def signup_verify_email_view(request):
     user.is_active = True
     user.save()
     auth_login(request, user)
-    for key in ("signup_waiting_user_pk", "signup_email_resend_count", "signup_email_cooldown_until",
+    # Curățare sesiune după activare – un singur set de chei signup_*
+    for key in ("signup_waiting_id", "signup_waiting_user_pk", "signup_email_resend_count", "signup_email_cooldown_until",
                 "signup_sms_resend_count", "signup_sms_cooldown_until"):
         request.session.pop(key, None)
 
@@ -1067,10 +1156,349 @@ def account_view(request):
     user = request.user
     account_profile = getattr(user, "account_profile", None)
     user_profile = getattr(user, "profile", None)
-    return render(request, "anunturi/account.html", {
+    ctx = {
         "account_profile": account_profile,
         "user_profile": user_profile,
-    })
+    }
+    # Statistici + form_prefill pentru PF (caseta modificare profil în pagină)
+    if account_profile and account_profile.role == AccountProfile.ROLE_PF:
+        ctx["animale_in_grija"] = AnimalListing.objects.filter(owner=user).count()
+        ctx["adoptii_finalizate"] = UserAdoption.objects.filter(user=user, status="completed").count()
+        if "edit_errors" in request.session:
+            ctx["edit_errors"] = request.session.pop("edit_errors", [])
+            ctx["form_prefill"] = request.session.pop("edit_prefill", {})
+        else:
+            phone_country, phone = _parse_phone_for_edit(user_profile.phone if user_profile else "")
+            ctx["form_prefill"] = {
+                "first_name": user.first_name or "",
+                "last_name": user.last_name or "",
+                "email": user.email or "",
+                "phone_country": phone_country,
+                "phone": phone,
+                "judet": user_profile.judet if user_profile else "",
+                "oras": user_profile.oras if user_profile else "",
+                "accept_termeni": user_profile.accept_termeni if user_profile else False,
+                "accept_gdpr": user_profile.accept_gdpr if user_profile else False,
+                "email_opt_in_wishlist": user_profile.email_opt_in_wishlist if user_profile else False,
+            }
+    ctx["account_updated"] = request.GET.get("updated") == "1"
+    ctx["username_updated"] = request.GET.get("username_updated") == "1"
+    # Mesaj/sugestii după încercare schimbare username (PF)
+    if account_profile and account_profile.role == AccountProfile.ROLE_PF:
+        if "username_error" in request.session:
+            ctx["username_error"] = request.session.pop("username_error", "")
+            ctx["username_suggestions"] = request.session.pop("username_suggestions", [])
+            ctx["username_tried"] = request.session.pop("username_tried", "")
+            ctx["show_username_edit"] = True
+    return render(request, "anunturi/account.html", ctx)
+
+
+def _username_suggestions(tried, user_pk):
+    """Sugestii de username când cel introdus există deja. Returnează doar variante libere."""
+    User = get_user_model()
+    base = _normalize_username_base(tried) or "User"
+    candidates = [
+        f"{base}123",
+        f"{base}12",
+        f"{base}1",
+        f"{base}456",
+        "User123",
+        "User12",
+        "User1",
+        f"{tried.strip()}_1",
+        f"{tried.strip()}_2",
+    ]
+    out = []
+    for u in candidates:
+        if not u or len(u) < 3:
+            continue
+        if not User.objects.filter(username__iexact=u).exclude(pk=user_pk).exists():
+            out.append(u)
+        if len(out) >= 5:
+            break
+    if not out:
+        n = 1
+        while len(out) < 5 and n < 100:
+            c = f"{base}{n}"
+            if not User.objects.filter(username__iexact=c).exclude(pk=user_pk).exists():
+                out.append(c)
+            n += 1
+    return out[:5]
+
+
+@login_required
+def account_edit_username_view(request):
+    """Schimbare username: POST cu noul username. Verifică unicitate; la duplicat pune în session eroare + sugestii."""
+    User = get_user_model()
+    user = request.user
+    new_username = (request.POST.get("username") or "").strip()
+    if not new_username:
+        request.session["username_error"] = "Introdu un nume de utilizator."
+        request.session["username_tried"] = ""
+        request.session["username_suggestions"] = []
+        return redirect(reverse("account"))
+    if len(new_username) < 3:
+        request.session["username_error"] = "Numele de utilizator trebuie să aibă cel puțin 3 caractere."
+        request.session["username_tried"] = new_username
+        request.session["username_suggestions"] = _username_suggestions(new_username, user.pk)
+        return redirect(reverse("account"))
+    if not all(c.isalnum() or c in "._" for c in new_username):
+        request.session["username_error"] = "Folosește doar litere, cifre, punct și liniuță jos."
+        request.session["username_tried"] = new_username
+        request.session["username_suggestions"] = _username_suggestions(new_username, user.pk)
+        return redirect(reverse("account"))
+    if User.objects.filter(username__iexact=new_username).exclude(pk=user.pk).exists():
+        request.session["username_error"] = "User existent. Alege altul sau încearcă una dintre sugestiile de mai jos."
+        request.session["username_tried"] = new_username
+        request.session["username_suggestions"] = _username_suggestions(new_username, user.pk)
+        return redirect(reverse("account"))
+    user.username = new_username
+    user.save(update_fields=["username"])
+    return redirect(reverse("account") + "?username_updated=1")
+
+
+def _parse_phone_for_edit(phone_str):
+    """Din profile.phone (ex: '+40 753017411' sau '0753017411') returnează (phone_country, phone)."""
+    if not phone_str or not isinstance(phone_str, str):
+        return "+40", ""
+    s = phone_str.strip()
+    if not s:
+        return "+40", ""
+    parts = s.split(None, 1)
+    if len(parts) == 2 and parts[0].startswith("+"):
+        return parts[0], parts[1]
+    if s.startswith("0"):
+        return "+40", s
+    return "+40", s
+
+
+@login_required
+def account_edit_view(request):
+    """Editează profil PF: formular ca la înscriere, fără parolă. La salvare: dacă telefon/email schimbat → SMS apoi email."""
+    User = get_user_model()
+    user = request.user
+    account_profile = getattr(user, "account_profile", None)
+    user_profile = getattr(user, "profile", None)
+    if not account_profile or account_profile.role != AccountProfile.ROLE_PF:
+        return redirect(reverse("account"))
+
+    if request.method != "POST":
+        return redirect(reverse("account"))
+
+    first_name = (request.POST.get("first_name") or "").strip()
+    last_name = (request.POST.get("last_name") or "").strip()
+    email = (request.POST.get("email") or "").strip().lower()
+    phone_country = (request.POST.get("phone_country") or "+40").strip()
+    phone = (request.POST.get("phone") or "").strip()
+    judet = (request.POST.get("judet") or "").strip()
+    oras = (request.POST.get("oras") or "").strip()
+    accept_termeni = request.POST.get("accept_termeni") == "on"
+    accept_gdpr = request.POST.get("accept_gdpr") == "on"
+    email_opt_in_wishlist = request.POST.get("email_opt_in_wishlist") == "on"
+
+    errors = []
+    if not email:
+        errors.append("Email obligatoriu.")
+    if User.objects.filter(email__iexact=email).exclude(pk=user.pk).exists():
+        errors.append("Acest email este deja folosit.")
+    if not first_name:
+        errors.append("Prenumele este obligatoriu.")
+    if not last_name:
+        errors.append("Numele este obligatoriu.")
+    if not phone:
+        errors.append("Telefonul este obligatoriu.")
+    if not judet:
+        errors.append("Județul este obligatoriu.")
+    if not oras:
+        errors.append("Orașul / localitatea este obligatoriu.")
+    full_phone = f"{phone_country} {phone}".strip()
+    current_phone = (user_profile.phone or "").strip() if user_profile else ""
+    phone_changed = full_phone != current_phone
+    if phone_changed:
+        norm_new = _phone_normalize_for_compare(_phone_digits(full_phone))
+        for p in UserProfile.objects.exclude(user=user).exclude(phone="").exclude(phone__isnull=True):
+            if _phone_normalize_for_compare(_phone_digits(p.phone)) == norm_new:
+                errors.append("Acest număr de telefon este deja folosit.")
+                break
+    if not accept_termeni:
+        errors.append("Trebuie să accepți termenii și condițiile.")
+    if not accept_gdpr:
+        errors.append("Trebuie să accepți prelucrarea datelor conform GDPR.")
+
+    email_changed = email != (user.email or "")
+
+    if errors:
+        prefill = {
+            "first_name": first_name, "last_name": last_name, "email": email,
+            "phone_country": phone_country, "phone": phone, "judet": judet, "oras": oras,
+            "accept_termeni": accept_termeni, "accept_gdpr": accept_gdpr, "email_opt_in_wishlist": email_opt_in_wishlist,
+        }
+        request.session["edit_errors"] = errors
+        request.session["edit_prefill"] = prefill
+        return redirect(reverse("account"))
+
+    if not phone_changed and not email_changed:
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save(update_fields=["first_name", "last_name"])
+        if user_profile is None:
+            user_profile = UserProfile.objects.create(user=user)
+        user_profile.phone = full_phone
+        user_profile.judet = judet
+        user_profile.oras = oras
+        user_profile.accept_termeni = accept_termeni
+        user_profile.accept_gdpr = accept_gdpr
+        user_profile.email_opt_in_wishlist = email_opt_in_wishlist
+        user_profile.save()
+        return redirect(reverse("account") + "?updated=1")
+
+    edit_pending = {
+        "user_pk": user.pk,
+        "first_name": first_name, "last_name": last_name, "email": email,
+        "phone_country": phone_country, "phone": phone, "judet": judet, "oras": oras,
+        "accept_termeni": accept_termeni, "accept_gdpr": accept_gdpr, "email_opt_in_wishlist": email_opt_in_wishlist,
+        "phone_changed": phone_changed, "email_changed": email_changed,
+    }
+    request.session["edit_pending"] = edit_pending
+
+    if phone_changed:
+        import time
+        request.session["edit_sms_at"] = time.time()
+        return redirect(reverse("edit_verificare_sms"))
+    else:
+        from django.core.signing import TimestampSigner
+        from django.core.mail import send_mail
+        from urllib.parse import quote
+        signer = TimestampSigner()
+        token = signer.sign(f"{user.pk}:{email}")
+        verify_url = request.build_absolute_uri(reverse("edit_verify_email")) + "?token=" + quote(token)
+        plain = f"Bună ziua,\n\nConfirmă noul email pentru contul EU-Adopt:\n{verify_url}\n\nLinkul este valabil 1 oră."
+        html = f'<p>Bună ziua,</p><p><a href="{verify_url}" style="color:#1565c0;font-weight:bold;">Confirmă emailul</a></p><p>Linkul este valabil 1 oră.</p>'
+        try:
+            send_mail(subject="Confirmă noul email – EU-Adopt", message=plain, from_email=None, recipient_list=[email], fail_silently=False, html_message=html)
+        except Exception:
+            pass
+        return redirect(reverse("edit_check_email") + f"?email={quote(email)}")
+
+
+@login_required
+def edit_verificare_sms_view(request):
+    """Verificare SMS pentru modificare profil: cod 111111, apoi actualizare date; dacă email schimbat, trimite link."""
+    data = request.session.get("edit_pending")
+    if not data or data.get("user_pk") != request.user.pk:
+        return redirect(reverse("account"))
+
+    if request.method != "POST":
+        import time
+        if "edit_sms_at" not in request.session:
+            request.session["edit_sms_at"] = time.time()
+        expires_at = int(request.session["edit_sms_at"]) + 300
+        return render(request, "anunturi/edit_verify_sms.html", {
+            "email": data.get("email", ""),
+            "back_url": reverse("account_edit"),
+            "expires_at": expires_at,
+        })
+
+    sms_code = (request.POST.get("sms_code") or "").strip()
+    if sms_code != "111111":
+        import time
+        expires_at = int(request.session.get("edit_sms_at", time.time())) + 300
+        return render(request, "anunturi/edit_verify_sms.html", {
+            "email": data.get("email", ""),
+            "sms_error": "Cod invalid. Folosește 111111 pentru verificare.",
+            "back_url": reverse("account_edit"),
+            "expires_at": expires_at,
+        })
+
+    User = get_user_model()
+    user = User.objects.get(pk=data["user_pk"])
+    profile, _ = UserProfile.objects.get_or_create(user=user, defaults={})
+    full_phone = f"{data.get('phone_country', '')} {data.get('phone', '')}".strip()
+    user.first_name = data.get("first_name", "")
+    user.last_name = data.get("last_name", "")
+    user.save(update_fields=["first_name", "last_name"])
+    profile.phone = full_phone
+    profile.judet = data.get("judet", "")
+    profile.oras = data.get("oras", "")
+    profile.accept_termeni = data.get("accept_termeni", False)
+    profile.accept_gdpr = data.get("accept_gdpr", False)
+    profile.email_opt_in_wishlist = data.get("email_opt_in_wishlist", False)
+    profile.save()
+
+    if data.get("email_changed"):
+        from django.core.signing import TimestampSigner
+        from django.core.mail import send_mail
+        from urllib.parse import quote
+        signer = TimestampSigner()
+        token = signer.sign(f"{user.pk}:{data['email']}")
+        verify_url = request.build_absolute_uri(reverse("edit_verify_email")) + "?token=" + quote(token)
+        plain = f"Bună ziua,\n\nConfirmă noul email pentru contul EU-Adopt:\n{verify_url}\n\nLinkul este valabil 1 oră."
+        html = f'<p>Bună ziua,</p><p><a href="{verify_url}" style="color:#1565c0;font-weight:bold;">Confirmă emailul</a></p><p>Linkul este valabil 1 oră.</p>'
+        try:
+            send_mail(subject="Confirmă noul email – EU-Adopt", message=plain, from_email=None, recipient_list=[data["email"]], fail_silently=False, html_message=html)
+        except Exception:
+            pass
+        request.session.pop("edit_pending", None)
+        request.session.pop("edit_sms_at", None)
+        return redirect(reverse("edit_check_email") + f"?email={quote(data['email'])}")
+    request.session.pop("edit_pending", None)
+    request.session.pop("edit_sms_at", None)
+    return redirect(reverse("account") + "?updated=1")
+
+
+def edit_check_email_view(request):
+    """Pagina 'Am trimis link la noul email' după verificare SMS la edit profil."""
+    if not request.user.is_authenticated:
+        return redirect(reverse("account"))
+    email = request.GET.get("email", "")
+    return render(request, "anunturi/edit_check_email.html", {"email": email, "back_url": reverse("account")})
+
+
+def edit_verify_email_view(request):
+    """Link din email: confirmă noul email și actualizează userul (+ restul din edit_pending dacă există)."""
+    from django.core.signing import TimestampSigner
+    from django.core.signing import SignatureExpired
+
+    token = (request.GET.get("token") or "").strip()
+    if not token:
+        return redirect(reverse("account") + "?edit_email_invalid=1")
+    signer = TimestampSigner()
+    try:
+        payload = signer.unsign(token, max_age=3600)
+    except SignatureExpired:
+        return redirect(reverse("account") + "?edit_email_expired=1")
+    except Exception:
+        return redirect(reverse("account") + "?edit_email_invalid=1")
+    parts = payload.split(":", 1)
+    if len(parts) != 2:
+        return redirect(reverse("account") + "?edit_email_invalid=1")
+    user_pk, new_email = parts[0], parts[1]
+    User = get_user_model()
+    try:
+        user = User.objects.get(pk=user_pk)
+    except User.DoesNotExist:
+        return redirect(reverse("account") + "?edit_email_invalid=1")
+
+    data = request.session.get("edit_pending")
+    if data and str(data.get("user_pk")) == str(user.pk):
+        user.first_name = data.get("first_name", "")
+        user.last_name = data.get("last_name", "")
+        user.email = new_email
+        user.save(update_fields=["first_name", "last_name", "email"])
+        profile, _ = UserProfile.objects.get_or_create(user=user, defaults={})
+        full_phone = f"{data.get('phone_country', '')} {data.get('phone', '')}".strip()
+        profile.phone = full_phone
+        profile.judet = data.get("judet", "")
+        profile.oras = data.get("oras", "")
+        profile.accept_termeni = data.get("accept_termeni", False)
+        profile.accept_gdpr = data.get("accept_gdpr", False)
+        profile.email_opt_in_wishlist = data.get("email_opt_in_wishlist", False)
+        profile.save()
+    else:
+        user.email = new_email
+        user.save(update_fields=["email"])
+    request.session.pop("edit_pending", None)
+    return redirect(reverse("account") + "?updated=1")
 
 
 @login_required

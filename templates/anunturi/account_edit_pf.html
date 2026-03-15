@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Modificare profil – EU-ADOPT{% endblock %}
+{% block body_class %}page-login page-account-edit{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/w-cadru.css' %}?v=1" type="text/css" media="screen" />
+<style>
+	body.page-account-edit .layout { grid-template-columns: 1fr; height: 100%; min-height: 0; }
+	body.page-account-edit .sidebar-left,
+	body.page-account-edit .sidebar-right { display: none; }
+	body.page-account-edit #main_content { height: calc(100vh - var(--nav-h, 64px)); overflow: hidden; }
+	body.page-account-edit .main-content { max-width: 600px; margin: 0 auto; padding: 0; min-height: 0; height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+	.edit-profil-wrap {
+		width: 100%; max-width: 560px; height: 100%; max-height: calc(100vh - var(--nav-h, 64px) - 1rem);
+		display: flex; flex-direction: column; overflow: hidden;
+		background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); border: 1px solid #e8e8e8;
+		padding: 0.6rem 1rem; box-sizing: border-box;
+	}
+	.edit-profil-wrap h1 { margin: 0 0 0.2rem; font-size: 1rem; font-weight: 700; color: #c62828; text-align: center; flex-shrink: 0; }
+	.edit-profil-wrap .edit-intro { margin: 0 0 0.4rem; font-size: 0.75rem; color: #555; text-align: center; flex-shrink: 0; line-height: 1.3; }
+	.edit-profil-wrap .signup-errors { background: #ffebee; border: 1px solid #c62828; border-radius: 6px; padding: 0.4rem 0.6rem; margin-bottom: 0.4rem; font-size: 0.78rem; color: #b71c1c; flex-shrink: 0; }
+	.edit-profil-wrap .signup-errors ul { margin: 0; padding-left: 1rem; }
+	.edit-profil-wrap .edit-form-inner { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+	.edit-profil-wrap .edit-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem 0.75rem; flex: 1; min-height: 0; align-content: start; }
+	.edit-profil-wrap .edit-form-grid .span2 { grid-column: 1 / -1; }
+	.edit-profil-wrap .signup-field { margin-bottom: 0; }
+	.edit-profil-wrap .signup-field label { display: block; margin-bottom: 0.1rem; font-size: 0.7rem; font-weight: 600; color: #333; }
+	.edit-profil-wrap .signup-field input, .edit-profil-wrap .signup-field select { width: 100%; padding: 0.3rem 0.4rem; border-radius: 4px; border: 1px solid #ccc; font-size: 0.82rem; box-sizing: border-box; }
+	.edit-profil-wrap .signup-phone-row { display: flex; gap: 0.3rem; }
+	.edit-profil-wrap .signup-phone-prefix { flex: 0 0 80px; }
+	.edit-profil-wrap .signup-phone-number { flex: 1; min-width: 0; }
+	.edit-profil-wrap .signup-actions { margin-top: 0.4rem; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+	.edit-profil-wrap .btn-save { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 0.4rem; border-radius: 6px; border: none; background: #c62828; color: #fff; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+	.edit-profil-wrap .btn-save:hover { background: #b71c1c; color: #fff; }
+	.edit-profil-wrap .edit-back { text-align: center; font-size: 0.78rem; }
+	.edit-profil-wrap .edit-back a { color: #1565c0; font-weight: 600; text-decoration: none; }
+	.edit-profil-wrap .edit-back a:hover { text-decoration: underline; }
+	.edit-profil-wrap .signup-field label.check { display: flex; align-items: center; gap: 0.35rem; font-weight: normal; font-size: 0.75rem; }
+	.edit-profil-wrap .signup-field input[type="checkbox"] { width: auto; }
+	@media (max-width: 480px) { .edit-profil-wrap .edit-form-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-profil-wrap">
+	<h1>Modificare profil</h1>
+	<p class="edit-intro">Modifică datele și salvează. Dacă schimbi telefonul sau emailul, vom verifica prin SMS și email.</p>
+	{% if signup_errors %}
+	<div class="signup-errors" role="alert">
+		<ul>{% for err in signup_errors %}<li>{{ err }}</li>{% endfor %}</ul>
+	</div>
+	{% endif %}
+	<form method="post" action="{% url 'account_edit' %}" class="edit-form-inner">
+		{% csrf_token %}
+		<div class="edit-form-grid">
+			<div class="signup-field">
+				<label for="id_last_name">Nume *</label>
+				<input type="text" id="id_last_name" name="last_name" required value="{{ form_prefill.last_name|default:'' }}" />
+			</div>
+			<div class="signup-field">
+				<label for="id_first_name">Prenume *</label>
+				<input type="text" id="id_first_name" name="first_name" required value="{{ form_prefill.first_name|default:'' }}" />
+			</div>
+			<div class="signup-field span2">
+				<label for="id_email">Email *</label>
+				<input type="email" id="id_email" name="email" required value="{{ form_prefill.email|default:'' }}" />
+			</div>
+			<div class="signup-field span2">
+				<label>Telefon *</label>
+				<div class="signup-phone-row">
+					<div class="signup-phone-prefix">
+						<select id="id_phone_country" name="phone_country" required>
+							<option value="+40" {% if not form_prefill.phone_country or form_prefill.phone_country == '+40' %}selected{% endif %}>RO +40</option>
+							<option value="+39" {% if form_prefill.phone_country == '+39' %}selected{% endif %}>IT +39</option>
+							<option value="+33" {% if form_prefill.phone_country == '+33' %}selected{% endif %}>FR +33</option>
+							<option value="+49" {% if form_prefill.phone_country == '+49' %}selected{% endif %}>DE +49</option>
+							<option value="+44" {% if form_prefill.phone_country == '+44' %}selected{% endif %}>UK +44</option>
+							<option value="+34" {% if form_prefill.phone_country == '+34' %}selected{% endif %}>ES +34</option>
+							<option value="+43" {% if form_prefill.phone_country == '+43' %}selected{% endif %}>AT +43</option>
+							<option value="+41" {% if form_prefill.phone_country == '+41' %}selected{% endif %}>CH +41</option>
+							<option value="+1" {% if form_prefill.phone_country == '+1' %}selected{% endif %}>US +1</option>
+						</select>
+					</div>
+					<div class="signup-phone-number">
+						<input type="tel" id="id_phone" name="phone" required value="{{ form_prefill.phone|default:'' }}" />
+					</div>
+				</div>
+			</div>
+			<div class="signup-field">
+				<label for="id_judet">Județ *</label>
+				<input type="text" id="id_judet" name="judet" required list="county-list-edit" value="{{ form_prefill.judet|default:'' }}" />
+				{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-edit" %}
+			</div>
+			<div class="signup-field">
+				<label for="id_oras">Oraș *</label>
+				<input type="text" id="id_oras" name="oras" required value="{{ form_prefill.oras|default:'' }}" />
+			</div>
+			<div class="signup-field span2">
+				<label class="check"><input type="checkbox" name="accept_termeni" required {% if form_prefill.accept_termeni %}checked{% endif %} /> Accept termenii și condițiile *</label>
+			</div>
+			<div class="signup-field span2">
+				<label class="check"><input type="checkbox" name="accept_gdpr" required {% if form_prefill.accept_gdpr %}checked{% endif %} /> Accept GDPR *</label>
+			</div>
+			<div class="signup-field span2">
+				<label class="check"><input type="checkbox" name="email_opt_in_wishlist" {% if form_prefill.email_opt_in_wishlist %}checked{% endif %} /> Notificări email (wishlist)</label>
+			</div>
+		</div>
+		<div class="signup-actions">
+			<button type="submit" class="btn-save">Salvează modificările</button>
+			<p class="edit-back"><a href="{% url 'account' %}">← Înapoi la contul meu</a></p>
+		</div>
+	</form>
+</div>
+{% endblock %}

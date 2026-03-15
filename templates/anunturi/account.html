@@ -1,51 +1,489 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Contul meu – EU-ADOPT{% endblock %}
 {% block body_class %}page-account{% endblock %}
 
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+	body.page-account { font-family: 'Source Sans 3', system-ui, sans-serif; background: linear-gradient(160deg, #fafafa 0%, #f0f0f0 50%, #f5f5f5 100%); }
+	body.page-account .layout { grid-template-columns: 1fr; height: 100%; min-height: 0; }
+	body.page-account .sidebar-left { display: none; }
+	body.page-account #main_content { height: calc(100vh - var(--nav-h, 64px)); overflow: hidden; }
+	body.page-account .main-content { max-width: 100%; padding-left: 0; padding-right: 0.75rem; min-height: 0; height: 100%; overflow: hidden; }
+	body.page-account .cont-pf-two-col { display: flex; gap: 1rem; max-width: 1100px; margin: 0; margin-right: auto; height: 100%; min-height: 0; overflow: hidden; }
+	body.page-account .cont-pf-left { flex: 0 0 320px; min-width: 0; overflow: hidden; display: flex; flex-direction: column; }
+	body.page-account .cont-pf-right { flex: 1 1 auto; min-width: 0; overflow: hidden; display: flex; flex-direction: column; }
+	body.page-account .main-content .cont-pf-wrap { margin: 0; max-width: none; flex: 1; min-height: 0; }
+	@media (max-width: 760px) { body.page-account .cont-pf-two-col { flex-direction: column; } body.page-account .cont-pf-left { flex: 0 0 auto; } }
+	/* Caseta modificare profil (stânga) */
+	.cont-pf-edit-box {
+		background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); border: 1px solid #e8e8e8;
+		padding: 0.75rem 1rem; box-sizing: border-box; height: 100%; min-height: 0; overflow: hidden; display: flex; flex-direction: column;
+	}
+	.cont-pf-edit-box h2 { margin: 0 0 0.25rem; font-size: 0.95rem; font-weight: 700; color: #c62828; text-align: center; }
+	.cont-pf-edit-box .edit-intro { margin: 0 0 0.5rem; font-size: 0.78rem; color: #555; text-align: center; line-height: 1.3; flex-shrink: 0; }
+	.cont-pf-edit-box .signup-errors { background: #ffebee; border: 1px solid #c62828; border-radius: 6px; padding: 0.4rem 0.6rem; margin-bottom: 0.4rem; font-size: 0.78rem; color: #b71c1c; flex-shrink: 0; }
+	.cont-pf-edit-box .signup-errors ul { margin: 0; padding-left: 1rem; }
+	.cont-pf-edit-box .edit-form-inner { flex: 1; min-height: 0; overflow-y: auto; }
+	.cont-pf-edit-box .edit-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem 0.6rem; }
+	.cont-pf-edit-box .edit-form-grid .span2 { grid-column: 1 / -1; }
+	.cont-pf-edit-box .signup-field { margin-bottom: 0.4rem; }
+	.cont-pf-edit-box .signup-field label { display: block; margin-bottom: 0.1rem; font-size: 0.7rem; font-weight: 600; color: #333; }
+	.cont-pf-edit-box .signup-field input, .cont-pf-edit-box .signup-field select { width: 100%; padding: 0.3rem 0.4rem; border-radius: 4px; border: 1px solid #ccc; font-size: 0.82rem; box-sizing: border-box; }
+	.cont-pf-edit-box .signup-phone-row { display: flex; gap: 0.3rem; }
+	.cont-pf-edit-box .signup-phone-prefix { flex: 0 0 80px; }
+	.cont-pf-edit-box .signup-phone-number { flex: 1; min-width: 0; }
+	.cont-pf-edit-box .signup-actions { margin-top: 0.5rem; flex-shrink: 0; }
+	.cont-pf-edit-box .btn-save { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 0.4rem; border-radius: 6px; border: none; background: #c62828; color: #fff; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+	.cont-pf-edit-box .btn-save:hover { background: #b71c1c; color: #fff; }
+	.cont-pf-edit-box .btn-modificare-profil { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 0.4rem; border-radius: 6px; border: none; background: #c62828; color: #fff; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+	.cont-pf-edit-box .btn-modificare-profil:hover { background: #b71c1c; color: #fff; }
+	.cont-pf-edit-box .btn-save[disabled] { opacity: 0.7; cursor: not-allowed; }
+	.cont-pf-edit-box .signup-field label.check { display: flex; align-items: center; gap: 0.35rem; font-weight: normal; font-size: 0.75rem; }
+	.cont-pf-edit-box .signup-field input[type="checkbox"] { width: auto; }
+	@media (max-width: 760px) {
+		.cont-pf-edit-box .edit-form-grid { grid-template-columns: 1fr; }
+	}
+	.cont-meu { max-width: 720px; margin: 0 auto; }
+	.cont-meu .cont-meu-title { font-size: 1.5rem; font-weight: 700; color: #1a1a1a; margin: 0 0 0.25rem; }
+	.cont-meu .cont-meu-subtitle { color: #555; font-size: 0.95rem; margin-bottom: 1.5rem; }
+	.cont-meu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+	@media (max-width: 560px) { .cont-meu-grid { grid-template-columns: 1fr; } }
+	.cont-meu-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 12px; padding: 1.1rem 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+	.cont-meu-card h2 { margin: 0 0 0.75rem; font-size: 0.8rem; color: #c62828; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+	.cont-meu-card p { margin: 0.4rem 0; font-size: 0.95rem; color: #333; }
+	.cont-meu-card p strong { color: #1a1a1a; }
+	.cont-meu-section { margin-top: 1.25rem; }
+	.cont-meu-actions { margin-top: 1.5rem; text-align: center; }
+	.cont-meu-actions .btn-home { display: inline-flex; align-items: center; padding: 0.6rem 1.4rem; background: #c62828; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; transition: background 0.2s; }
+	.cont-meu-actions .btn-home:hover { background: #b71c1c; color: #fff; }
+
+	/* --- Pagina PF: un viewport, fără scroll --- */
+	body.page-account .cont-pf-wrap {
+		height: 100%;
+		min-height: 0;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		padding: 0.9rem 1rem;
+		box-sizing: border-box;
+	}
+	.cont-pf-wrap { animation: cont-pf-fadein 0.4s ease-out; }
+	@keyframes cont-pf-fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+	.cont-pf-stats {
+		flex: 0 0 auto;
+		display: flex;
+		gap: 1.5rem;
+		margin-bottom: 0.6rem;
+		padding: 0.5rem 0;
+	}
+	.cont-pf-stat { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: #555; }
+	.cont-pf-stat strong { color: #c62828; font-size: 1.1rem; }
+	.cont-pf-wrap .cont-pf-header {
+		flex: 0 0 auto;
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin-bottom: 0.5rem;
+		padding-bottom: 0.6rem;
+		border-bottom: 1px solid rgba(0,0,0,0.08);
+	}
+	.cont-pf-avatar {
+		width: 52px;
+		height: 52px;
+		border-radius: 50%;
+		background: linear-gradient(135deg, #c62828 0%, #e57373 100%);
+		color: #fff;
+		font-size: 1.1rem;
+		font-weight: 700;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		letter-spacing: 0.02em;
+		flex-shrink: 0;
+	}
+	.cont-pf-header-text h1 { margin: 0; font-size: 1.15rem; font-weight: 700; color: #1a1a1a; }
+	.cont-pf-header-text .cont-pf-email { margin: 0.2rem 0 0; font-size: 0.8rem; color: #666; }
+	.cont-pf-body {
+		flex: 1 1 auto;
+		min-height: 0;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: 1fr auto;
+		gap: 0.65rem;
+	}
+	.cont-pf-card {
+		background: #fff;
+		border: 1px solid #e8e8e8;
+		border-radius: 10px;
+		padding: 0.7rem 0.9rem;
+		box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+		transition: box-shadow 0.2s, border-color 0.2s;
+		overflow: hidden;
+	}
+	.cont-pf-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #e0e0e0; }
+	.cont-pf-card h2 { margin: 0 0 0.45rem; font-size: 0.7rem; color: #c62828; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+	.cont-pf-card p { margin: 0.25rem 0; font-size: 0.82rem; color: #333; line-height: 1.35; }
+	.cont-pf-card p strong { color: #1a1a1a; }
+	.cont-pf-card.cont-pf-card-wide { grid-column: 1 / -1; }
+	.cont-pf-footer {
+		flex: 0 0 auto;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.5rem;
+		padding-top: 0.6rem;
+	}
+	.cont-pf-footer .btn-pf { display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; text-decoration: none; transition: background 0.2s, transform 0.15s, color 0.2s; }
+	.cont-pf-footer .btn-pf-home { background: #c62828; color: #fff; }
+	.cont-pf-footer .btn-pf-home:hover { background: #b71c1c; color: #fff; transform: translateY(-1px); }
+	.cont-pf-footer .btn-pf-secondary { background: #fff; color: #555; border: 1px solid #ddd; }
+	.cont-pf-footer .btn-pf-secondary:hover { background: #f5f5f5; border-color: #c62828; color: #c62828; }
+	@media (max-width: 560px) {
+		.cont-pf-body { grid-template-columns: 1fr; }
+	}
+	/* Modificare user: caseta editabilă */
+	.cont-username-view { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+	.cont-username-view .btn-modificare-user {
+		font-size: 0.78rem; padding: 0.25rem 0.5rem; border-radius: 6px; border: 1px solid #c62828;
+		background: #fff; color: #c62828; cursor: pointer; text-decoration: none; font-weight: 600;
+	}
+	.cont-username-view .btn-modificare-user:hover { background: #ffebee; color: #b71c1c; }
+	.cont-username-edit-wrap { margin-top: 0.35rem; }
+	.cont-username-edit form { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; }
+	.cont-username-edit input[type="text"] { padding: 0.25rem 0.4rem; border-radius: 4px; border: 1px solid #ccc; font-size: 0.82rem; min-width: 120px; }
+	.cont-username-edit .btn-save-user,
+	.cont-username-edit .btn-renunta-user { padding: 0.2rem 0.45rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600; cursor: pointer; }
+	.cont-username-edit .btn-save-user { border: none; background: #c62828; color: #fff; }
+	.cont-username-edit .btn-save-user:hover { background: #b71c1c; }
+	.cont-username-edit .btn-renunta-user { border: 1px solid #999; background: #fff; color: #555; }
+	.cont-username-edit .btn-renunta-user:hover { background: #f5f5f5; color: #333; }
+	.cont-username-edit .username-error { margin-top: 0.4rem; padding: 0.35rem 0.5rem; background: #ffebee; border-radius: 6px; font-size: 0.8rem; color: #b71c1c; }
+	.cont-username-edit .username-suggestions { margin-top: 0.25rem; font-size: 0.78rem; color: #555; }
+	.cont-username-edit .username-suggestions strong { color: #333; }
+	.cont-username-edit .username-suggestions ul { margin: 0.2rem 0 0; padding-left: 1.2rem; }
+	.cont-username-edit .username-suggestions li { margin: 0.1rem 0; }
+	.cont-username-edit .username-suggestions li code { background: #f5f5f5; padding: 0.1rem 0.3rem; border-radius: 4px; }
+	.cont-username-updated { margin: 0 0 0.4rem; padding: 0.4rem 0.6rem; background: #e3f2fd; border-radius: 8px; font-size: 0.88rem; color: #1565c0; font-weight: 600; }
+	.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+	.cont-username-row.after-username-success .cont-username-edit-wrap { display: none !important; }
+	.cont-username-row.after-username-success .cont-username-view { display: flex !important; }
+</style>
+{% endblock %}
+
 {% block content %}
-<section aria-label="Contul meu">
-	<div class="login-card" style="max-width: 760px;">
-		<h1 style="margin-bottom:0.5rem;">Contul meu</h1>
-		<p style="margin-bottom:1rem;">Datele tale de înscriere și rolul contului.</p>
-
-		<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-			<div style="border:1px solid #eee;border-radius:12px;padding:0.9rem;">
-				<h2 style="margin:0 0 0.5rem;font-size:0.95rem;color:#e53935;text-transform:uppercase;letter-spacing:0.05em;">Identificare</h2>
-				<p style="margin:0.25rem 0;"><strong>User:</strong> {{ user.username }}</p>
-				<p style="margin:0.25rem 0;"><strong>Email:</strong> {{ user.email|default:"—" }}</p>
-				<p style="margin:0.25rem 0;"><strong>Nume:</strong> {{ user.get_full_name|default:"—" }}</p>
+{% if account_profile.role == 'pf' %}
+{# Layout premium PF: stânga = caseta Modificare profil (integrală), dreapta = date cont #}
+<div class="cont-pf-two-col">
+	{# Coloana stângă: caseta Modificare profil (aceeași ca pe pagina editează) #}
+	<aside class="cont-pf-left" aria-label="Modificare profil">
+		<div class="cont-pf-edit-box" id="profil-box">
+			<h2>PROFIL</h2>
+			<p class="edit-intro">Modifică datele și salvează. Dacă schimbi telefonul sau emailul, vom verifica prin SMS și email.</p>
+			{% if edit_errors %}
+			<div class="signup-errors" role="alert">
+				<ul>{% for err in edit_errors %}<li>{{ err }}</li>{% endfor %}</ul>
 			</div>
-
-			<div style="border:1px solid #eee;border-radius:12px;padding:0.9rem;">
-				<h2 style="margin:0 0 0.5rem;font-size:0.95rem;color:#e53935;text-transform:uppercase;letter-spacing:0.05em;">Rol cont</h2>
+			{% endif %}
+			<form method="post" action="{% url 'account_edit' %}" class="edit-form-inner" id="profil-form">
+				{% csrf_token %}
+				<div class="edit-form-grid">
+					<div class="signup-field">
+						<label for="id_last_name_pf">Nume *</label>
+						<input type="text" id="id_last_name_pf" name="last_name" required value="{{ form_prefill.last_name|default:'' }}" class="profil-field" {% if not edit_errors %}readonly{% endif %} />
+					</div>
+					<div class="signup-field">
+						<label for="id_first_name_pf">Prenume *</label>
+						<input type="text" id="id_first_name_pf" name="first_name" required value="{{ form_prefill.first_name|default:'' }}" class="profil-field" {% if not edit_errors %}readonly{% endif %} />
+					</div>
+					<div class="signup-field span2">
+						<label for="id_email_pf">Email *</label>
+						<input type="email" id="id_email_pf" name="email" required value="{{ form_prefill.email|default:'' }}" class="profil-field" {% if not edit_errors %}readonly{% endif %} />
+					</div>
+					<div class="signup-field span2">
+						<label>Telefon *</label>
+						<div class="signup-phone-row">
+							<div class="signup-phone-prefix">
+								<select id="id_phone_country_pf" name="phone_country" required class="profil-field" {% if not edit_errors %}disabled{% endif %}>
+									<option value="+40" {% if not form_prefill.phone_country or form_prefill.phone_country == '+40' %}selected{% endif %}>RO +40</option>
+									<option value="+39" {% if form_prefill.phone_country == '+39' %}selected{% endif %}>IT +39</option>
+									<option value="+33" {% if form_prefill.phone_country == '+33' %}selected{% endif %}>FR +33</option>
+									<option value="+49" {% if form_prefill.phone_country == '+49' %}selected{% endif %}>DE +49</option>
+									<option value="+44" {% if form_prefill.phone_country == '+44' %}selected{% endif %}>UK +44</option>
+									<option value="+34" {% if form_prefill.phone_country == '+34' %}selected{% endif %}>ES +34</option>
+									<option value="+43" {% if form_prefill.phone_country == '+43' %}selected{% endif %}>AT +43</option>
+									<option value="+41" {% if form_prefill.phone_country == '+41' %}selected{% endif %}>CH +41</option>
+									<option value="+1" {% if form_prefill.phone_country == '+1' %}selected{% endif %}>US +1</option>
+								</select>
+							</div>
+							<div class="signup-phone-number">
+								<input type="tel" id="id_phone_pf" name="phone" required value="{{ form_prefill.phone|default:'' }}" class="profil-field" {% if not edit_errors %}readonly{% endif %} />
+							</div>
+						</div>
+					</div>
+					<div class="signup-field">
+						<label for="id_judet_pf">Județ *</label>
+						{% include "anunturi/includes/ro_county_select.html" with select_id="id_judet_pf" select_name="judet" current=form_prefill.judet profile_editable=edit_errors %}
+					</div>
+					<div class="signup-field">
+						<label for="id_oras_pf">Oraș / Localitate *</label>
+						{% include "anunturi/includes/ro_city_select.html" with select_id="id_oras_pf" select_name="oras" current=form_prefill.oras profile_editable=edit_errors %}
+					</div>
+					<div class="signup-field span2">
+						<label class="check"><input type="checkbox" name="accept_termeni" required class="profil-field" {% if form_prefill.accept_termeni %}checked{% endif %} {% if not edit_errors %}disabled{% endif %} /> Accept termenii și condițiile *</label>
+					</div>
+					<div class="signup-field span2">
+						<label class="check"><input type="checkbox" name="accept_gdpr" required class="profil-field" {% if form_prefill.accept_gdpr %}checked{% endif %} {% if not edit_errors %}disabled{% endif %} /> Accept GDPR *</label>
+					</div>
+					<div class="signup-field span2">
+						<label class="check"><input type="checkbox" name="email_opt_in_wishlist" class="profil-field" {% if form_prefill.email_opt_in_wishlist %}checked{% endif %} {% if not edit_errors %}disabled{% endif %} /> Notificări email (wishlist)</label>
+					</div>
+				</div>
+				<div class="signup-actions">
+					<button type="button" id="btn-modificare-profil" class="btn-modificare-profil" {% if edit_errors %}style="display:none;"{% endif %}>Modificare profil</button>
+					<button type="submit" id="btn-save-profil" class="btn-save" {% if not edit_errors %}style="display:none;"{% endif %} {% if not edit_errors %}disabled{% endif %}>Salvează profil</button>
+				</div>
+			</form>
+		</div>
+	</aside>
+	{# Coloana dreaptă: date cont (stats, header, carduri, butoane) #}
+	<section class="cont-pf-wrap cont-pf-right" aria-label="Contul meu">
+		<div class="cont-pf-stats">
+			<span class="cont-pf-stat">În grija ta: <strong>{{ animale_in_grija|default:0 }}</strong></span>
+			<span class="cont-pf-stat">Adopții: <strong>{{ adoptii_finalizate|default:0 }}</strong></span>
+		</div>
+		<div class="cont-pf-header">
+			<div class="cont-pf-avatar" aria-hidden="true">
+				{% if user_profile and user_profile.poza_1 %}<img src="{{ user_profile.poza_1.url }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />{% else %}{% if user.first_name or user.last_name %}{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}{% else %}{{ user.username|slice:":2"|upper }}{% endif %}{% endif %}
+			</div>
+			<div class="cont-pf-header-text">
+				<h1>{{ user.get_full_name|default:user.username }}</h1>
+				<p class="cont-pf-email">{{ user.email|default:"" }}</p>
+			</div>
+		</div>
+		<div class="cont-pf-body">
+			{% if account_updated %}<p id="cont-account-updated-msg" class="cont-pf-updated" style="grid-column:1/-1;margin:0 0 0.4rem;padding:0.4rem 0.6rem;background:#e8f5e9;border-radius:8px;font-size:0.88rem;color:#2e7d32;font-weight:600;">Datele au fost actualizate.</p>{% endif %}
+			{% if username_updated %}<p id="cont-username-updated-msg" class="cont-username-updated" style="grid-column:1/-1;">Numele de utilizator a fost actualizat.</p>{% endif %}
+			<div class="cont-pf-card">
+				<h2>Identificare</h2>
+				<p class="cont-username-row{% if username_updated %} after-username-success{% endif %}">
+					<span class="cont-username-view" id="cont-username-view">
+						<strong>User:</strong> {{ user.username }}
+						<button type="button" class="btn-modificare-user" id="btn-modificare-user" aria-label="Modificare user">Modificare user</button>
+					</span>
+					<div id="cont-username-edit-wrap" class="cont-username-edit-wrap" {% if not show_username_edit %}style="display:none;"{% endif %}>
+						<span class="cont-username-edit" id="cont-username-edit">
+							<form method="post" action="{% url 'account_edit_username' %}">
+								{% csrf_token %}
+								<label for="id_username_cont" class="sr-only">Nume utilizator</label>
+								<input type="text" id="id_username_cont" name="username" value="{{ username_tried|default:user.username }}" placeholder="Nume utilizator" required minlength="3" maxlength="150" />
+								<button type="submit" class="btn-save-user">Salvează</button>
+								<button type="button" class="btn-renunta-user" id="btn-renunta-user">Renunță</button>
+							</form>
+							{% if username_error %}
+							<p class="username-error" role="alert">{{ username_error }}</p>
+							{% if username_suggestions %}
+							<div class="username-suggestions">
+								<strong>Exemple disponibile:</strong>
+								<ul>{% for s in username_suggestions %}<li><code>{{ s }}</code></li>{% endfor %}</ul>
+							</div>
+							{% endif %}
+							{% endif %}
+						</span>
+					</div>
+				</p>
+				<p><strong>Nume:</strong> {{ user.last_name|default:"—" }}</p>
+				<p><strong>Prenume:</strong> {{ user.first_name|default:"—" }}</p>
+				<p><strong>Email:</strong> {{ user.email|default:"—" }}</p>
+			</div>
+			<div class="cont-pf-card">
+				<h2>Rol cont</h2>
 				{% if account_profile %}
-					<p style="margin:0.25rem 0;"><strong>Rol:</strong> {{ account_profile.get_role_display }}</p>
-					<p style="margin:0.25rem 0;"><strong>Postează animale:</strong> {{ account_profile.can_post_animals|yesno:"Da,Nu" }}</p>
-					<p style="margin:0.25rem 0;"><strong>Adoptă animale:</strong> {{ account_profile.can_adopt_animals|yesno:"Da,Nu" }}</p>
-					<p style="margin:0.25rem 0;"><strong>Postează servicii/produse:</strong> {{ account_profile.can_post_services|yesno:"Da,Nu" }}</p>
+					<p><strong>Rol:</strong> {{ account_profile.get_role_display }}</p>
+					<p><strong>Postează animale:</strong> {{ account_profile.can_post_animals|yesno:"Da,Nu" }}</p>
+					<p><strong>Adoptă animale:</strong> {{ account_profile.can_adopt_animals|yesno:"Da,Nu" }}</p>
 				{% else %}
-					<p style="margin:0.25rem 0;">—</p>
+					<p>—</p>
+				{% endif %}
+			</div>
+			<div class="cont-pf-card cont-pf-card-wide">
+				<h2>Date la înscriere</h2>
+				{% if user_profile %}
+					<p><strong>Telefon:</strong> {{ user_profile.phone|default:"—" }}</p>
+					<p><strong>Județ:</strong> {{ user_profile.judet|default:"—" }} &nbsp; · &nbsp; <strong>Oraș:</strong> {{ user_profile.oras|default:"—" }}</p>
+					<p><strong>Accept termeni:</strong> {{ user_profile.accept_termeni|yesno:"Da,Nu" }} &nbsp; · &nbsp; <strong>GDPR:</strong> {{ user_profile.accept_gdpr|yesno:"Da,Nu" }} &nbsp; · &nbsp; <strong>Notificări wishlist:</strong> {{ user_profile.email_opt_in_wishlist|yesno:"Da,Nu" }}</p>
+				{% else %}
+					<p>Nu există încă profil salvat.</p>
 				{% endif %}
 			</div>
 		</div>
-
-		<div style="margin-top:1rem;border:1px solid #eee;border-radius:12px;padding:0.9rem;">
-			<h2 style="margin:0 0 0.5rem;font-size:0.95rem;color:#e53935;text-transform:uppercase;letter-spacing:0.05em;">Date completate la înscriere (PF)</h2>
-			{% if user_profile %}
-				<p style="margin:0.25rem 0;"><strong>Telefon:</strong> {{ user_profile.phone|default:"—" }}</p>
-				<p style="margin:0.25rem 0;"><strong>Oraș:</strong> {{ user_profile.oras|default:"—" }}</p>
-				<p style="margin:0.25rem 0;"><strong>Accept termeni:</strong> {{ user_profile.accept_termeni|yesno:"Da,Nu" }}</p>
-				<p style="margin:0.25rem 0;"><strong>Accept GDPR:</strong> {{ user_profile.accept_gdpr|yesno:"Da,Nu" }}</p>
+		<div class="cont-pf-footer">
+			<a href="{% url 'home' %}" class="btn-pf btn-pf-home">Înapoi la prima pagină</a>
+			<a href="{% url 'forgot_password' %}" class="btn-pf btn-pf-secondary">Schimbă parola</a>
+		</div>
+	</section>
+</div>
+{% else %}
+{# ONG / Colaborator: layout standard cu scroll #}
+<section class="cont-meu" aria-label="Contul meu">
+	<h1 class="cont-meu-title">Contul meu</h1>
+	<p class="cont-meu-subtitle">Datele tale de înscriere și rolul contului.</p>
+	<div class="cont-meu-grid">
+		<div class="cont-meu-card">
+			<h2>Identificare</h2>
+			<p><strong>User:</strong> {{ user.username }}</p>
+			<p><strong>Email:</strong> {{ user.email|default:"—" }}</p>
+			<p><strong>Nume:</strong> {{ user.get_full_name|default:"—" }}</p>
+		</div>
+		<div class="cont-meu-card">
+			<h2>Rol cont</h2>
+			{% if account_profile %}
+				<p><strong>Rol:</strong> {{ account_profile.get_role_display }}</p>
+				<p><strong>Postează animale:</strong> {{ account_profile.can_post_animals|yesno:"Da,Nu" }}</p>
+				<p><strong>Adoptă animale:</strong> {{ account_profile.can_adopt_animals|yesno:"Da,Nu" }}</p>
+				<p><strong>Postează servicii/produse:</strong> {{ account_profile.can_post_services|yesno:"Da,Nu" }}</p>
 			{% else %}
-				<p style="margin:0.25rem 0;">Nu există încă profil PF salvat în baza de date pentru acest cont.</p>
+				<p>—</p>
 			{% endif %}
 		</div>
-
-		<div style="margin-top:1rem;text-align:center;">
-			<a href="{% url 'home' %}" class="login-submit" style="background:#d32f2f;display:inline-flex;text-decoration:none;padding:0.55rem 1.2rem;">Înapoi la prima pagină</a>
-		</div>
+	</div>
+	<div class="cont-meu-card cont-meu-section">
+		<h2>Date completate la înscriere</h2>
+		{% if user_profile %}
+			<p><strong>Telefon:</strong> {{ user_profile.phone|default:"—" }}</p>
+			<p><strong>Oraș:</strong> {{ user_profile.oras|default:"—" }}</p>
+			<p><strong>Accept termeni:</strong> {{ user_profile.accept_termeni|yesno:"Da,Nu" }}</p>
+			<p><strong>Accept GDPR:</strong> {{ user_profile.accept_gdpr|yesno:"Da,Nu" }}</p>
+		{% else %}
+			<p>Nu există încă profil salvat pentru acest cont.</p>
+		{% endif %}
+	</div>
+	<div class="cont-meu-actions">
+		<a href="{% url 'home' %}" class="btn-home">Înapoi la prima pagină</a>
 	</div>
 </section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if account_profile.role == 'pf' %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	var view = document.getElementById('cont-username-view');
+	var wrap = document.getElementById('cont-username-edit-wrap');
+	var btn = document.getElementById('btn-modificare-user');
+	var renunta = document.getElementById('btn-renunta-user');
+	var msg = document.getElementById('cont-username-updated-msg');
+	var row = view && view.closest ? view.closest('.cont-username-row') : null;
+	if (view && wrap && btn) {
+		btn.addEventListener('click', function() {
+			view.style.display = 'none';
+			wrap.style.display = 'block';
+			if (msg) msg.style.display = 'none';
+			if (row) row.classList.remove('after-username-success');
+		});
+	}
+	if (wrap && renunta) {
+		renunta.addEventListener('click', function(e) {
+			e.preventDefault();
+			wrap.style.display = 'none';
+			view.style.display = 'flex';
+		});
+	}
+	/* PROFIL: Modificare profil → câmpuri editabile → la prima modificare buton devine Salvează profil */
+	var profilForm = document.getElementById('profil-form');
+	var btnModificareProfil = document.getElementById('btn-modificare-profil');
+	var btnSaveProfil = document.getElementById('btn-save-profil');
+	if (profilForm && btnModificareProfil && btnSaveProfil) {
+		btnModificareProfil.addEventListener('click', function() {
+			var fields = profilForm.querySelectorAll('.profil-field');
+			fields.forEach(function(el) {
+				el.removeAttribute('readonly');
+				el.removeAttribute('disabled');
+			});
+			btnModificareProfil.style.display = 'none';
+			btnSaveProfil.style.display = 'inline-flex';
+			btnSaveProfil.disabled = true;
+		});
+		function enableSaveProfil() {
+			btnSaveProfil.disabled = false;
+		}
+		profilForm.addEventListener('input', enableSaveProfil);
+		profilForm.addEventListener('change', enableSaveProfil);
+	}
+	/* Mesaj „Numele de utilizator a fost actualizat” dispare după 5 secunde */
+	var usernameUpdatedMsg = document.getElementById('cont-username-updated-msg');
+	if (usernameUpdatedMsg) {
+		setTimeout(function() {
+			usernameUpdatedMsg.style.display = 'none';
+		}, 5000);
+	}
+	/* Mesaj „Datele au fost actualizate” dispare după 5 secunde */
+	var accountUpdatedMsg = document.getElementById('cont-account-updated-msg');
+	if (accountUpdatedMsg) {
+		setTimeout(function() {
+			accountUpdatedMsg.style.display = 'none';
+		}, 5000);
+	}
+	/* După salvare (când mesajul de actualizare e vizibil), după 2 secunde butonul revine la „Modificare profil” */
+	if (accountUpdatedMsg && profilForm && btnModificareProfil && btnSaveProfil) {
+		setTimeout(function() {
+			var fields = profilForm.querySelectorAll('.profil-field');
+			fields.forEach(function(el) {
+				el.setAttribute('readonly', 'readonly');
+				el.setAttribute('disabled', 'disabled');
+			});
+			btnSaveProfil.style.display = 'none';
+			btnModificareProfil.style.display = 'inline-flex';
+		}, 2000);
+	}
+});
+</script>
+<script>
+(function() {
+	/* Județ = select (toate 41). Oraș = select populat din JSON la schimbarea județului (același fișier ca la înregistrare). */
+	var localitiesByCounty = {};
+	var orasSelect = document.getElementById("id_oras_pf");
+	var judetSelect = document.getElementById("id_judet_pf");
+	function fillOras() {
+		if (!orasSelect || !judetSelect) return;
+		var county = judetSelect.value;
+		var currentOras = (orasSelect.getAttribute("data-current-oras") || "").trim();
+		orasSelect.innerHTML = "";
+		var opt0 = document.createElement("option");
+		opt0.value = "";
+		opt0.textContent = "—— Alege orașul ——";
+		orasSelect.appendChild(opt0);
+		var list = localitiesByCounty[county];
+		if (list && list.length) {
+			for (var i = 0; i < list.length; i++) {
+				var opt = document.createElement("option");
+				opt.value = list[i];
+				opt.textContent = list[i];
+				if (list[i] === currentOras) opt.selected = true;
+				orasSelect.appendChild(opt);
+			}
+		}
+		if (currentOras && (!list || list.indexOf(currentOras) === -1)) {
+			var optCustom = document.createElement("option");
+			optCustom.value = currentOras;
+			optCustom.textContent = currentOras;
+			optCustom.selected = true;
+			orasSelect.appendChild(optCustom);
+		}
+		orasSelect.removeAttribute("data-current-oras");
+	}
+	fetch("{% static 'data/ro_counties_cities.json' %}").then(function(r) { return r.json(); }).then(function(data) {
+		for (var k in data) localitiesByCounty[k] = data[k];
+		fillOras();
+	}).catch(function() {});
+	if (judetSelect) {
+		judetSelect.addEventListener("change", fillOras);
+	}
+})();
+</script>
+{% endif %}
 {% endblock %}
 
