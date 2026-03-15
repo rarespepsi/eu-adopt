@@ -48,6 +48,23 @@
 		flex-wrap: wrap;
 		box-sizing: border-box;
 	}
+	/* Mesaj eroare deasupra formularului, fără să deranjeze poziția casetelor (tip + două coloane) */
+	.signup-col-form-area {
+		position: relative;
+		flex: 1 1 300px;
+		min-width: 300px;
+	}
+	.signup-col-form-area .signup-errors {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 5;
+		margin: 0;
+	}
+	.signup-col-form-area.has-errors .signup-col-form-wrap {
+		padding-top: 3.5rem;
+	}
 	.signup-col-tip-box {
 		flex: 0 0 auto;
 		width: 200px;
@@ -359,14 +376,17 @@
 				</label>
 				<p id="signup-col-tip-nota" class="signup-col-tip-nota" role="alert">Este obligatoriu să alegi una dintre variante.</p>
 			</div>
+			<div class="signup-col-form-area{% if signup_errors %} has-errors{% endif %}">
 			{% if signup_errors %}
-			<div class="signup-errors" role="alert" style="background:#ffebee;border:1px solid #c62828;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;">
+			<div class="signup-errors" role="alert" style="background:#ffebee;border:1px solid #c62828;border-radius:8px;padding:0.75rem 1rem;">
 				<ul style="margin:0;padding-left:1.25rem;">
 					{% for err in signup_errors %}<li>{{ err }}</li>{% endfor %}
 				</ul>
 			</div>
 			{% endif %}
 			<form id="signup-col-form" method="post" action="{% url 'signup_colaborator' %}" autocomplete="off">
+				{% csrf_token %}
+				<input type="hidden" name="tip_partener" id="signup-col-tip-partener-hidden" value="{% if form_prefill and form_prefill.tip_partener %}{{ form_prefill.tip_partener }}{% endif %}" />
 				<div style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true">
 					<input type="text" name="username_fake" tabindex="-1" autocomplete="username">
 					<input type="password" name="password_fake" tabindex="-1" autocomplete="current-password">
@@ -424,14 +444,14 @@
 				<div class="signup-col-field signup-col-field-box signup-pwd-wrap">
 					<label for="id_parola1_col">Parolă *</label>
 					<span class="signup-pwd-inner">
-						<input type="password" id="id_parola1_col" name="parola1" required autocomplete="new-password" />
+						<input type="password" id="id_parola1_col" name="parola1" required autocomplete="new-password" value="{% if form_prefill %}{{ form_prefill.parola1|default:'' }}{% endif %}" />
 						<span class="signup-pwd-eye" data-pwd="id_parola1_col" title="Arată parola" aria-label="Arată parola" role="button" tabindex="0"></span>
 					</span>
 				</div>
 				<div class="signup-col-field signup-col-field-box signup-pwd-wrap">
 					<label for="id_parola2_col">Confirmare parolă *</label>
 					<span class="signup-pwd-inner">
-						<input type="password" id="id_parola2_col" name="parola2" required autocomplete="new-password" />
+						<input type="password" id="id_parola2_col" name="parola2" required autocomplete="new-password" value="{% if form_prefill %}{{ form_prefill.parola2|default:'' }}{% endif %}" />
 						<span class="signup-pwd-eye" data-pwd="id_parola2_col" title="Arată parola" aria-label="Arată parola" role="button" tabindex="0"></span>
 					</span>
 				</div>
@@ -466,6 +486,7 @@
 					</div>
 				</div>
 			</form>
+			</div>
 		</main>
 	</div>
 </section>
@@ -497,6 +518,38 @@
 
 {% block extra_js %}
 {% include 'anunturi/includes/fundal_random_script.html' %}
+<script>
+(function() {
+	// Asigură token CSRF la submit (fallback dacă lipsește din cache)
+	function getCookie(name) {
+		var v = null;
+		if (document.cookie && document.cookie !== '') {
+			var parts = document.cookie.split('; ');
+			for (var i = 0; i < parts.length; i++) {
+				var p = parts[i].split('=');
+				if (p[0] === name) { v = decodeURIComponent((p[1] || '').replace(/\+/g, ' ')); break; }
+			}
+		}
+		return v;
+	}
+	var form = document.getElementById('signup-col-form');
+	if (form) {
+		form.addEventListener('submit', function() {
+			var input = form.querySelector('input[name="csrfmiddlewaretoken"]');
+			var token = getCookie('csrftoken');
+			if (token) {
+				if (!input) {
+					input = document.createElement('input');
+					input.type = 'hidden';
+					input.name = 'csrfmiddlewaretoken';
+					form.appendChild(input);
+				}
+				input.value = token;
+			}
+		});
+	}
+})();
+</script>
 <script>
 (function() {
 	function prefillColDemo() {
@@ -532,7 +585,24 @@
 		/* Nu bifăm niciun Tip partener – rămâne neselectat ca userul să vadă validarea */
 	}
 	function initColValidation() {
-		// Formularul se trimite la server; validarea (tip partener, email, telefon etc.) se face acolo și toate erorile apar împreună (aceleași reguli ca la ONG).
+		// Sincronizare tip partener (radio în afara formularului) cu câmpul ascuns din formular
+		var hidden = document.getElementById('signup-col-tip-partener-hidden');
+		var radios = [document.getElementById('id_tip_cabinet'), document.getElementById('id_tip_servicii'), document.getElementById('id_tip_magazin')];
+		function setTipFromRadios() {
+			if (!hidden) return;
+			for (var i = 0; i < radios.length; i++) {
+				if (radios[i] && radios[i].checked) {
+					hidden.value = radios[i].value;
+					return;
+				}
+			}
+			hidden.value = '';
+		}
+		radios.forEach(function(r) {
+			if (r) r.addEventListener('change', setTipFromRadios);
+		});
+		var form = document.getElementById('signup-col-form');
+		if (form) form.addEventListener('submit', function() { setTipFromRadios(); });
 	}
 	if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', function() {

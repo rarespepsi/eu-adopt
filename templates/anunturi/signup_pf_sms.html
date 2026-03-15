@@ -28,21 +28,71 @@
 	.signup-sms-box .signup-sms-back { margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
 	.signup-sms-box .signup-sms-back a { display: inline-block; color: #0d47a1; font-weight: 600; text-decoration: none; font-size: 0.95rem; padding: 0.25rem 0; }
 	.signup-sms-box .signup-sms-back a:hover { text-decoration: underline; }
+	.signup-sms-box .sms-success { color: #2e7d32; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600; }
+	.signup-sms-box .sms-cooldown { color: #b71c1c; margin: 0.5rem 0; font-size: 0.95rem; font-weight: 600; background: #ffebee; padding: 0.5rem 0.75rem; border-radius: 6px; }
+	.signup-sms-box .sms-retrimite { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e0e0e0; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="signup-sms-box">
 	<h2>Verificare SMS</h2>
+	{% if sms_retrimis %}<p class="sms-success">Cod retrimis. Ai încă 5 minute.</p>{% endif %}
+	{% if sms_in_cooldown or sms_cooldown %}
+	<p class="sms-cooldown">Ați depășit cele 3 încercări. Vă rugăm reveniți peste 45 de minute.</p>
+	{% if sms_cooldown_until %}<p class="signup-sms-cooldown-timer" data-until="{{ sms_cooldown_until }}">Timp rămas: <span class="cooldown-clock">--:--</span></p>{% endif %}
+	{% else %}
 	<p>Introdu codul primit prin SMS (pentru test folosește <strong>111111</strong>). Codul este valabil 5 minute.</p>
 	{% if expires_at %}{% include 'anunturi/includes/countdown_5min.html' with expires_at=expires_at label="Cod valabil" %}{% endif %}
 	{% if sms_error %}<p class="sms-error">{{ sms_error }}</p>{% endif %}
-	<form method="post" action="{% url 'signup_verificare_sms' %}">
-		{% csrf_token %}
-		<input type="text" name="sms_code" placeholder="Cod SMS" maxlength="10" autocomplete="off" required />
-		<button type="submit">Trimite</button>
-	</form>
+	<div class="signup-sms-form-wrap">
+		<form method="post" action="{% url 'signup_verificare_sms' %}">
+			{% csrf_token %}
+			<input type="text" name="sms_code" placeholder="Cod SMS" maxlength="10" autocomplete="off" required />
+			<button type="submit">Trimite</button>
+		</form>
+		<div class="sms-retrimite signup-sms-retrimite-wrap" id="sms-retrimite-wrap" style="{% if sms_expired and sms_resend_count < 3 %}display:block{% else %}display:none{% endif %}">
+			<p>Codul a expirat. Poți solicita un cod nou. Mai ai <strong id="sms-ramase">{{ sms_resend_remaining|default:3 }}</strong> încercări (din 3).</p>
+			<form method="post" action="{% url 'signup_retrimite_sms' %}">
+				{% csrf_token %}
+				<button type="submit">Retrimite cod</button>
+			</form>
+		</div>
+	</div>
+	{% endif %}
 	<p class="signup-sms-back"><a href="{{ back_url|default:'#' }}">← Înapoi la fișa de înregistrare</a></p>
 </div>
+<script>
+(function() {
+	var wrap = document.getElementById('sms-retrimite-wrap');
+	var expiresAt = {{ expires_at|default:0 }};
+	var resendCount = {{ sms_resend_count|default:0 }};
+	if (wrap && expiresAt && resendCount < 3) {
+		var check = function() {
+			if (Date.now() / 1000 >= expiresAt) {
+				wrap.style.display = 'block';
+				var ramase = document.getElementById('sms-ramase');
+				if (ramase) ramase.textContent = 3 - resendCount;
+			}
+		};
+		setInterval(check, 1000);
+		check();
+	}
+	var cooldownEl = document.querySelector('.signup-sms-cooldown-timer[data-until]');
+	if (cooldownEl) {
+		var until = parseInt(cooldownEl.getAttribute('data-until'), 10) * 1000;
+		var clock = cooldownEl.querySelector('.cooldown-clock');
+		function pad(n) { return n < 10 ? '0' + n : n; }
+		function upd() {
+			var left = Math.max(0, Math.floor((until - Date.now()) / 1000));
+			if (left <= 0) { if (clock) clock.textContent = '00:00'; location.reload(); return; }
+			var m = Math.floor(left / 60), s = left % 60;
+			if (clock) clock.textContent = pad(m) + ':' + pad(s);
+			setTimeout(upd, 1000);
+		}
+		upd();
+	}
+})();
+</script>
 {% include 'anunturi/includes/fundal_random_script.html' %}
 {% endblock %}

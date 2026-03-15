@@ -52,46 +52,9 @@
 		flex-wrap: wrap;
 		margin-left: -6.25rem;
 	}
-	.signup-poza-stanga {
-		flex: 0 0 auto;
-		width: 140px;
-		height: 140px;
-		background: rgba(255, 255, 255, 0.72);
-		border: 1px solid rgba(255, 255, 255, 0.5);
-		border-radius: 10px;
-		padding: 0.5rem;
-		box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-		box-sizing: border-box;
-		display: flex;
-		flex-direction: column;
-		justify-content: flex-start;
-		align-items: stretch;
-	}
-	.signup-poza-stanga label {
-		display: block;
-		margin-bottom: 0.35rem;
-		font-size: 0.65rem;
-		font-weight: 600;
-		color: #555;
-		text-transform: uppercase;
-		letter-spacing: 0.03em;
-		line-height: 1.2;
-	}
-	.signup-poza-stanga .signup-poza-regula {
-		margin: 0 0 0.35rem;
-		font-size: 0.6rem;
-		color: #666;
-		line-height: 1.2;
-	}
-	.signup-poza-stanga input[type="file"] {
-		font-size: 0.7rem;
-		width: 100%;
-		margin-top: auto;
-	}
 	.signup-form-wrap {
 		flex: 1 1 400px;
 		min-width: 0;
-		margin-left: 2.5rem;
 	}
 	.signup-casete-row {
 		display: flex;
@@ -386,11 +349,6 @@
 <section class="wrapper" id="main_content">
 	<div id="W" aria-label="Cadru principal">
 	<main aria-label="Înregistrare Persoană Fizică EU-ADOPT" class="signup-main">
-		<div class="signup-poza-stanga">
-			<label for="id_poza_1">Poză profil (opțional)</label>
-			<p class="signup-poza-regula">JPG sau PNG, max 2 MB.</p>
-			<input type="file" id="id_poza_1" name="poza_1" accept="image/jpeg,image/png" form="signup-pf-form" data-max-mb="2" />
-		</div>
 		<div class="signup-form-wrap">
 			<div class="signup-form-header">
 				<h1>Înregistrare Persoană Fizică</h1>
@@ -463,14 +421,14 @@
 					<div class="signup-field signup-field-box signup-pwd-wrap">
 						<label for="id_password1">Parolă *</label>
 						<span class="signup-pwd-inner">
-							<input type="password" id="id_password1" name="password1" required autocomplete="new-password" />
+							<input type="password" id="id_password1" name="password1" required autocomplete="new-password" value="{% if form_prefill %}{{ form_prefill.password1|default:'' }}{% endif %}" />
 							<span class="signup-pwd-eye" data-pwd="id_password1" title="Arată parola" aria-label="Arată parola" role="button" tabindex="0"></span>
 						</span>
 					</div>
 					<div class="signup-field signup-field-box signup-pwd-wrap">
 						<label for="id_password2">Confirmare parolă *</label>
 						<span class="signup-pwd-inner">
-							<input type="password" id="id_password2" name="password2" required autocomplete="new-password" />
+							<input type="password" id="id_password2" name="password2" required autocomplete="new-password" value="{% if form_prefill %}{{ form_prefill.password2|default:'' }}{% endif %}" />
 							<span class="signup-pwd-eye" data-pwd="id_password2" title="Arată parola" aria-label="Arată parola" role="button" tabindex="0"></span>
 						</span>
 					</div>
@@ -556,13 +514,9 @@
 <script>
 (function() {
 	var form = document.getElementById('signup-pf-form');
-	var fileInput = document.getElementById('id_poza_1');
 	var checkTermeni = document.getElementById('id_accept_termeni');
 	var checkGdpr = document.getElementById('id_accept_gdpr');
 	if (!form) return;
-	var maxMb = fileInput ? parseInt(fileInput.getAttribute('data-max-mb') || '2', 10) : 2;
-	var maxBytes = maxMb * 1024 * 1024;
-	var allowedTypes = ['image/jpeg', 'image/png'];
 	form.addEventListener('submit', function(e) {
 		if (checkTermeni && !checkTermeni.checked) {
 			e.preventDefault();
@@ -574,40 +528,8 @@
 			alert('Trebuie să accepți prelucrarea datelor conform GDPR pentru a crea cont.');
 			return;
 		}
-		if (fileInput && fileInput.files && fileInput.files[0]) {
-			var file = fileInput.files[0];
-			if (allowedTypes.indexOf(file.type) === -1) {
-				e.preventDefault();
-				alert('Poza profil: acceptăm doar JPG sau PNG.');
-				fileInput.value = '';
-				return;
-			}
-			if (file.size > maxBytes) {
-				e.preventDefault();
-				alert('Poza profil: dimensiunea maximă este ' + maxMb + ' MB.');
-				fileInput.value = '';
-				return;
-			}
-		}
-		// aici, în loc să trimitem formularul la server,
-		// deschidem verificarea prin SMS (cod 6 cifre).
-		e.preventDefault();
-		var main = document.querySelector('.signup-main');
-		var backdrop = document.getElementById('signup-sms-backdrop');
-		var smsText = document.getElementById('signup-sms-text');
-		if (main) {
-			main.classList.add('signup-main-blurred');
-		}
-		if (backdrop) {
-			backdrop.style.display = 'flex';
-		}
-		// actualizăm textul cu numărul ales
-		var prefix = document.getElementById('id_phone_country');
-		var phone = document.getElementById('id_phone');
-		if (smsText && prefix && phone) {
-			var nr = (prefix.value || '') + ' ' + (phone.value || '');
-			smsText.textContent = 'Ți-am trimis un cod SMS de 6 cifre la numărul ' + nr.trim() + '. Te rugăm să îl scrii mai jos pentru a continua crearea contului EU-Adopt.';
-		}
+		// Formularul se trimite la server; serverul validează și redirecționează la pagina de verificare SMS, apoi la „Verifică email”.
+		// Nu mai blocăm submit-ul cu modal local – fluxul e pe server.
 	});
 })();
 </script>
@@ -726,53 +648,25 @@
 </script>
 <script>
 (function() {
+	// Modalul SMS din această pagină nu se mai folosește: la „Creează cont” formularul se trimite la server
+	// și ești redirecționat la pagina reală de verificare SMS (cu contor 5 min), apoi la „Verifică email”.
+	// Dacă cumva modalul e deschis (cache vechi), butonul Accesează nu mai face redirect greșit.
 	var confirmBtn = document.getElementById('signup-sms-confirm-btn');
 	var codeInput = document.getElementById('id_sms_code');
 	var backdrop = document.getElementById('signup-sms-backdrop');
-	function handleConfirm() {
-		if (!codeInput || !backdrop) return;
-		var code = (codeInput.value || '').trim();
-		if (code !== '111111') {
-			alert('Cod SMS incorect. Te rugăm să încerci din nou.');
-			codeInput.focus();
-			return;
-		}
-		// cod corect – simulăm crearea contului și mesajul de final
-		var main = document.querySelector('.signup-main');
-		if (main) {
-			main.classList.remove('signup-main-blurred');
-		}
-		backdrop.style.display = 'none';
-		// Mesaj scurt: cont creat + confirmare pe email
-		var firstNameEl = document.getElementById('id_first_name');
-		var lastNameEl = document.getElementById('id_last_name');
-		var emailEl = document.getElementById('id_email');
-		var usernamePreview = '';
-		if (firstNameEl && lastNameEl) {
-			var fn = (firstNameEl.value || '').trim();
-			var ln = (lastNameEl.value || '').trim();
-			var initial = ln ? ln.charAt(0).toUpperCase() : '';
-			usernamePreview = (fn || '').toLowerCase();
-			if (initial) {
-				usernamePreview += '.' + initial.toLowerCase();
-			}
-		}
-		var emailTxt = emailEl && emailEl.value ? emailEl.value.trim() : 'adresa ta de email';
-		alert('Userul „' + (usernamePreview || 'tău') + '” a fost creat.\n' +
-			'Un email a fost trimis la adresa ' + emailTxt + '.\n' +
-			'Vă rugăm să confirmați contul din linkul primit pe mail.\n\n' +
-			'Pentru probă acum, după ce apeși OK te vom duce direct pe pagina Home cu nota de bun venit.');
-		// pentru probă: după OK mergem pe Home cu nota de bun venit
-		window.location.href = "{% url 'home' %}?welcome_demo=1";
-	}
 	if (confirmBtn) {
-		confirmBtn.addEventListener('click', handleConfirm);
+		confirmBtn.addEventListener('click', function() {
+			if (backdrop) backdrop.style.display = 'none';
+			var main = document.querySelector('.signup-main');
+			if (main) main.classList.remove('signup-main-blurred');
+			alert('Folosește fluxul normal: apasă „Creează cont” în formular. Vei fi dus la pagina de verificare SMS (cu contor 5 min), apoi la „Verifică email”.');
+		});
 	}
 	if (codeInput) {
 		codeInput.addEventListener('keydown', function(e) {
 			if (e.key === 'Enter') {
 				e.preventDefault();
-				handleConfirm();
+				if (confirmBtn) confirmBtn.click();
 			}
 		});
 	}

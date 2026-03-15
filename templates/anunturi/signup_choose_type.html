@@ -195,6 +195,16 @@
 		<div class="signup-choose-page">
 			<h1>Alege tipul contului</h1>
 			<p class="intro">Selectați categoria care vă descrie pentru a continua cu înregistrarea.</p>
+			{% if link_expirat %}
+			<div class="signup-choose-alert" role="alert" style="background:#ffebee;border:1px solid #c62828;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;color:#b71c1c;font-weight:600;">
+				Linkul de activare a expirat (e valabil 5 minute). Poți porni o nouă înregistrare mai jos.
+			</div>
+			{% endif %}
+			{% if link_invalid %}
+			<div class="signup-choose-alert" role="alert" style="background:#ffebee;border:1px solid #c62828;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;color:#b71c1c;font-weight:600;">
+				Linkul de activare este invalid sau a fost deja folosit. Poți porni o nouă înregistrare mai jos.
+			</div>
+			{% endif %}
 
 			<div class="signup-cards">
 				<div class="signup-card">

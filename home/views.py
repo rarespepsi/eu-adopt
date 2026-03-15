@@ -26,14 +26,15 @@ def _phone_digits(phone_str):
 
 
 def _phone_normalize_for_compare(digits):
-    """Normalizează cifrele pentru comparare: 0753017424 (10 cifre) = 40753017424 (prefix RO)."""
+    """Normalizează cifrele pentru comparare: 0753017424 (10 cifre) = 753017424 (9 cifre) = 40753017424 (prefix RO)."""
     if not digits or len(digits) < 9:
         return digits
     # România: 10 cifre începând cu 0 → 40 + 9 cifre
     if len(digits) == 10 and digits[0] == "0":
         return "40" + digits[1:]
+    # 9 cifre începând cu 6 sau 7 → același 40 + 9 cifre (ca 0xxxxxxxx)
     if len(digits) == 9 and digits[0] in "67":
-        return "4" + digits  # 4 + 9 cifre = 40 + 9
+        return "40" + digits
     return digits
 
 
@@ -238,7 +239,12 @@ def forgot_password_view(request):
 
 def signup_choose_type_view(request):
     """Pagina de alegere tip cont (persoană fizică / firmă / ONG / colaborator)."""
-    return render(request, "anunturi/signup_choose_type.html", {})
+    ctx = {}
+    if request.GET.get("link_expirat"):
+        ctx["link_expirat"] = True
+    if request.GET.get("link_invalid"):
+        ctx["link_invalid"] = True
+    return render(request, "anunturi/signup_choose_type.html", ctx)
 
 
 def signup_pf_view(request):
@@ -251,7 +257,12 @@ def signup_pf_view(request):
             ctx["signup_errors"] = ["Acest email este deja folosit. Te rugăm folosește alt email."]
         data = _get_signup_pending(request)
         if data and data.get("role") == "pf":
-            ctx["form_prefill"] = data
+            # Include password1/password2 din sesiune ca parola să rămână vizibilă la erori (ex. phone_taken)
+            prefill = dict(data)
+            pwd = data.get("password", "")
+            prefill["password1"] = pwd
+            prefill["password2"] = pwd
+            ctx["form_prefill"] = prefill
         return render(request, "anunturi/signup_pf.html", ctx)
 
     User = get_user_model()
@@ -267,7 +278,6 @@ def signup_pf_view(request):
     accept_termeni = request.POST.get("accept_termeni") == "on"
     accept_gdpr = request.POST.get("accept_gdpr") == "on"
     email_opt_in_wishlist = request.POST.get("email_opt_in_wishlist") == "on"
-    poza_1 = request.FILES.get("poza_1")
 
     errors = []
     if not email:
@@ -300,6 +310,7 @@ def signup_pf_view(request):
         prefill = {
             "first_name": first_name, "last_name": last_name, "email": email,
             "phone_country": phone_country, "phone": phone, "judet": judet, "oras": oras,
+            "password1": password1, "password2": password2,
         }
         return render(request, "anunturi/signup_pf.html", {"signup_errors": errors, "form_prefill": prefill})
 
@@ -426,19 +437,46 @@ def signup_verificare_sms_view(request):
         import time
         if "signup_sms_at" not in request.session:
             request.session["signup_sms_at"] = time.time()
+        if "signup_sms_resend_count" not in request.session:
+            request.session["signup_sms_resend_count"] = 0
         expires_at = int(request.session["signup_sms_at"]) + 300
         back_url = _redirect_for_role(role, "")
-        return render(request, "anunturi/signup_pf_sms.html", {"email": email, "back_url": back_url, "expires_at": expires_at})
+        now = int(time.time())
+        sms_resend_count = request.session.get("signup_sms_resend_count", 0)
+        sms_cooldown_until = request.session.get("signup_sms_cooldown_until") or 0
+        sms_in_cooldown = sms_cooldown_until > 0 and now < sms_cooldown_until
+        return render(request, "anunturi/signup_pf_sms.html", {
+            "email": email, "back_url": back_url, "expires_at": expires_at,
+            "sms_resend_count": sms_resend_count, "sms_resend_remaining": max(0, 3 - sms_resend_count),
+            "sms_cooldown_until": int(sms_cooldown_until),
+            "sms_retrimis": request.GET.get("retrimis"), "sms_cooldown": request.GET.get("cooldown"),
+            "sms_in_cooldown": sms_in_cooldown,
+        })
 
     sms_code = (request.POST.get("sms_code") or "").strip()
     if sms_code != "111111":
         import time
-        expires_at = int(request.session.get("signup_sms_at", time.time())) + 300
+        sms_at = request.session.get("signup_sms_at") or time.time()
+        expires_at = int(float(sms_at)) + 300
         back_url = _redirect_for_role(role, "")
+        now = time.time()
+        sms_expired = now > expires_at
+        sms_resend_count = request.session.get("signup_sms_resend_count", 0)
+        sms_cooldown_until = request.session.get("signup_sms_cooldown_until") or 0
+        sms_in_cooldown = sms_cooldown_until > 0 and now < sms_cooldown_until
+        if sms_expired:
+            sms_error = "Codul a expirat. Poți solicita un cod nou mai jos (max 3 încercări)."
+        else:
+            sms_error = "Cod invalid. Folosește 111111 pentru verificare."
         return render(
             request,
             "anunturi/signup_pf_sms.html",
-            {"email": email, "sms_error": "Cod invalid. Folosește 111111 pentru verificare.", "back_url": back_url, "expires_at": expires_at},
+            {
+                "email": email, "sms_error": sms_error, "back_url": back_url, "expires_at": expires_at,
+                "sms_expired": sms_expired, "sms_resend_count": sms_resend_count, "sms_resend_remaining": max(0, 3 - sms_resend_count),
+                "sms_cooldown_until": int(sms_cooldown_until),
+                "sms_in_cooldown": sms_in_cooldown, "sms_retrimis": None, "sms_cooldown": None,
+            },
         )
 
     if role == "pf":
@@ -447,14 +485,12 @@ def signup_verificare_sms_view(request):
         full_phone = (data.get("telefon") or "").strip()
 
     if _phone_already_used(full_phone):
-        request.session.pop("signup_pending", None)
-        request.session.pop("signup_pf_pending", None)
+        # Nu ștergem signup_pending – ca la redirect pe formular datele (inclusiv parola) să rămână
         return redirect(_redirect_for_role(role, "phone") + "?phone_taken=1")
 
     User = get_user_model()
     if User.objects.filter(email=email).exists():
-        request.session.pop("signup_pending", None)
-        request.session.pop("signup_pf_pending", None)
+        # Nu ștergem signup_pending – ca la redirect pe formular datele să rămână
         return redirect(_redirect_for_role(role, "email") + "?email_taken=1")
 
     username = _make_signup_username(data, role)
@@ -559,9 +595,36 @@ def signup_verificare_sms_view(request):
 
     import time
     request.session["signup_link_created_at"] = time.time()
+    request.session["signup_waiting_user_pk"] = user.pk
+    request.session["signup_email_resend_count"] = 0
     request.session.pop("signup_pending", None)
     request.session.pop("signup_pf_pending", None)
-    return redirect(reverse("signup_pf_check_email") + f"?email={quote(email)}")
+    # Mereu redirect la „Verifică email” – nu la home; logarea se face doar după click pe link din email
+    check_email_url = reverse("signup_pf_check_email") + f"?email={quote(email)}"
+    return redirect(check_email_url)
+
+
+def signup_retrimite_sms_view(request):
+    """Retrimite cod SMS: resetează timerul 5 min. Max 3 încercări, apoi cooldown 45 min."""
+    import time
+    data = _get_signup_pending(request)
+    if not data:
+        return redirect(reverse("signup_choose_type"))
+    if request.method != "POST":
+        return redirect(reverse("signup_verificare_sms"))
+    now = time.time()
+    cooldown_until = request.session.get("signup_sms_cooldown_until") or 0
+    if now < cooldown_until:
+        return redirect(reverse("signup_verificare_sms") + "?cooldown=1")
+    resend_count = request.session.get("signup_sms_resend_count", 0)
+    if resend_count >= 3:
+        request.session["signup_sms_cooldown_until"] = now + 45 * 60
+        return redirect(reverse("signup_verificare_sms") + "?cooldown=1")
+    request.session["signup_sms_resend_count"] = resend_count + 1
+    request.session["signup_sms_at"] = now
+    if request.session["signup_sms_resend_count"] >= 3:
+        request.session["signup_sms_cooldown_until"] = now + 45 * 60
+    return redirect(reverse("signup_verificare_sms") + "?retrimis=1")
 
 
 def signup_pf_sms_view(request):
@@ -576,38 +639,115 @@ def signup_pf_check_email_view(request):
     waiting_id = request.session.get("signup_waiting_id", "")
     created = request.session.get("signup_link_created_at") or time.time()
     expires_at = int(created) + 300
+    email_resend_count = request.session.get("signup_email_resend_count", 0)
+    email_cooldown_until = request.session.get("signup_email_cooldown_until") or 0
+    now_ts = int(time.time())
+    email_in_cooldown = email_cooldown_until > 0 and now_ts < email_cooldown_until
     return render(
         request,
         "anunturi/signup_pf_check_email.html",
-        {"email": email, "waiting_id": waiting_id, "back_url": reverse("signup_choose_type"), "expires_at": expires_at},
+        {
+            "email": email, "waiting_id": waiting_id, "back_url": reverse("signup_choose_type"), "expires_at": expires_at,
+            "email_resend_count": email_resend_count, "email_resend_remaining": max(0, 3 - email_resend_count),
+            "email_cooldown_until": int(email_cooldown_until),
+            "email_retrimis": request.GET.get("retrimis"), "email_cooldown": request.GET.get("cooldown"),
+            "email_in_cooldown": email_in_cooldown,
+        },
     )
+
+
+def signup_retrimite_email_view(request):
+    """Retrimite link activare pe email. Max 3 încercări, apoi cooldown 45 min."""
+    import time
+    from django.core.signing import TimestampSigner
+    from django.core.mail import send_mail
+    from urllib.parse import quote
+    if request.method != "POST":
+        return redirect(reverse("signup_choose_type"))
+    user_pk = request.session.get("signup_waiting_user_pk")
+    if not user_pk:
+        return redirect(reverse("signup_choose_type"))
+    now = time.time()
+    cooldown_until = request.session.get("signup_email_cooldown_until") or 0
+    if now < cooldown_until:
+        email = get_user_model().objects.filter(pk=user_pk).values_list("email", flat=True).first() or ""
+        return redirect(reverse("signup_pf_check_email") + f"?email={quote(email)}&cooldown=1")
+    resend_count = request.session.get("signup_email_resend_count", 0)
+    if resend_count >= 3:
+        request.session["signup_email_cooldown_until"] = now + 45 * 60
+        email = get_user_model().objects.filter(pk=user_pk).values_list("email", flat=True).first() or ""
+        return redirect(reverse("signup_pf_check_email") + f"?email={quote(email)}&cooldown=1")
+    User = get_user_model()
+    try:
+        user = User.objects.get(pk=user_pk, is_active=False)
+    except User.DoesNotExist:
+        request.session.pop("signup_waiting_user_pk", None)
+        return redirect(reverse("signup_choose_type"))
+    signer = TimestampSigner()
+    token = signer.sign(user.pk)
+    waiting_id = request.session.get("signup_waiting_id", "")
+    verify_url = (
+        request.build_absolute_uri(reverse("signup_verify_email"))
+        + "?token=" + quote(token)
+        + ("&waiting_id=" + quote(waiting_id) if waiting_id else "")
+    )
+    plain_msg = f"Bună ziua,\n\nApasă pe link pentru a-ți activa contul:\n{verify_url}\n\nDacă nu ai creat cont, poți ignora acest email."
+    html_msg = (
+        f'<p>Bună ziua,</p>'
+        f'<p>Apasă pe link pentru a-ți activa contul:<br/>'
+        f'<a href="{verify_url}" style="color:#1565c0;font-weight:bold;">Activează contul</a></p>'
+        f'<p>Dacă linkul nu merge, copiază în browser:</p><p style="word-break:break-all;">{verify_url}</p>'
+        f'<p>Dacă nu ai creat cont, poți ignora acest email.</p>'
+    )
+    try:
+        send_mail(
+            subject="Verificare email – EU-Adopt (retrimis)",
+            message=plain_msg,
+            from_email=None,
+            recipient_list=[user.email],
+            fail_silently=False,
+            html_message=html_msg,
+        )
+    except Exception:
+        pass
+    request.session["signup_link_created_at"] = now
+    request.session["signup_email_resend_count"] = resend_count + 1
+    if request.session["signup_email_resend_count"] >= 3:
+        request.session["signup_email_cooldown_until"] = now + 45 * 60
+    return redirect(reverse("signup_pf_check_email") + f"?email={quote(user.email)}&retrimis=1")
 
 
 def signup_verify_email_view(request):
     """Link din email: verifică token, activează user, login pe acest device; dacă e waiting_id, pune one_time_token pentru tab-ul de pe laptop."""
-    from django.core.signing import Signer
+    from django.core.signing import TimestampSigner
+    from django.core.signing import SignatureExpired
     from django.contrib.auth import login as auth_login
     from django.core.cache import cache
     import uuid
 
-    token = request.GET.get("token", "")
+    token = (request.GET.get("token") or "").strip()
     if not token:
-        return redirect(reverse("signup_pf"))
-    signer = Signer()
+        return redirect(reverse("signup_choose_type") + "?link_invalid=1")
+    signer = TimestampSigner()
     try:
-        user_pk = signer.unsign(token)
+        user_pk = signer.unsign(token, max_age=300)
+    except SignatureExpired:
+        return redirect(reverse("signup_choose_type") + "?link_expirat=1")
     except Exception:
-        return redirect(reverse("signup_pf"))
+        return redirect(reverse("signup_choose_type") + "?link_invalid=1")
 
     User = get_user_model()
     try:
         user = User.objects.get(pk=user_pk)
     except User.DoesNotExist:
-        return redirect(reverse("signup_pf"))
+        return redirect(reverse("signup_choose_type") + "?link_invalid=1")
 
     user.is_active = True
     user.save()
     auth_login(request, user)
+    for key in ("signup_waiting_user_pk", "signup_email_resend_count", "signup_email_cooldown_until",
+                "signup_sms_resend_count", "signup_sms_cooldown_until"):
+        request.session.pop(key, None)
 
     waiting_id = (request.GET.get("waiting_id") or "").strip()
     if waiting_id:
@@ -649,8 +789,9 @@ def signup_complete_login_view(request):
     except User.DoesNotExist:
         return redirect(reverse("home"))
     cache.delete("signup_onetime_" + token)
-    if request.session.get("signup_waiting_id"):
-        request.session.pop("signup_waiting_id", None)
+    for key in ("signup_waiting_id", "signup_waiting_user_pk", "signup_email_resend_count", "signup_email_cooldown_until",
+                "signup_sms_resend_count", "signup_sms_cooldown_until"):
+        request.session.pop(key, None)
     auth_login(request, user)
     return redirect(reverse("home") + "?welcome=1")
 
@@ -747,6 +888,7 @@ def signup_organizatie_view(request):
             "accept_gdpr": accept_gdpr,
             "email_opt_in": email_opt_in,
             "is_public_shelter": is_public_shelter if is_public_shelter_val in ("yes", "no") else None,
+            "parola1": parola1, "parola2": parola2,
         }
         return _no_cache_response(render(request, "anunturi/signup_organizatie.html", {"field_errors": field_errors, "form_prefill": prefill}))
 
@@ -851,6 +993,7 @@ def signup_colaborator_view(request):
             "accept_termeni": accept_termeni,
             "accept_gdpr": accept_gdpr,
             "email_opt_in": email_opt_in,
+            "parola1": parola1, "parola2": parola2,
         }
         return render(request, "anunturi/signup_colaborator.html", {"signup_errors": errors, "form_prefill": prefill})
 

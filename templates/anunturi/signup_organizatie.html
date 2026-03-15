@@ -128,10 +128,35 @@
 	.signup-org-public-box.flash {
 		animation: signup-org-tip-flash 0.55s ease;
 	}
-	.signup-org-form-wrap {
+	/* Mesaj eroare deasupra formularului, fără să deranjeze poziția casetelor (la fel ca la Colaborator) */
+	.signup-org-form-area {
+		position: relative;
 		flex: 1 1 400px;
 		min-width: 0;
 		margin-left: 2.5rem;
+	}
+	.signup-org-form-area .signup-errors {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 5;
+		margin: 0;
+		background: #ffebee;
+		border: 1px solid #c62828;
+		border-radius: 8px;
+		padding: 0.75rem 1rem;
+	}
+	.signup-org-form-area .signup-errors ul {
+		margin: 0;
+		padding-left: 1.25rem;
+	}
+	.signup-org-form-area.has-errors .signup-org-form-wrap {
+		padding-top: 3.5rem;
+	}
+	.signup-org-form-wrap {
+		flex: 1 1 400px;
+		min-width: 0;
 	}
 	.signup-org-casete-row {
 		display: flex;
@@ -618,6 +643,14 @@
 			</label>
 			<p id="signup-org-tip-nota" class="signup-org-tip-nota {% if field_errors and field_errors.is_public_shelter %}visible{% endif %}" role="alert">{% if field_errors and field_errors.is_public_shelter %}{{ field_errors.is_public_shelter }}{% else %}Este obligatoriu să alegi una dintre cele două variante.{% endif %}</p>
 		</div>
+		<div class="signup-org-form-area{% if field_errors %} has-errors{% endif %}">
+			{% if field_errors %}
+			<div class="signup-errors" role="alert">
+				<ul>
+					{% for key, err in field_errors.items %}<li>{{ err }}</li>{% endfor %}
+				</ul>
+			</div>
+			{% endif %}
 		<div class="signup-org-form-wrap">
 			<div class="signup-org-header">
 				<h1>Înregistrare Adăpost / ONG / Firmă</h1>
@@ -688,7 +721,7 @@
 						<div class="signup-org-field signup-org-field-box signup-pwd-wrap">
 							<label for="id_parola1">Parolă *</label>
 							<span class="signup-pwd-inner">
-								<input type="password" id="id_parola1" name="parola1" required autocomplete="new-password" />
+								<input type="password" id="id_parola1" name="parola1" required autocomplete="new-password" value="{% if form_prefill %}{{ form_prefill.parola1|default:'' }}{% endif %}" />
 								<span class="signup-pwd-eye" data-pwd="id_parola1" title="Arată parola" aria-label="Arată parola" role="button" tabindex="0"></span>
 							</span>
 							{% if field_errors and field_errors.parola %}<p class="signup-field-err" role="alert">{{ field_errors.parola }}</p>{% endif %}
@@ -696,7 +729,7 @@
 						<div class="signup-org-field signup-org-field-box signup-pwd-wrap">
 							<label for="id_parola2">Confirmare parolă *</label>
 							<span class="signup-pwd-inner">
-								<input type="password" id="id_parola2" name="parola2" required autocomplete="new-password" />
+								<input type="password" id="id_parola2" name="parola2" required autocomplete="new-password" value="{% if form_prefill %}{{ form_prefill.parola2|default:'' }}{% endif %}" />
 								<span class="signup-pwd-eye" data-pwd="id_parola2" title="Arată parola" aria-label="Arată parola" role="button" tabindex="0"></span>
 							</span>
 						</div>
@@ -732,6 +765,7 @@
 					</p>
 				</div>
 			</form>
+		</div>
 		</div>
 	</main>
 	</div>

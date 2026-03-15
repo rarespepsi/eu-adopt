@@ -40,11 +40,52 @@
 {% block content %}
 <div class="signup-check-email">
 	<h2>Verifică email-ul</h2>
+	{% if email_retrimis %}<p class="signup-check-success" style="color:#2e7d32;font-weight:600;margin-bottom:0.5rem;">Link retrimis. Ai încă 5 minute.</p>{% endif %}
+	{% if email_in_cooldown or email_cooldown %}
+	<p class="signup-check-cooldown" style="color:#b71c1c;font-weight:600;background:#ffebee;padding:0.5rem 0.75rem;border-radius:6px;margin:0.5rem 0;">Ați depășit cele 3 încercări. Vă rugăm reveniți peste 45 de minute.</p>
+	{% if email_cooldown_until %}<p class="signup-check-cooldown-timer" data-until="{{ email_cooldown_until }}">Timp rămas: <span class="cooldown-clock">--:--</span></p>{% endif %}
+	{% else %}
 	<p>Am trimis un link de activare la <strong>{{ email }}</strong>.</p>
 	<p>Deschide emailul și apasă pe link pentru a-ți activa contul. Linkul este valabil 5 minute.</p>
 	{% if expires_at %}{% include 'anunturi/includes/countdown_5min.html' with expires_at=expires_at label="Link valabil" %}{% endif %}
+	<div class="signup-check-retrimite-wrap" id="email-retrimite-wrap" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid #e0e0e0;">
+		<p>Linkul a expirat. Poți solicita un link nou. Mai ai <strong id="email-ramase">{{ email_resend_remaining|default:3 }}</strong> încercări (din 3).</p>
+		<form method="post" action="{% url 'signup_retrimite_email' %}">
+			{% csrf_token %}
+			<button type="submit">Retrimite link</button>
+		</form>
+	</div>
+	{% endif %}
 	<p class="signup-check-back"><a href="{{ back_url|default:'/' }}">Vreau o fișă nouă de înregistrare</a></p>
 </div>
+<script>
+(function() {
+	var wrap = document.getElementById('email-retrimite-wrap');
+	var expiresAt = {{ expires_at|default:0 }};
+	var remaining = {{ email_resend_remaining|default:3 }};
+	if (wrap && expiresAt && remaining > 0) {
+		var check = function() {
+			if (Date.now() / 1000 >= expiresAt) wrap.style.display = 'block';
+		};
+		setInterval(check, 1000);
+		setTimeout(check, 500);
+	}
+	var cooldownEl = document.querySelector('.signup-check-cooldown-timer[data-until]');
+	if (cooldownEl) {
+		var until = parseInt(cooldownEl.getAttribute('data-until'), 10) * 1000;
+		var clock = cooldownEl.querySelector('.cooldown-clock');
+		function pad(n) { return n < 10 ? '0' + n : n; }
+		function upd() {
+			var left = Math.max(0, Math.floor((until - Date.now()) / 1000));
+			if (left <= 0) { if (clock) clock.textContent = '00:00'; location.reload(); return; }
+			var m = Math.floor(left / 60), s = left % 60;
+			if (clock) clock.textContent = pad(m) + ':' + pad(s);
+			setTimeout(upd, 1000);
+		}
+		upd();
+	}
+})();
+</script>
 {% if waiting_id %}
 <script>
 (function() {
