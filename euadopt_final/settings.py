@@ -47,7 +47,13 @@ INSTALLED_APPS = [
     'home.apps.HomeConfig',
 ]
 
+# Când SITE_PUBLIC e False (sau lipsește), vizitatorii văd doar „Site în lucru”. Când e True, site-ul e public.
+import os as _os
+_site_public = _os.environ.get('SITE_PUBLIC', 'false').strip().lower()
+MAINTENANCE_MODE = _site_public not in ('1', 'true', 'da', 'yes')
+
 MIDDLEWARE = [
+    'euadopt_final.maintenance_middleware.MaintenanceMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -132,14 +138,17 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Email – verificare cont (real)
-# Pentru trimitere reală: setează EMAIL_BACKEND pe 'django.core.mail.backends.smtp.EmailBackend'
-# și EMAIL_HOST, EMAIL_PORT, EMAIL_USE_TLS, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
-EMAIL_BACKEND = os.environ.get(
-    'EMAIL_BACKEND',
-    'django.core.mail.backends.console.EmailBackend'
-)
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@eu-adopt.ro')
+# Email – trimitere din euadopt@gmail.com (Gmail)
+# Parola: folosește „Parolă pentru aplicații” din contul Google (nu parola contului).
+# Setează EMAIL_HOST_PASSWORD în .env sau variabile de mediu; dacă lipsește, mailurile merg în consolă.
+_email_password = _os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' if _email_password else 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'euadopt@gmail.com'
+EMAIL_HOST_PASSWORD = _email_password
+DEFAULT_FROM_EMAIL = 'euadopt@gmail.com'
 
 # WhiteNoise + stocare fișiere (Django 6: STORAGES cu cheie "default" pentru upload-uri)
 STORAGES = {

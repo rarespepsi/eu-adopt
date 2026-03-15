@@ -1,2 +1,3 @@
 # Local / secrets – do not commit
 .cursor/
+.env

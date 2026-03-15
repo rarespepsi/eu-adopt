@@ -3,6 +3,11 @@
 import os
 import sys
 
+# Încarcă variabile din .env (ex: EMAIL_HOST_PASSWORD) înainte de settings
+if os.path.exists(os.path.join(os.path.dirname(__file__), ".env")):
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+
 
 def main():
     """Run administrative tasks."""
