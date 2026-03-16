@@ -1257,6 +1257,30 @@ def account_edit_username_view(request):
     return redirect(reverse("account") + "?username_updated=1")
 
 
+@login_required
+@require_POST
+def account_upload_avatar_view(request):
+    """
+    Upload/crop poză profil pentru PF.
+    Primește un singur fișier 'avatar' (JPEG) și îl salvează în UserProfile.poza_1.
+    """
+    user = request.user
+    account_profile = getattr(user, "account_profile", None)
+    if not account_profile or account_profile.role != AccountProfile.ROLE_PF:
+        return JsonResponse({"ok": False, "error": "Nu este permis."}, status=403)
+    file_obj = request.FILES.get("avatar")
+    if not file_obj:
+        return JsonResponse({"ok": False, "error": "Nu s-a trimis niciun fișier."}, status=400)
+    profile, _ = UserProfile.objects.get_or_create(user=user, defaults={})
+    profile.poza_1 = file_obj
+    profile.save()
+    try:
+        url = profile.poza_1.url
+    except Exception:
+        url = ""
+    return JsonResponse({"ok": True, "url": url})
+
+
 def _parse_phone_for_edit(phone_str):
     """Din profile.phone (ex: '+40 753017411' sau '0753017411') returnează (phone_country, phone)."""
     if not phone_str or not isinstance(phone_str, str):

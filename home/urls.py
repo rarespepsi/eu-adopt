@@ -21,6 +21,7 @@ urlpatterns = [
     path('signup/colaborator/', views.signup_colaborator_view, name='signup_colaborator'),
     path('cont/', views.account_view, name='account'),
     path('cont/schimbare-user/', views.account_edit_username_view, name='account_edit_username'),
+    path('cont/upload-avatar/', views.account_upload_avatar_view, name='account_upload_avatar'),
     path('cont/editeaza/', views.account_edit_view, name='account_edit'),
     path('cont/editeaza/verificare-sms/', views.edit_verificare_sms_view, name='edit_verificare_sms'),
     path('cont/editeaza/verificare-email/', views.edit_check_email_view, name='edit_check_email'),
