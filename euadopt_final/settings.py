@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,7 +27,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-wu12p^yxl^qac$r@#16ts1c%l23=h$lfz5_v%yqx!8v^8y@q@p'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# Workflow: DEBUG este controlat doar din env (ex. în `.env`), cu default sigur = False.
+_debug_env = os.environ.get("DJANGO_DEBUG", "").strip().lower()
+DEBUG = _debug_env in ("1", "true", "yes", "on")
 
 ALLOWED_HOSTS = [
     "eu-adopt.ro",

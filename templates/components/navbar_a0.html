@@ -21,7 +21,7 @@
 				<nav id="menu_wrap" class="a0-right">
 					<div class="menu-main-menu-container">
 						<ul id="menu-main-menu" class="menu">
-							<li><a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="current_page"{% endif %}>Acasă</a></li>
+							<li><a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="a0-nav-home-link current_page"{% else %}class="a0-nav-home-link"{% endif %}>Acasă</a></li>
 							<li><a href="{% url 'pets_all' %}" {% if request.resolver_match.url_name == 'pets_all' %}class="current_page"{% endif %}>Prietenul tău</a></li>
 							<li><a href="{% url 'servicii' %}" {% if request.resolver_match.url_name == 'servicii' %}class="current_page"{% endif %}>Servicii</a></li>
 							<li><a href="{% url 'transport' %}" {% if request.resolver_match.url_name == 'transport' %}class="current_page"{% endif %}>Transport</a></li>
@@ -30,7 +30,7 @@
 								<li><a href="{% url 'home' %}">Analiza</a></li>
 							{% endif %}
 							{% if user.is_authenticated %}
-								<li><a href="{% url 'account' %}" class="a0-nav-account-link">
+								<li class="a0-nav-account-item"><a href="{% url 'account' %}" class="a0-nav-account-link">
 									{% if nav_avatar_url %}
 										<span class="a0-nav-avatar-wrap"><img src="{{ nav_avatar_url }}" alt="" class="a0-nav-avatar" /></span>
 									{% else %}
@@ -40,7 +40,7 @@
 								</a></li>
 							{% else %}
 							{% endif %}
-							<li>
+							<li class="a0-nav-mypet-start">
 								{% if user.is_authenticated %}
 									{% if user.account_profile and user.account_profile.role == 'collaborator' %}
 										<a href="{% url 'mypet' %}">Magazinul meu</a>
@@ -51,7 +51,7 @@
 									<a href="{% url 'login' %}">MyPet</a>
 								{% endif %}
 							</li>
-							<li>
+							<li class="a0-nav-ilove-start">
 								{% if user.is_authenticated %}
 									<a href="{% url 'i_love' %}">❤️ I Love (<span data-wishlist-count>{{ wishlist_count|default:0 }}</span>)</a>
 								{% else %}
