@@ -1,3 +1,14 @@
 # Local / secrets – do not commit
 .cursor/
 .env
+
+# Python bytecode / caches
+__pycache__/
+*.pyc
+
+# Django generated / local runtime
+staticfiles/
+media/
+
+# Local DB (keep out of git to avoid noise)
+db.sqlite3
