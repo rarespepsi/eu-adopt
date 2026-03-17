@@ -61,12 +61,33 @@
 				font-size: 3rem;
 				line-height: 1;
 			}
+			.pet-single-detail {
+				display: flex;
+				align-items: flex-start;
+				gap: 1.5rem;
+				margin-top: 0.25rem;
+			}
+			body.page-pet-single .entry-content {
+				margin-left: 0;
+				padding-left: 0;
+			}
+			body.page-pet-single h2.entry-title {
+				margin-top: 0.5rem;
+				margin-bottom: 0.25rem;
+			}
+			.pet-single-right-col {
+				margin-top: 0;
+			}
+			.pet-single-right-box {
+				margin-top: 0;
+			}
 			.pet-image-with-back {
 				display: flex;
 				align-items: stretch;
 				gap: 1rem;
 				flex-wrap: wrap;
 				margin-bottom: 1rem;
+				margin-left: -19rem; /* un pas înapoi spre interior */
 			}
 			.pet-image-with-back .pet-image-col {
 				display: flex;
@@ -509,13 +530,16 @@
 													<span class="pet-fisa-slot-empty">Poza 3</span>
 												{% endif %}
 											</div>
+											<div class="pet-fisa-slot pet-photo-anim">
+												<span class="pet-fisa-slot-empty">Video (în curând)</span>
+											</div>
 										</div>
 										<div class="pet-te-plac-wrap">
 											{% if user.is_authenticated %}
 												{% if pet.pk in wishlist_pet_ids %}
-												<a href="{% url 'wishlist_toggle' pet.pk %}?action=remove" class="pet-te-plac-btn pet-te-plac-active" title="Scoate din lista mea">❤️ În lista mea</a>
+												<a href="{% url 'wishlist_toggle' %}?action=remove" class="pet-te-plac-btn pet-te-plac-active" title="Scoate din lista mea">❤️ În lista mea</a>
 												{% else %}
-												<a href="{% url 'wishlist_toggle' pet.pk %}" class="pet-te-plac-btn" title="Adaugă la lista mea">🤍 Te plac</a>
+												<a href="{% url 'wishlist_toggle' %}" class="pet-te-plac-btn" title="Adaugă la lista mea">🤍 Te plac</a>
 												{% endif %}
 											{% else %}
 												<a href="{% url 'home' %}?next={% url 'pets_all' %}" class="pet-te-plac-btn" title="Adaugă la lista mea (autentificare)">🤍 <span class="login-required-lock-icon">🔒</span> Te plac</a>
@@ -549,8 +573,13 @@
 											<div class="pet-single-right-box">
 											<div class="pet-hero-card">
 												<h3>🐾 {{ pet.nume }} caută familie</h3>
-												<div class="pet-hero-meta">📍 {% if pet.judet %}{{ pet.get_judet_display }}{% else %}—{% endif %}<br />{% if pet.sex == 'male' %}♂{% else %}♀{% endif %} {{ pet.get_sex_display }}{% if pet.varsta_aproximativa is not None %} • {{ pet.get_varsta_aproximativa_display }}{% endif %}{% if pet.marime %} • {{ pet.get_marime_display }}{% endif %}</div>
-												{% if pet.tags %}<div class="pet-hero-traits">❤️ {{ pet.tags }}</div>{% endif %}
+												<div class="pet-hero-meta">
+													📍 {% if pet.oras or pet.judet %}{{ pet.oras|default:"" }}{% if pet.oras and pet.judet %}, {% endif %}{{ pet.judet|default:"" }}{% else %}—{% endif %}<br />
+													{% if pet.sex %}Sex: {{ pet.sex }}{% endif %}{% if pet.age_label %} • Vârstă: {{ pet.age_label }}{% endif %}{% if pet.size %} • Talie: {{ pet.size }}{% endif %}
+												</div>
+												{% if pet.color %}
+												<div class="pet-hero-traits">❤️ Culoare: {{ pet.color }}</div>
+												{% endif %}
 											</div>
 											{% if user_adoption_request %}
 											<p class="pet-your-request-notice">Ai deja o cerere pentru acest câine: <strong>{{ user_adoption_request.get_status_display }}</strong>. Poziția ta în coadă: <strong>{{ user_adoption_request.queue_position }}</strong>.</p>
@@ -569,7 +598,7 @@
 												<li>⚠️ La ce trebuie să fii atent</li>
 											</ul>
 											<div class="pet-single-ask-row">
-												<a href="{% url 'pet_ask' pet.pk %}" class="pet-single-ask-btn">ÎNTREABĂ DESPRE MINE!</a>
+												<a href="#" class="pet-single-ask-btn">ÎNTREABĂ DESPRE MINE!</a>
 											</div>
 											</div>
 										</div>
@@ -591,10 +620,11 @@
 										{% endwith %}
 									</div>
 									<div class="pet-info">
-										<div class="breed">{{ pet.get_tip_display }} – {{ pet.rasa }}{% if pet.varsta_aproximativa is not None %} – {{ pet.get_varsta_aproximativa_display }}{% endif %} – {{ pet.get_sex_display }}{% if pet.marime %} – {{ pet.get_marime_display }}{% endif %}</div>
-										<div class="pet_info clearfix">
-											<span>{{ pet.get_status_display }}</span>
-											{% if pet.tags %}{{ pet.tags }}{% endif %}
+										<div class="breed">
+											{% if pet.species == "dog" %}Câine{% elif pet.species == "cat" %}Pisică{% elif pet.species %}{{ pet.species }}{% endif %}
+											{% if pet.sex %} – {{ pet.sex }}{% endif %}
+											{% if pet.age_label %} – {{ pet.age_label }}{% endif %}
+											{% if pet.size %} – {{ pet.size }}{% endif %}
 										</div>
 										{% if pet.descriere %}
 											<p>{{ pet.descriere|linebreaks }}</p>
@@ -614,12 +644,12 @@
 											</div>
 										{% endif %}
 									</div>
-									{% if pet.sterilizat is not None or pet.cip or pet.carnet_sanatate or pet.vaccin %}
+									{% if pet.sterilizat or pet.cip or pet.carnet_sanatate or pet.vaccin or pet.probleme_medicale %}
 									<div class="pet-sanitar-box">
 										<h4>🏥 Sanitar</h4>
 										<ul>
-											{% if pet.sterilizat is not None %}
-											<li><strong>Sterilizat/Castrat:</strong> {% if pet.sterilizat %}Da{% else %}Nu{% endif %}</li>
+											{% if pet.sterilizat %}
+											<li><strong>Sterilizat/Castrat:</strong> {{ pet.sterilizat }}</li>
 											{% endif %}
 											{% if pet.cip %}
 											<li><strong>CIP:</strong> {{ pet.cip }}</li>
@@ -629,6 +659,9 @@
 											{% endif %}
 											{% if pet.vaccin %}
 											<li><strong>Vaccin:</strong> {{ pet.vaccin }}</li>
+											{% endif %}
+											{% if pet.probleme_medicale %}
+											<li><strong>Probleme medicale:</strong> {{ pet.probleme_medicale }}</li>
 											{% endif %}
 										</ul>
 									</div>
@@ -751,26 +784,8 @@
 					}
 					var toFetch = ids.filter(function(id) { return id && id !== currentId; }).slice(0, 5);
 					if (toFetch.length) {
-						var xhr = new XMLHttpRequest();
-						xhr.open("GET", "{% url 'api_pets_by_ids' %}?ids=" + toFetch.join(","));
-						xhr.onload = function() {
-							if (xhr.status === 200) {
-								try {
-									var data = JSON.parse(xhr.responseText);
-									if (data.pets && data.pets.length) {
-										var html = "";
-										for (var i = 0; i < data.pets.length; i++) {
-											var p = data.pets[i];
-											var fallback = visitedSection.getAttribute("data-fallback-img") || "/static/images/pets/charlie-275x275.jpg";
-										html += '<a href="' + (p.link || '/pet/' + p.id + '/') + '" class="pet-related-card" title="' + (p.nume || '').replace(/"/g, '&quot;') + '"><img src="' + (p.imagine_url || fallback) + '" alt="' + (p.nume || '').replace(/"/g, '&quot;') + '" onerror="this.src=\'' + fallback + '\';" /><span>' + (p.nume || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span></a>';
-										}
-										visitedCards.innerHTML = html;
-									} else { visitedSection.style.display = "none"; }
-								} catch (e) { visitedSection.style.display = "none"; }
-							} else { visitedSection.style.display = "none"; }
-						};
-						xhr.onerror = function() { visitedSection.style.display = "none"; };
-						xhr.send();
+						// Funcția „prieteni vizitați” este dezactivată temporar (nu avem API în acest proiect).
+						visitedSection.style.display = "none";
 					} else { visitedSection.style.display = "none"; }
 				} catch (e) { visitedSection.style.display = "none"; }
 			}

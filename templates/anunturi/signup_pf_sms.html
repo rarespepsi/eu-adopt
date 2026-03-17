@@ -9,16 +9,14 @@
 <style>
 	body.page-login { overflow: hidden; }
 	body.page-login #main_wrap { height: 100vh; display: flex; flex-direction: column; overflow: hidden; background: transparent; }
-	body.page-login #main_content { background: transparent !important; box-shadow: none !important; }
+	body.page-login #main_content { box-shadow: none !important; background: transparent !important; }
 	body.page-login .layout { min-height: 0; display: block; background: transparent; }
 	body.page-login .wrapper { background: transparent !important; }
-	body.page-login .main-content { background: transparent; }
 	body.page-login .sidebar-left,
 	body.page-login .sidebar-right { display: none; }
-	body.page-login .main-content { max-width: 100%; }
-	body.page-login .main-content { display: flex; justify-content: center; align-items: center; max-height: inherit; width: 100%; }
-	body.page-login #main_content { flex: 1; min-height: 0; max-height: calc(100vh - 140px); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-	.signup-sms-box { max-width: 400px; margin: auto; padding: 1rem; background: #f0f0f0; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); text-align: center; }
+	body.page-login .main-content { max-width: 100%; display: flex; justify-content: center; align-items: center; max-height: inherit; width: 100%; background: transparent; }
+	body.page-login #main_content { flex: 1; min-height: 0; max-height: calc(100vh - 140px); display: flex; align-items: center; justify-content: center; overflow: hidden; background: transparent; }
+	.signup-sms-box { max-width: 400px; margin: auto; padding: 1rem; background: rgba(240,240,240,0.95); border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); text-align: center; }
 	.signup-sms-box h2 { margin: 0 0 0.5rem; font-size: 1.15rem; }
 	.signup-sms-box p { margin: 0 0 0.5rem; }
 	.signup-sms-box .sms-error { color: #c62828; margin-bottom: 0.5rem; font-size: 0.9rem; }

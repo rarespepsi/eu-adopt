@@ -171,11 +171,11 @@ body.page-account .account-right-panel {
 		flex: 0 0 auto;
 		display: flex;
 		gap: 1.5rem;
-		margin: 0;
+		margin: -0.35rem 0 0.05rem;
 		padding: 0;
 	}
-	.cont-pf-stat { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: #555; }
-	.cont-pf-stat strong { color: #c62828; font-size: 1.1rem; }
+	.cont-pf-stat { display: flex; align-items: center; gap: 0.4rem; font-size: 0.92rem; color: #555; }
+	.cont-pf-stat strong { color: #c62828; font-size: 1.2rem; }
 	.cont-pf-wrap .cont-pf-header {
 		flex: 0 0 auto;
 		display: flex;
@@ -243,11 +243,13 @@ body.page-account .account-right-panel {
 	.cont-pf-header-text h1 { margin: 0; font-size: 0.94rem; font-weight: 700; color: #1a1a1a; }
 	.cont-pf-header-text .cont-pf-email { margin: 0.1rem 0 0; font-size: 0.74rem; color: #666; }
 	.cont-pf-body {
+		position: relative; /* pentru overlay-ul cu nota de actualizare */
 		flex: 1 1 auto;
+		/* Lăsăm înălțimea să se adapteze astfel încât toate cele 3 rânduri + butoanele să încapă în pagină. */
 		min-height: 0;
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		grid-auto-rows: auto;
+		grid-auto-rows: 1fr;
 		gap: 0.65rem;
 	}
 	.cont-pf-card {
@@ -264,6 +266,132 @@ body.page-account .account-right-panel {
 	.cont-pf-card p { margin: 0.25rem 0; font-size: 0.82rem; color: #333; line-height: 1.35; }
 	.cont-pf-card p strong { color: #1a1a1a; }
 	.cont-pf-card.cont-pf-card-wide { grid-column: 1 / -1; }
+
+	/* Randul 2 (Identificare + Rol cont) mai mic pe înălțime ~jumătate față de rândul 3 */
+	.cont-pf-body > .cont-pf-card {
+		padding-top: 0.35rem;
+		padding-bottom: 0.35rem;
+	}
+
+	/* RO + CUI pe un singur rând, micșorate pentru caseta „Date firmă” din stânga */
+	.cont-pf-left .signup-col-cui-row {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		gap: 0.25rem;
+	}
+	.cont-pf-left .signup-col-cui-stanga,
+	.cont-pf-left .signup-col-cui-dreapta {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 0.25rem;
+		min-width: 0;
+	}
+	.cont-pf-left .signup-col-cui-stanga {
+		flex: 0 0 30%;
+		font-size: 0.7rem;
+	}
+	.cont-pf-left .signup-col-cui-stanga select {
+		font-size: 0.7rem;
+		padding: 0.15rem 0.3rem;
+		min-width: 0;
+	}
+	.cont-pf-left .signup-col-cui-dreapta {
+		flex: 1 1 70%;
+		max-width: 70%;
+	}
+	.cont-pf-left .signup-col-cui-dreapta input#id_cui_account {
+		max-width: 100%;
+		font-size: 0.7rem;
+		padding: 0.18rem 0.3rem;
+		box-sizing: border-box;
+	}
+
+	/* Caseta DATE FIRMĂ – continut compact, fără scroll în interior */
+	.cont-pf-left .cont-pf-edit-box {
+		overflow: hidden;
+	}
+	.cont-pf-left .edit-form-inner {
+		font-size: 0.78rem;
+	}
+	.cont-pf-left .edit-form-grid {
+		gap: 0.25rem;
+	}
+	.cont-pf-left .signup-field {
+		margin-bottom: 0.12rem;
+	}
+	.cont-pf-left .signup-field input[type="text"] {
+		padding: 0.18rem 0.3rem;
+		font-size: 0.78rem;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	/* Bife/checkbox + radio active – marcaj roșu vizibil pe această pagină */
+	body.page-account input[type="checkbox"]:checked,
+	body.page-account input[type="radio"]:checked {
+		accent-color: #c62828;
+	}
+
+	/* În caseta „Date firmă”: tip colaborator = text + bifa imediat după text, pe un singur rând, în casetă (fără scroll) */
+	.cont-pf-left .signup-col-tip-options {
+		display: flex;
+		flex-direction: column;
+		gap: 0.12rem;
+	}
+	.cont-pf-left .signup-col-tip-option {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		font-size: 0.78rem;
+	}
+	.cont-pf-left .signup-col-tip-option span {
+		flex: 0 1 auto;
+		min-width: 0;
+	}
+	.cont-pf-left .signup-col-tip-option input[type="radio"] {
+		flex: 0 0 auto;
+		width: 0.9rem;
+		height: 0.9rem;
+		transform: scale(0.9);
+		margin: 0 0 0 5ch; /* ~distanță cât 5 caractere invizibile după text */
+		padding: 0;
+	}
+	/* Ultima bifa (Magazin / Pet-shop) încă 5 „spații” mai la dreapta față de text */
+	.cont-pf-left .signup-col-tip-option:last-child input[type="radio"] {
+		margin-left: 10ch;
+	}
+
+	/* Nota „Datele au fost actualizate” ca overlay mic peste primul rând de casete */
+	.cont-pf-updated {
+		position: absolute;
+		top: 0.15rem;
+		left: 0.8rem;
+		right: 0.8rem;
+		margin: 0;
+		padding: 0.2rem 0.4rem;
+		background: #e8f5e9;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		color: #2e7d32;
+		font-weight: 600;
+		text-align: center;
+		pointer-events: none;
+	}
+
+	/* Provizoriu: casetele din rândul 3 (Date la înscriere + caseta goală) pe verde */
+	.cont-pf-bottom-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.65rem;
+	}
+	.cont-pf-bottom-row .cont-pf-card {
+		background: #e0f7e9;
+		border-color: #9bd4b4;
+		height: 100%;
+	}
 
 	/* Slot poză din caseta de lângă avatar – stil inspirat din MyPet, dar scos doar aici */
 	.cont-pf-photo-card .mypet-fisa-photo-slot {
@@ -292,9 +420,10 @@ body.page-account .account-right-panel {
 		margin-bottom: 0;
 	}
 	.cont-pf-photo-card .mypet-fisa-photo-preview .img-crop {
-		max-width: 100%;
-		max-height: 100%;
+		width: 100%;
+		height: 100%;
 		display: block;
+		object-fit: cover;
 	}
 	.cont-pf-photo-card .mypet-fisa-photo-input-hidden {
 		position: absolute;
@@ -414,13 +543,205 @@ body.page-account .account-right-panel {
 {% endblock %}
 
 {% block content %}
-{% if account_profile.role == 'pf' %}
+{% if account_profile.role == 'pf' or account_profile.role == 'collaborator' %}
 {# Layout premium PF: stânga = caseta Modificare profil (integrală), mijloc = cont PF (roșu), dreapta = caseta albastră #}
 <div class="cont-pf-two-col" id="PFW">
-	{# Coloana stângă: caseta Modificare profil (aceeași ca pe pagina editează) #}
-	<aside class="cont-pf-left" aria-label="Modificare profil">
+	{# Coloana stângă: casetă cu toate câmpurile de firmă din fișa Colaborator (editabile în UI; salvarea completă va necesita un pas backend separat) #}
+	<aside class="cont-pf-left" aria-label="Date firmă">
+		<div class="cont-pf-edit-box cont-pf-edit-box-empty">
+			<h2>DATE FIRMĂ</h2>
+			<p class="edit-intro">Date firmă și tip colaborator (copiate din fișa de înscriere Colaborator).</p>
+			<form method="post" action="{% url 'account_edit' %}" class="edit-form-inner" id="firma-form">
+				{% csrf_token %}
+				<input type="hidden" name="form_type" value="firma" />
+				<div class="edit-form-grid">
+					{% with fp_firma=form_prefill_firma %}
+					<div class="signup-field span2">
+						<label for="id_company_display_name">Denumire afișată *</label>
+						<input type="text" id="id_company_display_name" name="company_display_name" value="{{ fp_firma.company_display_name|default:user_profile.company_display_name|default:'' }}" class="firma-field" readonly />
+					</div>
+					<div class="signup-field span2">
+						<label for="id_company_legal_name">Denumire societate</label>
+						<input type="text" id="id_company_legal_name" name="company_legal_name" value="{{ fp_firma.company_legal_name|default:user_profile.company_legal_name|default:'' }}" class="firma-field" readonly />
+					</div>
+					<div class="signup-field span2">
+						<label>CUI / CIF *</label>
+						<div class="signup-col-cui-row">
+							<div class="signup-col-cui-stanga">
+								<label for="id_company_cui_has_ro">RO</label>
+								<select id="id_company_cui_has_ro" name="company_cui_has_ro" class="firma-field">
+									<option value="nu" {% if fp_firma.company_cui_has_ro|default_if_none:'' != 'da' and not user_profile.company_cui_has_ro %}selected{% endif %}>Fără RO</option>
+									<option value="da" {% if fp_firma.company_cui_has_ro == 'da' or user_profile.company_cui_has_ro %}selected{% endif %}>RO</option>
+								</select>
+							</div>
+							<div class="signup-col-cui-dreapta">
+								<label for="id_company_cui">CUI</label>
+								<input type="text" id="id_company_cui" name="company_cui" value="{{ fp_firma.company_cui|default:user_profile.company_cui|default:'' }}" class="firma-field" readonly />
+							</div>
+						</div>
+					</div>
+					<div class="signup-field">
+						<label for="id_company_judet">Județ firmă *</label>
+						<input type="text" id="id_company_judet" name="company_judet" value="{{ fp_firma.company_judet|default:user_profile.company_judet|default:user_profile.judet }}" class="firma-field" readonly />
+					</div>
+					<div class="signup-field">
+						<label for="id_company_oras">Oraș / Localitate firmă *</label>
+						<input type="text" id="id_company_oras" name="company_oras" value="{{ fp_firma.company_oras|default:user_profile.company_oras|default:user_profile.oras }}" class="firma-field" readonly />
+					</div>
+					<div class="signup-field span2">
+						<label for="id_company_address">Adresă firmă</label>
+						<input type="text" id="id_company_address" name="company_address" value="{{ fp_firma.company_address|default:user_profile.company_address|default:'' }}" class="firma-field" readonly />
+					</div>
+				</div>
+				<div class="signup-field span2" style="margin-top:0.5rem;">
+					<label>Tip colaborator *</label>
+					<div class="signup-col-tip-options">
+						<label class="signup-col-tip-option">
+							<span>Cabinet / Clinică veterinară</span>
+							<input type="radio" name="collaborator_type" value="cabinet" class="firma-field" disabled {% if fp_firma.collaborator_type == 'cabinet' or user_profile.collaborator_type == 'cabinet' %}checked{% endif %} />
+						</label>
+						<label class="signup-col-tip-option">
+							<span>Servicii / Grooming / Dresaj</span>
+							<input type="radio" name="collaborator_type" value="servicii" class="firma-field" disabled {% if fp_firma.collaborator_type == 'servicii' or user_profile.collaborator_type == 'servicii' %}checked{% endif %} />
+						</label>
+						<label class="signup-col-tip-option">
+							<span>Magazin / Pet-shop</span>
+							<input type="radio" name="collaborator_type" value="magazin" class="firma-field" disabled {% if fp_firma.collaborator_type == 'magazin' or user_profile.collaborator_type == 'magazin' %}checked{% endif %} />
+						</label>
+					</div>
+				</div>
+				{% endwith %}
+				<div class="signup-actions" style="margin-top:0.6rem;">
+					<button type="button" id="btn-modificare-firma" class="btn-modificare-profil">Modificare date firmă</button>
+					<button type="submit" id="btn-save-firma" class="btn-save" style="display:none;" disabled>Salvează date firmă</button>
+				</div>
+			</form>
+		</div>
+	</aside>
+	{# Coloana din mijloc: caseta mare Contul meu (nemodificată) #}
+	<section class="cont-pf-wrap cont-pf-right" aria-label="Contul meu">
+		<div class="cont-pf-header-row">
+			<div class="cont-pf-header-card">
+				<div class="cont-pf-stats">
+					<span class="cont-pf-stat">În grija ta: <strong>{{ animale_in_grija|default:0 }}</strong></span>
+					<span class="cont-pf-stat">Adopții: <strong>{{ adoptii_finalizate|default:0 }}</strong></span>
+				</div>
+				<div class="cont-pf-header">
+					<div class="cont-pf-header-main">
+						<div class="cont-pf-avatar{% if user_profile and user_profile.poza_1 %} has-photo{% endif %}" aria-hidden="true">
+							{% if user_profile and user_profile.poza_1 %}
+								<img id="cont-avatar-circle-img" src="{{ user_profile.poza_1.url }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />
+							{% else %}
+								<span id="cont-avatar-circle-initials" class="cont-pf-avatar-initials">
+									{% if user.first_name or user.last_name %}
+										{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}
+									{% else %}
+										{{ user.username|slice:":2"|upper }}
+									{% endif %}
+								</span>
+							{% endif %}
+						</div>
+						<div class="cont-pf-header-text">
+							<h1>
+								{% if account_profile.role == 'collaborator' and user_profile and user_profile.company_display_name %}
+									{{ user_profile.company_display_name }}
+								{% else %}
+									{{ user.get_full_name|default:user.username }}
+								{% endif %}
+							</h1>
+							<p class="cont-pf-email">{{ user.email|default:"" }}</p>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="cont-pf-photo-card">
+				<div class="mypet-fisa-photo-slot mypet-fisa-photo-1{% if user_profile and user_profile.poza_1 %} has-photo{% endif %}">
+					<div class="mypet-fisa-photo-preview" id="pf-photo-preview" aria-hidden="true">
+						{% if user_profile and user_profile.poza_1 %}
+							<img src="{{ user_profile.poza_1.url }}" alt="Poză profil" class="img-crop" />
+						{% endif %}
+						<span class="mypet-fisa-photo-hint">Max 2 MB, JPEG</span>
+					</div>
+					<input type="file" id="id_avatar_file" accept="image/jpeg,image/jpg" class="mypet-fisa-photo-input-hidden" />
+					<div class="mypet-fisa-photo-actions">
+						<button type="button" class="mypet-fisa-zoom-btn" data-slot="1" data-action="in" title="Mărește">+</button>
+						<label for="id_avatar_file" class="mypet-fisa-photo-btn">Alege poza</label>
+						<button type="button" class="mypet-fisa-zoom-btn" data-slot="1" data-action="out" title="Micșorează">−</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="cont-pf-body">
+			{% if account_updated %}<p id="cont-account-updated-msg" class="cont-pf-updated">Datele au fost actualizate.</p>{% endif %}
+			{% if username_updated %}<p id="cont-username-updated-msg" class="cont-username-updated" style="grid-column:1/-1;">Numele de utilizator a fost actualizat.</p>{% endif %}
+			<div class="cont-pf-card">
+				<h2>Identificare</h2>
+				<p class="cont-username-row{% if username_updated %} after-username-success{% endif %}">
+					<span class="cont-username-view" id="cont-username-view">
+						<strong>User:</strong> {{ user.username }}
+						<button type="button" class="btn-modificare-user" id="btn-modificare-user" aria-label="Modificare user">Modificare user</button>
+					</span>
+					<div id="cont-username-edit-wrap" class="cont-username-edit-wrap" {% if not show_username_edit %}style="display:none;"{% endif %}>
+						<span class="cont-username-edit" id="cont-username-edit">
+							<form method="post" action="{% url 'account_edit_username' %}">
+								{% csrf_token %}
+								<label for="id_username_cont" class="sr-only">Nume utilizator</label>
+								<input type="text" id="id_username_cont" name="username" value="{{ username_tried|default:user.username }}" placeholder="Nume utilizator" required minlength="3" maxlength="150" />
+								<button type="submit" class="btn-save-user">Salvează</button>
+								<button type="button" class="btn-renunta-user" id="btn-renunta-user">Renunță</button>
+							</form>
+							{% if username_error %}
+							<p class="username-error" role="alert">{{ username_error }}</p>
+							{% if username_suggestions %}
+							<div class="username-suggestions">
+								<strong>Exemple disponibile:</strong>
+								<ul>{% for s in username_suggestions %}<li><code>{{ s }}</code></li>{% endfor %}</ul>
+							</div>
+							{% endif %}
+							{% endif %}
+						</span>
+					</div>
+				</p>
+				<p><strong>Nume:</strong> {{ user.last_name|default:"—" }}</p>
+				<p><strong>Prenume:</strong> {{ user.first_name|default:"—" }}</p>
+				<p><strong>Email:</strong> {{ user.email|default:"—" }}</p>
+			</div>
+			<div class="cont-pf-card">
+				<h2>Rol cont</h2>
+				{% if account_profile %}
+					<p><strong>Rol:</strong> {{ account_profile.get_role_display }}</p>
+					<p><strong>Postează animale:</strong> {{ account_profile.can_post_animals|yesno:"Da,Nu" }}</p>
+					<p><strong>Adoptă animale:</strong> {{ account_profile.can_adopt_animals|yesno:"Da,Nu" }}</p>
+				{% else %}
+					<p>—</p>
+				{% endif %}
+			</div>
+			<div class="cont-pf-bottom-row">
+				<div class="cont-pf-card">
+					<!-- Casetă goală, rezervată pentru viitoare informații -->
+				</div>
+				<div class="cont-pf-card">
+					<h2>Date la înscriere &amp; contact</h2>
+					{% if user_profile %}
+						<p><strong>Telefon:</strong> {{ user_profile.phone|default:"—" }}</p>
+						<p><strong>Județ:</strong> {{ user_profile.judet|default:"—" }} &nbsp; · &nbsp; <strong>Oraș:</strong> {{ user_profile.oras|default:"—" }}</p>
+						<p><strong>Accept termeni:</strong> {{ user_profile.accept_termeni|yesno:"Da,Nu" }} &nbsp; · &nbsp; <strong>GDPR:</strong> {{ user_profile.accept_gdpr|yesno:"Da,Nu" }} &nbsp; · &nbsp; <strong>Notificări wishlist:</strong> {{ user_profile.email_opt_in_wishlist|yesno:"Da,Nu" }}</p>
+						<p><strong>Persoană contact:</strong> {{ user.get_full_name|default:user.username }}</p>
+						<p><strong>Telefon contact:</strong> {{ user_profile.phone|default:"—" }}</p>
+					{% else %}
+						<p>Nu există încă profil salvat.</p>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+		<div class="cont-pf-footer">
+			<a href="{% url 'home' %}" class="btn-pf btn-pf-home">Înapoi la prima pagină</a>
+			<a href="{% url 'forgot_password' %}" class="btn-pf btn-pf-secondary">Schimbă parola</a>
+		</div>
+	</section>
+	<div class="account-right-panel" aria-label="Modificare profil">
 		<div class="cont-pf-edit-box" id="profil-box">
-			<h2>PROFIL</h2>
+			<h2>Date persoană contact</h2>
 			<p class="edit-intro">Modifică datele și salvează. Dacă schimbi telefonul sau emailul, vom verifica prin SMS și email.</p>
 			{% if edit_errors %}
 			<div class="signup-errors" role="alert">
@@ -487,175 +808,15 @@ body.page-account .account-right-panel {
 				</div>
 			</form>
 		</div>
-	</aside>
-	{# Coloana dreaptă: date cont (stats, header, carduri, butoane) #}
-	<section class="cont-pf-wrap cont-pf-right" aria-label="Contul meu">
-		<div class="cont-pf-header-row">
-			<div class="cont-pf-header-card">
-				<div class="cont-pf-stats">
-					<span class="cont-pf-stat">În grija ta: <strong>{{ animale_in_grija|default:0 }}</strong></span>
-					<span class="cont-pf-stat">Adopții: <strong>{{ adoptii_finalizate|default:0 }}</strong></span>
-				</div>
-				<div class="cont-pf-header">
-					<div class="cont-pf-header-main">
-						<div class="cont-pf-avatar{% if user_profile and user_profile.poza_1 %} has-photo{% endif %}" aria-hidden="true">
-							{% if user_profile and user_profile.poza_1 %}
-								<img id="cont-avatar-circle-img" src="{{ user_profile.poza_1.url }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />
-							{% else %}
-								<span id="cont-avatar-circle-initials" class="cont-pf-avatar-initials">
-									{% if user.first_name or user.last_name %}
-										{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}
-									{% else %}
-										{{ user.username|slice:":2"|upper }}
-									{% endif %}
-								</span>
-							{% endif %}
-						</div>
-						<div class="cont-pf-header-text">
-							<h1>{{ user.get_full_name|default:user.username }}</h1>
-							<p class="cont-pf-email">{{ user.email|default:"" }}</p>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="cont-pf-photo-card">
-				<div class="mypet-fisa-photo-slot mypet-fisa-photo-1{% if user_profile and user_profile.poza_1 %} has-photo{% endif %}">
-					<div class="mypet-fisa-photo-preview" id="pf-photo-preview" aria-hidden="true">
-						{% if user_profile and user_profile.poza_1 %}
-							<img src="{{ user_profile.poza_1.url }}" alt="Poză profil" class="img-crop" />
-						{% endif %}
-						<span class="mypet-fisa-photo-hint">Max 2 MB, JPEG</span>
-					</div>
-					<input type="file" id="id_avatar_file" accept="image/jpeg,image/jpg" class="mypet-fisa-photo-input-hidden" />
-					<div class="mypet-fisa-photo-actions">
-						<button type="button" class="mypet-fisa-zoom-btn" data-slot="1" data-action="in" title="Mărește">+</button>
-						<label for="id_avatar_file" class="mypet-fisa-photo-btn">Alege poza</label>
-						<button type="button" class="mypet-fisa-zoom-btn" data-slot="1" data-action="out" title="Micșorează">−</button>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="cont-pf-body">
-			{% if account_updated %}<p id="cont-account-updated-msg" class="cont-pf-updated" style="grid-column:1/-1;margin:0 0 0.4rem;padding:0.4rem 0.6rem;background:#e8f5e9;border-radius:8px;font-size:0.88rem;color:#2e7d32;font-weight:600;">Datele au fost actualizate.</p>{% endif %}
-			{% if username_updated %}<p id="cont-username-updated-msg" class="cont-username-updated" style="grid-column:1/-1;">Numele de utilizator a fost actualizat.</p>{% endif %}
-			<div class="cont-pf-card">
-				<h2>Identificare</h2>
-				<p class="cont-username-row{% if username_updated %} after-username-success{% endif %}">
-					<span class="cont-username-view" id="cont-username-view">
-						<strong>User:</strong> {{ user.username }}
-						<button type="button" class="btn-modificare-user" id="btn-modificare-user" aria-label="Modificare user">Modificare user</button>
-					</span>
-					<div id="cont-username-edit-wrap" class="cont-username-edit-wrap" {% if not show_username_edit %}style="display:none;"{% endif %}>
-						<span class="cont-username-edit" id="cont-username-edit">
-							<form method="post" action="{% url 'account_edit_username' %}">
-								{% csrf_token %}
-								<label for="id_username_cont" class="sr-only">Nume utilizator</label>
-								<input type="text" id="id_username_cont" name="username" value="{{ username_tried|default:user.username }}" placeholder="Nume utilizator" required minlength="3" maxlength="150" />
-								<button type="submit" class="btn-save-user">Salvează</button>
-								<button type="button" class="btn-renunta-user" id="btn-renunta-user">Renunță</button>
-							</form>
-							{% if username_error %}
-							<p class="username-error" role="alert">{{ username_error }}</p>
-							{% if username_suggestions %}
-							<div class="username-suggestions">
-								<strong>Exemple disponibile:</strong>
-								<ul>{% for s in username_suggestions %}<li><code>{{ s }}</code></li>{% endfor %}</ul>
-							</div>
-							{% endif %}
-							{% endif %}
-						</span>
-					</div>
-				</p>
-				<p><strong>Nume:</strong> {{ user.last_name|default:"—" }}</p>
-				<p><strong>Prenume:</strong> {{ user.first_name|default:"—" }}</p>
-				<p><strong>Email:</strong> {{ user.email|default:"—" }}</p>
-			</div>
-			<div class="cont-pf-card">
-				<h2>Rol cont</h2>
-				{% if account_profile %}
-					<p><strong>Rol:</strong> {{ account_profile.get_role_display }}</p>
-					<p><strong>Postează animale:</strong> {{ account_profile.can_post_animals|yesno:"Da,Nu" }}</p>
-					<p><strong>Adoptă animale:</strong> {{ account_profile.can_adopt_animals|yesno:"Da,Nu" }}</p>
-				{% else %}
-					<p>—</p>
-				{% endif %}
-			</div>
-			<div class="cont-pf-bottom-row">
-				<div class="cont-pf-card">
-					<h2>Date la înscriere</h2>
-					{% if user_profile %}
-						<p><strong>Telefon:</strong> {{ user_profile.phone|default:"—" }}</p>
-						<p><strong>Județ:</strong> {{ user_profile.judet|default:"—" }} &nbsp; · &nbsp; <strong>Oraș:</strong> {{ user_profile.oras|default:"—" }}</p>
-						<p><strong>Accept termeni:</strong> {{ user_profile.accept_termeni|yesno:"Da,Nu" }} &nbsp; · &nbsp; <strong>GDPR:</strong> {{ user_profile.accept_gdpr|yesno:"Da,Nu" }} &nbsp; · &nbsp; <strong>Notificări wishlist:</strong> {{ user_profile.email_opt_in_wishlist|yesno:"Da,Nu" }}</p>
-					{% else %}
-						<p>Nu există încă profil salvat.</p>
-					{% endif %}
-				</div>
-				<div class="cont-pf-card">
-					<!-- Casetă goală, simetrică cu „Date la înscriere” -->
-				</div>
-			</div>
-		</div>
-		<div class="cont-pf-footer">
-			<a href="{% url 'home' %}" class="btn-pf btn-pf-home">Înapoi la prima pagină</a>
-			<a href="{% url 'forgot_password' %}" class="btn-pf btn-pf-secondary">Schimbă parola</a>
-		</div>
-	</section>
-	<div class="account-right-panel">
-		<div class="account-right-panel-grid" aria-label="Informații suplimentare cont">
-			<div class="account-right-mini-card" data-slot="R1.1"></div>
-			<div class="account-right-mini-card" data-slot="R1.2"></div>
-			<div class="account-right-mini-card" data-slot="R2.1"></div>
-			<div class="account-right-mini-card" data-slot="R2.2"></div>
-			<div class="account-right-mini-card" data-slot="R3.1"></div>
-			<div class="account-right-mini-card" data-slot="R3.2"></div>
-		</div>
 	</div>
 </div>
 {% else %}
-{# ONG / Colaborator: layout standard cu scroll #}
-<section class="cont-meu" aria-label="Contul meu">
-	<h1 class="cont-meu-title">Contul meu</h1>
-	<p class="cont-meu-subtitle">Datele tale de înscriere și rolul contului.</p>
-	<div class="cont-meu-grid">
-		<div class="cont-meu-card">
-			<h2>Identificare</h2>
-			<p><strong>User:</strong> {{ user.username }}</p>
-			<p><strong>Email:</strong> {{ user.email|default:"—" }}</p>
-			<p><strong>Nume:</strong> {{ user.get_full_name|default:"—" }}</p>
-		</div>
-		<div class="cont-meu-card">
-			<h2>Rol cont</h2>
-			{% if account_profile %}
-				<p><strong>Rol:</strong> {{ account_profile.get_role_display }}</p>
-				<p><strong>Postează animale:</strong> {{ account_profile.can_post_animals|yesno:"Da,Nu" }}</p>
-				<p><strong>Adoptă animale:</strong> {{ account_profile.can_adopt_animals|yesno:"Da,Nu" }}</p>
-				<p><strong>Postează servicii/produse:</strong> {{ account_profile.can_post_services|yesno:"Da,Nu" }}</p>
-			{% else %}
-				<p>—</p>
-			{% endif %}
-		</div>
-	</div>
-	<div class="cont-meu-card cont-meu-section">
-		<h2>Date completate la înscriere</h2>
-		{% if user_profile %}
-			<p><strong>Telefon:</strong> {{ user_profile.phone|default:"—" }}</p>
-			<p><strong>Oraș:</strong> {{ user_profile.oras|default:"—" }}</p>
-			<p><strong>Accept termeni:</strong> {{ user_profile.accept_termeni|yesno:"Da,Nu" }}</p>
-			<p><strong>Accept GDPR:</strong> {{ user_profile.accept_gdpr|yesno:"Da,Nu" }}</p>
-		{% else %}
-			<p>Nu există încă profil salvat pentru acest cont.</p>
-		{% endif %}
-	</div>
-	<div class="cont-meu-actions">
-		<a href="{% url 'home' %}" class="btn-home">Înapoi la prima pagină</a>
-	</div>
-</section>
+{# Alt rol (ex. ONG organizație) – layout separat, de definit ulterior #}
 {% endif %}
 {% endblock %}
 
 {% block extra_js %}
-{% if account_profile.role == 'pf' %}
+{% if account_profile.role == 'pf' or account_profile.role == 'collaborator' %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -701,6 +862,27 @@ document.addEventListener('DOMContentLoaded', function() {
 		profilForm.addEventListener('input', enableSaveProfil);
 		profilForm.addEventListener('change', enableSaveProfil);
 	}
+	/* DATE FIRMĂ (Colaborator): Modificare date firmă → câmpuri editabile, apoi Salvează */
+	var firmaForm = document.getElementById('firma-form');
+	var btnModificareFirma = document.getElementById('btn-modificare-firma');
+	var btnSaveFirma = document.getElementById('btn-save-firma');
+	if (firmaForm && btnModificareFirma && btnSaveFirma) {
+		btnModificareFirma.addEventListener('click', function() {
+			var fields = firmaForm.querySelectorAll('.firma-field');
+			fields.forEach(function(el) {
+				el.removeAttribute('readonly');
+				el.removeAttribute('disabled');
+			});
+			btnModificareFirma.style.display = 'none';
+			btnSaveFirma.style.display = 'inline-flex';
+			btnSaveFirma.disabled = true;
+		});
+		function enableSaveFirma() {
+			btnSaveFirma.disabled = false;
+		}
+		firmaForm.addEventListener('input', enableSaveFirma);
+		firmaForm.addEventListener('change', enableSaveFirma);
+	}
 	/* Mesaj „Numele de utilizator a fost actualizat” dispare după 5 secunde */
 	var usernameUpdatedMsg = document.getElementById('cont-username-updated-msg');
 	if (usernameUpdatedMsg) {
@@ -708,23 +890,37 @@ document.addEventListener('DOMContentLoaded', function() {
 			usernameUpdatedMsg.style.display = 'none';
 		}, 5000);
 	}
-	/* Mesaj „Datele au fost actualizate” dispare după 5 secunde */
+	/* Mesaj „Datele au fost actualizate” dispare după 2 secunde */
 	var accountUpdatedMsg = document.getElementById('cont-account-updated-msg');
 	if (accountUpdatedMsg) {
 		setTimeout(function() {
 			accountUpdatedMsg.style.display = 'none';
-		}, 5000);
+		}, 2000);
 	}
 	/* După salvare (când mesajul de actualizare e vizibil), după 2 secunde butonul revine la „Modificare profil” */
-	if (accountUpdatedMsg && profilForm && btnModificareProfil && btnSaveProfil) {
+	if (accountUpdatedMsg) {
 		setTimeout(function() {
-			var fields = profilForm.querySelectorAll('.profil-field');
-			fields.forEach(function(el) {
-				el.setAttribute('readonly', 'readonly');
-				el.setAttribute('disabled', 'disabled');
-			});
-			btnSaveProfil.style.display = 'none';
-			btnModificareProfil.style.display = 'inline-flex';
+			if (profilForm && btnModificareProfil && btnSaveProfil) {
+				var fields = profilForm.querySelectorAll('.profil-field');
+				fields.forEach(function(el) {
+					el.setAttribute('readonly', 'readonly');
+					el.setAttribute('disabled', 'disabled');
+				});
+				btnSaveProfil.style.display = 'none';
+				btnModificareProfil.style.display = 'inline-flex';
+			}
+			if (firmaForm && btnModificareFirma && btnSaveFirma) {
+				var ffields = firmaForm.querySelectorAll('.firma-field');
+				ffields.forEach(function(el) {
+					if (el.tagName === 'INPUT' && el.type === 'text') {
+						el.setAttribute('readonly', 'readonly');
+					} else {
+						el.setAttribute('disabled', 'disabled');
+					}
+				});
+				btnSaveFirma.style.display = 'none';
+				btnModificareFirma.style.display = 'inline-flex';
+			}
 		}, 2000);
 	}
 });
@@ -819,6 +1015,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		ensureAvatarCircleImg();
 		var url = URL.createObjectURL(blob);
 		avatarCircleImg.src = url;
+		// Actualizăm și avatarul din navbar (dacă există) cu aceeași poză
+		var navAvatar = document.querySelector(".a0-nav-avatar");
+		if (navAvatar) {
+			navAvatar.src = url;
+		}
 	}
 
 	var avatarPreviewUpdateScheduled = false;

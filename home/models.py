@@ -16,6 +16,15 @@ class UserProfile(models.Model):
     phone = models.CharField("Telefon", max_length=20, blank=True)
     judet = models.CharField("Județ", max_length=120, blank=True)
     oras = models.CharField("Oraș / Localitate", max_length=120, blank=True)
+    # Date firmă / colaborator (ONG / SRL / Colaborator servicii-produse)
+    company_display_name = models.CharField("Denumire afișată", max_length=255, blank=True)
+    company_legal_name = models.CharField("Denumire societate", max_length=255, blank=True)
+    company_cui = models.CharField("CUI/CIF", max_length=32, blank=True)
+    company_cui_has_ro = models.BooleanField("CUI cu RO", default=False)
+    company_address = models.CharField("Adresă firmă", max_length=255, blank=True)
+    company_judet = models.CharField("Județ firmă", max_length=120, blank=True)
+    company_oras = models.CharField("Oraș firmă", max_length=120, blank=True)
+    collaborator_type = models.CharField("Tip colaborator", max_length=20, blank=True)  # cabinet/servicii/magazin
     poza_1 = models.ImageField(
         "Poză profil",
         upload_to="profiles/",

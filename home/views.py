@@ -97,15 +97,27 @@ def home_view(request):
         except (ValueError, TypeError):
             pass
     if request.resolver_match.url_name == "pets_all":
-        # P2: toți câinii activi; rândurile în funcție de număr; ultimul rând complet (4) prin repetare
+        # P2: câinii activi din DB (AnimalListing); dacă nu există, cădem pe lista demo (DEMO_DOGS)
         p2_list = []
-        for d in DEMO_DOGS:
-            p2_list.append({
-                "pk": d["id"],
-                "nume": d["nume"],
-                "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
-                "traits": (d.get("traits") or [])[:2],
-            })
+        db_pets = list(AnimalListing.objects.filter(is_published=True).order_by("-created_at")[:200])
+        if db_pets:
+            for listing in db_pets:
+                p2_list.append({
+                    "pk": listing.pk,
+                    "nume": listing.name or "—",
+                    "imagine": listing.photo_1,
+                    "imagine_fallback": DEMO_DOG_IMAGE,
+                    "traits": [],
+                })
+        else:
+            # fallback demo
+            for d in DEMO_DOGS:
+                p2_list.append({
+                    "pk": d["id"],
+                    "nume": d["nume"],
+                    "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
+                    "traits": (d.get("traits") or [])[:2],
+                })
         n = len(p2_list)
         need = (4 - n % 4) % 4  # completează ultimul rând la 4 (repetă câini din listă)
         if need and p2_list:
@@ -153,14 +165,31 @@ def home_view(request):
 
     is_home = request.resolver_match.url_name == "home"
 
-    # Available dogs for PT (Prietenul tău); demo: use DEMO_DOGS with default added_at so all are "old"
+    # Available dogs pentru A2 (HOME) / PT:
+    # 1) întâi din DB (AnimalListing, is_published=True), cu added_at = created_at
+    # 2) dacă nu există niciun câine în DB, folosim lista demo (DEMO_DOGS)
     available_for_pt = []
-    now = timezone.now()
-    for d in DEMO_DOGS:
-        row = deepcopy(d)
-        if "added_at" not in row:
-            row["added_at"] = now - timezone.timedelta(hours=A2_NEW_HOURS + 1)
-        available_for_pt.append(row)
+    db_pets_for_a2 = list(
+        AnimalListing.objects.filter(is_published=True).order_by("-created_at")[:200]
+    )
+    if db_pets_for_a2:
+        for listing in db_pets_for_a2:
+            available_for_pt.append({
+                "id": listing.pk,
+                "nume": listing.name or "—",
+                "varsta": listing.age_label or "",
+                "descriere": listing.cine_sunt or listing.probleme_medicale or "",
+                # păstrăm imaginea demo ca fallback – A2 folosește {% static pet.imagine_fallback %}
+                "imagine_fallback": DEMO_DOG_IMAGE,
+                "added_at": listing.created_at or timezone.now(),
+            })
+    else:
+        now = timezone.now()
+        for d in DEMO_DOGS:
+            row = deepcopy(d)
+            if "added_at" not in row:
+                row["added_at"] = now - timezone.timedelta(hours=A2_NEW_HOURS + 1)
+            available_for_pt.append(row)
 
     # A2: 12 dogs – new (last 24h) first, then fill randomly from PT
     a2_selected = select_a2_dogs(available_for_pt, limit=A2_SLOT_COUNT)
@@ -643,6 +672,15 @@ def signup_verificare_sms_view(request):
         profile.phone = full_phone
         profile.judet = data.get("judet", "")
         profile.oras = data.get("oras", "")
+        # Date firmă / colaborator salvate în profil pentru contul Colaborator
+        profile.company_display_name = data.get("denumire", "")
+        profile.company_legal_name = data.get("denumire_societate", "")
+        profile.company_cui = data.get("cui", "")
+        profile.company_cui_has_ro = (data.get("cui_cu_ro") == "da")
+        profile.company_address = data.get("adresa_firma", "")
+        profile.company_judet = data.get("judet", "")
+        profile.company_oras = data.get("oras", "")
+        profile.collaborator_type = data.get("tip_partener", "")
         profile.accept_termeni = data.get("accept_termeni", False)
         profile.accept_gdpr = data.get("accept_gdpr", False)
         profile.email_opt_in_wishlist = data.get("email_opt_in", False)
@@ -1144,10 +1182,43 @@ def shop_magazin_foto_view(request):
 
 
 def dog_profile_view(request, pk):
-    dog = next((d for d in DEMO_DOGS if d["id"] == pk), None)
-    if not dog:
-        dog = {"id": pk, "nume": "—", "varsta": "—", "descriere": ""}
-    ctx = {"pet": {"pk": dog["id"], "nume": dog["nume"], "varsta": dog["varsta"], "descriere": dog["descriere"], "imagine_fallback": dog.get("imagine_fallback", DEMO_DOG_IMAGE)}}
+    """
+    Fișa câinelui (PT) – afișează datele reale din AnimalListing.
+
+    Layoutul din `pets-single.html` folosește un obiect `pet` cu câmpuri istorice
+    (imagine, imagine_2, imagine_3, descriere etc.). Pentru lista MyPet / PT
+    mapăm câmpurile din AnimalListing pe aceste nume, fără să schimbăm șablonul.
+    """
+    from django.shortcuts import get_object_or_404
+
+    listing = get_object_or_404(AnimalListing, pk=pk, is_published=True)
+
+    # Mapare minimă către câmpurile folosite în șablonul existent
+    pet = {
+        "pk": listing.pk,
+        "nume": listing.name or "—",
+        "descriere": listing.cine_sunt or listing.probleme_medicale or "",
+        "imagine": listing.photo_1,
+        "imagine_2": listing.photo_2,
+        "imagine_3": listing.photo_3,
+        "imagine_fallback": DEMO_DOG_IMAGE,
+        "judet": listing.county,
+        "oras": listing.city,
+        "sex": listing.sex,
+        "species": listing.species,
+        "size": listing.size,
+        "age_label": listing.age_label,
+        "color": listing.color,
+        "sterilizat": listing.sterilizat,
+        "carnet_sanatate": listing.carnet_sanatate,
+        "cip": listing.cip,
+        "vaccin": listing.vaccinat,
+        "probleme_medicale": listing.probleme_medicale,
+    }
+
+    ctx = {
+        "pet": pet,
+    }
     return render(request, "anunturi/pets-single.html", ctx)
 
 
@@ -1166,13 +1237,15 @@ def account_view(request):
         "account_profile": account_profile,
         "user_profile": user_profile,
     }
-    # Statistici + form_prefill pentru PF (caseta modificare profil în pagină)
-    if account_profile and account_profile.role == AccountProfile.ROLE_PF:
+    # Statistici + form_prefill pentru PF/Colaborator (caseta modificare profil în pagină)
+    if account_profile and account_profile.role in (AccountProfile.ROLE_PF, AccountProfile.ROLE_COLLAB):
         ctx["animale_in_grija"] = AnimalListing.objects.filter(owner=user).count()
         ctx["adoptii_finalizate"] = UserAdoption.objects.filter(user=user, status="completed").count()
         if "edit_errors" in request.session:
             ctx["edit_errors"] = request.session.pop("edit_errors", [])
             ctx["form_prefill"] = request.session.pop("edit_prefill", {})
+            # dacă avem și prefill pentru firmă, îl populăm de asemenea
+            ctx["form_prefill_firma"] = request.session.pop("edit_prefill_firma", None)
         else:
             phone_country, phone = _parse_phone_for_edit(user_profile.phone if user_profile else "")
             ctx["form_prefill"] = {
@@ -1280,7 +1353,8 @@ def account_upload_avatar_view(request):
     """
     user = request.user
     account_profile = getattr(user, "account_profile", None)
-    if not account_profile or account_profile.role != AccountProfile.ROLE_PF:
+    # Permitem upload avatar atât pentru PF, cât și pentru Colaborator (aceeași logică)
+    if not account_profile or account_profile.role not in (AccountProfile.ROLE_PF, AccountProfile.ROLE_COLLAB):
         return JsonResponse({"ok": False, "error": "Nu este permis."}, status=403)
     print("FILES:", request.FILES)
     file_obj = request.FILES.get("avatar")
@@ -1346,17 +1420,77 @@ def _parse_phone_for_edit(phone_str):
 
 @login_required
 def account_edit_view(request):
-    """Editează profil PF: formular ca la înscriere, fără parolă. La salvare: dacă telefon/email schimbat → SMS apoi email."""
+    """Editează profil PF/Colaborator.
+
+    Două tipuri de formulare:
+    - form_type != 'firma' (implicit): date persoană (PF + colaborator) – ca la înscriere, fără parolă. Dacă telefon/email se schimbă → SMS apoi email.
+    - form_type == 'firma' (doar colaborator): date firmă (denumire, CUI, adresă, tip colaborator) – se salvează direct în UserProfile, fără SMS/email.
+    """
     User = get_user_model()
     user = request.user
     account_profile = getattr(user, "account_profile", None)
     user_profile = getattr(user, "profile", None)
-    if not account_profile or account_profile.role != AccountProfile.ROLE_PF:
+    if not account_profile or account_profile.role not in (AccountProfile.ROLE_PF, AccountProfile.ROLE_COLLAB):
         return redirect(reverse("account"))
 
     if request.method != "POST":
         return redirect(reverse("account"))
 
+    form_type = (request.POST.get("form_type") or "").strip()
+
+    # Formular „DATE FIRMĂ” – doar pentru colaborator
+    if form_type == "firma" and account_profile.role == AccountProfile.ROLE_COLLAB:
+        company_display_name = (request.POST.get("company_display_name") or "").strip()
+        company_legal_name = (request.POST.get("company_legal_name") or "").strip()
+        company_cui = (request.POST.get("company_cui") or "").strip()
+        company_cui_has_ro = (request.POST.get("company_cui_has_ro") or "") == "da"
+        company_judet = (request.POST.get("company_judet") or "").strip()
+        company_oras = (request.POST.get("company_oras") or "").strip()
+        company_address = (request.POST.get("company_address") or "").strip()
+        collaborator_type = (request.POST.get("collaborator_type") or "").strip()
+
+        errors = []
+        if not company_display_name:
+            errors.append("Denumirea afișată a firmei este obligatorie.")
+        if not company_cui:
+            errors.append("CUI/CIF este obligatoriu.")
+        if not company_judet:
+            errors.append("Județul firmei este obligatoriu.")
+        if not company_oras:
+            errors.append("Orașul/localitatea firmei este obligatorie.")
+        if collaborator_type not in ("cabinet", "servicii", "magazin"):
+            errors.append("Tipul de colaborator trebuie să fie Cabinet, Servicii sau Magazin.")
+
+        if errors:
+            request.session["edit_errors"] = errors
+            # prefill pentru firmă
+            request.session["edit_prefill_firma"] = {
+                "company_display_name": company_display_name,
+                "company_legal_name": company_legal_name,
+                "company_cui": company_cui,
+                "company_cui_has_ro": "da" if company_cui_has_ro else "nu",
+                "company_judet": company_judet,
+                "company_oras": company_oras,
+                "company_address": company_address,
+                "collaborator_type": collaborator_type,
+            }
+            return redirect(reverse("account"))
+
+        if user_profile is None:
+            user_profile = UserProfile.objects.create(user=user)
+        user_profile.company_display_name = company_display_name
+        user_profile.company_legal_name = company_legal_name
+        user_profile.company_cui = company_cui
+        user_profile.company_cui_has_ro = company_cui_has_ro
+        user_profile.company_judet = company_judet
+        user_profile.company_oras = company_oras
+        user_profile.company_address = company_address
+        user_profile.collaborator_type = collaborator_type
+        user_profile.save()
+        request.session["account_updated"] = True
+        return redirect(reverse("account") + "?updated=1")
+
+    # Formular principal (PF + colaborator) – date persoană
     first_name = (request.POST.get("first_name") or "").strip()
     last_name = (request.POST.get("last_name") or "").strip()
     email = (request.POST.get("email") or "").strip().lower()
@@ -1586,12 +1720,10 @@ def mypet_view(request):
     # Minim 20 rânduri pentru a vedea scroll-ul
     while len(pets) < 20:
         pets.append(None)
-    active_animals = AnimalListing.objects.filter(owner=user, is_published=True).count()
-    adopted_animals = UserAdoption.objects.filter(user=user, status="completed").count()
+    # Contorul din navbar folosește valorile globale din context processor (DEMO_DOGS),
+    # nu mai suprascriem aici active_animals/adopted_animals.
     return render(request, "anunturi/mypet.html", {
         "pets": pets,
-        "active_animals": active_animals,
-        "adopted_animals": adopted_animals,
     })
 
 
@@ -1690,7 +1822,8 @@ def mypet_add_view(request):
                     trait_necesita_experienta=trait("trait_necesita_experienta"),
                     is_published=True,
                 )
-                return redirect("mypet_edit", pk=listing.pk)
+                # După salvarea fișei noi, ducem userul în lista MyPet
+                return redirect("mypet")
             except Exception as exc:
                 error = str(exc)
         ctx = {
