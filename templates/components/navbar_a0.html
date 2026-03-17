@@ -30,7 +30,14 @@
 								<li><a href="{% url 'home' %}">Analiza</a></li>
 							{% endif %}
 							{% if user.is_authenticated %}
-								<li><a href="{% url 'account' %}">👤 {{ user.username }}</a></li>
+								<li><a href="{% url 'account' %}" class="a0-nav-account-link">
+									{% if nav_avatar_url %}
+										<span class="a0-nav-avatar-wrap"><img src="{{ nav_avatar_url }}" alt="" class="a0-nav-avatar" /></span>
+									{% else %}
+										<span class="a0-nav-avatar-placeholder" aria-hidden="true">👤</span>
+									{% endif %}
+									<span class="a0-nav-username">{{ user.username }}</span>
+								</a></li>
 							{% else %}
 							{% endif %}
 							<li>

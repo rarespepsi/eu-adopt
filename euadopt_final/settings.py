@@ -140,8 +140,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = ['static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Fișiere încărcate de utilizatori (ex: poză profil)
-MEDIA_URL = 'media/'
+# Fișiere încărcate de utilizatori (ex: poză profil) – URL de la rădăcina site-ului
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Email – trimitere din euadopt@gmail.com (Gmail)

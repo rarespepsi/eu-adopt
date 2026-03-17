@@ -204,7 +204,7 @@ body.page-account .account-right-panel {
 		background: rgba(255, 255, 255, 0.5);
 		border: 1px solid rgba(232, 232, 232, 0.9);
 		border-radius: 10px;
-		padding: 0.6rem 0.2rem 0.2rem;
+		padding: 0.4rem 0.35rem 0.35rem;
 		color: #333;
 	}
 	.cont-pf-header-card .cont-pf-header-text h1,
@@ -264,6 +264,103 @@ body.page-account .account-right-panel {
 	.cont-pf-card p { margin: 0.25rem 0; font-size: 0.82rem; color: #333; line-height: 1.35; }
 	.cont-pf-card p strong { color: #1a1a1a; }
 	.cont-pf-card.cont-pf-card-wide { grid-column: 1 / -1; }
+
+	/* Slot poză din caseta de lângă avatar – stil inspirat din MyPet, dar scos doar aici */
+	.cont-pf-photo-card .mypet-fisa-photo-slot {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		justify-content: flex-start;
+		gap: 0.25rem;
+		padding: 0.25rem 0.35rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		box-sizing: border-box;
+	}
+	.cont-pf-photo-card .mypet-fisa-photo-preview {
+		flex: 1 1 0;
+		min-height: 140px;
+		min-width: 0;
+		width: 100%;
+		display: flex;
+		align-items: stretch;
+		justify-content: stretch;
+		background: #ffe082;
+		border-radius: 4px 4px 0 0;
+		overflow: hidden;
+		position: relative;
+		margin-bottom: 0;
+	}
+	.cont-pf-photo-card .mypet-fisa-photo-preview .img-crop {
+		max-width: 100%;
+		max-height: 100%;
+		display: block;
+	}
+	.cont-pf-photo-card .mypet-fisa-photo-input-hidden {
+		position: absolute;
+		width: 0.1px;
+		height: 0.1px;
+		opacity: 0;
+		overflow: hidden;
+		z-index: -1;
+	}
+	.cont-pf-photo-card .mypet-fisa-photo-actions {
+		display: flex;
+		align-items: stretch;
+		gap: 0.2rem;
+		width: 100%;
+		margin-top: 0.3rem;
+	}
+	.cont-pf-photo-card .mypet-fisa-photo-actions .mypet-fisa-photo-btn {
+		flex: 1;
+		min-width: 0;
+		margin-top: 0;
+	}
+	.cont-pf-photo-card .mypet-fisa-photo-btn {
+		display: block;
+		width: 100%;
+		padding: 0.15rem 0.4rem;
+		font-size: 0.65rem;
+		font-weight: 700;
+		color: #fff;
+		background: #c62828;
+		border: none;
+		border-radius: 0;
+		cursor: pointer;
+		text-align: center;
+		box-sizing: border-box;
+	}
+	.cont-pf-photo-card .mypet-fisa-photo-btn:hover {
+		background: #b71c1c;
+		color: #fff;
+	}
+	.cont-pf-photo-card .mypet-fisa-zoom-btn {
+		display: block;
+		flex-shrink: 0;
+		width: 1.75rem;
+		min-height: 1.75rem;
+		padding: 0;
+		border: 1px solid #888;
+		border-radius: 4px;
+		background: #fff;
+		font-size: 1rem;
+		line-height: 1;
+		cursor: pointer;
+		color: #333;
+		font-weight: 700;
+	}
+	.cont-pf-photo-card .mypet-fisa-zoom-btn:hover {
+		background: #eee;
+		border-color: #555;
+	}
+	.cont-pf-photo-card .mypet-fisa-photo-hint {
+		position: absolute;
+		left: 0.35rem;
+		top: 0.25rem;
+		font-size: 0.65rem;
+		font-weight: 600;
+		color: #555;
+	}
 	.cont-pf-middle-row,
 	.cont-pf-bottom-row {
 		display: grid;
@@ -422,7 +519,20 @@ body.page-account .account-right-panel {
 				</div>
 			</div>
 			<div class="cont-pf-photo-card">
-				<!-- CASETA POZA (goală pentru moment) -->
+				<div class="mypet-fisa-photo-slot mypet-fisa-photo-1{% if user_profile and user_profile.poza_1 %} has-photo{% endif %}">
+					<div class="mypet-fisa-photo-preview" id="pf-photo-preview" aria-hidden="true">
+						{% if user_profile and user_profile.poza_1 %}
+							<img src="{{ user_profile.poza_1.url }}" alt="Poză profil" class="img-crop" />
+						{% endif %}
+						<span class="mypet-fisa-photo-hint">Max 2 MB, JPEG</span>
+					</div>
+					<input type="file" id="id_avatar_file" accept="image/jpeg,image/jpg" class="mypet-fisa-photo-input-hidden" />
+					<div class="mypet-fisa-photo-actions">
+						<button type="button" class="mypet-fisa-zoom-btn" data-slot="1" data-action="in" title="Mărește">+</button>
+						<label for="id_avatar_file" class="mypet-fisa-photo-btn">Alege poza</label>
+						<button type="button" class="mypet-fisa-zoom-btn" data-slot="1" data-action="out" title="Micșorează">−</button>
+					</div>
+				</div>
 			</div>
 		</div>
 		<div class="cont-pf-body">
@@ -683,9 +793,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 
-	function updateAvatarCircleFromBlob(blob) {
-		if (!blob) return;
-		var url = URL.createObjectURL(blob);
+	function ensureAvatarCircleImg() {
 		if (!avatarCircleImg) {
 			avatarCircleImg = document.createElement("img");
 			avatarCircleImg.id = "cont-avatar-circle-img";
@@ -704,7 +812,26 @@ document.addEventListener('DOMContentLoaded', function() {
 			avatarCircleInitials.parentNode.removeChild(avatarCircleInitials);
 			avatarCircleInitials = null;
 		}
+	}
+
+	function updateAvatarCircleFromBlob(blob) {
+		if (!blob) return;
+		ensureAvatarCircleImg();
+		var url = URL.createObjectURL(blob);
 		avatarCircleImg.src = url;
+	}
+
+	var avatarPreviewUpdateScheduled = false;
+	function updateAvatarCircleFromCanvas(canvas) {
+		if (!canvas || avatarPreviewUpdateScheduled) return;
+		avatarPreviewUpdateScheduled = true;
+		setTimeout(function() {
+			avatarPreviewUpdateScheduled = false;
+			ensureAvatarCircleImg();
+			try {
+				avatarCircleImg.src = canvas.toDataURL("image/jpeg", 0.7);
+			} catch (e) {}
+		}, 150);
 	}
 
 	function saveAvatarBlobToServer(blob) {
@@ -715,18 +842,28 @@ document.addEventListener('DOMContentLoaded', function() {
 		fetch("{% url 'account_upload_avatar' %}", {
 			method: "POST",
 			body: fd,
-			credentials: "same-origin"
+			credentials: "same-origin",
+			headers: { "X-Requested-With": "XMLHttpRequest" }
 		}).then(function(res) {
-			return res.json().catch(function() { return {}; });
-		}).then(function(data) {
-			if (data && data.url) {
-				if (avatarCircleImg) avatarCircleImg.src = data.url;
-				if (avatarPreview) {
-					var img = avatarPreview.querySelector("img.img-crop");
-					if (img) img.src = data.url;
-				}
+			return res.text().then(function(txt) {
+				var data = {};
+				try { data = JSON.parse(txt) || {}; } catch (e) {}
+				return { res: res, data: data };
+			});
+		}).then(function(o) {
+			var res = o.res, data = o.data;
+			if (data && data.ok) {
+				if (avatarLabel) { avatarLabel.textContent = "Salvat!"; }
+				setTimeout(function() {
+					if (avatarLabel) avatarLabel.textContent = "Alege poza";
+				}, 2000);
+			} else {
+				var msg = (data && data.error) ? data.error : ("Poza nu s-a putut salva. (HTTP " + (o.res ? o.res.status : "") + ")");
+				if (typeof alert !== "undefined") alert(msg);
 			}
-		}).catch(function() {});
+		}).catch(function(err) {
+			if (typeof alert !== "undefined") alert("Eroare la trimiterea pozei. Verifică consola (F12).");
+		});
 	}
 
 	function freezeSlot() {
@@ -787,24 +924,43 @@ document.addEventListener('DOMContentLoaded', function() {
 			avatarLabel.removeAttribute("for");
 			var img = document.createElement("img");
 			img.className = "img-crop";
-			img.src = URL.createObjectURL(file);
+			var objectUrl = URL.createObjectURL(file);
+			img.src = objectUrl;
 			img.alt = "Poză profil";
 			avatarPreview.appendChild(img);
+			/* Afișăm poza și în cercul avatar imediat ce e aleasă */
+			ensureAvatarCircleImg();
+			if (avatarCircleImg) avatarCircleImg.src = objectUrl;
 			if (typeof Cropper !== "undefined") {
-				var w = avatarPreview.offsetWidth;
-				var h = avatarPreview.offsetHeight;
-				var ratio = (w && h) ? (w / h) : 1;
+				/* Pentru avatar: păstrăm un crop pătrat (ca cercul avatarului) */
+				var ratio = 1;
 				croppers[n] = new Cropper(img, {
 					aspectRatio: ratio,
-					viewMode: 3,
+					viewMode: 1,
 					dragMode: "move",
-					autoCropArea: 1,
+					autoCropArea: 0.7,
 					restore: false,
 					guides: true,
 					center: true,
 					highlight: false,
 					cropBoxMovable: true,
-					cropBoxResizable: true
+					cropBoxResizable: true,
+					crop: function() {
+						try {
+							var box = croppers[n].getCropBoxData();
+							var cw = Math.round(box.width) || 200;
+							var ch = Math.round(box.height) || 200;
+							var canvas = croppers[n].getCroppedCanvas({
+								width: cw,
+								height: ch,
+								imageSmoothingEnabled: true,
+								imageSmoothingQuality: "high"
+							});
+							if (canvas) {
+								updateAvatarCircleFromCanvas(canvas);
+							}
+						} catch (e) {}
+					}
 				});
 			}
 		});

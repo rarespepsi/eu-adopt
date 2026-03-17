@@ -10,6 +10,7 @@ class UserProfile(models.Model):
     """
     Profil extensie pentru User (persoană fizică).
     Datele din formularul de înregistrare PF: telefon, oraș, poză, acorduri.
+    Poză: salvată permanent în profiles/ (MEDIA_ROOT).
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     phone = models.CharField("Telefon", max_length=20, blank=True)

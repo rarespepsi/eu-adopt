@@ -10,6 +10,9 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.http import JsonResponse
+from django.core.files.base import ContentFile
+from django.conf import settings
+import os
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
@@ -1155,7 +1158,10 @@ def account_view(request):
 
     user = request.user
     account_profile = getattr(user, "account_profile", None)
-    user_profile = getattr(user, "profile", None)
+    # Întotdeauna citim profilul din DB (nu din cache) ca poza salvată să apară la revenire
+    user_profile = UserProfile.objects.filter(user=user).first()
+    if account_profile and account_profile.role == AccountProfile.ROLE_PF and user_profile is None:
+        user_profile = UserProfile.objects.create(user=user)
     ctx = {
         "account_profile": account_profile,
         "user_profile": user_profile,
@@ -1190,7 +1196,12 @@ def account_view(request):
             ctx["username_suggestions"] = request.session.pop("username_suggestions", [])
             ctx["username_tried"] = request.session.pop("username_tried", "")
             ctx["show_username_edit"] = True
-    return render(request, "anunturi/account.html", ctx)
+    response = render(request, "anunturi/account.html", ctx)
+    # Fără cache – ca la revenire pe pagină să se vadă poza salvată, nu versiunea veche
+    response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response["Pragma"] = "no-cache"
+    response["Expires"] = "0"
+    return response
 
 
 def _username_suggestions(tried, user_pk):
@@ -1260,24 +1271,61 @@ def account_edit_username_view(request):
 @login_required
 @require_POST
 def account_upload_avatar_view(request):
+    print("UPLOAD VIEW HIT")
     """
-    Upload/crop poză profil pentru PF.
-    Primește un singur fișier 'avatar' (JPEG) și îl salvează în UserProfile.poza_1.
+    Upload/crop poză profil pentru PF. Salvare permanentă:
+    - fișier pe disc în MEDIA_ROOT/profiles/<user_id>/ (scale la sute/mii de useri),
+    - referință în UserProfile.poza_1 (baza de date).
+    La refresh sau pe orice pagină, poza se încarcă din media (navbar, pagină cont).
     """
     user = request.user
     account_profile = getattr(user, "account_profile", None)
     if not account_profile or account_profile.role != AccountProfile.ROLE_PF:
         return JsonResponse({"ok": False, "error": "Nu este permis."}, status=403)
+    print("FILES:", request.FILES)
     file_obj = request.FILES.get("avatar")
+    print("FILE OBJ:", file_obj)
     if not file_obj:
         return JsonResponse({"ok": False, "error": "Nu s-a trimis niciun fișier."}, status=400)
-    profile, _ = UserProfile.objects.get_or_create(user=user, defaults={})
-    profile.poza_1 = file_obj
-    profile.save()
+    profiles_dir = os.path.join(settings.MEDIA_ROOT, "profiles")
+    print("MEDIA_ROOT:", settings.MEDIA_ROOT)
+    print("profiles dir exists:", os.path.isdir(profiles_dir))
+    if not os.path.isdir(profiles_dir):
+        try:
+            os.makedirs(profiles_dir, exist_ok=True)
+            print("Created profiles dir")
+        except Exception as e_dir:
+            print("Failed to create profiles dir:", e_dir)
     try:
-        url = profile.poza_1.url
+        raw = file_obj.read()
+        print("raw length:", len(raw) if raw else 0)
+        if not raw:
+            return JsonResponse({"ok": False, "error": "Fișierul este gol."}, status=400)
+        profile, _ = UserProfile.objects.get_or_create(user=user, defaults={})
+        safe_name = "avatar_%s_%s.jpg" % (user.id, timezone.now().strftime("%Y%m%d%H%M%S"))
+        print("safe_name:", safe_name)
+        content = ContentFile(raw)
+        print("ContentFile created")
+        profile.poza_1.save(safe_name, content, save=True)
+        print("save() done")
+        profile.refresh_from_db()
+        print("poza_1.name after save:", getattr(profile.poza_1, "name", None))
+        if not profile.poza_1.name:
+            return JsonResponse({"ok": False, "error": "Poza nu s-a salvat în baza de date."}, status=500)
+    except Exception as e:
+        print("EXCEPTION in save:", type(e).__name__, str(e))
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({"ok": False, "error": "Eroare la salvare: " + str(e)}, status=500)
+    url = ""
+    try:
+        rel_url = profile.poza_1.url
+        if rel_url:
+            url = rel_url if rel_url.startswith("/") else "/" + rel_url.lstrip("/")
     except Exception:
-        url = ""
+        pass
+    if not url:
+        return JsonResponse({"ok": False, "error": "Poza s-a salvat dar URL-ul lipsește."}, status=500)
     return JsonResponse({"ok": True, "url": url})
 
 

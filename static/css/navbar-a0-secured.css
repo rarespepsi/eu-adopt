@@ -110,6 +110,7 @@ body:not(.page-home-v2):not(.page-animale) #main_content {
 	justify-content: flex-start !important;
 	position: relative !important;
 }
+
 /* Contor la marginea navbar (absolute left -5cm în zona de padding) */
 #A0 #main_menu .a0-left {
 	position: absolute !important;
@@ -125,6 +126,7 @@ body:not(.page-home-v2):not(.page-animale) #main_content {
 	pointer-events: none !important;
 }
 #A0 #main_menu .a0-left .animal-counter-navbar { pointer-events: auto !important; }
+
 #A0 #main_menu .a0-search-right {
 	position: absolute !important;
 	right: -15.35625rem !important; /* cu 0,5cm la stânga față de -7cm */
@@ -137,7 +139,7 @@ body:not(.page-home-v2):not(.page-animale) #main_content {
 	transform: none !important;
 	min-height: auto !important;
 	height: auto !important;
-	margin: 0 0 0 7.0875rem !important; /* Acasă până la Termeni (ex 3cm) */
+	margin: 0 0 0 calc(7.0875rem - 3cm) !important; /* cu 3cm mai la stânga; contorul rămâne fix */
 	padding: 0 !important;
 	display: flex !important;
 	align-items: center !important;
@@ -265,6 +267,7 @@ width: 35.4375rem !important;
 }
 #A0 #main_menu ul li a {
 	line-height: var(--nav-height) !important;
+	height: var(--nav-height) !important;
 	padding: 0 calc(var(--btn-padding-h) / 3) !important;
 	margin: 0 !important;
 	display: flex !important;
@@ -309,8 +312,47 @@ width: 35.4375rem !important;
 	background: #e53935 !important;
 }
 
-/* Dacă textul "Intră / Fă cont" cere spațiu, mutăm meniul și căutarea puțin spre dreapta */
-#A0 #menu_wrap.a0-right { margin: 0 0 0 8.26875rem !important; }
+/* Avatar utilizator în navbar – vizibil pe toate paginile */
+#A0 #main_menu ul li a.a0-nav-account-link {
+	gap: 6px !important;
+	/* micșorăm poziția avatar+username cu 1cm spre stânga față de poziția meniului */
+	margin-left: -1cm !important;
+}
+/* Wrapper rotund – taie imaginea în cerc (overflow + clip-path) */
+#A0 #main_menu .a0-nav-avatar-wrap {
+	display: inline-block !important;
+	width: 14px !important;
+	height: 14px !important;
+	min-width: 14px !important;
+	max-width: 14px !important;
+	border-radius: 50% !important;
+	overflow: hidden !important;
+	flex-shrink: 0 !important;
+	clip-path: circle(7px at 50% 50%) !important;
+	box-sizing: border-box !important;
+}
+#A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar,
+body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
+\t/* de test: ascundem complet poza din avatar */
+\tdisplay: none !important;
+}
+#A0 #main_menu .a0-nav-avatar-wrap {
+\t/* de test: fundal vizibil ca să știm sigur că lucrăm în avatar */
+\tbackground: linear-gradient(135deg, #ff9800, #e91e63) !important;
+\tborder: 1px solid #fff !important;
+}
+#A0 #main_menu .a0-nav-avatar-placeholder {
+	width: 14px !important;
+	height: 14px !important;
+	min-width: 14px !important;
+	border-radius: 50% !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	font-size: 10px !important;
+}
+
+/* Dacă textul "Intră / Fă cont" cere spațiu, mutăm DOAR căutarea puțin spre dreapta (meniul are un singur control de poziție la #A0 #menu_wrap) */
 #A0 #main_menu .a0-search-right { right: -17.71875rem !important; }
 
 /* Contor stânga/dreapta */
