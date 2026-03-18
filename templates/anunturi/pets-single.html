@@ -12,721 +12,616 @@
 		<link rel="stylesheet" href="{% static 'includes/fancybox/jquery.fancybox.css' %}" type="text/css" media="screen" />
 		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
 		<style>
-			.back-to-friends-btn {
-				display: inline-flex;
-				flex-direction: column;
-				align-items: center;
-				text-decoration: none;
-				margin: 1.5rem 0;
-				cursor: pointer;
-				border: none;
-				background: none;
-				transition: transform 0.2s;
+			/* PET SINGLE – clonă vizuală MyPet Fișă (read-only) */
+			body.page-pet-single #main_wrap,
+			body.page-pet-single #main_content {
+				min-height: 100vh;
+				margin: 0;
+				padding: 0;
 			}
-			.back-to-friends-btn:hover { transform: scale(1.05); }
-			.back-to-friends-bubble {
-				position: relative;
-				display: inline-block;
-				padding: 0.5rem 1rem;
-				background: #fff;
-				border: 2px solid #c62828;
-				border-radius: 12px;
-				color: #c62828;
-				font-weight: 700;
-				font-size: 0.9rem;
-				white-space: nowrap;
-				margin-bottom: 4px;
-				box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			/* fără sidebar-uri pe fișa PET */
+			body.page-pet-single .layout {
+				display: block;
 			}
-			.back-to-friends-bubble::after {
-				content: '';
-				position: absolute;
-				left: 50%;
-				bottom: -10px;
-				margin-left: -10px;
-				border: 10px solid transparent;
-				border-top-color: #c62828;
+			body.page-pet-single .sidebar-left,
+			body.page-pet-single .sidebar-right {
+				display: none !important;
 			}
-			.back-to-friends-bubble::before {
-				content: '';
-				position: absolute;
-				left: 50%;
-				bottom: -6px;
-				margin-left: -8px;
-				border: 8px solid transparent;
-				border-top-color: #fff;
-				z-index: 1;
+			body.page-pet-single .main-content {
+				width: 100% !important;
+				max-width: 100% !important;
 			}
-			.back-to-friends-dog {
-				font-size: 3rem;
-				line-height: 1;
+
+			/* Forțează layout full-width (fără container îngust) */
+			body.page-pet-single #main_content .container,
+			body.page-pet-single #main_content .posts-wrap,
+			body.page-pet-single #main_content .page,
+			body.page-pet-single #main_content .entry-content {
+				width: 100% !important;
+				max-width: 100% !important;
+				margin: 0 !important;
+				padding: 0 !important;
+				box-sizing: border-box !important;
 			}
-			.pet-single-detail {
-				display: flex;
-				align-items: flex-start;
-				gap: 1.5rem;
-				margin-top: 0.25rem;
-			}
-			body.page-pet-single .entry-content {
-				margin-left: 0;
-				padding-left: 0;
-			}
-			body.page-pet-single h2.entry-title {
-				margin-top: 0.5rem;
-				margin-bottom: 0.25rem;
-			}
-			.pet-single-right-col {
-				margin-top: 0;
-			}
-			.pet-single-right-box {
-				margin-top: 0;
-			}
-			.pet-image-with-back {
+
+			.mypet-fisa-wrap {
+				height: calc(100vh - var(--nav-h, 64px) - 8px);
 				display: flex;
 				align-items: stretch;
-				gap: 1rem;
-				flex-wrap: wrap;
-				margin-bottom: 1rem;
-				margin-left: -19rem; /* un pas înapoi spre interior */
+				justify-content: flex-start;
+				padding: 0;
+				margin: 0;
+				box-sizing: border-box;
+				overflow: hidden;
+				background: #f5e39b;
 			}
-			.pet-image-with-back .pet-image-col {
+
+			.mypet-fisa-inner {
+				display: grid;
+				grid-template-columns: 0.8fr 2.4fr 1.1fr;
+				grid-template-rows: auto 1fr;
+				width: 100%;
+				height: 100%;
+				margin: 0;
+				box-sizing: border-box;
+			}
+
+			.mypet-fisa-col {
+				box-sizing: border-box;
+			}
+
+			/* Coloana stânga – poze */
+			.mypet-fisa-col-photos {
 				display: flex;
 				flex-direction: column;
-				gap: 0.5rem;
-				flex-shrink: 0;
+				grid-row: 1 / 3;
+				grid-column: 1 / 2;
 			}
-			.pet-adopt-cta-under-photo {
-				margin-top: 0.5rem;
+
+			.mypet-fisa-photo-slot {
+				flex: 1 1 0;
+				display: flex;
+				flex-direction: column;
+				align-items: stretch;
+				justify-content: flex-start;
+				gap: 0.25rem;
+				padding: 0.25rem 0.35rem;
+				font-size: 0.75rem;
+				font-weight: 600;
+				border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+				box-sizing: border-box;
+			}
+
+			.mypet-fisa-photo-1,
+			.mypet-fisa-photo-2,
+			.mypet-fisa-photo-3 {
+				flex: 1.05 1 0;
+				padding-bottom: 0;
+			}
+
+			.mypet-fisa-photo-4 {
+				flex: 0.85 1 0;
+				min-height: 0;
+			}
+			.mypet-fisa-video-box {
+				display: flex;
+				flex-direction: column;
+				align-items: stretch;
+				justify-content: flex-start;
+				gap: 0.2rem;
+				flex: 1 1 0;
+				min-height: 0;
+				padding: 0.2rem 0;
+				text-align: center;
+			}
+			.mypet-fisa-video-preview {
+				position: relative;
+				flex: 1 1 0;
+				min-height: 3rem;
+				background: rgba(0,0,0,0.06);
+				border-radius: 4px;
+				overflow: hidden;
+				display: flex;
+				align-items: flex-end;
+				justify-content: center;
+			}
+			.mypet-fisa-video-preview video {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
 				display: block;
 			}
-			.pet-adopt-cta-under-photo .pet-hero-cta {
-				display: inline-block;
+			.mypet-fisa-video-btn-overlay {
+				position: relative;
+				z-index: 2;
 				width: 100%;
-				max-width: 237px;
-				text-align: center;
-				padding: 0.5rem 1rem;
-				font-size: 0.95rem;
-				background: #c62828;
-				color: #fff;
+				padding: 0.35rem 0.5rem;
+				font-size: 0.7rem;
 				font-weight: 700;
-				text-decoration: none;
-				border-radius: 8px;
+				color: #333;
+				background: rgba(255,248,225,0.9);
 				border: none;
-				box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-				transition: background 0.2s;
-			}
-			.pet-adopt-cta-under-photo .pet-hero-cta:hover { background: #b71c1c; color: #fff; }
-			.pet-adopt-cta-under-photo .pet-hero-cta-disabled {
-				display: inline-block;
-				width: 100%;
-				max-width: 237px;
-				text-align: center;
-				padding: 0.5rem 1rem;
-				font-size: 0.95rem;
-				background: #e0e0e0;
-				color: #666;
-				font-weight: 600;
-				border-radius: 8px;
 				cursor: default;
-			}
-			.pet-pending-notice {
-				background: #b71c1c;
-				color: #fff;
-				padding: 1rem 1.25rem;
-				border-radius: 8px;
-				font-weight: 700;
-				font-size: 1rem;
-				line-height: 1.35;
 				text-align: center;
-				box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-				max-width: 275px;
+				display: block;
+				text-decoration: none;
+				user-select: none;
 			}
-			.adoption-form-errors {
-				list-style: none;
-				margin: 0 0 1rem;
-				padding: 1rem;
-				background: #ffebee;
-				border: 1px solid #c62828;
-				border-radius: 8px;
-				color: #b71c1c;
-				font-weight: 600;
+			.mypet-fisa-video-hint {
+				font-size: 0.6rem;
+				color: #666;
+				text-align: center;
 			}
-			.adoption-form-errors li { margin: 0; }
-			.pet-sticky-aplica-btn-disabled, .pet-hero-cta-disabled {
-				opacity: 0.7;
-				cursor: not-allowed;
+			.mypet-fisa-video-link {
+				font-size: 0.6rem;
+				color: #1565c0;
+				text-align: center;
+				text-decoration: none;
 				pointer-events: none;
 			}
-			.pet-your-request-notice {
-				margin: 0.75rem 0 0;
-				padding: 0.5rem 0.75rem;
-				background: #e8f5e9;
-				border-radius: 6px;
-				font-size: 0.9rem;
-				color: #2e7d32;
-			}
-			.pet-badge-adopted-msg { background: #e0e0e0; color: #333; }
-			.pet-badge-unavailable-msg { background: #ffebee; color: #c62828; }
-			.pet-badge-rezervat-msg { background: #e65100; color: #fff; }
-			.pet-image-with-back .pet-image {
-				flex-shrink: 0;
-				width: 275px;
+
+			.mypet-fisa-photo-preview {
+				flex: 1 1 0;
+				min-height: 80px;
+				min-width: 0;
+				width: 100%;
 				display: flex;
-				min-height: 0;
+				align-items: stretch;
+				justify-content: stretch;
+				background: rgba(0,0,0,0.06);
+				border-radius: 4px 4px 0 0;
+				overflow: hidden;
 				position: relative;
+				margin-bottom: 0;
 			}
-			.pet-te-plac-wrap { position: absolute; bottom: 8px; right: 8px; z-index: 5; }
-			.pet-te-plac-btn {
-				display: inline-block;
-				padding: 6px 12px;
-				background: rgba(255,255,255,0.95);
-				color: #c62828;
-				border-radius: 8px;
-				font-weight: 600;
-				font-size: 0.9rem;
-				text-decoration: none;
-				box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-			}
-			.pet-te-plac-btn:hover { background: #fff; color: #b71c1c; }
-			.pet-te-plac-btn.pet-te-plac-active { background: #c62828; color: #fff; }
-			.pet-te-plac-btn.pet-te-plac-active:hover { background: #b71c1c; color: #fff; }
-			.pet-image-with-back .pet-image img {
+			.mypet-fisa-photo-preview img {
+				max-width: 100%;
+				max-height: 100%;
+				object-fit: contain;
+				display: block;
+				vertical-align: middle;
 				width: 100%;
 				height: 100%;
-				object-fit: cover;
-				display: block;
 			}
-			.pet-fisa-three-photos { width: 280px; max-width: 100%; }
-			.pet-fisa-slots {
+			.mypet-fisa-photo-hint {
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				display: block;
+				width: 100%;
+				text-align: center;
+				font-size: 0.65rem;
+				font-weight: 500;
+				color: #555;
+				padding: 0.25rem 0;
+				z-index: 2;
+				background: rgba(255,255,255,0.35);
+			}
+
+			.mypet-fisa-photo-actions {
+				display: flex;
+				align-items: stretch;
+				gap: 0.2rem;
+				width: 100%;
+			}
+			.mypet-fisa-photo-btn {
+				display: block;
+				width: 100%;
+				margin-top: 0;
+				padding: 0.15rem 0.4rem;
+				font-size: 0.65rem;
+				font-weight: 700;
+				color: #fff;
+				background: #c62828;
+				border: none;
+				border-radius: 0;
+				cursor: default;
+				text-align: center;
+				box-sizing: border-box;
+				user-select: none;
+				pointer-events: none;
+			}
+			.mypet-fisa-zoom-btn { display: none !important; }
+
+			.mypet-fisa-photo-1 { background: #ffe082; }
+			.mypet-fisa-photo-2 { background: #b3e5fc; }
+			.mypet-fisa-photo-3 { background: #80cbc4; }
+			.mypet-fisa-photo-4 { background: #fff3e0; }
+
+			/* Coloana mijloc – fișa */
+			.mypet-fisa-col-main {
+				padding: 0.4rem 0.6rem;
+				padding-right: 0;
 				display: flex;
 				flex-direction: column;
-				gap: 0.75rem;
-				margin-bottom: 0.75rem;
+				grid-row: 2 / 3;
+				grid-column: 2 / 3;
 			}
-			.pet-fisa-slot {
-				position: relative;
-				width: 100%;
-				aspect-ratio: 4 / 3;
-				overflow: hidden;
-				background: #f0f0f0;
-				border-radius: 8px;
-				border: 1px solid #e0e0e0;
+
+			.mypet-fisa-header-row {
+				display: grid;
+				grid-template-columns: auto 1fr auto;
+				align-items: center;
+				margin-bottom: 0.4rem;
+				grid-row: 1 / 2;
+				grid-column: 2 / 4;
 			}
-			.pet-fisa-slot img {
-				width: 100%;
-				height: 100%;
-				object-fit: cover;
-				display: block;
+
+			.mypet-fisa-tab {
+				background: #9d1c1c;
+				color: #fff;
+				padding: 0.35rem 0.9rem;
+				border-radius: 18px;
+				font-size: 0.85rem;
+				font-weight: 800;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
 			}
-			.pet-fisa-slot-empty {
+
+			.mypet-fisa-header-actions {
 				display: flex;
+				gap: 0.4rem;
+			}
+
+			.mypet-fisa-main-box {
+				flex: 1 1 auto;
+				min-height: 0;
+				background: #ffecb3;
+				border-radius: 8px 0 0 8px;
+				padding: 0.35rem 0.5rem;
+				box-sizing: border-box;
+			}
+
+			.mypet-fisa-main-cols {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 0.4rem;
+				height: 100%;
+			}
+
+			.mypet-fisa-main-col {
+				display: flex;
+				flex-direction: column;
+				gap: 0.18rem;
+			}
+
+			.mypet-fisa-section-title {
+				margin: 0 0 0.25rem 0;
+				font-size: 0.85rem;
+				font-weight: 800;
+				text-transform: uppercase;
+				color: #7b5c00;
+			}
+
+			.mypet-add-field {
+				display: flex;
+				flex-direction: column;
+				gap: 0.1rem;
+			}
+
+			.mypet-add-field label {
+				font-size: 0.8rem;
+				font-weight: 600;
+				color: #5c3c00;
+			}
+
+			.mypet-add-field input,
+			.mypet-add-field textarea {
+				width: 100%;
+				box-sizing: border-box;
+				padding: 0.25rem 0.35rem;
+				font-size: 0.8rem;
+				border-radius: 4px;
+				border: 1px solid #d2b27a;
+				background: #fffef7;
+			}
+			.mypet-add-field select {
+				width: 100%;
+				box-sizing: border-box;
+				padding: 0.25rem 1.85rem 0.25rem 0.35rem;
+				font-size: 0.8rem;
+				border-radius: 4px;
+				border: 1px solid #d2b27a;
+				appearance: none;
+				-moz-appearance: none;
+				-webkit-appearance: none;
+				background-color: #fffef7;
+				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%23222' d='M7 10L2 4h10z'/%3E%3C/svg%3E");
+				background-repeat: no-repeat;
+				background-position: right 0.5rem center;
+			}
+			.mypet-add-field input.mypet-fisa-input-with-arrow {
+				background-color: #fffef7;
+				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%23222' d='M7 10L2 4h10z'/%3E%3C/svg%3E");
+				background-repeat: no-repeat;
+				background-position: right 0.5rem center;
+				padding-right: 1.85rem;
+			}
+
+			.mypet-add-field textarea { resize: none; }
+			.mypet-fisa-textarea { height: 3.2rem; }
+			.mypet-fisa-field-medical textarea {
+				height: 4.08rem;
+				min-height: 4.08rem;
+				max-height: 4.08rem;
+				overflow-y: scroll;
+			}
+			.mypet-fisa-field-story { margin-top: 0.15rem; }
+			.mypet-fisa-field-story textarea {
+				height: 4.8rem;
+				min-height: 4.8rem;
+				max-height: 4.8rem;
+				overflow-y: scroll;
+			}
+
+			/* Coloana dreapta – trăsături adoptator */
+			.mypet-fisa-col-traits {
+				padding: 0.4rem 0.55rem 0.4rem 0;
+				background: transparent;
+				border-left: none;
+				display: flex;
+				flex-direction: column;
+				grid-row: 2 / 3;
+				grid-column: 3 / 4;
+			}
+
+			.mypet-fisa-traits-box {
+				flex: 1 1 auto;
+				min-height: 0;
+				background: #ffecb3;
+				border-radius: 0 8px 8px 0;
+				padding: 0.35rem 0.5rem;
+				box-sizing: border-box;
+				display: flex;
+				flex-direction: column;
+			}
+
+			.mypet-fisa-traits-list {
+				list-style: none;
+				margin: 0.25rem 0 0;
+				padding: 0;
+				font-size: 0.8rem;
+				display: flex;
+				flex-direction: column;
+				gap: 0.15rem;
+			}
+
+			.mypet-fisa-traits-list label {
+				display: grid;
+				grid-template-columns: auto 1fr;
+				gap: 0.35rem;
+				align-items: center;
+				color: #5c3c00;
+			}
+
+			.mypet-fisa-traits-list input[type="checkbox"] { margin: 0; }
+
+			.mypet-btn {
+				display: inline-flex;
 				align-items: center;
 				justify-content: center;
-				width: 100%;
-				height: 100%;
-				color: #999;
-				font-size: 0.9rem;
-			}
-			.pet-gallery-extra {
-				display: flex;
-				gap: 0.5rem;
-				margin-top: 0.5rem;
-				flex-wrap: wrap;
-			}
-			.pet-gallery-extra .pet-extra-thumb {
-				width: 80px;
-				height: 80px;
-				object-fit: cover;
-				border-radius: 6px;
-				border: 1px solid #e5e5e5;
-			}
-			.pet-image-with-back .back-to-friends-btn {
-				flex-shrink: 0;
-				margin: 0;
-			}
-			.pet-image-with-back .share-bar {
-				flex-basis: 100%;
-				width: 100%;
-			}
-			.pet-single-right-col {
-				display: flex;
-				flex-direction: column;
-				align-items: flex-start;
-				gap: 1rem;
-				flex-shrink: 0;
-			}
-			.pet-single-right-box {
-				width: 280px;
-				max-width: 100%;
-				background: #f5f5f5;
-				border-radius: 10px;
-				padding: 1rem;
-				border: 1px solid #e5e5e5;
-			}
-			.pet-single-topics {
-				list-style: none;
-				margin: 1rem 0 0;
-				padding: 0;
-				font-size: 0.9rem;
-				line-height: 1.6;
-				color: #333;
-			}
-			.pet-single-topics li {
-				margin: 0.25rem 0;
-				padding-left: 0.75rem;
-				position: relative;
-			}
-			.pet-single-topics li::before {
-				content: "•";
-				position: absolute;
-				left: 0;
-				color: #c62828;
-			}
-			.pet-single-ask-row {
-				margin-top: 1rem;
-				padding-top: 1rem;
-				background: #e8f0f8;
-				margin-left: -1rem;
-				margin-right: -1rem;
-				margin-bottom: -1rem;
-				padding: 1rem;
-				border-radius: 0 0 10px 10px;
-				text-align: center;
-			}
-			.pet-single-ask-btn {
-				display: inline-block;
-				background: #c62828;
-				color: #fff;
+				padding: 0.35rem 0.9rem;
+				border-radius: 999px;
+				font-size: 0.8rem;
 				font-weight: 700;
-				font-size: 0.95rem;
-				padding: 0.6rem 1.2rem;
-				border-radius: 8px;
 				text-decoration: none;
-				transition: background 0.2s, transform 0.2s;
+				border: 1px solid transparent;
+				cursor: default;
+				white-space: nowrap;
+				user-select: none;
+				pointer-events: none;
 			}
-			.pet-single-ask-btn:hover {
-				background: #a01e1e;
-				color: #fff;
-				transform: scale(1.02);
-			}
-			.pet-hero-card {
-				width: 100%;
-				background: #fff;
-				border: 1px solid #e5e5e5;
-				border-radius: 10px;
-				padding: 1rem;
-				margin-bottom: 1rem;
-			}
-			.pet-hero-card h3 {
-				margin: 0 0 0.5rem;
-				font-size: 1rem;
-				color: #333;
-			}
-			.pet-hero-card .pet-hero-meta {
-				font-size: 0.9rem;
-				color: #555;
-				line-height: 1.5;
-				margin-bottom: 0.5rem;
-			}
-			.pet-hero-card .pet-hero-traits {
-				font-size: 0.85rem;
-				color: #666;
-				margin-bottom: 1rem;
-			}
-			.pet-hero-cta {
-				display: inline-block;
-				background: #c62828;
-				color: #fff !important;
-				font-weight: 700;
-				font-size: 0.95rem;
-				padding: 0.6rem 1.2rem;
-				border-radius: 8px;
-				text-decoration: none;
-				transition: background 0.2s, transform 0.2s;
-			}
-			.pet-hero-cta:hover {
-				background: #a01e1e;
-				color: #fff !important;
-				transform: scale(1.02);
-			}
-			.pet-story-block {
-				width: 100%;
-				margin-bottom: 1rem;
-			}
-			.pet-story-block h4 {
-				margin: 0 0 0.5rem;
-				font-size: 0.95rem;
-				color: #333;
-			}
-			.pet-story-block p {
-				margin: 0;
-				font-size: 0.9rem;
-				color: #555;
-				line-height: 1.5;
-				max-width: 100%;
-			}
-			.pet-form-intro {
-				text-align: center;
-				padding: 1rem 0;
-				margin-bottom: 1rem;
-			}
-			.pet-form-intro p {
-				margin: 0;
-				font-size: 0.95rem;
-				color: #555;
-				line-height: 1.5;
-			}
-			.pet-form-intro strong { color: #c62828; }
-			.pet-related-section {
-				margin-top: 2rem;
-				padding-top: 1.5rem;
-				border-top: 1px solid #e5e5e5;
-			}
-			.pet-related-section h4 {
-				margin: 0 0 1rem;
-				font-size: 1rem;
-				color: #333;
-			}
-			.pet-related-cards {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 1rem;
-			}
-			.pet-related-card {
-				width: calc(25% - 0.75rem);
-				min-width: 120px;
-				text-align: center;
-				text-decoration: none;
-				color: inherit;
-			}
-			.pet-related-card img {
-				width: 100%;
-				aspect-ratio: 1;
-				object-fit: cover;
-				border-radius: 8px;
-				border: 1px solid #e5e5e5;
-			}
-			.pet-related-card span {
-				display: block;
-				margin-top: 0.25rem;
-				font-size: 0.85rem;
-				font-weight: 600;
-			}
-			.pet-related-card:hover img {
-				border-color: #c62828;
-			}
-			@media (prefers-reduced-motion: no-preference) {
-				html { scroll-behavior: smooth; }
-				body.page-pet-single .posts-wrap .page {
-					animation: petPageEnter 0.3s ease-out;
-				}
-				@keyframes petPageEnter {
-					from { opacity: 0; transform: translateY(12px); }
-					to { opacity: 1; transform: translateY(0); }
-				}
-			}
-			@media (prefers-reduced-motion: reduce) {
-				body.page-pet-single .posts-wrap .page { animation: none; }
-			}
-			.pet-sticky-aplica-btn {
-				position: fixed;
-				right: 20px;
-				top: 50%;
-				transform: translateY(-50%);
-				z-index: 100;
-				display: inline-block;
-				padding: 12px 20px;
-				background: #c62828;
-				color: #fff !important;
-				font-weight: 700;
-				font-size: 0.9rem;
-				border-radius: 8px;
-				text-decoration: none !important;
-				box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-				transition: background 0.25s, transform 0.25s, box-shadow 0.25s;
-			}
-			.pet-sticky-aplica-btn:hover {
-				background: #a01e1e;
-				transform: translateY(-50%) scale(1.03);
-				box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-				color: #fff !important;
-			}
-			.pet-sanitar-box {
-				margin-top: 1rem;
-				padding: 1rem;
-				background: #f0f8f0;
-				border: 1px solid #c8e6c9;
-				border-radius: 8px;
-			}
-			.pet-sanitar-box h4 {
-				margin: 0 0 0.5rem;
-				font-size: 0.95rem;
-				color: #2e7d32;
-			}
-			.pet-sanitar-box ul {
-				margin: 0;
-				padding-left: 1.25rem;
-				font-size: 0.9rem;
-				color: #333;
-				line-height: 1.6;
-			}
+			.mypet-btn-primary { background: #9d1c1c; color: #fff; }
+			.mypet-btn-secondary { background: #fff8e1; color: #5d4037; border-color: #ffcc80; }
 		</style>
 	</head>
 	<body class="content_left scheme_red page-pet-single" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
 		<section id="main_wrap">
 			{% include "components/navbar_a0.html" %}
-		<section class="wrapper" id="main_content">
+			<section class="wrapper" id="main_content">
 				<div class="container clearfix">
 					<div class="posts-wrap">
 						<section class="page">
-							<h2 class="entry-title">{{ pet.nume }}</h2>
 							<div class="entry-content clearfix">
-								<div class="pet-single-detail clearfix">
-										<div class="pet-image-with-back">
-										<div class="pet-image-col pet-fisa-three-photos">
-										{% if pet.adoption_status == "reserved" or pet.is_reserved %}
-										<div class="pet-pending-notice pet-badge-rezervat-msg" role="alert">REZERVAT / În curs</div>
-										{% if user_adoption_request %}
-										<div class="pet-pending-notice" style="margin-top: 4px; font-size: 0.9rem;">Poziția ta în coadă: {{ user_adoption_request.queue_position }}</div>
-										{% endif %}
-										{% elif pet.has_active_requests %}
-										<div class="pet-pending-notice" role="alert">
-											REZERVAT / În curs
-											{% if user_adoption_request %}
-											<br><strong>Poziția ta în coadă: {{ user_adoption_request.queue_position }}</strong>
-											{% endif %}
-										</div>
-										{% endif %}
-										{% if pet.adoption_status == "adopted" %}
-										<div class="pet-pending-notice pet-badge-adopted-msg" role="alert">Adoptat</div>
-										{% elif pet.adoption_status == "unavailable" %}
-										<div class="pet-pending-notice pet-badge-unavailable-msg" role="alert">Indisponibil</div>
-										{% endif %}
-										<div class="pet-fisa-slots">
-											<div class="pet-fisa-slot pet-photo-anim">
-												{% if pet.imagine %}
-													<img src="{{ pet.imagine.url }}" alt="{{ pet.nume }}" class="attachment-pet_single_large" onerror="this.src='{% static 'images/pets/charlie-275x275.jpg' %}';this.onerror=null;" />
-												{% elif pet.imagine_fallback %}
-													<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }}" class="attachment-pet_single_large" />
-												{% else %}
-													<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="{{ pet.nume }}" class="attachment-pet_single_large" />
-												{% endif %}
-											</div>
-											<div class="pet-fisa-slot pet-photo-anim">
-												{% if pet.imagine_2 %}
-													<img src="{{ pet.imagine_2.url }}" alt="{{ pet.nume }} 2" class="attachment-pet_single_large" onerror="this.style.display='none';" />
-												{% elif pet.imagine_fallback %}
-													<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }} 2" class="attachment-pet_single_large" />
-												{% else %}
-													<span class="pet-fisa-slot-empty">Poza 2</span>
-												{% endif %}
-											</div>
-											<div class="pet-fisa-slot pet-photo-anim">
-												{% if pet.imagine_3 %}
-													<img src="{{ pet.imagine_3.url }}" alt="{{ pet.nume }} 3" class="attachment-pet_single_large" onerror="this.style.display='none';" />
-												{% elif pet.imagine_fallback %}
-													<img src="{% static pet.imagine_fallback %}" alt="{{ pet.nume }} 3" class="attachment-pet_single_large" />
-												{% else %}
-													<span class="pet-fisa-slot-empty">Poza 3</span>
-												{% endif %}
-											</div>
-											<div class="pet-fisa-slot pet-photo-anim">
-												<span class="pet-fisa-slot-empty">Video (în curând)</span>
-											</div>
-										</div>
-										<div class="pet-te-plac-wrap">
-											{% if user.is_authenticated %}
-												{% if pet.pk in wishlist_pet_ids %}
-												<a href="{% url 'wishlist_toggle' %}?action=remove" class="pet-te-plac-btn pet-te-plac-active" title="Scoate din lista mea">❤️ În lista mea</a>
-												{% else %}
-												<a href="{% url 'wishlist_toggle' %}" class="pet-te-plac-btn" title="Adaugă la lista mea">🤍 Te plac</a>
-												{% endif %}
-											{% else %}
-												<a href="{% url 'home' %}?next={% url 'pets_all' %}" class="pet-te-plac-btn" title="Adaugă la lista mea (autentificare)">🤍 <span class="login-required-lock-icon">🔒</span> Te plac</a>
-											{% endif %}
-										</div>
-										<div class="pet-adopt-cta-under-photo">
-											{% if user_adoption_request %}
-												<span class="pet-hero-cta pet-hero-cta-disabled" title="Ai deja o cerere">Ai deja o cerere: {{ user_adoption_request.get_status_display }}</span>
-											{% elif pet.adoption_status == "reserved" or pet.is_reserved %}
-												{% if request.user.is_authenticated %}
-												<a href="{% url 'adoption_form_page' pet.pk %}" class="pet-hero-cta" target="_blank" rel="noopener">🐾 Intră pe lista de așteptare</a>
-												{% else %}
-												<a href="{% url 'home' %}?next={{ request.get_full_path|urlencode }}" class="pet-hero-cta">🔒 Intră pe lista de așteptare</a>
-												{% endif %}
-											{% elif pet.adoption_status == "available" or pet.has_active_requests %}
-												{% if request.user.is_authenticated %}
-												<a href="{% url 'adoption_form_page' pet.pk %}" class="pet-hero-cta" target="_blank" rel="noopener">🐾 {% if pet.has_active_requests %}Aplică (rezervă){% else %}{% if pet.sex == 'female' %}Vreau s-o cunosc{% else %}Vreau să îl adopt{% endif %}{% endif %}</a>
-												{% else %}
-												<a href="{% url 'home' %}?next={{ request.get_full_path|urlencode }}" class="pet-hero-cta">🔒 {% if pet.has_active_requests %}Aplică (rezervă){% else %}{% if pet.sex == 'female' %}Vreau s-o cunosc{% else %}Vreau să îl adopt{% endif %}{% endif %}</a>
-												{% endif %}
-											{% else %}
-												<span class="pet-hero-cta pet-hero-cta-disabled" title="Momentan indisponibil">Momentan indisponibil</span>
-											{% endif %}
-										</div>
-										</div>
-										<div class="pet-single-right-col">
-											<a href="{% url 'pets_all' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" class="back-to-friends-btn" title="Înapoi la Prietenul tău">
-												<span class="back-to-friends-bubble">ÎNAPOI LA PRIETENII MEI</span>
-												<span class="back-to-friends-dog" aria-hidden="true">🐕</span>
-											</a>
-											<div class="pet-single-right-box">
-											<div class="pet-hero-card">
-												<h3>🐾 {{ pet.nume }} caută familie</h3>
-												<div class="pet-hero-meta">
-													📍 {% if pet.oras or pet.judet %}{{ pet.oras|default:"" }}{% if pet.oras and pet.judet %}, {% endif %}{{ pet.judet|default:"" }}{% else %}—{% endif %}<br />
-													{% if pet.sex %}Sex: {{ pet.sex }}{% endif %}{% if pet.age_label %} • Vârstă: {{ pet.age_label }}{% endif %}{% if pet.size %} • Talie: {{ pet.size }}{% endif %}
+								<section id="MW" class="mypet-fisa-wrap">
+									<div class="mypet-fisa-inner">
+										<div class="mypet-fisa-col mypet-fisa-col-photos">
+											<div class="mypet-fisa-photo-slot mypet-fisa-photo-1">
+												<div class="mypet-fisa-photo-preview" aria-hidden="true">
+													{% if pet.imagine %}
+														<img src="{{ pet.imagine.url }}" alt="Poza 1" class="img-crop" />
+													{% else %}
+														<img src="{% static pet.imagine_fallback|default:'images/pets/charlie-275x275.jpg' %}" alt="Poza 1" class="img-crop" />
+													{% endif %}
+													<span class="mypet-fisa-photo-hint">Max 2 MB, JPEG</span>
 												</div>
-												{% if pet.color %}
-												<div class="pet-hero-traits">❤️ Culoare: {{ pet.color }}</div>
-												{% endif %}
+												<div class="mypet-fisa-photo-actions">
+													<span class="mypet-fisa-photo-btn">Alege poza</span>
+												</div>
 											</div>
-											{% if user_adoption_request %}
-											<p class="pet-your-request-notice">Ai deja o cerere pentru acest câine: <strong>{{ user_adoption_request.get_status_display }}</strong>. Poziția ta în coadă: <strong>{{ user_adoption_request.queue_position }}</strong>.</p>
-											{% endif %}
-											{% if pet.descriere %}
-											<div class="pet-story-block">
-												<h4>🐾 Povestea mea</h4>
-												<p>{{ pet.descriere|truncatewords:40 }}</p>
+											<div class="mypet-fisa-photo-slot mypet-fisa-photo-2">
+												<div class="mypet-fisa-photo-preview" aria-hidden="true">
+													{% if pet.imagine_2 %}
+														<img src="{{ pet.imagine_2.url }}" alt="Poza 2" class="img-crop" />
+													{% else %}
+														<img src="{% static pet.imagine_fallback|default:'images/pets/charlie-275x275.jpg' %}" alt="Poza 2" class="img-crop" />
+													{% endif %}
+													<span class="mypet-fisa-photo-hint">Max 2 MB, JPEG</span>
+												</div>
+												<div class="mypet-fisa-photo-actions">
+													<span class="mypet-fisa-photo-btn">Alege poza</span>
+												</div>
 											</div>
-											{% endif %}
-											<ul class="pet-single-topics">
-												<li>🏠 Viața cu mine</li>
-												<li>🍖 Ce îmi place să mănânc</li>
-												<li>🏃 De câtă mișcare am nevoie</li>
-												<li>😊 Cum mă acomodez acasă</li>
-												<li>⚠️ La ce trebuie să fii atent</li>
-											</ul>
-											<div class="pet-single-ask-row">
-												<a href="#" class="pet-single-ask-btn">ÎNTREABĂ DESPRE MINE!</a>
+											<div class="mypet-fisa-photo-slot mypet-fisa-photo-3">
+												<div class="mypet-fisa-photo-preview" aria-hidden="true">
+													{% if pet.imagine_3 %}
+														<img src="{{ pet.imagine_3.url }}" alt="Poza 3" class="img-crop" />
+													{% else %}
+														<img src="{% static pet.imagine_fallback|default:'images/pets/charlie-275x275.jpg' %}" alt="Poza 3" class="img-crop" />
+													{% endif %}
+													<span class="mypet-fisa-photo-hint">Max 2 MB, JPEG</span>
+												</div>
+												<div class="mypet-fisa-photo-actions">
+													<span class="mypet-fisa-photo-btn">Alege poza</span>
+												</div>
 											</div>
+											<div class="mypet-fisa-photo-slot mypet-fisa-photo-4">
+												<div class="mypet-fisa-video-box">
+													<div class="mypet-fisa-video-preview" id="video_preview">
+														<span class="mypet-fisa-video-btn-overlay" id="video_btn_label">Alege video</span>
+													</div>
+													<span class="mypet-fisa-video-hint">MP4, max. 30 sec, max. 10 MB</span>
+													<a class="mypet-fisa-video-link">Taie sau micșorează video înainte</a>
+												</div>
 											</div>
 										</div>
-										{% with page_url=request.build_absolute_uri %}
-										{% with share_text="Vezi acest animal pentru adopție pe EU-ADOPT:" %}
-										{% with email_subject="EU-ADOPT – Animal pentru adopție" %}
-										{% with email_body=share_text|add:" "|add:page_url %}
-										<div class="share-bar">
-											<h5 class="share-bar-label">Distribuie</h5>
-											<a href="https://api.whatsapp.com/send?text={{ share_text|urlencode }}%20{{ page_url|urlencode }}" target="_blank" rel="noopener noreferrer" class="share-btn share-wa" title="WhatsApp">WhatsApp</a>
-											<a href="https://www.facebook.com/sharer/sharer.php?u={{ page_url|urlencode }}" target="_blank" rel="noopener noreferrer" class="share-btn share-fb" title="Facebook">Facebook</a>
-											<a href="mailto:?subject={{ email_subject|urlencode }}&body={{ email_body|urlencode }}" class="share-btn share-mail" title="Trimite pe email">Email</a>
-											<button type="button" class="share-btn share-copy" id="copyLinkBtn" title="Copiază link">Copiază link</button>
-											<div class="share-bar-note">Pentru Instagram/TikTok: apasă „Copiază link” și lipește în postare/Story.</div>
-										</div>
-										{% endwith %}
-										{% endwith %}
-										{% endwith %}
-										{% endwith %}
-									</div>
-									<div class="pet-info">
-										<div class="breed">
-											{% if pet.species == "dog" %}Câine{% elif pet.species == "cat" %}Pisică{% elif pet.species %}{{ pet.species }}{% endif %}
-											{% if pet.sex %} – {{ pet.sex }}{% endif %}
-											{% if pet.age_label %} – {{ pet.age_label }}{% endif %}
-											{% if pet.size %} – {{ pet.size }}{% endif %}
-										</div>
-										{% if pet.descriere %}
-											<p>{{ pet.descriere|linebreaks }}</p>
-										{% endif %}
-										{% with rec_text=pet.generate_recommendation_text %}
-										{% if rec_text %}
-											<div class="pet-recommendation-box" style="margin-top:1rem; padding:1rem; background:#f0f7f0; border-radius:8px; border-left:4px solid #2e7d32;">
-												<h4 style="margin:0 0 0.5rem 0; font-size:1rem;">✨ Recomandare</h4>
-												<p style="margin:0;">Acest animal este recomandat pentru: <strong>{{ rec_text }}</strong>.</p>
-											</div>
-										{% endif %}
-										{% endwith %}
-										{% if pet.descriere_personalitate %}
-											<div class="pet-descriere-personalitate" style="margin-top:1rem;">
-												<h4 style="margin:0 0 0.5rem 0; font-size:1rem;">😊 Despre personalitate</h4>
-												<p style="margin:0;">{{ pet.descriere_personalitate|linebreaks }}</p>
-											</div>
-										{% endif %}
-									</div>
-									{% if pet.sterilizat or pet.cip or pet.carnet_sanatate or pet.vaccin or pet.probleme_medicale %}
-									<div class="pet-sanitar-box">
-										<h4>🏥 Sanitar</h4>
-										<ul>
-											{% if pet.sterilizat %}
-											<li><strong>Sterilizat/Castrat:</strong> {{ pet.sterilizat }}</li>
-											{% endif %}
-											{% if pet.cip %}
-											<li><strong>CIP:</strong> {{ pet.cip }}</li>
-											{% endif %}
-											{% if pet.carnet_sanatate %}
-											<li><strong>Carnet de sănătate:</strong> {{ pet.carnet_sanatate }}</li>
-											{% endif %}
-											{% if pet.vaccin %}
-											<li><strong>Vaccin:</strong> {{ pet.vaccin }}</li>
-											{% endif %}
-											{% if pet.probleme_medicale %}
-											<li><strong>Probleme medicale:</strong> {{ pet.probleme_medicale }}</li>
-											{% endif %}
-										</ul>
-									</div>
-									{% endif %}
-								</div>
 
-								{% if messages %}
-								<ul class="adoption-messages">
-									{% for message in messages %}
-									<li class="message-{{ message.tags }}">{{ message }}</li>
-									{% endfor %}
-								</ul>
-								{% endif %}
-
-								{% if is_owner and pet_cereri %}
-								<section class="pet-cereri-owner" style="margin-bottom: 2rem;">
-									<h3>Cereri adopție</h3>
-									<ul style="list-style: none; margin: 0; padding: 0;">
-										{% for req in pet_cereri %}
-										<li style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; margin-bottom: 0.5rem; background: #fafafa;">
-											{{ req.nume_complet }} – {{ req.email }} ({{ req.get_status_display }})
-											{% if pet.adoption_status == "reserved" and req.status == "approved" or pet.adoption_status == "reserved" and req.status == "approved_ong" %}
-											<div style="margin-top: 0.5rem;">
-												<form method="post" action="{% url 'adoption_finalize' req.pk %}" style="display:inline;" class="js-finalize-form-pet" data-pet-name="{{ pet.nume }}">
-													{% csrf_token %}
-													<input type="hidden" name="confirm" value="1" />
-													<input type="hidden" name="next" value="{{ request.path }}" />
-													<button type="submit" class="button" style="background: #2e7d32;">Adopție finalizată</button>
-												</form>
-												<form method="post" action="{% url 'adoption_cancel_reservation' req.pk %}" style="display:inline;">
-													{% csrf_token %}
-													<input type="hidden" name="next" value="{{ request.path }}" />
-													<button type="submit" class="button" style="background: #c62828;">Anulează rezervarea</button>
-												</form>
+										<div class="mypet-fisa-header-row">
+											<div class="mypet-fisa-tab">FIȘA PET</div>
+											<div class="mypet-fisa-header-spacer"></div>
+											<div class="mypet-fisa-header-actions">
+												<span class="mypet-btn mypet-btn-primary">SALVEAZĂ FIȘA</span>
+												<span class="mypet-btn mypet-btn-secondary">ÎNAPOI LA MYPET</span>
 											</div>
-											{% endif %}
-										</li>
-										{% endfor %}
-									</ul>
+										</div>
+
+										<div class="mypet-fisa-col mypet-fisa-col-main">
+											<div class="mypet-fisa-main-box">
+												<div class="mypet-fisa-main-cols">
+													<div class="mypet-fisa-main-col">
+														<h3 class="mypet-fisa-section-title">Date de bază</h3>
+
+														<div class="mypet-add-field">
+															<label for="id_name">NUME PET *</label>
+															<input type="text" id="id_name" value="{{ pet.nume|default:'' }}" maxlength="120" disabled />
+														</div>
+
+														<div class="mypet-add-field">
+															<label for="id_species">SPECIE</label>
+															<select id="id_species" disabled>
+																<option value="dog" {% if pet.species == "dog" %}selected{% endif %}>Câine</option>
+																<option value="cat" {% if pet.species == "cat" %}selected{% endif %}>Pisică</option>
+																<option value="other" {% if pet.species == "other" %}selected{% endif %}>Alt animal</option>
+															</select>
+														</div>
+
+														<div class="mypet-add-field">
+															<label for="id_age_label">VÂRSTĂ APROXIMATIVĂ *</label>
+															<select id="id_age_label" disabled>
+																<option value="">{{ pet.age_label|default:"Alege" }}</option>
+															</select>
+														</div>
+
+														<div class="mypet-add-field">
+															<label for="id_size">TALIE *</label>
+															<select id="id_size" disabled>
+																<option value="">{{ pet.size|default:"Alege" }}</option>
+															</select>
+														</div>
+
+														<div class="mypet-add-field">
+															<label for="id_color">CULOARE</label>
+															<select id="id_color" disabled>
+																<option value="">{{ pet.color|default:"Alege" }}</option>
+															</select>
+														</div>
+
+														<div class="mypet-add-field">
+															<label for="id_sterilizat">STERILIZAT</label>
+															<select id="id_sterilizat" disabled>
+																<option value="">{{ pet.sterilizat|default:"Alege" }}</option>
+															</select>
+														</div>
+
+														<div class="mypet-add-field">
+															<label for="id_vaccinat">VACCINAT</label>
+															<select id="id_vaccinat" disabled>
+																<option value="">{{ pet.vaccin|default:"Alege" }}</option>
+															</select>
+														</div>
+
+														<div class="mypet-add-field">
+															<label for="id_carnet">CARNET DE SĂNĂTATE</label>
+															<select id="id_carnet" disabled>
+																<option value="">{{ pet.carnet_sanatate|default:"Alege" }}</option>
+															</select>
+														</div>
+
+														<div class="mypet-add-field">
+															<label for="id_cip">CIP</label>
+															<select id="id_cip" disabled>
+																<option value="">{{ pet.cip|default:"Alege" }}</option>
+															</select>
+														</div>
+													</div>
+
+													<div class="mypet-fisa-main-col">
+														<h3 class="mypet-fisa-section-title">Date de bază (locație)</h3>
+
+														<div class="mypet-add-field">
+															<label for="id_sex">SEX</label>
+															<select id="id_sex" disabled>
+																<option value="">{{ pet.sex|default:"Alege" }}</option>
+															</select>
+														</div>
+
+														<div class="mypet-add-field">
+															<label for="id_weight">GREUTATE (APROX.)</label>
+															<input type="text" id="id_weight" value="{{ pet.greutate_aprox|default:'' }}" disabled />
+														</div>
+
+														<div class="mypet-add-field">
+															<label for="id_county">JUDEȚ</label>
+															<input type="text" id="id_county" value="{{ pet.judet|default:'' }}" autocomplete="off" class="mypet-fisa-input-with-arrow" disabled />
+														</div>
+
+														<div class="mypet-add-field">
+															<label for="id_city">ORAȘ / LOCALITATE</label>
+															<input type="text" id="id_city" value="{{ pet.oras|default:'' }}" autocomplete="off" class="mypet-fisa-input-with-arrow" disabled />
+														</div>
+
+														<div class="mypet-add-field mypet-fisa-field-medical">
+															<label for="id_medical">PROBLEME MEDICALE</label>
+															<textarea id="id_medical" rows="2" class="mypet-fisa-textarea" disabled>{{ pet.probleme_medicale|default:'' }}</textarea>
+														</div>
+
+														<div class="mypet-add-field mypet-fisa-field-story">
+															<label for="id_story">CINE SUNT ȘI DE UNDE SUNT</label>
+															<textarea id="id_story" rows="2" class="mypet-fisa-textarea" disabled>{{ pet.descriere|default:'' }}</textarea>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+
+										<div class="mypet-fisa-col mypet-fisa-col-traits">
+											<div class="mypet-fisa-traits-box">
+												<h3 class="mypet-fisa-section-title">Detalii potrivire adoptator</h3>
+												<ul class="mypet-fisa-traits-list">
+													<li><label><input type="checkbox" {% if pet.trait_jucaus %}checked{% endif %} disabled /> JUCĂUȘ</label></li>
+													<li><label><input type="checkbox" {% if pet.trait_iubitor %}checked{% endif %} disabled /> IUBITOR</label></li>
+													<li><label><input type="checkbox" {% if pet.trait_protector %}checked{% endif %} disabled /> PROTECTOR</label></li>
+													<li><label><input type="checkbox" {% if pet.trait_energic %}checked{% endif %} disabled /> ENERGIC</label></li>
+													<li><label><input type="checkbox" {% if pet.trait_linistit %}checked{% endif %} disabled /> LINIȘTIT</label></li>
+													<li><label><input type="checkbox" {% if pet.trait_bun_copii %}checked{% endif %} disabled /> BUN CU COPII</label></li>
+													<li><label><input type="checkbox" {% if pet.trait_bun_caini %}checked{% endif %} disabled /> BUN CU ALȚI CÂINI</label></li>
+													<li><label><input type="checkbox" {% if pet.trait_bun_pisici %}checked{% endif %} disabled /> BUN CU PISICI</label></li>
+													<li><label><input type="checkbox" {% if pet.trait_obisnuit_casa %}checked{% endif %} disabled /> OBIȘNUIT ÎN CASĂ</label></li>
+													<li><label><input type="checkbox" {% if pet.trait_obisnuit_lesa %}checked{% endif %} disabled /> OBIȘNUIT CU LESA</label></li>
+													<li><label><input type="checkbox" {% if pet.trait_nu_latla %}checked{% endif %} disabled /> NU LATRĂ EXCESIV</label></li>
+													<li><label><input type="checkbox" {% if pet.trait_apartament %}checked{% endif %} disabled /> POTRIVIT PENTRU APARTAMENT</label></li>
+													<li><label><input type="checkbox" {% if pet.trait_se_adapteaza %}checked{% endif %} disabled /> SE ADAPTEAZĂ UȘOR</label></li>
+													<li><label><input type="checkbox" {% if pet.trait_tolereaza_singur %}checked{% endif %} disabled /> TOLEREAZĂ SĂ STEA SINGUR</label></li>
+													<li><label><input type="checkbox" {% if pet.trait_necesita_experienta %}checked{% endif %} disabled /> NECESITĂ EXPERIENȚĂ CU CÂINI</label></li>
+												</ul>
+											</div>
+										</div>
+									</div>
 								</section>
-								{% endif %}
-
-								{% if related_pets %}
-								<div class="pet-related-section">
-									<h4>🐾 Poate îți place și…</h4>
-									<div class="pet-related-cards">
-										{% for r in related_pets %}
-										<a href="{% url 'pets_single' r.pk %}" class="pet-related-card" title="{{ r.nume }}">
-											{% if r.imagine %}
-												<img src="{{ r.imagine.url }}" alt="{{ r.nume }}" onerror="this.src='{% static 'images/pets/charlie-275x275.jpg' %}';this.onerror=null;" />
-											{% elif r.imagine_fallback %}
-												<img src="{% static r.imagine_fallback %}" alt="{{ r.nume }}" />
-											{% else %}
-												<img src="{% static 'images/pets/charlie-275x275.jpg' %}" alt="{{ r.nume }}" />
-											{% endif %}
-											<span>{{ r.nume }}</span>
-										</a>
-										{% endfor %}
-									</div>
-								</div>
-								{% endif %}
-								<div id="visited-pets-section" class="pet-related-section pet-visited-section" data-current-pet-id="{{ pet.pk }}" data-fallback-img="{% static 'images/pets/charlie-275x275.jpg' %}">
-									<h4>🐾 Prietenii pe care i-ai vizitat</h4>
-									<div id="visited-pets-cards" class="pet-related-cards"></div>
-								</div>
 							</div>
 						</section>
 					</div>
