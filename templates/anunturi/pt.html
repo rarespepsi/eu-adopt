@@ -156,3 +156,56 @@
 </section>
 
 {% endblock main_wrap_after_header %}
+
+{% block extra_js %}
+<script>
+(function() {
+	// Sex: MASCUL / FEMELA + micșorare font dacă nu încape (fără să lărgim caseta)
+	function normalizeSexOptions(selectEl) {
+		if (!selectEl) return;
+		var opts = Array.prototype.slice.call(selectEl.querySelectorAll("option"));
+		opts.forEach(function(opt) {
+			var v = (opt.value || "").toLowerCase();
+			if (v === "m") opt.textContent = "MASCUL";
+			if (v === "f") opt.textContent = "FEMELA";
+		});
+	}
+	function shrinkSelectFontToFit(selectEl) {
+		if (!selectEl) return;
+		var base = parseFloat(getComputedStyle(selectEl).fontSize) || 14;
+		var min = 10;
+		selectEl.style.fontSize = base + "px";
+		for (var i = 0; i < 14; i++) {
+			// scrollWidth/clientWidth pe select nu e perfect cross-browser, dar ajută
+			if ((selectEl.scrollWidth || 0) <= (selectEl.clientWidth || 0) + 2) break;
+			base = Math.max(min, base - 0.5);
+			selectEl.style.fontSize = base + "px";
+			if (base <= min) break;
+		}
+	}
+	function initSexSelect() {
+		var sel = document.getElementById("id_sex_pt");
+		if (!sel) return;
+		normalizeSexOptions(sel);
+		shrinkSelectFontToFit(sel);
+	}
+	// dacă opțiunile sunt populate ulterior, le normalizăm când apar
+	function observeSexSelect() {
+		var sel = document.getElementById("id_sex_pt");
+		if (!sel || !window.MutationObserver) return;
+		var mo = new MutationObserver(function() {
+			normalizeSexOptions(sel);
+			shrinkSelectFontToFit(sel);
+		});
+		mo.observe(sel, { childList: true, subtree: true });
+	}
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", function() { initSexSelect(); observeSexSelect(); });
+	} else {
+		initSexSelect();
+		observeSexSelect();
+	}
+	window.addEventListener("resize", initSexSelect);
+})();
+</script>
+{% endblock %}

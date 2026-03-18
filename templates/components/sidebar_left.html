@@ -1,2 +1,11 @@
 {% load static %}
-<!-- LEFT SIDEBAR: gol (sloturi 3 casete eliminate) -->
+{% if request.resolver_match and request.resolver_match.url_name == "mypet" %}
+	<div class="mypet-left-boxes" aria-label="Panou stânga MyPet">
+		<div class="mypet-left-box mypet-left-box-1" data-box="L1"></div>
+		<div class="mypet-left-box mypet-left-box-2" data-box="L2"></div>
+		<div class="mypet-left-box mypet-left-box-3" data-box="L3"></div>
+		<div class="mypet-left-box mypet-left-box-4" data-box="L4"></div>
+	</div>
+{% else %}
+	<!-- LEFT SIDEBAR: gol (sloturi eliminate) -->
+{% endif %}

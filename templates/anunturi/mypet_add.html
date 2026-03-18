@@ -47,8 +47,11 @@
 			</div>
 			<div class="mypet-fisa-photo-slot mypet-fisa-photo-4">
 				<div class="mypet-fisa-video-box">
-					<div class="mypet-fisa-video-preview" id="video_preview">
-						<label for="id_video" class="mypet-fisa-video-btn-overlay" id="video_btn_label">Alege video</label>
+					<div class="mypet-fisa-video-preview {% if listing and listing.video %}has-video{% endif %}" id="video_preview">
+						{% if listing and listing.video %}
+							<video src="{{ listing.video.url }}" muted loop playsinline></video>
+						{% endif %}
+						<label for="id_video" class="mypet-fisa-video-btn-overlay" id="video_btn_label">{% if listing and listing.video %}Schimbă video{% else %}Alege video{% endif %}</label>
 					</div>
 					<input type="file" id="id_video" name="video" form="mypet-add-form" accept="video/mp4,video/webm" class="mypet-fisa-video-input-hidden" />
 					<span class="mypet-fisa-video-hint">MP4, max. 30 sec, max. 10 MB</span>
@@ -195,8 +198,8 @@
 								<label for="id_sex">SEX</label>
 								<select id="id_sex" name="sex">
 									<option value="">Alege</option>
-									<option value="m">Mascul</option>
-									<option value="f">Femelă</option>
+									<option value="m" {% if sex == "m" %}selected{% endif %}>MASCUL</option>
+									<option value="f" {% if sex == "f" %}selected{% endif %}>FEMELA</option>
 								</select>
 							</div>
 
@@ -205,7 +208,8 @@
 								<input
 									type="text"
 									id="id_weight"
-									name="greutate_aprox" />
+									name="greutate_aprox"
+									value="{{ greutate_aprox }}" />
 							</div>
 
 							<div class="mypet-add-field">
@@ -278,12 +282,12 @@
 
 							<div class="mypet-add-field mypet-fisa-field-medical">
 								<label for="id_medical">PROBLEME MEDICALE</label>
-								<textarea id="id_medical" name="probleme_medicale" rows="2" class="mypet-fisa-textarea"></textarea>
+								<textarea id="id_medical" name="probleme_medicale" rows="2" class="mypet-fisa-textarea">{{ probleme_medicale }}</textarea>
 							</div>
 
 							<div class="mypet-add-field mypet-fisa-field-story">
 								<label for="id_story">CINE SUNT ȘI DE UNDE SUNT</label>
-								<textarea id="id_story" name="cine_sunt" rows="2" class="mypet-fisa-textarea"></textarea>
+								<textarea id="id_story" name="cine_sunt" rows="2" class="mypet-fisa-textarea">{{ cine_sunt }}</textarea>
 							</div>
 						</div>
 					</div>
@@ -294,27 +298,44 @@
 		<div class="mypet-fisa-col mypet-fisa-col-traits">
 			<div class="mypet-fisa-traits-box">
 				<h3 class="mypet-fisa-section-title">Detalii potrivire adoptator</h3>
+				<div class="mypet-fisa-traits-note" id="traitsNote" {% if not traits_empty %}style="display:none;"{% endif %}>
+					ACESTE selectii va ajuta in prezentarea catre adoptator.
+				</div>
 				<ul class="mypet-fisa-traits-list">
-					<li><label><input type="checkbox" name="trait_jucaus" {% if trait_jucaus %}checked{% endif %} /> JUCĂUȘ</label></li>
-					<li><label><input type="checkbox" name="trait_iubitor" {% if trait_iubitor %}checked{% endif %} /> IUBITOR</label></li>
-					<li><label><input type="checkbox" name="trait_protector" {% if trait_protector %}checked{% endif %} /> PROTECTOR</label></li>
-					<li><label><input type="checkbox" name="trait_energic" {% if trait_energic %}checked{% endif %} /> ENERGIC</label></li>
-					<li><label><input type="checkbox" name="trait_linistit" {% if trait_linistit %}checked{% endif %} /> LINIȘTIT</label></li>
-					<li><label><input type="checkbox" name="trait_bun_copii" {% if trait_bun_copii %}checked{% endif %} /> BUN CU COPII</label></li>
-					<li><label><input type="checkbox" name="trait_bun_caini" {% if trait_bun_caini %}checked{% endif %} /> BUN CU ALȚI CÂINI</label></li>
-					<li><label><input type="checkbox" name="trait_bun_pisici" {% if trait_bun_pisici %}checked{% endif %} /> BUN CU PISICI</label></li>
-					<li><label><input type="checkbox" name="trait_obisnuit_casa" {% if trait_obisnuit_casa %}checked{% endif %} /> OBIȘNUIT ÎN CASĂ</label></li>
-					<li><label><input type="checkbox" name="trait_obisnuit_lesa" {% if trait_obisnuit_lesa %}checked{% endif %} /> OBIȘNUIT CU LESA</label></li>
-					<li><label><input type="checkbox" name="trait_nu_latla" {% if trait_nu_latla %}checked{% endif %} /> NU LATRĂ EXCESIV</label></li>
-					<li><label><input type="checkbox" name="trait_apartament" {% if trait_apartament %}checked{% endif %} /> POTRIVIT PENTRU APARTAMENT</label></li>
-					<li><label><input type="checkbox" name="trait_se_adapteaza" {% if trait_se_adapteaza %}checked{% endif %} /> SE ADAPTEAZĂ UȘOR</label></li>
-					<li><label><input type="checkbox" name="trait_tolereaza_singur" {% if trait_tolereaza_singur %}checked{% endif %} /> TOLEREAZĂ SĂ STEA SINGUR</label></li>
-					<li><label><input type="checkbox" name="trait_necesita_experienta" {% if trait_necesita_experienta %}checked{% endif %} /> NECESITĂ EXPERIENȚĂ CU CÂINI</label></li>
+					<li><label><input type="checkbox" name="trait_jucaus" form="mypet-add-form" {% if trait_jucaus %}checked{% endif %} /> JUCĂUȘ</label></li>
+					<li><label><input type="checkbox" name="trait_iubitor" form="mypet-add-form" {% if trait_iubitor %}checked{% endif %} /> IUBITOR</label></li>
+					<li><label><input type="checkbox" name="trait_protector" form="mypet-add-form" {% if trait_protector %}checked{% endif %} /> PROTECTOR</label></li>
+					<li><label><input type="checkbox" name="trait_energic" form="mypet-add-form" {% if trait_energic %}checked{% endif %} /> ENERGIC</label></li>
+					<li><label><input type="checkbox" name="trait_linistit" form="mypet-add-form" {% if trait_linistit %}checked{% endif %} /> LINIȘTIT</label></li>
+					<li><label><input type="checkbox" name="trait_bun_copii" form="mypet-add-form" {% if trait_bun_copii %}checked{% endif %} /> BUN CU COPII</label></li>
+					<li><label><input type="checkbox" name="trait_bun_caini" form="mypet-add-form" {% if trait_bun_caini %}checked{% endif %} /> BUN CU ALȚI CÂINI</label></li>
+					<li><label><input type="checkbox" name="trait_bun_pisici" form="mypet-add-form" {% if trait_bun_pisici %}checked{% endif %} /> BUN CU PISICI</label></li>
+					<li><label><input type="checkbox" name="trait_obisnuit_casa" form="mypet-add-form" {% if trait_obisnuit_casa %}checked{% endif %} /> OBIȘNUIT ÎN CASĂ</label></li>
+					<li><label><input type="checkbox" name="trait_obisnuit_lesa" form="mypet-add-form" {% if trait_obisnuit_lesa %}checked{% endif %} /> OBIȘNUIT CU LESA</label></li>
+					<li><label><input type="checkbox" name="trait_nu_latla" form="mypet-add-form" {% if trait_nu_latla %}checked{% endif %} /> NU LATRĂ EXCESIV</label></li>
+					<li><label><input type="checkbox" name="trait_apartament" form="mypet-add-form" {% if trait_apartament %}checked{% endif %} /> POTRIVIT PENTRU APARTAMENT</label></li>
+					<li><label><input type="checkbox" name="trait_se_adapteaza" form="mypet-add-form" {% if trait_se_adapteaza %}checked{% endif %} /> SE ADAPTEAZĂ UȘOR</label></li>
+					<li><label><input type="checkbox" name="trait_tolereaza_singur" form="mypet-add-form" {% if trait_tolereaza_singur %}checked{% endif %} /> TOLEREAZĂ SĂ STEA SINGUR</label></li>
+					<li><label><input type="checkbox" name="trait_necesita_experienta" form="mypet-add-form" {% if trait_necesita_experienta %}checked{% endif %} /> NECESITĂ EXPERIENȚĂ CU CÂINI</label></li>
 				</ul>
 			</div>
 		</div>
 	</div>
 </section>
+
+<div class="mypet-unsaved-modal" id="mypetUnsavedModal" hidden aria-hidden="true">
+	<div class="mypet-unsaved-modal__panel" role="dialog" aria-modal="true" aria-labelledby="mypetUnsavedTitle">
+		<p class="mypet-unsaved-modal__title" id="mypetUnsavedTitle">Nu salvați modificările?</p>
+		<p class="mypet-unsaved-modal__text">
+			- <strong>DA</strong> = salvez ca la „SALVEAZĂ FIȘA”, apoi continui navigarea.<br />
+			- <strong>NU</strong> = plec fără să salvez și rămân salvările vechi.
+		</p>
+		<div class="mypet-unsaved-modal__actions">
+			<button type="button" class="mypet-unsaved-modal__btn mypet-unsaved-modal__btn--no" id="mypetUnsavedNo">NU</button>
+			<button type="button" class="mypet-unsaved-modal__btn mypet-unsaved-modal__btn--yes" id="mypetUnsavedYes">DA</button>
+		</div>
+	</div>
+</div>
 {% endblock %}
 
 {% block extra_css_after %}
@@ -714,6 +735,13 @@
 		font-weight: 800;
 		text-transform: uppercase;
 		color: #7b5c00;
+		display: inline-block;
+		width: fit-content;
+		max-width: 100%;
+		padding: 2px 6px;
+		border-radius: 6px;
+		background: rgba(240, 240, 240, 0.55);
+		backdrop-filter: blur(1.5px);
 	}
 
 	.mypet-fisa-form {
@@ -723,12 +751,22 @@
 	}
 
 	.mypet-add-error {
-		margin-bottom: 0.4rem;
-		padding: 0.35rem 0.5rem;
-		background: #ffebee;
+		/* overlay: nu împinge layout-ul */
+		position: fixed;
+		left: 50%;
+		transform: translateX(-50%);
+		top: calc(var(--nav-h, 64px) + 10px);
+		z-index: 9998;
+		width: min(900px, calc(100vw - 24px));
+		padding: 0.45rem 0.65rem;
+		background: rgba(255, 235, 238, 0.97);
 		color: #b71c1c;
-		border-radius: 6px;
+		border: 1px solid rgba(183, 28, 28, 0.25);
+		border-radius: 10px;
 		font-size: 0.85rem;
+		box-shadow: 0 10px 26px rgba(0,0,0,0.22);
+		backdrop-filter: blur(2px);
+		pointer-events: none; /* să nu blocheze click-uri */
 	}
 	.mypet-fisa-photo-reminder {
 		padding: 0.35rem 0.5rem;
@@ -750,6 +788,13 @@
 		font-size: 0.8rem;
 		font-weight: 600;
 		color: #5c3c00;
+		display: inline-block;
+		width: fit-content;
+		max-width: 100%;
+		padding: 2px 6px;
+		border-radius: 6px;
+		background: rgba(240, 240, 240, 0.55);
+		backdrop-filter: blur(1.5px);
 	}
 
 	.mypet-add-field input,
@@ -853,6 +898,19 @@
 		margin: 0;
 	}
 
+			.mypet-fisa-traits-note {
+				margin-top: 0.2rem;
+				padding: 0.25rem 0.35rem;
+				background: rgba(255, 255, 255, 0.55);
+				border: 1px solid rgba(0, 0, 0, 0.12);
+				border-radius: 6px;
+				color: #111;
+				font-size: 0.7rem;
+				font-weight: 700;
+				text-transform: none;
+				letter-spacing: 0.02em;
+			}
+
 	.mypet-btn {
 		display: inline-flex;
 		align-items: center;
@@ -877,6 +935,66 @@
 		color: #5d4037;
 		border-color: #ffcc80;
 	}
+
+	/* Modal: avertizare modificări nesalvate */
+	.mypet-unsaved-modal[hidden] { display: none !important; }
+	.mypet-unsaved-modal {
+		position: fixed;
+		inset: 0;
+		z-index: 9999;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(0, 0, 0, 0.6);
+		padding: 2vh 2vw;
+		box-sizing: border-box;
+	}
+	.mypet-unsaved-modal__panel {
+		width: min(520px, 92vw);
+		background: rgba(255, 255, 255, 0.95);
+		border-radius: 12px;
+		box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+		padding: 14px 14px 12px;
+		box-sizing: border-box;
+	}
+	.mypet-unsaved-modal__title {
+		margin: 0 0 6px;
+		font-size: 0.95rem;
+		font-weight: 900;
+		color: #111;
+	}
+	.mypet-unsaved-modal__text {
+		margin: 0 0 12px;
+		font-size: 0.85rem;
+		color: #333;
+		line-height: 1.35;
+	}
+	.mypet-unsaved-modal__actions {
+		display: flex;
+		gap: 10px;
+		justify-content: flex-end;
+	}
+	.mypet-unsaved-modal__btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.45rem 0.9rem;
+		border-radius: 999px;
+		border: 1px solid rgba(0,0,0,0.15);
+		font-size: 0.85rem;
+		font-weight: 900;
+		cursor: pointer;
+		white-space: nowrap;
+	}
+	.mypet-unsaved-modal__btn--no {
+		background: #fff;
+		color: #111;
+	}
+	.mypet-unsaved-modal__btn--yes {
+		background: #9d1c1c;
+		color: #fff;
+		border-color: transparent;
+	}
 </style>
 {% endblock %}
 
@@ -888,6 +1006,99 @@
 	var savedBlobs = { 1: null, 2: null, 3: null };
 	var form = document.getElementById("mypet-add-form");
 	if (!form) return;
+
+	// ====== Unsaved-changes guard (DA=salvează, NU=pleacă fără) ======
+	var dirty = false;
+	var saving = false;
+	var pendingNavUrl = null;
+	var modal = document.getElementById("mypetUnsavedModal");
+	var btnYes = document.getElementById("mypetUnsavedYes");
+	var btnNo = document.getElementById("mypetUnsavedNo");
+	var serverErrorNote = document.querySelector(".mypet-add-error");
+
+	function setDirty(val) { dirty = !!val; }
+	function openUnsavedModal(url) {
+		pendingNavUrl = url || null;
+		if (modal) modal.hidden = false;
+	}
+	function hideUnsavedModal() {
+		if (modal) modal.hidden = true;
+	}
+	function closeUnsavedModal() {
+		hideUnsavedModal();
+		pendingNavUrl = null;
+	}
+	function proceedNavigation() {
+		if (pendingNavUrl) window.location.href = pendingNavUrl;
+		closeUnsavedModal();
+	}
+
+	// Mark dirty on any change (inclusiv input-urile din stânga care sunt în afara <form>
+	// dar folosesc atributul form="mypet-add-form")
+	function isMyPetFormField(el) {
+		if (!el || !el.matches) return false;
+		if (!el.matches("input, select, textarea")) return false;
+		// câmp în interiorul form-ului
+		if (form.contains(el)) return true;
+		// câmp asociat prin atributul form=""
+		var fid = el.getAttribute("form");
+		return fid === "mypet-add-form";
+	}
+	function hideServerErrorNote() {
+		if (!serverErrorNote) return;
+		serverErrorNote.style.display = "none";
+	}
+	document.addEventListener("input", function(e) {
+		if (isMyPetFormField(e.target)) {
+			setDirty(true);
+			hideServerErrorNote();
+		}
+	}, true);
+	document.addEventListener("change", function(e) {
+		if (isMyPetFormField(e.target)) {
+			setDirty(true);
+			hideServerErrorNote();
+		}
+	}, true);
+
+	// Intercept link clicks when dirty
+	document.addEventListener("click", function(e) {
+		var a = e.target && e.target.closest("a[href]");
+		if (!a) return;
+		var href = a.getAttribute("href") || "";
+		if (!href || href[0] === "#" || href.startsWith("javascript:")) return;
+		if (a.target === "_blank") return;
+		if (!dirty || saving) return;
+		e.preventDefault();
+		openUnsavedModal(a.href);
+	}, true);
+
+	// Back/forward guard (best effort): show modal and keep user on page
+	if (window.history && window.history.pushState) {
+		try {
+			window.history.pushState({ mypet_guard: 1 }, "", window.location.href);
+			window.addEventListener("popstate", function() {
+				if (!dirty || saving) return;
+				// Restore state immediately and ask
+				window.history.pushState({ mypet_guard: 1 }, "", window.location.href);
+				openUnsavedModal(null);
+			});
+		} catch (e) {}
+	}
+
+	// Tab close / reload: browser-native prompt (nu permite text custom)
+	window.addEventListener("beforeunload", function(e) {
+		if (!dirty || saving) return;
+		e.preventDefault();
+		e.returnValue = "";
+	});
+
+	if (btnNo) btnNo.addEventListener("click", function() { proceedNavigation(); });
+	if (btnYes) btnYes.addEventListener("click", function() {
+		// DA = salvează ca butonul general; după salvare, navigăm dacă avem url
+		hideUnsavedModal(); // păstrăm pendingNavUrl pentru după salvare
+		try { form.requestSubmit(); } catch (e) { form.submit(); }
+	});
 
 	var localitiesByCounty = {};
 	var countyNames = ["Alba","Arad","Argeș","Bacău","Bihor","Bistrița-Năsăud","Botoșani","Brăila","Brașov","Buzău","Călărași","Caraș-Severin","Cluj","Constanța","Covasna","Dâmbovița","Dolj","Galați","Giurgiu","Gorj","Harghita","Hunedoara","Ialomița","Iași","Ilfov","Maramureș","Mehedinți","Mureș","Neamț","Olt","Prahova","Sălaj","Satu Mare","Sibiu","Suceava","Teleorman","Timiș","Tulcea","Vâlcea","Vaslui","Vrancea"];
@@ -1067,12 +1278,36 @@
 		var videoPreview = document.getElementById("video_preview");
 		var videoLabel = document.getElementById("video_btn_label");
 		if (!videoInput || !videoPreview || !videoLabel) return;
+		var videoSaved = true;
+		function setLabelState(state) {
+			// state: "add" | "save"
+			if (state === "save") {
+				videoLabel.textContent = "Salvează video";
+				videoLabel.removeAttribute("for");
+				videoSaved = false;
+			} else {
+				// "add" = gata de ales/înlocuit video
+				videoLabel.textContent = videoPreview.classList.contains("has-video") ? "Schimbă video" : "Adaugă video";
+				videoLabel.setAttribute("for", "id_video");
+				videoSaved = true;
+			}
+		}
+		// Inițial: dacă există video deja în fișă, îl pornim și afișăm "Schimbă video"
+		var existingVideo = videoPreview.querySelector("video");
+		if (existingVideo) {
+			videoPreview.classList.add("has-video");
+			try { existingVideo.play().catch(function() {}); } catch (e) {}
+		}
+		setLabelState("add");
+		// Click pe "Salvează video" doar confirmă (UI) că video e gata de trimis la "SALVEAZĂ FIȘA"
 		videoLabel.addEventListener("click", function(e) {
 			if (!this.getAttribute("for")) {
 				e.preventDefault();
-				this.textContent = "Alege video";
-				this.setAttribute("for", "id_video");
-				return;
+				// confirmăm salvarea (UI) și revenim la "Adaugă video"
+				setLabelState("add");
+				var old = videoLabel.textContent;
+				videoLabel.textContent = "Video salvat";
+				setTimeout(function() { videoLabel.textContent = old; }, 700);
 			}
 		});
 		videoInput.addEventListener("change", function() {
@@ -1090,9 +1325,31 @@
 			videoEl.play().catch(function() {});
 			videoPreview.insertBefore(videoEl, videoLabel);
 			videoPreview.classList.add("has-video");
-			videoLabel.textContent = "Salvează";
-			videoLabel.removeAttribute("for");
+			setLabelState("save");
 		});
+
+		// expune pentru submit
+		window.__euadoptVideoNeedsSave = function() {
+			return Boolean(videoInput && videoInput.files && videoInput.files[0] && !videoSaved);
+		};
+		window.__euadoptVideoFinalize = function() {
+			// marchează video ca "salvat" (UI) înainte de submit
+			if (videoInput && videoInput.files && videoInput.files[0]) setLabelState("add");
+		};
+	})();
+
+	// Notă trăsături: apare dacă nu e bifată nicio trăsătură
+	(function initTraitsNote() {
+		var note = document.getElementById("traitsNote");
+		if (!note) return;
+		function refresh() {
+			var any = !!document.querySelector(".mypet-fisa-traits-list input[type=checkbox]:checked");
+			note.style.display = any ? "none" : "block";
+		}
+		document.addEventListener("change", function(e) {
+			if (e.target && e.target.matches(".mypet-fisa-traits-list input[type=checkbox]")) refresh();
+		});
+		refresh();
 	})();
 
 	document.addEventListener("click", function(e) {
@@ -1107,28 +1364,39 @@
 
 	form.addEventListener("submit", function(e) {
 		e.preventDefault();
+		saving = true;
 		var reminder = document.getElementById("mypet-fisa-photo-reminder");
 		if (reminder) reminder.style.display = "none";
 		var unsaved = [];
 		for (var n = 1; n <= 3; n++) { if (slotHasPhotoButNotSaved(n)) unsaved.push(n); }
 		if (unsaved.length > 0) {
 			if (reminder) { reminder.style.display = "block"; reminder.scrollIntoView({ behavior: "smooth", block: "nearest" }); }
+			alert("Nu pot salva fișa încă. Ai poze selectate dar nesalvate (apasă „Salvează” la poză): sloturile " + unsaved.join(", ") + ".");
+			saving = false;
 			return;
+		}
+		if (typeof window.__euadoptVideoNeedsSave === "function" && window.__euadoptVideoNeedsSave()) {
+			// Nu blocăm salvarea: auto-confirmăm video ca să nu pară că "nu s-a salvat nimic"
+			if (typeof window.__euadoptVideoFinalize === "function") window.__euadoptVideoFinalize();
 		}
 		var fd = new FormData();
 		var csrf = form.querySelector("[name=csrfmiddlewaretoken]");
 		if (csrf) fd.append("csrfmiddlewaretoken", csrf.value);
 
-		var els = form.querySelectorAll("input, select, textarea");
+		// Colectăm TOATE câmpurile: cele din <form> + cele asociate prin form="mypet-add-form"
+		var els = Array.prototype.slice.call(form.querySelectorAll("input, select, textarea"));
+		var external = Array.prototype.slice.call(document.querySelectorAll('[form="mypet-add-form"]'));
+		for (var ei = 0; ei < external.length; ei++) {
+			if (els.indexOf(external[ei]) === -1) els.push(external[ei]);
+		}
 		for (var i = 0; i < els.length; i++) {
 			var el = els[i];
-			if (!el.name || el.type === "file") continue;
-			if (el.type === "checkbox") { if (el.checked) fd.append(el.name, el.value); }
+			if (!el || !el.name || el.type === "file") continue;
+			if (el.type === "checkbox") { if (el.checked) fd.append(el.name, el.value || "on"); }
 			else fd.append(el.name, el.value);
 		}
 
 		var action = form.action || window.location.pathname;
-		var promises = [];
 
 		function getCroppedBlob(n) {
 			return new Promise(function(resolve) {
@@ -1158,12 +1426,41 @@
 			results.forEach(function(r) {
 				if (r.blob) fd.append("photo_" + r.n, r.blob, "photo_" + r.n + ".jpg");
 			});
+			// Video (dacă există) – îl trimitem ca fișier brut
+			var videoInput = document.getElementById("id_video");
+			if (videoInput && videoInput.files && videoInput.files[0]) {
+				fd.append("video", videoInput.files[0]);
+			}
 			return fetch(action, { method: "POST", body: fd, credentials: "same-origin" });
 		}).then(function(res) {
-			if (res.redirected) window.location.href = res.url;
-			else if (res.ok) window.location.href = res.url;
-			else window.location.reload();
-		}).catch(function() { form.submit(); });
+			if (res.redirected) {
+				setDirty(false);
+				saving = false;
+				if (pendingNavUrl) { window.location.href = pendingNavUrl; return; }
+				window.location.href = res.url;
+				return;
+			}
+			// Atenție: în Django, pe erori de validare de obicei se răspunde 200 cu HTML (fără redirect).
+			// Dacă am reîncărca pagina, browserul ar pierde fișierul selectat (video) și pare că "a dispărut".
+			if (res.ok) {
+				return res.text().then(function(html) {
+					saving = false;
+					alert("Nu s-a putut salva fișa. Verifică mesajul roșu din pagină (câmpuri obligatorii) și încearcă din nou.");
+					// Înlocuim conținutul paginii ca să vezi exact eroarea serverului
+					document.open();
+					document.write(html);
+					document.close();
+				});
+			}
+			// Eroare la salvare (ex: 403 CSRF, 413 upload prea mare etc.)
+			res.text().then(function(t) {
+				saving = false;
+				alert("Eroare la salvare (" + res.status + "). Dacă ai încărcat video, încearcă un fișier mai mic sau reîncarcă pagina.\n\n" + (t ? t.slice(0, 200) : ""));
+			}).catch(function() {
+				saving = false;
+				alert("Eroare la salvare (" + res.status + ").");
+			});
+		}).catch(function() { saving = false; form.submit(); });
 	});
 })();
 </script>

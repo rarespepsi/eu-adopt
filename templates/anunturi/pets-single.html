@@ -21,13 +21,18 @@
 			}
 			/* Leagă layout-ul strict de viewport (fără „jos” sub ecran) */
 			body.page-pet-single #main_wrap {
-				height: 100vh;
-				overflow: hidden;
+				min-height: 100vh;
+				height: auto;
+				overflow: visible;
 			}
 			body.page-pet-single #main_content {
 				/* în proiect, navbar folosește variabila --nav-height; păstrăm fallback sigur */
 				height: calc(100dvh - var(--nav-height, 64px));
 				overflow: hidden;
+				/* lipit de navbar: elimină padding/margini de temă */
+				padding-top: 0 !important;
+				padding-bottom: 0 !important;
+				margin-top: 0 !important;
 			}
 			/* fără sidebar-uri pe fișa PET */
 			body.page-pet-single .layout {
@@ -55,7 +60,8 @@
 			}
 
 			.mypet-fisa-wrap {
-				height: 100%;
+				/* wrapper exact cât viewport minus navbar */
+				height: calc(100dvh - var(--nav-height, 64px));
 				display: flex;
 				align-items: stretch;
 				justify-content: flex-start;
@@ -117,23 +123,54 @@
 				padding-bottom: 0;
 			}
 
-			/* Debug vizibilitate: casete clare, cu text centrat */
+			/* Coloana poze/video – read-only */
 			.mypet-fisa-col-photos .mypet-fisa-photo-slot {
+				position: relative;
+			}
+			.mypet-fisa-col-photos .mypet-fisa-photo-slot img,
+			.mypet-fisa-col-photos .mypet-fisa-video-preview {
+				cursor: pointer;
+			}
+			.mypet-fisa-col-photos .mypet-fisa-photo-slot .mypet-fisa-photo-preview,
+			.mypet-fisa-col-photos .mypet-fisa-photo-slot .mypet-fisa-video-preview {
+				width: 100%;
+				height: 100%;
+			}
+			.mypet-fisa-col-photos .mypet-fisa-video-btn-overlay {
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				border: 2px solid rgba(0,0,0,0.35);
-				background: rgba(255, 255, 255, 0.25);
+				height: 100%;
+				background: rgba(0,0,0,0.10);
 				color: #1a1a1a;
 				font-weight: 900;
 				letter-spacing: 0.08em;
 				text-transform: uppercase;
 				user-select: none;
 			}
-			.mypet-fisa-col-photos .mypet-fisa-photo-1 { background: rgba(255,224,130,0.55); }
-			.mypet-fisa-col-photos .mypet-fisa-photo-2 { background: rgba(179,229,252,0.55); }
-			.mypet-fisa-col-photos .mypet-fisa-photo-3 { background: rgba(128,203,196,0.55); }
-			.mypet-fisa-col-photos .mypet-fisa-photo-4 { background: rgba(255,243,224,0.55); }
+			/* Icon Play în slotul video (semitransparent) */
+			.mypet-fisa-col-photos .mypet-fisa-video-btn-overlay {
+				position: absolute;
+				inset: 0;
+				background: transparent;
+				pointer-events: none; /* clickul rămâne pe container (.js-pet-video-thumb) */
+			}
+			.mypet-fisa-col-photos .mypet-fisa-video-btn-overlay::before {
+				content: "";
+				width: 0;
+				height: 0;
+				border-top: 18px solid transparent;
+				border-bottom: 18px solid transparent;
+				border-left: 28px solid rgba(255, 255, 255, 0.72);
+				filter: drop-shadow(0 6px 10px rgba(0,0,0,0.35));
+				transform: translateX(2px);
+			}
+			.mypet-fisa-col-photos .mypet-fisa-video-preview.has-video .mypet-fisa-video-btn-overlay::before {
+				border-left-color: rgba(255, 255, 255, 0.55);
+			}
+			.mypet-fisa-col-photos .mypet-fisa-video-preview:not(.has-video) .mypet-fisa-video-btn-overlay::before {
+				border-left-color: rgba(255, 255, 255, 0.78);
+			}
 			.mypet-fisa-video-box {
 				display: flex;
 				flex-direction: column;
@@ -260,28 +297,71 @@
 
 			.mypet-fisa-header-row {
 				display: grid;
-				grid-template-columns: auto 1fr auto;
-				align-items: center;
+				grid-template-columns: 1fr auto 1fr;
+				align-items: start; /* lipite sus: tab + buton pe aceeași linie de sus */
 				margin-bottom: 0.18rem;
 				grid-row: 1 / 2;
 				grid-column: 2 / 4;
 			}
 
+			/* 2 pastile identice (aceeași mărime) */
+			.mypet-fisa-tab-group {
+				grid-column: 2;
+				justify-self: center;
+				/* centrăm după primul buton; al doilea NU influențează centrajul */
+				position: relative;
+				display: inline-block;
+				white-space: nowrap;
+			}
+			/* Mută doar al doilea "buton" mai la dreapta (primul rămâne fix) */
+			.mypet-fisa-tab-group #petCardCopyBtn {
+				position: absolute;
+				top: 0;
+				left: calc(100% + 12rem); /* ~5cm la 16px/rem */
+				justify-content: center;
+				text-align: center;
+			}
+			.mypet-fisa-tab.is-action {
+				cursor: pointer;
+				user-select: none;
+			}
+			.mypet-fisa-tab.is-action:active {
+				transform: scale(0.99);
+			}
+
 			.mypet-fisa-tab {
 				background: #9d1c1c;
 				color: #fff;
-				padding: 0.18rem 0.56rem;
+				/* mai lipit de text (fără schimbare text) */
+				padding: 0.12rem 0.44rem;
 				border-radius: 18px;
-				font-size: 0.58rem;
+				font-size: 0.85rem; /* ca în pagina mamă */
 				font-weight: 800;
 				text-transform: uppercase;
 				letter-spacing: 0.08em;
+				line-height: 1.05;
+				display: inline-flex;
+				align-items: center;
+				align-self: start;
+				justify-self: center;
+			}
+			/* (Distribuie eliminat) */
+			.mypet-fisa-header-spacer {
+				grid-column: 1;
+			}
+			.mypet-fisa-header-actions {
+				grid-column: 3;
+				justify-self: end;
+				align-self: start;
 			}
 
 			.mypet-fisa-header-actions {
 				display: flex;
 				gap: 0.4rem;
+				align-items: center; /* nu decala header-ul */
 			}
+
+
 
 			.mypet-fisa-main-box {
 				flex: 1 1 auto;
@@ -290,6 +370,10 @@
 				border-radius: 8px 0 0 8px;
 				padding: 0.18rem 0.3rem;
 				box-sizing: border-box;
+				/* WT fundal (setat din JS) */
+				background-size: cover;
+				background-position: center;
+				background-repeat: no-repeat;
 			}
 
 			.mypet-fisa-main-cols {
@@ -307,10 +391,18 @@
 
 			.mypet-fisa-section-title {
 				margin: 0 0 0.14rem 0;
-				font-size: 0.58rem;
+				font-size: 0.85rem; /* ca în pagina mamă */
 				font-weight: 800;
 				text-transform: uppercase;
-				color: #7b5c00;
+				color: #0050b5;
+				line-height: 1.05;
+				display: inline-block;
+				width: fit-content;
+				max-width: 100%;
+				padding: 2px 6px;
+				border-radius: 6px;
+				background: rgba(240, 240, 240, 0.55);
+				backdrop-filter: blur(1.5px);
 			}
 
 			.mypet-add-field {
@@ -320,9 +412,17 @@
 			}
 
 			.mypet-add-field label {
-				font-size: 0.56rem;
+				font-size: 0.8rem; /* ca în pagina mamă */
 				font-weight: 600;
-				color: #5c3c00;
+				color: #0050b5;
+				line-height: 1.05;
+				display: inline-block;
+				width: fit-content;
+				max-width: 100%;
+				padding: 2px 6px;
+				border-radius: 6px;
+				background: rgba(240, 240, 240, 0.55);
+				backdrop-filter: blur(1.5px);
 			}
 
 			.mypet-add-field input,
@@ -330,32 +430,33 @@
 				width: 100%;
 				box-sizing: border-box;
 				padding: 0.14rem 0.22rem;
-				font-size: 0.56rem;
+				font-size: 0.8rem; /* ca în pagina mamă */
 				border-radius: 4px;
 				border: 1px solid #d2b27a;
 				background: #fffef7;
+				line-height: 1.05;
 			}
 			.mypet-add-field select {
 				width: 100%;
 				box-sizing: border-box;
 				padding: 0.14rem 1.24rem 0.14rem 0.22rem;
-				font-size: 0.56rem;
+				font-size: 0.8rem; /* ca în pagina mamă */
 				border-radius: 4px;
 				border: 1px solid #d2b27a;
 				appearance: none;
 				-moz-appearance: none;
 				-webkit-appearance: none;
 				background-color: #fffef7;
-				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%23222' d='M7 10L2 4h10z'/%3E%3C/svg%3E");
+				background-image: none;
 				background-repeat: no-repeat;
 				background-position: right 0.5rem center;
 			}
 			.mypet-add-field input.mypet-fisa-input-with-arrow {
 				background-color: #fffef7;
-				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%23222' d='M7 10L2 4h10z'/%3E%3C/svg%3E");
+				background-image: none;
 				background-repeat: no-repeat;
 				background-position: right 0.5rem center;
-				padding-right: 1.24rem;
+				padding-right: 0.22rem;
 			}
 
 			.mypet-add-field textarea { resize: none; }
@@ -394,17 +495,25 @@
 				box-sizing: border-box;
 				display: flex;
 				flex-direction: column;
+				/* WT fundal (setat din JS) */
+				background-size: cover;
+				background-position: center;
+				background-repeat: no-repeat;
+				position: relative;
+				overflow: hidden;
 			}
+			
 
 			.mypet-fisa-traits-list {
 				list-style: none !important;
 				margin: 0.14rem 0 0;
 				padding: 0 !important;
 				padding-left: 0 !important;
-				font-size: 0.56rem;
+				font-size: 0.8rem; /* ca în pagina mamă */
 				display: flex;
 				flex-direction: column;
 				gap: 0.075rem;
+				line-height: 1.05;
 			}
 			.mypet-fisa-traits-list li {
 				list-style: none !important;
@@ -420,7 +529,12 @@
 				grid-template-columns: auto 1fr;
 				gap: 0.35rem;
 				align-items: center;
-				color: #5c3c00;
+				color: #1a1a1a;
+				background: rgba(240, 240, 240, 0.85);
+				border: 1px solid rgba(0, 0, 0, 0.12);
+				border-radius: 6px;
+				padding: 0.08rem 0.18rem;
+				box-sizing: border-box;
 			}
 
 			.mypet-fisa-traits-list input[type="checkbox"] { margin: 0; }
@@ -442,6 +556,186 @@
 			}
 			.mypet-btn-primary { background: #9d1c1c; color: #fff; }
 			.mypet-btn-secondary { background: #fff8e1; color: #5d4037; border-color: #ffcc80; }
+
+			/* Modal media (poze/video) */
+			.pet-media-modal[hidden] { display: none !important; }
+			.pet-media-modal {
+				position: fixed;
+				inset: 0;
+				z-index: 9999;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background: rgba(0, 0, 0, 0.65);
+				padding: 1vh 1vw;
+				box-sizing: border-box;
+			}
+			.pet-media-modal__panel {
+				position: relative;
+				/* "x4" vizual: aproape full-screen, dar cu margini pentru click-out */
+				/* cerință: mai îngust (~ -1/3) și mai înalt */
+				width: min(62vw, 1100px);
+				max-width: 96vw;
+				max-height: 96vh;
+				background: rgba(255, 255, 255, 0.92);
+				border-radius: 10px;
+				overflow: hidden;
+				box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+				display: flex;
+				flex-direction: column;
+			}
+			.pet-media-modal__close {
+				position: absolute;
+				top: 8px;
+				right: 8px;
+				z-index: 2;
+				width: 34px;
+				height: 34px;
+				border-radius: 999px;
+				border: 1px solid rgba(0,0,0,0.2);
+				background: rgba(255,255,255,0.9);
+				color: #111;
+				font-weight: 900;
+				cursor: pointer;
+				line-height: 1;
+			}
+			/* Distribuie în nota poze/video (share-sheet) */
+			.pet-media-modal__share {
+				position: absolute;
+				top: 8px;
+				left: 8px;
+				z-index: 2;
+				height: 34px;
+				padding: 0 10px;
+				border-radius: 999px;
+				border: 1px solid rgba(0,0,0,0.2);
+				background: rgba(255,255,255,0.75);
+				color: #111;
+				font-weight: 900;
+				cursor: pointer;
+				line-height: 1;
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				backdrop-filter: blur(2px);
+			}
+			.pet-media-modal__share:active { transform: scale(0.99); }
+			.pet-media-modal__body {
+				padding: 0;
+				box-sizing: border-box;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				min-height: 180px;
+				flex: 1 1 auto;
+				position: relative;
+			}
+			.pet-media-modal__footer[hidden] { display: none !important; }
+			.pet-media-modal__footer {
+				flex: 0 0 auto;
+				padding: 10px 12px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background: rgba(255, 255, 255, 0.92);
+				border-top: 1px solid rgba(0,0,0,0.12);
+			}
+			.pet-media-modal__body img,
+			.pet-media-modal__body video {
+				width: 100%;
+				height: 100%;
+				max-width: none;
+				max-height: none;
+				display: block;
+				border-radius: 0;
+				background: #000;
+				object-fit: contain;
+			}
+
+			/* QR (colț jos dreapta) */
+			.pet-qr-corner {
+				position: fixed;
+				right: 10px;
+				bottom: 10px;
+				z-index: 2500;
+				background: rgba(255, 255, 255, 0.82);
+				border: 1px solid rgba(0,0,0,0.18);
+				border-radius: 10px;
+				padding: 8px;
+				box-shadow: 0 10px 26px rgba(0,0,0,0.22);
+				backdrop-filter: blur(2px);
+				display: flex;
+				flex-direction: column;
+				gap: 6px;
+				align-items: center;
+				justify-content: center;
+				width: 148px;
+				box-sizing: border-box;
+			}
+			.pet-qr-corner__title {
+				font-size: 0.68rem;
+				font-weight: 900;
+				letter-spacing: 0.06em;
+				text-transform: uppercase;
+				color: #111;
+				margin: 0;
+				line-height: 1.05;
+				text-align: center;
+			}
+			.pet-qr-corner__img {
+				width: 132px;
+				height: 132px;
+				display: block;
+				background: #fff;
+				border-radius: 6px;
+				border: 1px solid rgba(0,0,0,0.10);
+				box-sizing: border-box;
+			}
+			.pet-qr-corner__hint {
+				font-size: 0.62rem;
+				color: #222;
+				margin: 0;
+				line-height: 1.1;
+				text-align: center;
+				opacity: 0.9;
+			}
+			@media (max-width: 820px) {
+				.pet-qr-corner { width: 132px; }
+				.pet-qr-corner__img { width: 116px; height: 116px; }
+			}
+
+			/* Controale video în modal (semitransparente) */
+			.pet-media-modal__video-controls {
+				display: flex !important;
+				gap: 10px;
+				align-items: center;
+				justify-content: center;
+				padding: 10px 12px;
+				border-radius: 999px;
+				background: rgba(0, 0, 0, 0.62);
+				border: 1px solid rgba(255, 255, 255, 0.38);
+				backdrop-filter: blur(2px);
+				pointer-events: auto;
+			}
+			.pet-media-modal__vc-btn {
+				width: 52px;
+				height: 52px;
+				border-radius: 999px;
+				border: 1px solid rgba(255,255,255,0.78);
+				background: rgba(255,255,255,0.22);
+				color: #fff;
+				font-weight: 900;
+				font-size: 20px;
+				line-height: 1;
+				cursor: pointer;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				user-select: none;
+				text-shadow: 0 2px 8px rgba(0,0,0,0.75);
+			}
+			.pet-media-modal__vc-btn:active { transform: scale(0.98); }
+			.pet-media-modal__vc-btn:focus { outline: 2px solid rgba(255,255,255,0.7); outline-offset: 2px; }
 		</style>
 	</head>
 	<body class="content_left scheme_red page-pet-single" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
@@ -455,18 +749,52 @@
 								<section id="MW" class="mypet-fisa-wrap">
 									<div class="mypet-fisa-inner">
 										<div class="mypet-fisa-col mypet-fisa-col-photos">
-											<div class="mypet-fisa-photo-slot mypet-fisa-photo-1">POZA 1</div>
-											<div class="mypet-fisa-photo-slot mypet-fisa-photo-2">POZA 2</div>
-											<div class="mypet-fisa-photo-slot mypet-fisa-photo-3">POZA 3</div>
-											<div class="mypet-fisa-photo-slot mypet-fisa-photo-4">VIDEO</div>
+											<div class="mypet-fisa-photo-slot mypet-fisa-photo-1">
+												<div class="mypet-fisa-photo-preview" aria-hidden="true">
+													{% if pet.imagine %}
+														<img src="{{ pet.imagine.url }}" alt="Poza 1" class="img-crop js-pet-media-thumb" data-media-type="image" />
+													{% else %}
+														<img src="{% static pet.imagine_fallback|default:'images/pets/charlie-275x275.jpg' %}" alt="Poza 1" class="img-crop js-pet-media-thumb" data-media-type="image" />
+													{% endif %}
+												</div>
+											</div>
+											<div class="mypet-fisa-photo-slot mypet-fisa-photo-2">
+												<div class="mypet-fisa-photo-preview" aria-hidden="true">
+													{% if pet.imagine_2 %}
+														<img src="{{ pet.imagine_2.url }}" alt="Poza 2" class="img-crop js-pet-media-thumb" data-media-type="image" />
+													{% else %}
+														<img src="{% static pet.imagine_fallback|default:'images/pets/charlie-275x275.jpg' %}" alt="Poza 2" class="img-crop js-pet-media-thumb" data-media-type="image" />
+													{% endif %}
+												</div>
+											</div>
+											<div class="mypet-fisa-photo-slot mypet-fisa-photo-3">
+												<div class="mypet-fisa-photo-preview" aria-hidden="true">
+													{% if pet.imagine_3 %}
+														<img src="{{ pet.imagine_3.url }}" alt="Poza 3" class="img-crop js-pet-media-thumb" data-media-type="image" />
+													{% else %}
+														<img src="{% static pet.imagine_fallback|default:'images/pets/charlie-275x275.jpg' %}" alt="Poza 3" class="img-crop js-pet-media-thumb" data-media-type="image" />
+													{% endif %}
+												</div>
+											</div>
+											<div class="mypet-fisa-photo-slot mypet-fisa-photo-4">
+												<div class="mypet-fisa-video-box">
+													<div class="mypet-fisa-video-preview js-pet-video-thumb {% if pet.video %}has-video{% endif %}" id="video_preview" data-media-type="video" data-video-src="{% if pet.video %}{{ pet.video.url }}{% endif %}">
+														{% if pet.video %}
+															<video src="{{ pet.video.url }}" muted loop autoplay playsinline></video>
+														{% endif %}
+														<span class="mypet-fisa-video-btn-overlay" id="video_btn_label" aria-hidden="true"></span>
+													</div>
+												</div>
+											</div>
 										</div>
 
 										<div class="mypet-fisa-header-row">
-											<div class="mypet-fisa-tab">FIȘA PET</div>
+											<div class="mypet-fisa-tab-group">
+												<div class="mypet-fisa-tab">FIȘA PET {{ pet.nume|default:"" }}</div>
+												<div class="mypet-fisa-tab is-action" id="petCardCopyBtn" role="button" tabindex="0" aria-label="Distribuie (copiază linkul fișei)">DISTRIBUIE</div>
+											</div>
 											<div class="mypet-fisa-header-spacer"></div>
 											<div class="mypet-fisa-header-actions">
-												<span class="mypet-btn mypet-btn-primary">SALVEAZĂ FIȘA</span>
-												<span class="mypet-btn mypet-btn-secondary">ÎNAPOI LA MYPET</span>
 											</div>
 										</div>
 
@@ -546,7 +874,13 @@
 														<div class="mypet-add-field">
 															<label for="id_sex">SEX</label>
 															<select id="id_sex" disabled>
-																<option value="">{{ pet.sex|default:"Alege" }}</option>
+																{% if pet.sex == "m" %}
+																	<option value="m" selected>MASCUL</option>
+																{% elif pet.sex == "f" %}
+																	<option value="f" selected>FEMELA</option>
+																{% else %}
+																	<option value="">{{ pet.sex|default:"Alege" }}</option>
+																{% endif %}
 															</select>
 														</div>
 
@@ -574,6 +908,11 @@
 															<label for="id_story">CINE SUNT ȘI DE UNDE SUNT</label>
 															<textarea id="id_story" rows="2" class="mypet-fisa-textarea" disabled>{{ pet.descriere|default:'' }}</textarea>
 														</div>
+
+														<div class="mypet-add-field mypet-fisa-field-story">
+															<label for="id_messages">MESAJE</label>
+															<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled></textarea>
+														</div>
 													</div>
 												</div>
 											</div>
@@ -583,21 +922,21 @@
 											<div class="mypet-fisa-traits-box">
 												<h3 class="mypet-fisa-section-title">Detalii potrivire adoptator</h3>
 												<ul class="mypet-fisa-traits-list">
-													<li><label><input type="checkbox" {% if pet.trait_jucaus %}checked{% endif %} disabled /> JUCĂUȘ</label></li>
-													<li><label><input type="checkbox" {% if pet.trait_iubitor %}checked{% endif %} disabled /> IUBITOR</label></li>
-													<li><label><input type="checkbox" {% if pet.trait_protector %}checked{% endif %} disabled /> PROTECTOR</label></li>
-													<li><label><input type="checkbox" {% if pet.trait_energic %}checked{% endif %} disabled /> ENERGIC</label></li>
-													<li><label><input type="checkbox" {% if pet.trait_linistit %}checked{% endif %} disabled /> LINIȘTIT</label></li>
-													<li><label><input type="checkbox" {% if pet.trait_bun_copii %}checked{% endif %} disabled /> BUN CU COPII</label></li>
-													<li><label><input type="checkbox" {% if pet.trait_bun_caini %}checked{% endif %} disabled /> BUN CU ALȚI CÂINI</label></li>
-													<li><label><input type="checkbox" {% if pet.trait_bun_pisici %}checked{% endif %} disabled /> BUN CU PISICI</label></li>
-													<li><label><input type="checkbox" {% if pet.trait_obisnuit_casa %}checked{% endif %} disabled /> OBIȘNUIT ÎN CASĂ</label></li>
-													<li><label><input type="checkbox" {% if pet.trait_obisnuit_lesa %}checked{% endif %} disabled /> OBIȘNUIT CU LESA</label></li>
-													<li><label><input type="checkbox" {% if pet.trait_nu_latla %}checked{% endif %} disabled /> NU LATRĂ EXCESIV</label></li>
-													<li><label><input type="checkbox" {% if pet.trait_apartament %}checked{% endif %} disabled /> POTRIVIT PENTRU APARTAMENT</label></li>
-													<li><label><input type="checkbox" {% if pet.trait_se_adapteaza %}checked{% endif %} disabled /> SE ADAPTEAZĂ UȘOR</label></li>
-													<li><label><input type="checkbox" {% if pet.trait_tolereaza_singur %}checked{% endif %} disabled /> TOLEREAZĂ SĂ STEA SINGUR</label></li>
-													<li><label><input type="checkbox" {% if pet.trait_necesita_experienta %}checked{% endif %} disabled /> NECESITĂ EXPERIENȚĂ CU CÂINI</label></li>
+													{% if pet.trait_jucaus %}<li><label><input type="checkbox" checked disabled /> JUCĂUȘ</label></li>{% endif %}
+													{% if pet.trait_iubitor %}<li><label><input type="checkbox" checked disabled /> IUBITOR</label></li>{% endif %}
+													{% if pet.trait_protector %}<li><label><input type="checkbox" checked disabled /> PROTECTOR</label></li>{% endif %}
+													{% if pet.trait_energic %}<li><label><input type="checkbox" checked disabled /> ENERGIC</label></li>{% endif %}
+													{% if pet.trait_linistit %}<li><label><input type="checkbox" checked disabled /> LINIȘTIT</label></li>{% endif %}
+													{% if pet.trait_bun_copii %}<li><label><input type="checkbox" checked disabled /> BUN CU COPII</label></li>{% endif %}
+													{% if pet.trait_bun_caini %}<li><label><input type="checkbox" checked disabled /> BUN CU ALȚI CÂINI</label></li>{% endif %}
+													{% if pet.trait_bun_pisici %}<li><label><input type="checkbox" checked disabled /> BUN CU PISICI</label></li>{% endif %}
+													{% if pet.trait_obisnuit_casa %}<li><label><input type="checkbox" checked disabled /> OBIȘNUIT ÎN CASĂ</label></li>{% endif %}
+													{% if pet.trait_obisnuit_lesa %}<li><label><input type="checkbox" checked disabled /> OBIȘNUIT CU LESA</label></li>{% endif %}
+													{% if pet.trait_nu_latla %}<li><label><input type="checkbox" checked disabled /> NU LATRĂ EXCESIV</label></li>{% endif %}
+													{% if pet.trait_apartament %}<li><label><input type="checkbox" checked disabled /> POTRIVIT PENTRU APARTAMENT</label></li>{% endif %}
+													{% if pet.trait_se_adapteaza %}<li><label><input type="checkbox" checked disabled /> SE ADAPTEAZĂ UȘOR</label></li>{% endif %}
+													{% if pet.trait_tolereaza_singur %}<li><label><input type="checkbox" checked disabled /> TOLEREAZĂ SĂ STEA SINGUR</label></li>{% endif %}
+													{% if pet.trait_necesita_experienta %}<li><label><input type="checkbox" checked disabled /> NECESITĂ EXPERIENȚĂ CU CÂINI</label></li>{% endif %}
 												</ul>
 											</div>
 										</div>
@@ -609,9 +948,243 @@
 				</div>
 			</section>
 		</section>
+
+		<div class="pet-media-modal" id="petMediaModal" hidden>
+			<div class="pet-media-modal__panel" role="dialog" aria-modal="true" aria-label="Media">
+				<button type="button" class="pet-media-modal__share" id="petMediaModalShare" aria-label="Distribuie">↗ Distribuie</button>
+				<button type="button" class="pet-media-modal__close" id="petMediaModalClose" aria-label="Închide">X</button>
+				<div class="pet-media-modal__body" id="petMediaModalBody"></div>
+				<div class="pet-media-modal__footer" id="petMediaModalFooter" hidden></div>
+			</div>
+		</div>
+
+		<div class="pet-qr-corner" id="petQrCorner" aria-label="Cod QR fișă">
+			<p class="pet-qr-corner__title">Scanează fișa</p>
+			<img class="pet-qr-corner__img" id="petQrImg" alt="Cod QR către fișă" />
+			<p class="pet-qr-corner__hint">Deschide pe telefon</p>
+		</div>
+
 		{% with page_url=request.build_absolute_uri %}
 		<script>
 		(function() {
+			// WT fundal (Transport): 4 variante, aplicat doar sub casetele cu text
+			var fundalUrls = [
+				"{% static 'images/transport/fundal_1.jpg' %}",
+				"{% static 'images/transport/fundal_2.jpg' %}",
+				"{% static 'images/transport/fundal_3.jpg' %}",
+				"{% static 'images/transport/fundal_4.jpg' %}"
+			];
+			function setRandomWT() {
+				var url = fundalUrls[Math.floor(Math.random() * fundalUrls.length)];
+				document.querySelectorAll("#MW .mypet-fisa-main-box, #MW .mypet-fisa-traits-box").forEach(function(el) {
+					el.style.backgroundImage = "url(" + url + ")";
+				});
+			}
+			if (document.readyState === "loading") {
+				document.addEventListener("DOMContentLoaded", setRandomWT);
+			} else {
+				setRandomWT();
+			}
+			setInterval(setRandomWT, 60 * 60 * 1000);
+
+			// Autoplay preview video (slot 4) – unele browsere cer play() explicit chiar și cu muted
+			function tryPlayPreviewVideo() {
+				var pv = document.querySelector("#video_preview video");
+				if (!pv) return;
+				try {
+					pv.muted = true;
+					pv.loop = true;
+					pv.playsInline = true;
+					var p = pv.play();
+					if (p && typeof p.catch === "function") p.catch(function() {});
+				} catch (e) {}
+			}
+			if (document.readyState === "loading") {
+				document.addEventListener("DOMContentLoaded", tryPlayPreviewVideo);
+			} else {
+				tryPlayPreviewVideo();
+			}
+
+			// Modal poze/video (click -> preview mare, close X / click afară / Esc)
+			var modal = document.getElementById("petMediaModal");
+			var modalBody = document.getElementById("petMediaModalBody");
+			var modalClose = document.getElementById("petMediaModalClose");
+			var modalFooter = document.getElementById("petMediaModalFooter");
+			var modalShare = document.getElementById("petMediaModalShare");
+
+			function closeModal() {
+				if (!modal) return;
+				modal.hidden = true;
+				document.body.style.overflow = "";
+				if (modalBody) modalBody.innerHTML = "";
+				if (modalFooter) { modalFooter.innerHTML = ""; modalFooter.hidden = true; }
+			}
+			function openImage(src, alt) {
+				if (!modal || !modalBody) return;
+				modalBody.innerHTML = "";
+				var img = document.createElement("img");
+				img.src = src;
+				img.alt = alt || "";
+				modalBody.appendChild(img);
+				if (modalFooter) { modalFooter.innerHTML = ""; modalFooter.hidden = true; }
+				modal.hidden = false;
+				document.body.style.overflow = "hidden";
+			}
+			function openVideo(src) {
+				if (!src) return;
+				if (!modal || !modalBody) return;
+				modalBody.innerHTML = "";
+				var v = document.createElement("video");
+				v.src = src;
+				v.controls = false;
+				v.playsInline = true;
+				v.preload = "metadata";
+				v.setAttribute("aria-label", "Video");
+
+				modalBody.appendChild(v);
+
+				if (modalFooter) {
+					modalFooter.innerHTML = "";
+					var controls = document.createElement("div");
+					controls.className = "pet-media-modal__video-controls";
+
+					var btnBack = document.createElement("button");
+					btnBack.type = "button";
+					btnBack.className = "pet-media-modal__vc-btn";
+					btnBack.title = "Înapoi 5 sec";
+					btnBack.setAttribute("aria-label", "Înapoi 5 secunde");
+					btnBack.textContent = "⏪";
+
+					var btnPlay = document.createElement("button");
+					btnPlay.type = "button";
+					btnPlay.className = "pet-media-modal__vc-btn";
+					btnPlay.title = "Play / Pauză";
+					btnPlay.setAttribute("aria-label", "Play sau pauză");
+					btnPlay.textContent = "⏸";
+
+					var btnFwd = document.createElement("button");
+					btnFwd.type = "button";
+					btnFwd.className = "pet-media-modal__vc-btn";
+					btnFwd.title = "Înainte 5 sec";
+					btnFwd.setAttribute("aria-label", "Înainte 5 secunde");
+					btnFwd.textContent = "⏩";
+
+					function clampTime(t) {
+						if (!isFinite(t)) return 0;
+						var d = v.duration;
+						if (!isFinite(d) || d <= 0) return Math.max(0, t);
+						return Math.min(Math.max(0, t), d);
+					}
+					function togglePlay() {
+						if (v.paused) v.play().catch(function() {});
+						else v.pause();
+					}
+					function syncPlayIcon() {
+						btnPlay.textContent = v.paused ? "▶" : "⏸";
+					}
+
+					btnBack.addEventListener("click", function(e) {
+						e.stopPropagation();
+						v.currentTime = clampTime((v.currentTime || 0) - 5);
+					});
+					btnFwd.addEventListener("click", function(e) {
+						e.stopPropagation();
+						v.currentTime = clampTime((v.currentTime || 0) + 5);
+					});
+					btnPlay.addEventListener("click", function(e) {
+						e.stopPropagation();
+						togglePlay();
+					});
+					v.addEventListener("play", syncPlayIcon);
+					v.addEventListener("pause", syncPlayIcon);
+					v.addEventListener("ended", syncPlayIcon);
+					v.addEventListener("loadedmetadata", syncPlayIcon);
+
+					controls.appendChild(btnBack);
+					controls.appendChild(btnPlay);
+					controls.appendChild(btnFwd);
+					modalFooter.appendChild(controls);
+					modalFooter.hidden = false;
+				}
+				modal.hidden = false;
+				document.body.style.overflow = "hidden";
+				try { v.play(); } catch (e) {}
+			}
+
+			// Distribuie în notă (share-sheet). Trimite linkul fișei.
+			const pageUrl = "{{ page_url|escapejs }}";
+			const petId = {{ pet.pk|default:"0" }};
+			function getCsrfToken() {
+				try {
+					var m = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+					return m ? decodeURIComponent(m[1]) : "";
+				} catch (e) { return ""; }
+			}
+			function trackPetEvent(eventName) {
+				try {
+					if (!petId) return;
+					fetch("{% url 'pet_track_event' pk=pet.pk %}", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+							"X-CSRFToken": getCsrfToken(),
+						},
+						body: "event=" + encodeURIComponent(eventName),
+						credentials: "same-origin",
+					}).catch(function() {});
+				} catch (e) {}
+			}
+			// QR în colț (encodează linkul fișei ca imagine)
+			(function initQrCorner() {
+				var img = document.getElementById("petQrImg");
+				if (!img) return;
+				var qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=6&data=" + encodeURIComponent(pageUrl);
+				img.src = qrUrl;
+			})();
+			if (modalShare) {
+				modalShare.addEventListener("click", async function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+					trackPetEvent("share_click");
+					if (!navigator.share) {
+						alert("Distribuirea (meniul de trimitere) este disponibilă pe telefon (Chrome/Android). Pe laptop nu apare acest meniu.");
+						return;
+					}
+					try {
+						var name = "{{ pet.nume|default:''|escapejs }}";
+						await navigator.share({
+							title: (name ? ("Fișa lui " + name) : "Fișa animalului") + " | EU‑Adopt",
+							text: "Uite fișa pe EU‑Adopt:",
+							url: pageUrl
+						});
+					} catch (err) {}
+				});
+			}
+			document.addEventListener("click", function(e) {
+				var img = e.target && e.target.closest(".js-pet-media-thumb");
+				if (img && img.tagName === "IMG") {
+					trackPetEvent("media_view");
+					openImage(img.getAttribute("src"), img.getAttribute("alt"));
+					return;
+				}
+				var vid = e.target && e.target.closest(".js-pet-video-thumb");
+				if (vid) {
+					var src = vid.getAttribute("data-video-src") || "";
+					if (src) {
+						trackPetEvent("media_view");
+						openVideo(src);
+					}
+					return;
+				}
+				if (modal && !modal.hidden) {
+					if (e.target === modal) closeModal();
+					if (modalClose && (e.target === modalClose)) closeModal();
+				}
+			});
+			document.addEventListener("keydown", function(e) {
+				if (e.key === "Escape") closeModal();
+			});
+
 			document.querySelectorAll(".js-finalize-form-pet").forEach(function(form) {
 				form.addEventListener("submit", function(e) {
 					var petName = form.getAttribute("data-pet-name") || "acest animal";
@@ -620,7 +1193,70 @@
 					}
 				});
 			});
-			const pageUrl = "{{ page_url|escapejs }}";
+			// pageUrl este definit mai sus
+			// "buton" 2 identic (copie vizuală): copiază linkul fișei
+			(function initCardCopyBtn() {
+				var b = document.getElementById("petCardCopyBtn");
+				if (!b) return;
+				// păstrăm dimensiunea casetei 2 FIXĂ (ca la pastila 1), chiar dacă textul diferă
+				function lockSameSizeAsFirst() {
+					try {
+						var group = b.closest(".mypet-fisa-tab-group");
+						if (!group) return;
+						var first = group.querySelector(".mypet-fisa-tab:not(#petCardCopyBtn)");
+						if (!first) return;
+						var w = first.offsetWidth || 0;
+						var h = first.offsetHeight || 0;
+						if (w) b.style.width = w + "px";
+						if (h) b.style.height = h + "px";
+					} catch (e) {}
+				}
+				function shrinkTextToFit() {
+					// nu mărim caseta; micșorăm fontul dacă e nevoie
+					try {
+						var base = parseFloat(getComputedStyle(b).fontSize) || 14;
+						var min = 10;
+						var size = base;
+						// reset înainte de măsurare
+						b.style.fontSize = base + "px";
+						for (var i = 0; i < 12; i++) {
+							if (b.scrollWidth <= b.clientWidth) break;
+							size = Math.max(min, size - 0.5);
+							b.style.fontSize = size + "px";
+							if (size <= min) break;
+						}
+					} catch (e) {}
+				}
+				lockSameSizeAsFirst();
+				shrinkTextToFit();
+				window.addEventListener("resize", function() {
+					lockSameSizeAsFirst();
+					shrinkTextToFit();
+				});
+
+				async function doShare() {
+					trackPetEvent("share_click");
+					if (!navigator.share) {
+						alert("Distribuirea (meniul de trimitere) este disponibilă pe telefon (Chrome/Android). Pe laptop nu apare acest meniu.");
+						return;
+					}
+					try {
+						var name = "{{ pet.nume|default:''|escapejs }}";
+						await navigator.share({
+							title: (name ? ("Fișa lui " + name) : "Fișa animalului") + " | EU‑Adopt",
+							text: "Uite fișa pe EU‑Adopt:",
+							url: pageUrl
+						});
+					} catch (err) {}
+				}
+				b.addEventListener("click", function(e) { e.preventDefault(); e.stopPropagation(); doShare(); });
+				b.addEventListener("keydown", function(e) {
+					if (e.key === "Enter" || e.key === " ") {
+						e.preventDefault();
+						doShare();
+					}
+				});
+			})();
 			const btn = document.getElementById("copyLinkBtn");
 			if (btn) {
 				btn.addEventListener("click", async function() {

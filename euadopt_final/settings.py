@@ -149,6 +149,11 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Upload limits (video demo / fișiere MyPet)
+# Implicit Django poate bloca request-uri > ~2.5MB (DATA_UPLOAD_MAX_MEMORY_SIZE).
+DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25 MB
+
 # Email – trimitere din euadopt@gmail.com (Gmail)
 # Parola: folosește „Parolă pentru aplicații” din contul Google (nu parola contului).
 # Setează EMAIL_HOST_PASSWORD în .env sau variabile de mediu; dacă lipsește, mailurile merg în consolă.

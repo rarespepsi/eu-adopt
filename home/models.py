@@ -123,6 +123,7 @@ class AnimalListing(models.Model):
     photo_1 = models.ImageField("Poza 1", upload_to="animals/", blank=True, null=True)
     photo_2 = models.ImageField("Poza 2", upload_to="animals/", blank=True, null=True)
     photo_3 = models.ImageField("Poza 3", upload_to="animals/", blank=True, null=True)
+    video = models.FileField("Video", upload_to="animals/videos/", blank=True, null=True)
 
     # Date suplimentare din fișă
     color = models.CharField("Culoare", max_length=80, blank=True)
@@ -153,6 +154,8 @@ class AnimalListing(models.Model):
     trait_necesita_experienta = models.BooleanField("Necesită experiență cu câini", default=False)
 
     is_published = models.BooleanField("Publicat", default=True)
+    media_views = models.IntegerField("Vizualizări media (click pe poză/video)", default=0)
+    share_clicks = models.IntegerField("Distribuiri (click pe buton)", default=0)
     created_at = models.DateTimeField("Creat la", auto_now_add=True)
     updated_at = models.DateTimeField("Actualizat la", auto_now=True)
 

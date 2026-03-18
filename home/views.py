@@ -10,6 +10,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.http import JsonResponse
+from django.db.models import Count
+from django.db.models import F
 from django.core.files.base import ContentFile
 from django.conf import settings
 import os
@@ -1201,6 +1203,7 @@ def dog_profile_view(request, pk):
         "imagine": listing.photo_1,
         "imagine_2": listing.photo_2,
         "imagine_3": listing.photo_3,
+        "video": listing.video,
         "imagine_fallback": DEMO_DOG_IMAGE,
         "judet": listing.county,
         "oras": listing.city,
@@ -1214,6 +1217,24 @@ def dog_profile_view(request, pk):
         "cip": listing.cip,
         "vaccin": listing.vaccinat,
         "probleme_medicale": listing.probleme_medicale,
+        "greutate_aprox": listing.greutate_aprox,
+        "cine_sunt": listing.cine_sunt,
+        # Trăsături potrivire adoptator (bife) – afișate în pets-single.html
+        "trait_jucaus": listing.trait_jucaus,
+        "trait_iubitor": listing.trait_iubitor,
+        "trait_protector": listing.trait_protector,
+        "trait_energic": listing.trait_energic,
+        "trait_linistit": listing.trait_linistit,
+        "trait_bun_copii": listing.trait_bun_copii,
+        "trait_bun_caini": listing.trait_bun_caini,
+        "trait_bun_pisici": listing.trait_bun_pisici,
+        "trait_obisnuit_casa": listing.trait_obisnuit_casa,
+        "trait_obisnuit_lesa": listing.trait_obisnuit_lesa,
+        "trait_nu_latla": listing.trait_nu_latla,
+        "trait_apartament": listing.trait_apartament,
+        "trait_se_adapteaza": listing.trait_se_adapteaza,
+        "trait_tolereaza_singur": listing.trait_tolereaza_singur,
+        "trait_necesita_experienta": listing.trait_necesita_experienta,
     }
 
     ctx = {
@@ -1344,7 +1365,6 @@ def account_edit_username_view(request):
 @login_required
 @require_POST
 def account_upload_avatar_view(request):
-    print("UPLOAD VIEW HIT")
     """
     Upload/crop poză profil pentru PF. Salvare permanentă:
     - fișier pe disc în MEDIA_ROOT/profiles/<user_id>/ (scale la sute/mii de useri),
@@ -1356,40 +1376,28 @@ def account_upload_avatar_view(request):
     # Permitem upload avatar atât pentru PF, cât și pentru Colaborator (aceeași logică)
     if not account_profile or account_profile.role not in (AccountProfile.ROLE_PF, AccountProfile.ROLE_COLLAB):
         return JsonResponse({"ok": False, "error": "Nu este permis."}, status=403)
-    print("FILES:", request.FILES)
     file_obj = request.FILES.get("avatar")
-    print("FILE OBJ:", file_obj)
     if not file_obj:
         return JsonResponse({"ok": False, "error": "Nu s-a trimis niciun fișier."}, status=400)
     profiles_dir = os.path.join(settings.MEDIA_ROOT, "profiles")
-    print("MEDIA_ROOT:", settings.MEDIA_ROOT)
-    print("profiles dir exists:", os.path.isdir(profiles_dir))
     if not os.path.isdir(profiles_dir):
         try:
             os.makedirs(profiles_dir, exist_ok=True)
-            print("Created profiles dir")
         except Exception as e_dir:
-            print("Failed to create profiles dir:", e_dir)
+            # dacă nu putem crea, lăsăm să dea eroare la save() mai jos
+            pass
     try:
         raw = file_obj.read()
-        print("raw length:", len(raw) if raw else 0)
         if not raw:
             return JsonResponse({"ok": False, "error": "Fișierul este gol."}, status=400)
         profile, _ = UserProfile.objects.get_or_create(user=user, defaults={})
         safe_name = "avatar_%s_%s.jpg" % (user.id, timezone.now().strftime("%Y%m%d%H%M%S"))
-        print("safe_name:", safe_name)
         content = ContentFile(raw)
-        print("ContentFile created")
         profile.poza_1.save(safe_name, content, save=True)
-        print("save() done")
         profile.refresh_from_db()
-        print("poza_1.name after save:", getattr(profile.poza_1, "name", None))
         if not profile.poza_1.name:
             return JsonResponse({"ok": False, "error": "Poza nu s-a salvat în baza de date."}, status=500)
     except Exception as e:
-        print("EXCEPTION in save:", type(e).__name__, str(e))
-        import traceback
-        traceback.print_exc()
         return JsonResponse({"ok": False, "error": "Eroare la salvare: " + str(e)}, status=500)
     url = ""
     try:
@@ -1717,6 +1725,66 @@ def mypet_view(request):
         AnimalListing.objects.filter(owner=user)
         .order_by("-id")[:50]
     )
+    mypet_count = len([p for p in pets if p is not None])
+    adopted_count = 0
+    if mypet_count:
+        pet_ids_all = list(AnimalListing.objects.filter(owner=user).values_list("pk", flat=True))
+        if pet_ids_all:
+            adopted_count = UserAdoption.objects.filter(status="completed", animal_id__in=pet_ids_all).count()
+    total_count = int(mypet_count) + int(adopted_count)
+    # Wishlist counts (I love): câte inimioare are fiecare câine
+    pet_ids = [p.pk for p in pets if p is not None]
+    wish_map = {}
+    if pet_ids:
+        for row in (
+            WishlistItem.objects
+            .filter(animal_id__in=pet_ids)
+            .values("animal_id")
+            .annotate(c=Count("id"))
+        ):
+            wish_map[int(row["animal_id"])] = int(row["c"])
+    for p in pets:
+        if p is None:
+            continue
+        p.wish_count = wish_map.get(p.pk, 0)
+        # Fișă completă (procent vizibilitate): 1/2/3 poze + video + 3 bife cheie
+        points = 0
+        missing = []
+        # Poze: prima contează mai mult (copertă)
+        if getattr(p, "photo_1", None):
+            points += 2
+        else:
+            missing.append("Poza 1")
+        if getattr(p, "photo_2", None):
+            points += 1
+        else:
+            missing.append("Poza 2")
+        if getattr(p, "photo_3", None):
+            points += 1
+        else:
+            missing.append("Poza 3")
+        # Video
+        if getattr(p, "video", None):
+            points += 2
+        else:
+            missing.append("Video")
+        # 3 bife “max vizibilitate”
+        key_traits = [
+            ("trait_bun_copii", "Bun cu copii"),
+            ("trait_bun_caini", "Bun cu alți câini"),
+            ("trait_bun_pisici", "Bun cu pisici"),
+        ]
+        for field, label in key_traits:
+            if bool(getattr(p, field, False)):
+                points += 1
+            else:
+                missing.append(label)
+        total_points = 9  # 2+1+1 +2 +3*1
+        try:
+            p.fisa_percent = int(round((points / float(total_points)) * 100))
+        except Exception:
+            p.fisa_percent = 0
+        p.fisa_missing = missing
     # Minim 20 rânduri pentru a vedea scroll-ul
     while len(pets) < 20:
         pets.append(None)
@@ -1724,6 +1792,9 @@ def mypet_view(request):
     # nu mai suprascriem aici active_animals/adopted_animals.
     return render(request, "anunturi/mypet.html", {
         "pets": pets,
+        "mypet_count": mypet_count,
+        "adopted_count": adopted_count,
+        "total_count": total_count,
     })
 
 
@@ -1779,10 +1850,28 @@ def mypet_add_view(request):
         def trait(name):
             return name in request.POST
         error = None
-        if not name:
-            error = "Te rugăm să completezi numele câinelui."
-        if not age_label:
-            error = "Te rugăm să alegi vârsta estimată."
+        # Toate câmpurile sunt obligatorii (în afară de bifele de potrivire adoptator)
+        required = [
+            ("name", name, "Te rugăm să completezi numele câinelui."),
+            ("species", species, "Te rugăm să alegi specia."),
+            ("age_label", age_label, "Te rugăm să alegi vârsta estimată."),
+            ("size", size, "Te rugăm să alegi talia."),
+            ("color", color, "Te rugăm să alegi culoarea."),
+            ("sterilizat", sterilizat, "Te rugăm să alegi dacă este sterilizat."),
+            ("vaccinat", vaccinat, "Te rugăm să alegi dacă este vaccinat."),
+            ("carnet_sanatate", carnet_sanatate, "Te rugăm să alegi dacă are carnet de sănătate."),
+            ("cip", cip, "Te rugăm să alegi dacă are CIP."),
+            ("sex", sex, "Te rugăm să alegi sexul."),
+            ("greutate_aprox", greutate_aprox, "Te rugăm să completezi greutatea (aprox.)."),
+            ("county", county, "Te rugăm să completezi județul."),
+            ("city", city, "Te rugăm să completezi orașul/localitatea."),
+            ("probleme_medicale", probleme_medicale, "Te rugăm să completezi problemele medicale (scrie „Nu” dacă nu sunt)."),
+            ("cine_sunt", cine_sunt, "Te rugăm să completezi „Cine sunt și de unde sunt”."),
+        ]
+        for _key, val, msg in required:
+            if not val:
+                error = msg
+                break
         if not error:
             try:
                 listing = AnimalListing.objects.create(
@@ -1805,6 +1894,7 @@ def mypet_add_view(request):
                     photo_1=request.FILES.get("photo_1"),
                     photo_2=request.FILES.get("photo_2"),
                     photo_3=request.FILES.get("photo_3"),
+                    video=request.FILES.get("video"),
                     trait_jucaus=trait("trait_jucaus"),
                     trait_iubitor=trait("trait_iubitor"),
                     trait_protector=trait("trait_protector"),
@@ -1863,6 +1953,11 @@ def mypet_add_view(request):
             "trait_se_adapteaza": trait("trait_se_adapteaza"),
             "trait_tolereaza_singur": trait("trait_tolereaza_singur"),
             "trait_necesita_experienta": trait("trait_necesita_experienta"),
+            "traits_empty": not any(trait(n) for n in (
+                "trait_jucaus","trait_iubitor","trait_protector","trait_energic","trait_linistit",
+                "trait_bun_copii","trait_bun_caini","trait_bun_pisici","trait_obisnuit_casa","trait_obisnuit_lesa",
+                "trait_nu_latla","trait_apartament","trait_se_adapteaza","trait_tolereaza_singur","trait_necesita_experienta"
+            )),
         }
         return render(request, "anunturi/mypet_add.html", ctx)
 
@@ -1903,6 +1998,7 @@ def mypet_add_view(request):
         "trait_se_adapteaza": False,
         "trait_tolereaza_singur": False,
         "trait_necesita_experienta": False,
+        "traits_empty": True,
     }
     return render(request, "anunturi/mypet_add.html", ctx)
 
@@ -1952,10 +2048,27 @@ def mypet_edit_view(request, pk):
             return name in request.POST
 
         error = None
-        if not name:
-            error = "Te rugăm să completezi numele câinelui."
-        if not age_label:
-            error = "Te rugăm să alegi vârsta estimată."
+        required = [
+            ("name", name, "Te rugăm să completezi numele câinelui."),
+            ("species", species, "Te rugăm să alegi specia."),
+            ("age_label", age_label, "Te rugăm să alegi vârsta estimată."),
+            ("size", size, "Te rugăm să alegi talia."),
+            ("color", color, "Te rugăm să alegi culoarea."),
+            ("sterilizat", sterilizat, "Te rugăm să alegi dacă este sterilizat."),
+            ("vaccinat", vaccinat, "Te rugăm să alegi dacă este vaccinat."),
+            ("carnet_sanatate", carnet_sanatate, "Te rugăm să alegi dacă are carnet de sănătate."),
+            ("cip", cip, "Te rugăm să alegi dacă are CIP."),
+            ("sex", sex, "Te rugăm să alegi sexul."),
+            ("greutate_aprox", greutate_aprox, "Te rugăm să completezi greutatea (aprox.)."),
+            ("county", county, "Te rugăm să completezi județul."),
+            ("city", city, "Te rugăm să completezi orașul/localitatea."),
+            ("probleme_medicale", probleme_medicale, "Te rugăm să completezi problemele medicale (scrie „Nu” dacă nu sunt)."),
+            ("cine_sunt", cine_sunt, "Te rugăm să completezi „Cine sunt și de unde sunt”."),
+        ]
+        for _key, val, msg in required:
+            if not val:
+                error = msg
+                break
         if not error:
             try:
                 listing.name = name
@@ -1979,6 +2092,8 @@ def mypet_edit_view(request, pk):
                     listing.photo_2 = request.FILES.get("photo_2")
                 if request.FILES.get("photo_3"):
                     listing.photo_3 = request.FILES.get("photo_3")
+                if request.FILES.get("video"):
+                    listing.video = request.FILES.get("video")
                 listing.trait_jucaus = trait("trait_jucaus")
                 listing.trait_iubitor = trait("trait_iubitor")
                 listing.trait_protector = trait("trait_protector")
@@ -2036,6 +2151,12 @@ def mypet_edit_view(request, pk):
             "trait_se_adapteaza": listing.trait_se_adapteaza,
             "trait_tolereaza_singur": listing.trait_tolereaza_singur,
             "trait_necesita_experienta": listing.trait_necesita_experienta,
+            "traits_empty": not any([
+                trait("trait_jucaus"), trait("trait_iubitor"), trait("trait_protector"), trait("trait_energic"),
+                trait("trait_linistit"), trait("trait_bun_copii"), trait("trait_bun_caini"), trait("trait_bun_pisici"),
+                trait("trait_obisnuit_casa"), trait("trait_obisnuit_lesa"), trait("trait_nu_latla"), trait("trait_apartament"),
+                trait("trait_se_adapteaza"), trait("trait_tolereaza_singur"), trait("trait_necesita_experienta")
+            ]),
         }
         return render(request, "anunturi/mypet_add.html", ctx)
 
@@ -2076,6 +2197,12 @@ def mypet_edit_view(request, pk):
         "trait_se_adapteaza": listing.trait_se_adapteaza,
         "trait_tolereaza_singur": listing.trait_tolereaza_singur,
         "trait_necesita_experienta": listing.trait_necesita_experienta,
+        "traits_empty": not any([
+            listing.trait_jucaus, listing.trait_iubitor, listing.trait_protector, listing.trait_energic,
+            listing.trait_linistit, listing.trait_bun_copii, listing.trait_bun_caini, listing.trait_bun_pisici,
+            listing.trait_obisnuit_casa, listing.trait_obisnuit_lesa, listing.trait_nu_latla, listing.trait_apartament,
+            listing.trait_se_adapteaza, listing.trait_tolereaza_singur, listing.trait_necesita_experienta
+        ]),
     }
     return render(request, "anunturi/mypet_add.html", ctx)
 
@@ -2129,3 +2256,27 @@ def wishlist_toggle_view(request):
         "wish_count": wish_count,
         "user_wishlist_count": user_wishlist_count,
     })
+
+
+@require_POST
+@csrf_protect
+def pet_track_event_view(request, pk: int):
+    """
+    Tracking pentru MyPet:
+    - media_view: click pe poză/video (deschidere în notă)
+    - share_click: click pe butonul Distribuie (încercare share)
+    """
+    event = (request.POST.get("event") or "").strip()
+    if event not in {"media_view", "share_click"}:
+        return JsonResponse({"ok": False, "error": "invalid_event"}, status=400)
+
+    # Acceptăm și neautentificat (adoptator), dar doar pentru anunțuri publicate
+    qs = AnimalListing.objects.filter(pk=pk, is_published=True)
+    updated = 0
+    if event == "media_view":
+        updated = qs.update(media_views=F("media_views") + 1)
+    elif event == "share_click":
+        updated = qs.update(share_clicks=F("share_clicks") + 1)
+    if not updated:
+        return JsonResponse({"ok": False, "error": "not_found"}, status=404)
+    return JsonResponse({"ok": True})

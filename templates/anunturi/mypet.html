@@ -10,7 +10,10 @@
 	<div class="mypet-inner">
 		<div class="mypet-actions">
 			<a href="{% url 'mypet' %}" class="mypet-btn mypet-btn-primary">My pets</a>
-			<a href="{% url 'mypet_add' %}" class="mypet-btn mypet-btn-secondary">Adaugă un pet</a>
+			<a href="{% url 'mypet_add' %}" class="mypet-btn mypet-btn-secondary mypet-btn-add">Adaugă un pet</a>
+			<a href="{% url 'account' %}" class="mypet-btn mypet-btn-secondary mypet-btn-counter">
+				MyPet {{ mypet_count|default:0 }} / Adoptați {{ adopted_count|default:0 }} / Total {{ total_count|default:0 }}
+			</a>
 		</div>
 		<div class="mypet-table-wrap">
 			<table class="mypet-table" aria-label="Lista animalelor mele">
@@ -36,6 +39,9 @@
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Adoptat</span></th>
 						<th class="mypet-th mypet-th-date"><span class="mypet-th-v">Data in</span></th>
 						<th class="mypet-th mypet-th-date"><span class="mypet-th-v">Data out</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Fișă %</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Vizualizări</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Distribuiri</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 5</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 6</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 7</span></th>
@@ -69,11 +75,18 @@
 						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.age_label|default:"—" }}{% else %}—{% endif %}</td>
 						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.size|default:"—" }}{% else %}—{% endif %}</td>
 						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.sterilizat|default:"—" }}{% else %}—{% endif %}</td>
-						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.wish_count|default:0 }}{% else %}—{% endif %}</td>
 						<td class="mypet-td mypet-td-narrow">—</td>
 						<td class="mypet-td mypet-td-narrow">—</td>
 						<td class="mypet-td mypet-td-date">{% if pet and pet.created_at %}{{ pet.created_at|date:"d.m.Y" }}{% else %}—{% endif %}</td>
 						<td class="mypet-td mypet-td-date">—</td>
+						<td class="mypet-td mypet-td-narrow">
+							{% if pet %}
+								<span title="{% if pet.fisa_missing %}Lipsește: {{ pet.fisa_missing|join:', ' }}{% else %}Fișa este completă{% endif %}">{{ pet.fisa_percent|default:0 }}%</span>
+							{% else %}—{% endif %}
+						</td>
+						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.media_views|default:0 }}{% else %}—{% endif %}</td>
+						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.share_clicks|default:0 }}{% else %}—{% endif %}</td>
 						<td class="mypet-td mypet-td-narrow">—</td>
 						<td class="mypet-td mypet-td-narrow">—</td>
 						<td class="mypet-td mypet-td-narrow">—</td>
@@ -195,7 +208,23 @@
 	}
 	.mypet-td-nr { text-align: center; font-weight: 600; color: #5c3c00; min-width: 2rem; }
 	.mypet-td-photo { padding: 0.25rem; text-align: center; width: 120px; min-width: 120px; vertical-align: middle; }
-	.mypet-td-name { min-width: 9rem; }
+	.mypet-td-name {
+		min-width: 9rem;
+		text-align: center;
+		font-weight: 900;
+		font-size: 0.95rem; /* puțin mai mare */
+		white-space: nowrap;
+		overflow: hidden; /* caseta rămâne fixă */
+	}
+	.mypet-td-name a {
+		display: block;
+		width: 100%;
+		text-decoration: none;
+		font-weight: 900;
+		color: inherit;
+		white-space: nowrap;
+		overflow: hidden;
+	}
 	.mypet-td-narrow { min-width: 2.5rem; text-align: center; }
 	.mypet-td-date { min-width: 4rem; font-size: 0.75rem; white-space: nowrap; }
 	.mypet-row-photo {
@@ -229,39 +258,38 @@
 		background: rgba(255, 248, 225, 0.9);
 		box-shadow: inset 0 0 0 2px rgba(255, 193, 7, 0.9);
 	}
-	/* A6–A8 în sidebar-left: lipite vertical, fără spații goale între ele, păstrând dimensiunile pe lățime */
+	/* 4 casete în stânga (în "caseta mamă") */
 	body.page-mypet .sidebar-left {
 		display: flex;
 		flex-direction: column;
+		padding: 0.2rem;
+		box-sizing: border-box;
+		overflow: hidden;
 	}
-	body.page-mypet .sidebar-left .slot-container {
-		flex: 1 1 0;
-		margin: 0;
-	}
-	body.page-mypet .sidebar-left .sidebar-box {
+	body.page-mypet .sidebar-left .mypet-left-boxes {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
 		height: 100%;
+		min-height: 0;
 	}
-	/* Casetele din stânga (mâncare câini) – micșorate astfel încât cele 3 să încapă în MW fără scroll */
-	body.page-mypet #A6 .sidebar-ad-img,
-	body.page-mypet #A7 .sidebar-ad-img,
-	body.page-mypet #A8 .sidebar-ad-img {
-		width: 100%;
-		height: 80px;
-		object-fit: cover;
-		display: block;
-	}
-	body.page-mypet #A6 .sidebar-box,
-	body.page-mypet #A7 .sidebar-box,
-	body.page-mypet #A8 .sidebar-box {
-		padding: 2px 0;
+	body.page-mypet .sidebar-left .mypet-left-box {
+		flex: 1 1 0;
+		min-height: 0;
+		border-radius: 8px;
+		border: 2px solid rgba(210, 178, 122, 0.95);
+		background: rgba(255, 254, 247, 0.95);
+		box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
 	}
 	.mypet-actions {
 		margin: 0 auto;
 		padding-top: 0.5rem;
 		display: flex;
-		flex-wrap: wrap;
+		flex-wrap: nowrap; /* nu rupe pe rând nou */
 		gap: 0.5rem;
 		justify-content: center;
+		align-items: center;
+		width: 100%;
 	}
 	.mypet-btn {
 		display: inline-flex;
@@ -273,7 +301,7 @@
 		font-weight: 700;
 		text-decoration: none;
 		border: 1px solid transparent;
-		cursor: default;
+		cursor: pointer;
 	}
 	.mypet-btn-primary {
 		background: #2e7d32;
@@ -283,6 +311,17 @@
 		background: #fff8e1;
 		color: #5d4037;
 		border-color: #ffcc80;
+	}
+	/* Pepsi blue pentru "Adaugă un pet" */
+	.mypet-btn-add {
+		background: #0050b5;
+		color: #fff;
+		border-color: transparent;
+	}
+	.mypet-btn-counter {
+		background: #f5e39b; /* galben */
+		color: #5c3c00;
+		border-color: #d2b27a;
 	}
 </style>
 <script>
@@ -298,9 +337,57 @@
 		var dist = Math.round(viewportRight - tableRight);
 		console.log('MyPet: Spațiu liber în dreapta până la limita ecranului: ' + dist + ' px (lățime tabel: ' + Math.round(tableRect.width) + ' px)');
 	}
+	function fitNameText(el) {
+		if (!el) return;
+		// doar dacă avem overflow
+		var base = parseFloat(getComputedStyle(el).fontSize) || 14;
+		var min = 10; // nu coborâm sub 10px
+		el.style.fontSize = base + "px";
+		for (var i = 0; i < 18; i++) {
+			if (el.scrollWidth <= el.clientWidth + 1) break;
+			base = Math.max(min, base - 0.5);
+			el.style.fontSize = base + "px";
+			if (base <= min) break;
+		}
+	}
+	function fitAllNames() {
+		document.querySelectorAll('.mypet-td-name a').forEach(function(a) { fitNameText(a); });
+		// dacă rândurile "—" sunt plain text, nu facem nimic
+	}
+	function fitActionButtons() {
+		var wrap = document.querySelector('.mypet-actions');
+		if (!wrap) return;
+		var btns = Array.prototype.slice.call(wrap.querySelectorAll('.mypet-btn'));
+		if (!btns.length) return;
+		// Reset
+		btns.forEach(function(b) { b.style.fontSize = ''; });
+		var base = parseFloat(getComputedStyle(btns[0]).fontSize) || 14;
+		var min = 10;
+		var size = base;
+		for (var i = 0; i < 16; i++) {
+			var total = 0;
+			btns.forEach(function(b) { total += b.getBoundingClientRect().width; });
+			var gap = parseFloat(getComputedStyle(wrap).columnGap || getComputedStyle(wrap).gap) || 0;
+			var need = total + gap * Math.max(0, btns.length - 1);
+			var avail = wrap.getBoundingClientRect().width;
+			if (need <= avail + 1) break;
+			size = Math.max(min, size - 0.5);
+			btns.forEach(function(b) { b.style.fontSize = size + "px"; });
+			if (size <= min) break;
+		}
+	}
 	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', measureRight);
 	else measureRight();
 	setTimeout(measureRight, 500);
+	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fitAllNames);
+	else fitAllNames();
+	window.addEventListener('resize', function() {
+		// refacem fit la resize (caseta rămâne fixă)
+		fitAllNames();
+		fitActionButtons();
+	});
+	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fitActionButtons);
+	else fitActionButtons();
 })();
 </script>
 {% endblock %}
