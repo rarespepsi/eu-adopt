@@ -19,6 +19,16 @@
 				margin: 0;
 				padding: 0;
 			}
+			/* Leagă layout-ul strict de viewport (fără „jos” sub ecran) */
+			body.page-pet-single #main_wrap {
+				height: 100vh;
+				overflow: hidden;
+			}
+			body.page-pet-single #main_content {
+				/* în proiect, navbar folosește variabila --nav-height; păstrăm fallback sigur */
+				height: calc(100dvh - var(--nav-height, 64px));
+				overflow: hidden;
+			}
 			/* fără sidebar-uri pe fișa PET */
 			body.page-pet-single .layout {
 				display: block;
@@ -45,7 +55,7 @@
 			}
 
 			.mypet-fisa-wrap {
-				height: calc(100vh - var(--nav-h, 64px) - 8px);
+				height: 100%;
 				display: flex;
 				align-items: stretch;
 				justify-content: flex-start;
@@ -76,6 +86,11 @@
 				flex-direction: column;
 				grid-row: 1 / 3;
 				grid-column: 1 / 2;
+				padding: 0;
+				margin: 0;
+				/* Slot 1 sus (sub navbar), slot 4 jos: ocupă toată înălțimea wrapperului */
+				height: 100%;
+				align-self: stretch;
 			}
 
 			.mypet-fisa-photo-slot {
@@ -84,25 +99,41 @@
 				flex-direction: column;
 				align-items: stretch;
 				justify-content: flex-start;
-				gap: 0.25rem;
-				padding: 0.25rem 0.35rem;
+				gap: 0;
+				padding: 0;
 				font-size: 0.75rem;
 				font-weight: 600;
-				border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+				border-bottom: 0;
 				box-sizing: border-box;
 			}
 
+			/* Împărțire egală: 4 sloturi cu înălțimi identice */
 			.mypet-fisa-photo-1,
 			.mypet-fisa-photo-2,
-			.mypet-fisa-photo-3 {
-				flex: 1.05 1 0;
+			.mypet-fisa-photo-3,
+			.mypet-fisa-photo-4 {
+				flex: 1 1 0;
+				min-height: 0;
 				padding-bottom: 0;
 			}
 
-			.mypet-fisa-photo-4 {
-				flex: 0.85 1 0;
-				min-height: 0;
+			/* Debug vizibilitate: casete clare, cu text centrat */
+			.mypet-fisa-col-photos .mypet-fisa-photo-slot {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				border: 2px solid rgba(0,0,0,0.35);
+				background: rgba(255, 255, 255, 0.25);
+				color: #1a1a1a;
+				font-weight: 900;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				user-select: none;
 			}
+			.mypet-fisa-col-photos .mypet-fisa-photo-1 { background: rgba(255,224,130,0.55); }
+			.mypet-fisa-col-photos .mypet-fisa-photo-2 { background: rgba(179,229,252,0.55); }
+			.mypet-fisa-col-photos .mypet-fisa-photo-3 { background: rgba(128,203,196,0.55); }
+			.mypet-fisa-col-photos .mypet-fisa-photo-4 { background: rgba(255,243,224,0.55); }
 			.mypet-fisa-video-box {
 				display: flex;
 				flex-direction: column;
@@ -111,15 +142,15 @@
 				gap: 0.2rem;
 				flex: 1 1 0;
 				min-height: 0;
-				padding: 0.2rem 0;
+				padding: 0;
 				text-align: center;
 			}
 			.mypet-fisa-video-preview {
 				position: relative;
 				flex: 1 1 0;
-				min-height: 3rem;
-				background: rgba(0,0,0,0.06);
-				border-radius: 4px;
+				min-height: 0;
+				background: transparent;
+				border-radius: 0;
 				overflow: hidden;
 				display: flex;
 				align-items: flex-end;
@@ -151,28 +182,22 @@
 				user-select: none;
 			}
 			.mypet-fisa-video-hint {
-				font-size: 0.6rem;
-				color: #666;
-				text-align: center;
+				display: none;
 			}
 			.mypet-fisa-video-link {
-				font-size: 0.6rem;
-				color: #1565c0;
-				text-align: center;
-				text-decoration: none;
-				pointer-events: none;
+				display: none;
 			}
 
 			.mypet-fisa-photo-preview {
 				flex: 1 1 0;
-				min-height: 80px;
+				min-height: 0;
 				min-width: 0;
 				width: 100%;
 				display: flex;
 				align-items: stretch;
 				justify-content: stretch;
-				background: rgba(0,0,0,0.06);
-				border-radius: 4px 4px 0 0;
+				background: transparent;
+				border-radius: 0;
 				overflow: hidden;
 				position: relative;
 				margin-bottom: 0;
@@ -180,26 +205,14 @@
 			.mypet-fisa-photo-preview img {
 				max-width: 100%;
 				max-height: 100%;
-				object-fit: contain;
+				object-fit: cover;
 				display: block;
 				vertical-align: middle;
 				width: 100%;
 				height: 100%;
 			}
 			.mypet-fisa-photo-hint {
-				position: absolute;
-				bottom: 0;
-				left: 0;
-				right: 0;
-				display: block;
-				width: 100%;
-				text-align: center;
-				font-size: 0.65rem;
-				font-weight: 500;
-				color: #555;
-				padding: 0.25rem 0;
-				z-index: 2;
-				background: rgba(255,255,255,0.35);
+				display: none;
 			}
 
 			.mypet-fisa-photo-actions {
@@ -227,10 +240,13 @@
 			}
 			.mypet-fisa-zoom-btn { display: none !important; }
 
-			.mypet-fisa-photo-1 { background: #ffe082; }
-			.mypet-fisa-photo-2 { background: #b3e5fc; }
-			.mypet-fisa-photo-3 { background: #80cbc4; }
-			.mypet-fisa-photo-4 { background: #fff3e0; }
+			/* fără fundal în jurul pozelor/video – rămâne doar imaginea */
+			.mypet-fisa-photo-1,
+			.mypet-fisa-photo-2,
+			.mypet-fisa-photo-3,
+			.mypet-fisa-photo-4 {
+				background: transparent;
+			}
 
 			/* Coloana mijloc – fișa */
 			.mypet-fisa-col-main {
@@ -246,7 +262,7 @@
 				display: grid;
 				grid-template-columns: auto 1fr auto;
 				align-items: center;
-				margin-bottom: 0.4rem;
+				margin-bottom: 0.18rem;
 				grid-row: 1 / 2;
 				grid-column: 2 / 4;
 			}
@@ -254,9 +270,9 @@
 			.mypet-fisa-tab {
 				background: #9d1c1c;
 				color: #fff;
-				padding: 0.35rem 0.9rem;
+				padding: 0.18rem 0.56rem;
 				border-radius: 18px;
-				font-size: 0.85rem;
+				font-size: 0.58rem;
 				font-weight: 800;
 				text-transform: uppercase;
 				letter-spacing: 0.08em;
@@ -272,26 +288,26 @@
 				min-height: 0;
 				background: #ffecb3;
 				border-radius: 8px 0 0 8px;
-				padding: 0.35rem 0.5rem;
+				padding: 0.18rem 0.3rem;
 				box-sizing: border-box;
 			}
 
 			.mypet-fisa-main-cols {
 				display: grid;
 				grid-template-columns: 1fr 1fr;
-				gap: 0.4rem;
+				gap: 0.22rem;
 				height: 100%;
 			}
 
 			.mypet-fisa-main-col {
 				display: flex;
 				flex-direction: column;
-				gap: 0.18rem;
+				gap: 0.09rem;
 			}
 
 			.mypet-fisa-section-title {
-				margin: 0 0 0.25rem 0;
-				font-size: 0.85rem;
+				margin: 0 0 0.14rem 0;
+				font-size: 0.58rem;
 				font-weight: 800;
 				text-transform: uppercase;
 				color: #7b5c00;
@@ -304,7 +320,7 @@
 			}
 
 			.mypet-add-field label {
-				font-size: 0.8rem;
+				font-size: 0.56rem;
 				font-weight: 600;
 				color: #5c3c00;
 			}
@@ -313,8 +329,8 @@
 			.mypet-add-field textarea {
 				width: 100%;
 				box-sizing: border-box;
-				padding: 0.25rem 0.35rem;
-				font-size: 0.8rem;
+				padding: 0.14rem 0.22rem;
+				font-size: 0.56rem;
 				border-radius: 4px;
 				border: 1px solid #d2b27a;
 				background: #fffef7;
@@ -322,8 +338,8 @@
 			.mypet-add-field select {
 				width: 100%;
 				box-sizing: border-box;
-				padding: 0.25rem 1.85rem 0.25rem 0.35rem;
-				font-size: 0.8rem;
+				padding: 0.14rem 1.24rem 0.14rem 0.22rem;
+				font-size: 0.56rem;
 				border-radius: 4px;
 				border: 1px solid #d2b27a;
 				appearance: none;
@@ -339,28 +355,28 @@
 				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%23222' d='M7 10L2 4h10z'/%3E%3C/svg%3E");
 				background-repeat: no-repeat;
 				background-position: right 0.5rem center;
-				padding-right: 1.85rem;
+				padding-right: 1.24rem;
 			}
 
 			.mypet-add-field textarea { resize: none; }
-			.mypet-fisa-textarea { height: 3.2rem; }
+			.mypet-fisa-textarea { height: 2.1rem; }
 			.mypet-fisa-field-medical textarea {
-				height: 4.08rem;
-				min-height: 4.08rem;
-				max-height: 4.08rem;
+				height: 2.55rem;
+				min-height: 2.55rem;
+				max-height: 2.55rem;
 				overflow-y: scroll;
 			}
 			.mypet-fisa-field-story { margin-top: 0.15rem; }
 			.mypet-fisa-field-story textarea {
-				height: 4.8rem;
-				min-height: 4.8rem;
-				max-height: 4.8rem;
+				height: 3.0rem;
+				min-height: 3.0rem;
+				max-height: 3.0rem;
 				overflow-y: scroll;
 			}
 
 			/* Coloana dreapta – trăsături adoptator */
 			.mypet-fisa-col-traits {
-				padding: 0.4rem 0.55rem 0.4rem 0;
+				padding: 0.22rem 0.34rem 0.22rem 0;
 				background: transparent;
 				border-left: none;
 				display: flex;
@@ -374,20 +390,29 @@
 				min-height: 0;
 				background: #ffecb3;
 				border-radius: 0 8px 8px 0;
-				padding: 0.35rem 0.5rem;
+				padding: 0.18rem 0.3rem;
 				box-sizing: border-box;
 				display: flex;
 				flex-direction: column;
 			}
 
 			.mypet-fisa-traits-list {
-				list-style: none;
-				margin: 0.25rem 0 0;
-				padding: 0;
-				font-size: 0.8rem;
+				list-style: none !important;
+				margin: 0.14rem 0 0;
+				padding: 0 !important;
+				padding-left: 0 !important;
+				font-size: 0.56rem;
 				display: flex;
 				flex-direction: column;
-				gap: 0.15rem;
+				gap: 0.075rem;
+			}
+			.mypet-fisa-traits-list li {
+				list-style: none !important;
+				margin: 0 !important;
+				padding: 0 !important;
+			}
+			.mypet-fisa-traits-list li::marker {
+				content: "" !important;
 			}
 
 			.mypet-fisa-traits-list label {
@@ -430,54 +455,10 @@
 								<section id="MW" class="mypet-fisa-wrap">
 									<div class="mypet-fisa-inner">
 										<div class="mypet-fisa-col mypet-fisa-col-photos">
-											<div class="mypet-fisa-photo-slot mypet-fisa-photo-1">
-												<div class="mypet-fisa-photo-preview" aria-hidden="true">
-													{% if pet.imagine %}
-														<img src="{{ pet.imagine.url }}" alt="Poza 1" class="img-crop" />
-													{% else %}
-														<img src="{% static pet.imagine_fallback|default:'images/pets/charlie-275x275.jpg' %}" alt="Poza 1" class="img-crop" />
-													{% endif %}
-													<span class="mypet-fisa-photo-hint">Max 2 MB, JPEG</span>
-												</div>
-												<div class="mypet-fisa-photo-actions">
-													<span class="mypet-fisa-photo-btn">Alege poza</span>
-												</div>
-											</div>
-											<div class="mypet-fisa-photo-slot mypet-fisa-photo-2">
-												<div class="mypet-fisa-photo-preview" aria-hidden="true">
-													{% if pet.imagine_2 %}
-														<img src="{{ pet.imagine_2.url }}" alt="Poza 2" class="img-crop" />
-													{% else %}
-														<img src="{% static pet.imagine_fallback|default:'images/pets/charlie-275x275.jpg' %}" alt="Poza 2" class="img-crop" />
-													{% endif %}
-													<span class="mypet-fisa-photo-hint">Max 2 MB, JPEG</span>
-												</div>
-												<div class="mypet-fisa-photo-actions">
-													<span class="mypet-fisa-photo-btn">Alege poza</span>
-												</div>
-											</div>
-											<div class="mypet-fisa-photo-slot mypet-fisa-photo-3">
-												<div class="mypet-fisa-photo-preview" aria-hidden="true">
-													{% if pet.imagine_3 %}
-														<img src="{{ pet.imagine_3.url }}" alt="Poza 3" class="img-crop" />
-													{% else %}
-														<img src="{% static pet.imagine_fallback|default:'images/pets/charlie-275x275.jpg' %}" alt="Poza 3" class="img-crop" />
-													{% endif %}
-													<span class="mypet-fisa-photo-hint">Max 2 MB, JPEG</span>
-												</div>
-												<div class="mypet-fisa-photo-actions">
-													<span class="mypet-fisa-photo-btn">Alege poza</span>
-												</div>
-											</div>
-											<div class="mypet-fisa-photo-slot mypet-fisa-photo-4">
-												<div class="mypet-fisa-video-box">
-													<div class="mypet-fisa-video-preview" id="video_preview">
-														<span class="mypet-fisa-video-btn-overlay" id="video_btn_label">Alege video</span>
-													</div>
-													<span class="mypet-fisa-video-hint">MP4, max. 30 sec, max. 10 MB</span>
-													<a class="mypet-fisa-video-link">Taie sau micșorează video înainte</a>
-												</div>
-											</div>
+											<div class="mypet-fisa-photo-slot mypet-fisa-photo-1">POZA 1</div>
+											<div class="mypet-fisa-photo-slot mypet-fisa-photo-2">POZA 2</div>
+											<div class="mypet-fisa-photo-slot mypet-fisa-photo-3">POZA 3</div>
+											<div class="mypet-fisa-photo-slot mypet-fisa-photo-4">VIDEO</div>
 										</div>
 
 										<div class="mypet-fisa-header-row">
