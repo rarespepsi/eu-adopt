@@ -42,4 +42,5 @@ urlpatterns = [
     path('pets/', views.home_view, name='pets_all'),
     path('pets/<int:pk>/', views.dog_profile_view, name='pets_single'),
     path('pets/<int:pk>/track/', views.pet_track_event_view, name='pet_track_event'),
+    path('mypet/observatii/<int:pk>/', views.mypet_observatii_update_view, name='mypet_observatii_update'),
 ]

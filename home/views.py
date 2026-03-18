@@ -99,51 +99,212 @@ def home_view(request):
         except (ValueError, TypeError):
             pass
     if request.resolver_match.url_name == "pets_all":
-        # P2: câinii activi din DB (AnimalListing); dacă nu există, cădem pe lista demo (DEMO_DOGS)
+        # PT (P2): filtre de căutare (judet / marime / varsta / sex) – active pe parametri GET.
+        selected_judet = (request.GET.get("judet") or "").strip()
+        selected_marime = (request.GET.get("marime") or "").strip()
+        selected_varsta = (request.GET.get("varsta") or "").strip()
+        selected_sex = (request.GET.get("sex") or "").strip()
+        selected_species = (request.GET.get("species") or "").strip().lower()
+        if selected_species not in {"dog", "cat", "other"}:
+            selected_species = ""
+
+        selected_traits = request.GET.getlist("traits")
+        if len(selected_traits) == 1 and "," in selected_traits[0]:
+            selected_traits = [t.strip() for t in selected_traits[0].split(",") if t.strip()]
+        allowed_traits = {
+            "trait_jucaus",
+            "trait_iubitor",
+            "trait_protector",
+            "trait_energic",
+            "trait_linistit",
+            "trait_bun_copii",
+            "trait_bun_caini",
+            "trait_bun_pisici",
+            "trait_obisnuit_casa",
+            "trait_obisnuit_lesa",
+            "trait_nu_latla",
+            "trait_apartament",
+            "trait_se_adapteaza",
+            "trait_tolereaza_singur",
+            "trait_necesita_experienta",
+        }
+        selected_traits = [t for t in selected_traits if t in allowed_traits]
+
+        filter_active = any([selected_judet, selected_marime, selected_varsta, selected_sex, selected_species]) or bool(selected_traits)
+
+        # Filtre COMPLETE (pentru viitor): opțiuni din listă fixă, nu din DB,
+        # ca să apară județele/taliile/vârstele/sexurile indiferent de ce e deja înregistrat.
+        judet_choices = [
+            "Alba",
+            "Arad",
+            "Argeș",
+            "Bacău",
+            "Bihor",
+            "Bistrița-Năsăud",
+            "Botoșani",
+            "Brăila",
+            "Brașov",
+            "București",
+            "Buzău",
+            "Călărași",
+            "Caraș-Severin",
+            "Cluj",
+            "Constanța",
+            "Covasna",
+            "Dâmbovița",
+            "Dolj",
+            "Galați",
+            "Giurgiu",
+            "Gorj",
+            "Harghita",
+            "Hunedoara",
+            "Ialomița",
+            "Iași",
+            "Ilfov",
+            "Maramureș",
+            "Mehedinți",
+            "Mureș",
+            "Neamț",
+            "Olt",
+            "Prahova",
+            "Sălaj",
+            "Satu Mare",
+            "Sibiu",
+            "Suceava",
+            "Teleorman",
+            "Timiș",
+            "Tulcea",
+            "Vâlcea",
+            "Vaslui",
+            "Vrancea",
+        ]
+        marime_choices = ["mica", "medie", "mare"]
+        varsta_choices = [
+            "<1 an",
+            "1 an",
+            "2 ani",
+            "3 ani",
+            "4 ani",
+            "5 ani",
+            "6 ani",
+            "7 ani",
+            "8 ani",
+            "9 ani",
+            "10+ ani",
+        ]
+        sex_choices = ["m", "f"]
+
+        qs_base = AnimalListing.objects.filter(is_published=True)
+
+        # P2: câinii din DB (AnimalListing).
+        # Dacă sunt filtre active, nu mai folosim fallback demo (ca să fie filtrarea "completă").
         p2_list = []
-        db_pets = list(AnimalListing.objects.filter(is_published=True).order_by("-created_at")[:200])
-        if db_pets:
-            for listing in db_pets:
-                p2_list.append({
-                    "pk": listing.pk,
-                    "nume": listing.name or "—",
-                    "imagine": listing.photo_1,
-                    "imagine_fallback": DEMO_DOG_IMAGE,
-                    "traits": [],
-                })
+        if not filter_active:
+            db_pets = list(qs_base.order_by("-created_at")[:200])
+            if db_pets:
+                for listing in db_pets:
+                    p2_list.append({
+                        "pk": listing.pk,
+                        "nume": listing.name or "—",
+                        "imagine": listing.photo_1,
+                        "imagine_fallback": DEMO_DOG_IMAGE,
+                        "traits": [],
+                    })
+            else:
+                # fallback demo (doar când nu există filtre)
+                for d in DEMO_DOGS:
+                    p2_list.append({
+                        "pk": d["id"],
+                        "nume": d["nume"],
+                        "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
+                        "traits": (d.get("traits") or [])[:2],
+                    })
+
+            n = len(p2_list)
+            need = (4 - n % 4) % 4  # completează ultimul rând la 4
+            if need and p2_list:
+                for i, d in enumerate(cycle(DEMO_DOGS)):
+                    if i >= need:
+                        break
+                    p2_list.append({
+                        "pk": d["id"],
+                        "nume": d["nume"],
+                        "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
+                        "traits": (d.get("traits") or [])[:2],
+                    })
+
+            # Demo: ~10 rânduri în scroll (40 celule)
+            if p2_list and len(p2_list) <= 12:
+                extra = 40
+                for i, d in enumerate(cycle(DEMO_DOGS)):
+                    if i >= extra:
+                        break
+                    p2_list.append({
+                        "pk": d["id"],
+                        "nume": d["nume"],
+                        "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
+                        "traits": (d.get("traits") or [])[:2],
+                    })
         else:
-            # fallback demo
-            for d in DEMO_DOGS:
-                p2_list.append({
-                    "pk": d["id"],
-                    "nume": d["nume"],
-                    "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
-                    "traits": (d.get("traits") or [])[:2],
-                })
-        n = len(p2_list)
-        need = (4 - n % 4) % 4  # completează ultimul rând la 4 (repetă câini din listă)
-        if need and p2_list:
-            for i, d in enumerate(cycle(DEMO_DOGS)):
-                if i >= need:
-                    break
-                p2_list.append({
-                    "pk": d["id"],
-                    "nume": d["nume"],
-                    "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
-                    "traits": (d.get("traits") or [])[:2],
-                })
-        # Demo: ~10 rânduri în scroll (40 celule); când vine DB, lista vine de acolo
-        if p2_list and len(p2_list) <= 12:
-            extra = 40
-            for i, d in enumerate(cycle(DEMO_DOGS)):
-                if i >= extra:
-                    break
-                p2_list.append({
-                    "pk": d["id"],
-                    "nume": d["nume"],
-                    "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
-                    "traits": (d.get("traits") or [])[:2],
-                })
+            # Când filtrele sunt active: nu amestecăm DEMO_DOGS cu rezultate filtrate.
+            qs = qs_base
+            if selected_judet:
+                qs = qs.filter(county__iexact=selected_judet)
+            if selected_marime:
+                qs = qs.filter(size__iexact=selected_marime)
+            if selected_varsta:
+                qs = qs.filter(age_label__iexact=selected_varsta)
+            if selected_sex:
+                qs = qs.filter(sex__iexact=selected_sex)
+            if selected_species:
+                qs = qs.filter(species__iexact=selected_species)
+
+            db_candidates = list(qs.order_by("-created_at")[:200])
+            if db_candidates:
+                if selected_traits:
+                    # Sortare: mai întâi câinii care bifează cele mai multe trăsături selectate,
+                    # apoi restul în ordine descrescătoare.
+                    scored = []
+                    for listing in db_candidates:
+                        match_count = 0
+                        for tr in selected_traits:
+                            if getattr(listing, tr, False):
+                                match_count += 1
+                        scored.append((listing, match_count))
+
+                    scored.sort(key=lambda x: (x[1], x[0].created_at), reverse=True)
+                    # Dacă există potriviri (>0), nu afișăm direct cei cu 0 decât dacă trebuie.
+                    positive = [obj for obj, cnt in scored if cnt > 0]
+                    ordered = positive if positive else [obj for obj, _ in scored]
+                else:
+                    ordered = db_candidates
+
+                for listing in ordered:
+                    p2_list.append({
+                        "pk": listing.pk,
+                        "nume": listing.name or "—",
+                        "imagine": listing.photo_1,
+                        "imagine_fallback": DEMO_DOG_IMAGE,
+                        "traits": [],
+                    })
+
+            n = len(p2_list)
+            need = (4 - n % 4) % 4
+            if need and p2_list:
+                snapshot = list(p2_list)
+                for i, d in enumerate(cycle(snapshot)):
+                    if i >= need:
+                        break
+                    p2_list.append(d)
+
+            # păstrăm scrollul (dacă e destul de puțin, repetăm doar din rezultatele filtrate)
+            if p2_list and len(p2_list) < 40:
+                snapshot = list(p2_list)
+                for d in cycle(snapshot):
+                    if len(p2_list) >= 40:
+                        break
+                    p2_list.append(d)
+
         p2_pets = p2_list[:12]
         p2_pets_rest = p2_list[12:]
         # P1 și P3: benzi cu poze (aceleași imagini demo, repetate pentru strip)
@@ -163,6 +324,15 @@ def home_view(request):
             "p2_pets_rest": p2_pets_rest,
             "strip_pets": strip_pets,
             "wishlist_ids": wishlist_ids,
+            "judet_choices": judet_choices,
+            "marime_choices": marime_choices,
+            "varsta_choices": varsta_choices,
+            "sex_choices": sex_choices,
+            "selected_judet": selected_judet,
+            "selected_marime": selected_marime,
+            "selected_varsta": selected_varsta,
+            "selected_sex": selected_sex,
+            "selected_species": selected_species,
         })
 
     is_home = request.resolver_match.url_name == "home"
@@ -1750,36 +1920,61 @@ def mypet_view(request):
         # Fișă completă (procent vizibilitate): 1/2/3 poze + video + 3 bife cheie
         points = 0
         missing = []
+        trait_fields = [
+            "trait_jucaus",
+            "trait_iubitor",
+            "trait_protector",
+            "trait_energic",
+            "trait_linistit",
+            "trait_bun_copii",
+            "trait_bun_caini",
+            "trait_bun_pisici",
+            "trait_obisnuit_casa",
+            "trait_obisnuit_lesa",
+            "trait_nu_latla",
+            "trait_apartament",
+            "trait_se_adapteaza",
+            "trait_tolereaza_singur",
+            "trait_necesita_experienta",
+        ]
+        selected_traits = 0
+
+        poze_ok = False
+        video_ok = False
         # Poze: prima contează mai mult (copertă)
         if getattr(p, "photo_1", None):
             points += 2
-        else:
-            missing.append("Poza 1")
+        photo_1_ok = bool(getattr(p, "photo_1", None))
         if getattr(p, "photo_2", None):
             points += 1
-        else:
-            missing.append("Poza 2")
+        photo_2_ok = bool(getattr(p, "photo_2", None))
         if getattr(p, "photo_3", None):
             points += 1
-        else:
-            missing.append("Poza 3")
+        photo_3_ok = bool(getattr(p, "photo_3", None))
+
+        poze_ok = photo_1_ok and photo_2_ok and photo_3_ok
+        if not poze_ok:
+            missing.append("Poze")
         # Video
-        if getattr(p, "video", None):
+        video_ok = bool(getattr(p, "video", None))
+        if video_ok:
             points += 2
         else:
             missing.append("Video")
-        # 3 bife “max vizibilitate”
-        key_traits = [
-            ("trait_bun_copii", "Bun cu copii"),
-            ("trait_bun_caini", "Bun cu alți câini"),
-            ("trait_bun_pisici", "Bun cu pisici"),
-        ]
-        for field, label in key_traits:
+
+        for field in trait_fields:
             if bool(getattr(p, field, False)):
-                points += 1
-            else:
-                missing.append(label)
-        total_points = 9  # 2+1+1 +2 +3*1
+                selected_traits += 1
+
+        # Nu avem bife obligatorii: considerăm OK dacă sunt >= 3 bife selectate.
+        calitati_ok = selected_traits >= 3
+        if not calitati_ok:
+            missing.append("Calități")
+
+        # Punctaj maxim pentru bife: primele 3 bife selectate => 3 puncte.
+        points += min(selected_traits, 3)
+
+        total_points = 9  # (Poza 1-3) 4 + Video 2 + Calități 3
         try:
             p.fisa_percent = int(round((points / float(total_points)) * 100))
         except Exception:
@@ -2279,4 +2474,23 @@ def pet_track_event_view(request, pk: int):
         updated = qs.update(share_clicks=F("share_clicks") + 1)
     if not updated:
         return JsonResponse({"ok": False, "error": "not_found"}, status=404)
+    return JsonResponse({"ok": True})
+
+
+@login_required
+@require_POST
+@csrf_protect
+def mypet_observatii_update_view(request, pk: int):
+    """
+    Autosave pentru caseta de observații din MyPet.
+    Doar proprietarul poate edita.
+    """
+    print("mypet_observatii_update_view called", {"pk": pk, "user_id": getattr(request.user, "id", None), "method": request.method})
+    pet = get_object_or_404(AnimalListing, pk=pk, owner=request.user)
+    text = (request.POST.get("observatii") or "").strip()
+    # Limită pentru a evita payload-uri uriașe
+    if len(text) > 5000:
+        text = text[:5000]
+    pet.observatii = text
+    pet.save(update_fields=["observatii"])
     return JsonResponse({"ok": True})

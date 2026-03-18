@@ -34,6 +34,95 @@
 		object-fit: cover !important; object-position: center center !important;
 		display: block !important;
 	}
+
+	/* PT match modal (mini-form) */
+	.pt-match-modal[hidden] { display: none; }
+	.pt-match-modal {
+		position: fixed;
+		inset: 0;
+		z-index: 9999;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.pt-match-modal__backdrop {
+		position: absolute;
+		inset: 0;
+		background: rgba(0,0,0,0.55);
+	}
+	.pt-match-modal__panel {
+		position: relative;
+		width: min(520px, calc(100vw - 2rem));
+		max-height: calc(100vh - 2rem);
+		overflow: auto;
+		background: #fff;
+		border-radius: 10px;
+		padding: 1rem 1.1rem 1.2rem;
+		box-sizing: border-box;
+		border: 2px solid rgba(0,0,0,0.85);
+	}
+	.pt-match-modal__close {
+		position: absolute;
+		top: 0.35rem;
+		right: 0.55rem;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 999px;
+		border: 2px solid rgba(0,0,0,0.6);
+		background: #fff;
+		color: #111;
+		cursor: pointer;
+		font-size: 1.3rem;
+		line-height: 1;
+	}
+	.pt-match-modal__title {
+		margin: 0 0 0.7rem 0;
+		font-size: 1.15rem;
+		color: #1a237e;
+		font-weight: 900;
+	}
+	.pt-match-modal__traits-wrap { margin-top: 0.4rem; }
+	.pt-match-modal__traits-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.35rem 0.9rem;
+	}
+	.pt-match-modal__traits-list li label {
+		display: flex;
+		gap: 0.45rem;
+		align-items: center;
+		font-size: 0.92rem;
+		font-weight: 700;
+		color: #222;
+		user-select: none;
+	}
+	.pt-match-modal__actions {
+		margin-top: 1rem;
+		display: flex;
+		justify-content: center;
+	}
+	.pt-match-modal__submit {
+		padding: 0.55rem 1rem;
+		border: none;
+		border-radius: 10px;
+		background: #c62828;
+		color: #fff;
+		font-weight: 900;
+		cursor: pointer;
+	}
+	@keyframes ptMatchBlink {
+		0%, 49% { opacity: 1; }
+		50%, 100% { opacity: 0.25; }
+	}
+	.pt-match-btn--active {
+		animation: ptMatchBlink 0.9s steps(2, end) infinite;
+	}
+	@media (max-width: 420px) {
+		.pt-match-modal__traits-list { grid-template-columns: 1fr; }
+	}
 </style>
 {% endblock %}
 
@@ -60,35 +149,67 @@
 						<div class="pet-filters-box p3-caseta-independenta">
 							<p class="p3-title">Caută prietenul tău</p>
 							<ul class="p3-tip-butoane clearfix animal_filter_list">
-								<li><a href="#" class="active"><span class="p3-btn-label">Toate</span><span class="p3-btn-count">—</span></a></li>
-								<li><a href="#"><span class="p3-btn-label">Câini</span><span class="p3-btn-count">—</span></a></li>
-								<li><a href="#"><span class="p3-btn-label">Pisici</span><span class="p3-btn-count">—</span></a></li>
-								<li><a href="#"><span class="p3-btn-label">Altele</span><span class="p3-btn-count">—</span></a></li>
+								<li>
+									<a href="{% url 'pets_all' %}{% if selected_judet or selected_marime or selected_varsta or selected_sex %}?{% endif %}{% if selected_judet %}judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}{% if selected_judet %}&{% endif %}marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}{% if selected_judet or selected_marime %}&{% endif %}varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}{% if selected_judet or selected_marime or selected_varsta %}&{% endif %}sex={{ selected_sex|urlencode }}{% endif %}" class="{% if not selected_species %}active{% endif %}">
+										<span class="p3-btn-label">Toate</span><span class="p3-btn-count">—</span>
+									</a>
+								</li>
+								<li>
+									<a href="{% url 'pets_all' %}?species=dog{% if selected_judet %}&judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}&marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}&varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}&sex={{ selected_sex|urlencode }}{% endif %}" class="{% if selected_species == 'dog' %}active{% endif %}">
+										<span class="p3-btn-label">Câini</span><span class="p3-btn-count">—</span>
+									</a>
+								</li>
+								<li>
+									<a href="{% url 'pets_all' %}?species=cat{% if selected_judet %}&judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}&marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}&varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}&sex={{ selected_sex|urlencode }}{% endif %}" class="{% if selected_species == 'cat' %}active{% endif %}">
+										<span class="p3-btn-label">Pisici</span><span class="p3-btn-count">—</span>
+									</a>
+								</li>
+								<li>
+									<a href="{% url 'pets_all' %}?species=other{% if selected_judet %}&judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}&marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}&varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}&sex={{ selected_sex|urlencode }}{% endif %}" class="{% if selected_species == 'other' %}active{% endif %}">
+										<span class="p3-btn-label">Altele</span><span class="p3-btn-count">—</span>
+									</a>
+								</li>
 							</ul>
 							<form method="get" action="{% url 'pets_all' %}" id="filtre-animale" class="pt-p4-filtre-form">
 								<div class="p3-filters-grid">
 									<div class="p3-filter-cell">
 										<label for="id_judet_pt">Județ</label>
 										<select name="judet" id="id_judet_pt">
-											<option value="">— Toate —</option>
+											<option value="" {% if not selected_judet %}selected{% endif %}>— Toate —</option>
+											{% for value in judet_choices %}
+											<option value="{{ value }}"{% if value == selected_judet %} selected{% endif %}>{{ value }}</option>
+											{% endfor %}
 										</select>
 									</div>
 									<div class="p3-filter-cell">
 										<label for="id_marime_pt">Talie</label>
 										<select name="marime" id="id_marime_pt">
-											<option value="">— Toate —</option>
+											<option value="" {% if not selected_marime %}selected{% endif %}>— Toate —</option>
+											{% for value in marime_choices %}
+											<option value="{{ value }}"{% if value == selected_marime %} selected{% endif %}>
+												{% if value == "mica" %}Mică{% elif value == "medie" %}Medie{% elif value == "mare" %}Mare{% else %}{{ value }}{% endif %}
+											</option>
+											{% endfor %}
 										</select>
 									</div>
 									<div class="p3-filter-cell">
 										<label for="id_varsta_pt">Vârstă</label>
 										<select name="varsta" id="id_varsta_pt">
-											<option value="">— Toate —</option>
+											<option value="" {% if not selected_varsta %}selected{% endif %}>— Toate —</option>
+											{% for value in varsta_choices %}
+											<option value="{{ value }}"{% if value == selected_varsta %} selected{% endif %}>{{ value }}</option>
+											{% endfor %}
 										</select>
 									</div>
 									<div class="p3-filter-cell">
 										<label for="id_sex_pt">Sex</label>
 										<select name="sex" id="id_sex_pt">
-											<option value="">— Toate —</option>
+											<option value="" {% if not selected_sex %}selected{% endif %}>— Toate —</option>
+											{% for value in sex_choices %}
+											<option value="{{ value }}"{% if value == selected_sex %} selected{% endif %}>
+												{% if value == "m" %}MASCUL{% elif value == "f" %}FEMELA{% else %}{{ value }}{% endif %}
+											</option>
+											{% endfor %}
 										</select>
 									</div>
 								</div>
@@ -155,11 +276,166 @@
 	</main>
 </section>
 
+	<!-- MATCH MINI FORM (deschis din butonul "Găsește-mi perechea") -->
+	<div class="pt-match-modal" id="ptMatchModal" hidden aria-hidden="true">
+		<div class="pt-match-modal__backdrop" id="ptMatchModalBackdrop"></div>
+		<div class="pt-match-modal__panel" role="dialog" aria-modal="true" aria-label="Găsește-mi perechea">
+			<button type="button" class="pt-match-modal__close" id="ptMatchModalClose" aria-label="Închide">×</button>
+			<h3 class="pt-match-modal__title">Găsește-mi perechea</h3>
+
+			<form id="ptMatchMiniForm" method="post">
+				<input type="hidden" name="species" value="{{ selected_species|default:'' }}" />
+				<input type="hidden" name="judet" value="{{ selected_judet|default:'' }}" />
+				<input type="hidden" name="marime" value="{{ selected_marime|default:'' }}" />
+				<input type="hidden" name="varsta" value="{{ selected_varsta|default:'' }}" />
+				<input type="hidden" name="sex" value="{{ selected_sex|default:'' }}" />
+
+				<div class="pt-match-modal__traits-wrap">
+					<ul class="pt-match-modal__traits-list">
+						<li><label><input type="checkbox" name="trait_jucaus" /> JUCĂUȘ</label></li>
+						<li><label><input type="checkbox" name="trait_iubitor" /> IUBITOR</label></li>
+						<li><label><input type="checkbox" name="trait_protector" /> PROTECTOR</label></li>
+						<li><label><input type="checkbox" name="trait_energic" /> ENERGIC</label></li>
+						<li><label><input type="checkbox" name="trait_linistit" /> LINIȘTIT</label></li>
+						<li><label><input type="checkbox" name="trait_bun_copii" /> BUN CU COPII</label></li>
+						<li><label><input type="checkbox" name="trait_bun_caini" /> BUN CU ALȚI CÂINI</label></li>
+						<li><label><input type="checkbox" name="trait_bun_pisici" /> BUN CU PISICI</label></li>
+						<li><label><input type="checkbox" name="trait_obisnuit_casa" /> OBIȘNUIT ÎN CASĂ</label></li>
+						<li><label><input type="checkbox" name="trait_obisnuit_lesa" /> OBIȘNUIT CU LESA</label></li>
+						<li><label><input type="checkbox" name="trait_nu_latla" /> NU LATRĂ EXCESIV</label></li>
+						<li><label><input type="checkbox" name="trait_apartament" /> POTRIVIT PENTRU APARTAMENT</label></li>
+						<li><label><input type="checkbox" name="trait_se_adapteaza" /> SE ADAPTEAZĂ UȘOR</label></li>
+						<li><label><input type="checkbox" name="trait_tolereaza_singur" /> TOLEREAZĂ SĂ STEA SINGUR</label></li>
+						<li><label><input type="checkbox" name="trait_necesita_experienta" /> NECESITĂ EXPERIENȚĂ CU CÂINI</label></li>
+					</ul>
+				</div>
+
+				<div class="pt-match-modal__actions">
+					<button type="submit" class="pt-match-modal__submit">OK</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
 {% endblock main_wrap_after_header %}
 
 {% block extra_js %}
 <script>
 (function() {
+	var modal = document.getElementById("ptMatchModal");
+	if (!modal) return;
+	var backdrop = document.getElementById("ptMatchModalBackdrop");
+	var closeBtn = document.getElementById("ptMatchModalClose");
+	var form = document.getElementById("ptMatchMiniForm");
+
+	var matchBtn = document.querySelector(".pt-p4-btn-match");
+	var defaultMatchText = matchBtn ? (matchBtn.textContent || "").trim() : "";
+
+	function readSelectedTraits() {
+		try {
+			var raw = window.localStorage.getItem("ptMatchTraits");
+			if (!raw) return [];
+			var parsed = JSON.parse(raw);
+			return Array.isArray(parsed) ? parsed : [];
+		} catch (e) {
+			return [];
+		}
+	}
+
+	function setMatchBtnActive(active) {
+		if (!matchBtn) return;
+		if (active) {
+			matchBtn.textContent = "Resetează filtre";
+			matchBtn.classList.add("pt-match-btn--active");
+		} else {
+			matchBtn.textContent = defaultMatchText || "Găsește-mi perechea";
+			matchBtn.classList.remove("pt-match-btn--active");
+		}
+	}
+
+	var isActive = readSelectedTraits().length > 0;
+	setMatchBtnActive(isActive);
+
+	function openModal() {
+		if (!modal) return;
+		modal.hidden = false;
+		modal.setAttribute("aria-hidden", "false");
+		document.body.style.overflow = "hidden";
+
+		// Pre-check bife din ultima setare (dacă există)
+		try {
+			var raw = window.localStorage.getItem("ptMatchTraits");
+			var selected = [];
+			if (raw) {
+				try { selected = JSON.parse(raw) || []; } catch (e) { selected = []; }
+			}
+			var selectedSet = new Set(selected);
+			var inputs = modal.querySelectorAll('input[type="checkbox"]');
+			inputs.forEach(function(inp) {
+				inp.checked = selectedSet.has(inp.name);
+			});
+		} catch (e) {}
+	}
+	function closeModal() {
+		if (!modal) return;
+		modal.hidden = true;
+		modal.setAttribute("aria-hidden", "true");
+		document.body.style.overflow = "";
+	}
+
+	if (matchBtn) {
+		matchBtn.addEventListener("click", function(e) {
+			e.preventDefault();
+			// Dacă există deja o selecție aplicată (din note), click pe buton = reset.
+			if (isActive) {
+				try { window.localStorage.removeItem("ptMatchTraits"); } catch (err) {}
+				isActive = false;
+				setMatchBtnActive(false);
+				closeModal();
+				window.location.href = window.location.pathname + (window.location.search || "");
+				return;
+			}
+			openModal();
+		});
+	}
+	if (backdrop) backdrop.addEventListener("click", closeModal);
+	if (closeBtn) closeBtn.addEventListener("click", closeModal);
+	document.addEventListener("keydown", function(e) {
+		if (e.key === "Escape" && modal && !modal.hidden) closeModal();
+	});
+
+	if (form) {
+		form.addEventListener("submit", function(e) {
+			e.preventDefault();
+			try {
+				var selected = [];
+				var inputs = form.querySelectorAll('input[type="checkbox"]');
+				inputs.forEach(function(inp) {
+					if (inp.checked) selected.push(inp.name);
+				});
+				window.localStorage.setItem("ptMatchTraits", JSON.stringify(selected));
+				var url = new URL(window.location.href);
+				// Curățăm orice selecție anterioară
+				url.searchParams.delete("traits");
+				selected.forEach(function(t) { url.searchParams.append("traits", t); });
+				window.location.href = url.toString();
+			} catch (err) {}
+		});
+	}
+
+	// Temporar: după ce serverul a aplicat filtrarea (traits în URL),
+	// scoatem parametrul din URL ca să nu rămână permanent la navigare/refresh.
+	(function() {
+		try {
+			var url = new URL(window.location.href);
+			if (url.searchParams.has("traits")) {
+				url.searchParams.delete("traits");
+				var newUrl = url.pathname + (url.search ? url.search : "");
+				window.history.replaceState({}, document.title, newUrl);
+			}
+		} catch (e) {}
+	})();
+
 	// Sex: MASCUL / FEMELA + micșorare font dacă nu încape (fără să lărgim caseta)
 	function normalizeSexOptions(selectEl) {
 		if (!selectEl) return;

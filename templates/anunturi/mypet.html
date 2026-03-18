@@ -8,12 +8,33 @@
 {% block content %}
 <section id="MW" class="mypet-wrap">
 	<div class="mypet-inner">
+		{% csrf_token %}
 		<div class="mypet-actions">
 			<a href="{% url 'mypet' %}" class="mypet-btn mypet-btn-primary">My pets</a>
 			<a href="{% url 'mypet_add' %}" class="mypet-btn mypet-btn-secondary mypet-btn-add">Adaugă un pet</a>
-			<a href="{% url 'account' %}" class="mypet-btn mypet-btn-secondary mypet-btn-counter">
+			<div class="mypet-btn mypet-btn-secondary mypet-btn-counter">
 				MyPet {{ mypet_count|default:0 }} / Adoptați {{ adopted_count|default:0 }} / Total {{ total_count|default:0 }}
-			</a>
+			</div>
+			<!-- Filtru specii (dog / cat / other) -->
+			<div class="mypet-species-filters" aria-label="Filtru specii">
+				<div class="mypet-btn mypet-btn-secondary mypet-btn-spec is-active" role="button" tabindex="0" data-species="dog" aria-label="Câini">Câini</div>
+				<div class="mypet-btn mypet-btn-secondary mypet-btn-spec" role="button" tabindex="0" data-species="cat" aria-label="Pisici">Pisici</div>
+				<div class="mypet-btn mypet-btn-secondary mypet-btn-spec" role="button" tabindex="0" data-species="other" aria-label="Altele">Altele</div>
+			</div>
+			<div class="mypet-fisa-legend" aria-hidden="true">
+				<span class="mypet-legend-item">
+					<span class="mypet-legend-swatch mypet-swatch-0"></span><span>&lt; 50%</span>
+				</span>
+				<span class="mypet-legend-item">
+					<span class="mypet-legend-swatch mypet-swatch-half"></span><span>50–89%</span>
+				</span>
+				<span class="mypet-legend-item">
+					<span class="mypet-legend-swatch mypet-swatch-75"></span><span>90–99%</span>
+				</span>
+				<span class="mypet-legend-item">
+					<span class="mypet-legend-swatch mypet-swatch-100"></span><span>100%</span>
+				</span>
+			</div>
 		</div>
 		<div class="mypet-table-wrap">
 			<table class="mypet-table" aria-label="Lista animalelor mele">
@@ -39,25 +60,17 @@
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Adoptat</span></th>
 						<th class="mypet-th mypet-th-date"><span class="mypet-th-v">Data in</span></th>
 						<th class="mypet-th mypet-th-date"><span class="mypet-th-v">Data out</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Fișă %</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Vizualizări</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Distribuiri</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 5</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 6</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 7</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 8</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 9</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 10</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 11</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 12</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 13</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 14</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Col 15</span></th>
+						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="fisa"><span class="mypet-th-v">Fișă %</span></th>
+						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="views"><span class="mypet-th-v">Vizualizări</span></th>
+						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="shares"><span class="mypet-th-v">Distribuiri</span></th>
+						<!-- NOTĂ: Observații ocupă acum mai puține coloane ca să încapă o coloană în plus -->
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">$</span></th>
+						<th class="mypet-th mypet-th-observatii" colspan="10">Observații</th>
 					</tr>
 				</thead>
 				<tbody>
 					{% for pet in pets %}
-					<tr class="mypet-row">
+					<tr class="mypet-row" data-species="{% if pet %}{{ pet.species }}{% else %}none{% endif %}">
 						<td class="mypet-td mypet-td-nr">{{ forloop.counter }}</td>
 						<td class="mypet-td mypet-td-photo">
 							{% if pet %}
@@ -82,22 +95,53 @@
 						<td class="mypet-td mypet-td-date">—</td>
 						<td class="mypet-td mypet-td-narrow">
 							{% if pet %}
-								<span title="{% if pet.fisa_missing %}Lipsește: {{ pet.fisa_missing|join:', ' }}{% else %}Fișa este completă{% endif %}">{{ pet.fisa_percent|default:0 }}%</span>
+								{% with pct=pet.fisa_percent|default:0 %}
+								<span
+									class="mypet-fisa-pill
+										{% if pct >= 100 %}mypet-fisa-100
+										{% elif pct >= 90 %}mypet-fisa-75
+										{% elif pct >= 50 %}mypet-fisa-half
+										{% else %}mypet-fisa-0
+										{% endif %}"
+									data-missing="{% if pet.fisa_missing %}Lipsește: {{ pet.fisa_missing|join:', ' }}{% else %}Fișa este completă{% endif %}"
+									title="{% if pet.fisa_missing %}Lipsește: {{ pet.fisa_missing|join:', ' }}{% else %}Fișa este completă{% endif %}">
+									{{ pct }}%
+								</span>
+								{% endwith %}
 							{% else %}—{% endif %}
 						</td>
 						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.media_views|default:0 }}{% else %}—{% endif %}</td>
 						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.share_clicks|default:0 }}{% else %}—{% endif %}</td>
-						<td class="mypet-td mypet-td-narrow">—</td>
-						<td class="mypet-td mypet-td-narrow">—</td>
-						<td class="mypet-td mypet-td-narrow">—</td>
-						<td class="mypet-td mypet-td-narrow">—</td>
-						<td class="mypet-td mypet-td-narrow">—</td>
-						<td class="mypet-td mypet-td-narrow">—</td>
-						<td class="mypet-td mypet-td-narrow">—</td>
-						<td class="mypet-td mypet-td-narrow">—</td>
-						<td class="mypet-td mypet-td-narrow">—</td>
-						<td class="mypet-td mypet-td-narrow">—</td>
-						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-narrow">
+							<span class="mypet-td-photo-shop-v">Photo Shop</span>
+						</td>
+						<td class="mypet-td mypet-td-narrow mypet-td-observatii" colspan="10">
+							{% if pet %}
+								<div class="mypet-observatii-editor">
+									<textarea
+										class="mypet-observatii-ta"
+										data-save-url="{% url 'mypet_observatii_update' pk=pet.pk %}"
+										name="observatii"
+										placeholder="{% if pet.fisa_missing %}Lipsește: {{ pet.fisa_missing|join:', ' }}{% else %}Fișa e completă{% endif %}"
+										spellcheck="false"
+										maxlength="5000"
+									>{{ pet.observatii|default:'' }}</textarea>
+									<button
+										type="button"
+										class="mypet-observatii-save-btn"
+										data-save-url="{% url 'mypet_observatii_update' pk=pet.pk %}"
+									>
+										{% if pet.observatii %}
+											Modifică
+										{% else %}
+											RUPT
+										{% endif %}
+									</button>
+								</div>
+							{% else %}
+								—
+							{% endif %}
+						</td>
 					</tr>
 					{% endfor %}
 				</tbody>
@@ -186,6 +230,10 @@
 		vertical-align: bottom;
 		white-space: nowrap;
 	}
+	.mypet-th-sort {
+		cursor: pointer;
+		user-select: none;
+	}
 	.mypet-th-v,
 	.mypet-th-vertical {
 		display: inline-block;
@@ -195,11 +243,21 @@
 		line-height: 1.2;
 		padding: 0.35rem 0;
 	}
+	.mypet-td-photo-shop-v {
+		display: inline-block;
+		writing-mode: vertical-rl;
+		text-orientation: mixed;
+		transform: rotate(180deg);
+		line-height: 1.1;
+		padding: 0.1rem 0;
+		font-size: 0.7rem;
+	}
 	.mypet-th-nr { min-width: 2rem; }
 	.mypet-th-photo { width: 120px; min-width: 120px; }
 	.mypet-th-name { min-width: 9rem; }
 	.mypet-th-narrow { min-width: 2.5rem; }
 	.mypet-th-date { min-width: 4rem; }
+	.mypet-th-observatii { min-width: 0; }
 	.mypet-td {
 		padding: 0.2rem 0.35rem;
 		border-bottom: 1px solid #eee;
@@ -227,6 +285,72 @@
 	}
 	.mypet-td-narrow { min-width: 2.5rem; text-align: center; }
 	.mypet-td-date { min-width: 4rem; font-size: 0.75rem; white-space: nowrap; }
+	.mypet-td-observatii { text-align: center; white-space: normal; overflow: visible; text-overflow: clip; }
+	/* Ca textarea să atingă laturile casetei (fără spațiu interior de la td) */
+	.mypet-td-observatii {
+		padding-left: 0;
+		padding-right: 0;
+		padding-top: 0;
+		padding-bottom: 0;
+		vertical-align: stretch;
+	}
+	.mypet-observatii-ta {
+		width: 100%;
+		min-height: 3.9rem;
+		height: 100%;
+		box-sizing: border-box;
+		border: 1px solid rgba(210, 178, 122, 0.85);
+		border-radius: 6px;
+		background: rgba(255, 255, 255, 0.65);
+		padding: 0.2rem 0.35rem;
+		font-size: 0.75rem;
+		color: #5c3c00;
+		resize: none;
+		outline: none;
+		overflow: hidden;
+		text-align: left;
+	}
+	.mypet-observatii-editor {
+		display: flex;
+		align-items: stretch;
+		gap: 0.35rem;
+		height: 100%;
+	}
+	.mypet-observatii-ta {
+		flex: 1 1 auto;
+	}
+	.mypet-observatii-save-btn {
+		flex: 0 0 auto;
+		align-self: center;
+		height: auto;
+		min-height: 0;
+		padding: 0.25rem 0.55rem;
+		border-radius: 5px;
+		border: 1px solid rgba(210, 178, 122, 0.85);
+		background: rgba(30, 136, 229, 0.95); /* albastru */
+		color: #ffffff;
+		font-weight: 900;
+		font-size: 0.7rem;
+		cursor: pointer;
+	}
+	.mypet-observatii-save-btn:disabled {
+		opacity: 0.7;
+		cursor: progress;
+		color: #ffffff;
+	}
+	.mypet-observatii-save-btn.is-saved-ok:disabled {
+		opacity: 1;
+		cursor: pointer;
+	}
+	.mypet-observatii-save-btn.is-saved-ok {
+		background: rgba(200, 230, 201, 0.98);
+		border-color: rgba(46, 125, 50, 0.9);
+		color: #1b5e20;
+	}
+	.mypet-observatii-ta:focus {
+		background: rgba(255, 255, 255, 0.95);
+		border-color: rgba(0, 80, 181, 0.65);
+	}
 	.mypet-row-photo {
 		display: block;
 		width: 120px;
@@ -290,6 +414,7 @@
 		justify-content: center;
 		align-items: center;
 		width: 100%;
+		position: relative; /* pentru legendă absolute */
 	}
 	.mypet-btn {
 		display: inline-flex;
@@ -322,6 +447,105 @@
 		background: #f5e39b; /* galben */
 		color: #5c3c00;
 		border-color: #d2b27a;
+		cursor: default;
+	}
+	.mypet-species-filters {
+		display: flex;
+		flex-wrap: nowrap;
+		gap: 0.45rem;
+		align-items: center;
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		z-index: 5;
+	}
+	.mypet-btn-spec {
+		user-select: none;
+	}
+	.mypet-btn-spec.is-active {
+		background: #0050b5; /* evidențiem cu aceeași culoare ca "Adaugă un pet" */
+		color: #fff;
+		border-color: transparent;
+	}
+
+	/* Legendă & culori pentru "Fișă %" */
+	.mypet-fisa-legend {
+		position: absolute;
+		top: 50%;
+		right: 0.35rem;
+		transform: translateY(-50%);
+		display: flex;
+		gap: 0.35rem;
+		align-items: center;
+		justify-content: flex-end;
+		pointer-events: none; /* să nu afecteze butoanele */
+		white-space: nowrap;
+	}
+	.mypet-legend-item {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		font-size: 0.65rem;
+		font-weight: 900;
+		color: #5c3c00;
+	}
+	.mypet-legend-swatch {
+		width: 10px;
+		height: 10px;
+		border-radius: 3px;
+		display: inline-block;
+	}
+	.mypet-swatch-0 { background: #d32f2f; } /* roșu */
+	.mypet-swatch-half { background: linear-gradient(to bottom, #f5e39b 50%, #2e7d32 50%); } /* half */
+	.mypet-swatch-75 { background: #f5e39b; } /* galben */
+	.mypet-swatch-100 { background: #2e7d32; } /* verde */
+
+	.mypet-fisa-pill {
+		display: block;
+		width: 100%;
+		min-width: 0;
+		text-align: center;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: clip;
+		font-weight: 900;
+		padding: 0.08rem 0.25rem;
+		border-radius: 6px;
+		box-sizing: border-box;
+	}
+	.mypet-fisa-0 {
+		background: #d32f2f;
+		color: #fff;
+	}
+	.mypet-fisa-half {
+		background: linear-gradient(to bottom, #f5e39b 50%, #2e7d32 50%);
+		color: #5c3c00;
+	}
+	.mypet-fisa-75 {
+		background: #f5e39b;
+		color: #5c3c00;
+	}
+	.mypet-fisa-100 {
+		background: #2e7d32;
+		color: #fff;
+	}
+
+	/* Tooltip custom pentru hover pe "Fișă %" */
+	.mypet-fisa-tooltip {
+		position: fixed;
+		z-index: 999999;
+		display: none;
+		max-width: 22rem;
+		padding: 0.35rem 0.55rem;
+		background: rgba(17,17,17,0.92);
+		color: #fff;
+		border: 1px solid rgba(255,255,255,0.18);
+		border-radius: 8px;
+		font-size: 0.78rem;
+		line-height: 1.25;
+		box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+		white-space: normal;
+		pointer-events: none;
 	}
 </style>
 <script>
@@ -389,6 +613,292 @@
 	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fitActionButtons);
 	else fitActionButtons();
 })();
+
+(function initFisaTooltip() {
+	var spans = document.querySelectorAll(".mypet-fisa-pill");
+	if (!spans || !spans.length) return;
+
+	var tip = document.getElementById("mypetFisaTooltip");
+	if (!tip) {
+		tip = document.createElement("div");
+		tip.id = "mypetFisaTooltip";
+		tip.className = "mypet-fisa-tooltip";
+		document.body.appendChild(tip);
+	}
+
+	function place(e) {
+		var x = (e && typeof e.clientX === "number") ? e.clientX + 12 : 16;
+		var y = (e && typeof e.clientY === "number") ? e.clientY + 16 : 16;
+		tip.style.left = x + "px";
+		tip.style.top = y + "px";
+	}
+
+	spans.forEach(function(span) {
+		span.addEventListener("mouseenter", function(e) {
+			var txt = span.getAttribute("data-missing") || "";
+			tip.textContent = txt;
+			tip.style.display = "block";
+			place(e);
+		});
+		span.addEventListener("mousemove", function(e) {
+			if (tip.style.display === "block") place(e);
+		});
+		span.addEventListener("mouseleave", function() {
+			tip.style.display = "none";
+			tip.textContent = "";
+		});
+	});
+})();
+
+document.addEventListener("DOMContentLoaded", function() {
+(function initObservatiiAutosave() {
+	function getCookie(name) {
+		var cookieValue = null;
+		if (document.cookie && document.cookie !== '') {
+			var cookies = document.cookie.split(';');
+			for (var i = 0; i < cookies.length; i++) {
+				var cookie = cookies[i].trim();
+				if (cookie.substring(0, name.length + 1) === (name + '=')) {
+					cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+					break;
+				}
+			}
+		}
+		return cookieValue;
+	}
+
+	var csrftoken = getCookie('csrftoken') || '';
+	// Preferăm tokenul din input (afișat de `{% csrf_token %}`) pentru a evita
+	// cazuri în care cookie-ul lipsește sau e nepotrivit.
+	try {
+		var csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+		if (csrfInput && csrfInput.value) csrftoken = csrfInput.value;
+	} catch (e) {}
+
+	function postObservatii(textarea, value) {
+		var url = textarea.getAttribute('data-save-url') || '';
+		if (!url) return Promise.resolve({ ok: false });
+		var v = (value || '').toString();
+
+		return fetch(url, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+				'X-CSRFToken': csrftoken,
+			},
+			body: 'csrfmiddlewaretoken=' + encodeURIComponent(csrftoken) + '&observatii=' + encodeURIComponent(v),
+			credentials: 'same-origin',
+		}).then(function(r) {
+			return r.text().then(function(txt) {
+				try {
+					return JSON.parse(txt);
+				} catch (e) {
+					console.error("mypet observatii: non-JSON response", {
+						status: r.status,
+						contentType: r.headers && r.headers.get ? r.headers.get('content-type') : null,
+						bodyStart: (txt || '').slice(0, 250)
+					});
+					return { ok: false };
+				}
+			});
+		}).catch(function() {
+			console.error("mypet observatii: fetch failed (network/CSRF)");
+			return { ok: false };
+		});
+	}
+
+	var areas = document.querySelectorAll('.mypet-observatii-ta');
+	if (!areas || !areas.length) return;
+
+	areas.forEach(function(ta) {
+		var editor = ta.closest('.mypet-observatii-editor');
+		var btn = editor ? editor.querySelector('.mypet-observatii-save-btn') : null;
+		if (!btn) return;
+
+		function syncBtnText() {
+			btn.textContent = (ta.value || '').trim() ? 'Modifică' : 'RUPT';
+		}
+
+		// Asigurăm că butonul e clickabil chiar din start.
+		btn.disabled = false;
+		syncBtnText();
+		ta.addEventListener('input', syncBtnText);
+
+		btn.addEventListener('click', function() {
+			var v = ta.value || '';
+			if (btn.disabled) return;
+
+			btn.disabled = true;
+			btn.textContent = 'SAVING...';
+
+			postObservatii(ta, v).then(function(data) {
+				btn.disabled = false;
+				if (data && data.ok) {
+					btn.classList.add('is-saved-ok');
+					btn.textContent = 'SAVED';
+					setTimeout(function() {
+						btn.classList.remove('is-saved-ok');
+						// Revenim la eticheta corectă.
+						btn.textContent = (ta.value || '').trim() ? 'Modifică' : 'RUPT';
+						syncBtnText();
+					}, 1600);
+				} else {
+					btn.textContent = (v.trim() ? 'Modifică' : 'RUPT');
+				}
+			});
+		});
+	});
+})();
+}); // end DOMContentLoaded for MyPet observatii
+
+document.addEventListener("DOMContentLoaded", function() {
+	(function initMyPetSorting() {
+		var headers = Array.prototype.slice.call(document.querySelectorAll('th[data-sort-key]'));
+		if (!headers.length) return;
+
+		var table = document.querySelector('.mypet-table');
+		if (!table) return;
+		var tbody = table.querySelector('tbody');
+		if (!tbody) return;
+
+		var state = { key: null, dir: 'desc' };
+		var cellIdxByKey = { fisa: 12, views: 13, shares: 14 }; // 0-based index în tr.children
+
+		function getNumeric(tr, key) {
+			try {
+				var idx = cellIdxByKey[key];
+				if (typeof idx !== 'number') return -1;
+				var td = tr.children[idx];
+				if (!td) return -1;
+				var txt = '';
+				if (key === 'fisa') {
+					var pill = td.querySelector('.mypet-fisa-pill');
+					txt = (pill ? pill.textContent : td.textContent) || '';
+					txt = txt.replace('%', '');
+				} else {
+					txt = td.textContent || '';
+				}
+				txt = txt.replace(/[^0-9.\-]/g, '');
+				var n = parseFloat(txt);
+				return isNaN(n) ? -1 : n;
+			} catch (e) {
+				return -1;
+			}
+		}
+
+		function sortRows(key, dir) {
+			var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr.mypet-row'));
+			if (!rows.length) return;
+
+			var indexed = rows.map(function(row, i) {
+				return { row: row, i: i, v: getNumeric(row, key) };
+			});
+
+			indexed.sort(function(a, b) {
+				if (a.v === b.v) return a.i - b.i;
+				return dir === 'asc' ? (a.v - b.v) : (b.v - a.v);
+			});
+
+			indexed.forEach(function(item) {
+				tbody.appendChild(item.row);
+			});
+		}
+
+		function setHeaderActive(clickedHeader, key, dir) {
+			headers.forEach(function(h) {
+				h.classList.remove('is-sorted-asc', 'is-sorted-desc');
+			});
+			clickedHeader.classList.add(dir === 'asc' ? 'is-sorted-asc' : 'is-sorted-desc');
+			state.key = key;
+			state.dir = dir;
+		}
+
+		headers.forEach(function(th) {
+			th.addEventListener('click', function() {
+				var key = th.getAttribute('data-sort-key') || '';
+				if (!key) return;
+
+				var dir = 'desc';
+				if (state.key === key) dir = (state.dir === 'asc') ? 'desc' : 'asc';
+
+				sortRows(key, dir);
+				setHeaderActive(th, key, dir);
+			});
+		});
+	})();
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+	(function initSpeciesFilters() {
+		var filters = Array.prototype.slice.call(document.querySelectorAll(".mypet-btn-spec"));
+		if (!filters.length) return;
+
+		var rows = Array.prototype.slice.call(document.querySelectorAll(".mypet-row"));
+		var filtersWrap = document.querySelector(".mypet-species-filters");
+		var actionsWrap = document.querySelector(".mypet-actions");
+		var counterBtn = document.querySelector(".mypet-btn-counter");
+
+		function placeFilters() {
+			try {
+				if (!filtersWrap || !actionsWrap || !counterBtn) return;
+				var aRect = actionsWrap.getBoundingClientRect();
+				var cRect = counterBtn.getBoundingClientRect();
+				var myPetsBtn = document.querySelector(".mypet-btn-primary");
+				filtersWrap.style.right = "auto";
+				// Ajust fin pentru poziționare (deplasare suplimentară spre stânga).
+				// Valoare în px, derivată din cerința de ~3 cm.
+				var extraLeftPx = 114;
+				if (myPetsBtn) {
+					var pRect = myPetsBtn.getBoundingClientRect();
+					// Mută filtrele "înainte" de butonul My pets.
+					var fRect = filtersWrap.getBoundingClientRect();
+					var filtersW = (fRect && fRect.width) ? fRect.width : filtersWrap.offsetWidth;
+					var left = (pRect.left - aRect.left - (filtersW || 0) - 8) - extraLeftPx;
+					filtersWrap.style.left = left + "px";
+				} else {
+					// fallback: păstrăm comportamentul vechi (aproape) dacă nu găsim butonul
+					var fRect2 = filtersWrap.getBoundingClientRect();
+					var filtersW2 = (fRect2 && fRect2.width) ? fRect2.width : filtersWrap.offsetWidth;
+					var left2 = (cRect.left - aRect.left - (filtersW2 || 0) - 8) - extraLeftPx;
+					filtersWrap.style.left = left2 + "px";
+				}
+			} catch (e) {}
+		}
+
+		function setActive(species) {
+			filters.forEach(function(btn) {
+				btn.classList.toggle("is-active", (btn.getAttribute("data-species") || "") === species);
+			});
+			rows.forEach(function(tr) {
+				var sp = (tr.getAttribute("data-species") || "");
+				// dacă rândul e placeholder (none), îl ascund când nu e "toate"
+				if (species === "all") {
+					tr.style.display = "";
+					return;
+				}
+				tr.style.display = (sp === species) ? "" : "none";
+			});
+		}
+
+		filters.forEach(function(btn) {
+			var species = btn.getAttribute("data-species") || "";
+			btn.addEventListener("click", function() { setActive(species); });
+			btn.addEventListener("keydown", function(e) {
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault();
+					setActive(species);
+				}
+			});
+		});
+
+		// default: câini
+		setActive("dog");
+		placeFilters();
+		// Re-calculează o dată după layout (evită situații cu dimensiuni încă nefinale).
+		requestAnimationFrame(placeFilters);
+		window.addEventListener("resize", placeFilters);
+	})();
+});
 </script>
 {% endblock %}
 

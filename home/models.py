@@ -156,6 +156,7 @@ class AnimalListing(models.Model):
     is_published = models.BooleanField("Publicat", default=True)
     media_views = models.IntegerField("Vizualizări media (click pe poză/video)", default=0)
     share_clicks = models.IntegerField("Distribuiri (click pe buton)", default=0)
+    observatii = models.TextField("Observații (MyPet)", blank=True, default="")
     created_at = models.DateTimeField("Creat la", auto_now_add=True)
     updated_at = models.DateTimeField("Actualizat la", auto_now=True)
 

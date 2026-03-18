@@ -24,7 +24,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
-		padding: 4px 2px;
+		padding: 4px 0;
 		min-height: 0;
 	}
 	#SW .sw-s2-filter-judet,
@@ -52,6 +52,61 @@
 	#SW .sw-s4-box-ads {
 		flex: 1 1 0;
 		min-height: 0;
+	}
+	/* S2.1 – butoane selecție specie (câini/pisici/altele) */
+	/* Important: S2.1 are și label-ul "S2.1"; îl ținem sus, apoi butoanele pe toată lățimea. */
+	#SW .sw-s4-box-filters {
+		flex-direction: column !important;
+		align-items: stretch !important;
+		justify-content: flex-start !important;
+	}
+	/* Ridică casetele sus și le lipește între ele */
+	#SW .sw-s4-inner {
+		gap: 0 !important;
+	}
+	#SW .sw-s4-box {
+		align-items: flex-start !important;
+		justify-content: flex-start !important;
+	}
+	#SW .sw-s2-species-buttons {
+		display: flex;
+		flex-direction: column;
+		gap: 0 !important;
+		width: 100%;
+		padding: 0 !important;
+		align-items: stretch;
+		box-sizing: border-box;
+	}
+	#SW .sw-s2-species-btn {
+		display: block;
+		flex: 1 1 auto;
+		width: 100%;
+		min-width: 0;
+		padding: 0.32rem 0.35rem;
+		font-size: 0.78rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		background: #e3f2fd;
+		color: #1565c0;
+		border: 1px solid #1565c0;
+		border-radius: 7px;
+		cursor: pointer;
+		box-sizing: border-box;
+	}
+	#SW .sw-s2-species-btn.is-active {
+		background: #1565c0;
+		color: #fff;
+	}
+
+	/* Redistribuire înălțime în S2: S2.1 doar cât conținutul,
+	   restul (spațiul rămas) se împarte egal între S2.2 și S2.3. */
+	#SW .sw-s4-box-filters {
+		flex: 0 0 auto !important;
+		padding: 0 !important;
+	}
+	#SW .sw-s4-box-match,
+	#SW .sw-s4-box-ads {
+		flex: 1 1 0 !important;
 	}
 </style>
 {% endblock %}
@@ -84,7 +139,14 @@
 							<datalist id="city-list-servicii"></datalist>
 						</div>
 					</div>
-					<div class="sw-s4-box sw-s4-box-filters" id="S2.1" data-slot="S2.1"><span class="sw-s4-label">S2.1</span></div>
+					<div class="sw-s4-box sw-s4-box-filters" id="S2.1" data-slot="S2.1">
+						<input type="hidden" id="sw-selected-species" value="all" />
+						<div class="sw-s2-species-buttons" role="group" aria-label="Selecție specie">
+							<button type="button" class="sw-s2-species-btn is-active" data-species="dog">CÂINI</button>
+							<button type="button" class="sw-s2-species-btn" data-species="cat">PISICI</button>
+							<button type="button" class="sw-s2-species-btn" data-species="other">ALTELE</button>
+						</div>
+					</div>
 					<div class="sw-s4-box sw-s4-box-match" id="S2.2" data-slot="S2.2"><span class="sw-s4-label">S2.2</span></div>
 					<div class="sw-s4-box sw-s4-box-ads" id="S2.3" data-slot="S2.3"><span class="sw-s4-label">S2.3</span></div>
 				</div>
@@ -151,10 +213,19 @@
 (function() {
 	var localitiesByCounty = {};
 	var countyNames = ["Alba","Arad","Argeș","Bacău","Bihor","Bistrița-Năsăud","Botoșani","Brăila","Brașov","București","Buzău","Călărași","Caraș-Severin","Cluj","Constanța","Covasna","Dâmbovița","Dolj","Galați","Giurgiu","Gorj","Harghita","Hunedoara","Ialomița","Iași","Ilfov","Maramureș","Mehedinți","Mureș","Neamț","Olt","Prahova","Sălaj","Satu Mare","Sibiu","Suceava","Teleorman","Timiș","Tulcea","Vâlcea","Vaslui","Vrancea"];
+	function stripAccents(str) {
+		if (str === undefined || str === null) return "";
+		// Normalizare diacritice pentru comparații tolerante (ex: Arges -> Argeș)
+		return String(str).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+	}
 	function matchCounty(val) {
 		if (!val) return null;
 		val = String(val).trim();
-		for (var i = 0; i < countyNames.length; i++) if (countyNames[i].toLowerCase() === val.toLowerCase()) return countyNames[i];
+		var valNorm = stripAccents(val).toLowerCase();
+		for (var i = 0; i < countyNames.length; i++) {
+			var cNorm = stripAccents(countyNames[i]).toLowerCase();
+			if (cNorm === valNorm) return countyNames[i];
+		}
 		return null;
 	}
 	function updateCityList() {
@@ -178,6 +249,24 @@
 		countyInput.addEventListener("change", updateCityList);
 		updateCityList();
 	}
+
+	// S2.1 selecție specii (Câini / Pisici / Altele)
+	(function initSpeciesButtons() {
+		var hidden = document.getElementById("sw-selected-species");
+		var btns = Array.prototype.slice.call(document.querySelectorAll("#SW .sw-s2-species-btn"));
+		if (!btns.length) return;
+
+		function setActive(btn) {
+			btns.forEach(function(b) { b.classList.toggle("is-active", b === btn); });
+			if (hidden) hidden.value = btn.getAttribute("data-species") || "all";
+		}
+
+		btns.forEach(function(btn) {
+			btn.addEventListener("click", function() { setActive(btn); });
+		});
+		var active = btns.find(function(b) { return b.classList.contains("is-active"); }) || btns[0];
+		setActive(active);
+	})();
 })();
 </script>
 {% endblock %}
