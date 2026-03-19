@@ -827,6 +827,14 @@ def signup_verificare_sms_view(request):
         profile.accept_termeni = data.get("accept_termeni", False)
         profile.accept_gdpr = data.get("accept_gdpr", False)
         profile.email_opt_in_wishlist = data.get("email_opt_in", False)
+        # Păstrăm și datele de entitate juridică pentru afișarea corectă în fișa contului ONG/SRL.
+        profile.company_display_name = data.get("denumire", "")
+        profile.company_legal_name = data.get("denumire_societate", "")
+        profile.company_cui = data.get("cui", "")
+        profile.company_cui_has_ro = (data.get("cui_cu_ro") == "da")
+        profile.company_judet = data.get("judet", "")
+        profile.company_oras = data.get("oras", "")
+        profile.collaborator_type = ""
         profile.save()
     else:
         user = User.objects.create_user(
@@ -1585,15 +1593,19 @@ def account_edit_username_view(request):
 @require_POST
 def account_upload_avatar_view(request):
     """
-    Upload/crop poză profil pentru PF. Salvare permanentă:
+    Upload/crop poză profil pentru PF/ONG/Colaborator. Salvare permanentă:
     - fișier pe disc în MEDIA_ROOT/profiles/<user_id>/ (scale la sute/mii de useri),
     - referință în UserProfile.poza_1 (baza de date).
     La refresh sau pe orice pagină, poza se încarcă din media (navbar, pagină cont).
     """
     user = request.user
     account_profile = getattr(user, "account_profile", None)
-    # Permitem upload avatar atât pentru PF, cât și pentru Colaborator (aceeași logică)
-    if not account_profile or account_profile.role not in (AccountProfile.ROLE_PF, AccountProfile.ROLE_COLLAB):
+    # Permitem upload avatar pentru PF, ONG și Colaborator (aceeași logică).
+    if not account_profile or account_profile.role not in (
+        AccountProfile.ROLE_PF,
+        AccountProfile.ROLE_ORG,
+        AccountProfile.ROLE_COLLAB,
+    ):
         return JsonResponse({"ok": False, "error": "Nu este permis."}, status=403)
     file_obj = request.FILES.get("avatar")
     if not file_obj:
@@ -1647,17 +1659,22 @@ def _parse_phone_for_edit(phone_str):
 
 @login_required
 def account_edit_view(request):
-    """Editează profil PF/Colaborator.
+    """Editează profil PF/ONG/Colaborator.
 
     Două tipuri de formulare:
     - form_type != 'firma' (implicit): date persoană (PF + colaborator) – ca la înscriere, fără parolă. Dacă telefon/email se schimbă → SMS apoi email.
-    - form_type == 'firma' (doar colaborator): date firmă (denumire, CUI, adresă, tip colaborator) – se salvează direct în UserProfile, fără SMS/email.
+    - form_type == 'firma' (ONG/Colaborator): date firmă (denumire, CUI, adresă, tip adăpost/tip colaborator)
+      – se salvează direct în UserProfile/AccountProfile, fără SMS/email.
     """
     User = get_user_model()
     user = request.user
     account_profile = getattr(user, "account_profile", None)
     user_profile = getattr(user, "profile", None)
-    if not account_profile or account_profile.role not in (AccountProfile.ROLE_PF, AccountProfile.ROLE_COLLAB):
+    if not account_profile or account_profile.role not in (
+        AccountProfile.ROLE_PF,
+        AccountProfile.ROLE_ORG,
+        AccountProfile.ROLE_COLLAB,
+    ):
         return redirect(reverse("account"))
 
     if request.method != "POST":
@@ -1665,8 +1682,8 @@ def account_edit_view(request):
 
     form_type = (request.POST.get("form_type") or "").strip()
 
-    # Formular „DATE FIRMĂ” – doar pentru colaborator
-    if form_type == "firma" and account_profile.role == AccountProfile.ROLE_COLLAB:
+    # Formular „DATE FIRMĂ” – ONG + colaborator
+    if form_type == "firma" and account_profile.role in (AccountProfile.ROLE_COLLAB, AccountProfile.ROLE_ORG):
         company_display_name = (request.POST.get("company_display_name") or "").strip()
         company_legal_name = (request.POST.get("company_legal_name") or "").strip()
         company_cui = (request.POST.get("company_cui") or "").strip()
@@ -1675,6 +1692,7 @@ def account_edit_view(request):
         company_oras = (request.POST.get("company_oras") or "").strip()
         company_address = (request.POST.get("company_address") or "").strip()
         collaborator_type = (request.POST.get("collaborator_type") or "").strip()
+        is_public_shelter_val = (request.POST.get("is_public_shelter") or request.POST.get("is_public_shelter_org") or "").strip()
 
         errors = []
         if not company_display_name:
@@ -1685,8 +1703,12 @@ def account_edit_view(request):
             errors.append("Județul firmei este obligatoriu.")
         if not company_oras:
             errors.append("Orașul/localitatea firmei este obligatorie.")
-        if collaborator_type not in ("cabinet", "servicii", "magazin"):
-            errors.append("Tipul de colaborator trebuie să fie Cabinet, Servicii sau Magazin.")
+        if account_profile.role == AccountProfile.ROLE_COLLAB:
+            if collaborator_type not in ("cabinet", "servicii", "magazin"):
+                errors.append("Tipul de colaborator trebuie să fie Cabinet, Servicii sau Magazin.")
+        elif account_profile.role == AccountProfile.ROLE_ORG:
+            if is_public_shelter_val not in ("yes", "no"):
+                errors.append("Alege tipul de adăpost: Sunt adăpost public / Nu sunt adăpost public.")
 
         if errors:
             request.session["edit_errors"] = errors
@@ -1699,7 +1721,8 @@ def account_edit_view(request):
                 "company_judet": company_judet,
                 "company_oras": company_oras,
                 "company_address": company_address,
-                "collaborator_type": collaborator_type,
+                "collaborator_type": collaborator_type if account_profile.role == AccountProfile.ROLE_COLLAB else "",
+                "is_public_shelter": is_public_shelter_val if is_public_shelter_val in ("yes", "no") else "",
             }
             return redirect(reverse("account"))
 
@@ -1712,8 +1735,11 @@ def account_edit_view(request):
         user_profile.company_judet = company_judet
         user_profile.company_oras = company_oras
         user_profile.company_address = company_address
-        user_profile.collaborator_type = collaborator_type
+        user_profile.collaborator_type = collaborator_type if account_profile.role == AccountProfile.ROLE_COLLAB else ""
         user_profile.save()
+        if account_profile.role == AccountProfile.ROLE_ORG:
+            account_profile.is_public_shelter = is_public_shelter_val == "yes"
+            account_profile.save(update_fields=["is_public_shelter"])
         request.session["account_updated"] = True
         return redirect(reverse("account") + "?updated=1")
 

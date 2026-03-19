@@ -557,10 +557,10 @@ body.page-account .account-right-panel {
 	{# Coloana stângă: casetă cu toate câmpurile de firmă din fișa Colaborator (editabile în UI; salvarea completă va necesita un pas backend separat) #}
 	<aside class="cont-pf-left" aria-label="Date firmă">
 		<div class="cont-pf-edit-box cont-pf-edit-box-empty">
-			<h2>{% if display_role|default:account_profile.role == 'org' %}DATE COLABORATOR{% else %}DATE FIRMĂ{% endif %}</h2>
+			<h2>{% if display_role|default:account_profile.role == 'org' %}DATE ONG, SRL, SA, ASOCIATIE{% else %}DATE FIRMĂ{% endif %}</h2>
 			<p class="edit-intro">
 				{% if display_role|default:account_profile.role == 'org' %}
-					Date SRL;SA,PF/ veterinar/servicii/magazin
+					Date SRL;SA,PF
 				{% else %}
 					Date firmă și tip colaborator (copiate din fișa de înscriere Colaborator).
 				{% endif %}
@@ -583,7 +583,7 @@ body.page-account .account-right-panel {
 						<div class="signup-col-cui-row">
 							<div class="signup-col-cui-stanga">
 								<label for="id_company_cui_has_ro">RO</label>
-								<select id="id_company_cui_has_ro" name="company_cui_has_ro" class="firma-field">
+								<select id="id_company_cui_has_ro" name="company_cui_has_ro" class="firma-field" disabled>
 									<option value="nu" {% if fp_firma.company_cui_has_ro|default_if_none:'' != 'da' and not user_profile.company_cui_has_ro %}selected{% endif %}>Fără RO</option>
 									<option value="da" {% if fp_firma.company_cui_has_ro == 'da' or user_profile.company_cui_has_ro %}selected{% endif %}>RO</option>
 								</select>
@@ -609,19 +609,15 @@ body.page-account .account-right-panel {
 				</div>
 				<div class="signup-field span2" style="margin-top:0.5rem;">
 					{% if display_role|default:account_profile.role == 'org' %}
-						<label>Tip colaborator *</label>
+						<label>Tip adăpost *</label>
 						<div class="signup-col-tip-options">
 							<label class="signup-col-tip-option">
-								<span>CABINET VETERINAR</span>
-								<input type="radio" name="collaborator_type_org" value="cabinet" class="firma-field" disabled {% if fp_firma.collaborator_type == 'cabinet' or user_profile.collaborator_type == 'cabinet' %}checked{% endif %} />
+								<span>Sunt adăpost public</span>
+								<input type="radio" name="is_public_shelter" value="yes" class="firma-field" disabled {% if fp_firma.is_public_shelter == 'yes' or not fp_firma.is_public_shelter and account_profile and account_profile.is_public_shelter %}checked{% endif %} />
 							</label>
 							<label class="signup-col-tip-option">
-								<span>MAGAZIN DE SPECIALITATE</span>
-								<input type="radio" name="collaborator_type_org" value="magazin" class="firma-field" disabled {% if fp_firma.collaborator_type == 'magazin' or user_profile.collaborator_type == 'magazin' %}checked{% endif %} />
-							</label>
-							<label class="signup-col-tip-option">
-								<span>SALOANE COSMETICA VET</span>
-								<input type="radio" name="collaborator_type_org" value="servicii" class="firma-field" disabled {% if fp_firma.collaborator_type == 'servicii' or user_profile.collaborator_type == 'servicii' %}checked{% endif %} />
+								<span>Nu sunt adăpost public</span>
+								<input type="radio" name="is_public_shelter" value="no" class="firma-field" disabled {% if fp_firma.is_public_shelter == 'no' or not fp_firma.is_public_shelter and account_profile and not account_profile.is_public_shelter %}checked{% endif %} />
 							</label>
 						</div>
 					{% else %}
@@ -644,12 +640,12 @@ body.page-account .account-right-panel {
 				</div>
 				{% endwith %}
 				<div class="signup-actions" style="margin-top:0.6rem;">
-					{% if display_role|default:account_profile.role == 'org' %}
-						<button type="button" class="btn-modificare-profil" disabled title="Activăm editarea ONG în pasul următor">Modificare date organizație</button>
-					{% else %}
-						<button type="button" id="btn-modificare-firma" class="btn-modificare-profil">Modificare date firmă</button>
-						<button type="submit" id="btn-save-firma" class="btn-save" style="display:none;" disabled>Salvează date firmă</button>
-					{% endif %}
+					<button type="button" id="btn-modificare-firma" class="btn-modificare-profil">
+						{% if display_role|default:account_profile.role == 'org' %}Modificare date ONG/SRL{% else %}Modificare date firmă{% endif %}
+					</button>
+					<button type="submit" id="btn-save-firma" class="btn-save" style="display:none;" disabled>
+						{% if display_role|default:account_profile.role == 'org' %}Salvează date ONG/SRL{% else %}Salvează date firmă{% endif %}
+					</button>
 				</div>
 			</form>
 		</div>
