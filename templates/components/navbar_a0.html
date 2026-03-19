@@ -69,6 +69,16 @@
 							{% endif %}
 							<li><a href="{% url 'home' %}">Termeni și condiții</a></li>
 							<li><a href="{% url 'home' %}">Contact</a></li>
+							{% if user.is_authenticated %}
+								<li class="a0-nav-envelope-item">
+									<a href="{% url 'mypet' %}?open_messages=1" class="a0-nav-envelope-link" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}" aria-label="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}">
+										<span class="a0-nav-envelope-icon {% if message_unread_count|default:0 > 0 %}is-hot{% endif %}" aria-hidden="true">✉</span>
+										{% if message_unread_count|default:0 > 0 %}
+											<span class="a0-nav-envelope-count">{{ message_unread_count }}</span>
+										{% endif %}
+									</a>
+								</li>
+							{% endif %}
 						</ul>
 					</div>
 				</nav>

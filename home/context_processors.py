@@ -1,5 +1,6 @@
-from .models import WishlistItem
+from .models import WishlistItem, PetMessage
 from .data import DEMO_DOGS
+from django.utils import timezone
 
 
 def _get_display_role(request):
@@ -57,6 +58,19 @@ def wishlist_counts(request):
         and request.session.get("view_as_role") == "collaborator"
     )
 
+    # Mesaje necitite pentru userul curent (plic navbar) - owner sau adoptator.
+    message_unread_count = 0
+    if user and user.is_authenticated:
+        try:
+            active_since = timezone.now() - timezone.timedelta(days=30)
+            message_unread_count = PetMessage.objects.filter(
+                receiver=user,
+                is_read=False,
+                created_at__gte=active_since,
+            ).count()
+        except Exception:
+            message_unread_count = 0
+
     return {
         "wishlist_count": wishlist_count,
         "nav_avatar_url": nav_avatar_url,
@@ -64,5 +78,6 @@ def wishlist_counts(request):
         "adopted_animals": adopted_animals,
         "display_role": display_role,
         "is_viewing_as_collaborator": is_viewing_as_collaborator,
+        "message_unread_count": message_unread_count,
     }
 

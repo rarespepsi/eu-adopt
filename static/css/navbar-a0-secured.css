@@ -367,7 +367,10 @@ width: 35.4375rem !important;
 	align-items: center !important;
 	justify-content: center !important;
 	line-height: 1 !important;
-	padding: 0.32rem 0.7rem !important;
+	padding: 0.21rem 0.7rem !important; /* -~1/3 pe verticală */
+	height: auto !important; /* override height: var(--nav-height) generic link */
+	min-height: 0 !important;
+	white-space: nowrap !important; /* nu rupe "Intră / Fă cont" pe 2 rânduri */
 	border-radius: 999px !important;
 	background: #d32f2f !important;
 	color: #fff !important;
@@ -433,7 +436,45 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 }
 
 /* (override) Căutarea este după Contact (în flux), la o distanță fixă mică față de Contact. */
-#A0 #main_menu .a0-search-right { right: auto !important; margin-left: 2.8rem !important; position: static !important; }
+#A0 #main_menu .a0-search-right { right: auto !important; margin-left: 3.2rem !important; position: static !important; }
+
+/* Plic mesaje între Contact și căutare (fără mutare de casete) */
+#A0 #menu-main-menu .a0-nav-envelope-item { margin-left: 0.15rem !important; margin-right: 0.1rem !important; }
+#A0 #menu-main-menu .a0-nav-envelope-link {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	position: relative !important;
+	width: calc(1.35rem + 3px) !important;
+	height: calc(1.35rem + 3px) !important;
+	padding: 0 !important;
+	border-radius: 999px !important;
+	border: 1px solid rgba(255,255,255,0.55) !important;
+	background: rgba(255,255,255,0.08) !important;
+	line-height: 1 !important;
+}
+#A0 #menu-main-menu .a0-nav-envelope-link:hover { background: rgba(255,255,255,0.18) !important; }
+#A0 #menu-main-menu .a0-nav-envelope-icon {
+	font-size: 0.82rem !important;
+	color: #ffffff !important;
+	line-height: 1 !important;
+}
+#A0 #menu-main-menu .a0-nav-envelope-icon.is-hot { color: #d32f2f !important; }
+#A0 #menu-main-menu .a0-nav-envelope-count {
+	position: absolute !important;
+	top: -0.32rem !important;
+	right: -0.34rem !important;
+	min-width: 0.86rem !important;
+	height: 0.86rem !important;
+	padding: 0 0.12rem !important;
+	border-radius: 999px !important;
+	background: #d32f2f !important;
+	color: #fff !important;
+	font-size: 0.58rem !important;
+	font-weight: 900 !important;
+	line-height: 0.86rem !important;
+	text-align: center !important;
+}
 
 /* Contor stânga/dreapta */
 #A0 .animal-counter-navbar {

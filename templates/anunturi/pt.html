@@ -322,6 +322,36 @@
 {% block extra_js %}
 <script>
 (function() {
+	function initPetImageRotation() {
+		var imgs = document.querySelectorAll('img.pet-rotating-image');
+		if (!imgs || !imgs.length) return;
+		imgs.forEach(function(img) {
+			if (img.dataset.rotInit === "1") return;
+			var src1 = img.getAttribute("src") || "";
+			var src2 = img.getAttribute("data-rot-src-2") || "";
+			var src3 = img.getAttribute("data-rot-src-3") || "";
+			var list = [src1, src2, src3].filter(function(v) { return !!v; });
+			if (list.length <= 1) {
+				img.dataset.rotInit = "1";
+				return;
+			}
+			var idx = 0;
+			img.dataset.rotInit = "1";
+			setInterval(function() {
+				idx = (idx + 1) % list.length;
+				img.setAttribute("src", list[idx]);
+			}, 5000);
+		});
+	}
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", initPetImageRotation);
+	} else {
+		initPetImageRotation();
+	}
+})();
+</script>
+<script>
+(function() {
 	var modal = document.getElementById("ptMatchModal");
 	if (!modal) return;
 	var backdrop = document.getElementById("ptMatchModalBackdrop");

@@ -314,3 +314,81 @@ class UserPost(models.Model):
     def __str__(self):
         return self.title
 
+
+class PetMessage(models.Model):
+    """
+    Mesaj intern între adoptator și owner-ul câinelui (ONG/PF).
+    Conversațiile sunt legate de un animal.
+    """
+    animal = models.ForeignKey(AnimalListing, on_delete=models.CASCADE, related_name="messages")
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="pet_messages_sent")
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="pet_messages_received")
+    body = models.TextField("Mesaj", max_length=2000)
+    is_read = models.BooleanField("Citit", default=False)
+    created_at = models.DateTimeField("Creat la", auto_now_add=True)
+    updated_at = models.DateTimeField("Actualizat la", auto_now=True)
+
+    class Meta:
+        verbose_name = "Mesaj pet"
+        verbose_name_plural = "Mesaje pet"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["animal", "created_at"]),
+            models.Index(fields=["receiver", "is_read", "created_at"]),
+            models.Index(fields=["sender", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.sender} -> {self.receiver} ({self.animal_id})"
+
+
+class AdoptionRequest(models.Model):
+    """
+    Cerere de adopție: PF apasă „Vreau să-l adopt”; owner acceptă în MyPet.
+    Datele de contact (PII) se trimit pe email doar după accept.
+    """
+
+    STATUS_PENDING = "in_asteptare"
+    STATUS_ACCEPTED = "acceptata"
+    STATUS_REJECTED = "respinsa"
+    STATUS_FINALIZED = "finalizata"
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "În așteptare (owner)"),
+        (STATUS_ACCEPTED, "Acceptată"),
+        (STATUS_REJECTED, "Respinsă"),
+        (STATUS_FINALIZED, "Adopție finalizată"),
+    ]
+
+    animal = models.ForeignKey(
+        AnimalListing,
+        on_delete=models.CASCADE,
+        related_name="adoption_requests",
+    )
+    adopter = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="adoption_requests_sent",
+    )
+    status = models.CharField(
+        "Stare",
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING,
+    )
+    accepted_at = models.DateTimeField("Acceptată la", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Cerere adopție"
+        verbose_name_plural = "Cereri adopție"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["animal", "status"]),
+            models.Index(fields=["adopter", "status"]),
+        ]
+
+    def __str__(self):
+        return f"Adopt #{self.pk} pet={self.animal_id} de {self.adopter_id} → {self.status}"
+

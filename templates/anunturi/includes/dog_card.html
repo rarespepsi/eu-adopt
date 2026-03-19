@@ -10,7 +10,15 @@
 				</svg>
 			</button>
 			{% if pet.imagine %}
-			<img src="{{ pet.imagine.url }}" alt="" />
+			<img
+				src="{{ pet.imagine.url }}"
+				alt=""
+				class="pet-rotating-image"
+				{% if pet.imagine_2 or pet.imagine_3 %}
+				data-rot-src-2="{% if pet.imagine_2 %}{{ pet.imagine_2.url }}{% endif %}"
+				data-rot-src-3="{% if pet.imagine_3 %}{{ pet.imagine_3.url }}{% endif %}"
+				{% endif %}
+			/>
 			{% elif pet.imagine_fallback %}
 			<img src="{% static pet.imagine_fallback %}" alt="" />
 			{% else %}
@@ -31,7 +39,15 @@
 				</svg>
 			</button>
 			{% if pet.imagine %}
-			<img src="{{ pet.imagine.url }}" alt="" />
+			<img
+				src="{{ pet.imagine.url }}"
+				alt=""
+				class="pet-rotating-image"
+				{% if pet.imagine_2 or pet.imagine_3 %}
+				data-rot-src-2="{% if pet.imagine_2 %}{{ pet.imagine_2.url }}{% endif %}"
+				data-rot-src-3="{% if pet.imagine_3 %}{{ pet.imagine_3.url }}{% endif %}"
+				{% endif %}
+			/>
 			{% elif pet.imagine_fallback %}
 			<img src="{% static pet.imagine_fallback %}" alt="" />
 			{% else %}

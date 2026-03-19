@@ -556,6 +556,24 @@
 			}
 			.mypet-btn-primary { background: #9d1c1c; color: #fff; }
 			.mypet-btn-secondary { background: #fff8e1; color: #5d4037; border-color: #ffcc80; }
+			/* Butonul mic de trimitere mesaj (activ/clickabil) */
+			.pet-msg-send-btn {
+				padding: 0.2rem 0.58rem;
+				font-size: 0.68rem;
+				font-weight: 800;
+				line-height: 1.1;
+				border-radius: 999px;
+				background: #9d1c1c;
+				color: #fff;
+				border: 1px solid rgba(0, 0, 0, 0.12);
+				cursor: pointer;
+				pointer-events: auto;
+				user-select: none;
+			}
+			.pet-msg-send-btn:disabled {
+				opacity: 0.72;
+				cursor: progress;
+			}
 
 			/* Modal media (poze/video) */
 			.pet-media-modal[hidden] { display: none !important; }
@@ -699,9 +717,40 @@
 				text-align: center;
 				opacity: 0.9;
 			}
+			.pet-adopt-corner {
+				position: fixed;
+				right: 168px;
+				bottom: 10px;
+				z-index: 2500;
+				width: 148px;
+				height: 148px;
+				box-sizing: border-box;
+				border-radius: 10px;
+				border: 1px solid rgba(0,0,0,0.18);
+				background: rgba(157, 28, 28, 0.94);
+				box-shadow: 0 10px 26px rgba(0,0,0,0.22);
+				color: #fff;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				text-align: center;
+				padding: 10px;
+				font-size: 1rem;
+				font-weight: 900;
+				letter-spacing: 0.03em;
+				text-transform: uppercase;
+				user-select: none;
+				cursor: default;
+			}
 			@media (max-width: 820px) {
 				.pet-qr-corner { width: 132px; }
 				.pet-qr-corner__img { width: 116px; height: 116px; }
+				.pet-adopt-corner {
+					right: 150px;
+					width: 132px;
+					height: 132px;
+					font-size: 0.9rem;
+				}
 			}
 
 			/* Controale video în modal (semitransparente) */
@@ -911,7 +960,18 @@
 
 														<div class="mypet-add-field mypet-fisa-field-story">
 															<label for="id_messages">MESAJE</label>
-															<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled></textarea>
+															{% if can_send_pet_message and adopter_messaging_unlocked %}
+																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" placeholder="Scrie mesajul tău către ONG / owner..."></textarea>
+																<div style="margin-top:.35rem;display:flex;justify-content:flex-end;">
+																	<button type="button" id="petSendMessageBtn" class="pet-msg-send-btn" data-send-url="{% url 'pet_send_message' pet.pk %}">Send</button>
+																</div>
+															{% elif can_send_pet_message %}
+																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled>{% if adoption_request_status == "in_asteptare" %}Cererea ta de adopție este în așteptare. După ce organizația o acceptă în MyPet, vei putea trimite mesaje libere aici.{% else %}Folosește butonul „VREAU SA-L ADOPT” (lângă QR). După ce cererea este acceptată, poți folosi acest câmp pentru mesaje către organizație.{% endif %}</textarea>
+															{% elif user.is_authenticated %}
+																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled>Acesta este anunțul tău.</textarea>
+															{% else %}
+																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled>Intră în cont pentru a trimite mesaj.</textarea>
+															{% endif %}
 														</div>
 													</div>
 												</div>
@@ -958,6 +1018,16 @@
 			</div>
 		</div>
 
+		{% if can_send_pet_message %}
+		<div
+			class="pet-adopt-corner"
+			id="petAdoptCorner"
+			role="button"
+			tabindex="0"
+			data-adopt-url="{% url 'pet_adoption_request' pet.pk %}"
+			aria-label="Vreau să-l adopt"
+		>VREAU SA-L ADOPT</div>
+		{% endif %}
 		<div class="pet-qr-corner" id="petQrCorner" aria-label="Cod QR fișă">
 			<p class="pet-qr-corner__title">Scanează fișa</p>
 			<img class="pet-qr-corner__img" id="petQrImg" alt="Cod QR către fișă" />
@@ -1300,6 +1370,111 @@
 						visitedSection.style.display = "none";
 					} else { visitedSection.style.display = "none"; }
 				} catch (e) { visitedSection.style.display = "none"; }
+			}
+
+			function getCookie(name) {
+				var value = "; " + document.cookie;
+				var parts = value.split("; " + name + "=");
+				if (parts.length === 2) return parts.pop().split(";").shift();
+				return "";
+			}
+			var sendBtn = document.getElementById("petSendMessageBtn");
+			var msgTa = document.getElementById("id_messages");
+			if (sendBtn && msgTa) {
+				async function submitPetMessage() {
+					var text = (msgTa.value || "").trim();
+					if (!text) {
+						alert("Scrie un mesaj înainte de trimitere.");
+						return;
+					}
+					var old = sendBtn.textContent;
+					sendBtn.disabled = true;
+					sendBtn.textContent = "Se trimite...";
+					try {
+						var body = new URLSearchParams();
+						body.set("message", text);
+						var resp = await fetch(sendBtn.getAttribute("data-send-url"), {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+								"X-CSRFToken": getCookie("csrftoken")
+							},
+							credentials: "same-origin",
+							body: body.toString()
+						});
+						var data = {};
+						try { data = await resp.json(); } catch (e) {}
+						if (!resp.ok || !data.ok) {
+							throw new Error((data && data.error) || "Mesajul nu s-a trimis.");
+						}
+						msgTa.value = "";
+						sendBtn.textContent = "Trimis";
+						setTimeout(function() { sendBtn.textContent = old; }, 1200);
+					} catch (err) {
+						alert(err.message || "Eroare la trimitere mesaj.");
+						sendBtn.textContent = old;
+					} finally {
+						sendBtn.disabled = false;
+					}
+				}
+				sendBtn.addEventListener("click", submitPetMessage);
+				msgTa.addEventListener("keydown", function(e) {
+					// Enter = send, Shift+Enter = rând nou
+					if (e.key === "Enter" && !e.shiftKey) {
+						e.preventDefault();
+						submitPetMessage();
+					}
+				});
+			}
+			var adoptCorner = document.getElementById("petAdoptCorner");
+			if (adoptCorner) {
+				var adoptUrl = adoptCorner.getAttribute("data-adopt-url") || "";
+				async function submitAdoptRequest() {
+					if (!adoptUrl) return;
+					var old = adoptCorner.textContent;
+					adoptCorner.setAttribute("aria-busy", "true");
+					try {
+						var body = new URLSearchParams();
+						var resp = await fetch(adoptUrl, {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+								"X-CSRFToken": getCookie("csrftoken")
+							},
+							credentials: "same-origin",
+							body: body.toString()
+						});
+						var data = {};
+						try { data = await resp.json(); } catch (e) {}
+						if (data.already === "pending") {
+							alert("Ai deja o cerere în așteptare pentru acest animal.");
+							return;
+						}
+						if (data.already === "accepted") {
+							alert("Cererea ta a fost deja acceptată. Verifică emailul și mesajele din MyPet.");
+							return;
+						}
+						if (!resp.ok || !data.ok) {
+							throw new Error((data && data.error) || "Nu am putut trimite cererea.");
+						}
+						alert("Cererea de adopție a fost trimisă. Organizația va fi notificată în Mesaje (MyPet).");
+					} catch (err) {
+						alert(err.message || "Eroare la trimitere.");
+					} finally {
+						adoptCorner.removeAttribute("aria-busy");
+						adoptCorner.textContent = old;
+					}
+				}
+				adoptCorner.addEventListener("click", function(e) {
+					e.preventDefault();
+					submitAdoptRequest();
+				});
+				adoptCorner.addEventListener("keydown", function(e) {
+					if (e.key === "Enter" || e.key === " ") {
+						e.preventDefault();
+						submitAdoptRequest();
+					}
+				});
 			}
 		})();
 		</script>

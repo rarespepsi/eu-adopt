@@ -11,6 +11,14 @@
 		{% csrf_token %}
 		<div class="mypet-actions">
 			<a href="{% url 'mypet' %}" class="mypet-btn mypet-btn-primary">My pets</a>
+			{% if not user_has_owned_pets %}
+				<button
+					type="button"
+					class="mypet-btn mypet-btn-secondary"
+					id="adopterInboxBtn"
+					data-list-url="{% url 'adopter_messages_list' %}"
+				>Mesaje</button>
+			{% endif %}
 			<a href="{% url 'mypet_add' %}" class="mypet-btn mypet-btn-secondary mypet-btn-add">Adaugă un pet</a>
 			<div class="mypet-btn mypet-btn-secondary mypet-btn-counter">
 				MyPet {{ mypet_count|default:0 }} / Adoptați {{ adopted_count|default:0 }} / Total {{ total_count|default:0 }}
@@ -44,7 +52,8 @@
 					<col class="mypet-col-name" />
 					<col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" />
 					<col class="mypet-col-date" /><col class="mypet-col-date" />
-					<col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" />
+					<col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" />
+					<col class="mypet-col-mesaje" />
 				</colgroup>
 				<thead>
 					<tr>
@@ -63,9 +72,9 @@
 						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="fisa"><span class="mypet-th-v">Fișă %</span></th>
 						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="views"><span class="mypet-th-v">Vizualizări</span></th>
 						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="shares"><span class="mypet-th-v">Distribuiri</span></th>
-						<!-- NOTĂ: Observații ocupă acum mai puține coloane ca să încapă o coloană în plus -->
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">$</span></th>
-						<th class="mypet-th mypet-th-observatii" colspan="10">Observații</th>
+						<th class="mypet-th mypet-th-observatii" colspan="7">Observații</th>
+						<th class="mypet-th mypet-th-mesaje"><span class="mypet-th-v">Mesaje</span></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -89,7 +98,18 @@
 						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.size|default:"—" }}{% else %}—{% endif %}</td>
 						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.sterilizat|default:"—" }}{% else %}—{% endif %}</td>
 						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.wish_count|default:0 }}{% else %}—{% endif %}</td>
-						<td class="mypet-td mypet-td-narrow">—</td>
+						<td class="mypet-td mypet-td-narrow mypet-td-adoptie">
+							{% if pet %}
+								<div class="mypet-adoptie-cell">{{ pet.adoption_row_label|default:"—" }}</div>
+								{% if pet.adoption_finalize_id %}
+								<button
+									type="button"
+									class="mypet-adopt-finalize-btn"
+									data-finalize-url="{% url 'mypet_adoption_finalize' pet.adoption_finalize_id %}"
+								>Adopție finalizată</button>
+								{% endif %}
+							{% else %}—{% endif %}
+						</td>
 						<td class="mypet-td mypet-td-narrow">—</td>
 						<td class="mypet-td mypet-td-date">{% if pet and pet.created_at %}{{ pet.created_at|date:"d.m.Y" }}{% else %}—{% endif %}</td>
 						<td class="mypet-td mypet-td-date">—</td>
@@ -115,7 +135,7 @@
 						<td class="mypet-td mypet-td-narrow">
 							<span class="mypet-td-photo-shop-v">Photo Shop</span>
 						</td>
-						<td class="mypet-td mypet-td-narrow mypet-td-observatii" colspan="10">
+						<td class="mypet-td mypet-td-narrow mypet-td-observatii" colspan="7">
 							{% if pet %}
 								<div class="mypet-observatii-editor">
 									<textarea
@@ -131,13 +151,25 @@
 										class="mypet-observatii-save-btn"
 										data-save-url="{% url 'mypet_observatii_update' pk=pet.pk %}"
 									>
-										{% if pet.observatii %}
-											Modifică
-										{% else %}
-											RUPT
-										{% endif %}
+										Save
 									</button>
 								</div>
+							{% else %}
+								—
+							{% endif %}
+						</td>
+						<td class="mypet-td mypet-td-mesaje">
+							{% if pet %}
+								<button
+									type="button"
+									class="mypet-msg-open-btn{% if pet.unread_messages %} is-unread{% else %} is-read{% endif %}"
+									data-pet-id="{{ pet.pk }}"
+									data-pet-name="{{ pet.name|default:'' }}"
+									data-list-url="{% url 'mypet_messages_list' pk=pet.pk %}"
+									data-unread="{{ pet.unread_messages|default:0 }}"
+								>
+									Mesaje{% if pet.unread_messages %} ({{ pet.unread_messages }}){% endif %}
+								</button>
 							{% else %}
 								—
 							{% endif %}
@@ -149,6 +181,27 @@
 		</div>
 	</div>
 </section>
+
+<div class="mypet-msg-modal" id="mypetMsgModal" hidden>
+	<div class="mypet-msg-panel" role="dialog" aria-modal="true" aria-label="Mesaje pet">
+		<div class="mypet-msg-head">
+			<strong id="mypetMsgTitle">Mesaje</strong>
+			<button type="button" id="mypetMsgClose" class="mypet-msg-close" onclick="if(window.__closeMyPetMsgModal){window.__closeMyPetMsgModal();}">X</button>
+		</div>
+		<div class="mypet-msg-tabs">
+			<button type="button" class="mypet-msg-tab is-active" id="mypetMsgTabActive" data-scope="active">Active</button>
+			<button type="button" class="mypet-msg-tab" id="mypetMsgTabArchived" data-scope="archived">Arhivă</button>
+		</div>
+		<div class="mypet-msg-body">
+			<div class="mypet-msg-threads" id="mypetMsgThreads"></div>
+			<div class="mypet-msg-thread" id="mypetMsgThread"></div>
+		</div>
+		<div class="mypet-msg-reply">
+			<textarea id="mypetMsgReplyTa" placeholder="Răspunde aici..."></textarea>
+			<button type="button" id="mypetMsgReplyBtn">Send</button>
+		</div>
+	</div>
+</div>
 {% endblock %}
 
 {% block extra_css_after %}
@@ -163,8 +216,14 @@
 	body.page-mypet .sidebar-right {
 		display: none !important;
 	}
+	/* Coloana stângă = doar cât trebuie pentru caseta mamă + casetele mici; restul → main (spațiu eliberat la dreapta coloanei) */
+	body.page-mypet {
+		--mypet-sidebar-w: 118px; /* caseta mamă îngustată; main ia spațiul de la dreapta ei */
+	}
 	body.page-mypet .layout {
-		grid-template-columns: 260px 1fr !important;
+		grid-template-columns: var(--mypet-sidebar-w) 1fr !important;
+		align-items: stretch; /* caseta mamă = înălțimea rândului (ca main-ul) */
+		min-height: calc(100vh - var(--nav-h, 64px)); /* rândul umple înălțimea utilă sub navbar */
 	}
 	body.page-mypet .layout .main-content {
 		flex: 1 1 0;
@@ -222,6 +281,7 @@
 	.mypet-col-name { width: 9rem; }
 	.mypet-col-narrow { width: 2.5rem; }
 	.mypet-col-date { width: 4.5rem; }
+	.mypet-col-mesaje { width: 5.04rem; }
 	.mypet-th {
 		background: #5c3c00;
 		color: #fff;
@@ -258,6 +318,7 @@
 	.mypet-th-narrow { min-width: 2.5rem; }
 	.mypet-th-date { min-width: 4rem; }
 	.mypet-th-observatii { min-width: 0; }
+	.mypet-th-mesaje { min-width: 4.8rem; }
 	.mypet-td {
 		padding: 0.2rem 0.35rem;
 		border-bottom: 1px solid #eee;
@@ -286,6 +347,7 @@
 	.mypet-td-narrow { min-width: 2.5rem; text-align: center; }
 	.mypet-td-date { min-width: 4rem; font-size: 0.75rem; white-space: nowrap; }
 	.mypet-td-observatii { text-align: center; white-space: normal; overflow: visible; text-overflow: clip; }
+	.mypet-td-mesaje { text-align: center; min-width: 4.8rem; }
 	/* Ca textarea să atingă laturile casetei (fără spațiu interior de la td) */
 	.mypet-td-observatii {
 		padding-left: 0;
@@ -309,6 +371,271 @@
 		outline: none;
 		overflow: hidden;
 		text-align: left;
+	}
+	.mypet-msg-badge {
+		display: inline-block;
+		padding: 0.18rem 0.38rem;
+		border-radius: 999px;
+		background: #ffebee;
+		border: 1px solid #c62828;
+		color: #b71c1c;
+		font-size: 0.65rem;
+		font-weight: 800;
+		line-height: 1.2;
+		white-space: nowrap;
+	}
+	.mypet-msg-open-btn {
+		display: inline-block;
+		padding: 0.2rem 0.3rem;
+		border-radius: 8px;
+		font-size: 0.68rem;
+		font-weight: 800;
+		cursor: pointer;
+	}
+	.mypet-msg-open-btn.is-unread {
+		border: 1px solid #c62828;
+		background: #ffebee;
+		color: #b71c1c;
+	}
+	.mypet-msg-open-btn.is-read {
+		border: 1px solid #1b5e20;
+		background: #e8f5e9;
+		color: #1b5e20;
+	}
+	.mypet-msg-modal {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.48);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 100000;
+	}
+	.mypet-msg-panel {
+		width: min(900px, 94vw);
+		height: min(78vh, 680px);
+		background: #fffef7;
+		border-radius: 10px;
+		border: 2px solid #d2b27a;
+		display: flex;
+		flex-direction: column;
+	}
+	.mypet-msg-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.45rem 0.7rem;
+		border-bottom: 1px solid #e6d2ab;
+	}
+	.mypet-msg-close {
+		position: relative;
+		z-index: 5;
+		border: 1px solid #c62828;
+		background: #fff;
+		color: #c62828;
+		border-radius: 6px;
+		padding: 0.1rem 0.45rem;
+		font-weight: 900;
+		cursor: pointer;
+	}
+	.mypet-msg-body {
+		flex: 1 1 auto;
+		min-height: 0;
+		display: grid;
+		grid-template-columns: 260px 1fr;
+	}
+	.mypet-msg-tabs {
+		display: flex;
+		gap: 0.35rem;
+		padding: 0.35rem 0.6rem 0.25rem;
+		border-bottom: 1px solid #ecd9b8;
+	}
+	.mypet-msg-tab {
+		border: 1px solid #d2b27a;
+		background: #fff;
+		color: #5c3c00;
+		border-radius: 999px;
+		padding: 0.15rem 0.65rem;
+		font-size: 0.72rem;
+		font-weight: 800;
+		cursor: pointer;
+	}
+	.mypet-msg-tab.is-active {
+		background: #5c3c00;
+		color: #fff;
+		border-color: #5c3c00;
+	}
+	.mypet-msg-threads {
+		border-right: 1px solid #ecd9b8;
+		overflow: auto;
+	}
+	.mypet-msg-thread {
+		overflow: auto;
+		padding: 0.45rem;
+	}
+	.mypet-msg-thread-item {
+		padding: 0.3rem 0.35rem;
+		border-bottom: 1px solid #f0e4cf;
+		cursor: pointer;
+		font-size: 0.78rem;
+	}
+	.mypet-msg-thread-item.is-active { background: #fff3cd; }
+	.mypet-msg-item-top {
+		display: grid;
+		grid-template-columns: 42px 1fr;
+		gap: 0.4rem;
+		align-items: center;
+	}
+	.mypet-msg-item-photo-link,
+	.mypet-msg-item-photo {
+		display: block;
+		width: 42px;
+		height: 42px;
+		border-radius: 6px;
+		object-fit: cover;
+		background: #f1f1f1;
+		border: 1px solid #d2b27a;
+	}
+	.mypet-msg-item-photo-link.is-inactive {
+		opacity: 0.7;
+		cursor: not-allowed;
+	}
+	.mypet-msg-item-photo-wrap {
+		position: relative;
+		width: 42px;
+		height: 42px;
+	}
+	.mypet-msg-item-closed-badge {
+		position: absolute;
+		left: 1px;
+		right: 1px;
+		bottom: 1px;
+		font-size: 0.5rem;
+		font-weight: 900;
+		line-height: 1.1;
+		padding: 0.1rem 0.12rem;
+		border-radius: 4px;
+		background: rgba(183, 28, 28, 0.92);
+		color: #fff;
+		text-align: center;
+		pointer-events: none;
+	}
+	.mypet-msg-item-title { font-weight: 800; line-height: 1.2; }
+	.mypet-msg-item-sub {
+		font-size: 0.7rem;
+		color: #6d4c41;
+		margin-top: 1px;
+		line-height: 1.2;
+	}
+	.mypet-msg-item-preview {
+		font-size: 0.72rem;
+		color: #444;
+		margin-top: 0.15rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.mypet-msg-bubble {
+		max-width: 85%;
+		padding: 0.35rem 0.5rem;
+		border-radius: 8px;
+		margin-bottom: 0.3rem;
+		font-size: 0.78rem;
+		line-height: 1.25;
+		white-space: pre-wrap;
+	}
+	.mypet-msg-bubble.from-owner { margin-left: auto; background: #e3f2fd; }
+	.mypet-msg-bubble.from-user { margin-right: auto; background: #f5f5f5; }
+	.mypet-td-adoptie {
+		min-width: 4.2rem;
+		text-align: center;
+		vertical-align: middle;
+		line-height: 1.2;
+	}
+	.mypet-adoptie-cell {
+		font-size: 0.68rem;
+		font-weight: 700;
+		color: #5c3c00;
+		margin-bottom: 0.2rem;
+		white-space: normal;
+	}
+	.mypet-adopt-finalize-btn {
+		display: inline-block;
+		margin-top: 0.15rem;
+		font-size: 0.62rem;
+		font-weight: 800;
+		padding: 0.2rem 0.35rem;
+		border-radius: 6px;
+		border: 1px solid #1b5e20;
+		background: #2e7d32;
+		color: #fff;
+		cursor: pointer;
+		white-space: normal;
+		max-width: 100%;
+		line-height: 1.15;
+	}
+	.mypet-adopt-finalize-btn:hover { background: #1b5e20; }
+	.mypet-msg-adopt-bar {
+		background: #fff8e1;
+		border: 1px solid #ffe082;
+		border-radius: 8px;
+		padding: 0.45rem 0.5rem;
+		margin-bottom: 0.5rem;
+	}
+	.mypet-msg-adopt-hint {
+		margin: 0 0 0.4rem;
+		font-size: 0.78rem;
+		color: #5c3c00;
+		line-height: 1.3;
+	}
+	.mypet-msg-adopt-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+	.mypet-msg-adopt-btn {
+		font-size: 0.75rem;
+		font-weight: 800;
+		padding: 0.35rem 0.55rem;
+		border-radius: 6px;
+		cursor: pointer;
+		border: 1px solid #888;
+	}
+	.mypet-msg-adopt-btn.m-adopt-accept {
+		background: #1b5e20;
+		color: #fff;
+		border-color: #1b5e20;
+	}
+	.mypet-msg-adopt-btn.m-adopt-reject {
+		background: #fafafa;
+		color: #b71c1c;
+		border-color: #b71c1c;
+	}
+	.mypet-msg-thread-empty {
+		font-size: 0.8rem;
+		color: #666;
+		padding: 0.25rem 0;
+	}
+	.mypet-msg-reply {
+		border-top: 1px solid #ecd9b8;
+		padding: 0.45rem;
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: 0.45rem;
+	}
+	#mypetMsgReplyTa {
+		min-height: 64px;
+		resize: vertical;
+		border-radius: 8px;
+		border: 1px solid #d2b27a;
+		padding: 0.35rem;
+	}
+	#mypetMsgReplyBtn {
+		align-self: end;
+		height: 36px;
+		border-radius: 8px;
+		border: 1px solid #1b5e20;
+		background: #2e7d32;
+		color: #fff;
+		font-weight: 800;
+		padding: 0 0.8rem;
+		cursor: pointer;
 	}
 	.mypet-observatii-editor {
 		display: flex;
@@ -347,6 +674,11 @@
 		border-color: rgba(46, 125, 50, 0.9);
 		color: #1b5e20;
 	}
+	.mypet-observatii-save-btn.is-dirty {
+		background: rgba(198, 40, 40, 0.96);
+		border-color: rgba(183, 28, 28, 0.95);
+		color: #ffffff;
+	}
 	.mypet-observatii-ta:focus {
 		background: rgba(255, 255, 255, 0.95);
 		border-color: rgba(0, 80, 181, 0.65);
@@ -382,28 +714,40 @@
 		background: rgba(255, 248, 225, 0.9);
 		box-shadow: inset 0 0 0 2px rgba(255, 193, 7, 0.9);
 	}
-	/* 4 casete în stânga (în "caseta mamă") */
+	/* 3 casete în stânga (în caseta mamă A6–A8): lățime ca o celulă mică S3 (#SW .sw-s2-1-cell), nu coloana S3 */
 	body.page-mypet .sidebar-left {
 		display: flex;
 		flex-direction: column;
-		padding: 0.2rem;
+		align-items: stretch;
+		padding: 0.1rem 0.18rem 0.05rem 0.08rem;
 		box-sizing: border-box;
 		overflow: hidden;
+		min-width: 0;
+		min-height: 0;
+		width: 100%;
 	}
 	body.page-mypet .sidebar-left .mypet-left-boxes {
 		display: flex;
 		flex-direction: column;
-		gap: 0.2rem;
-		height: 100%;
+		flex: 1 1 0; /* umple caseta mamă pe verticală */
+		gap: 2px; /* ca gap-ul grid-ului S2.1 din servicii.css */
 		min-height: 0;
+		align-items: flex-start;
+		justify-content: flex-start;
+		width: 100%;
 	}
+	/* Lățime ca S3; înălțimea se împarte egal între cele 3 casete până la fundul casetei mame */
 	body.page-mypet .sidebar-left .mypet-left-box {
 		flex: 1 1 0;
 		min-height: 0;
-		border-radius: 8px;
-		border: 2px solid rgba(210, 178, 122, 0.95);
-		background: rgba(255, 254, 247, 0.95);
-		box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+		box-sizing: border-box;
+		width: calc((100vw - var(--mypet-sidebar-w)) * 4.5625 / 50.625 - 4px);
+		max-width: 100%;
+		min-width: 2rem;
+		border-radius: 4px;
+		border: 1px solid #9e9e9e;
+		background: #f5f5f5;
+		box-shadow: none;
 	}
 	.mypet-actions {
 		margin: 0 auto;
@@ -554,12 +898,11 @@
 		var wrap = document.querySelector('.mypet-table-wrap');
 		var table = document.querySelector('.mypet-table');
 		if (!wrap || !table) return;
-		var wrapRect = wrap.getBoundingClientRect();
 		var tableRect = table.getBoundingClientRect();
 		var viewportRight = window.innerWidth;
 		var tableRight = tableRect.right;
-		var dist = Math.round(viewportRight - tableRight);
-		console.log('MyPet: Spațiu liber în dreapta până la limita ecranului: ' + dist + ' px (lățime tabel: ' + Math.round(tableRect.width) + ' px)');
+		void viewportRight;
+		void tableRight;
 	}
 	function fitNameText(el) {
 		if (!el) return;
@@ -714,9 +1057,17 @@ document.addEventListener("DOMContentLoaded", function() {
 		var editor = ta.closest('.mypet-observatii-editor');
 		var btn = editor ? editor.querySelector('.mypet-observatii-save-btn') : null;
 		if (!btn) return;
+		var lastSavedValue = ta.value || '';
 
 		function syncBtnText() {
-			btn.textContent = (ta.value || '').trim() ? 'Modifică' : 'RUPT';
+			var current = ta.value || '';
+			var isDirty = current !== lastSavedValue;
+			btn.textContent = 'Save';
+			if (isDirty) {
+				btn.classList.add('is-dirty');
+			} else {
+				btn.classList.remove('is-dirty');
+			}
 		}
 
 		// Asigurăm că butonul e clickabil chiar din start.
@@ -734,22 +1085,87 @@ document.addEventListener("DOMContentLoaded", function() {
 			postObservatii(ta, v).then(function(data) {
 				btn.disabled = false;
 				if (data && data.ok) {
+					if (typeof data.observatii === 'string') {
+						ta.value = data.observatii;
+					}
+					lastSavedValue = ta.value || '';
+					btn.classList.remove('is-dirty');
 					btn.classList.add('is-saved-ok');
 					btn.textContent = 'SAVED';
 					setTimeout(function() {
 						btn.classList.remove('is-saved-ok');
-						// Revenim la eticheta corectă.
-						btn.textContent = (ta.value || '').trim() ? 'Modifică' : 'RUPT';
 						syncBtnText();
 					}, 1600);
 				} else {
-					btn.textContent = (v.trim() ? 'Modifică' : 'RUPT');
+					syncBtnText();
 				}
 			});
 		});
 	});
 })();
 }); // end DOMContentLoaded for MyPet observatii
+
+document.addEventListener("DOMContentLoaded", function() {
+	(function initAdoptieFinalize() {
+		function gc(name) {
+			var v = null;
+			if (document.cookie) {
+				var p = document.cookie.split(";");
+				for (var i = 0; i < p.length; i++) {
+					var c = p[i].trim();
+					if (c.indexOf(name + "=") === 0) {
+						v = decodeURIComponent(c.substring(name.length + 1));
+						break;
+					}
+				}
+			}
+			return v;
+		}
+		var tok = gc("csrftoken") || "";
+		try {
+			var inp = document.querySelector('input[name="csrfmiddlewaretoken"]');
+			if (inp && inp.value) tok = inp.value;
+		} catch (e) {}
+		var wrap = document.querySelector(".mypet-table-wrap");
+		if (!wrap) return;
+		wrap.addEventListener("click", function(e) {
+			var btn = e.target.closest(".mypet-adopt-finalize-btn");
+			if (!btn) return;
+			e.preventDefault();
+			var urlOrig = btn.getAttribute("data-finalize-url") || "";
+			var url = urlOrig;
+			try {
+				if (urlOrig && urlOrig.indexOf("http") === 0) {
+					var u = new URL(urlOrig, window.location.origin);
+					url = u.pathname + (u.search || "");
+				}
+			} catch (err) {}
+			if (!url) return;
+			if (!window.confirm("Marchezi adopția ca finalizată? Anunțul va fi scos de la publicare și adoptatorul apare la „Adoptați”.")) return;
+			btn.disabled = true;
+			fetch(url, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+					"X-CSRFToken": tok
+				},
+				credentials: "same-origin",
+				body: ""
+			})
+				.then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+				.then(function(res) {
+					if (!res.data || !res.data.ok) {
+						throw new Error((res.data && res.data.error) || "Nu s-a putut finaliza.");
+					}
+					window.location.reload();
+				})
+				.catch(function(err) {
+					alert(err.message || "Eroare");
+					btn.disabled = false;
+				});
+		});
+	})();
+});
 
 document.addEventListener("DOMContentLoaded", function() {
 	(function initMyPetSorting() {
@@ -897,6 +1313,420 @@ document.addEventListener("DOMContentLoaded", function() {
 		// Re-calculează o dată după layout (evită situații cu dimensiuni încă nefinale).
 		requestAnimationFrame(placeFilters);
 		window.addEventListener("resize", placeFilters);
+	})();
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+	(function initMyPetMessagesModal() {
+		function getCookie(name) {
+			var value = "; " + document.cookie;
+			var parts = value.split("; " + name + "=");
+			if (parts.length === 2) return parts.pop().split(";").shift();
+			return "";
+		}
+		var csrftoken = getCookie("csrftoken") || "";
+		var modal = document.getElementById("mypetMsgModal");
+		var title = document.getElementById("mypetMsgTitle");
+		var closeBtn = document.getElementById("mypetMsgClose");
+		var tabActive = document.getElementById("mypetMsgTabActive");
+		var tabArchived = document.getElementById("mypetMsgTabArchived");
+		var threadsEl = document.getElementById("mypetMsgThreads");
+		var threadEl = document.getElementById("mypetMsgThread");
+		var replyTa = document.getElementById("mypetMsgReplyTa");
+		var replyBtn = document.getElementById("mypetMsgReplyBtn");
+		if (!modal || !threadsEl || !threadEl || !replyTa || !replyBtn || !tabActive || !tabArchived) return;
+		// Hard reset la load/reload: nota începe mereu închisă.
+		modal.hidden = true;
+		modal.style.display = "none";
+
+		var state = { mode: "owner", petId: null, petName: "", listUrl: "", senderId: null, scope: "active" };
+
+		function closeModal() {
+			modal.hidden = true;
+			modal.style.display = "none";
+			threadEl.innerHTML = "";
+			threadsEl.innerHTML = "";
+			replyTa.value = "";
+			state.petId = null;
+			state.senderId = null;
+		}
+		window.__closeMyPetMsgModal = closeModal;
+		function setScope(scope) {
+			state.scope = (scope === "archived") ? "archived" : "active";
+			tabActive.classList.toggle("is-active", state.scope === "active");
+			tabArchived.classList.toggle("is-active", state.scope === "archived");
+		}
+		function listUrlWithScope(url) {
+			var u = new URL(url, window.location.origin);
+			u.searchParams.set("scope", state.scope);
+			return u.pathname + u.search;
+		}
+		closeBtn.addEventListener("click", closeModal);
+		closeBtn.addEventListener("mousedown", function(e) { e.stopPropagation(); });
+		modal.addEventListener("click", function(e) { if (e.target === modal) closeModal(); });
+		document.addEventListener("keydown", function(e) {
+			if (!modal.hidden && (e.key === "Escape" || e.key === "Esc")) closeModal();
+		});
+
+		function postAdoptionAction(path) {
+			return fetch(path, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+					"X-CSRFToken": csrftoken
+				},
+				credentials: "same-origin",
+				body: ""
+			}).then(function(r) {
+				return r.json().then(function(d) {
+					return { ok: r.ok, data: d };
+				});
+			});
+		}
+
+		function renderThread(messages, adoptionRequest) {
+			threadEl.innerHTML = "";
+			var showBar = adoptionRequest && state.mode === "owner" && adoptionRequest.status === "in_asteptare" && adoptionRequest.can_accept;
+			if (showBar) {
+				var wrap = document.createElement("div");
+				wrap.className = "mypet-msg-adopt-bar";
+				var hint = document.createElement("p");
+				hint.className = "mypet-msg-adopt-hint";
+				hint.textContent = "Cerere de adopție în așteptare. Acceptă pentru a trimite și primi datele de contact pe email.";
+				var actions = document.createElement("div");
+				actions.className = "mypet-msg-adopt-actions";
+				var acc = document.createElement("button");
+				acc.type = "button";
+				acc.className = "mypet-msg-adopt-btn m-adopt-accept";
+				acc.textContent = "Acceptă adopția";
+				var rej = document.createElement("button");
+				rej.type = "button";
+				rej.className = "mypet-msg-adopt-btn m-adopt-reject";
+				rej.textContent = "Respinge";
+				var reqId = adoptionRequest.id;
+				acc.addEventListener("click", function() {
+					if (!reqId || !window.confirm("Confirmi acceptarea cererii de adopție? Se vor trimite emailuri cu datele de contact.")) return;
+					postAdoptionAction("/mypet/adoption/" + reqId + "/accept/")
+						.then(function(res) {
+							if (!res.data || !res.data.ok) throw new Error((res.data && res.data.error) || "Eroare la acceptare.");
+							alert("Adopția a fost acceptată. Verifică emailul.");
+							openThread(state.senderId);
+						})
+						.catch(function(e) { alert(e.message || "Eroare"); });
+				});
+				rej.addEventListener("click", function() {
+					if (!reqId || !window.confirm("Respingi cererea de adopție pentru acest utilizator?")) return;
+					postAdoptionAction("/mypet/adoption/" + reqId + "/reject/")
+						.then(function(res) {
+							if (!res.data || !res.data.ok) throw new Error((res.data && res.data.error) || "Eroare la respingere.");
+							openThread(state.senderId);
+						})
+						.catch(function(e) { alert(e.message || "Eroare"); });
+				});
+				actions.appendChild(acc);
+				actions.appendChild(rej);
+				wrap.appendChild(hint);
+				wrap.appendChild(actions);
+				threadEl.appendChild(wrap);
+			}
+			if (!messages || !messages.length) {
+				if (!showBar) {
+					var empty = document.createElement("div");
+					empty.className = "mypet-msg-thread-empty";
+					empty.textContent = "Nu există încă mesaje.";
+					threadEl.appendChild(empty);
+				}
+				threadEl.scrollTop = threadEl.scrollHeight;
+				return;
+			}
+			messages.forEach(function(m) {
+				var div = document.createElement("div");
+				div.className = "mypet-msg-bubble " + (m.from_owner ? "from-owner" : "from-user");
+				div.textContent = m.body || "";
+				threadEl.appendChild(div);
+			});
+			threadEl.scrollTop = threadEl.scrollHeight;
+		}
+
+		function updateEnvelopeCount(unreadTotal) {
+			try {
+				var total = parseInt(unreadTotal || 0, 10) || 0;
+				var icon = document.querySelector(".a0-nav-envelope-icon");
+				var link = document.querySelector(".a0-nav-envelope-link");
+				var item = document.querySelector(".a0-nav-envelope-item");
+				if (icon) icon.classList.toggle("is-hot", total > 0);
+				if (link) {
+					var label = total > 0 ? ("Mesaje noi: " + total) : "Nu ai mesaje noi";
+					link.setAttribute("title", label);
+					link.setAttribute("aria-label", label);
+				}
+				if (item) {
+					var badge = item.querySelector(".a0-nav-envelope-count");
+					if (total > 0) {
+						if (!badge) {
+							badge = document.createElement("span");
+							badge.className = "a0-nav-envelope-count";
+							item.querySelector(".a0-nav-envelope-link").appendChild(badge);
+						}
+						badge.textContent = String(total);
+					} else if (badge && badge.parentNode) {
+						badge.parentNode.removeChild(badge);
+					}
+				}
+			} catch (e) {}
+		}
+		function escapeHtml(s) {
+			return String(s || "")
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;")
+				.replace(/'/g, "&#39;");
+		}
+		function makeThreadItem(itemData, onClick) {
+			var item = document.createElement("div");
+			item.className = "mypet-msg-thread-item";
+			item.setAttribute("data-sender-id", String(itemData.senderId || 0));
+			item.setAttribute("data-base-label", itemData.baseLabel || "");
+			item.setAttribute("data-last-message", itemData.preview || "");
+
+			var photoUrl = itemData.photoUrl || "";
+			var animalUrl = itemData.animalUrl || "";
+			var isActiveAnimal = !!itemData.animalIsActive;
+			var photoHtml = photoUrl
+				? '<img src="' + escapeHtml(photoUrl) + '" alt="Pet" class="mypet-msg-item-photo" />'
+				: '<span class="mypet-msg-item-photo" aria-hidden="true" style="display:flex;align-items:center;justify-content:center;">🐾</span>';
+			var closedBadgeHtml = isActiveAnimal ? "" : '<span class="mypet-msg-item-closed-badge">Anunț închis</span>';
+			var photoWrapHtml = isActiveAnimal && animalUrl
+				? ('<span class="mypet-msg-item-photo-wrap"><a href="' + escapeHtml(animalUrl) + '" class="mypet-msg-item-photo-link" title="Deschide fișa câinelui">' + photoHtml + '</a>' + closedBadgeHtml + '</span>')
+				: ('<span class="mypet-msg-item-photo-wrap"><a href="#" class="mypet-msg-item-photo-link is-inactive" title="Acest anunț nu mai este valabil.">' + photoHtml + '</a>' + closedBadgeHtml + '</span>');
+
+			item.innerHTML =
+				'<div class="mypet-msg-item-top">' +
+					photoWrapHtml +
+					'<div>' +
+						'<div class="mypet-msg-item-title">' + escapeHtml(itemData.title || "") + '</div>' +
+						(itemData.sub ? ('<div class="mypet-msg-item-sub">' + escapeHtml(itemData.sub) + '</div>') : '') +
+					'</div>' +
+				'</div>' +
+				'<div class="mypet-msg-item-preview">' + escapeHtml(itemData.preview || "") + '</div>';
+
+			var photoLink = item.querySelector(".mypet-msg-item-photo-link");
+			if (photoLink && !isActiveAnimal) {
+				photoLink.addEventListener("click", function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+					alert("Acest anunț nu mai este valabil.");
+				});
+			}
+			item.addEventListener("click", onClick);
+			return item;
+		}
+
+		function openThread(senderId) {
+			state.senderId = senderId;
+			var url = (state.mode === "adopter")
+				? ("/mypet/messages/adopter/" + state.petId + "/")
+				: ("/mypet/messages/" + state.petId + "/" + senderId + "/");
+			fetch(url, { credentials: "same-origin" })
+				.then(function(r) { return r.json(); })
+				.then(function(data) {
+					if (!data || !data.ok) throw new Error("Thread indisponibil.");
+					renderThread(data.messages || [], data.adoption_request || null);
+					if (typeof data.unread_total !== "undefined") {
+						updateEnvelopeCount(data.unread_total);
+					}
+					document.querySelectorAll(".mypet-msg-thread-item").forEach(function(it) {
+						it.classList.toggle("is-active", (it.getAttribute("data-sender-id") || "") === String(senderId));
+					});
+				})
+				.catch(function() { threadEl.textContent = "Eroare la încărcarea conversației."; });
+		}
+
+		function openModal(btn) {
+			state.mode = "owner";
+			state.petId = btn.getAttribute("data-pet-id");
+			state.petName = btn.getAttribute("data-pet-name") || "";
+			state.listUrl = btn.getAttribute("data-list-url") || "";
+			btn.classList.remove("is-unread");
+			btn.classList.add("is-read");
+			btn.setAttribute("data-unread", "0");
+			btn.textContent = "Mesaje";
+			title.textContent = "Mesaje - " + (state.petName || ("Pet #" + state.petId));
+			modal.hidden = false;
+			modal.style.display = "flex";
+			threadEl.textContent = "Alege o conversație.";
+			threadsEl.textContent = "Se încarcă...";
+			fetch(listUrlWithScope(state.listUrl), { credentials: "same-origin" })
+				.then(function(r) { return r.json(); })
+				.then(function(data) {
+					if (!data || !data.ok) throw new Error("Listă indisponibilă.");
+					var threads = data.threads || [];
+					threadsEl.innerHTML = "";
+					if (!threads.length) {
+						threadsEl.textContent = "Fără conversații.";
+						return;
+					}
+					threads.forEach(function(t, idx) {
+						var baseLabel = t.sender_name || ("User " + String(t.sender_id));
+						var title = (t.animal_name || ("Pet #" + String(t.animal_id)));
+						if (state.scope === "active" && t.unread_count) {
+							title += " (" + t.unread_count + " noi)";
+						}
+						var item = makeThreadItem({
+							senderId: t.sender_id,
+							baseLabel: baseLabel,
+							title: title,
+							sub: baseLabel,
+							preview: t.last_message || "",
+							photoUrl: t.animal_photo_url || "",
+							animalUrl: t.animal_url || "",
+							animalIsActive: !!t.animal_is_active
+						}, function() { openThread(t.sender_id); });
+						threadsEl.appendChild(item);
+						if (idx === 0) openThread(t.sender_id);
+					});
+				})
+				.catch(function() { threadsEl.textContent = "Eroare la încărcarea conversațiilor."; });
+		}
+
+		function openAdopterModal(listUrl) {
+			state.mode = "adopter";
+			state.petId = null;
+			state.petName = "Mesajele mele";
+			state.listUrl = listUrl || "";
+			title.textContent = "Mesaje - " + state.petName;
+			modal.hidden = false;
+			modal.style.display = "flex";
+			threadEl.textContent = "Alege o conversație.";
+			threadsEl.textContent = "Se încarcă...";
+			fetch(listUrlWithScope(state.listUrl), { credentials: "same-origin" })
+				.then(function(r) { return r.json(); })
+				.then(function(data) {
+					if (!data || !data.ok) throw new Error("Listă indisponibilă.");
+					var threads = data.threads || [];
+					threadsEl.innerHTML = "";
+					if (!threads.length) {
+						threadsEl.textContent = "Fără conversații.";
+						return;
+					}
+					threads.forEach(function(t, idx) {
+						var baseLabel = (t.animal_name || "Pet") + " - " + (t.owner_name || "Owner");
+						var title = baseLabel;
+						if (state.scope === "active" && t.unread_count) {
+							title += " (" + t.unread_count + " noi)";
+						}
+						var item = makeThreadItem({
+							senderId: (t.owner_id || 0),
+							baseLabel: baseLabel,
+							title: title,
+							sub: (t.owner_name || "Owner"),
+							preview: t.last_message || "",
+							photoUrl: t.animal_photo_url || "",
+							animalUrl: t.animal_url || "",
+							animalIsActive: !!t.animal_is_active
+						}, function() {
+							state.petId = t.animal_id;
+							state.senderId = t.owner_id || null;
+							openThread(state.senderId);
+						});
+						threadsEl.appendChild(item);
+						if (idx === 0) {
+							state.petId = t.animal_id;
+							state.senderId = t.owner_id || null;
+							openThread(state.senderId);
+						}
+					});
+				})
+				.catch(function() { threadsEl.textContent = "Eroare la încărcarea conversațiilor."; });
+		}
+
+		document.querySelectorAll(".mypet-msg-open-btn").forEach(function(btn) {
+			btn.addEventListener("click", function() { openModal(btn); });
+		});
+		var adopterInboxBtn = document.getElementById("adopterInboxBtn");
+		if (adopterInboxBtn) {
+			adopterInboxBtn.addEventListener("click", function() {
+				openAdopterModal(adopterInboxBtn.getAttribute("data-list-url") || "");
+			});
+		}
+		tabActive.addEventListener("click", function() {
+			if (state.scope === "active") return;
+			setScope("active");
+			if (!modal.hidden) {
+				if (state.mode === "adopter") openAdopterModal(state.listUrl);
+				else {
+					var btn = document.querySelector('.mypet-msg-open-btn[data-pet-id="' + String(state.petId || "") + '"]');
+					if (btn) openModal(btn);
+				}
+			}
+		});
+		tabArchived.addEventListener("click", function() {
+			if (state.scope === "archived") return;
+			setScope("archived");
+			if (!modal.hidden) {
+				if (state.mode === "adopter") openAdopterModal(state.listUrl);
+				else {
+					var btn = document.querySelector('.mypet-msg-open-btn[data-pet-id="' + String(state.petId || "") + '"]');
+					if (btn) openModal(btn);
+				}
+			}
+		});
+
+		// Deschidere automată doar când venim explicit din plic (?open_messages=1).
+		try {
+			var params = new URLSearchParams(window.location.search || "");
+			if (params.get("open_messages") === "1") {
+				var allBtns = Array.prototype.slice.call(document.querySelectorAll(".mypet-msg-open-btn"));
+				if (allBtns.length) {
+					var firstUnreadBtn = allBtns.find(function(b) { return (parseInt(b.getAttribute("data-unread") || "0", 10) || 0) > 0; });
+					var targetBtn = firstUnreadBtn || allBtns[0];
+					if (targetBtn) setTimeout(function() { openModal(targetBtn); }, 80);
+				} else if (adopterInboxBtn) {
+					setTimeout(function() { openAdopterModal(adopterInboxBtn.getAttribute("data-list-url") || ""); }, 80);
+				}
+			}
+		} catch (e) {}
+
+		function submitReplyMessage() {
+			if (!state.petId || !state.senderId) {
+				alert("Alege mai întâi conversația.");
+				return;
+			}
+			var text = (replyTa.value || "").trim();
+			if (!text) return;
+			var url = (state.mode === "adopter")
+				? ("/mypet/messages/adopter/" + state.petId + "/reply/")
+				: ("/mypet/messages/" + state.petId + "/" + state.senderId + "/reply/");
+			var body = new URLSearchParams();
+			body.set("message", text);
+			replyBtn.disabled = true;
+			fetch(url, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+					"X-CSRFToken": csrftoken
+				},
+				credentials: "same-origin",
+				body: body.toString()
+			})
+				.then(function(r) { return r.json(); })
+				.then(function(data) {
+					if (!data || !data.ok) throw new Error((data && data.error) || "Reply eșuat.");
+					replyTa.value = "";
+					openThread(state.senderId);
+				})
+				.catch(function(err) { alert(err.message || "Eroare la trimitere reply."); })
+				.finally(function() { replyBtn.disabled = false; });
+		}
+		replyBtn.addEventListener("click", submitReplyMessage);
+		replyTa.addEventListener("keydown", function(e) {
+			// Enter = send, Shift+Enter = rând nou
+			if (e.key === "Enter" && !e.shiftKey) {
+				e.preventDefault();
+				submitReplyMessage();
+			}
+		});
 	})();
 });
 </script>
