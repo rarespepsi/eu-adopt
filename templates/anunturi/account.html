@@ -328,6 +328,10 @@ body.page-account .account-right-panel {
 		width: 100%;
 		box-sizing: border-box;
 	}
+	/* Menține Județ + Oraș pe același rând vizual (fără label pe 2 linii) */
+	.cont-pf-left .signup-field .signup-label-one-line {
+		white-space: nowrap;
+	}
 
 	/* Bife/checkbox + radio active – marcaj roșu vizibil pe această pagină */
 	body.page-account input[type="checkbox"]:checked,
@@ -342,26 +346,30 @@ body.page-account .account-right-panel {
 		gap: 0.12rem;
 	}
 	.cont-pf-left .signup-col-tip-option {
-		display: inline-flex;
+		display: grid;
+		grid-template-columns: 1fr auto;
 		align-items: center;
 		gap: 0.25rem;
+		width: 100%;
 		font-size: 0.78rem;
 	}
 	.cont-pf-left .signup-col-tip-option span {
-		flex: 0 1 auto;
-		min-width: 0;
+		display: inline-block;
+		width: 40ch; /* spațiu invizibil fix de la prima literă */
+		min-width: 40ch;
+		max-width: 40ch;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: clip;
 	}
 	.cont-pf-left .signup-col-tip-option input[type="radio"] {
 		flex: 0 0 auto;
+		justify-self: end;
 		width: 0.9rem;
 		height: 0.9rem;
 		transform: scale(0.9);
-		margin: 0 0 0 5ch; /* ~distanță cât 5 caractere invizibile după text */
+		margin: 0;
 		padding: 0;
-	}
-	/* Ultima bifa (Magazin / Pet-shop) încă 5 „spații” mai la dreapta față de text */
-	.cont-pf-left .signup-col-tip-option:last-child input[type="radio"] {
-		margin-left: 10ch;
 	}
 
 	/* Nota „Datele au fost actualizate” ca overlay mic peste primul rând de casete */
@@ -543,14 +551,20 @@ body.page-account .account-right-panel {
 {% endblock %}
 
 {% block content %}
-{% if account_profile.role == 'pf' or account_profile.role == 'collaborator' %}
+{% if account_profile.role == 'pf' or account_profile.role == 'collaborator' or account_profile.role == 'org' %}
 {# Layout premium PF: stânga = caseta Modificare profil (integrală), mijloc = cont PF (roșu), dreapta = caseta albastră #}
 <div class="cont-pf-two-col" id="PFW">
 	{# Coloana stângă: casetă cu toate câmpurile de firmă din fișa Colaborator (editabile în UI; salvarea completă va necesita un pas backend separat) #}
 	<aside class="cont-pf-left" aria-label="Date firmă">
 		<div class="cont-pf-edit-box cont-pf-edit-box-empty">
-			<h2>DATE FIRMĂ</h2>
-			<p class="edit-intro">Date firmă și tip colaborator (copiate din fișa de înscriere Colaborator).</p>
+			<h2>{% if account_profile.role == 'org' %}DATE COLABORATOR{% else %}DATE FIRMĂ{% endif %}</h2>
+			<p class="edit-intro">
+				{% if account_profile.role == 'org' %}
+					Date SRL;SA,PF/ veterinar/servicii/magazin
+				{% else %}
+					Date firmă și tip colaborator (copiate din fișa de înscriere Colaborator).
+				{% endif %}
+			</p>
 			<form method="post" action="{% url 'account_edit' %}" class="edit-form-inner" id="firma-form">
 				{% csrf_token %}
 				<input type="hidden" name="form_type" value="firma" />
@@ -581,11 +595,11 @@ body.page-account .account-right-panel {
 						</div>
 					</div>
 					<div class="signup-field">
-						<label for="id_company_judet">Județ firmă *</label>
+						<label for="id_company_judet" class="signup-label-one-line">Județ firmă *</label>
 						<input type="text" id="id_company_judet" name="company_judet" value="{{ fp_firma.company_judet|default:user_profile.company_judet|default:user_profile.judet }}" class="firma-field" readonly />
 					</div>
 					<div class="signup-field">
-						<label for="id_company_oras">Oraș / Localitate firmă *</label>
+						<label for="id_company_oras" class="signup-label-one-line">Oraș / Localitate firmă *</label>
 						<input type="text" id="id_company_oras" name="company_oras" value="{{ fp_firma.company_oras|default:user_profile.company_oras|default:user_profile.oras }}" class="firma-field" readonly />
 					</div>
 					<div class="signup-field span2">
@@ -594,26 +608,48 @@ body.page-account .account-right-panel {
 					</div>
 				</div>
 				<div class="signup-field span2" style="margin-top:0.5rem;">
-					<label>Tip colaborator *</label>
-					<div class="signup-col-tip-options">
-						<label class="signup-col-tip-option">
-							<span>Cabinet / Clinică veterinară</span>
-							<input type="radio" name="collaborator_type" value="cabinet" class="firma-field" disabled {% if fp_firma.collaborator_type == 'cabinet' or user_profile.collaborator_type == 'cabinet' %}checked{% endif %} />
-						</label>
-						<label class="signup-col-tip-option">
-							<span>Servicii / Grooming / Dresaj</span>
-							<input type="radio" name="collaborator_type" value="servicii" class="firma-field" disabled {% if fp_firma.collaborator_type == 'servicii' or user_profile.collaborator_type == 'servicii' %}checked{% endif %} />
-						</label>
-						<label class="signup-col-tip-option">
-							<span>Magazin / Pet-shop</span>
-							<input type="radio" name="collaborator_type" value="magazin" class="firma-field" disabled {% if fp_firma.collaborator_type == 'magazin' or user_profile.collaborator_type == 'magazin' %}checked{% endif %} />
-						</label>
-					</div>
+					{% if account_profile.role == 'org' %}
+						<label>Tip colaborator *</label>
+						<div class="signup-col-tip-options">
+							<label class="signup-col-tip-option">
+								<span>CABINET VETERINAR</span>
+								<input type="radio" name="collaborator_type_org" value="cabinet" class="firma-field" disabled {% if fp_firma.collaborator_type == 'cabinet' or user_profile.collaborator_type == 'cabinet' %}checked{% endif %} />
+							</label>
+							<label class="signup-col-tip-option">
+								<span>MAGAZIN DE SPECIALITATE</span>
+								<input type="radio" name="collaborator_type_org" value="magazin" class="firma-field" disabled {% if fp_firma.collaborator_type == 'magazin' or user_profile.collaborator_type == 'magazin' %}checked{% endif %} />
+							</label>
+							<label class="signup-col-tip-option">
+								<span>SALOANE COSMETICA VET</span>
+								<input type="radio" name="collaborator_type_org" value="servicii" class="firma-field" disabled {% if fp_firma.collaborator_type == 'servicii' or user_profile.collaborator_type == 'servicii' %}checked{% endif %} />
+							</label>
+						</div>
+					{% else %}
+						<label>Tip colaborator *</label>
+						<div class="signup-col-tip-options">
+							<label class="signup-col-tip-option">
+								<span>Cabinet / Clinică veterinară</span>
+								<input type="radio" name="collaborator_type" value="cabinet" class="firma-field" disabled {% if fp_firma.collaborator_type == 'cabinet' or user_profile.collaborator_type == 'cabinet' %}checked{% endif %} />
+							</label>
+							<label class="signup-col-tip-option">
+								<span>Servicii / Grooming / Dresaj</span>
+								<input type="radio" name="collaborator_type" value="servicii" class="firma-field" disabled {% if fp_firma.collaborator_type == 'servicii' or user_profile.collaborator_type == 'servicii' %}checked{% endif %} />
+							</label>
+							<label class="signup-col-tip-option">
+								<span>Magazin / Pet-shop</span>
+								<input type="radio" name="collaborator_type" value="magazin" class="firma-field" disabled {% if fp_firma.collaborator_type == 'magazin' or user_profile.collaborator_type == 'magazin' %}checked{% endif %} />
+							</label>
+						</div>
+					{% endif %}
 				</div>
 				{% endwith %}
 				<div class="signup-actions" style="margin-top:0.6rem;">
-					<button type="button" id="btn-modificare-firma" class="btn-modificare-profil">Modificare date firmă</button>
-					<button type="submit" id="btn-save-firma" class="btn-save" style="display:none;" disabled>Salvează date firmă</button>
+					{% if account_profile.role == 'org' %}
+						<button type="button" class="btn-modificare-profil" disabled title="Activăm editarea ONG în pasul următor">Modificare date organizație</button>
+					{% else %}
+						<button type="button" id="btn-modificare-firma" class="btn-modificare-profil">Modificare date firmă</button>
+						<button type="submit" id="btn-save-firma" class="btn-save" style="display:none;" disabled>Salvează date firmă</button>
+					{% endif %}
 				</div>
 			</form>
 		</div>
@@ -643,7 +679,9 @@ body.page-account .account-right-panel {
 						</div>
 						<div class="cont-pf-header-text">
 							<h1>
-								{% if account_profile.role == 'collaborator' and user_profile and user_profile.company_display_name %}
+								{% if account_profile.role == 'collaborator' %}
+									{{ user.username }}
+								{% elif account_profile.role == 'org' and user_profile and user_profile.company_display_name %}
 									{{ user_profile.company_display_name }}
 								{% else %}
 									{{ user.get_full_name|default:user.username }}
@@ -811,12 +849,61 @@ body.page-account .account-right-panel {
 	</div>
 </div>
 {% else %}
-{# Alt rol (ex. ONG organizație) – layout separat, de definit ulterior #}
+<section class="cont-meu" aria-label="Fișa contului">
+	<h1 class="cont-meu-title">Fișa contului</h1>
+	<p class="cont-meu-subtitle">Datele contului tău sunt afișate mai jos.</p>
+	<div class="cont-meu-grid">
+		<div class="cont-meu-card">
+			<h2>Identificare</h2>
+			<p><strong>User:</strong> {{ user.username|default:"—" }}</p>
+			<p><strong>Email:</strong> {{ user.email|default:"—" }}</p>
+			<p><strong>Nume:</strong> {{ user.last_name|default:"—" }}</p>
+			<p><strong>Prenume:</strong> {{ user.first_name|default:"—" }}</p>
+		</div>
+		<div class="cont-meu-card">
+			<h2>Rol cont</h2>
+			{% if account_profile %}
+				<p><strong>Rol:</strong> {{ account_profile.get_role_display }}</p>
+				<p><strong>Postează animale:</strong> {{ account_profile.can_post_animals|yesno:"Da,Nu" }}</p>
+				<p><strong>Adoptă animale:</strong> {{ account_profile.can_adopt_animals|yesno:"Da,Nu" }}</p>
+			{% else %}
+				<p><strong>Rol:</strong> —</p>
+			{% endif %}
+		</div>
+		<div class="cont-meu-card">
+			<h2>Date organizație / firmă</h2>
+			{% if user_profile %}
+				<p><strong>Denumire afișată:</strong> {{ user_profile.company_display_name|default:"—" }}</p>
+				<p><strong>Denumire legală:</strong> {{ user_profile.company_legal_name|default:"—" }}</p>
+				<p><strong>CUI/CIF:</strong> {{ user_profile.company_cui|default:"—" }}</p>
+				<p><strong>Județ:</strong> {{ user_profile.company_judet|default:user_profile.judet|default:"—" }}</p>
+				<p><strong>Oraș:</strong> {{ user_profile.company_oras|default:user_profile.oras|default:"—" }}</p>
+				<p><strong>Adresă:</strong> {{ user_profile.company_address|default:"—" }}</p>
+			{% else %}
+				<p>Nu există încă date de profil.</p>
+			{% endif %}
+		</div>
+		<div class="cont-meu-card">
+			<h2>Contact</h2>
+			{% if user_profile %}
+				<p><strong>Telefon:</strong> {{ user_profile.phone|default:"—" }}</p>
+				<p><strong>Accept termeni:</strong> {{ user_profile.accept_termeni|yesno:"Da,Nu" }}</p>
+				<p><strong>GDPR:</strong> {{ user_profile.accept_gdpr|yesno:"Da,Nu" }}</p>
+				<p><strong>Notificări email:</strong> {{ user_profile.email_opt_in_wishlist|yesno:"Da,Nu" }}</p>
+			{% else %}
+				<p>Nu există încă date de contact.</p>
+			{% endif %}
+		</div>
+	</div>
+	<div class="cont-meu-actions">
+		<a href="{% url 'home' %}" class="btn-home">Înapoi la prima pagină</a>
+	</div>
+</section>
 {% endif %}
 {% endblock %}
 
 {% block extra_js %}
-{% if account_profile.role == 'pf' or account_profile.role == 'collaborator' %}
+{% if account_profile.role == 'pf' or account_profile.role == 'collaborator' or account_profile.role == 'org' %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {

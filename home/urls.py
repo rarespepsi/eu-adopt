@@ -26,6 +26,7 @@ urlpatterns = [
     path('cont/editeaza/verificare-sms/', views.edit_verificare_sms_view, name='edit_verificare_sms'),
     path('cont/editeaza/verificare-email/', views.edit_check_email_view, name='edit_check_email'),
     path('cont/editeaza/confirmare-email/', views.edit_verify_email_view, name='edit_verify_email'),
+    path('admin-analysis/', views.admin_analysis_home_view, name='admin_analysis_home'),
     path('mypet/', views.mypet_view, name='mypet'),
     path('mypet/add/', views.mypet_add_view, name='mypet_add'),
     path('mypet/edit/<int:pk>/', views.mypet_edit_view, name='mypet_edit'),

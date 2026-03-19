@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Analiza Admin - EU-ADOPT{% endblock %}
+{% block body_class %}page-admin-analysis{% endblock %}
+
+{% block extra_css %}
+<style>
+	body.page-admin-analysis {
+		overflow: hidden !important;
+		height: 100dvh;
+	}
+	body.page-admin-analysis #main_wrap {
+		height: 100dvh !important;
+		overflow: hidden !important;
+		display: flex;
+		flex-direction: column;
+	}
+	body.page-admin-analysis .layout {
+		grid-template-columns: 1fr;
+		height: 100%;
+		min-height: 0;
+	}
+	body.page-admin-analysis .sidebar-left,
+	body.page-admin-analysis .sidebar-right {
+		display: none;
+	}
+	body.page-admin-analysis #main_content {
+		height: calc(100dvh - var(--nav-h, 64px)) !important;
+		min-height: calc(100dvh - var(--nav-h, 64px)) !important;
+		flex: 1 1 auto;
+		overflow: hidden;
+		padding: 0;
+		box-sizing: border-box;
+	}
+	body.page-admin-analysis .main-content {
+		max-width: 100%;
+		padding: 0;
+		height: 100%;
+		overflow: hidden;
+	}
+	.analysis-home-shell {
+		min-height: 100%;
+		height: 100%;
+		border: 2px solid rgba(21, 101, 192, 0.75);
+		border-radius: 14px;
+		padding: 0.75rem;
+		box-sizing: border-box;
+		background: transparent;
+	}
+	.analysis-home-shell h1 {
+		margin: 0;
+		font-size: 1rem;
+		font-weight: 800;
+		color: #0d47a1;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="analysis-home-shell" aria-label="Analiza Admin">
+	<h1>Analiza - Pagina principala (in constructie)</h1>
+</section>
+{% endblock %}
+

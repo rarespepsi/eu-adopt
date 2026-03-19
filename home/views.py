@@ -1428,8 +1428,8 @@ def account_view(request):
         "account_profile": account_profile,
         "user_profile": user_profile,
     }
-    # Statistici + form_prefill pentru PF/Colaborator (caseta modificare profil în pagină)
-    if account_profile and account_profile.role in (AccountProfile.ROLE_PF, AccountProfile.ROLE_COLLAB):
+    # Statistici + form_prefill pentru PF/ONG/Colaborator (caseta modificare profil în pagină)
+    if account_profile and account_profile.role in (AccountProfile.ROLE_PF, AccountProfile.ROLE_ORG, AccountProfile.ROLE_COLLAB):
         ctx["animale_in_grija"] = AnimalListing.objects.filter(owner=user).count()
         ctx["adoptii_finalizate"] = UserAdoption.objects.filter(user=user, status="completed").count()
         if "edit_errors" in request.session:
@@ -1466,6 +1466,14 @@ def account_view(request):
     response["Pragma"] = "no-cache"
     response["Expires"] = "0"
     return response
+
+
+@login_required
+def admin_analysis_home_view(request):
+    """Pagina centrală Analiză (doar pentru admin/staff)."""
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    return render(request, "anunturi/admin_analysis_home.html", {})
 
 
 def _username_suggestions(tried, user_pk):
