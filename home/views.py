@@ -1473,7 +1473,48 @@ def admin_analysis_home_view(request):
     """Pagina centrală Analiză (doar pentru admin/staff)."""
     if not (request.user.is_superuser or request.user.is_staff):
         return redirect(reverse("home"))
-    return render(request, "anunturi/admin_analysis_home.html", {})
+    view_as_role = request.session.get("view_as_role") or None
+    return render(request, "anunturi/admin_analysis_home.html", {"view_as_role": view_as_role})
+
+
+def admin_analysis_set_view_as_view(request):
+    """Setează „Vezi ca” (doar staff). Salvează în sesiune și redirect la Analiza."""
+    if not (request.user.is_authenticated and (request.user.is_superuser or request.user.is_staff)):
+        return redirect(reverse("home"))
+    role = (request.GET.get("role") or "").strip()
+    if role in ("pf", "org", "collaborator"):
+        request.session["view_as_role"] = role
+    else:
+        request.session.pop("view_as_role", None)
+    return redirect(reverse("admin_analysis_home"))
+
+
+@login_required
+def admin_analysis_dogs_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    return render(request, "anunturi/admin_analysis_dogs.html", {})
+
+
+@login_required
+def admin_analysis_requests_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    return render(request, "anunturi/admin_analysis_requests.html", {})
+
+
+@login_required
+def admin_analysis_users_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    return render(request, "anunturi/admin_analysis_users.html", {})
+
+
+@login_required
+def admin_analysis_alerts_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    return render(request, "anunturi/admin_analysis_alerts.html", {})
 
 
 def _username_suggestions(tried, user_pk):

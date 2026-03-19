@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Analiza - Dogs{% endblock %}
+{% block body_class %}page-admin-analysis{% endblock %}
+
+{% block extra_css %}
+<style>
+	body.page-admin-analysis { overflow: hidden !important; height: 100dvh; }
+	body.page-admin-analysis #main_wrap { height: 100dvh !important; overflow: hidden !important; display: flex; flex-direction: column; }
+	body.page-admin-analysis .layout { grid-template-columns: 1fr; height: 100%; min-height: 0; }
+	body.page-admin-analysis .sidebar-left, body.page-admin-analysis .sidebar-right { display: none; }
+	body.page-admin-analysis #main_content { height: calc(100dvh - var(--nav-h, 64px)) !important; min-height: calc(100dvh - var(--nav-h, 64px)) !important; flex: 1 1 auto; overflow: hidden; padding: 0; box-sizing: border-box; }
+	body.page-admin-analysis .main-content { max-width: 100%; padding: 0; height: 100%; overflow: hidden; }
+	.analysis-shell { min-height: 100%; height: 100%; border: 2px solid rgba(21, 101, 192, 0.75); border-radius: 14px; padding: 0.75rem; box-sizing: border-box; background: transparent; }
+	.analysis-shell h1 { margin: 0; font-size: 1rem; font-weight: 800; color: #0d47a1; text-transform: uppercase; }
+	.analysis-subnav { margin-top: 0.45rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+	.analysis-subnav a { text-decoration: none; padding: 0.2rem 0.45rem; border-radius: 999px; border: 1px solid rgba(13, 71, 161, 0.5); color: #0d47a1; font-size: 0.72rem; font-weight: 700; }
+	.analysis-grid { margin-top: 0.6rem; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.45rem; }
+	.analysis-card { border-radius: 10px; padding: 0.5rem; border: 1px solid rgba(0, 0, 0, 0.18); font-size: 0.74rem; font-weight: 700; min-height: 3rem; background: rgba(255, 171, 145, 0.62); display: flex; align-items: center; justify-content: center; text-align: center; }
+	.dogs-layout {
+		margin-top: 0.6rem;
+		height: calc(100% - 2.8rem);
+		display: grid;
+		grid-template-rows: auto auto 1fr;
+		gap: 0.5rem;
+		min-height: 0;
+	}
+	.dogs-row {
+		min-height: 0;
+	}
+	.dogs-kpis {
+		display: grid;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+		gap: 0.45rem;
+	}
+	.dogs-kpi {
+		border-radius: 10px;
+		padding: 0.4rem 0.45rem;
+		box-sizing: border-box;
+		border: 1px solid rgba(0,0,0,0.18);
+		font-size: 0.72rem;
+		font-weight: 800;
+		text-align: center;
+		color: #1a1a1a;
+		min-height: 2.3rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.dogs-kpi-1 { background: rgba(255, 171, 145, 0.62); }
+	.dogs-kpi-2 { background: rgba(255, 224, 178, 0.62); }
+	.dogs-kpi-3 { background: rgba(255, 245, 157, 0.62); }
+	.dogs-kpi-4 { background: rgba(197, 225, 165, 0.62); }
+	.dogs-kpi-5 { background: rgba(178, 223, 219, 0.62); }
+	.dogs-distributions {
+		display: grid;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+		gap: 0.45rem;
+	}
+	.dogs-dist {
+		border-radius: 10px;
+		padding: 0.38rem 0.4rem;
+		box-sizing: border-box;
+		border: 1px solid rgba(0,0,0,0.18);
+		font-size: 0.7rem;
+		font-weight: 700;
+		color: #1f2937;
+		background: rgba(129, 212, 250, 0.45);
+		text-align: center;
+		min-height: 2.2rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.dogs-main {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.5rem;
+		min-height: 0;
+	}
+	.dogs-panel {
+		border-radius: 10px;
+		border: 1px solid rgba(0,0,0,0.2);
+		padding: 0.5rem;
+		box-sizing: border-box;
+		background: rgba(255,255,255,0.48);
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		min-height: 0;
+		overflow: hidden;
+	}
+	.dogs-panel h2 {
+		margin: 0;
+		font-size: 0.76rem;
+		font-weight: 900;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		color: #0d47a1;
+	}
+	.dogs-list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+	.dogs-list li {
+		background: rgba(255,255,255,0.62);
+		border: 1px solid rgba(0,0,0,0.12);
+		border-radius: 6px;
+		padding: 0.28rem 0.35rem;
+		font-size: 0.71rem;
+		font-weight: 700;
+		color: #1f2937;
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="analysis-shell" aria-label="Analiza Dogs">
+	<h1>Analiza / Dogs</h1>
+	<div class="analysis-subnav">
+		<a href="{% url 'admin_analysis_home' %}">Inapoi la central</a>
+		<a href="{% url 'admin_analysis_requests' %}">Requests</a>
+		<a href="{% url 'admin_analysis_users' %}">Users</a>
+		<a href="{% url 'admin_analysis_alerts' %}">Alerts</a>
+	</div>
+	<div class="dogs-layout">
+		<div class="dogs-row dogs-kpis">
+			<div class="dogs-kpi dogs-kpi-1">Total câini</div>
+			<div class="dogs-kpi dogs-kpi-2">Activi</div>
+			<div class="dogs-kpi dogs-kpi-3">Rezervați</div>
+			<div class="dogs-kpi dogs-kpi-4">Adoptați</div>
+			<div class="dogs-kpi dogs-kpi-5">Indisponibili</div>
+		</div>
+		<div class="dogs-row dogs-distributions">
+			<div class="dogs-dist">Distribuție pe județe</div>
+			<div class="dogs-dist">Distribuție pe organizații</div>
+			<div class="dogs-dist">Distribuție pe statusuri</div>
+			<div class="dogs-dist">Distribuție pe vârstă</div>
+			<div class="dogs-dist">Distribuție pe talie</div>
+		</div>
+		<div class="dogs-row dogs-main">
+			<section class="dogs-panel" aria-label="Probleme de date Dogs">
+				<h2>Probleme de date</h2>
+				<ul class="dogs-list">
+					<li>Câini fără poză principală</li>
+					<li>Câini fără galerie completă</li>
+					<li>Câini fără poveste</li>
+					<li>Câini fără județ/localitate</li>
+					<li>Câini fără date medicale</li>
+					<li>Câini fără status clar</li>
+				</ul>
+			</section>
+			<section class="dogs-panel" aria-label="Liste utile Dogs">
+				<h2>Liste utile</h2>
+				<ul class="dogs-list">
+					<li>Câini noi</li>
+					<li>Câini vechi încă activi</li>
+					<li>Cei mai vizualizați</li>
+					<li>Cei mai puși la wishlist</li>
+				</ul>
+			</section>
+		</div>
+	</div>
+</section>
+{% endblock %}
+

@@ -551,15 +551,15 @@ body.page-account .account-right-panel {
 {% endblock %}
 
 {% block content %}
-{% if account_profile.role == 'pf' or account_profile.role == 'collaborator' or account_profile.role == 'org' %}
+{% if display_role|default:account_profile.role == 'pf' or display_role|default:account_profile.role == 'collaborator' or display_role|default:account_profile.role == 'org' %}
 {# Layout premium PF: stânga = caseta Modificare profil (integrală), mijloc = cont PF (roșu), dreapta = caseta albastră #}
 <div class="cont-pf-two-col" id="PFW">
 	{# Coloana stângă: casetă cu toate câmpurile de firmă din fișa Colaborator (editabile în UI; salvarea completă va necesita un pas backend separat) #}
 	<aside class="cont-pf-left" aria-label="Date firmă">
 		<div class="cont-pf-edit-box cont-pf-edit-box-empty">
-			<h2>{% if account_profile.role == 'org' %}DATE COLABORATOR{% else %}DATE FIRMĂ{% endif %}</h2>
+			<h2>{% if display_role|default:account_profile.role == 'org' %}DATE COLABORATOR{% else %}DATE FIRMĂ{% endif %}</h2>
 			<p class="edit-intro">
-				{% if account_profile.role == 'org' %}
+				{% if display_role|default:account_profile.role == 'org' %}
 					Date SRL;SA,PF/ veterinar/servicii/magazin
 				{% else %}
 					Date firmă și tip colaborator (copiate din fișa de înscriere Colaborator).
@@ -608,7 +608,7 @@ body.page-account .account-right-panel {
 					</div>
 				</div>
 				<div class="signup-field span2" style="margin-top:0.5rem;">
-					{% if account_profile.role == 'org' %}
+					{% if display_role|default:account_profile.role == 'org' %}
 						<label>Tip colaborator *</label>
 						<div class="signup-col-tip-options">
 							<label class="signup-col-tip-option">
@@ -644,7 +644,7 @@ body.page-account .account-right-panel {
 				</div>
 				{% endwith %}
 				<div class="signup-actions" style="margin-top:0.6rem;">
-					{% if account_profile.role == 'org' %}
+					{% if display_role|default:account_profile.role == 'org' %}
 						<button type="button" class="btn-modificare-profil" disabled title="Activăm editarea ONG în pasul următor">Modificare date organizație</button>
 					{% else %}
 						<button type="button" id="btn-modificare-firma" class="btn-modificare-profil">Modificare date firmă</button>
@@ -679,9 +679,9 @@ body.page-account .account-right-panel {
 						</div>
 						<div class="cont-pf-header-text">
 							<h1>
-								{% if account_profile.role == 'collaborator' %}
+								{% if display_role|default:account_profile.role == 'collaborator' %}
 									{{ user.username }}
-								{% elif account_profile.role == 'org' and user_profile and user_profile.company_display_name %}
+								{% elif display_role|default:account_profile.role == 'org' and user_profile and user_profile.company_display_name %}
 									{{ user_profile.company_display_name }}
 								{% else %}
 									{{ user.get_full_name|default:user.username }}
@@ -903,7 +903,7 @@ body.page-account .account-right-panel {
 {% endblock %}
 
 {% block extra_js %}
-{% if account_profile.role == 'pf' or account_profile.role == 'collaborator' or account_profile.role == 'org' %}
+{% if display_role|default:account_profile.role == 'pf' or display_role|default:account_profile.role == 'collaborator' or display_role|default:account_profile.role == 'org' %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {

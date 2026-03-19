@@ -42,8 +42,12 @@
 							{% endif %}
 							<li class="a0-nav-mypet-start">
 								{% if user.is_authenticated %}
-									{% if user.account_profile and user.account_profile.role == 'collaborator' %}
+									{% if display_role == 'collaborator' %}
+										{% if is_viewing_as_collaborator %}
+										<a href="{% url 'mypet' %}" title="Magazinul meu">Magazin</a>
+										{% else %}
 										<a href="{% url 'mypet' %}">Magazinul meu</a>
+										{% endif %}
 									{% else %}
 										<a href="{% url 'mypet' %}">MyPet</a>
 									{% endif %}
