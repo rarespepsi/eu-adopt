@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{# Nu se mai folosește: /magazinul-meu/ redirecționează către collab_offers_control. Păstrat ca fallback. #}
+{% block title %}Magazinul meu | EU Adopt{% endblock %}
+{% block body_class %}page-magazinul-meu page-magazinul-meu-panel{% endblock %}
+{% block content %}
+<section class="magazinul-meu-wrap" style="padding:1rem;">
+	<p><a href="{% url 'collab_offers_control' %}">Mergi la control oferte</a></p>
+</section>
+{% endblock %}

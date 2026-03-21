@@ -317,8 +317,11 @@ class UserPost(models.Model):
 
 class PetMessage(models.Model):
     """
-    Mesaj intern între adoptator și owner-ul câinelui (ONG/PF).
-    Conversațiile sunt legate de un animal.
+    Mesaje despre **animal / adopție** (MyPet, fișă câine).
+
+    Folosit de **PF** și **ONG/SRL** (proprietar anunț sau adoptator).
+    Nu folosi acest model pentru discuții despre servicii sau produse colaborator —
+    pentru acelea vezi `CollabServiceMessage`.
     """
     animal = models.ForeignKey(AnimalListing, on_delete=models.CASCADE, related_name="messages")
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="pet_messages_sent")
@@ -340,6 +343,77 @@ class PetMessage(models.Model):
 
     def __str__(self):
         return f"{self.sender} -> {self.receiver} ({self.animal_id})"
+
+
+class CollabServiceMessage(models.Model):
+    """
+    Mesaje despre **servicii / produse / magazin colaborator** (nu despre animale).
+
+    Colaboratorul este partea care oferă serviciul sau produsul; celălalt user
+    (PF, ONG sau orice client) poartă discuția în acest flux.
+    Pentru adopție și fișă câine folosește `PetMessage`.
+    """
+
+    CONTEXT_SERVICII = "servicii"
+    CONTEXT_SHOP = "shop"
+    CONTEXT_MAGAZIN = "magazin"
+    CONTEXT_CABINET = "cabinet"
+    CONTEXT_GENERAL = "general"
+
+    CONTEXT_CHOICES = [
+        (CONTEXT_SERVICII, "Servicii"),
+        (CONTEXT_SHOP, "Shop"),
+        (CONTEXT_MAGAZIN, "Magazin colaborator"),
+        (CONTEXT_CABINET, "Cabinet"),
+        (CONTEXT_GENERAL, "General"),
+    ]
+
+    collaborator = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="collab_service_messages_as_collaborator",
+        help_text="Colaboratorul (ofertant).",
+    )
+    context_type = models.CharField(
+        "Context",
+        max_length=24,
+        choices=CONTEXT_CHOICES,
+        default=CONTEXT_GENERAL,
+    )
+    context_ref = models.CharField(
+        "Referință ofertă",
+        max_length=120,
+        blank=True,
+        help_text="Opțional: ID/slug când există anunț de serviciu sau produs.",
+    )
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="collab_service_messages_sent",
+    )
+    receiver = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="collab_service_messages_received",
+    )
+    body = models.TextField("Mesaj", max_length=2000)
+    is_read = models.BooleanField("Citit", default=False)
+    created_at = models.DateTimeField("Creat la", auto_now_add=True)
+    updated_at = models.DateTimeField("Actualizat la", auto_now=True)
+
+    class Meta:
+        verbose_name = "Mesaj servicii / produs"
+        verbose_name_plural = "Mesaje servicii / produse"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["collaborator", "created_at"]),
+            models.Index(fields=["collaborator", "context_type", "context_ref", "created_at"]),
+            models.Index(fields=["receiver", "is_read", "created_at"]),
+            models.Index(fields=["sender", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.sender_id} → {self.receiver_id} (collab={self.collaborator_id}, {self.context_type})"
 
 
 class AdoptionRequest(models.Model):
@@ -391,4 +465,49 @@ class AdoptionRequest(models.Model):
 
     def __str__(self):
         return f"Adopt #{self.pk} pet={self.animal_id} de {self.adopter_id} → {self.status}"
+
+
+class CollaboratorServiceOffer(models.Model):
+    """
+    Ofertă simplă postată de colaborator (cabinet / servicii): imagine, titlu, text scurt,
+    preț opțional și/sau discount %. Publică pe /oferte-parteneri/; vizitatorul poate
+    cere pe email datele de contact ale cabinetului (fără programări în platformă).
+    """
+
+    collaborator = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="service_offers",
+    )
+    title = models.CharField("Titlu serviciu", max_length=160)
+    description = models.CharField("Text scurt", max_length=500, blank=True)
+    image = models.ImageField("Imagine", upload_to="collab_offers/")
+    price_hint = models.CharField("Preț (text scurt)", max_length=80, blank=True)
+    discount_percent = models.PositiveSmallIntegerField(
+        "Reducere %",
+        null=True,
+        blank=True,
+        help_text="Opțional, 1–100 (ex. 25 pentru 25%).",
+    )
+    is_active = models.BooleanField("Activă pe site", default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Ofertă colaborator"
+        verbose_name_plural = "Oferte colaboratori"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["collaborator", "is_active", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.title} ({self.collaborator_id})"
+
+    def partner_display_name(self) -> str:
+        try:
+            p = self.collaborator.profile
+            return (p.company_display_name or "").strip() or self.collaborator.username
+        except UserProfile.DoesNotExist:
+            return self.collaborator.username
 

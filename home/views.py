@@ -29,9 +29,125 @@ from .models import (
     AccountProfile,
     UserProfile,
     PetMessage,
+    CollabServiceMessage,
     AdoptionRequest,
+    CollaboratorServiceOffer,
 )
 from django.contrib.auth import get_user_model
+from functools import wraps
+from django.contrib import messages
+
+
+def _user_can_use_mypet(request):
+    """
+    MyPet + inbox mesaje din navbar: doar PF și ONG/SRL (postează câini spre adopție).
+    Colaboratorii (servicii / produse) nu au acces. Staff: da, mai puțin „Vezi ca colaborator”.
+    """
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated:
+        return False
+    if getattr(user, "is_staff", False) or getattr(user, "is_superuser", False):
+        va = request.session.get("view_as_role")
+        if va == "collaborator":
+            return False
+        return True
+    try:
+        ap = getattr(user, "account_profile", None)
+        if not ap:
+            return False
+        if ap.role == AccountProfile.ROLE_COLLAB:
+            return False
+        return ap.role in (AccountProfile.ROLE_PF, AccountProfile.ROLE_ORG)
+    except Exception:
+        return False
+
+
+def _mypet_access_redirect(request):
+    messages.info(
+        request,
+        "MyPet este pentru persoane fizice și organizații (ONG / firmă) care publică anunțuri de adopție.",
+    )
+    return redirect("home")
+
+
+def mypet_pf_org_required(view_func):
+    @wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        if not _user_can_use_mypet(request):
+            return _mypet_access_redirect(request)
+        return view_func(request, *args, **kwargs)
+    return _wrapped
+
+
+def mypet_pf_org_required_json(view_func):
+    @wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        if not _user_can_use_mypet(request):
+            return JsonResponse(
+                {"ok": False, "error": "MyPet este doar pentru conturi PF și ONG/SRL."},
+                status=403,
+            )
+        return view_func(request, *args, **kwargs)
+    return _wrapped
+
+
+def _user_can_use_magazinul_meu(request):
+    """
+    Pagina Magazinul meu: colaboratori (cabinet / servicii / magazin).
+    Staff: doar când „Vezi ca colaborator”.
+    """
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated:
+        return False
+    if getattr(user, "is_staff", False) or getattr(user, "is_superuser", False):
+        return request.session.get("view_as_role") == "collaborator"
+    try:
+        ap = getattr(user, "account_profile", None)
+        return bool(ap and ap.role == AccountProfile.ROLE_COLLAB)
+    except Exception:
+        return False
+
+
+def _magazinul_meu_access_redirect(request):
+    messages.info(
+        request,
+        "Magazinul meu este pentru conturi colaborator (cabinet / servicii / magazin).",
+    )
+    return redirect("home")
+
+
+def collab_magazin_required(view_func):
+    @wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        if not _user_can_use_magazinul_meu(request):
+            return _magazinul_meu_access_redirect(request)
+        return view_func(request, *args, **kwargs)
+    return _wrapped
+
+
+def _collaborator_tip_partener(request) -> str:
+    """
+    Valoare din înregistrare colaborator (tip_partener): cabinet | servicii | magazin.
+    Cabinet și servicii folosesc același template; magazin are pagină separată (produse).
+    Pentru staff cu „Vezi ca colaborator”, tipul vine din sesiune (preview Magazinul meu).
+    """
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated:
+        return "servicii"
+    if getattr(user, "is_staff", False) or getattr(user, "is_superuser", False):
+        if request.session.get("view_as_role") == "collaborator":
+            st = (request.session.get("view_as_collab_tip") or "servicii").strip().lower()
+            if st in ("cabinet", "servicii", "magazin"):
+                return st
+            return "servicii"
+    try:
+        prof = getattr(user, "profile", None)
+        tip = (getattr(prof, "collaborator_type", None) or "").strip().lower()
+    except Exception:
+        tip = ""
+    if tip in ("cabinet", "servicii", "magazin"):
+        return tip
+    return "servicii"
 
 
 def _phone_digits(phone_str):
@@ -82,6 +198,10 @@ def _messages_active_since():
     delete_before = now - timezone.timedelta(days=MESSAGE_DELETE_DAYS)
     try:
         PetMessage.objects.filter(created_at__lt=delete_before).delete()
+    except Exception:
+        pass
+    try:
+        CollabServiceMessage.objects.filter(created_at__lt=delete_before).delete()
     except Exception:
         pass
     return now - timezone.timedelta(days=MESSAGE_ARCHIVE_DAYS)
@@ -1457,7 +1577,32 @@ def servicii_view(request):
         if i >= 20:
             break
         strip_pets.append({"imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE)})
-    return render(request, "anunturi/servicii.html", {"strip_pets": strip_pets})
+    vet_offers = []
+    vet_offer_empty_slots = []
+    max_vet = 24
+    try:
+        vet_offers = list(
+            CollaboratorServiceOffer.objects.filter(
+                is_active=True,
+                collaborator__profile__collaborator_type__iexact="cabinet",
+            )
+            .select_related("collaborator")
+            .order_by("-created_at")[:max_vet]
+        )
+        pad = max(0, max_vet - len(vet_offers))
+        vet_offer_empty_slots = [None] * pad
+    except Exception:
+        vet_offers = []
+        vet_offer_empty_slots = [None] * max_vet
+    return render(
+        request,
+        "anunturi/servicii.html",
+        {
+            "strip_pets": strip_pets,
+            "vet_offers": vet_offers,
+            "vet_offer_empty_slots": vet_offer_empty_slots,
+        },
+    )
 
 
 def transport_view(request):
@@ -1627,18 +1772,37 @@ def admin_analysis_home_view(request):
     if not (request.user.is_superuser or request.user.is_staff):
         return redirect(reverse("home"))
     view_as_role = request.session.get("view_as_role") or None
-    return render(request, "anunturi/admin_analysis_home.html", {"view_as_role": view_as_role})
+    view_as_collab_tip = (request.session.get("view_as_collab_tip") or "servicii").strip().lower()
+    if view_as_collab_tip not in ("cabinet", "servicii", "magazin"):
+        view_as_collab_tip = "servicii"
+    return render(
+        request,
+        "anunturi/admin_analysis_home.html",
+        {
+            "view_as_role": view_as_role,
+            "view_as_collab_tip": view_as_collab_tip,
+        },
+    )
 
 
 def admin_analysis_set_view_as_view(request):
-    """Setează „Vezi ca” (doar staff). Salvează în sesiune și redirect la Analiza."""
+    """Setează „Vezi ca” (doar staff). Opțional `tip` pentru colaborator: cabinet|servicii|magazin."""
     if not (request.user.is_authenticated and (request.user.is_superuser or request.user.is_staff)):
         return redirect(reverse("home"))
     role = (request.GET.get("role") or "").strip()
+    tip = (request.GET.get("tip") or "").strip().lower()
     if role in ("pf", "org", "collaborator"):
         request.session["view_as_role"] = role
+        if role == "collaborator":
+            if tip in ("cabinet", "servicii", "magazin"):
+                request.session["view_as_collab_tip"] = tip
+            elif not request.session.get("view_as_collab_tip"):
+                request.session["view_as_collab_tip"] = "servicii"
+        else:
+            request.session.pop("view_as_collab_tip", None)
     else:
         request.session.pop("view_as_role", None)
+        request.session.pop("view_as_collab_tip", None)
     return redirect(reverse("admin_analysis_home"))
 
 
@@ -1886,6 +2050,8 @@ def account_edit_view(request):
             account_profile.is_public_shelter = is_public_shelter_val == "yes"
             account_profile.save(update_fields=["is_public_shelter"])
         request.session["account_updated"] = True
+        if account_profile.role == AccountProfile.ROLE_COLLAB:
+            return redirect(reverse("collab_offers_control") + "?tip_updated=1")
         return redirect(reverse("account") + "?updated=1")
 
     # Formular principal (PF + colaborator) – date persoană
@@ -2106,9 +2272,11 @@ def edit_verify_email_view(request):
 
 
 @login_required
+@mypet_pf_org_required
 def mypet_view(request):
     """
     Pagina MyPet – listă animale ale userului (un rând per câine).
+    Acces: doar PF și ONG/SRL (`AccountProfile`). Colaboratorii nu postează câini spre adopție.
     """
     user = request.user
     pets = list(
@@ -2264,6 +2432,20 @@ def mypet_view(request):
 
 
 @login_required
+@collab_magazin_required
+def magazinul_meu_view(request):
+    """
+    Ruta /magazinul-meu/ redirecționează către pagina de control oferte (prima pagină colaborator).
+    Păstrăm URL-ul pentru compatibilitate; query-urile (ex. open_messages, tip_updated) se propagă.
+    """
+    target = reverse("collab_offers_control")
+    if request.GET:
+        target += "?" + request.GET.urlencode()
+    return redirect(target)
+
+
+@login_required
+@mypet_pf_org_required
 def mypet_add_view(request):
     """
     Formular simplu pentru a adăuga un pet nou.
@@ -2469,6 +2651,7 @@ def mypet_add_view(request):
 
 
 @login_required
+@mypet_pf_org_required
 def mypet_edit_view(request, pk):
     """Editare fișă pet existent."""
     user = request.user
@@ -2748,6 +2931,7 @@ def pet_track_event_view(request, pk: int):
 
 
 @login_required
+@mypet_pf_org_required_json
 @require_POST
 @csrf_protect
 def mypet_observatii_update_view(request, pk: int):
@@ -2798,6 +2982,7 @@ def pet_send_message_view(request, pk: int):
 
 
 @login_required
+@mypet_pf_org_required_json
 def mypet_messages_list_view(request, pk: int):
     """Lista conversațiilor (grupare pe expeditor) pentru un pet deținut de userul curent."""
     scope = (request.GET.get("scope") or "active").strip().lower()
@@ -2858,6 +3043,7 @@ def mypet_messages_list_view(request, pk: int):
 
 
 @login_required
+@mypet_pf_org_required_json
 def mypet_messages_thread_view(request, pk: int, sender_id: int):
     """Thread între owner și un user pentru un pet; la deschidere marchează mesajele ca citite."""
     active_since = _messages_active_since()
@@ -2878,7 +3064,15 @@ def mypet_messages_thread_view(request, pk: int, sender_id: int):
             "created_at": msg.created_at.isoformat(),
             "is_read": bool(msg.is_read),
         })
-    unread_total = PetMessage.objects.filter(receiver=request.user, is_read=False, created_at__gte=active_since).count()
+    user = request.user
+    unread_total = PetMessage.objects.filter(receiver=user, is_read=False, created_at__gte=active_since).count()
+    collab_client_unread = (
+        CollabServiceMessage.objects.filter(
+            receiver=user, is_read=False, created_at__gte=active_since
+        )
+        .exclude(collaborator=user)
+        .count()
+    )
     adoption_payload = None
     ar = (
         AdoptionRequest.objects.filter(animal=pet, adopter_id=sender_id)
@@ -2897,12 +3091,14 @@ def mypet_messages_thread_view(request, pk: int, sender_id: int):
             "ok": True,
             "messages": items,
             "unread_total": unread_total,
+            "navbar_unread_total": unread_total + collab_client_unread,
             "adoption_request": adoption_payload,
         }
     )
 
 
 @login_required
+@mypet_pf_org_required_json
 @require_POST
 @csrf_protect
 def mypet_messages_reply_view(request, pk: int, sender_id: int):
@@ -3011,12 +3207,28 @@ def adopter_messages_thread_view(request, pk: int):
         items.append({
             "id": msg.id,
             "from_me": msg.sender_id == user.id,
+            "from_owner": msg.sender_id == owner.id,
             "body": msg.body,
             "created_at": msg.created_at.isoformat(),
             "is_read": bool(msg.is_read),
         })
     unread_total = PetMessage.objects.filter(receiver=user, is_read=False, created_at__gte=active_since).count()
-    return JsonResponse({"ok": True, "messages": items, "animal_name": pet.name or "", "unread_total": unread_total})
+    collab_client_unread = (
+        CollabServiceMessage.objects.filter(
+            receiver=user, is_read=False, created_at__gte=active_since
+        )
+        .exclude(collaborator=user)
+        .count()
+    )
+    return JsonResponse(
+        {
+            "ok": True,
+            "messages": items,
+            "animal_name": pet.name or "",
+            "unread_total": unread_total,
+            "navbar_unread_total": unread_total + collab_client_unread,
+        }
+    )
 
 
 @login_required
@@ -3047,6 +3259,408 @@ def adopter_messages_reply_view(request, pk: int):
         animal=pet,
         sender=user,
         receiver=pet.owner,
+        body=text,
+        is_read=False,
+    )
+    return JsonResponse({"ok": True})
+
+
+def _collab_context_choice_keys():
+    return {c[0] for c in CollabServiceMessage.CONTEXT_CHOICES}
+
+
+def _normalize_collab_context_type(raw) -> str:
+    s = (raw or "").strip().lower() or CollabServiceMessage.CONTEXT_GENERAL
+    return s if s in _collab_context_choice_keys() else CollabServiceMessage.CONTEXT_GENERAL
+
+
+def _collab_thread_peer_user_id(msg: CollabServiceMessage, collaborator_id: int) -> int:
+    return msg.receiver_id if msg.sender_id == collaborator_id else msg.sender_id
+
+
+def _collab_context_label(context_type: str) -> str:
+    return dict(CollabServiceMessage.CONTEXT_CHOICES).get(context_type, context_type)
+
+
+@login_required
+def collab_inbox_list_view(request):
+    """Lista thread-uri servicii/produse pentru colaborator (Magazinul meu)."""
+    if not _user_can_use_magazinul_meu(request):
+        return JsonResponse({"ok": False, "error": "Acces interzis."}, status=403)
+    scope = (request.GET.get("scope") or "active").strip().lower()
+    if scope not in {"active", "archived"}:
+        scope = "active"
+    now = timezone.now()
+    active_since = _messages_active_since()
+    user = request.user
+    base = CollabServiceMessage.objects.filter(collaborator=user)
+    if scope == "active":
+        base = base.filter(created_at__gte=active_since)
+    else:
+        base = base.filter(
+            created_at__lt=active_since,
+            created_at__gte=now - timezone.timedelta(days=MESSAGE_DELETE_DAYS),
+        )
+    threads_map = {}
+    for m in base.order_by("-created_at"):
+        peer = _collab_thread_peer_user_id(m, user.id)
+        key = (peer, m.context_type, m.context_ref or "")
+        if key not in threads_map:
+            threads_map[key] = m
+    UserModel = get_user_model()
+    out = []
+    for (client_id, ct, cref), last in threads_map.items():
+        client = UserModel.objects.filter(pk=client_id).first()
+        cname = ""
+        if client:
+            cname = (f"{client.first_name} {client.last_name}").strip() or client.username
+        unread_qs = CollabServiceMessage.objects.filter(
+            collaborator=user,
+            context_type=ct,
+            context_ref=cref,
+            sender_id=client_id,
+            receiver=user,
+            is_read=False,
+        )
+        if scope == "active":
+            unread_qs = unread_qs.filter(created_at__gte=active_since)
+        else:
+            unread_qs = unread_qs.filter(
+                created_at__lt=active_since,
+                created_at__gte=now - timezone.timedelta(days=MESSAGE_DELETE_DAYS),
+            )
+        unread = unread_qs.count()
+        preview = last.body or ""
+        if len(preview) > 80:
+            preview = preview[:80] + "…"
+        out.append(
+            {
+                "client_id": client_id,
+                "client_name": cname or f"User {client_id}",
+                "context_type": ct,
+                "context_ref": cref,
+                "context_label": _collab_context_label(ct),
+                "last_message": preview,
+                "unread_count": unread,
+                "last_at": last.created_at.isoformat() if last.created_at else "",
+            }
+        )
+    out.sort(key=lambda x: 0 if int(x.get("unread_count") or 0) > 0 else 1)
+    return JsonResponse({"ok": True, "threads": out, "scope": scope})
+
+
+@login_required
+def collab_inbox_thread_view(request):
+    """Thread colaborator ↔ client pentru un context."""
+    if not _user_can_use_magazinul_meu(request):
+        return JsonResponse({"ok": False, "error": "Acces interzis."}, status=403)
+    try:
+        client_id = int(request.GET.get("client_id") or 0)
+    except ValueError:
+        client_id = 0
+    if not client_id:
+        return JsonResponse({"ok": False, "error": "Lipsește client_id."}, status=400)
+    ct = _normalize_collab_context_type(request.GET.get("context_type"))
+    cref = (request.GET.get("context_ref") or "").strip()[:120]
+    scope = (request.GET.get("scope") or "active").strip().lower()
+    if scope not in {"active", "archived"}:
+        scope = "active"
+    now = timezone.now()
+    active_since = _messages_active_since()
+    collab = request.user
+    base_filter = {
+        "collaborator": collab,
+        "context_type": ct,
+        "context_ref": cref,
+    }
+    if scope == "active":
+        time_q = Q(created_at__gte=active_since)
+    else:
+        time_q = Q(
+            created_at__lt=active_since,
+            created_at__gte=now - timezone.timedelta(days=MESSAGE_DELETE_DAYS),
+        )
+    CollabServiceMessage.objects.filter(
+        **base_filter,
+        sender_id=client_id,
+        receiver=collab,
+        is_read=False,
+    ).filter(time_q).update(is_read=True)
+    qs = (
+        CollabServiceMessage.objects.filter(**base_filter)
+        .filter(Q(sender=collab, receiver_id=client_id) | Q(sender_id=client_id, receiver=collab))
+        .filter(time_q)
+        .order_by("created_at")
+    )
+    items = []
+    for msg in qs:
+        items.append(
+            {
+                "id": msg.id,
+                "from_me": msg.sender_id == collab.id,
+                "from_collaborator": msg.sender_id == collab.id,
+                "body": msg.body,
+                "created_at": msg.created_at.isoformat(),
+                "is_read": bool(msg.is_read),
+            }
+        )
+    unread_total = CollabServiceMessage.objects.filter(
+        receiver=collab,
+        collaborator=collab,
+        is_read=False,
+        created_at__gte=active_since,
+    ).count()
+    return JsonResponse(
+        {
+            "ok": True,
+            "messages": items,
+            "context_label": _collab_context_label(ct),
+            "unread_total": unread_total,
+        }
+    )
+
+
+@login_required
+@require_POST
+@csrf_protect
+def collab_inbox_reply_view(request):
+    """Răspuns colaborator către client."""
+    if not _user_can_use_magazinul_meu(request):
+        return JsonResponse({"ok": False, "error": "Acces interzis."}, status=403)
+    try:
+        client_id = int(request.POST.get("client_id") or 0)
+    except ValueError:
+        client_id = 0
+    if not client_id:
+        return JsonResponse({"ok": False, "error": "Lipsește client_id."}, status=400)
+    ct = _normalize_collab_context_type(request.POST.get("context_type"))
+    cref = (request.POST.get("context_ref") or "").strip()[:120]
+    text = (request.POST.get("message") or "").strip()
+    if not text:
+        return JsonResponse({"ok": False, "error": "Mesajul este gol."}, status=400)
+    if len(text) > 2000:
+        text = text[:2000]
+    if client_id == request.user.id:
+        return JsonResponse({"ok": False, "error": "Destinatar invalid."}, status=400)
+    CollabServiceMessage.objects.create(
+        collaborator=request.user,
+        context_type=ct,
+        context_ref=cref,
+        sender=request.user,
+        receiver_id=client_id,
+        body=text,
+        is_read=False,
+    )
+    return JsonResponse({"ok": True})
+
+
+@login_required
+def collab_client_inbox_list_view(request):
+    """Inbox client: conversații cu colaboratori (PF/ONG)."""
+    scope = (request.GET.get("scope") or "active").strip().lower()
+    if scope not in {"active", "archived"}:
+        scope = "active"
+    now = timezone.now()
+    active_since = _messages_active_since()
+    user = request.user
+    base = CollabServiceMessage.objects.filter(Q(sender=user) | Q(receiver=user)).exclude(
+        collaborator=user
+    )
+    if scope == "active":
+        base = base.filter(created_at__gte=active_since)
+    else:
+        base = base.filter(
+            created_at__lt=active_since,
+            created_at__gte=now - timezone.timedelta(days=MESSAGE_DELETE_DAYS),
+        )
+    threads_map = {}
+    for m in base.order_by("-created_at"):
+        cid = m.collaborator_id
+        key = (cid, m.context_type, m.context_ref or "")
+        if key not in threads_map:
+            threads_map[key] = m
+    UserModel = get_user_model()
+    out = []
+    for (collab_id, ct, cref), last in threads_map.items():
+        collab_u = UserModel.objects.filter(pk=collab_id).first()
+        cname = ""
+        if collab_u:
+            cname = (f"{collab_u.first_name} {collab_u.last_name}").strip() or collab_u.username
+        unread_qs = CollabServiceMessage.objects.filter(
+            collaborator_id=collab_id,
+            context_type=ct,
+            context_ref=cref,
+            sender_id=collab_id,
+            receiver=user,
+            is_read=False,
+        )
+        if scope == "active":
+            unread_qs = unread_qs.filter(created_at__gte=active_since)
+        else:
+            unread_qs = unread_qs.filter(
+                created_at__lt=active_since,
+                created_at__gte=now - timezone.timedelta(days=MESSAGE_DELETE_DAYS),
+            )
+        unread = unread_qs.count()
+        preview = last.body or ""
+        if len(preview) > 80:
+            preview = preview[:80] + "…"
+        out.append(
+            {
+                "collaborator_id": collab_id,
+                "collaborator_name": cname or f"Colaborator {collab_id}",
+                "context_type": ct,
+                "context_ref": cref,
+                "context_label": _collab_context_label(ct),
+                "last_message": preview,
+                "unread_count": unread,
+                "last_at": last.created_at.isoformat() if last.created_at else "",
+            }
+        )
+    out.sort(key=lambda x: 0 if int(x.get("unread_count") or 0) > 0 else 1)
+    return JsonResponse({"ok": True, "threads": out, "scope": scope})
+
+
+@login_required
+def collab_client_thread_view(request):
+    """Thread din perspectiva clientului."""
+    try:
+        collab_id = int(request.GET.get("collaborator_id") or 0)
+    except ValueError:
+        collab_id = 0
+    if not collab_id:
+        return JsonResponse({"ok": False, "error": "Lipsește collaborator_id."}, status=400)
+    ct = _normalize_collab_context_type(request.GET.get("context_type"))
+    cref = (request.GET.get("context_ref") or "").strip()[:120]
+    scope = (request.GET.get("scope") or "active").strip().lower()
+    if scope not in {"active", "archived"}:
+        scope = "active"
+    now = timezone.now()
+    active_since = _messages_active_since()
+    user = request.user
+    collab = get_object_or_404(get_user_model(), pk=collab_id)
+    if scope == "active":
+        time_q = Q(created_at__gte=active_since)
+    else:
+        time_q = Q(
+            created_at__lt=active_since,
+            created_at__gte=now - timezone.timedelta(days=MESSAGE_DELETE_DAYS),
+        )
+    CollabServiceMessage.objects.filter(
+        collaborator=collab,
+        context_type=ct,
+        context_ref=cref,
+        sender=collab,
+        receiver=user,
+        is_read=False,
+    ).filter(time_q).update(is_read=True)
+    qs = (
+        CollabServiceMessage.objects.filter(
+            collaborator=collab,
+            context_type=ct,
+            context_ref=cref,
+        )
+        .filter(Q(sender=user, receiver=collab) | Q(sender=collab, receiver=user))
+        .filter(time_q)
+        .order_by("created_at")
+    )
+    items = []
+    for msg in qs:
+        items.append(
+            {
+                "id": msg.id,
+                "from_me": msg.sender_id == user.id,
+                "from_collaborator": msg.sender_id == collab.id,
+                "body": msg.body,
+                "created_at": msg.created_at.isoformat(),
+                "is_read": bool(msg.is_read),
+            }
+        )
+    collab_client_unread = (
+        CollabServiceMessage.objects.filter(receiver=user, is_read=False, created_at__gte=active_since)
+        .exclude(collaborator=user)
+        .count()
+    )
+    pet_unread = PetMessage.objects.filter(
+        receiver=user, is_read=False, created_at__gte=active_since
+    ).count()
+    return JsonResponse(
+        {
+            "ok": True,
+            "messages": items,
+            "context_label": _collab_context_label(ct),
+            "unread_total": collab_client_unread,
+            "navbar_unread_total": pet_unread + collab_client_unread,
+        }
+    )
+
+
+@login_required
+@require_POST
+@csrf_protect
+def collab_client_reply_view(request):
+    """Răspuns client către colaborator."""
+    try:
+        collab_id = int(request.POST.get("collaborator_id") or 0)
+    except ValueError:
+        collab_id = 0
+    if not collab_id:
+        return JsonResponse({"ok": False, "error": "Lipsește collaborator_id."}, status=400)
+    collab = get_object_or_404(get_user_model(), pk=collab_id)
+    ap = getattr(collab, "account_profile", None)
+    if not ap or ap.role != AccountProfile.ROLE_COLLAB:
+        return JsonResponse({"ok": False, "error": "Destinatarul nu este colaborator."}, status=400)
+    ct = _normalize_collab_context_type(request.POST.get("context_type"))
+    cref = (request.POST.get("context_ref") or "").strip()[:120]
+    text = (request.POST.get("message") or "").strip()
+    if not text:
+        return JsonResponse({"ok": False, "error": "Mesajul este gol."}, status=400)
+    if len(text) > 2000:
+        text = text[:2000]
+    if request.user.id == collab_id:
+        return JsonResponse({"ok": False, "error": "Nu poți trimite către tine."}, status=400)
+    CollabServiceMessage.objects.create(
+        collaborator=collab,
+        context_type=ct,
+        context_ref=cref,
+        sender=request.user,
+        receiver=collab,
+        body=text,
+        is_read=False,
+    )
+    return JsonResponse({"ok": True})
+
+
+@login_required
+@require_POST
+@csrf_protect
+def collab_contact_message_view(request):
+    """Primul mesaj (sau continuare) de la client către colaborator."""
+    try:
+        collaborator_id = int(request.POST.get("collaborator_id") or 0)
+    except ValueError:
+        collaborator_id = 0
+    if not collaborator_id:
+        return JsonResponse({"ok": False, "error": "Lipsește collaborator_id."}, status=400)
+    collab = get_object_or_404(get_user_model(), pk=collaborator_id)
+    ap = getattr(collab, "account_profile", None)
+    if not ap or ap.role != AccountProfile.ROLE_COLLAB:
+        return JsonResponse({"ok": False, "error": "Destinatarul nu este colaborator."}, status=400)
+    if request.user.id == collaborator_id:
+        return JsonResponse({"ok": False, "error": "Nu poți trimite către tine."}, status=400)
+    ct = _normalize_collab_context_type(request.POST.get("context_type"))
+    cref = (request.POST.get("context_ref") or "").strip()[:120]
+    text = (request.POST.get("message") or "").strip()
+    if not text:
+        return JsonResponse({"ok": False, "error": "Mesajul este gol."}, status=400)
+    if len(text) > 2000:
+        text = text[:2000]
+    CollabServiceMessage.objects.create(
+        collaborator=collab,
+        context_type=ct,
+        context_ref=cref,
+        sender=request.user,
+        receiver=collab,
         body=text,
         is_read=False,
     )
@@ -3105,6 +3719,7 @@ def pet_adoption_request_view(request, pk: int):
 
 
 @login_required
+@mypet_pf_org_required_json
 @require_POST
 @csrf_protect
 def mypet_adoption_accept_view(request, req_id: int):
@@ -3149,6 +3764,7 @@ def mypet_adoption_accept_view(request, req_id: int):
 
 
 @login_required
+@mypet_pf_org_required_json
 @require_POST
 @csrf_protect
 def mypet_adoption_reject_view(request, req_id: int):
@@ -3172,6 +3788,7 @@ def mypet_adoption_reject_view(request, req_id: int):
 
 
 @login_required
+@mypet_pf_org_required_json
 @require_POST
 @csrf_protect
 def mypet_adoption_finalize_view(request, req_id: int):
@@ -3198,3 +3815,188 @@ def mypet_adoption_finalize_view(request, req_id: int):
         pet.is_published = False
         pet.save(update_fields=["is_published", "updated_at"])
     return JsonResponse({"ok": True})
+
+
+def _cabinet_contact_lines_for_email(user):
+    """Text pentru email: date firmă din UserProfile + email user."""
+    prof = getattr(user, "profile", None)
+    lines = []
+    if prof:
+        if prof.company_display_name:
+            lines.append(f"Denumire: {prof.company_display_name}")
+        if user.email:
+            lines.append(f"Email cabinet: {user.email}")
+        if prof.phone:
+            lines.append(f"Telefon: {prof.phone}")
+        addr_bits = [prof.company_address, prof.company_oras, prof.company_judet]
+        addr = ", ".join(x for x in addr_bits if x)
+        if addr:
+            lines.append(f"Adresă / localitate: {addr}")
+        if prof.company_cui:
+            cui = prof.company_cui
+            if getattr(prof, "company_cui_has_ro", False):
+                cui = "RO " + cui
+            lines.append(f"CUI: {cui}")
+    if not lines and user.email:
+        lines.append(f"Email: {user.email}")
+    return "\n".join(lines) if lines else "(completează date firmă în contul colaborator)"
+
+
+@login_required
+@collab_magazin_required
+@require_POST
+def collab_offer_add_view(request):
+    ap = getattr(request.user, "account_profile", None)
+    if not ap or ap.role != AccountProfile.ROLE_COLLAB:
+        return redirect("home")
+    tip = _collaborator_tip_partener(request)
+    if tip not in ("cabinet", "servicii", "magazin"):
+        messages.error(request, "Tip partener necunoscut.")
+        return redirect("collab_offers_control")
+    title = (request.POST.get("title") or "").strip()
+    description = (request.POST.get("description") or "").strip()[:500]
+    price_hint = (request.POST.get("price_hint") or "").strip()[:80]
+    discount_raw = (request.POST.get("discount_percent") or "").strip()
+    discount_percent = None
+    if discount_raw.isdigit():
+        d = int(discount_raw)
+        if 1 <= d <= 100:
+            discount_percent = d
+    image = request.FILES.get("image")
+    errs = []
+    if not title:
+        errs.append("Completează titlul serviciului.")
+    if not image:
+        errs.append("Alege o imagine pentru ofertă.")
+    if errs:
+        for e in errs:
+            messages.error(request, e)
+        return redirect("collab_offer_new")
+    CollaboratorServiceOffer.objects.create(
+        collaborator=request.user,
+        title=title,
+        description=description,
+        price_hint=price_hint,
+        discount_percent=discount_percent,
+        image=image,
+    )
+    messages.success(request, "Oferta a fost publicată (pagina Oferte parteneri).")
+    return redirect("collab_offers_control")
+
+
+@login_required
+@collab_magazin_required
+@require_POST
+def collab_offer_delete_view(request, pk: int):
+    offer = get_object_or_404(CollaboratorServiceOffer, pk=pk, collaborator=request.user)
+    offer.delete()
+    messages.success(request, "Oferta a fost ștearsă.")
+    return redirect("collab_offers_control")
+
+
+@login_required
+@collab_magazin_required
+def collab_offers_control_view(request):
+    offers = list(
+        CollaboratorServiceOffer.objects.filter(collaborator=request.user).order_by("-created_at")[:100]
+    )
+    tip = _collaborator_tip_partener(request)
+    vet_kpi_offers_total = len(offers)
+    vet_kpi_offers_active = sum(1 for o in offers if o.is_active)
+    vet_kpi_offers_inactive = vet_kpi_offers_total - vet_kpi_offers_active
+    return render(
+        request,
+        "anunturi/magazinul_meu_oferte_control.html",
+        {
+            "collab_offers": offers,
+            "open_messages": (request.GET.get("open_messages") or "").strip() == "1",
+            "tip_just_updated": (request.GET.get("tip_updated") or "").strip() == "1",
+            "collab_tip_partener": tip,
+            "vet_kpi_offers_total": vet_kpi_offers_total,
+            "vet_kpi_offers_active": vet_kpi_offers_active,
+            "vet_kpi_offers_inactive": vet_kpi_offers_inactive,
+        },
+    )
+
+
+@login_required
+@collab_magazin_required
+def collab_offer_new_view(request):
+    return render(
+        request,
+        "anunturi/magazinul_meu_oferte_nou.html",
+        {
+            "collab_tip_partener": _collaborator_tip_partener(request),
+        },
+    )
+
+
+def public_offers_list_view(request):
+    offers = (
+        CollaboratorServiceOffer.objects.filter(is_active=True)
+        .select_related("collaborator")
+        .order_by("-created_at")[:200]
+    )
+    return render(
+        request,
+        "anunturi/oferte_parteneri.html",
+        {"offers": offers},
+    )
+
+
+def public_offer_detail_view(request, pk: int):
+    offer = get_object_or_404(
+        CollaboratorServiceOffer.objects.filter(is_active=True).select_related("collaborator"),
+        pk=pk,
+    )
+    return render(
+        request,
+        "anunturi/oferta_partener_detail.html",
+        {"offer": offer},
+    )
+
+
+@require_POST
+@csrf_protect
+def public_offer_request_view(request, pk: int):
+    offer = get_object_or_404(CollaboratorServiceOffer.objects.filter(is_active=True), pk=pk)
+    collab = offer.collaborator
+    if request.user.is_authenticated:
+        dest_email = request.user.email
+        name = request.user.get_full_name() or request.user.username
+    else:
+        dest_email = (request.POST.get("email") or "").strip()
+        name = (request.POST.get("name") or "").strip() or "Utilizator"
+        if not dest_email:
+            messages.error(
+                request,
+                "Introdu adresa de email ca să primești datele cabinetului.",
+            )
+            return redirect(reverse("public_offer_detail", args=[pk]))
+    contact_block = _cabinet_contact_lines_for_email(collab)
+    subject = f"EU-Adopt – date contact: {offer.title}"
+    body = (
+        f"Bună {name},\n\n"
+        f"Ai solicitat oferta: {offer.title}\n\n"
+        f"--- Date cabinet / partener ---\n{contact_block}\n\n"
+        f"--- Despre ofertă ---\n"
+        f"{offer.description or '(fără text suplimentar)'}\n"
+    )
+    if offer.price_hint:
+        body += f"\nPreț indicat: {offer.price_hint}\n"
+    if offer.discount_percent:
+        body += f"Discount: {offer.discount_percent}%\n"
+    body += "\n---\nEU-Adopt\n"
+    try:
+        send_mail(subject, body, None, [dest_email], fail_silently=True)
+    except Exception:
+        messages.warning(
+            request,
+            "Nu am putut trimite emailul acum. Încearcă din nou.",
+        )
+        return redirect(reverse("public_offer_detail", args=[pk]))
+    messages.success(
+        request,
+        "Ți-am trimis pe email datele de contact ale cabinetului. Verifică și Spam.",
+    )
+    return redirect(reverse("public_offer_detail", args=[pk]))

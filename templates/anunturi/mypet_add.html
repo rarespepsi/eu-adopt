@@ -3,7 +3,7 @@
 
 {% block title %}Adaugă un pet | MyPet{% endblock %}
 
-{% block body_class %}page-mypet{% endblock %}
+{% block body_class %}page-mypet{% if show_mypet_nav %} page-mypet-magazin{% endif %}{% endblock %}
 
 {% block content %}
 <section id="MW" class="mypet-fisa-wrap">

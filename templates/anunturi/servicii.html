@@ -108,6 +108,53 @@
 	#SW .sw-s4-box-ads {
 		flex: 1 1 0 !important;
 	}
+	/* Oferte cabinet veterinar (din DB) în zona S3 */
+	#SW .sw-s2-1-cell.sw-s2-1-cell--vet-offer {
+		padding: 0;
+	}
+	#SW .sw-s2-1-cell--vet-offer .sw-s2-1-vet-offer-link {
+		display: block;
+		width: 100%;
+		height: 100%;
+		min-height: 0;
+		position: relative;
+		text-decoration: none;
+		color: inherit;
+	}
+	#SW .sw-s2-1-cell--vet-offer .sw-s2-1-vet-offer-link img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center;
+		display: block;
+	}
+	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-cap {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		max-height: 42%;
+		overflow: hidden;
+		padding: 2px 3px;
+		font-size: clamp(8px, 1.5vw, 11px);
+		font-weight: 800;
+		line-height: 1.15;
+		color: #fff;
+		background: linear-gradient(transparent, rgba(0, 0, 0, 0.78));
+		text-align: center;
+	}
+	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-disc {
+		position: absolute;
+		top: 2px;
+		right: 2px;
+		background: #c62828;
+		color: #fff;
+		font-size: 9px;
+		font-weight: 900;
+		padding: 1px 4px;
+		border-radius: 999px;
+		line-height: 1.2;
+	}
 </style>
 {% endblock %}
 
@@ -157,9 +204,20 @@
 						<div class="sw-s2-1-band">CABINETE VETERINARE</div>
 						<div class="sw-s2-1-body">
 							<div class="sw-s2-1-grid">
-								{% for i in "123456789012345678901234" %}
-								<div class="sw-s2-1-cell" data-slot="S3.{{ forloop.counter }}"><span class="sw-s3-cell-label">S3.{{ forloop.counter }}</span></div>
+								{% for offer in vet_offers %}
+								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S3.{{ forloop.counter }}">
+									<a class="sw-s2-1-vet-offer-link" href="{% url 'public_offer_detail' offer.pk %}">
+										{% if offer.image %}<img src="{{ offer.image.url }}" alt="{{ offer.title }}" loading="lazy" />{% endif %}
+										{% if offer.discount_percent %}<span class="sw-vet-offer-disc">−{{ offer.discount_percent }}%</span>{% endif %}
+										<span class="sw-vet-offer-cap">{{ offer.title }}</span>
+									</a>
+								</div>
 								{% endfor %}
+								{% with n=vet_offers|length %}
+								{% for _ in vet_offer_empty_slots %}
+								<div class="sw-s2-1-cell" data-slot="S3.{{ n|add:forloop.counter }}"><span class="sw-s3-cell-label">S3.{{ n|add:forloop.counter }}</span></div>
+								{% endfor %}
+								{% endwith %}
 							</div>
 						</div>
 					</div>

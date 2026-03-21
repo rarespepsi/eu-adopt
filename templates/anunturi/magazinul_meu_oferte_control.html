@@ -1,0 +1,963 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Control oferte active | EU Adopt{% endblock %}
+{% block body_class %}page-magazinul-meu page-magazinul-meu-panel page-magazinul-meu-oferte{% endblock %}
+
+{% block content %}
+<section id="MGW" class="magazinul-meu-wrap" aria-label="Control oferte active">
+	<div class="magazinul-meu-inner magazinul-meu-inner--oferte">
+		{% if tip_just_updated %}
+		<div class="collab-oferte-tip-flash" role="status">
+			<strong>Actualizat.</strong> Tipul de partener a fost salvat.
+		</div>
+		{% endif %}
+		<header class="collab-oferte-head" id="mesaje-collab" tabindex="-1">
+			<h1 class="collab-oferte-head-title">Control oferte active</h1>
+			<div class="collab-oferte-head-actions collab-oferte-head-actions--bar">
+				<a href="{% url 'collab_offer_new' %}" class="collab-oferte-btn collab-oferte-btn-primary">Adaugă ofertă</a>
+				<a href="{% url 'servicii' %}#S3" class="collab-oferte-btn collab-oferte-btn-secondary">Vezi în Servicii</a>
+				<button type="button" id="magazinOpenInboxBtn" class="collab-oferte-btn collab-oferte-btn-secondary">Mesaje</button>
+			</div>
+		</header>
+		<div class="collab-vet-kpi-strip" aria-label="Rezumat cont colaborator">
+			<div class="collab-vet-stats">
+				<span class="collab-vet-stat">Oferte active: <strong>{{ vet_kpi_offers_active }}</strong></span>
+				<span class="collab-vet-stat">Total oferte: <strong>{{ vet_kpi_offers_total }}</strong></span>
+			</div>
+			<div class="collab-vet-kpi-grid" role="list">
+				<div class="collab-vet-kpi-card collab-vet-kpi-card--r1" role="listitem">
+					<span class="collab-vet-kpi-value">{{ vet_kpi_offers_active }}</span>
+					<span class="collab-vet-kpi-label">Oferte active</span>
+				</div>
+				<div class="collab-vet-kpi-card collab-vet-kpi-card--r2" role="listitem">
+					<span class="collab-vet-kpi-value">{{ vet_kpi_offers_total }}</span>
+					<span class="collab-vet-kpi-label">Oferte totale</span>
+				</div>
+				<div class="collab-vet-kpi-card collab-vet-kpi-card--r3" role="listitem">
+					<span class="collab-vet-kpi-value">{{ vet_kpi_offers_inactive }}</span>
+					<span class="collab-vet-kpi-label">Inactive</span>
+				</div>
+				<div class="collab-vet-kpi-card collab-vet-kpi-card--dual" role="listitem">
+					<div class="collab-vet-kpi-dual-row">
+						<span class="collab-vet-kpi-dual-label">Solicitări „Vreau oferta”</span>
+						<span class="collab-vet-kpi-dual-val">—</span>
+						<span class="collab-vet-kpi-dual-sub">în curând</span>
+					</div>
+					<div class="collab-vet-kpi-dual-row">
+						<span class="collab-vet-kpi-dual-label">Vizualizări oferte</span>
+						<span class="collab-vet-kpi-dual-val">—</span>
+						<span class="collab-vet-kpi-dual-sub">în curând</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<p class="collab-oferte-lead">
+			Prima pagină colaborator (MyListVet / MyListServicii / Magazinul meu din meniu). Ofertele de la <strong>cabinet veterinar</strong> apar în pagina
+			<a href="{% url 'servicii' %}#S3">Servicii</a>, zona <strong>Cabinete veterinare</strong>. Detaliu și „Vreau oferta”:
+			<a href="{% url 'public_offers_list' %}">lista tuturor ofertelor</a>. Vizitatorii pot solicita pe email datele tale — fără programări în site.
+		</p>
+		<div class="collab-oferte-table-wrap">
+			<table class="collab-oferte-table" aria-label="Lista ofertelor tale">
+				<thead>
+					<tr>
+						<th class="collab-oferte-th-nr">Nr</th>
+						<th class="collab-oferte-th-photo">Poză</th>
+						<th>Titlu</th>
+						<th>Preț / discount</th>
+						<th>Activă</th>
+						<th class="collab-oferte-th-act"></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for o in collab_offers %}
+					<tr>
+						<td class="collab-oferte-td-nr">{{ forloop.counter }}</td>
+						<td class="collab-oferte-td-photo">
+							{% if o.image %}
+							<img src="{{ o.image.url }}" alt="" class="collab-oferte-td-img" width="56" height="56" loading="lazy" />
+							{% else %}<span class="collab-oferte-dash">—</span>{% endif %}
+						</td>
+						<td>
+							{% if o.is_active %}
+							<button type="button" class="collab-oferte-title-link collab-offer-preview-open" data-preview-tpl="collab-offer-preview-tpl-{{ o.pk }}" aria-haspopup="dialog">{{ o.title }}</button>
+							{% else %}
+							{{ o.title }} <span class="collab-oferte-muted">(inactivă)</span>
+							{% endif %}
+						</td>
+						<td class="collab-oferte-td-meta">
+							{% if o.discount_percent %}<span class="collab-oferte-disc">−{{ o.discount_percent }}%</span>{% endif %}
+							{% if o.price_hint %}<span>{{ o.price_hint }}</span>{% endif %}
+							{% if not o.discount_percent and not o.price_hint %}<span class="collab-oferte-dash">—</span>{% endif %}
+						</td>
+						<td>{% if o.is_active %}Da{% else %}Nu{% endif %}</td>
+						<td class="collab-oferte-td-del">
+							<form method="post" action="{% url 'collab_offer_delete' o.pk %}" onsubmit="return confirm('Ștergi această ofertă?');">
+								{% csrf_token %}
+								<button type="submit" class="collab-oferte-btn-del">Șterge</button>
+							</form>
+						</td>
+					</tr>
+					{% empty %}
+					<tr>
+						<td colspan="6" class="collab-oferte-empty">Nicio ofertă încă. Apasă „Adaugă ofertă” (sus, în dreapta titlului).</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+
+{% for o in collab_offers %}
+{% if o.is_active %}
+<template id="collab-offer-preview-tpl-{{ o.pk }}">
+	<article class="collab-preview-note-card">
+		{% if o.image %}
+		<div class="collab-preview-note-img-wrap">
+			<img src="{{ o.image.url }}" alt="" class="collab-preview-note-img" width="800" height="450" loading="lazy" />
+			{% if o.discount_percent %}
+			<span class="collab-preview-note-pill">−{{ o.discount_percent }}%</span>
+			{% endif %}
+		</div>
+		{% endif %}
+		<div class="collab-preview-note-body">
+			<p class="collab-preview-partner"><strong>Partener:</strong> {{ o.partner_display_name }}</p>
+			<h2 class="collab-preview-title">{{ o.title }}</h2>
+			{% if o.description %}
+			<p class="collab-preview-desc">{{ o.description }}</p>
+			{% endif %}
+			<div class="collab-preview-meta">
+				{% if o.price_hint %}<p><strong>Preț indicat:</strong> {{ o.price_hint }}</p>{% endif %}
+				{% if o.discount_percent %}<p><strong>Discount:</strong> {{ o.discount_percent }}%</p>{% endif %}
+			</div>
+			<p class="collab-preview-foot">
+				Previzualizare — așa apare oferta publică. Utilizatorii pot solicita datele de contact din pagina <strong>Servicii</strong>.
+			</p>
+		</div>
+	</article>
+</template>
+{% endif %}
+{% endfor %}
+
+<div class="collab-offer-preview-modal" id="collabOfferPreviewModal" hidden>
+	<div class="collab-offer-preview-backdrop" data-collab-preview-close aria-hidden="true"></div>
+	<div class="collab-offer-preview-panel" role="dialog" aria-modal="true" aria-labelledby="collabOfferPreviewHeading">
+		<div class="collab-offer-preview-head">
+			<span id="collabOfferPreviewHeading" class="collab-offer-preview-head-title">Previzualizare ofertă</span>
+			<button type="button" class="collab-offer-preview-close" id="collabOfferPreviewClose" aria-label="Închide">×</button>
+		</div>
+		<div class="collab-offer-preview-scroll" id="collabOfferPreviewMount"></div>
+	</div>
+</div>
+
+<div class="mypet-msg-modal" id="collabSvcMsgModal" hidden>
+	<div class="mypet-msg-panel" role="dialog" aria-modal="true" aria-label="Mesaje servicii colaborator">
+		<div class="mypet-msg-head">
+			<strong id="collabSvcMsgTitle">Mesaje</strong>
+			<button type="button" id="collabSvcMsgClose" class="mypet-msg-close" onclick="if(window.__closeCollabSvcMsgModal_collabSvc){window.__closeCollabSvcMsgModal_collabSvc();}">X</button>
+		</div>
+		<div class="mypet-msg-tabs">
+			<button type="button" class="mypet-msg-tab is-active" id="collabSvcMsgTabActive" data-scope="active">Active</button>
+			<button type="button" class="mypet-msg-tab" id="collabSvcMsgTabArchived" data-scope="archived">Arhivă</button>
+		</div>
+		<div class="mypet-msg-body">
+			<div class="mypet-msg-threads" id="collabSvcMsgThreads"></div>
+			<div class="mypet-msg-thread" id="collabSvcMsgThread"></div>
+		</div>
+		<div class="mypet-msg-reply">
+			<textarea id="collabSvcMsgReplyTa" placeholder="Răspunde aici..."></textarea>
+			<button type="button" id="collabSvcMsgReplyBtn">Trimite</button>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block extra_css_after %}
+<style>
+	.collab-oferte-tip-flash {
+		margin: 0 0 0.75rem;
+		padding: 0.6rem 0.75rem;
+		border-radius: 10px;
+		background: rgba(46, 125, 50, 0.12);
+		border: 1px solid rgba(46, 125, 50, 0.35);
+		color: #1b5e20;
+		font-size: 0.9rem;
+		line-height: 1.35;
+	}
+	body.page-magazinul-meu #main_wrap,
+	body.page-magazinul-meu #main_content {
+		min-height: 0;
+		margin: 0;
+		padding: 0;
+	}
+	body.page-magazinul-meu .sidebar-right {
+		display: none !important;
+	}
+	body.page-magazinul-meu {
+		--mypet-sidebar-w: 118px;
+	}
+	body.page-magazinul-meu .layout {
+		grid-template-columns: var(--mypet-sidebar-w) 1fr !important;
+		align-items: stretch;
+		min-height: calc(100vh - var(--nav-h, 64px));
+	}
+	body.page-magazinul-meu .layout .main-content {
+		flex: 1 1 0;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		max-width: none;
+		padding-right: 0 !important;
+		margin-right: 0 !important;
+	}
+	body.page-magazinul-meu .sidebar-left {
+		background: rgba(255, 248, 225, 0.9);
+		box-shadow: inset 0 0 0 2px rgba(255, 193, 7, 0.9);
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		padding: 0.1rem 0.18rem 0.05rem 0.08rem;
+		box-sizing: border-box;
+		overflow: hidden;
+		min-width: 0;
+		min-height: 0;
+		width: 100%;
+	}
+	body.page-magazinul-meu .sidebar-left .mypet-left-boxes {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 0;
+		gap: 2px;
+		min-height: 0;
+		align-items: flex-start;
+		justify-content: flex-start;
+		width: 100%;
+	}
+	body.page-magazinul-meu .sidebar-left .mypet-left-box {
+		flex: 1 1 0;
+		min-height: 0;
+		box-sizing: border-box;
+		width: calc((100vw - var(--mypet-sidebar-w)) * 4.5625 / 50.625 - 4px);
+		max-width: 100%;
+		min-width: 2rem;
+		border-radius: 4px;
+		border: 1px solid #9e9e9e;
+		background: #f5f5f5;
+		box-shadow: none;
+	}
+	.magazinul-meu-wrap {
+		height: calc(100vh - var(--nav-h, 64px));
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+		overflow: auto;
+		width: 100%;
+		padding: 0.5rem 0.75rem 1rem;
+	}
+	.magazinul-meu-inner--oferte {
+		max-width: 100%;
+		width: 100%;
+	}
+	.collab-oferte-head {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0.45rem;
+		margin-bottom: 0.55rem;
+		padding-bottom: 0.45rem;
+		border-bottom: 2px solid rgba(141, 110, 99, 0.35);
+		min-width: 0;
+	}
+	.collab-oferte-head-title {
+		margin: 0;
+		font-size: 1.08rem;
+		color: #5c3c00;
+		line-height: 1.25;
+		flex: 0 0 auto;
+	}
+	.collab-oferte-head-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: stretch;
+		gap: 0.35rem;
+		justify-content: flex-start;
+		width: 100%;
+	}
+	.collab-oferte-head-actions--bar {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		width: 100%;
+		gap: 0.35rem;
+		box-sizing: border-box;
+	}
+	@media (max-width: 520px) {
+		.collab-oferte-head-actions--bar {
+			grid-template-columns: 1fr;
+		}
+	}
+	.collab-oferte-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-decoration: none;
+		font-size: 0.72rem;
+		font-weight: 800;
+		padding: 0.3rem 0.45rem;
+		border-radius: 5px;
+		border: 1px solid #5c3c00;
+		line-height: 1.2;
+		white-space: nowrap;
+		cursor: pointer;
+		box-sizing: border-box;
+		font-family: inherit;
+	}
+	button.collab-oferte-btn {
+		background: #fafafa;
+		color: #4e342e;
+		border-color: #8d6e63;
+	}
+	button.collab-oferte-btn:hover {
+		background: #efebe9;
+	}
+	.collab-oferte-btn-primary {
+		background: #fff8e1;
+		color: #5c3c00;
+	}
+	.collab-oferte-btn-primary:hover {
+		background: #ffecb3;
+	}
+	.collab-oferte-btn-secondary {
+		background: #fafafa;
+		color: #4e342e;
+		border-color: #8d6e63;
+	}
+	a.collab-oferte-btn-secondary:hover {
+		background: #efebe9;
+	}
+	.collab-oferte-head-actions--bar .collab-oferte-btn {
+		width: 100%;
+		min-width: 0;
+		min-height: 2.35rem;
+		padding: 0.3rem 0.4rem;
+		font-size: 0.7rem;
+		font-weight: 800;
+		border-width: 1px;
+		border-radius: 6px;
+		line-height: 1.15;
+		white-space: normal;
+		text-align: center;
+		hyphens: auto;
+	}
+	.collab-vet-kpi-strip {
+		margin: 0 0 0.65rem;
+		padding: 0.4rem 0.45rem;
+		border-radius: 8px;
+		width: 100%;
+		box-sizing: border-box;
+		border: 1px solid rgba(141, 110, 99, 0.35);
+		background: rgba(255, 253, 245, 0.95);
+	}
+	.collab-vet-stats {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.65rem 1.25rem;
+		margin: 0 0 0.55rem;
+		padding: 0 0 0.45rem;
+		border-bottom: 1px dashed rgba(141, 110, 99, 0.28);
+	}
+	.collab-vet-stat {
+		font-size: 0.86rem;
+		color: #5d4037;
+	}
+	.collab-vet-stat strong {
+		color: #c62828;
+		font-size: 1.08rem;
+		font-weight: 800;
+	}
+	.collab-vet-kpi-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 0.35rem;
+		width: 100%;
+		box-sizing: border-box;
+	}
+	@media (max-width: 720px) {
+		.collab-vet-kpi-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+		.collab-vet-kpi-card--dual {
+			grid-column: 1 / -1;
+		}
+	}
+	@media (max-width: 380px) {
+		.collab-vet-kpi-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+	.collab-vet-kpi-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		padding: 0.35rem 0.25rem;
+		border-radius: 6px;
+		color: #fff;
+		font-weight: 700;
+		min-height: 2.65rem;
+		box-sizing: border-box;
+	}
+	.collab-vet-kpi-value {
+		font-size: 1.1rem;
+		font-weight: 900;
+		line-height: 1.1;
+	}
+	.collab-vet-kpi-label {
+		font-size: 0.62rem;
+		font-weight: 700;
+		line-height: 1.2;
+		margin-top: 0.15rem;
+		opacity: 0.95;
+	}
+	.collab-vet-kpi-card--r1 {
+		background: #2e7d32;
+	}
+	.collab-vet-kpi-card--r2 {
+		background: #1565c0;
+	}
+	.collab-vet-kpi-card--r3 {
+		background: #6d4c41;
+	}
+	.collab-vet-kpi-card--dual {
+		background: #ad1457;
+		grid-column: span 1;
+		align-items: stretch;
+		text-align: left;
+		gap: 0.35rem;
+		min-height: auto;
+	}
+	@media (min-width: 721px) {
+		.collab-vet-kpi-card--dual {
+			grid-column: span 3;
+			flex-direction: row;
+			justify-content: space-around;
+			align-items: center;
+		}
+	}
+	.collab-vet-kpi-dual-row {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		grid-template-rows: auto auto;
+		column-gap: 0.35rem;
+		row-gap: 0;
+		align-items: center;
+		font-size: 0.72rem;
+		padding: 0.15rem 0;
+		border-top: 1px solid rgba(255, 255, 255, 0.25);
+	}
+	.collab-vet-kpi-dual-row:first-child {
+		border-top: none;
+		padding-top: 0;
+	}
+	.collab-vet-kpi-dual-label {
+		grid-column: 1;
+		grid-row: 1;
+		font-weight: 700;
+		opacity: 0.95;
+	}
+	.collab-vet-kpi-dual-val {
+		grid-column: 2;
+		grid-row: 1 / 3;
+		font-size: 1.1rem;
+		font-weight: 900;
+		align-self: center;
+	}
+	.collab-vet-kpi-dual-sub {
+		grid-column: 1;
+		grid-row: 2;
+		font-size: 0.62rem;
+		opacity: 0.85;
+		font-weight: 600;
+	}
+	.collab-oferte-lead {
+		margin: 0 0 0.85rem;
+		font-size: 0.88rem;
+		line-height: 1.45;
+		color: #4e342e;
+	}
+	.collab-oferte-lead a {
+		color: #1565c0;
+		font-weight: 700;
+	}
+	.collab-oferte-table-wrap {
+		overflow-x: auto;
+		border-radius: 8px;
+		border: 1px solid #bcaaa4;
+		background: #fffef7;
+	}
+	.collab-oferte-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.82rem;
+	}
+	.collab-oferte-table th {
+		text-align: left;
+		padding: 0.45rem 0.5rem;
+		background: rgba(255, 213, 79, 0.35);
+		color: #4e342e;
+		font-weight: 800;
+		border-bottom: 2px solid #8d6e63;
+		white-space: nowrap;
+	}
+	.collab-oferte-table td {
+		padding: 0.4rem 0.5rem;
+		border-bottom: 1px solid #d7ccc8;
+		vertical-align: middle;
+	}
+	.collab-oferte-table tbody tr:hover {
+		background: rgba(255, 248, 225, 0.4);
+	}
+	.collab-oferte-th-nr,
+	.collab-oferte-td-nr {
+		width: 2.5rem;
+		text-align: center;
+	}
+	.collab-oferte-th-photo,
+	.collab-oferte-td-photo {
+		width: 4.5rem;
+	}
+	.collab-oferte-th-act,
+	.collab-oferte-td-del {
+		width: 5rem;
+		text-align: right;
+	}
+	.collab-oferte-td-img {
+		width: 56px;
+		height: 56px;
+		object-fit: cover;
+		border-radius: 6px;
+		display: block;
+	}
+	button.collab-oferte-title-link {
+		color: #1565c0;
+		font-weight: 700;
+		text-decoration: none;
+		background: none;
+		border: none;
+		padding: 0;
+		font: inherit;
+		cursor: pointer;
+		text-align: left;
+	}
+	button.collab-oferte-title-link:hover {
+		text-decoration: underline;
+	}
+	.collab-offer-preview-modal {
+		position: fixed;
+		inset: 0;
+		z-index: 100050;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 1rem;
+		box-sizing: border-box;
+	}
+	.collab-offer-preview-modal[hidden] {
+		display: none !important;
+	}
+	.collab-offer-preview-backdrop {
+		position: absolute;
+		inset: 0;
+		background: rgba(62, 39, 35, 0.45);
+		cursor: pointer;
+	}
+	.collab-offer-preview-panel {
+		position: relative;
+		z-index: 1;
+		width: min(36rem, 100%);
+		max-height: min(88vh, 42rem);
+		display: flex;
+		flex-direction: column;
+		background: linear-gradient(165deg, #fffef5 0%, #fff9e6 40%, #fff3c4 100%);
+		border-radius: 14px;
+		border: 2px solid #d4a574;
+		box-shadow:
+			0 4px 0 rgba(180, 140, 80, 0.35),
+			0 12px 40px rgba(0, 0, 0, 0.22);
+		overflow: hidden;
+	}
+	.collab-offer-preview-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 0.5rem 0.65rem;
+		border-bottom: 1px dashed rgba(141, 110, 99, 0.45);
+		background: rgba(255, 248, 225, 0.85);
+		flex-shrink: 0;
+	}
+	.collab-offer-preview-head-title {
+		font-size: 0.95rem;
+		font-weight: 800;
+		color: #5c3c00;
+	}
+	.collab-offer-preview-close {
+		width: 2.25rem;
+		height: 2.25rem;
+		border-radius: 8px;
+		border: 2px solid #8d6e63;
+		background: #fff;
+		color: #5d4037;
+		font-size: 1.35rem;
+		font-weight: 900;
+		line-height: 1;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		flex-shrink: 0;
+	}
+	.collab-offer-preview-close:hover {
+		background: #ffebee;
+		border-color: #c62828;
+		color: #b71c1c;
+	}
+	.collab-offer-preview-scroll {
+		overflow: auto;
+		padding: 0.75rem 0.85rem 1rem;
+		-webkit-overflow-scrolling: touch;
+	}
+	.collab-preview-note-card {
+		margin: 0;
+	}
+	.collab-preview-note-img-wrap {
+		position: relative;
+		border-radius: 10px;
+		overflow: hidden;
+		border: 1px solid #a5d6a7;
+		background: #eee;
+		margin-bottom: 0.75rem;
+	}
+	.collab-preview-note-img {
+		width: 100%;
+		display: block;
+		max-height: 240px;
+		object-fit: cover;
+	}
+	.collab-preview-note-pill {
+		position: absolute;
+		top: 0.5rem;
+		right: 0.5rem;
+		background: #c62828;
+		color: #fff;
+		font-size: 0.85rem;
+		font-weight: 800;
+		padding: 0.15rem 0.5rem;
+		border-radius: 999px;
+	}
+	.collab-preview-note-body {
+		font-size: 0.92rem;
+		line-height: 1.45;
+		color: #4e342e;
+	}
+	.collab-preview-partner {
+		margin: 0 0 0.4rem;
+		font-size: 0.85rem;
+		color: #455a64;
+	}
+	.collab-preview-title {
+		margin: 0 0 0.5rem;
+		font-size: 1.2rem;
+		color: #1b5e20;
+		line-height: 1.25;
+	}
+	.collab-preview-desc {
+		margin: 0 0 0.65rem;
+		white-space: pre-wrap;
+	}
+	.collab-preview-meta {
+		font-size: 0.88rem;
+		margin-bottom: 0.65rem;
+	}
+	.collab-preview-meta p {
+		margin: 0.2rem 0;
+	}
+	.collab-preview-foot {
+		margin: 0;
+		padding: 0.55rem 0.65rem;
+		font-size: 0.8rem;
+		line-height: 1.4;
+		color: #37474f;
+		background: rgba(227, 242, 253, 0.65);
+		border: 1px solid #90caf9;
+		border-radius: 8px;
+	}
+	.collab-oferte-disc {
+		font-weight: 800;
+		color: #c62828;
+		margin-right: 0.35rem;
+	}
+	.collab-oferte-muted {
+		color: #757575;
+		font-size: 0.75rem;
+	}
+	.collab-oferte-dash {
+		color: #9e9e9e;
+	}
+	.collab-oferte-empty {
+		text-align: center;
+		padding: 1.25rem 0.75rem !important;
+		color: #6d4c41;
+	}
+	.collab-oferte-btn-del {
+		border: 1px solid #c62828;
+		background: #fff;
+		color: #b71c1c;
+		font-size: 0.72rem;
+		font-weight: 700;
+		padding: 0.25rem 0.45rem;
+		border-radius: 6px;
+		cursor: pointer;
+	}
+	.collab-oferte-btn-del:hover {
+		background: #ffebee;
+	}
+	.mypet-msg-modal {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.48);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 100000;
+	}
+	.mypet-msg-panel {
+		width: min(900px, 94vw);
+		height: min(78vh, 680px);
+		background: #fffef7;
+		border-radius: 10px;
+		border: 2px solid #d2b27a;
+		display: flex;
+		flex-direction: column;
+	}
+	.mypet-msg-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.45rem 0.7rem;
+		border-bottom: 1px solid #e6d2ab;
+	}
+	.mypet-msg-close {
+		position: relative;
+		z-index: 5;
+		border: 1px solid #c62828;
+		background: #fff;
+		color: #c62828;
+		border-radius: 6px;
+		padding: 0.1rem 0.45rem;
+		font-weight: 900;
+		cursor: pointer;
+	}
+	.mypet-msg-body {
+		flex: 1 1 auto;
+		min-height: 0;
+		display: grid;
+		grid-template-columns: 260px 1fr;
+	}
+	.mypet-msg-tabs {
+		display: flex;
+		gap: 0.35rem;
+		padding: 0.35rem 0.6rem 0.25rem;
+		border-bottom: 1px solid #ecd9b8;
+	}
+	.mypet-msg-tab {
+		border: 1px solid #d2b27a;
+		background: #fff;
+		color: #5c3c00;
+		border-radius: 999px;
+		padding: 0.15rem 0.65rem;
+		font-size: 0.72rem;
+		font-weight: 800;
+		cursor: pointer;
+	}
+	.mypet-msg-tab.is-active {
+		background: #5c3c00;
+		color: #fff;
+		border-color: #5c3c00;
+	}
+	.mypet-msg-threads {
+		border-right: 1px solid #ecd9b8;
+		overflow: auto;
+	}
+	.mypet-msg-thread {
+		overflow: auto;
+		padding: 0.45rem;
+	}
+	.mypet-msg-thread-item {
+		padding: 0.3rem 0.35rem;
+		border-bottom: 1px solid #f0e4cf;
+		cursor: pointer;
+		font-size: 0.78rem;
+	}
+	.mypet-msg-thread-item.is-active { background: #fff3cd; }
+	.mypet-msg-item-top {
+		display: grid;
+		grid-template-columns: 42px 1fr;
+		gap: 0.4rem;
+		align-items: center;
+	}
+	.mypet-msg-item-photo {
+		display: block;
+		width: 42px;
+		height: 42px;
+		border-radius: 6px;
+		object-fit: cover;
+		background: #f1f1f1;
+		border: 1px solid #d2b27a;
+	}
+	.mypet-msg-item-photo-wrap {
+		position: relative;
+		width: 42px;
+		height: 42px;
+	}
+	.mypet-msg-item-title { font-weight: 800; line-height: 1.2; }
+	.mypet-msg-item-sub {
+		font-size: 0.7rem;
+		color: #6d4c41;
+		margin-top: 1px;
+		line-height: 1.2;
+	}
+	.mypet-msg-item-preview {
+		font-size: 0.72rem;
+		color: #444;
+		margin-top: 0.15rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.mypet-msg-bubble {
+		max-width: 85%;
+		padding: 0.35rem 0.5rem;
+		border-radius: 8px;
+		margin-bottom: 0.3rem;
+		font-size: 0.78rem;
+		line-height: 1.25;
+		white-space: pre-wrap;
+	}
+	.mypet-msg-bubble.from-owner { margin-left: auto; background: #e3f2fd; }
+	.mypet-msg-bubble.from-user { margin-right: auto; background: #f5f5f5; }
+	.mypet-msg-thread-empty {
+		font-size: 0.8rem;
+		color: #666;
+		padding: 0.25rem 0;
+	}
+	.mypet-msg-reply {
+		border-top: 1px solid #ecd9b8;
+		padding: 0.45rem;
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: 0.45rem;
+	}
+	#collabSvcMsgReplyTa {
+		min-height: 64px;
+		resize: vertical;
+		border-radius: 8px;
+		border: 1px solid #d2b27a;
+		padding: 0.35rem;
+	}
+	#collabSvcMsgReplyBtn {
+		align-self: end;
+		height: 36px;
+		border-radius: 8px;
+		border: 1px solid #1b5e20;
+		background: #2e7d32;
+		color: #fff;
+		font-weight: 800;
+		padding: 0 0.8rem;
+		cursor: pointer;
+	}
+	@media (max-width: 640px) {
+		.mypet-msg-body {
+			grid-template-columns: 1fr;
+			grid-template-rows: minmax(120px, 35%) 1fr;
+		}
+		.mypet-msg-threads {
+			border-right: none;
+			border-bottom: 1px solid #ecd9b8;
+		}
+	}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/collab-service-inbox.js' %}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+	var el = document.getElementById("mesaje-collab");
+	if (el && new URLSearchParams(window.location.search || "").get("open_messages") === "1") {
+		try { el.scrollIntoView({ block: "start", behavior: "smooth" }); } catch (e) {}
+	}
+});
+document.addEventListener("DOMContentLoaded", function() {
+	var prevModal = document.getElementById("collabOfferPreviewModal");
+	var prevMount = document.getElementById("collabOfferPreviewMount");
+	var prevCloseBtn = document.getElementById("collabOfferPreviewClose");
+	var lastPreviewFocus = null;
+	function closeOfferPreview() {
+		if (!prevModal || !prevMount) return;
+		prevModal.setAttribute("hidden", "");
+		prevMount.replaceChildren();
+		document.body.style.overflow = "";
+		if (lastPreviewFocus && typeof lastPreviewFocus.focus === "function") {
+			try { lastPreviewFocus.focus(); } catch (e) {}
+		}
+		lastPreviewFocus = null;
+	}
+	function openOfferPreview(tplId) {
+		if (!prevModal || !prevMount) return;
+		var tpl = document.getElementById(tplId);
+		if (!tpl || !tpl.content) return;
+		lastPreviewFocus = document.activeElement;
+		prevMount.replaceChildren();
+		prevMount.appendChild(tpl.content.cloneNode(true));
+		prevModal.removeAttribute("hidden");
+		document.body.style.overflow = "hidden";
+		if (prevCloseBtn) {
+			try { prevCloseBtn.focus(); } catch (e) {}
+		}
+	}
+	document.querySelectorAll(".collab-offer-preview-open").forEach(function(btn) {
+		btn.addEventListener("click", function() {
+			var id = btn.getAttribute("data-preview-tpl");
+			if (id) openOfferPreview(id);
+		});
+	});
+	if (prevCloseBtn) prevCloseBtn.addEventListener("click", closeOfferPreview);
+	var prevBackdrop = prevModal && prevModal.querySelector("[data-collab-preview-close]");
+	if (prevBackdrop) prevBackdrop.addEventListener("click", closeOfferPreview);
+	document.addEventListener("keydown", function(ev) {
+		if (ev.key === "Escape" && prevModal && !prevModal.hasAttribute("hidden")) {
+			closeOfferPreview();
+		}
+	});
+});
+document.addEventListener("DOMContentLoaded", function() {
+	if (typeof window.initCollabServiceInbox === "function") {
+		window.initCollabServiceInbox({
+			mode: "collaborator",
+			idPrefix: "collabSvc",
+			listUrl: "{% url 'collab_inbox_list' %}",
+			threadUrl: "{% url 'collab_inbox_thread' %}",
+			replyUrl: "{% url 'collab_inbox_reply' %}",
+			useNavbarCombinedUnread: false,
+			openButtonId: "magazinOpenInboxBtn",
+			autoOpenParam: "open_messages",
+			autoOpenParamValue: "1",
+			globalOpenFn: "__openMagazinulCollabInbox",
+		});
+	}
+});
+</script>
+{% endblock %}

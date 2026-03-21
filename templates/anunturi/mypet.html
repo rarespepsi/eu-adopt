@@ -3,10 +3,10 @@
 
 {% block title %}MyPet | EU Adopt{% endblock %}
 
-{% block body_class %}page-mypet{% endblock %}
+{% block body_class %}page-mypet{% if show_mypet_nav %} page-mypet-magazin{% endif %}{% endblock %}
 
 {% block content %}
-<section id="MW" class="mypet-wrap">
+<section id="MW" class="mypet-wrap" data-pet-msg-unread="{{ pet_message_unread_count|default:0 }}" data-collab-client-unread="{{ collab_client_unread_count|default:0 }}">
 	<div class="mypet-inner">
 		{% csrf_token %}
 		<div class="mypet-actions">
@@ -18,6 +18,9 @@
 					id="adopterInboxBtn"
 					data-list-url="{% url 'adopter_messages_list' %}"
 				>Mesaje</button>
+			{% endif %}
+			{% if show_mypet_nav %}
+			<button type="button" class="mypet-btn mypet-btn-secondary" id="collabClientInboxBtn" title="Mesaje cu colaboratori (servicii / produse)">Mesaje servicii</button>
 			{% endif %}
 			<a href="{% url 'mypet_add' %}" class="mypet-btn mypet-btn-secondary mypet-btn-add">Adaugă un pet</a>
 			<div class="mypet-btn mypet-btn-secondary mypet-btn-counter">
@@ -202,6 +205,27 @@
 		</div>
 	</div>
 </div>
+
+<div class="mypet-msg-modal" id="collabCliMsgModal" hidden>
+	<div class="mypet-msg-panel" role="dialog" aria-modal="true" aria-label="Mesaje servicii și produse">
+		<div class="mypet-msg-head">
+			<strong id="collabCliMsgTitle">Mesaje</strong>
+			<button type="button" id="collabCliMsgClose" class="mypet-msg-close" onclick="if(window.__closeCollabSvcMsgModal_collabCli){window.__closeCollabSvcMsgModal_collabCli();}">X</button>
+		</div>
+		<div class="mypet-msg-tabs">
+			<button type="button" class="mypet-msg-tab is-active" id="collabCliMsgTabActive" data-scope="active">Active</button>
+			<button type="button" class="mypet-msg-tab" id="collabCliMsgTabArchived" data-scope="archived">Arhivă</button>
+		</div>
+		<div class="mypet-msg-body">
+			<div class="mypet-msg-threads" id="collabCliMsgThreads"></div>
+			<div class="mypet-msg-thread" id="collabCliMsgThread"></div>
+		</div>
+		<div class="mypet-msg-reply">
+			<textarea id="collabCliMsgReplyTa" placeholder="Răspunde aici..."></textarea>
+			<button type="button" id="collabCliMsgReplyBtn">Send</button>
+		</div>
+	</div>
+</div>
 {% endblock %}
 
 {% block extra_css_after %}
@@ -224,6 +248,13 @@
 		grid-template-columns: var(--mypet-sidebar-w) 1fr !important;
 		align-items: stretch; /* caseta mamă = înălțimea rândului (ca main-ul) */
 		min-height: calc(100vh - var(--nav-h, 64px)); /* rândul umple înălțimea utilă sub navbar */
+	}
+	/* Fără page-mypet-magazin: fără coloană stângă (pe /mypet/ userii permisi au mereu panoul) */
+	body.page-mypet:not(.page-mypet-magazin) .sidebar-left {
+		display: none !important;
+	}
+	body.page-mypet:not(.page-mypet-magazin) .layout {
+		grid-template-columns: minmax(0, 1fr) !important;
 	}
 	body.page-mypet .layout .main-content {
 		flex: 1 1 0;
@@ -627,6 +658,24 @@
 		padding: 0.35rem;
 	}
 	#mypetMsgReplyBtn {
+		align-self: end;
+		height: 36px;
+		border-radius: 8px;
+		border: 1px solid #1b5e20;
+		background: #2e7d32;
+		color: #fff;
+		font-weight: 800;
+		padding: 0 0.8rem;
+		cursor: pointer;
+	}
+	#collabCliMsgReplyTa {
+		min-height: 64px;
+		resize: vertical;
+		border-radius: 8px;
+		border: 1px solid #d2b27a;
+		padding: 0.35rem;
+	}
+	#collabCliMsgReplyBtn {
 		align-self: end;
 		height: 36px;
 		border-radius: 8px;
@@ -1315,7 +1364,25 @@ document.addEventListener("DOMContentLoaded", function() {
 		window.addEventListener("resize", placeFilters);
 	})();
 });
-
+</script>
+<script src="{% static 'js/collab-service-inbox.js' %}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+	if (typeof window.initCollabServiceInbox === "function") {
+		window.initCollabServiceInbox({
+			mode: "client",
+			idPrefix: "collabCli",
+			listUrl: "{% url 'collab_client_inbox_list' %}",
+			threadUrl: "{% url 'collab_client_thread' %}",
+			replyUrl: "{% url 'collab_client_reply' %}",
+			useNavbarCombinedUnread: true,
+			openButtonId: "collabClientInboxBtn",
+			globalOpenFn: "__openMyPetCollabClientInbox",
+		});
+	}
+});
+</script>
+<script>
 document.addEventListener("DOMContentLoaded", function() {
 	(function initMyPetMessagesModal() {
 		function getCookie(name) {
@@ -1533,7 +1600,9 @@ document.addEventListener("DOMContentLoaded", function() {
 				.then(function(data) {
 					if (!data || !data.ok) throw new Error("Thread indisponibil.");
 					renderThread(data.messages || [], data.adoption_request || null);
-					if (typeof data.unread_total !== "undefined") {
+					if (typeof data.navbar_unread_total !== "undefined") {
+						updateEnvelopeCount(data.navbar_unread_total);
+					} else if (typeof data.unread_total !== "undefined") {
 						updateEnvelopeCount(data.unread_total);
 					}
 					document.querySelectorAll(".mypet-msg-thread-item").forEach(function(it) {
@@ -1673,12 +1742,17 @@ document.addEventListener("DOMContentLoaded", function() {
 			}
 		});
 
-		// Deschidere automată doar când venim explicit din plic (?open_messages=1).
+		// Deschidere automată din plic (?open_messages=1): dacă nu ai mesaje pet necitite dar ai servicii → inbox colaboratori; altfel flux animale.
 		try {
 			var params = new URLSearchParams(window.location.search || "");
 			if (params.get("open_messages") === "1") {
+				var mw = document.getElementById("MW");
+				var petU = mw ? (parseInt(mw.getAttribute("data-pet-msg-unread") || "0", 10) || 0) : 0;
+				var collabU = mw ? (parseInt(mw.getAttribute("data-collab-client-unread") || "0", 10) || 0) : 0;
 				var allBtns = Array.prototype.slice.call(document.querySelectorAll(".mypet-msg-open-btn"));
-				if (allBtns.length) {
+				if (collabU > 0 && petU === 0 && typeof window.__openMyPetCollabClientInbox === "function") {
+					setTimeout(function() { window.__openMyPetCollabClientInbox(); }, 80);
+				} else if (allBtns.length) {
 					var firstUnreadBtn = allBtns.find(function(b) { return (parseInt(b.getAttribute("data-unread") || "0", 10) || 0) > 0; });
 					var targetBtn = firstUnreadBtn || allBtns[0];
 					if (targetBtn) setTimeout(function() { openModal(targetBtn); }, 80);

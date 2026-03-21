@@ -120,6 +120,21 @@
 		color: #fff;
 		border-color: #0d47a1;
 	}
+	.analysis-view-as-tip {
+		flex: 1 1 100%;
+		width: 100%;
+		box-sizing: border-box;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.35rem;
+		margin-top: 0.4rem;
+		padding-top: 0.4rem;
+		border-top: 1px dashed rgba(13, 71, 161, 0.25);
+	}
+	.analysis-view-as-tip .analysis-view-as-label {
+		margin-right: 0.15rem;
+	}
 	.analysis-grid {
 		height: calc(100% - 1.6rem);
 		margin-top: 0.6rem;
@@ -288,6 +303,14 @@
 			<a href="{% url 'admin_analysis_set_view_as' %}?role=collaborator" class="{% if view_as_role == 'collaborator' %}is-active{% endif %}">Colaborator</a>
 			<a href="{% url 'admin_analysis_set_view_as' %}?role=" class="{% if not view_as_role %}is-active{% endif %}">Rol real</a>
 		</div>
+		{% if view_as_role == 'collaborator' %}
+		<div class="analysis-view-as-tip" aria-label="Tip partener colaborator preview">
+			<span class="analysis-view-as-label">Tip partener (preview):</span>
+			<a href="{% url 'admin_analysis_set_view_as' %}?role=collaborator&amp;tip=cabinet" class="{% if view_as_collab_tip == 'cabinet' %}is-active{% endif %}">Cabinet</a>
+			<a href="{% url 'admin_analysis_set_view_as' %}?role=collaborator&amp;tip=servicii" class="{% if view_as_collab_tip == 'servicii' %}is-active{% endif %}">Servicii</a>
+			<a href="{% url 'admin_analysis_set_view_as' %}?role=collaborator&amp;tip=magazin" class="{% if view_as_collab_tip == 'magazin' %}is-active{% endif %}">Magazin</a>
+		</div>
+		{% endif %}
 	</div>
 	<div class="analysis-grid">
 		<div class="analysis-row analysis-kpis">

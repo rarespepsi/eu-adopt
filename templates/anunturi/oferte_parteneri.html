@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Oferte parteneri | EU Adopt{% endblock %}
+{% block body_class %}page-oferte-parteneri{% endblock %}
+
+{% block content %}
+<section class="oferte-p-wrap" aria-label="Oferte colaboratori">
+	<div class="oferte-p-inner">
+		<h1 class="oferte-p-title">Oferte parteneri</h1>
+		<p class="oferte-p-lead">
+			Servicii și promoții publicate de cabinete și parteneri EU-Adopt. Apasă o ofertă pentru detalii; poți solicita pe email datele de contact ale cabinetului — <strong>fără programări sau chat obligatoriu în platformă</strong>.
+		</p>
+		{% if not offers %}
+		<p class="oferte-p-empty">Încă nu există oferte publicate. Revino curând.</p>
+		{% else %}
+		<ul class="oferte-p-grid">
+			{% for offer in offers %}
+			<li>
+				<a class="oferte-p-card" href="{% url 'public_offer_detail' offer.pk %}">
+					<span class="oferte-p-card-img-wrap">
+						{% if offer.image %}
+						<img src="{{ offer.image.url }}" alt="" class="oferte-p-card-img" loading="lazy" />
+						{% endif %}
+						{% if offer.discount_percent %}
+						<span class="oferte-p-pill">−{{ offer.discount_percent }}%</span>
+						{% endif %}
+					</span>
+					<span class="oferte-p-card-body">
+						<span class="oferte-p-card-title">{{ offer.title }}</span>
+						<span class="oferte-p-card-partner">{{ offer.partner_display_name }}</span>
+						{% if offer.price_hint %}
+						<span class="oferte-p-card-price">{{ offer.price_hint }}</span>
+						{% endif %}
+					</span>
+				</a>
+			</li>
+			{% endfor %}
+		</ul>
+		{% endif %}
+	</div>
+</section>
+{% endblock %}
+
+{% block extra_css_after %}
+<style>
+	.oferte-p-wrap {
+		padding: 0.75rem 1rem 2rem;
+		max-width: 56rem;
+		margin: 0 auto;
+		box-sizing: border-box;
+	}
+	.oferte-p-title {
+		margin: 0 0 0.5rem;
+		font-size: 1.4rem;
+		color: #33691e;
+	}
+	.oferte-p-lead {
+		margin: 0 0 1.25rem;
+		line-height: 1.5;
+		color: #4e342e;
+		font-size: 0.95rem;
+	}
+	.oferte-p-empty {
+		padding: 1rem;
+		background: #fff8e1;
+		border-radius: 10px;
+		border: 1px solid #ffe082;
+		color: #5d4037;
+	}
+	.oferte-p-grid {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+		gap: 0.75rem;
+	}
+	.oferte-p-card {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		text-decoration: none;
+		color: inherit;
+		border-radius: 12px;
+		overflow: hidden;
+		border: 1px solid #c8e6c9;
+		background: #f1f8e9;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+		transition: transform 0.12s ease, box-shadow 0.12s ease;
+	}
+	.oferte-p-card:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+	}
+	.oferte-p-card-img-wrap {
+		position: relative;
+		display: block;
+		aspect-ratio: 4 / 3;
+		background: #e0e0e0;
+	}
+	.oferte-p-card-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+	.oferte-p-pill {
+		position: absolute;
+		top: 0.4rem;
+		right: 0.4rem;
+		background: #c62828;
+		color: #fff;
+		font-size: 0.75rem;
+		font-weight: 800;
+		padding: 0.15rem 0.45rem;
+		border-radius: 999px;
+	}
+	.oferte-p-card-body {
+		padding: 0.5rem 0.6rem 0.65rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+	}
+	.oferte-p-card-title {
+		font-weight: 800;
+		font-size: 0.88rem;
+		line-height: 1.3;
+		color: #1b5e20;
+	}
+	.oferte-p-card-partner {
+		font-size: 0.72rem;
+		color: #616161;
+		line-height: 1.2;
+	}
+	.oferte-p-card-price {
+		font-size: 0.8rem;
+		color: #5d4037;
+	}
+</style>
+{% endblock %}

@@ -47,6 +47,11 @@
 
 		{% block main_wrap_after_header %}
 		<section class="wrapper" id="main_content">
+			{% if messages %}
+			<ul class="django-messages" style="list-style:none;margin:0;padding:0.35rem 0.75rem;background:#fff8e1;border-bottom:1px solid #ffe082;color:#5d4037;font-size:0.9rem;">
+				{% for message in messages %}<li>{{ message }}</li>{% endfor %}
+			</ul>
+			{% endif %}
 			{% block home_top_strip %}{% endblock %}
 			<div class="layout">
 				<aside class="sidebar-left">

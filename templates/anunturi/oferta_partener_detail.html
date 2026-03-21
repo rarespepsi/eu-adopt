@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ offer.title }} | Oferte parteneri | EU Adopt{% endblock %}
+{% block body_class %}page-oferta-partener-detail{% endblock %}
+
+{% block content %}
+<section class="oferte-d-wrap" aria-label="Detaliu ofertă">
+	<div class="oferte-d-inner">
+		<p class="oferte-d-back"><a href="{% url 'public_offers_list' %}">← Toate ofertele</a></p>
+		<article class="oferte-d-card">
+			{% if offer.image %}
+			<div class="oferte-d-img-wrap">
+				<img src="{{ offer.image.url }}" alt="" class="oferte-d-img" />
+				{% if offer.discount_percent %}
+				<span class="oferte-d-pill">−{{ offer.discount_percent }}%</span>
+				{% endif %}
+			</div>
+			{% endif %}
+			<div class="oferte-d-body">
+				<p class="oferte-d-partner"><strong>Partener:</strong> {{ offer.partner_display_name }}</p>
+				<h1 class="oferte-d-title">{{ offer.title }}</h1>
+				{% if offer.description %}
+				<p class="oferte-d-desc">{{ offer.description }}</p>
+				{% endif %}
+				<div class="oferte-d-meta">
+					{% if offer.price_hint %}
+					<p><strong>Preț indicat:</strong> {{ offer.price_hint }}</p>
+					{% endif %}
+					{% if offer.discount_percent %}
+					<p><strong>Discount:</strong> {{ offer.discount_percent }}%</p>
+					{% endif %}
+				</div>
+				<p class="oferte-d-note">
+					Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: îți trimitem pe <strong>email</strong> datele de contact ale cabinetului (din profilul partenerului).
+				</p>
+				<form class="oferte-d-form" method="post" action="{% url 'public_offer_request' offer.pk %}">
+					{% csrf_token %}
+					{% if user.is_authenticated %}
+					<p class="oferte-d-email-hint">Vom trimite datele la: <strong>{{ user.email }}</strong></p>
+					{% else %}
+					<label class="oferte-d-label">
+						<span>Nume (opțional)</span>
+						<input type="text" name="name" maxlength="120" placeholder="Prenume" autocomplete="name" />
+					</label>
+					<label class="oferte-d-label">
+						<span>Email *</span>
+						<input type="email" name="email" required placeholder="adresa@email.com" autocomplete="email" />
+					</label>
+					{% endif %}
+					<button type="submit" class="oferte-d-cta">Vreau această ofertă</button>
+				</form>
+			</div>
+		</article>
+	</div>
+</section>
+{% endblock %}
+
+{% block extra_css_after %}
+<style>
+	.oferte-d-wrap {
+		padding: 0.75rem 1rem 2rem;
+		max-width: 36rem;
+		margin: 0 auto;
+		box-sizing: border-box;
+	}
+	.oferte-d-back {
+		margin: 0 0 0.75rem;
+		font-size: 0.9rem;
+	}
+	.oferte-d-back a {
+		color: #1565c0;
+		font-weight: 700;
+		text-decoration: none;
+	}
+	.oferte-d-back a:hover {
+		text-decoration: underline;
+	}
+	.oferte-d-card {
+		border-radius: 14px;
+		border: 1px solid #a5d6a7;
+		overflow: hidden;
+		background: #fff;
+		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+	}
+	.oferte-d-img-wrap {
+		position: relative;
+		background: #eee;
+	}
+	.oferte-d-img {
+		width: 100%;
+		display: block;
+		max-height: 280px;
+		object-fit: cover;
+	}
+	.oferte-d-pill {
+		position: absolute;
+		top: 0.6rem;
+		right: 0.6rem;
+		background: #c62828;
+		color: #fff;
+		font-size: 0.9rem;
+		font-weight: 800;
+		padding: 0.2rem 0.55rem;
+		border-radius: 999px;
+	}
+	.oferte-d-body {
+		padding: 1rem 1.1rem 1.25rem;
+	}
+	.oferte-d-partner {
+		margin: 0 0 0.5rem;
+		font-size: 0.88rem;
+		color: #455a64;
+	}
+	.oferte-d-title {
+		margin: 0 0 0.5rem;
+		font-size: 1.25rem;
+		color: #1b5e20;
+		line-height: 1.25;
+	}
+	.oferte-d-desc {
+		margin: 0 0 0.75rem;
+		line-height: 1.5;
+		color: #4e342e;
+		font-size: 0.95rem;
+	}
+	.oferte-d-meta {
+		font-size: 0.9rem;
+		color: #5d4037;
+		margin-bottom: 0.75rem;
+	}
+	.oferte-d-meta p {
+		margin: 0.25rem 0;
+	}
+	.oferte-d-note {
+		font-size: 0.88rem;
+		line-height: 1.45;
+		color: #37474f;
+		padding: 0.65rem 0.75rem;
+		background: #e3f2fd;
+		border-radius: 8px;
+		border: 1px solid #90caf9;
+		margin: 0 0 1rem;
+	}
+	.oferte-d-email-hint {
+		font-size: 0.9rem;
+		margin: 0 0 0.75rem;
+		color: #37474f;
+	}
+	.oferte-d-label {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		margin-bottom: 0.6rem;
+		font-size: 0.82rem;
+		font-weight: 700;
+		color: #5d4037;
+	}
+	.oferte-d-label input {
+		font: inherit;
+		padding: 0.45rem 0.5rem;
+		border: 1px solid #b0bec5;
+		border-radius: 8px;
+	}
+	.oferte-d-cta {
+		width: 100%;
+		margin-top: 0.35rem;
+		padding: 0.65rem 1rem;
+		font-size: 1rem;
+		font-weight: 800;
+		color: #fff;
+		background: #2e7d32;
+		border: none;
+		border-radius: 10px;
+		cursor: pointer;
+	}
+	.oferte-d-cta:hover {
+		background: #1b5e20;
+	}
+</style>
+{% endblock %}
