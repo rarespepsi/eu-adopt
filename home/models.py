@@ -472,12 +472,32 @@ class CollaboratorServiceOffer(models.Model):
     Ofertă simplă postată de colaborator (cabinet / servicii): imagine, titlu, scurtă descriere,
     preț opțional și/sau discount %. Publică pe /oferte-parteneri/; vizitatorul poate
     cere pe email datele de contact ale cabinetului (fără programări în platformă).
+
+    partner_kind = canal la creare (snapshot): S3 cabinet / S5 servicii / S4 magazin în pagina Servicii.
+    Nu depinde de bifa curentă din profil după salvare — ofertele nu se amestecă între canale.
     """
+
+    PARTNER_KIND_CABINET = "cabinet"
+    PARTNER_KIND_SERVICII = "servicii"
+    PARTNER_KIND_MAGAZIN = "magazin"
+    PARTNER_KIND_CHOICES = [
+        (PARTNER_KIND_CABINET, "Cabinet / clinică veterinară"),
+        (PARTNER_KIND_SERVICII, "Servicii / grooming / dresaj"),
+        (PARTNER_KIND_MAGAZIN, "Magazin / pet-shop"),
+    ]
 
     collaborator = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name="service_offers",
+    )
+    partner_kind = models.CharField(
+        "Canal partener (la creare)",
+        max_length=20,
+        choices=PARTNER_KIND_CHOICES,
+        default=PARTNER_KIND_CABINET,
+        db_index=True,
+        help_text="Setat la publicare; determină zona Servicii. Nu se schimbă cu bifa din cont.",
     )
     title = models.CharField("Titlu serviciu", max_length=160)
     description = models.CharField("Scurtă descriere produs", max_length=500, blank=True)
@@ -530,6 +550,7 @@ class CollaboratorServiceOffer(models.Model):
         indexes = [
             models.Index(fields=["collaborator", "is_active", "created_at"]),
             models.Index(fields=["is_active", "valid_until"]),
+            models.Index(fields=["partner_kind", "is_active", "created_at"]),
         ]
 
     def __str__(self):

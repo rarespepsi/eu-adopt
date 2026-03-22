@@ -19,6 +19,14 @@ Document pentru **administrare și dezvoltare**. Descrie fluxul dintre **utiliza
 - La fiecare solicitare reușită se creează un rând **`CollaboratorOfferClaim`** și se consumă un loc.
 - Când **ultimul** loc este consumat, oferta este setată **`is_active = False`** și **nu mai apare** în listările publice (filtru `is_active=True`). Colaboratorul poate **mări stocul** la editare și apoi **reactiva** oferta din listă dacă dorește.
 
+## Canal `partner_kind` (fără amestec la schimbarea bifelor)
+
+- Fiecare ofertă are **`partner_kind`**: `cabinet` | `servicii` | `magazin`, setat **la creare** din bifa curentă din cont.
+- **Nu se schimbă** când colaboratorul își modifică tipul în profil — ofertele vechi rămân în **zona Servicii** corespunzătoare (S3 / S5 / S4).
+- **Migrarea inițială** pune toate ofertele existente la `cabinet` (erau afișate doar la veterinar înainte).
+- **Panoul Magazinul meu → Oferte** listează **doar** ofertele cu `partner_kind` = bifa curentă; solicitările din tabelul de jos sunt filtrate la fel.
+- Link **„Vezi în Servicii”**: `#S3` (cabinet), `#S5` (servicii), `#S4` (magazin).
+
 ## Solicitarea „Vreau oferta” (public)
 
 - **POST** către `oferte-parteneri/<id>/vreau/` (`public_offer_request_view`).

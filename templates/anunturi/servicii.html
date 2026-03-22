@@ -463,9 +463,25 @@
 						<div class="sw-s2-1-band">MAGAZINE DE SPECIALITATE</div>
 						<div class="sw-s2-1-body">
 							<div class="sw-s2-1-grid">
-								{% for i in "123456789012345678901234" %}
-								<div class="sw-s2-1-cell" data-slot="S4.{{ forloop.counter }}"><span class="sw-s3-cell-label">S4.{{ forloop.counter }}</span></div>
+								{% for offer in shop_offers %}
+								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S4.{{ forloop.counter }}">
+									<a class="sw-s2-1-vet-offer-link sw-vet-offer-modal-trigger" href="{% url 'public_offer_detail' offer.pk %}" data-modal-tpl="sw-vet-offer-modal-tpl-{{ offer.pk }}">
+										{% if offer.image %}<img src="{{ offer.image.url }}" alt="{{ offer.title }}" loading="lazy" />{% endif %}
+										{% if offer.discount_percent %}<span class="sw-vet-offer-disc">−{{ offer.discount_percent }}%</span>{% endif %}
+										<span class="sw-vet-offer-cap">
+											<span class="sw-vet-offer-title">{{ offer.title }}</span>
+											{% if offer.description %}
+											<span class="sw-vet-offer-desc">{{ offer.description }}</span>
+											{% endif %}
+										</span>
+									</a>
+								</div>
 								{% endfor %}
+								{% with n=shop_offers|length %}
+								{% for _ in shop_offer_empty_slots %}
+								<div class="sw-s2-1-cell" data-slot="S4.{{ n|add:forloop.counter }}"><span class="sw-s3-cell-label">S4.{{ n|add:forloop.counter }}</span></div>
+								{% endfor %}
+								{% endwith %}
 							</div>
 						</div>
 					</div>
@@ -473,9 +489,25 @@
 						<div class="sw-s2-1-band">SALOANE COSMETICA VET</div>
 						<div class="sw-s2-1-body">
 							<div class="sw-s2-1-grid">
-								{% for i in "123456789012345678901234" %}
-								<div class="sw-s2-1-cell" data-slot="S5.{{ forloop.counter }}"><span class="sw-s3-cell-label">S5.{{ forloop.counter }}</span></div>
+								{% for offer in groom_offers %}
+								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S5.{{ forloop.counter }}">
+									<a class="sw-s2-1-vet-offer-link sw-vet-offer-modal-trigger" href="{% url 'public_offer_detail' offer.pk %}" data-modal-tpl="sw-vet-offer-modal-tpl-{{ offer.pk }}">
+										{% if offer.image %}<img src="{{ offer.image.url }}" alt="{{ offer.title }}" loading="lazy" />{% endif %}
+										{% if offer.discount_percent %}<span class="sw-vet-offer-disc">−{{ offer.discount_percent }}%</span>{% endif %}
+										<span class="sw-vet-offer-cap">
+											<span class="sw-vet-offer-title">{{ offer.title }}</span>
+											{% if offer.description %}
+											<span class="sw-vet-offer-desc">{{ offer.description }}</span>
+											{% endif %}
+										</span>
+									</a>
+								</div>
 								{% endfor %}
+								{% with n=groom_offers|length %}
+								{% for _ in groom_offer_empty_slots %}
+								<div class="sw-s2-1-cell" data-slot="S5.{{ n|add:forloop.counter }}"><span class="sw-s3-cell-label">S5.{{ n|add:forloop.counter }}</span></div>
+								{% endfor %}
+								{% endwith %}
 							</div>
 						</div>
 					</div>
@@ -536,6 +568,90 @@
 		</div>
 		<p class="sw-vet-offer-nota__note">
 			Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: primești pe <strong>email</strong> un <strong>cod alfanumeric comun</strong> cu cabinetul, datele de contact ale partenerului și detalii despre ofertă. Colaboratorul primește aceeași solicitare cu datele tale (nume, email; din cont: telefon și localitate dacă sunt completate). Verifică și folderul <strong>Spam</strong>. Dacă oferta are număr limitat de locuri, după epuizare dispare din listările publice.
+		</p>
+		<form method="post" action="{% url 'public_offer_request' offer.pk %}">
+			{% csrf_token %}
+			{% if user.is_authenticated %}
+			<p class="sw-vet-offer-nota__email-hint">Vom trimite datele la: <strong>{{ user.email }}</strong></p>
+			{% else %}
+			<label class="sw-vet-offer-nota__label">
+				<span>Nume (opțional)</span>
+				<input type="text" name="name" maxlength="120" placeholder="Prenume" autocomplete="name" />
+			</label>
+			<label class="sw-vet-offer-nota__label">
+				<span>Email *</span>
+				<input type="email" name="email" required placeholder="adresa@email.com" autocomplete="email" />
+			</label>
+			{% endif %}
+			<button type="submit" class="sw-vet-offer-nota__cta">Vreau această ofertă</button>
+		</form>
+	</article>
+</template>
+{% endfor %}
+{% for offer in groom_offers %}
+<template id="sw-vet-offer-modal-tpl-{{ offer.pk }}">
+	<article class="sw-vet-offer-nota">
+		{% if offer.image %}
+		<div class="sw-vet-offer-nota__img-wrap">
+			<img class="sw-vet-offer-nota__img" src="{{ offer.image.url }}" alt="" loading="lazy" />
+			{% if offer.discount_percent %}<span class="sw-vet-offer-nota__pill">−{{ offer.discount_percent }}%</span>{% endif %}
+		</div>
+		{% elif offer.discount_percent %}
+		<p style="margin:0 0 0.35rem;"><span class="sw-vet-offer-nota__pill" style="position:static;display:inline-block;">−{{ offer.discount_percent }}%</span></p>
+		{% endif %}
+		<p class="sw-vet-offer-nota__partner"><strong>Partener:</strong> {{ offer.partner_display_name }}</p>
+		<h2 class="sw-vet-offer-nota__title">{{ offer.title }}</h2>
+		{% if offer.description %}
+		<p class="sw-vet-offer-nota__desc">{{ offer.description }}</p>
+		{% endif %}
+		<div class="sw-vet-offer-nota__meta">
+			{% if offer.price_hint %}<p><strong>Preț indicat:</strong> {{ offer.price_hint }}</p>{% endif %}
+			{% if offer.discount_percent %}<p><strong>Discount:</strong> {{ offer.discount_percent }}%</p>{% endif %}
+		</div>
+		<p class="sw-vet-offer-nota__note">
+			Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: primești pe <strong>email</strong> un <strong>cod alfanumeric comun</strong> cu partenerul, datele de contact și detalii despre ofertă. Colaboratorul primește aceeași solicitare cu datele tale (nume, email; din cont: telefon și localitate dacă sunt completate). Verifică și folderul <strong>Spam</strong>. Dacă oferta are număr limitat de locuri, după epuizare dispare din listările publice.
+		</p>
+		<form method="post" action="{% url 'public_offer_request' offer.pk %}">
+			{% csrf_token %}
+			{% if user.is_authenticated %}
+			<p class="sw-vet-offer-nota__email-hint">Vom trimite datele la: <strong>{{ user.email }}</strong></p>
+			{% else %}
+			<label class="sw-vet-offer-nota__label">
+				<span>Nume (opțional)</span>
+				<input type="text" name="name" maxlength="120" placeholder="Prenume" autocomplete="name" />
+			</label>
+			<label class="sw-vet-offer-nota__label">
+				<span>Email *</span>
+				<input type="email" name="email" required placeholder="adresa@email.com" autocomplete="email" />
+			</label>
+			{% endif %}
+			<button type="submit" class="sw-vet-offer-nota__cta">Vreau această ofertă</button>
+		</form>
+	</article>
+</template>
+{% endfor %}
+{% for offer in shop_offers %}
+<template id="sw-vet-offer-modal-tpl-{{ offer.pk }}">
+	<article class="sw-vet-offer-nota">
+		{% if offer.image %}
+		<div class="sw-vet-offer-nota__img-wrap">
+			<img class="sw-vet-offer-nota__img" src="{{ offer.image.url }}" alt="" loading="lazy" />
+			{% if offer.discount_percent %}<span class="sw-vet-offer-nota__pill">−{{ offer.discount_percent }}%</span>{% endif %}
+		</div>
+		{% elif offer.discount_percent %}
+		<p style="margin:0 0 0.35rem;"><span class="sw-vet-offer-nota__pill" style="position:static;display:inline-block;">−{{ offer.discount_percent }}%</span></p>
+		{% endif %}
+		<p class="sw-vet-offer-nota__partner"><strong>Partener:</strong> {{ offer.partner_display_name }}</p>
+		<h2 class="sw-vet-offer-nota__title">{{ offer.title }}</h2>
+		{% if offer.description %}
+		<p class="sw-vet-offer-nota__desc">{{ offer.description }}</p>
+		{% endif %}
+		<div class="sw-vet-offer-nota__meta">
+			{% if offer.price_hint %}<p><strong>Preț indicat:</strong> {{ offer.price_hint }}</p>{% endif %}
+			{% if offer.discount_percent %}<p><strong>Discount:</strong> {{ offer.discount_percent }}%</p>{% endif %}
+		</div>
+		<p class="sw-vet-offer-nota__note">
+			Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: primești pe <strong>email</strong> un <strong>cod alfanumeric comun</strong> cu partenerul, datele de contact și detalii despre ofertă. Colaboratorul primește aceeași solicitare cu datele tale (nume, email; din cont: telefon și localitate dacă sunt completate). Verifică și folderul <strong>Spam</strong>. Dacă oferta are număr limitat de locuri, după epuizare dispare din listările publice.
 		</p>
 		<form method="post" action="{% url 'public_offer_request' offer.pk %}">
 			{% csrf_token %}

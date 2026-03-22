@@ -1574,6 +1574,21 @@ def signup_colaborator_view(request):
     return redirect(reverse("signup_verificare_sms"))
 
 
+def _servicii_offers_for_kind(partner_kind: str, max_n: int = 24):
+    """Oferte publice pentru S3/S5/S4 după partner_kind (snapshot la creare), nu după bifa curentă din profil."""
+    try:
+        base = CollaboratorServiceOffer.objects.filter(is_active=True, partner_kind=partner_kind)
+        offers = list(
+            _collab_offer_valid_public_qs(base)
+            .select_related("collaborator")
+            .order_by("-created_at")[:max_n]
+        )
+        pad = max(0, max_n - len(offers))
+        return offers, [None] * pad
+    except Exception:
+        return [], [None] * max_n
+
+
 def servicii_view(request):
     """Pagina Servicii – S1/S3 benzi ca PT, strip_pets pentru poze."""
     strip_pets = []
@@ -1581,24 +1596,16 @@ def servicii_view(request):
         if i >= 20:
             break
         strip_pets.append({"imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE)})
-    vet_offers = []
-    vet_offer_empty_slots = []
-    max_vet = 24
-    try:
-        vet_base = CollaboratorServiceOffer.objects.filter(
-            is_active=True,
-            collaborator__profile__collaborator_type__iexact="cabinet",
-        )
-        vet_offers = list(
-            _collab_offer_valid_public_qs(vet_base)
-            .select_related("collaborator")
-            .order_by("-created_at")[:max_vet]
-        )
-        pad = max(0, max_vet - len(vet_offers))
-        vet_offer_empty_slots = [None] * pad
-    except Exception:
-        vet_offers = []
-        vet_offer_empty_slots = [None] * max_vet
+    max_slot = 24
+    vet_offers, vet_offer_empty_slots = _servicii_offers_for_kind(
+        CollaboratorServiceOffer.PARTNER_KIND_CABINET, max_slot
+    )
+    groom_offers, groom_offer_empty_slots = _servicii_offers_for_kind(
+        CollaboratorServiceOffer.PARTNER_KIND_SERVICII, max_slot
+    )
+    shop_offers, shop_offer_empty_slots = _servicii_offers_for_kind(
+        CollaboratorServiceOffer.PARTNER_KIND_MAGAZIN, max_slot
+    )
     return render(
         request,
         "anunturi/servicii.html",
@@ -1606,6 +1613,10 @@ def servicii_view(request):
             "strip_pets": strip_pets,
             "vet_offers": vet_offers,
             "vet_offer_empty_slots": vet_offer_empty_slots,
+            "groom_offers": groom_offers,
+            "groom_offer_empty_slots": groom_offer_empty_slots,
+            "shop_offers": shop_offers,
+            "shop_offer_empty_slots": shop_offer_empty_slots,
         },
     )
 
@@ -4027,6 +4038,7 @@ def collab_offer_add_view(request):
         return redirect("collab_offer_new")
     CollaboratorServiceOffer.objects.create(
         collaborator=request.user,
+        partner_kind=tip,
         title=title,
         description=description,
         price_hint=price_hint,
@@ -4044,7 +4056,10 @@ def collab_offer_add_view(request):
 @collab_magazin_required
 @require_POST
 def collab_offer_toggle_active_view(request, pk: int):
-    offer = get_object_or_404(CollaboratorServiceOffer, pk=pk, collaborator=request.user)
+    tip = _collaborator_tip_partener(request)
+    offer = get_object_or_404(
+        CollaboratorServiceOffer, pk=pk, collaborator=request.user, partner_kind=tip
+    )
     offer.is_active = not offer.is_active
     offer.save(update_fields=["is_active"])
     if offer.is_active:
@@ -4058,7 +4073,10 @@ def collab_offer_toggle_active_view(request, pk: int):
 @collab_magazin_required
 @require_POST
 def collab_offer_delete_view(request, pk: int):
-    offer = get_object_or_404(CollaboratorServiceOffer, pk=pk, collaborator=request.user)
+    tip = _collaborator_tip_partener(request)
+    offer = get_object_or_404(
+        CollaboratorServiceOffer, pk=pk, collaborator=request.user, partner_kind=tip
+    )
     offer.delete()
     messages.success(request, "Oferta a fost ștearsă.")
     return redirect("collab_offers_control")
@@ -4067,8 +4085,9 @@ def collab_offer_delete_view(request, pk: int):
 @login_required
 @collab_magazin_required
 def collab_offers_control_view(request):
+    tip = _collaborator_tip_partener(request)
     offers_qs = (
-        CollaboratorServiceOffer.objects.filter(collaborator=request.user)
+        CollaboratorServiceOffer.objects.filter(collaborator=request.user, partner_kind=tip)
         .annotate(claims_c=Count("claims"))
         .order_by("-created_at")[:100]
     )
@@ -4078,7 +4097,6 @@ def collab_offers_control_view(request):
             o.remaining_slots = max(0, int(o.quantity_available) - int(o.claims_c))
         else:
             o.remaining_slots = None
-    tip = _collaborator_tip_partener(request)
     vet_kpi_offers_total = len(offers)
     vet_kpi_offers_active = sum(1 for o in offers if o.is_active)
     vet_kpi_offers_inactive = vet_kpi_offers_total - vet_kpi_offers_active
@@ -4087,7 +4105,9 @@ def collab_offers_control_view(request):
         int(o.remaining_slots) for o in offers if o.remaining_slots is not None
     )
     recent_claims = list(
-        CollaboratorOfferClaim.objects.filter(offer__collaborator=request.user)
+        CollaboratorOfferClaim.objects.filter(
+            offer__collaborator=request.user, offer__partner_kind=tip
+        )
         .select_related("offer")
         .order_by("-created_at")[:200]
     )
@@ -4126,11 +4146,13 @@ def collab_offer_new_view(request):
 @collab_magazin_required
 @require_http_methods(["GET", "POST"])
 def collab_offer_edit_view(request, pk: int):
-    offer = get_object_or_404(CollaboratorServiceOffer, pk=pk, collaborator=request.user)
+    tip = _collaborator_tip_partener(request)
+    offer = get_object_or_404(
+        CollaboratorServiceOffer, pk=pk, collaborator=request.user, partner_kind=tip
+    )
     ap = getattr(request.user, "account_profile", None)
     if not ap or ap.role != AccountProfile.ROLE_COLLAB:
         return redirect("home")
-    tip = _collaborator_tip_partener(request)
     if tip not in ("cabinet", "servicii", "magazin"):
         messages.error(request, "Tip partener necunoscut.")
         return redirect("collab_offers_control")

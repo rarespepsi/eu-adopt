@@ -16,7 +16,7 @@
 		<div class="mylvet-actions" id="mesaje-collab" tabindex="-1">
 			<a href="{% url 'collab_offers_control' %}" class="mylvet-btn mylvet-btn-primary">{{ nav_magazinul_meu_label|default:"MyListVet" }}</a>
 			<a href="{% url 'collab_offer_new' %}" class="mylvet-btn mylvet-btn-add">Adaugă ofertă</a>
-			<a href="{% url 'servicii' %}#S3" class="mylvet-btn mylvet-btn-secondary">Vezi în Servicii</a>
+			<a href="{% url 'servicii' %}{% if collab_tip_partener == 'cabinet' %}#S3{% elif collab_tip_partener == 'servicii' %}#S5{% else %}#S4{% endif %}" class="mylvet-btn mylvet-btn-secondary">Vezi în Servicii</a>
 			<button type="button" id="magazinOpenInboxBtn" class="mylvet-btn mylvet-btn-secondary">Mesaje</button>
 			<div class="mylvet-btn mylvet-btn-counter" aria-label="Rezumat oferte">
 				Active {{ vet_kpi_offers_active }} / Total {{ vet_kpi_offers_total }} / Inactive {{ vet_kpi_offers_inactive }}
