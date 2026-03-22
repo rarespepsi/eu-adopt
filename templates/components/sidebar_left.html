@@ -7,7 +7,7 @@
 		<div class="mypet-left-box mypet-left-box-3" data-box="L3"></div>
 	</div>
 {% elif show_magazinul_meu_nav and request.resolver_match %}
-	{% if request.resolver_match.url_name == "magazinul_meu" or request.resolver_match.url_name == "collab_offers_control" or request.resolver_match.url_name == "collab_offer_new" %}
+	{% if request.resolver_match.url_name == "magazinul_meu" or request.resolver_match.url_name == "collab_offers_control" or request.resolver_match.url_name == "collab_offer_new" or request.resolver_match.url_name == "collab_offer_edit" %}
 	<div class="mypet-left-boxes" aria-label="Panou stânga {{ nav_magazinul_meu_label|default:'Magazinul meu' }}">
 		<div class="mypet-left-box mypet-left-box-1" data-box="M1"></div>
 		<div class="mypet-left-box mypet-left-box-2" data-box="M2"></div>

@@ -30,9 +30,12 @@
 					{% if offer.discount_percent %}
 					<p><strong>Discount:</strong> {{ offer.discount_percent }}%</p>
 					{% endif %}
+					{% if offer.valid_from or offer.valid_until %}
+					<p><strong>Valabilitate:</strong> {% if offer.valid_from %}{{ offer.valid_from|date:"d.m.Y" }}{% else %}—{% endif %} → {% if offer.valid_until %}{{ offer.valid_until|date:"d.m.Y" }}{% else %}—{% endif %}</p>
+					{% endif %}
 				</div>
 				<p class="oferte-d-note">
-					Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: îți trimitem pe <strong>email</strong> datele de contact ale cabinetului (din profilul partenerului).
+					Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: primești pe <strong>email</strong> un <strong>cod alfanumeric comun</strong> cu cabinetul, datele de contact ale partenerului și detalii despre ofertă. Colaboratorul primește aceeași solicitare cu datele tale (nume, email; din cont: telefon și localitate dacă sunt completate). Verifică și folderul <strong>Spam</strong>. Dacă oferta are număr limitat de locuri, după epuizare dispare din listările publice.
 				</p>
 				<form class="oferte-d-form" method="post" action="{% url 'public_offer_request' offer.pk %}">
 					{% csrf_token %}

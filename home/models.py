@@ -469,7 +469,7 @@ class AdoptionRequest(models.Model):
 
 class CollaboratorServiceOffer(models.Model):
     """
-    Ofertă simplă postată de colaborator (cabinet / servicii): imagine, titlu, text scurt,
+    Ofertă simplă postată de colaborator (cabinet / servicii): imagine, titlu, scurtă descriere,
     preț opțional și/sau discount %. Publică pe /oferte-parteneri/; vizitatorul poate
     cere pe email datele de contact ale cabinetului (fără programări în platformă).
     """
@@ -480,7 +480,7 @@ class CollaboratorServiceOffer(models.Model):
         related_name="service_offers",
     )
     title = models.CharField("Titlu serviciu", max_length=160)
-    description = models.CharField("Text scurt", max_length=500, blank=True)
+    description = models.CharField("Scurtă descriere produs", max_length=500, blank=True)
     image = models.ImageField("Imagine", upload_to="collab_offers/")
     price_hint = models.CharField("Preț (text scurt)", max_length=80, blank=True)
     discount_percent = models.PositiveSmallIntegerField(
@@ -489,7 +489,37 @@ class CollaboratorServiceOffer(models.Model):
         blank=True,
         help_text="Opțional, 1–100 (ex. 25 pentru 25%).",
     )
+    quantity_available = models.PositiveIntegerField(
+        "Număr oferte valabile",
+        null=True,
+        blank=True,
+        help_text="Opțional: câte oferte/locuri sunt disponibile (ex. 10).",
+    )
+    valid_from = models.DateField(
+        "Valabilă de la",
+        null=True,
+        blank=True,
+        help_text="Prima zi în care oferta e valabilă (calendar România).",
+    )
+    valid_until = models.DateField(
+        "Valabilă până la",
+        null=True,
+        blank=True,
+        help_text="Ultima zi de valabilitate (inclusiv).",
+    )
     is_active = models.BooleanField("Activă pe site", default=True)
+    # Notificări email (max. 1 / tip / perioadă stoc sau / perioadă valabilitate; se resetează la edit)
+    expiry_notice_sent_for_valid_until = models.DateField(
+        "Reminder expirare trimis pentru data sfârșit",
+        null=True,
+        blank=True,
+        help_text="Dacă e setat la aceeași valoare ca valid_until, nu mai trimitem iar mailul T−5 zile.",
+    )
+    low_stock_notice_sent = models.BooleanField(
+        "Reminder stoc 1 rămas trimis",
+        default=False,
+        help_text="True după mailul „mai ai 1 ofertă”; se resetează la creșterea stocului în fișă.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -499,6 +529,7 @@ class CollaboratorServiceOffer(models.Model):
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["collaborator", "is_active", "created_at"]),
+            models.Index(fields=["is_active", "valid_until"]),
         ]
 
     def __str__(self):
@@ -510,4 +541,41 @@ class CollaboratorServiceOffer(models.Model):
             return (p.company_display_name or "").strip() or self.collaborator.username
         except UserProfile.DoesNotExist:
             return self.collaborator.username
+
+
+class CollaboratorOfferClaim(models.Model):
+    """
+    O „acceptare” a ofertei de către un utilizator: generează cod unic,
+    trimite emailuri cumpărător + colaborator, consumă din stoc.
+    """
+
+    offer = models.ForeignKey(
+        CollaboratorServiceOffer,
+        on_delete=models.CASCADE,
+        related_name="claims",
+    )
+    code = models.CharField("Cod ofertă", max_length=20, unique=True, db_index=True)
+    buyer_user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="collab_offer_claims",
+    )
+    buyer_email = models.EmailField("Email cumpărător")
+    buyer_name_snapshot = models.CharField("Nume (snapshot)", max_length=200, blank=True)
+    buyer_phone_snapshot = models.CharField("Telefon (snapshot)", max_length=40, blank=True)
+    buyer_locality_snapshot = models.CharField("Localitate (snapshot)", max_length=200, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Acceptare ofertă colaborator"
+        verbose_name_plural = "Acceptări oferte colaboratori"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["offer", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.code} → ofertă {self.offer_id}"
 

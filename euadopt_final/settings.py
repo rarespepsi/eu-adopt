@@ -131,7 +131,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Bucharest'
 
 USE_I18N = True
 
@@ -148,6 +148,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Fișiere încărcate de utilizatori (ex: poză profil) – URL de la rădăcina site-ului
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Link absolut în emailuri (ex. remindere oferte colaborator). Ex.: https://www.eu-adopt.ro
+SITE_BASE_URL = os.environ.get("EUADOPT_SITE_BASE_URL", "").strip().rstrip("/")
 
 # Upload limits (video demo / fișiere MyPet)
 # Implicit Django poate bloca request-uri > ~2.5MB (DATA_UPLOAD_MAX_MEMORY_SIZE).

@@ -48,8 +48,8 @@
 		{% block main_wrap_after_header %}
 		<section class="wrapper" id="main_content">
 			{% if messages %}
-			<ul class="django-messages" style="list-style:none;margin:0;padding:0.35rem 0.75rem;background:#fff8e1;border-bottom:1px solid #ffe082;color:#5d4037;font-size:0.9rem;">
-				{% for message in messages %}<li>{{ message }}</li>{% endfor %}
+			<ul id="djangoMessagesBanner" class="django-messages" style="list-style:none;margin:0;padding:0.35rem 0.75rem;background:#fff8e1;border-bottom:1px solid #ffe082;color:#5d4037;font-size:0.9rem;">
+				{% for message in messages %}<li data-level="{{ message.level_tag }}">{{ message }}</li>{% endfor %}
 			</ul>
 			{% endif %}
 			{% block home_top_strip %}{% endblock %}
@@ -72,5 +72,23 @@
 	{% include "components/login_required_modal.html" %}
 	<script src="{% static 'js/wishlist.js' %}?v=1"></script>
 	{% block extra_js %}{% endblock %}
+	<script>
+	(function () {
+		var root = document.getElementById("djangoMessagesBanner");
+		if (!root) return;
+		var lis = root.querySelectorAll("li[data-level]");
+		if (!lis.length) return;
+		for (var i = 0; i < lis.length; i++) {
+			if ((lis[i].getAttribute("data-level") || "") !== "success") return;
+		}
+		window.setTimeout(function () {
+			root.style.transition = "opacity 0.35s ease";
+			root.style.opacity = "0";
+			window.setTimeout(function () {
+				if (root.parentNode) root.parentNode.removeChild(root);
+			}, 380);
+		}, 2000);
+	})();
+	</script>
 </body>
 </html>

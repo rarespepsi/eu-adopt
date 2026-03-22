@@ -6,6 +6,7 @@ from .models import (
     AdoptionRequest,
     CollabServiceMessage,
     CollaboratorServiceOffer,
+    CollaboratorOfferClaim,
 )
 
 
@@ -47,7 +48,27 @@ class UserPostAdmin(admin.ModelAdmin):
 
 @admin.register(CollaboratorServiceOffer)
 class CollaboratorServiceOfferAdmin(admin.ModelAdmin):
-    list_display = ("title", "collaborator", "discount_percent", "is_active", "created_at")
+    list_display = (
+        "title",
+        "collaborator",
+        "valid_from",
+        "valid_until",
+        "quantity_available",
+        "discount_percent",
+        "is_active",
+        "expiry_notice_sent_for_valid_until",
+        "low_stock_notice_sent",
+        "created_at",
+    )
     list_filter = ("is_active",)
     search_fields = ("title", "description", "collaborator__username")
     raw_id_fields = ("collaborator",)
+
+
+@admin.register(CollaboratorOfferClaim)
+class CollaboratorOfferClaimAdmin(admin.ModelAdmin):
+    list_display = ("code", "offer", "buyer_email", "buyer_name_snapshot", "created_at")
+    list_filter = ("created_at",)
+    search_fields = ("code", "buyer_email", "buyer_name_snapshot", "offer__title")
+    raw_id_fields = ("offer", "buyer_user")
+    readonly_fields = ("created_at",)

@@ -5,6 +5,8 @@ REGULĂ: Orice modificare în home (punct, virgulă, orice) doar cu aprobarea ti
 """
 import logging
 import random
+import secrets
+from datetime import date, datetime
 from copy import deepcopy
 from itertools import cycle
 from django.shortcuts import render, redirect, get_object_or_404
@@ -18,7 +20,8 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
 import os
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
+from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
 from .data import DEMO_DOGS, DEMO_DOG_IMAGE, A2_QUOTE_POOL, HERO_SLIDER_IMAGES
@@ -32,6 +35,7 @@ from .models import (
     CollabServiceMessage,
     AdoptionRequest,
     CollaboratorServiceOffer,
+    CollaboratorOfferClaim,
 )
 from django.contrib.auth import get_user_model
 from functools import wraps
@@ -1581,11 +1585,12 @@ def servicii_view(request):
     vet_offer_empty_slots = []
     max_vet = 24
     try:
+        vet_base = CollaboratorServiceOffer.objects.filter(
+            is_active=True,
+            collaborator__profile__collaborator_type__iexact="cabinet",
+        )
         vet_offers = list(
-            CollaboratorServiceOffer.objects.filter(
-                is_active=True,
-                collaborator__profile__collaborator_type__iexact="cabinet",
-            )
+            _collab_offer_valid_public_qs(vet_base)
             .select_related("collaborator")
             .order_by("-created_at")[:max_vet]
         )
@@ -3842,6 +3847,138 @@ def _cabinet_contact_lines_for_email(user):
     return "\n".join(lines) if lines else "(completează date firmă în contul colaborator)"
 
 
+_OFFER_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+
+def _generate_collab_offer_code() -> str:
+    for _ in range(32):
+        code = "".join(secrets.choice(_OFFER_CODE_ALPHABET) for _ in range(10))
+        if not CollaboratorOfferClaim.objects.filter(code=code).exists():
+            return code
+    return secrets.token_hex(6).upper()
+
+
+def _buyer_snapshot_for_offer_request(request, post_name: str, post_email: str) -> dict:
+    """Nume, email, telefon, localitate pentru email colaborator (din cont dacă e logat)."""
+    email = (post_email or "").strip()
+    name = (post_name or "").strip()
+    phone = ""
+    locality = ""
+    buyer_user = request.user if getattr(request.user, "is_authenticated", False) else None
+    if buyer_user:
+        email = (buyer_user.email or email or "").strip()
+        fn = (buyer_user.first_name or "").strip()
+        ln = (buyer_user.last_name or "").strip()
+        name = (f"{fn} {ln}".strip() or buyer_user.get_full_name() or buyer_user.username or name).strip()
+        prof = getattr(buyer_user, "profile", None)
+        if prof:
+            phone = (prof.phone or "").strip()
+            loc_bits = [x for x in [prof.oras, prof.judet] if x and str(x).strip()]
+            locality = ", ".join(loc_bits)
+    return {
+        "email": email,
+        "name": name or "Utilizator",
+        "phone": phone,
+        "locality": locality,
+        "user": buyer_user,
+    }
+
+
+def _cabinet_block_for_buyer_email(collab_user) -> str:
+    """Text pentru cumpărător: cabinet, telefon, persoană contact, email."""
+    prof = getattr(collab_user, "profile", None)
+    contact_person = (collab_user.get_full_name() or "").strip() or collab_user.username
+    lines = []
+    if prof and (prof.company_display_name or "").strip():
+        lines.append(f"Cabinet / partener: {prof.company_display_name.strip()}")
+    else:
+        lines.append(f"Cabinet / partener: {contact_person}")
+    if prof and (prof.phone or "").strip():
+        lines.append(f"Telefon: {prof.phone.strip()}")
+    if collab_user.email:
+        lines.append(f"Email: {collab_user.email}")
+    lines.append(f"Persoană de contact: {contact_person}")
+    return "\n".join(lines)
+
+
+def _redirect_after_public_offer_request(request, pk: int):
+    ref = (request.META.get("HTTP_REFERER") or "").lower()
+    if "servicii" in ref:
+        return redirect(reverse("servicii") + "#S3")
+    return redirect(reverse("public_offer_detail", args=[pk]))
+
+
+def _ro_today() -> date:
+    """Dată calendaristică locală (setări Django; RO = același fus pe teritoriu)."""
+    return timezone.localdate()
+
+
+def _parse_post_date_iso(s: str):
+    s = (s or "").strip()
+    if not s:
+        return None
+    try:
+        return datetime.strptime(s, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _collab_offer_valid_public_qs(base_qs):
+    """Oferte în fereastra de date; NULL pe margini = fără limită (oferte vechi)."""
+    today = _ro_today()
+    return base_qs.filter(
+        (Q(valid_from__isnull=True) | Q(valid_from__lte=today))
+        & (Q(valid_until__isnull=True) | Q(valid_until__gte=today))
+    )
+
+
+def _collab_offer_is_valid_today(offer) -> bool:
+    today = _ro_today()
+    if offer.valid_from is not None and today < offer.valid_from:
+        return False
+    if offer.valid_until is not None and today > offer.valid_until:
+        return False
+    return True
+
+
+def _client_ip_for_rate_limit(request) -> str:
+    xff = (request.META.get("HTTP_X_FORWARDED_FOR") or "").strip()
+    if xff:
+        return xff.split(",")[0].strip() or "unknown"
+    return (request.META.get("REMOTE_ADDR") or "").strip() or "unknown"
+
+
+def _public_offer_request_rate_limited(request, pk: int) -> bool:
+    """
+    Limitează abuzul: max. 15 solicitări reușite / 10 min / IP / ofertă
+    și max. 50 / oră / IP la nivel global (toate ofertele).
+    """
+    ip = _client_ip_for_rate_limit(request)
+    per_offer = cache.get(f"collab_orl_po:{ip}:{pk}")
+    if per_offer is not None and int(per_offer) >= 15:
+        return True
+    global_key = f"collab_orl_gl:{ip}"
+    g = cache.get(global_key)
+    if g is not None and int(g) >= 50:
+        return True
+    return False
+
+
+def _public_offer_request_rate_limit_touch(request, pk: int) -> None:
+    """Incrementează contoare după o solicitare înregistrată cu succes."""
+    ip = _client_ip_for_rate_limit(request)
+    po_key = f"collab_orl_po:{ip}:{pk}"
+    gl_key = f"collab_orl_gl:{ip}"
+    try:
+        cache.incr(po_key)
+    except ValueError:
+        cache.add(po_key, 1, 600)
+    try:
+        cache.incr(gl_key)
+    except ValueError:
+        cache.add(gl_key, 1, 3600)
+
+
 @login_required
 @collab_magazin_required
 @require_POST
@@ -3862,12 +3999,28 @@ def collab_offer_add_view(request):
         d = int(discount_raw)
         if 1 <= d <= 100:
             discount_percent = d
+    qty_raw = (request.POST.get("quantity_available") or "").strip()
+    quantity_available = None
+    if qty_raw.isdigit():
+        q = int(qty_raw)
+        if 0 < q <= 999_999:
+            quantity_available = q
+    valid_from = _parse_post_date_iso(request.POST.get("valid_from"))
+    valid_until = _parse_post_date_iso(request.POST.get("valid_until"))
     image = request.FILES.get("image")
     errs = []
     if not title:
         errs.append("Completează titlul serviciului.")
     if not image:
         errs.append("Alege o imagine pentru ofertă.")
+    if not quantity_available:
+        errs.append("Introdu numărul de oferte valabile (minimum 1). Oferta iese din lista publică când se epuizează locurile.")
+    if not valid_from:
+        errs.append("Alege data de început a valabilității ofertei.")
+    if not valid_until:
+        errs.append("Alege data de sfârșit a valabilității ofertei.")
+    if valid_from and valid_until and valid_until < valid_from:
+        errs.append("Data de sfârșit trebuie să fie după sau egală cu data de început.")
     if errs:
         for e in errs:
             messages.error(request, e)
@@ -3878,9 +4031,26 @@ def collab_offer_add_view(request):
         description=description,
         price_hint=price_hint,
         discount_percent=discount_percent,
+        quantity_available=quantity_available,
+        valid_from=valid_from,
+        valid_until=valid_until,
         image=image,
     )
     messages.success(request, "Oferta a fost publicată (pagina Oferte parteneri).")
+    return redirect("collab_offers_control")
+
+
+@login_required
+@collab_magazin_required
+@require_POST
+def collab_offer_toggle_active_view(request, pk: int):
+    offer = get_object_or_404(CollaboratorServiceOffer, pk=pk, collaborator=request.user)
+    offer.is_active = not offer.is_active
+    offer.save(update_fields=["is_active"])
+    if offer.is_active:
+        messages.success(request, "Oferta este activă (apare în listări publice).")
+    else:
+        messages.success(request, "Oferta a fost dezactivată.")
     return redirect("collab_offers_control")
 
 
@@ -3897,24 +4067,45 @@ def collab_offer_delete_view(request, pk: int):
 @login_required
 @collab_magazin_required
 def collab_offers_control_view(request):
-    offers = list(
-        CollaboratorServiceOffer.objects.filter(collaborator=request.user).order_by("-created_at")[:100]
+    offers_qs = (
+        CollaboratorServiceOffer.objects.filter(collaborator=request.user)
+        .annotate(claims_c=Count("claims"))
+        .order_by("-created_at")[:100]
     )
+    offers = list(offers_qs)
+    for o in offers:
+        if o.quantity_available is not None:
+            o.remaining_slots = max(0, int(o.quantity_available) - int(o.claims_c))
+        else:
+            o.remaining_slots = None
     tip = _collaborator_tip_partener(request)
     vet_kpi_offers_total = len(offers)
     vet_kpi_offers_active = sum(1 for o in offers if o.is_active)
     vet_kpi_offers_inactive = vet_kpi_offers_total - vet_kpi_offers_active
+    vet_kpi_claims_total = sum(int(getattr(o, "claims_c", 0) or 0) for o in offers)
+    vet_kpi_slots_remaining_sum = sum(
+        int(o.remaining_slots) for o in offers if o.remaining_slots is not None
+    )
+    recent_claims = list(
+        CollaboratorOfferClaim.objects.filter(offer__collaborator=request.user)
+        .select_related("offer")
+        .order_by("-created_at")[:200]
+    )
     return render(
         request,
         "anunturi/magazinul_meu_oferte_control.html",
         {
             "collab_offers": offers,
+            "collab_recent_claims": recent_claims,
             "open_messages": (request.GET.get("open_messages") or "").strip() == "1",
             "tip_just_updated": (request.GET.get("tip_updated") or "").strip() == "1",
             "collab_tip_partener": tip,
             "vet_kpi_offers_total": vet_kpi_offers_total,
             "vet_kpi_offers_active": vet_kpi_offers_active,
             "vet_kpi_offers_inactive": vet_kpi_offers_inactive,
+            "vet_kpi_claims_total": vet_kpi_claims_total,
+            "vet_kpi_slots_remaining_sum": vet_kpi_slots_remaining_sum,
+            "ro_today": _ro_today(),
         },
     )
 
@@ -3931,11 +4122,116 @@ def collab_offer_new_view(request):
     )
 
 
+@login_required
+@collab_magazin_required
+@require_http_methods(["GET", "POST"])
+def collab_offer_edit_view(request, pk: int):
+    offer = get_object_or_404(CollaboratorServiceOffer, pk=pk, collaborator=request.user)
+    ap = getattr(request.user, "account_profile", None)
+    if not ap or ap.role != AccountProfile.ROLE_COLLAB:
+        return redirect("home")
+    tip = _collaborator_tip_partener(request)
+    if tip not in ("cabinet", "servicii", "magazin"):
+        messages.error(request, "Tip partener necunoscut.")
+        return redirect("collab_offers_control")
+
+    claims_count = CollaboratorOfferClaim.objects.filter(offer=offer).count()
+
+    if request.method == "POST":
+        old_valid_from = offer.valid_from
+        old_valid_until = offer.valid_until
+        old_quantity_available = offer.quantity_available
+        title = (request.POST.get("title") or "").strip()
+        description = (request.POST.get("description") or "").strip()[:500]
+        price_hint = (request.POST.get("price_hint") or "").strip()[:80]
+        discount_raw = (request.POST.get("discount_percent") or "").strip()
+        discount_percent = None
+        if discount_raw.isdigit():
+            d = int(discount_raw)
+            if 1 <= d <= 100:
+                discount_percent = d
+        qty_raw = (request.POST.get("quantity_available") or "").strip()
+        quantity_available = None
+        if qty_raw.isdigit():
+            q = int(qty_raw)
+            if 0 < q <= 999_999:
+                if q < claims_count:
+                    messages.error(
+                        request,
+                        f"Numărul de oferte valabile nu poate fi mai mic decât solicitările deja înregistrate ({claims_count}).",
+                    )
+                    return redirect(reverse("collab_offer_edit", args=[pk]))
+                quantity_available = q
+        valid_from = _parse_post_date_iso(request.POST.get("valid_from"))
+        valid_until = _parse_post_date_iso(request.POST.get("valid_until"))
+        image = request.FILES.get("image")
+        errs = []
+        if not title:
+            errs.append("Completează titlul serviciului.")
+        if not quantity_available:
+            errs.append(
+                "Introdu numărul de oferte valabile (minimum 1). Valoarea nu poate fi sub numărul de solicitări existente."
+            )
+        if not valid_from:
+            errs.append("Alege data de început a valabilității ofertei.")
+        if not valid_until:
+            errs.append("Alege data de sfârșit a valabilității ofertei.")
+        if valid_from and valid_until and valid_until < valid_from:
+            errs.append("Data de sfârșit trebuie să fie după sau egală cu data de început.")
+        if errs:
+            for e in errs:
+                messages.error(request, e)
+            return redirect(reverse("collab_offer_edit", args=[pk]))
+        offer.title = title
+        offer.description = description
+        offer.price_hint = price_hint
+        offer.discount_percent = discount_percent
+        offer.quantity_available = quantity_available
+        offer.valid_from = valid_from
+        offer.valid_until = valid_until
+        if valid_from != old_valid_from or valid_until != old_valid_until:
+            offer.expiry_notice_sent_for_valid_until = None
+        if quantity_available != old_quantity_available:
+            offer.low_stock_notice_sent = False
+        update_fields = [
+            "title",
+            "description",
+            "price_hint",
+            "discount_percent",
+            "quantity_available",
+            "valid_from",
+            "valid_until",
+            "updated_at",
+        ]
+        if valid_from != old_valid_from or valid_until != old_valid_until:
+            update_fields.append("expiry_notice_sent_for_valid_until")
+        if quantity_available != old_quantity_available:
+            update_fields.append("low_stock_notice_sent")
+        if image:
+            offer.image = image
+            update_fields.append("image")
+        offer.save(update_fields=update_fields)
+        messages.success(request, "Oferta a fost actualizată.")
+        return redirect("collab_offers_control")
+
+    quantity_floor = max(1, int(claims_count))
+    return render(
+        request,
+        "anunturi/magazinul_meu_oferte_edit.html",
+        {
+            "offer": offer,
+            "collab_tip_partener": tip,
+            "claims_count": claims_count,
+            "quantity_floor": quantity_floor,
+        },
+    )
+
+
 def public_offers_list_view(request):
-    offers = (
-        CollaboratorServiceOffer.objects.filter(is_active=True)
-        .select_related("collaborator")
-        .order_by("-created_at")[:200]
+    offers = list(
+        _collab_offer_valid_public_qs(
+            CollaboratorServiceOffer.objects.filter(is_active=True).select_related("collaborator")
+        ).order_by("-created_at")[:200]
     )
     return render(
         request,
@@ -3946,7 +4242,9 @@ def public_offers_list_view(request):
 
 def public_offer_detail_view(request, pk: int):
     offer = get_object_or_404(
-        CollaboratorServiceOffer.objects.filter(is_active=True).select_related("collaborator"),
+        _collab_offer_valid_public_qs(
+            CollaboratorServiceOffer.objects.filter(is_active=True).select_related("collaborator")
+        ),
         pk=pk,
     )
     return render(
@@ -3959,44 +4257,141 @@ def public_offer_detail_view(request, pk: int):
 @require_POST
 @csrf_protect
 def public_offer_request_view(request, pk: int):
-    offer = get_object_or_404(CollaboratorServiceOffer.objects.filter(is_active=True), pk=pk)
-    collab = offer.collaborator
-    if request.user.is_authenticated:
-        dest_email = request.user.email
-        name = request.user.get_full_name() or request.user.username
-    else:
-        dest_email = (request.POST.get("email") or "").strip()
-        name = (request.POST.get("name") or "").strip() or "Utilizator"
-        if not dest_email:
-            messages.error(
-                request,
-                "Introdu adresa de email ca să primești datele cabinetului.",
-            )
-            return redirect(reverse("public_offer_detail", args=[pk]))
-    contact_block = _cabinet_contact_lines_for_email(collab)
-    subject = f"EU-Adopt – date contact: {offer.title}"
-    body = (
-        f"Bună {name},\n\n"
-        f"Ai solicitat oferta: {offer.title}\n\n"
-        f"--- Date cabinet / partener ---\n{contact_block}\n\n"
-        f"--- Despre ofertă ---\n"
-        f"{offer.description or '(fără text suplimentar)'}\n"
+    post_name = (request.POST.get("name") or "").strip()
+    post_email = (request.POST.get("email") or "").strip()
+    buyer = _buyer_snapshot_for_offer_request(request, post_name, post_email)
+    dest_email = buyer["email"]
+    if not dest_email:
+        messages.error(
+            request,
+            "Introdu adresa de email ca să primești confirmarea și datele cabinetului.",
+        )
+        return _redirect_after_public_offer_request(request, pk)
+
+    offer_preview = get_object_or_404(
+        _collab_offer_valid_public_qs(
+            CollaboratorServiceOffer.objects.filter(is_active=True).select_related("collaborator")
+        ),
+        pk=pk,
     )
-    if offer.price_hint:
-        body += f"\nPreț indicat: {offer.price_hint}\n"
-    if offer.discount_percent:
-        body += f"Discount: {offer.discount_percent}%\n"
-    body += "\n---\nEU-Adopt\n"
+    collab = offer_preview.collaborator
+    collab_mail = (collab.email or "").strip()
+    if not collab_mail:
+        messages.error(
+            request,
+            "Momentan nu putem trimite solicitarea: cabinetul nu are email configurat.",
+        )
+        return _redirect_after_public_offer_request(request, pk)
+
+    if _public_offer_request_rate_limited(request, pk):
+        messages.error(
+            request,
+            "Ai trimis prea multe solicitări recent. Încearcă din nou peste câteva minute.",
+        )
+        return _redirect_after_public_offer_request(request, pk)
+
+    code = None
+    offer = None
     try:
-        send_mail(subject, body, None, [dest_email], fail_silently=True)
+        with transaction.atomic():
+            offer = (
+                CollaboratorServiceOffer.objects.select_for_update()
+                .filter(is_active=True, pk=pk)
+                .first()
+            )
+            if not offer:
+                messages.error(request, "Oferta nu mai este disponibilă.")
+                return _redirect_after_public_offer_request(request, pk)
+            if not _collab_offer_is_valid_today(offer):
+                messages.error(
+                    request,
+                    "Oferta nu mai este în perioada de valabilitate.",
+                )
+                return _redirect_after_public_offer_request(request, pk)
+            claimed = CollaboratorOfferClaim.objects.filter(offer_id=offer.pk).count()
+            if offer.quantity_available is not None:
+                if claimed >= int(offer.quantity_available):
+                    messages.error(
+                        request,
+                        "Oferta nu mai are locuri disponibile.",
+                    )
+                    return _redirect_after_public_offer_request(request, pk)
+            code = _generate_collab_offer_code()
+            CollaboratorOfferClaim.objects.create(
+                offer=offer,
+                code=code,
+                buyer_user=buyer["user"],
+                buyer_email=dest_email,
+                buyer_name_snapshot=buyer["name"],
+                buyer_phone_snapshot=(buyer["phone"][:40] if buyer["phone"] else ""),
+                buyer_locality_snapshot=(buyer["locality"][:200] if buyer["locality"] else ""),
+            )
+            if offer.quantity_available is not None:
+                new_count = claimed + 1
+                if new_count >= int(offer.quantity_available):
+                    offer.is_active = False
+                    offer.save(update_fields=["is_active", "updated_at"])
     except Exception:
+        logging.exception("public_offer_request atomic failed pk=%s", pk)
+        messages.error(request, "A apărut o eroare. Încearcă din nou.")
+        return _redirect_after_public_offer_request(request, pk)
+
+    if not code or offer is None:
+        return _redirect_after_public_offer_request(request, pk)
+
+    _public_offer_request_rate_limit_touch(request, pk)
+
+    cabinet_txt = _cabinet_block_for_buyer_email(collab)
+    buyer_subject = f"EU-Adopt – cod ofertă {code}: {offer.title}"
+    buyer_body = (
+        f"Bună {buyer['name']},\n\n"
+        f"Codul ofertei (îl au și cabinetul și tu): {code}\n\n"
+        f"Ofertă: {offer.title}\n\n"
+        f"--- Date cabinet (contact) ---\n{cabinet_txt}\n\n"
+    )
+    if offer.description:
+        buyer_body += f"--- Descriere ---\n{offer.description}\n\n"
+    if offer.price_hint:
+        buyer_body += f"Preț indicat: {offer.price_hint}\n"
+    if offer.discount_percent:
+        buyer_body += f"Discount: {offer.discount_percent}%\n"
+    buyer_body += "\n---\nEU-Adopt\n"
+
+    collab_subject = f"EU-Adopt – solicitare ofertă [{code}] {offer.title}"
+    collab_body = (
+        f"Ai o nouă solicitare pentru ofertă.\n\n"
+        f"Cod ofertă (același ca la cumpărător): {code}\n"
+        f"Titlu ofertă: {offer.title}\n\n"
+        f"--- Date cumpărător ---\n"
+        f"Nume: {buyer['name']}\n"
+        f"Email: {dest_email}\n"
+    )
+    if buyer["phone"]:
+        collab_body += f"Telefon: {buyer['phone']}\n"
+    if buyer["locality"]:
+        collab_body += f"Localitate: {buyer['locality']}\n"
+    collab_body += "\n---\nEU-Adopt\n"
+
+    mail_errors = []
+    try:
+        send_mail(buyer_subject, buyer_body, None, [dest_email], fail_silently=False)
+    except Exception:
+        logging.exception("send_mail buyer offer claim")
+        mail_errors.append("cumpărător")
+    try:
+        send_mail(collab_subject, collab_body, None, [collab_mail], fail_silently=False)
+    except Exception:
+        logging.exception("send_mail collab offer claim")
+        mail_errors.append("cabinet")
+
+    if mail_errors:
         messages.warning(
             request,
-            "Nu am putut trimite emailul acum. Încearcă din nou.",
+            "Solicitarea a fost înregistrată, dar unele emailuri nu s-au putut trimite acum. Verifică datele din cont sau încearcă din nou.",
         )
-        return redirect(reverse("public_offer_detail", args=[pk]))
-    messages.success(
-        request,
-        "Ți-am trimis pe email datele de contact ale cabinetului. Verifică și Spam.",
-    )
-    return redirect(reverse("public_offer_detail", args=[pk]))
+    else:
+        messages.success(
+            request,
+            f"Ți-am trimis pe email codul ofertei ({code}) și datele cabinetului. Colaboratorul a fost anunțat. Verifică și Spam.",
+        )
+    return _redirect_after_public_offer_request(request, pk)

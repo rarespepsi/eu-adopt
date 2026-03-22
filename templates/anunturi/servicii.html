@@ -133,15 +133,38 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
-		max-height: 42%;
+		max-height: 48%;
 		overflow: hidden;
-		padding: 2px 3px;
-		font-size: clamp(8px, 1.5vw, 11px);
-		font-weight: 800;
+		padding: 2px 4px 3px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 1px;
 		line-height: 1.15;
 		color: #fff;
-		background: linear-gradient(transparent, rgba(0, 0, 0, 0.78));
+		background: linear-gradient(transparent, rgba(0, 0, 0, 0.82));
 		text-align: center;
+	}
+	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-title {
+		font-size: clamp(8px, 1.5vw, 11px);
+		font-weight: 800;
+		width: 100%;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-desc {
+		font-size: clamp(7px, 1.15vw, 9px);
+		font-weight: 600;
+		opacity: 0.95;
+		width: 100%;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		line-height: 1.2;
 	}
 	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-disc {
 		position: absolute;
@@ -154,6 +177,216 @@
 		padding: 1px 4px;
 		border-radius: 999px;
 		line-height: 1.2;
+	}
+	/* Modal ofertă cabinet (notă în prim-plan, fundal blurat) – în afara #main_content */
+	#swVetOfferModal {
+		position: fixed;
+		inset: 0;
+		z-index: 100060;
+		display: flex;
+		align-items: flex-start;
+		justify-content: center;
+		padding: min(0.5rem, 2vh) min(1rem, 3vw) min(0.75rem, 2vh);
+		box-sizing: border-box;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+	#swVetOfferModal[hidden] {
+		display: none !important;
+	}
+	.sw-vet-offer-modal__backdrop {
+		position: absolute;
+		inset: 0;
+		background: rgba(15, 20, 30, 0.42);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		cursor: pointer;
+	}
+	.sw-vet-offer-modal__panel {
+		position: relative;
+		z-index: 2;
+		/* ~jumătate din lățimea viewport */
+		width: min(50vw, 42rem, 100%);
+		/* Înălțime după conținut — încape în ecran fără scroll în notă (imagine redusă) */
+		height: auto;
+		max-height: min(96vh, calc(100dvh - 12px));
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		background: #fffef7;
+		border: 2px solid #d2b27a;
+		border-radius: 12px;
+		box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
+		overflow-x: hidden;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+		margin-bottom: 0.5rem;
+	}
+	.sw-vet-offer-modal__head {
+		flex: 0 0 auto;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		padding: 0.25rem 0.35rem 0;
+		background: linear-gradient(180deg, rgba(255, 248, 225, 0.95), #fffef7);
+		border-bottom: 1px solid #e6d5a8;
+	}
+	.sw-vet-offer-modal__close {
+		border: 1px solid #c62828;
+		background: #fff;
+		color: #c62828;
+		border-radius: 8px;
+		width: 2rem;
+		height: 2rem;
+		font-size: 1.35rem;
+		line-height: 1;
+		font-weight: 800;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+	}
+	.sw-vet-offer-modal__close:hover {
+		background: #ffebee;
+	}
+	.sw-vet-offer-modal__body {
+		flex: 0 1 auto;
+		min-height: 0;
+		overflow: visible;
+		padding: 0.5rem 0.85rem 1rem;
+	}
+	.sw-vet-offer-nota {
+		margin: 0;
+		font-size: 0.92rem;
+		color: #4e342e;
+		line-height: 1.4;
+	}
+	/* Zonă poză: −50% pe înălțime față de varianta mare, ca nota să fie vizibilă fără scroll */
+	.sw-vet-offer-nota__img-wrap {
+		position: relative;
+		width: 100%;
+		height: min(750px, 36vh);
+		min-height: min(400px, 24vh);
+		border-radius: 8px;
+		overflow: hidden;
+		background: #e0e0e0;
+		margin-bottom: 0.55rem;
+		flex-shrink: 0;
+	}
+	.sw-vet-offer-nota__img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		display: block;
+		object-fit: cover;
+		object-position: center;
+	}
+	.sw-vet-offer-nota__pill {
+		position: absolute;
+		top: 0.45rem;
+		right: 0.45rem;
+		background: #c62828;
+		color: #fff;
+		font-size: 0.85rem;
+		font-weight: 800;
+		padding: 0.18rem 0.55rem;
+		border-radius: 999px;
+	}
+	.sw-vet-offer-nota__partner {
+		margin: 0 0 0.3rem;
+		font-size: 0.85rem;
+		color: #546e7a;
+	}
+	.sw-vet-offer-nota__title {
+		margin: 0 0 0.4rem;
+		font-size: 1.2rem;
+		font-weight: 800;
+		color: #1b5e20;
+		line-height: 1.25;
+	}
+	.sw-vet-offer-nota__desc {
+		margin: 0 0 0.45rem;
+		font-size: 0.88rem;
+		color: #5d4037;
+		white-space: pre-wrap;
+	}
+	.sw-vet-offer-nota__meta {
+		font-size: 0.86rem;
+		margin: 0 0 0.45rem;
+		color: #6d4c41;
+	}
+	.sw-vet-offer-nota__meta p {
+		margin: 0.15rem 0;
+	}
+	.sw-vet-offer-nota__note {
+		font-size: 0.84rem;
+		line-height: 1.4;
+		color: #37474f;
+		padding: 0.55rem 0.65rem;
+		background: #e3f2fd;
+		border: 1px solid #90caf9;
+		border-radius: 8px;
+		margin: 0 0 0.55rem;
+	}
+	.sw-vet-offer-nota__label {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		margin-bottom: 0.45rem;
+		font-size: 0.82rem;
+		font-weight: 700;
+		color: #5d4037;
+	}
+	.sw-vet-offer-nota__label input {
+		font: inherit;
+		padding: 0.35rem 0.45rem;
+		border: 1px solid #b0bec5;
+		border-radius: 6px;
+	}
+	.sw-vet-offer-nota__email-hint {
+		font-size: 0.85rem;
+		margin: 0 0 0.45rem;
+		color: #37474f;
+	}
+	.sw-vet-offer-nota__cta {
+		width: 100%;
+		margin-top: 0.3rem;
+		padding: 0.6rem 0.85rem;
+		font-size: 1rem;
+		font-weight: 800;
+		color: #fff;
+		background: #2e7d32;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+	}
+	.sw-vet-offer-nota__cta:hover {
+		background: #1b5e20;
+	}
+	body.page-servicii .sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+	@media (max-width: 520px) {
+		.sw-vet-offer-modal__panel {
+			width: 100%;
+			height: auto;
+			max-height: min(98vh, calc(100dvh - 8px));
+			min-height: 0;
+		}
+		.sw-vet-offer-nota__img-wrap {
+			height: min(450px, 29vh);
+			min-height: min(200px, 22vh);
+		}
 	}
 </style>
 {% endblock %}
@@ -206,10 +439,15 @@
 							<div class="sw-s2-1-grid">
 								{% for offer in vet_offers %}
 								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S3.{{ forloop.counter }}">
-									<a class="sw-s2-1-vet-offer-link" href="{% url 'public_offer_detail' offer.pk %}">
+									<a class="sw-s2-1-vet-offer-link sw-vet-offer-modal-trigger" href="{% url 'public_offer_detail' offer.pk %}" data-modal-tpl="sw-vet-offer-modal-tpl-{{ offer.pk }}">
 										{% if offer.image %}<img src="{{ offer.image.url }}" alt="{{ offer.title }}" loading="lazy" />{% endif %}
 										{% if offer.discount_percent %}<span class="sw-vet-offer-disc">−{{ offer.discount_percent }}%</span>{% endif %}
-										<span class="sw-vet-offer-cap">{{ offer.title }}</span>
+										<span class="sw-vet-offer-cap">
+											<span class="sw-vet-offer-title">{{ offer.title }}</span>
+											{% if offer.description %}
+											<span class="sw-vet-offer-desc">{{ offer.description }}</span>
+											{% endif %}
+										</span>
 									</a>
 								</div>
 								{% endfor %}
@@ -264,6 +502,61 @@
 		</div>
 	</main>
 </section>
+
+<div id="swVetOfferModal" class="sw-vet-offer-modal-root" hidden aria-hidden="true">
+	<div class="sw-vet-offer-modal__backdrop" data-sw-vet-offer-close tabindex="-1" aria-hidden="true"></div>
+	<div class="sw-vet-offer-modal__panel" role="dialog" aria-modal="true" aria-labelledby="swVetOfferModalTitle">
+		<div class="sw-vet-offer-modal__head">
+			<span id="swVetOfferModalTitle" class="sr-only">Detalii ofertă cabinet</span>
+			<button type="button" class="sw-vet-offer-modal__close" data-sw-vet-offer-close aria-label="Închide">×</button>
+		</div>
+		<div class="sw-vet-offer-modal__body" id="swVetOfferModalMount"></div>
+	</div>
+</div>
+
+{% for offer in vet_offers %}
+<template id="sw-vet-offer-modal-tpl-{{ offer.pk }}">
+	<article class="sw-vet-offer-nota">
+		{% if offer.image %}
+		<div class="sw-vet-offer-nota__img-wrap">
+			<img class="sw-vet-offer-nota__img" src="{{ offer.image.url }}" alt="" loading="lazy" />
+			{% if offer.discount_percent %}<span class="sw-vet-offer-nota__pill">−{{ offer.discount_percent }}%</span>{% endif %}
+		</div>
+		{% elif offer.discount_percent %}
+		<p style="margin:0 0 0.35rem;"><span class="sw-vet-offer-nota__pill" style="position:static;display:inline-block;">−{{ offer.discount_percent }}%</span></p>
+		{% endif %}
+		<p class="sw-vet-offer-nota__partner"><strong>Partener:</strong> {{ offer.partner_display_name }}</p>
+		<h2 class="sw-vet-offer-nota__title">{{ offer.title }}</h2>
+		{% if offer.description %}
+		<p class="sw-vet-offer-nota__desc">{{ offer.description }}</p>
+		{% endif %}
+		<div class="sw-vet-offer-nota__meta">
+			{% if offer.price_hint %}<p><strong>Preț indicat:</strong> {{ offer.price_hint }}</p>{% endif %}
+			{% if offer.discount_percent %}<p><strong>Discount:</strong> {{ offer.discount_percent }}%</p>{% endif %}
+		</div>
+		<p class="sw-vet-offer-nota__note">
+			Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: primești pe <strong>email</strong> un <strong>cod alfanumeric comun</strong> cu cabinetul, datele de contact ale partenerului și detalii despre ofertă. Colaboratorul primește aceeași solicitare cu datele tale (nume, email; din cont: telefon și localitate dacă sunt completate). Verifică și folderul <strong>Spam</strong>. Dacă oferta are număr limitat de locuri, după epuizare dispare din listările publice.
+		</p>
+		<form method="post" action="{% url 'public_offer_request' offer.pk %}">
+			{% csrf_token %}
+			{% if user.is_authenticated %}
+			<p class="sw-vet-offer-nota__email-hint">Vom trimite datele la: <strong>{{ user.email }}</strong></p>
+			{% else %}
+			<label class="sw-vet-offer-nota__label">
+				<span>Nume (opțional)</span>
+				<input type="text" name="name" maxlength="120" placeholder="Prenume" autocomplete="name" />
+			</label>
+			<label class="sw-vet-offer-nota__label">
+				<span>Email *</span>
+				<input type="email" name="email" required placeholder="adresa@email.com" autocomplete="email" />
+			</label>
+			{% endif %}
+			<button type="submit" class="sw-vet-offer-nota__cta">Vreau această ofertă</button>
+		</form>
+	</article>
+</template>
+{% endfor %}
+
 {% endblock %}
 
 {% block extra_js %}
@@ -325,6 +618,58 @@
 		var active = btns.find(function(b) { return b.classList.contains("is-active"); }) || btns[0];
 		setActive(active);
 	})();
+})();
+</script>
+<script>
+(function () {
+	var modal = document.getElementById("swVetOfferModal");
+	var mount = document.getElementById("swVetOfferModalMount");
+	var sw = document.getElementById("SW");
+	if (!modal || !mount || !sw) return;
+	var lastFocus = null;
+
+	function openModal(tplId) {
+		var tpl = document.getElementById(tplId);
+		if (!tpl || !tpl.content) return;
+		lastFocus = document.activeElement;
+		mount.replaceChildren();
+		mount.appendChild(tpl.content.cloneNode(true));
+		modal.removeAttribute("hidden");
+		modal.setAttribute("aria-hidden", "false");
+		document.body.style.overflow = "hidden";
+		var closeBtn = modal.querySelector(".sw-vet-offer-modal__close");
+		if (closeBtn) {
+			try { closeBtn.focus(); } catch (e) {}
+		}
+	}
+
+	function closeModal() {
+		modal.setAttribute("hidden", "");
+		modal.setAttribute("aria-hidden", "true");
+		mount.replaceChildren();
+		document.body.style.overflow = "";
+		if (lastFocus && typeof lastFocus.focus === "function") {
+			try { lastFocus.focus(); } catch (e) {}
+		}
+		lastFocus = null;
+	}
+
+	sw.addEventListener("click", function (e) {
+		var a = e.target.closest("a.sw-vet-offer-modal-trigger");
+		if (!a) return;
+		var tid = a.getAttribute("data-modal-tpl");
+		if (!tid) return;
+		e.preventDefault();
+		openModal(tid);
+	});
+
+	modal.addEventListener("click", function (e) {
+		if (e.target.closest("[data-sw-vet-offer-close]")) closeModal();
+	});
+
+	document.addEventListener("keydown", function (e) {
+		if (e.key === "Escape" && !modal.hasAttribute("hidden")) closeModal();
+	});
 })();
 </script>
 {% endblock %}

@@ -5,106 +5,166 @@
 {% block body_class %}page-magazinul-meu page-magazinul-meu-panel page-magazinul-meu-oferte{% endblock %}
 
 {% block content %}
-<section id="MGW" class="magazinul-meu-wrap" aria-label="Control oferte active">
-	<div class="magazinul-meu-inner magazinul-meu-inner--oferte">
+{# Schelet copiat din MyPet: mylvet-wrap / inner / actions / counter / casetă tabel cu scroll — fără editare mypet.html #}
+<section id="MGW" class="mylvet-wrap magazinul-meu-wrap" aria-label="Control oferte active">
+	<div class="mylvet-inner magazinul-meu-inner magazinul-meu-inner--oferte">
 		{% if tip_just_updated %}
 		<div class="collab-oferte-tip-flash" role="status">
 			<strong>Actualizat.</strong> Tipul de partener a fost salvat.
 		</div>
 		{% endif %}
-		<header class="collab-oferte-head" id="mesaje-collab" tabindex="-1">
-			<h1 class="collab-oferte-head-title">Control oferte active</h1>
-			<div class="collab-oferte-head-actions collab-oferte-head-actions--bar">
-				<a href="{% url 'collab_offer_new' %}" class="collab-oferte-btn collab-oferte-btn-primary">Adaugă ofertă</a>
-				<a href="{% url 'servicii' %}#S3" class="collab-oferte-btn collab-oferte-btn-secondary">Vezi în Servicii</a>
-				<button type="button" id="magazinOpenInboxBtn" class="collab-oferte-btn collab-oferte-btn-secondary">Mesaje</button>
+		<div class="mylvet-actions" id="mesaje-collab" tabindex="-1">
+			<a href="{% url 'collab_offers_control' %}" class="mylvet-btn mylvet-btn-primary">{{ nav_magazinul_meu_label|default:"MyListVet" }}</a>
+			<a href="{% url 'collab_offer_new' %}" class="mylvet-btn mylvet-btn-add">Adaugă ofertă</a>
+			<a href="{% url 'servicii' %}#S3" class="mylvet-btn mylvet-btn-secondary">Vezi în Servicii</a>
+			<button type="button" id="magazinOpenInboxBtn" class="mylvet-btn mylvet-btn-secondary">Mesaje</button>
+			<div class="mylvet-btn mylvet-btn-counter" aria-label="Rezumat oferte">
+				Active {{ vet_kpi_offers_active }} / Total {{ vet_kpi_offers_total }} / Inactive {{ vet_kpi_offers_inactive }}
 			</div>
-		</header>
-		<div class="collab-vet-kpi-strip" aria-label="Rezumat cont colaborator">
-			<div class="collab-vet-stats">
-				<span class="collab-vet-stat">Oferte active: <strong>{{ vet_kpi_offers_active }}</strong></span>
-				<span class="collab-vet-stat">Total oferte: <strong>{{ vet_kpi_offers_total }}</strong></span>
-			</div>
-			<div class="collab-vet-kpi-grid" role="list">
-				<div class="collab-vet-kpi-card collab-vet-kpi-card--r1" role="listitem">
-					<span class="collab-vet-kpi-value">{{ vet_kpi_offers_active }}</span>
-					<span class="collab-vet-kpi-label">Oferte active</span>
-				</div>
-				<div class="collab-vet-kpi-card collab-vet-kpi-card--r2" role="listitem">
-					<span class="collab-vet-kpi-value">{{ vet_kpi_offers_total }}</span>
-					<span class="collab-vet-kpi-label">Oferte totale</span>
-				</div>
-				<div class="collab-vet-kpi-card collab-vet-kpi-card--r3" role="listitem">
-					<span class="collab-vet-kpi-value">{{ vet_kpi_offers_inactive }}</span>
-					<span class="collab-vet-kpi-label">Inactive</span>
-				</div>
-				<div class="collab-vet-kpi-card collab-vet-kpi-card--dual" role="listitem">
-					<div class="collab-vet-kpi-dual-row">
-						<span class="collab-vet-kpi-dual-label">Solicitări „Vreau oferta”</span>
-						<span class="collab-vet-kpi-dual-val">—</span>
-						<span class="collab-vet-kpi-dual-sub">în curând</span>
-					</div>
-					<div class="collab-vet-kpi-dual-row">
-						<span class="collab-vet-kpi-dual-label">Vizualizări oferte</span>
-						<span class="collab-vet-kpi-dual-val">—</span>
-						<span class="collab-vet-kpi-dual-sub">în curând</span>
-					</div>
+			<div class="mylvet-kpi-row" role="list" aria-label="Indicatori oferte">
+				<div class="mylvet-kpi-cell mylvet-kpi-cell--g" role="listitem"><span class="mylvet-kpi-n">{{ vet_kpi_offers_active }}</span><span class="mylvet-kpi-l">Active</span></div>
+				<div class="mylvet-kpi-cell mylvet-kpi-cell--b" role="listitem"><span class="mylvet-kpi-n">{{ vet_kpi_offers_total }}</span><span class="mylvet-kpi-l">Total</span></div>
+				<div class="mylvet-kpi-cell mylvet-kpi-cell--br" role="listitem"><span class="mylvet-kpi-n">{{ vet_kpi_offers_inactive }}</span><span class="mylvet-kpi-l">Inactive</span></div>
+				<div class="mylvet-kpi-cell mylvet-kpi-cell--m" role="listitem">
+					<span class="mylvet-kpi-mini" title="Total solicitări „Vreau oferta” (toate ofertele tale)">Solicitări: <strong>{{ vet_kpi_claims_total }}</strong></span>
+					<span class="mylvet-kpi-mini" title="Sumă locuri rămase (doar ofertele cu număr setat în fișă)">Locuri rămase: <strong>{{ vet_kpi_slots_remaining_sum }}</strong></span>
 				</div>
 			</div>
 		</div>
-		<p class="collab-oferte-lead">
-			Prima pagină colaborator (MyListVet / MyListServicii / Magazinul meu din meniu). Ofertele de la <strong>cabinet veterinar</strong> apar în pagina
-			<a href="{% url 'servicii' %}#S3">Servicii</a>, zona <strong>Cabinete veterinare</strong>. Detaliu și „Vreau oferta”:
-			<a href="{% url 'public_offers_list' %}">lista tuturor ofertelor</a>. Vizitatorii pot solicita pe email datele tale — fără programări în site.
-		</p>
-		<div class="collab-oferte-table-wrap">
-			<table class="collab-oferte-table" aria-label="Lista ofertelor tale">
+		<div class="collab-oferte-filters" id="collabOferteFiltersBar" aria-label="Filtre listă oferte">
+			<input type="search" id="collabOfferFilterSearch" class="collab-oferte-filter-input" placeholder="Caută în titlu…" autocomplete="off" />
+			<label class="collab-oferte-filter-label"><span class="sr-only">Stare</span>
+				<select id="collabOfferFilterStatus" class="collab-oferte-filter-select">
+					<option value="all">Toate stările</option>
+					<option value="active">Doar active</option>
+					<option value="inactive">Doar inactive</option>
+				</select>
+			</label>
+			<button type="button" class="collab-oferte-filter-reset" id="collabOfferFilterReset">Reset</button>
+		</div>
+		<div class="mylvet-table-wrap collab-oferte-table-outer">
+			<table class="mylvet-table collab-oferte-table" aria-label="Lista ofertelor tale">
+				<colgroup>
+					<col class="collab-oferte-col-nr" /><col class="collab-oferte-col-photo" /><col class="collab-oferte-col-title" />
+					<col class="collab-oferte-col-d1" /><col class="collab-oferte-col-d2" /><col class="collab-oferte-col-qty" /><col class="collab-oferte-col-rem" />
+					<col class="collab-oferte-col-meta" /><col class="collab-oferte-col-yn" /><col class="collab-oferte-col-tog" /><col class="collab-oferte-col-edit" /><col class="collab-oferte-col-del" />
+				</colgroup>
 				<thead>
 					<tr>
-						<th class="collab-oferte-th-nr">Nr</th>
-						<th class="collab-oferte-th-photo">Poză</th>
-						<th>Titlu</th>
-						<th>Preț / discount</th>
-						<th>Activă</th>
-						<th class="collab-oferte-th-act"></th>
+						<th class="mylvet-th collab-oferte-th-nr"><span class="mylvet-th-v">#</span></th>
+						<th class="mylvet-th collab-oferte-th-photo"><span class="mylvet-th-v">Pz</span></th>
+						<th class="mylvet-th collab-oferte-th-title"><span class="mylvet-th-v">Titlu</span></th>
+						<th class="mylvet-th collab-oferte-th-d1" title="Valabilă de la"><span class="mylvet-th-v">De la</span></th>
+						<th class="mylvet-th collab-oferte-th-d2" title="Valabilă până la"><span class="mylvet-th-v">Până</span></th>
+						<th class="mylvet-th collab-oferte-th-qty" title="Stoc inițial"><span class="mylvet-th-v">Nr</span></th>
+						<th class="mylvet-th collab-oferte-th-rem" title="Rămase"><span class="mylvet-th-v">Răm</span></th>
+						<th class="mylvet-th collab-oferte-th-meta" title="Preț"><span class="mylvet-th-v">Preț</span></th>
+						<th class="mylvet-th collab-oferte-th-yn"><span class="mylvet-th-v">A</span></th>
+						<th class="mylvet-th collab-oferte-th-toggle"><span class="mylvet-th-v">On/Off</span></th>
+						<th class="mylvet-th collab-oferte-th-edit"><span class="mylvet-th-v">Ed</span></th>
+						<th class="mylvet-th collab-oferte-th-del"><span class="mylvet-th-v">X</span></th>
 					</tr>
 				</thead>
-				<tbody>
+				<tbody id="collabOffersTableBody">
 					{% for o in collab_offers %}
-					<tr>
-						<td class="collab-oferte-td-nr">{{ forloop.counter }}</td>
-						<td class="collab-oferte-td-photo">
+					<tr class="collab-oferte-data-row" data-active="{% if o.is_active %}1{% else %}0{% endif %}">
+						<td class="mylvet-td collab-oferte-td-nr">{{ forloop.counter }}</td>
+						<td class="mylvet-td collab-oferte-td-photo">
 							{% if o.image %}
-							<img src="{{ o.image.url }}" alt="" class="collab-oferte-td-img" width="56" height="56" loading="lazy" />
+							<div class="collab-oferte-photo-wrap">
+								<img src="{{ o.image.url }}" alt="" class="collab-oferte-td-img" width="40" height="40" loading="lazy" />
+								{% if o.valid_until and o.valid_until < ro_today %}
+								<span class="collab-oferte-expired-overlay" aria-hidden="true">Expirată</span>
+								{% endif %}
+							</div>
 							{% else %}<span class="collab-oferte-dash">—</span>{% endif %}
 						</td>
-						<td>
+						<td class="mylvet-td collab-oferte-td-title">
 							{% if o.is_active %}
 							<button type="button" class="collab-oferte-title-link collab-offer-preview-open" data-preview-tpl="collab-offer-preview-tpl-{{ o.pk }}" aria-haspopup="dialog">{{ o.title }}</button>
 							{% else %}
-							{{ o.title }} <span class="collab-oferte-muted">(inactivă)</span>
+							<span class="collab-oferte-title-static">{{ o.title }} <span class="collab-oferte-muted">(inact.)</span></span>
 							{% endif %}
 						</td>
-						<td class="collab-oferte-td-meta">
+						<td class="mylvet-td collab-oferte-td-d1">{% if o.valid_from %}{{ o.valid_from|date:"d.m.y" }}{% else %}<span class="collab-oferte-dash">—</span>{% endif %}</td>
+						<td class="mylvet-td collab-oferte-td-d2">{% if o.valid_until %}{{ o.valid_until|date:"d.m.y" }}{% else %}<span class="collab-oferte-dash">—</span>{% endif %}</td>
+						<td class="mylvet-td collab-oferte-td-qty">{% if o.quantity_available is not None %}{{ o.quantity_available }}{% else %}<span class="collab-oferte-dash">—</span>{% endif %}</td>
+						<td class="mylvet-td collab-oferte-td-rem">{% if o.remaining_slots is not None %}{{ o.remaining_slots }}{% else %}<span class="collab-oferte-dash">—</span>{% endif %}</td>
+						<td class="mylvet-td collab-oferte-td-meta">
 							{% if o.discount_percent %}<span class="collab-oferte-disc">−{{ o.discount_percent }}%</span>{% endif %}
-							{% if o.price_hint %}<span>{{ o.price_hint }}</span>{% endif %}
+							{% if o.price_hint %}<span class="collab-oferte-price-hint">{{ o.price_hint }}</span>{% endif %}
 							{% if not o.discount_percent and not o.price_hint %}<span class="collab-oferte-dash">—</span>{% endif %}
 						</td>
-						<td>{% if o.is_active %}Da{% else %}Nu{% endif %}</td>
-						<td class="collab-oferte-td-del">
-							<form method="post" action="{% url 'collab_offer_delete' o.pk %}" onsubmit="return confirm('Ștergi această ofertă?');">
+						<td class="mylvet-td collab-oferte-td-yn">{% if o.is_active %}D{% else %}N{% endif %}</td>
+						<td class="mylvet-td collab-oferte-td-toggle">
+							<form method="post" action="{% url 'collab_offer_toggle_active' o.pk %}" class="collab-oferte-act-form">
 								{% csrf_token %}
-								<button type="submit" class="collab-oferte-btn-del">Șterge</button>
+								<button type="submit" class="collab-oferte-btn-toggle{% if o.is_active %} collab-oferte-btn-toggle--off{% else %} collab-oferte-btn-toggle--on{% endif %}" title="{% if o.is_active %}Dezactivează{% else %}Activează{% endif %}">{% if o.is_active %}Off{% else %}On{% endif %}</button>
+							</form>
+						</td>
+						<td class="mylvet-td collab-oferte-td-edit">
+							<a href="{% url 'collab_offer_edit' o.pk %}" class="collab-oferte-btn-edit" title="Editează">Ed</a>
+						</td>
+						<td class="mylvet-td collab-oferte-td-del">
+							<form method="post" action="{% url 'collab_offer_delete' o.pk %}" class="collab-oferte-act-form" onsubmit="return confirm('Ștergi această ofertă?');">
+								{% csrf_token %}
+								<button type="submit" class="collab-oferte-btn-del" title="Șterge">×</button>
 							</form>
 						</td>
 					</tr>
 					{% empty %}
 					<tr>
-						<td colspan="6" class="collab-oferte-empty">Nicio ofertă încă. Apasă „Adaugă ofertă” (sus, în dreapta titlului).</td>
+						<td colspan="12" class="mylvet-td collab-oferte-empty">Nicio ofertă încă. Apasă „Adaugă ofertă” în bara de sus.</td>
 					</tr>
 					{% endfor %}
 				</tbody>
 			</table>
+		</div>
+		<div class="collab-claims-wrap" aria-label="Solicitări oferte">
+			<div class="collab-claims-filters" id="collabClaimsFiltersBar" aria-label="Filtre solicitări">
+				<input type="search" id="collabClaimsFilterSearch" class="collab-oferte-filter-input" placeholder="Cod, email, nume…" autocomplete="off" />
+				<label class="collab-oferte-filter-label"><span class="sr-only">Ofertă</span>
+					<select id="collabClaimsFilterOffer" class="collab-oferte-filter-select">
+						<option value="">Toate ofertele</option>
+						{% for o in collab_offers %}
+						<option value="{{ o.pk }}">{{ o.title|truncatechars:35 }}</option>
+						{% endfor %}
+					</select>
+				</label>
+				<button type="button" class="collab-oferte-filter-reset" id="collabClaimsFilterReset">Reset</button>
+			</div>
+			<div class="collab-claims-table-scroll">
+				<table class="mylvet-table collab-claims-table">
+					<thead>
+						<tr>
+							<th class="mylvet-th">Data</th>
+							<th class="mylvet-th">Cod</th>
+							<th class="mylvet-th">Ofertă</th>
+							<th class="mylvet-th">Nume</th>
+							<th class="mylvet-th">Email</th>
+							<th class="mylvet-th">Tel.</th>
+							<th class="mylvet-th">Localitate</th>
+						</tr>
+					</thead>
+					<tbody id="collabClaimsTableBody">
+						{% for c in collab_recent_claims %}
+						<tr class="collab-claims-data-row" data-offer-id="{{ c.offer_id }}">
+							<td class="mylvet-td">{{ c.created_at|date:"d.m.Y H:i" }}</td>
+							<td class="mylvet-td collab-claims-code">{{ c.code }}</td>
+							<td class="mylvet-td">{{ c.offer.title|truncatechars:40 }}</td>
+							<td class="mylvet-td">{{ c.buyer_name_snapshot|default:"—" }}</td>
+							<td class="mylvet-td">{{ c.buyer_email }}</td>
+							<td class="mylvet-td">{{ c.buyer_phone_snapshot|default:"—" }}</td>
+							<td class="mylvet-td">{{ c.buyer_locality_snapshot|default:"—" }}</td>
+						</tr>
+						{% empty %}
+						<tr>
+							<td colspan="7" class="mylvet-td collab-oferte-empty">Încă nu există solicitări înregistrate.</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</div>
 </section>
@@ -128,6 +188,12 @@
 			<p class="collab-preview-desc">{{ o.description }}</p>
 			{% endif %}
 			<div class="collab-preview-meta">
+				{% if o.valid_from and o.valid_until %}
+				<p><strong>Valabilitate:</strong> {{ o.valid_from|date:"d.m.Y" }} → {{ o.valid_until|date:"d.m.Y" }}</p>
+				{% endif %}
+				{% if o.quantity_available is not None %}
+				<p><strong>Număr oferte (stoc):</strong> {{ o.quantity_available }}{% if o.remaining_slots is not None %} — <strong>rămase:</strong> {{ o.remaining_slots }}{% endif %}</p>
+				{% endif %}
 				{% if o.price_hint %}<p><strong>Preț indicat:</strong> {{ o.price_hint }}</p>{% endif %}
 				{% if o.discount_percent %}<p><strong>Discount:</strong> {{ o.discount_percent }}%</p>{% endif %}
 			</div>
@@ -175,9 +241,21 @@
 
 {% block extra_css_after %}
 <style>
+	.page-magazinul-meu-oferte .sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		border: 0;
+		white-space: nowrap;
+	}
 	.collab-oferte-tip-flash {
-		margin: 0 0 0.75rem;
-		padding: 0.6rem 0.75rem;
+		flex-shrink: 0;
+		margin: 0 0 0.35rem;
+		padding: 0.45rem 0.6rem;
 		border-radius: 10px;
 		background: rgba(46, 125, 50, 0.12);
 		border: 1px solid rgba(46, 125, 50, 0.35);
@@ -219,7 +297,8 @@
 		align-items: stretch;
 		padding: 0.1rem 0.18rem 0.05rem 0.08rem;
 		box-sizing: border-box;
-		overflow: hidden;
+		overflow-x: hidden;
+		overflow-y: hidden;
 		min-width: 0;
 		min-height: 0;
 		width: 100%;
@@ -230,327 +309,508 @@
 		flex: 1 1 0;
 		gap: 2px;
 		min-height: 0;
-		align-items: flex-start;
+		align-items: stretch;
 		justify-content: flex-start;
 		width: 100%;
+		min-width: 0;
 	}
 	body.page-magazinul-meu .sidebar-left .mypet-left-box {
 		flex: 1 1 0;
 		min-height: 0;
 		box-sizing: border-box;
-		width: calc((100vw - var(--mypet-sidebar-w)) * 4.5625 / 50.625 - 4px);
+		width: 100%;
 		max-width: 100%;
-		min-width: 2rem;
+		min-width: 0;
 		border-radius: 4px;
 		border: 1px solid #9e9e9e;
 		background: #f5f5f5;
 		box-shadow: none;
 	}
-	.magazinul-meu-wrap {
+	/* —— Schelet MyPet (mylvet-*) pentru MyList vet —— */
+	.magazinul-meu-wrap.mylvet-wrap,
+	#MGW.mylvet-wrap {
 		height: calc(100vh - var(--nav-h, 64px));
 		display: flex;
 		flex-direction: column;
+		align-items: stretch;
+		justify-content: flex-start;
+		padding: 0;
 		box-sizing: border-box;
-		overflow: auto;
+		overflow: hidden;
 		width: 100%;
-		padding: 0.5rem 0.75rem 1rem;
+	}
+	.mylvet-inner {
+		width: 100%;
+		max-width: none;
+		height: 100%;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		padding: 0.15rem 0.1rem 0.15rem 0.15rem;
+		overflow: hidden;
+		min-height: 0;
 	}
 	.magazinul-meu-inner--oferte {
 		max-width: 100%;
 		width: 100%;
 	}
-	.collab-oferte-head {
-		display: flex;
-		flex-direction: column;
-		align-items: stretch;
-		gap: 0.45rem;
-		margin-bottom: 0.55rem;
-		padding-bottom: 0.45rem;
-		border-bottom: 2px solid rgba(141, 110, 99, 0.35);
-		min-width: 0;
-	}
-	.collab-oferte-head-title {
-		margin: 0;
-		font-size: 1.08rem;
-		color: #5c3c00;
-		line-height: 1.25;
-		flex: 0 0 auto;
-	}
-	.collab-oferte-head-actions {
+	.mylvet-actions {
+		margin: 0 auto;
+		padding: 0.45rem 0.2rem 0;
 		display: flex;
 		flex-wrap: wrap;
-		align-items: stretch;
-		gap: 0.35rem;
-		justify-content: flex-start;
+		gap: 0.38rem 0.4rem;
+		justify-content: center;
+		align-items: center;
 		width: 100%;
-	}
-	.collab-oferte-head-actions--bar {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		width: 100%;
-		gap: 0.35rem;
+		max-width: 100%;
+		min-width: 0;
 		box-sizing: border-box;
+		flex-shrink: 0;
 	}
-	@media (max-width: 520px) {
-		.collab-oferte-head-actions--bar {
-			grid-template-columns: 1fr;
-		}
-	}
-	.collab-oferte-btn {
+	.mylvet-btn {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
+		padding: 0.32rem 0.62rem;
+		border-radius: 999px;
+		font-size: 0.78rem;
+		font-weight: 700;
 		text-decoration: none;
-		font-size: 0.72rem;
-		font-weight: 800;
-		padding: 0.3rem 0.45rem;
-		border-radius: 5px;
-		border: 1px solid #5c3c00;
+		border: 1px solid transparent;
+		cursor: pointer;
+		font-family: inherit;
+		box-sizing: border-box;
 		line-height: 1.2;
 		white-space: nowrap;
-		cursor: pointer;
-		box-sizing: border-box;
-		font-family: inherit;
 	}
-	button.collab-oferte-btn {
-		background: #fafafa;
-		color: #4e342e;
-		border-color: #8d6e63;
+	.mylvet-btn-primary {
+		background: #2e7d32;
+		color: #fff;
 	}
-	button.collab-oferte-btn:hover {
-		background: #efebe9;
+	.mylvet-btn-primary:hover {
+		background: #1b5e20;
+		color: #fff;
 	}
-	.collab-oferte-btn-primary {
+	.mylvet-btn-secondary {
 		background: #fff8e1;
-		color: #5c3c00;
+		color: #5d4037;
+		border-color: #ffcc80;
 	}
-	.collab-oferte-btn-primary:hover {
+	a.mylvet-btn-secondary:hover {
 		background: #ffecb3;
-	}
-	.collab-oferte-btn-secondary {
-		background: #fafafa;
-		color: #4e342e;
-		border-color: #8d6e63;
-	}
-	a.collab-oferte-btn-secondary:hover {
-		background: #efebe9;
-	}
-	.collab-oferte-head-actions--bar .collab-oferte-btn {
-		width: 100%;
-		min-width: 0;
-		min-height: 2.35rem;
-		padding: 0.3rem 0.4rem;
-		font-size: 0.7rem;
-		font-weight: 800;
-		border-width: 1px;
-		border-radius: 6px;
-		line-height: 1.15;
-		white-space: normal;
-		text-align: center;
-		hyphens: auto;
-	}
-	.collab-vet-kpi-strip {
-		margin: 0 0 0.65rem;
-		padding: 0.4rem 0.45rem;
-		border-radius: 8px;
-		width: 100%;
-		box-sizing: border-box;
-		border: 1px solid rgba(141, 110, 99, 0.35);
-		background: rgba(255, 253, 245, 0.95);
-	}
-	.collab-vet-stats {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.65rem 1.25rem;
-		margin: 0 0 0.55rem;
-		padding: 0 0 0.45rem;
-		border-bottom: 1px dashed rgba(141, 110, 99, 0.28);
-	}
-	.collab-vet-stat {
-		font-size: 0.86rem;
 		color: #5d4037;
 	}
-	.collab-vet-stat strong {
-		color: #c62828;
-		font-size: 1.08rem;
-		font-weight: 800;
+	button.mylvet-btn-secondary {
+		background: #fff8e1;
+		color: #5d4037;
+		border-color: #ffcc80;
 	}
-	.collab-vet-kpi-grid {
+	button.mylvet-btn-secondary:hover {
+		background: #ffecb3;
+	}
+	.mylvet-btn-add {
+		background: #0050b5;
+		color: #fff;
+		border-color: transparent;
+	}
+	a.mylvet-btn-add:hover {
+		background: #003d8a;
+		color: #fff;
+	}
+	.mylvet-btn-counter {
+		background: #f5e39b;
+		color: #5c3c00;
+		border-color: #d2b27a;
+		cursor: default;
+		font-size: 0.7rem;
+		font-weight: 700;
+		max-width: 100%;
+		white-space: normal;
+		text-align: center;
+		line-height: 1.25;
+		padding: 0.28rem 0.45rem !important;
+	}
+	.mylvet-kpi-row {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 0.35rem;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 		width: 100%;
+		max-width: 100%;
+		min-width: 0;
+		gap: 0.3rem;
+		margin-top: 0.15rem;
 		box-sizing: border-box;
 	}
 	@media (max-width: 720px) {
-		.collab-vet-kpi-grid {
-			grid-template-columns: repeat(2, 1fr);
-		}
-		.collab-vet-kpi-card--dual {
-			grid-column: 1 / -1;
+		.mylvet-kpi-row {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 	}
-	@media (max-width: 380px) {
-		.collab-vet-kpi-grid {
-			grid-template-columns: 1fr;
-		}
-	}
-	.collab-vet-kpi-card {
+	.mylvet-kpi-cell {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		text-align: center;
-		padding: 0.35rem 0.25rem;
+		min-height: 1.85rem;
+		padding: 0.2rem 0.15rem;
 		border-radius: 6px;
 		color: #fff;
 		font-weight: 700;
-		min-height: 2.65rem;
 		box-sizing: border-box;
 	}
-	.collab-vet-kpi-value {
-		font-size: 1.1rem;
+	.mylvet-kpi-n {
+		font-size: 0.95rem;
 		font-weight: 900;
 		line-height: 1.1;
 	}
-	.collab-vet-kpi-label {
-		font-size: 0.62rem;
-		font-weight: 700;
-		line-height: 1.2;
-		margin-top: 0.15rem;
+	.mylvet-kpi-l {
+		font-size: 0.58rem;
 		opacity: 0.95;
+		margin-top: 0.05rem;
 	}
-	.collab-vet-kpi-card--r1 {
+	.mylvet-kpi-cell--g {
 		background: #2e7d32;
 	}
-	.collab-vet-kpi-card--r2 {
+	.mylvet-kpi-cell--b {
 		background: #1565c0;
 	}
-	.collab-vet-kpi-card--r3 {
+	.mylvet-kpi-cell--br {
 		background: #6d4c41;
 	}
-	.collab-vet-kpi-card--dual {
+	.mylvet-kpi-cell--m {
 		background: #ad1457;
-		grid-column: span 1;
 		align-items: stretch;
 		text-align: left;
-		gap: 0.35rem;
-		min-height: auto;
+		padding: 0.25rem 0.35rem;
 	}
-	@media (min-width: 721px) {
-		.collab-vet-kpi-card--dual {
-			grid-column: span 3;
-			flex-direction: row;
-			justify-content: space-around;
-			align-items: center;
-		}
+	.mylvet-kpi-mini {
+		display: block;
+		font-size: 0.55rem;
+		line-height: 1.25;
+		color: #fff;
 	}
-	.collab-vet-kpi-dual-row {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		grid-template-rows: auto auto;
-		column-gap: 0.35rem;
-		row-gap: 0;
-		align-items: center;
-		font-size: 0.72rem;
-		padding: 0.15rem 0;
-		border-top: 1px solid rgba(255, 255, 255, 0.25);
-	}
-	.collab-vet-kpi-dual-row:first-child {
-		border-top: none;
-		padding-top: 0;
-	}
-	.collab-vet-kpi-dual-label {
-		grid-column: 1;
-		grid-row: 1;
-		font-weight: 700;
-		opacity: 0.95;
-	}
-	.collab-vet-kpi-dual-val {
-		grid-column: 2;
-		grid-row: 1 / 3;
-		font-size: 1.1rem;
-		font-weight: 900;
-		align-self: center;
-	}
-	.collab-vet-kpi-dual-sub {
-		grid-column: 1;
-		grid-row: 2;
-		font-size: 0.62rem;
+	.mylvet-kpi-mini small {
 		opacity: 0.85;
 		font-weight: 600;
 	}
-	.collab-oferte-lead {
-		margin: 0 0 0.85rem;
-		font-size: 0.88rem;
-		line-height: 1.45;
-		color: #4e342e;
-	}
-	.collab-oferte-lead a {
-		color: #1565c0;
-		font-weight: 700;
-	}
-	.collab-oferte-table-wrap {
-		overflow-x: auto;
+	.collab-oferte-filters,
+	.collab-claims-filters {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.35rem 0.45rem;
+		margin: 0.2rem auto 0.15rem;
+		padding: 0.25rem 0.35rem;
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
+		box-sizing: border-box;
+		flex-shrink: 0;
+		background: rgba(255, 248, 225, 0.65);
+		border: 1px dashed #d2b27a;
 		border-radius: 8px;
+	}
+	.collab-oferte-filter-input {
+		flex: 1 1 9rem;
+		min-width: 0;
+		max-width: 100%;
+		padding: 0.22rem 0.4rem;
+		font-size: 0.72rem;
 		border: 1px solid #bcaaa4;
+		border-radius: 6px;
+		box-sizing: border-box;
+	}
+	.collab-oferte-filter-label {
+		margin: 0;
+		flex: 0 1 auto;
+		min-width: 0;
+	}
+	.collab-oferte-filter-select {
+		max-width: min(14rem, 100%);
+		padding: 0.2rem 0.35rem;
+		font-size: 0.7rem;
+		border-radius: 6px;
+		border: 1px solid #bcaaa4;
+	}
+	.collab-oferte-filter-reset {
+		flex: 0 0 auto;
+		padding: 0.22rem 0.5rem;
+		font-size: 0.68rem;
+		font-weight: 800;
+		border-radius: 6px;
+		border: 1px solid #8d6e63;
+		background: #fff;
+		color: #5d4037;
+		cursor: pointer;
+	}
+	.collab-oferte-filter-reset:hover {
+		background: #fff3e0;
+	}
+	/* După acțiuni + filtre oferte: cele două casete (oferte | solicitări) împart egal înălțimea rămasă */
+	#MGW .collab-oferte-filters {
+		flex-shrink: 0;
+	}
+	.collab-oferte-table-outer.mylvet-table-wrap {
+		overflow-x: hidden;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+		flex: 1 1 0;
+		min-height: 0;
+		margin-top: 0.2rem;
+	}
+	.mylvet-table-wrap {
+		flex: 1 1 0;
+		min-height: 0;
+		width: 100%;
+		min-width: 0;
+		overflow: auto;
+		box-sizing: border-box;
+		margin-top: 0.25rem;
+		border: 2px solid #d2b27a;
+		border-radius: 8px;
 		background: #fffef7;
 	}
-	.collab-oferte-table {
-		width: 100%;
-		border-collapse: collapse;
-		font-size: 0.82rem;
+	.collab-claims-wrap {
+		margin-top: 0.35rem;
+		flex: 1 1 0;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		border: 2px solid #4dd0e1;
+		border-radius: 8px;
+		background: #e0f7fa;
+		padding: 0.35rem 0.45rem 0.45rem;
+		box-sizing: border-box;
 	}
-	.collab-oferte-table th {
-		text-align: left;
-		padding: 0.45rem 0.5rem;
-		background: rgba(255, 213, 79, 0.35);
-		color: #4e342e;
+	.collab-claims-table-scroll {
+		overflow: auto;
+		min-height: 0;
+		flex: 1 1 0;
+		-webkit-overflow-scrolling: touch;
+	}
+	#MGW .collab-claims-table {
+		width: 100%;
+		table-layout: auto;
+		border-collapse: collapse;
+		font-size: 0.72rem;
+	}
+	#MGW .collab-claims-table .mylvet-th {
+		font-size: 0.64rem;
+		padding: 0.26rem 0.22rem;
+		background: #00838f;
+	}
+	#MGW .collab-claims-table .mylvet-td {
+		font-size: 0.68rem;
+		padding: 0.18rem 0.22rem;
+		border-bottom: 1px solid #b2ebf2;
+		vertical-align: top;
+	}
+	#MGW .collab-claims-table tbody tr:hover {
+		background: rgba(255, 255, 255, 0.65);
+	}
+	.collab-claims-code {
+		font-family: ui-monospace, Consolas, monospace;
 		font-weight: 800;
-		border-bottom: 2px solid #8d6e63;
+		font-size: 0.64rem;
 		white-space: nowrap;
 	}
-	.collab-oferte-table td {
-		padding: 0.4rem 0.5rem;
-		border-bottom: 1px solid #d7ccc8;
+	#MGW .mylvet-table.collab-oferte-table {
+		width: 100%;
+		table-layout: fixed;
+		border-collapse: collapse;
+		font-size: 0.8rem;
+	}
+	#MGW .mylvet-th {
+		background: #5c3c00;
+		color: #fff;
+		padding: 0.35rem 0.2rem;
+		text-align: center;
 		vertical-align: middle;
+		white-space: nowrap;
+		font-weight: 800;
+		font-size: 0.72rem;
+		line-height: 1.2;
+		border-bottom: 2px solid #3e2723;
 	}
-	.collab-oferte-table tbody tr:hover {
-		background: rgba(255, 248, 225, 0.4);
+	/* Antet orizontal (fără vertical-rl): înălțime mică, fără „turnarea” literelor */
+	#MGW .mylvet-th-v {
+		display: inline;
+		writing-mode: horizontal-tb;
+		text-orientation: mixed;
+		transform: none;
+		line-height: 1.15;
+		padding: 0;
 	}
-	.collab-oferte-th-nr,
-	.collab-oferte-td-nr {
+	#MGW .mylvet-td {
+		padding: 0.14rem 0.2rem;
+		border-bottom: 1px solid #eee;
+		vertical-align: middle;
+		font-size: 0.72rem;
+		color: #333;
+	}
+	#MGW .collab-oferte-table tbody tr:hover {
+		background: rgba(255, 248, 225, 0.45);
+	}
+	#MGW .collab-oferte-th-nr,
+	#MGW .collab-oferte-td-nr {
 		width: 2.5rem;
 		text-align: center;
+		font-weight: 600;
+		color: #5c3c00;
 	}
-	.collab-oferte-th-photo,
-	.collab-oferte-td-photo {
+	#MGW .collab-oferte-th-photo,
+	#MGW .collab-oferte-td-photo {
 		width: 4.5rem;
+		text-align: center;
 	}
-	.collab-oferte-th-act,
-	.collab-oferte-td-del {
-		width: 5rem;
-		text-align: right;
+	#MGW .collab-oferte-th-qty,
+	#MGW .collab-oferte-td-qty,
+	#MGW .collab-oferte-th-rem,
+	#MGW .collab-oferte-td-rem {
+		width: 2.35rem;
+		min-width: 2.1rem;
+		max-width: 2.6rem;
+		text-align: center;
+		font-weight: 700;
+		font-size: 0.72rem;
+		padding-left: 0.08rem;
+		padding-right: 0.08rem;
+	}
+	#MGW .collab-oferte-th-meta,
+	#MGW .collab-oferte-td-meta {
+		width: 3.65rem;
+		min-width: 3.2rem;
+		max-width: 4.25rem;
+		text-align: center;
+		padding-left: 0.12rem;
+		padding-right: 0.12rem;
+		font-size: 0.7rem;
+		line-height: 1.2;
+		word-break: break-word;
+		hyphens: auto;
+	}
+	#MGW .collab-oferte-th-yn,
+	#MGW .collab-oferte-td-yn {
+		width: 2.1rem;
+		min-width: 2.1rem;
+		max-width: 2.4rem;
+		text-align: center;
+		padding-left: 0.1rem;
+		padding-right: 0.1rem;
+		font-weight: 700;
+	}
+	#MGW .collab-oferte-th-toggle,
+	#MGW .collab-oferte-td-toggle {
+		width: 6.35rem;
+		min-width: 5.75rem;
+		text-align: center;
+		vertical-align: middle;
+		padding-left: 0.15rem;
+		padding-right: 0.15rem;
+	}
+	#MGW .collab-oferte-th-edit,
+	#MGW .collab-oferte-td-edit {
+		width: 3.5rem;
+		min-width: 3.1rem;
+		text-align: center;
+		vertical-align: middle;
+		padding-left: 0.08rem;
+		padding-right: 0.08rem;
+	}
+	#MGW a.collab-oferte-btn-edit {
+		font-size: 0.58rem;
+		font-weight: 800;
+		color: #1565c0;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+	#MGW a.collab-oferte-btn-edit:hover {
+		text-decoration: underline;
+	}
+	#MGW .collab-oferte-th-del,
+	#MGW .collab-oferte-td-del {
+		text-align: center;
+		vertical-align: middle;
+		padding-left: 0.06rem;
+		padding-right: 0.06rem;
+	}
+	#MGW .collab-oferte-act-form {
+		margin: 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	#MGW .collab-oferte-td-title {
+		min-width: 0;
+		max-width: 100%;
+		text-align: left;
+		font-weight: 800;
+		overflow: hidden;
+	}
+	#MGW .collab-oferte-title-static {
+		display: block;
+		width: 100%;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		text-align: left;
 	}
 	.collab-oferte-td-img {
-		width: 56px;
-		height: 56px;
+		width: 40px;
+		height: 40px;
+		max-width: 40px;
 		object-fit: cover;
-		border-radius: 6px;
+		border-radius: 5px;
 		display: block;
+		margin: 0 auto;
 	}
-	button.collab-oferte-title-link {
+	#MGW .collab-oferte-photo-wrap {
+		position: relative;
+		display: inline-block;
+		vertical-align: middle;
+		margin: 0 auto;
+	}
+	#MGW .collab-oferte-expired-overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 5px;
+		background: rgba(255, 255, 255, 0.45);
+		color: #5d4037;
+		font-size: 0.52rem;
+		font-weight: 900;
+		font-style: italic;
+		line-height: 1.05;
+		text-align: center;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+		transform: rotate(-18deg);
+		pointer-events: none;
+		text-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
+	}
+	#MGW button.collab-oferte-title-link {
 		color: #1565c0;
-		font-weight: 700;
+		font-weight: 800;
 		text-decoration: none;
 		background: none;
 		border: none;
 		padding: 0;
 		font: inherit;
 		cursor: pointer;
+		display: block;
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
 		text-align: left;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
-	button.collab-oferte-title-link:hover {
+	#MGW button.collab-oferte-title-link:hover {
 		text-decoration: underline;
 	}
 	.collab-offer-preview-modal {
@@ -711,13 +971,38 @@
 		padding: 1.25rem 0.75rem !important;
 		color: #6d4c41;
 	}
+	#MGW .collab-oferte-btn-toggle,
+	#MGW .collab-oferte-btn-del {
+		white-space: nowrap;
+	}
+	.collab-oferte-btn-toggle {
+		font-size: 0.58rem;
+		font-weight: 700;
+		padding: 0.14rem 0.22rem;
+		border-radius: 5px;
+		cursor: pointer;
+		border: 1px solid #558b2f;
+		background: #fff;
+		color: #33691e;
+	}
+	.collab-oferte-btn-toggle--on:hover {
+		background: #f1f8e9;
+	}
+	.collab-oferte-btn-toggle--off {
+		border-color: #f9a825;
+		color: #e65100;
+		background: #fff;
+	}
+	.collab-oferte-btn-toggle--off:hover {
+		background: #fff8e1;
+	}
 	.collab-oferte-btn-del {
 		border: 1px solid #c62828;
 		background: #fff;
 		color: #b71c1c;
-		font-size: 0.72rem;
+		font-size: 0.65rem;
 		font-weight: 700;
-		padding: 0.25rem 0.45rem;
+		padding: 0.22rem 0.32rem;
 		border-radius: 6px;
 		cursor: pointer;
 	}
@@ -942,6 +1227,68 @@ document.addEventListener("DOMContentLoaded", function() {
 			closeOfferPreview();
 		}
 	});
+});
+document.addEventListener("DOMContentLoaded", function() {
+	function norm(s) {
+		return (s || "").toString().toLowerCase().trim();
+	}
+	var offerBody = document.getElementById("collabOffersTableBody");
+	var offerSearch = document.getElementById("collabOfferFilterSearch");
+	var offerStatus = document.getElementById("collabOfferFilterStatus");
+	var offerReset = document.getElementById("collabOfferFilterReset");
+	function offerTitleFromRow(tr) {
+		var cell = tr.querySelector(".collab-oferte-td-title");
+		return cell ? norm(cell.innerText || cell.textContent) : "";
+	}
+	function applyOfferFilters() {
+		if (!offerBody) return;
+		var q = norm(offerSearch && offerSearch.value);
+		var st = offerStatus ? offerStatus.value : "all";
+		offerBody.querySelectorAll("tr.collab-oferte-data-row").forEach(function(tr) {
+			var title = offerTitleFromRow(tr);
+			var okText = !q || title.indexOf(q) !== -1;
+			var active = tr.getAttribute("data-active") === "1";
+			var okSt = st === "all" || (st === "active" && active) || (st === "inactive" && !active);
+			tr.style.display = okText && okSt ? "" : "none";
+		});
+	}
+	if (offerSearch) offerSearch.addEventListener("input", applyOfferFilters);
+	if (offerStatus) offerStatus.addEventListener("change", applyOfferFilters);
+	if (offerReset) {
+		offerReset.addEventListener("click", function() {
+			if (offerSearch) offerSearch.value = "";
+			if (offerStatus) offerStatus.value = "all";
+			applyOfferFilters();
+		});
+	}
+	applyOfferFilters();
+
+	var claimsBody = document.getElementById("collabClaimsTableBody");
+	var claimsSearch = document.getElementById("collabClaimsFilterSearch");
+	var claimsOffer = document.getElementById("collabClaimsFilterOffer");
+	var claimsReset = document.getElementById("collabClaimsFilterReset");
+	function applyClaimsFilters() {
+		if (!claimsBody) return;
+		var q = norm(claimsSearch && claimsSearch.value);
+		var oid = claimsOffer && claimsOffer.value ? String(claimsOffer.value) : "";
+		claimsBody.querySelectorAll("tr.collab-claims-data-row").forEach(function(tr) {
+			var rowText = norm(tr.innerText || tr.textContent);
+			var okText = !q || rowText.indexOf(q) !== -1;
+			var trOid = tr.getAttribute("data-offer-id") || "";
+			var okOffer = !oid || trOid === oid;
+			tr.style.display = okText && okOffer ? "" : "none";
+		});
+	}
+	if (claimsSearch) claimsSearch.addEventListener("input", applyClaimsFilters);
+	if (claimsOffer) claimsOffer.addEventListener("change", applyClaimsFilters);
+	if (claimsReset) {
+		claimsReset.addEventListener("click", function() {
+			if (claimsSearch) claimsSearch.value = "";
+			if (claimsOffer) claimsOffer.value = "";
+			applyClaimsFilters();
+		});
+	}
+	applyClaimsFilters();
 });
 document.addEventListener("DOMContentLoaded", function() {
 	if (typeof window.initCollabServiceInbox === "function") {

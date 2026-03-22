@@ -1,61 +1,66 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Adaugă ofertă | Magazinul meu | EU Adopt{% endblock %}
-{% block body_class %}page-magazinul-meu page-magazinul-meu-panel page-magazinul-meu-oferte page-magazinul-meu-oferte-nou{% endblock %}
+{% block title %}Editează ofertă | Magazinul meu | EU Adopt{% endblock %}
+{% block body_class %}page-magazinul-meu page-magazinul-meu-panel page-magazinul-meu-oferte page-magazinul-meu-oferte-nou page-magazinul-meu-oferte-edit{% endblock %}
 
 {% block content %}
-<section id="MGW" class="magazinul-meu-wrap" aria-label="Adaugă ofertă">
+<section id="MGW" class="magazinul-meu-wrap" aria-label="Editează ofertă">
 	<div class="magazinul-meu-inner magazinul-meu-inner--oferte">
-		<form id="collab-oferte-nou-form" class="collab-oferte-nou-form" method="post" action="{% url 'collab_offer_add' %}" enctype="multipart/form-data" novalidate>
+		<form id="collab-oferte-edit-form" class="collab-oferte-nou-form" method="post" action="{% url 'collab_offer_edit' offer.pk %}" enctype="multipart/form-data" data-offer-edit="1" novalidate>
 			{% csrf_token %}
 			<div class="collab-oferte-nou-layout">
 				<div class="collab-oferte-nou-main">
 					<header class="collab-oferte-head">
-						<h1 class="collab-oferte-head-title">Adaugă ofertă</h1>
+						<h1 class="collab-oferte-head-title">Editează ofertă</h1>
 						<div class="collab-oferte-head-actions">
 							<a href="{% url 'collab_offers_control' %}" class="collab-oferte-btn collab-oferte-btn-secondary">Înapoi la listă</a>
 						</div>
 					</header>
 					<p class="collab-oferte-nou-hint">
-						Obligatoriu: <strong>titlu + imagine + număr oferte + interval valabilitate</strong> (de la / până la, calendar RO). În dreapta: previzualizare, decupare și +/− ca la MyPet. După data de sfârșit sau când se epuizează locurile, oferta <strong>nu mai e valabilă public</strong>. Opțional: descriere, preț, discount %.
+						Modifici textele, prețul, stocul sau imaginea. <strong>Număr oferte valabile</strong> nu poate fi mai mic decât solicitările deja înregistrate
+						({{ claims_count }}). Când locurile se epuizează, oferta iese automat din lista publică (poți reactiva din listă dacă mărești stocul).
 					</p>
 					<div class="collab-oferte-nou-grid">
 						<label class="collab-oferte-nou-field collab-oferte-nou-field--wide">
 							<span>Titlu serviciu *</span>
-							<input type="text" name="title" id="id_collab_title" required maxlength="160" placeholder="ex. Sterilizare cu 25%" autocomplete="off" />
+							<input type="text" name="title" id="id_collab_title" required maxlength="160" value="{{ offer.title }}" autocomplete="off" />
 						</label>
 						<label class="collab-oferte-nou-field collab-oferte-nou-field--wide">
 							<span>Scurtă descriere produs</span>
-							<textarea name="description" id="id_collab_description" rows="3" maxlength="500" placeholder="Aici pui ce vede utilizatorul în Servicii, în caseta de pe poză: 1–2 rânduri despre ofertă (ex. consult + plan tratament, program SOS week-end). Lasă gol dacă nu vrei text sub titlu."></textarea>
+							<textarea name="description" id="id_collab_description" rows="3" maxlength="500" placeholder="Text în Servicii pe imagine">{{ offer.description }}</textarea>
 						</label>
 						<label class="collab-oferte-nou-field">
 							<span>Preț (opțional)</span>
-							<input type="text" name="price_hint" id="id_collab_price" maxlength="80" placeholder="ex. 350 lei" />
+							<input type="text" name="price_hint" id="id_collab_price" maxlength="80" value="{{ offer.price_hint }}" placeholder="ex. 350 lei" />
 						</label>
 						<label class="collab-oferte-nou-field">
 							<span>Discount % (opțional)</span>
-							<input type="number" name="discount_percent" id="id_collab_discount" min="1" max="100" step="1" placeholder="25" />
+							<input type="number" name="discount_percent" id="id_collab_discount" min="1" max="100" step="1" placeholder="25" value="{% if offer.discount_percent %}{{ offer.discount_percent }}{% endif %}" />
 						</label>
 						<label class="collab-oferte-nou-field">
 							<span>Valabilă de la *</span>
-							<input type="date" name="valid_from" id="id_collab_valid_from" required autocomplete="off" />
+							<input type="date" name="valid_from" id="id_collab_valid_from" required value="{% if offer.valid_from %}{{ offer.valid_from|date:'Y-m-d' }}{% endif %}" autocomplete="off" />
 						</label>
 						<label class="collab-oferte-nou-field">
 							<span>Valabilă până la *</span>
-							<input type="date" name="valid_until" id="id_collab_valid_until" required autocomplete="off" />
+							<input type="date" name="valid_until" id="id_collab_valid_until" required value="{% if offer.valid_until %}{{ offer.valid_until|date:'Y-m-d' }}{% endif %}" autocomplete="off" />
 						</label>
 					</div>
 					<div class="collab-oferte-nou-actions">
-						<button type="submit" class="collab-oferte-btn collab-oferte-btn-primary collab-oferte-nou-submit">Publică oferta</button>
+						<button type="submit" class="collab-oferte-btn collab-oferte-btn-primary collab-oferte-nou-submit">Salvează modificările</button>
 						<a href="{% url 'collab_offers_control' %}" class="collab-oferte-btn collab-oferte-btn-secondary">Anulează</a>
 					</div>
 				</div>
 				<div class="collab-oferte-nou-photo-col" aria-label="Imagine ofertă">
-					<div class="collab-offer-photo-slot">
-						<div class="collab-offer-photo-label">Imagine ofertă *</div>
+					<div class="collab-offer-photo-slot{% if offer.image %} has-photo is-saved{% endif %}">
+						<div class="collab-offer-photo-label">Imagine ofertă {% if offer.image %}(opțional: înlocuiește){% else %}*{% endif %}</div>
 						<div class="collab-offer-photo-preview" id="collab_offer_preview_photo" aria-live="polite">
-							<span class="collab-offer-photo-hint">Max 2 MB. Alege poza → +/− → Salvează poza → Publică oferta.</span>
+							{% if offer.image %}
+							<img src="{{ offer.image.url }}" alt="" class="img-crop collab-offer-existing-img" width="400" height="400" style="width:100%;height:100%;object-fit:cover;display:block;" />
+							{% else %}
+							<span class="collab-offer-photo-hint">Max 2 MB. Alege poza → +/− → Salvează poza → Salvează modificările.</span>
+							{% endif %}
 						</div>
 						<input type="file" id="id_collab_offer_image" accept="image/jpeg,image/jpg,image/png,image/webp,image/gif" class="collab-offer-photo-input-hidden" autocomplete="off" />
 						<div class="collab-offer-photo-actions">
@@ -66,8 +71,8 @@
 						<div class="collab-offer-quantity-box">
 							<label class="collab-offer-quantity-label" for="id_collab_quantity_available">
 								<span class="collab-offer-quantity-title">Număr oferte valabile *</span>
-								<span class="collab-offer-quantity-hint">Obligatoriu (minim 1). Fiecare apăsare „Vreau oferta” consumă un loc; la zero, oferta nu mai apare public.</span>
-								<input type="number" name="quantity_available" id="id_collab_quantity_available" class="collab-offer-quantity-input" required min="1" max="999999" step="1" placeholder="ex. 20" inputmode="numeric" autocomplete="off" />
+								<span class="collab-offer-quantity-hint">Minim {{ quantity_floor }} (solicitări deja înregistrate: {{ claims_count }}). Oferta dispare din listă când stocul ajunge la zero.</span>
+								<input type="number" name="quantity_available" id="id_collab_quantity_available" class="collab-offer-quantity-input" required min="{{ quantity_floor }}" max="999999" step="1" value="{{ offer.quantity_available }}" inputmode="numeric" autocomplete="off" />
 							</label>
 						</div>
 					</div>
@@ -280,7 +285,6 @@
 	button.collab-oferte-nou-submit:hover {
 		background: #c8e6c9;
 	}
-	/* —— Casetă poză (stil MyPet / fișă) —— */
 	.collab-offer-photo-slot {
 		position: relative;
 		display: flex;
@@ -476,10 +480,6 @@
 		border-radius: 6px;
 		background: #fff;
 		color: #333;
-	}
-	.collab-offer-quantity-input::placeholder {
-		color: #9e9e9e;
-		font-weight: 500;
 	}
 </style>
 {% endblock %}
