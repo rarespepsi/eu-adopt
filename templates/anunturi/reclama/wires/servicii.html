@@ -1,0 +1,34 @@
+{# Schemă Servicii (SW): S1–S7 – simplificat #}
+<div class="reclama-sw-wire" aria-hidden="true">
+	<div class="reclama-alt-slot reclama-sw-wire__s1" data-slot="S1"><span class="reclama-slot-name">S1</span><div class="reclama-slot-preview"></div></div>
+	<div class="reclama-sw-wire__s2-row">
+		<div class="reclama-alt-slot" data-slot="S2.1"><span class="reclama-slot-name">S2.1</span><div class="reclama-slot-preview"></div></div>
+		<div class="reclama-alt-slot" data-slot="S2.2"><span class="reclama-slot-name">S2.2</span><div class="reclama-slot-preview"></div></div>
+		<div class="reclama-alt-slot" data-slot="S2.3"><span class="reclama-slot-name">S2.3</span><div class="reclama-slot-preview"></div></div>
+	</div>
+	<div class="reclama-sw-wire__mid">
+		<div class="reclama-sw-wire__col">
+			<span class="reclama-sw-wire__col-label">S3</span>
+			{% for i in "1234"|make_list %}
+			<div class="reclama-alt-slot reclama-sw-wire__mini" data-slot="S3.{{ forloop.counter }}"><span class="reclama-slot-name">S3.{{ forloop.counter }}</span><div class="reclama-slot-preview"></div></div>
+			{% endfor %}
+		</div>
+		<div class="reclama-sw-wire__col">
+			<span class="reclama-sw-wire__col-label">S4</span>
+			{% for i in "1234"|make_list %}
+			<div class="reclama-alt-slot reclama-sw-wire__mini" data-slot="S4.{{ forloop.counter }}"><span class="reclama-slot-name">S4.{{ forloop.counter }}</span><div class="reclama-slot-preview"></div></div>
+			{% endfor %}
+		</div>
+		<div class="reclama-sw-wire__col">
+			<span class="reclama-sw-wire__col-label">S5</span>
+			{% for i in "1234"|make_list %}
+			<div class="reclama-alt-slot reclama-sw-wire__mini" data-slot="S5.{{ forloop.counter }}"><span class="reclama-slot-name">S5.{{ forloop.counter }}</span><div class="reclama-slot-preview"></div></div>
+			{% endfor %}
+		</div>
+	</div>
+	<div class="reclama-sw-wire__s6">
+		<div class="reclama-alt-slot" data-slot="S6.1"><span class="reclama-slot-name">S6.1</span><div class="reclama-slot-preview"></div></div>
+		<div class="reclama-alt-slot" data-slot="S6.2"><span class="reclama-slot-name">S6.2</span><div class="reclama-slot-preview"></div></div>
+	</div>
+	<div class="reclama-alt-slot reclama-sw-wire__s7" data-slot="S7"><span class="reclama-slot-name">S7</span><div class="reclama-slot-preview"></div></div>
+</div>

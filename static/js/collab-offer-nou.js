@@ -24,16 +24,22 @@
 
 	function speciesSelectionIsValid() {
 		var checks = speciesChecks();
+		/* Fără câmpuri specie în formular → nu blocăm (nu ar trebui pe fișele cu țintă). */
 		if (!checks.dog && !checks.cat && !checks.other) return true;
-		return !!((checks.dog && checks.dog.checked) || (checks.cat && checks.cat.checked) || (checks.other && checks.other.checked));
+		return !!(
+			(checks.dog && checks.dog.checked) ||
+			(checks.cat && checks.cat.checked) ||
+			(checks.other && checks.other.checked)
+		);
 	}
 
-	function showSpeciesError2s() {
+	function showSpeciesToast3s() {
 		if (!speciesError) return;
 		speciesError.classList.add("is-visible");
-		window.setTimeout(function () {
+		window.clearTimeout(showSpeciesToast3s._t);
+		showSpeciesToast3s._t = window.setTimeout(function () {
 			speciesError.classList.remove("is-visible");
-		}, 2000);
+		}, 3000);
 	}
 
 	function hasNewImageWork() {
@@ -264,7 +270,7 @@
 	form.addEventListener("submit", function (e) {
 		if (!speciesSelectionIsValid()) {
 			e.preventDefault();
-			showSpeciesError2s();
+			showSpeciesToast3s();
 			var checks = speciesChecks();
 			if (checks.dog) checks.dog.focus();
 			return;
@@ -360,5 +366,60 @@
 					alert("Eroare la trimitere. Încearcă din nou.");
 				});
 		});
+	});
+})();
+
+/** Preț final (previzualizare) — același calcul ca pe server (Servicii). */
+(function () {
+	function parsePriceHint(s) {
+		if (!s || !String(s).trim()) return null;
+		var t = String(s)
+			.replace(/\u00a0/g, "")
+			.replace(/\s/g, "");
+		var m = t.match(/(\d+(?:[.,]\d+)?)/);
+		if (!m) return null;
+		var raw = m[1];
+		if ((raw.match(/\./g) || []).length > 1) raw = raw.replace(/\./g, "");
+		raw = raw.replace(",", ".");
+		var v = parseFloat(raw);
+		return isFinite(v) && v >= 0 ? v : null;
+	}
+
+	function formatFinalLei(v) {
+		if (v == null || !isFinite(v)) return "";
+		var rounded = Math.round(v * 100) / 100;
+		if (Math.abs(rounded - Math.round(rounded)) < 1e-6) return String(Math.round(rounded)) + " lei";
+		var s = rounded.toFixed(2).replace(".", ",");
+		s = s.replace(/0+$/, "");
+		if (s.endsWith(",")) s = s.slice(0, -1);
+		return s + " lei";
+	}
+
+	function updateCollabPriceFinal() {
+		var pEl = document.getElementById("id_collab_price");
+		var dEl = document.getElementById("id_collab_discount");
+		var out = document.getElementById("id_collab_price_final");
+		if (!pEl || !dEl || !out) return;
+		var base = parsePriceHint(pEl.value);
+		var dr = String(dEl.value || "").trim();
+		var d = parseInt(dr, 10);
+		if (base != null && isFinite(d) && d >= 1 && d <= 100) {
+			out.value = formatFinalLei(base * (1 - d / 100));
+		} else {
+			out.value = "";
+		}
+	}
+
+	var form =
+		document.getElementById("collab-oferte-nou-form") ||
+		document.getElementById("collab-oferte-edit-form");
+	if (!form) return;
+
+	updateCollabPriceFinal();
+	["input", "change"].forEach(function (ev) {
+		var p = document.getElementById("id_collab_price");
+		var d = document.getElementById("id_collab_discount");
+		if (p) p.addEventListener(ev, updateCollabPriceFinal);
+		if (d) d.addEventListener(ev, updateCollabPriceFinal);
 	});
 })();

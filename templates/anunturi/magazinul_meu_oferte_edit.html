@@ -24,19 +24,19 @@
 					</header>
 					{% if collab_tip_partener == 'magazin' %}
 					<p class="collab-oferte-nou-hint">
-						Modifici produsul, <strong>linkul extern</strong>, potrivirea pentru animal sau imaginea. <strong>Număr oferte valabile</strong> nu poate fi mai mic decât solicitările deja înregistrate ({{ claims_count }}). Linkul produsului rămâne obligatoriu.
+						Modifici produsul: <strong>preț</strong> și <strong>discount</strong> rămân obligatorii (ca la publicare). <strong>Linkul extern</strong>, potrivirea pentru animal sau imaginea. <strong>Număr oferte valabile</strong> nu poate fi mai mic decât solicitările deja înregistrate ({{ claims_count }}).
 					</p>
 					{% include "anunturi/includes/collab_species_checkboxes.html" %}
 					{% elif collab_tip_partener == 'servicii' %}
 					<p class="collab-oferte-nou-hint">
-						Modifici serviciul de înfrumusețare. <strong>Număr oferte valabile</strong> nu poate fi mai mic decât solicitările deja înregistrate ({{ claims_count }}). Această fișă nu folosește link de magazin.
+						Modifici serviciul de înfrumusețare. Obligatorii: <strong>preț</strong> și <strong>discount</strong>. <strong>Număr oferte valabile</strong> nu poate fi mai mic decât solicitările deja înregistrate ({{ claims_count }}). Această fișă nu folosește link de magazin.
 					</p>
 					{% else %}
 					<p class="collab-oferte-nou-hint">
-						Modifici serviciul veterinar. <strong>Număr oferte valabile</strong> nu poate fi mai mic decât solicitările deja înregistrate ({{ claims_count }}). Această fișă nu folosește link de magazin.
+						Modifici serviciul veterinar. Obligatorii: <strong>preț</strong> și <strong>discount</strong>. <strong>Număr oferte valabile</strong> nu poate fi mai mic decât solicitările deja înregistrate ({{ claims_count }}). Această fișă nu folosește link de magazin.
 					</p>
 					{% endif %}
-					<div class="collab-oferte-nou-grid{% if collab_tip_partener != 'magazin' %} collab-oferte-nou-grid--service{% endif %}">
+					<div class="collab-oferte-nou-grid{% if collab_tip_partener != 'magazin' %} collab-oferte-nou-grid--service{% endif %}{% if collab_tip_partener == 'cabinet' or collab_tip_partener == 'servicii' %} collab-oferte-nou-grid--vet{% endif %}{% if collab_tip_partener == 'magazin' %} collab-oferte-nou-grid--magazin-prod{% endif %}">
 						<label class="collab-oferte-nou-field collab-oferte-nou-field--wide{% if collab_tip_partener != 'magazin' %} collab-oferte-nou-field--title{% endif %}">
 							<span>{% if collab_tip_partener == 'magazin' %}Titlu produs *{% else %}Titlu serviciu *{% endif %}</span>
 							<input type="text" name="title" id="id_collab_title" required maxlength="160" value="{{ offer.title }}" autocomplete="off" />
@@ -64,22 +64,31 @@
 							{% endif %}
 						</label>
 						{% endif %}
-						<label class="collab-oferte-nou-field">
-							<span>Preț (opțional)</span>
-							<input type="text" name="price_hint" id="id_collab_price" maxlength="80" value="{{ offer.price_hint }}" placeholder="ex. 350 lei" />
-						</label>
-						<label class="collab-oferte-nou-field">
-							<span>Discount % (opțional)</span>
-							<input type="number" name="discount_percent" id="id_collab_discount" min="1" max="100" step="1" placeholder="25" value="{% if offer.discount_percent %}{{ offer.discount_percent }}{% endif %}" />
-						</label>
-						<label class="collab-oferte-nou-field">
-							<span>Valabilă de la *</span>
-							<input type="date" name="valid_from" id="id_collab_valid_from" required value="{% if offer.valid_from %}{{ offer.valid_from|date:'Y-m-d' }}{% endif %}" autocomplete="off" />
-						</label>
-						<label class="collab-oferte-nou-field">
-							<span>Valabilă până la *</span>
-							<input type="date" name="valid_until" id="id_collab_valid_until" required value="{% if offer.valid_until %}{{ offer.valid_until|date:'Y-m-d' }}{% endif %}" autocomplete="off" />
-						</label>
+						{% if collab_tip_partener == 'cabinet' or collab_tip_partener == 'servicii' %}
+						{% include "anunturi/includes/collab_offer_price_three_fields.html" with offer=offer price_discount_required=True %}
+						<div class="collab-oferte-nou-dates-row">
+							<label class="collab-oferte-nou-field">
+								<span>Valabilă de la *</span>
+								<input type="date" name="valid_from" id="id_collab_valid_from" required value="{% if offer.valid_from %}{{ offer.valid_from|date:'Y-m-d' }}{% endif %}" autocomplete="off" />
+							</label>
+							<label class="collab-oferte-nou-field">
+								<span>Valabilă până la *</span>
+								<input type="date" name="valid_until" id="id_collab_valid_until" required value="{% if offer.valid_until %}{{ offer.valid_until|date:'Y-m-d' }}{% endif %}" autocomplete="off" />
+							</label>
+						</div>
+						{% elif collab_tip_partener == 'magazin' %}
+						{% include "anunturi/includes/collab_offer_price_three_fields.html" with offer=offer price_discount_required=True %}
+						<div class="collab-oferte-nou-dates-row">
+							<label class="collab-oferte-nou-field">
+								<span>Valabilă de la *</span>
+								<input type="date" name="valid_from" id="id_collab_valid_from" required value="{% if offer.valid_from %}{{ offer.valid_from|date:'Y-m-d' }}{% endif %}" autocomplete="off" />
+							</label>
+							<label class="collab-oferte-nou-field">
+								<span>Valabilă până la *</span>
+								<input type="date" name="valid_until" id="id_collab_valid_until" required value="{% if offer.valid_until %}{{ offer.valid_until|date:'Y-m-d' }}{% endif %}" autocomplete="off" />
+							</label>
+						</div>
+						{% endif %}
 					</div>
 					<div class="collab-oferte-nou-actions">
 						<button type="submit" class="collab-oferte-btn collab-oferte-btn-primary collab-oferte-nou-submit">Salvează modificările</button>
@@ -209,6 +218,10 @@
 		padding-left: 0.18rem;
 		padding-right: 0.55rem;
 	}
+	body.page-magazinul-meu-fisa-servicii .magazinul-meu-wrap {
+		padding-top: 0.3rem;
+		padding-bottom: 0.35rem;
+	}
 	.collab-oferte-nou-layout {
 		display: grid;
 		grid-template-columns: 1fr minmax(260px, 38vw);
@@ -233,6 +246,9 @@
 		padding-top: 3.15rem;
 		margin-left: -0.18rem;
 	}
+	body.page-magazinul-meu-fisa-servicii .collab-species-side-rail {
+		padding-top: 2.65rem;
+	}
 	body.page-magazinul-meu-fisa-vet .collab-oferte-nou-main,
 	body.page-magazinul-meu-fisa-servicii .collab-oferte-nou-main {
 		grid-column: 2;
@@ -249,6 +265,28 @@
 	body.page-magazinul-meu-fisa-vet .collab-oferte-nou-grid--service .collab-oferte-nou-field--qty-inline,
 	body.page-magazinul-meu-fisa-servicii .collab-oferte-nou-grid--service .collab-oferte-nou-field--qty-inline {
 		grid-column: 2;
+	}
+	body.page-magazinul-meu-fisa-vet .collab-oferte-nou-grid--vet .collab-oferte-nou-pret-row,
+	body.page-magazinul-meu-fisa-servicii .collab-oferte-nou-grid--vet .collab-oferte-nou-pret-row {
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.55rem 0.75rem;
+		align-items: end;
+	}
+	body.page-magazinul-meu-fisa-vet .collab-oferte-nou-grid--vet .collab-oferte-nou-dates-row,
+	body.page-magazinul-meu-fisa-servicii .collab-oferte-nou-grid--vet .collab-oferte-nou-dates-row {
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: 0.55rem 0.75rem;
+		align-items: end;
+		width: 100%;
+		min-width: 0;
+	}
+	body.page-magazinul-meu-fisa-vet .collab-oferte-nou-grid--vet .collab-oferte-nou-dates-row .collab-oferte-nou-field,
+	body.page-magazinul-meu-fisa-servicii .collab-oferte-nou-grid--vet .collab-oferte-nou-dates-row .collab-oferte-nou-field {
+		min-width: 0;
 	}
 	body.page-magazinul-meu-fisa-vet .collab-oferte-nou-photo-col,
 	body.page-magazinul-meu-fisa-servicii .collab-oferte-nou-photo-col {
@@ -382,13 +420,28 @@
 	}
 	.collab-species-error {
 		display: none;
-		margin: 0.2rem 0 0;
-		font-size: 0.68rem;
+		margin: 0;
+		font-size: 0.78rem;
 		font-weight: 800;
-		color: #b71c1c;
+		color: #bf360c;
 	}
 	.collab-species-error.is-visible {
 		display: block;
+		position: fixed;
+		left: 50%;
+		bottom: 1.25rem;
+		transform: translateX(-50%);
+		z-index: 100200;
+		max-width: min(92vw, 22rem);
+		padding: 0.65rem 0.9rem;
+		margin: 0;
+		border-radius: 10px;
+		border: 1px solid #ff9800;
+		background: #fff8e1;
+		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+		text-align: center;
+		line-height: 1.35;
+		box-sizing: border-box;
 	}
 	.collab-target-fieldset {
 		margin: 0 0 1rem;
@@ -474,6 +527,48 @@
 	.collab-target-chip:hover {
 		border-color: #90a4ae;
 	}
+	.collab-oferte-nou-pret-row {
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		gap: 0.55rem 0.75rem;
+		align-items: start;
+	}
+	body.page-magazinul-meu-fisa-vet .collab-oferte-nou-grid--service .collab-oferte-nou-pret-row,
+	body.page-magazinul-meu-fisa-servicii .collab-oferte-nou-grid--service .collab-oferte-nou-pret-row {
+		grid-column: 1 / -1;
+	}
+	.collab-oferte-price-final-input {
+		background: #f1f8e9 !important;
+		color: #1b5e20 !important;
+		font-weight: 700 !important;
+		cursor: default;
+		border-color: #aed581 !important;
+	}
+	@media (max-width: 700px) {
+		.collab-oferte-nou-pret-row:not(.collab-oferte-nou-pret-row--required) {
+			grid-template-columns: 1fr;
+		}
+	}
+	body.page-magazinul-meu-fisa-produs .collab-oferte-nou-grid--magazin-prod .collab-oferte-nou-pret-row {
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.55rem 0.75rem;
+		align-items: end;
+	}
+	body.page-magazinul-meu-fisa-produs .collab-oferte-nou-grid--magazin-prod .collab-oferte-nou-dates-row {
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: 0.55rem 0.75rem;
+		align-items: end;
+		width: 100%;
+		min-width: 0;
+	}
+	body.page-magazinul-meu-fisa-produs .collab-oferte-nou-grid--magazin-prod .collab-oferte-nou-dates-row .collab-oferte-nou-field {
+		min-width: 0;
+	}
 	.collab-oferte-nou-grid {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
@@ -505,6 +600,13 @@
 		border-radius: 6px;
 		border: 1px solid #bcaaa4;
 		background: #fff;
+	}
+	#id_collab_description {
+		resize: none;
+		height: 96px;
+		min-height: 96px;
+		max-height: 96px;
+		overflow-y: auto;
 	}
 	.collab-oferte-nou-actions {
 		display: flex;
@@ -553,6 +655,9 @@
 		overflow: hidden;
 		position: relative;
 		box-sizing: border-box;
+	}
+	body.page-magazinul-meu-fisa-servicii .collab-offer-photo-preview {
+		min-height: 192px;
 	}
 	.collab-offer-photo-slot.has-photo .collab-offer-photo-preview {
 		background: #d0d0d0;
@@ -721,5 +826,5 @@
 
 {% block extra_js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" crossorigin="anonymous"></script>
-<script src="{% static 'js/collab-offer-nou.js' %}"></script>
+<script src="{% static 'js/collab-offer-nou.js' %}?v=2"></script>
 {% endblock %}

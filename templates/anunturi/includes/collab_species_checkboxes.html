@@ -2,18 +2,18 @@
 	<legend class="collab-species-legend">Specie țintă (obligatoriu: minim una)</legend>
 	<div class="collab-species-checks">
 		<label class="collab-species-chip">
-			<input type="checkbox" name="species_dog" value="1" {% if offer.species_dog or tf_species_dog %}checked{% endif %} />
+			<input type="checkbox" name="species_dog" value="1" {% if offer %}{% if offer.species_dog %}checked{% endif %}{% else %}{% if tf_species_dog %}checked{% endif %}{% endif %} />
 			<span>Câini</span>
 		</label>
 		<label class="collab-species-chip">
-			<input type="checkbox" name="species_cat" value="1" {% if offer.species_cat or tf_species_cat %}checked{% endif %} />
+			<input type="checkbox" name="species_cat" value="1" {% if offer %}{% if offer.species_cat %}checked{% endif %}{% else %}{% if tf_species_cat %}checked{% endif %}{% endif %} />
 			<span>Pisici</span>
 		</label>
 		<label class="collab-species-chip">
-			<input type="checkbox" name="species_other" value="1" {% if offer.species_other or tf_species_other %}checked{% endif %} />
+			<input type="checkbox" name="species_other" value="1" {% if offer %}{% if offer.species_other %}checked{% endif %}{% else %}{% if tf_species_other %}checked{% endif %}{% endif %} />
 			<span>Altele</span>
 		</label>
 	</div>
-	<p class="collab-species-note">Notă: selectează minim o categorie; pe baza acestor bife se activează filtrarea în pagina Servicii.</p>
-	<p class="collab-species-error" id="collabSpeciesError" aria-live="polite">Bifează minim o categorie specie.</p>
+	<p class="collab-species-note">La <strong>ofertă nouă</strong>, bifele pornesc goale: alege obligatoriu cel puțin o categorie. Fără nicio bifă nu se poate publica oferta. Pe Servicii, filtrarea folosește aceste categorii.</p>
+	<p class="collab-species-error" id="collabSpeciesError" role="status" aria-live="polite">Selectează cel puțin o specie țintă (Câini, Pisici sau Altele) ca să publici oferta.</p>
 </fieldset>

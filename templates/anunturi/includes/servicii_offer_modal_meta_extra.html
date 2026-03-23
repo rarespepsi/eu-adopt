@@ -1,0 +1,7 @@
+{% comment %}După Preț indicat / Discount în modalul Servicii.{% endcomment %}
+{% if offer.price_after_discount_display %}
+<p><strong>Preț final (estimativ):</strong> {{ offer.price_after_discount_display }}</p>
+{% endif %}
+{% if offer.show_stock_public %}
+<p><strong>Disponibile:</strong> {{ offer.remaining_slots_public }} din {{ offer.quantity_total_public }} oferte</p>
+{% endif %}

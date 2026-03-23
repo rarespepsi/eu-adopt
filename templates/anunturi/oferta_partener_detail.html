@@ -40,6 +40,7 @@
 					{% if offer.discount_percent %}
 					<p><strong>Discount:</strong> {{ offer.discount_percent }}%</p>
 					{% endif %}
+					{% include "anunturi/includes/servicii_offer_modal_meta_extra.html" %}
 					{% if offer.valid_from or offer.valid_until %}
 					<p><strong>Valabilitate:</strong> {% if offer.valid_from %}{{ offer.valid_from|date:"d.m.Y" }}{% else %}—{% endif %} → {% if offer.valid_until %}{{ offer.valid_until|date:"d.m.Y" }}{% else %}—{% endif %}</p>
 					{% endif %}

@@ -1,3 +1,5 @@
+import re
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -695,6 +697,41 @@ class CollaboratorServiceOffer(models.Model):
         if self.target_sterilized != self.TARGET_STERIL_ALL:
             tags.append(self.get_target_sterilized_display())
         return tags
+
+    def price_numeric_from_hint(self) -> float | None:
+        """Extrage primul număr din `price_hint` (ex. «100 lei», «350,50»)."""
+        if not (self.price_hint or "").strip():
+            return None
+        t = self.price_hint.strip().replace("\u00a0", " ").replace(" ", "")
+        m = re.search(r"(\d+(?:[.,]\d+)?)", t)
+        if not m:
+            return None
+        raw = m.group(1)
+        if raw.count(".") > 1:
+            raw = raw.replace(".", "")
+        raw = raw.replace(",", ".")
+        try:
+            v = float(raw)
+            return v if v >= 0 else None
+        except ValueError:
+            return None
+
+    @property
+    def price_after_discount_display(self) -> str | None:
+        """Preț final estimativ (text), dacă există preț numeric și discount 1–100%."""
+        base = self.price_numeric_from_hint()
+        if base is None:
+            return None
+        d = self.discount_percent
+        if d is None or d < 1 or d > 100:
+            return None
+        final = base * (1.0 - float(d) / 100.0)
+        if final < 0:
+            return None
+        if abs(final - round(final)) < 1e-6:
+            return f"{int(round(final))} lei"
+        s = f"{final:.2f}".replace(".", ",").rstrip("0").rstrip(",")
+        return f"{s} lei"
 
 
 class CollaboratorOfferClaim(models.Model):

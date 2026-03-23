@@ -1,0 +1,30 @@
+{% comment %}
+  Rând: Preț | Discount | Preț final (readonly, același calcul ca în Servicii).
+  Context opțional: offer (la edit) — valori inițiale.
+  price_discount_required=True — cabinet veterinar: preț și discount obligatorii (fără „opțional” în etichetă).
+{% endcomment %}
+<div class="collab-oferte-nou-pret-row{% if price_discount_required %} collab-oferte-nou-pret-row--required{% endif %}">
+	<label class="collab-oferte-nou-field">
+		<span>{% if price_discount_required %}Preț *{% else %}Preț (opțional){% endif %}</span>
+		<input type="text" name="price_hint" id="id_collab_price" maxlength="80" placeholder="ex. 350 lei" autocomplete="off" {% if offer %}value="{{ offer.price_hint }}"{% endif %} {% if price_discount_required %}required{% endif %} />
+	</label>
+	<label class="collab-oferte-nou-field">
+		<span>{% if price_discount_required %}Discount % *{% else %}Discount % (opțional){% endif %}</span>
+		<input type="number" name="discount_percent" id="id_collab_discount" min="1" max="100" step="1" placeholder="25" autocomplete="off" {% if offer and offer.discount_percent %}value="{{ offer.discount_percent }}"{% endif %} {% if price_discount_required %}required{% endif %} />
+	</label>
+	<label class="collab-oferte-nou-field collab-oferte-nou-field--price-final">
+		<span>Preț final (estimativ)</span>
+		<input
+			type="text"
+			id="id_collab_price_final"
+			class="collab-oferte-price-final-input"
+			readonly
+			tabindex="-1"
+			placeholder="—"
+			value="{% if offer %}{{ offer.price_after_discount_display|default:'' }}{% endif %}"
+			autocomplete="off"
+			aria-readonly="true"
+			title="Același calcul ca în pagina Servicii: din preț și discount. Nu se salvează separat — e doar previzualizare."
+		/>
+	</label>
+</div>

@@ -28,6 +28,7 @@
 							<li><a href="{% url 'shop' %}" {% if request.resolver_match.url_name == 'shop' %}class="current_page"{% endif %}>Shop</a></li>
 							{% if user.is_authenticated and user.is_staff %}
 								<li><a href="{% url 'admin_analysis_home' %}">Analiza</a></li>
+								<li><a href="{% url 'reclama_staff' %}">Reclama</a></li>
 							{% endif %}
 							{% if user.is_authenticated %}
 								<li class="a0-nav-account-item"><a href="{% url 'account' %}" class="a0-nav-account-link">

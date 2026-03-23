@@ -1576,6 +1576,24 @@ def signup_colaborator_view(request):
     return redirect(reverse("signup_verificare_sms"))
 
 
+def _attach_public_offer_stock(offer):
+    """
+    Locuri rămase din total (quantity_available − cereri), pentru afișare publică.
+    Atașează: show_stock_public, quantity_total_public, remaining_slots_public.
+    """
+    qa = offer.quantity_available
+    if qa is None:
+        offer.show_stock_public = False
+        offer.quantity_total_public = None
+        offer.remaining_slots_public = None
+        return
+    claims = int(getattr(offer, "claims_count", 0) or 0)
+    total = int(qa)
+    offer.show_stock_public = True
+    offer.quantity_total_public = total
+    offer.remaining_slots_public = max(0, total - claims)
+
+
 def _servicii_offers_for_kind(partner_kind: str, max_n: int = 24):
     """Oferte publice pentru S3/S5/S4 după partner_kind (snapshot la creare), nu după bifa curentă din profil."""
     try:
@@ -1583,8 +1601,11 @@ def _servicii_offers_for_kind(partner_kind: str, max_n: int = 24):
         offers = list(
             _collab_offer_valid_public_qs(base)
             .select_related("collaborator")
+            .annotate(claims_count=Count("claims", distinct=True))
             .order_by("-created_at")[:max_n]
         )
+        for o in offers:
+            _attach_public_offer_stock(o)
         pad = max(0, max_n - len(offers))
         return offers, [None] * pad
     except Exception:
@@ -1850,6 +1871,56 @@ def admin_analysis_alerts_view(request):
     if not (request.user.is_superuser or request.user.is_staff):
         return redirect(reverse("home"))
     return render(request, "anunturi/admin_analysis_alerts.html", {})
+
+
+# Reclama: hărți sloturi per „pagină” (nu navigăm către site-ul public, ci între sub-rute /reclama/...).
+RECLAMA_WIRE_TEMPLATES = {
+    "home": "anunturi/reclama/wires/home.html",
+    "pt": "anunturi/reclama/wires/pt.html",
+    "servicii": "anunturi/reclama/wires/servicii.html",
+    "transport": "anunturi/reclama/wires/transport.html",
+    "shop": "anunturi/reclama/wires/shop.html",
+    "mypet": "anunturi/reclama/wires/generic.html",
+    "magazinul_meu": "anunturi/reclama/wires/generic.html",
+    "i_love": "anunturi/reclama/wires/generic.html",
+    "termeni": "anunturi/reclama/wires/generic.html",
+    "contact": "anunturi/reclama/wires/generic.html",
+    "mesaje": "anunturi/reclama/wires/generic.html",
+}
+
+# (secțiune, titlu browser, etichetă Caseta 2)
+RECLAMA_META = {
+    "home": ("Acasă", "Caseta 2 – schemă HOME"),
+    "pt": ("Prietenul tău", "Caseta 2 – schemă Prietenul tău (PW)"),
+    "servicii": ("Servicii", "Caseta 2 – schemă Servicii (SW)"),
+    "transport": ("Transport", "Caseta 2 – schemă Transport (TW)"),
+    "shop": ("Shop", "Caseta 2 – schemă Shop (SHW)"),
+    "mypet": ("MyPet", "Caseta 2 – schemă MyPet (sloturi)"),
+    "magazinul_meu": ("Magazinul meu", "Caseta 2 – schemă Magazinul meu (sloturi)"),
+    "i_love": ("I Love", "Caseta 2 – schemă I Love (sloturi)"),
+    "termeni": ("Termeni", "Caseta 2 – schemă Termeni (sloturi)"),
+    "contact": ("Contact", "Caseta 2 – schemă Contact (sloturi)"),
+    "mesaje": ("Mesaje", "Caseta 2 – schemă Mesaje (sloturi)"),
+}
+
+
+@login_required
+def reclama_staff_view(request, reclama_section="home"):
+    """Pagină Reclama (doar staff). Non-staff → Acasă. Sub-rute: hărți sloturi per zonă, nu paginile publice."""
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    section = (reclama_section or "home").strip().lower()
+    if section not in RECLAMA_WIRE_TEMPLATES:
+        return redirect(reverse("reclama_staff"))
+    meta = RECLAMA_META.get(section, ("Reclama", "Caseta 2"))
+    wire_template = RECLAMA_WIRE_TEMPLATES[section]
+    ctx = {
+        "reclama_section": section,
+        "reclama_page_title": meta[0],
+        "reclama_caseta2_label": meta[1],
+        "reclama_wire_template": wire_template,
+    }
+    return render(request, "anunturi/reclama_staff.html", ctx)
 
 
 def _username_suggestions(tried, user_pk):
@@ -4150,6 +4221,15 @@ def collab_offer_add_view(request):
         errs.append("Data de sfârșit trebuie să fie după sau egală cu data de început.")
     if not (species_dog or species_cat or species_other):
         errs.append("Selectează cel puțin o categorie specie: Câini, Pisici sau Altele.")
+    if tip in (
+        CollaboratorServiceOffer.PARTNER_KIND_CABINET,
+        CollaboratorServiceOffer.PARTNER_KIND_SERVICII,
+        CollaboratorServiceOffer.PARTNER_KIND_MAGAZIN,
+    ):
+        if not price_hint:
+            errs.append("Completează prețul (ex. 200 lei).")
+        if discount_percent is None:
+            errs.append("Introdu discountul (1–100%).")
     external_url = ""
     if tip == CollaboratorServiceOffer.PARTNER_KIND_MAGAZIN:
         try:
@@ -4282,9 +4362,9 @@ def collab_offer_new_view(request):
                 "age": M.TARGET_AGE_ALL,
                 "st": M.TARGET_STERIL_ALL,
             },
-            "tf_species_dog": True,
-            "tf_species_cat": True,
-            "tf_species_other": True,
+            "tf_species_dog": False,
+            "tf_species_cat": False,
+            "tf_species_other": False,
         },
     )
 
@@ -4357,6 +4437,15 @@ def collab_offer_edit_view(request, pk: int):
             errs.append("Data de sfârșit trebuie să fie după sau egală cu data de început.")
         if not (species_dog or species_cat or species_other):
             errs.append("Selectează cel puțin o categorie specie: Câini, Pisici sau Altele.")
+        if tip in (
+            CollaboratorServiceOffer.PARTNER_KIND_CABINET,
+            CollaboratorServiceOffer.PARTNER_KIND_SERVICII,
+            CollaboratorServiceOffer.PARTNER_KIND_MAGAZIN,
+        ):
+            if not price_hint:
+                errs.append("Completează prețul (ex. 200 lei).")
+            if discount_percent is None:
+                errs.append("Introdu discountul (1–100%).")
         external_url = ""
         if tip == CollaboratorServiceOffer.PARTNER_KIND_MAGAZIN:
             try:
@@ -4467,10 +4556,13 @@ def public_offers_list_view(request):
 def public_offer_detail_view(request, pk: int):
     offer = get_object_or_404(
         _collab_offer_valid_public_qs(
-            CollaboratorServiceOffer.objects.filter(is_active=True).select_related("collaborator")
+            CollaboratorServiceOffer.objects.filter(is_active=True)
+            .select_related("collaborator")
+            .annotate(claims_count=Count("claims", distinct=True))
         ),
         pk=pk,
     )
+    _attach_public_offer_stock(offer)
     return render(
         request,
         "anunturi/oferta_partener_detail.html",

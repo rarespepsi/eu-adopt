@@ -4,11 +4,11 @@
  * =============================================================================
  * DATE PENTRU MODIFICARE GREȘELI NAVBAR – referință: NAVBAR_SALVARE_PERFECT_REFERINTA.md
  *
- * VALORI SALVATE (revenir la acestea la orice greșeală):
+ * VALORI SALVATE (revenir la acestea la orice greșeală) – detaliu complet: NAVBAR_SALVARE_PERFECT_REFERINTA.md
  *   - #A0 .container: padding-left ≈ 11.8rem, padding-right ≈ 14.2rem
  *   - .a0-left (contor): position absolute, left ≈ -11.8rem, padding-left ≈ 0.7rem, max-width ≈ 21.3rem
- *   - #menu_wrap: margin-left ≈ 7.1rem (Acasă → Termeni)
- *   - Căutare: right ≈ -15.3rem
+ *   - #menu_wrap: margin-left calc(7.0875rem - 3.54375rem)
+ *   - Căutare (admin memorat): margin-left 0.5rem față de meniu, max-width min(8.75rem, calc(100vw - 16rem)); fără translateX pe căutare
  *
  * REGULĂ: Modifică DOAR la cerere explicită. La erori navbar, refă din NAVBAR_SALVARE_PERFECT_REFERINTA.md
  * =============================================================================
@@ -169,6 +169,8 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 	align-items: center !important;
 	justify-content: flex-start !important;
 	position: relative !important;
+	min-width: 0 !important;
+	max-width: 100% !important;
 }
 
 /* Contor la marginea navbar (absolute în zona de padding din stânga) */
@@ -196,6 +198,8 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 	gap: 6px !important;
 	transform: none !important;
 	margin-left: 4.725rem !important; /* spațiu fix după Contact pentru caseta de căutare */
+	min-width: 0 !important;
+	flex-shrink: 1 !important;
 }
 #A0 #menu_wrap {
 	transform: none !important;
@@ -211,15 +215,22 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 #A0 #main_menu .a0-search-form-inline {
 	display: flex !important;
 	align-items: center !important;
+	width: 100% !important;
+	max-width: 100% !important;
+	min-width: 0 !important;
 }
 #A0 #main_menu .a0-search-form-inline #searchform {
 	display: flex !important;
 	margin: 0 !important;
 	padding: 0 !important;
+	width: 100% !important;
+	max-width: 100% !important;
+	min-width: 0 !important;
 }
 #A0 #main_menu .a0-search-form-inline #searchform #s {
-width: 11.8125rem !important;
-		min-width: 11.8125rem !important;
+	width: 100% !important;
+	min-width: 0 !important;
+	max-width: 100% !important;
 	height: 32px !important;
 	padding: 0 28px 0 6px !important;
 	font-size: 13px !important;
@@ -234,13 +245,17 @@ width: 11.8125rem !important;
 	color: rgba(255,255,255,0.6) !important;
 }
 #A0 #main_menu .a0-search-right.a0-search-expanded .a0-search-form-inline #searchform #s {
-width: 35.4375rem !important;
-		max-width: min(35.4375rem, 40vw) !important;
-		min-width: 9.45rem !important;
+	width: min(35.4375rem, calc(100vw - 3rem)) !important;
+	max-width: min(35.4375rem, calc(100vw - 3rem)) !important;
+	min-width: 0 !important;
 }
 #A0 #main_menu .a0-search-form-inline .a0-search-input-wrap {
 	position: relative !important;
-	display: inline-block !important;
+	display: block !important;
+	width: 100% !important;
+	max-width: 100% !important;
+	min-width: 0 !important;
+	box-sizing: border-box !important;
 }
 #A0 #main_menu .a0-search-form-inline .a0-search-submit {
 	position: absolute !important;
@@ -435,8 +450,16 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 	font-size: 18px !important;
 }
 
-/* (override) Căutarea este după Contact (în flux), la o distanță fixă mică față de Contact. */
-#A0 #main_menu .a0-search-right { right: auto !important; margin-left: 3.2rem !important; position: static !important; }
+/* (override) Căutarea după plic – spațiu mic; casetă mai îngustă spre dreapta (stânga fixă), nu iese din pagină */
+#A0 #main_menu .a0-search-right {
+	right: auto !important;
+	margin-left: 0.5rem !important;
+	position: static !important;
+	max-width: min(8.75rem, calc(100vw - 16rem)) !important;
+}
+#A0 #main_menu .a0-search-right.a0-search-expanded {
+	max-width: min(35.4375rem, calc(100vw - 3rem)) !important;
+}
 
 /* Plic mesaje între Contact și căutare (fără mutare de casete) */
 #A0 #menu-main-menu .a0-nav-envelope-item { margin-left: 0.15rem !important; margin-right: 0.1rem !important; }
