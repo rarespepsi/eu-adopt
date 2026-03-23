@@ -23,6 +23,16 @@
 				{% if offer.description %}
 				<p class="oferte-d-desc">{{ offer.description }}</p>
 				{% endif %}
+				{% if offer.shows_product_targeting %}
+				<div class="oferte-d-target" aria-label="Profil animal orientativ">
+					{% if offer.target_filters_are_defaults %}
+					<p class="oferte-d-target-line"><strong>Profil animal:</strong> partenerul nu a restricționat categoria (oricare).</p>
+					{% else %}
+					<p class="oferte-d-target-line"><strong>Profil animal (orientativ):</strong> {% for t in offer.target_filter_tag_list %}{% if not forloop.first %} · {% endif %}{{ t }}{% endfor %}</p>
+					{% endif %}
+					<p class="oferte-d-target-note">În funcție de aceste opțiuni, EU-Adopt poate <strong>sugera</strong> adoptatorilor produse potrivite; este o recomandare <strong>orientativă</strong>, nu medicală și nu garantează potrivirea automată.</p>
+				</div>
+				{% endif %}
 				<div class="oferte-d-meta">
 					{% if offer.price_hint %}
 					<p><strong>Preț indicat:</strong> {{ offer.price_hint }}</p>
@@ -33,7 +43,20 @@
 					{% if offer.valid_from or offer.valid_until %}
 					<p><strong>Valabilitate:</strong> {% if offer.valid_from %}{{ offer.valid_from|date:"d.m.Y" }}{% else %}—{% endif %} → {% if offer.valid_until %}{{ offer.valid_until|date:"d.m.Y" }}{% else %}—{% endif %}</p>
 					{% endif %}
+				{% if offer.shows_product_targeting and offer.external_url %}
+				<p><strong>Link produs:</strong> disponibil la partener</p>
+				{% endif %}
 				</div>
+				{% if offer.shows_product_targeting and offer.external_url %}
+				<p class="oferte-d-out-link-wrap">
+					<a href="{{ offer.external_url }}" target="_blank" rel="noopener noreferrer" class="oferte-d-out-link">Deschide produsul la partener (tab nou)</a>
+				</p>
+				{% endif %}
+				{% if offer.shows_product_targeting and offer.product_sheet %}
+				<p class="oferte-d-out-link-wrap">
+					<a href="{{ offer.product_sheet.url }}" target="_blank" rel="noopener noreferrer" class="oferte-d-out-link">Citește fișa produsului (PDF/DOC)</a>
+				</p>
+				{% endif %}
 				<p class="oferte-d-note">
 					Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: primești pe <strong>email</strong> un <strong>cod alfanumeric comun</strong> cu cabinetul, datele de contact ale partenerului și detalii despre ofertă. Colaboratorul primește aceeași solicitare cu datele tale (nume, email; din cont: telefon și localitate dacă sunt completate). Verifică și folderul <strong>Spam</strong>. Dacă oferta are număr limitat de locuri, după epuizare dispare din listările publice.
 				</p>
@@ -127,6 +150,24 @@
 		color: #4e342e;
 		font-size: 0.95rem;
 	}
+	.oferte-d-target {
+		margin: 0 0 0.75rem;
+		padding: 0.55rem 0.65rem;
+		border-radius: 8px;
+		border: 1px solid #c5e1a5;
+		background: #f9fff5;
+		font-size: 0.82rem;
+		line-height: 1.45;
+		color: #37474f;
+	}
+	.oferte-d-target-line {
+		margin: 0 0 0.35rem;
+	}
+	.oferte-d-target-note {
+		margin: 0;
+		font-size: 0.78rem;
+		color: #546e7a;
+	}
 	.oferte-d-meta {
 		font-size: 0.9rem;
 		color: #5d4037;
@@ -144,6 +185,25 @@
 		border-radius: 8px;
 		border: 1px solid #90caf9;
 		margin: 0 0 1rem;
+	}
+	.oferte-d-out-link-wrap {
+		margin: 0 0 0.7rem;
+	}
+	.oferte-d-out-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-decoration: none;
+		font-size: 0.86rem;
+		font-weight: 800;
+		padding: 0.45rem 0.65rem;
+		border-radius: 8px;
+		border: 1px solid #1565c0;
+		background: #e3f2fd;
+		color: #0d47a1;
+	}
+	.oferte-d-out-link:hover {
+		background: #bbdefb;
 	}
 	.oferte-d-email-hint {
 		font-size: 0.9rem;

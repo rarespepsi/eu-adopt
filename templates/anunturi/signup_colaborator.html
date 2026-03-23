@@ -366,12 +366,12 @@
 						<span>Cabinet veterinar</span>
 					</span>
 					<span class="signup-col-tip-option">
-						<input type="radio" id="id_tip_servicii" name="tip_partener" value="servicii" {% if form_prefill and form_prefill.tip_partener == 'servicii' %}checked{% endif %} />
-						<span>Servicii</span>
-					</span>
-					<span class="signup-col-tip-option">
 						<input type="radio" id="id_tip_magazin" name="tip_partener" value="magazin" {% if form_prefill and form_prefill.tip_partener == 'magazin' %}checked{% endif %} />
 						<span>Magazin</span>
+					</span>
+					<span class="signup-col-tip-option">
+						<input type="radio" id="id_tip_servicii" name="tip_partener" value="servicii" {% if form_prefill and form_prefill.tip_partener == 'servicii' %}checked{% endif %} />
+						<span>Servicii</span>
 					</span>
 				</label>
 				<p id="signup-col-tip-nota" class="signup-col-tip-nota" role="alert">Este obligatoriu să alegi una dintre variante.</p>
@@ -587,7 +587,7 @@
 	function initColValidation() {
 		// Sincronizare tip partener (radio în afara formularului) cu câmpul ascuns din formular
 		var hidden = document.getElementById('signup-col-tip-partener-hidden');
-		var radios = [document.getElementById('id_tip_cabinet'), document.getElementById('id_tip_servicii'), document.getElementById('id_tip_magazin')];
+		var radios = [document.getElementById('id_tip_cabinet'), document.getElementById('id_tip_magazin'), document.getElementById('id_tip_servicii')];
 		function setTipFromRadios() {
 			if (!hidden) return;
 			for (var i = 0; i < radios.length; i++) {

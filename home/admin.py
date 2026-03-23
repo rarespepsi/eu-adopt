@@ -52,6 +52,11 @@ class CollaboratorServiceOfferAdmin(admin.ModelAdmin):
         "title",
         "collaborator",
         "partner_kind",
+        "target_species",
+        "target_size",
+        "target_age_band",
+        "external_url",
+        "product_sheet",
         "valid_from",
         "valid_until",
         "quantity_available",
@@ -61,8 +66,8 @@ class CollaboratorServiceOfferAdmin(admin.ModelAdmin):
         "low_stock_notice_sent",
         "created_at",
     )
-    list_filter = ("is_active", "partner_kind")
-    search_fields = ("title", "description", "collaborator__username")
+    list_filter = ("is_active", "partner_kind", "target_species")
+    search_fields = ("title", "description", "external_url", "collaborator__username")
     raw_id_fields = ("collaborator",)
 
 

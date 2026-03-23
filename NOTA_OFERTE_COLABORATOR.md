@@ -7,10 +7,24 @@ Document pentru **administrare și dezvoltare**. Descrie fluxul dintre **utiliza
 - **Colaborator** (cont cu tip partener cabinet / servicii / magazin): publică oferte din **Magazinul meu → Control oferte** (`/magazinul-meu/oferte/`).
 - **Utilizator** (autentificat sau nu): vede ofertele în **Oferte parteneri** și în zona Servicii (unde UI-ul este înghețat separat); poate cere datele prin **„Vreau oferta”**.
 
+## Trei fișe UI (după bifa colaboratorului)
+
+- **`cabinet` (veterinar)** și **`servicii` (înfrumusețare):** același tip de fișă **serviciu** — fără bloc „Potrivire pentru animal”, fără câmp link produs. Titluri vizibile: *Adaugă / Editează serviciu veterinar* vs *… serviciu de înfrumusețare*.
+- **`magazin`:** fișă **produs** — bloc „Potrivire pentru animal”, **link extern obligatoriu**, titluri *Adaugă / Editează produs*, buton *Publică produsul*.
+- **Backend:** la `cabinet` / `servicii`, filtrele țintă sunt forțate la **„oricare”** (`all`), `external_url` gol la salvare. La `magazin` se aplică `_parse_collab_offer_target_filters` și validarea URL.
+- **Model:** `shows_product_targeting` + `target_filter_tag_list` returnează etichete doar dacă `partner_kind == magazin`.
+
+## Filtrare țintă (profil animal) — doar magazin
+
+În fișă **magazin** (**Adaugă** / **Editează**) există blocul **„Potrivire pentru animal”** (radio): specie, talie, sex, vârstă, sterilizare. Implicit **„Oricare”**.
+
+- **Public:** detaliu ofertă și modale Servicii — profil + link extern doar pentru `partner_kind=magazin` (`oferta_partener_detail.html`, `servicii.html` + `servicii_offer_modal_target.html` doar la magazin).
+- **Migrare:** `0024_collaborator_offer_target_filters`.
+
 ## Creare și editare ofertă
 
-- **Adaugă ofertă** (`/magazinul-meu/oferte/nou/`): obligatoriu **titlu**, **imagine**, **număr oferte valabile** (≥ 1). Opțional: descriere scurtă, preț text, discount %.
-- **Editează** (`/magazinul-meu/oferte/<id>/editeaza/`): aceleași câmpuri; imaginea poate rămâne neschimbată sau fi înlocuită. **Numărul de oferte valabile nu poate fi mai mic** decât numărul de solicitări deja înregistrate pentru acea ofertă.
+- **Adaugă** (`/magazinul-meu/oferte/nou/`): câmpuri și texte în funcție de `collab_tip_partener` (vezi „Trei fișe UI”). Obligatoriu comun: **titlu**, **imagine**, **număr oferte**, **interval valabilitate**. La magazin: și **link produs** + filtre țintă.
+- **Editează** (`/magazinul-meu/oferte/<id>/editeaza/`): aceleași reguli pe segment; imaginea poate rămâne neschimbată. **Numărul de oferte valabile nu poate fi mai mic** decât solicitările înregistrate.
 - **Activ / Inactiv** și **Șterge** rămân din lista de control.
 
 ## Stoc și vizibilitate publică
@@ -67,7 +81,7 @@ Dacă trimiterea emailului eșuează (SMTP etc.), solicitarea **rămâne înregi
 - `home/models.py` — modele.
 - `home/views.py` — `collab_offer_*`, `public_offer_*`, rate limit helpers.
 - `home/urls.py` — rute magazin / oferte publice.
-- `templates/anunturi/magazinul_meu_oferte_control.html`, `magazinul_meu_oferte_nou.html`, `magazinul_meu_oferte_edit.html`, `oferta_partener_detail.html`.
+- `templates/anunturi/magazinul_meu_oferte_control.html`, `magazinul_meu_oferte_nou.html`, `magazinul_meu_oferte_edit.html`, `includes/collab_offer_target_filters_fieldset.html`, `oferta_partener_detail.html`.
 - `static/js/collab-offer-nou.js` — formular adăugare + editare (cropper / trimitere).
 
 ## Remindere email colaborator (cron)

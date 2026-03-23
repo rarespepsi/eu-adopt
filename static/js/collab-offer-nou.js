@@ -6,12 +6,35 @@
 	var form =
 		document.getElementById("collab-oferte-nou-form") ||
 		document.getElementById("collab-oferte-edit-form");
+	var fisaProdus = form && form.getAttribute("data-collab-fisa") === "produs";
 	var fileInput = document.getElementById("id_collab_offer_image");
 	var preview = document.getElementById("collab_offer_preview_photo");
 	var slot = document.querySelector(".collab-offer-photo-slot");
 	if (!form || !fileInput || !preview || !slot) return;
 
 	var editMode = form.getAttribute("data-offer-edit") === "1";
+	var speciesError = document.getElementById("collabSpeciesError");
+
+	function speciesChecks() {
+		var dog = form.querySelector('input[name="species_dog"]');
+		var cat = form.querySelector('input[name="species_cat"]');
+		var other = form.querySelector('input[name="species_other"]');
+		return { dog: dog, cat: cat, other: other };
+	}
+
+	function speciesSelectionIsValid() {
+		var checks = speciesChecks();
+		if (!checks.dog && !checks.cat && !checks.other) return true;
+		return !!((checks.dog && checks.dog.checked) || (checks.cat && checks.cat.checked) || (checks.other && checks.other.checked));
+	}
+
+	function showSpeciesError2s() {
+		if (!speciesError) return;
+		speciesError.classList.add("is-visible");
+		window.setTimeout(function () {
+			speciesError.classList.remove("is-visible");
+		}, 2000);
+	}
 
 	function hasNewImageWork() {
 		return !!(savedBlob || (fileInput.files && fileInput.files[0]) || cropper);
@@ -239,6 +262,13 @@
 	}
 
 	form.addEventListener("submit", function (e) {
+		if (!speciesSelectionIsValid()) {
+			e.preventDefault();
+			showSpeciesError2s();
+			var checks = speciesChecks();
+			if (checks.dog) checks.dog.focus();
+			return;
+		}
 		var titleEl = form.querySelector('[name="title"]');
 		var title = titleEl && titleEl.value ? String(titleEl.value).trim() : "";
 		if (!title) {
@@ -277,6 +307,11 @@
 			if (csrf) fd.append("csrfmiddlewaretoken", csrf.value);
 			fd.append("title", (form.querySelector('[name="title"]') || {}).value || "");
 			fd.append("description", (form.querySelector('[name="description"]') || {}).value || "");
+			fd.append("external_url", (form.querySelector('[name="external_url"]') || {}).value || "");
+			var productSheet = form.querySelector('[name="product_sheet"]');
+			if (productSheet && productSheet.files && productSheet.files[0]) {
+				fd.append("product_sheet", productSheet.files[0]);
+			}
 			fd.append("price_hint", (form.querySelector('[name="price_hint"]') || {}).value || "");
 			var disc = form.querySelector('[name="discount_percent"]');
 			fd.append("discount_percent", disc ? disc.value || "" : "");
@@ -286,6 +321,22 @@
 			var vu = form.querySelector('[name="valid_until"]');
 			fd.append("valid_from", vf ? vf.value || "" : "");
 			fd.append("valid_until", vu ? vu.value || "" : "");
+			["species_dog", "species_cat", "species_other"].forEach(function (name) {
+				var c = form.querySelector('input[name="' + name + '"]');
+				if (c && c.checked) fd.append(name, "1");
+			});
+			if (fisaProdus) {
+				[
+					"target_species",
+					"target_size",
+					"target_sex",
+					"target_age_band",
+					"target_sterilized",
+				].forEach(function (name) {
+					var el = form.querySelector('input[name="' + name + '"]:checked');
+					fd.append(name, el ? el.value || "" : "");
+				});
+			}
 			fd.append("image", blob, "offer.jpg");
 			var action = form.getAttribute("action") || window.location.pathname;
 			fetch(action, {

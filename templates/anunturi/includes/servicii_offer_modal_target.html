@@ -1,0 +1,9 @@
+{# Profil animal țintă — ofertă colaborator (modale Servicii S3/S4/S5) #}
+		<div class="sw-vet-offer-nota__target" aria-label="Profil animal orientativ">
+			{% if offer.target_filters_are_defaults %}
+			<p class="sw-vet-offer-nota__target-line"><strong>Profil animal:</strong> partenerul nu a restricționat categoria (oricare).</p>
+			{% else %}
+			<p class="sw-vet-offer-nota__target-line"><strong>Profil animal (orientativ):</strong> {% for t in offer.target_filter_tag_list %}{% if not forloop.first %} · {% endif %}{{ t }}{% endfor %}</p>
+			{% endif %}
+			<p class="sw-vet-offer-nota__target-mini">În funcție de aceste opțiuni, EU-Adopt poate <strong>sugera</strong> adoptatorilor produse sau servicii potrivite; este o recomandare <strong>orientativă</strong>, nu medicală.</p>
+		</div>

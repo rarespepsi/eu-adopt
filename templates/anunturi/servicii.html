@@ -178,6 +178,18 @@
 		border-radius: 999px;
 		line-height: 1.2;
 	}
+	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-sheet-badge {
+		position: absolute;
+		top: 2px;
+		left: 2px;
+		background: #0d47a1;
+		color: #fff;
+		font-size: 8px;
+		font-weight: 900;
+		padding: 1px 4px;
+		border-radius: 999px;
+		line-height: 1.2;
+	}
 	/* Modal ofertă cabinet (notă în prim-plan, fundal blurat) – în afara #main_content */
 	#swVetOfferModal {
 		position: fixed;
@@ -312,6 +324,25 @@
 		color: #5d4037;
 		white-space: pre-wrap;
 	}
+	.sw-vet-offer-nota__target {
+		font-size: 0.8rem;
+		line-height: 1.42;
+		color: #37474f;
+		margin: 0 0 0.5rem;
+		padding: 0.45rem 0.55rem;
+		border-radius: 8px;
+		border: 1px solid #c5e1a5;
+		background: #f9fff5;
+		box-sizing: border-box;
+	}
+	.sw-vet-offer-nota__target-line {
+		margin: 0 0 0.3rem;
+	}
+	.sw-vet-offer-nota__target-mini {
+		margin: 0;
+		font-size: 0.74rem;
+		color: #546e7a;
+	}
 	.sw-vet-offer-nota__meta {
 		font-size: 0.86rem;
 		margin: 0 0 0.45rem;
@@ -319,6 +350,22 @@
 	}
 	.sw-vet-offer-nota__meta p {
 		margin: 0.15rem 0;
+	}
+	.sw-vet-offer-nota__ext-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-decoration: none;
+		font-size: 0.78rem;
+		font-weight: 800;
+		padding: 0.34rem 0.5rem;
+		border-radius: 7px;
+		border: 1px solid #1565c0;
+		background: #e3f2fd;
+		color: #0d47a1;
+	}
+	.sw-vet-offer-nota__ext-link:hover {
+		background: #bbdefb;
 	}
 	.sw-vet-offer-nota__note {
 		font-size: 0.84rem;
@@ -438,7 +485,7 @@
 						<div class="sw-s2-1-body">
 							<div class="sw-s2-1-grid">
 								{% for offer in vet_offers %}
-								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S3.{{ forloop.counter }}">
+								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S3.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}">
 									<a class="sw-s2-1-vet-offer-link sw-vet-offer-modal-trigger" href="{% url 'public_offer_detail' offer.pk %}" data-modal-tpl="sw-vet-offer-modal-tpl-{{ offer.pk }}">
 										{% if offer.image %}<img src="{{ offer.image.url }}" alt="{{ offer.title }}" loading="lazy" />{% endif %}
 										{% if offer.discount_percent %}<span class="sw-vet-offer-disc">−{{ offer.discount_percent }}%</span>{% endif %}
@@ -464,9 +511,10 @@
 						<div class="sw-s2-1-body">
 							<div class="sw-s2-1-grid">
 								{% for offer in shop_offers %}
-								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S4.{{ forloop.counter }}">
+								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S4.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}">
 									<a class="sw-s2-1-vet-offer-link sw-vet-offer-modal-trigger" href="{% url 'public_offer_detail' offer.pk %}" data-modal-tpl="sw-vet-offer-modal-tpl-{{ offer.pk }}">
 										{% if offer.image %}<img src="{{ offer.image.url }}" alt="{{ offer.title }}" loading="lazy" />{% endif %}
+										{% if offer.product_sheet %}<span class="sw-vet-offer-sheet-badge" aria-hidden="true">PDF</span>{% endif %}
 										{% if offer.discount_percent %}<span class="sw-vet-offer-disc">−{{ offer.discount_percent }}%</span>{% endif %}
 										<span class="sw-vet-offer-cap">
 											<span class="sw-vet-offer-title">{{ offer.title }}</span>
@@ -490,7 +538,7 @@
 						<div class="sw-s2-1-body">
 							<div class="sw-s2-1-grid">
 								{% for offer in groom_offers %}
-								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S5.{{ forloop.counter }}">
+								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S5.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}">
 									<a class="sw-s2-1-vet-offer-link sw-vet-offer-modal-trigger" href="{% url 'public_offer_detail' offer.pk %}" data-modal-tpl="sw-vet-offer-modal-tpl-{{ offer.pk }}">
 										{% if offer.image %}<img src="{{ offer.image.url }}" alt="{{ offer.title }}" loading="lazy" />{% endif %}
 										{% if offer.discount_percent %}<span class="sw-vet-offer-disc">−{{ offer.discount_percent }}%</span>{% endif %}
@@ -562,10 +610,23 @@
 		{% if offer.description %}
 		<p class="sw-vet-offer-nota__desc">{{ offer.description }}</p>
 		{% endif %}
+		{% if offer.partner_kind == 'magazin' %}
+		{% include "anunturi/includes/servicii_offer_modal_target.html" %}
+		{% endif %}
 		<div class="sw-vet-offer-nota__meta">
 			{% if offer.price_hint %}<p><strong>Preț indicat:</strong> {{ offer.price_hint }}</p>{% endif %}
 			{% if offer.discount_percent %}<p><strong>Discount:</strong> {{ offer.discount_percent }}%</p>{% endif %}
 		</div>
+		{% if offer.partner_kind == 'magazin' and offer.external_url %}
+		<p style="margin:0 0 0.55rem;">
+			<a href="{{ offer.external_url }}" target="_blank" rel="noopener noreferrer" class="sw-vet-offer-nota__ext-link">Deschide produsul la partener (tab nou)</a>
+		</p>
+		{% endif %}
+		{% if offer.partner_kind == 'magazin' and offer.product_sheet %}
+		<p style="margin:0 0 0.55rem;">
+			<a href="{{ offer.product_sheet.url }}" target="_blank" rel="noopener noreferrer" class="sw-vet-offer-nota__ext-link">Citește fișa produsului (PDF/DOC)</a>
+		</p>
+		{% endif %}
 		<p class="sw-vet-offer-nota__note">
 			Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: primești pe <strong>email</strong> un <strong>cod alfanumeric comun</strong> cu cabinetul, datele de contact ale partenerului și detalii despre ofertă. Colaboratorul primește aceeași solicitare cu datele tale (nume, email; din cont: telefon și localitate dacă sunt completate). Verifică și folderul <strong>Spam</strong>. Dacă oferta are număr limitat de locuri, după epuizare dispare din listările publice.
 		</p>
@@ -604,10 +665,23 @@
 		{% if offer.description %}
 		<p class="sw-vet-offer-nota__desc">{{ offer.description }}</p>
 		{% endif %}
+		{% if offer.partner_kind == 'magazin' %}
+		{% include "anunturi/includes/servicii_offer_modal_target.html" %}
+		{% endif %}
 		<div class="sw-vet-offer-nota__meta">
 			{% if offer.price_hint %}<p><strong>Preț indicat:</strong> {{ offer.price_hint }}</p>{% endif %}
 			{% if offer.discount_percent %}<p><strong>Discount:</strong> {{ offer.discount_percent }}%</p>{% endif %}
 		</div>
+		{% if offer.partner_kind == 'magazin' and offer.external_url %}
+		<p style="margin:0 0 0.55rem;">
+			<a href="{{ offer.external_url }}" target="_blank" rel="noopener noreferrer" class="sw-vet-offer-nota__ext-link">Deschide produsul la partener (tab nou)</a>
+		</p>
+		{% endif %}
+		{% if offer.partner_kind == 'magazin' and offer.product_sheet %}
+		<p style="margin:0 0 0.55rem;">
+			<a href="{{ offer.product_sheet.url }}" target="_blank" rel="noopener noreferrer" class="sw-vet-offer-nota__ext-link">Citește fișa produsului (PDF/DOC)</a>
+		</p>
+		{% endif %}
 		<p class="sw-vet-offer-nota__note">
 			Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: primești pe <strong>email</strong> un <strong>cod alfanumeric comun</strong> cu partenerul, datele de contact și detalii despre ofertă. Colaboratorul primește aceeași solicitare cu datele tale (nume, email; din cont: telefon și localitate dacă sunt completate). Verifică și folderul <strong>Spam</strong>. Dacă oferta are număr limitat de locuri, după epuizare dispare din listările publice.
 		</p>
@@ -646,10 +720,23 @@
 		{% if offer.description %}
 		<p class="sw-vet-offer-nota__desc">{{ offer.description }}</p>
 		{% endif %}
+		{% if offer.partner_kind == 'magazin' %}
+		{% include "anunturi/includes/servicii_offer_modal_target.html" %}
+		{% endif %}
 		<div class="sw-vet-offer-nota__meta">
 			{% if offer.price_hint %}<p><strong>Preț indicat:</strong> {{ offer.price_hint }}</p>{% endif %}
 			{% if offer.discount_percent %}<p><strong>Discount:</strong> {{ offer.discount_percent }}%</p>{% endif %}
 		</div>
+		{% if offer.partner_kind == 'magazin' and offer.external_url %}
+		<p style="margin:0 0 0.55rem;">
+			<a href="{{ offer.external_url }}" target="_blank" rel="noopener noreferrer" class="sw-vet-offer-nota__ext-link">Deschide produsul la partener (tab nou)</a>
+		</p>
+		{% endif %}
+		{% if offer.partner_kind == 'magazin' and offer.product_sheet %}
+		<p style="margin:0 0 0.55rem;">
+			<a href="{{ offer.product_sheet.url }}" target="_blank" rel="noopener noreferrer" class="sw-vet-offer-nota__ext-link">Citește fișa produsului (PDF/DOC)</a>
+		</p>
+		{% endif %}
 		<p class="sw-vet-offer-nota__note">
 			Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: primești pe <strong>email</strong> un <strong>cod alfanumeric comun</strong> cu partenerul, datele de contact și detalii despre ofertă. Colaboratorul primește aceeași solicitare cu datele tale (nume, email; din cont: telefon și localitate dacă sunt completate). Verifică și folderul <strong>Spam</strong>. Dacă oferta are număr limitat de locuri, după epuizare dispare din listările publice.
 		</p>
@@ -722,10 +809,27 @@
 		var hidden = document.getElementById("sw-selected-species");
 		var btns = Array.prototype.slice.call(document.querySelectorAll("#SW .sw-s2-species-btn"));
 		if (!btns.length) return;
+		var offerCards = Array.prototype.slice.call(document.querySelectorAll("#SW [data-offer-species]"));
+
+		function applySpeciesFilter(species) {
+			offerCards.forEach(function(card) {
+				if (!species || species === "all") {
+					card.style.display = "";
+					return;
+				}
+				var dog = card.getAttribute("data-species-dog") === "1";
+				var cat = card.getAttribute("data-species-cat") === "1";
+				var other = card.getAttribute("data-species-other") === "1";
+				var show = (species === "dog" && dog) || (species === "cat" && cat) || (species === "other" && other);
+				card.style.display = show ? "" : "none";
+			});
+		}
 
 		function setActive(btn) {
 			btns.forEach(function(b) { b.classList.toggle("is-active", b === btn); });
-			if (hidden) hidden.value = btn.getAttribute("data-species") || "all";
+			var species = btn.getAttribute("data-species") || "all";
+			if (hidden) hidden.value = species;
+			applySpeciesFilter(species);
 		}
 
 		btns.forEach(function(btn) {

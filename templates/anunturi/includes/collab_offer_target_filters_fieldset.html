@@ -1,0 +1,57 @@
+{# tf: sp, sz, sex, age, st — valori curente pentru ofertă nouă sau edit #}
+<fieldset class="collab-target-fieldset">
+	<legend class="collab-target-legend">Potrivire pentru animal</legend>
+	<p class="collab-target-supplier-note">
+		<strong>Important:</strong> EU-Adopt poate folosi aceste opțiuni ca să orienteze adoptatorii către oferte potrivite profilului animalului
+		(ex. din cont sau din anunțuri). Este o <strong>recomandare orientativă</strong>, nu o potrivire automată garantată;
+		răspunderea pentru produs/serviciu rămâne la tine ca furnizor. Bifează criteriile relevante; unde lași „Oricare”, nu filtrăm pe acel criteriu.
+	</p>
+
+	<div class="collab-target-row">
+		<span class="collab-target-label" id="lbl-tg-sp">Specie</span>
+		<div class="collab-target-chips" role="radiogroup" aria-labelledby="lbl-tg-sp">
+			<label class="collab-target-chip"><input type="radio" name="target_species" value="all" {% if tf.sp == 'all' %}checked{% endif %} /> Câine sau pisică</label>
+			<label class="collab-target-chip"><input type="radio" name="target_species" value="dog" {% if tf.sp == 'dog' %}checked{% endif %} /> Câine</label>
+			<label class="collab-target-chip"><input type="radio" name="target_species" value="cat" {% if tf.sp == 'cat' %}checked{% endif %} /> Pisică</label>
+		</div>
+	</div>
+
+	<div class="collab-target-row">
+		<span class="collab-target-label" id="lbl-tg-sz">Talie <span class="collab-target-hint">(în special câine)</span></span>
+		<div class="collab-target-chips" role="radiogroup" aria-labelledby="lbl-tg-sz">
+			<label class="collab-target-chip"><input type="radio" name="target_size" value="all" {% if tf.sz == 'all' %}checked{% endif %} /> Oricare</label>
+			<label class="collab-target-chip"><input type="radio" name="target_size" value="small" {% if tf.sz == 'small' %}checked{% endif %} /> Mică</label>
+			<label class="collab-target-chip"><input type="radio" name="target_size" value="medium" {% if tf.sz == 'medium' %}checked{% endif %} /> Medie</label>
+			<label class="collab-target-chip"><input type="radio" name="target_size" value="large" {% if tf.sz == 'large' %}checked{% endif %} /> Mare</label>
+		</div>
+	</div>
+
+	<div class="collab-target-row">
+		<span class="collab-target-label" id="lbl-tg-sex">Sex</span>
+		<div class="collab-target-chips" role="radiogroup" aria-labelledby="lbl-tg-sex">
+			<label class="collab-target-chip"><input type="radio" name="target_sex" value="all" {% if tf.sex == 'all' %}checked{% endif %} /> Oricare</label>
+			<label class="collab-target-chip"><input type="radio" name="target_sex" value="male" {% if tf.sex == 'male' %}checked{% endif %} /> Mascul</label>
+			<label class="collab-target-chip"><input type="radio" name="target_sex" value="female" {% if tf.sex == 'female' %}checked{% endif %} /> Femelă</label>
+		</div>
+	</div>
+
+	<div class="collab-target-row">
+		<span class="collab-target-label" id="lbl-tg-age">Categorie vârstă</span>
+		<div class="collab-target-chips collab-target-chips--wrap" role="radiogroup" aria-labelledby="lbl-tg-age">
+			<label class="collab-target-chip"><input type="radio" name="target_age_band" value="all" {% if tf.age == 'all' %}checked{% endif %} /> Oricare</label>
+			<label class="collab-target-chip"><input type="radio" name="target_age_band" value="puppy" {% if tf.age == 'puppy' %}checked{% endif %} /> Pui</label>
+			<label class="collab-target-chip"><input type="radio" name="target_age_band" value="young" {% if tf.age == 'young' %}checked{% endif %} /> Tânăr</label>
+			<label class="collab-target-chip"><input type="radio" name="target_age_band" value="adult" {% if tf.age == 'adult' %}checked{% endif %} /> Adult</label>
+			<label class="collab-target-chip"><input type="radio" name="target_age_band" value="senior" {% if tf.age == 'senior' %}checked{% endif %} /> Senior</label>
+		</div>
+	</div>
+
+	<div class="collab-target-row">
+		<span class="collab-target-label" id="lbl-tg-st">Sterilizare</span>
+		<div class="collab-target-chips" role="radiogroup" aria-labelledby="lbl-tg-st">
+			<label class="collab-target-chip"><input type="radio" name="target_sterilized" value="all" {% if tf.st == 'all' %}checked{% endif %} /> Oricare</label>
+			<label class="collab-target-chip"><input type="radio" name="target_sterilized" value="yes" {% if tf.st == 'yes' %}checked{% endif %} /> Sterilizat / castrat</label>
+			<label class="collab-target-chip"><input type="radio" name="target_sterilized" value="no" {% if tf.st == 'no' %}checked{% endif %} /> Nesterilizat</label>
+		</div>
+	</div>
+</fieldset>

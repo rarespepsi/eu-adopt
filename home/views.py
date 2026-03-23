@@ -16,6 +16,8 @@ from django.http import JsonResponse
 from django.db.models import Count, Q, Max
 from django.db.models import F
 from django.core.files.base import ContentFile
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
@@ -3934,6 +3936,112 @@ def _parse_post_date_iso(s: str):
         return None
 
 
+def _normalize_external_url(raw: str) -> str:
+    """
+    Normalizează URL extern de produs:
+    - gol => ""
+    - fără schemă => prefixăm https://
+    - validăm strict http/https
+    """
+    val = (raw or "").strip()
+    if not val:
+        return ""
+    if "://" not in val:
+        val = "https://" + val
+    validator = URLValidator(schemes=["http", "https"])
+    try:
+        validator(val)
+    except DjangoValidationError:
+        raise ValueError("Linkul produsului trebuie să fie un URL valid (http:// sau https://).")
+    return val
+
+
+def _validate_collab_product_sheet(uploaded_file) -> str:
+    """
+    Validare simplă pentru fișa tehnică uploadată de colaborator.
+    Returnează mesaj eroare gol dacă fișierul este valid.
+    """
+    if not uploaded_file:
+        return ""
+    fn = (getattr(uploaded_file, "name", "") or "").strip().lower()
+    if not fn:
+        return "Fișierul pentru fișa tehnică nu are nume valid."
+    if not (fn.endswith(".pdf") or fn.endswith(".doc") or fn.endswith(".docx")):
+        return "Fișa tehnică trebuie să fie PDF, DOC sau DOCX."
+    # plafon pragmatic pentru upload public
+    size = int(getattr(uploaded_file, "size", 0) or 0)
+    if size > 10 * 1024 * 1024:
+        return "Fișa tehnică este prea mare (maxim 10 MB)."
+    return ""
+
+
+def _parse_collab_species_checks(post) -> tuple[bool, bool, bool]:
+    """
+    Bife specii (câini/pisici/altele), minim una obligatorie.
+    """
+    dog = bool(post.get("species_dog"))
+    cat = bool(post.get("species_cat"))
+    other = bool(post.get("species_other"))
+    return dog, cat, other
+
+
+def _parse_collab_offer_target_filters(post) -> dict:
+    """
+    Câmpuri țintă din POST (specie, talie, sex, vârstă, sterilizare).
+    Valorile invalide revin la „all” / default.
+    """
+    M = CollaboratorServiceOffer
+
+    def pick(key: str, allowed: set, default: str) -> str:
+        v = (post.get(key) or default).strip()
+        return v if v in allowed else default
+
+    return {
+        "target_species": pick(
+            "target_species",
+            {c for c, _ in M.TARGET_SPECIES_CHOICES},
+            M.TARGET_SPECIES_ALL,
+        ),
+        "target_size": pick(
+            "target_size",
+            {c for c, _ in M.TARGET_SIZE_CHOICES},
+            M.TARGET_SIZE_ALL,
+        ),
+        "target_sex": pick(
+            "target_sex",
+            {c for c, _ in M.TARGET_SEX_CHOICES},
+            M.TARGET_SEX_ALL,
+        ),
+        "target_age_band": pick(
+            "target_age_band",
+            {c for c, _ in M.TARGET_AGE_CHOICES},
+            M.TARGET_AGE_ALL,
+        ),
+        "target_sterilized": pick(
+            "target_sterilized",
+            {c for c, _ in M.TARGET_STERIL_CHOICES},
+            M.TARGET_STERIL_ALL,
+        ),
+    }
+
+
+def _collab_offer_target_filters_for_tip(tip: str, post) -> dict:
+    """
+    Magazin: citește filtrele din POST.
+    Cabinet / servicii: aceeași fișă de serviciu, fără potrivire produs — totul rămâne „oricare”.
+    """
+    M = CollaboratorServiceOffer
+    if tip == M.PARTNER_KIND_MAGAZIN:
+        return _parse_collab_offer_target_filters(post)
+    return {
+        "target_species": M.TARGET_SPECIES_ALL,
+        "target_size": M.TARGET_SIZE_ALL,
+        "target_sex": M.TARGET_SEX_ALL,
+        "target_age_band": M.TARGET_AGE_ALL,
+        "target_sterilized": M.TARGET_STERIL_ALL,
+    }
+
+
 def _collab_offer_valid_public_qs(base_qs):
     """Oferte în fereastra de date; NULL pe margini = fără limită (oferte vechi)."""
     today = _ro_today()
@@ -4003,6 +4111,8 @@ def collab_offer_add_view(request):
         return redirect("collab_offers_control")
     title = (request.POST.get("title") or "").strip()
     description = (request.POST.get("description") or "").strip()[:500]
+    external_url_raw = (request.POST.get("external_url") or "").strip()[:500]
+    external_url = ""
     price_hint = (request.POST.get("price_hint") or "").strip()[:80]
     discount_raw = (request.POST.get("discount_percent") or "").strip()
     discount_percent = None
@@ -4019,9 +4129,15 @@ def collab_offer_add_view(request):
     valid_from = _parse_post_date_iso(request.POST.get("valid_from"))
     valid_until = _parse_post_date_iso(request.POST.get("valid_until"))
     image = request.FILES.get("image")
+    product_sheet_file = request.FILES.get("product_sheet")
+    species_dog, species_cat, species_other = _parse_collab_species_checks(request.POST)
     errs = []
     if not title:
-        errs.append("Completează titlul serviciului.")
+        errs.append(
+            "Completează titlul produsului."
+            if tip == CollaboratorServiceOffer.PARTNER_KIND_MAGAZIN
+            else "Completează titlul serviciului."
+        )
     if not image:
         errs.append("Alege o imagine pentru ofertă.")
     if not quantity_available:
@@ -4032,21 +4148,41 @@ def collab_offer_add_view(request):
         errs.append("Alege data de sfârșit a valabilității ofertei.")
     if valid_from and valid_until and valid_until < valid_from:
         errs.append("Data de sfârșit trebuie să fie după sau egală cu data de început.")
+    if not (species_dog or species_cat or species_other):
+        errs.append("Selectează cel puțin o categorie specie: Câini, Pisici sau Altele.")
+    external_url = ""
+    if tip == CollaboratorServiceOffer.PARTNER_KIND_MAGAZIN:
+        try:
+            external_url = _normalize_external_url(external_url_raw)
+        except ValueError as exc:
+            errs.append(str(exc))
+        if not external_url:
+            errs.append("La tipul Magazin / Pet-shop, completează linkul produsului (site extern).")
+        sheet_err = _validate_collab_product_sheet(product_sheet_file)
+        if sheet_err:
+            errs.append(sheet_err)
     if errs:
         for e in errs:
             messages.error(request, e)
         return redirect("collab_offer_new")
+    tf = _collab_offer_target_filters_for_tip(tip, request.POST)
     CollaboratorServiceOffer.objects.create(
         collaborator=request.user,
         partner_kind=tip,
         title=title,
         description=description,
+        external_url=external_url,
         price_hint=price_hint,
         discount_percent=discount_percent,
         quantity_available=quantity_available,
         valid_from=valid_from,
         valid_until=valid_until,
         image=image,
+        product_sheet=product_sheet_file if tip == CollaboratorServiceOffer.PARTNER_KIND_MAGAZIN else None,
+        species_dog=species_dog,
+        species_cat=species_cat,
+        species_other=species_other,
+        **tf,
     )
     messages.success(request, "Oferta a fost publicată (pagina Oferte parteneri).")
     return redirect("collab_offers_control")
@@ -4133,11 +4269,22 @@ def collab_offers_control_view(request):
 @login_required
 @collab_magazin_required
 def collab_offer_new_view(request):
+    M = CollaboratorServiceOffer
     return render(
         request,
         "anunturi/magazinul_meu_oferte_nou.html",
         {
             "collab_tip_partener": _collaborator_tip_partener(request),
+            "tf": {
+                "sp": M.TARGET_SPECIES_ALL,
+                "sz": M.TARGET_SIZE_ALL,
+                "sex": M.TARGET_SEX_ALL,
+                "age": M.TARGET_AGE_ALL,
+                "st": M.TARGET_STERIL_ALL,
+            },
+            "tf_species_dog": True,
+            "tf_species_cat": True,
+            "tf_species_other": True,
         },
     )
 
@@ -4165,6 +4312,8 @@ def collab_offer_edit_view(request, pk: int):
         old_quantity_available = offer.quantity_available
         title = (request.POST.get("title") or "").strip()
         description = (request.POST.get("description") or "").strip()[:500]
+        external_url_raw = (request.POST.get("external_url") or "").strip()[:500]
+        external_url = ""
         price_hint = (request.POST.get("price_hint") or "").strip()[:80]
         discount_raw = (request.POST.get("discount_percent") or "").strip()
         discount_percent = None
@@ -4187,9 +4336,15 @@ def collab_offer_edit_view(request, pk: int):
         valid_from = _parse_post_date_iso(request.POST.get("valid_from"))
         valid_until = _parse_post_date_iso(request.POST.get("valid_until"))
         image = request.FILES.get("image")
+        product_sheet_file = request.FILES.get("product_sheet")
+        species_dog, species_cat, species_other = _parse_collab_species_checks(request.POST)
         errs = []
         if not title:
-            errs.append("Completează titlul serviciului.")
+            errs.append(
+                "Completează titlul produsului."
+                if tip == CollaboratorServiceOffer.PARTNER_KIND_MAGAZIN
+                else "Completează titlul serviciului."
+            )
         if not quantity_available:
             errs.append(
                 "Introdu numărul de oferte valabile (minimum 1). Valoarea nu poate fi sub numărul de solicitări existente."
@@ -4200,17 +4355,44 @@ def collab_offer_edit_view(request, pk: int):
             errs.append("Alege data de sfârșit a valabilității ofertei.")
         if valid_from and valid_until and valid_until < valid_from:
             errs.append("Data de sfârșit trebuie să fie după sau egală cu data de început.")
+        if not (species_dog or species_cat or species_other):
+            errs.append("Selectează cel puțin o categorie specie: Câini, Pisici sau Altele.")
+        external_url = ""
+        if tip == CollaboratorServiceOffer.PARTNER_KIND_MAGAZIN:
+            try:
+                external_url = _normalize_external_url(external_url_raw)
+            except ValueError as exc:
+                errs.append(str(exc))
+            if not external_url:
+                errs.append("La tipul Magazin / Pet-shop, completează linkul produsului (site extern).")
+            sheet_err = _validate_collab_product_sheet(product_sheet_file)
+            if sheet_err:
+                errs.append(sheet_err)
         if errs:
             for e in errs:
                 messages.error(request, e)
             return redirect(reverse("collab_offer_edit", args=[pk]))
+        tf = _collab_offer_target_filters_for_tip(tip, request.POST)
         offer.title = title
         offer.description = description
+        offer.external_url = external_url
         offer.price_hint = price_hint
         offer.discount_percent = discount_percent
         offer.quantity_available = quantity_available
         offer.valid_from = valid_from
         offer.valid_until = valid_until
+        offer.target_species = tf["target_species"]
+        offer.target_size = tf["target_size"]
+        offer.target_sex = tf["target_sex"]
+        offer.target_age_band = tf["target_age_band"]
+        offer.target_sterilized = tf["target_sterilized"]
+        offer.species_dog = species_dog
+        offer.species_cat = species_cat
+        offer.species_other = species_other
+        if tip == CollaboratorServiceOffer.PARTNER_KIND_MAGAZIN and product_sheet_file:
+            offer.product_sheet = product_sheet_file
+        if tip != CollaboratorServiceOffer.PARTNER_KIND_MAGAZIN and offer.product_sheet:
+            offer.product_sheet = None
         if valid_from != old_valid_from or valid_until != old_valid_until:
             offer.expiry_notice_sent_for_valid_until = None
         if quantity_available != old_quantity_available:
@@ -4218,11 +4400,21 @@ def collab_offer_edit_view(request, pk: int):
         update_fields = [
             "title",
             "description",
+            "external_url",
             "price_hint",
             "discount_percent",
             "quantity_available",
             "valid_from",
             "valid_until",
+            "target_species",
+            "target_size",
+            "target_sex",
+            "target_age_band",
+            "target_sterilized",
+            "species_dog",
+            "species_cat",
+            "species_other",
+            "product_sheet",
             "updated_at",
         ]
         if valid_from != old_valid_from or valid_until != old_valid_until:
@@ -4245,6 +4437,16 @@ def collab_offer_edit_view(request, pk: int):
             "collab_tip_partener": tip,
             "claims_count": claims_count,
             "quantity_floor": quantity_floor,
+            "tf": {
+                "sp": offer.target_species,
+                "sz": offer.target_size,
+                "sex": offer.target_sex,
+                "age": offer.target_age_band,
+                "st": offer.target_sterilized,
+            },
+            "tf_species_dog": bool(offer.species_dog),
+            "tf_species_cat": bool(offer.species_cat),
+            "tf_species_other": bool(offer.species_other),
         },
     )
 

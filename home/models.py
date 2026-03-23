@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -486,6 +487,54 @@ class CollaboratorServiceOffer(models.Model):
         (PARTNER_KIND_MAGAZIN, "Magazin / pet-shop"),
     ]
 
+    # Filtrare țintă (setată de furnizor; recomandări orientative pentru adoptatori)
+    TARGET_SPECIES_ALL = "all"
+    TARGET_SPECIES_DOG = "dog"
+    TARGET_SPECIES_CAT = "cat"
+    TARGET_SPECIES_CHOICES = [
+        (TARGET_SPECIES_ALL, "Câine sau pisică (oricare)"),
+        (TARGET_SPECIES_DOG, "Câine"),
+        (TARGET_SPECIES_CAT, "Pisică"),
+    ]
+    TARGET_SIZE_ALL = "all"
+    TARGET_SIZE_SMALL = "small"
+    TARGET_SIZE_MEDIUM = "medium"
+    TARGET_SIZE_LARGE = "large"
+    TARGET_SIZE_CHOICES = [
+        (TARGET_SIZE_ALL, "Oricare talie"),
+        (TARGET_SIZE_SMALL, "Talie mică"),
+        (TARGET_SIZE_MEDIUM, "Talie medie"),
+        (TARGET_SIZE_LARGE, "Talie mare"),
+    ]
+    TARGET_SEX_ALL = "all"
+    TARGET_SEX_MALE = "male"
+    TARGET_SEX_FEMALE = "female"
+    TARGET_SEX_CHOICES = [
+        (TARGET_SEX_ALL, "Oricare sex"),
+        (TARGET_SEX_MALE, "Mascul"),
+        (TARGET_SEX_FEMALE, "Femelă"),
+    ]
+    TARGET_AGE_ALL = "all"
+    TARGET_AGE_PUPPY = "puppy"
+    TARGET_AGE_YOUNG = "young"
+    TARGET_AGE_ADULT = "adult"
+    TARGET_AGE_SENIOR = "senior"
+    TARGET_AGE_CHOICES = [
+        (TARGET_AGE_ALL, "Oricare vârstă"),
+        (TARGET_AGE_PUPPY, "Pui"),
+        (TARGET_AGE_YOUNG, "Tânăr"),
+        (TARGET_AGE_ADULT, "Adult"),
+        (TARGET_AGE_SENIOR, "Senior"),
+    ]
+    TARGET_STERIL_ALL = "all"
+    TARGET_STERIL_YES = "yes"
+    TARGET_STERIL_NO = "no"
+    TARGET_STERIL_CHOICES = [
+        (TARGET_STERIL_ALL, "Oricare"),
+        (TARGET_STERIL_YES, "Sterilizat / castrat"),
+        (TARGET_STERIL_NO, "Nesterilizat"),
+    ]
+
     collaborator = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -502,6 +551,53 @@ class CollaboratorServiceOffer(models.Model):
     title = models.CharField("Titlu serviciu", max_length=160)
     description = models.CharField("Scurtă descriere produs", max_length=500, blank=True)
     image = models.ImageField("Imagine", upload_to="collab_offers/")
+    external_url = models.URLField(
+        "Link produs (extern)",
+        max_length=500,
+        blank=True,
+        help_text="Opțional pentru servicii/cabinet; recomandat/obligatoriu la magazin (http/https).",
+    )
+    product_sheet = models.FileField(
+        "Fișă tehnică produs",
+        upload_to="collab_offer_sheets/",
+        blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=["pdf", "doc", "docx"])],
+        help_text="Opțional, recomandat la magazin (PDF/DOC/DOCX).",
+    )
+    target_species = models.CharField(
+        "Țintă: specie",
+        max_length=12,
+        choices=TARGET_SPECIES_CHOICES,
+        default=TARGET_SPECIES_ALL,
+        db_index=True,
+    )
+    target_size = models.CharField(
+        "Țintă: talie (în special câine)",
+        max_length=12,
+        choices=TARGET_SIZE_CHOICES,
+        default=TARGET_SIZE_ALL,
+    )
+    target_sex = models.CharField(
+        "Țintă: sex",
+        max_length=12,
+        choices=TARGET_SEX_CHOICES,
+        default=TARGET_SEX_ALL,
+    )
+    target_age_band = models.CharField(
+        "Țintă: categorie vârstă",
+        max_length=12,
+        choices=TARGET_AGE_CHOICES,
+        default=TARGET_AGE_ALL,
+    )
+    target_sterilized = models.CharField(
+        "Țintă: sterilizare",
+        max_length=12,
+        choices=TARGET_STERIL_CHOICES,
+        default=TARGET_STERIL_ALL,
+    )
+    species_dog = models.BooleanField("Specie: câine", default=True)
+    species_cat = models.BooleanField("Specie: pisică", default=True)
+    species_other = models.BooleanField("Specie: altele", default=True)
     price_hint = models.CharField("Preț (text scurt)", max_length=80, blank=True)
     discount_percent = models.PositiveSmallIntegerField(
         "Reducere %",
@@ -562,6 +658,43 @@ class CollaboratorServiceOffer(models.Model):
             return (p.company_display_name or "").strip() or self.collaborator.username
         except UserProfile.DoesNotExist:
             return self.collaborator.username
+
+    @property
+    def shows_product_targeting(self) -> bool:
+        """Potrivire animal / link produs relevante doar pentru canalul magazin."""
+        return self.partner_kind == self.PARTNER_KIND_MAGAZIN
+
+    @property
+    def has_any_species_selected(self) -> bool:
+        return bool(self.species_dog or self.species_cat or self.species_other)
+
+    @property
+    def target_filters_are_defaults(self) -> bool:
+        return (
+            self.target_species == self.TARGET_SPECIES_ALL
+            and self.target_size == self.TARGET_SIZE_ALL
+            and self.target_sex == self.TARGET_SEX_ALL
+            and self.target_age_band == self.TARGET_AGE_ALL
+            and self.target_sterilized == self.TARGET_STERIL_ALL
+        )
+
+    @property
+    def target_filter_tag_list(self) -> list[str]:
+        """Etichete scurte pentru listă/tabel (doar criterii nerestânse la „oricare”)."""
+        if not self.shows_product_targeting:
+            return []
+        tags: list[str] = []
+        if self.target_species != self.TARGET_SPECIES_ALL:
+            tags.append(self.get_target_species_display())
+        if self.target_size != self.TARGET_SIZE_ALL:
+            tags.append(self.get_target_size_display())
+        if self.target_sex != self.TARGET_SEX_ALL:
+            tags.append(self.get_target_sex_display())
+        if self.target_age_band != self.TARGET_AGE_ALL:
+            tags.append(self.get_target_age_band_display())
+        if self.target_sterilized != self.TARGET_STERIL_ALL:
+            tags.append(self.get_target_sterilized_display())
+        return tags
 
 
 class CollaboratorOfferClaim(models.Model):
