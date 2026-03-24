@@ -360,6 +360,37 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 #A0 #menu-main-menu > li:nth-child(2) {
 	margin-left: calc(var(--gap-v2) / 8) !important;
 }
+/* Buton colaboratori (fără impact pe layout-ul existent: scos din flow) */
+#A0 #menu-main-menu {
+	position: relative !important;
+}
+#A0 #menu-main-menu > li.a0-nav-ads-float {
+	position: absolute !important;
+	left: -3.05rem !important;
+	top: 50% !important;
+	transform: translateY(-50%) !important;
+	margin: 0 !important;
+	z-index: 3 !important;
+}
+#A0 #menu-main-menu > li.a0-nav-ads-float > a.a0-nav-ads-link {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	height: auto !important;
+	line-height: 1.1 !important;
+	padding: 0.08rem 0.28rem !important;
+	border-radius: 6px !important;
+	border: 1px solid #2e7d32 !important;
+	background: #2e7d32 !important;
+	color: #fff !important;
+	font-size: 11px !important;
+	font-weight: 800 !important;
+	white-space: nowrap !important;
+}
+#A0 #menu-main-menu > li.a0-nav-ads-float > a.a0-nav-ads-link:hover {
+	background: #1b5e20 !important;
+	border-color: #1b5e20 !important;
+}
 #A0 #main_menu ul li a.current_page,
 #A0 #main_menu a.current_page {
 	color: #FFC107 !important;
@@ -840,6 +871,24 @@ body.page-animale #A0 {
 		padding: 14px 12px !important;
 		line-height: 1.3 !important;
 		font-size: 15px !important;
+	}
+	#A0 #menu-main-menu > li.a0-nav-ads-float {
+		position: static !important;
+		left: auto !important;
+		top: auto !important;
+		margin: 0 !important;
+	}
+	#A0 #menu-main-menu > li.a0-nav-ads-float > a.a0-nav-ads-link {
+		display: block !important;
+		height: auto !important;
+		line-height: 1.3 !important;
+		padding: 14px 12px !important;
+		border-radius: 0 !important;
+		border: none !important;
+		background: transparent !important;
+		color: rgba(255,255,255,0.95) !important;
+		font-size: 15px !important;
+		font-weight: 700 !important;
 	}
 }
 

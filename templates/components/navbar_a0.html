@@ -21,12 +21,17 @@
 				<nav id="menu_wrap" class="a0-right">
 					<div class="menu-main-menu-container">
 						<ul id="menu-main-menu" class="menu">
+							{% if user.is_authenticated and show_magazinul_meu_nav or user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}
+								<li class="a0-nav-ads-float">
+									<a href="{% url 'collab_offers_control' %}?ads_order=1" class="a0-nav-ads-link" title="Comenzi publicitate">PUB</a>
+								</li>
+							{% endif %}
 							<li><a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="a0-nav-home-link current_page"{% else %}class="a0-nav-home-link"{% endif %}>Acasă</a></li>
 							<li><a href="{% url 'pets_all' %}" {% if request.resolver_match.url_name == 'pets_all' %}class="current_page"{% endif %}>Prietenul tău</a></li>
 							<li><a href="{% url 'servicii' %}" {% if request.resolver_match.url_name == 'servicii' %}class="current_page"{% endif %}>Servicii</a></li>
 							<li><a href="{% url 'transport' %}" {% if request.resolver_match.url_name == 'transport' %}class="current_page"{% endif %}>Transport</a></li>
 							<li><a href="{% url 'shop' %}" {% if request.resolver_match.url_name == 'shop' %}class="current_page"{% endif %}>Shop</a></li>
-							{% if user.is_authenticated and user.is_staff %}
+							{% if user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}
 								<li><a href="{% url 'admin_analysis_home' %}">Analiza</a></li>
 								<li><a href="{% url 'reclama_staff' %}">Reclama</a></li>
 							{% endif %}
