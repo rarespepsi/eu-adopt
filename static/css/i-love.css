@@ -1,0 +1,364 @@
+/*
+ * Pagina I Love — grilă cu casete laterale (sloturi catalog IL.*) + conținut central.
+ * REFERINȚĂ DIMENSIUNI / LAYOUT MEMORAT: .cursor/rules/ILOVE_LAYOUT_MEMORAT.mdc
+ * Nu schimba grila, gap-urile, 160px poze, laterale 9–10.5rem fără cerere explicită; la modificări globale CSS, păstrează override-uri sub body.page-ilove aici.
+ */
+
+/* Pe I Love sidebars globale sunt goale (260px+260px) → benzi albe. Le ascundem; rămâne doar main pe lățime utilă. */
+body.page-ilove .layout .sidebar-left,
+body.page-ilove .layout .sidebar-right {
+	display: none !important;
+}
+
+body.page-ilove .layout {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+body.page-ilove #main_content {
+	max-width: none;
+	width: 100%;
+}
+
+body.page-ilove .ilove-page {
+	max-width: none;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+/* Coloana principală fără padding lateral: casetele ating marginea albă a zonei de conținut */
+body.page-ilove .layout > .main-content {
+	padding-left: 0;
+	padding-right: 0;
+	width: 100%;
+	min-width: 0;
+}
+
+body.page-ilove .ilove-wire {
+	display: grid;
+	/* Laterale fixe; mijlocul = tot restul lățimii ferestrei (fără sidebars goale) */
+	grid-template-columns: minmax(9rem, 10.5rem) minmax(0, 1fr) minmax(9rem, 10.5rem);
+	column-gap: 0;
+	row-gap: 0;
+	align-items: stretch;
+	width: 100%;
+}
+
+body.page-ilove .ilove-wire__col {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+	min-height: 0;
+}
+
+body.page-ilove .ilove-case {
+	flex: 1 1 0;
+	min-height: clamp(4.5rem, 12vh, 7rem);
+	border-radius: 0;
+	border: 1px dashed rgba(46, 125, 50, 0.45);
+	background: repeating-linear-gradient(-45deg, rgba(232, 245, 233, 0.95), rgba(232, 245, 233, 0.95) 4px, rgba(200, 230, 201, 0.5) 4px, rgba(200, 230, 201, 0.5) 8px);
+	box-sizing: border-box;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.35rem;
+	overflow: hidden;
+}
+
+body.page-ilove .ilove-case--a6 {
+	border-color: rgba(123, 31, 162, 0.4);
+	background: repeating-linear-gradient(-45deg, rgba(243, 229, 245, 0.95), rgba(243, 229, 245, 0.95) 4px, rgba(225, 190, 231, 0.45) 4px, rgba(225, 190, 231, 0.45) 8px);
+}
+
+/* Colțuri rotunjite doar spre mijloc (laturi exterioare lipite de marginea zonei) */
+body.page-ilove .ilove-wire__col--left .ilove-case:first-child {
+	border-radius: 0 10px 0 0;
+}
+body.page-ilove .ilove-wire__col--left .ilove-case:last-child {
+	border-radius: 0 0 10px 0;
+}
+body.page-ilove .ilove-wire__col--right .ilove-case:first-child {
+	border-radius: 10px 0 0 0;
+}
+body.page-ilove .ilove-wire__col--right .ilove-case:last-child {
+	border-radius: 0 0 0 10px;
+}
+body.page-ilove .ilove-wire__col--left .ilove-case:only-child {
+	border-radius: 0 10px 10px 0;
+}
+body.page-ilove .ilove-wire__col--right .ilove-case:only-child {
+	border-radius: 10px 0 0 10px;
+}
+
+body.page-ilove .ilove-case__ref {
+	position: absolute;
+	top: 0.35rem;
+	left: 0.4rem;
+	font-size: 0.62rem;
+	font-weight: 800;
+	letter-spacing: 0.04em;
+	color: rgba(0, 0, 0, 0.45);
+	text-transform: uppercase;
+	pointer-events: none;
+	user-select: none;
+}
+
+body.page-ilove .ilove-case__mark {
+	font-size: clamp(0.58rem, 1.6vw, 0.72rem);
+	font-weight: 900;
+	color: rgba(0, 0, 0, 0.35);
+	text-align: center;
+	line-height: 1.2;
+	transform: rotate(-32deg);
+	white-space: nowrap;
+	pointer-events: none;
+	user-select: none;
+}
+
+body.page-ilove .ilove-wire__main {
+	min-width: 0;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	/* Puțin aer între casetele laterale și carduri; coloana centrală = tot 1fr rămas */
+	padding-inline: clamp(0.45rem, 1.1vw, 0.85rem);
+	box-sizing: border-box;
+}
+
+body.page-ilove .ilove-wire__head {
+	margin: 0 0 0.65rem;
+}
+
+body.page-ilove .ilove-wire__head h1 {
+	margin: 0 0 0.35rem;
+	color: #e53935;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	font-size: clamp(1.15rem, 3vw, 1.45rem);
+}
+
+body.page-ilove .ilove-wire__head p {
+	margin: 0;
+	color: #555;
+	font-size: 0.95rem;
+	line-height: 1.45;
+}
+
+/* Caseta mare: toate cardurile animalelor bifate cu inimioara */
+body.page-ilove .ilove-main-caseta {
+	min-width: 0;
+	box-sizing: border-box;
+	background: #fff;
+	border: 1px solid rgba(229, 57, 53, 0.22);
+	border-radius: 16px;
+	padding: clamp(0.85rem, 2.2vw, 1.35rem);
+	box-shadow:
+		0 2px 14px rgba(0, 0, 0, 0.06),
+		inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+body.page-ilove .ilove-pets-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 1rem;
+	align-content: start;
+}
+
+body.page-ilove .ilove-pet-card {
+	border: 1px solid #eee;
+	border-radius: 12px;
+	overflow: hidden;
+	background: #fff;
+	position: relative;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+body.page-ilove .ilove-pet-card a {
+	display: block;
+	text-decoration: none;
+	color: inherit;
+}
+
+body.page-ilove .ilove-pet-card-photo {
+	position: relative;
+	overflow: hidden;
+}
+
+body.page-ilove .ilove-pet-card-photo .wish-btn {
+	top: 6px;
+	right: 6px;
+	z-index: 2;
+}
+
+body.page-ilove .ilove-pet-card-photo img {
+	width: 100%;
+	height: 160px;
+	object-fit: cover;
+	display: block;
+}
+
+body.page-ilove .ilove-pet-card .ilove-pet-meta {
+	padding: 0.75rem;
+}
+
+body.page-ilove .ilove-pet-card .ilove-pet-name {
+	font-weight: 800;
+}
+
+body.page-ilove .ilove-pet-card .ilove-pet-age {
+	font-size: 0.85rem;
+	color: #666;
+}
+
+body.page-ilove .ilove-empty {
+	grid-column: 1 / -1;
+	border: none;
+	border-radius: 12px;
+	padding: 1.25rem 1rem;
+	background: rgba(229, 57, 53, 0.06);
+	color: #555;
+	text-align: center;
+	line-height: 1.5;
+}
+
+/*
+ * Desktop: fără scroll pe pagină — doar în .ilove-main-caseta.
+ * Lateralele rămân lipite de sus–jos în înălțimea fixă a wire-ului (nu urcă cu conținutul din mijloc).
+ */
+@media (min-width: 901px) {
+	html:has(body.page-ilove) {
+		overflow: hidden;
+		height: 100%;
+	}
+	body.page-ilove {
+		overflow: hidden;
+		height: 100vh;
+		max-height: 100vh;
+	}
+	body.page-ilove #main_wrap {
+		display: flex;
+		flex-direction: column;
+		height: 100vh;
+		max-height: 100vh;
+		min-height: 0;
+		overflow: hidden;
+	}
+	body.page-ilove #main_content {
+		flex: 1 1 auto;
+		min-height: 0;
+		max-height: 100%;
+		overflow: hidden !important;
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+	}
+	body.page-ilove #main_content > ul.django-messages,
+	body.page-ilove #djangoMessagesBanner {
+		flex-shrink: 0;
+	}
+	body.page-ilove #main_content > .layout {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+	body.page-ilove .layout > .main-content {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+	body.page-ilove .ilove-page {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+	body.page-ilove .ilove-wire {
+		flex: 1 1 auto;
+		min-height: 0;
+		height: 100%;
+		max-height: 100%;
+		overflow: hidden;
+		grid-template-rows: minmax(0, 1fr);
+		align-items: stretch;
+		align-content: stretch;
+	}
+	body.page-ilove .ilove-wire__col {
+		align-self: stretch;
+		min-height: 0;
+		height: 100%;
+		max-height: 100%;
+		overflow: hidden;
+	}
+	body.page-ilove .ilove-wire__main {
+		flex: 1 1 auto;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		height: 100%;
+		max-height: 100%;
+	}
+	body.page-ilove .ilove-wire__head {
+		flex-shrink: 0;
+	}
+	body.page-ilove .ilove-main-caseta {
+		flex: 1 1 0%;
+		min-height: 0;
+		max-height: 100%;
+		overflow-y: auto;
+		overflow-x: hidden;
+		-webkit-overflow-scrolling: touch;
+		overscroll-behavior: contain;
+	}
+}
+
+@media (max-width: 900px) {
+	body.page-ilove .layout > .main-content {
+		padding-left: 0;
+		padding-right: 0;
+	}
+	body.page-ilove .ilove-wire {
+		grid-template-columns: 1fr;
+		min-height: 0;
+	}
+	body.page-ilove .ilove-wire__col--left,
+	body.page-ilove .ilove-wire__col--right {
+		flex-direction: row;
+	}
+	body.page-ilove .ilove-wire__col--left .ilove-case,
+	body.page-ilove .ilove-wire__col--right .ilove-case {
+		border-radius: 10px;
+	}
+	body.page-ilove .ilove-case {
+		min-height: clamp(3.5rem, 10vw, 5rem);
+	}
+	body.page-ilove .ilove-wire__main {
+		padding-inline: clamp(0.35rem, 2vw, 0.65rem);
+		order: -1;
+	}
+	body.page-ilove .ilove-pets-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	/* Scroll în caseta centrală când sunt multe carduri (nu trag lateralele) */
+	body.page-ilove .ilove-main-caseta {
+		max-height: calc(100vh - var(--nav-height) - 11rem);
+		overflow-y: auto;
+		overflow-x: hidden;
+		-webkit-overflow-scrolling: touch;
+	}
+}
+
+@media (max-width: 520px) {
+	body.page-ilove .ilove-pets-grid {
+		grid-template-columns: 1fr;
+	}
+}

@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Comandă promovare A2 | EU-ADOPT{% endblock %}
+{% block body_class %}page-promo-a2-order{% endblock %}
+
+{% block extra_css %}
+<style>
+	body.page-promo-a2-order #main_content {
+		min-height: calc(100vh - var(--nav-h, 64px));
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.8rem;
+		box-sizing: border-box;
+	}
+	.promo-a2-wrap {
+		width: min(760px, 100%);
+		background: #fff;
+		border: 1px solid #dbe3ef;
+		border-radius: 12px;
+		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+		padding: 0.9rem 1rem;
+		box-sizing: border-box;
+	}
+	.promo-a2-title {
+		margin: 0 0 0.4rem;
+		font-size: 1.05rem;
+		font-weight: 800;
+		color: #1565c0;
+	}
+	.promo-a2-sub {
+		margin: 0 0 0.8rem;
+		font-size: 0.85rem;
+		color: #455a64;
+	}
+	.promo-a2-grid {
+		display: grid;
+		grid-template-columns: 180px 1fr;
+		gap: 0.9rem;
+	}
+	.promo-a2-photo {
+		width: 100%;
+		aspect-ratio: 1 / 1;
+		border-radius: 10px;
+		overflow: hidden;
+		background: #eceff1;
+		border: 1px solid #cfd8dc;
+	}
+	.promo-a2-photo img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+	.promo-a2-fields { display: grid; gap: 0.5rem; }
+	.promo-a2-fields-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.5rem;
+	}
+	.promo-a2-field label {
+		display: block;
+		margin-bottom: 0.2rem;
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: #1f2d3d;
+	}
+	.promo-a2-field select {
+		width: 100%;
+		padding: 0.35rem 0.45rem;
+		border-radius: 8px;
+		border: 1px solid #c7d3e3;
+		font-size: 0.85rem;
+		box-sizing: border-box;
+	}
+	.promo-a2-field input[type="date"] {
+		width: 100%;
+		padding: 0.35rem 0.45rem;
+		border-radius: 8px;
+		border: 1px solid #c7d3e3;
+		font-size: 0.85rem;
+		box-sizing: border-box;
+	}
+	.promo-a2-field input[type="number"] {
+		width: 100%;
+		padding: 0.35rem 0.45rem;
+		border-radius: 8px;
+		border: 1px solid #c7d3e3;
+		font-size: 0.85rem;
+		box-sizing: border-box;
+	}
+	.promo-a2-field input[readonly] {
+		width: 100%;
+		padding: 0.35rem 0.45rem;
+		border-radius: 8px;
+		border: 1px solid #c7d3e3;
+		font-size: 0.85rem;
+		box-sizing: border-box;
+		background: #f8fbff;
+		color: #1f2d3d;
+	}
+	.promo-a2-field-help {
+		margin-top: 0.35rem;
+		font-size: 0.76rem;
+		line-height: 1.45;
+		color: #546e7a;
+		background: #f5f9ff;
+		border: 1px solid #d8e7fb;
+		border-radius: 8px;
+		padding: 0.45rem 0.55rem;
+	}
+	.promo-a2-note {
+		margin-top: 0.75rem;
+		font-size: 0.78rem;
+		color: #546e7a;
+		background: #f5f9ff;
+		border: 1px solid #d8e7fb;
+		border-radius: 8px;
+		padding: 0.45rem 0.55rem;
+	}
+	.promo-a2-actions {
+		margin-top: 0.8rem;
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+	.promo-a2-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.42rem 0.8rem;
+		border-radius: 8px;
+		border: 1px solid #1565c0;
+		background: #1565c0;
+		color: #fff;
+		font-size: 0.82rem;
+		font-weight: 800;
+		text-decoration: none;
+		cursor: pointer;
+	}
+	.promo-a2-btn--ghost {
+		background: #fff;
+		color: #1565c0;
+	}
+	.promo-a2-ok {
+		margin-top: 0.7rem;
+		border: 1px solid #c8e6c9;
+		background: #e8f5e9;
+		color: #1b5e20;
+		border-radius: 8px;
+		padding: 0.45rem 0.6rem;
+		font-size: 0.82rem;
+	}
+	@media (max-width: 620px) {
+		.promo-a2-grid { grid-template-columns: 1fr; }
+		.promo-a2-photo { max-width: 220px; }
+		.promo-a2-fields-row { grid-template-columns: 1fr; }
+	}
+</style>
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<div class="promo-a2-wrap" aria-label="Notă comandă promovare A2">
+		<h1 class="promo-a2-title">Notă comandă promovare A2</h1>
+		<p class="promo-a2-sub">Pet: <strong>{{ pet.name|default:"—" }}</strong> · specie: <strong>{{ pet.species|default:"—" }}</strong></p>
+
+		{% if order_submitted %}
+		<div class="promo-a2-ok" id="promoA2SimpleNote">
+			<strong>Comandă finalizată.</strong> Nr Oferte: <strong>{{ quantity }}</strong> · Perioada: <strong>{{ package }}</strong>.
+		</div>
+		{% endif %}
+
+		<form method="post">
+			{% csrf_token %}
+			<div class="promo-a2-grid">
+				<div class="promo-a2-photo" aria-hidden="true">
+					{% if pet.photo_1 %}
+					<img src="{{ pet.photo_1.url }}" alt="" />
+					{% else %}
+					<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" />
+					{% endif %}
+				</div>
+				<div class="promo-a2-fields">
+					<div class="promo-a2-fields-row">
+						<div class="promo-a2-field">
+							<label for="id_package">Ofertă</label>
+							<select name="package" id="id_package">
+								<option value="6h" {% if package == "6h" %}selected{% endif %}>6 apariții / 6 ore</option>
+								<option value="12h" {% if package == "12h" %}selected{% endif %}>12 apariții / 12 ore</option>
+							</select>
+						</div>
+						<div class="promo-a2-field">
+							<label for="id_quantity">Număr oferte</label>
+							<input type="number" id="id_quantity" name="quantity" min="1" max="30" step="1" value="{{ quantity }}" required />
+						</div>
+					</div>
+					<div class="promo-a2-field">
+						<label for="id_price_info">Preț ofertă</label>
+						<input type="text" id="id_price_info" value="" readonly />
+						<p class="promo-a2-field-help">
+							Promovarea asigură apariția anunțului în pagina Acasă, în caseta centrală A2. Afișările sunt distribuite intercalat, în intervale de câte 1 oră, pe durata a 24 de ore calculate de la momentul achiziției promovării. În intervalele nealocate promovării, caseta A2 afișează anunțuri organice din platformă.
+						</p>
+					</div>
+					<div class="promo-a2-field">
+						<label>Metodă plată</label>
+						<select id="id_payment_method" disabled>
+							<option selected>Card</option>
+						</select>
+					</div>
+					<div class="promo-a2-field">
+						<label for="id_start_date">Data de start</label>
+						<input type="date" id="id_start_date" name="start_date" value="{{ start_date }}" min="{{ today_iso }}" required />
+					</div>
+				</div>
+			</div>
+			<p class="promo-a2-note">Preț unitar: <strong>{{ unit_price }} lei</strong> · Număr pachete: <strong>{{ quantity }}</strong> · Total: <strong>{{ total_price }} lei</strong>. Acesta este un ecran v1 (demo) pentru fluxul de comandă.</p>
+			<div class="promo-a2-actions">
+				<button type="submit" class="promo-a2-btn">Plătește</button>
+				<a href="{% url 'mypet' %}" class="promo-a2-btn promo-a2-btn--ghost">Înapoi la MyPet</a>
+			</div>
+		</form>
+	</div>
+</section>
+<script>
+	(function initPromoA2PriceInfo() {
+		var packageEl = document.getElementById("id_package");
+		var quantityEl = document.getElementById("id_quantity");
+		var priceInfoEl = document.getElementById("id_price_info");
+		if (!packageEl || !quantityEl || !priceInfoEl) return;
+
+		function computeUnitPrice(pkg) {
+			return pkg === "12h" ? 15 : 10;
+		}
+
+		function refreshPriceInfo() {
+			var pkg = packageEl.value || "6h";
+			var qty = parseInt(quantityEl.value || "1", 10);
+			if (!Number.isFinite(qty) || qty < 1) qty = 1;
+			if (qty > 30) qty = 30;
+			var unit = computeUnitPrice(pkg);
+			var total = unit * qty;
+			priceInfoEl.value = unit + " lei/ofertă × " + qty + " = " + total + " lei";
+		}
+
+		packageEl.addEventListener("change", refreshPriceInfo);
+		quantityEl.addEventListener("input", refreshPriceInfo);
+		refreshPriceInfo();
+	})();
+	(function autoHidePromoA2Note() {
+		var noteEl = document.getElementById("promoA2SimpleNote");
+		if (!noteEl) return;
+		setTimeout(function() {
+			noteEl.style.display = "none";
+		}, 3000);
+	})();
+</script>
+{% endblock %}

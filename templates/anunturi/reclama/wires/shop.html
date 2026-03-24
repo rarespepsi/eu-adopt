@@ -1,20 +1,14 @@
-{# Schemă Shop (SHW): SH1–SH5, zone laterale – simplificat #}
-<div class="reclama-sh-wire" aria-hidden="true">
-	<div class="reclama-alt-slot reclama-sh-wire__top" data-slot="SH1"><span class="reclama-slot-name">SH1</span><div class="reclama-slot-preview"></div></div>
-	<div class="reclama-sh-wire__middle">
-		<div class="reclama-sh-wire__side">
-			<div class="reclama-alt-slot" data-slot="SH4.1"><span class="reclama-slot-name">SH4.1</span><div class="reclama-slot-preview"></div></div>
-			<div class="reclama-alt-slot reclama-sh-wire__announce" data-slot="SH4.2"><span class="reclama-slot-name">SH4.2</span><div class="reclama-slot-preview"></div></div>
-			<div class="reclama-alt-slot" data-slot="SH4.3"><span class="reclama-slot-name">SH4.3</span><div class="reclama-slot-preview"></div></div>
-		</div>
-		<div class="reclama-sh-wire__center">
-			<div class="reclama-alt-slot" data-slot="SH2"><span class="reclama-slot-name">SH2</span><div class="reclama-slot-preview"></div></div>
-			<div class="reclama-sh-wire__grid">
-				{% for i in "123456"|make_list %}
-				<div class="reclama-alt-slot reclama-sh-wire__cell" data-slot="SH2.{{ forloop.counter }}"><span class="reclama-slot-name">SH2.{{ forloop.counter }}</span><div class="reclama-slot-preview"></div></div>
-				{% endfor %}
-			</div>
-		</div>
+{# Shop (SHW) — ca Servicii/Transport: stânga 3×SH4, mijloc gol, dreapta 3×SH5. Fără SH1/SH2 pe schemă PUB. #}
+<div class="reclama-sh-wire" aria-hidden="{% if pub_interactive_wire %}false{% else %}true{% endif %}">
+	<div class="reclama-sh-wire__left">
+		<div class="reclama-alt-slot reclama-pt-wire__slot--publi-a5" data-slot="SH4.1"><span class="reclama-slot-name">SH4.1</span><div class="reclama-slot-preview"></div></div>
+		<div class="reclama-alt-slot reclama-pt-wire__slot--publi-a5" data-slot="SH4.2"><span class="reclama-slot-name">SH4.2</span><div class="reclama-slot-preview"></div></div>
+		<div class="reclama-alt-slot reclama-pt-wire__slot--publi-a5" data-slot="SH4.3"><span class="reclama-slot-name">SH4.3</span><div class="reclama-slot-preview"></div></div>
 	</div>
-	<div class="reclama-alt-slot reclama-sh-wire__bottom" data-slot="SH5"><span class="reclama-slot-name">SH5</span><div class="reclama-slot-preview"></div></div>
+	<div class="reclama-sh-wire__mid-zone" aria-hidden="true"></div>
+	<div class="reclama-sh-wire__right">
+		<div class="reclama-alt-slot reclama-pt-wire__slot--publi-a6" data-slot="SH5.1"><span class="reclama-slot-name">SH5.1</span><div class="reclama-slot-preview"></div></div>
+		<div class="reclama-alt-slot reclama-pt-wire__slot--publi-a6" data-slot="SH5.2"><span class="reclama-slot-name">SH5.2</span><div class="reclama-slot-preview"></div></div>
+		<div class="reclama-alt-slot reclama-pt-wire__slot--publi-a6" data-slot="SH5.3"><span class="reclama-slot-name">SH5.3</span><div class="reclama-slot-preview"></div></div>
+	</div>
 </div>

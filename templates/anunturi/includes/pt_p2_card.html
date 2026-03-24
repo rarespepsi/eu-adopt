@@ -7,6 +7,16 @@
 					<path class="wish-heart" d="M12 21s-7-4.6-10-9.2C-0.3 7.9 2.1 4 6 4c2 0 3.4 1.1 4 2 0.6-0.9 2-2 4-2 3.9 0 6.3 3.9 4 7.8C19 16.4 12 21 12 21z"/>
 				</svg>
 			</button>
+			{% if user.is_authenticated and display_role != "collaborator" %}
+			<button
+				type="button"
+				class="pt-promoveaza-btn"
+				title="Promovare A2"
+				onclick="event.preventDefault(); event.stopPropagation(); window.location.href='{% url 'promo_a2_order' pet.pk %}';"
+			>
+				Promovează-mă
+			</button>
+			{% endif %}
 			{% if pet.imagine %}
 			<img
 				src="{{ pet.imagine.url }}"

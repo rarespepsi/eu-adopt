@@ -1,34 +1,43 @@
-{# Schemă Servicii (SW): S1–S7 – simplificat #}
-<div class="reclama-sw-wire" aria-hidden="true">
-	<div class="reclama-alt-slot reclama-sw-wire__s1" data-slot="S1"><span class="reclama-slot-name">S1</span><div class="reclama-slot-preview"></div></div>
-	<div class="reclama-sw-wire__s2-row">
-		<div class="reclama-alt-slot" data-slot="S2.1"><span class="reclama-slot-name">S2.1</span><div class="reclama-slot-preview"></div></div>
-		<div class="reclama-alt-slot" data-slot="S2.2"><span class="reclama-slot-name">S2.2</span><div class="reclama-slot-preview"></div></div>
-		<div class="reclama-alt-slot" data-slot="S2.3"><span class="reclama-slot-name">S2.3</span><div class="reclama-slot-preview"></div></div>
-	</div>
-	<div class="reclama-sw-wire__mid">
-		<div class="reclama-sw-wire__col">
-			<span class="reclama-sw-wire__col-label">S3</span>
-			{% for i in "1234"|make_list %}
-			<div class="reclama-alt-slot reclama-sw-wire__mini" data-slot="S3.{{ forloop.counter }}"><span class="reclama-slot-name">S3.{{ forloop.counter }}</span><div class="reclama-slot-preview"></div></div>
-			{% endfor %}
-		</div>
-		<div class="reclama-sw-wire__col">
-			<span class="reclama-sw-wire__col-label">S4</span>
-			{% for i in "1234"|make_list %}
-			<div class="reclama-alt-slot reclama-sw-wire__mini" data-slot="S4.{{ forloop.counter }}"><span class="reclama-slot-name">S4.{{ forloop.counter }}</span><div class="reclama-slot-preview"></div></div>
-			{% endfor %}
-		</div>
-		<div class="reclama-sw-wire__col">
-			<span class="reclama-sw-wire__col-label">S5</span>
-			{% for i in "1234"|make_list %}
-			<div class="reclama-alt-slot reclama-sw-wire__mini" data-slot="S5.{{ forloop.counter }}"><span class="reclama-slot-name">S5.{{ forloop.counter }}</span><div class="reclama-slot-preview"></div></div>
-			{% endfor %}
+{# S1/S7 = benzi mesaj (ca P1/P3), fără data-slot → fără click în Publicitate; S2/S6 = sloturi. #}
+{% with pubmail=pub_site_contact_email|default:"euadopt@gmail.com" %}
+<div class="reclama-sw-wire" aria-hidden="{% if pub_interactive_wire %}false{% else %}true{% endif %}">
+	<div class="reclama-sw-wire__s1 reclama-sw-wire__strip-msg reclama-alt-slot reclama-pt-wire__slot--strip">
+		<div class="reclama-pt-strip-wrap reclama-pt-strip-wrap--p1">
+			<div class="reclama-pt-strip-track reclama-pt-strip-track--p1">
+				{% for __ in "0123456789" %}
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Spațiu la cerere — Servicii S1</span>
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Cereți oferta pe<br /><span class="reclama-pt-strip-email">{{ pubmail }}</span><br /><span class="reclama-pt-strip-ref">Servicii · S1</span></span>
+				{% endfor %}
+				{% for __ in "0123456789" %}
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Spațiu la cerere — Servicii S1</span>
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Cereți oferta pe<br /><span class="reclama-pt-strip-email">{{ pubmail }}</span><br /><span class="reclama-pt-strip-ref">Servicii · S1</span></span>
+				{% endfor %}
+			</div>
 		</div>
 	</div>
+	<div class="reclama-sw-wire__s2">
+		<div class="reclama-sw-wire__s2-spacer" aria-hidden="true"></div>
+		<div class="reclama-alt-slot reclama-pt-wire__slot--publi-a5" data-slot="S2.2"><span class="reclama-slot-name">S2.2</span><div class="reclama-slot-preview"></div></div>
+		<div class="reclama-alt-slot reclama-pt-wire__slot--publi-a5" data-slot="S2.3"><span class="reclama-slot-name">S2.3</span><div class="reclama-slot-preview"></div></div>
+	</div>
+	<div class="reclama-sw-wire__mid-zone" aria-hidden="true"></div>
 	<div class="reclama-sw-wire__s6">
-		<div class="reclama-alt-slot" data-slot="S6.1"><span class="reclama-slot-name">S6.1</span><div class="reclama-slot-preview"></div></div>
-		<div class="reclama-alt-slot" data-slot="S6.2"><span class="reclama-slot-name">S6.2</span><div class="reclama-slot-preview"></div></div>
+		<div class="reclama-alt-slot reclama-pt-wire__slot--publi-a6" data-slot="S6.1"><span class="reclama-slot-name">S6.1</span><div class="reclama-slot-preview"></div></div>
+		<div class="reclama-alt-slot reclama-pt-wire__slot--publi-a6" data-slot="S6.2"><span class="reclama-slot-name">S6.2</span><div class="reclama-slot-preview"></div></div>
 	</div>
-	<div class="reclama-alt-slot reclama-sw-wire__s7" data-slot="S7"><span class="reclama-slot-name">S7</span><div class="reclama-slot-preview"></div></div>
+	<div class="reclama-sw-wire__s7 reclama-sw-wire__strip-msg reclama-alt-slot reclama-pt-wire__slot--strip">
+		<div class="reclama-pt-strip-wrap reclama-pt-strip-wrap--p3">
+			<div class="reclama-pt-strip-track reclama-pt-strip-track--p3">
+				{% for __ in "0123456789" %}
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Spațiu la cerere — Servicii S7</span>
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Cereți oferta pe<br /><span class="reclama-pt-strip-email">{{ pubmail }}</span><br /><span class="reclama-pt-strip-ref">Servicii · S7</span></span>
+				{% endfor %}
+				{% for __ in "0123456789" %}
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Spațiu la cerere — Servicii S7</span>
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Cereți oferta pe<br /><span class="reclama-pt-strip-email">{{ pubmail }}</span><br /><span class="reclama-pt-strip-ref">Servicii · S7</span></span>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
 </div>
+{% endwith %}

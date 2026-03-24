@@ -1,0 +1,1513 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Publicitate | EU Adopt{% endblock %}
+{% block body_class %}page-publicitate-harta{% endblock %}
+
+{% block content %}
+<section id="PUBW" class="pub-wrap" aria-label="Harta comenzi publicitate">
+	<div class="pub-top-tabs">
+		{% for s in pub_sections %}
+			<a href="{% url 'publicitate_harta' %}?sect={{ s.code }}" class="pub-tab{% if pub_selected_section == s.code %} is-active{% endif %}">{{ s.label }}</a>
+		{% endfor %}
+	</div>
+	<div class="pub-grid">
+		<aside class="pub-c3">
+			<h3>Detalii slot</h3>
+			<div id="pubDetailsEmpty" class="pub-empty">Selectează un slot din hartă.</div>
+			<div id="pubDetailsInfo" class="pub-details-info" hidden></div>
+			<form id="pubDetailsForm" class="pub-form" hidden>
+				<div class="pub-row"><span>Cod:</span> <strong id="pubDetailCode">-</strong></div>
+				<div class="pub-row"><span>Titlu:</span> <strong id="pubDetailTitle">-</strong></div>
+				<div class="pub-row"><span>Tip:</span> <strong id="pubDetailTypes">-</strong></div>
+				<div class="pub-row"><span>Unitate:</span> <strong id="pubDetailUnit">-</strong></div>
+				<div class="pub-row"><span>Preț unitar:</span> <strong id="pubDetailPrice">-</strong></div>
+				<label for="pubQty">Perioadă:</label>
+				<input id="pubQty" type="number" min="1" max="12" value="1" />
+				<label for="pubNote">Notă:</label>
+				<textarea id="pubNote" rows="4" placeholder="Link / text scurt / instrucțiuni"></textarea>
+				<button id="pubAddBtn" type="button" class="pub-add-btn">Adaugă în coș</button>
+			</form>
+		</aside>
+		<main class="pub-c2">
+			<h3 class="pub-c2-heading">Hartă · {{ pub_selected_section|upper }}</h3>
+			<div class="pub-c2-stack">
+				{% if pub_selected_section == 'home' %}
+				<div class="pub-c2-map-half" aria-label="Schemă HOME">
+					<div class="pub-home-wire-clip">
+						{% include "anunturi/reclama/wires/home.html" with pub_interactive_wire=True %}
+					</div>
+				</div>
+				<div class="pub-c2-below-map">
+					<p class="pub-map-hint">
+						<strong>Schema HOME</strong> — pozițiile corespund paginii principale. Apasă pe <strong>A5</strong>, <strong>A6</strong> sau <strong>Burtieră</strong> pentru detalii și coș.
+						Casetele <strong>A1</strong> și <strong>A3</strong> sunt <strong>închiriabile la cerere</strong> (nu se comandă direct din această pagină). Grila <strong>A2</strong> este pentru promovarea anunțurilor de adopție (flux separat).
+					</p>
+				</div>
+				{% elif pub_selected_section == 'pt' %}
+				<div class="pub-c2-map-half" aria-label="Schemă PT">
+					<div class="pub-home-wire-clip pub-home-wire-clip--pt">
+						{% include "anunturi/reclama/wires/pt.html" with pub_interactive_wire=True %}
+					</div>
+				</div>
+				<div class="pub-c2-below-map">
+					<p class="pub-map-hint">
+						<strong>Schema PT (Prietenul tău)</strong> — aceleași proporții ca în Reclama staff. <strong>P1</strong> și <strong>P3</strong> sunt benzi cu casete ca pe PT (spațiu la cerere / ofertă pe email). Tarif online: ex. <strong>P4.3</strong>, <strong>P5.1–P5.3</strong>.
+					</p>
+				</div>
+				{% elif pub_selected_section == 'servicii' %}
+				<div class="pub-c2-map-half" aria-label="Schemă Servicii">
+					<div class="pub-home-wire-clip pub-home-wire-clip--servicii">
+						{% include "anunturi/reclama/wires/servicii.html" with pub_interactive_wire=True %}
+					</div>
+				</div>
+				<div class="pub-c2-below-map">
+					<p class="pub-map-hint">
+						<strong>Schema Servicii</strong> — benzile sus și jos sunt doar mesaj (fără click); mijloc: stânga–zonă goală–dreapta. Sloturi clicabile: <strong>S2.2</strong>, <strong>S2.3</strong>, <strong>S6.1</strong>, <strong>S6.2</strong> (tarife în catalog).
+					</p>
+				</div>
+				{% elif pub_selected_section == 'transport' %}
+				<div class="pub-c2-map-half" aria-label="Schemă Transport">
+					<div class="pub-home-wire-clip pub-home-wire-clip--transport">
+						{% include "anunturi/reclama/wires/transport.html" with pub_interactive_wire=True %}
+					</div>
+				</div>
+				<div class="pub-c2-below-map">
+					<p class="pub-map-hint">
+						<strong>Schema Transport</strong> — stânga zonă goală; <strong>o casetă în dreapta</strong> cu <strong>trei subcasete</strong> (<strong>TDR.1</strong>, <strong>TDR.2</strong>, <strong>TDR.3</strong>). Tarife în catalog.
+					</p>
+				</div>
+				{% elif pub_selected_section == 'shop' %}
+				<div class="pub-c2-map-half" aria-label="Schemă Shop">
+					<div class="pub-home-wire-clip pub-home-wire-clip--shop">
+						{% include "anunturi/reclama/wires/shop.html" with pub_interactive_wire=True %}
+					</div>
+				</div>
+				<div class="pub-c2-below-map">
+					<p class="pub-map-hint">
+						<strong>Schema Shop</strong> — <strong>trei casete stânga</strong> (<strong>SH4.1–SH4.3</strong>), mijloc gol (fundal ca pe site), <strong>trei casete dreapta</strong> (<strong>SH5.1–SH5.3</strong>). Tarife în catalog.
+					</p>
+				</div>
+				{% elif pub_selected_section == 'mypet' %}
+				<div class="pub-c2-map-half" aria-label="Schemă MyPet">
+					<div class="pub-home-wire-clip pub-home-wire-clip--mypet">
+						{% include "anunturi/reclama/wires/mypet.html" with pub_interactive_wire=True %}
+					</div>
+				</div>
+				<div class="pub-c2-below-map">
+					<p class="pub-map-hint">
+						<strong>Schema MyPet</strong> — <strong>trei casete în stânga</strong> (<strong>MP.L1</strong>, <strong>MP.L2</strong>, <strong>MP.L3</strong>); dreapta zonă goală (fundal ca pe site). Tarife în catalog.
+					</p>
+				</div>
+				{% elif pub_selected_section == 'i_love' %}
+				<div class="pub-c2-map-half" aria-label="Schemă I Love">
+					<div class="pub-home-wire-clip pub-home-wire-clip--i-love">
+						{% include "anunturi/reclama/wires/i_love.html" with pub_interactive_wire=True %}
+					</div>
+				</div>
+				<div class="pub-c2-below-map">
+					<p class="pub-map-hint">
+						<strong>Schema I Love</strong> — <strong>IL.L1</strong>, <strong>IL.L2</strong> stânga; mijloc gol; <strong>IL.R1</strong>, <strong>IL.R2</strong> dreapta. Aliniată cu pagina I Love din site. Tarife în catalog.
+					</p>
+				</div>
+				{% else %}
+				<div class="pub-c2-map-half pub-c2-map-half--solo">
+					<div id="pubSlotGrid" class="pub-slot-grid"></div>
+				</div>
+				{% endif %}
+			</div>
+		</main>
+		<aside class="pub-c1">
+			<h3>Coș publicitate</h3>
+			<div id="pubCartList" class="pub-cart-list"></div>
+			<div class="pub-cart-total">Total: <strong id="pubCartTotal">0 lei</strong></div>
+			<button type="button" class="pub-pay-btn" disabled>Plătește (demo)</button>
+		</aside>
+	</div>
+</section>
+{{ pub_slot_map|json_script:"pub-slot-map-json" }}
+{{ pub_selected_section|json_script:"pub-selected-section-json" }}
+{{ pub_a2_images|json_script:"pub-a2-images-json" }}
+{{ pub_a13_images|json_script:"pub-a13-images-json" }}
+{% endblock %}
+
+{% block extra_css_after %}
+<style>
+	/*
+	 * Fără sidebars — lățime completă.
+	 * Fără scroll pe pagină: body + main_wrap limitate la înălțimea ecranului, overflow hidden.
+	 * Zona Publicitate are max-height în viewport; casetele nu depășesc (conținut intern tăiat, nu scroll).
+	 */
+	html:has(body.page-publicitate-harta) {
+		height: 100%;
+		overflow: hidden;
+	}
+	body.page-publicitate-harta {
+		height: 100vh;
+		max-height: 100vh;
+		overflow: hidden !important;
+	}
+	body.page-publicitate-harta #main_wrap {
+		height: 100vh;
+		max-height: 100vh;
+		min-height: 0;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+	body.page-publicitate-harta #main_content {
+		flex: 1 1 auto;
+		min-height: 0;
+		max-height: 100%;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		padding-left: 0 !important;
+		padding-right: 0 !important;
+		padding-bottom: 0 !important;
+		overflow: hidden !important;
+	}
+	body.page-publicitate-harta #main_content > .layout {
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		display: grid !important;
+		grid-template-columns: minmax(0, 1fr) !important;
+		align-items: stretch;
+		overflow: hidden;
+	}
+	body.page-publicitate-harta .sidebar-left,
+	body.page-publicitate-harta .sidebar-right {
+		display: none !important;
+	}
+	body.page-publicitate-harta .layout .main-content {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: hidden;
+		width: 100%;
+		max-width: 100%;
+		padding-left: 0 !important;
+		padding-right: 0 !important;
+		box-sizing: border-box;
+	}
+	.page-publicitate-harta #PUBW.pub-wrap,
+	.page-publicitate-harta .pub-wrap {
+		/* Padding stânga mai mare: împinge C3|C2|C1 spre dreapta față de marginea ecranului. */
+		padding: 0.25rem 0.65rem 0.25rem clamp(1rem, 3vw, 2.5rem);
+		max-width: 100%;
+		width: 100%;
+		box-sizing: border-box;
+		flex: 1 1 auto;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+	/* Taburile rămân ușor retrase; grilele C3 | C2 | C1 ating marginile stânga/dreapta ale zonei principale */
+	.pub-top-tabs {
+		display: flex; flex-wrap: wrap; gap: 0.32rem; margin-bottom: 0.35rem;
+		padding: 0 0.35rem;
+	}
+	.pub-tab {
+		display: inline-flex; align-items: center; justify-content: center;
+		padding: 0.3rem 0.62rem; border-radius: 999px; text-decoration: none;
+		font-weight: 800; font-size: 0.78rem; background: #fff8e1; border: 1px solid #e0c97d; color: #5c3c00;
+	}
+	.pub-tab.is-active { background: #2e7d32; color: #fff; border-color: #2e7d32; }
+	.pub-grid {
+		display: grid;
+		grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr) minmax(9.5rem, 12.5rem);
+		gap: 0.5rem;
+		align-items: stretch;
+		flex: 0 1 auto;
+		min-height: 0;
+		overflow-x: visible;
+	}
+	/*
+	 * Ordine: pub-c3 (Detalii) | pub-c2 (hartă) | pub-c1 (coș).
+	 * C2 mai lat (~+15%): factor mijloc 0.68×1.15; C3 min/max ~−15% ca să cedeze spațiu + padding stânga pe .pub-wrap împinge C3 spre dreapta.
+	 * Mijloc: 78.2% din (100cqi − 23.6rem min C3+C1).
+	 */
+	.page-publicitate-harta .pub-grid {
+		flex: 1 1 auto;
+		overflow: hidden;
+		gap: 0;
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
+		box-sizing: border-box;
+		container-type: inline-size;
+		contain: inline-size;
+		grid-template-columns: minmax(14.1rem, 19.7rem) minmax(0, 1fr) minmax(9.5rem, 12.5rem);
+	}
+	@supports (width: 1cqi) {
+		.page-publicitate-harta .pub-grid {
+			grid-template-columns:
+				minmax(14.1rem, 19.7rem)
+				minmax(0, max(0px, calc((100cqi - 23.6rem) * 0.782)))
+				minmax(9.5rem, 12.5rem);
+		}
+	}
+	.page-publicitate-harta .pub-grid > * {
+		min-width: 0;
+	}
+	.page-publicitate-harta .pub-c1,
+	.page-publicitate-harta .pub-c2,
+	.page-publicitate-harta .pub-c3 {
+		overflow: hidden;
+	}
+	.pub-c1, .pub-c2, .pub-c3 {
+		background: #fffef7;
+		border: 2px solid #d2b27a;
+		border-radius: 10px;
+		padding: 0.45rem;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+	}
+	/* C3 (stânga) | C2 | C1 (dreapta): lipite de C2, fără gap. Rotunjiri pe marginile EXTERIOARE: C3 = stânga, C1 = dreapta (înainte erau inversate). */
+	.page-publicitate-harta .pub-c3 {
+		border-right: none;
+		border-radius: 10px 0 0 10px;
+	}
+	.page-publicitate-harta .pub-c2 {
+		border-radius: 0;
+	}
+	.page-publicitate-harta .pub-c1 {
+		border-left: none;
+		border-radius: 0 10px 10px 0;
+	}
+	.pub-c1 h3, .pub-c2-heading, .pub-c3 h3 { margin: 0 0 0.35rem; font-size: 0.95rem; color: #5c3c00; flex-shrink: 0; }
+	.pub-c2-stack {
+		flex: 1 1 auto;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+	/* Zona hartă: ~76% din stack C2 (66% × 1.15). */
+	.pub-c2-map-half {
+		flex: 0 0 76%;
+		max-height: 76%;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+	}
+	.pub-c2-map-half--solo {
+		flex: 1 1 auto;
+		max-height: none;
+		min-height: 14rem;
+	}
+	/*
+	 * Lățimi laterale A5/A6: cqi pe clip (nu vw pe body). În C2: coloane laterale ~40% mai înguste
+	 * decât raportul HOME (×0.6), ca A2 să primească spațiu; casetele A5/A6 → grid 3×1fr + preview pătrat ca pe HOME.
+	 */
+	.pub-home-wire-clip {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		border: 1px solid rgba(13, 71, 161, 0.22);
+		border-radius: 8px;
+		padding: 3px;
+		box-sizing: border-box;
+		background: rgba(255, 255, 255, 0.35);
+		container-type: inline-size;
+		contain: inline-size;
+		--side-col-width: clamp(3rem, 15vw, 9rem);
+		--side-col-width-tablet: clamp(2.5rem, 11vw, 6rem);
+	}
+	@supports (width: 1cqi) {
+		.page-publicitate-harta .pub-home-wire-clip {
+			--side-col-width: clamp(3rem, 15cqi, 9rem);
+			--side-col-width-tablet: clamp(2.5rem, 11cqi, 6rem);
+		}
+	}
+	.pub-c2-below-map {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: hidden;
+		font-size: 0.78rem;
+		line-height: 1.35;
+		color: #37474f;
+		padding: 0.2rem 0.15rem 0;
+	}
+	.pub-map-hint { margin: 0; }
+	.pub-map-hint strong { color: #1b5e20; }
+	/* ——— Schemă HOME (adaptat din Reclama staff) ——— */
+	body.page-publicitate-harta .reclama-home-wire {
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		max-width: 100%;
+		max-height: 100%;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		box-sizing: border-box;
+	}
+	body.page-publicitate-harta .reclama-home-wire [data-slot] { cursor: pointer; }
+	body.page-publicitate-harta .reclama-home-wire [data-slot].is-disabled-history {
+		cursor: default;
+		opacity: 0.72;
+		filter: grayscale(0.25);
+	}
+	body.page-publicitate-harta .reclama-home-wire [data-slot].is-static-no-rent {
+		cursor: default;
+	}
+	body.page-publicitate-harta .reclama-home-wire [data-slot].is-static-no-rent .reclama-slot-name::after {
+		content: " · STATIC";
+		color: #2e7d32;
+		font-weight: 900;
+	}
+	body.page-publicitate-harta .reclama-home-wire [data-slot^="A2."].is-static-no-rent .reclama-slot-name::after {
+		content: "";
+	}
+	/* A1/A3: bandă cursivă în interiorul previzualizării, fără a mări caseta (nu strică proporțiile hărții). */
+	body.page-publicitate-harta .reclama-home-wire-a1 .reclama-slot-preview,
+	body.page-publicitate-harta .reclama-home-wire-a3 .reclama-slot-preview {
+		position: relative;
+		overflow: hidden;
+	}
+	body.page-publicitate-harta .reclama-home-wire-a1 .pub-cursive-track,
+	body.page-publicitate-harta .reclama-home-wire-a3 .pub-cursive-track {
+		position: absolute;
+		left: 0;
+		top: 0;
+		height: 100%;
+		display: inline-flex;
+		flex-wrap: nowrap;
+		white-space: nowrap;
+		animation: pub-a13-cursive 26s linear infinite;
+		will-change: transform;
+		pointer-events: none;
+	}
+	body.page-publicitate-harta .reclama-home-wire-a1 .pub-cursive-track img,
+	body.page-publicitate-harta .reclama-home-wire-a3 .pub-cursive-track img {
+		height: 100%;
+		width: auto;
+		min-width: 3.2rem;
+		object-fit: cover;
+		flex-shrink: 0;
+	}
+	@keyframes pub-a13-cursive {
+		0% { transform: translateX(0); }
+		100% { transform: translateX(-50%); }
+	}
+	body.page-publicitate-harta .reclama-home-wire-a1 .reclama-slot-name::after,
+	body.page-publicitate-harta .reclama-home-wire-a3 .reclama-slot-name::after {
+		content: " · la cerere";
+		color: #1565c0;
+		font-weight: 900;
+	}
+	/* Lățimi ca pe HOME: laterală | centru | laterală (nu 0.2fr/1fr/0.2fr). */
+	body.page-publicitate-harta .reclama-home-wire-cols {
+		display: grid;
+		grid-template-columns: minmax(0, var(--side-col-width)) minmax(0, 1fr) minmax(0, var(--side-col-width));
+		gap: 0;
+		flex: 1 1 auto;
+		min-height: 0;
+		align-items: stretch;
+	}
+	@media (max-width: 56.25em) {
+		body.page-publicitate-harta .reclama-home-wire-cols {
+			grid-template-columns: minmax(0, var(--side-col-width-tablet)) minmax(0, 1fr) minmax(0, var(--side-col-width-tablet));
+		}
+	}
+	/* A5/A6: ca HOME — 3 rânduri egale; preview pătrat (lățime coloană ≈ înălțime celulă vizuală). */
+	body.page-publicitate-harta .reclama-home-wire-side {
+		display: grid;
+		grid-template-rows: repeat(3, minmax(0, 1fr));
+		gap: 0;
+		min-width: 0;
+		min-height: 0;
+		height: 100%;
+		align-self: stretch;
+		align-content: stretch;
+	}
+	/* A5 (stânga) vs A6 (dreapta) — culori diferite pe coloană + casete. */
+	body.page-publicitate-harta .reclama-home-wire-cols > .reclama-home-wire-side:first-child {
+		background: rgba(232, 245, 233, 0.95);
+		border-radius: 4px;
+		padding: 2px;
+		box-sizing: border-box;
+	}
+	body.page-publicitate-harta .reclama-home-wire-cols > .reclama-home-wire-side:last-child {
+		background: rgba(243, 229, 245, 0.95);
+		border-radius: 4px;
+		padding: 2px;
+		box-sizing: border-box;
+	}
+	body.page-publicitate-harta .reclama-slot-name {
+		display: block;
+		flex: 0 0 auto;
+		font-size: clamp(0.48rem, 0.9vw, 0.62rem);
+		font-weight: 800;
+		line-height: 1.15;
+		letter-spacing: 0.02em;
+		color: #0d47a1;
+		background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(230, 240, 252, 0.95) 100%);
+		padding: 2px 4px;
+		border-bottom: 1px solid rgba(13, 71, 161, 0.2);
+		box-sizing: border-box;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	body.page-publicitate-harta .reclama-home-wire-a2-cell .reclama-slot-name {
+		font-size: clamp(0.38rem, 0.75vw, 0.5rem);
+		padding: 1px 2px;
+	}
+	body.page-publicitate-harta .reclama-slot-preview {
+		flex: 1 1 auto;
+		min-height: 0;
+		min-width: 0;
+		background: repeating-linear-gradient(-45deg, #f0f4f8, #f0f4f8 3px, #e8eef5 3px, #e8eef5 6px);
+		box-sizing: border-box;
+		position: relative;
+	}
+	body.page-publicitate-harta .reclama-home-wire-side .reclama-slot-preview {
+		flex: 0 0 auto;
+		width: 100%;
+		aspect-ratio: 1;
+		max-height: 100%;
+	}
+	body.page-publicitate-harta .reclama-home-wire-slot {
+		flex: 1 1 0;
+		min-height: 0.55rem;
+		display: flex;
+		flex-direction: column;
+		border: 1px dashed rgba(13, 71, 161, 0.4);
+		border-radius: 2px;
+		background: rgba(255, 255, 255, 0.5);
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+	body.page-publicitate-harta .reclama-home-wire-side .reclama-home-wire-slot {
+		min-height: 0;
+		justify-content: flex-start;
+	}
+	body.page-publicitate-harta .reclama-home-wire-cols > .reclama-home-wire-side:first-child .reclama-home-wire-slot {
+		background: rgba(200, 230, 201, 0.45);
+		border-color: rgba(46, 125, 50, 0.45);
+	}
+	body.page-publicitate-harta .reclama-home-wire-cols > .reclama-home-wire-side:last-child .reclama-home-wire-slot {
+		background: rgba(225, 190, 231, 0.4);
+		border-color: rgba(123, 31, 162, 0.4);
+	}
+	body.page-publicitate-harta .reclama-home-wire-cols > .reclama-home-wire-side:first-child .reclama-slot-preview {
+		background: repeating-linear-gradient(-45deg, #e8f5e9, #e8f5e9 3px, #c8e6c9 3px, #c8e6c9 6px);
+	}
+	body.page-publicitate-harta .reclama-home-wire-cols > .reclama-home-wire-side:last-child .reclama-slot-preview {
+		background: repeating-linear-gradient(-45deg, #f3e5f5, #f3e5f5 3px, #e1bee7 3px, #e1bee7 6px);
+	}
+	/* Text diagonal în preview; denumirea casetei (A5.x / A6.x) rămâne în .reclama-slot-name deasupra. */
+	body.page-publicitate-harta .reclama-home-wire-cols > .reclama-home-wire-side .reclama-slot-preview::after {
+		content: "Zona Publi";
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		z-index: 1;
+		transform: translate(-50%, -50%) rotate(-38deg);
+		font-size: clamp(0.32rem, 2.2cqi, 0.58rem);
+		font-weight: 900;
+		line-height: 1.1;
+		letter-spacing: 0.06em;
+		color: #000;
+		text-shadow: 0 0 1px rgba(255, 255, 255, 0.85), 0 0 2px rgba(255, 255, 255, 0.5);
+		pointer-events: none;
+		user-select: none;
+		white-space: nowrap;
+		text-transform: none;
+	}
+	body.page-publicitate-harta .reclama-home-wire-center {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+		min-width: 0;
+		min-height: 0;
+		height: 100%;
+		align-self: stretch;
+	}
+	/* Centru: A2 ocupă restul; A1/A3 proporții fixe în coloana centru (schematic wire). */
+	body.page-publicitate-harta .reclama-home-wire-a1 {
+		flex: 0 0 22%;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		border: 1px dashed rgba(13, 71, 161, 0.45);
+		border-radius: 2px;
+		background: rgba(255, 255, 255, 0.55);
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+	body.page-publicitate-harta .reclama-home-wire-a2 {
+		flex: 1 1 auto;
+		min-height: 0;
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		grid-template-rows: repeat(3, minmax(0, 1fr));
+		gap: 1px;
+		border: 1px dashed rgba(13, 71, 161, 0.3);
+		border-radius: 2px;
+		padding: 1px;
+		box-sizing: border-box;
+		background: rgba(255, 255, 255, 0.4);
+	}
+	body.page-publicitate-harta .reclama-home-wire-a2-cell {
+		min-height: 0;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		border: 1px solid rgba(13, 71, 161, 0.18);
+		border-radius: 1px;
+		background: rgba(255, 255, 255, 0.65);
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+	body.page-publicitate-harta .reclama-home-wire-a3 {
+		flex: 0 0 12%;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		border: 1px dashed rgba(13, 71, 161, 0.45);
+		border-radius: 2px;
+		background: rgba(255, 255, 255, 0.5);
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+	body.page-publicitate-harta .reclama-home-wire-burtiera {
+		flex: 0 0 auto;
+		width: 100%;
+		display: flex;
+		align-items: center;
+		min-height: 1.24rem;
+		padding: 0.08rem 0.56rem;
+		margin: 0;
+		box-sizing: border-box;
+		background: #ffeb3b;
+		color: #1a1a1a;
+		border-top: 1px solid #f9a825;
+		border-radius: 0 0 4px 4px;
+		overflow: hidden;
+		position: relative;
+	}
+	body.page-publicitate-harta .reclama-slot-name--burtiera {
+		position: absolute;
+		top: 50%;
+		left: 6px;
+		transform: translateY(-50%);
+		z-index: 3;
+		display: inline-block;
+		font-size: clamp(0.64rem, 1.24vw, 0.84rem);
+		font-weight: 800;
+		line-height: 1.1;
+		letter-spacing: 0.02em;
+		color: #0d47a1;
+		background: rgba(255, 255, 255, 0.88);
+		padding: 1px 6px;
+		border-radius: 3px;
+		border: 1px solid rgba(13, 71, 161, 0.22);
+		box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
+		pointer-events: none;
+		white-space: nowrap;
+		border-bottom: none;
+	}
+	body.page-publicitate-harta .reclama-home-wire-burtiera-marquee-wrap {
+		flex: 1 1 auto;
+		min-width: 0;
+		display: flex;
+		align-items: center;
+		overflow: hidden;
+		width: 100%;
+		margin: 0;
+		padding: 0;
+	}
+	body.page-publicitate-harta .reclama-home-wire-burtiera-track {
+		display: inline-flex;
+		flex-wrap: nowrap;
+		white-space: nowrap;
+		animation: reclama-burtiera-marquee-pub 28s linear infinite;
+		padding-right: 2rem;
+	}
+	body.page-publicitate-harta .reclama-home-wire-burtiera-text {
+		margin: 0;
+		padding-right: 2rem;
+		flex-shrink: 0;
+		font-size: clamp(0.6rem, 1.24vw, 0.8rem);
+		font-weight: 700;
+		font-style: italic;
+		line-height: 1.15;
+		color: #1a1a1a;
+	}
+	@keyframes reclama-burtiera-marquee-pub {
+		0% { transform: translateX(0); }
+		100% { transform: translateX(-50%); }
+	}
+	/* PT: ca #PW .pt-grid (pt-v2) — P1 sus; mijloc P4 | P2 | P5; P3 jos; P4/P5 verticale */
+	body.page-publicitate-harta .reclama-alt-slot {
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+		border: 1px dashed rgba(13, 71, 161, 0.35);
+		border-radius: 2px;
+		background: rgba(255, 255, 255, 0.55);
+		overflow: hidden;
+		box-sizing: border-box;
+	}
+	body.page-publicitate-harta .reclama-alt-slot .reclama-slot-name {
+		flex: 0 0 auto;
+		font-size: clamp(0.42rem, 0.85vw, 0.58rem);
+	}
+	body.page-publicitate-harta .reclama-alt-slot .reclama-slot-preview {
+		flex: 1 1 auto;
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-pt-wire {
+		display: grid;
+		grid-template-columns: 0.75fr 4.5fr 0.75fr;
+		grid-template-rows: minmax(0, 0.28fr) minmax(0, 1fr) minmax(0, 0.21fr);
+		column-gap: 0;
+		row-gap: 2px;
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		height: 100%;
+	}
+	body.page-publicitate-harta .pub-home-wire-clip--pt .reclama-pt-wire [data-slot] {
+		cursor: pointer;
+	}
+	body.page-publicitate-harta .reclama-pt-wire__p1 {
+		grid-column: 1 / -1;
+		grid-row: 1;
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-pt-wire__p4 {
+		grid-column: 1;
+		grid-row: 2;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-pt-wire__p4 > .reclama-pt-wire__p4-spacer,
+	body.page-publicitate-harta .reclama-pt-wire__p4 > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-pt-wire__p4-spacer {
+		border: 1px dashed rgba(13, 71, 161, 0.2);
+		border-radius: 2px;
+		box-sizing: border-box;
+		pointer-events: none;
+	}
+	body.page-publicitate-harta .reclama-pt-wire__p2 {
+		grid-column: 2;
+		grid-row: 2;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 0;
+		padding: 1px;
+	}
+	body.page-publicitate-harta .reclama-pt-wire__p5 {
+		grid-column: 3;
+		grid-row: 2;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-pt-wire__p5 > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	/* P4.3 = ca A5 (stânga HOME); P5.1–P5.3 = ca A6 (dreapta HOME): culori + „Zona Publi” în preview */
+	body.page-publicitate-harta .reclama-pt-wire__slot--publi-a5 {
+		background: rgba(200, 230, 201, 0.45);
+		border-color: rgba(46, 125, 50, 0.45);
+	}
+	body.page-publicitate-harta .reclama-pt-wire__slot--publi-a6 {
+		background: rgba(225, 190, 231, 0.4);
+		border-color: rgba(123, 31, 162, 0.4);
+	}
+	body.page-publicitate-harta .reclama-pt-wire__slot--publi-a5 .reclama-slot-preview {
+		position: relative;
+		background: repeating-linear-gradient(-45deg, #e8f5e9, #e8f5e9 3px, #c8e6c9 3px, #c8e6c9 6px);
+	}
+	body.page-publicitate-harta .reclama-pt-wire__slot--publi-a6 .reclama-slot-preview {
+		position: relative;
+		background: repeating-linear-gradient(-45deg, #f3e5f5, #f3e5f5 3px, #e1bee7 3px, #e1bee7 6px);
+	}
+	body.page-publicitate-harta .reclama-pt-wire__slot--publi-a5 .reclama-slot-preview::after,
+	body.page-publicitate-harta .reclama-pt-wire__slot--publi-a6 .reclama-slot-preview::after {
+		content: "Zona Publi";
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		z-index: 1;
+		transform: translate(-50%, -50%) rotate(-38deg);
+		font-size: clamp(0.32rem, 2.2cqi, 0.58rem);
+		font-weight: 900;
+		line-height: 1.1;
+		letter-spacing: 0.06em;
+		color: #000;
+		text-shadow: 0 0 1px rgba(255, 255, 255, 0.85), 0 0 2px rgba(255, 255, 255, 0.5);
+		pointer-events: none;
+		user-select: none;
+		white-space: nowrap;
+		text-transform: none;
+	}
+	body.page-publicitate-harta .reclama-pt-wire__p3 {
+		grid-column: 1 / -1;
+		grid-row: 3;
+		min-height: 0;
+	}
+	/* P1 / P3: benzi ca pe PT (#PW) — fundal verde, casete galbene cursiv, marquee */
+	body.page-publicitate-harta .reclama-pt-wire__slot--strip.reclama-alt-slot {
+		padding: 0;
+		overflow: hidden;
+		align-items: stretch;
+		justify-content: stretch;
+		background: #2e7d32;
+		border-color: rgba(0, 0, 0, 0.75);
+	}
+	body.page-publicitate-harta .reclama-pt-strip-wrap {
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		position: relative;
+		display: block;
+		box-sizing: border-box;
+	}
+	body.page-publicitate-harta .reclama-pt-strip-wrap--p1 {
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-pt-strip-wrap--p3 {
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-pt-strip-track {
+		display: flex;
+		flex-wrap: nowrap;
+		align-items: stretch;
+		height: 100%;
+		width: max-content;
+		box-sizing: border-box;
+	}
+	body.page-publicitate-harta .reclama-pt-strip-track:hover {
+		animation-play-state: paused;
+	}
+	body.page-publicitate-harta .reclama-pt-strip-track--p1 {
+		animation: reclama-pt-strip-p1 40s linear infinite;
+	}
+	body.page-publicitate-harta .reclama-pt-strip-track--p3 {
+		animation: reclama-pt-strip-p3 45s linear infinite;
+	}
+	@keyframes reclama-pt-strip-p1 {
+		0% { transform: translateX(0); }
+		100% { transform: translateX(-50%); }
+	}
+	@keyframes reclama-pt-strip-p3 {
+		0% { transform: translateX(-50%); }
+		100% { transform: translateX(0); }
+	}
+	body.page-publicitate-harta .reclama-pt-strip-cell--disclaimer {
+		flex: 0 0 auto;
+		box-sizing: border-box;
+		width: clamp(4.5rem, 32cqi, 9rem);
+		min-width: clamp(4.5rem, 32cqi, 9rem);
+		max-width: clamp(4.5rem, 32cqi, 9rem);
+		height: 100%;
+		min-height: 100%;
+		margin: 0 2px 0 0;
+		padding: 0.2rem 0.3rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		background: #ffeb3b;
+		color: #b71c1c;
+		font-style: italic;
+		font-size: clamp(0.5rem, 3.4cqi, 0.82rem);
+		font-weight: 700;
+		text-align: center;
+		line-height: 1.2;
+		word-break: break-word;
+		text-shadow: 0 0 1px rgba(255, 255, 255, 0.9);
+	}
+	body.page-publicitate-harta .reclama-pt-strip-email {
+		font-style: italic;
+		font-weight: 800;
+		font-size: 0.95em;
+		word-break: break-all;
+		line-height: 1.15;
+	}
+	body.page-publicitate-harta .reclama-pt-strip-ref {
+		display: block;
+		margin-top: 0.12em;
+		font-style: normal;
+		font-weight: 900;
+		font-size: 0.78em;
+		letter-spacing: 0.04em;
+		line-height: 1.15;
+		opacity: 0.95;
+	}
+	/* Servicii (SW) — ca PT: 0.75 | 4.5 | 0.75; stânga S2 (spațiu + S2.2–S2.3); centru gol; dreapta S6 */
+	body.page-publicitate-harta .pub-home-wire-clip--servicii .reclama-sw-wire [data-slot] {
+		cursor: pointer;
+	}
+	body.page-publicitate-harta .reclama-sw-wire__strip-msg {
+		cursor: default;
+	}
+	body.page-publicitate-harta .reclama-sw-wire {
+		display: grid;
+		grid-template-columns: 0.75fr 4.5fr 0.75fr;
+		grid-template-rows: minmax(0, 0.28fr) minmax(0, 1fr) minmax(0, 0.21fr);
+		column-gap: 0;
+		row-gap: 2px;
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		height: 100%;
+	}
+	body.page-publicitate-harta .reclama-sw-wire__s1 {
+		grid-column: 1 / -1;
+		grid-row: 1;
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-sw-wire__s2 {
+		grid-column: 1;
+		grid-row: 2;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-sw-wire__s2 > .reclama-alt-slot,
+	body.page-publicitate-harta .reclama-sw-wire__s2 > .reclama-sw-wire__s2-spacer {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-sw-wire__s2-spacer {
+		border: 1px dashed rgba(13, 71, 161, 0.2);
+		border-radius: 2px;
+		box-sizing: border-box;
+		pointer-events: none;
+	}
+	body.page-publicitate-harta .reclama-sw-wire__mid-zone {
+		grid-column: 2;
+		grid-row: 2;
+		min-height: 0;
+		min-width: 0;
+		padding: 1px;
+		box-sizing: border-box;
+	}
+	body.page-publicitate-harta .reclama-sw-wire__s6 {
+		grid-column: 3;
+		grid-row: 2;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-sw-wire__s6 > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-sw-wire__s7 {
+		grid-column: 1 / -1;
+		grid-row: 3;
+		min-height: 0;
+	}
+	/* Transport (TW) — stânga gol; dreapta o casetă cu 3 subcasete verticale */
+	body.page-publicitate-harta .pub-home-wire-clip--transport .reclama-tw-wire [data-slot] {
+		cursor: pointer;
+	}
+	body.page-publicitate-harta .reclama-tw-wire {
+		display: grid;
+		grid-template-columns: 4.5fr 0.75fr;
+		column-gap: 2px;
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		height: 100%;
+	}
+	body.page-publicitate-harta .reclama-tw-wire__left-zone {
+		grid-column: 1;
+		grid-row: 1;
+		min-height: 0;
+		min-width: 0;
+		padding: 1px;
+		box-sizing: border-box;
+	}
+	/* Zone fără închiriere: fundal foto la fel ca pe site, fără strat care îl estompează */
+	body.page-publicitate-harta .reclama-pt-wire__p2.reclama-pt-wire__p2--zone,
+	body.page-publicitate-harta .reclama-pt-wire__p4-spacer,
+	body.page-publicitate-harta .reclama-sw-wire__mid-zone,
+	body.page-publicitate-harta .reclama-sw-wire__s2-spacer,
+	body.page-publicitate-harta .reclama-sh-wire__mid-zone,
+	body.page-publicitate-harta .reclama-mp-wire__rest,
+	body.page-publicitate-harta .reclama-il-wire__mid-zone,
+	body.page-publicitate-harta .reclama-tw-wire__left-zone {
+		background-color: #e8e8e8;
+		background-image: url("{% static 'images/transport/fundal_1.jpg' %}");
+		background-size: cover;
+		background-position: center center;
+		background-repeat: no-repeat;
+	}
+	body.page-publicitate-harta .reclama-tw-wire__right-caseta {
+		grid-column: 2;
+		grid-row: 1;
+		min-height: 0;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		padding: 2px;
+		border: 2px solid rgba(123, 31, 162, 0.45);
+		border-radius: 4px;
+		background: rgba(243, 229, 245, 0.35);
+		box-sizing: border-box;
+	}
+	body.page-publicitate-harta .reclama-tw-wire__right-inner {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		flex: 1 1 auto;
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-tw-wire__right-inner > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	/* Shop (SHW) — 3 | gol | 3, ca Servicii */
+	body.page-publicitate-harta .pub-home-wire-clip--shop .reclama-sh-wire [data-slot] {
+		cursor: pointer;
+	}
+	body.page-publicitate-harta .reclama-sh-wire {
+		display: grid;
+		grid-template-columns: 0.75fr 4.5fr 0.75fr;
+		column-gap: 2px;
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		height: 100%;
+	}
+	body.page-publicitate-harta .reclama-sh-wire__left {
+		grid-column: 1;
+		grid-row: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-height: 0;
+		min-width: 0;
+	}
+	body.page-publicitate-harta .reclama-sh-wire__left > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-sh-wire__mid-zone {
+		grid-column: 2;
+		grid-row: 1;
+		min-height: 0;
+		min-width: 0;
+		padding: 1px;
+		box-sizing: border-box;
+	}
+	body.page-publicitate-harta .reclama-sh-wire__right {
+		grid-column: 3;
+		grid-row: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-height: 0;
+		min-width: 0;
+	}
+	body.page-publicitate-harta .reclama-sh-wire__right > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	/* MyPet — 3 casete stânga, dreapta gol */
+	body.page-publicitate-harta .pub-home-wire-clip--mypet .reclama-mp-wire [data-slot] {
+		cursor: pointer;
+	}
+	body.page-publicitate-harta .reclama-mp-wire {
+		display: grid;
+		grid-template-columns: 0.75fr 4.5fr;
+		column-gap: 2px;
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		height: 100%;
+	}
+	body.page-publicitate-harta .reclama-mp-wire__left {
+		grid-column: 1;
+		grid-row: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-height: 0;
+		min-width: 0;
+	}
+	body.page-publicitate-harta .reclama-mp-wire__left > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-mp-wire__rest {
+		grid-column: 2;
+		grid-row: 1;
+		min-height: 0;
+		min-width: 0;
+		padding: 1px;
+		box-sizing: border-box;
+	}
+	/* I Love — 2 | gol | 2 */
+	body.page-publicitate-harta .pub-home-wire-clip--i-love .reclama-il-wire [data-slot] {
+		cursor: pointer;
+	}
+	body.page-publicitate-harta .reclama-il-wire {
+		display: grid;
+		grid-template-columns: 0.75fr 4.5fr 0.75fr;
+		column-gap: 2px;
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		height: 100%;
+	}
+	body.page-publicitate-harta .reclama-il-wire__left {
+		grid-column: 1;
+		grid-row: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-height: 0;
+		min-width: 0;
+	}
+	body.page-publicitate-harta .reclama-il-wire__left > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	body.page-publicitate-harta .reclama-il-wire__mid-zone {
+		grid-column: 2;
+		grid-row: 1;
+		min-height: 0;
+		min-width: 0;
+		padding: 1px;
+		box-sizing: border-box;
+	}
+	body.page-publicitate-harta .reclama-il-wire__right {
+		grid-column: 3;
+		grid-row: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-height: 0;
+		min-width: 0;
+	}
+	body.page-publicitate-harta .reclama-il-wire__right > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	.pub-slot-grid {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 0.35rem;
+		align-content: start;
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: hidden;
+	}
+	.pub-slot {
+		border: 1px solid #c5e1a5; background: #f1f8e9; color: #33691e; border-radius: 7px;
+		padding: 0.45rem 0.3rem; font-size: 0.76rem; font-weight: 800; cursor: pointer;
+	}
+	.pub-slot.is-selected { background: #e3f2fd; border-color: #64b5f6; color: #0d47a1; }
+	.pub-details-info {
+		font-size: 0.82rem;
+		line-height: 1.4;
+		color: #37474f;
+		padding: 0.35rem;
+		background: rgba(227, 242, 253, 0.65);
+		border: 1px solid #90caf9;
+		border-radius: 6px;
+	}
+	.pub-form { display: grid; gap: 0.3rem; }
+	.pub-row { font-size: 0.8rem; display: flex; justify-content: space-between; gap: 0.5rem; }
+	.pub-form input, .pub-form textarea {
+		width: 100%; box-sizing: border-box; border: 1px solid #bcaaa4; border-radius: 6px; padding: 0.34rem;
+	}
+	.pub-add-btn, .pub-pay-btn {
+		border: 1px solid #1565c0; background: #1565c0; color: #fff; border-radius: 7px; font-weight: 800; padding: 0.42rem 0.55rem;
+	}
+	.pub-pay-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+	.pub-cart-list { display: grid; gap: 0.24rem; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+	.pub-cart-item { border: 1px dashed #d2b27a; border-radius: 6px; padding: 0.3rem; font-size: 0.74rem; background: #fffdf4; }
+	.pub-empty { color: #8d6e63; font-size: 0.82rem; }
+	.pub-cart-total { margin-top: 0.4rem; font-size: 0.88rem; flex-shrink: 0; }
+	@media (max-width: 980px) {
+		.pub-grid { grid-template-columns: 1fr; }
+		.page-publicitate-harta .pub-grid { gap: 0.5rem; }
+		.page-publicitate-harta .pub-c1,
+		.page-publicitate-harta .pub-c2,
+		.page-publicitate-harta .pub-c3 {
+			border: 2px solid #d2b27a;
+			border-radius: 10px;
+		}
+		.pub-c2-map-half { flex: 0 0 68.3vh; max-height: 68.3vh; }
+		.pub-slot-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+	}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+	const slotMap = JSON.parse(document.getElementById("pub-slot-map-json").textContent || "{}");
+	const section = JSON.parse(document.getElementById("pub-selected-section-json").textContent || '"home"');
+	const a2Images = JSON.parse(document.getElementById("pub-a2-images-json").textContent || "[]");
+	const a13Images = JSON.parse(document.getElementById("pub-a13-images-json").textContent || "[]");
+	const staticBase = "{% get_static_prefix %}";
+	const grid = document.getElementById("pubSlotGrid");
+	const form = document.getElementById("pubDetailsForm");
+	const empty = document.getElementById("pubDetailsEmpty");
+	const infoEl = document.getElementById("pubDetailsInfo");
+	const cartList = document.getElementById("pubCartList");
+	const cartTotal = document.getElementById("pubCartTotal");
+	const payBtn = document.querySelector(".pub-pay-btn");
+	const qtyEl = document.getElementById("pubQty");
+	const noteEl = document.getElementById("pubNote");
+	const addBtn = document.getElementById("pubAddBtn");
+
+	let selected = null;
+	const cart = [];
+
+	function catalogByCode(codes) {
+		const o = {};
+		(slotMap[codes] || []).forEach(function (s) { o[s.code] = s; });
+		return o;
+	}
+
+	function showInfo(html) {
+		selected = null;
+		empty.hidden = true;
+		form.hidden = true;
+		if (addBtn) addBtn.disabled = true;
+		infoEl.hidden = false;
+		infoEl.innerHTML = html;
+	}
+
+	function hideInfo() {
+		infoEl.hidden = true;
+	}
+
+	function showDetails(slot) {
+		hideInfo();
+		empty.hidden = true;
+		form.hidden = false;
+		if (addBtn) addBtn.disabled = false;
+		document.getElementById("pubDetailCode").textContent = slot.code;
+		document.getElementById("pubDetailTitle").textContent = slot.title;
+		document.getElementById("pubDetailTypes").textContent = (slot.types || []).join(", ");
+		document.getElementById("pubDetailUnit").textContent = slot.unit;
+		document.getElementById("pubDetailPrice").textContent = slot.price + " lei";
+		selected = slot;
+	}
+
+	function showEmpty() {
+		hideInfo();
+		empty.hidden = false;
+		form.hidden = true;
+		if (addBtn) addBtn.disabled = true;
+		selected = null;
+	}
+
+	function renderSlots() {
+		if (!grid) return;
+		const slots = slotMap[section] || [];
+		grid.innerHTML = "";
+		slots.forEach(function (slot) {
+			const btn = document.createElement("button");
+			btn.type = "button";
+			btn.className = "pub-slot";
+			btn.textContent = slot.code;
+			btn.addEventListener("click", function () {
+				selected = slot;
+				grid.querySelectorAll(".pub-slot").forEach(function (el) { el.classList.remove("is-selected"); });
+				btn.classList.add("is-selected");
+				showDetails(slot);
+			});
+			grid.appendChild(btn);
+		});
+	}
+
+	function initHomeWire() {
+		var homeRoot = document.querySelector(".pub-home-wire-clip .reclama-home-wire");
+		if (!homeRoot) return;
+		var cat = catalogByCode("home");
+		var a2Index = 0;
+
+		function setCursivePreview(node) {
+			var preview = node.querySelector(".reclama-slot-preview");
+			if (!preview || !a13Images.length) return;
+			var track = document.createElement("div");
+			track.className = "pub-cursive-track";
+			for (var k = 0; k < 2; k += 1) {
+				a13Images.forEach(function (rel) {
+					var img = document.createElement("img");
+					img.src = staticBase + rel;
+					img.alt = "Imagine caini";
+					img.loading = "lazy";
+					track.appendChild(img);
+				});
+			}
+			preview.innerHTML = "";
+			preview.appendChild(track);
+		}
+
+		homeRoot.querySelectorAll("[data-slot]").forEach(function (n) {
+			var slotCode = (n.getAttribute("data-slot") || "").trim();
+			if (!slotCode) return;
+			if (slotCode === "A1" || slotCode === "A3") {
+				n.classList.add("is-disabled-history");
+				n.setAttribute("title", "Slot închiriabil la cerere");
+				setCursivePreview(n);
+				return;
+			}
+			if (slotCode.indexOf("A2.") === 0) {
+				n.classList.add("is-disabled-history");
+				n.classList.add("is-static-no-rent");
+				n.setAttribute("title", "A2 este zonă fixă cu poze câini (neînchiriabilă în PUB)");
+				var preview = n.querySelector(".reclama-slot-preview");
+				if (preview) {
+					var rel = a2Images.length ? a2Images[a2Index % a2Images.length] : "";
+					a2Index += 1;
+					if (rel) {
+						var img = document.createElement("img");
+						img.src = staticBase + rel;
+						img.alt = "Imagine câine";
+						img.loading = "lazy";
+						img.className = "reclama-slot-preview-img";
+						preview.innerHTML = "";
+						preview.appendChild(img);
+					}
+				}
+				return;
+			}
+			n.addEventListener("click", function () {
+				homeRoot.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
+				n.classList.add("pub-wire-selected");
+				var s = cat[slotCode];
+				if (s) {
+					showDetails(s);
+					return;
+				}
+				showInfo("Slotul <strong>" + slotCode + "</strong> nu are încă tarif configurat pentru comandă online.");
+			});
+		});
+	}
+
+	function initServiciiWire() {
+		var root = document.querySelector(".pub-home-wire-clip--servicii .reclama-sw-wire");
+		if (!root) return;
+		var cat = catalogByCode("servicii");
+		root.querySelectorAll("[data-slot]").forEach(function (n) {
+			n.addEventListener("click", function () {
+				root.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
+				n.classList.add("pub-wire-selected");
+				var slotCode = (n.getAttribute("data-slot") || "").trim();
+				var s = cat[slotCode];
+				if (s) {
+					showDetails(s);
+					return;
+				}
+				showInfo("Slotul <strong>" + slotCode + "</strong> nu are încă tarif configurat pentru comandă online.");
+			});
+		});
+	}
+
+	function initTransportWire() {
+		var root = document.querySelector(".pub-home-wire-clip--transport .reclama-tw-wire");
+		if (!root) return;
+		var cat = catalogByCode("transport");
+		root.querySelectorAll("[data-slot]").forEach(function (n) {
+			n.addEventListener("click", function () {
+				root.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
+				n.classList.add("pub-wire-selected");
+				var slotCode = (n.getAttribute("data-slot") || "").trim();
+				var s = cat[slotCode];
+				if (s) {
+					showDetails(s);
+					return;
+				}
+				showInfo("Slotul <strong>" + slotCode + "</strong> nu are încă tarif configurat pentru comandă online.");
+			});
+		});
+	}
+
+	function initShopWire() {
+		var root = document.querySelector(".pub-home-wire-clip--shop .reclama-sh-wire");
+		if (!root) return;
+		var cat = catalogByCode("shop");
+		root.querySelectorAll("[data-slot]").forEach(function (n) {
+			n.addEventListener("click", function () {
+				root.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
+				n.classList.add("pub-wire-selected");
+				var slotCode = (n.getAttribute("data-slot") || "").trim();
+				var s = cat[slotCode];
+				if (s) {
+					showDetails(s);
+					return;
+				}
+				showInfo("Slotul <strong>" + slotCode + "</strong> nu are încă tarif configurat pentru comandă online.");
+			});
+		});
+	}
+
+	function initMypetWire() {
+		var root = document.querySelector(".pub-home-wire-clip--mypet .reclama-mp-wire");
+		if (!root) return;
+		var cat = catalogByCode("mypet");
+		root.querySelectorAll("[data-slot]").forEach(function (n) {
+			n.addEventListener("click", function () {
+				root.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
+				n.classList.add("pub-wire-selected");
+				var slotCode = (n.getAttribute("data-slot") || "").trim();
+				var s = cat[slotCode];
+				if (s) {
+					showDetails(s);
+					return;
+				}
+				showInfo("Slotul <strong>" + slotCode + "</strong> nu are încă tarif configurat pentru comandă online.");
+			});
+		});
+	}
+
+	function initILoveWire() {
+		var root = document.querySelector(".pub-home-wire-clip--i-love .reclama-il-wire");
+		if (!root) return;
+		var cat = catalogByCode("i_love");
+		root.querySelectorAll("[data-slot]").forEach(function (n) {
+			n.addEventListener("click", function () {
+				root.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
+				n.classList.add("pub-wire-selected");
+				var slotCode = (n.getAttribute("data-slot") || "").trim();
+				var s = cat[slotCode];
+				if (s) {
+					showDetails(s);
+					return;
+				}
+				showInfo("Slotul <strong>" + slotCode + "</strong> nu are încă tarif configurat pentru comandă online.");
+			});
+		});
+	}
+
+	function initPtWire() {
+		var root = document.querySelector(".pub-home-wire-clip--pt .reclama-pt-wire");
+		if (!root) return;
+		var cat = catalogByCode("pt");
+		root.querySelectorAll("[data-slot]").forEach(function (n) {
+			var slotCodeEarly = (n.getAttribute("data-slot") || "").trim();
+			if (slotCodeEarly === "P1" || slotCodeEarly === "P3") {
+				n.setAttribute("title", "Spațiu la cerere — cereți oferta pe email");
+				n.addEventListener("click", function () {
+					root.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
+					n.classList.add("pub-wire-selected");
+					showInfo("Bandă <strong>publicitară la cerere</strong> (ca pe PT): spațiu la cerere și ofertă pe adresa de email a site-ului. Contactează EU-Adopt pentru detalii.");
+				});
+				return;
+			}
+			n.addEventListener("click", function () {
+				root.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
+				n.classList.add("pub-wire-selected");
+				var slotCode = (n.getAttribute("data-slot") || "").trim();
+				var s = cat[slotCode];
+				if (s) {
+					showDetails(s);
+					return;
+				}
+				showInfo("Slotul <strong>" + slotCode + "</strong> nu are încă tarif configurat pentru comandă online.");
+			});
+		});
+	}
+
+	function renderCart() {
+		cartList.innerHTML = "";
+		var total = 0;
+		cart.forEach(function (item) {
+			total += item.total;
+			var row = document.createElement("div");
+			row.className = "pub-cart-item";
+			row.textContent = item.code + " | " + item.qty + " " + item.unit + " | " + item.total + " lei";
+			cartList.appendChild(row);
+		});
+		cartTotal.textContent = total + " lei";
+		payBtn.disabled = cart.length === 0;
+	}
+
+	if (addBtn) {
+		addBtn.addEventListener("click", function () {
+			if (!selected) return;
+			var qtyRaw = parseInt(qtyEl.value || "1", 10);
+			var qty = Number.isFinite(qtyRaw) ? Math.max(1, Math.min(12, qtyRaw)) : 1;
+			var total = qty * Number(selected.price || 0);
+			cart.push({
+				code: selected.code,
+				qty: qty,
+				unit: selected.unit,
+				note: (noteEl.value || "").trim(),
+				total: total
+			});
+			renderCart();
+			noteEl.value = "";
+		});
+	}
+
+	if (section === "home") {
+		initHomeWire();
+		showEmpty();
+	} else if (section === "pt") {
+		initPtWire();
+		showEmpty();
+	} else if (section === "servicii") {
+		initServiciiWire();
+		showEmpty();
+	} else if (section === "transport") {
+		initTransportWire();
+		showEmpty();
+	} else if (section === "shop") {
+		initShopWire();
+		showEmpty();
+	} else if (section === "mypet") {
+		initMypetWire();
+		showEmpty();
+	} else if (section === "i_love") {
+		initILoveWire();
+		showEmpty();
+	} else {
+		renderSlots();
+		showEmpty();
+	}
+	renderCart();
+});
+</script>
+<style>
+	body.page-publicitate-harta .reclama-home-wire [data-slot].pub-wire-selected,
+	body.page-publicitate-harta .reclama-pt-wire [data-slot].pub-wire-selected,
+	body.page-publicitate-harta .reclama-sw-wire [data-slot].pub-wire-selected,
+	body.page-publicitate-harta .reclama-tw-wire [data-slot].pub-wire-selected,
+	body.page-publicitate-harta .reclama-sh-wire [data-slot].pub-wire-selected,
+	body.page-publicitate-harta .reclama-mp-wire [data-slot].pub-wire-selected,
+	body.page-publicitate-harta .reclama-il-wire [data-slot].pub-wire-selected {
+		outline: 2px solid #1565c0;
+		outline-offset: -1px;
+		box-shadow: 0 0 0 1px rgba(21, 101, 192, 0.35);
+	}
+</style>
+{% endblock %}

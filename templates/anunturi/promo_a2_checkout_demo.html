@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Plată demo securizată | EU-ADOPT{% endblock %}
+{% block body_class %}page-promo-a2-checkout-demo{% endblock %}
+
+{% block extra_css %}
+<style>
+	body.page-promo-a2-checkout-demo #main_content {
+		min-height: calc(100vh - var(--nav-h, 64px));
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.8rem;
+		box-sizing: border-box;
+	}
+	.promo-checkout-wrap {
+		width: min(680px, 100%);
+		background: #fff;
+		border: 1px solid #dbe3ef;
+		border-radius: 12px;
+		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+		padding: 1rem;
+	}
+	.promo-checkout-title {
+		margin: 0 0 0.35rem;
+		font-size: 1.05rem;
+		font-weight: 800;
+		color: #1565c0;
+	}
+	.promo-checkout-sub {
+		margin: 0 0 0.8rem;
+		font-size: 0.84rem;
+		color: #455a64;
+	}
+	.promo-checkout-box {
+		border: 1px solid #d8e7fb;
+		background: #f5f9ff;
+		border-radius: 10px;
+		padding: 0.65rem 0.75rem;
+		display: grid;
+		gap: 0.35rem;
+		font-size: 0.84rem;
+		color: #1f2d3d;
+	}
+	.promo-checkout-actions {
+		margin-top: 0.8rem;
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+	.promo-checkout-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.42rem 0.8rem;
+		border-radius: 8px;
+		border: 1px solid #1565c0;
+		background: #1565c0;
+		color: #fff;
+		font-size: 0.82rem;
+		font-weight: 800;
+		text-decoration: none;
+		cursor: pointer;
+	}
+	.promo-checkout-btn--ghost {
+		background: #fff;
+		color: #1565c0;
+	}
+</style>
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<div class="promo-checkout-wrap" aria-label="Plată demo securizată">
+		<h1 class="promo-checkout-title">Plată demo securizată</h1>
+		<p class="promo-checkout-sub">Simulare checkout card pentru comanda de promovare A2.</p>
+
+		<div class="promo-checkout-box">
+			<div>Pet: <strong>{{ pet.name|default:"—" }}</strong> ({{ pet.species|default:"—" }})</div>
+			<div>Ofertă: <strong>{{ package }}</strong> · Număr oferte: <strong>{{ quantity }}</strong></div>
+			<div>Program: <strong>{{ schedule }}</strong> · Data start: <strong>{{ start_date }}</strong></div>
+			<div>Metodă: <strong>{{ payment_method }}</strong></div>
+			<div>Preț unitar: <strong>{{ unit_price }} lei</strong> · Total de plată: <strong>{{ total_price }} lei</strong></div>
+		</div>
+
+		<div class="promo-checkout-actions">
+			<a href="{% url 'promo_a2_order' pet.pk %}" class="promo-checkout-btn promo-checkout-btn--ghost">Înapoi la notă</a>
+			<a href="{% url 'promo_a2_checkout_demo_success' pet.pk %}" class="promo-checkout-btn">Simulează plata</a>
+		</div>
+	</div>
+</section>
+{% endblock %}

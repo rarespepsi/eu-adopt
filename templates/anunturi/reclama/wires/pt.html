@@ -1,20 +1,44 @@
-{# Schemă Prietenul tău (PW): P1, P4, P2, P5, P3 #}
-<div class="reclama-pt-wire" aria-hidden="true">
-	<div class="reclama-pt-wire__p1 reclama-alt-slot" data-slot="P1"><span class="reclama-slot-name">P1</span><div class="reclama-slot-preview"></div></div>
+{# Schemă PW: P4 are 3 treimi egale ca P5; primele două sunt goale; P4.3 în treimea de jos. P1/P3 = benzi cu casete ca pe PT (galben/roșu), marquee. #}
+{% with pubmail=pub_site_contact_email|default:"euadopt@gmail.com" %}
+<div class="reclama-pt-wire" aria-hidden="{% if pub_interactive_wire %}false{% else %}true{% endif %}">
+	<div class="reclama-pt-wire__p1 reclama-alt-slot reclama-pt-wire__slot--strip" data-slot="P1">
+		<div class="reclama-pt-strip-wrap reclama-pt-strip-wrap--p1">
+			<div class="reclama-pt-strip-track reclama-pt-strip-track--p1">
+				{% for __ in "0123456789" %}
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Spațiu la cerere — PT P1</span>
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Cereți oferta pe<br /><span class="reclama-pt-strip-email">{{ pubmail }}</span><br /><span class="reclama-pt-strip-ref">PT · P1</span></span>
+				{% endfor %}
+				{% for __ in "0123456789" %}
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Spațiu la cerere — PT P1</span>
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Cereți oferta pe<br /><span class="reclama-pt-strip-email">{{ pubmail }}</span><br /><span class="reclama-pt-strip-ref">PT · P1</span></span>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
 	<div class="reclama-pt-wire__p4">
-		<div class="reclama-alt-slot" data-slot="P4.1"><span class="reclama-slot-name">P4.1</span><div class="reclama-slot-preview"></div></div>
-		<div class="reclama-alt-slot" data-slot="P4.2"><span class="reclama-slot-name">P4.2</span><div class="reclama-slot-preview"></div></div>
-		<div class="reclama-alt-slot" data-slot="P4.3"><span class="reclama-slot-name">P4.3</span><div class="reclama-slot-preview"></div></div>
+		<div class="reclama-pt-wire__p4-spacer" aria-hidden="true"></div>
+		<div class="reclama-pt-wire__p4-spacer" aria-hidden="true"></div>
+		<div class="reclama-alt-slot reclama-pt-wire__slot--publi-a5" data-slot="P4.3"><span class="reclama-slot-name">P4.3</span><div class="reclama-slot-preview"></div></div>
 	</div>
-	<div class="reclama-pt-wire__p2">
-		{% for i in "123456789012"|make_list %}
-		<div class="reclama-alt-slot reclama-pt-wire__p2-cell" data-slot="P2.{{ forloop.counter }}"><span class="reclama-slot-name">P2.{{ forloop.counter }}</span><div class="reclama-slot-preview"></div></div>
-		{% endfor %}
-	</div>
+	<div class="reclama-pt-wire__p2 reclama-pt-wire__p2--zone" aria-hidden="true"></div>
 	<div class="reclama-pt-wire__p5">
-		<div class="reclama-alt-slot" data-slot="P5.1"><span class="reclama-slot-name">P5.1</span><div class="reclama-slot-preview"></div></div>
-		<div class="reclama-alt-slot" data-slot="P5.2"><span class="reclama-slot-name">P5.2</span><div class="reclama-slot-preview"></div></div>
-		<div class="reclama-alt-slot" data-slot="P5.3"><span class="reclama-slot-name">P5.3</span><div class="reclama-slot-preview"></div></div>
+		<div class="reclama-alt-slot reclama-pt-wire__slot--publi-a6" data-slot="P5.1"><span class="reclama-slot-name">P5.1</span><div class="reclama-slot-preview"></div></div>
+		<div class="reclama-alt-slot reclama-pt-wire__slot--publi-a6" data-slot="P5.2"><span class="reclama-slot-name">P5.2</span><div class="reclama-slot-preview"></div></div>
+		<div class="reclama-alt-slot reclama-pt-wire__slot--publi-a6" data-slot="P5.3"><span class="reclama-slot-name">P5.3</span><div class="reclama-slot-preview"></div></div>
 	</div>
-	<div class="reclama-pt-wire__p3 reclama-alt-slot" data-slot="P3"><span class="reclama-slot-name">P3</span><div class="reclama-slot-preview"></div></div>
+	<div class="reclama-pt-wire__p3 reclama-alt-slot reclama-pt-wire__slot--strip" data-slot="P3">
+		<div class="reclama-pt-strip-wrap reclama-pt-strip-wrap--p3">
+			<div class="reclama-pt-strip-track reclama-pt-strip-track--p3">
+				{% for __ in "0123456789" %}
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Spațiu la cerere — PT P3</span>
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Cereți oferta pe<br /><span class="reclama-pt-strip-email">{{ pubmail }}</span><br /><span class="reclama-pt-strip-ref">PT · P3</span></span>
+				{% endfor %}
+				{% for __ in "0123456789" %}
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Spațiu la cerere — PT P3</span>
+				<span class="reclama-pt-strip-cell reclama-pt-strip-cell--disclaimer">Cereți oferta pe<br /><span class="reclama-pt-strip-email">{{ pubmail }}</span><br /><span class="reclama-pt-strip-ref">PT · P3</span></span>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
 </div>
+{% endwith %}

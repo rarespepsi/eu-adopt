@@ -1,5 +1,5 @@
 {# Schemă HOME (A1–A3, A5, A6, burtieră) – doar chenare #}
-<div class="reclama-home-wire" aria-hidden="true">
+<div class="reclama-home-wire" aria-hidden="{% if pub_interactive_wire %}false{% else %}true{% endif %}">
 	<div class="reclama-home-wire-cols">
 		<div class="reclama-home-wire-side">
 			<div class="reclama-home-wire-slot" data-slot="A5.1"><span class="reclama-slot-name">A5.1</span><div class="reclama-slot-preview"></div></div>
@@ -30,12 +30,12 @@
 			<div class="reclama-home-wire-slot" data-slot="A6.3"><span class="reclama-slot-name">A6.3</span><div class="reclama-slot-preview"></div></div>
 		</div>
 	</div>
-	<div class="reclama-home-wire-burtiera" data-slot="Burtieră" aria-hidden="true">
+	<div class="reclama-home-wire-burtiera" data-slot="Burtieră" aria-hidden="{% if pub_interactive_wire %}false{% else %}true{% endif %}">
 		<span class="reclama-slot-name reclama-slot-name--burtiera">Burtieră</span>
 		<div class="reclama-home-wire-burtiera-marquee-wrap">
-			<div class="reclama-home-wire-burtiera-track">
-				<span class="reclama-home-wire-burtiera-text">#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor.</span>
-				<span class="reclama-home-wire-burtiera-text">#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor.</span>
+			<div class="reclama-home-wire-burtiera-track" style="animation-duration: {{ reclama_burtiera_speed_seconds|default:28 }}s;">
+				<span class="reclama-home-wire-burtiera-text">{{ reclama_burtiera_display_text|default:"#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor." }}</span>
+				<span class="reclama-home-wire-burtiera-text">{{ reclama_burtiera_display_text|default:"#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor." }}</span>
 			</div>
 		</div>
 	</div>

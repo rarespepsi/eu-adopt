@@ -82,7 +82,7 @@
 				</thead>
 				<tbody>
 					{% for pet in pets %}
-					<tr class="mypet-row" data-species="{% if pet %}{{ pet.species }}{% else %}none{% endif %}">
+					<tr class="mypet-row" data-species="{% if pet %}{% if pet.species == 'dog' %}dog{% elif pet.species == 'cat' %}cat{% else %}other{% endif %}{% else %}none{% endif %}">
 						<td class="mypet-td mypet-td-nr">{{ forloop.counter }}</td>
 						<td class="mypet-td mypet-td-photo">
 							{% if pet %}
@@ -95,7 +95,14 @@
 								<span class="mypet-photo-empty">—</span>
 							{% endif %}
 						</td>
-						<td class="mypet-td mypet-td-name">{% if pet %}<a href="{% url 'mypet_edit' pet.pk %}">{{ pet.name|default:"—" }}</a>{% else %}—{% endif %}</td>
+						<td class="mypet-td mypet-td-name">
+							{% if pet %}
+								<a href="{% url 'mypet_edit' pet.pk %}">{{ pet.name|default:"—" }}</a>
+								{% if pet.species and pet.species != "dog" and pet.species != "cat" %}
+									<br><small class="mypet-species-other-label">Altă specie: {{ pet.species }}</small>
+								{% endif %}
+							{% else %}—{% endif %}
+						</td>
 						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.sex|default:"—" }}{% else %}—{% endif %}</td>
 						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.age_label|default:"—" }}{% else %}—{% endif %}</td>
 						<td class="mypet-td mypet-td-narrow">{% if pet %}{{ pet.size|default:"—" }}{% else %}—{% endif %}</td>
@@ -173,6 +180,9 @@
 								>
 									Mesaje{% if pet.unread_messages %} ({{ pet.unread_messages }}){% endif %}
 								</button>
+								{% if display_role != "collaborator" and pet.species == "dog" or display_role != "collaborator" and pet.species == "cat" %}
+								<a href="{% url 'promo_a2_order' pet.pk %}" class="mypet-promoveaza-btn" title="Promovare A2">Promovează-mă</a>
+								{% endif %}
 							{% else %}
 								—
 							{% endif %}
@@ -363,7 +373,7 @@
 		text-align: center;
 		font-weight: 900;
 		font-size: 0.95rem; /* puțin mai mare */
-		white-space: nowrap;
+		white-space: normal;
 		overflow: hidden; /* caseta rămâne fixă */
 	}
 	.mypet-td-name a {
@@ -374,6 +384,17 @@
 		color: inherit;
 		white-space: nowrap;
 		overflow: hidden;
+	}
+	.mypet-species-other-label {
+		display: block;
+		margin-top: 0.12rem;
+		font-size: 0.62rem;
+		font-weight: 700;
+		color: #6d4c41;
+		line-height: 1.2;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	.mypet-td-narrow { min-width: 2.5rem; text-align: center; }
 	.mypet-td-date { min-width: 4rem; font-size: 0.75rem; white-space: nowrap; }
@@ -432,6 +453,24 @@
 		border: 1px solid #1b5e20;
 		background: #e8f5e9;
 		color: #1b5e20;
+	}
+	.mypet-promoveaza-btn {
+		display: inline-block;
+		margin: 0.18rem auto 0;
+		padding: 0.14rem 0.34rem;
+		border-radius: 8px;
+		border: 1px solid #1565c0;
+		background: #1565c0;
+		color: #fff;
+		font-size: 0.64rem;
+		font-weight: 800;
+		line-height: 1.1;
+		cursor: pointer;
+		text-decoration: none;
+	}
+	.mypet-promoveaza-btn:hover {
+		background: #0d47a1;
+		border-color: #0d47a1;
 	}
 	.mypet-msg-modal {
 		position: fixed;
@@ -1311,9 +1350,11 @@ document.addEventListener("DOMContentLoaded", function() {
 		if (!filters.length) return;
 
 		var rows = Array.prototype.slice.call(document.querySelectorAll(".mypet-row"));
+		var addBtn = document.querySelector(".mypet-btn-add");
 		var filtersWrap = document.querySelector(".mypet-species-filters");
 		var actionsWrap = document.querySelector(".mypet-actions");
 		var counterBtn = document.querySelector(".mypet-btn-counter");
+		var activeSpecies = "dog";
 
 		function placeFilters() {
 			try {
@@ -1342,34 +1383,42 @@ document.addEventListener("DOMContentLoaded", function() {
 			} catch (e) {}
 		}
 
-		function setActive(species) {
+		function applyFilters() {
+			var species = activeSpecies;
 			filters.forEach(function(btn) {
 				btn.classList.toggle("is-active", (btn.getAttribute("data-species") || "") === species);
 			});
+			if (addBtn) {
+				if (species === "dog") addBtn.textContent = "Adaugă un câine";
+				else if (species === "cat") addBtn.textContent = "Adaugă o pisică";
+				else if (species === "other") addBtn.textContent = "AdaugăAltceva";
+				else addBtn.textContent = "Adaugă un pet";
+			}
 			rows.forEach(function(tr) {
 				var sp = (tr.getAttribute("data-species") || "");
-				// dacă rândul e placeholder (none), îl ascund când nu e "toate"
-				if (species === "all") {
-					tr.style.display = "";
-					return;
-				}
-				tr.style.display = (sp === species) ? "" : "none";
+				var speciesOk = (species === "all") ? true : (sp === species);
+				tr.style.display = speciesOk ? "" : "none";
 			});
 		}
 
 		filters.forEach(function(btn) {
 			var species = btn.getAttribute("data-species") || "";
-			btn.addEventListener("click", function() { setActive(species); });
+			btn.addEventListener("click", function() {
+				activeSpecies = species;
+				applyFilters();
+			});
 			btn.addEventListener("keydown", function(e) {
 				if (e.key === "Enter" || e.key === " ") {
 					e.preventDefault();
-					setActive(species);
+					activeSpecies = species;
+					applyFilters();
 				}
 			});
 		});
 
 		// default: câini
-		setActive("dog");
+		activeSpecies = "dog";
+		applyFilters();
 		placeFilters();
 		// Re-calculează o dată după layout (evită situații cu dimensiuni încă nefinale).
 		requestAnimationFrame(placeFilters);

@@ -7,6 +7,8 @@ from .models import (
     CollabServiceMessage,
     CollaboratorServiceOffer,
     CollaboratorOfferClaim,
+    PromoA2Order,
+    ReclamaSlotNote,
 )
 
 
@@ -78,3 +80,32 @@ class CollaboratorOfferClaimAdmin(admin.ModelAdmin):
     search_fields = ("code", "buyer_email", "buyer_name_snapshot", "offer__title")
     raw_id_fields = ("offer", "buyer_user")
     readonly_fields = ("created_at",)
+
+
+@admin.register(PromoA2Order)
+class PromoA2OrderAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "pet",
+        "payer_email",
+        "package",
+        "quantity",
+        "total_price",
+        "status",
+        "start_date",
+        "starts_at",
+        "ends_at",
+        "summary_sent_at",
+        "created_at",
+    )
+    list_filter = ("status", "package", "payment_provider")
+    search_fields = ("payer_email", "payer_name_snapshot", "payment_ref", "pet__name")
+    raw_id_fields = ("pet", "payer_user")
+
+
+@admin.register(ReclamaSlotNote)
+class ReclamaSlotNoteAdmin(admin.ModelAdmin):
+    list_display = ("section", "slot_code", "updated_by", "updated_at")
+    list_filter = ("section",)
+    search_fields = ("section", "slot_code", "text")
+    raw_id_fields = ("updated_by",)

@@ -59,6 +59,21 @@
 				if (countEl && typeof data.wish_count === 'number') {
 					countEl.textContent = String(data.wish_count);
 				}
+
+				// I Love: la scoatere din listă, elimină cardul din grilă (și mesaj gol dacă nu mai rămâne nimic)
+				if (document.body.classList.contains('page-ilove') && data.active === false) {
+					var card = btn.closest('.ilove-pet-card');
+					if (card && card.parentNode) {
+						card.remove();
+						var grid = document.querySelector('.ilove-pets-grid');
+						if (grid && !grid.querySelector('.ilove-pet-card')) {
+							var empty = document.createElement('div');
+							empty.className = 'ilove-empty';
+							empty.textContent = 'Nu ai niciun câine salvat încă. Apasă inimioara de pe poze.';
+							grid.appendChild(empty);
+						}
+					}
+				}
 			}).catch(function() {});
 		}, true);
 	}

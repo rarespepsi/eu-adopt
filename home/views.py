@@ -12,9 +12,10 @@ from itertools import cycle
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
-from django.http import JsonResponse
-from django.db.models import Count, Q, Max
+from django.http import HttpResponse, JsonResponse
+from django.db.models import Count, Q, Max, Sum
 from django.db.models import F
+from django.db.models.functions import TruncMonth
 from django.core.files.base import ContentFile
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -27,6 +28,13 @@ from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
 from .data import DEMO_DOGS, DEMO_DOG_IMAGE, A2_QUOTE_POOL, HERO_SLIDER_IMAGES
+from .pet_age_bands import (
+    AGE_LABELS_ORDERED,
+    BAND_CHOICES_UI,
+    BAND_FILTER_GET_VALUES,
+    animal_listing_matches_collab_offer_targets,
+    build_age_band_filter_q,
+)
 from .models import (
     WishlistItem,
     AnimalListing,
@@ -38,6 +46,8 @@ from .models import (
     AdoptionRequest,
     CollaboratorServiceOffer,
     CollaboratorOfferClaim,
+    PromoA2Order,
+    ReclamaSlotNote,
 )
 from django.contrib.auth import get_user_model
 from functools import wraps
@@ -129,6 +139,103 @@ def collab_magazin_required(view_func):
             return _magazinul_meu_access_redirect(request)
         return view_func(request, *args, **kwargs)
     return _wrapped
+
+
+def _promo_a2_flow_redirect(request, pet: AnimalListing):
+    """După respingere în fluxul promovare A2: proprietar → MyPet, alt utilizator → Acasă."""
+    if getattr(request.user, "pk", None) == pet.owner_id:
+        return redirect("mypet")
+    return redirect("home")
+
+
+HOME_BURTIERA_DEFAULT_TEXT = (
+    "#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției "
+    "animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană."
+)
+HOME_BURTIERA_DEFAULT_SPEED_SECONDS = 28
+
+
+def _get_home_burtiera_text() -> str:
+    note = ReclamaSlotNote.objects.filter(section="home", slot_code="Burtieră").first()
+    txt = (note.text if note else "") or ""
+    txt = txt.strip()
+    return txt or HOME_BURTIERA_DEFAULT_TEXT
+
+
+def _get_home_burtiera_speed_seconds() -> int:
+    note = ReclamaSlotNote.objects.filter(section="home", slot_code="BurtierăSpeed").first()
+    raw = ((note.text if note else "") or "").strip()
+    try:
+        sec = int(raw)
+    except (TypeError, ValueError):
+        sec = HOME_BURTIERA_DEFAULT_SPEED_SECONDS
+    return max(8, min(120, sec))
+
+
+def _promo_a2_order_hours(package: str) -> int:
+    return 12 if (package or "").strip().lower() == "12h" else 6
+
+
+def _promo_a2_compute_window(start_date, package: str, quantity: int):
+    qty = max(1, int(quantity or 1))
+    hours = _promo_a2_order_hours(package)
+    starts_at = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+    ends_at = starts_at + timezone.timedelta(hours=hours * qty)
+    return starts_at, ends_at
+
+
+def _promo_a2_build_summary_payload(order: PromoA2Order) -> dict:
+    pet = getattr(order, "pet", None)
+    pet_label = (getattr(pet, "name", None) or f"Anunț #{getattr(order, 'pet_id', '-')}")
+    pet_url = ""
+    if pet and getattr(pet, "is_published", False):
+        try:
+            path = reverse("pets_single", args=[pet.pk])
+            base = (getattr(settings, "SITE_BASE_URL", "") or "").rstrip("/")
+            pet_url = f"{base}{path}" if base else path
+        except Exception:
+            pet_url = ""
+    starts = timezone.localtime(order.starts_at) if order.starts_at else None
+    ends = timezone.localtime(order.ends_at) if order.ends_at else None
+    return {
+        "pet_label": pet_label,
+        "pet_url": pet_url,
+        "package": order.package or "6h",
+        "quantity": int(order.quantity or 1),
+        "unit_price": int(order.unit_price or 0),
+        "total_price": int(order.total_price or 0),
+        "starts_at": starts,
+        "ends_at": ends,
+        "schedule": order.schedule or "intercalat",
+    }
+
+
+def _promo_a2_send_summary_email(order: PromoA2Order) -> bool:
+    to = (order.payer_email or "").strip()
+    if not to:
+        return False
+    p = _promo_a2_build_summary_payload(order)
+    starts_txt = p["starts_at"].strftime("%d.%m.%Y %H:%M") if p["starts_at"] else "—"
+    ends_txt = p["ends_at"].strftime("%d.%m.%Y %H:%M") if p["ends_at"] else "—"
+    subj = f"EU-Adopt: rezumat final promovare A2 – {p['pet_label']}"
+    body = (
+        f"Bună,\n\n"
+        f"S-a încheiat perioada cumpărată pentru promovarea A2.\n\n"
+        f"Detalii comandă:\n"
+        f"- Anunț: {p['pet_label']}\n"
+        f"- Pachet: {p['package']}\n"
+        f"- Cantitate: {p['quantity']}\n"
+        f"- Programare: {p['schedule']}\n"
+        f"- Perioadă afișare: {starts_txt} → {ends_txt}\n"
+        f"- Preț unitar: {p['unit_price']} lei\n"
+        f"- Total achitat: {p['total_price']} lei\n"
+    )
+    if p["pet_url"]:
+        body += f"- Link anunț: {p['pet_url']}\n"
+    body += "\nMulțumim!\n— Aplicația EU-Adopt\n"
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
+    send_mail(subj, body, from_email, [to], fail_silently=False)
+    return True
 
 
 def _collaborator_tip_partener(request) -> str:
@@ -343,6 +450,9 @@ def home_view(request):
         selected_judet = (request.GET.get("judet") or "").strip()
         selected_marime = (request.GET.get("marime") or "").strip()
         selected_varsta = (request.GET.get("varsta") or "").strip()
+        selected_varsta_band = (request.GET.get("varsta_band") or "").strip().lower()
+        if selected_varsta_band not in BAND_FILTER_GET_VALUES:
+            selected_varsta_band = ""
         selected_sex = (request.GET.get("sex") or "").strip()
         selected_species = (request.GET.get("species") or "").strip().lower()
         if selected_species not in {"dog", "cat", "other"}:
@@ -370,7 +480,16 @@ def home_view(request):
         }
         selected_traits = [t for t in selected_traits if t in allowed_traits]
 
-        filter_active = any([selected_judet, selected_marime, selected_varsta, selected_sex, selected_species]) or bool(selected_traits)
+        filter_active = any(
+            [
+                selected_judet,
+                selected_marime,
+                selected_varsta,
+                selected_varsta_band,
+                selected_sex,
+                selected_species,
+            ]
+        ) or bool(selected_traits)
 
         # Filtre COMPLETE (pentru viitor): opțiuni din listă fixă, nu din DB,
         # ca să apară județele/taliile/vârstele/sexurile indiferent de ce e deja înregistrat.
@@ -419,19 +538,7 @@ def home_view(request):
             "Vrancea",
         ]
         marime_choices = ["mica", "medie", "mare"]
-        varsta_choices = [
-            "<1 an",
-            "1 an",
-            "2 ani",
-            "3 ani",
-            "4 ani",
-            "5 ani",
-            "6 ani",
-            "7 ani",
-            "8 ani",
-            "9 ani",
-            "10+ ani",
-        ]
+        varsta_choices = list(AGE_LABELS_ORDERED)
         sex_choices = ["m", "f"]
 
         qs_base = AnimalListing.objects.filter(is_published=True)
@@ -494,6 +601,9 @@ def home_view(request):
                 qs = qs.filter(county__iexact=selected_judet)
             if selected_marime:
                 qs = qs.filter(size__iexact=selected_marime)
+            band_q = build_age_band_filter_q(selected_varsta_band, selected_species, selected_marime)
+            if band_q is not None:
+                qs = qs.filter(band_q)
             if selected_varsta:
                 qs = qs.filter(age_label__iexact=selected_varsta)
             if selected_sex:
@@ -571,10 +681,12 @@ def home_view(request):
             "judet_choices": judet_choices,
             "marime_choices": marime_choices,
             "varsta_choices": varsta_choices,
+            "varsta_band_choices": BAND_CHOICES_UI,
             "sex_choices": sex_choices,
             "selected_judet": selected_judet,
             "selected_marime": selected_marime,
             "selected_varsta": selected_varsta,
+            "selected_varsta_band": selected_varsta_band,
             "selected_sex": selected_sex,
             "selected_species": selected_species,
         })
@@ -648,6 +760,8 @@ def home_view(request):
         "active_animals": len(DEMO_DOGS),
         "show_welcome_demo": show_welcome_demo,
         "wishlist_ids": wishlist_ids,
+        "home_burtiera_text": _get_home_burtiera_text(),
+        "home_burtiera_speed_seconds": _get_home_burtiera_speed_seconds(),
     })
 
 
@@ -1740,14 +1854,220 @@ def dog_profile_view(request, pk):
         if last_ar and last_ar.status == AdoptionRequest.STATUS_ACCEPTED:
             adopter_messaging_unlocked = True
 
+    # Promovare plătită: orice utilizator autentificat (sponsor), nu doar proprietarul.
+    promote_allowed = bool(
+        request.user.is_authenticated
+        and listing.is_published
+        and (listing.species or "").strip().lower() in ("dog", "cat")
+    )
+
     ctx = {
         "pet": pet,
         "can_send_pet_message": bool(request.user.is_authenticated and request.user.pk != listing.owner_id),
         "pet_owner_id": listing.owner_id,
         "adoption_request_status": adoption_request_status,
         "adopter_messaging_unlocked": adopter_messaging_unlocked,
+        "promote_allowed": promote_allowed,
     }
     return render(request, "anunturi/pets-single.html", ctx)
+
+
+@login_required
+def promo_a2_order_view(request, pk):
+    """
+    Notă comandă promovare A2 (v1).
+    Poate plăti orice cont autentificat (sponsor); anunțul trebuie publicat, câine sau pisică.
+    """
+    pet = get_object_or_404(AnimalListing, pk=pk)
+    if not pet.is_published:
+        messages.info(
+            request,
+            "Anunțul trebuie să fie publicat înainte de promovare.",
+        )
+        return _promo_a2_flow_redirect(request, pet)
+
+    species_ok = (pet.species or "").strip().lower() in ("dog", "cat")
+    if not species_ok:
+        messages.info(
+            request,
+            "Promovarea A2 este disponibilă doar pentru anunțuri câine sau pisică, publicate.",
+        )
+        return _promo_a2_flow_redirect(request, pet)
+
+    price_map = {"6h": 10, "12h": 15}
+    order_submitted = False
+    start_date = timezone.localdate().isoformat()
+    package = "6h"
+    quantity = 1
+    unit_price = price_map[package]
+    total_price = unit_price * quantity
+    if request.method == "POST":
+        package = (request.POST.get("package") or "6h").strip()
+        schedule = "intercalat"
+        payment_method = "card"
+        start_date_raw = (request.POST.get("start_date") or "").strip()
+        quantity_raw = (request.POST.get("quantity") or "1").strip()
+        if package not in ("6h", "12h"):
+            package = "6h"
+        try:
+            quantity = int(quantity_raw)
+        except ValueError:
+            quantity = 1
+        if quantity < 1:
+            quantity = 1
+        if quantity > 30:
+            quantity = 30
+        unit_price = price_map[package]
+        total_price = unit_price * quantity
+        try:
+            selected_start_date = date.fromisoformat(start_date_raw)
+            if selected_start_date < timezone.localdate():
+                raise ValueError("date in the past")
+            start_date = selected_start_date.isoformat()
+        except ValueError:
+            messages.error(request, "Selectează o dată de start validă (astăzi sau o dată viitoare).")
+            return render(
+                request,
+                "anunturi/promo_a2_order.html",
+                {
+                    "pet": pet,
+                    "order_submitted": order_submitted,
+                    "package": package,
+                    "schedule": schedule,
+                    "payment_method": payment_method,
+                    "start_date": start_date,
+                    "quantity": quantity,
+                    "unit_price": unit_price,
+                    "total_price": total_price,
+                    "today_iso": timezone.localdate().isoformat(),
+                },
+            )
+        starts_at, ends_at = _promo_a2_compute_window(selected_start_date, package, quantity)
+        payer_name = (request.user.get_full_name() or request.user.username or "").strip()
+        order = PromoA2Order.objects.create(
+            pet=pet,
+            payer_user=request.user,
+            payer_email=(request.user.email or "").strip(),
+            payer_name_snapshot=payer_name,
+            package=package,
+            quantity=quantity,
+            unit_price=unit_price,
+            total_price=total_price,
+            payment_method=payment_method,
+            schedule=schedule,
+            slot_code="A2",
+            start_date=selected_start_date,
+            starts_at=starts_at,
+            ends_at=ends_at,
+            status=PromoA2Order.STATUS_CHECKOUT_PENDING,
+            payment_provider="demo",
+        )
+
+        # v1: pregătim datele pentru checkout demo securizat
+        request.session["promo_a2_checkout"] = {
+            "order_id": order.pk,
+            "pet_id": pet.pk,
+            "package": package,
+            "schedule": schedule,
+            "payment_method": payment_method,
+            "start_date": start_date,
+            "quantity": quantity,
+            "unit_price": unit_price,
+            "total_price": total_price,
+        }
+        return redirect("promo_a2_checkout_demo", pk=pet.pk)
+
+    return render(
+        request,
+        "anunturi/promo_a2_order.html",
+        {
+            "pet": pet,
+            "order_submitted": order_submitted,
+            "package": "6h",
+            "schedule": "intercalat",
+            "payment_method": "card",
+            "start_date": start_date,
+            "quantity": quantity,
+            "unit_price": unit_price,
+            "total_price": total_price,
+            "today_iso": timezone.localdate().isoformat(),
+        },
+    )
+
+
+@login_required
+def promo_a2_checkout_demo_view(request, pk):
+    pet = get_object_or_404(AnimalListing, pk=pk)
+    if not pet.is_published or (pet.species or "").strip().lower() not in ("dog", "cat"):
+        messages.info(
+            request,
+            "Promovarea nu este disponibilă pentru acest anunț.",
+        )
+        return _promo_a2_flow_redirect(request, pet)
+    checkout = request.session.get("promo_a2_checkout") or {}
+    if checkout.get("pet_id") != pet.pk:
+        messages.info(request, "Completează mai întâi nota de comandă pentru a continua către plata demo.")
+        return redirect("promo_a2_order", pk=pet.pk)
+    order = None
+    order_id = checkout.get("order_id")
+    if order_id:
+        order = PromoA2Order.objects.filter(pk=order_id, payer_user=request.user, pet=pet).first()
+    if order is None:
+        messages.info(request, "Nu există o comandă promo validă pentru această sesiune.")
+        return redirect("promo_a2_order", pk=pet.pk)
+    return render(
+        request,
+        "anunturi/promo_a2_checkout_demo.html",
+        {
+            "pet": pet,
+            "package": checkout.get("package", "6h"),
+            "quantity": checkout.get("quantity", 1),
+            "unit_price": checkout.get("unit_price", 10),
+            "total_price": checkout.get("total_price", 10),
+            "start_date": checkout.get("start_date", ""),
+            "schedule": checkout.get("schedule", "intercalat"),
+            "payment_method": checkout.get("payment_method", "card"),
+            "promo_order_id": order.pk,
+        },
+    )
+
+
+@login_required
+def promo_a2_checkout_demo_success_view(request, pk):
+    pet = get_object_or_404(AnimalListing, pk=pk)
+    if not pet.is_published or (pet.species or "").strip().lower() not in ("dog", "cat"):
+        messages.info(
+            request,
+            "Promovarea nu este disponibilă pentru acest anunț.",
+        )
+        return _promo_a2_flow_redirect(request, pet)
+    checkout = request.session.get("promo_a2_checkout") or {}
+    if checkout.get("pet_id") != pet.pk:
+        messages.info(request, "Nu există o sesiune activă de plată demo pentru acest anunț.")
+        return redirect("promo_a2_order", pk=pet.pk)
+    order = None
+    order_id = checkout.get("order_id")
+    if order_id:
+        order = PromoA2Order.objects.filter(pk=order_id, payer_user=request.user, pet=pet).first()
+    if order is None:
+        messages.info(request, "Comanda promo nu a fost găsită.")
+        return redirect("promo_a2_order", pk=pet.pk)
+    if order.status != PromoA2Order.STATUS_PAID:
+        order.status = PromoA2Order.STATUS_PAID
+        order.payment_ref = f"DEMO-{order.pk}"
+        order.save(update_fields=["status", "payment_ref", "updated_at"])
+
+    ctx = {
+        "pet": pet,
+        "package": checkout.get("package", "6h"),
+        "quantity": checkout.get("quantity", 1),
+        "unit_price": checkout.get("unit_price", 10),
+        "total_price": checkout.get("total_price", 10),
+        "start_date": checkout.get("start_date", ""),
+        "promo_order_id": order.pk,
+    }
+    request.session.pop("promo_a2_checkout", None)
+    return render(request, "anunturi/promo_a2_checkout_demo_success.html", ctx)
 
 
 def account_view(request):
@@ -1880,9 +2200,9 @@ RECLAMA_WIRE_TEMPLATES = {
     "servicii": "anunturi/reclama/wires/servicii.html",
     "transport": "anunturi/reclama/wires/transport.html",
     "shop": "anunturi/reclama/wires/shop.html",
-    "mypet": "anunturi/reclama/wires/generic.html",
+    "mypet": "anunturi/reclama/wires/mypet.html",
     "magazinul_meu": "anunturi/reclama/wires/generic.html",
-    "i_love": "anunturi/reclama/wires/generic.html",
+    "i_love": "anunturi/reclama/wires/i_love.html",
     "termeni": "anunturi/reclama/wires/generic.html",
     "contact": "anunturi/reclama/wires/generic.html",
     "mesaje": "anunturi/reclama/wires/generic.html",
@@ -1912,15 +2232,157 @@ def reclama_staff_view(request, reclama_section="home"):
     section = (reclama_section or "home").strip().lower()
     if section not in RECLAMA_WIRE_TEMPLATES:
         return redirect(reverse("reclama_staff"))
+
+    if request.method == "POST" and section == "home":
+        action = (request.POST.get("action") or "").strip().lower()
+        slot_code = (request.POST.get("slot") or "").strip()
+        if action == "save_burtiera_note" and slot_code == "Burtieră":
+            text = (request.POST.get("burtiera_note") or "").strip()
+            speed_raw = (request.POST.get("burtiera_speed_seconds") or "").strip()
+            try:
+                speed_val = int(speed_raw)
+            except (TypeError, ValueError):
+                speed_val = HOME_BURTIERA_DEFAULT_SPEED_SECONDS
+            speed_val = max(8, min(120, speed_val))
+            note, _created = ReclamaSlotNote.objects.get_or_create(
+                section="home",
+                slot_code="Burtieră",
+                defaults={"text": text, "updated_by": request.user},
+            )
+            if not _created:
+                note.text = text
+                note.updated_by = request.user
+                note.save(update_fields=["text", "updated_by", "updated_at"])
+            speed_note, speed_created = ReclamaSlotNote.objects.get_or_create(
+                section="home",
+                slot_code="BurtierăSpeed",
+                defaults={"text": str(speed_val), "updated_by": request.user},
+            )
+            if not speed_created:
+                speed_note.text = str(speed_val)
+                speed_note.updated_by = request.user
+                speed_note.save(update_fields=["text", "updated_by", "updated_at"])
+            messages.success(request, "Textul pentru burtieră a fost salvat.")
+            return redirect(f"{reverse('reclama_staff')}?slot=Burtieră")
     meta = RECLAMA_META.get(section, ("Reclama", "Caseta 2"))
     wire_template = RECLAMA_WIRE_TEMPLATES[section]
+    now = timezone.now()
+    active_orders = list(
+        PromoA2Order.objects.filter(
+            status=PromoA2Order.STATUS_PAID,
+            starts_at__isnull=False,
+            ends_at__isnull=False,
+            starts_at__lte=now,
+            ends_at__gt=now,
+        )
+        .select_related("pet", "payer_user")
+        .order_by("ends_at", "-created_at")[:80]
+    )
+    expiring_soon = 0
+    for o in active_orders:
+        try:
+            rem = int((o.ends_at - now).total_seconds())
+        except Exception:
+            rem = 0
+        o.remaining_seconds = max(0, rem)
+        if rem <= 3600:
+            expiring_soon += 1
+    paid_today = PromoA2Order.objects.filter(
+        status=PromoA2Order.STATUS_PAID,
+        updated_at__date=timezone.localdate(),
+    ).count()
+
+    slot_allowed = {
+        "A2.1", "A2.2", "A2.3", "A2.4", "A2.5", "A2.6",
+        "A2.7", "A2.8", "A2.9", "A2.10", "A2.11", "A2.12",
+        "A5.1", "A5.2", "A5.3", "A6.1", "A6.2", "A6.3", "Burtieră",
+    }
+    selected_slot = (request.GET.get("slot") or "").strip()
+    raw_months = request.GET.getlist("months")
+    selected_months = []
+    for m in raw_months:
+        try:
+            v = int((m or "").strip())
+        except (TypeError, ValueError):
+            continue
+        if 1 <= v <= 12 and v not in selected_months:
+            selected_months.append(v)
+    if not selected_months:
+        selected_months = list(range(1, 13))
+    if selected_slot not in slot_allowed:
+        selected_slot = ""
+    if selected_slot in {"A1", "A3"}:
+        selected_slot = ""
+
+    history_rows = []
+    history_total_orders = 0
+    history_total_revenue = 0
+    burtiera_note_text = ""
+    if section == "home" and selected_slot:
+        if selected_slot == "Burtieră":
+            # În editorul C3 afișăm textul curent efectiv din burtieră (fie notă salvată, fie default).
+            burtiera_note_text = _get_home_burtiera_text()
+        else:
+            current_year = timezone.localdate().year
+            month_qs = (
+                PromoA2Order.objects.filter(
+                    status=PromoA2Order.STATUS_PAID,
+                    slot_code=selected_slot,
+                    starts_at__year=current_year,
+                    starts_at__month__in=selected_months,
+                )
+                .annotate(month=TruncMonth("starts_at"))
+                .values("month")
+                .annotate(total_orders=Count("id"), total_revenue=Sum("total_price"))
+                .order_by("month")
+            )
+            history_rows = list(month_qs)
+            for r in history_rows:
+                history_total_orders += int(r.get("total_orders") or 0)
+                history_total_revenue += int(r.get("total_revenue") or 0)
     ctx = {
         "reclama_section": section,
         "reclama_page_title": meta[0],
         "reclama_caseta2_label": meta[1],
         "reclama_wire_template": wire_template,
+        "promo_active_orders": active_orders,
+        "promo_active_total": len(active_orders),
+        "promo_expiring_soon": expiring_soon,
+        "promo_paid_today": paid_today,
+        "reclama_selected_slot": selected_slot,
+        "reclama_selected_months": selected_months,
+        "reclama_month_options": list(range(1, 13)),
+        "reclama_slot_history_rows": history_rows,
+        "reclama_slot_history_total_orders": history_total_orders,
+        "reclama_slot_history_total_revenue": history_total_revenue,
+        "reclama_burtiera_note_text": burtiera_note_text,
+        "reclama_burtiera_display_text": _get_home_burtiera_text(),
+        "reclama_burtiera_speed_seconds": _get_home_burtiera_speed_seconds(),
+        "pub_site_contact_email": (
+            (getattr(settings, "DEFAULT_FROM_EMAIL", None) or "").strip() or "euadopt@gmail.com"
+        ),
     }
     return render(request, "anunturi/reclama_staff.html", ctx)
+
+
+@login_required
+@require_POST
+def reclama_promo_export_summary_now_view(request, order_id: int):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect("home")
+    order = get_object_or_404(PromoA2Order.objects.select_related("pet"), pk=order_id)
+    try:
+        sent = _promo_a2_send_summary_email(order)
+    except Exception:
+        logging.getLogger(__name__).exception("promo_a2_manual_summary_email_fail order=%s", order.pk)
+        sent = False
+    if sent:
+        order.summary_manual_sent_at = timezone.now()
+        order.save(update_fields=["summary_manual_sent_at", "updated_at"])
+        messages.success(request, f"Rezumatul a fost trimis către {order.payer_email}.")
+    else:
+        messages.error(request, "Nu am putut trimite rezumatul (email plătitor lipsă).")
+    return redirect("reclama_staff")
 
 
 def _username_suggestions(tried, user_pk):
@@ -2552,23 +3014,17 @@ def mypet_add_view(request):
     )
     default_med = "da" if is_public_shelter else ""
 
-    age_choices = [
-        "<1 an",
-        "1 an",
-        "2 ani",
-        "3 ani",
-        "4 ani",
-        "5 ani",
-        "6 ani",
-        "7 ani",
-        "8 ani",
-        "9 ani",
-        "10+ ani",
-    ]
+    age_choices = list(AGE_LABELS_ORDERED)
 
     if request.method == "POST":
         name = (request.POST.get("name") or "").strip()
-        species = (request.POST.get("species") or "dog").strip() or "dog"
+        species_mode = (request.POST.get("species_mode") or "").strip().lower()
+        species_custom = (request.POST.get("species_custom") or "").strip()
+        if species_mode in ("dog", "cat"):
+            species = species_mode
+        else:
+            species_mode = "other"
+            species = species_custom
         size = (request.POST.get("size") or "").strip()
         age_label = (request.POST.get("age_label") or "").strip()
         city = (request.POST.get("city") or "").strip()
@@ -2608,6 +3064,8 @@ def mypet_add_view(request):
             if not val:
                 error = msg
                 break
+        if not error and species_mode == "other" and not species_custom:
+            error = "Te rugăm să completezi specia pentru categoria «Altele» (ex: hamster)."
         if not error:
             try:
                 listing = AnimalListing.objects.create(
@@ -2656,6 +3114,8 @@ def mypet_add_view(request):
             "error": error,
             "name": name,
             "species": species,
+            "species_mode": species_mode,
+            "species_custom": species_custom,
             "size": size,
             "age_label": age_label,
             "city": city or default_city,
@@ -2701,6 +3161,8 @@ def mypet_add_view(request):
         "error": None,
         "name": "",
         "species": "dog",
+        "species_mode": "dog",
+        "species_custom": "",
         "size": "",
         "age_label": "",
         "city": default_city,
@@ -2759,14 +3221,26 @@ def mypet_edit_view(request, pk):
     )
     default_med = "da" if is_public_shelter else ""
 
-    age_choices = [
-        "<1 an", "1 an", "2 ani", "3 ani", "4 ani", "5 ani",
-        "6 ani", "7 ani", "8 ani", "9 ani", "10+ ani",
-    ]
+    age_choices = list(AGE_LABELS_ORDERED)
 
     if request.method == "POST":
+        form_action = (request.POST.get("form_action") or "save").strip().lower()
+        edit_mode = (request.POST.get("edit_mode") or "").strip().lower()
+        if form_action == "delete":
+            listing.delete()
+            return redirect("mypet")
+        if edit_mode != "edit":
+            messages.info(request, "Fișa este blocată. Apasă mai întâi pe „Modifică fișa”.")
+            return redirect("mypet_edit", pk=listing.pk)
+
         name = (request.POST.get("name") or "").strip()
-        species = (request.POST.get("species") or "dog").strip() or "dog"
+        species_mode = (request.POST.get("species_mode") or "").strip().lower()
+        species_custom = (request.POST.get("species_custom") or "").strip()
+        if species_mode in ("dog", "cat"):
+            species = species_mode
+        else:
+            species_mode = "other"
+            species = species_custom
         size = (request.POST.get("size") or "").strip()
         age_label = (request.POST.get("age_label") or "").strip()
         city = (request.POST.get("city") or "").strip()
@@ -2806,6 +3280,8 @@ def mypet_edit_view(request, pk):
             if not val:
                 error = msg
                 break
+        if not error and species_mode == "other" and not species_custom:
+            error = "Te rugăm să completezi specia pentru categoria «Altele» (ex: hamster)."
         if not error:
             try:
                 listing.name = name
@@ -2853,9 +3329,12 @@ def mypet_edit_view(request, pk):
 
         ctx = {
             "listing": listing,
+            "form_locked": False,
             "error": error,
             "name": name,
             "species": species,
+            "species_mode": species_mode,
+            "species_custom": species_custom,
             "size": size,
             "age_label": age_label,
             "city": city or default_city,
@@ -2897,11 +3376,20 @@ def mypet_edit_view(request, pk):
         }
         return render(request, "anunturi/mypet_add.html", ctx)
 
+    current_species = (listing.species or "").strip().lower()
+    species_mode = current_species if current_species in ("dog", "cat") else "other"
+    species_custom = ""
+    if species_mode == "other" and current_species:
+        species_custom = listing.species
+
     ctx = {
         "listing": listing,
+        "form_locked": True,
         "error": None,
         "name": listing.name or "",
         "species": listing.species or "dog",
+        "species_mode": species_mode,
+        "species_custom": species_custom,
         "size": listing.size or "",
         "age_label": listing.age_label or "",
         "city": listing.city or default_city,
@@ -4298,6 +4786,111 @@ def collab_offer_delete_view(request, pk: int):
     return redirect("collab_offers_control")
 
 
+def _user_can_use_publicitate(request) -> bool:
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated:
+        return False
+    if getattr(user, "is_staff", False) or getattr(user, "is_superuser", False):
+        return True
+    try:
+        ap = getattr(user, "account_profile", None)
+        return bool(ap and ap.role == AccountProfile.ROLE_COLLAB)
+    except Exception:
+        return False
+
+
+@login_required
+def publicitate_harta_view(request):
+    if not _user_can_use_publicitate(request):
+        messages.info(
+            request,
+            "Pagina Publicitate este pentru conturi colaborator (admin are acces pentru operare rapidă).",
+        )
+        return redirect("home")
+
+    sections = [
+        {"code": "home", "label": "Home"},
+        {"code": "pt", "label": "PT"},
+        {"code": "servicii", "label": "Servicii"},
+        {"code": "transport", "label": "Transport"},
+        {"code": "shop", "label": "Shop"},
+        {"code": "mypet", "label": "MyPet"},
+        {"code": "i_love", "label": "I Love"},
+    ]
+    selected_section = (request.GET.get("sect") or "home").strip().lower()
+    valid_codes = {s["code"] for s in sections}
+    if selected_section not in valid_codes:
+        selected_section = "home"
+
+    slot_map = {
+        "home": [
+            {"code": "A5.1", "title": "Home – coloană stânga A5.1", "types": ["image", "link", "video"], "unit": "luna", "price": 120},
+            {"code": "A5.2", "title": "Home – coloană stânga A5.2", "types": ["image", "link", "video"], "unit": "luna", "price": 120},
+            {"code": "A5.3", "title": "Home – coloană stânga A5.3", "types": ["image", "link", "video"], "unit": "luna", "price": 120},
+            {"code": "A6.1", "title": "Home – coloană dreapta A6.1", "types": ["image", "link", "video"], "unit": "luna", "price": 110},
+            {"code": "A6.2", "title": "Home – coloană dreapta A6.2", "types": ["image", "link", "video"], "unit": "luna", "price": 110},
+            {"code": "A6.3", "title": "Home – coloană dreapta A6.3", "types": ["image", "link", "video"], "unit": "luna", "price": 110},
+            {
+                "code": "Burtieră",
+                "title": "Home – bandă galbenă (burtieră)",
+                "types": ["text", "link", "video"],
+                "unit": "luna",
+                "price": 150,
+            },
+        ],
+        "pt": [
+            {"code": "P4.3", "title": "PT P4.3", "types": ["image", "link", "video"], "unit": "luna", "price": 100},
+            {"code": "P5.1", "title": "PT P5.1", "types": ["image", "link", "video"], "unit": "luna", "price": 95},
+            {"code": "P5.2", "title": "PT P5.2", "types": ["image", "link", "video"], "unit": "luna", "price": 95},
+            {"code": "P5.3", "title": "PT P5.3", "types": ["image", "link", "video"], "unit": "luna", "price": 95},
+        ],
+        "servicii": [
+            {"code": "S2.2", "title": "Servicii S2.2", "types": ["image", "link", "video"], "unit": "luna", "price": 130},
+            {"code": "S2.3", "title": "Servicii S2.3", "types": ["image", "link", "video"], "unit": "luna", "price": 130},
+            {"code": "S6.1", "title": "Servicii S6.1", "types": ["image", "link", "video"], "unit": "luna", "price": 115},
+            {"code": "S6.2", "title": "Servicii S6.2", "types": ["image", "link", "video"], "unit": "luna", "price": 115},
+        ],
+        "transport": [
+            {"code": "TDR.1", "title": "Transport R1", "types": ["image", "link", "video"], "unit": "ora", "price": 4},
+            {"code": "TDR.2", "title": "Transport R2", "types": ["image", "link", "video"], "unit": "ora", "price": 4},
+            {"code": "TDR.3", "title": "Transport R3", "types": ["image", "link", "video"], "unit": "ora", "price": 4},
+        ],
+        "shop": [
+            {"code": "SH4.1", "title": "Shop SH4.1", "types": ["image", "link", "video"], "unit": "luna", "price": 140},
+            {"code": "SH4.2", "title": "Shop SH4.2", "types": ["image", "link", "video"], "unit": "luna", "price": 140},
+            {"code": "SH4.3", "title": "Shop SH4.3", "types": ["image", "link", "video"], "unit": "luna", "price": 140},
+            {"code": "SH5.1", "title": "Shop SH5.1", "types": ["image", "link", "video"], "unit": "luna", "price": 125},
+            {"code": "SH5.2", "title": "Shop SH5.2", "types": ["image", "link", "video"], "unit": "luna", "price": 125},
+            {"code": "SH5.3", "title": "Shop SH5.3", "types": ["image", "link", "video"], "unit": "luna", "price": 125},
+        ],
+        "mypet": [
+            {"code": "MP.L1", "title": "MyPet L1", "types": ["image", "link", "video"], "unit": "luna", "price": 90},
+            {"code": "MP.L2", "title": "MyPet L2", "types": ["image", "link", "video"], "unit": "luna", "price": 90},
+            {"code": "MP.L3", "title": "MyPet L3", "types": ["image", "link", "video"], "unit": "luna", "price": 90},
+        ],
+        "i_love": [
+            {"code": "IL.L1", "title": "I Love L1", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
+            {"code": "IL.L2", "title": "I Love L2", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
+            {"code": "IL.R1", "title": "I Love R1", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
+            {"code": "IL.R2", "title": "I Love R2", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
+        ],
+    }
+
+    ctx = {
+        "pub_sections": sections,
+        "pub_selected_section": selected_section,
+        "pub_slot_map": slot_map,
+        "pub_a2_images": [d.get("imagine_fallback") for d in DEMO_DOGS if d.get("imagine_fallback")][:12],
+        "pub_a13_images": list(HERO_SLIDER_IMAGES or []),
+        "reclama_burtiera_display_text": _get_home_burtiera_text(),
+        "reclama_burtiera_speed_seconds": _get_home_burtiera_speed_seconds(),
+        "pub_site_contact_email": (
+            (getattr(settings, "DEFAULT_FROM_EMAIL", None) or "").strip() or "euadopt@gmail.com"
+        ),
+    }
+    return render(request, "anunturi/publicitate_harta.html", ctx)
+
+
 @login_required
 @collab_magazin_required
 def collab_offers_control_view(request):
@@ -4540,12 +5133,38 @@ def collab_offer_edit_view(request, pk: int):
     )
 
 
+def _animal_listing_for_public_offer_match(request):
+    """
+    Acceptă ?for_animal=<pk> (AnimalListing).
+    Public: doar anunț publicat; proprietarul autentificat poate folosi și fișa nepublicată.
+    """
+    raw = (request.GET.get("for_animal") or "").strip()
+    if not raw:
+        return None
+    try:
+        pk = int(raw)
+    except (ValueError, TypeError):
+        return None
+    listing = AnimalListing.objects.filter(pk=pk).first()
+    if not listing:
+        return None
+    if listing.is_published:
+        return listing
+    user = getattr(request, "user", None)
+    if user and user.is_authenticated and listing.owner_id == user.pk:
+        return listing
+    return None
+
+
 def public_offers_list_view(request):
     offers = list(
         _collab_offer_valid_public_qs(
             CollaboratorServiceOffer.objects.filter(is_active=True).select_related("collaborator")
         ).order_by("-created_at")[:200]
     )
+    match_listing = _animal_listing_for_public_offer_match(request)
+    if match_listing:
+        offers = [o for o in offers if animal_listing_matches_collab_offer_targets(o, match_listing)]
     return render(
         request,
         "anunturi/oferte_parteneri.html",

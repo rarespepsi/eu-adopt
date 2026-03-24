@@ -770,3 +770,108 @@ class CollaboratorOfferClaim(models.Model):
     def __str__(self):
         return f"{self.code} → ofertă {self.offer_id}"
 
+
+class PromoA2Order(models.Model):
+    """
+    Comandă promovare A2 (flux curent demo/plată).
+    Rezumatul final se trimite plătitorului după expirarea perioadei cumpărate.
+    """
+
+    STATUS_DRAFT = "draft"
+    STATUS_CHECKOUT_PENDING = "checkout_pending"
+    STATUS_PAID = "paid"
+    STATUS_FAILED = "failed"
+    STATUS_CANCELLED = "cancelled"
+    STATUS_CHOICES = [
+        (STATUS_DRAFT, "Draft"),
+        (STATUS_CHECKOUT_PENDING, "Checkout pending"),
+        (STATUS_PAID, "Paid"),
+        (STATUS_FAILED, "Failed"),
+        (STATUS_CANCELLED, "Cancelled"),
+    ]
+
+    PACKAGE_6H = "6h"
+    PACKAGE_12H = "12h"
+    PACKAGE_CHOICES = [
+        (PACKAGE_6H, "6h"),
+        (PACKAGE_12H, "12h"),
+    ]
+    SLOT_A2 = "A2"
+
+    pet = models.ForeignKey(
+        AnimalListing,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="promo_a2_orders",
+    )
+    payer_user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="promo_a2_orders",
+    )
+    payer_email = models.EmailField("Email plătitor")
+    payer_name_snapshot = models.CharField("Nume plătitor (snapshot)", max_length=200, blank=True)
+
+    package = models.CharField("Pachet", max_length=8, choices=PACKAGE_CHOICES, default=PACKAGE_6H)
+    quantity = models.PositiveIntegerField("Cantitate", default=1)
+    unit_price = models.PositiveIntegerField("Preț unitar (lei)", default=10)
+    total_price = models.PositiveIntegerField("Total (lei)", default=10)
+    payment_method = models.CharField("Metodă plată", max_length=20, default="card")
+    schedule = models.CharField("Programare", max_length=20, default="intercalat")
+    slot_code = models.CharField("Caseta promovare", max_length=20, default=SLOT_A2, db_index=True)
+
+    start_date = models.DateField("Data start")
+    starts_at = models.DateTimeField("Pornire promovare", null=True, blank=True)
+    ends_at = models.DateTimeField("Final promovare", null=True, blank=True)
+
+    status = models.CharField("Status", max_length=24, choices=STATUS_CHOICES, default=STATUS_DRAFT, db_index=True)
+    payment_provider = models.CharField("Procesator", max_length=40, blank=True, default="demo")
+    payment_ref = models.CharField("Referință plată", max_length=120, blank=True)
+
+    summary_sent_at = models.DateTimeField("Rezumat final trimis la", null=True, blank=True)
+    summary_manual_sent_at = models.DateTimeField("Rezumat trimis manual la", null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Comandă promovare A2"
+        verbose_name_plural = "Comenzi promovare A2"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status", "ends_at"]),
+            models.Index(fields=["payer_email", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"A2#{self.pk} pet={self.pet_id} {self.status}"
+
+
+class ReclamaSlotNote(models.Model):
+    """Notiță editabilă pentru sloturile din pagina Reclama (ex. Burtieră HOME)."""
+
+    section = models.CharField("Secțiune", max_length=30, db_index=True)
+    slot_code = models.CharField("Slot", max_length=30, db_index=True)
+    text = models.TextField("Text notiță", blank=True, default="")
+    updated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reclama_slot_notes_updated",
+    )
+    updated_at = models.DateTimeField("Actualizat la", auto_now=True)
+    created_at = models.DateTimeField("Creat la", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Notiță slot Reclama"
+        verbose_name_plural = "Notițe sloturi Reclama"
+        unique_together = [("section", "slot_code")]
+        ordering = ["section", "slot_code"]
+
+    def __str__(self):
+        return f"{self.section}:{self.slot_code}"
+

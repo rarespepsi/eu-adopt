@@ -609,6 +609,34 @@
   pointer-events: none !important;
 }
 
+/* Probă CTA promovare: overlay semitransparent, fără impact pe dimensiunea casetei P2 */
+#PW .pt-p2-card-cell .pt-promoveaza-btn {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 5px;
+  min-height: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  background: rgba(21, 101, 192, 0.62);
+  color: #fff;
+  font-size: clamp(0.36rem, 0.86vw, 0.48rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  backdrop-filter: blur(1px);
+}
+#PW .pt-p2-card-cell .pt-promoveaza-btn:hover {
+  background: rgba(198, 40, 40, 0.68);
+}
+
 /* P5 = coloană dreapta – cele 3 casete umplu P5 până la limită, fără modificarea dimensiunii celulei P5 */
 #PW .pt-cell-5 {
   grid-row: 2;

@@ -4,28 +4,75 @@
 {% block title %}I Love – EU-ADOPT{% endblock %}
 {% block body_class %}page-ilove{% endblock %}
 
-{% block content %}
-<section aria-label="I Love">
-	<h1 style="margin:0 0 0.75rem;color:#e53935;text-transform:uppercase;letter-spacing:0.05em;">❤️ I Love</h1>
-	<p style="margin:0 0 1rem;color:#555;">Aici apar animalele pe care le-ai marcat cu inimioară.</p>
-
-	<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;">
-		{% for pet in pets %}
-			<div style="border:1px solid #eee;border-radius:12px;overflow:hidden;background:#fff;position:relative;">
-				<a href="{% url 'pets_single' pet.pk %}" style="display:block;text-decoration:none;color:inherit;">
-					<img src="{% static pet.imagine_fallback %}" alt="" style="width:100%;height:160px;object-fit:cover;display:block;" />
-					<div style="padding:0.75rem;">
-						<div style="font-weight:800;">{{ pet.nume }}</div>
-						<div style="font-size:0.85rem;color:#666;">{{ pet.varsta }}</div>
-					</div>
-				</a>
-			</div>
-		{% empty %}
-			<div style="grid-column:1/-1;border:1px dashed #ccc;border-radius:12px;padding:1rem;background:#fff;">
-				Nu ai niciun câine salvat încă. Apasă inimioara de pe poze.
-			</div>
-		{% endfor %}
-	</div>
-</section>
+{% block extra_css_after %}
+<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=9" type="text/css" media="screen" />
 {% endblock %}
 
+{% block content %}
+<main id="ILW" class="ilove-page" aria-label="I Love">
+	<div class="ilove-wire">
+		<aside class="ilove-wire__col ilove-wire__col--left" aria-label="Casete stânga">
+			<div class="ilove-case ilove-case--a5">
+				<span class="ilove-case__ref">IL.L1</span>
+				<span class="ilove-case__mark">Zona Publi</span>
+			</div>
+			<div class="ilove-case ilove-case--a5">
+				<span class="ilove-case__ref">IL.L2</span>
+				<span class="ilove-case__mark">Zona Publi</span>
+			</div>
+		</aside>
+
+		<div class="ilove-wire__main">
+			<header class="ilove-wire__head">
+				<h1>❤️ I Love</h1>
+				<p>Aici apar animalele pe care le-ai marcat cu inimioară.</p>
+			</header>
+
+			<div class="ilove-main-caseta" aria-label="Lista animalelor bifate cu inimioara">
+				<div class="ilove-pets-grid">
+					{% for pet in pets %}
+						<article class="ilove-pet-card">
+							<a href="{% url 'pets_single' pet.pk %}">
+								<div class="ilove-pet-card-photo">
+									<button
+										type="button"
+										class="wish-btn {% if wishlist_ids and pet.pk in wishlist_ids %}is-active{% endif %}"
+										data-animal-id="{{ pet.pk }}"
+										aria-pressed="{% if wishlist_ids and pet.pk in wishlist_ids %}true{% else %}false{% endif %}"
+										aria-label="{% if wishlist_ids and pet.pk in wishlist_ids %}Scoate din I Love{% else %}Adaugă la I Love{% endif %}"
+										title="Scoate din I Love"
+									>
+										<svg viewBox="0 0 24 24" aria-hidden="true">
+											<path class="wish-heart" d="M12 21s-7-4.6-10-9.2C-0.3 7.9 2.1 4 6 4c2 0 3.4 1.1 4 2 0.6-0.9 2-2 4-2 3.9 0 6.3 3.9 4 7.8C19 16.4 12 21 12 21z"/>
+										</svg>
+									</button>
+									<img src="{% static pet.imagine_fallback %}" alt="" loading="lazy" />
+								</div>
+								<div class="ilove-pet-meta">
+									<div class="ilove-pet-name">{{ pet.nume }}</div>
+									<div class="ilove-pet-age">{{ pet.varsta }}</div>
+								</div>
+							</a>
+						</article>
+					{% empty %}
+						<div class="ilove-empty">
+							Nu ai niciun câine salvat încă. Apasă inimioara de pe poze.
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+
+		<aside class="ilove-wire__col ilove-wire__col--right" aria-label="Casete dreapta">
+			<div class="ilove-case ilove-case--a6">
+				<span class="ilove-case__ref">IL.R1</span>
+				<span class="ilove-case__mark">Zona Publi</span>
+			</div>
+			<div class="ilove-case ilove-case--a6">
+				<span class="ilove-case__ref">IL.R2</span>
+				<span class="ilove-case__mark">Zona Publi</span>
+			</div>
+		</aside>
+	</div>
+</main>
+{% endblock %}

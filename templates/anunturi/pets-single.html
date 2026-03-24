@@ -321,12 +321,26 @@
 				justify-content: center;
 				text-align: center;
 			}
+			.mypet-fisa-tab-group #petCardPromoteBtn {
+				position: absolute;
+				top: 0;
+				left: calc(100% + 24rem);
+				justify-content: center;
+				text-align: center;
+			}
 			.mypet-fisa-tab.is-action {
 				cursor: pointer;
 				user-select: none;
+				background: #1565c0;
+				border: 1px solid #1565c0;
+				color: #fff;
 			}
 			.mypet-fisa-tab.is-action:active {
 				transform: scale(0.99);
+			}
+			.mypet-fisa-tab.is-action:hover {
+				background: #0d47a1;
+				border-color: #0d47a1;
 			}
 
 			.mypet-fisa-tab {
@@ -841,6 +855,9 @@
 											<div class="mypet-fisa-tab-group">
 												<div class="mypet-fisa-tab">FIȘA PET {{ pet.nume|default:"" }}</div>
 												<div class="mypet-fisa-tab is-action" id="petCardCopyBtn" role="button" tabindex="0" aria-label="Distribuie (copiază linkul fișei)">DISTRIBUIE</div>
+												{% if promote_allowed %}
+												<a href="{% url 'promo_a2_order' pet.pk %}" class="mypet-fisa-tab is-action" id="petCardPromoteBtn" role="button" tabindex="0" aria-label="Promovează-mă">PROMOVEAZĂ-MĂ</a>
+												{% endif %}
 											</div>
 											<div class="mypet-fisa-header-spacer"></div>
 											<div class="mypet-fisa-header-actions">
@@ -1326,6 +1343,39 @@
 						doShare();
 					}
 				});
+			})();
+			(function initCardPromoteBtn() {
+				var b = document.getElementById("petCardPromoteBtn");
+				if (!b) return;
+				function lockSameSizeAsFirst() {
+					try {
+						var group = b.closest(".mypet-fisa-tab-group");
+						if (!group) return;
+						var first = group.querySelector(".mypet-fisa-tab:not(#petCardCopyBtn):not(#petCardPromoteBtn)");
+						if (!first) return;
+						var w = first.offsetWidth || 0;
+						var h = first.offsetHeight || 0;
+						if (w) b.style.width = w + "px";
+						if (h) b.style.height = h + "px";
+					} catch (e) {}
+				}
+				function shrinkTextToFit() {
+					try {
+						var base = parseFloat(getComputedStyle(b).fontSize) || 14;
+						var min = 10;
+						var size = base;
+						b.style.fontSize = base + "px";
+						for (var i = 0; i < 12; i++) {
+							if (b.scrollWidth <= b.clientWidth) break;
+							size = Math.max(min, size - 0.5);
+							b.style.fontSize = size + "px";
+							if (size <= min) break;
+						}
+					} catch (e) {}
+				}
+				function fit() { lockSameSizeAsFirst(); shrinkTextToFit(); }
+				fit();
+				window.addEventListener("resize", fit);
 			})();
 			const btn = document.getElementById("copyLinkBtn");
 			if (btn) {

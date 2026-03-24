@@ -34,7 +34,57 @@
 				<div class="reclama-staff-split">
 					<div class="reclama-staff-pane reclama-staff-pane--left" aria-label="Caseta 1">
 						<span class="reclama-staff-pane-label">Caseta 1</span>
-						{# conținut ulterior #}
+						<div class="reclama-c1-title">Comenzi promo A2 active (locație: Reclama / Caseta 1)</div>
+						<div class="reclama-c1-summary">
+							<span>Active acum: <strong>{{ promo_active_total|default:0 }}</strong></span>
+							<span>Expiră în &lt; 1h: <strong>{{ promo_expiring_soon|default:0 }}</strong></span>
+							<span>Plătite azi: <strong>{{ promo_paid_today|default:0 }}</strong></span>
+						</div>
+						<div class="reclama-c1-table-wrap">
+							<table class="reclama-c1-table" aria-label="Comenzi promovare A2 active">
+								<thead>
+									<tr>
+										<th>Pet</th>
+										<th>Caseta</th>
+										<th>Pachet</th>
+										<th>Perioadă</th>
+										<th>Rămas</th>
+										<th>Plătitor</th>
+										<th>Butoane</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for o in promo_active_orders %}
+									<tr>
+										<td>
+											{% if o.pet %}
+												<a href="{% url 'pets_single' o.pet.pk %}" target="_blank" rel="noopener">{{ o.pet.name|default:"(fără nume)" }}</a>
+											{% else %}(anunț șters){% endif %}
+										</td>
+										<td>{{ o.slot_code|default:"A2" }}</td>
+										<td>{{ o.package|upper }} × {{ o.quantity }}</td>
+										<td>
+											{% if o.starts_at %}{{ o.starts_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}
+											→
+											{% if o.ends_at %}{{ o.ends_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}
+										</td>
+										<td>{% if o.remaining_seconds %}{{ o.remaining_seconds }} sec{% else %}—{% endif %}</td>
+										<td>{{ o.payer_email }}</td>
+										<td class="reclama-c1-actions">
+											<form method="post" action="{% url 'reclama_promo_export_summary_now' o.pk %}">
+												{% csrf_token %}
+												<button type="submit" class="reclama-c1-btn">Exportă rezumat</button>
+											</form>
+										</td>
+									</tr>
+									{% empty %}
+									<tr>
+										<td colspan="7">Nu există comenzi promo active în acest moment.</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
 					</div>
 					<div class="reclama-staff-right-stack">
 						<div class="reclama-staff-pane reclama-staff-pane--caseta2" aria-label="{{ reclama_caseta2_label|default:'Caseta 2' }}">
@@ -44,8 +94,64 @@
 							</div>
 						</div>
 						<div class="reclama-staff-pane reclama-staff-pane--caseta3" aria-label="Caseta 3">
-							<span class="reclama-staff-pane-label">Caseta 3</span>
-							{# conținut ulterior #}
+							{% if reclama_section == "home" %}
+							<div class="reclama-c3-box">
+								{% if not reclama_selected_slot %}
+									<div class="reclama-c3-empty">
+										Click pe o casetă din schema HOME pentru istoric (A5/A6/A2) sau pe Burtieră pentru nota de text.
+									</div>
+								{% elif reclama_selected_slot == "Burtieră" %}
+									<div class="reclama-c3-title">Burtieră – notă text</div>
+									<form method="post" class="reclama-c3-note-form">
+										{% csrf_token %}
+										<input type="hidden" name="action" value="save_burtiera_note" />
+										<input type="hidden" name="slot" value="Burtieră" />
+										<textarea id="id_burtiera_note" name="burtiera_note" rows="8" readonly>{{ reclama_burtiera_note_text|default:'' }}</textarea>
+										<div class="reclama-c3-speed-row">
+											<label for="id_burtiera_speed_seconds">Viteză bandă (secunde/ciclu)</label>
+											<input type="number" id="id_burtiera_speed_seconds" name="burtiera_speed_seconds" min="8" max="120" value="{{ reclama_burtiera_speed_seconds|default:28 }}" readonly />
+										</div>
+										<div class="reclama-c3-note-actions">
+											<button type="button" id="burtieraEditBtn" class="reclama-c1-btn">Modifică</button>
+											<button type="submit" id="burtieraSaveBtn" class="reclama-c1-btn" disabled>Salvează</button>
+										</div>
+									</form>
+								{% else %}
+									<form method="get" class="reclama-c3-filters">
+										<input type="hidden" name="slot" value="{{ reclama_selected_slot }}" />
+										<div class="reclama-c3-filter-label">{{ reclama_selected_slot }}</div>
+										<div class="reclama-c3-month-boxes">
+											{% for m in reclama_month_options %}
+											<label class="reclama-c3-month-box{% if m in reclama_selected_months %} is-active{% endif %}">
+												<input type="checkbox" name="months" value="{{ m }}" {% if m in reclama_selected_months %}checked{% endif %} onchange="this.form.submit()" />
+												<span>{{ m }}</span>
+											</label>
+											{% endfor %}
+										</div>
+									</form>
+									<div class="reclama-c3-summary">
+										Total comenzi: <strong>{{ reclama_slot_history_total_orders }}</strong>
+										| Total venit: <strong>{{ reclama_slot_history_total_revenue }} lei</strong>
+									</div>
+									<div class="reclama-c3-table-wrap">
+										<table class="reclama-c1-table">
+											<thead><tr><th>Lună</th><th>Comenzi</th><th>Valoare</th></tr></thead>
+											<tbody>
+											{% for row in reclama_slot_history_rows %}
+												<tr>
+													<td>{{ row.month|date:"m.Y" }}</td>
+													<td>{{ row.total_orders|default:0 }}</td>
+													<td>{{ row.total_revenue|default:0 }} lei</td>
+												</tr>
+											{% empty %}
+												<tr><td colspan="3">Nu există comenzi în perioada selectată.</td></tr>
+											{% endfor %}
+											</tbody>
+										</table>
+									</div>
+								{% endif %}
+							</div>
+							{% endif %}
 						</div>
 					</div>
 				</div>
@@ -218,6 +324,182 @@
 	body.page-reclama-staff .reclama-staff-pane--left {
 		min-height: 0;
 		align-self: stretch;
+	}
+	body.page-reclama-staff .reclama-c1-summary {
+		display: flex;
+		gap: 0.45rem;
+		flex-wrap: wrap;
+		font-size: 0.68rem;
+		color: #37474f;
+		margin-bottom: 0.25rem;
+	}
+	body.page-reclama-staff .reclama-c1-title {
+		font-size: 0.7rem;
+		font-weight: 700;
+		color: #0d47a1;
+		margin: 0.1rem 0 0.28rem;
+	}
+	body.page-reclama-staff .reclama-c1-table-wrap {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: auto;
+		border: 1px solid rgba(13, 71, 161, 0.18);
+		border-radius: 8px;
+	}
+	body.page-reclama-staff .reclama-c1-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.66rem;
+	}
+	body.page-reclama-staff .reclama-c1-table th,
+	body.page-reclama-staff .reclama-c1-table td {
+		border-bottom: 1px solid rgba(13, 71, 161, 0.12);
+		padding: 0.25rem 0.3rem;
+		vertical-align: top;
+		text-align: left;
+	}
+	body.page-reclama-staff .reclama-c1-table th {
+		background: #e3f2fd;
+		color: #0d47a1;
+		position: sticky;
+		top: 0;
+		z-index: 1;
+	}
+	body.page-reclama-staff .reclama-c1-actions {
+		white-space: nowrap;
+	}
+	body.page-reclama-staff .reclama-c1-btn {
+		border: 1px solid #1565c0;
+		background: #1565c0;
+		color: #fff;
+		border-radius: 6px;
+		padding: 0.15rem 0.35rem;
+		font-size: 0.62rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+	body.page-reclama-staff .reclama-c1-btn:hover {
+		background: #0d47a1;
+		border-color: #0d47a1;
+	}
+	body.page-reclama-staff .reclama-c3-box {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		min-height: 0;
+		flex: 1 1 auto;
+	}
+	body.page-reclama-staff .reclama-c3-title {
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: #0d47a1;
+	}
+	body.page-reclama-staff .reclama-c3-empty {
+		font-size: 0.68rem;
+		color: #455a64;
+		background: #f5f7fb;
+		border: 1px solid rgba(13, 71, 161, 0.2);
+		border-radius: 8px;
+		padding: 0.5rem;
+	}
+	body.page-reclama-staff .reclama-c3-filters {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		align-items: center;
+		gap: 0.18rem 0.28rem;
+		font-size: 0.68rem;
+		margin-top: 0;
+	}
+	body.page-reclama-staff .reclama-c3-filter-label {
+		font-weight: 700;
+		color: #0d47a1;
+		white-space: nowrap;
+		border: 1px solid rgba(13, 71, 161, 0.28);
+		border-radius: 6px;
+		background: #e3f2fd;
+		padding: 0.06rem 0.32rem;
+		font-size: 0.62rem;
+		min-height: 1.06rem;
+		display: inline-flex;
+		align-items: center;
+	}
+	body.page-reclama-staff .reclama-c3-month-boxes {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		gap: 0.12rem;
+		width: 100%;
+		max-width: 100%;
+	}
+	body.page-reclama-staff .reclama-c3-month-box {
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		border: 1px solid rgba(13, 71, 161, 0.28);
+		border-radius: 6px;
+		background: #fff;
+		color: #0d47a1;
+		font-size: 0.58rem;
+		font-weight: 700;
+		min-height: 1.06rem;
+		cursor: pointer;
+		user-select: none;
+	}
+	body.page-reclama-staff .reclama-c3-month-box input {
+		position: absolute;
+		opacity: 0;
+		pointer-events: none;
+	}
+	body.page-reclama-staff .reclama-c3-month-box.is-active {
+		background: #1565c0;
+		border-color: #0d47a1;
+		color: #fff;
+	}
+	body.page-reclama-staff .reclama-c3-summary {
+		font-size: 0.67rem;
+		color: #37474f;
+	}
+	body.page-reclama-staff .reclama-c3-table-wrap {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: auto;
+		border: 1px solid rgba(13, 71, 161, 0.16);
+		border-radius: 8px;
+	}
+	body.page-reclama-staff .reclama-c3-note-form textarea {
+		width: 100%;
+		resize: none;
+		height: 8rem;
+		min-height: 8rem;
+		max-height: 8rem;
+		overflow-y: auto;
+		overflow-x: hidden;
+		font-size: 0.68rem;
+		font-style: italic;
+		padding: 0.4rem;
+		border-radius: 8px;
+		border: 1px solid rgba(13, 71, 161, 0.2);
+		box-sizing: border-box;
+	}
+	body.page-reclama-staff .reclama-c3-note-actions {
+		display: flex;
+		gap: 0.35rem;
+	}
+	body.page-reclama-staff .reclama-c3-speed-row {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.66rem;
+	}
+	body.page-reclama-staff .reclama-c3-speed-row input {
+		width: 6rem;
+		font-size: 0.66rem;
+		padding: 0.12rem 0.22rem;
+	}
+	body.page-reclama-staff .reclama-home-wire [data-slot] {
+		cursor: pointer;
+	}
+	body.page-reclama-staff .reclama-home-wire [data-slot].is-disabled-history {
+		cursor: default;
 	}
 	body.page-reclama-staff .reclama-staff-pane--caseta2,
 	body.page-reclama-staff .reclama-staff-pane--caseta3 {
@@ -483,155 +765,424 @@
 		flex: 1 1 auto;
 		min-height: 0;
 	}
+	/* PT: ca #PW .pt-grid — P1 tot sus; mijloc P4 | P2 | P5 (0.75 / 4.5 / 0.75); P3 jos tot */
 	body.page-reclama-staff .reclama-pt-wire {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
+		display: grid;
+		grid-template-columns: 0.75fr 4.5fr 0.75fr;
+		grid-template-rows: minmax(0, 0.28fr) minmax(0, 1fr) minmax(0, 0.21fr);
+		column-gap: 0;
+		row-gap: 2px;
 		flex: 1 1 auto;
 		min-height: 0;
 		width: 100%;
 		height: 100%;
 	}
-	body.page-reclama-staff .reclama-pt-wire__p1 { flex: 0 0 12%; min-height: 0.4rem; }
-	body.page-reclama-staff .reclama-pt-wire__p4 {
-		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
-		gap: 2px;
-		flex: 0 0 14%;
+	body.page-reclama-staff .reclama-pt-wire__p1 {
+		grid-column: 1 / -1;
+		grid-row: 1;
 		min-height: 0;
+	}
+	body.page-reclama-staff .reclama-pt-wire__p4 {
+		grid-column: 1;
+		grid-row: 2;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-height: 0;
+	}
+	body.page-reclama-staff .reclama-pt-wire__p4 > .reclama-pt-wire__p4-spacer,
+	body.page-reclama-staff .reclama-pt-wire__p4 > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	body.page-reclama-staff .reclama-pt-wire__p4-spacer {
+		border: 1px dashed rgba(13, 71, 161, 0.2);
+		border-radius: 2px;
+		box-sizing: border-box;
+		pointer-events: none;
 	}
 	body.page-reclama-staff .reclama-pt-wire__p2 {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		grid-template-rows: repeat(3, minmax(0, 1fr));
-		gap: 1px;
-		flex: 1 1 auto;
+		grid-column: 2;
+		grid-row: 2;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		min-height: 0;
 		padding: 1px;
-		background: rgba(13, 71, 161, 0.08);
-	}
-	body.page-reclama-staff .reclama-pt-wire__p2-cell .reclama-slot-name {
-		font-size: clamp(0.32rem, 0.65vw, 0.45rem);
-		padding: 1px 2px;
 	}
 	body.page-reclama-staff .reclama-pt-wire__p5 {
-		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
-		gap: 2px;
-		flex: 0 0 12%;
-		min-height: 0;
-	}
-	body.page-reclama-staff .reclama-pt-wire__p3 { flex: 0 0 12%; min-height: 0.4rem; }
-	body.page-reclama-staff .reclama-sw-wire {
+		grid-column: 3;
+		grid-row: 2;
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
+		min-height: 0;
+	}
+	body.page-reclama-staff .reclama-pt-wire__p5 > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	/* P4.3 / P5.x: aceleași culori + „Zona Publi” ca A5/A6 pe HOME (publicitate_harta) */
+	body.page-reclama-staff .reclama-pt-wire__slot--publi-a5 {
+		background: rgba(200, 230, 201, 0.45);
+		border-color: rgba(46, 125, 50, 0.45);
+	}
+	body.page-reclama-staff .reclama-pt-wire__slot--publi-a6 {
+		background: rgba(225, 190, 231, 0.4);
+		border-color: rgba(123, 31, 162, 0.4);
+	}
+	body.page-reclama-staff .reclama-pt-wire__slot--publi-a5 .reclama-slot-preview {
+		position: relative;
+		background: repeating-linear-gradient(-45deg, #e8f5e9, #e8f5e9 3px, #c8e6c9 3px, #c8e6c9 6px);
+	}
+	body.page-reclama-staff .reclama-pt-wire__slot--publi-a6 .reclama-slot-preview {
+		position: relative;
+		background: repeating-linear-gradient(-45deg, #f3e5f5, #f3e5f5 3px, #e1bee7 3px, #e1bee7 6px);
+	}
+	body.page-reclama-staff .reclama-pt-wire__slot--publi-a5 .reclama-slot-preview::after,
+	body.page-reclama-staff .reclama-pt-wire__slot--publi-a6 .reclama-slot-preview::after {
+		content: "Zona Publi";
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		z-index: 1;
+		transform: translate(-50%, -50%) rotate(-38deg);
+		font-size: clamp(0.32rem, 1.05vw, 0.58rem);
+		font-weight: 900;
+		line-height: 1.1;
+		letter-spacing: 0.06em;
+		color: #000;
+		text-shadow: 0 0 1px rgba(255, 255, 255, 0.85), 0 0 2px rgba(255, 255, 255, 0.5);
+		pointer-events: none;
+		user-select: none;
+		white-space: nowrap;
+		text-transform: none;
+	}
+	body.page-reclama-staff .reclama-pt-wire__p3 {
+		grid-column: 1 / -1;
+		grid-row: 3;
+		min-height: 0;
+	}
+	body.page-reclama-staff .reclama-pt-wire__slot--strip.reclama-alt-slot {
+		padding: 0;
+		overflow: hidden;
+		align-items: stretch;
+		justify-content: stretch;
+		background: #2e7d32;
+		border-color: rgba(0, 0, 0, 0.75);
+	}
+	body.page-reclama-staff .reclama-pt-strip-wrap {
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		position: relative;
+		display: block;
+		box-sizing: border-box;
+	}
+	body.page-reclama-staff .reclama-pt-strip-track {
+		display: flex;
+		flex-wrap: nowrap;
+		align-items: stretch;
+		height: 100%;
+		width: max-content;
+		box-sizing: border-box;
+	}
+	body.page-reclama-staff .reclama-pt-strip-track:hover {
+		animation-play-state: paused;
+	}
+	body.page-reclama-staff .reclama-pt-strip-track--p1 {
+		animation: reclama-pt-strip-p1 40s linear infinite;
+	}
+	body.page-reclama-staff .reclama-pt-strip-track--p3 {
+		animation: reclama-pt-strip-p3 45s linear infinite;
+	}
+	@keyframes reclama-pt-strip-p1 {
+		0% { transform: translateX(0); }
+		100% { transform: translateX(-50%); }
+	}
+	@keyframes reclama-pt-strip-p3 {
+		0% { transform: translateX(-50%); }
+		100% { transform: translateX(0); }
+	}
+	body.page-reclama-staff .reclama-pt-strip-cell--disclaimer {
+		flex: 0 0 auto;
+		box-sizing: border-box;
+		width: clamp(4.5rem, 18vw, 9rem);
+		min-width: clamp(4.5rem, 18vw, 9rem);
+		max-width: clamp(4.5rem, 18vw, 9rem);
+		height: 100%;
+		min-height: 100%;
+		margin: 0 2px 0 0;
+		padding: 0.2rem 0.3rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		background: #ffeb3b;
+		color: #b71c1c;
+		font-style: italic;
+		font-size: clamp(0.5rem, 1.35vw, 0.82rem);
+		font-weight: 700;
+		text-align: center;
+		line-height: 1.2;
+		word-break: break-word;
+		text-shadow: 0 0 1px rgba(255, 255, 255, 0.9);
+	}
+	body.page-reclama-staff .reclama-pt-strip-email {
+		font-style: italic;
+		font-weight: 800;
+		font-size: 0.95em;
+		word-break: break-all;
+		line-height: 1.15;
+	}
+	body.page-reclama-staff .reclama-pt-strip-ref {
+		display: block;
+		margin-top: 0.12em;
+		font-style: normal;
+		font-weight: 900;
+		font-size: 0.78em;
+		letter-spacing: 0.04em;
+		line-height: 1.15;
+		opacity: 0.95;
+	}
+	body.page-reclama-staff .reclama-sw-wire {
+		display: grid;
+		grid-template-columns: 0.75fr 4.5fr 0.75fr;
+		grid-template-rows: minmax(0, 0.28fr) minmax(0, 1fr) minmax(0, 0.21fr);
+		column-gap: 0;
+		row-gap: 2px;
 		flex: 1 1 auto;
 		min-height: 0;
 		width: 100%;
 		height: 100%;
 	}
-	body.page-reclama-staff .reclama-sw-wire__s1 { flex: 0 0 10%; min-height: 0.35rem; }
-	body.page-reclama-staff .reclama-sw-wire__s2-row {
-		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
-		gap: 2px;
-		flex: 0 0 12%;
-	}
-	body.page-reclama-staff .reclama-sw-wire__mid {
-		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
-		gap: 2px;
-		flex: 1 1 auto;
+	body.page-reclama-staff .reclama-sw-wire__s1 {
+		grid-column: 1 / -1;
+		grid-row: 1;
 		min-height: 0;
 	}
-	body.page-reclama-staff .reclama-sw-wire__col {
+	body.page-reclama-staff .reclama-sw-wire__s2 {
+		grid-column: 1;
+		grid-row: 2;
 		display: flex;
 		flex-direction: column;
-		gap: 1px;
+		gap: 2px;
+		min-height: 0;
+	}
+	body.page-reclama-staff .reclama-sw-wire__s2 > .reclama-alt-slot,
+	body.page-reclama-staff .reclama-sw-wire__s2 > .reclama-sw-wire__s2-spacer {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	body.page-reclama-staff .reclama-sw-wire__s2-spacer {
+		border: 1px dashed rgba(13, 71, 161, 0.2);
+		border-radius: 2px;
+		box-sizing: border-box;
+		pointer-events: none;
+	}
+	body.page-reclama-staff .reclama-sw-wire__mid-zone {
+		grid-column: 2;
+		grid-row: 2;
 		min-height: 0;
 		min-width: 0;
-		background: rgba(21, 101, 192, 0.06);
-		border-radius: 2px;
-		padding: 2px;
+		padding: 1px;
+		box-sizing: border-box;
 	}
-	body.page-reclama-staff .reclama-sw-wire__col-label {
-		font-size: clamp(0.35rem, 0.7vw, 0.48rem);
-		font-weight: 800;
-		color: #0d47a1;
-		text-align: center;
-	}
-	body.page-reclama-staff .reclama-sw-wire__mini { min-height: 0; flex: 1 1 0; }
-	body.page-reclama-staff .reclama-sw-wire__mini .reclama-slot-name { font-size: clamp(0.28rem, 0.55vw, 0.4rem); padding: 0 1px; }
 	body.page-reclama-staff .reclama-sw-wire__s6 {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 2px;
-		flex: 0 0 14%;
-	}
-	body.page-reclama-staff .reclama-sw-wire__s7 { flex: 0 0 12%; min-height: 0.35rem; }
-	body.page-reclama-staff .reclama-tw-wire {
+		grid-column: 3;
+		grid-row: 2;
 		display: flex;
 		flex-direction: column;
-		gap: 3px;
+		gap: 2px;
+		min-height: 0;
+	}
+	body.page-reclama-staff .reclama-sw-wire__s6 > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	body.page-reclama-staff .reclama-sw-wire__s7 {
+		grid-column: 1 / -1;
+		grid-row: 3;
+		min-height: 0;
+	}
+	body.page-reclama-staff .reclama-sw-wire__strip-msg {
+		cursor: default;
+	}
+	body.page-reclama-staff .reclama-tw-wire {
+		display: grid;
+		grid-template-columns: 4.5fr 0.75fr;
+		column-gap: 2px;
 		flex: 1 1 auto;
 		min-height: 0;
 		width: 100%;
 		height: 100%;
 	}
-	body.page-reclama-staff .reclama-tw-wire__t1 { flex: 1 1 35%; min-height: 0.5rem; }
-	body.page-reclama-staff .reclama-tw-wire__t2 { flex: 1 1 30%; min-height: 0.45rem; }
-	body.page-reclama-staff .reclama-tw-wire__t3 {
-		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
+	body.page-reclama-staff .reclama-tw-wire__left-zone {
+		grid-column: 1;
+		grid-row: 1;
+		min-height: 0;
+		min-width: 0;
+		padding: 1px;
+		box-sizing: border-box;
+	}
+	/* Zone fără închiriere — fundal foto natural, fără strat care îl estompează */
+	body.page-reclama-staff .reclama-pt-wire__p2.reclama-pt-wire__p2--zone,
+	body.page-reclama-staff .reclama-pt-wire__p4-spacer,
+	body.page-reclama-staff .reclama-sw-wire__mid-zone,
+	body.page-reclama-staff .reclama-sw-wire__s2-spacer,
+	body.page-reclama-staff .reclama-sh-wire__mid-zone,
+	body.page-reclama-staff .reclama-mp-wire__rest,
+	body.page-reclama-staff .reclama-il-wire__mid-zone,
+	body.page-reclama-staff .reclama-tw-wire__left-zone {
+		background-color: #e8e8e8;
+		background-image: url("{% static 'images/transport/fundal_1.jpg' %}");
+		background-size: cover;
+		background-position: center center;
+		background-repeat: no-repeat;
+	}
+	body.page-reclama-staff .reclama-tw-wire__right-caseta {
+		grid-column: 2;
+		grid-row: 1;
+		min-height: 0;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		padding: 2px;
+		border: 2px solid rgba(123, 31, 162, 0.45);
+		border-radius: 4px;
+		background: rgba(243, 229, 245, 0.35);
+		box-sizing: border-box;
+	}
+	body.page-reclama-staff .reclama-tw-wire__right-inner {
+		display: flex;
+		flex-direction: column;
 		gap: 2px;
-		flex: 1 1 28%;
+		flex: 1 1 auto;
+		min-height: 0;
+	}
+	body.page-reclama-staff .reclama-tw-wire__right-inner > .reclama-alt-slot {
+		flex: 1 1 0;
 		min-height: 0;
 	}
 	body.page-reclama-staff .reclama-sh-wire {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
+		display: grid;
+		grid-template-columns: 0.75fr 4.5fr 0.75fr;
+		column-gap: 2px;
 		flex: 1 1 auto;
 		min-height: 0;
 		width: 100%;
 		height: 100%;
 	}
-	body.page-reclama-staff .reclama-sh-wire__top { flex: 0 0 12%; }
-	body.page-reclama-staff .reclama-sh-wire__middle {
-		display: flex;
-		flex-direction: row;
-		gap: 2px;
-		flex: 1 1 auto;
-		min-height: 0;
-	}
-	body.page-reclama-staff .reclama-sh-wire__side {
+	body.page-reclama-staff .reclama-sh-wire__left {
+		grid-column: 1;
+		grid-row: 1;
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
-		flex: 0 0 22%;
-		min-width: 0;
-	}
-	body.page-reclama-staff .reclama-sh-wire__center {
-		flex: 1 1 auto;
-		min-width: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-	body.page-reclama-staff .reclama-sh-wire__grid {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		grid-template-rows: repeat(2, minmax(0, 1fr));
-		gap: 1px;
-		flex: 1 1 auto;
 		min-height: 0;
+		min-width: 0;
+	}
+	body.page-reclama-staff .reclama-sh-wire__left > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	body.page-reclama-staff .reclama-sh-wire__mid-zone {
+		grid-column: 2;
+		grid-row: 1;
+		min-height: 0;
+		min-width: 0;
 		padding: 1px;
-		background: rgba(13, 71, 161, 0.08);
+		box-sizing: border-box;
 	}
-	body.page-reclama-staff .reclama-sh-wire__cell .reclama-slot-name { font-size: clamp(0.3rem, 0.6vw, 0.42rem); }
-	body.page-reclama-staff .reclama-sh-wire__bottom { flex: 0 0 12%; }
-	body.page-reclama-staff .reclama-sh-wire__announce { min-height: 0.4rem; }
+	body.page-reclama-staff .reclama-sh-wire__right {
+		grid-column: 3;
+		grid-row: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-height: 0;
+		min-width: 0;
+	}
+	body.page-reclama-staff .reclama-sh-wire__right > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	body.page-reclama-staff .reclama-mp-wire {
+		display: grid;
+		grid-template-columns: 0.75fr 4.5fr;
+		column-gap: 2px;
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		height: 100%;
+	}
+	body.page-reclama-staff .reclama-mp-wire__left {
+		grid-column: 1;
+		grid-row: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-height: 0;
+		min-width: 0;
+	}
+	body.page-reclama-staff .reclama-mp-wire__left > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	body.page-reclama-staff .reclama-mp-wire__rest {
+		grid-column: 2;
+		grid-row: 1;
+		min-height: 0;
+		min-width: 0;
+		padding: 1px;
+		box-sizing: border-box;
+	}
+	body.page-reclama-staff .reclama-il-wire {
+		display: grid;
+		grid-template-columns: 0.75fr 4.5fr 0.75fr;
+		column-gap: 2px;
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		height: 100%;
+	}
+	body.page-reclama-staff .reclama-il-wire__left {
+		grid-column: 1;
+		grid-row: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-height: 0;
+		min-width: 0;
+	}
+	body.page-reclama-staff .reclama-il-wire__left > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	body.page-reclama-staff .reclama-il-wire__mid-zone {
+		grid-column: 2;
+		grid-row: 1;
+		min-height: 0;
+		min-width: 0;
+		padding: 1px;
+		box-sizing: border-box;
+	}
+	body.page-reclama-staff .reclama-il-wire__right {
+		grid-column: 3;
+		grid-row: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-height: 0;
+		min-width: 0;
+	}
+	body.page-reclama-staff .reclama-il-wire__right > .reclama-alt-slot {
+		flex: 1 1 0;
+		min-height: 0;
+	}
 	body.page-reclama-staff .reclama-generic-wire {
 		display: flex;
 		flex-direction: column;
@@ -687,4 +1238,49 @@
 		}
 	}
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+	var homeWire = document.querySelector(".reclama-home-wire");
+	if (homeWire) {
+		var nodes = homeWire.querySelectorAll("[data-slot]");
+		nodes.forEach(function(n) {
+			var slot = (n.getAttribute("data-slot") || "").trim();
+			if (!slot) return;
+			if (slot === "A1" || slot === "A3") {
+				n.classList.add("is-disabled-history");
+				return;
+			}
+			n.addEventListener("click", function() {
+				var p = new URLSearchParams(window.location.search || "");
+				p.set("slot", slot);
+				if (slot === "Burtieră") p.delete("months");
+				else if (!p.get("months")) p.set("months", "12");
+				window.location.search = p.toString();
+			});
+		});
+	}
+
+	var editBtn = document.getElementById("burtieraEditBtn");
+	var saveBtn = document.getElementById("burtieraSaveBtn");
+	var ta = document.getElementById("id_burtiera_note");
+	var speedInput = document.getElementById("id_burtiera_speed_seconds");
+	if (editBtn && saveBtn && ta) {
+		editBtn.addEventListener("click", function() {
+			// Sincronizăm textarea cu textul curent vizibil din burtiera C2.
+			var liveTxtEl = document.querySelector(".reclama-home-wire-burtiera-text");
+			if (liveTxtEl) {
+				var liveTxt = (liveTxtEl.textContent || "").trim();
+				if (liveTxt) ta.value = liveTxt;
+			}
+			ta.readOnly = false;
+			if (speedInput) speedInput.readOnly = false;
+			ta.focus();
+			saveBtn.disabled = false;
+		});
+	}
+});
+</script>
 {% endblock %}
