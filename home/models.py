@@ -187,6 +187,16 @@ class AnimalListing(models.Model):
         ("cat", "Pisică"),
         ("other", "Alt"),
     ]
+    ADOPTION_STATE_FREE = "liber"
+    ADOPTION_STATE_OPEN = "spre_adoptie"
+    ADOPTION_STATE_IN_PROGRESS = "in_curs_adoptie"
+    ADOPTION_STATE_ADOPTED = "adoptat"
+    ADOPTION_STATE_CHOICES = [
+        (ADOPTION_STATE_FREE, "Liber"),
+        (ADOPTION_STATE_OPEN, "Spre adopție"),
+        (ADOPTION_STATE_IN_PROGRESS, "În curs de adopție"),
+        (ADOPTION_STATE_ADOPTED, "Adoptat"),
+    ]
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="animal_listings")
     name = models.CharField("Nume", max_length=120, blank=True)
@@ -231,6 +241,13 @@ class AnimalListing(models.Model):
     trait_necesita_experienta = models.BooleanField("Necesită experiență cu câini", default=False)
 
     is_published = models.BooleanField("Publicat", default=True)
+    adoption_state = models.CharField(
+        "Stare adopție",
+        max_length=20,
+        choices=ADOPTION_STATE_CHOICES,
+        default=ADOPTION_STATE_FREE,
+        db_index=True,
+    )
     media_views = models.IntegerField("Vizualizări media (click pe poză/video)", default=0)
     share_clicks = models.IntegerField("Distribuiri (click pe buton)", default=0)
     observatii = models.TextField("Observații (MyPet)", blank=True, default="")
@@ -502,12 +519,14 @@ class AdoptionRequest(models.Model):
     STATUS_PENDING = "in_asteptare"
     STATUS_ACCEPTED = "acceptata"
     STATUS_REJECTED = "respinsa"
+    STATUS_EXPIRED = "expirata_neconfirmata"
     STATUS_FINALIZED = "finalizata"
 
     STATUS_CHOICES = [
         (STATUS_PENDING, "În așteptare (owner)"),
         (STATUS_ACCEPTED, "Acceptată"),
         (STATUS_REJECTED, "Respinsă"),
+        (STATUS_EXPIRED, "Expirată neconfirmată"),
         (STATUS_FINALIZED, "Adopție finalizată"),
     ]
 
@@ -523,11 +542,13 @@ class AdoptionRequest(models.Model):
     )
     status = models.CharField(
         "Stare",
-        max_length=20,
+        max_length=32,
         choices=STATUS_CHOICES,
         default=STATUS_PENDING,
     )
     accepted_at = models.DateTimeField("Acceptată la", null=True, blank=True)
+    accepted_expires_at = models.DateTimeField("Acceptare valabilă până la", null=True, blank=True)
+    extension_count = models.PositiveSmallIntegerField("Număr prelungiri", default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

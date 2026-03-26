@@ -1045,6 +1045,11 @@
 			aria-label="Vreau să-l adopt"
 		>VREAU SA-L ADOPT</div>
 		{% endif %}
+		<div
+			class="pet-adoption-state-corner"
+			aria-label="Stare adopție"
+			style="position:fixed;right:18px;bottom:120px;z-index:14;padding:6px 10px;border-radius:999px;background:rgba(0,0,0,0.72);color:#fff;font-size:12px;font-weight:800;letter-spacing:.02em;"
+		>{{ pet.adoption_state_label|default:"Liber" }}</div>
 		<div class="pet-qr-corner" id="petQrCorner" aria-label="Cod QR fișă">
 			<p class="pet-qr-corner__title">Scanează fișa</p>
 			<img class="pet-qr-corner__img" id="petQrImg" alt="Cod QR către fișă" />
@@ -1506,6 +1511,10 @@
 						}
 						if (!resp.ok || !data.ok) {
 							throw new Error((data && data.error) || "Nu am putut trimite cererea.");
+						}
+						if (data.queued) {
+							alert("Cererea a fost înregistrată în lista de așteptare. Dacă adopția curentă nu se finalizează, vei primi detaliile adopției.");
+							return;
 						}
 						alert("Cererea de adopție a fost trimisă. Organizația va fi notificată în Mesaje (MyPet).");
 					} catch (err) {

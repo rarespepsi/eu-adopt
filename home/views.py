@@ -391,6 +391,46 @@ def _adopter_messaging_allowed(pet, user) -> bool:
     ).exists()
 
 
+def _adoption_state_label(state: str) -> str:
+    mapping = {
+        AnimalListing.ADOPTION_STATE_FREE: "Liber",
+        AnimalListing.ADOPTION_STATE_OPEN: "Spre adopție",
+        AnimalListing.ADOPTION_STATE_IN_PROGRESS: "În curs de adopție",
+        AnimalListing.ADOPTION_STATE_ADOPTED: "Adoptat",
+    }
+    return mapping.get((state or "").strip(), "Liber")
+
+
+def _sync_animal_adoption_state(animal: AnimalListing) -> str:
+    """
+    Sincronizează starea câinelui după stările cererilor de adopție.
+    Prioritate: finalizată > acceptată > în așteptare > liber.
+    """
+    now = timezone.now()
+    changed = False
+    for req in AdoptionRequest.objects.filter(animal=animal, status=AdoptionRequest.STATUS_ACCEPTED):
+        if req.accepted_expires_at and req.accepted_expires_at < now:
+            req.status = AdoptionRequest.STATUS_EXPIRED
+            req.save(update_fields=["status", "updated_at"])
+            changed = True
+    if changed:
+        animal.refresh_from_db(fields=["id"])
+
+    if AdoptionRequest.objects.filter(animal=animal, status=AdoptionRequest.STATUS_FINALIZED).exists():
+        target = AnimalListing.ADOPTION_STATE_ADOPTED
+    elif AdoptionRequest.objects.filter(animal=animal, status=AdoptionRequest.STATUS_ACCEPTED).exists():
+        target = AnimalListing.ADOPTION_STATE_IN_PROGRESS
+    elif AdoptionRequest.objects.filter(animal=animal, status=AdoptionRequest.STATUS_PENDING).exists():
+        target = AnimalListing.ADOPTION_STATE_OPEN
+    else:
+        target = AnimalListing.ADOPTION_STATE_FREE
+
+    if animal.adoption_state != target:
+        animal.adoption_state = target
+        animal.save(update_fields=["adoption_state", "updated_at"])
+    return target
+
+
 def _adoption_contact_block(user):
     """Text pentru email: date cont + profil (fără HTML)."""
     lines = []
@@ -464,6 +504,56 @@ def _send_adoption_accept_emails(ar: AdoptionRequest):
             send_mail(sub_adopter, body_adopter, from_email, [adopter.email], fail_silently=False)
     except Exception as exc:
         logging.getLogger(__name__).exception("adoption_accept_email_adopter: %s", exc)
+
+
+def _send_adoption_request_owner_email(ar: AdoptionRequest):
+    """Owner primește notificare pentru cerere nouă + link către MyPet."""
+    pet = ar.animal
+    owner = pet.owner
+    adopter = ar.adopter
+    if not owner.email:
+        return
+    pet_label = (pet.name or f"Animal #{pet.pk}").strip()
+    adopter_name = (f"{adopter.first_name} {adopter.last_name}").strip() or adopter.username
+    mypet_link = ""
+    try:
+        mypet_link = (getattr(settings, "SITE_BASE_URL", "") or "").rstrip("/") + reverse("mypet")
+    except Exception:
+        mypet_link = reverse("mypet")
+    sub = f"EU-Adopt: cerere nouă de adopție pentru {pet_label}"
+    body = (
+        f"Bună ziua,\n\n"
+        f"Aveți o cerere de adopție pentru „{pet_label}”, de la utilizatorul {adopter_name}.\n\n"
+        f"Dacă acest câine este valabil, intrați în MyPet și apăsați „Acceptă adopție”.\n"
+        f"Link: {mypet_link}\n\n"
+        f"Aplicația EU-Adopt\n"
+    )
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
+    try:
+        send_mail(sub, body, from_email, [owner.email], fail_silently=False)
+    except Exception as exc:
+        logging.getLogger(__name__).exception("adoption_request_email_owner: %s", exc)
+
+
+def _send_adoption_waiting_list_email(ar: AdoptionRequest):
+    """Adoptatorul este notificat că intră în lista de așteptare."""
+    adopter = ar.adopter
+    pet = ar.animal
+    if not adopter.email:
+        return
+    pet_label = (pet.name or f"Animal #{pet.pk}").strip()
+    sub = f"EU-Adopt: listă de așteptare pentru {pet_label}"
+    body = (
+        f"Bună ziua,\n\n"
+        f"Te informăm că pentru „{pet_label}” există deja o adopție în curs, iar cererea ta a fost pusă în lista de așteptare.\n"
+        f"Dacă adopția curentă nu se finalizează, vei primi detaliile necesare pentru continuarea procesului.\n\n"
+        f"Aplicația EU-Adopt\n"
+    )
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
+    try:
+        send_mail(sub, body, from_email, [adopter.email], fail_silently=False)
+    except Exception as exc:
+        logging.getLogger(__name__).exception("adoption_waiting_email_adopter: %s", exc)
 
 
 def select_a2_dogs(available_dogs, limit=A2_SLOT_COUNT):
@@ -617,6 +707,8 @@ def home_view(request):
                         "imagine_2": listing.photo_2,
                         "imagine_3": listing.photo_3,
                         "imagine_fallback": DEMO_DOG_IMAGE,
+                        "adoption_state": listing.adoption_state,
+                        "adoption_state_label": _adoption_state_label(listing.adoption_state),
                         "traits": [],
                     })
             else:
@@ -699,6 +791,8 @@ def home_view(request):
                         "imagine_2": listing.photo_2,
                         "imagine_3": listing.photo_3,
                         "imagine_fallback": DEMO_DOG_IMAGE,
+                        "adoption_state": listing.adoption_state,
+                        "adoption_state_label": _adoption_state_label(listing.adoption_state),
                         "traits": [],
                     })
 
@@ -2028,6 +2122,7 @@ def dog_profile_view(request, pk):
     from django.shortcuts import get_object_or_404
 
     listing = get_object_or_404(AnimalListing, pk=pk, is_published=True)
+    _sync_animal_adoption_state(listing)
 
     # Mapare minimă către câmpurile folosite în șablonul existent
     pet = {
@@ -2069,6 +2164,8 @@ def dog_profile_view(request, pk):
         "trait_se_adapteaza": listing.trait_se_adapteaza,
         "trait_tolereaza_singur": listing.trait_tolereaza_singur,
         "trait_necesita_experienta": listing.trait_necesita_experienta,
+        "adoption_state": listing.adoption_state,
+        "adoption_state_label": _adoption_state_label(listing.adoption_state),
     }
 
     adoption_request_status = None
@@ -2097,7 +2194,11 @@ def dog_profile_view(request, pk):
 
     ctx = {
         "pet": pet,
-        "can_send_pet_message": bool(request.user.is_authenticated and request.user.pk != listing.owner_id),
+        "can_send_pet_message": bool(
+            request.user.is_authenticated
+            and request.user.pk != listing.owner_id
+            and listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
+        ),
         "pet_owner_id": listing.owner_id,
         "adoption_request_status": adoption_request_status,
         "adopter_messaging_unlocked": adopter_messaging_unlocked,
@@ -3225,25 +3326,73 @@ def mypet_view(request):
         ):
             pending_counts[int(row["animal_id"])] = int(row["c"])
     accepted_map = {}
+    now = timezone.now()
     if pet_ids:
         for ar in AdoptionRequest.objects.filter(
             animal_id__in=pet_ids,
             status=AdoptionRequest.STATUS_ACCEPTED,
+        ).filter(
+            Q(accepted_expires_at__isnull=True) | Q(accepted_expires_at__gte=now)
         ).order_by("-accepted_at", "-pk"):
             aid = int(ar.animal_id)
             if aid not in accepted_map:
                 accepted_map[aid] = ar.pk
+
+    pending_first = {}
+    if pet_ids:
+        for ar in AdoptionRequest.objects.filter(
+            animal_id__in=pet_ids,
+            status=AdoptionRequest.STATUS_PENDING,
+        ).order_by("created_at"):
+            aid = int(ar.animal_id)
+            if aid not in pending_first:
+                pending_first[aid] = ar
+
+    manage_by_animal = {}
+    if pet_ids:
+        for ar in AdoptionRequest.objects.filter(
+            animal_id__in=pet_ids,
+            status__in=[AdoptionRequest.STATUS_ACCEPTED, AdoptionRequest.STATUS_EXPIRED],
+        ).order_by("-accepted_at", "-pk"):
+            aid = int(ar.animal_id)
+            if aid not in manage_by_animal:
+                manage_by_animal[aid] = ar
+
     for p in pets:
         if p is None:
             continue
+        _sync_animal_adoption_state(p)
         parts = []
         npc = pending_counts.get(p.pk, 0)
         if npc:
             parts.append(f"Așteptare ({npc})")
         if p.pk in accepted_map:
             parts.append("Adopție acceptată")
-        p.adoption_row_label = " · ".join(parts) if parts else "—"
+        p.adoption_row_label = " · ".join(parts) if parts else _adoption_state_label(getattr(p, "adoption_state", ""))
         p.adoption_finalize_id = accepted_map.get(p.pk)
+
+        manage_ar = manage_by_animal.get(p.pk)
+        pend_ar = pending_first.get(p.pk)
+        p.adoption_pending_req_id = None
+        p.adoption_manage_req_id = None
+        p.adoption_can_extend = False
+        p.adoption_can_next = False
+        p.adoption_manage_is_expired = False
+        if manage_ar:
+            p.adoption_manage_req_id = manage_ar.pk
+            ext = int(getattr(manage_ar, "extension_count", 0) or 0)
+            p.adoption_can_extend = manage_ar.status in (
+                AdoptionRequest.STATUS_ACCEPTED,
+                AdoptionRequest.STATUS_EXPIRED,
+            ) and ext < 2
+            p.adoption_can_next = manage_ar.status in (
+                AdoptionRequest.STATUS_ACCEPTED,
+                AdoptionRequest.STATUS_EXPIRED,
+            )
+            exp = getattr(manage_ar, "accepted_expires_at", None)
+            p.adoption_manage_is_expired = bool(exp and exp < now) or manage_ar.status == AdoptionRequest.STATUS_EXPIRED
+        elif pend_ar:
+            p.adoption_pending_req_id = pend_ar.pk
     # Minim 20 rânduri pentru a vedea scroll-ul
     while len(pets) < 20:
         pets.append(None)
@@ -3933,11 +4082,18 @@ def mypet_messages_thread_view(request, pk: int, sender_id: int):
         .first()
     )
     if ar:
+        now = timezone.now()
+        expires_at = getattr(ar, "accepted_expires_at", None)
+        is_expired = bool(expires_at and expires_at < now)
         adoption_payload = {
             "id": ar.id,
             "status": ar.status,
             "can_accept": ar.status == AdoptionRequest.STATUS_PENDING,
             "can_reject": ar.status == AdoptionRequest.STATUS_PENDING,
+            "accepted_expires_at": expires_at.isoformat() if expires_at else "",
+            "is_expired": is_expired or ar.status == AdoptionRequest.STATUS_EXPIRED,
+            "can_extend": ar.status in {AdoptionRequest.STATUS_ACCEPTED, AdoptionRequest.STATUS_EXPIRED} and int(getattr(ar, "extension_count", 0) or 0) < 2,
+            "can_next": ar.status in {AdoptionRequest.STATUS_ACCEPTED, AdoptionRequest.STATUS_EXPIRED},
         }
     return JsonResponse(
         {
@@ -4529,6 +4685,9 @@ def pet_adoption_request_view(request, pk: int):
     (detaliile personale merg pe email doar după accept).
     """
     pet = get_object_or_404(AnimalListing, pk=pk, is_published=True)
+    _sync_animal_adoption_state(pet)
+    if pet.adoption_state == AnimalListing.ADOPTION_STATE_ADOPTED:
+        return JsonResponse({"ok": False, "error": "Acest câine este deja adoptat."}, status=400)
     if pet.owner_id == request.user.id:
         return JsonResponse({"ok": False, "error": "Nu poți solicita adopția propriului anunț."}, status=400)
     ap = getattr(request.user, "account_profile", None)
@@ -4555,8 +4714,13 @@ def pet_adoption_request_view(request, pk: int):
         "Am trimis o cerere de adopție pentru acest animal prin EU-Adopt. "
         "Datele mele de contact îți vor fi disponibile după ce accepți cererea în MyPet → Mesaje."
     )
+    has_active_accepted = AdoptionRequest.objects.filter(
+        animal=pet,
+        status=AdoptionRequest.STATUS_ACCEPTED,
+    ).filter(Q(accepted_expires_at__isnull=True) | Q(accepted_expires_at__gte=timezone.now())).exists()
+
     with transaction.atomic():
-        AdoptionRequest.objects.create(
+        ar = AdoptionRequest.objects.create(
             animal=pet,
             adopter=request.user,
             status=AdoptionRequest.STATUS_PENDING,
@@ -4568,7 +4732,11 @@ def pet_adoption_request_view(request, pk: int):
             body=body,
             is_read=False,
         )
-    return JsonResponse({"ok": True})
+    _send_adoption_request_owner_email(ar)
+    if has_active_accepted:
+        _send_adoption_waiting_list_email(ar)
+    _sync_animal_adoption_state(pet)
+    return JsonResponse({"ok": True, "queued": bool(has_active_accepted)})
 
 
 @login_required
@@ -4601,7 +4769,9 @@ def mypet_adoption_accept_view(request, req_id: int):
         ).exclude(pk=ad_req.pk).update(status=AdoptionRequest.STATUS_REJECTED)
         ad_req.status = AdoptionRequest.STATUS_ACCEPTED
         ad_req.accepted_at = timezone.now()
-        ad_req.save(update_fields=["status", "accepted_at", "updated_at"])
+        ad_req.accepted_expires_at = timezone.now() + timezone.timedelta(days=7)
+        ad_req.save(update_fields=["status", "accepted_at", "accepted_expires_at", "updated_at"])
+    _sync_animal_adoption_state(ad_req.animal)
     _send_adoption_accept_emails(ad_req)
     PetMessage.objects.create(
         animal=ad_req.animal,
@@ -4630,6 +4800,7 @@ def mypet_adoption_reject_view(request, req_id: int):
         return JsonResponse({"ok": False, "error": "Cererea nu mai poate fi respinsă."}, status=400)
     ad_req.status = AdoptionRequest.STATUS_REJECTED
     ad_req.save(update_fields=["status", "updated_at"])
+    _sync_animal_adoption_state(ad_req.animal)
     PetMessage.objects.create(
         animal=ad_req.animal,
         sender=request.user,
@@ -4665,9 +4836,80 @@ def mypet_adoption_finalize_view(request, req_id: int):
                 "status": "completed",
             },
         )
-        pet.is_published = False
-        pet.save(update_fields=["is_published", "updated_at"])
+        pet.adoption_state = AnimalListing.ADOPTION_STATE_ADOPTED
+        pet.save(update_fields=["adoption_state", "updated_at"])
     return JsonResponse({"ok": True})
+
+
+@login_required
+@mypet_pf_org_required_json
+@require_POST
+@csrf_protect
+def mypet_adoption_extend_view(request, req_id: int):
+    ar = get_object_or_404(
+        AdoptionRequest,
+        pk=req_id,
+        animal__owner=request.user,
+    )
+    if ar.status not in {AdoptionRequest.STATUS_ACCEPTED, AdoptionRequest.STATUS_EXPIRED}:
+        return JsonResponse({"ok": False, "error": "Cererea nu poate fi prelungită în starea curentă."}, status=400)
+    ext = int(getattr(ar, "extension_count", 0) or 0)
+    if ext >= 2:
+        return JsonResponse({"ok": False, "error": "S-a atins limita maximă de 2 prelungiri."}, status=400)
+    ar.status = AdoptionRequest.STATUS_ACCEPTED
+    ar.extension_count = ext + 1
+    ar.accepted_at = timezone.now()
+    ar.accepted_expires_at = timezone.now() + timezone.timedelta(days=7)
+    ar.save(update_fields=["status", "extension_count", "accepted_at", "accepted_expires_at", "updated_at"])
+    _sync_animal_adoption_state(ar.animal)
+    return JsonResponse({"ok": True, "extension_count": ar.extension_count})
+
+
+@login_required
+@mypet_pf_org_required_json
+@require_POST
+@csrf_protect
+def mypet_adoption_next_view(request, req_id: int):
+    ar = get_object_or_404(
+        AdoptionRequest,
+        pk=req_id,
+        animal__owner=request.user,
+    )
+    if ar.status not in {AdoptionRequest.STATUS_ACCEPTED, AdoptionRequest.STATUS_EXPIRED}:
+        return JsonResponse({"ok": False, "error": "Poți trece la următorul doar dintr-o adopție activă/expirată."}, status=400)
+    pet = ar.animal
+    with transaction.atomic():
+        if ar.status == AdoptionRequest.STATUS_ACCEPTED:
+            ar.status = AdoptionRequest.STATUS_EXPIRED
+            ar.save(update_fields=["status", "updated_at"])
+        nxt = (
+            AdoptionRequest.objects.filter(
+                animal=pet,
+                status=AdoptionRequest.STATUS_PENDING,
+            )
+            .order_by("created_at", "pk")
+            .first()
+        )
+        if not nxt:
+            _sync_animal_adoption_state(pet)
+            return JsonResponse({"ok": False, "error": "Nu există un utilizator următor în lista de așteptare."}, status=400)
+        nxt.status = AdoptionRequest.STATUS_ACCEPTED
+        nxt.accepted_at = timezone.now()
+        nxt.accepted_expires_at = timezone.now() + timezone.timedelta(days=7)
+        nxt.save(update_fields=["status", "accepted_at", "accepted_expires_at", "updated_at"])
+    _send_adoption_accept_emails(nxt)
+    PetMessage.objects.create(
+        animal=nxt.animal,
+        sender=request.user,
+        receiver=nxt.adopter,
+        body=(
+            "Ai fost selectat din lista de așteptare. Cererea ta de adopție este acum activă "
+            "și datele de contact au fost trimise pe email."
+        ),
+        is_read=False,
+    )
+    _sync_animal_adoption_state(pet)
+    return JsonResponse({"ok": True, "next_request_id": nxt.pk})
 
 
 def _cabinet_contact_lines_for_email(user):

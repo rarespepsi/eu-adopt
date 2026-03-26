@@ -55,7 +55,7 @@
 					<col class="mypet-col-name" />
 					<col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" />
 					<col class="mypet-col-date" /><col class="mypet-col-date" />
-					<col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" />
+					<col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" />
 					<col class="mypet-col-mesaje" />
 				</colgroup>
 				<thead>
@@ -76,7 +76,7 @@
 						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="views"><span class="mypet-th-v">Vizualizări</span></th>
 						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="shares"><span class="mypet-th-v">Distribuiri</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">$</span></th>
-						<th class="mypet-th mypet-th-observatii" colspan="7">Observații</th>
+						<th class="mypet-th mypet-th-mypet-adopt" colspan="6"><span class="mypet-th-v">Adopție</span></th>
 						<th class="mypet-th mypet-th-mesaje"><span class="mypet-th-v">Mesaje</span></th>
 					</tr>
 				</thead>
@@ -145,24 +145,28 @@
 						<td class="mypet-td mypet-td-narrow">
 							<span class="mypet-td-photo-shop-v">Photo Shop</span>
 						</td>
-						<td class="mypet-td mypet-td-narrow mypet-td-observatii" colspan="7">
+						<td class="mypet-td mypet-td-mypet-adopt" colspan="6">
 							{% if pet %}
-								<div class="mypet-observatii-editor">
-									<textarea
-										class="mypet-observatii-ta"
-										data-save-url="{% url 'mypet_observatii_update' pk=pet.pk %}"
-										name="observatii"
-										placeholder="{% if pet.fisa_missing %}Lipsește: {{ pet.fisa_missing|join:', ' }}{% else %}Fișa e completă{% endif %}"
-										spellcheck="false"
-										maxlength="5000"
-									>{{ pet.observatii|default:'' }}</textarea>
-									<button
-										type="button"
-										class="mypet-observatii-save-btn"
-										data-save-url="{% url 'mypet_observatii_update' pk=pet.pk %}"
-									>
-										Save
-									</button>
+								<div class="mypet-row-adopt-wrap">
+									{% if pet.adoption_manage_req_id %}
+										<button
+											type="button"
+											class="mypet-row-adopt-btn mypet-row-adopt-manage"
+											data-req-id="{{ pet.adoption_manage_req_id }}"
+											data-can-extend="{% if pet.adoption_can_extend %}1{% else %}0{% endif %}"
+											data-can-next="{% if pet.adoption_can_next %}1{% else %}0{% endif %}"
+											{% if pet.adoption_manage_is_expired %}
+											title="Adopție expirată — prelungește 7 zile sau treci la următorul utilizator"
+											{% else %}
+											title="Prelungește termenul sau treci la următorul din lista de așteptare"
+											{% endif %}
+										>Gestionare adopție</button>
+									{% elif pet.adoption_pending_req_id %}
+										<button type="button" class="mypet-row-adopt-btn mypet-row-adopt-accept" data-req-id="{{ pet.adoption_pending_req_id }}" title="Acceptă cererea de adopție">Acceptă</button>
+										<button type="button" class="mypet-row-adopt-btn mypet-row-adopt-reject" data-req-id="{{ pet.adoption_pending_req_id }}" title="Respinge cererea">Respinge</button>
+									{% else %}
+										<span class="mypet-row-adopt-empty">—</span>
+									{% endif %}
 								</div>
 							{% else %}
 								—
@@ -177,11 +181,14 @@
 									data-pet-name="{{ pet.name|default:'' }}"
 									data-list-url="{% url 'mypet_messages_list' pk=pet.pk %}"
 									data-unread="{{ pet.unread_messages|default:0 }}"
+									title="{% if pet.unread_messages %}Mesaje noi: {{ pet.unread_messages }}{% else %}Mesaje{% endif %}"
+									aria-label="{% if pet.unread_messages %}Mesaje noi: {{ pet.unread_messages }}{% else %}Mesaje{% endif %}"
 								>
-									Mesaje{% if pet.unread_messages %} ({{ pet.unread_messages }}){% endif %}
+									<span class="mypet-msg-open-icon" aria-hidden="true">✉</span>
+									{% if pet.unread_messages %}<span class="mypet-msg-open-count">{{ pet.unread_messages }}</span>{% endif %}
 								</button>
 								{% if display_role != "collaborator" and pet.species == "dog" or display_role != "collaborator" and pet.species == "cat" %}
-								<a href="{% url 'promo_a2_order' pet.pk %}" class="mypet-promoveaza-btn" title="Promovare A2">Promovează-mă</a>
+								<a href="{% url 'promo_a2_order' pet.pk %}" class="mypet-promoveaza-btn" title="Promovare A2">Promovează</a>
 								{% endif %}
 							{% else %}
 								—
@@ -233,6 +240,17 @@
 		<div class="mypet-msg-reply">
 			<textarea id="collabCliMsgReplyTa" placeholder="Răspunde aici..."></textarea>
 			<button type="button" id="collabCliMsgReplyBtn">Send</button>
+		</div>
+	</div>
+</div>
+
+<div class="mypet-confirm-modal" id="mypetConfirmModal" aria-hidden="true">
+	<div class="mypet-confirm-backdrop" role="presentation"></div>
+	<div class="mypet-confirm-panel" role="alertdialog" aria-modal="true" aria-labelledby="mypetConfirmText">
+		<p class="mypet-confirm-text" id="mypetConfirmText"></p>
+		<div class="mypet-confirm-actions">
+			<button type="button" class="mypet-confirm-btn mypet-confirm-btn-cancel" id="mypetConfirmCancel">Anulează</button>
+			<button type="button" class="mypet-confirm-btn mypet-confirm-btn-ok" id="mypetConfirmOk">Confirm</button>
 		</div>
 	</div>
 </div>
@@ -322,7 +340,7 @@
 	.mypet-col-name { width: 9rem; }
 	.mypet-col-narrow { width: 2.5rem; }
 	.mypet-col-date { width: 4.5rem; }
-	.mypet-col-mesaje { width: 5.04rem; }
+	.mypet-col-mesaje { width: 5.8rem; }
 	.mypet-th {
 		background: #5c3c00;
 		color: #fff;
@@ -358,8 +376,8 @@
 	.mypet-th-name { min-width: 9rem; }
 	.mypet-th-narrow { min-width: 2.5rem; }
 	.mypet-th-date { min-width: 4rem; }
-	.mypet-th-observatii { min-width: 0; }
-	.mypet-th-mesaje { min-width: 4.8rem; }
+	.mypet-th-mypet-adopt { min-width: 0; }
+	.mypet-th-mesaje { min-width: 5.6rem; }
 	.mypet-td {
 		padding: 0.2rem 0.35rem;
 		border-bottom: 1px solid #eee;
@@ -398,32 +416,56 @@
 	}
 	.mypet-td-narrow { min-width: 2.5rem; text-align: center; }
 	.mypet-td-date { min-width: 4rem; font-size: 0.75rem; white-space: nowrap; }
-	.mypet-td-observatii { text-align: center; white-space: normal; overflow: visible; text-overflow: clip; }
-	.mypet-td-mesaje { text-align: center; min-width: 4.8rem; }
-	/* Ca textarea să atingă laturile casetei (fără spațiu interior de la td) */
-	.mypet-td-observatii {
-		padding-left: 0;
-		padding-right: 0;
-		padding-top: 0;
-		padding-bottom: 0;
-		vertical-align: stretch;
+	.mypet-td-mypet-adopt {
+		text-align: center;
+		white-space: normal;
+		overflow: visible;
+		vertical-align: middle;
+		padding: 0.2rem 0.25rem;
+		min-width: 0;
 	}
-	.mypet-observatii-ta {
+	.mypet-row-adopt-wrap {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.28rem;
 		width: 100%;
-		min-height: 3.9rem;
-		height: 100%;
-		box-sizing: border-box;
-		border: 1px solid rgba(210, 178, 122, 0.85);
-		border-radius: 6px;
-		background: rgba(255, 255, 255, 0.65);
-		padding: 0.2rem 0.35rem;
-		font-size: 0.75rem;
-		color: #5c3c00;
-		resize: none;
-		outline: none;
-		overflow: hidden;
-		text-align: left;
+		min-height: 2.8rem;
 	}
+	.mypet-row-adopt-empty {
+		font-size: 0.85rem;
+		color: #999;
+	}
+	.mypet-row-adopt-btn {
+		display: inline-block;
+		font-size: 0.62rem;
+		font-weight: 800;
+		padding: 0.22rem 0.4rem;
+		border-radius: 6px;
+		cursor: pointer;
+		line-height: 1.15;
+		white-space: nowrap;
+		max-width: 100%;
+	}
+	.mypet-row-adopt-accept {
+		background: #1b5e20;
+		color: #fff;
+		border: 1px solid #1b5e20;
+	}
+	.mypet-row-adopt-accept:hover { background: #145a18; }
+	.mypet-row-adopt-reject {
+		background: #fafafa;
+		color: #b71c1c;
+		border: 1px solid #b71c1c;
+	}
+	.mypet-row-adopt-manage {
+		background: #fff8e1;
+		color: #5c3c00;
+		border: 1px solid #d2b27a;
+	}
+	.mypet-row-adopt-manage:hover { background: #ffecb3; }
+	.mypet-td-mesaje { text-align: center; min-width: 5.6rem; }
 	.mypet-msg-badge {
 		display: inline-block;
 		padding: 0.18rem 0.38rem;
@@ -437,12 +479,39 @@
 		white-space: nowrap;
 	}
 	.mypet-msg-open-btn {
-		display: inline-block;
-		padding: 0.2rem 0.3rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		min-width: 1.65rem;
+		min-height: 1.65rem;
+		padding: 0.12rem 0.2rem;
 		border-radius: 8px;
 		font-size: 0.68rem;
 		font-weight: 800;
 		cursor: pointer;
+		line-height: 1;
+	}
+	.mypet-msg-open-icon {
+		font-size: 1.05rem;
+		line-height: 1;
+		display: block;
+	}
+	.mypet-msg-open-count {
+		position: absolute;
+		top: -0.2rem;
+		right: -0.28rem;
+		min-width: 0.92rem;
+		height: 0.92rem;
+		padding: 0 0.18rem;
+		border-radius: 999px;
+		background: #c62828;
+		color: #fff;
+		font-size: 0.55rem;
+		font-weight: 900;
+		line-height: 0.92rem;
+		text-align: center;
+		box-sizing: border-box;
 	}
 	.mypet-msg-open-btn.is-unread {
 		border: 1px solid #c62828;
@@ -645,37 +714,65 @@
 		line-height: 1.15;
 	}
 	.mypet-adopt-finalize-btn:hover { background: #1b5e20; }
-	.mypet-msg-adopt-bar {
-		background: #fff8e1;
-		border: 1px solid #ffe082;
-		border-radius: 8px;
-		padding: 0.45rem 0.5rem;
-		margin-bottom: 0.5rem;
+	/* Confirmare în pagină (în loc de window.confirm) */
+	.mypet-confirm-modal {
+		position: fixed;
+		inset: 0;
+		z-index: 1000000;
+		display: none;
+		align-items: center;
+		justify-content: center;
+		padding: 1rem;
+		box-sizing: border-box;
 	}
-	.mypet-msg-adopt-hint {
-		margin: 0 0 0.4rem;
-		font-size: 0.78rem;
-		color: #5c3c00;
-		line-height: 1.3;
+	.mypet-confirm-modal.is-open {
+		display: flex;
 	}
-	.mypet-msg-adopt-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-	.mypet-msg-adopt-btn {
-		font-size: 0.75rem;
+	.mypet-confirm-backdrop {
+		position: absolute;
+		inset: 0;
+		background: rgba(60, 40, 20, 0.45);
+	}
+	.mypet-confirm-panel {
+		position: relative;
+		max-width: 22rem;
+		width: 100%;
+		background: #fffef8;
+		border: 2px solid #d2b27a;
+		border-radius: 12px;
+		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+		padding: 1rem 1.1rem 1rem;
+	}
+	.mypet-confirm-text {
+		margin: 0 0 0.85rem;
+		font-size: 0.88rem;
+		line-height: 1.45;
+		color: #3e2723;
+		font-weight: 600;
+	}
+	.mypet-confirm-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		justify-content: flex-end;
+	}
+	.mypet-confirm-btn {
+		font-size: 0.8rem;
 		font-weight: 800;
-		padding: 0.35rem 0.55rem;
-		border-radius: 6px;
+		padding: 0.45rem 0.85rem;
+		border-radius: 8px;
 		cursor: pointer;
 		border: 1px solid #888;
 	}
-	.mypet-msg-adopt-btn.m-adopt-accept {
-		background: #1b5e20;
+	.mypet-confirm-btn-cancel {
+		background: #fafafa;
+		color: #5d4037;
+		border-color: #a1887f;
+	}
+	.mypet-confirm-btn-ok {
+		background: #2e7d32;
 		color: #fff;
 		border-color: #1b5e20;
-	}
-	.mypet-msg-adopt-btn.m-adopt-reject {
-		background: #fafafa;
-		color: #b71c1c;
-		border-color: #b71c1c;
 	}
 	.mypet-msg-thread-empty {
 		font-size: 0.8rem;
@@ -724,52 +821,6 @@
 		font-weight: 800;
 		padding: 0 0.8rem;
 		cursor: pointer;
-	}
-	.mypet-observatii-editor {
-		display: flex;
-		align-items: stretch;
-		gap: 0.35rem;
-		height: 100%;
-	}
-	.mypet-observatii-ta {
-		flex: 1 1 auto;
-	}
-	.mypet-observatii-save-btn {
-		flex: 0 0 auto;
-		align-self: center;
-		height: auto;
-		min-height: 0;
-		padding: 0.25rem 0.55rem;
-		border-radius: 5px;
-		border: 1px solid rgba(210, 178, 122, 0.85);
-		background: rgba(30, 136, 229, 0.95); /* albastru */
-		color: #ffffff;
-		font-weight: 900;
-		font-size: 0.7rem;
-		cursor: pointer;
-	}
-	.mypet-observatii-save-btn:disabled {
-		opacity: 0.7;
-		cursor: progress;
-		color: #ffffff;
-	}
-	.mypet-observatii-save-btn.is-saved-ok:disabled {
-		opacity: 1;
-		cursor: pointer;
-	}
-	.mypet-observatii-save-btn.is-saved-ok {
-		background: rgba(200, 230, 201, 0.98);
-		border-color: rgba(46, 125, 50, 0.9);
-		color: #1b5e20;
-	}
-	.mypet-observatii-save-btn.is-dirty {
-		background: rgba(198, 40, 40, 0.96);
-		border-color: rgba(183, 28, 28, 0.95);
-		color: #ffffff;
-	}
-	.mypet-observatii-ta:focus {
-		background: rgba(255, 255, 255, 0.95);
-		border-color: rgba(0, 80, 181, 0.65);
 	}
 	.mypet-row-photo {
 		display: block;
@@ -1093,117 +1144,179 @@
 	});
 })();
 
+(function() {
+	/* Dialog de confirmare în pagină (EU-Adopt), nu window.confirm al browserului */
+	window.mypetConfirmPromise = function(message, okText, cancelText) {
+		return new Promise(function(resolve) {
+			var modal = document.getElementById("mypetConfirmModal");
+			var textEl = document.getElementById("mypetConfirmText");
+			var btnOk = document.getElementById("mypetConfirmOk");
+			var btnCancel = document.getElementById("mypetConfirmCancel");
+			if (!modal || !textEl || !btnOk || !btnCancel) {
+				resolve(false);
+				return;
+			}
+			textEl.textContent = message;
+			btnOk.textContent = okText || "Confirm";
+			btnCancel.textContent = cancelText || "Anulează";
+			var backdrop = modal.querySelector(".mypet-confirm-backdrop");
+			function finish(val) {
+				modal.classList.remove("is-open");
+				modal.setAttribute("aria-hidden", "true");
+				btnOk.removeEventListener("click", onOk);
+				btnCancel.removeEventListener("click", onCancel);
+				if (backdrop) backdrop.removeEventListener("click", onBackdrop);
+				document.removeEventListener("keydown", onKey);
+				resolve(val);
+			}
+			function onOk() { finish(true); }
+			function onCancel() { finish(false); }
+			function onBackdrop() { finish(false); }
+			function onKey(ev) {
+				if (ev.key === "Escape") {
+					ev.preventDefault();
+					finish(false);
+				}
+			}
+			btnOk.addEventListener("click", onOk);
+			btnCancel.addEventListener("click", onCancel);
+			if (backdrop) backdrop.addEventListener("click", onBackdrop);
+			document.addEventListener("keydown", onKey);
+			modal.classList.add("is-open");
+			modal.setAttribute("aria-hidden", "false");
+		});
+	};
+})();
+
 document.addEventListener("DOMContentLoaded", function() {
-(function initObservatiiAutosave() {
-	function getCookie(name) {
-		var cookieValue = null;
-		if (document.cookie && document.cookie !== '') {
-			var cookies = document.cookie.split(';');
-			for (var i = 0; i < cookies.length; i++) {
-				var cookie = cookies[i].trim();
-				if (cookie.substring(0, name.length + 1) === (name + '=')) {
-					cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-					break;
-				}
-			}
-		}
-		return cookieValue;
+(function initMyPetRowAdoption() {
+	function getCsrf() {
+		try {
+			var inp = document.querySelector('input[name="csrfmiddlewaretoken"]');
+			if (inp && inp.value) return inp.value;
+		} catch (e) {}
+		var m = document.cookie.match(/csrftoken=([^;]+)/);
+		return m ? decodeURIComponent(m[1]) : "";
 	}
-
-	var csrftoken = getCookie('csrftoken') || '';
-	// Preferăm tokenul din input (afișat de `{% csrf_token %}`) pentru a evita
-	// cazuri în care cookie-ul lipsește sau e nepotrivit.
-	try {
-		var csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
-		if (csrfInput && csrfInput.value) csrftoken = csrfInput.value;
-	} catch (e) {}
-
-	function postObservatii(textarea, value) {
-		var url = textarea.getAttribute('data-save-url') || '';
-		if (!url) return Promise.resolve({ ok: false });
-		var v = (value || '').toString();
-
-		return fetch(url, {
-			method: 'POST',
+	function postAdopt(path) {
+		return fetch(path, {
+			method: "POST",
 			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-				'X-CSRFToken': csrftoken,
+				"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+				"X-CSRFToken": getCsrf()
 			},
-			body: 'csrfmiddlewaretoken=' + encodeURIComponent(csrftoken) + '&observatii=' + encodeURIComponent(v),
-			credentials: 'same-origin',
+			credentials: "same-origin",
+			body: ""
 		}).then(function(r) {
-			return r.text().then(function(txt) {
-				try {
-					return JSON.parse(txt);
-				} catch (e) {
-					console.error("mypet observatii: non-JSON response", {
-						status: r.status,
-						contentType: r.headers && r.headers.get ? r.headers.get('content-type') : null,
-						bodyStart: (txt || '').slice(0, 250)
-					});
-					return { ok: false };
-				}
+			return r.json().then(function(d) {
+				return { ok: r.ok, data: d };
 			});
-		}).catch(function() {
-			console.error("mypet observatii: fetch failed (network/CSRF)");
-			return { ok: false };
 		});
 	}
-
-	var areas = document.querySelectorAll('.mypet-observatii-ta');
-	if (!areas || !areas.length) return;
-
-	areas.forEach(function(ta) {
-		var editor = ta.closest('.mypet-observatii-editor');
-		var btn = editor ? editor.querySelector('.mypet-observatii-save-btn') : null;
-		if (!btn) return;
-		var lastSavedValue = ta.value || '';
-
-		function syncBtnText() {
-			var current = ta.value || '';
-			var isDirty = current !== lastSavedValue;
-			btn.textContent = 'Save';
-			if (isDirty) {
-				btn.classList.add('is-dirty');
-			} else {
-				btn.classList.remove('is-dirty');
+	var confirmDlg = window.mypetConfirmPromise || function(msg, a, b) { return Promise.resolve(window.confirm(msg)); };
+	var tw = document.querySelector(".mypet-table-wrap");
+	if (!tw) return;
+	tw.addEventListener("click", function(e) {
+		var acc = e.target.closest(".mypet-row-adopt-accept");
+		var rej = e.target.closest(".mypet-row-adopt-reject");
+		var mng = e.target.closest(".mypet-row-adopt-manage");
+		if (acc) {
+			var idA = acc.getAttribute("data-req-id");
+			if (!idA) return;
+			confirmDlg(
+				"Confirmi acceptarea cererii de adopție? Se vor trimite emailuri cu datele de contact.",
+				"Da, accept",
+				"Anulează"
+			).then(function(ok) {
+				if (!ok) return;
+				postAdopt("/mypet/adoption/" + idA + "/accept/")
+					.then(function(res) {
+						if (!res.data || !res.data.ok) throw new Error((res.data && res.data.error) || "Eroare la acceptare.");
+						alert("Adopția a fost acceptată. Verifică emailul.");
+						window.location.reload();
+					})
+					.catch(function(err) { alert(err.message || "Eroare"); });
+			});
+			return;
+		}
+		if (rej) {
+			var idR = rej.getAttribute("data-req-id");
+			if (!idR) return;
+			confirmDlg(
+				"Respingi cererea de adopție pentru acest utilizator?",
+				"Da, resping",
+				"Anulează"
+			).then(function(ok) {
+				if (!ok) return;
+				postAdopt("/mypet/adoption/" + idR + "/reject/")
+					.then(function(res) {
+						if (!res.data || !res.data.ok) throw new Error((res.data && res.data.error) || "Eroare la respingere.");
+						window.location.reload();
+					})
+					.catch(function(err) { alert(err.message || "Eroare"); });
+			});
+			return;
+		}
+		if (mng) {
+			var idM = mng.getAttribute("data-req-id");
+			var canEx = mng.getAttribute("data-can-extend") === "1";
+			var canNx = mng.getAttribute("data-can-next") === "1";
+			if (!idM) return;
+			if (canEx) {
+				confirmDlg(
+					"Prelungești această adopție cu încă 7 zile?",
+					"Da, prelungește",
+					"Nu"
+				).then(function(ok) {
+					if (ok) {
+						postAdopt("/mypet/adoption/" + idM + "/extend/")
+							.then(function(res) {
+								if (!res.data || !res.data.ok) throw new Error((res.data && res.data.error) || "Eroare la prelungire.");
+								alert("Adopția a fost prelungită cu 7 zile.");
+								window.location.reload();
+							})
+							.catch(function(err) { alert(err.message || "Eroare"); });
+						return;
+					}
+					if (canNx) {
+						confirmDlg(
+							"Treci la următorul utilizator din lista de așteptare?",
+							"Da, continuă",
+							"Anulează"
+						).then(function(ok2) {
+							if (!ok2) return;
+							postAdopt("/mypet/adoption/" + idM + "/next/")
+								.then(function(res) {
+									if (!res.data || !res.data.ok) throw new Error((res.data && res.data.error) || "Eroare la trecere.");
+									alert("S-a activat următorul utilizator din lista de așteptare.");
+									window.location.reload();
+								})
+								.catch(function(err) { alert(err.message || "Eroare"); });
+						});
+					}
+				});
+				return;
+			}
+			if (canNx) {
+				confirmDlg(
+					"Treci la următorul utilizator din lista de așteptare?",
+					"Da, continuă",
+					"Anulează"
+				).then(function(ok) {
+					if (!ok) return;
+					postAdopt("/mypet/adoption/" + idM + "/next/")
+						.then(function(res) {
+							if (!res.data || !res.data.ok) throw new Error((res.data && res.data.error) || "Eroare la trecere.");
+							alert("S-a activat următorul utilizator din lista de așteptare.");
+							window.location.reload();
+						})
+						.catch(function(err) { alert(err.message || "Eroare"); });
+				});
 			}
 		}
-
-		// Asigurăm că butonul e clickabil chiar din start.
-		btn.disabled = false;
-		syncBtnText();
-		ta.addEventListener('input', syncBtnText);
-
-		btn.addEventListener('click', function() {
-			var v = ta.value || '';
-			if (btn.disabled) return;
-
-			btn.disabled = true;
-			btn.textContent = 'SAVING...';
-
-			postObservatii(ta, v).then(function(data) {
-				btn.disabled = false;
-				if (data && data.ok) {
-					if (typeof data.observatii === 'string') {
-						ta.value = data.observatii;
-					}
-					lastSavedValue = ta.value || '';
-					btn.classList.remove('is-dirty');
-					btn.classList.add('is-saved-ok');
-					btn.textContent = 'SAVED';
-					setTimeout(function() {
-						btn.classList.remove('is-saved-ok');
-						syncBtnText();
-					}, 1600);
-				} else {
-					syncBtnText();
-				}
-			});
-		});
 	});
 })();
-}); // end DOMContentLoaded for MyPet observatii
+});
 
 document.addEventListener("DOMContentLoaded", function() {
 	(function initAdoptieFinalize() {
@@ -1241,7 +1354,8 @@ document.addEventListener("DOMContentLoaded", function() {
 				}
 			} catch (err) {}
 			if (!url) return;
-			if (!window.confirm("Marchezi adopția ca finalizată? Anunțul va fi scos de la publicare și adoptatorul apare la „Adoptați”.")) return;
+			var finMsg = "Marchezi adopția ca finalizată? Câinele va rămâne vizibil cu eticheta „Adoptat”, iar adoptatorul apare la „Adoptați”.";
+			var doFinalize = function() {
 			btn.disabled = true;
 			fetch(url, {
 				method: "POST",
@@ -1263,6 +1377,14 @@ document.addEventListener("DOMContentLoaded", function() {
 					alert(err.message || "Eroare");
 					btn.disabled = false;
 				});
+			};
+			if (window.mypetConfirmPromise) {
+				window.mypetConfirmPromise(finMsg, "Da, finalizez", "Anulează").then(function(ok) {
+					if (ok) doFinalize();
+				});
+			} else if (window.confirm(finMsg)) {
+				doFinalize();
+			}
 		});
 	})();
 });
@@ -1489,6 +1611,24 @@ document.addEventListener("DOMContentLoaded", function() {
 			u.searchParams.set("scope", state.scope);
 			return u.pathname + u.search;
 		}
+		function setMyPetMsgBtnContent(btn, unreadCount) {
+			var n = parseInt(unreadCount || 0, 10) || 0;
+			btn.innerHTML = "";
+			var icon = document.createElement("span");
+			icon.className = "mypet-msg-open-icon";
+			icon.setAttribute("aria-hidden", "true");
+			icon.textContent = "\u2709";
+			btn.appendChild(icon);
+			if (n > 0) {
+				var badge = document.createElement("span");
+				badge.className = "mypet-msg-open-count";
+				badge.textContent = String(n);
+				btn.appendChild(badge);
+			}
+			var label = n > 0 ? ("Mesaje noi: " + n) : "Mesaje";
+			btn.setAttribute("aria-label", label);
+			btn.setAttribute("title", label);
+		}
 		closeBtn.addEventListener("click", closeModal);
 		closeBtn.addEventListener("mousedown", function(e) { e.stopPropagation(); });
 		modal.addEventListener("click", function(e) { if (e.target === modal) closeModal(); });
@@ -1496,74 +1636,14 @@ document.addEventListener("DOMContentLoaded", function() {
 			if (!modal.hidden && (e.key === "Escape" || e.key === "Esc")) closeModal();
 		});
 
-		function postAdoptionAction(path) {
-			return fetch(path, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-					"X-CSRFToken": csrftoken
-				},
-				credentials: "same-origin",
-				body: ""
-			}).then(function(r) {
-				return r.json().then(function(d) {
-					return { ok: r.ok, data: d };
-				});
-			});
-		}
-
-		function renderThread(messages, adoptionRequest) {
+		/* Acțiuni adopție (Acceptă / Gestionare) sunt pe rândul din tabel, nu în thread. */
+		function renderThread(messages) {
 			threadEl.innerHTML = "";
-			var showBar = adoptionRequest && state.mode === "owner" && adoptionRequest.status === "in_asteptare" && adoptionRequest.can_accept;
-			if (showBar) {
-				var wrap = document.createElement("div");
-				wrap.className = "mypet-msg-adopt-bar";
-				var hint = document.createElement("p");
-				hint.className = "mypet-msg-adopt-hint";
-				hint.textContent = "Cerere de adopție în așteptare. Acceptă pentru a trimite și primi datele de contact pe email.";
-				var actions = document.createElement("div");
-				actions.className = "mypet-msg-adopt-actions";
-				var acc = document.createElement("button");
-				acc.type = "button";
-				acc.className = "mypet-msg-adopt-btn m-adopt-accept";
-				acc.textContent = "Acceptă adopția";
-				var rej = document.createElement("button");
-				rej.type = "button";
-				rej.className = "mypet-msg-adopt-btn m-adopt-reject";
-				rej.textContent = "Respinge";
-				var reqId = adoptionRequest.id;
-				acc.addEventListener("click", function() {
-					if (!reqId || !window.confirm("Confirmi acceptarea cererii de adopție? Se vor trimite emailuri cu datele de contact.")) return;
-					postAdoptionAction("/mypet/adoption/" + reqId + "/accept/")
-						.then(function(res) {
-							if (!res.data || !res.data.ok) throw new Error((res.data && res.data.error) || "Eroare la acceptare.");
-							alert("Adopția a fost acceptată. Verifică emailul.");
-							openThread(state.senderId);
-						})
-						.catch(function(e) { alert(e.message || "Eroare"); });
-				});
-				rej.addEventListener("click", function() {
-					if (!reqId || !window.confirm("Respingi cererea de adopție pentru acest utilizator?")) return;
-					postAdoptionAction("/mypet/adoption/" + reqId + "/reject/")
-						.then(function(res) {
-							if (!res.data || !res.data.ok) throw new Error((res.data && res.data.error) || "Eroare la respingere.");
-							openThread(state.senderId);
-						})
-						.catch(function(e) { alert(e.message || "Eroare"); });
-				});
-				actions.appendChild(acc);
-				actions.appendChild(rej);
-				wrap.appendChild(hint);
-				wrap.appendChild(actions);
-				threadEl.appendChild(wrap);
-			}
 			if (!messages || !messages.length) {
-				if (!showBar) {
-					var empty = document.createElement("div");
-					empty.className = "mypet-msg-thread-empty";
-					empty.textContent = "Nu există încă mesaje.";
-					threadEl.appendChild(empty);
-				}
+				var empty = document.createElement("div");
+				empty.className = "mypet-msg-thread-empty";
+				empty.textContent = "Nu există încă mesaje.";
+				threadEl.appendChild(empty);
 				threadEl.scrollTop = threadEl.scrollHeight;
 				return;
 			}
@@ -1660,7 +1740,7 @@ document.addEventListener("DOMContentLoaded", function() {
 				.then(function(r) { return r.json(); })
 				.then(function(data) {
 					if (!data || !data.ok) throw new Error("Thread indisponibil.");
-					renderThread(data.messages || [], data.adoption_request || null);
+					renderThread(data.messages || []);
 					if (typeof data.navbar_unread_total !== "undefined") {
 						updateEnvelopeCount(data.navbar_unread_total);
 					} else if (typeof data.unread_total !== "undefined") {
@@ -1681,7 +1761,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			btn.classList.remove("is-unread");
 			btn.classList.add("is-read");
 			btn.setAttribute("data-unread", "0");
-			btn.textContent = "Mesaje";
+			setMyPetMsgBtnContent(btn, 0);
 			title.textContent = "Mesaje - " + (state.petName || ("Pet #" + state.petId));
 			modal.hidden = false;
 			modal.style.display = "flex";
