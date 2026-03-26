@@ -71,8 +71,8 @@
 							{% else %}
 								<li><a href="{% url 'login' %}" class="a0-login-cta">Intră / Fă cont</a></li>
 							{% endif %}
-							<li><a href="{% url 'home' %}">Termeni și condiții</a></li>
-							<li><a href="{% url 'home' %}">Contact</a></li>
+							<li><a href="{% url 'termeni' %}" {% if request.resolver_match.url_name == 'termeni' %}class="current_page"{% endif %}>Termeni și condiții</a></li>
+							<li><a href="{% url 'contact' %}" {% if request.resolver_match.url_name == 'contact' %}class="current_page"{% endif %}>Contact</a></li>
 							{% if user.is_authenticated and show_mypet_nav %}
 								<li class="a0-nav-envelope-item">
 									<a href="{% url 'mypet' %}?open_messages=1" class="a0-nav-envelope-link" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}" aria-label="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}">

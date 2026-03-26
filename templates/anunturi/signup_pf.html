@@ -435,19 +435,19 @@
 					<div class="signup-field signup-field-box">
 						<label>
 							<input type="checkbox" id="id_accept_termeni" name="accept_termeni" required {% if form_prefill and form_prefill.accept_termeni %}checked{% endif %} />
-							Accept termenii și condițiile *
+							Accept <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">Termenii și condițiile de utilizare</a> *
 						</label>
 					</div>
 					<div class="signup-field signup-field-box">
 						<label>
 							<input type="checkbox" id="id_accept_gdpr" name="accept_gdpr" required {% if form_prefill and form_prefill.accept_gdpr %}checked{% endif %} />
-							Accept prelucrarea datelor conform GDPR *
+							Accept <a href="{% url 'politica_confidentialitate' %}" target="_blank" rel="noopener">Politica de confidențialitate (GDPR)</a> *
 						</label>
 					</div>
 					<div class="signup-field signup-field-box">
 						<label>
 							<input type="checkbox" id="id_email_opt_in_wishlist" name="email_opt_in_wishlist" {% if form_prefill and form_prefill.email_opt_in_wishlist %}checked{% endif %} />
-							Notificări email EU-Adopt (wishlist)
+							Doresc notificări email EU-Adopt (opțional)
 						</label>
 					</div>
 					<div class="signup-actions" style="margin-top:0.75rem;">

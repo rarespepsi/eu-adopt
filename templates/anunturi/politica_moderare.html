@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Politica de moderare | EU-ADOPT{% endblock %}
+{% block body_class %}page-termeni{% endblock %}
+
+{% block content %}
+<section class="termeni-wrap" aria-label="Politica de moderare, raportare și conținut interzis">
+	<header class="termeni-head">
+		<h1>Politica de moderare, raportare și conținut interzis – EU-ADOPT</h1>
+		<p>Document separat privind regulile de conținut și măsurile de moderare.</p>
+	</header>
+	<nav class="termeni-cats" aria-label="Categorii legale">
+		<a class="termeni-cat" href="{% url 'termeni_read' %}">
+			<span class="termeni-cat-title">1) Termeni și condiții</span>
+			<span class="termeni-cat-sub">Reguli generale de utilizare</span>
+		</a>
+		<a class="termeni-cat" href="{% url 'politica_confidentialitate' %}">
+			<span class="termeni-cat-title">2) Politica de confidențialitate</span>
+			<span class="termeni-cat-sub">Protecția datelor cu caracter personal</span>
+		</a>
+		<a class="termeni-cat is-active" href="{% url 'politici_altele' %}">
+			<span class="termeni-cat-title">3) Politici complementare</span>
+			<span class="termeni-cat-sub">Cookie-uri, servicii plătite și moderare</span>
+		</a>
+	</nav>
+	<article class="termeni-doc">
+		<a class="legal-close-x" href="{% url 'termeni' %}" aria-label="Închide" title="Închide">×</a>
+		<p><strong>Versiune:</strong> 1.0</p>
+		<p><strong>Data intrării în vigoare:</strong> 26.03.2026</p>
+		<p><strong>Ultima actualizare:</strong> 26.03.2026</p>
+
+		<h2>1. SCOP</h2>
+		<p>Prezenta politică stabilește regulile privind:</p>
+		<ul>
+			<li>conținutul permis și interzis în platforma EU-ADOPT;</li>
+			<li>moderarea conținutului;</li>
+			<li>raportarea anunțurilor, conturilor sau materialelor;</li>
+			<li>măsurile care pot fi luate de platformă.</li>
+		</ul>
+
+		<h2>2. DOMENIU DE APLICARE</h2>
+		<p>Această politică se aplică tuturor materialelor și activităților din platformă, inclusiv:</p>
+		<ul>
+			<li>profiluri de utilizator;</li>
+			<li>anunțuri de adopție;</li>
+			<li>servicii și oferte;</li>
+			<li>produse;</li>
+			<li>reclame și materiale publicitare;</li>
+			<li>imagini, texte, descrieri și alte materiale încărcate;</li>
+			<li>mesaje, solicitări sau interacțiuni permise prin platformă.</li>
+		</ul>
+
+		<h2>3. CONȚINUT PERMIS</h2>
+		<p>În platformă este permis conținutul care:</p>
+		<ul>
+			<li>este legal;</li>
+			<li>este real, clar și suficient de precis;</li>
+			<li>nu încalcă drepturile altor persoane;</li>
+			<li>este relevant pentru scopul platformei;</li>
+			<li>respectă bunele moravuri și regulile minime de conduită.</li>
+		</ul>
+
+		<h2>4. CONȚINUT INTERZIS</h2>
+		<p>Este interzisă publicarea sau utilizarea de conținut:</p>
+		<ul>
+			<li>fals, înșelător sau manipulator;</li>
+			<li>defăimător, abuziv, amenințător, obscen sau discriminatoriu;</li>
+			<li>ilegal sau care promovează activități ilegale;</li>
+			<li>care încalcă drepturi de autor, mărci, drepturi la imagine sau alte drepturi ale terților;</li>
+			<li>care folosește identități false sau informații frauduloase;</li>
+			<li>care promovează violență, cruzime, abuz sau practici incompatibile cu scopul platformei;</li>
+			<li>care conține spam, promovare excesivă sau conținut fără legătură cu platforma;</li>
+			<li>care poate induce utilizatorii în eroare privind identitatea, originea, disponibilitatea sau caracteristicile reale ale animalelor, produselor sau serviciilor;</li>
+			<li>care încalcă regulile publicitare sau politicile comerciale ale platformei.</li>
+		</ul>
+
+		<h2>5. REGULI SPECIALE PENTRU ANUNȚURI, SERVICII ȘI RECLAME</h2>
+		<p>5.1. Informațiile publicate trebuie să fie suficient de clare și să nu inducă în eroare.</p>
+		<p>5.2. Imaginile și materialele trebuie să aparțină utilizatorului sau să fie utilizate legal.</p>
+		<p>5.3. Materialele publicitare sau comerciale trebuie să respecte și politica serviciilor plătite / publicitate.</p>
+		<p>5.4. Platforma poate respinge conținutul care, deși nu este neapărat ilegal, este incompatibil cu scopul, valorile sau standardele EU-ADOPT.</p>
+
+		<h2>6. RAPORTAREA CONȚINUTULUI</h2>
+		<p>6.1. Utilizatorii pot raporta conținut, conturi sau comportamente suspecte, abuzive sau neconforme.</p>
+		<p>6.2. Raportarea poate viza, de exemplu:</p>
+		<ul>
+			<li>anunțuri suspecte;</li>
+			<li>informații false;</li>
+			<li>profiluri dubioase;</li>
+			<li>materiale publicitare neconforme;</li>
+			<li>tentative de fraudă;</li>
+			<li>conținut ofensator sau abuziv.</li>
+		</ul>
+		<p>6.3. Platforma poate solicita detalii suplimentare pentru analiza unei raportări.</p>
+
+		<h2>7. MODERARE</h2>
+		<p>7.1. EU-ADOPT poate modera conținutul manual, semi-automat sau prin alte mijloace interne.</p>
+		<p>7.2. Moderarea poate avea loc:</p>
+		<ul>
+			<li>înainte de publicare;</li>
+			<li>după publicare;</li>
+			<li>ca urmare a unei raportări;</li>
+			<li>ca urmare a unor verificări interne.</li>
+		</ul>
+		<p>7.3. EU-ADOPT nu garantează verificarea exhaustivă și imediată a tuturor materialelor publicate.</p>
+
+		<h2>8. MĂSURI POSIBILE</h2>
+		<p>În funcție de gravitate, EU-ADOPT poate lua una sau mai multe dintre următoarele măsuri:</p>
+		<ul>
+			<li>solicitarea de corectare sau completare;</li>
+			<li>avertisment;</li>
+			<li>ascunderea temporară a conținutului;</li>
+			<li>refuzul publicării;</li>
+			<li>eliminarea conținutului;</li>
+			<li>suspendarea temporară a contului;</li>
+			<li>închiderea contului;</li>
+			<li>restricționarea accesului la anumite funcții;</li>
+			<li>raportarea către autorități, dacă este necesar.</li>
+		</ul>
+
+		<h2>9. FĂRĂ OBLIGAȚIA DE EXPLICARE PUBLICĂ</h2>
+		<p>EU-ADOPT poate lua măsuri de moderare fără obligația de a comunica public toate motivele, metodele interne sau detaliile investigațiilor efectuate, în limitele legii.</p>
+
+		<h2>10. RECURS / REANALIZARE</h2>
+		<p>10.1. Utilizatorul poate solicita reanalizarea unei măsuri, prin contactarea platformei la datele oficiale de contact.</p>
+		<p>10.2. EU-ADOPT poate decide menținerea, modificarea sau anularea măsurii, după analiza internă.</p>
+		<p>10.3. Reanalizarea nu garantează revenirea conținutului sau a contului.</p>
+
+		<h2>11. COOPERARE CU AUTORITĂȚILE</h2>
+		<p>În cazurile prevăzute de lege sau în situații grave, EU-ADOPT poate coopera cu autoritățile competente și poate furniza informațiile necesare, conform obligațiilor legale aplicabile.</p>
+
+		<h2>12. LEGĂTURA CU ALTE DOCUMENTE</h2>
+		<p>Prezenta politică se completează cu:</p>
+		<ul>
+			<li>Termenii și condițiile EU-ADOPT;</li>
+			<li>Politica de confidențialitate;</li>
+			<li>Politica de cookie-uri;</li>
+			<li>Politica serviciilor plătite / publicitate.</li>
+		</ul>
+
+		<h2>13. MODIFICĂRI</h2>
+		<p>EU-ADOPT poate actualiza această politică, iar versiunea curentă va fi publicată pe site cu data ultimei actualizări.</p>
+
+		<h2>14. CONTACT</h2>
+		<p>Pentru sesizări, raportări sau întrebări privind moderarea:</p>
+		<ul>
+			<li>E-mail: euadopt@gmail.com</li>
+			<li>Adresă: în curs de completare</li>
+			<li>Telefon: în curs de completare</li>
+		</ul>
+	</article>
+</section>
+{% include "anunturi/partials/legal_pages_shared_style.html" %}
+{% endblock %}

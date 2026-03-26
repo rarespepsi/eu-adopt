@@ -827,13 +827,13 @@ body.page-account .account-right-panel {
 						{% include "anunturi/includes/ro_city_select.html" with select_id="id_oras_pf" select_name="oras" current=form_prefill.oras profile_editable=edit_errors %}
 					</div>
 					<div class="signup-field span2">
-						<label class="check"><input type="checkbox" name="accept_termeni" required class="profil-field" {% if form_prefill.accept_termeni %}checked{% endif %} {% if not edit_errors %}disabled{% endif %} /> Accept termenii și condițiile *</label>
+						<label class="check"><input type="checkbox" name="accept_termeni" required class="profil-field" {% if form_prefill.accept_termeni %}checked{% endif %} {% if not edit_errors %}disabled{% endif %} /> Accept <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">Termenii și condițiile de utilizare</a> *</label>
 					</div>
 					<div class="signup-field span2">
-						<label class="check"><input type="checkbox" name="accept_gdpr" required class="profil-field" {% if form_prefill.accept_gdpr %}checked{% endif %} {% if not edit_errors %}disabled{% endif %} /> Accept GDPR *</label>
+						<label class="check"><input type="checkbox" name="accept_gdpr" required class="profil-field" {% if form_prefill.accept_gdpr %}checked{% endif %} {% if not edit_errors %}disabled{% endif %} /> Accept <a href="{% url 'politica_confidentialitate' %}" target="_blank" rel="noopener">Politica de confidențialitate (GDPR)</a> *</label>
 					</div>
 					<div class="signup-field span2">
-						<label class="check"><input type="checkbox" name="email_opt_in_wishlist" class="profil-field" {% if form_prefill.email_opt_in_wishlist %}checked{% endif %} {% if not edit_errors %}disabled{% endif %} /> Notificări email (wishlist)</label>
+						<label class="check"><input type="checkbox" name="email_opt_in_wishlist" class="profil-field" {% if form_prefill.email_opt_in_wishlist %}checked{% endif %} {% if not edit_errors %}disabled{% endif %} /> Doresc notificări email EU-Adopt (opțional)</label>
 					</div>
 				</div>
 				<div class="signup-actions">

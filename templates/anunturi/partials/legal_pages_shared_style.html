@@ -1,0 +1,108 @@
+<style>
+	body.page-termeni .layout .sidebar-left,
+	body.page-termeni .layout .sidebar-right {
+		display: none !important;
+	}
+	body.page-termeni .layout {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	body.page-termeni .layout > .main-content {
+		padding: 0.55rem 0.7rem 0.9rem;
+	}
+	body.page-termeni .termeni-wrap {
+		max-width: 1100px;
+		margin: 0 auto;
+	}
+	body.page-termeni .termeni-head {
+		background: #fff;
+		border: 1px solid #e0e0e0;
+		border-radius: 12px;
+		padding: 0.9rem 1rem;
+		margin-bottom: 0.65rem;
+	}
+	body.page-termeni .termeni-head h1 {
+		margin: 0 0 0.45rem;
+		font-size: 1.25rem;
+		color: #c62828;
+	}
+	body.page-termeni .termeni-head p {
+		margin: 0.15rem 0;
+		color: #4e342e;
+		font-size: 0.92rem;
+	}
+	body.page-termeni .termeni-cats {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.45rem;
+		margin-bottom: 0.65rem;
+	}
+	body.page-termeni .termeni-cat {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		border: 1px solid #e0e0e0;
+		background: #fff;
+		border-radius: 12px;
+		padding: 0.65rem 0.75rem;
+		text-decoration: none;
+		color: #3e2723;
+	}
+	body.page-termeni .termeni-cat:hover { border-color: #90caf9; }
+	body.page-termeni .termeni-cat.is-active {
+		border-color: #42a5f5;
+		box-shadow: 0 0 0 1px rgba(66, 165, 245, 0.25);
+	}
+	body.page-termeni .termeni-cat-title {
+		font-size: 0.96rem;
+		font-weight: 800;
+		color: #ad1457;
+	}
+	body.page-termeni .termeni-cat-sub {
+		font-size: 0.82rem;
+		color: #6d4c41;
+	}
+	body.page-termeni .termeni-doc {
+		background: #fff;
+		border: 1px solid #e0e0e0;
+		border-radius: 12px;
+		padding: 1rem;
+		position: relative;
+		line-height: 1.55;
+		color: #3e2723;
+	}
+	body.page-termeni .legal-close-x {
+		position: absolute;
+		top: 0.45rem;
+		right: 0.55rem;
+		width: 1.75rem;
+		height: 1.75rem;
+		border: 1px solid #c62828;
+		border-radius: 8px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-decoration: none;
+		font-size: 1.15rem;
+		font-weight: 800;
+		line-height: 1;
+		color: #c62828;
+		background: #fff;
+	}
+	body.page-termeni .legal-close-x:hover {
+		background: #ffebee;
+	}
+	body.page-termeni .termeni-doc h2 {
+		margin: 0.9rem 0 0.45rem;
+		font-size: 1.03rem;
+		color: #ad1457;
+	}
+	body.page-termeni .termeni-doc h2:first-child { margin-top: 0; }
+	body.page-termeni .termeni-doc p { margin: 0.35rem 0; }
+	body.page-termeni .termeni-doc ul { margin: 0.25rem 0 0.55rem 1.1rem; padding: 0; }
+	body.page-termeni .termeni-doc li { margin: 0.2rem 0; }
+	body.page-termeni .termeni-doc a { color: #1565c0; text-decoration: none; }
+	body.page-termeni .termeni-doc a:hover { text-decoration: underline; }
+	@media (max-width: 900px) {
+		body.page-termeni .termeni-cats { grid-template-columns: 1fr; }
+	}
+</style>

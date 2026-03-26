@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Termeni și condiții | EU-ADOPT{% endblock %}
+{% block body_class %}page-termeni{% endblock %}
+
+{% block content %}
+<section id="TCW" class="termeni-wrap" aria-label="Hub documente legale">
+	<header class="termeni-head">
+		<h1>Documente legale – EU-ADOPT</h1>
+		<p>Alege documentul pe care dorești să îl citești.</p>
+	</header>
+	<nav class="termeni-cats" aria-label="Categorii legale">
+		<a class="termeni-cat" href="{% url 'termeni_read' %}">
+			<span class="termeni-cat-title">1) Termeni și condiții</span>
+			<span class="termeni-cat-sub">Reguli generale de utilizare</span>
+		</a>
+		<a class="termeni-cat" href="{% url 'politica_confidentialitate' %}">
+			<span class="termeni-cat-title">2) Politica de confidențialitate</span>
+			<span class="termeni-cat-sub">Protecția datelor cu caracter personal</span>
+		</a>
+		<a class="termeni-cat" href="{% url 'politici_altele' %}">
+			<span class="termeni-cat-title">3) Politici complementare</span>
+			<span class="termeni-cat-sub">Cookie-uri, servicii plătite și moderare</span>
+		</a>
+	</nav>
+</section>
+{% include "anunturi/partials/legal_pages_shared_style.html" %}
+{% endblock %}

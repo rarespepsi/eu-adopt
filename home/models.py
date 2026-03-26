@@ -54,6 +54,80 @@ class UserProfile(models.Model):
         return self.user.get_full_name() or self.user.username
 
 
+class UserLegalConsent(models.Model):
+    """Audit trail pentru accepturile legale (T&C, GDPR, marketing)."""
+
+    CONSENT_TERMS = "terms"
+    CONSENT_PRIVACY = "privacy"
+    CONSENT_MARKETING = "marketing"
+    CONSENT_CHOICES = [
+        (CONSENT_TERMS, "Termeni și condiții"),
+        (CONSENT_PRIVACY, "Politica de confidențialitate"),
+        (CONSENT_MARKETING, "Marketing / noutăți"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="legal_consents")
+    consent_type = models.CharField("Tip consimțământ", max_length=20, choices=CONSENT_CHOICES)
+    accepted = models.BooleanField("Acceptat", default=False)
+    version = models.CharField("Versiune document", max_length=20, default="1.0")
+    source = models.CharField("Sursă acțiune", max_length=50, blank=True, default="")
+    ip_address = models.CharField("IP", max_length=64, blank=True, default="")
+    user_agent = models.CharField("User-Agent", max_length=500, blank=True, default="")
+    created_at = models.DateTimeField("Înregistrat la", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Consimțământ legal utilizator"
+        verbose_name_plural = "Consimțăminte legale utilizatori"
+        indexes = [
+            models.Index(fields=["user", "consent_type", "created_at"]),
+            models.Index(fields=["created_at"]),
+        ]
+
+    def __str__(self):
+        state = "da" if self.accepted else "nu"
+        return f"{self.user_id}:{self.consent_type}:{state}@{self.version}"
+
+
+class ContactMessage(models.Model):
+    """Mesaj trimis din pagina Contact."""
+
+    TOPIC_GENERAL = "general"
+    TOPIC_GDPR = "gdpr"
+    TOPIC_COMMERCIAL = "commercial"
+    TOPIC_MODERATION = "moderation"
+    TOPIC_CHOICES = [
+        (TOPIC_GENERAL, "Suport general"),
+        (TOPIC_GDPR, "Date personale (GDPR)"),
+        (TOPIC_COMMERCIAL, "Publicitate / servicii plătite"),
+        (TOPIC_MODERATION, "Moderare / raportări"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="contact_messages")
+    full_name = models.CharField("Nume", max_length=120)
+    email = models.EmailField("E-mail")
+    phone = models.CharField("Telefon", max_length=40, blank=True, default="")
+    topic = models.CharField("Tip solicitare", max_length=20, choices=TOPIC_CHOICES, default=TOPIC_GENERAL)
+    subject = models.CharField("Subiect", max_length=180)
+    message = models.TextField("Mesaj", max_length=3000)
+    attachment = models.FileField("Fișier atașat", upload_to="contact_attachments/", blank=True, null=True)
+    accepted_privacy = models.BooleanField("Acord confidențialitate", default=False)
+    ip_address = models.CharField("IP", max_length=64, blank=True, default="")
+    user_agent = models.CharField("User-Agent", max_length=500, blank=True, default="")
+    created_at = models.DateTimeField("Trimis la", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Mesaj Contact"
+        verbose_name_plural = "Mesaje Contact"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["topic", "created_at"]),
+            models.Index(fields=["email", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.email} [{self.topic}] {self.subject[:40]}"
+
+
 class AccountProfile(models.Model):
     """
     Profil comun pentru toți userii (PF / ONG+SRL / Colaborator).

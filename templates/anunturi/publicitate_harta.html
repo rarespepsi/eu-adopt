@@ -1148,7 +1148,19 @@
 	}
 	.pub-pay-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
 	.pub-cart-list { display: grid; gap: 0.24rem; flex: 1 1 auto; min-height: 0; overflow: hidden; }
-	.pub-cart-item { border: 1px dashed #d2b27a; border-radius: 6px; padding: 0.3rem; font-size: 0.74rem; background: #fffdf4; }
+	.pub-cart-item {
+		border: 1px dashed #d2b27a; border-radius: 6px; padding: 0.3rem 0.35rem; font-size: 0.74rem; background: #fffdf4;
+		display: flex; align-items: flex-start; justify-content: space-between; gap: 0.4rem;
+	}
+	.pub-cart-item-text { flex: 1; min-width: 0; line-height: 1.35; }
+	.pub-cart-remove {
+		flex-shrink: 0; width: 1.65rem; height: 1.65rem; padding: 0; margin: -0.05rem 0 0;
+		border: 1px solid #c62828; border-radius: 6px; background: #fff; color: #c62828;
+		font-size: 1.15rem; font-weight: 800; line-height: 1; cursor: pointer;
+		display: inline-flex; align-items: center; justify-content: center;
+	}
+	.pub-cart-remove:hover { background: #ffebee; }
+	.pub-cart-remove:focus-visible { outline: 2px solid #1565c0; outline-offset: 1px; }
 	.pub-empty { color: #8d6e63; font-size: 0.82rem; }
 	.pub-cart-total { margin-top: 0.4rem; font-size: 0.88rem; flex-shrink: 0; }
 	@media (max-width: 980px) {
@@ -1440,11 +1452,25 @@ document.addEventListener("DOMContentLoaded", function () {
 	function renderCart() {
 		cartList.innerHTML = "";
 		var total = 0;
-		cart.forEach(function (item) {
+		cart.forEach(function (item, index) {
 			total += item.total;
 			var row = document.createElement("div");
 			row.className = "pub-cart-item";
-			row.textContent = item.code + " | " + item.qty + " " + item.unit + " | " + item.total + " lei";
+			var text = document.createElement("span");
+			text.className = "pub-cart-item-text";
+			text.textContent = item.code + " | " + item.qty + " " + item.unit + " | " + item.total + " lei";
+			var rm = document.createElement("button");
+			rm.type = "button";
+			rm.className = "pub-cart-remove";
+			rm.setAttribute("aria-label", "Elimină din coș");
+			rm.title = "Elimină din coș";
+			rm.textContent = "\u00D7";
+			rm.addEventListener("click", function () {
+				cart.splice(index, 1);
+				renderCart();
+			});
+			row.appendChild(text);
+			row.appendChild(rm);
 			cartList.appendChild(row);
 		});
 		cartTotal.textContent = total + " lei";

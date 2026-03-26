@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Termeni și condiții | EU-ADOPT{% endblock %}
+{% block body_class %}page-termeni{% endblock %}
+
+{% block content %}
+<section class="termeni-wrap" aria-label="Termeni și condiții">
+	<header class="termeni-head">
+		<h1>Termeni și condiții de utilizare – EU-ADOPT</h1>
+		<p><strong>Versiune:</strong> 1.0</p>
+		<p><strong>Data intrării în vigoare:</strong> 26.03.2026</p>
+		<p><strong>Ultima actualizare:</strong> 26.03.2026</p>
+	</header>
+	<nav class="termeni-cats" aria-label="Categorii legale">
+		<a class="termeni-cat is-active" href="{% url 'termeni_read' %}">
+			<span class="termeni-cat-title">1) Termeni și condiții</span>
+			<span class="termeni-cat-sub">Reguli generale de utilizare</span>
+		</a>
+		<a class="termeni-cat" href="{% url 'politica_confidentialitate' %}">
+			<span class="termeni-cat-title">2) Politica de confidențialitate</span>
+			<span class="termeni-cat-sub">Protecția datelor cu caracter personal</span>
+		</a>
+		<a class="termeni-cat" href="{% url 'politici_altele' %}">
+			<span class="termeni-cat-title">3) Politici complementare</span>
+			<span class="termeni-cat-sub">Cookie-uri, servicii plătite și moderare</span>
+		</a>
+	</nav>
+
+	<article class="termeni-doc">
+		<a class="legal-close-x" href="{% url 'termeni' %}" aria-label="Închide" title="Închide">×</a>
+		<h2>1. IDENTITATEA OPERATORULUI PLATFORMEI</h2>
+		<p>Platforma EU-ADOPT este operată de:</p>
+		<ul>
+			<li>Denumire legală: EU-ADOPT (operator platformă)</li>
+			<li>CUI/CIF: în curs de completare</li>
+			<li>Sediu: în curs de completare</li>
+			<li>E-mail contact: euadopt@gmail.com</li>
+			<li>E-mail juridic/GDPR: euadopt@gmail.com</li>
+			<li>Telefon: în curs de completare</li>
+		</ul>
+
+		<h2>2. DEFINIȚII</h2>
+		<p>În sensul prezentului document:</p>
+		<ul>
+			<li>„Platforma” = site-ul EU-ADOPT și serviciile oferite prin acesta.</li>
+			<li>„Utilizator” = orice persoană care accesează sau utilizează platforma.</li>
+			<li>„Postator” = utilizator persoană fizică sau juridică ce publică anunțuri, servicii, oferte sau alte materiale.</li>
+			<li>„Adoptator” = utilizator interesat de adopția unui animal.</li>
+			<li>„Partener” = cabinet veterinar, magazin, groomer, transportator, sponsor, advertiser sau alt colaborator prezent pe platformă.</li>
+			<li>„Conținut” = texte, imagini, informații, anunțuri, oferte, date și materiale încărcate în platformă.</li>
+			<li>„Servicii plătite” = servicii premium, publicitate, promovare sau alte servicii comerciale oferite prin platformă.</li>
+		</ul>
+
+		<h2>3. NATURA SERVICIULUI (ROL DE INTERMEDIAR)</h2>
+		<p>3.1. EU-ADOPT oferă un serviciu de intermediere digitală între persoane/entități care publică animale, servicii sau oferte și utilizatori interesați de acestea.</p>
+		<p>3.2. EU-ADOPT NU este parte în relația contractuală dintre postator și adoptator, dintre utilizator și partener sau dintre utilizator și advertiser.</p>
+		<p>3.3. EU-ADOPT NU întocmește, NU semnează și NU garantează actele de adopție, contractele dintre părți sau executarea obligațiilor asumate între utilizatori.</p>
+		<p>3.4. Toate obligațiile legale privind adopția, transferul animalului, serviciile medical-veterinare, transportul, publicitatea și plățile revin exclusiv părților implicate, conform legii aplicabile.</p>
+
+		<h2>4. ELIGIBILITATE ȘI CONTURI</h2>
+		<p>4.1. Utilizarea funcțiilor active ale platformei este permisă persoanelor care au capacitate legală.</p>
+		<p>4.2. Utilizatorul este responsabil pentru corectitudinea, actualitatea și legalitatea datelor furnizate la înregistrare și pe parcursul utilizării platformei.</p>
+		<p>4.3. Utilizatorul este responsabil pentru păstrarea confidențialității contului și parolei.</p>
+		<p>4.4. Este interzisă crearea de conturi false, impersonarea altor persoane sau folosirea contului în scop fraudulos ori abuziv.</p>
+		<p>4.5. Platforma poate solicita informații suplimentare sau documente justificative pentru validarea anumitor conturi sau conținuturi.</p>
+
+		<h2>5. REGULI DE PUBLICARE</h2>
+		<p>5.1. Postatorul declară și garantează că:</p>
+		<ul>
+			<li>are dreptul legal de a publica anunțul, serviciul, oferta sau materialul respectiv;</li>
+			<li>are dreptul legal de a oferi animalul spre adopție sau de a promova serviciul/produsele respective;</li>
+			<li>informațiile publicate sunt reale, actuale și complete.</li>
+		</ul>
+		<p>5.2. Este interzisă publicarea de conținut:</p>
+		<ul>
+			<li>fals, înșelător, defăimător, abuziv, discriminatoriu sau ilegal;</li>
+			<li>care încalcă drepturi de autor, mărci sau alte drepturi ale terților;</li>
+			<li>care promovează activități ilegale, practici abuzive sau servicii interzise de lege ori de politicile platformei.</li>
+		</ul>
+		<p>5.3. EU-ADOPT poate modera, restricționa, ascunde, suspenda sau elimina conținut care încalcă prezentii termeni, politicile platformei sau legea, fără notificare prealabilă.</p>
+		<p>5.4. EU-ADOPT poate solicita corectarea, completarea sau dovedirea anumitor informații înainte de menținerea sau republicarea conținutului.</p>
+
+		<h2>6. ADOPȚIE ȘI RESPONSABILITATEA PĂRȚILOR</h2>
+		<p>6.1. EU-ADOPT facilitează contactul dintre părți, fără a garanta finalizarea adopției.</p>
+		<p>6.2. Adoptatorul este responsabil să verifice identitatea postatorului, documentele, condițiile de adopție și starea reală a animalului înainte de orice decizie.</p>
+		<p>6.3. Postatorul este responsabil pentru legalitatea, corectitudinea și buna-credință a procesului de adopție.</p>
+		<p>6.4. EU-ADOPT nu garantează starea de sănătate, istoricul medical, comportamentul, compatibilitatea, disponibilitatea sau caracteristicile reale ale animalului publicat, acestea fiind prezentate pe baza informațiilor furnizate de utilizatori.</p>
+
+		<h2>7. SERVICII MEDICALE, TRANSPORT ȘI ALTE SERVICII</h2>
+		<p>7.1. Platforma poate facilita afișarea și contactarea furnizorilor de servicii, inclusiv cabinete veterinare, transportatori, groomeri, magazine sau alți parteneri.</p>
+		<p>7.2. EU-ADOPT nu garantează calitatea, siguranța, legalitatea, disponibilitatea, termenul de execuție sau rezultatul serviciilor oferite de terți.</p>
+		<p>7.3. Orice programare, prestație, transport, act medical-veterinar sau tranzacție este realizat(ă) pe răspunderea exclusivă a părților implicate.</p>
+
+		<h2>8. PUBLICITATE ȘI SERVICII PLĂTITE</h2>
+		<p>8.1. Pentru servicii premium, publicitate sau alte servicii plătite, condițiile comerciale aplicabile sunt afișate înainte de plasarea comenzii sau sunt reglementate prin politica separată privind serviciile plătite/publicitatea.</p>
+		<p>8.2. Plata unui serviciu nu garantează automat aprobarea sau publicarea materialului transmis.</p>
+		<p>8.3. EU-ADOPT își rezervă dreptul de a refuza, suspenda sau elimina materiale publicitare sau servicii care încalcă legea, prezentii termeni sau politicile platformei.</p>
+		<p>8.4. Facturarea și prestarea serviciilor se fac conform legislației aplicabile și condițiilor comerciale afișate.</p>
+
+		<h2>9. RESPONSABILITATEA UTILIZATORILOR</h2>
+		<p>9.1. Utilizatorii poartă răspunderea integrală pentru conținutul publicat și pentru relațiile stabilite prin intermediul platformei.</p>
+		<p>9.2. Utilizatorii sunt obligați să respecte legea, bunele moravuri, prezentii termeni și politicile complementare ale platformei.</p>
+		<p>9.3. Utilizatorii răspund pentru exactitatea datelor, legalitatea materialelor încărcate și dreptul de utilizare asupra imaginilor, textelor și altor materiale publicate.</p>
+
+		<h2>10. LIMITAREA RĂSPUNDERII EU-ADOPT</h2>
+		<p>10.1. EU-ADOPT depune eforturi rezonabile pentru funcționarea platformei, dar nu garantează funcționare neîntreruptă, lipsa erorilor sau disponibilitate permanentă.</p>
+		<p>10.2. EU-ADOPT nu garantează:</p>
+		<ul>
+			<li>autenticitatea absolută a tuturor informațiilor și materialelor publicate;</li>
+			<li>disponibilitatea permanentă a animalelor, serviciilor, produselor sau ofertelor publicate;</li>
+			<li>comportamentul, buna-credință, solvabilitatea sau seriozitatea utilizatorilor.</li>
+		</ul>
+		<p>10.3. EU-ADOPT nu răspunde pentru:</p>
+		<ul>
+			<li>prejudicii rezultate din interacțiunile dintre utilizatori;</li>
+			<li>neînțelegeri, litigii, refuzuri, anulări, nerespectarea promisiunilor sau obligațiilor dintre părți;</li>
+			<li>pierderi indirecte, comerciale, reputaționale sau morale generate de utilizarea platformei;</li>
+			<li>conținutul publicat de utilizatori sau consecințele utilizării acestuia.</li>
+		</ul>
+		<p>10.4. EU-ADOPT nu efectuează o verificare exhaustivă și permanentă a tuturor datelor furnizate de utilizatori.</p>
+		<p>10.5. Orice act medical-veterinar, transport, adopție, transfer, plată, rezervare, publicitate sau colaborare se realizează pe răspunderea exclusivă a părților implicate.</p>
+
+		<h2>11. PROPRIETATE INTELECTUALĂ</h2>
+		<p>11.1. Conținutul propriu al platformei (design, structură, logo, elemente grafice, texte proprii) aparține EU-ADOPT sau partenerilor săi și este protejat de lege.</p>
+		<p>11.2. Prin publicarea conținutului, utilizatorul acordă EU-ADOPT o licență neexclusivă, gratuită, teritorial nelimitată, pe durata existenței contului/anunțului, pentru afișarea, stocarea, promovarea și distribuirea conținutului în contextul funcționării platformei.</p>
+		<p>11.3. Utilizatorul declară că deține drepturile necesare asupra materialelor încărcate.</p>
+
+		<h2>12. RAPORTARE, MODERARE ȘI MĂSURI</h2>
+		<p>12.1. Utilizatorii pot raporta conținut, conturi sau comportamente suspecte ori neconforme.</p>
+		<p>12.2. EU-ADOPT poate analiza raportările și poate lua măsuri, inclusiv avertisment, ascundere conținut, suspendare temporară sau închidere cont.</p>
+		<p>12.3. Platforma nu este obligată să comunice public toate măsurile interne adoptate în urma unei raportări.</p>
+
+		<h2>13. SUSPENDAREA SAU ÎNCHIDEREA CONTULUI</h2>
+		<p>13.1. EU-ADOPT poate suspenda sau închide conturi care încalcă termenii, politicile platformei sau legea.</p>
+		<p>13.2. În cazuri grave (fraudă, abuz, conținut ilegal, identitate falsă, încălcări repetate), platforma poate bloca imediat accesul.</p>
+
+		<h2>14. FORȚA MAJORĂ</h2>
+		<p>EU-ADOPT nu răspunde pentru neexecutarea obligațiilor cauzată de evenimente de forță majoră.</p>
+
+		<h2>15. DOCUMENTE COMPLEMENTARE</h2>
+		<p>Utilizarea platformei este guvernată, după caz, și de următoarele documente publicate separat pe site:</p>
+		<ul>
+			<li><a href="{% url 'politica_confidentialitate' %}">Politica de confidențialitate</a>;</li>
+			<li><a href="{% url 'politica_cookie' %}">Politica de cookie-uri</a>;</li>
+			<li><a href="{% url 'politica_servicii_platite' %}">Politica serviciilor plătite / publicitate</a>;</li>
+			<li><a href="{% url 'politica_moderare' %}">Politica de moderare, raportare și conținut interzis</a>.</li>
+		</ul>
+		<p>Prin utilizarea platformei, utilizatorul confirmă că a luat cunoștință de aceste documente, în măsura în care sunt aplicabile.</p>
+
+		<h2>16. MODIFICAREA TERMENILOR</h2>
+		<p>16.1. EU-ADOPT poate actualiza prezentii termeni.</p>
+		<p>16.2. Versiunea actualizată va fi publicată pe platformă, cu data intrării în vigoare.</p>
+		<p>16.3. Continuarea utilizării platformei după actualizare reprezintă acceptarea noilor termeni.</p>
+
+		<h2>17. LEGEA APLICABILĂ ȘI JURISDICȚIA</h2>
+		<p>17.1. Prezentii termeni sunt guvernați de legea română.</p>
+		<p>17.2. Litigiile se soluționează mai întâi pe cale amiabilă, iar în caz de eșec, de instanțele competente din România, conform legii.</p>
+
+		<h2>18. CONTACT</h2>
+		<p>Pentru întrebări juridice, sesizări sau notificări:</p>
+		<ul>
+			<li>E-mail: [EMAIL JURIDIC]</li>
+			<li>Adresă: [ADRESĂ COMPLETĂ]</li>
+			<li>Telefon: în curs de completare</li>
+		</ul>
+		<p>Prin utilizarea platformei și/sau prin bifarea căsuței de acceptare, utilizatorul confirmă că a citit, înțeles și acceptat prezentii Termeni și Condiții.</p>
+	</article>
+</section>
+{% include "anunturi/partials/legal_pages_shared_style.html" %}
+{% endblock %}

@@ -20,7 +20,7 @@ from django.core.files.base import ContentFile
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from django.db import transaction
 import os
 from django.views.decorators.http import require_POST, require_http_methods
@@ -41,6 +41,8 @@ from .models import (
     UserAdoption,
     AccountProfile,
     UserProfile,
+    UserLegalConsent,
+    ContactMessage,
     PetMessage,
     CollabServiceMessage,
     AdoptionRequest,
@@ -52,6 +54,10 @@ from .models import (
 from django.contrib.auth import get_user_model
 from functools import wraps
 from django.contrib import messages
+
+LEGAL_TERMS_VERSION = "1.0"
+LEGAL_PRIVACY_VERSION = "1.0"
+LEGAL_MARKETING_VERSION = "1.0"
 
 
 def _user_can_use_mypet(request):
@@ -105,6 +111,60 @@ def mypet_pf_org_required_json(view_func):
             )
         return view_func(request, *args, **kwargs)
     return _wrapped
+
+
+def _client_ip(request) -> str:
+    xff = (request.META.get("HTTP_X_FORWARDED_FOR") or "").strip()
+    if xff:
+        return xff.split(",")[0].strip()[:64]
+    return (request.META.get("REMOTE_ADDR") or "")[:64]
+
+
+def _log_legal_consents(
+    request,
+    user,
+    *,
+    accept_termeni: bool,
+    accept_gdpr: bool,
+    email_opt_in: bool,
+    source: str,
+    previous: dict | None = None,
+):
+    """
+    Audit trail pentru consimțăminte legale.
+    Înregistrează doar schimbările față de `previous` (dacă este furnizat).
+    """
+    previous = previous or {}
+    current = {
+        UserLegalConsent.CONSENT_TERMS: bool(accept_termeni),
+        UserLegalConsent.CONSENT_PRIVACY: bool(accept_gdpr),
+        UserLegalConsent.CONSENT_MARKETING: bool(email_opt_in),
+    }
+    versions = {
+        UserLegalConsent.CONSENT_TERMS: LEGAL_TERMS_VERSION,
+        UserLegalConsent.CONSENT_PRIVACY: LEGAL_PRIVACY_VERSION,
+        UserLegalConsent.CONSENT_MARKETING: LEGAL_MARKETING_VERSION,
+    }
+    ip = _client_ip(request)
+    ua = (request.META.get("HTTP_USER_AGENT") or "")[:500]
+
+    rows = []
+    for consent_type, accepted in current.items():
+        if consent_type in previous and bool(previous.get(consent_type)) == accepted:
+            continue
+        rows.append(
+            UserLegalConsent(
+                user=user,
+                consent_type=consent_type,
+                accepted=accepted,
+                version=versions[consent_type],
+                source=source,
+                ip_address=ip,
+                user_agent=ua,
+            )
+        )
+    if rows:
+        UserLegalConsent.objects.bulk_create(rows)
 
 
 def _user_can_use_magazinul_meu(request):
@@ -1171,6 +1231,14 @@ def signup_verificare_sms_view(request):
         profile.accept_gdpr = data.get("accept_gdpr", False)
         profile.email_opt_in_wishlist = data.get("email_opt_in_wishlist", False)
         profile.save()
+        _log_legal_consents(
+            request,
+            user,
+            accept_termeni=profile.accept_termeni,
+            accept_gdpr=profile.accept_gdpr,
+            email_opt_in=profile.email_opt_in_wishlist,
+            source="signup_pf_sms",
+        )
     elif role == "org":
         user = User.objects.create_user(
             username=username,
@@ -1200,6 +1268,14 @@ def signup_verificare_sms_view(request):
         profile.company_oras = data.get("oras", "")
         profile.collaborator_type = ""
         profile.save()
+        _log_legal_consents(
+            request,
+            user,
+            accept_termeni=profile.accept_termeni,
+            accept_gdpr=profile.accept_gdpr,
+            email_opt_in=profile.email_opt_in_wishlist,
+            source="signup_org_sms",
+        )
     else:
         user = User.objects.create_user(
             username=username,
@@ -1229,6 +1305,14 @@ def signup_verificare_sms_view(request):
         profile.accept_gdpr = data.get("accept_gdpr", False)
         profile.email_opt_in_wishlist = data.get("email_opt_in", False)
         profile.save()
+        _log_legal_consents(
+            request,
+            user,
+            accept_termeni=profile.accept_termeni,
+            accept_gdpr=profile.accept_gdpr,
+            email_opt_in=profile.email_opt_in_wishlist,
+            source="signup_collaborator_sms",
+        )
 
     from django.core.signing import TimestampSigner
     from django.core.mail import send_mail
@@ -1724,6 +1808,156 @@ def _servicii_offers_for_kind(partner_kind: str, max_n: int = 24):
         return offers, [None] * pad
     except Exception:
         return [], [None] * max_n
+
+
+def termeni_view(request):
+    """Hub principal documente legale."""
+    return render(request, "anunturi/termeni.html", {})
+
+
+def termeni_read_view(request):
+    """Pagina completă Termeni și Condiții (mod citire)."""
+    return render(request, "anunturi/termeni_read.html", {})
+
+
+def politica_confidentialitate_view(request):
+    """Politica de confidențialitate (GDPR)."""
+    return render(request, "anunturi/politica_confidentialitate.html", {})
+
+
+def politici_altele_view(request):
+    """Hub politici complementare (cookie-uri, publicitate, moderare)."""
+    return render(request, "anunturi/politici_altele.html", {})
+
+
+def politica_cookie_view(request):
+    """Politica de cookie-uri."""
+    return render(request, "anunturi/politica_cookie.html", {})
+
+
+def politica_servicii_platite_view(request):
+    """Politica serviciilor plătite / publicitate."""
+    return render(request, "anunturi/politica_servicii_platite.html", {})
+
+
+def politica_moderare_view(request):
+    """Politica de moderare, raportare și conținut interzis."""
+    return render(request, "anunturi/politica_moderare.html", {})
+
+
+def contact_view(request):
+    """Pagina Contact dedicată."""
+    form_prefill = {
+        "full_name": "",
+        "email": "",
+        "phone": "",
+        "topic": ContactMessage.TOPIC_GENERAL,
+        "subject": "",
+        "message": "",
+        "attachment_name": "",
+        "accept_privacy": False,
+    }
+    form_errors = []
+    form_success = False
+
+    if request.method == "GET" and request.GET.get("sent") == "1":
+        form_success = True
+
+    if request.method == "POST":
+        attachment = request.FILES.get("attachment")
+        form_prefill = {
+            "full_name": (request.POST.get("full_name") or "").strip(),
+            "email": (request.POST.get("email") or "").strip().lower(),
+            "phone": (request.POST.get("phone") or "").strip(),
+            "topic": (request.POST.get("topic") or ContactMessage.TOPIC_GENERAL).strip(),
+            "subject": (request.POST.get("subject") or "").strip(),
+            "message": (request.POST.get("message") or "").strip(),
+            "attachment_name": (attachment.name if attachment else ""),
+            "accept_privacy": request.POST.get("accept_privacy") == "on",
+        }
+        honey = (request.POST.get("website") or "").strip()
+        if honey:
+            return redirect("contact")
+
+        if not form_prefill["full_name"]:
+            form_errors.append("Numele este obligatoriu.")
+        if not form_prefill["email"]:
+            form_errors.append("E-mailul este obligatoriu.")
+        if form_prefill["topic"] not in dict(ContactMessage.TOPIC_CHOICES):
+            form_errors.append("Selectează un tip de solicitare valid.")
+        if not form_prefill["subject"]:
+            form_errors.append("Subiectul este obligatoriu.")
+        if not form_prefill["message"]:
+            form_errors.append("Mesajul este obligatoriu.")
+        if len(form_prefill["message"]) > 3000:
+            form_errors.append("Mesajul este prea lung (maxim 3000 caractere).")
+        if attachment and attachment.size > 8 * 1024 * 1024:
+            form_errors.append("Fișierul atașat depășește limita de 8MB.")
+        if not form_prefill["accept_privacy"]:
+            form_errors.append("Trebuie să accepți politica de confidențialitate pentru a trimite mesajul.")
+
+        if not form_errors:
+            entry = ContactMessage.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                full_name=form_prefill["full_name"],
+                email=form_prefill["email"],
+                phone=form_prefill["phone"],
+                topic=form_prefill["topic"],
+                subject=form_prefill["subject"],
+                message=form_prefill["message"],
+                attachment=attachment,
+                accepted_privacy=form_prefill["accept_privacy"],
+                ip_address=_client_ip(request),
+                user_agent=(request.META.get("HTTP_USER_AGENT") or "")[:500],
+            )
+            topic_label = dict(ContactMessage.TOPIC_CHOICES).get(entry.topic, entry.topic)
+            msg_lines = [
+                "Mesaj nou din pagina Contact (EU-ADOPT)",
+                "",
+                f"Nume: {entry.full_name}",
+                f"E-mail: {entry.email}",
+                f"Telefon: {entry.phone or '-'}",
+                f"Tip solicitare: {topic_label}",
+                f"Subiect: {entry.subject}",
+                f"IP: {entry.ip_address or '-'}",
+                f"Atașament: {entry.attachment.name if entry.attachment else '-'}",
+                "",
+                "Mesaj:",
+                entry.message,
+            ]
+            to_email = (getattr(settings, "DEFAULT_FROM_EMAIL", None) or "").strip() or "euadopt@gmail.com"
+            from_email = to_email
+            try:
+                mail = EmailMessage(
+                    subject=f"[Contact EU-ADOPT] {entry.subject}",
+                    body="\n".join(msg_lines),
+                    from_email=from_email,
+                    to=[to_email],
+                )
+                if entry.attachment:
+                    try:
+                        mail.attach_file(entry.attachment.path)
+                    except Exception:
+                        # Păstrăm trimiterea mesajului chiar dacă atașarea eșuează.
+                        pass
+                mail.send(fail_silently=False)
+            except Exception:
+                pass
+
+            form_success = True
+            # PRG: după trimitere facem redirect ca mesajul/datele să nu rămână la refresh/reintrare.
+            return redirect(f"{reverse('contact')}?sent=1")
+
+    return render(
+        request,
+        "anunturi/contact.html",
+        {
+            "form_prefill": form_prefill,
+            "form_errors": form_errors,
+            "form_success": form_success,
+            "contact_topic_choices": ContactMessage.TOPIC_CHOICES,
+        },
+    )
 
 
 def servicii_view(request):
@@ -2659,6 +2893,11 @@ def account_edit_view(request):
         return redirect(reverse("account"))
 
     if not phone_changed and not email_changed:
+        prev_consents = {
+            UserLegalConsent.CONSENT_TERMS: bool(user_profile.accept_termeni) if user_profile else False,
+            UserLegalConsent.CONSENT_PRIVACY: bool(user_profile.accept_gdpr) if user_profile else False,
+            UserLegalConsent.CONSENT_MARKETING: bool(user_profile.email_opt_in_wishlist) if user_profile else False,
+        }
         user.first_name = first_name
         user.last_name = last_name
         user.save(update_fields=["first_name", "last_name"])
@@ -2671,6 +2910,15 @@ def account_edit_view(request):
         user_profile.accept_gdpr = accept_gdpr
         user_profile.email_opt_in_wishlist = email_opt_in_wishlist
         user_profile.save()
+        _log_legal_consents(
+            request,
+            user,
+            accept_termeni=user_profile.accept_termeni,
+            accept_gdpr=user_profile.accept_gdpr,
+            email_opt_in=user_profile.email_opt_in_wishlist,
+            source="account_edit_direct",
+            previous=prev_consents,
+        )
         return redirect(reverse("account") + "?updated=1")
 
     edit_pending = {
@@ -2734,6 +2982,11 @@ def edit_verificare_sms_view(request):
     User = get_user_model()
     user = User.objects.get(pk=data["user_pk"])
     profile, _ = UserProfile.objects.get_or_create(user=user, defaults={})
+    prev_consents = {
+        UserLegalConsent.CONSENT_TERMS: bool(profile.accept_termeni),
+        UserLegalConsent.CONSENT_PRIVACY: bool(profile.accept_gdpr),
+        UserLegalConsent.CONSENT_MARKETING: bool(profile.email_opt_in_wishlist),
+    }
     full_phone = f"{data.get('phone_country', '')} {data.get('phone', '')}".strip()
     user.first_name = data.get("first_name", "")
     user.last_name = data.get("last_name", "")
@@ -2745,6 +2998,15 @@ def edit_verificare_sms_view(request):
     profile.accept_gdpr = data.get("accept_gdpr", False)
     profile.email_opt_in_wishlist = data.get("email_opt_in_wishlist", False)
     profile.save()
+    _log_legal_consents(
+        request,
+        user,
+        accept_termeni=profile.accept_termeni,
+        accept_gdpr=profile.accept_gdpr,
+        email_opt_in=profile.email_opt_in_wishlist,
+        source="account_edit_sms",
+        previous=prev_consents,
+    )
 
     if data.get("email_changed"):
         from django.core.signing import TimestampSigner
@@ -2807,6 +3069,11 @@ def edit_verify_email_view(request):
         user.email = new_email
         user.save(update_fields=["first_name", "last_name", "email"])
         profile, _ = UserProfile.objects.get_or_create(user=user, defaults={})
+        prev_consents = {
+            UserLegalConsent.CONSENT_TERMS: bool(profile.accept_termeni),
+            UserLegalConsent.CONSENT_PRIVACY: bool(profile.accept_gdpr),
+            UserLegalConsent.CONSENT_MARKETING: bool(profile.email_opt_in_wishlist),
+        }
         full_phone = f"{data.get('phone_country', '')} {data.get('phone', '')}".strip()
         profile.phone = full_phone
         profile.judet = data.get("judet", "")
@@ -2815,6 +3082,15 @@ def edit_verify_email_view(request):
         profile.accept_gdpr = data.get("accept_gdpr", False)
         profile.email_opt_in_wishlist = data.get("email_opt_in_wishlist", False)
         profile.save()
+        _log_legal_consents(
+            request,
+            user,
+            accept_termeni=profile.accept_termeni,
+            accept_gdpr=profile.accept_gdpr,
+            email_opt_in=profile.email_opt_in_wishlist,
+            source="account_edit_email_verify",
+            previous=prev_consents,
+        )
     else:
         user.email = new_email
         user.save(update_fields=["email"])

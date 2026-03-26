@@ -736,21 +736,21 @@
 						<div class="signup-org-bife-actions">
 							<div class="signup-org-field signup-org-field-box">
 								<label class="signup-org-bifa-row">
-									<span>Accept termenii și condițiile *</span>
+									<span>Accept <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">Termenii și condițiile de utilizare</a> *</span>
 									<input type="checkbox" id="id_accept_termeni_org" name="accept_termeni_org" required {% if form_prefill and form_prefill.accept_termeni %}checked{% endif %} />
 								</label>
 								{% if field_errors and field_errors.accept_termeni %}<p class="signup-field-err" role="alert">{{ field_errors.accept_termeni }}</p>{% endif %}
 							</div>
 							<div class="signup-org-field signup-org-field-box">
 								<label class="signup-org-bifa-row">
-									<span>Accept prelucrarea datelor conform GDPR *</span>
+									<span>Accept <a href="{% url 'politica_confidentialitate' %}" target="_blank" rel="noopener">Politica de confidențialitate (GDPR)</a> *</span>
 									<input type="checkbox" id="id_accept_gdpr_org" name="accept_gdpr_org" required {% if form_prefill and form_prefill.accept_gdpr %}checked{% endif %} />
 								</label>
 								{% if field_errors and field_errors.accept_gdpr %}<p class="signup-field-err" role="alert">{{ field_errors.accept_gdpr }}</p>{% endif %}
 							</div>
 							<div class="signup-org-field signup-org-field-box">
 								<label class="signup-org-bifa-row">
-									<span>Notificări email EU-Adopt (noutăți ONG / firmă)</span>
+									<span>Doresc notificări email EU-Adopt (opțional)</span>
 									<input type="checkbox" id="id_email_opt_in_org" name="email_opt_in_org" {% if form_prefill and form_prefill.email_opt_in %}checked{% endif %} />
 								</label>
 							</div>

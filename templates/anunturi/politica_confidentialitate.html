@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Politica de confidențialitate | EU-ADOPT{% endblock %}
+{% block body_class %}page-termeni{% endblock %}
+
+{% block content %}
+<section class="termeni-wrap" aria-label="Politica de confidențialitate GDPR">
+	<header class="termeni-head">
+		<h1>Politica de confidențialitate (GDPR) – EU-ADOPT</h1>
+		<p><strong>Versiune:</strong> 1.0</p>
+		<p><strong>Data intrării în vigoare:</strong> 26.03.2026</p>
+		<p><strong>Ultima actualizare:</strong> 26.03.2026</p>
+	</header>
+	<nav class="termeni-cats" aria-label="Categorii legale">
+		<a class="termeni-cat" href="{% url 'termeni_read' %}">
+			<span class="termeni-cat-title">1) Termeni și condiții</span>
+			<span class="termeni-cat-sub">Reguli generale de utilizare</span>
+		</a>
+		<a class="termeni-cat is-active" href="{% url 'politica_confidentialitate' %}">
+			<span class="termeni-cat-title">2) Politica de confidențialitate</span>
+			<span class="termeni-cat-sub">Protecția datelor cu caracter personal</span>
+		</a>
+		<a class="termeni-cat" href="{% url 'politici_altele' %}">
+			<span class="termeni-cat-title">3) Politici complementare</span>
+			<span class="termeni-cat-sub">Cookie-uri, servicii plătite și moderare</span>
+		</a>
+	</nav>
+
+	<article class="termeni-doc">
+		<a class="legal-close-x" href="{% url 'termeni' %}" aria-label="Închide" title="Închide">×</a>
+		<h2>1. CINE SUNTEM</h2>
+		<p>Operatorul datelor cu caracter personal:</p>
+		<ul>
+			<li>Denumire: EU-ADOPT (operator platformă)</li>
+			<li>CUI/CIF: în curs de completare</li>
+			<li>Sediu: în curs de completare</li>
+			<li>E-mail GDPR: euadopt@gmail.com</li>
+			<li>Telefon: în curs de completare</li>
+		</ul>
+
+		<h2>2. CE DATE COLECTĂM</h2>
+		<p>În funcție de modul în care utilizezi platforma, putem colecta următoarele categorii de date:</p>
+		<h2>2.1. Date de identificare și contact</h2>
+		<ul>
+			<li>nume, prenume;</li>
+			<li>e-mail;</li>
+			<li>număr de telefon;</li>
+			<li>date de autentificare și cont (username, parolă criptată).</li>
+		</ul>
+		<h2>2.2. Date pentru conturi organizaționale / profesionale</h2>
+		<ul>
+			<li>denumire legală;</li>
+			<li>CUI/CIF;</li>
+			<li>reprezentant sau persoană de contact;</li>
+			<li>adresa sediului;</li>
+			<li>adresă de lucru / adresă de preluare / locație relevantă;</li>
+			<li>alte date necesare prezentării serviciilor în platformă.</li>
+		</ul>
+		<h2>2.3. Date publicate de utilizator în platformă</h2>
+		<ul>
+			<li>informații din profil;</li>
+			<li>informații din anunțuri, servicii, oferte sau reclame;</li>
+			<li>imagini și alte materiale încărcate;</li>
+			<li>date de contact pe care utilizatorul alege să le afișeze.</li>
+		</ul>
+		<h2>2.4. Date tehnice</h2>
+		<ul>
+			<li>adresa IP;</li>
+			<li>user-agent / browser / sistem de operare;</li>
+			<li>loguri de acces și securitate;</li>
+			<li>identificatori tehnici și cookie-uri.</li>
+		</ul>
+		<h2>2.5. Date privind utilizarea platformei</h2>
+		<ul>
+			<li>acțiuni efectuate în cont;</li>
+			<li>istoricul unor interacțiuni relevante în platformă;</li>
+			<li>preferințe și opțiuni exprimate în interfață, unde este cazul.</li>
+		</ul>
+
+		<h2>3. SURSA DATELOR</h2>
+		<p>Datele personale provin:</p>
+		<ul>
+			<li>direct de la utilizator, la înregistrare sau prin completarea formularelor;</li>
+			<li>din conținutul încărcat de utilizator în platformă;</li>
+			<li>din utilizarea tehnică a platformei (loguri, cookie-uri, securitate, acces).</li>
+		</ul>
+
+		<h2>4. SCOPURI ȘI TEMEIURI LEGALE</h2>
+		<p>Prelucrăm datele pentru următoarele scopuri și temeiuri:</p>
+		<h2>4.1. Executarea serviciului platformei (art. 6 alin. (1) lit. b GDPR)</h2>
+		<ul>
+			<li>creare și administrare cont;</li>
+			<li>autentificare și securitate cont;</li>
+			<li>publicare și gestionare anunțuri, servicii, oferte, materiale sau reclame;</li>
+			<li>comunicări funcționale legate de cont, cereri, servicii și funcționarea platformei;</li>
+			<li>facilitarea interacțiunilor dintre utilizatori, în măsura permisă de platformă.</li>
+		</ul>
+		<h2>4.2. Respectarea obligațiilor legale (art. 6 alin. (1) lit. c GDPR)</h2>
+		<ul>
+			<li>conformare fiscală și contabilă;</li>
+			<li>răspuns la solicitări ale autorităților;</li>
+			<li>păstrarea documentelor atunci când legea impune acest lucru.</li>
+		</ul>
+		<h2>4.3. Interes legitim (art. 6 alin. (1) lit. f GDPR)</h2>
+		<ul>
+			<li>securitatea platformei;</li>
+			<li>prevenirea fraudelor, abuzurilor și utilizărilor nelegale;</li>
+			<li>apărarea drepturilor și intereselor legitime ale operatorului;</li>
+			<li>administrarea și îmbunătățirea serviciilor;</li>
+			<li>gestionarea raportărilor, sesizărilor și incidentelor.</li>
+		</ul>
+		<h2>4.4. Consimțământ (art. 6 alin. (1) lit. a GDPR)</h2>
+		<ul>
+			<li>transmiterea de comunicări opționale de marketing / noutăți;</li>
+			<li>activarea cookie-urilor neesențiale;</li>
+			<li>alte prelucrări pentru care solicităm în mod expres acordul.</li>
+		</ul>
+
+		<h2>5. CE DATE POT DEVENI PUBLICE</h2>
+		<p>În funcție de tipul contului și de funcțiile utilizate, anumite date pot fi afișate public în platformă, cum ar fi:</p>
+		<ul>
+			<li>nume organizație / denumire cabinet / denumire partener;</li>
+			<li>oraș / județ / locație generală;</li>
+			<li>descrieri, informații despre animale, servicii, oferte sau reclame;</li>
+			<li>imagini și materiale încărcate;</li>
+			<li>date de contact pe care utilizatorul alege să le afișeze public în platformă.</li>
+		</ul>
+		<p>Utilizatorul este responsabil pentru conținutul și datele pe care alege să le publice sau să le facă vizibile altor utilizatori.</p>
+
+		<h2>6. CÂT TIMP PĂSTRĂM DATELE</h2>
+		<p>6.1. Datele de cont se păstrează pe durata existenței contului și pentru o perioadă rezonabilă după închidere, în scopul apărării drepturilor legale, prevenirii abuzurilor și soluționării incidentelor.</p>
+		<p>6.2. Datele supuse obligațiilor legale de arhivare se păstrează pe durata prevăzută de lege.</p>
+		<p>6.3. Datele prelucrate pe baza consimțământului se păstrează până la retragerea acestuia, cu excepția cazurilor în care legea impune alt termen sau există un alt temei legal aplicabil.</p>
+		<p>6.4. Datele publicate în platformă pot fi șterse, anonimizate sau păstrate în măsura permisă de lege și de interesele legitime ale operatorului.</p>
+
+		<h2>7. CUI TRANSMITEM DATELE</h2>
+		<p>Putem transmite date către:</p>
+		<ul>
+			<li>furnizori de hosting și infrastructură IT;</li>
+			<li>furnizori de servicii e-mail și notificări;</li>
+			<li>furnizori de mentenanță și suport tehnic;</li>
+			<li>furnizori de stocare fișiere / imagini, unde este cazul;</li>
+			<li>procesatori de plăți, unde este cazul;</li>
+			<li>autorități publice, atunci când există obligație legală;</li>
+			<li>alți parteneri strict necesari pentru operarea serviciilor, în baza unor relații contractuale adecvate.</li>
+		</ul>
+		<p>Nu vindem date personale către terți.</p>
+
+		<h2>8. TRANSFERURI ÎN AFARA UE/SEE</h2>
+		<p>În principiu, folosim furnizori din UE/SEE. Dacă anumite servicii implică transferuri de date în afara UE/SEE, acestea se realizează cu garanții adecvate, conform GDPR, inclusiv prin clauze contractuale standard sau alte mecanisme legale aplicabile.</p>
+
+		<h2>9. DREPTURILE PERSOANEI VIZATE</h2>
+		<p>Ai următoarele drepturi, în condițiile prevăzute de GDPR:</p>
+		<ul>
+			<li>dreptul la informare;</li>
+			<li>dreptul de acces;</li>
+			<li>dreptul la rectificare;</li>
+			<li>dreptul la ștergere („dreptul de a fi uitat”), în limitele legii;</li>
+			<li>dreptul la restricționarea prelucrării;</li>
+			<li>dreptul la portabilitatea datelor;</li>
+			<li>dreptul la opoziție;</li>
+			<li>dreptul de a retrage consimțământul, fără a afecta legalitatea prelucrării anterioare;</li>
+			<li>dreptul de a depune plângere la ANSPDCP.</li>
+		</ul>
+		<p>Pentru exercitarea drepturilor, ne poți contacta la: euadopt@gmail.com</p>
+
+		<h2>10. ȘTERGEREA CONTULUI ȘI A DATELOR</h2>
+		<p>10.1. Utilizatorul poate solicita ștergerea contului, în condițiile legii și ale funcționalităților platformei.</p>
+		<p>10.2. Anumite date pot fi păstrate ulterior ștergerii contului dacă:</p>
+		<ul>
+			<li>există obligații legale de păstrare;</li>
+			<li>sunt necesare pentru apărarea unui drept în justiție;</li>
+			<li>sunt necesare pentru prevenirea fraudei sau a abuzului;</li>
+			<li>există un alt temei legal justificat.</li>
+		</ul>
+		<p>10.3. În măsura posibilului, datele care nu mai trebuie păstrate pot fi șterse sau anonimizate.</p>
+
+		<h2>11. COMUNICĂRI FUNCȚIONALE ȘI DE MARKETING</h2>
+		<p>11.1. Putem trimite comunicări funcționale necesare utilizării platformei, cum ar fi:</p>
+		<ul>
+			<li>confirmări de cont;</li>
+			<li>notificări privind activitatea din cont;</li>
+			<li>mesaje tehnice sau de securitate;</li>
+			<li>comunicări necesare executării serviciului.</li>
+		</ul>
+		<p>11.2. Comunicările de marketing, informări comerciale, noutăți sau oferte se transmit numai în condițiile prevăzute de lege și, unde este necesar, pe baza consimțământului separat exprimat.</p>
+
+		<h2>12. DATELE MINORILOR</h2>
+		<p>Platforma nu este destinată colectării intenționate de date de la minori fără baza legală necesară. Dacă identificăm date colectate necorespunzător, putem lua măsuri de restricționare, ștergere sau anonimizare, după caz.</p>
+
+		<h2>13. SECURITATEA DATELOR</h2>
+		<p>Aplicăm măsuri tehnice și organizatorice rezonabile și adecvate riscului, inclusiv:</p>
+		<ul>
+			<li>control al accesului;</li>
+			<li>parole criptate;</li>
+			<li>jurnalizare și monitorizare de securitate;</li>
+			<li>limitarea accesului administrativ;</li>
+			<li>măsuri de protecție a infrastructurii și a datelor stocate.</li>
+		</ul>
+		<p>Nicio metodă online nu garantează securitate absolută, însă luăm măsuri rezonabile pentru a reduce riscurile.</p>
+
+		<h2>14. COOKIE-URI ȘI TEHNOLOGII SIMILARE</h2>
+		<p>14.1. Folosim cookie-uri și tehnologii similare pentru funcționarea, securitatea și îmbunătățirea platformei.</p>
+		<p>14.2. Cookie-urile neesențiale se activează numai pe baza opțiunilor exprimate prin bannerul sau setările de cookie-uri, unde este cazul.</p>
+		<p>14.3. Informații suplimentare se regăsesc în <a href="{% url 'politica_cookie' %}">Politica de cookie-uri</a>.</p>
+
+		<h2>15. MODIFICĂRI ALE POLITICII</h2>
+		<p>Putem actualiza această politică periodic. Versiunea actualizată va fi publicată pe platformă, împreună cu data ultimei actualizări.</p>
+
+		<h2>16. CONTACT GDPR</h2>
+		<p>Pentru cereri sau întrebări legate de datele personale:</p>
+		<ul>
+			<li>E-mail: euadopt@gmail.com</li>
+			<li>Adresă: în curs de completare</li>
+			<li>Telefon: în curs de completare</li>
+		</ul>
+		<p>Timp orientativ de răspuns: maximum 30 zile, conform GDPR, cu posibilitatea prelungirii în condițiile legii.</p>
+	</article>
+</section>
+{% include "anunturi/partials/legal_pages_shared_style.html" %}
+{% endblock %}

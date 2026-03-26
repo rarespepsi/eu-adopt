@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Politica de cookie-uri | EU-ADOPT{% endblock %}
+{% block body_class %}page-termeni{% endblock %}
+
+{% block content %}
+<section class="termeni-wrap" aria-label="Politica de cookie-uri">
+	<header class="termeni-head">
+		<h1>Politica de cookie-uri – EU-ADOPT</h1>
+		<p>Document separat pentru utilizarea cookie-urilor și a tehnologiilor similare.</p>
+	</header>
+	<nav class="termeni-cats" aria-label="Categorii legale">
+		<a class="termeni-cat" href="{% url 'termeni_read' %}">
+			<span class="termeni-cat-title">1) Termeni și condiții</span>
+			<span class="termeni-cat-sub">Reguli generale de utilizare</span>
+		</a>
+		<a class="termeni-cat" href="{% url 'politica_confidentialitate' %}">
+			<span class="termeni-cat-title">2) Politica de confidențialitate</span>
+			<span class="termeni-cat-sub">Protecția datelor cu caracter personal</span>
+		</a>
+		<a class="termeni-cat is-active" href="{% url 'politici_altele' %}">
+			<span class="termeni-cat-title">3) Politici complementare</span>
+			<span class="termeni-cat-sub">Cookie-uri, servicii plătite și moderare</span>
+		</a>
+	</nav>
+	<article class="termeni-doc">
+		<a class="legal-close-x" href="{% url 'termeni' %}" aria-label="Închide" title="Închide">×</a>
+		<p><strong>Versiune:</strong> 1.0</p>
+		<p><strong>Data intrării în vigoare:</strong> 26.03.2026</p>
+		<p><strong>Ultima actualizare:</strong> 26.03.2026</p>
+
+		<h2>1. CE SUNT COOKIE-URILE</h2>
+		<p>Cookie-urile sunt fișiere mici stocate pe dispozitivul tău când vizitezi un site. Ele ajută la funcționarea platformei, securitate, memorarea preferințelor și analiză.</p>
+
+		<h2>2. CE TIPURI DE COOKIE-URI FOLOSIM</h2>
+		<h2>2.1. Cookie-uri strict necesare (esențiale)</h2>
+		<ul>
+			<li>necesare pentru autentificare, sesiune, securitate, funcții de bază ale platformei;</li>
+			<li>fără ele, site-ul nu poate funcționa corect.</li>
+		</ul>
+		<p>Temei: interes legitim / necesitate tehnică.</p>
+		<h2>2.2. Cookie-uri de preferințe</h2>
+		<p>Memorează opțiuni precum limbă, preferințe interfață. Temei: consimțământ (unde este cazul).</p>
+		<h2>2.3. Cookie-uri de analiză/statistice</h2>
+		<p>Ajută la înțelegerea modului de utilizare a platformei pentru îmbunătățire. Temei: consimțământ.</p>
+		<h2>2.4. Cookie-uri de marketing (dacă sunt implementate)</h2>
+		<p>Pot fi folosite pentru comunicări/promovare relevante. Temei: consimțământ explicit.</p>
+
+		<h2>3. DURATA COOKIE-URILOR</h2>
+		<ul>
+			<li>cookie-uri de sesiune: se șterg la închiderea browserului;</li>
+			<li>cookie-uri persistente: rămân până la expirare sau ștergere manuală.</li>
+		</ul>
+
+		<h2>4. CUM ÎȚI GESTIONEZI OPȚIUNILE</h2>
+		<p>4.1. La primul acces, poți accepta/refuza cookie-urile neesențiale prin banner.</p>
+		<p>4.2. Poți modifica opțiunile ulterior din setările de cookie-uri.</p>
+		<p>4.3. Poți bloca/șterge cookie-urile și din setările browserului, dar anumite funcții pot deveni indisponibile.</p>
+
+		<h2>5. TERȚI</h2>
+		<p>Unele cookie-uri pot proveni de la furnizori terți utilizați pentru funcții tehnice/analitice. Folosim astfel de furnizori numai în condiții contractuale adecvate.</p>
+
+		<h2>6. LEGĂTURA CU GDPR</h2>
+		<p>Informațiile colectate prin cookie-uri care pot identifica indirect un utilizator sunt tratate conform <a href="{% url 'politica_confidentialitate' %}">Politicii de Confidențialitate</a> și GDPR.</p>
+
+		<h2>7. MODIFICĂRI</h2>
+		<p>Putem actualiza această politică. Versiunea curentă este publicată pe site, cu data ultimei actualizări.</p>
+
+		<h2>8. CONTACT</h2>
+		<p>Pentru întrebări privind cookie-uri și confidențialitate:</p>
+		<ul>
+			<li>E-mail: euadopt@gmail.com</li>
+			<li>Adresă: în curs de completare</li>
+		</ul>
+	</article>
+</section>
+{% include "anunturi/partials/legal_pages_shared_style.html" %}
+{% endblock %}

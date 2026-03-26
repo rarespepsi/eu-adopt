@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+
+{% block title %}Contact | EU-ADOPT{% endblock %}
+{% block body_class %}page-contact{% endblock %}
+
+{% block content %}
+<section class="contact-wrap" aria-label="Pagina Contact">
+	<header class="contact-head">
+		<h1>Contact EU-ADOPT</h1>
+		<p>
+			Alege tipul solicitării și trimite mesajul direct din formularul de mai jos.
+		</p>
+	</header>
+
+	<div class="contact-grid contact-grid-top" role="list">
+		<article class="contact-card contact-card-legal" role="listitem">
+			<h2>Date operator platformă</h2>
+			<p><strong>Denumire legală:</strong> EU-ADOPT (operator platformă)</p>
+			<p><strong>CUI/CIF:</strong> în curs de completare</p>
+			<p><strong>Sediu:</strong> în curs de completare</p>
+			<p><strong>Telefon:</strong> în curs de completare</p>
+		</article>
+
+		<article class="contact-card" role="listitem">
+			<h2>1) Suport general</h2>
+			<p>Întrebări legate de cont, autentificare, utilizare pagini și probleme tehnice uzuale.</p>
+			<ul>
+				<li><strong>Canal:</strong> Formular intern Contact</li>
+				<li><strong>Timp orientativ răspuns:</strong> 1-3 zile lucrătoare</li>
+			</ul>
+		</article>
+
+		<article class="contact-card" role="listitem">
+			<h2>2) Date personale (GDPR)</h2>
+			<p>Drept de acces, rectificare, ștergere, restricționare, portabilitate, opoziție.</p>
+			<ul>
+				<li><strong>Canal:</strong> Formular intern Contact</li>
+				<li><strong>Politică:</strong> <a href="{% url 'politica_confidentialitate' %}">Politica de confidențialitate</a></li>
+			</ul>
+		</article>
+
+		<article class="contact-card" role="listitem">
+			<h2>3) Publicitate și servicii plătite</h2>
+			<p>Solicitări comerciale pentru promovare, campanii, sloturi și apariții publicitare.</p>
+			<ul>
+				<li><strong>Canal:</strong> Formular intern Contact</li>
+				<li><strong>Politică:</strong> <a href="{% url 'politica_servicii_platite' %}">Politica serviciilor plătite</a></li>
+			</ul>
+		</article>
+
+		<article class="contact-card" role="listitem">
+			<h2>4) Moderare și raportări</h2>
+			<p>Raportări privind conținut suspect, conturi abuzive, fraudă sau încălcări ale regulilor.</p>
+			<ul>
+				<li><strong>Canal:</strong> Formular intern Contact</li>
+				<li><strong>Politică:</strong> <a href="{% url 'politica_moderare' %}">Politica de moderare</a></li>
+			</ul>
+		</article>
+	</div>
+
+	<form method="post" enctype="multipart/form-data" class="contact-form" aria-label="Formular contact">
+		{% csrf_token %}
+		<input type="text" name="website" value="" autocomplete="off" tabindex="-1" aria-hidden="true" class="contact-hp" />
+		<h2>Trimite mesaj</h2>
+		{% if form_success %}
+			<p class="contact-ok contact-ok-toast" id="contactSuccessToast">Mesajul tău a fost trimis. Îți răspundem cât mai curând.</p>
+		{% endif %}
+		{% if form_errors %}
+			<div class="contact-errors" role="alert">
+				<ul>
+					{% for err in form_errors %}
+						<li>{{ err }}</li>
+					{% endfor %}
+				</ul>
+			</div>
+		{% endif %}
+		<div class="contact-form-grid">
+			<div>
+				<label for="id_contact_name">Nume *</label>
+				<input id="id_contact_name" name="full_name" type="text" required value="{{ form_prefill.full_name|default:'' }}" />
+			</div>
+			<div>
+				<label for="id_contact_email">E-mail *</label>
+				<input id="id_contact_email" name="email" type="email" required value="{{ form_prefill.email|default:'' }}" />
+			</div>
+			<div>
+				<label for="id_contact_phone">Telefon (opțional)</label>
+				<input id="id_contact_phone" name="phone" type="text" value="{{ form_prefill.phone|default:'' }}" />
+			</div>
+			<div>
+				<label for="id_contact_topic">Tip solicitare *</label>
+				<select id="id_contact_topic" name="topic" required>
+					{% for value, label in contact_topic_choices %}
+						<option value="{{ value }}" {% if form_prefill.topic == value %}selected{% endif %}>{{ label }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="contact-span2">
+				<label for="id_contact_subject">Subiect *</label>
+				<input id="id_contact_subject" name="subject" type="text" required value="{{ form_prefill.subject|default:'' }}" />
+			</div>
+			<div class="contact-span2">
+				<label for="id_contact_message">Mesaj *</label>
+				<textarea id="id_contact_message" name="message" rows="3" required>{{ form_prefill.message|default:'' }}</textarea>
+			</div>
+			<div class="contact-span2">
+				<label for="id_contact_attachment">Add file (optional)</label>
+				<input id="id_contact_attachment" name="attachment" type="file" />
+				{% if form_prefill.attachment_name %}
+					<small class="contact-file-note">Fișier selectat: {{ form_prefill.attachment_name }}</small>
+				{% endif %}
+			</div>
+			<label class="contact-check contact-span2">
+				<input type="checkbox" name="accept_privacy" {% if form_prefill.accept_privacy %}checked{% endif %} required />
+				Accept <a href="{% url 'politica_confidentialitate' %}" target="_blank" rel="noopener">Politica de confidențialitate (GDPR)</a> *
+			</label>
+		</div>
+		<div class="contact-form-actions">
+			<button type="submit">Send message</button>
+		</div>
+	</form>
+
+</section>
+
+<style>
+	html:has(body.page-contact),
+	body.page-contact {
+		height: 100%;
+		overflow: hidden;
+	}
+	body.page-contact #main_wrap {
+		height: 100vh;
+		max-height: 100vh;
+		overflow: hidden;
+	}
+	body.page-contact #main_content {
+		height: calc(100vh - var(--nav-h, 64px));
+		max-height: calc(100vh - var(--nav-h, 64px));
+		overflow: hidden !important;
+		display: flex;
+		flex-direction: column;
+	}
+	body.page-contact .contact-wrap {
+		max-width: 1100px;
+		margin: 0 auto;
+		padding: clamp(0.28rem, 0.7vw, 0.45rem);
+		display: flex;
+		flex-direction: column;
+		gap: 0.24rem;
+		height: 100%;
+		max-height: 100%;
+		overflow: hidden;
+	}
+	body.page-contact .contact-head {
+		background: #fff;
+		border: 1px solid rgba(211, 47, 47, 0.25);
+		border-radius: 14px;
+		padding: 0.34rem 0.5rem;
+	}
+	body.page-contact .contact-head h1 {
+		margin: 0 0 0.06rem;
+		color: #c62828;
+		font-size: clamp(0.84rem, 1.1vw, 0.96rem);
+	}
+	body.page-contact .contact-head p {
+		margin: 0;
+		color: #444;
+		font-size: 0.7rem;
+		line-height: 1.18;
+	}
+	body.page-contact .contact-grid {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 0.22rem;
+		flex: 0 0 auto;
+		min-height: 0;
+		order: 2;
+	}
+	body.page-contact .contact-grid.contact-grid-top {
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+	}
+	body.page-contact .contact-card {
+		background: #fff;
+		border: 1px solid rgba(0, 0, 0, 0.08);
+		border-radius: 12px;
+		padding: 0.34rem 0.42rem;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+	body.page-contact .contact-card h2 {
+		margin: 0 0 0.08rem;
+		font-size: 0.73rem;
+		color: #d32f2f;
+	}
+	body.page-contact .contact-card p {
+		margin: 0 0 0.12rem;
+		font-size: 0.67rem;
+		color: #4a4a4a;
+		line-height: 1.16;
+	}
+	body.page-contact .contact-card ul {
+		margin: 0;
+		padding-left: 0.72rem;
+		font-size: 0.66rem;
+		color: #2e2e2e;
+		line-height: 1.14;
+	}
+	body.page-contact .contact-card a {
+		color: #1565c0;
+		text-decoration: none;
+	}
+	body.page-contact .contact-card a:hover { text-decoration: underline; }
+	body.page-contact .contact-form {
+		background: #fff;
+		border: 1px solid rgba(0, 0, 0, 0.09);
+		border-radius: 12px;
+		padding: 0.28rem 0.42rem;
+		order: 1;
+		position: relative;
+		padding-top: 0.36rem;
+	}
+	body.page-contact .contact-form h2 {
+		margin: 0 0 0.08rem;
+		font-size: 0.76rem;
+		color: #d32f2f;
+	}
+	body.page-contact .contact-form-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.12rem 0.24rem;
+	}
+	body.page-contact .contact-form label {
+		display: block;
+		margin: 0 0 0.04rem;
+		font-size: 0.67rem;
+		font-weight: 600;
+		color: #555;
+	}
+	body.page-contact .contact-form input,
+	body.page-contact .contact-form select,
+	body.page-contact .contact-form textarea {
+		width: 100%;
+		box-sizing: border-box;
+		padding: 0.18rem 0.28rem;
+		font-size: 0.68rem;
+		border: 1px solid #cfd8dc;
+		border-radius: 6px;
+	}
+	body.page-contact .contact-form textarea { resize: vertical; min-height: 54px; }
+	body.page-contact .contact-form textarea {
+		height: 62px;
+		min-height: 62px;
+		max-height: 62px;
+		overflow-y: auto;
+		resize: none;
+	}
+	body.page-contact .contact-file-note {
+		display: block;
+		margin-top: 0.08rem;
+		font-size: 0.67rem;
+		color: #666;
+	}
+	body.page-contact .contact-span2 { grid-column: span 2; }
+	body.page-contact .contact-check {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.72rem;
+	}
+	body.page-contact .contact-check input { width: auto; }
+	body.page-contact .contact-check a { color: #1565c0; text-decoration: none; }
+	body.page-contact .contact-form-actions {
+		margin-top: 0.12rem;
+		display: flex;
+		justify-content: flex-end;
+	}
+	body.page-contact .contact-form-actions button {
+		border: none;
+		border-radius: 999px;
+		padding: 0.24rem 0.48rem;
+		font-size: 0.67rem;
+		font-weight: 700;
+		color: #fff;
+		background: #d32f2f;
+		cursor: pointer;
+	}
+	body.page-contact .contact-form-actions button:hover { background: #e53935; }
+	body.page-contact .contact-ok {
+		margin: 0 0 0.2rem;
+		padding: 0.28rem 0.4rem;
+		border-radius: 6px;
+		background: #e8f5e9;
+		border: 1px solid #81c784;
+		color: #1b5e20;
+		font-size: 0.73rem;
+	}
+	body.page-contact .contact-ok-toast {
+		position: absolute;
+		top: 0.22rem;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 20;
+		margin: 0;
+		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+		opacity: 1;
+		transition: opacity 220ms ease;
+		white-space: nowrap;
+	}
+	body.page-contact .contact-ok-toast.is-hiding {
+		opacity: 0;
+	}
+	body.page-contact .contact-errors {
+		margin: 0 0 0.2rem;
+		padding: 0.28rem 0.4rem;
+		border-radius: 6px;
+		background: #ffebee;
+		border: 1px solid #e57373;
+		color: #b71c1c;
+		font-size: 0.72rem;
+	}
+	body.page-contact .contact-errors ul { margin: 0; padding-left: 0.9rem; }
+	body.page-contact .contact-hp { position: absolute; left: -9999px; }
+	body.page-contact .contact-card-legal {
+		background: #fff8f2;
+		border-color: rgba(255, 152, 0, 0.35);
+	}
+	body.page-contact .contact-card-legal h2 {
+		color: #e65100;
+	}
+	body.page-contact .contact-card-legal p {
+		margin: 0.01rem 0;
+		font-size: 0.63rem;
+		color: #3f3f3f;
+	}
+	@media (max-width: 1100px) {
+		body.page-contact .contact-grid.contact-grid-top {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+	@media (max-width: 860px) {
+		body.page-contact,
+		body.page-contact #main_wrap,
+		body.page-contact #main_content {
+			height: auto;
+			max-height: none;
+			overflow: auto !important;
+		}
+		body.page-contact .contact-wrap {
+			height: auto;
+			max-height: none;
+			overflow: visible;
+		}
+		body.page-contact .contact-grid.contact-grid-top {
+			grid-template-columns: 1fr;
+			flex: initial;
+		}
+		body.page-contact .contact-form-grid {
+			grid-template-columns: 1fr;
+		}
+		body.page-contact .contact-span2 {
+			grid-column: auto;
+		}
+	}
+</style>
+<script>
+(function() {
+	var toast = document.getElementById('contactSuccessToast');
+	if (!toast) return;
+	window.setTimeout(function() {
+		toast.classList.add('is-hiding');
+		window.setTimeout(function() {
+			if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
+		}, 250);
+	}, 3000);
+})();
+</script>
+{% endblock %}

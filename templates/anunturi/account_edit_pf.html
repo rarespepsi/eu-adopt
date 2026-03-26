@@ -98,13 +98,13 @@
 				<input type="text" id="id_oras" name="oras" required value="{{ form_prefill.oras|default:'' }}" />
 			</div>
 			<div class="signup-field span2">
-				<label class="check"><input type="checkbox" name="accept_termeni" required {% if form_prefill.accept_termeni %}checked{% endif %} /> Accept termenii și condițiile *</label>
+				<label class="check"><input type="checkbox" name="accept_termeni" required {% if form_prefill.accept_termeni %}checked{% endif %} /> Accept <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">Termenii și condițiile de utilizare</a> *</label>
 			</div>
 			<div class="signup-field span2">
-				<label class="check"><input type="checkbox" name="accept_gdpr" required {% if form_prefill.accept_gdpr %}checked{% endif %} /> Accept GDPR *</label>
+				<label class="check"><input type="checkbox" name="accept_gdpr" required {% if form_prefill.accept_gdpr %}checked{% endif %} /> Accept <a href="{% url 'politica_confidentialitate' %}" target="_blank" rel="noopener">Politica de confidențialitate (GDPR)</a> *</label>
 			</div>
 			<div class="signup-field span2">
-				<label class="check"><input type="checkbox" name="email_opt_in_wishlist" {% if form_prefill.email_opt_in_wishlist %}checked{% endif %} /> Notificări email (wishlist)</label>
+				<label class="check"><input type="checkbox" name="email_opt_in_wishlist" {% if form_prefill.email_opt_in_wishlist %}checked{% endif %} /> Doresc notificări email EU-Adopt (opțional)</label>
 			</div>
 		</div>
 		<div class="signup-actions">
