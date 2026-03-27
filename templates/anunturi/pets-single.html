@@ -983,7 +983,7 @@
 																	<button type="button" id="petSendMessageBtn" class="pet-msg-send-btn" data-send-url="{% url 'pet_send_message' pet.pk %}">Send</button>
 																</div>
 															{% elif can_send_pet_message %}
-																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled>{% if adoption_request_status == "in_asteptare" %}Cererea ta de adopție este în așteptare. După ce organizația o acceptă în MyPet, vei putea trimite mesaje libere aici.{% else %}Folosește butonul „VREAU SA-L ADOPT” (lângă QR). După ce cererea este acceptată, poți folosi acest câmp pentru mesaje către organizație.{% endif %}</textarea>
+																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled>{% if adoption_request_status == "in_asteptare" %}Cererea ta de adopție este în așteptare. După ce organizația o acceptă în MyPet, vei putea trimite mesaje libere aici.{% else %}Folosește butonul „VREAU SĂ ADOPT” (lângă QR). După ce cererea este acceptată, poți folosi acest câmp pentru mesaje către organizație.{% endif %}</textarea>
 															{% elif user.is_authenticated %}
 																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled>Acesta este anunțul tău.</textarea>
 															{% else %}
@@ -1042,8 +1042,8 @@
 			role="button"
 			tabindex="0"
 			data-adopt-url="{% url 'pet_adoption_request' pet.pk %}"
-			aria-label="Vreau să-l adopt"
-		>VREAU SA-L ADOPT</div>
+			aria-label="Vreau să adopt"
+		>VREAU SĂ ADOPT</div>
 		{% endif %}
 		<div
 			class="pet-adoption-state-corner"
@@ -1502,21 +1502,21 @@
 						var data = {};
 						try { data = await resp.json(); } catch (e) {}
 						if (data.already === "pending") {
-							alert("Ai deja o cerere în așteptare pentru acest animal.");
+							alert("Ai deja o cerere în așteptare pentru acest animal. În pagina Servicii poți apăsa ♥ pe oferte din județul tău (opțional, bonus la adopție finalizată).");
 							return;
 						}
 						if (data.already === "accepted") {
-							alert("Cererea ta a fost deja acceptată. Verifică emailul și mesajele din MyPet.");
+							alert("Cererea ta a fost deja acceptată. Verifică emailul și mesajele din MyPet. În Servicii poți marca cu ♥ oferte pentru bonus (opțional).");
 							return;
 						}
 						if (!resp.ok || !data.ok) {
 							throw new Error((data && data.error) || "Nu am putut trimite cererea.");
 						}
 						if (data.queued) {
-							alert("Cererea a fost înregistrată în lista de așteptare. Dacă adopția curentă nu se finalizează, vei primi detaliile adopției.");
+							alert("Cererea a fost înregistrată în lista de așteptare. Dacă adopția curentă nu se finalizează, vei primi detaliile adopției. În Servicii poți marca cu ♥ oferte din județ (bonus opțional la finalizare).");
 							return;
 						}
-						alert("Cererea de adopție a fost trimisă. Organizația va fi notificată în Mesaje (MyPet).");
+						alert("Cererea de adopție a fost trimisă. Organizația va fi notificată în Mesaje (MyPet). Deschide Servicii: poți apăsa ♥ pe până la 3 oferte (una per categorie) din județul tău — bonus opțional când adopția se finalizează.");
 					} catch (err) {
 						alert(err.message || "Eroare la trimitere.");
 					} finally {

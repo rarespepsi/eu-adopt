@@ -131,7 +131,8 @@ def wishlist_counts(request):
             if show_magazinul_meu_nav:
                 message_unread_count = collab_business_unread_count
             elif show_mypet_nav:
-                message_unread_count = pet_message_unread_count + collab_client_unread_count
+                # MyPet (PF/ONG) rămâne strict pe fluxul de pet.
+                message_unread_count = pet_message_unread_count
             else:
                 message_unread_count = (
                     pet_message_unread_count

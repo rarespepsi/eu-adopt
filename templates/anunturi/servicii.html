@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=1" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=2" type="text/css" media="screen" />
 <style>
 	/* La fel ca PT: main_wrap, main_content, apoi SW cu aceleași dimensiuni ca PW */
 	body.page-servicii #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -234,6 +234,48 @@
 		padding: 1px 4px;
 		border-radius: 999px;
 		line-height: 1.2;
+	}
+	#SW .sw-s2-1-vet-offer-inner {
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+		height: 100%;
+		min-height: 0;
+	}
+	#SW .sw-adopt-bonus-heart {
+		position: absolute;
+		top: 2px;
+		right: 2px;
+		z-index: 4;
+		width: 26px;
+		height: 26px;
+		border: none;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.92);
+		color: #c62828;
+		font-size: 14px;
+		line-height: 1;
+		cursor: pointer;
+		box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	#SW .sw-adopt-bonus-heart.is-on {
+		background: #c62828;
+		color: #fff;
+	}
+	#SW .sw-adopt-bonus-banner {
+		flex: 0 0 auto;
+		margin: 0 0 4px 0;
+		padding: 6px 8px;
+		font-size: clamp(0.68rem, 1.6vw, 0.82rem);
+		line-height: 1.35;
+		background: linear-gradient(90deg, rgba(229, 57, 53, 0.12), rgba(255, 193, 7, 0.15));
+		border: 1px solid rgba(198, 40, 40, 0.35);
+		border-radius: 8px;
+		color: #1a1a1a;
 	}
 	/* Modal ofertă cabinet (notă în prim-plan, fundal blurat) – în afara #main_content */
 	#swVetOfferModal {
@@ -486,6 +528,13 @@
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
 	<main id="SW" class="servicii-wrapper" aria-label="Conținut Servicii">
+		{% if adoption_bonus_show_banner %}
+		<div class="sw-adopt-bonus-banner">
+			<strong>Bonus adopție:</strong> din bunătatea ta de a adopta, partenerii pot oferi servicii cu preț special.
+			Apasă <strong>♥</strong> pe cel mult <strong>o ofertă</strong> din fiecare categorie din <strong>județul din contul tău</strong> (cabinet, magazin, salon).
+			La <strong>adopție finalizată</strong> primești pe email coduri și linkuri. Totul este <strong>opțional</strong>.
+		</div>
+		{% endif %}
 		<div class="sw-grid">
 			<div id="S1" class="sw-cell sw-cell-1" data-slot="S1">
 				<div class="sw-strip-wrap sw-strip-s1" aria-label="Banda poze">
@@ -860,6 +909,59 @@
 	})();
 })();
 </script>
+{% if adoption_bonus_request_id %}
+<script>
+(function () {
+	function getCookie(name) {
+		var v = null;
+		if (document.cookie && document.cookie !== "") {
+			var parts = document.cookie.split("; ");
+			for (var i = 0; i < parts.length; i++) {
+				var p = parts[i].split("=");
+				if (p[0] === name) { v = decodeURIComponent((p[1] || "").replace(/\+/g, " ")); break; }
+			}
+		}
+		return v;
+	}
+	var sw = document.getElementById("SW");
+	if (!sw) return;
+	var reqId = {{ adoption_bonus_request_id }};
+	var toggleUrl = "{{ adoption_bonus_toggle_url|escapejs }}";
+	sw.addEventListener("click", function (ev) {
+		var btn = ev.target.closest(".sw-adopt-bonus-heart");
+		if (!btn) return;
+		ev.preventDefault();
+		ev.stopPropagation();
+		var oid = btn.getAttribute("data-offer-id");
+		if (!oid) return;
+		var token = getCookie("csrftoken");
+		var body = new URLSearchParams();
+		body.set("adoption_request_id", String(reqId));
+		body.set("offer_id", oid);
+		btn.setAttribute("aria-busy", "true");
+		fetch(toggleUrl, {
+			method: "POST",
+			credentials: "same-origin",
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+				"X-CSRFToken": token || ""
+			},
+			body: body.toString()
+		}).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+			.then(function (x) {
+				if (!x.ok || !x.d || !x.d.ok) {
+					alert((x.d && x.d.error) || "Nu am putut salva selecția.");
+					return;
+				}
+				btn.classList.toggle("is-on", !!x.d.selected);
+				btn.setAttribute("aria-pressed", x.d.selected ? "true" : "false");
+			})
+			.catch(function () { alert("Eroare de rețea."); })
+			.finally(function () { btn.removeAttribute("aria-busy"); });
+	}, true);
+})();
+</script>
+{% endif %}
 <script>
 (function () {
 	var modal = document.getElementById("swVetOfferModal");

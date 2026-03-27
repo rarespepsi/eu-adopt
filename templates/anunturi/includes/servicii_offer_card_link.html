@@ -1,28 +1,38 @@
 {% comment %}
   Card ofertă în grila Servicii (imagine + overlay preț / stoc).
   Variabile: offer, show_pdf_badge (opțional, default False)
+  adoption_bonus_show_heart / adoption_bonus_selected setate în servicii_view
 {% endcomment %}
-<a class="sw-s2-1-vet-offer-link sw-vet-offer-modal-trigger" href="{% url 'public_offer_detail' offer.pk %}" data-modal-tpl="sw-vet-offer-modal-tpl-{{ offer.pk }}">
-	{% if offer.image %}<img src="{{ offer.image.url }}" alt="{{ offer.title }}" loading="lazy" />{% endif %}
-	{% if show_pdf_badge and offer.product_sheet %}<span class="sw-vet-offer-sheet-badge" aria-hidden="true">PDF</span>{% endif %}
-	{% if offer.discount_percent %}<span class="sw-vet-offer-disc">−{{ offer.discount_percent }}%</span>{% endif %}
-	{% if offer.price_after_discount_display or offer.price_hint or offer.show_stock_public %}
-	<div class="sw-vet-offer-mid" aria-hidden="true">
-		{% if offer.price_after_discount_display %}
-			{% if offer.price_hint %}<span class="sw-vet-offer-price-old">{{ offer.price_hint }}</span>{% endif %}
-			<span class="sw-vet-offer-price-final">{{ offer.price_after_discount_display }}</span>
-		{% elif offer.price_hint %}
-			<span class="sw-vet-offer-price-final sw-vet-offer-price-final--solo">{{ offer.price_hint }}</span>
-		{% endif %}
-		{% if offer.show_stock_public %}
-			<span class="sw-vet-offer-remain">{{ offer.remaining_slots_public }} din {{ offer.quantity_total_public }} oferte</span>
-		{% endif %}
-	</div>
+<div class="sw-s2-1-vet-offer-inner" style="position:relative;width:100%;height:100%;min-height:0;">
+	{% if offer.adoption_bonus_show_heart %}
+	<button type="button"
+		class="sw-adopt-bonus-heart{% if offer.adoption_bonus_selected %} is-on{% endif %}"
+		data-offer-id="{{ offer.pk }}"
+		aria-pressed="{% if offer.adoption_bonus_selected %}true{% else %}false{% endif %}"
+		title="Salvează oferta pentru bonus la finalizarea adopției (opțional)">♥</button>
 	{% endif %}
-	<span class="sw-vet-offer-cap">
-		<span class="sw-vet-offer-title">{{ offer.title }}</span>
-		{% if offer.description %}
-		<span class="sw-vet-offer-desc">{{ offer.description }}</span>
+	<a class="sw-s2-1-vet-offer-link sw-vet-offer-modal-trigger" href="{% url 'public_offer_detail' offer.pk %}" data-modal-tpl="sw-vet-offer-modal-tpl-{{ offer.pk }}">
+		{% if offer.image %}<img src="{{ offer.image.url }}" alt="{{ offer.title }}" loading="lazy" />{% endif %}
+		{% if show_pdf_badge and offer.product_sheet %}<span class="sw-vet-offer-sheet-badge" aria-hidden="true">PDF</span>{% endif %}
+		{% if offer.discount_percent %}<span class="sw-vet-offer-disc">−{{ offer.discount_percent }}%</span>{% endif %}
+		{% if offer.price_after_discount_display or offer.price_hint or offer.show_stock_public %}
+		<div class="sw-vet-offer-mid" aria-hidden="true">
+			{% if offer.price_after_discount_display %}
+				{% if offer.price_hint %}<span class="sw-vet-offer-price-old">{{ offer.price_hint }}</span>{% endif %}
+				<span class="sw-vet-offer-price-final">{{ offer.price_after_discount_display }}</span>
+			{% elif offer.price_hint %}
+				<span class="sw-vet-offer-price-final sw-vet-offer-price-final--solo">{{ offer.price_hint }}</span>
+			{% endif %}
+			{% if offer.show_stock_public %}
+				<span class="sw-vet-offer-remain">{{ offer.remaining_slots_public }} din {{ offer.quantity_total_public }} oferte</span>
+			{% endif %}
+		</div>
 		{% endif %}
-	</span>
-</a>
+		<span class="sw-vet-offer-cap">
+			<span class="sw-vet-offer-title">{{ offer.title }}</span>
+			{% if offer.description %}
+			<span class="sw-vet-offer-desc">{{ offer.description }}</span>
+			{% endif %}
+		</span>
+	</a>
+</div>

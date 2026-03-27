@@ -167,7 +167,12 @@ class AccountProfile(models.Model):
 
     @property
     def can_adopt_animals(self) -> bool:
-        return self.role in {self.ROLE_PF, self.ROLE_ORG}
+        if self.role == self.ROLE_PF:
+            return True
+        if self.role == self.ROLE_ORG:
+            # Adăpost public: poate publica spre adopție, nu poate adopta.
+            return not bool(self.is_public_shelter)
+        return False
 
     @property
     def can_post_services(self) -> bool:
@@ -411,7 +416,7 @@ class UserPost(models.Model):
 
 class PetMessage(models.Model):
     """
-    Mesaje despre **animal / adopție** (MyPet, fișă câine).
+    Mesaje despre **animal / adopție** (MyPet, fișă publică).
 
     Folosit de **PF** și **ONG/SRL** (proprietar anunț sau adoptator).
     Nu folosi acest model pentru discuții despre servicii sau produse colaborator —
@@ -445,7 +450,7 @@ class CollabServiceMessage(models.Model):
 
     Colaboratorul este partea care oferă serviciul sau produsul; celălalt user
     (PF, ONG sau orice client) poartă discuția în acest flux.
-    Pentru adopție și fișă câine folosește `PetMessage`.
+    Pentru adopție și fișă animal folosește `PetMessage`.
     """
 
     CONTEXT_SERVICII = "servicii"
@@ -512,7 +517,7 @@ class CollabServiceMessage(models.Model):
 
 class AdoptionRequest(models.Model):
     """
-    Cerere de adopție: PF apasă „Vreau să-l adopt”; owner acceptă în MyPet.
+    Cerere de adopție: PF apasă „Vreau să adopt”; owner acceptă în MyPet.
     Datele de contact (PII) se trimit pe email doar după accept.
     """
 
@@ -549,6 +554,8 @@ class AdoptionRequest(models.Model):
     accepted_at = models.DateTimeField("Acceptată la", null=True, blank=True)
     accepted_expires_at = models.DateTimeField("Acceptare valabilă până la", null=True, blank=True)
     extension_count = models.PositiveSmallIntegerField("Număr prelungiri", default=0)
+    finalized_at = models.DateTimeField("Adopție finalizată la", null=True, blank=True)
+    goodwill_email_sent_at = models.DateTimeField("Mail bun venit +15 zile trimis la", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -559,6 +566,8 @@ class AdoptionRequest(models.Model):
         indexes = [
             models.Index(fields=["animal", "status"]),
             models.Index(fields=["adopter", "status"]),
+            models.Index(fields=["status", "goodwill_email_sent_at"]),
+            models.Index(fields=["status", "finalized_at"]),
         ]
 
     def __str__(self):
@@ -827,6 +836,50 @@ class CollaboratorServiceOffer(models.Model):
             return f"{int(round(final))} lei"
         s = f"{final:.2f}".replace(".", ",").rstrip("0").rstrip(",")
         return f"{s} lei"
+
+
+class AdoptionBonusSelection(models.Model):
+    """
+    Oferte partener alese cu inimioara în timpul unui demers de adopție (max 1 / partner_kind).
+    La adopție finalizată: cod comun + mail adoptator + mail colaborator.
+    """
+
+    adoption_request = models.ForeignKey(
+        AdoptionRequest,
+        on_delete=models.CASCADE,
+        related_name="bonus_selections",
+    )
+    offer = models.ForeignKey(
+        CollaboratorServiceOffer,
+        on_delete=models.CASCADE,
+        related_name="adoption_bonus_selections",
+    )
+    partner_kind = models.CharField(
+        "Canal ofertă (snapshot)",
+        max_length=20,
+        choices=CollaboratorServiceOffer.PARTNER_KIND_CHOICES,
+    )
+    redemption_code = models.CharField("Cod identificare", max_length=40, blank=True, default="")
+    bonus_emails_sent_at = models.DateTimeField("Mailuri bonus trimise la", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Selecție bonus adopție (ofertă)"
+        verbose_name_plural = "Selecții bonus adopție"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["adoption_request", "partner_kind"],
+                name="uniq_adoption_bonus_per_kind",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["adoption_request"]),
+            models.Index(fields=["redemption_code"]),
+        ]
+
+    def __str__(self):
+        return f"Bonus AR{self.adoption_request_id} {self.partner_kind} → ofertă {self.offer_id}"
 
 
 class CollaboratorOfferClaim(models.Model):
