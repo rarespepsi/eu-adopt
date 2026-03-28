@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Înregistrare Cabinet / Magazin / Servicii – EU-ADOPT{% endblock %}
+{% block title %}Înregistrare Cabinet / Magazin / Servicii / Transport – EU-ADOPT{% endblock %}
 {% block body_class %}page-login{% endblock %}
 
 {% block extra_css %}
@@ -40,7 +40,7 @@
 	}
 	.signup-col-main {
 		width: 100%;
-		max-width: 1040px;
+		max-width: 1240px;
 		display: flex;
 		flex-direction: row;
 		align-items: flex-start;
@@ -68,7 +68,8 @@
 	.signup-col-tip-box {
 		flex: 0 0 auto;
 		width: 200px;
-		height: 200px;
+		min-height: 200px;
+		height: auto;
 		align-self: center;
 		margin-left: -2.5rem;
 		background: rgba(255, 241, 118, 0.9);
@@ -264,6 +265,44 @@
 		align-items: stretch;
 		flex-wrap: wrap;
 	}
+	/* Caseta transport: lângă celelalte două; conținut compact pe rânduri */
+	.signup-col-caseta-transport {
+		flex: 1 1 220px;
+		min-width: 200px;
+		max-width: 340px;
+	}
+	.signup-col-caseta-transport .signup-col-transport-hint {
+		font-size: 0.68rem;
+		margin: 0 0 0.35rem;
+		color: #444;
+		line-height: 1.25;
+	}
+	.signup-col-transport-inline-row {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		gap: 0.35rem;
+		align-items: stretch;
+		margin-bottom: 0.28rem;
+	}
+	.signup-col-transport-inline-row:last-child {
+		margin-bottom: 0;
+	}
+	.signup-col-transport-inline-row .signup-col-field-box {
+		flex: 1 1 50%;
+		min-width: 0;
+		margin-bottom: 0;
+	}
+	.signup-col-caseta-transport .signup-col-transport-scope .signup-col-bifa-row {
+		display: grid !important;
+		grid-template-columns: 1fr auto;
+		align-items: center;
+		gap: 0.35rem;
+	}
+	.signup-col-caseta-transport .signup-col-transport-scope .signup-col-bifa-row span {
+		font-size: 0.62rem;
+		line-height: 1.2;
+	}
 	/* Buton + scris sub buton – aceeași poziție ca la ONG (în zona form-wrap, sub casete) */
 	.signup-col-actions {
 		margin-top: 0.28rem;
@@ -357,7 +396,7 @@
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
 	<div id="W" aria-label="Cadru principal">
-		<main aria-label="Înregistrare Cabinet / Magazin / Servicii EU-ADOPT" class="signup-col-main" id="signup-col-main">
+		<main aria-label="Înregistrare Cabinet / Magazin / Servicii / Transport EU-ADOPT" class="signup-col-main" id="signup-col-main">
 			<div class="signup-col-tip-box">
 				<h2 class="signup-col-tip-title">Tip partener</h2>
 				<label class="signup-col-tip-options">
@@ -372,6 +411,10 @@
 					<span class="signup-col-tip-option">
 						<input type="radio" id="id_tip_servicii" name="tip_partener" value="servicii" {% if form_prefill and form_prefill.tip_partener == 'servicii' %}checked{% endif %} />
 						<span>Servicii</span>
+					</span>
+					<span class="signup-col-tip-option">
+						<input type="radio" id="id_tip_transport" name="tip_partener" value="transport" {% if form_prefill and form_prefill.tip_partener == 'transport' %}checked{% endif %} />
+						<span>Transportator</span>
 					</span>
 				</label>
 				<p id="signup-col-tip-nota" class="signup-col-tip-nota" role="alert">Este obligatoriu să alegi una dintre variante.</p>
@@ -400,8 +443,8 @@
 					<input type="text" id="id_denumire_col" name="denumire" required value="{% if form_prefill %}{{ form_prefill.denumire|default:'' }}{% endif %}" />
 				</div>
 				<div class="signup-col-field signup-col-field-box">
-					<label for="id_denumire_societate_col">Denumire societate</label>
-					<input type="text" id="id_denumire_societate_col" name="denumire_societate" value="{% if form_prefill %}{{ form_prefill.denumire_societate|default:'' }}{% endif %}" />
+					<label for="id_denumire_societate_col">Denumire societate *</label>
+					<input type="text" id="id_denumire_societate_col" name="denumire_societate" required value="{% if form_prefill %}{{ form_prefill.denumire_societate|default:'' }}{% endif %}" />
 				</div>
 				<div class="signup-col-field signup-col-field-box signup-col-cui-row">
 					<div class="signup-col-cui-stanga">
@@ -474,8 +517,36 @@
 							<input type="checkbox" id="id_email_opt_in_col" name="email_opt_in_col" {% if form_prefill and form_prefill.email_opt_in %}checked{% endif %} />
 						</label>
 					</div>
+					</div>
 				</div>
-			</div>
+					<div id="signup-col-transport-block" class="signup-col-caseta signup-col-caseta-transport"{% if not form_prefill or form_prefill.tip_partener != 'transport' %} style="display:none;" hidden{% endif %}>
+						<h2>Capacitate transport</h2>
+						<p class="signup-col-transport-hint">Pentru transportator: bifează național și/sau internațional; completează capacitățile.</p>
+						<div class="signup-col-transport-inline-row">
+							<div class="signup-col-field signup-col-field-box signup-col-transport-scope">
+								<label class="signup-col-bifa-row" for="id_transport_national">
+									<span>TRANSPORT NAȚIONAL</span>
+									<input type="checkbox" name="transport_national" id="id_transport_national" value="on" {% if form_prefill and form_prefill.transport_national %}checked{% endif %} />
+								</label>
+							</div>
+							<div class="signup-col-field signup-col-field-box signup-col-transport-scope">
+								<label class="signup-col-bifa-row" for="id_transport_international">
+									<span>TRANSPORT INTERNATIONAL</span>
+									<input type="checkbox" name="transport_international" id="id_transport_international" value="on" {% if form_prefill and form_prefill.transport_international %}checked{% endif %} />
+								</label>
+							</div>
+						</div>
+						<div class="signup-col-transport-inline-row">
+							<div class="signup-col-field signup-col-field-box">
+								<label for="id_max_caini">Max. câini / cursă *</label>
+								<input type="number" id="id_max_caini" name="max_caini" min="1" max="99" value="{% if form_prefill %}{{ form_prefill.max_caini|default:'1' }}{% else %}1{% endif %}" />
+							</div>
+							<div class="signup-col-field signup-col-field-box">
+								<label for="id_max_pisici">Max. pisici / cursă *</label>
+								<input type="number" id="id_max_pisici" name="max_pisici" min="1" max="99" value="{% if form_prefill %}{{ form_prefill.max_pisici|default:'1' }}{% else %}1{% endif %}" />
+							</div>
+						</div>
+					</div>
 					</div>
 					<div class="signup-col-actions signup-col-actions-bottom">
 						<button type="submit" class="signup-col-submit" id="signup-col-submit-btn">Creează cont</button>
@@ -587,20 +658,31 @@
 	function initColValidation() {
 		// Sincronizare tip partener (radio în afara formularului) cu câmpul ascuns din formular
 		var hidden = document.getElementById('signup-col-tip-partener-hidden');
-		var radios = [document.getElementById('id_tip_cabinet'), document.getElementById('id_tip_magazin'), document.getElementById('id_tip_servicii')];
+		var transportBlock = document.getElementById('signup-col-transport-block');
+		var radios = [document.getElementById('id_tip_cabinet'), document.getElementById('id_tip_magazin'), document.getElementById('id_tip_servicii'), document.getElementById('id_tip_transport')];
 		function setTipFromRadios() {
 			if (!hidden) return;
 			for (var i = 0; i < radios.length; i++) {
 				if (radios[i] && radios[i].checked) {
 					hidden.value = radios[i].value;
+					if (transportBlock) {
+						var show = radios[i].value === 'transport';
+						transportBlock.style.display = show ? '' : 'none';
+						if (show) transportBlock.removeAttribute('hidden'); else transportBlock.setAttribute('hidden', '');
+					}
 					return;
 				}
 			}
 			hidden.value = '';
+			if (transportBlock) {
+				transportBlock.style.display = 'none';
+				transportBlock.setAttribute('hidden', '');
+			}
 		}
 		radios.forEach(function(r) {
 			if (r) r.addEventListener('change', setTipFromRadios);
 		});
+		setTipFromRadios();
 		var form = document.getElementById('signup-col-form');
 		if (form) form.addEventListener('submit', function() { setTipFromRadios(); });
 	}

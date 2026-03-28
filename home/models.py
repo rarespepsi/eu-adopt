@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -1022,4 +1023,262 @@ class ReclamaSlotNote(models.Model):
 
     def __str__(self):
         return f"{self.section}:{self.slot_code}"
+
+
+class TransportOperatorProfile(models.Model):
+    """
+    Profil transportator (colaborator cu tip_partener=transport).
+    Aprobare admin; capacitate câini/pisici; bifă național / internațional.
+    """
+
+    APPROVAL_PENDING = "pending"
+    APPROVAL_APPROVED = "approved"
+    APPROVAL_INACTIVE = "inactive"
+    APPROVAL_CHOICES = [
+        (APPROVAL_PENDING, "În așteptare aprobare"),
+        (APPROVAL_APPROVED, "Aprobat"),
+        (APPROVAL_INACTIVE, "Inactiv"),
+    ]
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="transport_operator_profile",
+    )
+    approval_status = models.CharField(
+        "Status aprobare",
+        max_length=20,
+        choices=APPROVAL_CHOICES,
+        default=APPROVAL_PENDING,
+        db_index=True,
+    )
+    transport_national = models.BooleanField("TRANSPORT NAȚIONAL", default=False)
+    transport_international = models.BooleanField("TRANSPORT INTERNATIONAL", default=False)
+    max_caini = models.PositiveSmallIntegerField("Capacitate max. câini / cursă", default=1)
+    max_pisici = models.PositiveSmallIntegerField("Capacitate max. pisici / cursă", default=1)
+    block_count = models.PositiveSmallIntegerField("Număr blocări", default=0)
+    blocked_until = models.DateTimeField("Blocat până la", null=True, blank=True)
+    removed_after_third_block = models.BooleanField("Eliminat după a 3-a blocare", default=False)
+    # Medie note user → transportator (agregat simplu; evaluările detaliate pot veni într-un model separat)
+    rating_sum = models.IntegerField("Sumă stele (user→transportator)", default=0)
+    rating_count = models.PositiveIntegerField("Număr evaluări (user→transportator)", default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Profil transportator"
+        verbose_name_plural = "Profile transportatori"
+
+    def __str__(self):
+        return f"Transport {self.user_id} ({self.approval_status})"
+
+    @property
+    def average_rating_public(self) -> Optional[float]:
+        if not self.rating_count:
+            return None
+        return round(self.rating_sum / self.rating_count, 2)
+
+
+class TransportVeterinaryRequest(models.Model):
+    """
+    Cerere completată pe pagina Transport (formular veterinar).
+    Opțional legată de o fișă animal când fluxul vine din adopție.
+    """
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transport_veterinary_requests",
+    )
+    judet = models.CharField("Județ", max_length=120)
+    oras = models.CharField("Oraș / localitate", max_length=120)
+    plecare = models.CharField("Punct plecare", max_length=500)
+    sosire = models.CharField("Punct sosire", max_length=500)
+    plecare_lat = models.CharField("Plecare lat", max_length=32, blank=True, default="")
+    plecare_lng = models.CharField("Plecare lng", max_length=32, blank=True, default="")
+    sosire_lat = models.CharField("Sosire lat", max_length=32, blank=True, default="")
+    sosire_lng = models.CharField("Sosire lng", max_length=32, blank=True, default="")
+    data_raw = models.CharField("Data (text formular)", max_length=40, blank=True, default="")
+    ora_raw = models.CharField("Ora (text formular)", max_length=20, blank=True, default="")
+    nr_caini = models.PositiveSmallIntegerField("Nr. animale", default=1)
+    ROUTE_NATIONAL = "national"
+    ROUTE_INTERNATIONAL = "international"
+    ROUTE_SCOPE_CHOICES = [
+        (ROUTE_NATIONAL, "Național"),
+        (ROUTE_INTERNATIONAL, "Internațional"),
+    ]
+    route_scope = models.CharField(
+        "Tip traseu",
+        max_length=20,
+        choices=ROUTE_SCOPE_CHOICES,
+        default=ROUTE_NATIONAL,
+    )
+    URGENCY_FLEX = "flex"
+    URGENCY_TODAY = "today"
+    URGENCY_24H = "h24"
+    URGENCY_CHOICES = [
+        (URGENCY_FLEX, "Fără fereastră strictă"),
+        (URGENCY_TODAY, "Transport azi"),
+        (URGENCY_24H, "24 ore"),
+    ]
+    urgency_window = models.CharField(
+        "Fereastră timp",
+        max_length=12,
+        choices=URGENCY_CHOICES,
+        default=URGENCY_FLEX,
+    )
+    related_animal = models.ForeignKey(
+        "AnimalListing",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transport_requests",
+        verbose_name="Anunț asociat (adopție)",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Cerere transport veterinar"
+        verbose_name_plural = "Cereri transport veterinar"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["-created_at"]),
+            models.Index(fields=["user", "-created_at"]),
+            models.Index(fields=["route_scope", "-created_at"]),
+        ]
+
+    def __str__(self):
+        return f"Transport #{self.pk} {self.judet}/{self.oras}"
+
+
+class TransportDispatchJob(models.Model):
+    """Flux: broadcast către transportatori, primul accept, anulare, re-ofertă."""
+
+    STATUS_OPEN = "open"
+    STATUS_ASSIGNED = "assigned"
+    STATUS_CANCELLED = "cancelled"
+    STATUS_COMPLETED = "completed"
+    STATUS_EXPIRED = "expired"
+    STATUS_EXHAUSTED = "exhausted"
+    STATUS_CHOICES = [
+        (STATUS_OPEN, "Deschisă (ofertă)"),
+        (STATUS_ASSIGNED, "Asignată"),
+        (STATUS_CANCELLED, "Anulată"),
+        (STATUS_COMPLETED, "Finalizată"),
+        (STATUS_EXPIRED, "Expirată"),
+        (STATUS_EXHAUSTED, "Fără transportatori disponibili"),
+    ]
+
+    tvr = models.OneToOneField(
+        TransportVeterinaryRequest,
+        on_delete=models.CASCADE,
+        related_name="dispatch_job",
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_OPEN, db_index=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    assigned_transporter = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transport_dispatch_jobs_assigned",
+    )
+    assigned_at = models.DateTimeField(null=True, blank=True)
+    reopen_count = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Job dispatch transport"
+        verbose_name_plural = "Joburi dispatch transport"
+
+    def __str__(self):
+        return f"Dispatch #{self.pk} TVR={self.tvr_id} {self.status}"
+
+
+class TransportDispatchRecipient(models.Model):
+    """Transportator invitat la o cerere; primul accept câștigă."""
+
+    ST_PENDING = "pending"
+    ST_ACCEPTED = "accepted"
+    ST_SUPERSEDED = "superseded"
+    ST_DECLINED = "declined"
+    STATUS_CHOICES = [
+        (ST_PENDING, "În așteptare"),
+        (ST_ACCEPTED, "Acceptat"),
+        (ST_SUPERSEDED, "Luat de altcineva"),
+        (ST_DECLINED, "Refuzat"),
+    ]
+
+    job = models.ForeignKey(
+        TransportDispatchJob,
+        on_delete=models.CASCADE,
+        related_name="recipients",
+    )
+    transporter = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="transport_dispatch_recipients",
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=ST_PENDING, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Destinatar dispatch transport"
+        verbose_name_plural = "Destinatari dispatch transport"
+        unique_together = [("job", "transporter")]
+        indexes = [
+            models.Index(fields=["job", "status"]),
+            models.Index(fields=["transporter", "status"]),
+        ]
+
+    def __str__(self):
+        return f"R{self.pk} job={self.job_id} t={self.transporter_id} {self.status}"
+
+
+class TransportTripRating(models.Model):
+    """Evaluare după cursă; reciprocă — vizibilitate diferită după direcție."""
+
+    DIR_USER_TO_OP = "user_to_op"
+    DIR_OP_TO_USER = "op_to_user"
+    DIR_CHOICES = [
+        (DIR_USER_TO_OP, "Utilizator → transportator"),
+        (DIR_OP_TO_USER, "Transportator → utilizator"),
+    ]
+
+    job = models.ForeignKey(
+        TransportDispatchJob,
+        on_delete=models.CASCADE,
+        related_name="ratings",
+    )
+    from_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="transport_ratings_given",
+    )
+    to_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="transport_ratings_received",
+    )
+    direction = models.CharField(max_length=20, choices=DIR_CHOICES)
+    stars = models.PositiveSmallIntegerField()
+    comment = models.TextField(blank=True, default="")
+    # user→op: inclus în medie publică; op→user: doar admin + părți (nu agregat public)
+    visible_to_public_profile = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Evaluare cursă transport"
+        verbose_name_plural = "Evaluări cursă transport"
+        indexes = [
+            models.Index(fields=["job", "direction"]),
+            models.Index(fields=["to_user", "-created_at"]),
+        ]
+
+    def __str__(self):
+        return f"Rating #{self.pk} job={self.job_id} {self.stars}*"
 

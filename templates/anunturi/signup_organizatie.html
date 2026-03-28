@@ -672,8 +672,9 @@
 							{% if field_errors and field_errors.denumire %}<p class="signup-field-err" role="alert">{{ field_errors.denumire }}</p>{% endif %}
 						</div>
 						<div class="signup-org-field signup-org-field-box">
-							<label for="id_denumire_societate">Denumire societate</label>
-							<input type="text" id="id_denumire_societate" name="denumire_societate" value="{% if form_prefill %}{{ form_prefill.denumire_societate|default:'' }}{% endif %}" />
+							<label for="id_denumire_societate">Denumire societate *</label>
+							<input type="text" id="id_denumire_societate" name="denumire_societate" required value="{% if form_prefill %}{{ form_prefill.denumire_societate|default:'' }}{% endif %}" />
+							{% if field_errors and field_errors.denumire_societate %}<p class="signup-field-err" role="alert">{{ field_errors.denumire_societate }}</p>{% endif %}
 						</div>
 						<div class="signup-org-field signup-org-field-box signup-org-cui-row">
 							<div class="signup-org-cui-stanga">

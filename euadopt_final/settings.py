@@ -152,6 +152,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Link absolut în emailuri (ex. remindere oferte colaborator). Ex.: https://www.eu-adopt.ro
 SITE_BASE_URL = os.environ.get("EUADOPT_SITE_BASE_URL", "").strip().rstrip("/")
 
+# Google Maps JavaScript API (Places Autocomplete pe /transport/). Setează EUADOPT_GOOGLE_MAPS_API_KEY în .env.
+GOOGLE_MAPS_API_KEY = os.environ.get("EUADOPT_GOOGLE_MAPS_API_KEY", "").strip()
+
 # Upload limits (video demo / fișiere MyPet)
 # Implicit Django poate bloca request-uri > ~2.5MB (DATA_UPLOAD_MAX_MEMORY_SIZE).
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25 MB

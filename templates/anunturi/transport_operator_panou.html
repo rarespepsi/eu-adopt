@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Panou transportator – EU-Adopt{% endblock %}
+{% block body_class %}page-login{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/w-cadru.css' %}?v=1" type="text/css" media="screen" />
+<style>
+	body.page-login #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
+	body.page-login #main_content { flex: 1 1 0; min-height: 0; overflow: auto; padding: 0.75rem 1rem 1.5rem; }
+	.top-wrap { max-width: 920px; margin: 0 auto; }
+	.top-card {
+		background: rgba(255, 255, 255, 0.88);
+		border-radius: 14px;
+		box-shadow: 0 2px 14px rgba(0,0,0,0.08);
+		border: 1px solid rgba(21, 101, 192, 0.2);
+		padding: 1rem 1.15rem;
+		margin-bottom: 1rem;
+	}
+	.top-card h1 { margin: 0 0 0.35rem; font-size: 1.05rem; font-weight: 800; color: #1565c0; text-transform: uppercase; letter-spacing: 0.04em; }
+	.top-meta { font-size: 0.88rem; color: #333; line-height: 1.45; }
+	.top-meta strong { color: #0d47a1; }
+	.avg-badge {
+		float: right;
+		margin: 0 0 0.5rem 0.75rem;
+		padding: 0.35rem 0.65rem;
+		border-radius: 10px;
+		background: #e3f2fd;
+		border: 1px solid #1565c0;
+		font-weight: 800;
+		font-size: 0.9rem;
+		color: #0d47a1;
+	}
+	.grid-two { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+	@media (max-width: 640px) { .grid-two { grid-template-columns: 1fr; } }
+	.sub-card {
+		background: rgba(227, 242, 253, 0.5);
+		border-radius: 10px;
+		padding: 0.75rem 0.9rem;
+		border: 1px dashed rgba(21, 101, 192, 0.35);
+	}
+	.sub-card h2 { margin: 0 0 0.4rem; font-size: 0.82rem; font-weight: 800; color: #1565c0; text-transform: uppercase; }
+	.sub-card p { margin: 0; font-size: 0.85rem; color: #444; }
+	.panou-links { margin-top: 0.75rem; font-size: 0.88rem; }
+	.panou-links a { color: #1565c0; font-weight: 700; }
+</style>
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<div class="top-wrap">
+		{% if tip_just_updated %}
+		<p style="background:#e8f5e9;border:1px solid #2e7d32;border-radius:8px;padding:0.5rem 0.75rem;margin:0 0 0.75rem;font-weight:600;color:#1b5e20;">Datele firmei au fost actualizate.</p>
+		{% endif %}
+		<div class="top-card">
+			<span class="avg-badge" title="Medie note utilizatori">{% if transport_profile.rating_count %}★ {{ transport_profile.average_rating_public }}{% else %}★ —{% endif %}</span>
+			<h1>Transport animale</h1>
+			<div class="top-meta">
+				<p><strong>Status cont:</strong>
+					{% if transport_profile.approval_status == 'approved' %}Aprobat — poți primi oferte (flux în dezvoltare).{% elif transport_profile.approval_status == 'inactive' %}Inactiv.{% else %}În așteptare aprobare admin.{% endif %}
+				</p>
+				<p><strong>Capacitate:</strong> max. {{ transport_profile.max_caini }} câini, max. {{ transport_profile.max_pisici }} pisici / cursă.</p>
+				<p><strong>Zonă:</strong>
+					{% if transport_profile.transport_national %}TRANSPORT NAȚIONAL{% endif %}
+					{% if transport_profile.transport_national and transport_profile.transport_international %} · {% endif %}
+					{% if transport_profile.transport_international %}TRANSPORT INTERNATIONAL{% endif %}
+				</p>
+			</div>
+			<div class="panou-links">
+				<a href="{% url 'account' %}">Fișa contului (date firmă)</a>
+				· <a href="{% url 'transport' %}">Pagina publică Transport</a>
+			</div>
+		</div>
+		<div class="grid-two">
+			<div class="sub-card">
+				<h2>Oferte / în așteptare</h2>
+				{% if dispatch_recipients %}
+				<ul style="margin:0;padding-left:1.1rem;font-size:0.85rem;line-height:1.4;">
+					{% for r in dispatch_recipients %}
+					<li style="margin-bottom:0.45rem;">
+						Cerere #{{ r.job.tvr.pk }} — job {{ r.job.pk }} · <strong>{{ r.get_status_display }}</strong>
+						{% if r.job.status == 'open' and r.status == 'pending' %}· deschisă{% endif %}
+					</li>
+					{% endfor %}
+				</ul>
+				<p style="margin:0.5rem 0 0;font-size:0.78rem;color:#555;">Acceptă / refuză din emailurile primite (linkuri semnate).</p>
+				{% else %}
+				<p style="margin:0;font-size:0.85rem;">Nicio ofertă în listă momentan.</p>
+				{% endif %}
+			</div>
+			<div class="sub-card">
+				<h2>Preluate de tine</h2>
+				{% if dispatch_assigned %}
+				<ul style="margin:0;padding-left:1.1rem;font-size:0.85rem;line-height:1.4;">
+					{% for j in dispatch_assigned %}
+					<li style="margin-bottom:0.55rem;">
+						Cerere #{{ j.tvr.pk }} — job {{ j.pk }}
+						{% if j.status == 'assigned' or j.status == 'completed' %}
+						<a href="{% url 'transport_dispatch_rate' j.pk %}" style="font-size:0.78rem;margin-left:0.35rem;font-weight:700;">Evaluează clientul</a>
+						{% endif %}
+						{% if j.status == 'assigned' %}
+						<form method="post" action="{% url 'transport_op_release_job' %}" style="display:inline;margin-left:0.35rem;">
+							{% csrf_token %}
+							<input type="hidden" name="job_id" value="{{ j.pk }}" />
+							<button type="submit" style="font-size:0.75rem;padding:0.15rem 0.45rem;cursor:pointer;">Renunță / retrimite</button>
+						</form>
+						{% endif %}
+					</li>
+					{% endfor %}
+				</ul>
+				{% else %}
+				<p style="margin:0;font-size:0.85rem;">Nicio cursă asignată încă.</p>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</section>
+{% endblock %}

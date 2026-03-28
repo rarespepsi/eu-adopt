@@ -1,8 +1,8 @@
 # EU-Adopt Project – Structure Reference
 
-**Proiect de lucru: doar `euadopt_final/`.** Nu modifica proiectul vechi (fișiere din adoptapet_pro în afara folderului euadopt_final). Toate modificările se fac aici.
+**Proiect de lucru:** acest repository; aplicația Django este în `euadopt_final/`.
 
-**Use only this structure. Do not suggest old layouts or alternative structures.**
+**Use only this structure. Do not suggest alternative layouts or parallel architectures.**
 
 ## Development rules
 

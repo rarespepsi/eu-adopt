@@ -52,6 +52,11 @@ from .models import (
     CollaboratorOfferClaim,
     PromoA2Order,
     ReclamaSlotNote,
+    TransportVeterinaryRequest,
+    TransportOperatorProfile,
+    TransportDispatchJob,
+    TransportDispatchRecipient,
+    TransportTripRating,
 )
 from django.contrib.auth import get_user_model
 from functools import wraps
@@ -303,8 +308,9 @@ def _promo_a2_send_summary_email(order: PromoA2Order) -> bool:
 
 def _collaborator_tip_partener(request) -> str:
     """
-    Valoare din înregistrare colaborator (tip_partener): cabinet | servicii | magazin.
+    Valoare din înregistrare colaborator (tip_partener): cabinet | servicii | magazin | transport.
     Cabinet și servicii folosesc același template; magazin are pagină separată (produse).
+    Transport: panou dedicat, fără oferte S3/S4/S5.
     Pentru staff cu „Vezi ca colaborator”, tipul vine din sesiune (preview Magazinul meu).
     """
     user = getattr(request, "user", None)
@@ -313,7 +319,7 @@ def _collaborator_tip_partener(request) -> str:
     if getattr(user, "is_staff", False) or getattr(user, "is_superuser", False):
         if request.session.get("view_as_role") == "collaborator":
             st = (request.session.get("view_as_collab_tip") or "servicii").strip().lower()
-            if st in ("cabinet", "servicii", "magazin"):
+            if st in ("cabinet", "servicii", "magazin", "transport"):
                 return st
             return "servicii"
     try:
@@ -321,7 +327,7 @@ def _collaborator_tip_partener(request) -> str:
         tip = (getattr(prof, "collaborator_type", None) or "").strip().lower()
     except Exception:
         tip = ""
-    if tip in ("cabinet", "servicii", "magazin"):
+    if tip in ("cabinet", "servicii", "magazin", "transport"):
         return tip
     return "servicii"
 
@@ -731,6 +737,13 @@ def _adopter_profile_county_raw(user) -> str:
     if not prof:
         return ""
     return (prof.judet or "").strip() or (prof.company_judet or "").strip()
+
+
+def _adopter_has_county_for_transport(user) -> bool:
+    """Transport la adopție: afișăm opțiunea dacă userul are județ în profil (zonă cunoscută)."""
+    if not getattr(user, "is_authenticated", False):
+        return False
+    return bool(_adopter_profile_county_raw(user).strip())
 
 
 def _offer_collab_county_norm(offer: CollaboratorServiceOffer) -> str:
@@ -1992,6 +2005,18 @@ def signup_verificare_sms_view(request):
         profile.accept_gdpr = data.get("accept_gdpr", False)
         profile.email_opt_in_wishlist = data.get("email_opt_in", False)
         profile.save()
+        tip_col = (data.get("tip_partener") or "").strip().lower()
+        if tip_col == "transport":
+            TransportOperatorProfile.objects.update_or_create(
+                user=user,
+                defaults={
+                    "transport_national": bool(data.get("transport_national")),
+                    "transport_international": bool(data.get("transport_international")),
+                    "max_caini": max(1, min(99, int(data.get("max_caini") or 1))),
+                    "max_pisici": max(1, min(99, int(data.get("max_pisici") or 1))),
+                    "approval_status": TransportOperatorProfile.APPROVAL_PENDING,
+                },
+            )
         _log_legal_consents(
             request,
             user,
@@ -2299,6 +2324,8 @@ def signup_organizatie_view(request):
         field_errors["email"] = "Acest email este deja folosit."
     if not denumire:
         field_errors["denumire"] = "Denumirea organizației este obligatorie."
+    if not denumire_societate:
+        field_errors["denumire_societate"] = "Denumirea societății este obligatorie."
     if not pers_contact:
         field_errors["pers_contact"] = "Persoana de contact este obligatorie."
     if not telefon:
@@ -2374,6 +2401,8 @@ def signup_colaborator_view(request):
                 data = dict(data)
                 data["cui_cu_ro"] = "da" if (data.get("cui") or "").upper().startswith("RO") else "nu"
             ctx["form_prefill"] = data
+        elif (request.GET.get("tip") or "").strip().lower() == "transport":
+            ctx["form_prefill"] = {"tip_partener": "transport"}
         return render(request, "anunturi/signup_colaborator.html", ctx)
 
     User = get_user_model()
@@ -2389,6 +2418,16 @@ def signup_colaborator_view(request):
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
     tip_partener = (request.POST.get("tip_partener") or "").strip()
+    transport_national = request.POST.get("transport_national") == "on"
+    transport_international = request.POST.get("transport_international") == "on"
+    try:
+        max_caini = max(1, min(99, int((request.POST.get("max_caini") or "1").strip() or "1")))
+    except ValueError:
+        max_caini = 1
+    try:
+        max_pisici = max(1, min(99, int((request.POST.get("max_pisici") or "1").strip() or "1")))
+    except ValueError:
+        max_pisici = 1
     parola1 = request.POST.get("parola1") or ""
     parola2 = request.POST.get("parola2") or ""
     accept_termeni = request.POST.get("accept_termeni_col") == "on"
@@ -2396,14 +2435,19 @@ def signup_colaborator_view(request):
     email_opt_in = request.POST.get("email_opt_in_col") == "on"
 
     errors = []
-    if tip_partener not in ("cabinet", "servicii", "magazin"):
-        errors.append("Trebuie să alegi tipul de partener: Cabinet veterinar, Servicii sau Magazin.")
+    if tip_partener not in ("cabinet", "servicii", "magazin", "transport"):
+        errors.append("Trebuie să alegi tipul de partener: Cabinet, Servicii, Magazin sau Transportator.")
+    if tip_partener == "transport":
+        if not transport_national and not transport_international:
+            errors.append("Bifează cel puțin una: TRANSPORT NAȚIONAL sau TRANSPORT INTERNATIONAL.")
     if not email:
         errors.append("Email obligatoriu.")
     if User.objects.filter(email=email).exists():
         errors.append("Acest email este deja folosit.")
     if not denumire:
         errors.append("Denumirea este obligatorie.")
+    if not denumire_societate:
+        errors.append("Denumirea societății este obligatorie.")
     if not pers_contact:
         errors.append("Persoana de contact este obligatorie.")
     if not telefon:
@@ -2434,7 +2478,11 @@ def signup_colaborator_view(request):
             "oras": oras,
             "email": email,
             "telefon": telefon,
-            "tip_partener": tip_partener if tip_partener in ("cabinet", "servicii", "magazin") else "",
+            "tip_partener": tip_partener if tip_partener in ("cabinet", "servicii", "magazin", "transport") else "",
+            "transport_national": transport_national,
+            "transport_international": transport_international,
+            "max_caini": max_caini,
+            "max_pisici": max_pisici,
             "accept_termeni": accept_termeni,
             "accept_gdpr": accept_gdpr,
             "email_opt_in": email_opt_in,
@@ -2442,8 +2490,9 @@ def signup_colaborator_view(request):
         }
         return render(request, "anunturi/signup_colaborator.html", {"signup_errors": errors, "form_prefill": prefill})
 
-    request.session["signup_pending"] = {
+    pending = {
         "role": "collaborator",
+        "tip_partener": tip_partener,
         "denumire": denumire,
         "denumire_societate": denumire_societate,
         "cui": cui,
@@ -2458,6 +2507,12 @@ def signup_colaborator_view(request):
         "accept_gdpr": accept_gdpr,
         "email_opt_in": email_opt_in,
     }
+    if tip_partener == "transport":
+        pending["transport_national"] = transport_national
+        pending["transport_international"] = transport_international
+        pending["max_caini"] = max_caini
+        pending["max_pisici"] = max_pisici
+    request.session["signup_pending"] = pending
     return redirect(reverse("signup_verificare_sms"))
 
 
@@ -2690,7 +2745,270 @@ def servicii_view(request):
 
 def transport_view(request):
     """Pagina Transport – wrapper TW, layout ca PW/SW."""
-    return render(request, "anunturi/transport.html", {})
+    ctx = {
+        "google_maps_api_key": getattr(settings, "GOOGLE_MAPS_API_KEY", "") or "",
+        "from_adoption_pet_pk": None,
+        "continue_adoption_url": "",
+    }
+    if request.GET.get("from_adoption") == "1":
+        raw = (request.GET.get("pet") or "").strip()
+        if raw.isdigit():
+            pk = int(raw)
+            if AnimalListing.objects.filter(pk=pk, is_published=True).exists():
+                ctx["from_adoption_pet_pk"] = pk
+                ctx["continue_adoption_url"] = reverse("pets_single", args=[pk]) + "?after_transport=1"
+    return render(request, "anunturi/transport.html", ctx)
+
+
+def _safe_local_redirect_path(path_val: str) -> str | None:
+    """Permite doar path-uri relative pe același site (open redirect safe)."""
+    p = (path_val or "").strip()
+    if not p.startswith("/") or p.startswith("//"):
+        return None
+    if "\n" in p or "\r" in p:
+        return None
+    return p
+
+
+@require_POST
+@csrf_protect
+def transport_submit_view(request):
+    """Salvează cererea de transport veterinar din formularul paginii /transport/."""
+    judet = (request.POST.get("judet") or "").strip()
+    oras = (request.POST.get("oras") or "").strip()
+    plecare = (request.POST.get("plecare") or "").strip()
+    sosire = (request.POST.get("sosire") or "").strip()
+    if not judet or not oras or not plecare or not sosire:
+        messages.error(
+            request,
+            "Completează județul, localitatea și punctele de plecare / sosire.",
+        )
+        return redirect("transport")
+
+    try:
+        nr = int(request.POST.get("nr_caini") or "1")
+        nr = max(1, min(99, nr))
+    except (TypeError, ValueError):
+        nr = 1
+
+    related = None
+    rp = (request.POST.get("related_pet_id") or "").strip()
+    if rp.isdigit():
+        related = AnimalListing.objects.filter(pk=int(rp), is_published=True).first()
+
+    rs = (request.POST.get("route_scope") or TransportVeterinaryRequest.ROUTE_NATIONAL).strip()
+    if rs not in (TransportVeterinaryRequest.ROUTE_NATIONAL, TransportVeterinaryRequest.ROUTE_INTERNATIONAL):
+        rs = TransportVeterinaryRequest.ROUTE_NATIONAL
+    uw = (request.POST.get("urgency_window") or TransportVeterinaryRequest.URGENCY_FLEX).strip()
+    if uw not in (
+        TransportVeterinaryRequest.URGENCY_FLEX,
+        TransportVeterinaryRequest.URGENCY_TODAY,
+        TransportVeterinaryRequest.URGENCY_24H,
+    ):
+        uw = TransportVeterinaryRequest.URGENCY_FLEX
+
+    tvr = TransportVeterinaryRequest.objects.create(
+        user=request.user if request.user.is_authenticated else None,
+        judet=judet[:120],
+        oras=oras[:120],
+        plecare=plecare[:500],
+        sosire=sosire[:500],
+        plecare_lat=(request.POST.get("plecare_lat") or "")[:32],
+        plecare_lng=(request.POST.get("plecare_lng") or "")[:32],
+        sosire_lat=(request.POST.get("sosire_lat") or "")[:32],
+        sosire_lng=(request.POST.get("sosire_lng") or "")[:32],
+        data_raw=(request.POST.get("data") or "")[:40],
+        ora_raw=(request.POST.get("ora") or "")[:20],
+        nr_caini=nr,
+        related_animal=related,
+        route_scope=rs,
+        urgency_window=uw,
+    )
+    if request.user.is_authenticated:
+        from .transport_dispatch import create_dispatch_for_tvr
+
+        create_dispatch_for_tvr(request, tvr)
+    messages.success(request, "Cererea de transport a fost înregistrată.")
+
+    next_path = _safe_local_redirect_path(request.POST.get("next") or "")
+    if next_path:
+        return redirect(next_path)
+    return redirect("transport")
+
+
+def transport_dispatch_accept_view(request):
+    """Link din email: transportator acceptă cererea."""
+    from urllib.parse import urlencode
+
+    from .transport_dispatch import accept_job, maybe_expire_job, parse_token
+
+    token = (request.GET.get("t") or "").strip()
+    parsed = parse_token(token)
+    if not parsed or parsed[0] != "accept":
+        messages.error(request, "Link invalid sau expirat.")
+        return redirect("home")
+    _, job_id, uid = parsed
+    if not request.user.is_authenticated:
+        return redirect(reverse("login") + "?" + urlencode({"next": request.get_full_path()}))
+    if request.user.pk != uid:
+        messages.error(request, "Acest link este pentru alt cont de transportator.")
+        return redirect("home")
+    job = TransportDispatchJob.objects.filter(pk=job_id).first()
+    if job:
+        maybe_expire_job(job)
+    ok, msg = accept_job(request, job_id, uid)
+    if ok:
+        messages.success(request, msg)
+    else:
+        messages.error(request, msg)
+    return redirect("transport_operator_panel")
+
+
+def transport_dispatch_decline_view(request):
+    from urllib.parse import urlencode
+
+    from .transport_dispatch import decline_job, maybe_expire_job, parse_token
+
+    token = (request.GET.get("t") or "").strip()
+    parsed = parse_token(token)
+    if not parsed or parsed[0] != "decline":
+        messages.error(request, "Link invalid sau expirat.")
+        return redirect("home")
+    _, job_id, uid = parsed
+    if not request.user.is_authenticated:
+        return redirect(reverse("login") + "?" + urlencode({"next": request.get_full_path()}))
+    if request.user.pk != uid:
+        messages.error(request, "Acest link este pentru alt cont.")
+        return redirect("home")
+    job = TransportDispatchJob.objects.filter(pk=job_id).first()
+    if job:
+        maybe_expire_job(job)
+    ok, msg = decline_job(request, job_id, uid)
+    if ok:
+        messages.success(request, msg)
+    else:
+        messages.error(request, msg)
+    return redirect("transport_operator_panel")
+
+
+@login_required
+def transport_dispatch_cancel_user_view(request):
+    from .transport_dispatch import cancel_job_by_user, parse_token
+
+    token = (request.GET.get("t") or "").strip()
+    parsed = parse_token(token)
+    if not parsed or parsed[0] != "cancel_user":
+        messages.error(request, "Link invalid sau expirat.")
+        return redirect("home")
+    _, job_id, uid = parsed
+    if request.user.pk != uid:
+        messages.error(request, "Acest link este pentru contul care a trimis cererea.")
+        return redirect("home")
+    ok, msg = cancel_job_by_user(request, job_id, uid)
+    if ok:
+        messages.success(request, msg)
+    else:
+        messages.error(request, msg)
+    return redirect("transport")
+
+
+@login_required
+@require_POST
+def transport_op_release_job_view(request):
+    """Transportator renunță după ce a acceptat — re-ofertă."""
+    from .transport_dispatch import cancel_assignment_by_transporter
+
+    try:
+        job_id = int((request.POST.get("job_id") or "").strip() or "0")
+    except ValueError:
+        job_id = 0
+    if not job_id:
+        messages.error(request, "Lipsește cererea.")
+        return redirect("transport_operator_panel")
+    ok, msg = cancel_assignment_by_transporter(request, job_id, request.user.pk)
+    if ok:
+        messages.success(request, msg)
+    else:
+        messages.error(request, msg)
+    return redirect("transport_operator_panel")
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def transport_dispatch_rate_view(request, job_id: int):
+    """Formular evaluare după cursă (utilizator → transportator sau invers)."""
+    from .transport_dispatch import submit_rating
+
+    job = get_object_or_404(
+        TransportDispatchJob.objects.select_related("tvr", "assigned_transporter", "tvr__user"),
+        pk=job_id,
+    )
+    if job.status not in (
+        TransportDispatchJob.STATUS_ASSIGNED,
+        TransportDispatchJob.STATUS_COMPLETED,
+    ):
+        messages.error(
+            request,
+            "Evaluarea este disponibilă după ce un transportator a acceptat cererea și cursa s-a derulat.",
+        )
+        return redirect("transport")
+
+    tvr = job.tvr
+    op = job.assigned_transporter
+    if not tvr.user_id or not op:
+        messages.error(request, "Cerere incompletă.")
+        return redirect("transport")
+
+    is_client = request.user.pk == tvr.user_id
+    is_op = request.user.pk == op.pk
+    if not is_client and not is_op:
+        messages.error(request, "Nu poți evalua această cerere.")
+        return redirect("home")
+
+    if is_client:
+        direction = TransportTripRating.DIR_USER_TO_OP
+        to_user = op
+        role_title = "Evaluează transportatorul"
+        hint = "Nota ta (medie) contribuie la reputația publică a transportatorului."
+    else:
+        direction = TransportTripRating.DIR_OP_TO_USER
+        to_user = tvr.user
+        role_title = "Evaluează clientul"
+        hint = "Evaluarea este vizibilă doar ție, clientului și echipei admin (nu publică pe site)."
+
+    existing = TransportTripRating.objects.filter(
+        job=job, from_user=request.user, direction=direction
+    ).first()
+
+    if request.method == "POST":
+        if existing:
+            messages.info(request, "Ai trimis deja această evaluare.")
+            return redirect(reverse("transport_dispatch_rate", kwargs={"job_id": job.pk}))
+        try:
+            stars = int((request.POST.get("stars") or "0").strip())
+        except ValueError:
+            stars = 0
+        if stars < 1 or stars > 5:
+            messages.error(request, "Alege între 1 și 5 stele.")
+            return redirect(reverse("transport_dispatch_rate", kwargs={"job_id": job.pk}))
+        comment = (request.POST.get("comment") or "").strip()
+        submit_rating(job, request.user, to_user, direction, stars, comment)
+        messages.success(request, "Mulțumim pentru evaluare.")
+        return redirect(reverse("transport_dispatch_rate", kwargs={"job_id": job.pk}))
+
+    return render(
+        request,
+        "anunturi/transport_dispatch_rate.html",
+        {
+            "job": job,
+            "tvr": tvr,
+            "to_user": to_user,
+            "role_title": role_title,
+            "hint": hint,
+            "existing": existing,
+            "direction": direction,
+        },
+    )
 
 
 def custi_view(request):
@@ -2803,6 +3121,9 @@ def dog_profile_view(request, pk):
             # Fallback defensiv pentru conturi vechi fără profil rol.
             viewer_can_adopt = True
 
+    after_transport = (request.GET.get("after_transport") == "1")
+    has_county = _adopter_has_county_for_transport(request.user) if request.user.is_authenticated else False
+
     ctx = {
         "pet": pet,
         "can_send_pet_message": bool(
@@ -2815,6 +3136,8 @@ def dog_profile_view(request, pk):
         "adoption_request_status": adoption_request_status,
         "adopter_messaging_unlocked": adopter_messaging_unlocked,
         "promote_allowed": promote_allowed,
+        "adoption_after_transport": bool(after_transport),
+        "adoption_transport_option_available": bool(has_county and not after_transport),
     }
     return render(request, "anunturi/pets-single.html", ctx)
 
@@ -3032,6 +3355,30 @@ def account_view(request):
         "account_profile": account_profile,
         "user_profile": user_profile,
     }
+    if user_profile and (user_profile.collaborator_type or "").strip().lower() == "transport":
+        ctx["transport_operator_profile"] = TransportOperatorProfile.objects.filter(user=user).first()
+    # Linkuri evaluare transport (client): joburi asignate fără notă user→transportator
+    if request.user.is_authenticated:
+        pending_tr = []
+        for dj in (
+            TransportDispatchJob.objects.filter(
+                tvr__user=user,
+                status__in=(
+                    TransportDispatchJob.STATUS_ASSIGNED,
+                    TransportDispatchJob.STATUS_COMPLETED,
+                ),
+            )
+            .select_related("tvr", "assigned_transporter")
+            .order_by("-assigned_at")[:12]
+        ):
+            if not TransportTripRating.objects.filter(
+                job=dj,
+                from_user=user,
+                direction=TransportTripRating.DIR_USER_TO_OP,
+            ).exists():
+                pending_tr.append(dj)
+        if pending_tr:
+            ctx["transport_pending_rating_jobs"] = pending_tr
     # Statistici + form_prefill pentru PF/ONG/Colaborator (caseta modificare profil în pagină)
     if account_profile and account_profile.role in (AccountProfile.ROLE_PF, AccountProfile.ROLE_ORG, AccountProfile.ROLE_COLLAB):
         ctx["animale_in_grija"] = AnimalListing.objects.filter(owner=user).count()
@@ -3079,7 +3426,7 @@ def admin_analysis_home_view(request):
         return redirect(reverse("home"))
     view_as_role = request.session.get("view_as_role") or None
     view_as_collab_tip = (request.session.get("view_as_collab_tip") or "servicii").strip().lower()
-    if view_as_collab_tip not in ("cabinet", "servicii", "magazin"):
+    if view_as_collab_tip not in ("cabinet", "servicii", "magazin", "transport"):
         view_as_collab_tip = "servicii"
     return render(
         request,
@@ -3100,7 +3447,7 @@ def admin_analysis_set_view_as_view(request):
     if role in ("pf", "org", "collaborator"):
         request.session["view_as_role"] = role
         if role == "collaborator":
-            if tip in ("cabinet", "servicii", "magazin"):
+            if tip in ("cabinet", "servicii", "magazin", "transport"):
                 request.session["view_as_collab_tip"] = tip
             elif not request.session.get("view_as_collab_tip"):
                 request.session["view_as_collab_tip"] = "servicii"
@@ -3504,6 +3851,8 @@ def account_edit_view(request):
         errors = []
         if not company_display_name:
             errors.append("Denumirea afișată a firmei este obligatorie.")
+        if not company_legal_name:
+            errors.append("Denumirea societății este obligatorie.")
         if not company_cui:
             errors.append("CUI/CIF este obligatoriu.")
         if not company_judet:
@@ -3511,8 +3860,8 @@ def account_edit_view(request):
         if not company_oras:
             errors.append("Orașul/localitatea firmei este obligatorie.")
         if account_profile.role == AccountProfile.ROLE_COLLAB:
-            if collaborator_type not in ("cabinet", "servicii", "magazin"):
-                errors.append("Tipul de colaborator trebuie să fie Cabinet, Servicii sau Magazin.")
+            if collaborator_type not in ("cabinet", "servicii", "magazin", "transport"):
+                errors.append("Tipul de colaborator trebuie să fie Cabinet, Servicii, Magazin sau Transportator.")
         elif account_profile.role == AccountProfile.ROLE_ORG:
             if is_public_shelter_val not in ("yes", "no"):
                 errors.append("Alege tipul de adăpost: Sunt adăpost public / Nu sunt adăpost public.")
@@ -3549,6 +3898,8 @@ def account_edit_view(request):
             account_profile.save(update_fields=["is_public_shelter"])
         request.session["account_updated"] = True
         if account_profile.role == AccountProfile.ROLE_COLLAB:
+            if collaborator_type == "transport":
+                return redirect(reverse("transport_operator_panel") + "?tip_updated=1")
             return redirect(reverse("collab_offers_control") + "?tip_updated=1")
         return redirect(reverse("account") + "?updated=1")
 
@@ -4043,8 +4394,17 @@ def mypet_view(request):
 def magazinul_meu_view(request):
     """
     Ruta /magazinul-meu/ redirecționează către pagina de control oferte (prima pagină colaborator).
-    Păstrăm URL-ul pentru compatibilitate; query-urile (ex. open_messages, tip_updated) se propagă.
+    Transportatorii → panou transport. Păstrăm URL-ul pentru compatibilitate.
     """
+    try:
+        prof = getattr(request.user, "profile", None)
+        if prof and (prof.collaborator_type or "").strip().lower() == "transport":
+            target = reverse("transport_operator_panel")
+            if request.GET:
+                target += "?" + request.GET.urlencode()
+            return redirect(target)
+    except Exception:
+        pass
     target = reverse("collab_offers_control")
     if request.GET:
         target += "?" + request.GET.urlencode()
@@ -5846,6 +6206,8 @@ def collab_offer_add_view(request):
     if not ap or ap.role != AccountProfile.ROLE_COLLAB:
         return redirect("home")
     tip = _collaborator_tip_partener(request)
+    if tip == "transport":
+        return redirect("transport_operator_panel")
     if tip not in ("cabinet", "servicii", "magazin"):
         messages.error(request, "Tip partener necunoscut.")
         return redirect("collab_offers_control")
@@ -5942,6 +6304,8 @@ def collab_offer_add_view(request):
 @require_POST
 def collab_offer_toggle_active_view(request, pk: int):
     tip = _collaborator_tip_partener(request)
+    if tip == "transport":
+        return redirect("transport_operator_panel")
     offer = get_object_or_404(
         CollaboratorServiceOffer, pk=pk, collaborator=request.user, partner_kind=tip
     )
@@ -5959,6 +6323,8 @@ def collab_offer_toggle_active_view(request, pk: int):
 @require_POST
 def collab_offer_delete_view(request, pk: int):
     tip = _collaborator_tip_partener(request)
+    if tip == "transport":
+        return redirect("transport_operator_panel")
     offer = get_object_or_404(
         CollaboratorServiceOffer, pk=pk, collaborator=request.user, partner_kind=tip
     )
@@ -6074,8 +6440,57 @@ def publicitate_harta_view(request):
 
 @login_required
 @collab_magazin_required
+def transport_operator_panel_view(request):
+    """Panou transportator: comenzi (în dezvoltare), capacitate, status aprobare."""
+    ap = getattr(request.user, "account_profile", None)
+    prof = getattr(request.user, "profile", None)
+    if not ap or ap.role != AccountProfile.ROLE_COLLAB:
+        return redirect("home")
+    if (getattr(prof, "collaborator_type", None) or "").strip().lower() != "transport":
+        return redirect("collab_offers_control")
+    top, _ = TransportOperatorProfile.objects.get_or_create(
+        user=request.user,
+        defaults={
+            "approval_status": TransportOperatorProfile.APPROVAL_PENDING,
+            "transport_national": True,
+            "transport_international": False,
+            "max_caini": 1,
+            "max_pisici": 1,
+        },
+    )
+    from .transport_dispatch import maybe_expire_job
+
+    recs = list(
+        TransportDispatchRecipient.objects.filter(transporter=request.user)
+        .select_related("job", "job__tvr")
+        .order_by("-job__updated_at")[:40]
+    )
+    for r in recs:
+        if r.job_id:
+            maybe_expire_job(r.job)
+    assigned = list(
+        TransportDispatchJob.objects.filter(assigned_transporter=request.user)
+        .select_related("tvr")
+        .order_by("-assigned_at")[:20]
+    )
+    return render(
+        request,
+        "anunturi/transport_operator_panou.html",
+        {
+            "transport_profile": top,
+            "tip_just_updated": (request.GET.get("tip_updated") or "").strip() == "1",
+            "dispatch_recipients": recs,
+            "dispatch_assigned": assigned,
+        },
+    )
+
+
+@login_required
+@collab_magazin_required
 def collab_offers_control_view(request):
     tip = _collaborator_tip_partener(request)
+    if tip == "transport":
+        return redirect(reverse("transport_operator_panel"))
     offers_qs = (
         CollaboratorServiceOffer.objects.filter(collaborator=request.user, partner_kind=tip)
         .annotate(claims_c=Count("claims"))
@@ -6123,6 +6538,8 @@ def collab_offers_control_view(request):
 @login_required
 @collab_magazin_required
 def collab_offer_new_view(request):
+    if _collaborator_tip_partener(request) == "transport":
+        return redirect("transport_operator_panel")
     M = CollaboratorServiceOffer
     return render(
         request,
@@ -6148,6 +6565,8 @@ def collab_offer_new_view(request):
 @require_http_methods(["GET", "POST"])
 def collab_offer_edit_view(request, pk: int):
     tip = _collaborator_tip_partener(request)
+    if tip == "transport":
+        return redirect("transport_operator_panel")
     offer = get_object_or_404(
         CollaboratorServiceOffer, pk=pk, collaborator=request.user, partner_kind=tip
     )

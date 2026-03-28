@@ -5,7 +5,7 @@
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=1" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=6" type="text/css" media="screen" />
 <style>
 	/* TW la fel ca PW/SW: fără scroll pagină, dimensiuni fixe în viewport */
 	body.page-transport { overflow: hidden !important; height: 100vh !important; }
@@ -45,6 +45,32 @@
 		body.page-transport #main_content { overflow-y: auto !important; overflow-x: hidden !important; }
 		body.page-transport #main_content #TW { overflow: visible !important; height: auto !important; max-height: none !important; }
 	}
+	.transport-from-adoption-banner {
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+		margin-bottom: 0.5rem;
+		padding: 0.5rem 0.65rem;
+		background: linear-gradient(135deg, rgba(21, 101, 192, 0.12), rgba(157, 28, 28, 0.08));
+		border: 2px solid #1565c0;
+		border-radius: 8px;
+		font-size: 0.72rem;
+		line-height: 1.35;
+		color: #0d1f33;
+	}
+	.transport-from-adoption-banner strong { display: block; margin-bottom: 0.25rem; font-size: 0.75rem; }
+	.transport-from-adoption-banner a {
+		display: inline-block;
+		margin-top: 0.35rem;
+		padding: 0.35rem 0.65rem;
+		background: #1565c0;
+		color: #fff !important;
+		font-weight: 800;
+		text-decoration: none;
+		border-radius: 6px;
+		font-size: 0.72rem;
+	}
+	.transport-from-adoption-banner a:hover { filter: brightness(1.08); }
 </style>
 {% endblock %}
 
@@ -55,8 +81,22 @@
 			<div id="T1" class="tw-cell" data-slot="T1">
 				<div class="t1-inner">
 					<h2 class="t1-title">Transport veterinar – România</h2>
+					{% if from_adoption_pet_pk and continue_adoption_url %}
+					<div class="transport-from-adoption-banner" role="status">
+						<strong>Pașii adopției</strong>
+						Completează detaliile de transport de mai jos. După aceea, apasă „Continuă cererea de adopție” pentru a reveni la fișă și a trimite cererea către organizație.
+						<a href="{{ continue_adoption_url }}">Continuă cererea de adopție</a>
+					</div>
+					{% endif %}
 					<p class="t1-intro">Cererea este transmisă colaboratorilor, primul care acceptă primește datele.</p>
-					<form class="t1-form" action="#" method="post">
+					<form class="t1-form" method="post" action="{% url 'transport_submit' %}">
+						{% csrf_token %}
+						{% if continue_adoption_url %}
+						<input type="hidden" name="next" value="{{ continue_adoption_url }}" />
+						{% endif %}
+						{% if from_adoption_pet_pk %}
+						<input type="hidden" name="related_pet_id" value="{{ from_adoption_pet_pk }}" />
+						{% endif %}
 						<div class="t1-field t1-caseta t1-row-inline">
 							<label class="t1-label" for="tw-judet">JUDET</label>
 							<input type="text" class="t1-input" id="tw-judet" name="judet" list="county-list-tw" placeholder="Alege sau scrie județul" autocomplete="off" />
@@ -69,17 +109,31 @@
 						</div>
 						<div class="t1-field t1-caseta">
 							<div class="t1-label-row">
-								<label class="t1-label">PUNCT PLECARE</label>
-								<a href="#" class="t1-link">ALEGE DE PE HARTĂ – PLECARE</a>
+								<label class="t1-label" for="plecare_input">PUNCT PLECARE</label>
+								{% if google_maps_api_key %}
+								<button type="button" class="t1-map-pick-btn" id="plecare_map_pick" title="Deschide harta aici și alege locația">Alege pe hartă</button>
+								{% else %}
+								<a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer" class="t1-link t1-maps-link" id="plecare_maps_link" title="Deschide în Google Maps">🗺️ Google Maps</a>
+								{% endif %}
 							</div>
-							<input type="text" class="t1-input" name="plecare" placeholder="Ex: Str. Lalelelor 10, Iași" />
+							<input type="text" class="t1-input" name="plecare" id="plecare_input" placeholder="Localitate, adresă sau punct de plecare" autocomplete="off" />
+							<input type="hidden" name="plecare_lat" id="plecare_lat" value="" />
+							<input type="hidden" name="plecare_lng" id="plecare_lng" value="" />
+							<p class="t1-hint">{% if google_maps_api_key %}Sugestii la tastare sau „Alege pe hartă” (aceeași pagină), în zona județului / localității.{% else %}Poți deschide harta în tab-ul alăturat.{% endif %}</p>
 						</div>
 						<div class="t1-field t1-caseta">
 							<div class="t1-label-row">
-								<label class="t1-label">PUNCT SOSIRE</label>
-								<a href="#" class="t1-link">ALEGE DE PE HARTĂ – SOSIRE</a>
+								<label class="t1-label" for="sosire_input">PUNCT SOSIRE</label>
+								{% if google_maps_api_key %}
+								<button type="button" class="t1-map-pick-btn" id="sosire_map_pick" title="Deschide harta aici și alege locația">Alege pe hartă</button>
+								{% else %}
+								<a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer" class="t1-link t1-maps-link" id="sosire_maps_link" title="Deschide în Google Maps">🗺️ Google Maps</a>
+								{% endif %}
 							</div>
-							<input type="text" class="t1-input" name="sosire" placeholder="Ex: Bd Unirii 15, București" />
+							<input type="text" class="t1-input" name="sosire" id="sosire_input" placeholder="Localitate, adresă sau punct de sosire" autocomplete="off" />
+							<input type="hidden" name="sosire_lat" id="sosire_lat" value="" />
+							<input type="hidden" name="sosire_lng" id="sosire_lng" value="" />
+							<p class="t1-hint">{% if google_maps_api_key %}Sugestii la tastare sau „Alege pe hartă” (aceeași pagină), în zona județului / localității.{% else %}Poți deschide harta în tab-ul alăturat.{% endif %}</p>
 						</div>
 						<div class="t1-field t1-caseta t1-row-inline t1-data-ora">
 							<label class="t1-label">DATA ȘI ORA</label>
@@ -94,6 +148,21 @@
 						<div class="t1-field t1-caseta t1-row-inline">
 							<label class="t1-label">NR. CÂINI</label>
 							<input type="number" class="t1-input t1-input-num" name="nr_caini" value="1" min="1" />
+						</div>
+						<div class="t1-field t1-caseta t1-row-inline">
+							<label class="t1-label" for="tw-route-scope">TRASEU</label>
+							<select class="t1-input" id="tw-route-scope" name="route_scope" aria-label="Tip traseu">
+								<option value="national" selected>Național</option>
+								<option value="international">Internațional</option>
+							</select>
+						</div>
+						<div class="t1-field t1-caseta t1-row-inline">
+							<label class="t1-label" for="tw-urgency">URGENȚĂ</label>
+							<select class="t1-input" id="tw-urgency" name="urgency_window" aria-label="Fereastră timp">
+								<option value="flex" selected>Fără limită strictă</option>
+								<option value="today">Transport azi</option>
+								<option value="h24">24 ore</option>
+							</select>
 						</div>
 						<button type="submit" class="t1-submit">TRIMITE CEREREA</button>
 					</form>
@@ -180,6 +249,24 @@
 		</div>
 	</main>
 </section>
+{% if google_maps_api_key %}
+<div id="transportMapModal" class="transport-map-modal" hidden aria-hidden="true">
+	<div class="transport-map-modal__backdrop" id="transportMapModalBackdrop" tabindex="-1"></div>
+	<div class="transport-map-modal__panel" role="dialog" aria-modal="true" aria-labelledby="transportMapModalTitle">
+		<h3 class="transport-map-modal__title" id="transportMapModalTitle">Alege locația pe hartă</h3>
+		<p class="transport-map-modal__hint" id="transportMapModalHint">Caută mai jos sau apasă pe hartă pentru pin. Poți muta pinul.</p>
+		<div class="transport-map-modal__search-wrap">
+			<label class="transport-map-modal__search-label" for="transportMapSearch">Caută adresă</label>
+			<input type="text" id="transportMapSearch" class="transport-map-modal__search" placeholder="Caută adresă, stradă, localitate…" autocomplete="off" />
+		</div>
+		<div id="transportMapCanvas" class="transport-map-modal__canvas"></div>
+		<div class="transport-map-modal__actions">
+			<button type="button" class="transport-map-modal__btn transport-map-modal__btn--cancel" id="transportMapModalCancel">Anulează</button>
+			<button type="button" class="transport-map-modal__btn transport-map-modal__btn--ok" id="transportMapModalConfirm">Folosește această locație</button>
+		</div>
+	</div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
@@ -240,4 +327,278 @@
 	}
 })();
 </script>
+{% if google_maps_api_key %}
+<script>
+(function() {
+	var key = '{{ google_maps_api_key|escapejs }}';
+	if (!key) return;
+	var script = document.createElement('script');
+	script.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key) + '&libraries=places&callback=transportPlacesReady';
+	script.async = true;
+	script.defer = true;
+	window.transportPlacesReady = function() {
+		if (typeof google === 'undefined' || !google.maps || !google.maps.places) return;
+		var geocoder = new google.maps.Geocoder();
+		/* Limite aproximative România – bias slab dacă nu e ales județul */
+		var romaniaBounds = new google.maps.LatLngBounds(
+			new google.maps.LatLng(43.62, 20.22),
+			new google.maps.LatLng(48.28, 29.75)
+		);
+		var baseOpts = {
+			types: ['establishment', 'geocode'],
+			componentRestrictions: { country: 'ro' }
+		};
+		var plecareInput = document.getElementById('plecare_input');
+		var sosireInput = document.getElementById('sosire_input');
+		var judetEl = document.getElementById('tw-judet');
+		var orasEl = document.getElementById('tw-oras');
+		var ac1 = null;
+		var ac2 = null;
+		if (plecareInput) ac1 = new google.maps.places.Autocomplete(plecareInput, baseOpts);
+		if (sosireInput) ac2 = new google.maps.places.Autocomplete(sosireInput, baseOpts);
+		function boundsAroundPoint(lat, lng, kmDelta) {
+			var d = kmDelta / 111.0;
+			return new google.maps.LatLngBounds(
+				new google.maps.LatLng(lat - d, lng - d * 1.2),
+				new google.maps.LatLng(lat + d, lng + d * 1.2)
+			);
+		}
+		var regionTimer = null;
+		function applyRegionBoundsToAutocomplete() {
+			if (!ac1 || !ac2) return;
+			var judet = judetEl && judetEl.value ? String(judetEl.value).trim() : '';
+			var oras = orasEl && orasEl.value ? String(orasEl.value).trim() : '';
+			if (!judet) {
+				ac1.setBounds(romaniaBounds);
+				ac2.setBounds(romaniaBounds);
+				return;
+			}
+			var query = oras ? (oras + ', ' + judet + ', România') : (judet + ', România');
+			geocoder.geocode({ address: query, region: 'ro' }, function(results, status) {
+				if (status !== 'OK' || !results || !results.length) {
+					ac1.setBounds(romaniaBounds);
+					ac2.setBounds(romaniaBounds);
+					return;
+				}
+				var g = results[0].geometry;
+				if (g.viewport) {
+					ac1.setBounds(g.viewport);
+					ac2.setBounds(g.viewport);
+				} else if (g.location) {
+					var lat = g.location.lat();
+					var lng = g.location.lng();
+					var b = boundsAroundPoint(lat, lng, oras ? 22 : 45);
+					ac1.setBounds(b);
+					ac2.setBounds(b);
+				} else {
+					ac1.setBounds(romaniaBounds);
+					ac2.setBounds(romaniaBounds);
+				}
+			});
+		}
+		function scheduleRegionBounds() {
+			if (regionTimer) clearTimeout(regionTimer);
+			regionTimer = setTimeout(applyRegionBoundsToAutocomplete, 320);
+		}
+		if (judetEl) {
+			judetEl.addEventListener('change', scheduleRegionBounds);
+			judetEl.addEventListener('input', scheduleRegionBounds);
+			judetEl.addEventListener('blur', applyRegionBoundsToAutocomplete);
+		}
+		if (orasEl) {
+			orasEl.addEventListener('change', scheduleRegionBounds);
+			orasEl.addEventListener('input', scheduleRegionBounds);
+			orasEl.addEventListener('blur', applyRegionBoundsToAutocomplete);
+		}
+		applyRegionBoundsToAutocomplete();
+		if (plecareInput && ac1) {
+			ac1.addListener('place_changed', function() {
+				var place = ac1.getPlace();
+				if (place && place.geometry) {
+					var latEl = document.getElementById('plecare_lat');
+					var lngEl = document.getElementById('plecare_lng');
+					if (latEl) latEl.value = String(place.geometry.location.lat());
+					if (lngEl) lngEl.value = String(place.geometry.location.lng());
+				}
+			});
+		}
+		if (sosireInput && ac2) {
+			ac2.addListener('place_changed', function() {
+				var place = ac2.getPlace();
+				if (place && place.geometry) {
+					var latEl = document.getElementById('sosire_lat');
+					var lngEl = document.getElementById('sosire_lng');
+					if (latEl) latEl.value = String(place.geometry.location.lat());
+					if (lngEl) lngEl.value = String(place.geometry.location.lng());
+				}
+			});
+		}
+		/* ——— Hartă în modal (aceeași pagină) ——— */
+		var transportMapModal = document.getElementById('transportMapModal');
+		var transportMapCanvas = document.getElementById('transportMapCanvas');
+		var mapPickerMap = null;
+		var mapPickerMarker = null;
+		var mapPickerMode = null;
+		var mapPickerSearchBox = null;
+		function ensureMapPickerMap() {
+			if (mapPickerMap || !transportMapCanvas) return;
+			mapPickerMap = new google.maps.Map(transportMapCanvas, {
+				zoom: 12,
+				center: { lat: 45.9432, lng: 24.9668 },
+				mapTypeControl: false,
+				streetViewControl: false,
+				fullscreenControl: true
+			});
+			mapPickerMarker = new google.maps.Marker({ map: mapPickerMap, draggable: true });
+			mapPickerMap.addListener('click', function(e) {
+				mapPickerMarker.setPosition(e.latLng);
+				mapPickerMarker.setMap(mapPickerMap);
+			});
+			var searchInput = document.getElementById('transportMapSearch');
+			if (searchInput && google.maps.places && google.maps.places.SearchBox) {
+				mapPickerSearchBox = new google.maps.places.SearchBox(searchInput);
+				mapPickerMap.addListener('bounds_changed', function() {
+					if (mapPickerSearchBox) mapPickerSearchBox.setBounds(mapPickerMap.getBounds());
+				});
+				mapPickerSearchBox.addListener('places_changed', function() {
+					var places = mapPickerSearchBox.getPlaces();
+					if (!places || !places.length) return;
+					var place = places[0];
+					if (!place.geometry || !place.geometry.location) return;
+					var loc = place.geometry.location;
+					mapPickerMarker.setPosition(loc);
+					mapPickerMarker.setMap(mapPickerMap);
+					if (place.geometry.viewport) {
+						mapPickerMap.fitBounds(place.geometry.viewport);
+					} else {
+						mapPickerMap.setCenter(loc);
+						mapPickerMap.setZoom(16);
+					}
+					setTimeout(function() {
+						google.maps.event.trigger(mapPickerMap, 'resize');
+					}, 100);
+				});
+			}
+		}
+		function closeTransportMapModal() {
+			if (!transportMapModal) return;
+			transportMapModal.hidden = true;
+			transportMapModal.setAttribute('aria-hidden', 'true');
+			document.body.style.overflow = '';
+			mapPickerMode = null;
+		}
+		function openTransportMapPicker(mode) {
+			mapPickerMode = mode;
+			var titleEl = document.getElementById('transportMapModalTitle');
+			if (titleEl) titleEl.textContent = mode === 'plecare' ? 'Punct plecare – alege pe hartă' : 'Punct sosire – alege pe hartă';
+			if (transportMapModal) {
+				transportMapModal.hidden = false;
+				transportMapModal.setAttribute('aria-hidden', 'false');
+			}
+			document.body.style.overflow = 'hidden';
+			var searchIn = document.getElementById('transportMapSearch');
+			if (searchIn) searchIn.value = '';
+			var latId = mode === 'plecare' ? 'plecare_lat' : 'sosire_lat';
+			var lngId = mode === 'plecare' ? 'plecare_lng' : 'sosire_lng';
+			var latEl = document.getElementById(latId);
+			var lngEl = document.getElementById(lngId);
+			function finishCenter(lat, lng, zoom) {
+				var pos = { lat: lat, lng: lng };
+				mapPickerMap.setCenter(pos);
+				mapPickerMap.setZoom(zoom || 13);
+				mapPickerMarker.setPosition(pos);
+				mapPickerMarker.setMap(mapPickerMap);
+				setTimeout(function() {
+					google.maps.event.trigger(mapPickerMap, 'resize');
+					mapPickerMap.setCenter(pos);
+				}, 280);
+				setTimeout(function() {
+					var si = document.getElementById('transportMapSearch');
+					if (si) si.focus();
+				}, 350);
+			}
+			setTimeout(function() {
+				ensureMapPickerMap();
+				if (latEl && lngEl && latEl.value && lngEl.value) {
+					var la = parseFloat(latEl.value);
+					var ln = parseFloat(lngEl.value);
+					if (!isNaN(la) && !isNaN(ln)) {
+						finishCenter(la, ln, 15);
+						return;
+					}
+				}
+				var judet = judetEl && judetEl.value ? String(judetEl.value).trim() : '';
+				var oras = orasEl && orasEl.value ? String(orasEl.value).trim() : '';
+				var query = oras ? (oras + ', ' + judet + ', România') : (judet ? (judet + ', România') : 'România');
+				geocoder.geocode({ address: query, region: 'ro' }, function(results, status) {
+					if (status === 'OK' && results[0] && results[0].geometry && results[0].geometry.location) {
+						var loc = results[0].geometry.location;
+						finishCenter(loc.lat(), loc.lng(), judet ? 12 : 7);
+					} else {
+						finishCenter(45.9432, 24.9668, 7);
+					}
+				});
+			}, 100);
+		}
+		var btnPickP = document.getElementById('plecare_map_pick');
+		var btnPickS = document.getElementById('sosire_map_pick');
+		if (btnPickP) btnPickP.addEventListener('click', function() { openTransportMapPicker('plecare'); });
+		if (btnPickS) btnPickS.addEventListener('click', function() { openTransportMapPicker('sosire'); });
+		var btnCancel = document.getElementById('transportMapModalCancel');
+		var btnOk = document.getElementById('transportMapModalConfirm');
+		var backdrop = document.getElementById('transportMapModalBackdrop');
+		if (btnCancel) btnCancel.addEventListener('click', closeTransportMapModal);
+		if (backdrop) backdrop.addEventListener('click', closeTransportMapModal);
+		if (btnOk) btnOk.addEventListener('click', function() {
+			if (!mapPickerMarker || !mapPickerMode) {
+				closeTransportMapModal();
+				return;
+			}
+			var pos = mapPickerMarker.getPosition();
+			if (!pos) {
+				closeTransportMapModal();
+				return;
+			}
+			geocoder.geocode({ location: pos }, function(results, status) {
+				var addr = (status === 'OK' && results[0]) ? results[0].formatted_address : (pos.lat().toFixed(5) + ', ' + pos.lng().toFixed(5));
+				if (mapPickerMode === 'plecare') {
+					if (plecareInput) plecareInput.value = addr;
+					var la = document.getElementById('plecare_lat');
+					var ln = document.getElementById('plecare_lng');
+					if (la) la.value = String(pos.lat());
+					if (ln) ln.value = String(pos.lng());
+				} else {
+					if (sosireInput) sosireInput.value = addr;
+					var la2 = document.getElementById('sosire_lat');
+					var ln2 = document.getElementById('sosire_lng');
+					if (la2) la2.value = String(pos.lat());
+					if (ln2) ln2.value = String(pos.lng());
+				}
+				closeTransportMapModal();
+			});
+		});
+		document.addEventListener('keydown', function(ev) {
+			if (ev.key === 'Escape' && transportMapModal && !transportMapModal.hidden) {
+				ev.preventDefault();
+				closeTransportMapModal();
+			}
+		});
+	};
+	document.head.appendChild(script);
+})();
+</script>
+{% else %}
+<script>
+(function() {
+	function updateMapsLink(id, q) {
+		var link = document.getElementById(id);
+		if (link && q) link.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+	}
+	var plecareInput = document.getElementById('plecare_input');
+	var sosireInput = document.getElementById('sosire_input');
+	if (plecareInput) plecareInput.addEventListener('input', function() { updateMapsLink('plecare_maps_link', plecareInput.value); });
+	if (sosireInput) sosireInput.addEventListener('input', function() { updateMapsLink('sosire_maps_link', sosireInput.value); });
+})();
+</script>
+{% endif %}
 {% endblock %}

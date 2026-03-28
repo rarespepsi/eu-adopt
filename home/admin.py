@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from django.contrib import admin
+from django.utils import timezone
 from .models import (
     UserProfile,
     UserAdoption,
@@ -9,6 +12,11 @@ from .models import (
     CollaboratorOfferClaim,
     PromoA2Order,
     ReclamaSlotNote,
+    TransportVeterinaryRequest,
+    TransportOperatorProfile,
+    TransportDispatchJob,
+    TransportDispatchRecipient,
+    TransportTripRating,
 )
 
 
@@ -109,3 +117,86 @@ class ReclamaSlotNoteAdmin(admin.ModelAdmin):
     list_filter = ("section",)
     search_fields = ("section", "slot_code", "text")
     raw_id_fields = ("updated_by",)
+
+
+def _block_transport_operators(queryset, days: int):
+    now = timezone.now()
+    until = now + timedelta(days=days)
+    for obj in queryset:
+        obj.block_count += 1
+        obj.blocked_until = until
+        if obj.block_count >= 3:
+            obj.removed_after_third_block = True
+            obj.approval_status = TransportOperatorProfile.APPROVAL_INACTIVE
+        obj.save()
+
+
+@admin.action(description="Blochează 7 zile (increment blocare)")
+def transport_op_block_7(modeladmin, request, queryset):
+    _block_transport_operators(queryset, 7)
+
+
+@admin.action(description="Blochează 14 zile (increment blocare)")
+def transport_op_block_14(modeladmin, request, queryset):
+    _block_transport_operators(queryset, 14)
+
+
+@admin.action(description="Blochează 21 zile (increment blocare)")
+def transport_op_block_21(modeladmin, request, queryset):
+    _block_transport_operators(queryset, 21)
+
+
+@admin.register(TransportOperatorProfile)
+class TransportOperatorProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "approval_status",
+        "transport_national",
+        "transport_international",
+        "max_caini",
+        "max_pisici",
+        "block_count",
+        "blocked_until",
+        "removed_after_third_block",
+        "rating_count",
+        "updated_at",
+    )
+    # Bife + status editabile din listă → Salvează, fără să deschizi formularul complet
+    list_display_links = ("user",)
+    list_editable = ("approval_status", "transport_national", "transport_international")
+    list_filter = ("approval_status", "transport_national", "transport_international")
+    search_fields = ("user__email", "user__username", "user__first_name", "user__last_name")
+    raw_id_fields = ("user",)
+    readonly_fields = ("created_at", "updated_at", "rating_sum", "rating_count")
+    actions = (transport_op_block_7, transport_op_block_14, transport_op_block_21)
+
+
+@admin.register(TransportDispatchJob)
+class TransportDispatchJobAdmin(admin.ModelAdmin):
+    list_display = ("id", "tvr", "status", "assigned_transporter", "expires_at", "reopen_count", "updated_at")
+    list_filter = ("status",)
+    raw_id_fields = ("tvr", "assigned_transporter")
+    search_fields = ("tvr__judet", "tvr__oras")
+
+
+@admin.register(TransportDispatchRecipient)
+class TransportDispatchRecipientAdmin(admin.ModelAdmin):
+    list_display = ("id", "job", "transporter", "status", "updated_at")
+    list_filter = ("status",)
+    raw_id_fields = ("job", "transporter")
+
+
+@admin.register(TransportTripRating)
+class TransportTripRatingAdmin(admin.ModelAdmin):
+    list_display = ("id", "job", "from_user", "to_user", "direction", "stars", "visible_to_public_profile", "created_at")
+    list_filter = ("direction", "visible_to_public_profile")
+    raw_id_fields = ("job", "from_user", "to_user")
+
+
+@admin.register(TransportVeterinaryRequest)
+class TransportVeterinaryRequestAdmin(admin.ModelAdmin):
+    list_display = ("id", "judet", "oras", "user", "related_animal", "nr_caini", "created_at")
+    list_filter = ("judet",)
+    search_fields = ("judet", "oras", "plecare", "sosire", "user__email", "user__username")
+    raw_id_fields = ("user", "related_animal")
+    readonly_fields = ("created_at",)

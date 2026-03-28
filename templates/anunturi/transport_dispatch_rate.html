@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ role_title }} – EU-Adopt{% endblock %}
+{% block body_class %}page-login{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/w-cadru.css' %}?v=1" type="text/css" media="screen" />
+<style>
+	body.page-login #main_content { flex: 1 1 0; min-height: 0; overflow: auto; padding: 1rem; max-width: 520px; margin: 0 auto; }
+	.tdr-card {
+		background: rgba(255,255,255,0.92);
+		border-radius: 14px;
+		padding: 1.1rem 1.25rem;
+		box-shadow: 0 2px 14px rgba(0,0,0,0.08);
+		border: 1px solid rgba(21, 101, 192, 0.2);
+	}
+	.tdr-card h1 { margin: 0 0 0.5rem; font-size: 1.05rem; color: #1565c0; text-transform: uppercase; letter-spacing: 0.04em; }
+	.tdr-hint { font-size: 0.85rem; color: #444; margin: 0 0 1rem; line-height: 1.45; }
+	.tdr-meta { font-size: 0.82rem; color: #555; margin-bottom: 1rem; }
+	.tdr-stars label { display: inline-block; margin-right: 0.35rem; cursor: pointer; font-size: 1.4rem; }
+	.tdr-stars input { accent-color: #1565c0; }
+	textarea.tdr-comment { width: 100%; min-height: 88px; padding: 0.5rem; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; }
+	.tdr-submit { margin-top: 0.75rem; padding: 0.45rem 1.2rem; border-radius: 999px; border: none; background: #1565c0; color: #fff; font-weight: 700; cursor: pointer; }
+	.tdr-done { background: #e8f5e9; border: 1px solid #2e7d32; color: #1b5e20; padding: 0.75rem; border-radius: 10px; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<div class="tdr-card">
+		<h1>{{ role_title }}</h1>
+		<p class="tdr-hint">{{ hint }}</p>
+		<p class="tdr-meta">Cerere #{{ tvr.pk }} · Job #{{ job.pk }} · Către: <strong>{{ to_user.get_full_name|default:to_user.username }}</strong></p>
+
+		{% if existing %}
+		<div class="tdr-done">
+			Ai trimis deja evaluarea: <strong>{{ existing.stars }} stele</strong>.
+			{% if existing.comment %}<br/>Comentariu: {{ existing.comment }}{% endif %}
+		</div>
+		<p style="margin-top:1rem;"><a href="{% url 'transport' %}">Înapoi la Transport</a>
+			{% if direction == 'op_to_user' %} · <a href="{% url 'transport_operator_panel' %}">Panou transportator</a>{% endif %}
+			{% if direction == 'user_to_op' %} · <a href="{% url 'account' %}">Contul meu</a>{% endif %}
+		</p>
+		{% else %}
+		<form method="post" action="">
+			{% csrf_token %}
+			<div class="tdr-stars" aria-label="Stele">
+				<span style="display:block;font-size:0.78rem;font-weight:700;margin-bottom:0.35rem;color:#333;">Stele (1–5)</span>
+				{% for s in "12345" %}
+				<label><input type="radio" name="stars" value="{{ s }}" required /> {{ s }}★</label>
+				{% endfor %}
+			</div>
+			<label for="tdr-comment" style="display:block;margin-top:0.75rem;font-size:0.82rem;font-weight:600;">Comentariu (opțional)</label>
+			<textarea class="tdr-comment" id="tdr-comment" name="comment" maxlength="2000" placeholder="Scurt feedback…"></textarea>
+			<button type="submit" class="tdr-submit">Trimite evaluarea</button>
+		</form>
+		{% endif %}
+	</div>
+</section>
+{% endblock %}

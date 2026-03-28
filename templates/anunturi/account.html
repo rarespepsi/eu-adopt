@@ -575,8 +575,8 @@ body.page-account .account-right-panel {
 						<input type="text" id="id_company_display_name" name="company_display_name" value="{{ fp_firma.company_display_name|default:user_profile.company_display_name|default:'' }}" class="firma-field" readonly />
 					</div>
 					<div class="signup-field span2">
-						<label for="id_company_legal_name">Denumire societate</label>
-						<input type="text" id="id_company_legal_name" name="company_legal_name" value="{{ fp_firma.company_legal_name|default:user_profile.company_legal_name|default:'' }}" class="firma-field" readonly />
+						<label for="id_company_legal_name">Denumire societate *</label>
+						<input type="text" id="id_company_legal_name" name="company_legal_name" value="{{ fp_firma.company_legal_name|default:user_profile.company_legal_name|default:'' }}" class="firma-field" required readonly />
 					</div>
 					<div class="signup-field span2">
 						<label>CUI / CIF *</label>
@@ -635,9 +635,21 @@ body.page-account .account-right-panel {
 								<span>Servicii / Grooming / Dresaj</span>
 								<input type="radio" name="collaborator_type" value="servicii" class="firma-field" disabled {% if fp_firma.collaborator_type == 'servicii' or user_profile.collaborator_type == 'servicii' %}checked{% endif %} />
 							</label>
+							<label class="signup-col-tip-option">
+								<span>Transportator</span>
+								<input type="radio" name="collaborator_type" value="transport" class="firma-field" disabled {% if fp_firma.collaborator_type == 'transport' or user_profile.collaborator_type == 'transport' %}checked{% endif %} />
+							</label>
 						</div>
 					{% endif %}
 				</div>
+				{% if transport_operator_profile %}
+				<div class="signup-field span2" style="margin-top:0.5rem;padding:0.5rem 0.65rem;background:rgba(227,242,253,0.45);border-radius:8px;border:1px solid rgba(21,101,192,0.25);">
+					<strong style="display:block;margin-bottom:0.35rem;color:#1565c0;font-size:0.88rem;">Fișă transportator</strong>
+					<span style="font-size:0.82rem;">Status: {{ transport_operator_profile.get_approval_status_display }} · Capacitate: {{ transport_operator_profile.max_caini }} câini / {{ transport_operator_profile.max_pisici }} pisici ·
+					{% if transport_operator_profile.transport_national %}Național{% endif %}{% if transport_operator_profile.transport_national and transport_operator_profile.transport_international %} · {% endif %}{% if transport_operator_profile.transport_international %}Internațional{% endif %}
+					</span>
+				</div>
+				{% endif %}
 				{% endwith %}
 				<div class="signup-actions" style="margin-top:0.6rem;">
 					<button type="button" id="btn-modificare-firma" class="btn-modificare-profil">
@@ -652,6 +664,14 @@ body.page-account .account-right-panel {
 	</aside>
 	{# Coloana din mijloc: caseta mare Contul meu (nemodificată) #}
 	<section class="cont-pf-wrap cont-pf-right" aria-label="Contul meu">
+		{% if transport_pending_rating_jobs %}
+		<div style="background:#e3f2fd;border:1px solid #1565c0;border-radius:10px;padding:0.65rem 0.85rem;margin-bottom:0.75rem;font-size:0.88rem;">
+			<strong style="color:#0d47a1;">Transport:</strong> poți lăsa o evaluare pentru transportator —
+			{% for dj in transport_pending_rating_jobs %}
+			<a href="{% url 'transport_dispatch_rate' dj.pk %}" style="font-weight:700;">cerere #{{ dj.tvr.pk }}</a>{% if not forloop.last %}, {% endif %}
+			{% endfor %}
+		</div>
+		{% endif %}
 		<div class="cont-pf-header-row">
 			<div class="cont-pf-header-card">
 				<div class="cont-pf-stats">

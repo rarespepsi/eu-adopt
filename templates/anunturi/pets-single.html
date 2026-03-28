@@ -767,6 +767,110 @@
 				}
 			}
 
+			/* Modal alegere: ridicare personală vs transport înainte de cerere adopție */
+			.pet-adopt-choice-modal {
+				position: fixed;
+				inset: 0;
+				z-index: 4000;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 1rem;
+				box-sizing: border-box;
+			}
+			.pet-adopt-choice-modal[hidden] {
+				display: none !important;
+			}
+			.pet-adopt-choice-modal__backdrop {
+				position: absolute;
+				inset: 0;
+				background: rgba(0, 0, 0, 0.5);
+				backdrop-filter: blur(2px);
+			}
+			.pet-adopt-choice-modal__panel {
+				position: relative;
+				z-index: 1;
+				width: min(100%, 440px);
+				max-height: 90vh;
+				overflow: auto;
+				background: #fff;
+				border: 2px solid #111;
+				border-radius: 12px;
+				padding: 1.1rem 1.2rem 1.2rem;
+				box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+				box-sizing: border-box;
+			}
+			.pet-adopt-choice-modal__title {
+				margin: 0 0 0.5rem;
+				font-size: 1.05rem;
+				font-weight: 900;
+				text-transform: uppercase;
+				letter-spacing: 0.04em;
+				color: #111;
+			}
+			.pet-adopt-choice-modal__text {
+				margin: 0 0 0.85rem;
+				font-size: 0.88rem;
+				line-height: 1.45;
+				color: #222;
+			}
+			.pet-adopt-choice-modal__hint {
+				margin: 0.5rem 0 0;
+				font-size: 0.78rem;
+				line-height: 1.4;
+				color: #444;
+			}
+			.pet-adopt-choice-modal__hint a {
+				color: #1565c0;
+				font-weight: 700;
+			}
+			.pet-adopt-choice-modal__options {
+				display: flex;
+				flex-direction: column;
+				gap: 0.65rem;
+				margin-bottom: 1rem;
+			}
+			.pet-adopt-choice-modal__opt {
+				display: flex;
+				align-items: flex-start;
+				gap: 0.5rem;
+				cursor: pointer;
+				font-size: 0.85rem;
+				line-height: 1.35;
+				color: #111;
+			}
+			.pet-adopt-choice-modal__opt input {
+				margin-top: 0.2rem;
+				flex-shrink: 0;
+			}
+			.pet-adopt-choice-modal__actions {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: flex-end;
+				gap: 0.5rem;
+			}
+			.pet-adopt-choice-modal__btn {
+				padding: 0.45rem 0.95rem;
+				font-size: 0.82rem;
+				font-weight: 800;
+				border-radius: 8px;
+				cursor: pointer;
+				border: 2px solid #111;
+				font-family: inherit;
+			}
+			.pet-adopt-choice-modal__btn--secondary {
+				background: #fff;
+				color: #111;
+			}
+			.pet-adopt-choice-modal__btn--primary {
+				background: #9d1c1c;
+				color: #fff;
+				border-color: #6b1010;
+			}
+			.pet-adopt-choice-modal__btn--primary:hover {
+				filter: brightness(1.05);
+			}
+
 			/* Controale video în modal (semitransparente) */
 			.pet-media-modal__video-controls {
 				display: flex !important;
@@ -1036,12 +1140,47 @@
 		</div>
 
 		{% if can_send_pet_message %}
+		<div id="petAdoptChoiceModal" class="pet-adopt-choice-modal" {% if not adoption_after_transport %}hidden{% endif %} aria-hidden="{% if adoption_after_transport %}false{% else %}true{% endif %}">
+			<div class="pet-adopt-choice-modal__backdrop" id="petAdoptChoiceBackdrop"></div>
+			<div class="pet-adopt-choice-modal__panel" role="dialog" aria-modal="true" aria-labelledby="petAdoptChoiceTitle">
+				{% if adoption_after_transport %}
+				<h3 class="pet-adopt-choice-modal__title" id="petAdoptChoiceTitle">Finalizează cererea de adopție</h3>
+				<p class="pet-adopt-choice-modal__text">Ai completat pasul cu transportul veterinar. Poți trimite acum cererea către organizație.</p>
+				<div class="pet-adopt-choice-modal__actions">
+					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--secondary" id="petAdoptChoiceCancelAfter">Închide</button>
+					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--primary" id="petAdoptChoiceSubmitAfter">Trimite cererea de adopție</button>
+				</div>
+				{% else %}
+				<h3 class="pet-adopt-choice-modal__title" id="petAdoptChoiceTitle">Cum preiei animalul?</h3>
+				<p class="pet-adopt-choice-modal__text">Alege o opțiune înainte de a trimite cererea de adopție.</p>
+				<div class="pet-adopt-choice-modal__options">
+					<label class="pet-adopt-choice-modal__opt">
+						<input type="radio" name="pet_adopt_pickup" value="personal" checked />
+						<span>Ridicare personală (mă întâlnesc cu organizația / punctul convenit)</span>
+					</label>
+					{% if adoption_transport_option_available %}
+					<label class="pet-adopt-choice-modal__opt">
+						<input type="radio" name="pet_adopt_pickup" value="transport" />
+						<span>Doresc transport veterinar (completezi formularul, apoi revii la cererea de adopție)</span>
+					</label>
+					{% else %}
+					<p class="pet-adopt-choice-modal__hint">Pentru opțiunea de transport, completează <strong>județul</strong> în <a href="{% url 'account_edit' %}">contul tău</a>, apoi revino la această fișă.</p>
+					{% endif %}
+				</div>
+				<div class="pet-adopt-choice-modal__actions">
+					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--secondary" id="petAdoptChoiceCancel">Anulează</button>
+					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--primary" id="petAdoptChoiceContinue">Continuă</button>
+				</div>
+				{% endif %}
+			</div>
+		</div>
 		<div
 			class="pet-adopt-corner"
 			id="petAdoptCorner"
 			role="button"
 			tabindex="0"
 			data-adopt-url="{% url 'pet_adoption_request' pet.pk %}"
+			data-transport-url="{% url 'transport' %}?from_adoption=1&pet={{ pet.pk }}"
 			aria-label="Vreau să adopt"
 		>VREAU SĂ ADOPT</div>
 		{% endif %}
@@ -1482,8 +1621,10 @@
 				});
 			}
 			var adoptCorner = document.getElementById("petAdoptCorner");
+			var adoptChoiceModal = document.getElementById("petAdoptChoiceModal");
 			if (adoptCorner) {
 				var adoptUrl = adoptCorner.getAttribute("data-adopt-url") || "";
+				var transportUrl = adoptCorner.getAttribute("data-transport-url") || "";
 				async function submitAdoptRequest() {
 					if (!adoptUrl) return;
 					var old = adoptCorner.textContent;
@@ -1524,14 +1665,65 @@
 						adoptCorner.textContent = old;
 					}
 				}
+				function closeAdoptChoiceModal() {
+					if (!adoptChoiceModal) return;
+					adoptChoiceModal.hidden = true;
+					adoptChoiceModal.setAttribute("aria-hidden", "true");
+					document.body.style.overflow = "";
+				}
+				function openAdoptChoiceModal() {
+					if (!adoptChoiceModal) return;
+					adoptChoiceModal.hidden = false;
+					adoptChoiceModal.setAttribute("aria-hidden", "false");
+					document.body.style.overflow = "hidden";
+				}
+				var afterTransportMode = {% if adoption_after_transport %}true{% else %}false{% endif %};
+				if (afterTransportMode && adoptChoiceModal) {
+					document.body.style.overflow = "hidden";
+				}
+				var bd = document.getElementById("petAdoptChoiceBackdrop");
+				if (bd) bd.addEventListener("click", closeAdoptChoiceModal);
+				var btnCancel = document.getElementById("petAdoptChoiceCancel");
+				var btnContinue = document.getElementById("petAdoptChoiceContinue");
+				if (btnCancel) btnCancel.addEventListener("click", closeAdoptChoiceModal);
+				if (btnContinue) {
+					btnContinue.addEventListener("click", function() {
+						var r = document.querySelector('input[name="pet_adopt_pickup"]:checked');
+						var v = r ? r.value : "personal";
+						if (v === "transport" && transportUrl) {
+							window.location.href = transportUrl;
+							return;
+						}
+						closeAdoptChoiceModal();
+						submitAdoptRequest();
+					});
+				}
+				var btnAfterClose = document.getElementById("petAdoptChoiceCancelAfter");
+				var btnAfterSubmit = document.getElementById("petAdoptChoiceSubmitAfter");
+				if (btnAfterClose) btnAfterClose.addEventListener("click", closeAdoptChoiceModal);
+				if (btnAfterSubmit) btnAfterSubmit.addEventListener("click", function() {
+					closeAdoptChoiceModal();
+					submitAdoptRequest();
+				});
+				document.addEventListener("keydown", function(ev) {
+					if (ev.key === "Escape" && adoptChoiceModal && !adoptChoiceModal.hidden) {
+						ev.preventDefault();
+						closeAdoptChoiceModal();
+					}
+				});
 				adoptCorner.addEventListener("click", function(e) {
 					e.preventDefault();
-					submitAdoptRequest();
+					if (afterTransportMode) {
+						submitAdoptRequest();
+						return;
+					}
+					openAdoptChoiceModal();
 				});
 				adoptCorner.addEventListener("keydown", function(e) {
 					if (e.key === "Enter" || e.key === " ") {
 						e.preventDefault();
-						submitAdoptRequest();
+						if (afterTransportMode) submitAdoptRequest();
+						else openAdoptChoiceModal();
 					}
 				});
 			}

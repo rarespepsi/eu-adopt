@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=2" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=3" type="text/css" media="screen" />
 <style>
 	/* La fel ca PT: main_wrap, main_content, apoi SW cu aceleași dimensiuni ca PW */
 	body.page-servicii #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -629,7 +629,15 @@
 			</div>
 			<div id="S6" class="sw-cell sw-cell-5" data-slot="S6">
 				<div class="sw-s5-grid">
-					<div class="sw-s5-slot" id="S6.1" data-slot="S6.1"><span class="sw-s6-label">S6.1</span></div>
+					<div class="sw-s5-slot sw-s5-slot--cuprins" id="S6.1" data-slot="S6.1">
+						<div class="sw-cuprins-inner" style="padding:0.35rem 0.45rem;font-size:clamp(0.68rem,1.6vw,0.82rem);line-height:1.35;">
+							<strong style="display:block;margin-bottom:0.25rem;color:#1565c0;text-transform:uppercase;letter-spacing:0.04em;">Cuprins servicii</strong>
+							<a href="#S3" style="color:#0d47a1;font-weight:700;">Cabinete veterinare</a> ·
+							<a href="#S4" style="color:#0d47a1;font-weight:700;">Magazine</a> ·
+							<a href="#S5" style="color:#0d47a1;font-weight:700;">Saloane grooming</a> ·
+							<a href="{% url 'transport' %}" style="color:#c62828;font-weight:800;">Transport animale</a>
+						</div>
+					</div>
 					<div class="sw-s5-slot" id="S6.2" data-slot="S6.2"><span class="sw-s6-label">S6.2</span></div>
 				</div>
 			</div>
