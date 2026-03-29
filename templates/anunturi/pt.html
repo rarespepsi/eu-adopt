@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load anunturi_extras %}
 
 {% block title %}Prietenul tău | EU Adopt{% endblock %}
 
@@ -292,21 +293,21 @@
 
 				<div class="pt-match-modal__traits-wrap">
 					<ul class="pt-match-modal__traits-list">
-						<li><label><input type="checkbox" name="trait_jucaus" /> JUCĂUȘ</label></li>
-						<li><label><input type="checkbox" name="trait_iubitor" /> IUBITOR</label></li>
-						<li><label><input type="checkbox" name="trait_protector" /> PROTECTOR</label></li>
-						<li><label><input type="checkbox" name="trait_energic" /> ENERGIC</label></li>
-						<li><label><input type="checkbox" name="trait_linistit" /> LINIȘTIT</label></li>
-						<li><label><input type="checkbox" name="trait_bun_copii" /> BUN CU COPII</label></li>
-						<li><label><input type="checkbox" name="trait_bun_caini" /> BUN CU ALȚI CÂINI</label></li>
-						<li><label><input type="checkbox" name="trait_bun_pisici" /> BUN CU PISICI</label></li>
-						<li><label><input type="checkbox" name="trait_obisnuit_casa" /> OBIȘNUIT ÎN CASĂ</label></li>
-						<li><label><input type="checkbox" name="trait_obisnuit_lesa" /> OBIȘNUIT CU LESA</label></li>
-						<li><label><input type="checkbox" name="trait_nu_latla" /> NU LATRĂ EXCESIV</label></li>
-						<li><label><input type="checkbox" name="trait_apartament" /> POTRIVIT PENTRU APARTAMENT</label></li>
-						<li><label><input type="checkbox" name="trait_se_adapteaza" /> SE ADAPTEAZĂ UȘOR</label></li>
-						<li><label><input type="checkbox" name="trait_tolereaza_singur" /> TOLEREAZĂ SĂ STEA SINGUR</label></li>
-						<li><label><input type="checkbox" name="trait_necesita_experienta" /> NECESITĂ EXPERIENȚĂ CU CÂINI</label></li>
+						<li><label><input type="checkbox" name="trait_jucaus" /> {% animal_trait_label selected_species|default:'dog' 'trait_jucaus' %}</label></li>
+						<li><label><input type="checkbox" name="trait_iubitor" /> {% animal_trait_label selected_species|default:'dog' 'trait_iubitor' %}</label></li>
+						<li><label><input type="checkbox" name="trait_protector" /> {% animal_trait_label selected_species|default:'dog' 'trait_protector' %}</label></li>
+						<li><label><input type="checkbox" name="trait_energic" /> {% animal_trait_label selected_species|default:'dog' 'trait_energic' %}</label></li>
+						<li><label><input type="checkbox" name="trait_linistit" /> {% animal_trait_label selected_species|default:'dog' 'trait_linistit' %}</label></li>
+						<li><label><input type="checkbox" name="trait_bun_copii" /> {% animal_trait_label selected_species|default:'dog' 'trait_bun_copii' %}</label></li>
+						<li><label><input type="checkbox" name="trait_bun_caini" /> {% animal_trait_label selected_species|default:'dog' 'trait_bun_caini' %}</label></li>
+						<li><label><input type="checkbox" name="trait_bun_pisici" /> {% animal_trait_label selected_species|default:'dog' 'trait_bun_pisici' %}</label></li>
+						<li><label><input type="checkbox" name="trait_obisnuit_casa" /> {% animal_trait_label selected_species|default:'dog' 'trait_obisnuit_casa' %}</label></li>
+						<li><label><input type="checkbox" name="trait_obisnuit_lesa" /> {% animal_trait_label selected_species|default:'dog' 'trait_obisnuit_lesa' %}</label></li>
+						<li><label><input type="checkbox" name="trait_nu_latla" /> {% animal_trait_label selected_species|default:'dog' 'trait_nu_latla' %}</label></li>
+						<li><label><input type="checkbox" name="trait_apartament" /> {% animal_trait_label selected_species|default:'dog' 'trait_apartament' %}</label></li>
+						<li><label><input type="checkbox" name="trait_se_adapteaza" /> {% animal_trait_label selected_species|default:'dog' 'trait_se_adapteaza' %}</label></li>
+						<li><label><input type="checkbox" name="trait_tolereaza_singur" /> {% animal_trait_label selected_species|default:'dog' 'trait_tolereaza_singur' %}</label></li>
+						<li><label><input type="checkbox" name="trait_necesita_experienta" /> {% animal_trait_label selected_species|default:'dog' 'trait_necesita_experienta' %}</label></li>
 					</ul>
 				</div>
 

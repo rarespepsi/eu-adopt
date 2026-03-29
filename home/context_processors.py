@@ -1,11 +1,11 @@
-from .models import WishlistItem, PetMessage, CollabServiceMessage
+from .models import AccountProfile, WishlistItem, PetMessage, CollabServiceMessage
 from .data import DEMO_DOGS
 from django.utils import timezone
 
 
 def _collaborator_tip_partener_for_nav(request):
     """
-    cabinet | servicii | magazin — aliniat cu views._collaborator_tip_partener
+    cabinet | servicii | magazin | transport — aliniat cu views._collaborator_tip_partener
     (inclus staff „Vezi ca colaborator” + view_as_collab_tip în sesiune).
     """
     user = getattr(request, "user", None)
@@ -14,7 +14,7 @@ def _collaborator_tip_partener_for_nav(request):
     if getattr(user, "is_staff", False) or getattr(user, "is_superuser", False):
         if request.session.get("view_as_role") == "collaborator":
             st = (request.session.get("view_as_collab_tip") or "servicii").strip().lower()
-            if st in ("cabinet", "servicii", "magazin"):
+            if st in ("cabinet", "servicii", "magazin", "transport"):
                 return st
             return "servicii"
     try:
@@ -22,7 +22,7 @@ def _collaborator_tip_partener_for_nav(request):
         tip = (getattr(prof, "collaborator_type", None) or "").strip().lower()
     except Exception:
         tip = ""
-    if tip in ("cabinet", "servicii", "magazin"):
+    if tip in ("cabinet", "servicii", "magazin", "transport"):
         return tip
     return "servicii"
 
@@ -79,16 +79,29 @@ def wishlist_counts(request):
         show_mypet_nav = False
         show_magazinul_meu_nav = False
     elif user.is_staff or getattr(user, "is_superuser", False):
-        va = request.session.get("view_as_role")
-        if va == "collaborator":
+        try:
+            real_role = user.account_profile.role
+        except Exception:
+            real_role = None
+        # Cont real colaborator: link My transport / Magazin (nu MyPet), chiar dacă sesiunea are „Vezi ca PF”.
+        if real_role == AccountProfile.ROLE_COLLAB:
             show_mypet_nav = False
             show_magazinul_meu_nav = True
-        elif va in ("pf", "org"):
-            show_mypet_nav = True
-            show_magazinul_meu_nav = False
         else:
-            show_mypet_nav = True
-            show_magazinul_meu_nav = False
+            va = request.session.get("view_as_role")
+            if va == "collaborator":
+                show_mypet_nav = False
+                show_magazinul_meu_nav = True
+            elif va in ("pf", "org"):
+                show_mypet_nav = True
+                show_magazinul_meu_nav = False
+            else:
+                if real_role in (AccountProfile.ROLE_PF, AccountProfile.ROLE_ORG):
+                    show_mypet_nav = True
+                    show_magazinul_meu_nav = False
+                else:
+                    show_mypet_nav = True
+                    show_magazinul_meu_nav = False
     else:
         show_mypet_nav = display_role in ("pf", "org")
         show_magazinul_meu_nav = display_role == "collaborator"
@@ -153,6 +166,8 @@ def wishlist_counts(request):
             nav_magazinul_meu_label = "Magazinul meu"
         elif tip_nav == "cabinet":
             nav_magazinul_meu_label = "MyListVet"
+        elif tip_nav == "transport":
+            nav_magazinul_meu_label = "My transport"
         else:
             nav_magazinul_meu_label = "MyListServicii"
 

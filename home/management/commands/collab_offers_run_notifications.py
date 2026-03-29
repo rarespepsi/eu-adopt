@@ -12,6 +12,7 @@ from django.db.models import Count
 from django.urls import reverse
 from django.utils import timezone
 
+from home.mail_helpers import email_subject_for_user
 from home.models import CollaboratorServiceOffer
 
 logger = logging.getLogger(__name__)
@@ -86,7 +87,10 @@ class Command(BaseCommand):
             if not to:
                 logger.warning("collab_offer_expiry_mail skip offer=%s no email", o.pk)
                 continue
-            subj = f"EU-Adopt: oferta „{o.title}” expiră în 5 zile"
+            subj = email_subject_for_user(
+                o.collaborator.username,
+                f"EU-Adopt: oferta „{o.title}” expiră în 5 zile",
+            )
             vu = o.valid_until.strftime("%d.%m.%Y")
             vf = o.valid_from.strftime("%d.%m.%Y") if o.valid_from else "—"
             link = _control_url()
@@ -133,7 +137,10 @@ class Command(BaseCommand):
             if not to:
                 logger.warning("collab_offer_low_stock_mail skip offer=%s no email", o.pk)
                 continue
-            subj = f"EU-Adopt: oferta „{o.title}” — mai ai 1 loc disponibil"
+            subj = email_subject_for_user(
+                o.collaborator.username,
+                f"EU-Adopt: oferta „{o.title}” — mai ai 1 loc disponibil",
+            )
             link = _control_url()
             body = (
                 f"Bună ziua,\n\n"

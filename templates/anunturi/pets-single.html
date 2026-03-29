@@ -1,4 +1,5 @@
 {% load static %}
+{% load anunturi_extras %}
 <!DOCTYPE html>
 <html lang="ro">
 	<head>
@@ -81,7 +82,6 @@
 				margin: 0;
 				box-sizing: border-box;
 			}
-
 			.mypet-fisa-col {
 				box-sizing: border-box;
 			}
@@ -516,7 +516,33 @@
 				position: relative;
 				overflow: hidden;
 			}
-			
+
+			.mypet-fisa-observatii-box .mypet-fisa-section-title {
+				margin-bottom: 0.1rem;
+			}
+			.mypet-fisa-observatii-hint {
+				margin: 0 0 0.25rem 0;
+				font-size: 0.72rem;
+				line-height: 1.2;
+				color: #0050b5;
+			}
+			.mypet-fisa-observatii-field {
+				flex: 0 1 auto;
+				display: flex;
+				flex-direction: column;
+			}
+			.mypet-fisa-observatii-textarea {
+				flex: none;
+				min-height: 6.5rem;
+				height: 6.5rem !important;
+				max-height: 6.5rem !important;
+				overflow-y: auto;
+				resize: none;
+			}
+			.mypet-fisa-observatii-box {
+				flex: 0 1 auto;
+				align-self: stretch;
+			}
 
 			.mypet-fisa-traits-list {
 				list-style: none !important;
@@ -1100,26 +1126,36 @@
 										</div>
 
 										<div class="mypet-fisa-col mypet-fisa-col-traits">
+											{% if pet.species|lower == 'dog' or pet.species|lower == 'cat' %}
 											<div class="mypet-fisa-traits-box">
 												<h3 class="mypet-fisa-section-title">Detalii potrivire adoptator</h3>
 												<ul class="mypet-fisa-traits-list">
-													{% if pet.trait_jucaus %}<li><label><input type="checkbox" checked disabled /> JUCĂUȘ</label></li>{% endif %}
-													{% if pet.trait_iubitor %}<li><label><input type="checkbox" checked disabled /> IUBITOR</label></li>{% endif %}
-													{% if pet.trait_protector %}<li><label><input type="checkbox" checked disabled /> PROTECTOR</label></li>{% endif %}
-													{% if pet.trait_energic %}<li><label><input type="checkbox" checked disabled /> ENERGIC</label></li>{% endif %}
-													{% if pet.trait_linistit %}<li><label><input type="checkbox" checked disabled /> LINIȘTIT</label></li>{% endif %}
-													{% if pet.trait_bun_copii %}<li><label><input type="checkbox" checked disabled /> BUN CU COPII</label></li>{% endif %}
-													{% if pet.trait_bun_caini %}<li><label><input type="checkbox" checked disabled /> BUN CU ALȚI CÂINI</label></li>{% endif %}
-													{% if pet.trait_bun_pisici %}<li><label><input type="checkbox" checked disabled /> BUN CU PISICI</label></li>{% endif %}
-													{% if pet.trait_obisnuit_casa %}<li><label><input type="checkbox" checked disabled /> OBIȘNUIT ÎN CASĂ</label></li>{% endif %}
-													{% if pet.trait_obisnuit_lesa %}<li><label><input type="checkbox" checked disabled /> OBIȘNUIT CU LESA</label></li>{% endif %}
-													{% if pet.trait_nu_latla %}<li><label><input type="checkbox" checked disabled /> NU LATRĂ EXCESIV</label></li>{% endif %}
-													{% if pet.trait_apartament %}<li><label><input type="checkbox" checked disabled /> POTRIVIT PENTRU APARTAMENT</label></li>{% endif %}
-													{% if pet.trait_se_adapteaza %}<li><label><input type="checkbox" checked disabled /> SE ADAPTEAZĂ UȘOR</label></li>{% endif %}
-													{% if pet.trait_tolereaza_singur %}<li><label><input type="checkbox" checked disabled /> TOLEREAZĂ SĂ STEA SINGUR</label></li>{% endif %}
-													{% if pet.trait_necesita_experienta %}<li><label><input type="checkbox" checked disabled /> NECESITĂ EXPERIENȚĂ CU CÂINI</label></li>{% endif %}
+													{% if pet.trait_jucaus %}<li><label><input type="checkbox" checked disabled /> {% animal_trait_label pet.species 'trait_jucaus' %}</label></li>{% endif %}
+													{% if pet.trait_iubitor %}<li><label><input type="checkbox" checked disabled /> {% animal_trait_label pet.species 'trait_iubitor' %}</label></li>{% endif %}
+													{% if pet.trait_protector %}<li><label><input type="checkbox" checked disabled /> {% animal_trait_label pet.species 'trait_protector' %}</label></li>{% endif %}
+													{% if pet.trait_energic %}<li><label><input type="checkbox" checked disabled /> {% animal_trait_label pet.species 'trait_energic' %}</label></li>{% endif %}
+													{% if pet.trait_linistit %}<li><label><input type="checkbox" checked disabled /> {% animal_trait_label pet.species 'trait_linistit' %}</label></li>{% endif %}
+													{% if pet.trait_bun_copii %}<li><label><input type="checkbox" checked disabled /> {% animal_trait_label pet.species 'trait_bun_copii' %}</label></li>{% endif %}
+													{% if pet.trait_bun_caini %}<li><label><input type="checkbox" checked disabled /> {% animal_trait_label pet.species 'trait_bun_caini' %}</label></li>{% endif %}
+													{% if pet.trait_bun_pisici %}<li><label><input type="checkbox" checked disabled /> {% animal_trait_label pet.species 'trait_bun_pisici' %}</label></li>{% endif %}
+													{% if pet.trait_obisnuit_casa %}<li><label><input type="checkbox" checked disabled /> {% animal_trait_label pet.species 'trait_obisnuit_casa' %}</label></li>{% endif %}
+													{% if pet.trait_obisnuit_lesa %}<li><label><input type="checkbox" checked disabled /> {% animal_trait_label pet.species 'trait_obisnuit_lesa' %}</label></li>{% endif %}
+													{% if pet.trait_nu_latla %}<li><label><input type="checkbox" checked disabled /> {% animal_trait_label pet.species 'trait_nu_latla' %}</label></li>{% endif %}
+													{% if pet.trait_apartament %}<li><label><input type="checkbox" checked disabled /> {% animal_trait_label pet.species 'trait_apartament' %}</label></li>{% endif %}
+													{% if pet.trait_se_adapteaza %}<li><label><input type="checkbox" checked disabled /> {% animal_trait_label pet.species 'trait_se_adapteaza' %}</label></li>{% endif %}
+													{% if pet.trait_tolereaza_singur %}<li><label><input type="checkbox" checked disabled /> {% animal_trait_label pet.species 'trait_tolereaza_singur' %}</label></li>{% endif %}
+													{% if pet.trait_necesita_experienta %}<li><label><input type="checkbox" checked disabled /> {% animal_trait_label pet.species 'trait_necesita_experienta' %}</label></li>{% endif %}
 												</ul>
 											</div>
+											{% else %}
+											<div class="mypet-fisa-traits-box mypet-fisa-observatii-box">
+												<h3 class="mypet-fisa-section-title">Observații (detalii despre animal)</h3>
+												<p class="mypet-fisa-observatii-hint">Comportament, îngrijire — vizibil adoptatorilor.</p>
+												<div class="mypet-fisa-observatii-field">
+													<textarea id="id_detalii_animal" rows="7" class="mypet-fisa-textarea mypet-fisa-observatii-textarea" disabled>{{ pet.detalii_animal|default:'' }}</textarea>
+												</div>
+											</div>
+											{% endif %}
 										</div>
 									</div>
 								</section>

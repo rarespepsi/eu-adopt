@@ -36,6 +36,7 @@ from .pet_age_bands import (
     animal_listing_matches_collab_offer_targets,
     build_age_band_filter_q,
 )
+from .mail_helpers import email_subject_for_user
 from .models import (
     WishlistItem,
     AnimalListing,
@@ -177,19 +178,22 @@ def _log_legal_consents(
 
 def _user_can_use_magazinul_meu(request):
     """
-    Pagina Magazinul meu: colaboratori (cabinet / servicii / magazin).
-    Staff: doar când „Vezi ca colaborator”.
+    Pagina Magazinul meu / My transport: colaboratori (cabinet / servicii / magazin / transport).
+    Staff: „Vezi ca colaborator” sau cont real cu rol colaborator (ex. admin + transportator).
     """
     user = getattr(request, "user", None)
     if not user or not user.is_authenticated:
         return False
-    if getattr(user, "is_staff", False) or getattr(user, "is_superuser", False):
-        return request.session.get("view_as_role") == "collaborator"
     try:
         ap = getattr(user, "account_profile", None)
-        return bool(ap and ap.role == AccountProfile.ROLE_COLLAB)
+        real_collab = bool(ap and ap.role == AccountProfile.ROLE_COLLAB)
     except Exception:
-        return False
+        real_collab = False
+    if getattr(user, "is_staff", False) or getattr(user, "is_superuser", False):
+        if request.session.get("view_as_role") == "collaborator":
+            return True
+        return real_collab
+    return real_collab
 
 
 def _magazinul_meu_access_redirect(request):
@@ -285,7 +289,18 @@ def _promo_a2_send_summary_email(order: PromoA2Order) -> bool:
     p = _promo_a2_build_summary_payload(order)
     starts_txt = p["starts_at"].strftime("%d.%m.%Y %H:%M") if p["starts_at"] else "—"
     ends_txt = p["ends_at"].strftime("%d.%m.%Y %H:%M") if p["ends_at"] else "—"
-    subj = f"EU-Adopt: rezumat final promovare A2 – {p['pet_label']}"
+    uname = None
+    try:
+        if order.payer_user_id and order.payer_user:
+            uname = order.payer_user.username
+    except Exception:
+        uname = None
+    if not uname and to:
+        uname = (to.split("@", 1)[0] if "@" in to else None) or "oaspete"
+    subj = email_subject_for_user(
+        uname,
+        f"EU-Adopt: rezumat final promovare A2 – {p['pet_label']}",
+    )
     body = (
         f"Bună,\n\n"
         f"S-a încheiat perioada cumpărată pentru promovarea A2.\n\n"
@@ -505,12 +520,24 @@ def _send_adoption_accept_emails(ar: AdoptionRequest):
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
     try:
         if owner.email:
-            send_mail(sub_owner, body_owner, from_email, [owner.email], fail_silently=False)
+            send_mail(
+                email_subject_for_user(owner.username, sub_owner),
+                body_owner,
+                from_email,
+                [owner.email],
+                fail_silently=False,
+            )
     except Exception as exc:
         logging.getLogger(__name__).exception("adoption_accept_email_owner: %s", exc)
     try:
         if adopter.email:
-            send_mail(sub_adopter, body_adopter, from_email, [adopter.email], fail_silently=False)
+            send_mail(
+                email_subject_for_user(adopter.username, sub_adopter),
+                body_adopter,
+                from_email,
+                [adopter.email],
+                fail_silently=False,
+            )
     except Exception as exc:
         logging.getLogger(__name__).exception("adoption_accept_email_adopter: %s", exc)
 
@@ -546,6 +573,12 @@ def _adoption_pet_public_email_lines(pet: AnimalListing):
         if len(cs) > 400:
             cs = cs[:397] + "..."
         lines.append(f"Descriere: {cs}")
+    sp_low = (pet.species or "").strip().lower()
+    if sp_low not in ("dog", "cat") and (pet.detalii_animal or "").strip():
+        da = (pet.detalii_animal or "").strip().replace("\n", " ")
+        if len(da) > 400:
+            da = da[:397] + "..."
+        lines.append(f"Detalii animal: {da}")
     return lines
 
 
@@ -591,7 +624,14 @@ def _send_adoption_request_adopter_email(ar: AdoptionRequest):
     )
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
     try:
-        send_mail(sub, body, from_email, [adopter.email], fail_silently=False, html_message=html_body)
+        send_mail(
+            email_subject_for_user(adopter.username, sub),
+            body,
+            from_email,
+            [adopter.email],
+            fail_silently=False,
+            html_message=html_body,
+        )
     except Exception as exc:
         logging.getLogger(__name__).exception("adoption_request_email_adopter: %s", exc)
 
@@ -646,7 +686,14 @@ def _send_adoption_request_owner_email(ar: AdoptionRequest):
     )
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
     try:
-        send_mail(sub, body, from_email, [owner.email], fail_silently=False, html_message=html_body)
+        send_mail(
+            email_subject_for_user(owner.username, sub),
+            body,
+            from_email,
+            [owner.email],
+            fail_silently=False,
+            html_message=html_body,
+        )
     except Exception as exc:
         logging.getLogger(__name__).exception("adoption_request_email_owner: %s", exc)
 
@@ -718,7 +765,14 @@ def _send_adoption_reject_adopter_email(ar: AdoptionRequest, *, reason: str = "o
         )
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
     try:
-        send_mail(sub, body, from_email, [adopter.email], fail_silently=False, html_message=html_body)
+        send_mail(
+            email_subject_for_user(adopter.username, sub),
+            body,
+            from_email,
+            [adopter.email],
+            fail_silently=False,
+            html_message=html_body,
+        )
     except Exception as exc:
         logging.getLogger(__name__).exception("adoption_reject_email_adopter: %s", exc)
 
@@ -897,7 +951,14 @@ def _process_adoption_finalize_bonus(ar: AdoptionRequest):
         )
         if collab.email:
             try:
-                send_mail(sub_c, body_c, from_email, [collab.email], fail_silently=False, html_message=html_c)
+                send_mail(
+                    email_subject_for_user(collab.username, sub_c),
+                    body_c,
+                    from_email,
+                    [collab.email],
+                    fail_silently=False,
+                    html_message=html_c,
+                )
             except Exception as exc:
                 logging.getLogger(__name__).exception("adoption_bonus_email_collab: %s", exc)
 
@@ -921,7 +982,14 @@ def _process_adoption_finalize_bonus(ar: AdoptionRequest):
         f"<p>EU-Adopt</p>"
     )
     try:
-        send_mail(sub_a, body_a, from_email, [adopter.email], fail_silently=False, html_message=html_a)
+        send_mail(
+            email_subject_for_user(adopter.username, sub_a),
+            body_a,
+            from_email,
+            [adopter.email],
+            fail_silently=False,
+            html_message=html_a,
+        )
     except Exception as exc:
         logging.getLogger(__name__).exception("adoption_bonus_email_adopter: %s", exc)
 
@@ -1001,7 +1069,14 @@ def _send_adoption_goodwill_15d_email(ar: AdoptionRequest) -> bool:
     )
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
     try:
-        send_mail(sub, body, from_email, [adopter.email], fail_silently=False, html_message=html_body)
+        send_mail(
+            email_subject_for_user(adopter.username, sub),
+            body,
+            from_email,
+            [adopter.email],
+            fail_silently=False,
+            html_message=html_body,
+        )
         return True
     except Exception as exc:
         logging.getLogger(__name__).exception("adoption_goodwill_15d: %s", exc)
@@ -1157,7 +1232,13 @@ def _send_adoption_waiting_list_email(ar: AdoptionRequest):
     )
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
     try:
-        send_mail(sub, body, from_email, [adopter.email], fail_silently=False)
+        send_mail(
+            email_subject_for_user(adopter.username, sub),
+            body,
+            from_email,
+            [adopter.email],
+            fail_silently=False,
+        )
     except Exception as exc:
         logging.getLogger(__name__).exception("adoption_waiting_email_adopter: %s", exc)
 
@@ -1598,7 +1679,7 @@ def forgot_password_view(request):
                 )
                 try:
                     send_mail(
-                        subject="Resetare parolă – EU-Adopt",
+                        subject=email_subject_for_user(user.username, "Resetare parolă – EU-Adopt"),
                         message=plain,
                         from_email=None,
                         recipient_list=[user.email],
@@ -2052,7 +2133,7 @@ def signup_verificare_sms_view(request):
     )
     try:
         send_mail(
-            subject="Verificare email – EU-Adopt",
+            subject=email_subject_for_user(user.username, "Verificare email – EU-Adopt"),
             message=plain_msg,
             from_email=None,
             recipient_list=[email],
@@ -2170,7 +2251,7 @@ def signup_retrimite_email_view(request):
     )
     try:
         send_mail(
-            subject="Verificare email – EU-Adopt (retrimis)",
+            subject=email_subject_for_user(user.username, "Verificare email – EU-Adopt (retrimis)"),
             message=plain_msg,
             from_email=None,
             recipient_list=[user.email],
@@ -3068,6 +3149,7 @@ def dog_profile_view(request, pk):
         "probleme_medicale": listing.probleme_medicale,
         "greutate_aprox": listing.greutate_aprox,
         "cine_sunt": listing.cine_sunt,
+        "detalii_animal": listing.detalii_animal or "",
         # Trăsături potrivire adoptator (bife) – afișate în pets-single.html
         "trait_jucaus": listing.trait_jucaus,
         "trait_iubitor": listing.trait_iubitor,
@@ -4008,7 +4090,14 @@ def account_edit_view(request):
         plain = f"Bună ziua,\n\nConfirmă noul email pentru contul EU-Adopt:\n{verify_url}\n\nLinkul este valabil 1 oră."
         html = f'<p>Bună ziua,</p><p><a href="{verify_url}" style="color:#1565c0;font-weight:bold;">Confirmă emailul</a></p><p>Linkul este valabil 1 oră.</p>'
         try:
-            send_mail(subject="Confirmă noul email – EU-Adopt", message=plain, from_email=None, recipient_list=[email], fail_silently=False, html_message=html)
+            send_mail(
+                subject=email_subject_for_user(user.username, "Confirmă noul email – EU-Adopt"),
+                message=plain,
+                from_email=None,
+                recipient_list=[email],
+                fail_silently=False,
+                html_message=html,
+            )
         except Exception:
             pass
         return redirect(reverse("edit_check_email") + f"?email={quote(email)}")
@@ -4082,7 +4171,14 @@ def edit_verificare_sms_view(request):
         plain = f"Bună ziua,\n\nConfirmă noul email pentru contul EU-Adopt:\n{verify_url}\n\nLinkul este valabil 1 oră."
         html = f'<p>Bună ziua,</p><p><a href="{verify_url}" style="color:#1565c0;font-weight:bold;">Confirmă emailul</a></p><p>Linkul este valabil 1 oră.</p>'
         try:
-            send_mail(subject="Confirmă noul email – EU-Adopt", message=plain, from_email=None, recipient_list=[data["email"]], fail_silently=False, html_message=html)
+            send_mail(
+                subject=email_subject_for_user(user.username, "Confirmă noul email – EU-Adopt"),
+                message=plain,
+                from_email=None,
+                recipient_list=[data["email"]],
+                fail_silently=False,
+                html_message=html,
+            )
         except Exception:
             pass
         request.session.pop("edit_pending", None)
@@ -4411,6 +4507,15 @@ def magazinul_meu_view(request):
     return redirect(target)
 
 
+def _mypet_form_trait_labels_ctx(ctx: dict) -> dict:
+    """Include mapări etichete trăsături (dog/cat) pentru template + json_script."""
+    from home.pet_traits import TRAITS_LABELS_BY_SPECIES
+
+    out = dict(ctx)
+    out["trait_labels_by_species"] = TRAITS_LABELS_BY_SPECIES
+    return out
+
+
 @login_required
 @mypet_pf_org_required
 def mypet_add_view(request):
@@ -4431,6 +4536,11 @@ def mypet_add_view(request):
     default_med = "da" if is_public_shelter else ""
 
     age_choices = list(AGE_LABELS_ORDERED)
+
+    # GET ?species=dog|cat|other — fără asta, /mypet/add/ pornea mereu pe câine.
+    add_species_q = (request.GET.get("species") or "").strip().lower()
+    if add_species_q not in ("dog", "cat", "other"):
+        add_species_q = "dog"
 
     if request.method == "POST":
         name = (request.POST.get("name") or "").strip()
@@ -4454,9 +4564,17 @@ def mypet_add_view(request):
         greutate_aprox = (request.POST.get("greutate_aprox") or "").strip()
         probleme_medicale = (request.POST.get("probleme_medicale") or "").strip()
         cine_sunt = (request.POST.get("cine_sunt") or "").strip()
-        # Trăsături (checkboxes: prezente în POST când sunt bifate)
+        detalii_animal = (
+            (request.POST.get("detalii_animal") or "").strip()
+            if species_mode == "other"
+            else ""
+        )
+        # Trăsături (checkboxes): doar câine/pisică; la «Altele» nu se salvează
         def trait(name):
+            if species_mode == "other":
+                return False
             return name in request.POST
+
         error = None
         # Toate câmpurile sunt obligatorii (în afară de bifele de potrivire adoptator)
         required = [
@@ -4501,6 +4619,7 @@ def mypet_add_view(request):
                     greutate_aprox=greutate_aprox,
                     probleme_medicale=probleme_medicale,
                     cine_sunt=cine_sunt,
+                    detalii_animal=detalii_animal,
                     photo_1=request.FILES.get("photo_1"),
                     photo_2=request.FILES.get("photo_2"),
                     photo_3=request.FILES.get("photo_3"),
@@ -4545,6 +4664,7 @@ def mypet_add_view(request):
             "greutate_aprox": greutate_aprox,
             "probleme_medicale": probleme_medicale,
             "cine_sunt": cine_sunt,
+            "detalii_animal": detalii_animal,
             "age_choices": age_choices,
             "has_photo_1": False,
             "has_photo_2": False,
@@ -4571,13 +4691,15 @@ def mypet_add_view(request):
                 "trait_nu_latla","trait_apartament","trait_se_adapteaza","trait_tolereaza_singur","trait_necesita_experienta"
             )),
         }
-        return render(request, "anunturi/mypet_add.html", ctx)
+        return render(request, "anunturi/mypet_add.html", _mypet_form_trait_labels_ctx(ctx))
 
     ctx = {
         "error": None,
         "name": "",
-        "species": "dog",
-        "species_mode": "dog",
+        "species": "dog"
+        if add_species_q == "dog"
+        else ("cat" if add_species_q == "cat" else ""),
+        "species_mode": add_species_q,
         "species_custom": "",
         "size": "",
         "age_label": "",
@@ -4592,6 +4714,7 @@ def mypet_add_view(request):
         "greutate_aprox": "",
         "probleme_medicale": "",
         "cine_sunt": "",
+        "detalii_animal": "",
         "age_choices": age_choices,
         "has_photo_1": False,
         "has_photo_2": False,
@@ -4614,7 +4737,7 @@ def mypet_add_view(request):
         "trait_necesita_experienta": False,
         "traits_empty": True,
     }
-    return render(request, "anunturi/mypet_add.html", ctx)
+    return render(request, "anunturi/mypet_add.html", _mypet_form_trait_labels_ctx(ctx))
 
 
 @login_required
@@ -4670,8 +4793,15 @@ def mypet_edit_view(request, pk):
         greutate_aprox = (request.POST.get("greutate_aprox") or "").strip()
         probleme_medicale = (request.POST.get("probleme_medicale") or "").strip()
         cine_sunt = (request.POST.get("cine_sunt") or "").strip()
+        detalii_animal = (
+            (request.POST.get("detalii_animal") or "").strip()
+            if species_mode == "other"
+            else ""
+        )
 
         def trait(name):
+            if species_mode == "other":
+                return False
             return name in request.POST
 
         error = None
@@ -4715,6 +4845,7 @@ def mypet_edit_view(request, pk):
                 listing.greutate_aprox = greutate_aprox
                 listing.probleme_medicale = probleme_medicale
                 listing.cine_sunt = cine_sunt
+                listing.detalii_animal = detalii_animal
                 if request.FILES.get("photo_1"):
                     listing.photo_1 = request.FILES.get("photo_1")
                 if request.FILES.get("photo_2"):
@@ -4764,6 +4895,7 @@ def mypet_edit_view(request, pk):
             "greutate_aprox": greutate_aprox,
             "probleme_medicale": probleme_medicale,
             "cine_sunt": cine_sunt,
+            "detalii_animal": detalii_animal,
             "age_choices": age_choices,
             "has_photo_1": bool(listing.photo_1),
             "has_photo_2": bool(listing.photo_2),
@@ -4790,7 +4922,7 @@ def mypet_edit_view(request, pk):
                 trait("trait_se_adapteaza"), trait("trait_tolereaza_singur"), trait("trait_necesita_experienta")
             ]),
         }
-        return render(request, "anunturi/mypet_add.html", ctx)
+        return render(request, "anunturi/mypet_add.html", _mypet_form_trait_labels_ctx(ctx))
 
     current_species = (listing.species or "").strip().lower()
     species_mode = current_species if current_species in ("dog", "cat") else "other"
@@ -4819,6 +4951,7 @@ def mypet_edit_view(request, pk):
         "greutate_aprox": listing.greutate_aprox or "",
         "probleme_medicale": listing.probleme_medicale or "",
         "cine_sunt": listing.cine_sunt or "",
+        "detalii_animal": listing.detalii_animal or "",
         "age_choices": age_choices,
         "has_photo_1": bool(listing.photo_1),
         "has_photo_2": bool(listing.photo_2),
@@ -4845,7 +4978,7 @@ def mypet_edit_view(request, pk):
             listing.trait_se_adapteaza, listing.trait_tolereaza_singur, listing.trait_necesita_experienta
         ]),
     }
-    return render(request, "anunturi/mypet_add.html", ctx)
+    return render(request, "anunturi/mypet_add.html", _mypet_form_trait_labels_ctx(ctx))
 
 
 def i_love_view(request):
@@ -6448,7 +6581,7 @@ def transport_operator_panel_view(request):
         return redirect("home")
     if (getattr(prof, "collaborator_type", None) or "").strip().lower() != "transport":
         return redirect("collab_offers_control")
-    top, _ = TransportOperatorProfile.objects.get_or_create(
+    TransportOperatorProfile.objects.get_or_create(
         user=request.user,
         defaults={
             "approval_status": TransportOperatorProfile.APPROVAL_PENDING,
@@ -6460,27 +6593,47 @@ def transport_operator_panel_view(request):
     )
     from .transport_dispatch import maybe_expire_job
 
-    recs = list(
-        TransportDispatchRecipient.objects.filter(transporter=request.user)
-        .select_related("job", "job__tvr")
-        .order_by("-job__updated_at")[:40]
+    me = request.user
+    jobs_active = list(
+        TransportDispatchJob.objects.filter(
+            assigned_transporter=me,
+            status=TransportDispatchJob.STATUS_ASSIGNED,
+        )
+        .select_related("tvr", "tvr__user")
+        .order_by("-assigned_at", "-updated_at")[:50]
     )
-    for r in recs:
-        if r.job_id:
-            maybe_expire_job(r.job)
-    assigned = list(
-        TransportDispatchJob.objects.filter(assigned_transporter=request.user)
-        .select_related("tvr")
-        .order_by("-assigned_at")[:20]
+    jobs_completed = list(
+        TransportDispatchJob.objects.filter(
+            assigned_transporter=me,
+            status=TransportDispatchJob.STATUS_COMPLETED,
+        )
+        .select_related("tvr", "tvr__user")
+        .order_by("-updated_at")[:80]
     )
+    pending_invites = []
+    for r in (
+        TransportDispatchRecipient.objects.filter(
+            transporter=me,
+            status=TransportDispatchRecipient.ST_PENDING,
+        )
+        .select_related("job", "job__tvr", "job__tvr__user")
+        .order_by("-job__created_at")[:40]
+    ):
+        maybe_expire_job(r.job)
+        r.job.refresh_from_db()
+        if r.job.status == TransportDispatchJob.STATUS_OPEN:
+            pending_invites.append(r)
+
     return render(
         request,
         "anunturi/transport_operator_panou.html",
         {
-            "transport_profile": top,
-            "tip_just_updated": (request.GET.get("tip_updated") or "").strip() == "1",
-            "dispatch_recipients": recs,
-            "dispatch_assigned": assigned,
+            "transport_jobs_active": jobs_active,
+            "transport_jobs_completed": jobs_completed,
+            "transport_pending_invites": pending_invites,
+            "tp_count_pending": len(pending_invites),
+            "tp_count_active": len(jobs_active),
+            "tp_count_completed": len(jobs_completed),
         },
     )
 
@@ -6908,13 +7061,28 @@ def public_offer_request_view(request, pk: int):
     collab_body += "\n---\nEU-Adopt\n"
 
     mail_errors = []
+    buyer_uname = buyer["user"].username if buyer.get("user") else None
+    if not buyer_uname and dest_email:
+        buyer_uname = dest_email.split("@", 1)[0] if "@" in dest_email else None
     try:
-        send_mail(buyer_subject, buyer_body, None, [dest_email], fail_silently=False)
+        send_mail(
+            email_subject_for_user(buyer_uname, buyer_subject),
+            buyer_body,
+            None,
+            [dest_email],
+            fail_silently=False,
+        )
     except Exception:
         logging.exception("send_mail buyer offer claim")
         mail_errors.append("cumpărător")
     try:
-        send_mail(collab_subject, collab_body, None, [collab_mail], fail_silently=False)
+        send_mail(
+            email_subject_for_user(collab.username, collab_subject),
+            collab_body,
+            None,
+            [collab_mail],
+            fail_silently=False,
+        )
     except Exception:
         logging.exception("send_mail collab offer claim")
         mail_errors.append("cabinet")

@@ -228,6 +228,12 @@ class AnimalListing(models.Model):
     greutate_aprox = models.CharField("Greutate (aprox.)", max_length=30, blank=True)
     probleme_medicale = models.TextField("Probleme medicale", blank=True)
     cine_sunt = models.TextField("Cine sunt și de unde sunt", blank=True)
+    detalii_animal = models.TextField(
+        "Detalii despre animal",
+        blank=True,
+        default="",
+        help_text="Comportament, obiceiuri, ce îi place — vizibil adoptatorilor pe fișă.",
+    )
 
     # Trăsături potrivire adoptator (15 bife)
     trait_jucaus = models.BooleanField("Jucăuș", default=False)

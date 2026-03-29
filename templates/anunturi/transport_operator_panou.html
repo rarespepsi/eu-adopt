@@ -1,119 +1,493 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Panou transportator – EU-Adopt{% endblock %}
-{% block body_class %}page-login{% endblock %}
+{% block title %}My transport | EU-Adopt{% endblock %}
+{% block body_class %}page-my-transport{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/w-cadru.css' %}?v=1" type="text/css" media="screen" />
-<style>
-	body.page-login #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
-	body.page-login #main_content { flex: 1 1 0; min-height: 0; overflow: auto; padding: 0.75rem 1rem 1.5rem; }
-	.top-wrap { max-width: 920px; margin: 0 auto; }
-	.top-card {
-		background: rgba(255, 255, 255, 0.88);
-		border-radius: 14px;
-		box-shadow: 0 2px 14px rgba(0,0,0,0.08);
-		border: 1px solid rgba(21, 101, 192, 0.2);
-		padding: 1rem 1.15rem;
-		margin-bottom: 1rem;
-	}
-	.top-card h1 { margin: 0 0 0.35rem; font-size: 1.05rem; font-weight: 800; color: #1565c0; text-transform: uppercase; letter-spacing: 0.04em; }
-	.top-meta { font-size: 0.88rem; color: #333; line-height: 1.45; }
-	.top-meta strong { color: #0d47a1; }
-	.avg-badge {
-		float: right;
-		margin: 0 0 0.5rem 0.75rem;
-		padding: 0.35rem 0.65rem;
-		border-radius: 10px;
-		background: #e3f2fd;
-		border: 1px solid #1565c0;
-		font-weight: 800;
-		font-size: 0.9rem;
-		color: #0d47a1;
-	}
-	.grid-two { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-	@media (max-width: 640px) { .grid-two { grid-template-columns: 1fr; } }
-	.sub-card {
-		background: rgba(227, 242, 253, 0.5);
-		border-radius: 10px;
-		padding: 0.75rem 0.9rem;
-		border: 1px dashed rgba(21, 101, 192, 0.35);
-	}
-	.sub-card h2 { margin: 0 0 0.4rem; font-size: 0.82rem; font-weight: 800; color: #1565c0; text-transform: uppercase; }
-	.sub-card p { margin: 0; font-size: 0.85rem; color: #444; }
-	.panou-links { margin-top: 0.75rem; font-size: 0.88rem; }
-	.panou-links a { color: #1565c0; font-weight: 700; }
-</style>
-{% endblock %}
+{% block content %}
+<section id="TW" class="mypet-wrap transport-panou-wrap" aria-label="My transport">
+	<div class="mypet-inner">
+		<header class="tp-toolbar">
+			<div class="tp-row tp-row-primary">
+				<div class="mypet-btn mypet-btn-primary transport-panou-fake">My transport</div>
+				<div class="mypet-btn mypet-btn-secondary transport-panou-fake">Mesaje</div>
+				<div class="mypet-btn mypet-btn-secondary mypet-btn-add transport-panou-fake">Nou transport</div>
+				<div class="mypet-btn mypet-btn-secondary mypet-btn-counter transport-panou-fake">
+					Oferte {{ tp_count_pending|default:0 }} / În curs {{ tp_count_active|default:0 }} / Finalizate {{ tp_count_completed|default:0 }}
+				</div>
+			</div>
+			<div class="tp-row tp-row-filters" aria-hidden="true">
+				<div class="mypet-btn mypet-btn-secondary mypet-btn-spec is-active transport-panou-fake">Național</div>
+				<div class="mypet-btn mypet-btn-secondary mypet-btn-spec transport-panou-fake">Internațional</div>
+				<div class="mypet-btn mypet-btn-secondary mypet-btn-spec transport-panou-fake">Toate</div>
+			</div>
+			<div class="tp-row tp-row-legend" aria-hidden="true">
+				<span class="mypet-legend-item">
+					<span class="mypet-legend-swatch mypet-swatch-0"></span><span>&lt; 50%</span>
+				</span>
+				<span class="mypet-legend-item">
+					<span class="mypet-legend-swatch mypet-swatch-half"></span><span>50–89%</span>
+				</span>
+				<span class="mypet-legend-item">
+					<span class="mypet-legend-swatch mypet-swatch-75"></span><span>90–99%</span>
+				</span>
+				<span class="mypet-legend-item">
+					<span class="mypet-legend-swatch mypet-swatch-100"></span><span>100%</span>
+				</span>
+			</div>
+		</header>
+		<div class="tp-body" aria-label="Comenzi și cereri transport">
+			<div class="tp-body-pad">
+				<section class="tp-section" aria-labelledby="tp-h-pending">
+					<h3 id="tp-h-pending" class="tp-section-title">Oferte deschise (răspuns din email)</h3>
+					<div class="tp-table-wrap">
+						<table class="tp-table">
+							<thead>
+								<tr>
+									<th>Cerere</th>
+									<th>Job</th>
+									<th>Creată</th>
+									<th>Client</th>
+									<th>Email</th>
+									<th>Animale</th>
+									<th>Județ</th>
+									<th>Oraș</th>
+									<th>Plecare</th>
+									<th>Sosire</th>
+									<th>Dată/oră dorită</th>
+									<th>Traseu</th>
+									<th>Urgent</th>
+									<th>Status</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for r in transport_pending_invites %}
+								{% with t=r.job.tvr %}
+								<tr>
+									<td>#{{ t.pk }}</td>
+									<td>#{{ r.job.pk }}</td>
+									<td>{{ t.created_at|date:"d.m.Y H:i" }}</td>
+									<td>{% if t.user %}{{ t.user.username }}{% else %}—{% endif %}</td>
+									<td class="tp-td-clip">{% if t.user and t.user.email %}{{ t.user.email }}{% else %}—{% endif %}</td>
+									<td>{{ t.nr_caini }}</td>
+									<td>{{ t.judet|default:"—" }}</td>
+									<td>{{ t.oras|default:"—" }}</td>
+									<td class="tp-td-clip" title="{{ t.plecare }}">{{ t.plecare|truncatechars:40 }}</td>
+									<td class="tp-td-clip" title="{{ t.sosire }}">{{ t.sosire|truncatechars:40 }}</td>
+									<td>{{ t.data_raw|default:"—" }} {{ t.ora_raw|default:"" }}</td>
+									<td>{{ t.get_route_scope_display }}</td>
+									<td>{{ t.get_urgency_window_display }}</td>
+									<td><span class="tp-badge tp-badge-pending">Așteaptă răspuns</span></td>
+								</tr>
+								{% endwith %}
+								{% empty %}
+								<tr><td colspan="14" class="tp-empty">Nicio ofertă deschisă către tine.</td></tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</section>
 
-{% block main_wrap_after_header %}
-<section class="wrapper" id="main_content">
-	<div class="top-wrap">
-		{% if tip_just_updated %}
-		<p style="background:#e8f5e9;border:1px solid #2e7d32;border-radius:8px;padding:0.5rem 0.75rem;margin:0 0 0.75rem;font-weight:600;color:#1b5e20;">Datele firmei au fost actualizate.</p>
-		{% endif %}
-		<div class="top-card">
-			<span class="avg-badge" title="Medie note utilizatori">{% if transport_profile.rating_count %}★ {{ transport_profile.average_rating_public }}{% else %}★ —{% endif %}</span>
-			<h1>Transport animale</h1>
-			<div class="top-meta">
-				<p><strong>Status cont:</strong>
-					{% if transport_profile.approval_status == 'approved' %}Aprobat — poți primi oferte (flux în dezvoltare).{% elif transport_profile.approval_status == 'inactive' %}Inactiv.{% else %}În așteptare aprobare admin.{% endif %}
-				</p>
-				<p><strong>Capacitate:</strong> max. {{ transport_profile.max_caini }} câini, max. {{ transport_profile.max_pisici }} pisici / cursă.</p>
-				<p><strong>Zonă:</strong>
-					{% if transport_profile.transport_national %}TRANSPORT NAȚIONAL{% endif %}
-					{% if transport_profile.transport_national and transport_profile.transport_international %} · {% endif %}
-					{% if transport_profile.transport_international %}TRANSPORT INTERNATIONAL{% endif %}
-				</p>
-			</div>
-			<div class="panou-links">
-				<a href="{% url 'account' %}">Fișa contului (date firmă)</a>
-				· <a href="{% url 'transport' %}">Pagina publică Transport</a>
-			</div>
-		</div>
-		<div class="grid-two">
-			<div class="sub-card">
-				<h2>Oferte / în așteptare</h2>
-				{% if dispatch_recipients %}
-				<ul style="margin:0;padding-left:1.1rem;font-size:0.85rem;line-height:1.4;">
-					{% for r in dispatch_recipients %}
-					<li style="margin-bottom:0.45rem;">
-						Cerere #{{ r.job.tvr.pk }} — job {{ r.job.pk }} · <strong>{{ r.get_status_display }}</strong>
-						{% if r.job.status == 'open' and r.status == 'pending' %}· deschisă{% endif %}
-					</li>
-					{% endfor %}
-				</ul>
-				<p style="margin:0.5rem 0 0;font-size:0.78rem;color:#555;">Acceptă / refuză din emailurile primite (linkuri semnate).</p>
-				{% else %}
-				<p style="margin:0;font-size:0.85rem;">Nicio ofertă în listă momentan.</p>
-				{% endif %}
-			</div>
-			<div class="sub-card">
-				<h2>Preluate de tine</h2>
-				{% if dispatch_assigned %}
-				<ul style="margin:0;padding-left:1.1rem;font-size:0.85rem;line-height:1.4;">
-					{% for j in dispatch_assigned %}
-					<li style="margin-bottom:0.55rem;">
-						Cerere #{{ j.tvr.pk }} — job {{ j.pk }}
-						{% if j.status == 'assigned' or j.status == 'completed' %}
-						<a href="{% url 'transport_dispatch_rate' j.pk %}" style="font-size:0.78rem;margin-left:0.35rem;font-weight:700;">Evaluează clientul</a>
-						{% endif %}
-						{% if j.status == 'assigned' %}
-						<form method="post" action="{% url 'transport_op_release_job' %}" style="display:inline;margin-left:0.35rem;">
-							{% csrf_token %}
-							<input type="hidden" name="job_id" value="{{ j.pk }}" />
-							<button type="submit" style="font-size:0.75rem;padding:0.15rem 0.45rem;cursor:pointer;">Renunță / retrimite</button>
-						</form>
-						{% endif %}
-					</li>
-					{% endfor %}
-				</ul>
-				{% else %}
-				<p style="margin:0;font-size:0.85rem;">Nicio cursă asignată încă.</p>
-				{% endif %}
+				<section class="tp-section" aria-labelledby="tp-h-active">
+					<h3 id="tp-h-active" class="tp-section-title">În curs (preluate de tine)</h3>
+					<div class="tp-table-wrap">
+						<table class="tp-table">
+							<thead>
+								<tr>
+									<th>Cerere</th>
+									<th>Job</th>
+									<th>Preluat</th>
+									<th>Client</th>
+									<th>Email</th>
+									<th>Animale</th>
+									<th>Județ</th>
+									<th>Oraș</th>
+									<th>Plecare</th>
+									<th>Sosire</th>
+									<th>Dată/oră dorită</th>
+									<th>Traseu</th>
+									<th>Acțiuni</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for job in transport_jobs_active %}
+								{% with t=job.tvr %}
+								<tr>
+									<td>#{{ t.pk }}</td>
+									<td>#{{ job.pk }}</td>
+									<td>{% if job.assigned_at %}{{ job.assigned_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}</td>
+									<td>{% if t.user %}{{ t.user.username }}{% else %}—{% endif %}</td>
+									<td class="tp-td-clip">{% if t.user and t.user.email %}{{ t.user.email }}{% else %}—{% endif %}</td>
+									<td>{{ t.nr_caini }}</td>
+									<td>{{ t.judet|default:"—" }}</td>
+									<td>{{ t.oras|default:"—" }}</td>
+									<td class="tp-td-clip" title="{{ t.plecare }}">{{ t.plecare|truncatechars:40 }}</td>
+									<td class="tp-td-clip" title="{{ t.sosire }}">{{ t.sosire|truncatechars:40 }}</td>
+									<td>{{ t.data_raw|default:"—" }} {{ t.ora_raw|default:"" }}</td>
+									<td>{{ t.get_route_scope_display }}</td>
+									<td class="tp-td-actions">
+										<a href="{% url 'transport_dispatch_rate' job.pk %}" class="tp-link">Evaluare</a>
+										<form method="post" action="{% url 'transport_op_release_job' %}" class="tp-inline-form">
+											{% csrf_token %}
+											<input type="hidden" name="job_id" value="{{ job.pk }}" />
+											<button type="submit" class="tp-btn-danger">Renunță</button>
+										</form>
+									</td>
+								</tr>
+								{% endwith %}
+								{% empty %}
+								<tr><td colspan="13" class="tp-empty">Nicio cursă activă.</td></tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</section>
+
+				<section class="tp-section" aria-labelledby="tp-h-done">
+					<h3 id="tp-h-done" class="tp-section-title">Finalizate</h3>
+					<div class="tp-table-wrap">
+						<table class="tp-table">
+							<thead>
+								<tr>
+									<th>Cerere</th>
+									<th>Job</th>
+									<th>Actualizat</th>
+									<th>Client</th>
+									<th>Email</th>
+									<th>Animale</th>
+									<th>Județ</th>
+									<th>Oraș</th>
+									<th>Plecare</th>
+									<th>Sosire</th>
+									<th>Dată/oră dorită</th>
+									<th>Traseu</th>
+									<th>Acțiuni</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for job in transport_jobs_completed %}
+								{% with t=job.tvr %}
+								<tr>
+									<td>#{{ t.pk }}</td>
+									<td>#{{ job.pk }}</td>
+									<td>{{ job.updated_at|date:"d.m.Y H:i" }}</td>
+									<td>{% if t.user %}{{ t.user.username }}{% else %}—{% endif %}</td>
+									<td class="tp-td-clip">{% if t.user and t.user.email %}{{ t.user.email }}{% else %}—{% endif %}</td>
+									<td>{{ t.nr_caini }}</td>
+									<td>{{ t.judet|default:"—" }}</td>
+									<td>{{ t.oras|default:"—" }}</td>
+									<td class="tp-td-clip" title="{{ t.plecare }}">{{ t.plecare|truncatechars:40 }}</td>
+									<td class="tp-td-clip" title="{{ t.sosire }}">{{ t.sosire|truncatechars:40 }}</td>
+									<td>{{ t.data_raw|default:"—" }} {{ t.ora_raw|default:"" }}</td>
+									<td>{{ t.get_route_scope_display }}</td>
+									<td class="tp-td-actions">
+										<a href="{% url 'transport_dispatch_rate' job.pk %}" class="tp-link">Evaluare</a>
+									</td>
+								</tr>
+								{% endwith %}
+								{% empty %}
+								<tr><td colspan="13" class="tp-empty">Nicio cursă finalizată încă.</td></tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</section>
 			</div>
 		</div>
 	</div>
 </section>
+{% endblock %}
+
+{% block extra_css_after %}
+<style>
+	body.page-my-transport #main_wrap {
+		display: flex;
+		flex-direction: column;
+		min-height: 100vh;
+		max-height: 100vh;
+		overflow: hidden;
+		margin: 0;
+		padding: 0;
+	}
+	body.page-my-transport #main_content {
+		flex: 1 1 0;
+		min-height: 0;
+		overflow: hidden;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+	}
+	body.page-my-transport .sidebar-right {
+		display: none !important;
+	}
+	body.page-my-transport .layout {
+		grid-template-columns: minmax(0, 1fr) !important;
+		align-items: stretch;
+		flex: 1 1 0;
+		min-height: 0;
+		max-height: 100%;
+		overflow: hidden;
+	}
+	body.page-my-transport .sidebar-left {
+		display: none !important;
+	}
+	body.page-my-transport .layout .main-content {
+		flex: 1 1 0;
+		min-width: 0;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		max-width: none;
+		overflow: hidden;
+		padding-right: 0 !important;
+		margin-right: 0 !important;
+	}
+	.transport-panou-wrap.mypet-wrap {
+		flex: 1 1 0;
+		min-height: 0;
+		max-height: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		justify-content: flex-start;
+		padding: 0;
+		box-sizing: border-box;
+		overflow: hidden;
+		width: 100%;
+	}
+	.transport-panou-wrap .mypet-inner {
+		width: 100%;
+		max-width: none;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		padding: 0.15rem 0.35rem 0.35rem;
+		overflow: hidden;
+		min-height: 0;
+		flex: 1 1 0;
+	}
+	/* Toolbar: fără position absolute — rânduri stivuite */
+	.transport-panou-wrap .tp-toolbar {
+		flex: 0 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+		width: 100%;
+		max-width: 100%;
+		padding: 0.35rem 0 0.5rem;
+		box-sizing: border-box;
+		border-bottom: 1px solid rgba(210, 178, 122, 0.55);
+	}
+	.transport-panou-wrap .tp-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem 0.5rem;
+		width: 100%;
+		min-width: 0;
+		box-sizing: border-box;
+	}
+	.transport-panou-wrap .tp-row-filters {
+		padding-top: 0.15rem;
+		border-top: 1px dashed rgba(210, 178, 122, 0.45);
+	}
+	.transport-panou-wrap .tp-row-legend {
+		justify-content: center;
+		flex-wrap: wrap;
+		row-gap: 0.25rem;
+		padding-top: 0.1rem;
+	}
+	.transport-panou-wrap .mypet-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.32rem 0.62rem;
+		border-radius: 999px;
+		font-size: 0.78rem;
+		font-weight: 700;
+		text-decoration: none;
+		border: 1px solid transparent;
+		cursor: default;
+		user-select: none;
+		box-sizing: border-box;
+		flex-shrink: 0;
+	}
+	.transport-panou-wrap .mypet-btn-primary {
+		background: #2e7d32;
+		color: #fff;
+	}
+	.transport-panou-wrap .mypet-btn-secondary {
+		background: #fff8e1;
+		color: #5d4037;
+		border-color: #ffcc80;
+	}
+	.transport-panou-wrap .mypet-btn-add {
+		background: #0050b5;
+		color: #fff;
+		border-color: transparent;
+	}
+	.transport-panou-wrap .mypet-btn-counter {
+		background: #f5e39b;
+		color: #5c3c00;
+		border-color: #d2b27a;
+		font-size: 0.72rem;
+		padding: 0.28rem 0.5rem;
+		max-width: 100%;
+		white-space: normal;
+		text-align: center;
+		line-height: 1.25;
+	}
+	.transport-panou-wrap .mypet-btn-spec.is-active {
+		background: #0050b5;
+		color: #fff;
+		border-color: transparent;
+	}
+	.transport-panou-wrap .mypet-legend-item {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		font-size: 0.65rem;
+		font-weight: 900;
+		color: #5c3c00;
+	}
+	.transport-panou-wrap .mypet-legend-swatch {
+		width: 10px;
+		height: 10px;
+		border-radius: 3px;
+		display: inline-block;
+		flex-shrink: 0;
+	}
+	.transport-panou-wrap .mypet-swatch-0 { background: #d32f2f; }
+	.transport-panou-wrap .mypet-swatch-half { background: linear-gradient(to bottom, #f5e39b 50%, #2e7d32 50%); }
+	.transport-panou-wrap .mypet-swatch-75 { background: #f5e39b; }
+	.transport-panou-wrap .mypet-swatch-100 { background: #2e7d32; }
+	.transport-panou-fake {
+		pointer-events: none;
+	}
+	.transport-panou-wrap .tp-body {
+		flex: 1 1 0;
+		min-height: 0;
+		width: 100%;
+		overflow-x: hidden;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+		overscroll-behavior: contain;
+		box-sizing: border-box;
+		margin-top: 0.35rem;
+		border: 2px solid #d2b27a;
+		border-radius: 8px;
+		background: #fffef7;
+	}
+	.transport-panou-wrap .tp-body-pad {
+		padding: 0.5rem 0.35rem 0.85rem;
+		box-sizing: border-box;
+	}
+	.transport-panou-wrap .tp-section {
+		margin-bottom: 1rem;
+	}
+	.transport-panou-wrap .tp-section:last-child {
+		margin-bottom: 0;
+	}
+	.transport-panou-wrap .tp-section-title {
+		margin: 0 0 0.35rem;
+		font-size: 0.82rem;
+		font-weight: 800;
+		color: #5c3c00;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+	}
+	.transport-panou-wrap .tp-table-wrap {
+		overflow-x: auto;
+		width: 100%;
+		-webkit-overflow-scrolling: touch;
+		border-radius: 6px;
+		border: 1px solid #d2b27a;
+		background: #fff;
+	}
+	.transport-panou-wrap .tp-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.72rem;
+		min-width: 920px;
+	}
+	.transport-panou-wrap .tp-table th {
+		background: #5c3c00;
+		color: #fff;
+		padding: 0.28rem 0.35rem;
+		text-align: left;
+		font-weight: 700;
+		white-space: nowrap;
+		position: sticky;
+		top: 0;
+		z-index: 1;
+	}
+	.transport-panou-wrap .tp-table td {
+		padding: 0.25rem 0.35rem;
+		border-bottom: 1px solid #eee;
+		vertical-align: top;
+		color: #333;
+	}
+	.transport-panou-wrap .tp-table tbody tr:hover td {
+		background: rgba(245, 227, 155, 0.25);
+	}
+	.transport-panou-wrap .tp-td-clip {
+		max-width: 8rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.transport-panou-wrap .tp-empty {
+		text-align: center;
+		color: #777;
+		font-style: italic;
+		padding: 0.65rem !important;
+	}
+	.transport-panou-wrap .tp-badge {
+		display: inline-block;
+		padding: 0.12rem 0.4rem;
+		border-radius: 999px;
+		font-size: 0.68rem;
+		font-weight: 800;
+		white-space: nowrap;
+	}
+	.transport-panou-wrap .tp-badge-pending {
+		background: #e3f2fd;
+		color: #0d47a1;
+		border: 1px solid #90caf9;
+	}
+	.transport-panou-wrap .tp-td-actions {
+		white-space: nowrap;
+	}
+	.transport-panou-wrap .tp-link {
+		color: #1565c0;
+		font-weight: 700;
+		text-decoration: none;
+		font-size: 0.72rem;
+		margin-right: 0.35rem;
+	}
+	.transport-panou-wrap .tp-link:hover {
+		text-decoration: underline;
+	}
+	.transport-panou-wrap .tp-inline-form {
+		display: inline-block;
+		margin: 0;
+		vertical-align: middle;
+	}
+	.transport-panou-wrap .tp-btn-danger {
+		font-size: 0.68rem;
+		font-weight: 700;
+		padding: 0.12rem 0.4rem;
+		border-radius: 5px;
+		border: 1px solid #b71c1c;
+		background: #fff5f5;
+		color: #b71c1c;
+		cursor: pointer;
+	}
+	.transport-panou-wrap .tp-btn-danger:hover {
+		background: #ffebee;
+	}
+</style>
 {% endblock %}

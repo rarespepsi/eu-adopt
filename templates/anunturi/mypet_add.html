@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load anunturi_extras %}
 
 {% block title %}Adaugă un pet | MyPet{% endblock %}
 
@@ -310,29 +311,38 @@
 			</form>
 		</div>
 
-		<div class="mypet-fisa-col mypet-fisa-col-traits">
-			<div class="mypet-fisa-traits-box">
+		<div class="mypet-fisa-col mypet-fisa-col-traits" id="mypetRightCol">
+			<div class="mypet-fisa-traits-box" id="mypetTraitsAdoptatorBox" {% if species_mode == 'other' %}style="display:none;" aria-hidden="true"{% endif %}>
 				<h3 class="mypet-fisa-section-title">Detalii potrivire adoptator</h3>
+				{{ trait_labels_by_species|json_script:"mypet-traits-labels-by-species" }}
 				<div class="mypet-fisa-traits-note" id="traitsNote" {% if not traits_empty %}style="display:none;"{% endif %}>
 					ACESTE selectii va ajuta in prezentarea catre adoptator.
 				</div>
 				<ul class="mypet-fisa-traits-list">
-					<li><label><input type="checkbox" name="trait_jucaus" form="mypet-add-form" {% if trait_jucaus %}checked{% endif %} /> JUCĂUȘ</label></li>
-					<li><label><input type="checkbox" name="trait_iubitor" form="mypet-add-form" {% if trait_iubitor %}checked{% endif %} /> IUBITOR</label></li>
-					<li><label><input type="checkbox" name="trait_protector" form="mypet-add-form" {% if trait_protector %}checked{% endif %} /> PROTECTOR</label></li>
-					<li><label><input type="checkbox" name="trait_energic" form="mypet-add-form" {% if trait_energic %}checked{% endif %} /> ENERGIC</label></li>
-					<li><label><input type="checkbox" name="trait_linistit" form="mypet-add-form" {% if trait_linistit %}checked{% endif %} /> LINIȘTIT</label></li>
-					<li><label><input type="checkbox" name="trait_bun_copii" form="mypet-add-form" {% if trait_bun_copii %}checked{% endif %} /> BUN CU COPII</label></li>
-					<li><label><input type="checkbox" name="trait_bun_caini" form="mypet-add-form" {% if trait_bun_caini %}checked{% endif %} /> BUN CU ALȚI CÂINI</label></li>
-					<li><label><input type="checkbox" name="trait_bun_pisici" form="mypet-add-form" {% if trait_bun_pisici %}checked{% endif %} /> BUN CU PISICI</label></li>
-					<li><label><input type="checkbox" name="trait_obisnuit_casa" form="mypet-add-form" {% if trait_obisnuit_casa %}checked{% endif %} /> OBIȘNUIT ÎN CASĂ</label></li>
-					<li><label><input type="checkbox" name="trait_obisnuit_lesa" form="mypet-add-form" {% if trait_obisnuit_lesa %}checked{% endif %} /> OBIȘNUIT CU LESA</label></li>
-					<li><label><input type="checkbox" name="trait_nu_latla" form="mypet-add-form" {% if trait_nu_latla %}checked{% endif %} /> NU LATRĂ EXCESIV</label></li>
-					<li><label><input type="checkbox" name="trait_apartament" form="mypet-add-form" {% if trait_apartament %}checked{% endif %} /> POTRIVIT PENTRU APARTAMENT</label></li>
-					<li><label><input type="checkbox" name="trait_se_adapteaza" form="mypet-add-form" {% if trait_se_adapteaza %}checked{% endif %} /> SE ADAPTEAZĂ UȘOR</label></li>
-					<li><label><input type="checkbox" name="trait_tolereaza_singur" form="mypet-add-form" {% if trait_tolereaza_singur %}checked{% endif %} /> TOLEREAZĂ SĂ STEA SINGUR</label></li>
-					<li><label><input type="checkbox" name="trait_necesita_experienta" form="mypet-add-form" {% if trait_necesita_experienta %}checked{% endif %} /> NECESITĂ EXPERIENȚĂ CU CÂINI</label></li>
+					<li data-trait-field="trait_jucaus"><label><input type="checkbox" name="trait_jucaus" form="mypet-add-form" {% if trait_jucaus %}checked{% endif %} /> <span class="mypet-trait-lbl">{% animal_trait_label species_mode|default:'dog' 'trait_jucaus' %}</span></label></li>
+					<li data-trait-field="trait_iubitor"><label><input type="checkbox" name="trait_iubitor" form="mypet-add-form" {% if trait_iubitor %}checked{% endif %} /> <span class="mypet-trait-lbl">{% animal_trait_label species_mode|default:'dog' 'trait_iubitor' %}</span></label></li>
+					<li data-trait-field="trait_protector"><label><input type="checkbox" name="trait_protector" form="mypet-add-form" {% if trait_protector %}checked{% endif %} /> <span class="mypet-trait-lbl">{% animal_trait_label species_mode|default:'dog' 'trait_protector' %}</span></label></li>
+					<li data-trait-field="trait_energic"><label><input type="checkbox" name="trait_energic" form="mypet-add-form" {% if trait_energic %}checked{% endif %} /> <span class="mypet-trait-lbl">{% animal_trait_label species_mode|default:'dog' 'trait_energic' %}</span></label></li>
+					<li data-trait-field="trait_linistit"><label><input type="checkbox" name="trait_linistit" form="mypet-add-form" {% if trait_linistit %}checked{% endif %} /> <span class="mypet-trait-lbl">{% animal_trait_label species_mode|default:'dog' 'trait_linistit' %}</span></label></li>
+					<li data-trait-field="trait_bun_copii"><label><input type="checkbox" name="trait_bun_copii" form="mypet-add-form" {% if trait_bun_copii %}checked{% endif %} /> <span class="mypet-trait-lbl">{% animal_trait_label species_mode|default:'dog' 'trait_bun_copii' %}</span></label></li>
+					<li data-trait-field="trait_bun_caini"><label><input type="checkbox" name="trait_bun_caini" form="mypet-add-form" {% if trait_bun_caini %}checked{% endif %} /> <span class="mypet-trait-lbl">{% animal_trait_label species_mode|default:'dog' 'trait_bun_caini' %}</span></label></li>
+					<li data-trait-field="trait_bun_pisici"><label><input type="checkbox" name="trait_bun_pisici" form="mypet-add-form" {% if trait_bun_pisici %}checked{% endif %} /> <span class="mypet-trait-lbl">{% animal_trait_label species_mode|default:'dog' 'trait_bun_pisici' %}</span></label></li>
+					<li data-trait-field="trait_obisnuit_casa"><label><input type="checkbox" name="trait_obisnuit_casa" form="mypet-add-form" {% if trait_obisnuit_casa %}checked{% endif %} /> <span class="mypet-trait-lbl">{% animal_trait_label species_mode|default:'dog' 'trait_obisnuit_casa' %}</span></label></li>
+					<li data-trait-field="trait_obisnuit_lesa"><label><input type="checkbox" name="trait_obisnuit_lesa" form="mypet-add-form" {% if trait_obisnuit_lesa %}checked{% endif %} /> <span class="mypet-trait-lbl">{% animal_trait_label species_mode|default:'dog' 'trait_obisnuit_lesa' %}</span></label></li>
+					<li data-trait-field="trait_nu_latla"><label><input type="checkbox" name="trait_nu_latla" form="mypet-add-form" {% if trait_nu_latla %}checked{% endif %} /> <span class="mypet-trait-lbl">{% animal_trait_label species_mode|default:'dog' 'trait_nu_latla' %}</span></label></li>
+					<li data-trait-field="trait_apartament"><label><input type="checkbox" name="trait_apartament" form="mypet-add-form" {% if trait_apartament %}checked{% endif %} /> <span class="mypet-trait-lbl">{% animal_trait_label species_mode|default:'dog' 'trait_apartament' %}</span></label></li>
+					<li data-trait-field="trait_se_adapteaza"><label><input type="checkbox" name="trait_se_adapteaza" form="mypet-add-form" {% if trait_se_adapteaza %}checked{% endif %} /> <span class="mypet-trait-lbl">{% animal_trait_label species_mode|default:'dog' 'trait_se_adapteaza' %}</span></label></li>
+					<li data-trait-field="trait_tolereaza_singur"><label><input type="checkbox" name="trait_tolereaza_singur" form="mypet-add-form" {% if trait_tolereaza_singur %}checked{% endif %} /> <span class="mypet-trait-lbl">{% animal_trait_label species_mode|default:'dog' 'trait_tolereaza_singur' %}</span></label></li>
+					<li data-trait-field="trait_necesita_experienta"><label><input type="checkbox" name="trait_necesita_experienta" form="mypet-add-form" {% if trait_necesita_experienta %}checked{% endif %} /> <span class="mypet-trait-lbl">{% animal_trait_label species_mode|default:'dog' 'trait_necesita_experienta' %}</span></label></li>
 				</ul>
+			</div>
+			<div class="mypet-fisa-traits-box mypet-fisa-observatii-box" id="mypetObservatiiOtherBox" {% if species_mode != 'other' %}style="display:none;" aria-hidden="true"{% endif %}>
+				<h3 class="mypet-fisa-section-title">Observații (detalii despre animal)</h3>
+				<p class="mypet-fisa-observatii-hint">Comportament, îngrijire — vizibil pe fișa publică.</p>
+				<div class="mypet-fisa-observatii-field">
+					<label class="visually-hidden" for="id_detalii_animal">Observații</label>
+					<textarea id="id_detalii_animal" name="detalii_animal" form="mypet-add-form" class="mypet-fisa-textarea mypet-fisa-observatii-textarea" rows="8" placeholder="Ex.: ce mănâncă, obiceiuri, ce spațiu necesită…">{{ detalii_animal }}</textarea>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -406,7 +416,6 @@
 		margin: 0;
 		box-sizing: border-box;
 	}
-
 	.mypet-fisa-col {
 		box-sizing: border-box;
 	}
@@ -901,6 +910,46 @@
 		flex-direction: column;
 	}
 
+	/* Altele: aceeași coloană dreaptă ca la bife — casetă observații în locul listei */
+	.mypet-fisa-observatii-box .mypet-fisa-section-title {
+		margin-bottom: 0.1rem;
+	}
+	.mypet-fisa-observatii-hint {
+		margin: 0 0 0.3rem 0;
+		font-size: 0.72rem;
+		line-height: 1.2;
+		color: #5c3c00;
+	}
+	.mypet-fisa-observatii-field {
+		flex: 0 1 auto;
+		display: flex;
+		flex-direction: column;
+	}
+	.mypet-fisa-observatii-textarea {
+		flex: none;
+		min-height: 7.5rem;
+		height: 7.5rem !important;
+		max-height: 7.5rem !important;
+		overflow-y: auto;
+		resize: none;
+	}
+	.mypet-fisa-observatii-box label.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+	.mypet-fisa-observatii-box {
+		position: relative;
+		flex: 0 1 auto;
+		align-self: stretch;
+	}
+
 	.mypet-fisa-traits-list {
 		list-style: none;
 		margin: 0.25rem 0 0;
@@ -1094,8 +1143,38 @@
 		if (isNewListing && primaryActionBtn) {
 			if (m === "dog") primaryActionBtn.textContent = "ADAUGĂ UN CÂINE";
 			else if (m === "cat") primaryActionBtn.textContent = "ADAUGĂ O PISICĂ";
-			else primaryActionBtn.textContent = "ADAUGĂ ALTCEVA";
+			else primaryActionBtn.textContent = "SALVEAZĂ FIȘA";
 		}
+		var isOther = m === "other";
+		var traitsBox = document.getElementById("mypetTraitsAdoptatorBox");
+		var observBox = document.getElementById("mypetObservatiiOtherBox");
+		if (traitsBox) {
+			traitsBox.style.display = isOther ? "none" : "";
+			if (isOther) {
+				traitsBox.setAttribute("aria-hidden", "true");
+				document.querySelectorAll('.mypet-fisa-traits-list input[type="checkbox"][form="mypet-add-form"]').forEach(function(cb) {
+					cb.checked = false;
+				});
+			} else traitsBox.removeAttribute("aria-hidden");
+		}
+		if (observBox) {
+			observBox.style.display = isOther ? "" : "none";
+			if (isOther) observBox.removeAttribute("aria-hidden");
+			else observBox.setAttribute("aria-hidden", "true");
+		}
+		if (!isOther) try {
+			var bundleEl = document.getElementById("mypet-traits-labels-by-species");
+			if (bundleEl && bundleEl.textContent) {
+				var bundle = JSON.parse(bundleEl.textContent);
+				var labelKey = m === "cat" ? "cat" : "dog";
+				var L = bundle[labelKey] || bundle.dog;
+				document.querySelectorAll(".mypet-fisa-traits-list [data-trait-field]").forEach(function(li) {
+					var f = li.getAttribute("data-trait-field");
+					var sp = li.querySelector(".mypet-trait-lbl");
+					if (sp && L && L[f]) sp.textContent = L[f];
+				});
+			}
+		} catch (eLabels) {}
 	}
 	if (speciesPillsWrap) {
 		speciesPillsWrap.addEventListener("click", function(e) {

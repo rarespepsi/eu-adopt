@@ -19,7 +19,11 @@
 					data-list-url="{% url 'adopter_messages_list' %}"
 				>Mesaje</button>
 			{% endif %}
-			<a href="{% url 'mypet_add' %}" class="mypet-btn mypet-btn-secondary mypet-btn-add">Adaugă un pet</a>
+			<a
+				href="{% url 'mypet_add' %}?species=dog"
+				class="mypet-btn mypet-btn-secondary mypet-btn-add"
+				data-mypet-add-base="{% url 'mypet_add' %}"
+			>Adaugă un pet</a>
 			<div class="mypet-btn mypet-btn-secondary mypet-btn-counter">
 				MyPet {{ mypet_count|default:0 }} / Adoptați {{ adopted_count|default:0 }} / Total {{ total_count|default:0 }}
 			</div>
@@ -1514,6 +1518,10 @@ document.addEventListener("DOMContentLoaded", function() {
 				btn.classList.toggle("is-active", (btn.getAttribute("data-species") || "") === species);
 			});
 			if (addBtn) {
+				var base = addBtn.getAttribute("data-mypet-add-base");
+				if (base) {
+					addBtn.setAttribute("href", base + "?species=" + encodeURIComponent(species));
+				}
 				if (species === "dog") addBtn.textContent = "Adaugă un câine";
 				else if (species === "cat") addBtn.textContent = "Adaugă o pisică";
 				else if (species === "other") addBtn.textContent = "AdaugăAltceva";

@@ -16,6 +16,7 @@ from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 
+from .mail_helpers import email_subject_for_user
 from .models import (
     TransportDispatchJob,
     TransportDispatchRecipient,
@@ -159,7 +160,7 @@ def _email_user_no_transporters(request, tvr: TransportVeterinaryRequest, job: T
     u = tvr.user
     if not u or not u.email:
         return
-    subj = "EU-Adopt — Nu există transportatori disponibili în zonă"
+    subj = email_subject_for_user(u.username, "EU-Adopt — Nu există transportatori disponibili în zonă")
     body = (
         "Bună ziua,\n\n"
         "Ne pare rău, momentan nu există transportatori activi care să acopere traseul selectat.\n\n"
@@ -180,7 +181,7 @@ def _email_user_request_received(request, tvr: TransportVeterinaryRequest, job: 
     cancel_tok = make_token("cancel_user", job.pk, u.pk)
     cancel_path = reverse("transport_dispatch_cancel_user") + f"?t={cancel_tok}"
     cancel_url = _absolute(request, cancel_path)
-    subj = "EU-Adopt — Cererea ta de transport a fost trimisă transportatorilor"
+    subj = email_subject_for_user(u.username, "EU-Adopt — Cererea ta de transport a fost trimisă transportatorilor")
     body = (
         "Bună ziua,\n\n"
         "Cererea ta a fost transmisă transportatorilor eligibili. Primul care acceptă primește detaliile.\n\n"
@@ -209,7 +210,7 @@ def _email_transporter_new_offer(
     path_d = reverse("transport_dispatch_decline") + f"?t={decline_tok}"
     url = _absolute(request, path)
     url_d = _absolute(request, path_d)
-    subj = f"EU-Adopt — Cerere nouă de transport (#{job.pk})"
+    subj = email_subject_for_user(transporter.username, f"EU-Adopt — Cerere nouă de transport (#{job.pk})")
     body = (
         "Bună ziua,\n\n"
         "Ai o cerere nouă de transport în zona ta.\n\n"
@@ -228,7 +229,10 @@ def _email_transporter_superseded(request, job: TransportDispatchJob, transporte
     if not transporter.email:
         return
     name = winner.get_full_name() or winner.username
-    subj = f"EU-Adopt — Cererea #{job.pk} a fost acceptată de alt transportator"
+    subj = email_subject_for_user(
+        transporter.username,
+        f"EU-Adopt — Cererea #{job.pk} a fost acceptată de alt transportator",
+    )
     body = (
         "Bună ziua,\n\n"
         f"Comanda a fost acceptată de {name}.\n"
@@ -251,7 +255,7 @@ def _email_user_assigned(request, tvr: TransportVeterinaryRequest, job: Transpor
     prof_user = getattr(op, "profile", None)
     phone = getattr(prof_user, "phone", "") or ""
     rate_url = _absolute(request, rating_page_path(job.pk))
-    subj = "EU-Adopt — Un transportator a acceptat cererea ta"
+    subj = email_subject_for_user(u.username, "EU-Adopt — Un transportator a acceptat cererea ta")
     body = (
         "Bună ziua,\n\n"
         f"Transportator: {op.get_full_name() or op.username}\n"
@@ -279,7 +283,7 @@ def _email_op_assigned_client(request, tvr: TransportVeterinaryRequest, job: Tra
     except Exception:
         pass
     rate_url = _absolute(request, rating_page_path(job.pk))
-    subj = "EU-Adopt — Ai acceptat o cerere de transport"
+    subj = email_subject_for_user(op.username, "EU-Adopt — Ai acceptat o cerere de transport")
     body = (
         "Bună ziua,\n\n"
         "Date client:\n"
@@ -369,7 +373,10 @@ def decline_job(request, job_id: int, transporter_user_id: int) -> tuple[bool, s
         if job.tvr.user and job.tvr.user.email:
             try:
                 send_mail(
-                    "EU-Adopt — Nu mai există transportatori disponibili",
+                    email_subject_for_user(
+                        job.tvr.user.username,
+                        "EU-Adopt — Nu mai există transportatori disponibili",
+                    ),
                     "Toți transportatorii contactați au refuzat sau nu mai sunt disponibili.\n",
                     settings.DEFAULT_FROM_EMAIL,
                     [job.tvr.user.email],
@@ -434,7 +441,10 @@ def cancel_assignment_by_transporter(request, job_id: int, transporter_user_id: 
     if job.tvr.user and job.tvr.user.email:
         try:
             send_mail(
-                "EU-Adopt — Transportul a fost reprogramat",
+                email_subject_for_user(
+                    job.tvr.user.username,
+                    "EU-Adopt — Transportul a fost reprogramat",
+                ),
                 "Transportatorul a anulat preluarea. Cererea a fost retrimisă către transportatori.\n",
                 settings.DEFAULT_FROM_EMAIL,
                 [job.tvr.user.email],
@@ -466,7 +476,10 @@ def _email_user_job_expired(job: TransportDispatchJob) -> None:
         extra = (
             "\nPentru opțiunea „transport azi”, poți trimite o nouă cerere cu data/ora actualizată din pagina Transport.\n"
         )
-    subj = "EU-Adopt — Cererea de transport a expirat (nimeni nu a acceptat la timp)"
+    subj = email_subject_for_user(
+        u.username,
+        "EU-Adopt — Cererea de transport a expirat (nimeni nu a acceptat la timp)",
+    )
     body = (
         "Bună ziua,\n\n"
         f"Cererea #{tvr.pk} (job #{job.pk}) nu mai este activă — perioada alocată a expirat fără accept.\n"
