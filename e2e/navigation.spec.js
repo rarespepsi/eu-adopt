@@ -14,7 +14,11 @@ test.describe("Navigare principală (navbar)", () => {
     await page.getByRole("link", { name: "Servicii" }).click();
     await expect(page).toHaveURL(/\/servicii\/?$/);
 
-    await page.getByRole("link", { name: "Transport" }).click();
+    // Doar linkul din navbar (#menu-main-menu), nu „Transport animale” din conținut (ex. Servicii).
+    await page
+      .locator("#menu-main-menu")
+      .getByRole("link", { name: "Transport", exact: true })
+      .click();
     await expect(page).toHaveURL(/\/transport\/?$/);
 
     await page.getByRole("link", { name: "Shop" }).click();

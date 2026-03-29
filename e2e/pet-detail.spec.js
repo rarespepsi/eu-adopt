@@ -13,6 +13,8 @@ test.describe("Fișă animal din listă", () => {
     await expect(page).toHaveURL(/\/pets\/\d+\/?$/);
 
     await expect(page.locator("#petCardCopyBtn")).toBeVisible();
-    await expect(page.locator("#petAdoptCorner")).toBeVisible({ timeout: 10000 });
+    // #petAdoptCorner apare doar pentru utilizator autentificat care poate adopta (nu pentru anonim).
+    await expect(page.locator("#petQrCorner")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByLabel("Stare adopție")).toBeVisible();
   });
 });
