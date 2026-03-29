@@ -12,3 +12,11 @@ media/
 
 # Local DB (keep out of git to avoid noise)
 db.sqlite3
+
+# Playwright / Node (E2E)
+node_modules/
+playwright-report/
+test-results/
+playwright/.cache/
+.env.e2e
+.env.e2e.local
