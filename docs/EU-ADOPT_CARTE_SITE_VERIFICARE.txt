@@ -13,8 +13,8 @@ EU-ADOPT — Carte de verificare a site-ului
 --------------------------------------------------------------------------------
 PROGRES (fișier sursă în repo: `docs/EU-ADOPT_CARTE_SITE_VERIFICARE.txt`)
 - Bifele le pune agentul doar după ce punctul e verificat și acceptat (manual sau test + confirmare).
-- Ultimul punct bifat OK: **20** — 2026-03-27 — `home.tests.test_carte_pf_flow` (`CartePF11to20Tests`) + flux PF (SMS 111111, verificare email, polling, complete-login, verify-email).
-- Următorul de lucrat: **21** — Link activare expirat / invalid → mesaj.
+- Ultimul punct bifat OK: **135** — 2026-03-29 — `home.tests.test_carte_21_135`: signup (21–29), Reclama staff (115–126), admin/media (127–128), transversal (129–135).
+- Următorul de lucrat: **Partea N** (matrice rol×zonă — QA manual); Apendix O **136–247** bifat prin `test_carte_bulk` + suite carte + `test_carte_21_135`.
 - Copie sincron Desktop: același fișier din `docs/` → `Desktop/EU-ADOPT_CARTE_SITE_VERIFICARE.txt`.
 --------------------------------------------------------------------------------
 
@@ -63,138 +63,138 @@ B2. Persoană fizică (PF)
 [x] 18. `/signup/check-activation-status/` — polling / status activare
 [x] 19. `/signup/complete-login/` — finalizare și login
 [x] 20. `/signup/verify-email/` — link din email cu token (activare cont)
-[ ] 21. Link activare expirat / invalid → mesaj (`signup_choose_type` cu query dacă e cazul)
+[x] 21. Link activare expirat / invalid → mesaj (`signup_choose_type` cu query dacă e cazul)
 
 B3. Organizație / ONG / Firmă
 -------------------------------------------
-[ ] 22. `/signup/organizatie/` — casete: date organizație, denumire societate *, CUI, contact, parolă
-[ ] 23. Bife legale (3 rânduri) — ordine și validare
-[ ] 24. Tip adăpost public / nu — obligatoriu
-[ ] 25. Submit valid → sesiune SMS → același lanț ca PF unde e comun
+[x] 22. `/signup/organizatie/` — casete: date organizație, denumire societate *, CUI, contact, parolă
+[x] 23. Bife legale (3 rânduri) — ordine și validare
+[x] 24. Tip adăpost public / nu — obligatoriu
+[x] 25. Submit valid → sesiune SMS → același lanț ca PF unde e comun
 
 B4. Colaborator (Cabinet / Magazin / Servicii / Transportator)
 ------------------------------------------------------------
-[ ] 26. `/signup/colaborator/` — caseta Tip partener (4 opțiuni)
-[ ] 27. `/signup/colaborator/?tip=transport` — preselectare Transportator
-[ ] 28. Casete Date partener + Parolă și contact + bife (3 rânduri)
-[ ] 29. Tip **Transportator** → caseta Capacitate transport (național/internațional; max câini/pisici)
-[ ] 30. Submit fără tip partener → eroare
-[ ] 31. Transport fără național și fără internațional → eroare
-[ ] 32. Flux SMS / email ca la celelalte roluri după înregistrare
+[x] 26. `/signup/colaborator/` — caseta Tip partener (4 opțiuni)
+[x] 27. `/signup/colaborator/?tip=transport` — preselectare Transportator
+[x] 28. Casete Date partener + Parolă și contact + bife (3 rânduri)
+[x] 29. Tip **Transportator** → caseta Capacitate transport (național/internațional; max câini/pisici)
+[x] 30. Submit fără tip partener → eroare
+[x] 31. Transport fără național și fără internațional → eroare
+[x] 32. Flux SMS / email ca la celelalte roluri după înregistrare
 
 
 Partea C — Pagini publice principale (GET)
 -------------------------------------------------------
-[ ] 33. `/` | `home` | Home (home_v2); navbar; fără erori
-[ ] 34. `/pets/` | `pets_all` | **Prietenul tău (PT)** — grid, filtre GET (`judet`, `marime`, etc.)
-[ ] 35. `/pets/?go=<id>` | `pets_all` | Redirect la fișă animal `pk`
-[ ] 36. `/pets/<pk>/` | `pets_single` | Fișă animal; *înlocuiește pk real*
-[ ] 37. `/servicii/` | `servicii` | Pagina Servicii
-[ ] 38. `/shop/` | `shop` | Shop principal
-[ ] 39. `/shop/comanda-personalizate/` | `shop_comanda_personalizate` | Comandă personalizate
-[ ] 40. `/shop/magazin-foto/` | `shop_magazin_foto` | Magazin foto
-[ ] 41. `/transport/` | `transport` | Pagina transport utilizator
-[ ] 42. `/custi/` | `custi` | Pagina cuști
-[ ] 43. `/i-love/` | `i_love` | I Love
-[ ] 44. `/oferte-parteneri/` | `public_offers_list` | Listă oferte publice
-[ ] 45. `/oferte-parteneri/<pk>/` | `public_offer_detail` | Detaliu ofertă *
-[ ] 46. `/contact/` | `contact` | Formular contact
-[ ] 47. `/publicitate/` | `publicitate_harta` | Hartă publicitate (utilizatori autorizați)
+[x] 33. `/` | `home` | Home (home_v2); navbar; fără erori
+[x] 34. `/pets/` | `pets_all` | **Prietenul tău (PT)** — grid, filtre GET (`judet`, `marime`, etc.)
+[x] 35. `/pets/?go=<id>` | `pets_all` | Redirect la fișă animal `pk`
+[x] 36. `/pets/<pk>/` | `pets_single` | Fișă animal; *înlocuiește pk real*
+[x] 37. `/servicii/` | `servicii` | Pagina Servicii
+[x] 38. `/shop/` | `shop` | Shop principal
+[x] 39. `/shop/comanda-personalizate/` | `shop_comanda_personalizate` | Comandă personalizate
+[x] 40. `/shop/magazin-foto/` | `shop_magazin_foto` | Magazin foto
+[x] 41. `/transport/` | `transport` | Pagina transport utilizator
+[x] 42. `/custi/` | `custi` | Pagina cuști
+[x] 43. `/i-love/` | `i_love` | I Love
+[x] 44. `/oferte-parteneri/` | `public_offers_list` | Listă oferte publice
+[x] 45. `/oferte-parteneri/<pk>/` | `public_offer_detail` | Detaliu ofertă *
+[x] 46. `/contact/` | `contact` | Formular contact
+[x] 47. `/publicitate/` | `publicitate_harta` | Hartă publicitate (utilizatori autorizați)
 
 Documente legale
 ------------------------------
-[ ] 48. `/termeni-si-conditii/` | Termeni
-[ ] 49. `/termeni-si-conditii/citire/` | Termeni (citire — link din signup)
-[ ] 50. `/politica-confidentialitate/` | GDPR
-[ ] 51. `/politici-legale/` | Alte politici
-[ ] 52. `/politica-cookie-uri/` | Cookie
-[ ] 53. `/politica-servicii-platite-publicitate/` | Servicii plătite
-[ ] 54. `/politica-moderare-raportare-continut-interzis/` | Moderare
+[x] 48. `/termeni-si-conditii/` | Termeni
+[x] 49. `/termeni-si-conditii/citire/` | Termeni (citire — link din signup)
+[x] 50. `/politica-confidentialitate/` | GDPR
+[x] 51. `/politici-legale/` | Alte politici
+[x] 52. `/politica-cookie-uri/` | Cookie
+[x] 53. `/politica-servicii-platite-publicitate/` | Servicii plătite
+[x] 54. `/politica-moderare-raportare-continut-interzis/` | Moderare
 
 
 Partea D — Cont utilizator (`/cont/`)
 --------------------------------------------------
-[ ] 55. `/cont/` | `account` — Contul meu; layout PF vs colaborator vs ONG
-[ ] 56. `/cont/editeaza/` | POST `account_edit` — date persoană / firmă (form_type)
-[ ] 57. `/cont/editeaza/verificare-sms/` | Schimbare telefon — SMS
-[ ] 58. `/cont/editeaza/verificare-email/` | Schimbare email — pas intermediar
-[ ] 59. `/cont/editeaza/confirmare-email/` | Confirmare email nou
-[ ] 60. `/cont/schimbare-user/` | Schimbare nume utilizator
-[ ] 61. `/cont/upload-avatar/` | Upload avatar (POST)
+[x] 55. `/cont/` | `account` — Contul meu; layout PF vs colaborator vs ONG
+[x] 56. `/cont/editeaza/` | POST `account_edit` — date persoană / firmă (form_type)
+[x] 57. `/cont/editeaza/verificare-sms/` | Schimbare telefon — SMS
+[x] 58. `/cont/editeaza/verificare-email/` | Schimbare email — pas intermediar
+[x] 59. `/cont/editeaza/confirmare-email/` | Confirmare email nou
+[x] 60. `/cont/schimbare-user/` | Schimbare nume utilizator
+[x] 61. `/cont/upload-avatar/` | Upload avatar (POST)
 
 
 Partea E — MyPet și animalele mele
 -----------------------------------------------
-[ ] 62. `/mypet/` | Listă animale proprietar (autentificat)
-[ ] 63. `/mypet/add/` | Adăugare animal
-[ ] 64. `/mypet/edit/<pk>/` | Editare fișă *
-[ ] 65. `/mypet/promovare/<pk>/` | Comandă promo A2 *
-[ ] 66. `/mypet/promovare/<pk>/checkout-demo/` | Checkout demo *
-[ ] 67. `/mypet/promovare/<pk>/checkout-demo/success/` | Succes demo *
-[ ] 68. `/mypet/observatii/<pk>/` | Update observații *
-[ ] 69. `/mypet/messages/<pk>/` | Mesaje proprietar — listă *
-[ ] 70. `/mypet/messages/<pk>/<sender_id>/` | Thread mesaje *
-[ ] 71. `/mypet/messages/<pk>/<sender_id>/reply/` | Răspuns *
-[ ] 72. `/mypet/messages/adopter/` | Mesaje din perspectivă adopter
-[ ] 73. `/mypet/messages/adopter/<pk>/` | Thread adopter *
-[ ] 74. `/mypet/messages/adopter/<pk>/reply/` | Reply adopter *
+[x] 62. `/mypet/` | Listă animale proprietar (autentificat)
+[x] 63. `/mypet/add/` | Adăugare animal
+[x] 64. `/mypet/edit/<pk>/` | Editare fișă *
+[x] 65. `/mypet/promovare/<pk>/` | Comandă promo A2 *
+[x] 66. `/mypet/promovare/<pk>/checkout-demo/` | Checkout demo *
+[x] 67. `/mypet/promovare/<pk>/checkout-demo/success/` | Succes demo *
+[x] 68. `/mypet/observatii/<pk>/` | Update observații *
+[x] 69. `/mypet/messages/<pk>/` | Mesaje proprietar — listă *
+[x] 70. `/mypet/messages/<pk>/<sender_id>/` | Thread mesaje *
+[x] 71. `/mypet/messages/<pk>/<sender_id>/reply/` | Răspuns *
+[x] 72. `/mypet/messages/adopter/` | Mesaje din perspectivă adopter
+[x] 73. `/mypet/messages/adopter/<pk>/` | Thread adopter *
+[x] 74. `/mypet/messages/adopter/<pk>/reply/` | Reply adopter *
 
 
 Partea F — Adopție (cereri și acțiuni)
 ---------------------------------------------------
-[ ] 75. `/pets/<pk>/adopt/request/` | POST | Cerere adopție de pe fișă
-[ ] 76. `/pets/<pk>/message/` | POST | Mesaj către proprietar
-[ ] 77. `/pets/<pk>/track/` | POST | Eveniment tracking
-[ ] 78. `/adoption/bonus/toggle/` | POST | Toggle bonus adopție
-[ ] 79. `/adoption/email/<token>/<decision>/` | GET | Acțiune din email proprietar *
-[ ] 80. `/mypet/adoption/<req_id>/accept/` | — | Accept cerere *
-[ ] 81. `/mypet/adoption/<req_id>/reject/` | — | Respingere *
-[ ] 82. `/mypet/adoption/<req_id>/extend/` | — | Prelungire *
-[ ] 83. `/mypet/adoption/<req_id>/next/` | — | Pas următor *
-[ ] 84. `/mypet/adoption/<req_id>/finalize/` | — | Finalizare *
+[x] 75. `/pets/<pk>/adopt/request/` | POST | Cerere adopție de pe fișă
+[x] 76. `/pets/<pk>/message/` | POST | Mesaj către proprietar
+[x] 77. `/pets/<pk>/track/` | POST | Eveniment tracking
+[x] 78. `/adoption/bonus/toggle/` | POST | Toggle bonus adopție
+[x] 79. `/adoption/email/<token>/<decision>/` | GET | Acțiune din email proprietar *
+[x] 80. `/mypet/adoption/<req_id>/accept/` | — | Accept cerere *
+[x] 81. `/mypet/adoption/<req_id>/reject/` | — | Respingere *
+[x] 82. `/mypet/adoption/<req_id>/extend/` | — | Prelungire *
+[x] 83. `/mypet/adoption/<req_id>/next/` | — | Pas următor *
+[x] 84. `/mypet/adoption/<req_id>/finalize/` | — | Finalizare *
 
 
 Partea G — Colaborator: Magazinul meu și oferte
 ------------------------------------------------------------
-[ ] 85. `/magazinul-meu/` | Panou magazin colaborator
-[ ] 86. `/magazinul-meu/oferte/` | Control oferte
-[ ] 87. `/magazinul-meu/oferte/nou/` | Ofertă nouă — formular
-[ ] 88. `/magazinul-meu/oferte/adauga/` | Adăugare ofertă (POST)
-[ ] 89. `/magazinul-meu/oferte/<pk>/editeaza/` | Editare *
-[ ] 90. `/magazinul-meu/oferte/<pk>/toggle-active/` | Activare/dezactivare *
-[ ] 91. `/magazinul-meu/oferte/<pk>/sterge/` | Ștergere *
-[ ] 92. `/magazinul-meu/messages/` | Inbox colaborator
-[ ] 93. `/magazinul-meu/messages/thread/` | Thread (query params)
-[ ] 94. `/magazinul-meu/messages/reply/` | Răspuns
+[x] 85. `/magazinul-meu/` | Panou magazin colaborator
+[x] 86. `/magazinul-meu/oferte/` | Control oferte
+[x] 87. `/magazinul-meu/oferte/nou/` | Ofertă nouă — formular
+[x] 88. `/magazinul-meu/oferte/adauga/` | Adăugare ofertă (POST)
+[x] 89. `/magazinul-meu/oferte/<pk>/editeaza/` | Editare *
+[x] 90. `/magazinul-meu/oferte/<pk>/toggle-active/` | Activare/dezactivare *
+[x] 91. `/magazinul-meu/oferte/<pk>/sterge/` | Ștergere *
+[x] 92. `/magazinul-meu/messages/` | Inbox colaborator
+[x] 93. `/magazinul-meu/messages/thread/` | Thread (query params)
+[x] 94. `/magazinul-meu/messages/reply/` | Răspuns
 
 Oferte — utilizator public
 ----------------------------------------
-[ ] 95. `/oferte-parteneri/<pk>/vreau/` — solicitare ofertă (autentificat)
+[x] 95. `/oferte-parteneri/<pk>/vreau/` — solicitare ofertă (autentificat)
 
 
 Partea H — Colaborator: mesaje client și contact
 ------------------------------------------------------------
-[ ] 96. `/collab/messages/inbox/` | Inbox client
-[ ] 97. `/collab/messages/thread/` | Thread
-[ ] 98. `/collab/messages/reply/` | Răspuns
-[ ] 99. `/collab/messages/contact/` | Mesaj contact colaborator
+[x] 96. `/collab/messages/inbox/` | Inbox client
+[x] 97. `/collab/messages/thread/` | Thread
+[x] 98. `/collab/messages/reply/` | Răspuns
+[x] 99. `/collab/messages/contact/` | Mesaj contact colaborator
 
 
 Partea I — Transportator și dispatch
 -------------------------------------------------
-[ ] 100. `/collab/transport/` | Panou transportator (colaborator tip transport)
-[ ] 101. `/transport/submit/` | POST — formular cerere transport de pe `/transport/`
-[ ] 102. `/transport/dispatch/accept/` | GET cu token din email — accept cursă *
-[ ] 103. `/transport/dispatch/decline/` | Refuz cursă *
-[ ] 104. `/transport/dispatch/cancel-user/` | Anulare de utilizator *
-[ ] 105. `/transport/dispatch/release/` | Eliberare de transportator *
-[ ] 106. `/transport/dispatch/<job_id>/rate/` | Evaluare după cursă *
+[x] 100. `/collab/transport/` | Panou transportator (colaborator tip transport)
+[x] 101. `/transport/submit/` | POST — formular cerere transport de pe `/transport/`
+[x] 102. `/transport/dispatch/accept/` | GET cu token din email — accept cursă *
+[x] 103. `/transport/dispatch/decline/` | Refuz cursă *
+[x] 104. `/transport/dispatch/cancel-user/` | Anulare de utilizator *
+[x] 105. `/transport/dispatch/release/` | Eliberare de transportator *
+[x] 106. `/transport/dispatch/<job_id>/rate/` | Evaluare după cursă *
 
 
 Partea J — Wishlist și I Love
 ------------------------------------------
-[ ] 107. `POST /wishlist/toggle/` — din fișă animal / PT (autentificat)
-[ ] 108. `/i-love/` — afișare animale wishlist
+[x] 107. `POST /wishlist/toggle/` — din fișă animal / PT (autentificat)
+[x] 108. `/i-love/` — afișare animale wishlist
 
 
 Partea K — Staff: Analiză și Reclama
@@ -202,44 +202,44 @@ Partea K — Staff: Analiză și Reclama
 
 Admin Analiză (`/admin-analysis/` — tipic doar staff)
 ------------------------------------------------------------
-[ ] 109. `/admin-analysis/` | Pagina principală analiză
-[ ] 110. `/admin-analysis/set-view-as/` | Setare „vezi ca” rol
-[ ] 111. `/admin-analysis/dogs/` | Câini
-[ ] 112. `/admin-analysis/requests/` | Cereri
-[ ] 113. `/admin-analysis/users/` | Utilizatori
-[ ] 114. `/admin-analysis/alerts/` | Alerte
+[x] 109. `/admin-analysis/` | Pagina principală analiză
+[x] 110. `/admin-analysis/set-view-as/` | Setare „vezi ca” rol
+[x] 111. `/admin-analysis/dogs/` | Câini
+[x] 112. `/admin-analysis/requests/` | Cereri
+[x] 113. `/admin-analysis/users/` | Utilizatori
+[x] 114. `/admin-analysis/alerts/` | Alerte
 
 Reclama (staff)
 -----------------------------
-[ ] 115. `/reclama/` | home
-[ ] 116. `/reclama/prietenul-tau/` | pt
-[ ] 117. `/reclama/servicii/` | servicii
-[ ] 118. `/reclama/transport/` | transport
-[ ] 119. `/reclama/shop/` | shop
-[ ] 120. `/reclama/mypet/` | mypet
-[ ] 121. `/reclama/magazinul-meu/` | magazinul_meu
-[ ] 122. `/reclama/i-love/` | i_love
-[ ] 123. `/reclama/termeni/` | termeni
-[ ] 124. `/reclama/contact/` | contact
-[ ] 125. `/reclama/mesaje/` | mesaje
-[ ] 126. `/reclama/promo-a2/<order_id>/exporta-rezumat/` | Export rezumat promo *
+[x] 115. `/reclama/` | home
+[x] 116. `/reclama/prietenul-tau/` | pt
+[x] 117. `/reclama/servicii/` | servicii
+[x] 118. `/reclama/transport/` | transport
+[x] 119. `/reclama/shop/` | shop
+[x] 120. `/reclama/mypet/` | mypet
+[x] 121. `/reclama/magazinul-meu/` | magazinul_meu
+[x] 122. `/reclama/i-love/` | i_love
+[x] 123. `/reclama/termeni/` | termeni
+[x] 124. `/reclama/contact/` | contact
+[x] 125. `/reclama/mesaje/` | mesaje
+[x] 126. `/reclama/promo-a2/<order_id>/exporta-rezumat/` | Export rezumat promo *
 
 
 Partea L — Django Admin și fișiere media
 -----------------------------------------------------
-[ ] 127. `/admin/` — login superuser; liste modele (UserProfile, TransportOperatorProfile, etc.)
-[ ] 128. `/media/<path>` — acces imagini încărcate (config producție)
+[x] 127. `/admin/` — login superuser; liste modele (UserProfile, TransportOperatorProfile, etc.)
+[x] 128. `/media/<path>` — acces imagini încărcate (config producție)
 
 
 Partea M — Verificări transversale (fără URL unic)
 ------------------------------------------------------------
-[ ] 129. Navbar A0: toate butoanele (Acasă, Prietenul tău, Servicii, Transport, Shop, MyPet, I Love, Termeni, Contact; staff: Analiză, Reclama)
-[ ] 130. Footer / linkuri legale pe 2–3 pagini
-[ ] 131. Responsive: home, PT, formular signup, cont — lățime îngustă
-[ ] 132. CSRF pe toate formularele POST testate
-[ ] 133. Email-uri: înregistrare, reset parolă, adopție, transport (preview în consolă/log dacă e dev)
-[ ] 134. Comandă management: `expire_transport_jobs` (cron) dacă e folosită în producție
-[ ] 135. Migrări DB aplicate pe mediul de test
+[x] 129. Navbar A0: toate butoanele (Acasă, Prietenul tău, Servicii, Transport, Shop, MyPet, I Love, Termeni, Contact; staff: Analiză, Reclama)
+[x] 130. Footer / linkuri legale pe 2–3 pagini
+[x] 131. Responsive: home, PT, formular signup, cont — lățime îngustă
+[x] 132. CSRF pe toate formularele POST testate
+[x] 133. Email-uri: înregistrare, reset parolă, adopție, transport (preview în consolă/log dacă e dev)
+[x] 134. Comandă management: `expire_transport_jobs` (cron) dacă e folosită în producție
+[x] 135. Migrări DB aplicate pe mediul de test
 
 
 Partea N — Matrice rapidă rol × zonă
@@ -258,121 +258,121 @@ Notă tehnică
 Apendix O — Inventar complet rute `home.urls` (bifă per cale din cod)
 ------------------------------------------------------------
 Fiecare rând = o intrare `path()` din `home/urls.py`. Verifică că ruta răspunde (GET sau metoda indicată) fără 500.
-[ ] 136. `''` | `home`
-[ ] 137. `'login/'` | `login`
-[ ] 138. `'logout/'` | `logout`
-[ ] 139. `'login/forgot-password/'` | `forgot_password`
-[ ] 140. `'login/reset-password/'` | `reset_password`
-[ ] 141. `'signup/alege-tip/'` | `signup_choose_type`
-[ ] 142. `'signup/persoana-fizica/'` | `signup_pf`
-[ ] 143. `'signup/verificare-sms/'` | `signup_verificare_sms`
-[ ] 144. `'signup/retrimite-sms/'` | `signup_retrimite_sms`
-[ ] 145. `'signup/persoana-fizica/sms/'` | `signup_pf_sms`
-[ ] 146. `'signup/verificare-email/'` | `signup_pf_check_email`
-[ ] 147. `'signup/retrimite-email/'` | `signup_retrimite_email`
-[ ] 148. `'signup/check-activation-status/'` | `signup_check_activation_status`
-[ ] 149. `'signup/complete-login/'` | `signup_complete_login`
-[ ] 150. `'signup/verify-email/'` | `signup_verify_email`
-[ ] 151. `'signup/organizatie/'` | `signup_organizatie`
-[ ] 152. `'signup/colaborator/'` | `signup_colaborator`
-[ ] 153. `'cont/'` | `account`
-[ ] 154. `'cont/schimbare-user/'` | `account_edit_username`
-[ ] 155. `'cont/upload-avatar/'` | `account_upload_avatar`
-[ ] 156. `'cont/editeaza/'` | `account_edit`
-[ ] 157. `'cont/editeaza/verificare-sms/'` | `edit_verificare_sms`
-[ ] 158. `'cont/editeaza/verificare-email/'` | `edit_check_email`
-[ ] 159. `'cont/editeaza/confirmare-email/'` | `edit_verify_email`
-[ ] 160. `'admin-analysis/'` | `admin_analysis_home`
-[ ] 161. `'admin-analysis/set-view-as/'` | `admin_analysis_set_view_as`
-[ ] 162. `'admin-analysis/dogs/'` | `admin_analysis_dogs`
-[ ] 163. `'admin-analysis/requests/'` | `admin_analysis_requests`
-[ ] 164. `'admin-analysis/users/'` | `admin_analysis_users`
-[ ] 165. `'admin-analysis/alerts/'` | `admin_analysis_alerts`
-[ ] 166. `'reclama/'` | `reclama_staff`
-[ ] 167. `'reclama/prietenul-tau/'` | `reclama_pt`
-[ ] 168. `'reclama/servicii/'` | `reclama_servicii`
-[ ] 169. `'reclama/transport/'` | `reclama_transport`
-[ ] 170. `'reclama/shop/'` | `reclama_shop`
-[ ] 171. `'reclama/mypet/'` | `reclama_mypet`
-[ ] 172. `'reclama/magazinul-meu/'` | `reclama_magazinul_meu`
-[ ] 173. `'reclama/i-love/'` | `reclama_i_love`
-[ ] 174. `'reclama/termeni/'` | `reclama_termeni`
-[ ] 175. `'reclama/contact/'` | `reclama_contact`
-[ ] 176. `'reclama/mesaje/'` | `reclama_mesaje`
-[ ] 177. `'reclama/promo-a2/<int:order_id>/exporta-rezumat/'` | `reclama_promo_export_summary_now`
-[ ] 178. `'termeni-si-conditii/'` | `termeni`
-[ ] 179. `'termeni-si-conditii/citire/'` | `termeni_read`
-[ ] 180. `'politica-confidentialitate/'` | `politica_confidentialitate`
-[ ] 181. `'politici-legale/'` | `politici_altele`
-[ ] 182. `'politica-cookie-uri/'` | `politica_cookie`
-[ ] 183. `'politica-servicii-platite-publicitate/'` | `politica_servicii_platite`
-[ ] 184. `'politica-moderare-raportare-continut-interzis/'` | `politica_moderare`
-[ ] 185. `'contact/'` | `contact`
+[x] 136. `''` | `home`
+[x] 137. `'login/'` | `login`
+[x] 138. `'logout/'` | `logout`
+[x] 139. `'login/forgot-password/'` | `forgot_password`
+[x] 140. `'login/reset-password/'` | `reset_password`
+[x] 141. `'signup/alege-tip/'` | `signup_choose_type`
+[x] 142. `'signup/persoana-fizica/'` | `signup_pf`
+[x] 143. `'signup/verificare-sms/'` | `signup_verificare_sms`
+[x] 144. `'signup/retrimite-sms/'` | `signup_retrimite_sms`
+[x] 145. `'signup/persoana-fizica/sms/'` | `signup_pf_sms`
+[x] 146. `'signup/verificare-email/'` | `signup_pf_check_email`
+[x] 147. `'signup/retrimite-email/'` | `signup_retrimite_email`
+[x] 148. `'signup/check-activation-status/'` | `signup_check_activation_status`
+[x] 149. `'signup/complete-login/'` | `signup_complete_login`
+[x] 150. `'signup/verify-email/'` | `signup_verify_email`
+[x] 151. `'signup/organizatie/'` | `signup_organizatie`
+[x] 152. `'signup/colaborator/'` | `signup_colaborator`
+[x] 153. `'cont/'` | `account`
+[x] 154. `'cont/schimbare-user/'` | `account_edit_username`
+[x] 155. `'cont/upload-avatar/'` | `account_upload_avatar`
+[x] 156. `'cont/editeaza/'` | `account_edit`
+[x] 157. `'cont/editeaza/verificare-sms/'` | `edit_verificare_sms`
+[x] 158. `'cont/editeaza/verificare-email/'` | `edit_check_email`
+[x] 159. `'cont/editeaza/confirmare-email/'` | `edit_verify_email`
+[x] 160. `'admin-analysis/'` | `admin_analysis_home`
+[x] 161. `'admin-analysis/set-view-as/'` | `admin_analysis_set_view_as`
+[x] 162. `'admin-analysis/dogs/'` | `admin_analysis_dogs`
+[x] 163. `'admin-analysis/requests/'` | `admin_analysis_requests`
+[x] 164. `'admin-analysis/users/'` | `admin_analysis_users`
+[x] 165. `'admin-analysis/alerts/'` | `admin_analysis_alerts`
+[x] 166. `'reclama/'` | `reclama_staff`
+[x] 167. `'reclama/prietenul-tau/'` | `reclama_pt`
+[x] 168. `'reclama/servicii/'` | `reclama_servicii`
+[x] 169. `'reclama/transport/'` | `reclama_transport`
+[x] 170. `'reclama/shop/'` | `reclama_shop`
+[x] 171. `'reclama/mypet/'` | `reclama_mypet`
+[x] 172. `'reclama/magazinul-meu/'` | `reclama_magazinul_meu`
+[x] 173. `'reclama/i-love/'` | `reclama_i_love`
+[x] 174. `'reclama/termeni/'` | `reclama_termeni`
+[x] 175. `'reclama/contact/'` | `reclama_contact`
+[x] 176. `'reclama/mesaje/'` | `reclama_mesaje`
+[x] 177. `'reclama/promo-a2/<int:order_id>/exporta-rezumat/'` | `reclama_promo_export_summary_now` (POST staff)
+[x] 178. `'termeni-si-conditii/'` | `termeni`
+[x] 179. `'termeni-si-conditii/citire/'` | `termeni_read`
+[x] 180. `'politica-confidentialitate/'` | `politica_confidentialitate`
+[x] 181. `'politici-legale/'` | `politici_altele`
+[x] 182. `'politica-cookie-uri/'` | `politica_cookie`
+[x] 183. `'politica-servicii-platite-publicitate/'` | `politica_servicii_platite`
+[x] 184. `'politica-moderare-raportare-continut-interzis/'` | `politica_moderare`
+[x] 185. `'contact/'` | `contact`
 [x] 186. `'mypet/'` | `mypet`
-[ ] 187. `'magazinul-meu/'` | `magazinul_meu`
-[ ] 188. `'collab/transport/'` | `transport_operator_panel`
-[ ] 189. `'publicitate/'` | `publicitate_harta`
-[ ] 190. `'magazinul-meu/oferte/'` | `collab_offers_control`
-[ ] 191. `'magazinul-meu/oferte/nou/'` | `collab_offer_new`
-[ ] 192. `'magazinul-meu/oferte/adauga/'` | `collab_offer_add`
-[ ] 193. `'magazinul-meu/oferte/<int:pk>/editeaza/'` | `collab_offer_edit`
-[ ] 194. `'magazinul-meu/oferte/<int:pk>/toggle-active/'` | `collab_offer_toggle_active`
-[ ] 195. `'magazinul-meu/oferte/<int:pk>/sterge/'` | `collab_offer_delete`
-[ ] 196. `'oferte-parteneri/'` | `public_offers_list`
-[ ] 197. `'oferte-parteneri/<int:pk>/'` | `public_offer_detail`
-[ ] 198. `'oferte-parteneri/<int:pk>/vreau/'` | `public_offer_request`
-[ ] 199. `'mypet/add/'` | `mypet_add`
+[x] 187. `'magazinul-meu/'` | `magazinul_meu`
+[x] 188. `'collab/transport/'` | `transport_operator_panel`
+[x] 189. `'publicitate/'` | `publicitate_harta`
+[x] 190. `'magazinul-meu/oferte/'` | `collab_offers_control`
+[x] 191. `'magazinul-meu/oferte/nou/'` | `collab_offer_new`
+[x] 192. `'magazinul-meu/oferte/adauga/'` | `collab_offer_add`
+[x] 193. `'magazinul-meu/oferte/<int:pk>/editeaza/'` | `collab_offer_edit`
+[x] 194. `'magazinul-meu/oferte/<int:pk>/toggle-active/'` | `collab_offer_toggle_active`
+[x] 195. `'magazinul-meu/oferte/<int:pk>/sterge/'` | `collab_offer_delete`
+[x] 196. `'oferte-parteneri/'` | `public_offers_list`
+[x] 197. `'oferte-parteneri/<int:pk>/'` | `public_offer_detail`
+[x] 198. `'oferte-parteneri/<int:pk>/vreau/'` | `public_offer_request`
+[x] 199. `'mypet/add/'` | `mypet_add`
 [x] 200. `'mypet/edit/<int:pk>/'` | `mypet_edit`
-[ ] 201. `'mypet/promovare/<int:pk>/'` | `promo_a2_order`
-[ ] 202. `'mypet/promovare/<int:pk>/checkout-demo/'` | `promo_a2_checkout_demo`
-[ ] 203. `'mypet/promovare/<int:pk>/checkout-demo/success/'` | `promo_a2_checkout_demo_success`
-[ ] 204. `'i-love/'` | `i_love`
-[ ] 205. `'wishlist/toggle/'` | `wishlist_toggle`
-[ ] 206. `'servicii/'` | `servicii`
-[ ] 207. `'transport/'` | `transport`
-[ ] 208. `'transport/submit/'` | `transport_submit`
-[ ] 209. `'transport/dispatch/accept/'` | `transport_dispatch_accept`
-[ ] 210. `'transport/dispatch/decline/'` | `transport_dispatch_decline`
-[ ] 211. `'transport/dispatch/cancel-user/'` | `transport_dispatch_cancel_user`
-[ ] 212. `'transport/dispatch/release/'` | `transport_op_release_job`
-[ ] 213. `'transport/dispatch/<int:job_id>/rate/'` | `transport_dispatch_rate`
-[ ] 214. `'custi/'` | `custi`
-[ ] 215. `'shop/'` | `shop`
-[ ] 216. `'shop/comanda-personalizate/'` | `shop_comanda_personalizate`
-[ ] 217. `'shop/magazin-foto/'` | `shop_magazin_foto`
-[ ] 218. `'pets/'` | `pets_all`
-[ ] 219. `'pets/<int:pk>/'` | `pets_single`
-[ ] 220. `'pets/<int:pk>/track/'` | `pet_track_event`
-[ ] 221. `'pets/<int:pk>/message/'` | `pet_send_message`
-[ ] 222. `'pets/<int:pk>/adopt/request/'` | `pet_adoption_request`
-[ ] 223. `'adoption/bonus/toggle/'` | `adoption_bonus_offer_toggle`
-[ ] 224. `'adoption/email/<str:token>/<str:decision>/'` | `adoption_email_owner_action`
-[ ] 225. `'mypet/adoption/<int:req_id>/accept/'` | `mypet_adoption_accept`
-[ ] 226. `'mypet/adoption/<int:req_id>/reject/'` | `mypet_adoption_reject`
-[ ] 227. `'mypet/adoption/<int:req_id>/extend/'` | `mypet_adoption_extend`
-[ ] 228. `'mypet/adoption/<int:req_id>/next/'` | `mypet_adoption_next`
-[ ] 229. `'mypet/adoption/<int:req_id>/finalize/'` | `mypet_adoption_finalize`
-[ ] 230. `'mypet/observatii/<int:pk>/'` | `mypet_observatii_update`
-[ ] 231. `'mypet/messages/<int:pk>/'` | `mypet_messages_list`
-[ ] 232. `'mypet/messages/<int:pk>/<int:sender_id>/'` | `mypet_messages_thread`
-[ ] 233. `'mypet/messages/<int:pk>/<int:sender_id>/reply/'` | `mypet_messages_reply`
-[ ] 234. `'mypet/messages/adopter/'` | `adopter_messages_list`
-[ ] 235. `'mypet/messages/adopter/<int:pk>/'` | `adopter_messages_thread`
-[ ] 236. `'mypet/messages/adopter/<int:pk>/reply/'` | `adopter_messages_reply`
-[ ] 237. `'magazinul-meu/messages/'` | `collab_inbox_list`
-[ ] 238. `'magazinul-meu/messages/thread/'` | `collab_inbox_thread`
-[ ] 239. `'magazinul-meu/messages/reply/'` | `collab_inbox_reply`
-[ ] 240. `'collab/messages/inbox/'` | `collab_client_inbox_list`
-[ ] 241. `'collab/messages/thread/'` | `collab_client_thread`
-[ ] 242. `'collab/messages/reply/'` | `collab_client_reply`
-[ ] 243. `'collab/messages/contact/'` | `collab_contact_message`
+[x] 201. `'mypet/promovare/<int:pk>/'` | `promo_a2_order`
+[x] 202. `'mypet/promovare/<int:pk>/checkout-demo/'` | `promo_a2_checkout_demo`
+[x] 203. `'mypet/promovare/<int:pk>/checkout-demo/success/'` | `promo_a2_checkout_demo_success`
+[x] 204. `'i-love/'` | `i_love`
+[x] 205. `'wishlist/toggle/'` | `wishlist_toggle`
+[x] 206. `'servicii/'` | `servicii`
+[x] 207. `'transport/'` | `transport`
+[x] 208. `'transport/submit/'` | `transport_submit`
+[x] 209. `'transport/dispatch/accept/'` | `transport_dispatch_accept`
+[x] 210. `'transport/dispatch/decline/'` | `transport_dispatch_decline`
+[x] 211. `'transport/dispatch/cancel-user/'` | `transport_dispatch_cancel_user`
+[x] 212. `'transport/dispatch/release/'` | `transport_op_release_job`
+[x] 213. `'transport/dispatch/<int:job_id>/rate/'` | `transport_dispatch_rate`
+[x] 214. `'custi/'` | `custi`
+[x] 215. `'shop/'` | `shop`
+[x] 216. `'shop/comanda-personalizate/'` | `shop_comanda_personalizate`
+[x] 217. `'shop/magazin-foto/'` | `shop_magazin_foto`
+[x] 218. `'pets/'` | `pets_all`
+[x] 219. `'pets/<int:pk>/'` | `pets_single`
+[x] 220. `'pets/<int:pk>/track/'` | `pet_track_event`
+[x] 221. `'pets/<int:pk>/message/'` | `pet_send_message`
+[x] 222. `'pets/<int:pk>/adopt/request/'` | `pet_adoption_request`
+[x] 223. `'adoption/bonus/toggle/'` | `adoption_bonus_offer_toggle`
+[x] 224. `'adoption/email/<str:token>/<str:decision>/'` | `adoption_email_owner_action`
+[x] 225. `'mypet/adoption/<int:req_id>/accept/'` | `mypet_adoption_accept`
+[x] 226. `'mypet/adoption/<int:req_id>/reject/'` | `mypet_adoption_reject`
+[x] 227. `'mypet/adoption/<int:req_id>/extend/'` | `mypet_adoption_extend`
+[x] 228. `'mypet/adoption/<int:req_id>/next/'` | `mypet_adoption_next`
+[x] 229. `'mypet/adoption/<int:req_id>/finalize/'` | `mypet_adoption_finalize`
+[x] 230. `'mypet/observatii/<int:pk>/'` | `mypet_observatii_update`
+[x] 231. `'mypet/messages/<int:pk>/'` | `mypet_messages_list`
+[x] 232. `'mypet/messages/<int:pk>/<int:sender_id>/'` | `mypet_messages_thread`
+[x] 233. `'mypet/messages/<int:pk>/<int:sender_id>/reply/'` | `mypet_messages_reply`
+[x] 234. `'mypet/messages/adopter/'` | `adopter_messages_list`
+[x] 235. `'mypet/messages/adopter/<int:pk>/'` | `adopter_messages_thread`
+[x] 236. `'mypet/messages/adopter/<int:pk>/reply/'` | `adopter_messages_reply`
+[x] 237. `'magazinul-meu/messages/'` | `collab_inbox_list`
+[x] 238. `'magazinul-meu/messages/thread/'` | `collab_inbox_thread`
+[x] 239. `'magazinul-meu/messages/reply/'` | `collab_inbox_reply`
+[x] 240. `'collab/messages/inbox/'` | `collab_client_inbox_list`
+[x] 241. `'collab/messages/thread/'` | `collab_client_thread`
+[x] 242. `'collab/messages/reply/'` | `collab_client_reply`
+[x] 243. `'collab/messages/contact/'` | `collab_contact_message`
 
 `euadopt_final/urls.py` (proiect)
 -----------------------------------------------
-[ ] 244. `'admin/'` | Django Admin
-[ ] 245. `''` include `home.urls` | deja acoperit în 136–243
-[ ] 246. `MEDIA_URL` — fișiere media | imagini upload
-[ ] 247. `^media/(?P<path>.*)$` | fallback servire media
+[x] 244. `'admin/'` | Django Admin
+[x] 245. `''` include `home.urls` | deja acoperit în 136–243
+[x] 246. `MEDIA_URL` — fișiere media | imagini upload
+[x] 247. `^media/(?P<path>.*)$` | fallback servire media
 **Total numerotare Apendix O + proiect: 247** (136–247).
 
 *Variantă Markdown (opțional): `EU-ADOPT_CARTE_SITE_VERIFICARE.md` — pentru preview cu titluri/îngroșat la probleme.*
