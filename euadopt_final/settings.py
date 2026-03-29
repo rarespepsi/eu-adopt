@@ -24,7 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-wu12p^yxl^qac$r@#16ts1c%l23=h$lfz5_v%yqx!8v^8y@q@p'
+# În producție setează DJANGO_SECRET_KEY în mediu (vezi .env.example). Fallback doar pentru dev local.
+_SECRET_FALLBACK = "django-insecure-wu12p^yxl^qac$r@#16ts1c%l23=h$lfz5_v%yqx!8v^8y@q@p"
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "").strip() or _SECRET_FALLBACK
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # Workflow: DEBUG este controlat doar din env (ex. în `.env`), cu default sigur = False.
@@ -184,3 +186,12 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     }
 }
+
+# HTTPS / cookie-uri secure — doar când setezi explicit (ex. Render + domeniu real). Local fără variabilă = comportament actual.
+if os.environ.get("DJANGO_SECURE_SSL", "").strip().lower() in ("1", "true", "yes", "on"):
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
