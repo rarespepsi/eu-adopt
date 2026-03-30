@@ -30,9 +30,9 @@ python manage.py runserver 127.0.0.1:8000
 ```powershell
 $env:PLAYWRIGHT_BASE_URL = "http://127.0.0.1:8000"
 $env:E2E_USER_EMAIL = "e2e_pf@test.local"
-$env:E2E_USER_PASSWORD = "E2E_Test_Pass12!"
+$env:E2E_USER_PASSWORD = "Alexandru!1"
 $env:E2E_PUB_EMAIL = "e2e_staff@test.local"
-$env:E2E_PUB_PASSWORD = "E2E_Staff_Pass12!"
+$env:E2E_PUB_PASSWORD = "Alexandru!1"
 npm run test:e2e
 ```
 
@@ -44,9 +44,9 @@ npm run test:e2e
 ```bash
 export PLAYWRIGHT_BASE_URL=http://127.0.0.1:8000
 export E2E_USER_EMAIL=e2e_pf@test.local
-export E2E_USER_PASSWORD='E2E_Test_Pass12!'
+export E2E_USER_PASSWORD='Alexandru!1'
 export E2E_PUB_EMAIL=e2e_staff@test.local
-export E2E_PUB_PASSWORD='E2E_Staff_Pass12!'
+export E2E_PUB_PASSWORD='Alexandru!1'
 npm run test:e2e
 ```
 

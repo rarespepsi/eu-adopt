@@ -16,11 +16,11 @@ User = get_user_model()
 
 PF_EMAIL = "e2e_pf@test.local"
 PF_USERNAME = "e2e_pf"
-PF_PASSWORD = "E2E_Test_Pass12!"
+PF_PASSWORD = "Alexandru!1"
 
 STAFF_EMAIL = "e2e_staff@test.local"
 STAFF_USERNAME = "e2e_staff"
-STAFF_PASSWORD = "E2E_Staff_Pass12!"
+STAFF_PASSWORD = "Alexandru!1"
 
 
 def main():

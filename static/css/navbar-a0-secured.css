@@ -9,6 +9,11 @@
  *   - .a0-left (contor): position absolute, left ≈ -11.8rem, padding-left ≈ 0.7rem, max-width ≈ 21.3rem
  *   - #menu_wrap: margin-left calc(7.0875rem - 3.54375rem)
  *   - Căutare (admin memorat): margin-left 0.5rem față de meniu, max-width min(8.75rem, calc(100vw - 16rem)); fără translateX pe căutare
+ *   - Meniu logat lat: #menu_wrap flex 1 1 0, min-width 0, overflow-x auto, padding-left ~3.35rem (PUB); .a0-search-right flex-shrink 0
+ *   - Plic mesaje: .a0-nav-envelope-item între </nav> și căutare (nu în #menu_wrap), flex-shrink 0
+ *   - Logat: body[data-user-authenticated=true] — meniu tras spre contor (margin #menu_wrap mai mic, gap li mai strâns)
+ *   - Ferestre înguste (max ~1400 / 1200px): padding .container + contor left sincron, margin #menu_wrap redus, font 12px
+ *   - ≤70em (~1120px): hamburger + drawer (Firefox text mai lat / 100vw); min-width desktop restore 70.001em
  *
  * REGULĂ: Modifică DOAR la cerere explicită. La erori navbar, refă din NAVBAR_SALVARE_PERFECT_REFERINTA.md
  * =============================================================================
@@ -59,6 +64,15 @@ body:not(.page-home-v2):not(.page-animale) #main_content {
 	overflow: visible !important;
 	flex-shrink: 0 !important;
 	flex-grow: 0 !important;
+}
+
+/* Font metrics aliniate Chrome/Firefox pe același stack (reduce diferențe de lățime pe rând) */
+#A0 #main_menu,
+#A0 #main_menu button,
+#A0 #main_menu input.search_input {
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif !important;
+	-webkit-text-size-adjust: 100% !important;
+	text-size-adjust: 100% !important;
 }
 
 /* Proba "finală": buton Acasă = W, cont (avatar+user) ~1.5W, avatar = înălțimea navbarului
@@ -199,7 +213,8 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 	transform: none !important;
 	margin-left: 4.725rem !important; /* spațiu fix după Contact pentru caseta de căutare */
 	min-width: 0 !important;
-	flex-shrink: 1 !important;
+	/* Nu comprimăm căutarea: meniul (login/staff) se scroll-ează orizontal când e nevoie */
+	flex-shrink: 0 !important;
 }
 #A0 #menu_wrap {
 	transform: none !important;
@@ -207,12 +222,35 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 	height: auto !important;
 	margin: 0 0 0 calc(7.0875rem - 3.54375rem) !important; /* ajustare fină spre centru (folosește rem) */
 	padding: 0 !important;
+	padding-left: 3.35rem !important; /* spațiu pentru PUB absolut (left: -3.05rem); nu taie la overflow-x */
 	display: flex !important;
 	align-items: center !important;
-	overflow: visible !important;
+	overflow-x: auto !important;
+	overflow-y: visible !important;
+	box-sizing: border-box !important;
+	flex: 1 1 0 !important;
+	min-width: 0 !important;
+	scrollbar-width: thin !important;
 	position: relative !important;
 	z-index: 25 !important; /* peste contorul din stânga, pentru click corect pe PUB */
 }
+
+/* Logat: zona cont (user) e variabila — compensăm trăgând întreg lanțul de butoane spre contor (stânga) */
+body[data-user-authenticated="true"] #A0 #menu_wrap {
+	margin-left: 0.65rem !important;
+}
+body[data-user-authenticated="true"] #A0 #main_menu ul.menu > li {
+	margin-left: calc(var(--gap-v2) / 5.5) !important;
+}
+body[data-user-authenticated="true"] #A0 #menu-main-menu > li:nth-child(2) {
+	margin-left: calc(var(--gap-v2) / 10) !important;
+}
+body[data-user-authenticated="true"] #A0 #main_menu ul li a.a0-nav-account-link {
+	max-width: 9.25rem !important;
+	width: auto !important;
+	min-width: 0 !important;
+}
+
 #A0 #main_menu .a0-search-right #search_wrap { float: none !important; }
 #A0 #main_menu .a0-search-form-inline {
 	display: flex !important;
@@ -247,8 +285,8 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 	color: rgba(255,255,255,0.6) !important;
 }
 #A0 #main_menu .a0-search-right.a0-search-expanded .a0-search-form-inline #searchform #s {
-	width: min(35.4375rem, calc(100vw - 3rem)) !important;
-	max-width: min(35.4375rem, calc(100vw - 3rem)) !important;
+	width: min(35.4375rem, calc(100vw - 4rem)) !important;
+	max-width: min(35.4375rem, calc(100vw - 4rem)) !important;
 	min-width: 0 !important;
 }
 #A0 #main_menu .a0-search-form-inline .a0-search-input-wrap {
@@ -463,15 +501,15 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 }
 #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar,
 body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
-\tdisplay: block !important;
-\twidth: 100% !important;
-\theight: 100% !important;
-\tobject-fit: cover !important;
-\tobject-position: center !important;
+	display: block !important;
+	width: 100% !important;
+	height: 100% !important;
+	object-fit: cover !important;
+	object-position: center !important;
 }
 #A0 #main_menu .a0-nav-avatar-wrap {
-\tbackground: transparent !important;
-\tborder: none !important;
+	background: transparent !important;
+	border: none !important;
 }
 #A0 #main_menu .a0-nav-avatar-placeholder {
 	width: var(--nav-height) !important;
@@ -489,15 +527,21 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 	right: auto !important;
 	margin-left: 0.5rem !important;
 	position: static !important;
-	max-width: min(8.75rem, calc(100vw - 16rem)) !important;
+	max-width: min(8.75rem, calc(100vw - 18rem)) !important;
 }
 #A0 #main_menu .a0-search-right.a0-search-expanded {
-	max-width: min(35.4375rem, calc(100vw - 3rem)) !important;
+	max-width: min(35.4375rem, calc(100vw - 4rem)) !important;
 }
 
-/* Plic mesaje între Contact și căutare (fără mutare de casete) */
-#A0 #menu-main-menu .a0-nav-envelope-item { margin-left: 0.15rem !important; margin-right: 0.1rem !important; }
-#A0 #menu-main-menu .a0-nav-envelope-link {
+/* Plic mesaje între meniu (scroll) și căutare – în afara #menu_wrap ca să nu taie overflow-x */
+#A0 #main_menu .a0-nav-envelope-item {
+	display: flex !important;
+	align-items: center !important;
+	flex-shrink: 0 !important;
+	margin-left: 0.15rem !important;
+	margin-right: 0.35rem !important;
+}
+#A0 #main_menu .a0-nav-envelope-link {
 	display: inline-flex !important;
 	align-items: center !important;
 	justify-content: center !important;
@@ -510,14 +554,14 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 	background: rgba(255,255,255,0.08) !important;
 	line-height: 1 !important;
 }
-#A0 #menu-main-menu .a0-nav-envelope-link:hover { background: rgba(255,255,255,0.18) !important; }
-#A0 #menu-main-menu .a0-nav-envelope-icon {
+#A0 #main_menu .a0-nav-envelope-link:hover { background: rgba(255,255,255,0.18) !important; }
+#A0 #main_menu .a0-nav-envelope-icon {
 	font-size: 0.82rem !important;
 	color: #ffffff !important;
 	line-height: 1 !important;
 }
-#A0 #menu-main-menu .a0-nav-envelope-icon.is-hot { color: #d32f2f !important; }
-#A0 #menu-main-menu .a0-nav-envelope-count {
+#A0 #main_menu .a0-nav-envelope-icon.is-hot { color: #d32f2f !important; }
+#A0 #main_menu .a0-nav-envelope-count {
 	position: absolute !important;
 	top: -0.32rem !important;
 	right: -0.34rem !important;
@@ -697,8 +741,7 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 #A0 #main_menu .user-menu-dropdown ul.user-dropdown-menu li {
 	width: auto !important;
 }
-#A0 #main_menu .a0-bar-inner,
-#A0 #menu_wrap { overflow: visible !important; }
+#A0 #main_menu .a0-bar-inner { overflow: visible !important; }
 #A0 .menu-main-menu-container { overflow: visible !important; }
 #A0 #menu-main-menu { overflow: visible !important; }
 
@@ -737,6 +780,10 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 }
 #A0 #searchform { margin: 0 !important; padding: 0 !important; }
 #A0 * { flex-grow: 0 !important; }
+/* Override: zona meniu ocupă flex-ul rămas ca să rămână căutarea vizibilă la user logat/staff */
+#A0 #main_menu #menu_wrap {
+	flex-grow: 1 !important;
+}
 #A0 .container > * {
 	flex-grow: 0 !important;
 	flex-shrink: 0 !important;
@@ -802,10 +849,62 @@ body.page-animale #A0 {
 	background-clip: padding-box !important;
 }
 
-@media (max-width: 37.5em) {
-	/* Prag ~600px – același ca home_v2 mobil */
+/* --------------------------------------------------------------------------
+ * Laptop / fereastră îngustă: același comportament „fluid” ca .layout de sub
+ * navbar — altfel padding-urile mari în rem + scaling OS taie căutarea la dreapta.
+ * -------------------------------------------------------------------------- */
+@media (max-width: 87.5em) {
+	#A0 .container {
+		padding-left: 10.25rem !important;
+		padding-right: 10rem !important;
+	}
+	#A0 #main_menu .a0-left {
+		left: -10.25rem !important;
+	}
+	#A0 #menu_wrap {
+		margin-left: 0.85rem !important;
+	}
+	body[data-user-authenticated="true"] #A0 #menu_wrap {
+		margin-left: 0.45rem !important;
+	}
+}
+@media (max-width: 75em) {
+	#A0 .container {
+		padding-left: 8.75rem !important;
+		padding-right: 6.5rem !important;
+	}
+	#A0 #main_menu .a0-left {
+		left: -8.75rem !important;
+		max-width: 18rem !important;
+	}
+	#A0 #menu_wrap {
+		margin-left: 0.4rem !important;
+		padding-left: 3rem !important;
+	}
+	body[data-user-authenticated="true"] #A0 #menu_wrap {
+		margin-left: 0.2rem !important;
+	}
+	body[data-user-authenticated="true"] #A0 #main_menu ul li a.a0-nav-account-link {
+		max-width: 8rem !important;
+	}
+	#A0 {
+		--a0-home-w: 6.25rem !important;
+		--a0-account-w: 8.75rem !important;
+	}
+	#A0 #main_menu ul.menu > li,
+	#A0 #main_menu ul.menu > li > a {
+		font-size: 12px !important;
+	}
+	#A0 #main_menu .a0-search-right {
+		max-width: min(8.75rem, calc(100vw - 12rem)) !important;
+	}
+}
+
+/* ≤~1120px: hamburger + drawer (Firefox măsoară textul puțin mai lat; evită butoane pierdute în dreapta) */
+@media (max-width: 70em) {
 	#A0 .a0-mobile-trigger {
 		display: flex !important;
+		margin-right: auto !important;
 	}
 	#A0 .container {
 		padding-left: 12px !important;
@@ -819,10 +918,10 @@ body.page-animale #A0 {
 	}
 	#A0 #main_menu .a0-bar-inner {
 		width: 100% !important;
-		justify-content: flex-end !important;
+		justify-content: flex-start !important;
 	}
-	#A0 .a0-left {
-		display: none !important; /* contor ascuns în bara principală pe mobil */
+	#A0 #main_menu .a0-left {
+		display: none !important; /* contor în bara îngustă: spațiu pentru hamburger + căutare */
 	}
 	#A0 .a0-search-right {
 		position: static !important;
@@ -845,11 +944,14 @@ body.page-animale #A0 {
 		width: 100% !important;
 		max-height: calc(100vh - var(--nav-height)) !important;
 		overflow-y: auto !important;
+		overflow-x: hidden !important;
 		background: #343434 !important;
 		display: none !important;
 		flex-direction: column !important;
 		align-items: stretch !important;
 		justify-content: flex-start !important;
+		flex: none !important;
+		min-width: auto !important;
 		z-index: 1999 !important;
 		padding: 16px 0 !important;
 		box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
@@ -895,8 +997,8 @@ body.page-animale #A0 {
 	}
 }
 
-@media (min-width: 37.501em) {
+@media (min-width: 70.001em) {
 	#A0.a0-nav-open #menu_wrap {
-		display: flex !important; /* păstrăm meniul normal pe desktop chiar dacă clasa rămâne */
+		display: flex !important; /* desktop: meniul rămâne în bară chiar dacă clasa a rămas setată */
 	}
 }

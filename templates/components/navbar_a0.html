@@ -18,6 +18,9 @@
 						</div>
 					</div>
 				</div>
+				<button type="button" class="a0-mobile-trigger" id="a0_mobile_trigger" aria-expanded="false" aria-controls="menu_wrap" aria-label="Deschide sau închide meniul">
+					<span class="a0-hamburger" aria-hidden="true"></span>
+				</button>
 				<nav id="menu_wrap" class="a0-right">
 					<div class="menu-main-menu-container">
 						<ul id="menu-main-menu" class="menu">
@@ -73,28 +76,28 @@
 							{% endif %}
 							<li><a href="{% url 'termeni' %}" {% if request.resolver_match.url_name == 'termeni' %}class="current_page"{% endif %}>Termeni și condiții</a></li>
 							<li><a href="{% url 'contact' %}" {% if request.resolver_match.url_name == 'contact' %}class="current_page"{% endif %}>Contact</a></li>
-							{% if user.is_authenticated and show_mypet_nav %}
-								<li class="a0-nav-envelope-item">
-									<a href="{% url 'mypet' %}?open_messages=1" class="a0-nav-envelope-link" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}" aria-label="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}">
-										<span class="a0-nav-envelope-icon {% if message_unread_count|default:0 > 0 %}is-hot{% endif %}" aria-hidden="true">✉</span>
-										{% if message_unread_count|default:0 > 0 %}
-											<span class="a0-nav-envelope-count">{{ message_unread_count }}</span>
-										{% endif %}
-									</a>
-								</li>
-							{% elif user.is_authenticated and show_magazinul_meu_nav %}
-								<li class="a0-nav-envelope-item">
-									<a href="{% url 'collab_offers_control' %}?open_messages=1" class="a0-nav-envelope-link" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}" aria-label="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}">
-										<span class="a0-nav-envelope-icon {% if message_unread_count|default:0 > 0 %}is-hot{% endif %}" aria-hidden="true">✉</span>
-										{% if message_unread_count|default:0 > 0 %}
-											<span class="a0-nav-envelope-count">{{ message_unread_count }}</span>
-										{% endif %}
-									</a>
-								</li>
-							{% endif %}
 						</ul>
 					</div>
 				</nav>
+				{% if user.is_authenticated and show_mypet_nav %}
+					<div class="a0-nav-envelope-item">
+						<a href="{% url 'mypet' %}?open_messages=1" class="a0-nav-envelope-link" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}" aria-label="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}">
+							<span class="a0-nav-envelope-icon {% if message_unread_count|default:0 > 0 %}is-hot{% endif %}" aria-hidden="true">✉</span>
+							{% if message_unread_count|default:0 > 0 %}
+								<span class="a0-nav-envelope-count">{{ message_unread_count }}</span>
+							{% endif %}
+						</a>
+					</div>
+				{% elif user.is_authenticated and show_magazinul_meu_nav %}
+					<div class="a0-nav-envelope-item">
+						<a href="{% url 'collab_offers_control' %}?open_messages=1" class="a0-nav-envelope-link" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}" aria-label="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}">
+							<span class="a0-nav-envelope-icon {% if message_unread_count|default:0 > 0 %}is-hot{% endif %}" aria-hidden="true">✉</span>
+							{% if message_unread_count|default:0 > 0 %}
+								<span class="a0-nav-envelope-count">{{ message_unread_count }}</span>
+							{% endif %}
+						</a>
+					</div>
+				{% endif %}
 				<div class="a0-search-right" id="a0_search_right">
 					<div class="a0-search-form-inline">
 						<form method="get" id="searchform" action="{% url 'home' %}">
@@ -113,3 +116,34 @@
 		</div>
 	</div>
 </header>
+<script>
+(function () {
+	var a0 = document.getElementById("A0");
+	var btn = document.getElementById("a0_mobile_trigger");
+	var menu = document.getElementById("menu_wrap");
+	if (!a0 || !btn || !menu) return;
+	function setOpen(open) {
+		a0.classList.toggle("a0-nav-open", open);
+		btn.setAttribute("aria-expanded", open ? "true" : "false");
+		btn.setAttribute("aria-label", open ? "Închide meniul" : "Deschide meniul");
+	}
+	btn.addEventListener("click", function () {
+		setOpen(!a0.classList.contains("a0-nav-open"));
+	});
+	document.addEventListener("keydown", function (e) {
+		if (e.key === "Escape") setOpen(false);
+	});
+	document.addEventListener("click", function (e) {
+		if (!a0.classList.contains("a0-nav-open")) return;
+		var t = e.target;
+		if (t === btn || btn.contains(t)) return;
+		if (menu === t || menu.contains(t)) return;
+		setOpen(false);
+	});
+	window.addEventListener("resize", function () {
+		try {
+			if (window.matchMedia("(min-width: 70.001em)").matches) setOpen(false);
+		} catch (err) {}
+	});
+})();
+</script>

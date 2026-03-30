@@ -74,9 +74,9 @@ python manage.py test
 python e2e/create_e2e_users.py
 $env:PLAYWRIGHT_BASE_URL = "http://127.0.0.1:8000"
 $env:E2E_USER_EMAIL = "e2e_pf@test.local"
-$env:E2E_USER_PASSWORD = "E2E_Test_Pass12!"
+$env:E2E_USER_PASSWORD = "Alexandru!1"
 $env:E2E_PUB_EMAIL = "e2e_staff@test.local"
-$env:E2E_PUB_PASSWORD = "E2E_Staff_Pass12!"
+$env:E2E_PUB_PASSWORD = "Alexandru!1"
 # alt terminal: python manage.py runserver 127.0.0.1:8000
 npm run test:e2e
 ```

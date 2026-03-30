@@ -8,6 +8,7 @@
 	<button type="button"
 		class="sw-adopt-bonus-heart{% if offer.adoption_bonus_selected %} is-on{% endif %}"
 		data-offer-id="{{ offer.pk }}"
+		data-adoption-bonus-kind="{{ offer.partner_kind }}"
 		aria-pressed="{% if offer.adoption_bonus_selected %}true{% else %}false{% endif %}"
 		title="Salvează oferta pentru bonus la finalizarea adopției (opțional)">♥</button>
 	{% endif %}

@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=3" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=6" type="text/css" media="screen" />
 <style>
 	/* La fel ca PT: main_wrap, main_content, apoi SW cu aceleași dimensiuni ca PW */
 	body.page-servicii #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -266,6 +266,10 @@
 		background: #c62828;
 		color: #fff;
 	}
+	/* Doar inimioara aleasă rămâne vizibilă în aceeași categorie (cabinet / salon / magazin) */
+	#SW .sw-adopt-bonus-heart.sw-adopt-bonus-heart--hidden {
+		display: none !important;
+	}
 	#SW .sw-adopt-bonus-banner {
 		flex: 0 0 auto;
 		margin: 0 0 4px 0;
@@ -276,6 +280,37 @@
 		border: 1px solid rgba(198, 40, 40, 0.35);
 		border-radius: 8px;
 		color: #1a1a1a;
+	}
+	#SW .sw-adopt-bonus-banner.sw-adopt-bonus-banner--dismissed {
+		display: none !important;
+	}
+	#SW .sw-adopt-bonus-followup {
+		flex: 0 0 auto;
+		margin: 0 0 6px 0;
+		padding: 8px 10px;
+		font-size: clamp(0.68rem, 1.6vw, 0.84rem);
+		line-height: 1.45;
+		border-radius: 8px;
+		color: #1a1a1a;
+		box-sizing: border-box;
+	}
+	#SW .sw-adopt-bonus-followup.sw-adopt-bonus-followup--hidden,
+	#SW .sw-adopt-bonus-followup[hidden] {
+		display: none !important;
+	}
+	#SW .sw-adopt-bonus-followup--complete {
+		background: linear-gradient(90deg, rgba(46, 125, 50, 0.14), rgba(129, 199, 132, 0.2));
+		border: 1px solid rgba(27, 94, 32, 0.45);
+	}
+	#SW .sw-adopt-bonus-followup--complete strong {
+		color: #1b5e20;
+	}
+	#SW .sw-adopt-bonus-followup--nudge {
+		background: linear-gradient(90deg, rgba(21, 101, 192, 0.1), rgba(227, 242, 253, 0.65));
+		border: 1px solid rgba(21, 101, 192, 0.32);
+	}
+	#SW .sw-adopt-bonus-followup--nudge strong {
+		color: #0d47a1;
 	}
 	/* Modal ofertă cabinet (notă în prim-plan, fundal blurat) – în afara #main_content */
 	#swVetOfferModal {
@@ -529,10 +564,24 @@
 <section class="wrapper" id="main_content">
 	<main id="SW" class="servicii-wrapper" aria-label="Conținut Servicii">
 		{% if adoption_bonus_show_banner %}
-		<div class="sw-adopt-bonus-banner">
+		<div id="swAdoptBonusBanner" class="sw-adopt-bonus-banner{% if adoption_bonus_has_selection %} sw-adopt-bonus-banner--dismissed{% endif %}"{% if adoption_bonus_has_selection %} aria-hidden="true"{% else %} aria-hidden="false"{% endif %}>
 			<strong>Bonus adopție:</strong> din bunătatea ta de a adopta, partenerii pot oferi servicii cu preț special.
 			Apasă <strong>♥</strong> pe cel mult <strong>o ofertă</strong> din fiecare categorie din <strong>județul din contul tău</strong> (cabinet, magazin, salon).
+			Celelalte inimioare din <strong>aceeași categorie</strong> se ascund până când apeși din nou pe ♥ ca să renunți sau să alegi altă ofertă.
 			La <strong>adopție finalizată</strong> primești pe email coduri și linkuri. Totul este <strong>opțional</strong>.
+		</div>
+		<div id="swAdoptBonusCompletionNote" class="sw-adopt-bonus-followup sw-adopt-bonus-followup--complete sw-adopt-bonus-followup--hidden" hidden aria-hidden="true">
+			<strong>Ai ales ofertă la toate cele 3 categorii</strong>
+			(cabinet veterinar, salon cosmetica vet, magazin de specialitate).
+			Pentru cererea de adopție, <strong>proprietarul animalului</strong> a fost notificat pe <strong>e-mail</strong>.
+			<strong>Verifică și tu</strong> mesajele primite (inclusiv dosarul spam).
+			Ofertele bifate cu <strong>♥</strong> se <strong>activează</strong> (primești <strong>coduri</strong> pe e-mail)
+			<strong>după ce adopția este finalizată</strong> de proprietar în MyPet.
+		</div>
+		<div id="swAdoptBonusGentleNudge" class="sw-adopt-bonus-followup sw-adopt-bonus-followup--nudge sw-adopt-bonus-followup--hidden" hidden aria-hidden="true">
+			<strong>Ești în fluxul de adopție:</strong> poți apăsa <strong>♥</strong> pe <strong>cel mult o ofertă</strong>
+			din fiecare categorie — totul este <strong>opțional</strong>.
+			Dacă nu alegi nimic, nu e nicio problemă; <strong>codurile bonus</strong> se trimit doar dacă ai selecții și adopția se <strong>finalizează</strong>.
 		</div>
 		{% endif %}
 		<div class="sw-grid">
@@ -552,11 +601,11 @@
 				<div class="sw-s4-inner">
 					<div class="sw-s2-filter-row">
 						<div class="sw-s2-filter-judet">
-							<input type="text" id="sw-judet" class="sw-s2-filter-btn" list="county-list-servicii" placeholder="Județ" autocomplete="off" aria-label="Județ" />
+							<input type="text" id="sw-judet" class="sw-s2-filter-btn" list="county-list-servicii" placeholder="Județ" autocomplete="off" aria-label="Județ" value="{{ servicii_prefill_county|default:'' }}" />
 							{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-servicii" %}
 						</div>
 						<div class="sw-s2-filter-oras">
-							<input type="text" id="sw-oras" class="sw-s2-filter-btn" list="city-list-servicii" placeholder="Oras/Loc" autocomplete="off" aria-label="Oraș / Localitate" />
+							<input type="text" id="sw-oras" class="sw-s2-filter-btn" list="city-list-servicii" placeholder="Oras/Loc" autocomplete="off" aria-label="Oraș / Localitate" value="{{ servicii_prefill_city|default:'' }}" />
 							<datalist id="city-list-servicii"></datalist>
 						</div>
 					</div>
@@ -579,7 +628,7 @@
 						<div class="sw-s2-1-body">
 							<div class="sw-s2-1-grid">
 								{% for offer in vet_offers %}
-								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S3.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}">
+								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S3.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}" data-offer-county="{% firstof offer.collaborator.profile.company_judet offer.collaborator.profile.judet '' %}" data-offer-city="{% firstof offer.collaborator.profile.company_oras offer.collaborator.profile.oras '' %}">
 									{% include "anunturi/includes/servicii_offer_card_link.html" with offer=offer %}
 								</div>
 								{% endfor %}
@@ -596,7 +645,7 @@
 						<div class="sw-s2-1-body">
 							<div class="sw-s2-1-grid">
 								{% for offer in shop_offers %}
-								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S4.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}">
+								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S4.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}" data-offer-county="{% firstof offer.collaborator.profile.company_judet offer.collaborator.profile.judet '' %}" data-offer-city="{% firstof offer.collaborator.profile.company_oras offer.collaborator.profile.oras '' %}">
 									{% include "anunturi/includes/servicii_offer_card_link.html" with offer=offer show_pdf_badge=True %}
 								</div>
 								{% endfor %}
@@ -613,7 +662,7 @@
 						<div class="sw-s2-1-body">
 							<div class="sw-s2-1-grid">
 								{% for offer in groom_offers %}
-								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S5.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}">
+								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S5.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}" data-offer-county="{% firstof offer.collaborator.profile.company_judet offer.collaborator.profile.judet '' %}" data-offer-city="{% firstof offer.collaborator.profile.company_oras offer.collaborator.profile.oras '' %}">
 									{% include "anunturi/includes/servicii_offer_card_link.html" with offer=offer %}
 								</div>
 								{% endfor %}
@@ -629,15 +678,7 @@
 			</div>
 			<div id="S6" class="sw-cell sw-cell-5" data-slot="S6">
 				<div class="sw-s5-grid">
-					<div class="sw-s5-slot sw-s5-slot--cuprins" id="S6.1" data-slot="S6.1">
-						<div class="sw-cuprins-inner" style="padding:0.35rem 0.45rem;font-size:clamp(0.68rem,1.6vw,0.82rem);line-height:1.35;">
-							<strong style="display:block;margin-bottom:0.25rem;color:#1565c0;text-transform:uppercase;letter-spacing:0.04em;">Cuprins servicii</strong>
-							<a href="#S3" style="color:#0d47a1;font-weight:700;">Cabinete veterinare</a> ·
-							<a href="#S4" style="color:#0d47a1;font-weight:700;">Magazine</a> ·
-							<a href="#S5" style="color:#0d47a1;font-weight:700;">Saloane grooming</a> ·
-							<a href="{% url 'transport' %}" style="color:#c62828;font-weight:800;">Transport animale</a>
-						</div>
-					</div>
+					<div class="sw-s5-slot" id="S6.1" data-slot="S6.1"></div>
 					<div class="sw-s5-slot" id="S6.2" data-slot="S6.2"><span class="sw-s6-label">S6.2</span></div>
 				</div>
 			</div>
@@ -887,17 +928,29 @@
 		var btns = Array.prototype.slice.call(document.querySelectorAll("#SW .sw-s2-species-btn"));
 		if (!btns.length) return;
 		var offerCards = Array.prototype.slice.call(document.querySelectorAll("#SW [data-offer-species]"));
+		var countyInput = document.getElementById("sw-judet");
+		var cityInput = document.getElementById("sw-oras");
 
-		function applySpeciesFilter(species) {
+		function norm(s) {
+			if (s === undefined || s === null) return "";
+			return stripAccents(String(s)).trim().toLowerCase();
+		}
+
+		function applyFilters(species) {
+			var countyWanted = norm(countyInput ? countyInput.value : "");
+			var cityWanted = norm(cityInput ? cityInput.value : "");
 			offerCards.forEach(function(card) {
-				if (!species || species === "all") {
-					card.style.display = "";
-					return;
-				}
 				var dog = card.getAttribute("data-species-dog") === "1";
 				var cat = card.getAttribute("data-species-cat") === "1";
 				var other = card.getAttribute("data-species-other") === "1";
-				var show = (species === "dog" && dog) || (species === "cat" && cat) || (species === "other" && other);
+				var bySpecies = (!species || species === "all")
+					? true
+					: ((species === "dog" && dog) || (species === "cat" && cat) || (species === "other" && other));
+				var cardCounty = norm(card.getAttribute("data-offer-county") || "");
+				var cardCity = norm(card.getAttribute("data-offer-city") || "");
+				var byCounty = !countyWanted || cardCounty === countyWanted;
+				var byCity = !cityWanted || cardCity === cityWanted;
+				var show = bySpecies && byCounty && byCity;
 				card.style.display = show ? "" : "none";
 			});
 		}
@@ -906,12 +959,24 @@
 			btns.forEach(function(b) { b.classList.toggle("is-active", b === btn); });
 			var species = btn.getAttribute("data-species") || "all";
 			if (hidden) hidden.value = species;
-			applySpeciesFilter(species);
+			applyFilters(species);
 		}
 
 		btns.forEach(function(btn) {
 			btn.addEventListener("click", function() { setActive(btn); });
 		});
+		function refreshFromInputs() {
+			var current = (hidden && hidden.value) ? hidden.value : "all";
+			applyFilters(current);
+		}
+		if (countyInput) {
+			countyInput.addEventListener("input", refreshFromInputs);
+			countyInput.addEventListener("change", refreshFromInputs);
+		}
+		if (cityInput) {
+			cityInput.addEventListener("input", refreshFromInputs);
+			cityInput.addEventListener("change", refreshFromInputs);
+		}
 		var active = btns.find(function(b) { return b.classList.contains("is-active"); }) || btns[0];
 		setActive(active);
 	})();
@@ -920,6 +985,8 @@
 {% if adoption_bonus_request_id %}
 <script>
 (function () {
+	var BONUS_KIND_KEYS = ["cabinet", "servicii", "magazin"];
+	var NUDGE_DELAY_MS = 15000;
 	function getCookie(name) {
 		var v = null;
 		if (document.cookie && document.cookie !== "") {
@@ -931,10 +998,110 @@
 		}
 		return v;
 	}
+	function syncAdoptionBonusBanner(sw) {
+		var b = document.getElementById("swAdoptBonusBanner");
+		if (!b || !sw) return;
+		var anyOn = sw.querySelector(".sw-adopt-bonus-heart.is-on");
+		if (anyOn) {
+			b.classList.add("sw-adopt-bonus-banner--dismissed");
+			b.setAttribute("aria-hidden", "true");
+		} else {
+			b.classList.remove("sw-adopt-bonus-banner--dismissed");
+			b.setAttribute("aria-hidden", "false");
+		}
+	}
+	function allThreeBonusKindsSelected(sw) {
+		var seen = {};
+		if (!sw) return false;
+		sw.querySelectorAll(".sw-adopt-bonus-heart.is-on").forEach(function (h) {
+			var k = h.getAttribute("data-adoption-bonus-kind");
+			if (k) seen[k] = true;
+		});
+		for (var i = 0; i < BONUS_KIND_KEYS.length; i++) {
+			if (!seen[BONUS_KIND_KEYS[i]]) return false;
+		}
+		return true;
+	}
+	function syncAdoptionBonusCompletionNote(sw) {
+		var el = document.getElementById("swAdoptBonusCompletionNote");
+		if (!el || !sw) return;
+		if (allThreeBonusKindsSelected(sw)) {
+			el.classList.remove("sw-adopt-bonus-followup--hidden");
+			el.removeAttribute("hidden");
+			el.setAttribute("aria-hidden", "false");
+		} else {
+			el.classList.add("sw-adopt-bonus-followup--hidden");
+			el.setAttribute("hidden", "");
+			el.setAttribute("aria-hidden", "true");
+		}
+	}
+	function hideAdoptionBonusGentleNudge() {
+		var el = document.getElementById("swAdoptBonusGentleNudge");
+		if (!el) return;
+		el.classList.add("sw-adopt-bonus-followup--hidden");
+		el.setAttribute("hidden", "");
+		el.setAttribute("aria-hidden", "true");
+	}
+	function tryShowAdoptionBonusGentleNudge(sw) {
+		var el = document.getElementById("swAdoptBonusGentleNudge");
+		if (!el || !sw) return;
+		if (sw.querySelector(".sw-adopt-bonus-heart.is-on")) return;
+		el.classList.remove("sw-adopt-bonus-followup--hidden");
+		el.removeAttribute("hidden");
+		el.setAttribute("aria-hidden", "false");
+	}
+	function syncAdoptionBonusHeartVisibility(sw) {
+		if (!sw) return;
+		var kinds = {};
+		sw.querySelectorAll(".sw-adopt-bonus-heart[data-adoption-bonus-kind]").forEach(function (h) {
+			var k = h.getAttribute("data-adoption-bonus-kind");
+			if (!k) return;
+			if (!kinds[k]) kinds[k] = [];
+			kinds[k].push(h);
+		});
+		Object.keys(kinds).forEach(function (k) {
+			var list = kinds[k];
+			var selected = list.filter(function (h) { return h.classList.contains("is-on"); });
+			if (selected.length >= 1) {
+				var keep = selected[0];
+				list.forEach(function (h) {
+					if (h === keep) h.classList.remove("sw-adopt-bonus-heart--hidden");
+					else h.classList.add("sw-adopt-bonus-heart--hidden");
+				});
+			} else {
+				list.forEach(function (h) { h.classList.remove("sw-adopt-bonus-heart--hidden"); });
+			}
+		});
+	}
+	function applyBonusKindStateFromResponse(sw, d) {
+		if (!sw || !d) return;
+		var kind = d.partner_kind;
+		if (!kind) return;
+		var selected = !!d.selected;
+		var offerId = d.offer_id != null ? String(d.offer_id) : "";
+		sw.querySelectorAll('.sw-adopt-bonus-heart[data-adoption-bonus-kind="' + kind + '"]').forEach(function (h) {
+			var oid = h.getAttribute("data-offer-id");
+			var on = selected && offerId && String(oid) === offerId;
+			h.classList.toggle("is-on", on);
+			h.setAttribute("aria-pressed", on ? "true" : "false");
+		});
+	}
 	var sw = document.getElementById("SW");
 	if (!sw) return;
 	var reqId = {{ adoption_bonus_request_id }};
 	var toggleUrl = "{{ adoption_bonus_toggle_url|escapejs }}";
+	var initialBonusNoSelection = {% if adoption_bonus_has_selection %}false{% else %}true{% endif %};
+	var nudgeTimer = null;
+	syncAdoptionBonusHeartVisibility(sw);
+	syncAdoptionBonusBanner(sw);
+	syncAdoptionBonusCompletionNote(sw);
+	if (sw.querySelector(".sw-adopt-bonus-heart.is-on")) hideAdoptionBonusGentleNudge();
+	if (initialBonusNoSelection) {
+		nudgeTimer = setTimeout(function () {
+			nudgeTimer = null;
+			tryShowAdoptionBonusGentleNudge(sw);
+		}, NUDGE_DELAY_MS);
+	}
 	sw.addEventListener("click", function (ev) {
 		var btn = ev.target.closest(".sw-adopt-bonus-heart");
 		if (!btn) return;
@@ -961,8 +1128,15 @@
 					alert((x.d && x.d.error) || "Nu am putut salva selecția.");
 					return;
 				}
-				btn.classList.toggle("is-on", !!x.d.selected);
-				btn.setAttribute("aria-pressed", x.d.selected ? "true" : "false");
+				if (nudgeTimer) {
+					clearTimeout(nudgeTimer);
+					nudgeTimer = null;
+				}
+				applyBonusKindStateFromResponse(sw, x.d);
+				syncAdoptionBonusHeartVisibility(sw);
+				syncAdoptionBonusBanner(sw);
+				syncAdoptionBonusCompletionNote(sw);
+				if (sw.querySelector(".sw-adopt-bonus-heart.is-on")) hideAdoptionBonusGentleNudge();
 			})
 			.catch(function () { alert("Eroare de rețea."); })
 			.finally(function () { btn.removeAttribute("aria-busy"); });

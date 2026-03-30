@@ -793,6 +793,13 @@ def _adopter_profile_county_raw(user) -> str:
     return (prof.judet or "").strip() or (prof.company_judet or "").strip()
 
 
+def _adopter_profile_city_raw(user) -> str:
+    prof = UserProfile.objects.filter(user=user).first()
+    if not prof:
+        return ""
+    return (prof.oras or "").strip() or (prof.company_oras or "").strip()
+
+
 def _adopter_has_county_for_transport(user) -> bool:
     """Transport la adopție: afișăm opțiunea dacă userul are județ în profil (zonă cunoscută)."""
     if not getattr(user, "is_authenticated", False):
@@ -854,6 +861,7 @@ def _servicii_bundle_adoption_bonus(request):
         "adoption_bonus_request_id": None,
         "adoption_bonus_selection_by_kind": {},
         "adoption_bonus_show_banner": False,
+        "adoption_bonus_has_selection": False,
     }
     user = getattr(request, "user", None)
     if not user or not user.is_authenticated:
@@ -868,6 +876,7 @@ def _servicii_bundle_adoption_bonus(request):
     bundle["adoption_bonus_show_banner"] = True
     for s in AdoptionBonusSelection.objects.filter(adoption_request=ar):
         bundle["adoption_bonus_selection_by_kind"][s.partner_kind] = s.offer_id
+    bundle["adoption_bonus_has_selection"] = bool(bundle["adoption_bonus_selection_by_kind"])
     return bundle
 
 
@@ -2802,6 +2811,12 @@ def servicii_view(request):
     )
     bonus_bundle = _servicii_bundle_adoption_bonus(request)
     county_norm = _norm_county_str(_adopter_profile_county_raw(request.user)) if request.user.is_authenticated else ""
+    prefill_county = ""
+    prefill_city = ""
+    if request.user.is_authenticated and bonus_bundle.get("adoption_bonus_show_banner"):
+        # În fluxul venit din adopție, pornim implicit pe zona adoptatorului.
+        prefill_county = _adopter_profile_county_raw(request.user)
+        prefill_city = _adopter_profile_city_raw(request.user)
     for lst in (vet_offers, groom_offers, shop_offers):
         for off in lst:
             if off is not None:
@@ -2817,8 +2832,11 @@ def servicii_view(request):
             "groom_offer_empty_slots": groom_offer_empty_slots,
             "shop_offers": shop_offers,
             "shop_offer_empty_slots": shop_offer_empty_slots,
+            "servicii_prefill_county": prefill_county,
+            "servicii_prefill_city": prefill_city,
             "adoption_bonus_request_id": bonus_bundle.get("adoption_bonus_request_id"),
             "adoption_bonus_show_banner": bonus_bundle.get("adoption_bonus_show_banner"),
+            "adoption_bonus_has_selection": bonus_bundle.get("adoption_bonus_has_selection"),
             "adoption_bonus_toggle_url": reverse("adoption_bonus_offer_toggle"),
         },
     )
@@ -2830,7 +2848,12 @@ def transport_view(request):
         "google_maps_api_key": getattr(settings, "GOOGLE_MAPS_API_KEY", "") or "",
         "from_adoption_pet_pk": None,
         "continue_adoption_url": "",
+        "prefill_judet": "",
+        "prefill_oras": "",
     }
+    if request.user.is_authenticated:
+        ctx["prefill_judet"] = _adopter_profile_county_raw(request.user)
+        ctx["prefill_oras"] = _adopter_profile_city_raw(request.user)
     if request.GET.get("from_adoption") == "1":
         raw = (request.GET.get("pet") or "").strip()
         if raw.isdigit():

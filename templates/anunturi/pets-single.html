@@ -295,38 +295,66 @@
 				grid-column: 2 / 3;
 			}
 
+			/* Un singur rând în casetă: Distribuie | Fișă | Promovează — flex, fără grid pe antet */
 			.mypet-fisa-header-row {
-				display: grid;
-				grid-template-columns: 1fr auto 1fr;
-				align-items: start; /* lipite sus: tab + buton pe aceeași linie de sus */
+				display: block;
 				margin-bottom: 0.18rem;
 				grid-row: 1 / 2;
 				grid-column: 2 / 4;
+				width: 100%;
+				min-width: 0;
+				box-sizing: border-box;
 			}
-
-			/* 2 pastile identice (aceeași mărime) */
 			.mypet-fisa-tab-group {
-				grid-column: 2;
-				justify-self: center;
-				/* centrăm după primul buton; al doilea NU influențează centrajul */
-				position: relative;
-				display: inline-block;
+				display: flex;
+				flex-direction: row;
+				flex-wrap: nowrap;
+				align-items: center;
+				gap: 0.2rem;
+				width: 100%;
+				min-width: 0;
+				box-sizing: border-box;
+			}
+			/* Laterale fixe (lățime = conținut); mijlocul ia restul — titlul crește cu numele, fără să împingă butoanele */
+			.mypet-fisa-header-slot {
+				display: flex;
+				align-items: center;
+				min-width: 0;
+				box-sizing: border-box;
+			}
+			.mypet-fisa-header-slot--left,
+			.mypet-fisa-header-slot--right {
+				flex: 0 0 auto;
+				flex-shrink: 0;
+			}
+			.mypet-fisa-header-slot--left {
+				justify-content: flex-start;
+				/* ~2 cm spre caseta din centru */
+				padding-left: 2cm;
+			}
+			.mypet-fisa-header-slot--right {
+				justify-content: flex-end;
+				padding-right: 2cm;
+			}
+			.mypet-fisa-header-slot--center {
+				flex: 1 1 auto;
+				min-width: 0;
+				justify-content: center;
+			}
+			#petCardTitle.mypet-fisa-tab {
+				width: max-content;
+				max-width: 100%;
+				overflow: hidden;
+				text-overflow: ellipsis;
 				white-space: nowrap;
-			}
-			/* Mută doar al doilea "buton" mai la dreapta (primul rămâne fix) */
-			.mypet-fisa-tab-group #petCardCopyBtn {
-				position: absolute;
-				top: 0;
-				left: calc(100% + 12rem); /* ~5cm la 16px/rem */
 				justify-content: center;
-				text-align: center;
 			}
-			.mypet-fisa-tab-group #petCardPromoteBtn {
-				position: absolute;
-				top: 0;
-				left: calc(100% + 24rem);
-				justify-content: center;
-				text-align: center;
+			.mypet-fisa-header-slot .mypet-fisa-tab {
+				align-self: center;
+			}
+			.mypet-fisa-header-slot--left .mypet-fisa-tab,
+			.mypet-fisa-header-slot--right .mypet-fisa-tab {
+				flex-shrink: 0;
 			}
 			.mypet-fisa-tab.is-action {
 				cursor: pointer;
@@ -358,21 +386,6 @@
 				align-items: center;
 				align-self: start;
 				justify-self: center;
-			}
-			/* (Distribuie eliminat) */
-			.mypet-fisa-header-spacer {
-				grid-column: 1;
-			}
-			.mypet-fisa-header-actions {
-				grid-column: 3;
-				justify-self: end;
-				align-self: start;
-			}
-
-			.mypet-fisa-header-actions {
-				display: flex;
-				gap: 0.4rem;
-				align-items: center; /* nu decala header-ul */
 			}
 
 
@@ -897,6 +910,62 @@
 				filter: brightness(1.05);
 			}
 
+			/* Mesaj în-app (înlocuiește alert nativ) */
+			.pet-app-msg-modal {
+				position: fixed;
+				inset: 0;
+				z-index: 4500;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 1rem;
+				box-sizing: border-box;
+			}
+			.pet-app-msg-modal[hidden] {
+				display: none !important;
+			}
+			.pet-app-msg-modal__backdrop {
+				position: absolute;
+				inset: 0;
+				background: rgba(0, 0, 0, 0.5);
+				backdrop-filter: blur(2px);
+			}
+			.pet-app-msg-modal__panel {
+				position: relative;
+				z-index: 1;
+				width: min(100%, 420px);
+				max-height: 90vh;
+				overflow: auto;
+				background: #fff;
+				border: 2px solid #111;
+				border-radius: 12px;
+				padding: 1.1rem 1.2rem 1.2rem;
+				box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+				box-sizing: border-box;
+			}
+			.pet-app-msg-modal__title {
+				margin: 0 0 0.5rem;
+				font-size: 1.05rem;
+				font-weight: 900;
+				text-transform: uppercase;
+				letter-spacing: 0.04em;
+				color: #9d1c1c;
+			}
+			.pet-app-msg-modal__text {
+				margin: 0 0 1rem;
+				font-size: 0.88rem;
+				line-height: 1.45;
+				color: #222;
+				white-space: pre-wrap;
+				word-break: break-word;
+			}
+			.pet-app-msg-modal__actions {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: flex-end;
+				gap: 0.5rem;
+			}
+
 			/* Controale video în modal (semitransparente) */
 			.pet-media-modal__video-controls {
 				display: flex !important;
@@ -983,14 +1052,17 @@
 
 										<div class="mypet-fisa-header-row">
 											<div class="mypet-fisa-tab-group">
-												<div class="mypet-fisa-tab">FIȘA PET {{ pet.nume|default:"" }}</div>
-												<div class="mypet-fisa-tab is-action" id="petCardCopyBtn" role="button" tabindex="0" aria-label="Distribuie (copiază linkul fișei)">DISTRIBUIE</div>
-												{% if promote_allowed %}
-												<a href="{% url 'promo_a2_order' pet.pk %}" class="mypet-fisa-tab is-action" id="petCardPromoteBtn" role="button" tabindex="0" aria-label="Promovează-mă">PROMOVEAZĂ-MĂ</a>
-												{% endif %}
-											</div>
-											<div class="mypet-fisa-header-spacer"></div>
-											<div class="mypet-fisa-header-actions">
+												<div class="mypet-fisa-header-slot mypet-fisa-header-slot--left">
+													<div class="mypet-fisa-tab is-action" id="petCardCopyBtn" role="button" tabindex="0" aria-label="Distribuie (copiază linkul fișei)">DISTRIBUIE</div>
+												</div>
+												<div class="mypet-fisa-header-slot mypet-fisa-header-slot--center">
+													<div class="mypet-fisa-tab mypet-fisa-tab--title" id="petCardTitle">FIȘA PET {{ pet.nume|default:"" }}</div>
+												</div>
+												<div class="mypet-fisa-header-slot mypet-fisa-header-slot--right">
+													{% if promote_allowed %}
+													<a href="{% url 'promo_a2_order' pet.pk %}" class="mypet-fisa-tab is-action" id="petCardPromoteBtn" role="button" tabindex="0" aria-label="Promovează-mă">PROMOVEAZĂ-MĂ</a>
+													{% endif %}
+												</div>
 											</div>
 										</div>
 
@@ -1175,6 +1247,17 @@
 			</div>
 		</div>
 
+		<div id="petAppMsgModal" class="pet-app-msg-modal" hidden aria-hidden="true">
+			<div class="pet-app-msg-modal__backdrop" id="petAppMsgBackdrop"></div>
+			<div class="pet-app-msg-modal__panel" role="alertdialog" aria-modal="true" aria-labelledby="petAppMsgTitle" aria-describedby="petAppMsgText">
+				<h3 class="pet-app-msg-modal__title" id="petAppMsgTitle">EU-Adopt</h3>
+				<p class="pet-app-msg-modal__text" id="petAppMsgText"></p>
+				<div class="pet-app-msg-modal__actions">
+					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--primary" id="petAppMsgOk">OK</button>
+				</div>
+			</div>
+		</div>
+
 		{% if can_send_pet_message %}
 		<div id="petAdoptChoiceModal" class="pet-adopt-choice-modal" {% if not adoption_after_transport %}hidden{% endif %} aria-hidden="{% if adoption_after_transport %}false{% else %}true{% endif %}">
 			<div class="pet-adopt-choice-modal__backdrop" id="petAdoptChoiceBackdrop"></div>
@@ -1217,6 +1300,7 @@
 			tabindex="0"
 			data-adopt-url="{% url 'pet_adoption_request' pet.pk %}"
 			data-transport-url="{% url 'transport' %}?from_adoption=1&pet={{ pet.pk }}"
+			data-servicii-url="{% url 'servicii' %}"
 			aria-label="Vreau să adopt"
 		>VREAU SĂ ADOPT</div>
 		{% endif %}
@@ -1278,6 +1362,53 @@
 			var modalClose = document.getElementById("petMediaModalClose");
 			var modalFooter = document.getElementById("petMediaModalFooter");
 			var modalShare = document.getElementById("petMediaModalShare");
+			var petAppMsgModal = document.getElementById("petAppMsgModal");
+			var petAppMsgText = document.getElementById("petAppMsgText");
+			var petAppMsgOk = document.getElementById("petAppMsgOk");
+			var petAppMsgBackdrop = document.getElementById("petAppMsgBackdrop");
+
+			function showPetAppMessage(message, onClose) {
+				var msg = (message || "").toString();
+				if (!petAppMsgModal || !petAppMsgText || !petAppMsgOk || !petAppMsgBackdrop) {
+					window.alert(msg);
+					if (typeof onClose === "function") onClose();
+					return;
+				}
+				petAppMsgText.textContent = msg;
+				petAppMsgModal.hidden = false;
+				petAppMsgModal.setAttribute("aria-hidden", "false");
+				var prevOverflow = document.body.style.overflow;
+				document.body.style.overflow = "hidden";
+				function cleanup() {
+					petAppMsgOk.removeEventListener("click", onOk);
+					petAppMsgBackdrop.removeEventListener("click", onBackdrop);
+					document.removeEventListener("keydown", onKey, true);
+					petAppMsgModal.hidden = true;
+					petAppMsgModal.setAttribute("aria-hidden", "true");
+					document.body.style.overflow = prevOverflow;
+				}
+				function finish() {
+					cleanup();
+					if (typeof onClose === "function") onClose();
+				}
+				function onOk(ev) {
+					ev.preventDefault();
+					finish();
+				}
+				function onBackdrop(ev) {
+					if (ev.target === petAppMsgBackdrop) finish();
+				}
+				function onKey(ev) {
+					if (ev.key !== "Escape") return;
+					ev.preventDefault();
+					ev.stopPropagation();
+					finish();
+				}
+				petAppMsgOk.addEventListener("click", onOk);
+				petAppMsgBackdrop.addEventListener("click", onBackdrop);
+				document.addEventListener("keydown", onKey, true);
+				petAppMsgOk.focus();
+			}
 
 			function closeModal() {
 				if (!modal) return;
@@ -1414,7 +1545,7 @@
 					e.stopPropagation();
 					trackPetEvent("share_click");
 					if (!navigator.share) {
-						alert("Distribuirea (meniul de trimitere) este disponibilă pe telefon (Chrome/Android). Pe laptop nu apare acest meniu.");
+						showPetAppMessage("Distribuirea (meniul de trimitere) este disponibilă pe telefon (Chrome/Android). Pe laptop nu apare acest meniu.");
 						return;
 					}
 					try {
@@ -1468,13 +1599,10 @@
 				// păstrăm dimensiunea casetei 2 FIXĂ (ca la pastila 1), chiar dacă textul diferă
 				function lockSameSizeAsFirst() {
 					try {
-						var group = b.closest(".mypet-fisa-tab-group");
-						if (!group) return;
-						var first = group.querySelector(".mypet-fisa-tab:not(#petCardCopyBtn)");
-						if (!first) return;
-						var w = first.offsetWidth || 0;
-						var h = first.offsetHeight || 0;
-						if (w) b.style.width = w + "px";
+						var ref = document.getElementById("petCardTitle");
+						if (!ref || !b) return;
+						var h = ref.offsetHeight || 0;
+						b.style.width = "";
 						if (h) b.style.height = h + "px";
 					} catch (e) {}
 				}
@@ -1504,7 +1632,7 @@
 				async function doShare() {
 					trackPetEvent("share_click");
 					if (!navigator.share) {
-						alert("Distribuirea (meniul de trimitere) este disponibilă pe telefon (Chrome/Android). Pe laptop nu apare acest meniu.");
+						showPetAppMessage("Distribuirea (meniul de trimitere) este disponibilă pe telefon (Chrome/Android). Pe laptop nu apare acest meniu.");
 						return;
 					}
 					try {
@@ -1529,13 +1657,10 @@
 				if (!b) return;
 				function lockSameSizeAsFirst() {
 					try {
-						var group = b.closest(".mypet-fisa-tab-group");
-						if (!group) return;
-						var first = group.querySelector(".mypet-fisa-tab:not(#petCardCopyBtn):not(#petCardPromoteBtn)");
-						if (!first) return;
-						var w = first.offsetWidth || 0;
-						var h = first.offsetHeight || 0;
-						if (w) b.style.width = w + "px";
+						var ref = document.getElementById("petCardTitle");
+						if (!ref || !b) return;
+						var h = ref.offsetHeight || 0;
+						b.style.width = "";
 						if (h) b.style.height = h + "px";
 					} catch (e) {}
 				}
@@ -1614,7 +1739,7 @@
 				async function submitPetMessage() {
 					var text = (msgTa.value || "").trim();
 					if (!text) {
-						alert("Scrie un mesaj înainte de trimitere.");
+						showPetAppMessage("Scrie un mesaj înainte de trimitere.");
 						return;
 					}
 					var old = sendBtn.textContent;
@@ -1641,7 +1766,7 @@
 						sendBtn.textContent = "Trimis";
 						setTimeout(function() { sendBtn.textContent = old; }, 1200);
 					} catch (err) {
-						alert(err.message || "Eroare la trimitere mesaj.");
+						showPetAppMessage(err.message || "Eroare la trimitere mesaj.");
 						sendBtn.textContent = old;
 					} finally {
 						sendBtn.disabled = false;
@@ -1661,6 +1786,11 @@
 			if (adoptCorner) {
 				var adoptUrl = adoptCorner.getAttribute("data-adopt-url") || "";
 				var transportUrl = adoptCorner.getAttribute("data-transport-url") || "";
+				var serviciiUrl = adoptCorner.getAttribute("data-servicii-url") || "";
+				function goToServicii() {
+					if (!serviciiUrl) return;
+					window.location.href = serviciiUrl;
+				}
 				async function submitAdoptRequest() {
 					if (!adoptUrl) return;
 					var old = adoptCorner.textContent;
@@ -1679,23 +1809,35 @@
 						var data = {};
 						try { data = await resp.json(); } catch (e) {}
 						if (data.already === "pending") {
-							alert("Ai deja o cerere în așteptare pentru acest animal. În pagina Servicii poți apăsa ♥ pe oferte din județul tău (opțional, bonus la adopție finalizată).");
+							showPetAppMessage(
+								"Ai deja o cerere în așteptare pentru acest animal. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).",
+								goToServicii
+							);
 							return;
 						}
 						if (data.already === "accepted") {
-							alert("Cererea ta a fost deja acceptată. Verifică emailul și mesajele din MyPet. În Servicii poți marca cu ♥ oferte pentru bonus (opțional).");
+							showPetAppMessage(
+								"Cererea ta a fost deja acceptată. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).",
+								goToServicii
+							);
 							return;
 						}
 						if (!resp.ok || !data.ok) {
 							throw new Error((data && data.error) || "Nu am putut trimite cererea.");
 						}
 						if (data.queued) {
-							alert("Cererea a fost înregistrată în lista de așteptare. Dacă adopția curentă nu se finalizează, vei primi detaliile adopției. În Servicii poți marca cu ♥ oferte din județ (bonus opțional la finalizare).");
+							showPetAppMessage(
+								"Cererea a fost înregistrată în lista de așteptare. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).",
+								goToServicii
+							);
 							return;
 						}
-						alert("Cererea de adopție a fost trimisă. Organizația va fi notificată în Mesaje (MyPet). Deschide Servicii: poți apăsa ♥ pe până la 3 oferte (una per categorie) din județul tău — bonus opțional când adopția se finalizează.");
+						showPetAppMessage(
+							"Cererea de adopție a fost trimisă. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).",
+							goToServicii
+						);
 					} catch (err) {
-						alert(err.message || "Eroare la trimitere.");
+						showPetAppMessage(err.message || "Eroare la trimitere.");
 					} finally {
 						adoptCorner.removeAttribute("aria-busy");
 						adoptCorner.textContent = old;

@@ -99,12 +99,12 @@
 						{% endif %}
 						<div class="t1-field t1-caseta t1-row-inline">
 							<label class="t1-label" for="tw-judet">JUDET</label>
-							<input type="text" class="t1-input" id="tw-judet" name="judet" list="county-list-tw" placeholder="Alege sau scrie județul" autocomplete="off" />
+							<input type="text" class="t1-input" id="tw-judet" name="judet" list="county-list-tw" placeholder="Alege sau scrie județul" autocomplete="off" value="{{ prefill_judet|default:'' }}" />
 							{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-tw" %}
 						</div>
 						<div class="t1-field t1-caseta t1-row-inline">
 							<label class="t1-label" for="tw-oras">ORAȘ / LOCALITATE</label>
-							<input type="text" class="t1-input" id="tw-oras" name="oras" list="city-list-tw" placeholder="Alege mai întâi județul" autocomplete="off" />
+							<input type="text" class="t1-input" id="tw-oras" name="oras" list="city-list-tw" placeholder="Alege mai întâi județul" autocomplete="off" value="{{ prefill_oras|default:'' }}" />
 							<datalist id="city-list-tw"></datalist>
 						</div>
 						<div class="t1-field t1-caseta">

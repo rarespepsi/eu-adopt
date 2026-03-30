@@ -353,6 +353,16 @@
 </script>
 <script>
 (function() {
+	var filtersForm = document.getElementById("filtre-animale");
+	if (filtersForm) {
+		var filterSelects = filtersForm.querySelectorAll("select");
+		filterSelects.forEach(function(sel) {
+			sel.addEventListener("change", function() {
+				filtersForm.submit();
+			});
+		});
+	}
+
 	var modal = document.getElementById("ptMatchModal");
 	if (!modal) return;
 	var backdrop = document.getElementById("ptMatchModalBackdrop");
