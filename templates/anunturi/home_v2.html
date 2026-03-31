@@ -6,7 +6,7 @@
 {% block body_class %}page-home-v2{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/home_v2.css' %}?v=a2" type="text/css" media="all" />
+<link rel="stylesheet" href="{% static 'css/home_v2.css' %}?v=a3m19" type="text/css" media="all" />
 <style>
 	.home-welcome-overlay-backdrop {
 		position: fixed;
@@ -110,6 +110,18 @@
 					<a href="{% url 'pets_all' %}" class="hero-v2-cta-animale" title="Vezi prietenii tăi">Hai la noi!</a>
 				</header>
 			</div>
+			<div class="home-v2-mobile-ads home-v2-mobile-ads-top" aria-label="Publicitate sus">
+				{% for partner in left_sidebar_partners|slice:":3" %}
+				<div class="home-v2-mobile-ad-slot">
+					{% if partner %}
+					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener">
+						{% if partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
+						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.name }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+					</a>
+					{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+				</div>
+				{% endfor %}
+			</div>
 			<div id="A2">
 				{% if a2_quote_pool %}{{ a2_quote_pool|json_script:"a2QuotePool" }}{% endif %}
 				<div class="A2-casete-wrap" role="list" aria-label="12 câini disponibili pentru adopție">
@@ -117,6 +129,18 @@
 					{% include "anunturi/includes/dog_card.html" with pet=pet a2_compact=a2_compact|default:False %}
 					{% endfor %}
 				</div>
+			</div>
+			<div class="home-v2-mobile-ads home-v2-mobile-ads-bottom" aria-label="Publicitate jos">
+				{% for partner in right_sidebar_partners|slice:":3" %}
+				<div class="home-v2-mobile-ad-slot">
+					{% if partner %}
+					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener">
+						{% if partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
+						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.name }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+					</a>
+					{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+				</div>
+				{% endfor %}
 			</div>
 			<div id="A3">
 				{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A3</span>{% endif %}

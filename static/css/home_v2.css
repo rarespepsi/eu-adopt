@@ -1150,3 +1150,211 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
     min-width: 0 !important;
     min-height: 0 !important;
 }
+
+/* ========== HOME mobil: 3 sus + 4x3 + 3 jos (fara impact desktop/tableta) ========== */
+.home-v2-mobile-ads {
+    display: none;
+}
+
+@media (max-width: 37.5em) {
+    body.page-home-v2,
+    body.page-home-v2 #main_wrap {
+        height: auto !important;
+        min-height: 100vh !important;
+        overflow-y: auto !important;
+    }
+    body.page-home-v2 #AW.home-v2,
+    body.page-home-v2 .home-v2 {
+        min-height: auto !important;
+    }
+    body.page-home-v2 #A3,
+    body.page-home-v2 #home-col-left,
+    body.page-home-v2 #home-col-right {
+        display: none !important;
+    }
+    /* Eliminam orice rezervare de inaltime care lasa gol albastru sub ultimul rand publi. */
+    body.page-home-v2 #home-cols-wrap,
+    body.page-home-v2 .home-v2-three-cols,
+    body.page-home-v2 .home-v2-center {
+        flex: 0 0 auto !important;
+        min-height: 0 !important;
+        height: auto !important;
+        align-content: start !important;
+    }
+    body.page-home-v2 .home-v2-center {
+        display: block !important;
+    }
+
+    body.page-home-v2 .home-v2-mobile-ads {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 2px;
+        padding: 0.06rem 0.2rem 0;
+        margin: 0 !important;
+    }
+    body.page-home-v2 .home-v2-mobile-ad-slot {
+        min-height: 3.75rem; /* ~2mm mai putin pe fiecare rand publi => ~4mm total */
+        border-radius: 6px;
+        overflow: hidden;
+        background: #f5f5f5;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    body.page-home-v2 .home-v2-mobile-ad-slot a {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+    body.page-home-v2 .home-v2-mobile-ad-slot .slot-img-fit {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        display: block;
+    }
+
+    body.page-home-v2 #A2 {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+        overflow: hidden !important;
+    }
+    body.page-home-v2 #A2 .A2-casete-wrap {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+        grid-auto-rows: minmax(0, 1fr) !important;
+        gap: 2px !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        aspect-ratio: 4 / 3 !important;
+        overflow: hidden !important;
+    }
+    body.page-home-v2 #A2 .A2-casete-wrap > .dog-card-link {
+        aspect-ratio: auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+    body.page-home-v2 #A2 .dog-card-compact .dog-card-quote {
+        font-size: 0.66rem !important;
+        line-height: 1.15 !important;
+        left: 4px !important;
+        right: 4px !important;
+        bottom: 4px !important;
+    }
+    body.page-home-v2 .home-v2-mobile-ads-bottom {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        border-top: 0 !important;
+        position: relative;
+        top: -2px;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    body.page-home-v2 #AW,
+    body.page-home-v2 #home-cols-wrap,
+    body.page-home-v2 .home-v2-three-cols {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    body.page-home-v2 #home-burtiera-galbena {
+        margin-top: 0 !important;
+    }
+}
+
+@media (max-width: 37.5em) and (orientation: portrait) {
+    body.page-home-v2 .hero-v2 {
+        min-height: 4.15rem !important;
+        max-height: 4.15rem !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+    body.page-home-v2 .hero-v2-inner {
+        display: grid !important;
+        grid-template-columns: auto 1fr auto !important;
+        align-items: center !important;
+        gap: 0.08rem !important;
+        width: 100% !important;
+        height: 100% !important;
+        padding-left: 0.22rem !important;
+        padding-right: 0.22rem !important;
+    }
+    body.page-home-v2 .hero-v2-logo {
+        order: 1 !important;
+        justify-self: start !important;
+        transform: none !important;
+        width: 2.3rem !important;
+        height: 2.3rem !important;
+    }
+    body.page-home-v2 .hero-v2-logo a,
+    body.page-home-v2 .hero-v2-logo-img {
+        width: 2.3rem !important;
+        height: 2.3rem !important;
+        min-width: 2.3rem !important;
+        min-height: 2.3rem !important;
+    }
+    body.page-home-v2 .hero-v2-logo a {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: hidden !important;
+    }
+    body.page-home-v2 .hero-v2-logo-img {
+        object-fit: cover !important;
+        object-position: center center !important;
+        transform: scale(1.39) !important;
+        transform-origin: center center !important;
+    }
+    body.page-home-v2 .hero-v2-transport {
+        display: block !important;
+        order: 3 !important;
+        justify-self: end !important;
+    }
+    body.page-home-v2 .hero-v2-transport-badge {
+        width: 2.15rem !important;
+        height: 2.15rem !important;
+    }
+    body.page-home-v2 .hero-v2-cta-animale {
+        bottom: 0.05rem !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        z-index: 3 !important;
+        padding: 0.2rem 0.54rem !important;
+        font-size: 0.78rem !important;
+        line-height: 1.05 !important;
+        max-width: 7rem !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+    }
+
+    /* A2 urca imediat sub A1, fara banda/gol vizual. */
+    body.page-home-v2 #A1 {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    body.page-home-v2 #A2 {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    body.page-home-v2 #A2 .A2-casete-wrap {
+        margin-top: 0 !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
+        grid-auto-rows: minmax(0, 1fr) !important;
+        aspect-ratio: 3 / 2.9 !important; /* +~10% mai jos fata de varianta anterioara */
+        gap: 2px !important;
+    }
+    body.page-home-v2 .home-v2-mobile-ads-top {
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    body.page-home-v2 #A2 {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    body.page-home-v2 .home-v2-mobile-ads-bottom {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        top: 0 !important;
+    }
+}
