@@ -7,26 +7,29 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt1" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt14-p43-desk-mob-split" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
 	body.page-pt #main_content { min-height: 0 !important; display: flex !important; flex-direction: column !important; flex: 1 1 0 !important; overflow: hidden !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
-	body.page-pt #main_content #PW {
-		height: calc(100vh - var(--nav-h, 64px)) !important;
-		max-height: calc(100vh - var(--nav-h, 64px)) !important;
-		min-height: 0 !important;
-		display: flex !important;
-		flex-direction: column !important;
-		overflow: hidden !important;
-	}
-	/* P2: scroll doar în .pt-p2-scroll; casete 4×3 vizibile, restul la scroll (trec sub P3) */
-	body.page-pt #PW .pt-cell-2 { min-height: 0 !important; overflow: hidden !important; }
-	body.page-pt #PW .pt-p2-scroll {
-		min-height: 0 !important;
-		overflow-y: auto !important;
-		overflow-x: hidden !important;
-		-webkit-overflow-scrolling: touch;
+	/* Desktop/tablet: PW fix în viewport; mobil – flux natural (evită P2 prăbușit la flex 1 1 0) */
+	@media (min-width: 768px) {
+		body.page-pt #main_content #PW {
+			height: calc(100vh - var(--nav-h, 64px)) !important;
+			max-height: calc(100vh - var(--nav-h, 64px)) !important;
+			min-height: 0 !important;
+			display: flex !important;
+			flex-direction: column !important;
+			overflow: hidden !important;
+		}
+		/* P2: scroll doar în .pt-p2-scroll; casete 4×3 vizibile, restul la scroll (trec sub P3) */
+		body.page-pt #PW .pt-cell-2 { min-height: 0 !important; overflow: hidden !important; }
+		body.page-pt #PW .pt-p2-scroll {
+			min-height: 0 !important;
+			overflow-y: auto !important;
+			overflow-x: hidden !important;
+			-webkit-overflow-scrolling: touch;
+		}
 	}
 	#PW .pt-strip-item--p1 img,
 	#PW .pt-strip-item--p3 img {
@@ -124,6 +127,38 @@
 	@media (max-width: 420px) {
 		.pt-match-modal__traits-list { grid-template-columns: 1fr; }
 	}
+	@media (max-width: 767.98px) {
+		body.page-pt #main_content {
+			overflow: visible !important;
+			flex: none !important;
+			min-height: 0 !important;
+		}
+		body.page-pt #main_content #PW {
+			flex: none !important;
+			height: auto !important;
+			max-height: none !important;
+			min-height: 0 !important;
+			overflow: visible !important;
+		}
+		body.page-pt #PW .pt-grid {
+			flex: none !important;
+			height: auto !important;
+			min-height: 0 !important;
+		}
+		body.page-pt #PW .pt-cell-2 {
+			overflow: visible !important;
+			min-height: clamp(300px, 55vh, 620px) !important;
+			height: auto !important;
+		}
+		body.page-pt #PW .pt-cell-2 .pt-p2-scroll {
+			flex: none !important;
+			min-height: clamp(280px, 50vh, 560px) !important;
+			max-height: none !important;
+			height: auto !important;
+			overflow-y: auto !important;
+			-webkit-overflow-scrolling: touch;
+		}
+	}
 </style>
 {% endblock %}
 
@@ -148,6 +183,10 @@
 				<div class="pt-p4-inner">
 					<div class="pt-p4-box pt-p4-box-filters" id="P4.1" data-slot="P4.1">
 						<div class="pet-filters-box p3-caseta-independenta">
+							<div class="pt-mobile-filters-head">
+								<strong>Filtre</strong>
+								<button type="button" id="ptMobileFiltersClose" class="pt-mobile-filters-close" aria-label="Închide filtre">×</button>
+							</div>
 							<p class="p3-title">Caută prietenul tău</p>
 							<ul class="p3-tip-butoane clearfix animal_filter_list">
 								<li>
@@ -215,15 +254,30 @@
 									</div>
 								</div>
 								<a href="{% url 'pets_all' %}" class="p3-reset-link">Resetează filtre</a>
+								<div class="pt-mobile-filters-actions">
+									<button type="submit" id="ptMobileFiltersOk" class="pt-mobile-filters-ok">OK</button>
+								</div>
 							</form>
 						</div>
 					</div>
 					<div class="pt-p4-box pt-p4-box-match" id="P4.2" data-slot="P4.2">
-						<a href="#" class="pt-p4-btn-match" title="Găsește-ți sufletul pereche">Găsește-mi perechea</a>
+						<div class="pt-p4-actions">
+							<a href="#" class="pt-p4-btn-match" title="Găsește-ți sufletul pereche">Găsește-mi perechea</a>
+							<a href="#" class="pt-p4-btn-filters" id="ptMobileToggleFilters" title="Deschide filtre">Filtre</a>
+						</div>
 					</div>
-					<div class="pt-p4-box pt-p4-box-ads" id="P4.3" data-slot="P4.3"><span class="pt-p4-placeholder">P4.3</span></div>
+					<div class="pt-p4-box pt-p4-box-ads" id="P4.3" data-slot="P4.3">
+						<span class="pt-p4-placeholder pt-p43--desktop">P4.3</span>
+						<div class="pt-p43-mama pt-p43--mobile">
+							<div class="pt-p43-slot" data-slot="P4.3.1"><span class="pt-p43-label">P4.3.1</span></div>
+							<div class="pt-p43-slot" data-slot="P4.3.2"><span class="pt-p43-label">P4.3.2</span></div>
+							<div class="pt-p43-slot" data-slot="P4.3.3"><span class="pt-p43-label">P4.3.3</span></div>
+							<div class="pt-p43-slot" data-slot="P4.3.4"><span class="pt-p43-label">P4.3.4</span></div>
+						</div>
+					</div>
 				</div>
 			</div>
+			<div id="ptMobileFiltersBackdrop" class="pt-mobile-filters-backdrop" hidden></div>
 
 			<div id="P2" class="pt-cell pt-cell-2" data-slot="P2" aria-label="Listă animale – 4 coloane × 3 rânduri vizibile, scroll vertical">
 				<div class="pt-p2-scroll">
@@ -324,7 +378,8 @@
 <script>
 (function() {
 	function initPetImageRotation() {
-		var imgs = document.querySelectorAll('img.pet-rotating-image');
+		var all = document.querySelectorAll('img.pet-rotating-image');
+		var imgs = Array.prototype.slice.call(all, 0, 12);
 		if (!imgs || !imgs.length) return;
 		imgs.forEach(function(img) {
 			if (img.dataset.rotInit === "1") return;
@@ -354,22 +409,80 @@
 <script>
 (function() {
 	var filtersForm = document.getElementById("filtre-animale");
+	var mobileFiltersCloseBtn = document.getElementById("ptMobileFiltersClose");
+	var mobileFiltersOkBtn = document.getElementById("ptMobileFiltersOk");
+	var mobileFiltersBackdrop = document.getElementById("ptMobileFiltersBackdrop");
+	var mobileFiltersBtn = document.getElementById("ptMobileToggleFilters");
+	var p4Cell = document.getElementById("P4");
+	var modal = document.getElementById("ptMatchModal");
+	var backdrop = document.getElementById("ptMatchModalBackdrop");
+	var closeBtn = document.getElementById("ptMatchModalClose");
+	var form = document.getElementById("ptMatchMiniForm");
+	var matchBtn = document.querySelector(".pt-p4-btn-match");
+	var filterSelects = filtersForm ? filtersForm.querySelectorAll("select") : [];
+	var filtersApplied = false;
+	var filtersDraft = null;
+	function isMobileViewport() {
+		return !!(window.matchMedia && window.matchMedia("(max-width: 767.98px)").matches);
+	}
+	function getFilterSnapshot() {
+		var snap = {};
+		Array.prototype.forEach.call(filterSelects, function(sel) {
+			snap[sel.name] = sel.value;
+		});
+		return snap;
+	}
+	function restoreFilterSnapshot(snap) {
+		if (!snap) return;
+		Array.prototype.forEach.call(filterSelects, function(sel) {
+			if (Object.prototype.hasOwnProperty.call(snap, sel.name)) sel.value = snap[sel.name];
+		});
+	}
+	function hasAppliedFiltersInUrl() {
+		try {
+			var url = new URL(window.location.href);
+			return ["species", "judet", "marime", "varsta", "varsta_band", "sex", "traits"].some(function(k) {
+				var vals = url.searchParams.getAll(k);
+				return vals.some(function(v) { return !!(v || "").trim(); });
+			});
+		} catch (e) {
+			return false;
+		}
+	}
+	function setMobileFiltersBtnState(active) {
+		filtersApplied = !!active;
+		if (!mobileFiltersBtn) return;
+		if (filtersApplied) {
+			mobileFiltersBtn.textContent = "Resetează filtre";
+			mobileFiltersBtn.classList.add("pt-filters-btn--active");
+		} else {
+			mobileFiltersBtn.textContent = "Filtre";
+			mobileFiltersBtn.classList.remove("pt-filters-btn--active");
+		}
+	}
+	function closeMobileFilters(restoreDraft) {
+		if (!p4Cell) return;
+		if (restoreDraft) restoreFilterSnapshot(filtersDraft);
+		p4Cell.classList.remove("pt-mobile-filters-open");
+		if (mobileFiltersBackdrop) mobileFiltersBackdrop.hidden = true;
+		setMobileFiltersBtnState(filtersApplied);
+	}
+	function openMobileFilters() {
+		if (!p4Cell || !isMobileViewport()) return;
+		filtersDraft = getFilterSnapshot();
+		p4Cell.classList.add("pt-mobile-filters-open");
+		if (mobileFiltersBackdrop) mobileFiltersBackdrop.hidden = false;
+	}
+	setMobileFiltersBtnState(hasAppliedFiltersInUrl());
 	if (filtersForm) {
-		var filterSelects = filtersForm.querySelectorAll("select");
 		filterSelects.forEach(function(sel) {
 			sel.addEventListener("change", function() {
+				if (isMobileViewport() && p4Cell && p4Cell.classList.contains("pt-mobile-filters-open")) return;
 				filtersForm.submit();
 			});
 		});
 	}
 
-	var modal = document.getElementById("ptMatchModal");
-	if (!modal) return;
-	var backdrop = document.getElementById("ptMatchModalBackdrop");
-	var closeBtn = document.getElementById("ptMatchModalClose");
-	var form = document.getElementById("ptMatchMiniForm");
-
-	var matchBtn = document.querySelector(".pt-p4-btn-match");
 	var defaultMatchText = matchBtn ? (matchBtn.textContent || "").trim() : "";
 
 	function readSelectedTraits() {
@@ -439,10 +552,34 @@
 			openModal();
 		});
 	}
+	if (mobileFiltersBtn) {
+		mobileFiltersBtn.addEventListener("click", function(e) {
+			e.preventDefault();
+			if (!isMobileViewport()) return;
+			if (filtersApplied) {
+				if (filtersForm && filtersForm.action) window.location.href = filtersForm.action;
+				return;
+			}
+			if (p4Cell && p4Cell.classList.contains("pt-mobile-filters-open")) return;
+			openMobileFilters();
+		});
+	}
+	if (mobileFiltersCloseBtn) mobileFiltersCloseBtn.addEventListener("click", function() { closeMobileFilters(true); });
+	if (mobileFiltersOkBtn) {
+		mobileFiltersOkBtn.addEventListener("click", function() {
+			setMobileFiltersBtnState(true);
+			closeMobileFilters(false);
+		});
+	}
 	if (backdrop) backdrop.addEventListener("click", closeModal);
 	if (closeBtn) closeBtn.addEventListener("click", closeModal);
 	document.addEventListener("keydown", function(e) {
-		if (e.key === "Escape" && modal && !modal.hidden) closeModal();
+		if (e.key !== "Escape") return;
+		if (p4Cell && p4Cell.classList.contains("pt-mobile-filters-open")) return;
+		if (modal && !modal.hidden) closeModal();
+	});
+	window.addEventListener("resize", function() {
+		if (!isMobileViewport()) closeMobileFilters(true);
 	});
 
 	if (form) {

@@ -1435,9 +1435,9 @@ def home_view(request):
                         "traits": (d.get("traits") or [])[:2],
                     })
 
-            # Demo: ~10 rânduri în scroll (40 celule)
+            # Demo: scroll mai ușor pe mobil (24 celule în loc de 40)
             if p2_list and len(p2_list) <= 12:
-                extra = 40
+                extra = 24
                 for i, d in enumerate(cycle(DEMO_DOGS)):
                     if i >= extra:
                         break
@@ -1506,11 +1506,11 @@ def home_view(request):
                         break
                     p2_list.append(d)
 
-            # păstrăm scrollul (dacă e destul de puțin, repetăm doar din rezultatele filtrate)
-            if p2_list and len(p2_list) < 40:
+            # păstrăm scrollul (mai puține celule = încărcare mai rapidă)
+            if p2_list and len(p2_list) < 24:
                 snapshot = list(p2_list)
                 for d in cycle(snapshot):
-                    if len(p2_list) >= 40:
+                    if len(p2_list) >= 24:
                         break
                     p2_list.append(d)
 

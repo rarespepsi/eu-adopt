@@ -39,8 +39,13 @@ ALLOWED_HOSTS = [
     ".onrender.com",
     "127.0.0.1",
     "192.168.10.85",
+    "192.168.1.15",
     "localhost"
 ]
+# Dev: IP telefon / alt LAN fără edit manual (ex. DJANGO_ALLOWED_HOSTS=192.168.1.100,192.168.0.5)
+_extra_allowed = os.environ.get("DJANGO_ALLOWED_HOSTS", "").strip()
+if _extra_allowed:
+    ALLOWED_HOSTS.extend([h.strip() for h in _extra_allowed.split(",") if h.strip()])
 
 
 # Application definition

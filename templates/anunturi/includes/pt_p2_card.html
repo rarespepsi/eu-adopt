@@ -28,15 +28,17 @@
 				src="{{ pet.imagine.url }}"
 				alt=""
 				class="pet-rotating-image"
+				loading="lazy"
+				decoding="async"
 				{% if pet.imagine_2 or pet.imagine_3 %}
 				data-rot-src-2="{% if pet.imagine_2 %}{{ pet.imagine_2.url }}{% endif %}"
 				data-rot-src-3="{% if pet.imagine_3 %}{{ pet.imagine_3.url }}{% endif %}"
 				{% endif %}
 			/>
 			{% elif pet.imagine_fallback %}
-			<img src="{% static pet.imagine_fallback %}" alt="" />
+			<img src="{% static pet.imagine_fallback %}" alt="" loading="lazy" decoding="async" />
 			{% else %}
-			<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" />
+			<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" loading="lazy" decoding="async" />
 			{% endif %}
 		</div>
 		<span class="pt-p2-card-name pt-p2-card-name--overlay">{{ pet.nume }}</span>
