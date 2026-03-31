@@ -1207,10 +1207,15 @@ def adoption_email_owner_action_view(request, token: str, decision: str):
 
     opposite = "reject" if decision == "accept" else "accept"
     try:
-        opposite_url = reverse("adoption_email_owner_action", args=[token, opposite])
+        opposite_path = reverse("adoption_email_owner_action", args=[token, opposite])
     except Exception:
-        opposite_url = f"/adoption/email/{token}/{opposite}/"
-    mypet_url = reverse("mypet")
+        opposite_path = f"/adoption/email/{token}/{opposite}/"
+    try:
+        mypet_path = reverse("mypet")
+    except Exception:
+        mypet_path = "/mypet/"
+    opposite_url = request.build_absolute_uri(opposite_path)
+    mypet_url = request.build_absolute_uri(mypet_path)
 
     status_code = 200 if ok else 400
     html = (
@@ -1218,8 +1223,8 @@ def adoption_email_owner_action_view(request, token: str, decision: str):
         f"<h3>{'Acțiune procesată' if ok else 'Acțiune nereușită'}</h3>"
         f"<p>{msg}</p>"
         "<p>Dacă ai apăsat greșit, poți inversa decizia:</p>"
-        f"<p><a href='{opposite_url}' style='display:inline-block;padding:10px 14px;border-radius:8px;background:#f5f5f5;border:1px solid #888;color:#111;text-decoration:none;font-weight:700;'>Inversează decizia</a></p>"
-        f"<p><a href='{mypet_url}'>Deschide MyPet</a></p>"
+        f"<p><a href='{escape(opposite_url)}' style='display:inline-block;padding:10px 14px;border-radius:8px;background:#f5f5f5;border:1px solid #888;color:#111;text-decoration:none;font-weight:700;'>Inversează decizia</a></p>"
+        f"<p><a href='{escape(mypet_url)}'>Deschide MyPet</a></p>"
         "</body></html>"
     )
     return HttpResponse(html, status=status_code)

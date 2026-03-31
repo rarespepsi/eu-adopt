@@ -152,8 +152,16 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Link absolut în emailuri (ex. remindere oferte colaborator). Ex.: https://www.eu-adopt.ro
-SITE_BASE_URL = os.environ.get("EUADOPT_SITE_BASE_URL", "").strip().rstrip("/")
+# Link absolut în emailuri (ex. Accept/Respinge adopție, bonus, remindere).
+# Dacă lipsește, multe clienți de mail interpretează href-uri relative ca http:///cale → link invalid.
+# În producție (DEBUG=False) folosim fallback la domeniul public dacă env nu e setat.
+_EUADOPT_SITE_BASE_URL = os.environ.get("EUADOPT_SITE_BASE_URL", "").strip().rstrip("/")
+if _EUADOPT_SITE_BASE_URL:
+    SITE_BASE_URL = _EUADOPT_SITE_BASE_URL
+elif not DEBUG:
+    SITE_BASE_URL = "https://www.eu-adopt.ro"
+else:
+    SITE_BASE_URL = os.environ.get("EUADOPT_SITE_BASE_URL_DEV", "").strip().rstrip("/")
 
 # Google Maps JavaScript API (Places Autocomplete pe /transport/). Setează EUADOPT_GOOGLE_MAPS_API_KEY în .env.
 GOOGLE_MAPS_API_KEY = os.environ.get("EUADOPT_GOOGLE_MAPS_API_KEY", "").strip()
