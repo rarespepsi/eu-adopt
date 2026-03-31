@@ -1027,3 +1027,61 @@ body.page-animale #A0 {
 		display: flex !important; /* desktop: meniul rămâne în bară chiar dacă clasa a rămas setată */
 	}
 }
+
+/* Mobile landscape compact: hamburger + plic + cautare mai joase/inguste */
+@media (orientation: landscape) and (max-height: 34em) {
+	#A0 {
+		--nav-height: 34px !important;
+	}
+	#A0 .container {
+		padding-left: 8px !important;
+		padding-right: 8px !important;
+	}
+	#A0 .a0-mobile-trigger {
+		width: 40px !important;
+		height: 34px !important;
+		border-radius: 10px !important;
+	}
+	#A0 .a0-hamburger {
+		width: 18px !important;
+		height: 14px !important;
+		position: relative !important;
+	}
+	#A0 .a0-hamburger::before,
+	#A0 .a0-hamburger::after {
+		content: "" !important;
+		position: absolute !important;
+		height: 2px !important;
+		left: 0 !important;
+		right: 0 !important;
+		background: currentColor !important;
+		border-radius: 1px !important;
+		display: block !important;
+	}
+	#A0 .a0-hamburger::before { top: 0 !important; }
+	#A0 .a0-hamburger::after { bottom: 0 !important; }
+	#A0 .a0-hamburger {
+		background: linear-gradient(to bottom, transparent 6px, currentColor 6px, currentColor 8px, transparent 8px) !important;
+	}
+	#A0 #main_menu .a0-nav-envelope-link {
+		width: 20px !important;
+		height: 20px !important;
+	}
+	#A0 #main_menu .a0-nav-envelope-icon {
+		font-size: 0.72rem !important;
+	}
+	#A0 #main_menu .a0-search-right {
+		margin-left: 0.25rem !important;
+		max-width: min(7.4rem, calc(100vw - 9.5rem)) !important;
+	}
+	#A0 #main_menu .a0-search-form-inline #searchform #s {
+		height: 22px !important;
+		font-size: 11px !important;
+		padding: 0 22px 0 6px !important;
+	}
+	#A0 #main_menu .a0-search-form-inline .a0-search-submit {
+		width: 16px !important;
+		height: 16px !important;
+		right: 3px !important;
+	}
+}

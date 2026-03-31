@@ -1262,34 +1262,45 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
 
 @media (max-width: 37.5em) and (orientation: portrait) {
     body.page-home-v2 .hero-v2 {
-        min-height: 4.15rem !important;
-        max-height: 4.15rem !important;
+        min-height: 2.7rem !important; /* ~4mm mai jos fata de varianta anterioara */
+        max-height: 2.7rem !important;
         padding: 0 !important;
         overflow: hidden !important;
+        position: relative !important;
     }
     body.page-home-v2 .hero-v2-inner {
+        position: absolute !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
         display: grid !important;
         grid-template-columns: auto 1fr auto !important;
+        grid-template-rows: 1fr !important;
+        justify-content: stretch !important;
+        justify-items: stretch !important;
         align-items: center !important;
         gap: 0.08rem !important;
         width: 100% !important;
-        height: 100% !important;
-        padding-left: 0.22rem !important;
-        padding-right: 0.22rem !important;
+        height: auto !important;
+        padding-left: 0.24rem !important;
+        padding-right: 0.24rem !important;
+        flex-wrap: nowrap !important;
     }
     body.page-home-v2 .hero-v2-logo {
         order: 1 !important;
         justify-self: start !important;
+        align-self: center !important;
         transform: none !important;
-        width: 2.3rem !important;
-        height: 2.3rem !important;
+        width: 1.75rem !important;
+        height: 1.75rem !important;
     }
     body.page-home-v2 .hero-v2-logo a,
     body.page-home-v2 .hero-v2-logo-img {
-        width: 2.3rem !important;
-        height: 2.3rem !important;
-        min-width: 2.3rem !important;
-        min-height: 2.3rem !important;
+        width: 1.75rem !important;
+        height: 1.75rem !important;
+        min-width: 1.75rem !important;
+        min-height: 1.75rem !important;
     }
     body.page-home-v2 .hero-v2-logo a {
         display: flex !important;
@@ -1307,20 +1318,23 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
         display: block !important;
         order: 3 !important;
         justify-self: end !important;
+        align-self: center !important;
     }
     body.page-home-v2 .hero-v2-transport-badge {
-        width: 2.15rem !important;
-        height: 2.15rem !important;
+        width: 1.75rem !important;
+        height: 1.75rem !important;
     }
     body.page-home-v2 .hero-v2-cta-animale {
-        bottom: 0.05rem !important;
+        position: absolute !important;
         left: 50% !important;
-        transform: translateX(-50%) !important;
+        top: 50% !important;
+        bottom: auto !important;
+        transform: translate(-50%, -50%) !important;
         z-index: 3 !important;
-        padding: 0.2rem 0.54rem !important;
-        font-size: 0.78rem !important;
-        line-height: 1.05 !important;
-        max-width: 7rem !important;
+        padding: 0.1rem 0.35rem !important;
+        font-size: 0.62rem !important;
+        line-height: 1 !important;
+        max-width: 5.6rem !important;
         text-align: center !important;
         white-space: nowrap !important;
     }
@@ -1356,5 +1370,152 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
         margin-top: 0 !important;
         padding-top: 0 !important;
         top: 0 !important;
+    }
+}
+
+/* Home mobile landscape: varianta curata (fara override-uri agresive pe wrapper) */
+@media (orientation: landscape) and (max-height: 34em) {
+    body.page-home-v2,
+    body.page-home-v2 #main_wrap {
+        overflow-y: auto !important;
+        height: auto !important;
+        min-height: 100vh !important;
+    }
+    body.page-home-v2 {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    body.page-home-v2 #A3 { display: block !important; }
+    body.page-home-v2 .home-v2-mobile-ads { display: none !important; }
+
+    body.page-home-v2 #home-cols-wrap,
+    body.page-home-v2 .home-v2-three-cols {
+        display: grid !important;
+        grid-template-columns: 6.2rem minmax(0, 1fr) 6.2rem !important;
+        column-gap: 0 !important;
+        row-gap: 2px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+    }
+
+    body.page-home-v2 #home-col-left,
+    body.page-home-v2 #home-col-right {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+    }
+    body.page-home-v2 #home-col-left .home-v2-side-inner,
+    body.page-home-v2 #home-col-right .home-v2-side-inner {
+        display: grid !important;
+        grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+        gap: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 100% !important;
+    }
+
+    body.page-home-v2 .home-v2-center {
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    body.page-home-v2 #A1 {
+        flex: 0 0 auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    body.page-home-v2 .hero-v2 {
+        min-height: 3.2rem !important; /* ~10% mai mic */
+        max-height: 3.2rem !important;
+        overflow: hidden !important;
+        position: relative !important;
+        padding: 0 !important;
+    }
+    body.page-home-v2 .hero-v2-inner {
+        position: absolute !important;
+        inset-inline: 0 !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 0 0.24rem !important;
+    }
+    body.page-home-v2 .hero-v2-logo,
+    body.page-home-v2 .hero-v2-transport-badge,
+    body.page-home-v2 .hero-v2-logo a,
+    body.page-home-v2 .hero-v2-logo-img {
+        width: 1.85rem !important;
+        height: 1.85rem !important;
+        min-width: 1.85rem !important;
+        min-height: 1.85rem !important;
+    }
+    body.page-home-v2 .hero-v2-cta-animale {
+        position: absolute !important;
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        margin: 0 !important;
+        max-width: 5.8rem !important;
+        padding: 0.12rem 0.4rem !important;
+        font-size: 0.66rem !important;
+        line-height: 1 !important;
+    }
+
+    body.page-home-v2 #A2 {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+    body.page-home-v2 #A2 .A2-casete-wrap {
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+        gap: 2px !important;
+        height: clamp(10.8rem, 59vh, 13.2rem) !important;
+        min-height: 10.8rem !important;
+        max-height: 13.2rem !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+    body.page-home-v2 #A2 .dog-card-compact .dog-card-quote {
+        font-size: 0.52rem !important;
+        line-height: 1.08 !important;
+        left: 3px !important;
+        right: 3px !important;
+        bottom: 3px !important;
+        max-height: 2.3em !important;
+        overflow: hidden !important;
+    }
+
+    body.page-home-v2 #A3 .mission-bar-v2 {
+        padding: 0.24rem 0.5rem !important;
+        min-height: 0 !important;
+        gap: 0.35rem !important;
+    }
+    body.page-home-v2 #A3 .mission-bar-v2-link {
+        font-size: 0.8rem !important;
+        line-height: 1.1 !important;
+        white-space: nowrap !important;
+    }
+
+    body.page-home-v2 #home-burtiera-galbena.home-v2-burtiera-disclaimer {
+        min-height: 1.55rem !important;
+        padding: 0.12rem 0.45rem !important;
+        border-top-width: 1px !important;
+    }
+    body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-text {
+        font-size: 0.62rem !important;
+        line-height: 1.05 !important;
+        padding-right: 2.2rem !important;
     }
 }
