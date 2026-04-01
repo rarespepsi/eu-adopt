@@ -3,6 +3,7 @@ Home views. Layout HOME înghețat: v. HOME_SLOTS.md
 A0=navbar, A1=hero, A2=grid 4×3, A3=mission bar, A4=footer, A5=left sidebar (3), A6=right sidebar (3).
 REGULĂ: Orice modificare în home (punct, virgulă, orice) doar cu aprobarea titularului, cu parolă.
 """
+import json
 import logging
 import random
 import secrets
@@ -11,6 +12,7 @@ from datetime import date, datetime
 from copy import deepcopy
 from itertools import cycle
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.http import HttpResponse, JsonResponse
@@ -22,6 +24,7 @@ from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.conf import settings
 from django.core.mail import send_mail, EmailMessage
+from decimal import Decimal
 from django.db import transaction
 import os
 from django.views.decorators.http import require_POST, require_http_methods
@@ -36,6 +39,7 @@ from .pet_age_bands import (
     animal_listing_matches_collab_offer_targets,
     build_age_band_filter_q,
 )
+from .pt_p2_list import PT_P2_PAGE_SIZE, pt_pets_page_context
 from .mail_helpers import email_subject_for_user
 from .models import (
     WishlistItem,
@@ -53,6 +57,8 @@ from .models import (
     CollaboratorOfferClaim,
     PromoA2Order,
     ReclamaSlotNote,
+    PublicitateOrder,
+    PublicitateOrderLine,
     TransportVeterinaryRequest,
     TransportOperatorProfile,
     TransportDispatchJob,
@@ -1289,6 +1295,105 @@ def select_a2_dogs(available_dogs, limit=A2_SLOT_COUNT):
     return chosen[:limit]
 
 
+PT_PUB_SLOT_CODES = ("P4.3", "P5.1", "P5.2", "P5.3")
+PT_PUB_NOTE_SECTION = "pt"
+
+
+def _pt_pub_slot_parse_note(note):
+    """
+    Creative pentru slot PT din ReclamaSlotNote (section='pt', slot_code=P4.3 / P5.1 / …).
+    Câmpul text = JSON: {"img": "…", "link": "…", "alt": "…"}.
+    img: URL https sau cale absolută /… sau cale static (ex. images/parteneri/x.png).
+    Aceeași sursă alimentează desktop și mobil (un singur DOM pe pt.html).
+    """
+    from django.templatetags.static import static as django_static
+
+    if note is None:
+        return None
+    raw = (note.text or "").strip()
+    if not raw:
+        return None
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(data, dict):
+        return None
+    img = (data.get("img") or "").strip()
+    if not img:
+        return None
+    link = (data.get("link") or "").strip()
+    alt = (data.get("alt") or "").strip()
+    if link:
+        try:
+            URLValidator()(link)
+        except DjangoValidationError:
+            link = ""
+    if img.startswith(("http://", "https://")):
+        try:
+            URLValidator()(img)
+        except DjangoValidationError:
+            return None
+        img_href = img
+    elif img.startswith("/"):
+        if ".." in img or "\x00" in img:
+            return None
+        img_href = img
+    else:
+        if not img or any(c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./_-" for c in img):
+            return None
+        img_href = django_static(img)
+    return {"link": link, "img": img_href, "alt": alt or "Reclamă"}
+
+
+def _pt_pub_slot_list_for_template():
+    try:
+        notes = list(
+            ReclamaSlotNote.objects.filter(
+                section=PT_PUB_NOTE_SECTION,
+                slot_code__in=PT_PUB_SLOT_CODES,
+            )
+        )
+    except Exception:
+        notes = []
+    by_code = {n.slot_code: n for n in notes}
+    return [
+        {
+            "code": code,
+            "creative": _pt_pub_slot_parse_note(by_code.get(code)),
+            "is_p52": code == "P5.2",
+        }
+        for code in PT_PUB_SLOT_CODES
+    ]
+
+
+@require_http_methods(["GET"])
+def pets_p2_more_view(request):
+    """JSON: fragment HTML pentru următorul lot P2 (scroll infinit, același filtru GET ca pagina)."""
+    try:
+        offset = int(request.GET.get("offset", "0") or "0")
+    except (TypeError, ValueError):
+        offset = 0
+    offset = max(0, offset)
+    ctx = pt_pets_page_context(request)
+    p2_list = ctx.pop("p2_list")
+    batch = p2_list[offset : offset + PT_P2_PAGE_SIZE]
+    next_off = offset + len(batch)
+    has_more = next_off < len(p2_list)
+    wishlist_ids = set()
+    if request.user.is_authenticated:
+        try:
+            wishlist_ids = set(WishlistItem.objects.filter(user=request.user).values_list("animal_id", flat=True))
+        except Exception:
+            pass
+    html = render_to_string(
+        "anunturi/includes/pt_p2_grid_chunk.html",
+        {"pets": batch, "wishlist_ids": wishlist_ids},
+        request=request,
+    )
+    return JsonResponse({"ok": True, "html": html, "has_more": has_more, "next_offset": next_off})
+
+
 def home_view(request):
     if request.resolver_match.url_name == "pets_all" and request.GET.get("go"):
         try:
@@ -1297,226 +1402,11 @@ def home_view(request):
         except (ValueError, TypeError):
             pass
     if request.resolver_match.url_name == "pets_all":
-        # PT (P2): filtre de căutare (judet / marime / varsta / sex) – active pe parametri GET.
-        selected_judet = (request.GET.get("judet") or "").strip()
-        selected_marime = (request.GET.get("marime") or "").strip()
-        selected_varsta = (request.GET.get("varsta") or "").strip()
-        selected_varsta_band = (request.GET.get("varsta_band") or "").strip().lower()
-        if selected_varsta_band not in BAND_FILTER_GET_VALUES:
-            selected_varsta_band = ""
-        selected_sex = (request.GET.get("sex") or "").strip()
-        selected_species = (request.GET.get("species") or "").strip().lower()
-        if selected_species not in {"dog", "cat", "other"}:
-            selected_species = ""
-
-        selected_traits = request.GET.getlist("traits")
-        if len(selected_traits) == 1 and "," in selected_traits[0]:
-            selected_traits = [t.strip() for t in selected_traits[0].split(",") if t.strip()]
-        allowed_traits = {
-            "trait_jucaus",
-            "trait_iubitor",
-            "trait_protector",
-            "trait_energic",
-            "trait_linistit",
-            "trait_bun_copii",
-            "trait_bun_caini",
-            "trait_bun_pisici",
-            "trait_obisnuit_casa",
-            "trait_obisnuit_lesa",
-            "trait_nu_latla",
-            "trait_apartament",
-            "trait_se_adapteaza",
-            "trait_tolereaza_singur",
-            "trait_necesita_experienta",
-        }
-        selected_traits = [t for t in selected_traits if t in allowed_traits]
-
-        filter_active = any(
-            [
-                selected_judet,
-                selected_marime,
-                selected_varsta,
-                selected_varsta_band,
-                selected_sex,
-                selected_species,
-            ]
-        ) or bool(selected_traits)
-
-        # Filtre COMPLETE (pentru viitor): opțiuni din listă fixă, nu din DB,
-        # ca să apară județele/taliile/vârstele/sexurile indiferent de ce e deja înregistrat.
-        judet_choices = [
-            "Alba",
-            "Arad",
-            "Argeș",
-            "Bacău",
-            "Bihor",
-            "Bistrița-Năsăud",
-            "Botoșani",
-            "Brăila",
-            "Brașov",
-            "București",
-            "Buzău",
-            "Călărași",
-            "Caraș-Severin",
-            "Cluj",
-            "Constanța",
-            "Covasna",
-            "Dâmbovița",
-            "Dolj",
-            "Galați",
-            "Giurgiu",
-            "Gorj",
-            "Harghita",
-            "Hunedoara",
-            "Ialomița",
-            "Iași",
-            "Ilfov",
-            "Maramureș",
-            "Mehedinți",
-            "Mureș",
-            "Neamț",
-            "Olt",
-            "Prahova",
-            "Sălaj",
-            "Satu Mare",
-            "Sibiu",
-            "Suceava",
-            "Teleorman",
-            "Timiș",
-            "Tulcea",
-            "Vâlcea",
-            "Vaslui",
-            "Vrancea",
-        ]
-        marime_choices = ["mica", "medie", "mare"]
-        varsta_choices = list(AGE_LABELS_ORDERED)
-        sex_choices = ["m", "f"]
-
-        qs_base = AnimalListing.objects.filter(is_published=True)
-
-        # P2: câinii din DB (AnimalListing).
-        # Dacă sunt filtre active, nu mai folosim fallback demo (ca să fie filtrarea "completă").
-        p2_list = []
-        if not filter_active:
-            db_pets = list(qs_base.order_by("-created_at")[:200])
-            if db_pets:
-                for listing in db_pets:
-                    p2_list.append({
-                        "pk": listing.pk,
-                        "nume": listing.name or "—",
-                        "imagine": listing.photo_1,
-                        "imagine_2": listing.photo_2,
-                        "imagine_3": listing.photo_3,
-                        "imagine_fallback": DEMO_DOG_IMAGE,
-                        "adoption_state": listing.adoption_state,
-                        "adoption_state_label": _adoption_state_label(listing.adoption_state),
-                        "traits": [],
-                    })
-            else:
-                # fallback demo (doar când nu există filtre)
-                for d in DEMO_DOGS:
-                    p2_list.append({
-                        "pk": d["id"],
-                        "nume": d["nume"],
-                        "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
-                        "traits": (d.get("traits") or [])[:2],
-                    })
-
-            n = len(p2_list)
-            need = (4 - n % 4) % 4  # completează ultimul rând la 4
-            if need and p2_list:
-                for i, d in enumerate(cycle(DEMO_DOGS)):
-                    if i >= need:
-                        break
-                    p2_list.append({
-                        "pk": d["id"],
-                        "nume": d["nume"],
-                        "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
-                        "traits": (d.get("traits") or [])[:2],
-                    })
-
-            # Demo: scroll mai ușor pe mobil (24 celule în loc de 40)
-            if p2_list and len(p2_list) <= 12:
-                extra = 24
-                for i, d in enumerate(cycle(DEMO_DOGS)):
-                    if i >= extra:
-                        break
-                    p2_list.append({
-                        "pk": d["id"],
-                        "nume": d["nume"],
-                        "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
-                        "traits": (d.get("traits") or [])[:2],
-                    })
-        else:
-            # Când filtrele sunt active: nu amestecăm DEMO_DOGS cu rezultate filtrate.
-            qs = qs_base
-            if selected_judet:
-                qs = qs.filter(county__iexact=selected_judet)
-            if selected_marime:
-                qs = qs.filter(size__iexact=selected_marime)
-            band_q = build_age_band_filter_q(selected_varsta_band, selected_species, selected_marime)
-            if band_q is not None:
-                qs = qs.filter(band_q)
-            if selected_varsta:
-                qs = qs.filter(age_label__iexact=selected_varsta)
-            if selected_sex:
-                qs = qs.filter(sex__iexact=selected_sex)
-            if selected_species:
-                qs = qs.filter(species__iexact=selected_species)
-
-            db_candidates = list(qs.order_by("-created_at")[:200])
-            if db_candidates:
-                if selected_traits:
-                    # Sortare: mai întâi câinii care bifează cele mai multe trăsături selectate,
-                    # apoi restul în ordine descrescătoare.
-                    scored = []
-                    for listing in db_candidates:
-                        match_count = 0
-                        for tr in selected_traits:
-                            if getattr(listing, tr, False):
-                                match_count += 1
-                        scored.append((listing, match_count))
-
-                    scored.sort(key=lambda x: (x[1], x[0].created_at), reverse=True)
-                    # Dacă există potriviri (>0), nu afișăm direct cei cu 0 decât dacă trebuie.
-                    positive = [obj for obj, cnt in scored if cnt > 0]
-                    ordered = positive if positive else [obj for obj, _ in scored]
-                else:
-                    ordered = db_candidates
-
-                for listing in ordered:
-                    p2_list.append({
-                        "pk": listing.pk,
-                        "nume": listing.name or "—",
-                        "imagine": listing.photo_1,
-                        "imagine_2": listing.photo_2,
-                        "imagine_3": listing.photo_3,
-                        "imagine_fallback": DEMO_DOG_IMAGE,
-                        "adoption_state": listing.adoption_state,
-                        "adoption_state_label": _adoption_state_label(listing.adoption_state),
-                        "traits": [],
-                    })
-
-            n = len(p2_list)
-            need = (4 - n % 4) % 4
-            if need and p2_list:
-                snapshot = list(p2_list)
-                for i, d in enumerate(cycle(snapshot)):
-                    if i >= need:
-                        break
-                    p2_list.append(d)
-
-            # păstrăm scrollul (mai puține celule = încărcare mai rapidă)
-            if p2_list and len(p2_list) < 24:
-                snapshot = list(p2_list)
-                for d in cycle(snapshot):
-                    if len(p2_list) >= 24:
-                        break
-                    p2_list.append(d)
-
-        p2_pets = p2_list[:12]
-        p2_pets_rest = p2_list[12:]
-        # P1 și P3: benzi cu poze (aceleași imagini demo, repetate pentru strip)
+        pt_ctx = pt_pets_page_context(request)
+        p2_list = pt_ctx.pop("p2_list")
+        p2_pets = p2_list[:PT_P2_PAGE_SIZE]
+        p2_has_more = len(p2_list) > PT_P2_PAGE_SIZE
+        p2_next_offset = PT_P2_PAGE_SIZE if p2_has_more else len(p2_list)
         strip_pets = []
         for i, d in enumerate(cycle(DEMO_DOGS)):
             if i >= 20:
@@ -1528,23 +1418,20 @@ def home_view(request):
                 wishlist_ids = set(WishlistItem.objects.filter(user=request.user).values_list("animal_id", flat=True))
             except Exception:
                 pass
-        return render(request, "anunturi/pt.html", {
-            "p2_pets": p2_pets,
-            "p2_pets_rest": p2_pets_rest,
-            "strip_pets": strip_pets,
-            "wishlist_ids": wishlist_ids,
-            "judet_choices": judet_choices,
-            "marime_choices": marime_choices,
-            "varsta_choices": varsta_choices,
-            "varsta_band_choices": BAND_CHOICES_UI,
-            "sex_choices": sex_choices,
-            "selected_judet": selected_judet,
-            "selected_marime": selected_marime,
-            "selected_varsta": selected_varsta,
-            "selected_varsta_band": selected_varsta_band,
-            "selected_sex": selected_sex,
-            "selected_species": selected_species,
-        })
+        return render(
+            request,
+            "anunturi/pt.html",
+            {
+                **pt_ctx,
+                "p2_pets": p2_pets,
+                "p2_has_more": p2_has_more,
+                "p2_next_offset": p2_next_offset,
+                "pt_p2_page_size": PT_P2_PAGE_SIZE,
+                "strip_pets": strip_pets,
+                "wishlist_ids": wishlist_ids,
+                "pt_pub_slot_list": _pt_pub_slot_list_for_template(),
+            },
+        )
 
     is_home = request.resolver_match.url_name == "home"
 
@@ -6507,6 +6394,130 @@ def _user_can_use_publicitate(request) -> bool:
         return False
 
 
+# Catalog tarife publicitate (sursă unică: coș, validare comandă, viitor gateway plată).
+PUBLICITATE_SLOT_MAP = {
+    "home": [
+        {"code": "A5.1", "title": "Home – coloană stânga A5.1", "types": ["image", "link", "video"], "unit": "luna", "price": 120},
+        {"code": "A5.2", "title": "Home – coloană stânga A5.2", "types": ["image", "link", "video"], "unit": "luna", "price": 120},
+        {"code": "A5.3", "title": "Home – coloană stânga A5.3", "types": ["image", "link", "video"], "unit": "luna", "price": 120},
+        {"code": "A6.1", "title": "Home – coloană dreapta A6.1", "types": ["image", "link", "video"], "unit": "luna", "price": 110},
+        {"code": "A6.2", "title": "Home – coloană dreapta A6.2", "types": ["image", "link", "video"], "unit": "luna", "price": 110},
+        {"code": "A6.3", "title": "Home – coloană dreapta A6.3", "types": ["image", "link", "video"], "unit": "luna", "price": 110},
+        {
+            "code": "Burtieră",
+            "title": "Home – bandă galbenă (burtieră)",
+            "types": ["text", "link", "video"],
+            "unit": "luna",
+            "price": 150,
+        },
+    ],
+    "pt": [
+        {"code": "P4.3", "title": "PT P4.3", "types": ["image", "link", "video"], "unit": "luna", "price": 100},
+        {"code": "P5.1", "title": "PT P5.1", "types": ["image", "link", "video"], "unit": "luna", "price": 95},
+        {"code": "P5.2", "title": "PT P5.2", "types": ["image", "link", "video"], "unit": "luna", "price": 95},
+        {"code": "P5.3", "title": "PT P5.3", "types": ["image", "link", "video"], "unit": "luna", "price": 95},
+    ],
+    "servicii": [
+        {"code": "S2.2", "title": "Servicii S2.2", "types": ["image", "link", "video"], "unit": "luna", "price": 130},
+        {"code": "S2.3", "title": "Servicii S2.3", "types": ["image", "link", "video"], "unit": "luna", "price": 130},
+        {"code": "S6.1", "title": "Servicii S6.1", "types": ["image", "link", "video"], "unit": "luna", "price": 115},
+        {"code": "S6.2", "title": "Servicii S6.2", "types": ["image", "link", "video"], "unit": "luna", "price": 115},
+    ],
+    "transport": [
+        {"code": "TDR.1", "title": "Transport R1", "types": ["image", "link", "video"], "unit": "ora", "price": 4},
+        {"code": "TDR.2", "title": "Transport R2", "types": ["image", "link", "video"], "unit": "ora", "price": 4},
+        {"code": "TDR.3", "title": "Transport R3", "types": ["image", "link", "video"], "unit": "ora", "price": 4},
+    ],
+    "shop": [
+        {"code": "SH4.1", "title": "Shop SH4.1", "types": ["image", "link", "video"], "unit": "luna", "price": 140},
+        {"code": "SH4.2", "title": "Shop SH4.2", "types": ["image", "link", "video"], "unit": "luna", "price": 140},
+        {"code": "SH4.3", "title": "Shop SH4.3", "types": ["image", "link", "video"], "unit": "luna", "price": 140},
+        {"code": "SH5.1", "title": "Shop SH5.1", "types": ["image", "link", "video"], "unit": "luna", "price": 125},
+        {"code": "SH5.2", "title": "Shop SH5.2", "types": ["image", "link", "video"], "unit": "luna", "price": 125},
+        {"code": "SH5.3", "title": "Shop SH5.3", "types": ["image", "link", "video"], "unit": "luna", "price": 125},
+    ],
+    "mypet": [
+        {"code": "MP.L1", "title": "MyPet L1", "types": ["image", "link", "video"], "unit": "luna", "price": 90},
+        {"code": "MP.L2", "title": "MyPet L2", "types": ["image", "link", "video"], "unit": "luna", "price": 90},
+        {"code": "MP.L3", "title": "MyPet L3", "types": ["image", "link", "video"], "unit": "luna", "price": 90},
+    ],
+    "i_love": [
+        {"code": "IL.L1", "title": "I Love L1", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
+        {"code": "IL.L2", "title": "I Love L2", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
+        {"code": "IL.R1", "title": "I Love R1", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
+        {"code": "IL.R2", "title": "I Love R2", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
+    ],
+}
+
+PUBLICITATE_SESSION_CHECKOUT_ORDER = "pub_checkout_order_id"
+PUBLICITATE_SESSION_LAST_PAID = "pub_last_paid_order_id"
+
+
+def _publicitate_catalog_row(section: str, code: str):
+    for row in PUBLICITATE_SLOT_MAP.get(section) or []:
+        if row.get("code") == code:
+            return row
+    return None
+
+
+def _buyer_note_to_pt_slot_json(buyer_note: str) -> str:
+    """Produce JSON salvat în ReclamaSlotNote.text pentru sloturi PT (acceptat de _pt_pub_slot_parse_note)."""
+    note = (buyer_note or "").strip()
+    if not note:
+        return json.dumps(
+            {
+                "img": "images/parteneri/placeholder.jpg",
+                "link": "",
+                "alt": "Comandă plătită – completați creative în admin sau comandați cu JSON în notă.",
+            },
+            ensure_ascii=False,
+        )
+    try:
+        data = json.loads(note)
+        if isinstance(data, dict) and (data.get("img") or "").strip():
+            return json.dumps(data, ensure_ascii=False)
+    except json.JSONDecodeError:
+        pass
+    if note.startswith(("http://", "https://")):
+        try:
+            URLValidator()(note)
+            return json.dumps({"img": note, "link": note, "alt": ""}, ensure_ascii=False)
+        except DjangoValidationError:
+            pass
+    return json.dumps(
+        {
+            "img": "images/parteneri/placeholder.jpg",
+            "link": "",
+            "alt": note[:240],
+        },
+        ensure_ascii=False,
+    )
+
+
+def _apply_publicitate_line_to_site(line: PublicitateOrderLine, order: PublicitateOrder):
+    """După plată demo: aplică pe site unde există integrare (PT + burtieră HOME)."""
+    note = (line.buyer_note or "").strip()
+    if line.section == PT_PUB_NOTE_SECTION and line.slot_code in PT_PUB_SLOT_CODES:
+        body = _buyer_note_to_pt_slot_json(note)
+        ReclamaSlotNote.objects.update_or_create(
+            section=PT_PUB_NOTE_SECTION,
+            slot_code=line.slot_code,
+            defaults={"text": body, "updated_by": order.user},
+        )
+        return
+    if line.section == "home" and line.slot_code == "Burtieră" and note:
+        ReclamaSlotNote.objects.update_or_create(
+            section="home",
+            slot_code="Burtieră",
+            defaults={"text": note[:8000], "updated_by": order.user},
+        )
+
+
+def _apply_publicitate_paid_order(order: PublicitateOrder):
+    for line in order.lines.all():
+        _apply_publicitate_line_to_site(line, order)
+
+
 @login_required
 def publicitate_harta_view(request):
     if not _user_can_use_publicitate(request):
@@ -6530,64 +6541,10 @@ def publicitate_harta_view(request):
     if selected_section not in valid_codes:
         selected_section = "home"
 
-    slot_map = {
-        "home": [
-            {"code": "A5.1", "title": "Home – coloană stânga A5.1", "types": ["image", "link", "video"], "unit": "luna", "price": 120},
-            {"code": "A5.2", "title": "Home – coloană stânga A5.2", "types": ["image", "link", "video"], "unit": "luna", "price": 120},
-            {"code": "A5.3", "title": "Home – coloană stânga A5.3", "types": ["image", "link", "video"], "unit": "luna", "price": 120},
-            {"code": "A6.1", "title": "Home – coloană dreapta A6.1", "types": ["image", "link", "video"], "unit": "luna", "price": 110},
-            {"code": "A6.2", "title": "Home – coloană dreapta A6.2", "types": ["image", "link", "video"], "unit": "luna", "price": 110},
-            {"code": "A6.3", "title": "Home – coloană dreapta A6.3", "types": ["image", "link", "video"], "unit": "luna", "price": 110},
-            {
-                "code": "Burtieră",
-                "title": "Home – bandă galbenă (burtieră)",
-                "types": ["text", "link", "video"],
-                "unit": "luna",
-                "price": 150,
-            },
-        ],
-        "pt": [
-            {"code": "P4.3", "title": "PT P4.3", "types": ["image", "link", "video"], "unit": "luna", "price": 100},
-            {"code": "P5.1", "title": "PT P5.1", "types": ["image", "link", "video"], "unit": "luna", "price": 95},
-            {"code": "P5.2", "title": "PT P5.2", "types": ["image", "link", "video"], "unit": "luna", "price": 95},
-            {"code": "P5.3", "title": "PT P5.3", "types": ["image", "link", "video"], "unit": "luna", "price": 95},
-        ],
-        "servicii": [
-            {"code": "S2.2", "title": "Servicii S2.2", "types": ["image", "link", "video"], "unit": "luna", "price": 130},
-            {"code": "S2.3", "title": "Servicii S2.3", "types": ["image", "link", "video"], "unit": "luna", "price": 130},
-            {"code": "S6.1", "title": "Servicii S6.1", "types": ["image", "link", "video"], "unit": "luna", "price": 115},
-            {"code": "S6.2", "title": "Servicii S6.2", "types": ["image", "link", "video"], "unit": "luna", "price": 115},
-        ],
-        "transport": [
-            {"code": "TDR.1", "title": "Transport R1", "types": ["image", "link", "video"], "unit": "ora", "price": 4},
-            {"code": "TDR.2", "title": "Transport R2", "types": ["image", "link", "video"], "unit": "ora", "price": 4},
-            {"code": "TDR.3", "title": "Transport R3", "types": ["image", "link", "video"], "unit": "ora", "price": 4},
-        ],
-        "shop": [
-            {"code": "SH4.1", "title": "Shop SH4.1", "types": ["image", "link", "video"], "unit": "luna", "price": 140},
-            {"code": "SH4.2", "title": "Shop SH4.2", "types": ["image", "link", "video"], "unit": "luna", "price": 140},
-            {"code": "SH4.3", "title": "Shop SH4.3", "types": ["image", "link", "video"], "unit": "luna", "price": 140},
-            {"code": "SH5.1", "title": "Shop SH5.1", "types": ["image", "link", "video"], "unit": "luna", "price": 125},
-            {"code": "SH5.2", "title": "Shop SH5.2", "types": ["image", "link", "video"], "unit": "luna", "price": 125},
-            {"code": "SH5.3", "title": "Shop SH5.3", "types": ["image", "link", "video"], "unit": "luna", "price": 125},
-        ],
-        "mypet": [
-            {"code": "MP.L1", "title": "MyPet L1", "types": ["image", "link", "video"], "unit": "luna", "price": 90},
-            {"code": "MP.L2", "title": "MyPet L2", "types": ["image", "link", "video"], "unit": "luna", "price": 90},
-            {"code": "MP.L3", "title": "MyPet L3", "types": ["image", "link", "video"], "unit": "luna", "price": 90},
-        ],
-        "i_love": [
-            {"code": "IL.L1", "title": "I Love L1", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
-            {"code": "IL.L2", "title": "I Love L2", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
-            {"code": "IL.R1", "title": "I Love R1", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
-            {"code": "IL.R2", "title": "I Love R2", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
-        ],
-    }
-
     ctx = {
         "pub_sections": sections,
         "pub_selected_section": selected_section,
-        "pub_slot_map": slot_map,
+        "pub_slot_map": PUBLICITATE_SLOT_MAP,
         "pub_a2_images": [d.get("imagine_fallback") for d in DEMO_DOGS if d.get("imagine_fallback")][:12],
         "pub_a13_images": list(HERO_SLIDER_IMAGES or []),
         "reclama_burtiera_display_text": _get_home_burtiera_text(),
@@ -6597,6 +6554,175 @@ def publicitate_harta_view(request):
         ),
     }
     return render(request, "anunturi/publicitate_harta.html", ctx)
+
+
+@login_required
+@require_POST
+def publicitate_checkout_create_view(request):
+    """Primește coșul JSON, validează tarifele pe server, creează comanda `pending_payment`."""
+    if not _user_can_use_publicitate(request):
+        return JsonResponse({"ok": False, "error": "Acces nepermis."}, status=403)
+    try:
+        body = json.loads(request.body.decode() or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"ok": False, "error": "JSON invalid."}, status=400)
+    lines_in = body.get("lines")
+    if not isinstance(lines_in, list) or not lines_in:
+        return JsonResponse({"ok": False, "error": "Coșul este gol."}, status=400)
+
+    validated = []
+    total = Decimal("0.00")
+    for raw in lines_in:
+        if not isinstance(raw, dict):
+            return JsonResponse({"ok": False, "error": "Linie invalidă."}, status=400)
+        section = (raw.get("section") or "").strip().lower()
+        code = (raw.get("code") or "").strip()
+        cat = _publicitate_catalog_row(section, code)
+        if not cat:
+            return JsonResponse({"ok": False, "error": f"Slot necunoscut: {section}/{code}"}, status=400)
+        try:
+            unit_price = Decimal(str(raw.get("unit_price")))
+        except Exception:
+            return JsonResponse({"ok": False, "error": "Preț invalid."}, status=400)
+        catalog_price = Decimal(str(cat["price"]))
+        if unit_price != catalog_price:
+            return JsonResponse({"ok": False, "error": "Prețul nu corespunde catalogului. Reîncarcă pagina."}, status=400)
+        qty_raw = raw.get("qty", 1)
+        try:
+            qty = int(qty_raw)
+        except (TypeError, ValueError):
+            qty = 0
+        if qty < 1 or qty > 12:
+            return JsonResponse({"ok": False, "error": "Perioada trebuie să fie 1–12."}, status=400)
+        unit_label = (raw.get("unit") or cat.get("unit") or "luna").strip()[:32]
+        if unit_label != (cat.get("unit") or ""):
+            unit_label = cat.get("unit") or "luna"
+        line_total = (catalog_price * qty).quantize(Decimal("0.01"))
+        total += line_total
+        note = (raw.get("note") or "")[:8000]
+        validated.append(
+            {
+                "section": section,
+                "slot_code": code,
+                "title_snapshot": (cat.get("title") or code)[:220],
+                "unit_label": unit_label,
+                "unit_price_lei": catalog_price,
+                "quantity": qty,
+                "line_total_lei": line_total,
+                "buyer_note": note,
+            }
+        )
+
+    total = total.quantize(Decimal("0.01"))
+    try:
+        with transaction.atomic():
+            order = PublicitateOrder.objects.create(
+                user=request.user,
+                status=PublicitateOrder.STATUS_PENDING,
+                total_lei=total,
+                payment_provider="demo",
+            )
+            for row in validated:
+                PublicitateOrderLine.objects.create(order=order, **row)
+    except Exception as exc:
+        logging.getLogger(__name__).exception("publicitate_checkout_create")
+        return JsonResponse({"ok": False, "error": "Nu am putut salva comanda."}, status=500)
+
+    request.session[PUBLICITATE_SESSION_CHECKOUT_ORDER] = order.pk
+    return JsonResponse(
+        {
+            "ok": True,
+            "redirect": reverse("publicitate_checkout_demo"),
+            "order_id": order.pk,
+        }
+    )
+
+
+@login_required
+def publicitate_checkout_demo_view(request):
+    if not _user_can_use_publicitate(request):
+        messages.info(request, "Pagina Publicitate este pentru conturi colaborator sau admin.")
+        return redirect("home")
+    oid = request.session.get(PUBLICITATE_SESSION_CHECKOUT_ORDER)
+    if not oid:
+        messages.info(request, "Nu există o comandă în așteptare. Adaugă sloturi în coș și încearcă din nou.")
+        return redirect("publicitate_harta")
+    order = PublicitateOrder.objects.filter(
+        pk=oid, user=request.user, status=PublicitateOrder.STATUS_PENDING
+    ).first()
+    if order is None:
+        request.session.pop(PUBLICITATE_SESSION_CHECKOUT_ORDER, None)
+        messages.info(request, "Comanda nu mai este validă.")
+        return redirect("publicitate_harta")
+    return render(
+        request,
+        "anunturi/publicitate_checkout_demo.html",
+        {
+            "pub_order": order,
+            "pub_order_lines": list(order.lines.all()),
+        },
+    )
+
+
+@login_required
+@require_POST
+def publicitate_checkout_demo_confirm_view(request):
+    """
+    Simulare plată (demo). La go-live cu procesator real:
+    - nu mai folosiți neapărat acest POST; redirect către gateway + webhook/return URL.
+    - la confirmare plată validă: același bloc atomic (select_for_update), setați
+      order.status=PAID, payment_provider, payment_ref, paid_at, apoi
+      _apply_publicitate_paid_order(order) — aceeași funcție ca aici.
+    """
+    if not _user_can_use_publicitate(request):
+        return redirect("home")
+    oid = request.session.get(PUBLICITATE_SESSION_CHECKOUT_ORDER)
+    if not oid:
+        messages.info(request, "Sesiune expirată.")
+        return redirect("publicitate_harta")
+    try:
+        with transaction.atomic():
+            order = PublicitateOrder.objects.select_for_update().filter(pk=oid, user=request.user).first()
+            if order is None:
+                request.session.pop(PUBLICITATE_SESSION_CHECKOUT_ORDER, None)
+                messages.error(request, "Comanda nu a fost găsită.")
+                return redirect("publicitate_harta")
+            if order.status == PublicitateOrder.STATUS_PAID:
+                request.session.pop(PUBLICITATE_SESSION_CHECKOUT_ORDER, None)
+                request.session[PUBLICITATE_SESSION_LAST_PAID] = order.pk
+                return redirect("publicitate_checkout_demo_success")
+            if order.status != PublicitateOrder.STATUS_PENDING:
+                messages.error(request, "Comanda nu poate fi plătită.")
+                return redirect("publicitate_harta")
+            order.status = PublicitateOrder.STATUS_PAID
+            order.payment_ref = f"DEMO-{order.pk}"
+            order.paid_at = timezone.now()
+            order.save(update_fields=["status", "payment_ref", "paid_at", "updated_at"])
+            _apply_publicitate_paid_order(order)
+    except Exception:
+        logging.getLogger(__name__).exception("publicitate_checkout_demo_confirm")
+        messages.error(request, "Eroare la confirmarea plății demo.")
+        return redirect("publicitate_checkout_demo")
+
+    request.session.pop(PUBLICITATE_SESSION_CHECKOUT_ORDER, None)
+    request.session[PUBLICITATE_SESSION_LAST_PAID] = order.pk
+    messages.success(request, f"Plată demo reușită. Comandă #{order.pk}.")
+    return redirect("publicitate_checkout_demo_success")
+
+
+@login_required
+def publicitate_checkout_demo_success_view(request):
+    if not _user_can_use_publicitate(request):
+        return redirect("home")
+    last_id = request.session.get(PUBLICITATE_SESSION_LAST_PAID)
+    order = None
+    if last_id:
+        order = PublicitateOrder.objects.filter(pk=last_id, user=request.user).first()
+    return render(
+        request,
+        "anunturi/publicitate_checkout_demo_success.html",
+        {"pub_order": order},
+    )
 
 
 @login_required

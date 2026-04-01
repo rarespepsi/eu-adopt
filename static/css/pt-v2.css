@@ -1,4 +1,4 @@
-/* PT layout P1–P5: PW full viewport (navbar jos, stânga–dreapta); P2 = grid 4×3 + scroll */
+/* PT layout P1–P5: P1 bandă cursivă sub navbar (desktop + mobil); mobil: bara mov fixă la top = nav + înălțime P1 */
 #PW {
   width: 100% !important;
   max-width: 100% !important;
@@ -13,9 +13,9 @@
 
 #PW .pt-grid {
   display: grid;
-  /* P4 și P5 aceeași lățime; P2 ia spațiul rămas, atinge P4 și P5 (fără gap orizontal) */
-  grid-template-columns: 0.75fr 4.5fr 0.75fr;
-  /* P1 72px; P3 redus cu 25% (54px min); P2 coborât în spațiul eliberat */
+  /* P4 și P5 aceeași lățime (0.75fr); P2 la mijloc. Trei coloane explicite – fără coloană implicită „auto” care lățea P5. */
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 4.5fr) minmax(0, 0.75fr);
+  /* P1 72px; mijloc P4|P2|P5; jos P3 (54px min) */
   grid-template-rows: minmax(72px, 0.28125fr) minmax(0, 2.5078125fr) minmax(54px, 0.2109375fr);
   column-gap: 0;
   row-gap: 2px;
@@ -33,10 +33,20 @@
   color: #ffffff;
 }
 
-/* P1 = bandă sus; la fel ca P3 (casete și bandă) */
+#PW .pt-strip-wrap {
+  width: 100%;
+  height: 100%;
+  min-height: 72px;
+  overflow: hidden;
+  position: relative;
+  display: block;
+}
+
+/* P1 = bandă cursivă (poze defilante): sub navbar, deasupra butoanelor mov + P2 (și desktop, și mobil) */
 #PW .pt-cell-1 {
+  display: flex !important;
   grid-row: 1;
-  grid-column: 1 / 4;
+  grid-column: 1 / -1;
   background: #2e7d32;
   border: 2px solid #000;
   overflow: hidden;
@@ -47,16 +57,6 @@
   cursor: default;
 }
 
-#PW .pt-strip-wrap {
-  width: 100%;
-  height: 100%;
-  min-height: 72px;
-  overflow: hidden;
-  position: relative;
-  display: block;
-}
-
-/* Fundal vizibil pe benzile de poze – P1 la fel ca P3 */
 #PW .pt-strip-wrap.pt-strip-p1 {
   background: #2e7d32;
 }
@@ -78,17 +78,20 @@
   animation-play-state: paused;
 }
 
-/* P1: mișcare stânga → dreapta (track se deplasează la stânga) */
 #PW .pt-strip-track--p1 {
   animation: pt-strip-p1 40s linear infinite;
 }
 
 @keyframes pt-strip-p1 {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
-/* Casete P1 și P3: aceeași lățime fixă (multe casete vizibile, ca în P3) */
+/* Casete P1 și P3: aceeași lățime fixă */
 #PW .pt-strip-item--p1,
 #PW .pt-strip-item--p3 {
   flex: 0 0 200px;
@@ -111,8 +114,6 @@
   min-height: 54px !important;
 }
 
-/* Casete permanente cu anunț în benzile P1/P3 – același stil */
-/* P1: la fel ca P3 (fundal galben, scris roșu) */
 #PW .pt-strip-item--p1.pt-strip-disclaimer {
   display: flex;
   align-items: center;
@@ -126,7 +127,19 @@
   line-height: 1.2;
   word-break: break-word;
 }
-/* P3: fundal galben, scris roșu */
+
+#PW .pt-strip-item--p1 img {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  display: block !important;
+  vertical-align: top;
+}
+
+/* P3: disclaimer galben */
 #PW .pt-strip-item--p3.pt-strip-disclaimer {
   display: flex;
   align-items: center;
@@ -139,18 +152,6 @@
   text-align: center;
   line-height: 1.2;
   word-break: break-word;
-}
-
-/* P1: poza umple caseta (suprascrie body.page-animale img height:auto din style.css) */
-#PW .pt-strip-item--p1 img {
-  width: 100% !important;
-  height: 100% !important;
-  min-width: 100% !important;
-  min-height: 100% !important;
-  object-fit: cover !important;
-  object-position: center center !important;
-  display: block !important;
-  vertical-align: top;
 }
 
 #PW .pt-strip-no-img {
@@ -166,7 +167,7 @@
   text-align: center;
 }
 
-/* P4 = coloană stânga la mijloc; fără cursor pointer */
+/* P4 = coloană stânga la mijloc; fără cursor pointer (aceeași lățime de track ca P5) */
 #PW .pt-cell-4 {
   grid-row: 2;
   grid-column: 1;
@@ -176,6 +177,8 @@
   align-items: stretch;
   font-size: 1rem; /* resetează font-size mare de pe .pt-cell pentru caseta de filtre */
   cursor: default;
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* Interior P4: 3 casete orizontale (filtru, buton, publi) */
@@ -186,6 +189,16 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  box-sizing: border-box;
+}
+
+/* P4.2 + P4.3: pe desktop umple coloana; pe mobil → fixed permanent sub navbar + placeholder (JS măsoară înălțimea) */
+#PW .pt-p4-mobile-sticky {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
   box-sizing: border-box;
 }
 
@@ -398,21 +411,155 @@
   min-height: 2rem;
   background: #fff8e1;
   box-sizing: border-box;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
 }
-/* Desktop: o singură casetă P4.3; cele 4 sloturi doar pe mobil */
-#PW .pt-p43--mobile {
+/* Desktop: umple zona P4.3; mobil: ascuns (vezi .pt-p43-mobil-row) */
+#PW .pt-p43-desktop-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  align-items: stretch;
+}
+#PW .pt-p43-desktop-wrap > .pt-p43-desktop-slot {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+/* Mobil: 4 casete într-un rând (P4.3 + P5.1–P5.3); desktop: ascuns */
+#PW .pt-p43-mobil-row {
   display: none;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 2px;
 }
-#PW .pt-p43--desktop {
+
+/* P4.3 desktop: o casetă; P5.x în coloana #P5 */
+
+/* Wrapper fallback (dacă e folosit în șablon) */
+#PW .pt-p43-desktop-ads {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  gap: 2px;
+}
+#PW .pt-p43-desktop-slot {
+  flex: 1 1 auto;
+  min-height: 2rem;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff3cd;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 6px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+#PW .pt-p43-desktop-slot .pt-p43-partner-fill,
+#PW .pt-p43-desktop-slot .pt-p43-creative-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+#PW .pt-p43-desktop-slot .pt-p5-user-card {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+#PW .pt-p43-desktop-slot .pt-p5-user-avatar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#PW .pt-p43-desktop-slot .pt-p5-user-avatar img {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
   display: block;
 }
-#PW .pt-p43-mama {
+
+/* P5 coloană dreaptă: același track ca P4 (coloana 3 = 0.75fr) */
+#PW .pt-cell-5 {
+  grid-row: 1;
+  grid-column: 3;
+  background: #fff8e1;
+  border: 2px solid #000;
+  padding: 0;
+  align-items: stretch;
+  justify-content: stretch;
+  font-size: 1rem;
+  cursor: default;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+#PW .pt-p5-grid {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
   width: 100%;
-  height: auto;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-template-rows: auto;
+  min-height: 0;
   gap: 2px;
+  box-sizing: border-box;
+  padding: 2px;
+}
+#PW .pt-p5-slot {
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff3cd;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 6px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+#PW .pt-p5-slot .pt-p43-label {
+  font-size: clamp(0.45rem, 1.1vw, 0.65rem);
+  color: #8d6e63;
+  text-align: center;
+  padding: 2px;
+}
+#PW .pt-p5-slot .pt-p5-user-card {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+#PW .pt-p5-slot .pt-p5-user-avatar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#PW .pt-p5-slot .pt-p5-user-avatar img {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+#PW .pt-p5-slot.pt-p5-slot-user .pt-p5-user-avatar img {
+  object-fit: contain;
 }
 #PW .pt-p43-slot {
   min-width: 0;
@@ -429,6 +576,65 @@
   font-size: clamp(0.5rem, 1.5vw, 0.72rem);
   color: #8d6e63;
   text-align: center;
+}
+
+/* P5.2 în grila P4.3: link partener */
+#PW .pt-p43-slot--p52 {
+  padding: 1px;
+  overflow: hidden;
+}
+#PW .pt-p43-partner-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  text-decoration: none;
+  color: inherit;
+}
+#PW .pt-p43-partner-card {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border-radius: 4px;
+}
+#PW .pt-p43-slot--p52 .pt-p5-user-avatar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#PW .pt-p43-slot--p52 .pt-p5-user-avatar img {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+#PW .pt-p43-slot--p52 .pt-p5-partner-badge {
+  bottom: 2px;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  padding: 1px 4px;
+  font-size: clamp(0.45rem, 2.8vw, 0.55rem);
+}
+
+/* Reclamă din DB (aceleași reguli desktop + mobil) */
+#PW .pt-p43-creative-card .pt-p5-user-avatar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#PW .pt-p43-creative-card img {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
 }
 
 /* Tabs filtre: Toate / Câini / Pisici / Altele */
@@ -461,7 +667,7 @@
 
 /* P2 – zona centrală: grid 4×3 vizibil, restul la scroll; înălțime rând = 1/3 din zona P2 */
 #PW .pt-cell-2 {
-  --p2-row-h: calc((100vh - var(--nav-h, 64px) - 72px - 54px) / 3); /* P3 redus 25% → mai mult spațiu P2 */
+  --p2-row-h: calc((100vh - var(--nav-h, 64px) - 72px - 54px) / 3); /* P1 72px + P3 54px (redus) */
   grid-row: 2;
   grid-column: 2;
   background: transparent;
@@ -477,9 +683,12 @@
   overflow: hidden !important;
   justify-content: flex-start;
   align-items: stretch;
+  /* .pt-cell are font-size: 3rem — spațiul/alinierea din HTML devine nod text = flex item cu line-height uriaș = bandă „albă” deasupra grilei */
+  font-size: 0;
+  line-height: 0;
 }
 
-/* Scroll doar în P2; înălțime fixă = spațiul dintre P1 și P3 */
+/* Scroll doar în P2; înălțime între navbar și P3 */
 #PW .pt-p2-scroll {
   flex: 1 1 0 !important;
   min-height: 0 !important;
@@ -489,6 +698,9 @@
   overflow-x: hidden !important;
   width: 100% !important;
   -webkit-overflow-scrolling: touch;
+  /* Ca .pt-cell-2 / .pt-p2-grid: altfel nod text/spațiu înainte de grid = strut line-height 1rem = bandă #FCFCFC pe toată lățimea */
+  font-size: 0 !important;
+  line-height: 0 !important;
 }
 
 /* Grid 4×3: 3 rânduri egale (--p2-row-h), restul la scroll */
@@ -499,14 +711,26 @@
   grid-auto-rows: minmax(80px, var(--p2-row-h, 180px)) !important;
   gap: 2px !important;
   padding: 0 !important;
+  margin: 0 !important;
   width: 100% !important;
   min-width: 0 !important;
   box-sizing: border-box !important;
   align-content: start !important;
   justify-items: stretch !important;
+  /* Spații/newline din șablon = noduri text = rând fantomă în grid = bandă #FCFCFC sub marginea de sus a P2 */
+  font-size: 0 !important;
+  line-height: 0 !important;
 }
 
 /* Celulă: umple rândul; fără aspect-ratio fix */
+/* Sentinel pentru încărcare progresivă P2 (IntersectionObserver, root = .pt-p2-scroll) */
+#PW .pt-p2-load-sentinel {
+  width: 100%;
+  min-height: 8px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
 #PW .pt-p2-grid .pt-p2-cell,
 #PW .pt-p2-grid .pt-p2-20cell {
   aspect-ratio: auto !important;
@@ -523,6 +747,8 @@
   min-height: 0;
   width: 100%;
   height: 100%;
+  font-size: 1rem;
+  line-height: normal;
 }
 
 #PW .pt-p2-20cell--empty-msg {
@@ -593,12 +819,22 @@
   height: 100%;
   min-height: 0;
   overflow: hidden;
+  margin: 0;
+  padding: 0;
+  /* Include-ul putea lăsa \n înainte de <a> = primul flex item = gol deasupra pozei */
+  font-size: 0;
+  line-height: 0;
 }
 #PW .pt-p2-card-cell .pt-p2-card-photo-wrap {
   flex: 1 1 0;
   min-height: 0;
   position: relative;
   overflow: hidden;
+  margin: 0;
+  padding: 0;
+  /* Primul copil real al .pt-p2-card-link; evită strut dacă rămâne text înainte de wrap */
+  font-size: 1rem;
+  line-height: normal;
 }
 #PW .pt-p2-card-cell .pt-p2-card-photo {
   position: absolute;
@@ -619,9 +855,16 @@
   flex-direction: column;
   height: 100%;
   min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
   text-decoration: none;
   color: inherit;
   cursor: pointer;
+  /* 0 = fără strut la orice nod text rămas între taguri în interiorul <a> */
+  font-size: 0;
+  line-height: 0;
+  flex: 1 1 auto;
 }
 #PW .pt-p2-card-cell .pt-p2-card-tags {
   position: absolute;
@@ -704,48 +947,7 @@
   background: rgba(198, 40, 40, 0.68);
 }
 
-/* P5 = coloană dreapta – cele 3 casete umplu P5 până la limită */
-#PW .pt-cell-5 {
-  grid-row: 2;
-  grid-column: 3;
-  background: #d32f2f;
-  border: 2px solid #000;
-  padding: 2px;
-  box-sizing: border-box;
-  align-items: stretch;
-  justify-content: stretch;
-  cursor: default;
-}
-
-/* P5.1, P5.2, P5.3 = câte 1/3 din înălțimea P5 */
-#PW .pt-p5-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-}
-
-#PW .pt-p5-slot {
-  flex: 1 1 0;
-  min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  background: #fff8e1;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #8d6e63;
-  text-align: center;
-}
-
-#PW .pt-p5-slot-user {
-  padding: 4px;
-}
-
+/* Card partener (P5.2 în grila P4.3) */
 #PW .pt-p5-user-card {
   width: 100%;
   height: 100%;
@@ -797,26 +999,10 @@
   font-size: 0.7rem;
 }
 
-#PW .pt-p5-num {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  padding: 2px 6px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.6);
-  color: #ffffff;
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-#PW .pt-p5-label {
-  padding: 0 6px;
-}
-
-/* P3 = bandă jos; fără cursor pointer */
+/* P3 = bandă cursivă jos; pe mobil vine imediat după P2 în grilă (P5 ascuns) */
 #PW .pt-cell-3 {
   grid-row: 3;
-  grid-column: 1 / 4;
+  grid-column: 1 / -1;
   background: #2e7d32;
   border: 2px solid #000;
   overflow: hidden;
@@ -825,6 +1011,42 @@
   padding: 0;
   min-height: 54px; /* redus cu 25% (72→54), spațiul merge la P2 */
   cursor: default;
+}
+/* ≥768px: 3 rânduri — sus P1; mijloc P4|P2|P5; jos P3 */
+@media (min-width: 768px) {
+  #PW .pt-cell-4 {
+    grid-row: 2;
+    grid-column: 1;
+    order: 0;
+    background: #8e24aa;
+    border: 2px solid #000;
+  }
+  #PW .pt-cell-2 {
+    grid-row: 2;
+    grid-column: 2;
+    order: 0;
+  }
+  #PW .pt-cell-5 {
+    grid-row: 2;
+    grid-column: 3;
+    order: 0;
+    display: flex !important;
+  }
+  #PW .pt-cell-3--footer {
+    grid-row: 3;
+    grid-column: 1 / -1;
+    order: 0;
+    margin-top: 0 !important;
+  }
+  /* P2+P3 în .pt-mob-land-center: pe desktop wrapper-ele dispar din layout */
+  #PW .pt-mob-land-left,
+  #PW .pt-mob-land-right {
+    display: none !important;
+  }
+  #PW .pt-mob-land-3col,
+  #PW .pt-mob-land-center {
+    display: contents;
+  }
 }
 
 /* P3: mișcare dreapta → stânga (track se deplasează la dreapta) */
@@ -836,8 +1058,6 @@
   0% { transform: translateX(-50%); }
   100% { transform: translateX(0); }
 }
-
-/* P3: stil comun cu P1 (dimensiuni deja setate mai sus) */
 
 /* P3: poza umple caseta (suprascrie body.page-animale img height:auto din style.css) */
 #PW .pt-strip-item--p3 img {
@@ -860,13 +1080,7 @@
   display: none !important;
 }
 
-/* P1: scoatem scala gradată de pe poze (rămâne doar caseta/numărul) */
-#PW .pt-strip-item--p1 .pt-strip-scale {
-  display: none !important;
-}
-
-/* Cifră mare pe fiecare poză din benzi (P1/P3) – centrată, la jumătatea înălțimii */
-#PW .pt-strip-item--p1 .pt-strip-num,
+/* Cifră mare pe fiecare poză din banda P3 */
 #PW .pt-strip-item--p3 .pt-strip-num {
   position: absolute;
   top: 50%;
@@ -884,7 +1098,7 @@
   pointer-events: none;
 }
 
-/* Scară gradată în mm pe stânga pozelor (P1 și P3) – de jos în sus, numerotată */
+/* Scară gradată în mm pe stânga pozelor (bandă P3) */
 #PW .pt-strip-item .pt-strip-scale {
   position: absolute;
   left: 0;
@@ -924,16 +1138,106 @@
 
 /* Responsive PW: tablet + mobil */
 @media (max-width: 767.98px) {
+  /* Înălțime fixă P1 = aceeași valoare folosită la top al barei mov fixe (sub P1, nu peste) */
+  #PW {
+    --pt-p1-strip-h: 72px;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
   #PW .pt-p4-box-ads {
     flex: 0 0 auto;
     min-height: 0;
     padding: 2px;
   }
-  #PW .pt-p43--desktop {
+  #PW .pt-p43-desktop-wrap {
     display: none !important;
   }
-  #PW .pt-p43--mobile {
-    display: grid;
+  /* P1 primul în grilă; fără margin sus (altfel bandă #FCFCFC); stretch ca să umple înălțimea celulei */
+  #PW .pt-cell-1 {
+    order: 0;
+    grid-column: 1;
+    grid-row: auto;
+    width: 100%;
+    max-width: 100%;
+    min-height: var(--pt-p1-strip-h, 72px);
+    height: var(--pt-p1-strip-h, 72px);
+    max-height: var(--pt-p1-strip-h, 72px);
+    flex-shrink: 0;
+    box-sizing: border-box;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+  }
+  #PW .pt-strip-wrap.pt-strip-p1 {
+    min-height: var(--pt-p1-strip-h, 72px);
+    height: var(--pt-p1-strip-h, 72px);
+    max-height: var(--pt-p1-strip-h, 72px);
+  }
+  #PW .pt-p43-mobil-row {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: auto;
+    gap: 2px;
+  }
+  /* Înălțimea = bara fixă #pt_p4_mobile_sticky (JS măsoară copiii + chenar) */
+  #PW .pt-p4-sticky-placeholder {
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: transparent;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-sizing: border-box;
+  }
+  /* Bara mov fixă: sub P1 (bandă cursivă), nu sub navbar — altfel acoperea P1 */
+  #PW .pt-p4-mobile-sticky {
+    position: fixed !important;
+    left: 0;
+    right: 0;
+    top: calc(var(--nav-height, var(--nav-h, 64px)) + var(--pt-p1-strip-h, 72px));
+    z-index: 2400;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    margin: 0;
+    /* fără flex-grow pe bară/copii — altfel offsetHeight > conținut → placeholder mare → hău alb sub pub */
+    display: flex !important;
+    flex-direction: column !important;
+    flex: none !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    align-items: stretch;
+    background: #8e24aa;
+    border-bottom: 2px solid #000;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  }
+  #PW .pt-p4-mobile-sticky > .pt-p4-box {
+    flex: 0 0 auto !important;
+    flex-grow: 0 !important;
+    flex-shrink: 0 !important;
+  }
+  /* P4: fără fundal mov în flux; align-self:start evită întindere în grid care poate lăsa „hău” alb */
+  #PW .pt-cell-4 {
+    overflow: visible;
+    order: 1;
+    align-self: start;
+    width: 100%;
+    max-width: 100%;
+    background: transparent !important;
+    border: none !important;
+  }
+  #PW .pt-p4-inner {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  #PW .pt-cell-5 {
+    display: none !important;
+    order: 6;
   }
   /* Nu lăsa .pt-grid să rămână flex:1 pe coloană – prăbușește P2 când #PW e auto */
   #PW .pt-grid {
@@ -942,10 +1246,88 @@
     grid-template-rows: auto;
     height: auto;
     min-height: 0;
+    display: grid;
+    row-gap: 0 !important;
+    column-gap: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  /* Rând mobil portret: P4 → (P2+P3 în centru; landscape = 3 coloane) → P5 ascuns */
+  #PW .pt-mob-land-3col {
+    grid-column: 1;
+    order: 2;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  #PW .pt-mob-land-left,
+  #PW .pt-mob-land-right {
+    display: none !important;
+  }
+  #PW .pt-mob-land-center {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    box-sizing: border-box;
+  }
+  #PW .pt-p4-land-rail-box,
+  #PW .pt-p4-land-rail-ads {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  #PW .pt-p43-mobil-col--stack {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    min-width: 0;
+    align-items: stretch;
+  }
+  #PW .pt-p43-mobil-col--stack .pt-p43-slot {
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+    max-width: 100%;
+  }
+  #PW .pt-p4-actions--land-col {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 4px;
+    box-sizing: border-box;
+  }
+  #PW .pt-p4-actions--land-col .pt-p4-btn-match,
+  #PW .pt-p4-actions--land-col .pt-p4-btn-filters {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
   }
 
-  #PW .pt-cell-3,
-  #PW .pt-cell-1,
+  #PW .pt-cell-3--footer {
+    order: 4;
+    min-height: 72px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  #PW .pt-strip-wrap.pt-strip-p3 {
+    min-height: 72px !important;
+    height: 72px !important;
+  }
+  #PW .pt-strip-item--p3 {
+    min-height: 72px !important;
+    height: 100%;
+  }
+  #PW .pt-strip-item--p3 .pt-strip-no-img {
+    min-height: 72px !important;
+  }
+  #PW .pt-cell-3--footer,
   #PW .pt-cell-4,
   #PW .pt-cell-2,
   #PW .pt-cell-5 {
@@ -954,15 +1336,75 @@
   }
 
   #PW .pt-cell-2 {
+    position: relative;
+    z-index: 1;
+    order: 3;
     height: auto !important;
     overflow: visible !important;
     min-height: min(58vh, 520px);
+    /* Forțat: .pt-cell centrează conținutul — pe mobil lasă bandă #FCFCFC deasupra grilei P2 */
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    /* Raport casetă mobil (lățime/înălțime): ajustabil; ~aproape de celulă desk 4×3 (coloană lată față de rând) */
+    --p2-m-aspect-w: 5;
+    --p2-m-aspect-h: 4;
   }
   #PW .pt-cell-2 .pt-p2-scroll {
     flex: 0 1 auto !important;
     min-height: min(52vh, 480px);
     height: auto !important;
     max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    box-sizing: border-box !important;
+  }
+
+  /* P2 mobil: 2 coloane; înălțimea casetei din lățime + aspect (dreptunghi, baza = lățimea coloanei) */
+  #PW .pt-p2-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: none !important;
+    grid-auto-rows: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+  }
+  #PW .pt-p2-grid > .pt-p2-cell {
+    height: auto !important;
+    align-self: start;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    padding: 0 !important;
+    padding-top: 0 !important;
+  }
+  #PW .pt-p2-grid > .pt-p2-cell.pt-p2-card-cell {
+    aspect-ratio: var(--p2-m-aspect-w) / var(--p2-m-aspect-h) !important;
+    width: 100%;
+    min-height: 0;
+  }
+  #PW #P2.pt-cell-2 {
+    padding: 0 !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+  #PW #P2 .pt-p2-scroll {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+  #PW #P2 .pt-p2-grid {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    row-gap: 2px !important;
+    column-gap: 2px !important;
   }
 
   /* Mobil: P4.1 se deschide la cerere din butonul Filtre */
@@ -1036,5 +1478,169 @@
   }
   #PW .pt-p4-box-match .pt-p4-btn-filters {
     display: flex;
+  }
+}
+
+/* Mobil portret: banda cursivă P1 fixă sub navbar.
+   padding-top trebuie !important — altfel pierde în fața #PW .pt-grid { padding: 0 !important } din blocul ≤768 și apare bandă / suprapuneri greșite. */
+@media (max-width: 767.98px) and (orientation: portrait) {
+  #PW .pt-grid {
+    padding: 0 !important;
+    padding-top: var(--pt-p1-strip-h, 72px) !important;
+    box-sizing: border-box;
+  }
+  #PW .pt-cell-1 {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    top: var(--nav-height, var(--nav-h, 64px)) !important;
+    z-index: 2300 !important;
+    margin: 0 !important;
+    border-top: none !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* Mobil landscape: fără bară mov portret; grilă 3 coloane (rail | P2+P3 | rail) */
+@media (max-width: 767.98px) and (orientation: landscape) {
+  #PW .pt-grid {
+    padding-top: 0 !important;
+  }
+  #PW .pt-cell-1 {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    z-index: auto !important;
+    max-width: 100% !important;
+  }
+  #PW .pt-p4-portrait-sticky {
+    display: none !important;
+  }
+  #PW .pt-cell-4 {
+    margin: 0 !important;
+    padding: 0 !important;
+    border-width: 0 !important;
+    min-height: 0 !important;
+    align-self: stretch !important;
+  }
+  #PW .pt-p4-inner {
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+  }
+  #PW .pt-p4-sticky-placeholder {
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: hidden !important;
+  }
+  #PW .pt-mob-land-left,
+  #PW .pt-mob-land-right {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+    min-width: 0 !important;
+    background: #8e24aa !important;
+    border: 1px solid rgba(0, 0, 0, 0.5) !important;
+    border-top: none !important;
+    box-sizing: border-box !important;
+    padding: 2px !important;
+    margin-top: 0 !important;
+    align-self: stretch !important;
+  }
+  #PW .pt-mob-land-left {
+    border-left: none !important;
+  }
+  #PW .pt-mob-land-right {
+    border-right: none !important;
+  }
+  #PW .pt-mob-land-3col {
+    display: grid !important;
+    grid-template-columns: minmax(3.25rem, 5.75rem) minmax(0, 1fr) minmax(3.25rem, 5.75rem) !important;
+    gap: 0 !important;
+    column-gap: 0 !important;
+    row-gap: 0 !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    min-height: min(58vh, 340px) !important;
+  }
+  #PW .pt-mob-land-center {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+  #PW .pt-mob-land-center .pt-cell-2 {
+    flex: 1 1 auto !important;
+    min-height: min(48vh, 280px) !important;
+    max-height: none !important;
+  }
+  #PW .pt-mob-land-center .pt-cell-2 .pt-p2-scroll {
+    min-height: min(42vh, 250px) !important;
+    flex: 1 1 auto !important;
+    max-height: none !important;
+  }
+  #PW .pt-p4-land-rail-box {
+    background: transparent !important;
+    flex-shrink: 0 !important;
+    padding: 0 !important;
+  }
+  #PW .pt-p4-land-rail-ads {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    background: #fff8e1 !important;
+    padding: 2px !important;
+  }
+  #PW .pt-p4-land-rail-box .pt-p4-btn-match,
+  #PW .pt-p4-land-rail-box .pt-p4-btn-filters {
+    min-height: 1.6rem !important;
+    padding: 0.15rem 0.25rem !important;
+    font-size: clamp(0.48rem, 1.65vw, 0.66rem) !important;
+    border-radius: 8px !important;
+  }
+  #PW .pt-p43-mobil-col--stack .pt-p43-slot {
+    aspect-ratio: 1 / 1 !important;
+    max-height: 4.25rem !important;
+    min-height: 0 !important;
+  }
+  #PW .pt-p43-mobil-col--stack .pt-p43-creative-card img {
+    max-height: 100% !important;
+    object-fit: contain !important;
+  }
+  #PW .pt-mob-land-center .pt-cell-3--footer {
+    flex: 0 0 auto !important;
+  }
+  #PW .pt-cell-3--footer {
+    min-height: 48px !important;
+  }
+  #PW .pt-strip-wrap.pt-strip-p3 {
+    min-height: 48px !important;
+    height: 48px !important;
+  }
+  #PW .pt-strip-item--p3 .pt-strip-no-img {
+    min-height: 48px !important;
+  }
+}
+
+@media (max-width: 767.98px) and (orientation: landscape) and (min-width: 520px) {
+  #PW .pt-p2-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+  #PW .pt-p2-grid > .pt-p2-cell.pt-p2-card-cell {
+    aspect-ratio: 4 / 3 !important;
   }
 }

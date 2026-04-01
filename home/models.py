@@ -1031,6 +1031,77 @@ class ReclamaSlotNote(models.Model):
         return f"{self.section}:{self.slot_code}"
 
 
+class PublicitateOrder(models.Model):
+    """Comandă publicitate (coș → plată). `payment_provider=demo` până la integrare gateway real."""
+
+    STATUS_PENDING = "pending_payment"
+    STATUS_PAID = "paid"
+    STATUS_CANCELLED = "cancelled"
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "În așteptare plată"),
+        (STATUS_PAID, "Plătită"),
+        (STATUS_CANCELLED, "Anulată"),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="publicitate_orders",
+    )
+    status = models.CharField(
+        "Status",
+        max_length=24,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING,
+        db_index=True,
+    )
+    total_lei = models.DecimalField("Total (lei)", max_digits=10, decimal_places=2)
+    payment_provider = models.CharField(
+        "Procesator plată",
+        max_length=32,
+        default="demo",
+        help_text="demo = simulare; înlocuiește cu stripe/netopia/etc. la go-live.",
+    )
+    payment_ref = models.CharField("Referință plată", max_length=120, blank=True, default="")
+    paid_at = models.DateTimeField("Plătit la", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Comandă publicitate"
+        verbose_name_plural = "Comenzi publicitate"
+
+    def __str__(self):
+        return f"PUB#{self.pk} {self.user_id} {self.status} {self.total_lei} lei"
+
+
+class PublicitateOrderLine(models.Model):
+    """Linie comandă: secțiune site + slot + snapshot tarif + notă/creative cumpărător."""
+
+    order = models.ForeignKey(
+        PublicitateOrder,
+        on_delete=models.CASCADE,
+        related_name="lines",
+    )
+    section = models.CharField("Secțiune", max_length=30, db_index=True)
+    slot_code = models.CharField("Cod slot", max_length=30, db_index=True)
+    title_snapshot = models.CharField("Titlu (snapshot)", max_length=220)
+    unit_label = models.CharField("Unitate", max_length=32)
+    unit_price_lei = models.DecimalField("Preț unitar", max_digits=10, decimal_places=2)
+    quantity = models.PositiveSmallIntegerField("Cantitate (luni/ore)")
+    line_total_lei = models.DecimalField("Subtotal linie", max_digits=10, decimal_places=2)
+    buyer_note = models.TextField("Notă / creative (text sau JSON)", blank=True, default="")
+
+    class Meta:
+        ordering = ["id"]
+        verbose_name = "Linie comandă publicitate"
+        verbose_name_plural = "Linii comandă publicitate"
+
+    def __str__(self):
+        return f"{self.section}/{self.slot_code} ×{self.quantity}"
+
+
 class TransportOperatorProfile(models.Model):
     """
     Profil transportator (colaborator cu tip_partener=transport).

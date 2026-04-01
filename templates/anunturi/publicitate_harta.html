@@ -4,7 +4,8 @@
 {% block body_class %}page-publicitate-harta{% endblock %}
 
 {% block content %}
-<section id="PUBW" class="pub-wrap" aria-label="Harta comenzi publicitate">
+<section id="PUBW" class="pub-wrap" aria-label="Harta comenzi publicitate" data-pub-checkout-url="{% url 'publicitate_checkout_create' %}">
+	<form id="pubCsrfHolder" class="pub-csrf-holder" style="display:none" aria-hidden="true">{% csrf_token %}</form>
 	<div class="pub-top-tabs">
 		{% for s in pub_sections %}
 			<a href="{% url 'publicitate_harta' %}?sect={{ s.code }}" class="pub-tab{% if pub_selected_section == s.code %} is-active{% endif %}">{{ s.label }}</a>
@@ -23,8 +24,9 @@
 				<div class="pub-row"><span>Preț unitar:</span> <strong id="pubDetailPrice">-</strong></div>
 				<label for="pubQty">Perioadă:</label>
 				<input id="pubQty" type="number" min="1" max="12" value="1" />
-				<label for="pubNote">Notă:</label>
-				<textarea id="pubNote" rows="4" placeholder="Link / text scurt / instrucțiuni"></textarea>
+				<label for="pubNote">Notă / creative:</label>
+				<textarea id="pubNote" rows="4" placeholder="PT: JSON {&quot;img&quot;:&quot;…&quot;,&quot;link&quot;:&quot;…&quot;} sau un singur URL https… · Burtieră: textul benzii"></textarea>
+				<p class="pub-note-hint" style="margin:0;font-size:0.72rem;color:#6d4c41;line-height:1.35;">Același conținut se aplică pe <strong>desktop și mobil</strong> (PT). După plată demo se salvează automat pe site pentru PT și burtieră.</p>
 				<button id="pubAddBtn" type="button" class="pub-add-btn">Adaugă în coș</button>
 			</form>
 		</aside>
@@ -1458,7 +1460,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			row.className = "pub-cart-item";
 			var text = document.createElement("span");
 			text.className = "pub-cart-item-text";
-			text.textContent = item.code + " | " + item.qty + " " + item.unit + " | " + item.total + " lei";
+			text.textContent = (item.section || "?").toUpperCase() + " · " + item.code + " | " + item.qty + " " + item.unit + " | " + item.total + " lei";
 			var rm = document.createElement("button");
 			rm.type = "button";
 			rm.className = "pub-cart-remove";
@@ -1484,9 +1486,12 @@ document.addEventListener("DOMContentLoaded", function () {
 			var qty = Number.isFinite(qtyRaw) ? Math.max(1, Math.min(12, qtyRaw)) : 1;
 			var total = qty * Number(selected.price || 0);
 			cart.push({
+				section: section,
 				code: selected.code,
-				qty: qty,
+				title: selected.title || "",
 				unit: selected.unit,
+				unit_price: Number(selected.price || 0),
+				qty: qty,
 				note: (noteEl.value || "").trim(),
 				total: total
 			});
@@ -1521,6 +1526,56 @@ document.addEventListener("DOMContentLoaded", function () {
 		showEmpty();
 	}
 	renderCart();
+
+	function getPubCsrfToken() {
+		var el = document.querySelector("#pubCsrfHolder input[name=csrfmiddlewaretoken]");
+		return el ? el.value : "";
+	}
+	var pubW = document.getElementById("PUBW");
+	var pubCheckoutUrl = pubW ? pubW.getAttribute("data-pub-checkout-url") : "";
+	if (payBtn && pubCheckoutUrl) {
+		payBtn.addEventListener("click", function () {
+			if (!cart.length) return;
+			payBtn.disabled = true;
+			fetch(pubCheckoutUrl, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"X-CSRFToken": getPubCsrfToken()
+				},
+				body: JSON.stringify({
+					lines: cart.map(function (it) {
+						return {
+							section: it.section,
+							code: it.code,
+							unit: it.unit,
+							unit_price: it.unit_price,
+							qty: it.qty,
+							note: it.note || ""
+						};
+					})
+				}),
+				credentials: "same-origin"
+			})
+				.then(function (r) {
+					return r.json().catch(function () {
+						return { ok: false, error: "Răspuns invalid de la server." };
+					});
+				})
+				.then(function (data) {
+					if (data.ok && data.redirect) {
+						window.location.href = data.redirect;
+						return;
+					}
+					alert(data.error || "Eroare la crearea comenzii.");
+					payBtn.disabled = cart.length === 0;
+				})
+				.catch(function () {
+					alert("Eroare de rețea.");
+					payBtn.disabled = cart.length === 0;
+				});
+		});
+	}
 });
 </script>
 <style>

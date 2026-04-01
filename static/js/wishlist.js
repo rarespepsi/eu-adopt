@@ -48,10 +48,11 @@
 				if (!data || !data.ok) return;
 				setActive(btn, !!data.active);
 
-				// Update navbar badge if present
-				var nav = document.querySelector('[data-wishlist-count]');
-				if (nav && typeof data.user_wishlist_count === 'number') {
-					nav.textContent = String(data.user_wishlist_count);
+				// Update navbar badge if present (desktop meniu + bandă mobilă)
+				if (typeof data.user_wishlist_count === 'number') {
+					document.querySelectorAll('[data-wishlist-count]').forEach(function (nav) {
+						nav.textContent = String(data.user_wishlist_count);
+					});
 				}
 
 				// Update per-card count if present

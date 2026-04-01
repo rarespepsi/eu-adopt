@@ -21,6 +21,24 @@
 				<button type="button" class="a0-mobile-trigger" id="a0_mobile_trigger" aria-expanded="false" aria-controls="menu_wrap" aria-label="Deschide sau închide meniul">
 					<span class="a0-hamburger" aria-hidden="true"></span>
 				</button>
+				<div class="a0-mobile-shortcuts" aria-label="I Love, animale în grijă, adoptați">
+					{% if user.is_authenticated %}
+					<a href="{% url 'i_love' %}" class="a0-ms a0-ms-love" title="I Love">❤️<span class="a0-ms-val" data-wishlist-count>{{ wishlist_count|default:0 }}</span></a>
+					{% else %}
+					<a href="{% url 'login' %}" class="a0-ms a0-ms-love" title="I Love – intră în cont">❤️<span class="a0-ms-val">0</span></a>
+					{% endif %}
+					<span class="a0-ms a0-ms-animals" title="În grija noastră / adoptați"><span class="a0-ms-ico" aria-hidden="true">🐶</span><span class="a0-ms-val">{{ active_animals|default:0 }}</span><span class="a0-ms-sep" aria-hidden="true">·</span><span class="a0-ms-ico" aria-hidden="true">🏠</span><span class="a0-ms-val">{{ adopted_animals|default:0 }}</span></span>
+					{% if user.is_authenticated and navbar_messages_url %}
+					<div class="a0-nav-envelope-item a0-nav-envelope-item--shortcuts">
+						<a href="{{ navbar_messages_url }}" class="a0-nav-envelope-link" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}" aria-label="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}">
+							<span class="a0-nav-envelope-icon {% if message_unread_count|default:0 > 0 %}is-hot{% endif %}" aria-hidden="true">✉</span>
+							{% if message_unread_count|default:0 > 0 %}
+							<span class="a0-nav-envelope-count">{{ message_unread_count }}</span>
+							{% endif %}
+						</a>
+					</div>
+					{% endif %}
+				</div>
 				<nav id="menu_wrap" class="a0-right">
 					<div class="menu-main-menu-container">
 						<ul id="menu-main-menu" class="menu">
@@ -79,18 +97,9 @@
 						</ul>
 					</div>
 				</nav>
-				{% if user.is_authenticated and show_mypet_nav %}
-					<div class="a0-nav-envelope-item">
-						<a href="{% url 'mypet' %}?open_messages=1" class="a0-nav-envelope-link" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}" aria-label="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}">
-							<span class="a0-nav-envelope-icon {% if message_unread_count|default:0 > 0 %}is-hot{% endif %}" aria-hidden="true">✉</span>
-							{% if message_unread_count|default:0 > 0 %}
-								<span class="a0-nav-envelope-count">{{ message_unread_count }}</span>
-							{% endif %}
-						</a>
-					</div>
-				{% elif user.is_authenticated and show_magazinul_meu_nav %}
-					<div class="a0-nav-envelope-item">
-						<a href="{% url 'collab_offers_control' %}?open_messages=1" class="a0-nav-envelope-link" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}" aria-label="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}">
+				{% if user.is_authenticated and navbar_messages_url %}
+					<div class="a0-nav-envelope-item a0-nav-envelope-item--bar">
+						<a href="{{ navbar_messages_url }}" class="a0-nav-envelope-link" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}" aria-label="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}">
 							<span class="a0-nav-envelope-icon {% if message_unread_count|default:0 > 0 %}is-hot{% endif %}" aria-hidden="true">✉</span>
 							{% if message_unread_count|default:0 > 0 %}
 								<span class="a0-nav-envelope-count">{{ message_unread_count }}</span>

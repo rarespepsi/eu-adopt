@@ -68,6 +68,8 @@ _CARTE_GET_CASES = [
     ("magazinul_meu", {}, ""),
     ("transport_operator_panel", {}, ""),
     ("publicitate_harta", {}, ""),
+    ("publicitate_checkout_demo", {}, ""),
+    ("publicitate_checkout_demo_success", {}, ""),
     ("collab_offers_control", {}, ""),
     ("collab_offer_new", {}, ""),
     ("collab_offer_add", {}, ""),

@@ -12,6 +12,8 @@ from .models import (
     CollaboratorOfferClaim,
     PromoA2Order,
     ReclamaSlotNote,
+    PublicitateOrder,
+    PublicitateOrderLine,
     TransportVeterinaryRequest,
     TransportOperatorProfile,
     TransportDispatchJob,
@@ -117,6 +119,32 @@ class ReclamaSlotNoteAdmin(admin.ModelAdmin):
     list_filter = ("section",)
     search_fields = ("section", "slot_code", "text")
     raw_id_fields = ("updated_by",)
+
+
+class PublicitateOrderLineInline(admin.TabularInline):
+    model = PublicitateOrderLine
+    extra = 0
+    readonly_fields = ("section", "slot_code", "title_snapshot", "unit_label", "unit_price_lei", "quantity", "line_total_lei")
+    can_delete = False
+
+
+@admin.register(PublicitateOrder)
+class PublicitateOrderAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "user",
+        "status",
+        "total_lei",
+        "payment_provider",
+        "payment_ref",
+        "paid_at",
+        "created_at",
+    )
+    list_filter = ("status", "payment_provider")
+    search_fields = ("user__username", "user__email", "payment_ref")
+    raw_id_fields = ("user",)
+    readonly_fields = ("created_at", "updated_at", "paid_at")
+    inlines = [PublicitateOrderLineInline]
 
 
 def _block_transport_operators(queryset, days: int):

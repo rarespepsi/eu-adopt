@@ -1,6 +1,4 @@
-{% load static %}
-<a href="{% url 'pets_single' pet.pk %}" class="pt-p2-card-link" aria-label="Vezi profil {{ pet.nume }}">
-	<div class="pt-p2-card-photo-wrap" aria-hidden="true">
+{% load static %}<a href="{% url 'pets_single' pet.pk %}" class="pt-p2-card-link" aria-label="Vezi profil {{ pet.nume }}"><div class="pt-p2-card-photo-wrap" aria-hidden="true">
 		<div class="pt-p2-card-photo">
 			{% if pet.adoption_state_label %}
 			<span

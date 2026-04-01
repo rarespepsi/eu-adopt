@@ -1,0 +1,36 @@
+{% load static %}
+{# slot_layout: p4_desktop = caseta P4.3; p5_desktop = coloana P5; altfel = celulă mică .pt-p43-slot #}
+{% if slot_layout == 'p4_desktop' %}
+<div class="pt-p43-desktop-slot" data-slot="{{ slot_code }}">
+{% elif slot_layout == 'p5_desktop' %}
+<div class="pt-p5-slot{% if p5_middle %} pt-p5-slot-user{% endif %}" id="{{ slot_code }}" data-slot="{{ slot_code }}">
+{% else %}
+<div class="pt-p43-slot{% if slot_code == 'P5.2' %} pt-p43-slot--p52{% endif %}" data-slot="{{ slot_code }}">
+{% endif %}
+{% if creative and creative.img %}
+	{% if creative.link %}
+	<a href="{{ creative.link }}" target="_blank" rel="noopener" class="pt-p43-creative-link pt-p43-partner-fill pt-pub-fill-link" aria-label="{{ creative.alt }}">
+	{% endif %}
+		<div class="pt-p5-user-card pt-p43-partner-card pt-p43-creative-card">
+			<div class="pt-p5-user-avatar">
+				<img src="{{ creative.img }}" alt="{{ creative.alt }}" loading="lazy" decoding="async" />
+			</div>
+		</div>
+	{% if creative.link %}
+	</a>
+	{% endif %}
+{% elif slot_code == 'P5.2' %}
+	<a href="https://www.facebook.com/prietencredincios/" target="_blank" rel="noopener" class="pt-p5-partener-link pt-p43-partner-fill pt-pub-fill-link" aria-label="Asociația Prieten Credincios – Facebook">
+		<div class="pt-p5-user-card pt-p43-partner-card">
+			<div class="pt-p5-user-avatar">
+				<img src="{% static 'images/parteneri/prieten_credincios_logo.png' %}" alt="" />
+				<div class="pt-p5-user-badge pt-p5-partener-badge">
+					<span class="pt-p5-user-badge-text">PARTENER</span>
+				</div>
+			</div>
+		</div>
+	</a>
+{% else %}
+	<span class="pt-p43-label">{{ slot_code }}</span>
+{% endif %}
+</div>

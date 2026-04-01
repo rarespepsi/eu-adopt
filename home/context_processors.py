@@ -1,5 +1,6 @@
 from .models import AccountProfile, WishlistItem, PetMessage, CollabServiceMessage
 from .data import DEMO_DOGS
+from django.urls import reverse
 from django.utils import timezone
 
 
@@ -158,6 +159,17 @@ def wishlist_counts(request):
             collab_client_unread_count = 0
             message_unread_count = 0
 
+    # Link unic mesaje navbar (MyPet vs Magazinul meu / colaborator)
+    navbar_messages_url = ""
+    if user and user.is_authenticated:
+        try:
+            if show_magazinul_meu_nav:
+                navbar_messages_url = f"{reverse('collab_offers_control')}?open_messages=1"
+            else:
+                navbar_messages_url = f"{reverse('mypet')}?open_messages=1"
+        except Exception:
+            navbar_messages_url = ""
+
     # Formă restrânsă în navbar: MyListVet (cabinet veterinar), MyListServicii (grooming), Magazinul meu
     nav_magazinul_meu_label = "Magazinul meu"
     if show_magazinul_meu_nav:
@@ -185,5 +197,6 @@ def wishlist_counts(request):
         "collab_business_unread_count": collab_business_unread_count,
         "collab_client_unread_count": collab_client_unread_count,
         "nav_magazinul_meu_label": nav_magazinul_meu_label,
+        "navbar_messages_url": navbar_messages_url,
     }
 

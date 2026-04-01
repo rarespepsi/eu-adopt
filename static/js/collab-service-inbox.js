@@ -24,29 +24,28 @@
 	function updateEnvelopeCount(unreadTotal, useCombined) {
 		try {
 			var total = parseInt(unreadTotal || 0, 10) || 0;
-			var icon = document.querySelector(".a0-nav-envelope-icon");
-			var link = document.querySelector(".a0-nav-envelope-link");
-			var item = document.querySelector(".a0-nav-envelope-item");
-			if (icon) icon.classList.toggle("is-hot", total > 0);
-			if (link) {
-				var label = total > 0 ? ("Mesaje noi: " + total) : "Nu ai mesaje noi";
+			var label = total > 0 ? ("Mesaje noi: " + total) : "Nu ai mesaje noi";
+			document.querySelectorAll(".a0-nav-envelope-icon").forEach(function (icon) {
+				icon.classList.toggle("is-hot", total > 0);
+			});
+			document.querySelectorAll(".a0-nav-envelope-link").forEach(function (link) {
 				link.setAttribute("title", label);
 				link.setAttribute("aria-label", label);
-			}
-			if (item) {
+			});
+			document.querySelectorAll(".a0-nav-envelope-item").forEach(function (item) {
 				var badge = item.querySelector(".a0-nav-envelope-count");
+				var al = item.querySelector(".a0-nav-envelope-link");
 				if (total > 0) {
-					if (!badge) {
+					if (!badge && al) {
 						badge = document.createElement("span");
 						badge.className = "a0-nav-envelope-count";
-						var al = item.querySelector(".a0-nav-envelope-link");
-						if (al) al.appendChild(badge);
+						al.appendChild(badge);
 					}
 					if (badge) badge.textContent = String(total);
 				} else if (badge && badge.parentNode) {
 					badge.parentNode.removeChild(badge);
 				}
-			}
+			});
 			void useCombined;
 		} catch (e) {}
 	}

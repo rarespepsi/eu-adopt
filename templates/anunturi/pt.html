@@ -7,7 +7,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt14-p43-desk-mob-split" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt87-navbar-portrait-lipit" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -127,36 +127,25 @@
 	@media (max-width: 420px) {
 		.pt-match-modal__traits-list { grid-template-columns: 1fr; }
 	}
-	@media (max-width: 767.98px) {
+</style>
+{% endblock %}
+
+{# PT portret mobil: A0 fix + #main_content padding-top = --nav-height → banda cursivă lipită de navbar, fără #FCFCFC între ele #}
+{% block extra_css_after %}
+<style>
+	@media (max-width: 767.98px) and (orientation: portrait) {
+		html body.page-pt.page-animale #A0 {
+			position: fixed !important;
+			top: 0 !important;
+			left: 0 !important;
+			right: 0 !important;
+			z-index: 2600 !important;
+			width: 100% !important;
+		}
 		body.page-pt #main_content {
-			overflow: visible !important;
-			flex: none !important;
-			min-height: 0 !important;
-		}
-		body.page-pt #main_content #PW {
-			flex: none !important;
-			height: auto !important;
-			max-height: none !important;
-			min-height: 0 !important;
-			overflow: visible !important;
-		}
-		body.page-pt #PW .pt-grid {
-			flex: none !important;
-			height: auto !important;
-			min-height: 0 !important;
-		}
-		body.page-pt #PW .pt-cell-2 {
-			overflow: visible !important;
-			min-height: clamp(300px, 55vh, 620px) !important;
-			height: auto !important;
-		}
-		body.page-pt #PW .pt-cell-2 .pt-p2-scroll {
-			flex: none !important;
-			min-height: clamp(280px, 50vh, 560px) !important;
-			max-height: none !important;
-			height: auto !important;
-			overflow-y: auto !important;
-			-webkit-overflow-scrolling: touch;
+			box-sizing: border-box !important;
+			padding: 0 !important;
+			padding-top: var(--nav-height, var(--nav-h, 64px)) !important;
 		}
 	}
 </style>
@@ -167,7 +156,7 @@
 	<main id="PW">
 		<div class="pt-grid">
 			<div id="P1" class="pt-cell pt-cell-1" data-slot="P1">
-				<div class="pt-strip-wrap pt-strip-p1" aria-label="Banda poze animale">
+				<div class="pt-strip-wrap pt-strip-p1" aria-label="Banda poze animale sus">
 					<div class="pt-strip-track pt-strip-track--p1">
 						{% for pet in strip_pets %}
 						<span class="pt-strip-item pt-strip-item--p1"><img src="{% static pet.imagine_fallback %}" alt="" loading="lazy" /></span>
@@ -178,7 +167,6 @@
 					</div>
 				</div>
 			</div>
-
 			<div id="P4" class="pt-cell pt-cell-4" data-slot="P4">
 				<div class="pt-p4-inner">
 					<div class="pt-p4-box pt-p4-box-filters" id="P4.1" data-slot="P4.1">
@@ -260,74 +248,104 @@
 							</form>
 						</div>
 					</div>
-					<div class="pt-p4-box pt-p4-box-match" id="P4.2" data-slot="P4.2">
-						<div class="pt-p4-actions">
+					<div class="pt-p4-sticky-placeholder" id="pt_p4_sticky_placeholder" aria-hidden="true"></div>
+					{# Mobil: bară fixă — doar butoane + pub; banda cursivă = #P3 footer, un singur rând sub P2. #}
+					<div class="pt-p4-mobile-sticky pt-p4-portrait-sticky" id="pt_p4_mobile_sticky">
+						<div class="pt-p4-box pt-p4-box-match" id="P4.2" data-slot="P4.2">
+							<div class="pt-p4-actions">
+								<a href="#" class="pt-p4-btn-match" title="Găsește-ți sufletul pereche">Găsește-mi perechea</a>
+								<a href="#" class="pt-p4-btn-filters js-pt-mobile-filters" id="ptMobileToggleFilters" title="Deschide filtre">Filtre</a>
+							</div>
+						</div>
+						{# Desktop: doar P4.3 aici. Mobil: sub butoane, un rând cu P4.3 + P5.1–P5.3 (aceleași date ca #P5). #}
+						<div class="pt-p4-box pt-p4-box-ads" id="P4.3">
+							<div class="pt-p43-desktop-wrap">
+								{% for slot in pt_pub_slot_list %}
+									{% if slot.code == 'P4.3' %}
+									{% include "anunturi/includes/pt_pub_slot_block.html" with slot_code=slot.code creative=slot.creative slot_layout="p4_desktop" only %}
+									{% endif %}
+								{% endfor %}
+							</div>
+							<div class="pt-p43-mobil-row" aria-label="Reclame P4.3 și P5">
+								{% for slot in pt_pub_slot_list %}
+								{% include "anunturi/includes/pt_pub_slot_block.html" with slot_code=slot.code creative=slot.creative slot_layout="mama" only %}
+								{% endfor %}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="pt-mob-land-3col">
+				<aside class="pt-mob-land-left" aria-label="Acțiuni și reclame stânga">
+					<div class="pt-p4-box pt-p4-box-match pt-p4-land-rail-box">
+						<div class="pt-p4-actions pt-p4-actions--land-col">
 							<a href="#" class="pt-p4-btn-match" title="Găsește-ți sufletul pereche">Găsește-mi perechea</a>
-							<a href="#" class="pt-p4-btn-filters" id="ptMobileToggleFilters" title="Deschide filtre">Filtre</a>
 						</div>
 					</div>
-					<div class="pt-p4-box pt-p4-box-ads" id="P4.3" data-slot="P4.3">
-						<span class="pt-p4-placeholder pt-p43--desktop">P4.3</span>
-						<div class="pt-p43-mama pt-p43--mobile">
-							<div class="pt-p43-slot" data-slot="P4.3.1"><span class="pt-p43-label">P4.3.1</span></div>
-							<div class="pt-p43-slot" data-slot="P4.3.2"><span class="pt-p43-label">P4.3.2</span></div>
-							<div class="pt-p43-slot" data-slot="P4.3.3"><span class="pt-p43-label">P4.3.3</span></div>
-							<div class="pt-p43-slot" data-slot="P4.3.4"><span class="pt-p43-label">P4.3.4</span></div>
+					<div class="pt-p4-box pt-p4-box-ads pt-p4-land-rail-ads">
+						<div class="pt-p43-mobil-col pt-p43-mobil-col--stack">
+							{% for slot in pt_pub_slot_list %}
+								{% if slot.code == 'P4.3' or slot.code == 'P5.1' %}
+								{% include "anunturi/includes/pt_pub_slot_block.html" with slot_code=slot.code creative=slot.creative slot_layout="mama" only %}
+								{% endif %}
+							{% endfor %}
+						</div>
+					</div>
+				</aside>
+				<div class="pt-mob-land-center">
+					<div id="P2" class="pt-cell pt-cell-2" data-slot="P2" aria-label="Listă animale – 4 coloane × 3 rânduri vizibile, scroll vertical">
+						<div class="pt-p2-scroll">
+							<div class="pt-p2-grid" id="pt_p2_grid" role="list" data-p2-more-url="{% url 'pets_p2_more' %}" data-p2-offset="{{ p2_next_offset }}" data-p2-has-more="{% if p2_has_more %}1{% else %}0{% endif %}">
+								{% for pet in p2_pets %}
+								<div class="pt-p2-cell pt-p2-card-cell" role="listitem">
+									{% include "anunturi/includes/pt_p2_card.html" with pet=pet %}
+								</div>
+								{% endfor %}
+							</div>
+							<div id="pt_p2_load_sentinel" class="pt-p2-load-sentinel"{% if not p2_has_more %} hidden{% endif %} aria-hidden="true"></div>
+						</div>
+					</div>
+					<div id="P3" class="pt-cell pt-cell-3 pt-cell-3--footer" data-slot="P3">
+						<div class="pt-strip-wrap pt-strip-p3" aria-label="Banda poze animale">
+							<div class="pt-strip-track pt-strip-track--p3">
+								{% for pet in strip_pets %}
+								<span class="pt-strip-item pt-strip-item--p3"><img src="{% static pet.imagine_fallback %}" alt="" loading="lazy" /></span>
+								{% if forloop.counter|divisibleby:7 %}<span class="pt-strip-item pt-strip-item--p3 pt-strip-disclaimer">NU CUMPĂRĂM<br />NU VINDEM<br />ANIMALE!!</span>{% endif %}
+								{% empty %}
+								<span class="pt-strip-item pt-strip-item--p3 pt-strip-no-img">—</span>
+								{% endfor %}
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-			<div id="ptMobileFiltersBackdrop" class="pt-mobile-filters-backdrop" hidden></div>
-
-			<div id="P2" class="pt-cell pt-cell-2" data-slot="P2" aria-label="Listă animale – 4 coloane × 3 rânduri vizibile, scroll vertical">
-				<div class="pt-p2-scroll">
-					<div class="pt-p2-grid" role="list">
-						{% for pet in p2_pets %}
-						<div class="pt-p2-cell pt-p2-card-cell" role="listitem">
-							{% include "anunturi/includes/pt_p2_card.html" with pet=pet %}
+				<aside class="pt-mob-land-right" aria-label="Filtre și reclame dreapta">
+					<div class="pt-p4-box pt-p4-box-match pt-p4-land-rail-box">
+						<div class="pt-p4-actions pt-p4-actions--land-col">
+							<a href="#" class="pt-p4-btn-filters js-pt-mobile-filters" title="Deschide filtre">Filtre</a>
 						</div>
-						{% endfor %}
-						{% for pet in p2_pets_rest %}
-						<div class="pt-p2-cell pt-p2-card-cell" role="listitem">
-							{% include "anunturi/includes/pt_p2_card.html" with pet=pet %}
-						</div>
-						{% endfor %}
 					</div>
-				</div>
+					<div class="pt-p4-box pt-p4-box-ads pt-p4-land-rail-ads">
+						<div class="pt-p43-mobil-col pt-p43-mobil-col--stack">
+							{% for slot in pt_pub_slot_list %}
+								{% if slot.code == 'P5.2' or slot.code == 'P5.3' %}
+								{% include "anunturi/includes/pt_pub_slot_block.html" with slot_code=slot.code creative=slot.creative slot_layout="mama" only %}
+								{% endif %}
+							{% endfor %}
+						</div>
+					</div>
+				</aside>
 			</div>
-
 			<div id="P5" class="pt-cell pt-cell-5" data-slot="P5">
 				<div class="pt-p5-grid">
-					<div class="pt-p5-slot" id="P5.1" data-slot="P5.1"><span class="pt-p5-label">P5.1</span></div>
-					<div class="pt-p5-slot pt-p5-slot-user" id="P5.2" data-slot="P5.2">
-						<a href="https://www.facebook.com/prietencredincios/" target="_blank" rel="noopener" class="pt-p5-partener-link">
-							<div class="pt-p5-user-card">
-								<div class="pt-p5-user-avatar">
-									<img src="{% static 'images/parteneri/prieten_credincios_logo.png' %}" alt="Asociația Prieten Credincios" />
-									<div class="pt-p5-user-badge pt-p5-partener-badge">
-										<span class="pt-p5-user-badge-text">PARTENER</span>
-									</div>
-								</div>
-							</div>
-						</a>
-					</div>
-					<div class="pt-p5-slot" id="P5.3" data-slot="P5.3"><span class="pt-p5-label">P5.3</span></div>
-				</div>
-			</div>
-
-			<div id="P3" class="pt-cell pt-cell-3" data-slot="P3">
-				<div class="pt-strip-wrap pt-strip-p3" aria-label="Banda poze animale">
-					<div class="pt-strip-track pt-strip-track--p3">
-						{% for pet in strip_pets %}
-						<span class="pt-strip-item pt-strip-item--p3"><img src="{% static pet.imagine_fallback %}" alt="" loading="lazy" /></span>
-						{% if forloop.counter|divisibleby:7 %}<span class="pt-strip-item pt-strip-item--p3 pt-strip-disclaimer">NU CUMPĂRĂM<br />NU VINDEM<br />ANIMALE!!</span>{% endif %}
-						{% empty %}
-						<span class="pt-strip-item pt-strip-item--p3 pt-strip-no-img">—</span>
-						{% endfor %}
-					</div>
+					{% for slot in pt_pub_slot_list %}
+						{% if slot.code != 'P4.3' %}
+						{% include "anunturi/includes/pt_pub_slot_block.html" with slot_code=slot.code creative=slot.creative slot_layout="p5_desktop" p5_middle=slot.is_p52 only %}
+						{% endif %}
+					{% endfor %}
 				</div>
 			</div>
 		</div>
+		<div id="ptMobileFiltersBackdrop" class="pt-mobile-filters-backdrop" hidden></div>
 	</main>
 </section>
 
@@ -377,11 +395,11 @@
 {% block extra_js %}
 <script>
 (function() {
-	function initPetImageRotation() {
-		var all = document.querySelectorAll('img.pet-rotating-image');
-		var imgs = Array.prototype.slice.call(all, 0, 12);
-		if (!imgs || !imgs.length) return;
-		imgs.forEach(function(img) {
+	function initPetImageRotation(root) {
+		var el = root || document.getElementById("pt_p2_grid") || document;
+		var all = el.querySelectorAll ? el.querySelectorAll("img.pet-rotating-image") : [];
+		if (!all || !all.length) return;
+		Array.prototype.forEach.call(all, function(img) {
 			if (img.dataset.rotInit === "1") return;
 			var src1 = img.getAttribute("src") || "";
 			var src2 = img.getAttribute("data-rot-src-2") || "";
@@ -399,11 +417,76 @@
 			}, 5000);
 		});
 	}
+	window.euadoptInitPetImageRotation = initPetImageRotation;
 	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", initPetImageRotation);
+		document.addEventListener("DOMContentLoaded", function() { initPetImageRotation(document.getElementById("pt_p2_grid")); });
 	} else {
-		initPetImageRotation();
+		initPetImageRotation(document.getElementById("pt_p2_grid"));
 	}
+})();
+</script>
+<script>
+(function() {
+	var grid = document.getElementById("pt_p2_grid");
+	var sentinel = document.getElementById("pt_p2_load_sentinel");
+	var scrollEl = document.querySelector("#P2 .pt-p2-scroll");
+	if (!grid || !sentinel || !scrollEl) return;
+	var baseUrl = grid.getAttribute("data-p2-more-url") || "";
+	if (!baseUrl) return;
+	var loading = false;
+	var hasMore = grid.getAttribute("data-p2-has-more") === "1";
+	var nextOffset = parseInt(grid.getAttribute("data-p2-offset") || "0", 10) || 0;
+	if (!hasMore) return;
+
+	function buildPageUrl() {
+		var u = new URL(baseUrl, window.location.origin);
+		var cur = new URLSearchParams(window.location.search);
+		cur.forEach(function(value, key) {
+			if (key === "go") return;
+			u.searchParams.append(key, value);
+		});
+		u.searchParams.set("offset", String(nextOffset));
+		return u.toString();
+	}
+
+	function finish() {
+		hasMore = false;
+		sentinel.setAttribute("hidden", "");
+		if (io) io.disconnect();
+	}
+
+	var io = null;
+
+	function loadMore() {
+		if (loading || !hasMore) return;
+		loading = true;
+		fetch(buildPageUrl(), { credentials: "same-origin", headers: { Accept: "application/json" } })
+			.then(function(r) { return r.json(); })
+			.then(function(data) {
+				if (!data || !data.ok) throw new Error("p2-more");
+				var wrap = document.createElement("div");
+				wrap.innerHTML = data.html || "";
+				if (window.euadoptInitPetImageRotation) window.euadoptInitPetImageRotation(wrap);
+				while (wrap.firstChild) grid.appendChild(wrap.firstChild);
+				hasMore = !!data.has_more;
+				nextOffset = parseInt(data.next_offset, 10) || nextOffset;
+				grid.setAttribute("data-p2-offset", String(nextOffset));
+				grid.setAttribute("data-p2-has-more", hasMore ? "1" : "0");
+				if (!hasMore) finish();
+			})
+			.catch(function() {})
+			.then(function() { loading = false; });
+	}
+
+	io = new IntersectionObserver(
+		function(entries) {
+			for (var i = 0; i < entries.length; i++) {
+				if (entries[i].isIntersecting) loadMore();
+			}
+		},
+		{ root: scrollEl, rootMargin: "280px", threshold: 0 }
+	);
+	io.observe(sentinel);
 })();
 </script>
 <script>
@@ -412,13 +495,13 @@
 	var mobileFiltersCloseBtn = document.getElementById("ptMobileFiltersClose");
 	var mobileFiltersOkBtn = document.getElementById("ptMobileFiltersOk");
 	var mobileFiltersBackdrop = document.getElementById("ptMobileFiltersBackdrop");
-	var mobileFiltersBtn = document.getElementById("ptMobileToggleFilters");
+	var mobileFiltersBtns = document.querySelectorAll("#PW .js-pt-mobile-filters");
 	var p4Cell = document.getElementById("P4");
 	var modal = document.getElementById("ptMatchModal");
 	var backdrop = document.getElementById("ptMatchModalBackdrop");
 	var closeBtn = document.getElementById("ptMatchModalClose");
 	var form = document.getElementById("ptMatchMiniForm");
-	var matchBtn = document.querySelector(".pt-p4-btn-match");
+	var matchBtns = document.querySelectorAll("#PW .pt-p4-btn-match");
 	var filterSelects = filtersForm ? filtersForm.querySelectorAll("select") : [];
 	var filtersApplied = false;
 	var filtersDraft = null;
@@ -451,14 +534,16 @@
 	}
 	function setMobileFiltersBtnState(active) {
 		filtersApplied = !!active;
-		if (!mobileFiltersBtn) return;
-		if (filtersApplied) {
-			mobileFiltersBtn.textContent = "Resetează filtre";
-			mobileFiltersBtn.classList.add("pt-filters-btn--active");
-		} else {
-			mobileFiltersBtn.textContent = "Filtre";
-			mobileFiltersBtn.classList.remove("pt-filters-btn--active");
-		}
+		Array.prototype.forEach.call(mobileFiltersBtns, function(btn) {
+			if (!btn) return;
+			if (filtersApplied) {
+				btn.textContent = "Resetează filtre";
+				btn.classList.add("pt-filters-btn--active");
+			} else {
+				btn.textContent = "Filtre";
+				btn.classList.remove("pt-filters-btn--active");
+			}
+		});
 	}
 	function closeMobileFilters(restoreDraft) {
 		if (!p4Cell) return;
@@ -483,7 +568,7 @@
 		});
 	}
 
-	var defaultMatchText = matchBtn ? (matchBtn.textContent || "").trim() : "";
+	var defaultMatchText = matchBtns.length ? (matchBtns[0].textContent || "").trim() : "";
 
 	function readSelectedTraits() {
 		try {
@@ -497,14 +582,16 @@
 	}
 
 	function setMatchBtnActive(active) {
-		if (!matchBtn) return;
-		if (active) {
-			matchBtn.textContent = "Resetează filtre";
-			matchBtn.classList.add("pt-match-btn--active");
-		} else {
-			matchBtn.textContent = defaultMatchText || "Găsește-mi perechea";
-			matchBtn.classList.remove("pt-match-btn--active");
-		}
+		Array.prototype.forEach.call(matchBtns, function(matchBtn) {
+			if (!matchBtn) return;
+			if (active) {
+				matchBtn.textContent = "Resetează filtre";
+				matchBtn.classList.add("pt-match-btn--active");
+			} else {
+				matchBtn.textContent = defaultMatchText || "Găsește-mi perechea";
+				matchBtn.classList.remove("pt-match-btn--active");
+			}
+		});
 	}
 
 	var isActive = readSelectedTraits().length > 0;
@@ -537,8 +624,8 @@
 		document.body.style.overflow = "";
 	}
 
-	if (matchBtn) {
-		matchBtn.addEventListener("click", function(e) {
+	Array.prototype.forEach.call(matchBtns, function(btn) {
+		btn.addEventListener("click", function(e) {
 			e.preventDefault();
 			// Dacă există deja o selecție aplicată (din note), click pe buton = reset.
 			if (isActive) {
@@ -551,9 +638,9 @@
 			}
 			openModal();
 		});
-	}
-	if (mobileFiltersBtn) {
-		mobileFiltersBtn.addEventListener("click", function(e) {
+	});
+	Array.prototype.forEach.call(mobileFiltersBtns, function(btn) {
+		btn.addEventListener("click", function(e) {
 			e.preventDefault();
 			if (!isMobileViewport()) return;
 			if (filtersApplied) {
@@ -563,7 +650,7 @@
 			if (p4Cell && p4Cell.classList.contains("pt-mobile-filters-open")) return;
 			openMobileFilters();
 		});
-	}
+	});
 	if (mobileFiltersCloseBtn) mobileFiltersCloseBtn.addEventListener("click", function() { closeMobileFilters(true); });
 	if (mobileFiltersOkBtn) {
 		mobileFiltersOkBtn.addEventListener("click", function() {
@@ -659,7 +746,184 @@
 		initSexSelect();
 		observeSexSelect();
 	}
-	window.addEventListener("resize", initSexSelect);
+	/* La rotație, resize poate fi emis de zeci de ori; shrinkSelectFontToFit face multe read/write — debounce + rAF */
+	var _ptSexResizeT = null;
+	function scheduleInitSexSelect() {
+		clearTimeout(_ptSexResizeT);
+		_ptSexResizeT = setTimeout(function() {
+			_ptSexResizeT = null;
+			requestAnimationFrame(initSexSelect);
+		}, 220);
+	}
+	window.addEventListener("resize", scheduleInitSexSelect);
+	window.addEventListener("orientationchange", scheduleInitSexSelect);
+})();
+</script>
+<script>
+(function() {
+	var mq = window.matchMedia("(max-width: 767.98px)");
+	var bar, ph;
+	var ro = null;
+	var roAttached = false;
+	var roCoalesceRaf = null;
+	var roNav = null;
+	var roNavAttached = false;
+
+	function navHeight() {
+		var a0 = document.getElementById("A0");
+		if (!a0) return 64;
+		var r = a0.getBoundingClientRect();
+		var h = Math.floor(r.bottom);
+		if (h < 40 || h > 220) {
+			h = Math.floor(r.height);
+		}
+		return h;
+	}
+	function syncNavHeightToCss() {
+		if (!mq.matches) {
+			try {
+				document.documentElement.style.removeProperty("--nav-height");
+			} catch (e) {}
+			return;
+		}
+		/* Cu A0 fix + padding-top pe #main_content, înălțimea = floor(bottom) fără -1 (lipire cursivă sub navbar) */
+		var nh = Math.max(40, Math.min(220, navHeight()));
+		try {
+			document.documentElement.style.setProperty("--nav-height", nh + "px");
+		} catch (e) {}
+	}
+
+	function getBar() {
+		bar = bar || document.getElementById("pt_p4_mobile_sticky");
+		return bar;
+	}
+	function getPh() {
+		ph = ph || document.getElementById("pt_p4_sticky_placeholder");
+		return ph;
+	}
+	function syncPlaceholder() {
+		var b = getBar();
+		var p = getPh();
+		if (!b || !p) return;
+		if (!mq.matches) {
+			p.style.height = "";
+			return;
+		}
+		var sum = 0;
+		for (var i = 0; i < b.children.length; i++) {
+			var el = b.children[i];
+			try {
+				if (window.getComputedStyle(el).display === "none") continue;
+			} catch (e) { continue; }
+			sum += el.offsetHeight;
+		}
+		var cs = window.getComputedStyle(b);
+		var bt = parseFloat(cs.borderTopWidth) || 0;
+		var bb = parseFloat(cs.borderBottomWidth) || 0;
+		var hSum = Math.round(sum + bt + bb);
+		var hOuter = Math.round(b.offsetHeight);
+		var hRect = Math.round(b.getBoundingClientRect().height);
+		var h = hSum;
+		if (hSum > 0 && hOuter > 0) {
+			h = Math.min(hSum, hOuter);
+		}
+		if (h > 0 && hRect > 0) {
+			h = Math.min(h, hRect);
+		}
+		if (h <= 0) {
+			h = hOuter || hRect || hSum;
+		}
+		var prevH = Math.round(parseFloat(p.style.height) || 0);
+		if (prevH !== h) {
+			p.style.height = h + "px";
+		}
+		requestAnimationFrame(function() {
+			requestAnimationFrame(tightenBelowStickyGap);
+		});
+	}
+	function syncPlaceholderCoalesced() {
+		if (roCoalesceRaf != null) cancelAnimationFrame(roCoalesceRaf);
+		roCoalesceRaf = requestAnimationFrame(function() {
+			roCoalesceRaf = null;
+			syncPlaceholder();
+		});
+	}
+	function tightenBelowStickyGap() {
+		if (!mq.matches) return;
+		var b = getBar();
+		var p = getPh();
+		var p2 = document.getElementById("P2");
+		if (!b || !p || !p2) return;
+		if ((window.pageYOffset || document.documentElement.scrollTop || 0) > 6) return;
+		var gap = Math.round(p2.getBoundingClientRect().top - b.getBoundingClientRect().bottom);
+		if (gap < 2 || gap > 480) return;
+		var cur = parseFloat(p.style.height);
+		if (isNaN(cur) || cur <= 0) return;
+		var barH = Math.round(b.getBoundingClientRect().height);
+		var newH = Math.round(cur - gap);
+		if (newH >= Math.max(barH - 12, 40) && newH !== Math.round(cur)) {
+			p.style.height = newH + "px";
+		}
+	}
+	function boot() {
+		syncNavHeightToCss();
+		try {
+			document.documentElement.style.removeProperty("--pt-p1-strip-h");
+		} catch (e) {}
+		requestAnimationFrame(function() {
+			syncNavHeightToCss();
+			syncPlaceholder();
+		});
+		requestAnimationFrame(function() {
+			requestAnimationFrame(function() {
+				syncNavHeightToCss();
+				syncPlaceholder();
+			});
+		});
+		syncPlaceholder();
+		if (window.ResizeObserver && !roAttached) {
+			var b = getBar();
+			if (b) {
+				ro = new ResizeObserver(function() { syncPlaceholderCoalesced(); });
+				ro.observe(b);
+				var kids = b.querySelectorAll(":scope > .pt-p4-box");
+				for (var k = 0; k < kids.length; k++) {
+					ro.observe(kids[k]);
+				}
+				roAttached = true;
+			}
+		}
+		if (window.ResizeObserver && !roNavAttached) {
+			var navEl = document.getElementById("A0");
+			if (navEl) {
+				roNav = new ResizeObserver(function() {
+					syncNavHeightToCss();
+					syncPlaceholderCoalesced();
+				});
+				roNav.observe(navEl);
+				roNavAttached = true;
+			}
+		}
+	}
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", boot);
+	} else {
+		boot();
+	}
+	window.addEventListener("resize", function() {
+		clearTimeout(window._ptP4BarResizeT);
+		window._ptP4BarResizeT = setTimeout(boot, 160);
+	});
+	window.addEventListener("orientationchange", function() {
+		clearTimeout(window._ptP4BarResizeT);
+		window._ptP4BarResizeT = setTimeout(boot, 280);
+	});
+	window.addEventListener("load", boot);
+	window.addEventListener("load", function() {
+		setTimeout(function() {
+			if (mq.matches) syncPlaceholder();
+		}, 200);
+	});
 })();
 </script>
 {% endblock %}

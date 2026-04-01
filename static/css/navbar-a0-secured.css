@@ -577,6 +577,46 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 	text-align: center !important;
 }
 
+/* Mobil îngust: inimă+I Love, contor animale, plic (bara mare are contor ascuns) */
+#A0 #main_menu .a0-mobile-shortcuts {
+	display: none !important;
+	align-items: center !important;
+	justify-content: center !important;
+	flex: 1 1 0 !important;
+	min-width: 0 !important;
+	gap: 5px !important;
+	flex-wrap: nowrap !important;
+	margin: 0 0.2rem !important;
+}
+#A0 #main_menu .a0-mobile-shortcuts .a0-ms {
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 2px !important;
+	color: #fff !important;
+	font-size: 11px !important;
+	font-weight: 700 !important;
+	text-decoration: none !important;
+	white-space: nowrap !important;
+	line-height: 1 !important;
+}
+#A0 #main_menu .a0-mobile-shortcuts .a0-ms-val {
+	font-weight: 800 !important;
+	font-variant-numeric: tabular-nums !important;
+}
+#A0 #main_menu .a0-mobile-shortcuts .a0-ms-animals {
+	cursor: default !important;
+	pointer-events: none !important;
+	opacity: 0.95 !important;
+}
+#A0 #main_menu .a0-mobile-shortcuts .a0-ms-sep {
+	opacity: 0.65 !important;
+	padding: 0 1px !important;
+}
+#A0 #main_menu .a0-mobile-shortcuts .a0-nav-envelope-item--shortcuts {
+	margin: 0 !important;
+	margin-left: 0.05rem !important;
+}
+
 /* Contor stânga/dreapta */
 #A0 .animal-counter-navbar {
 	gap: 8px !important;
@@ -922,6 +962,12 @@ body.page-animale #A0 {
 	}
 	#A0 #main_menu .a0-left {
 		display: none !important; /* contor în bara îngustă: spațiu pentru hamburger + căutare */
+	}
+	#A0 #main_menu .a0-mobile-shortcuts {
+		display: flex !important;
+	}
+	#A0 #main_menu .a0-nav-envelope-item--bar {
+		display: none !important; /* plic duplicat: e în .a0-mobile-shortcuts */
 	}
 	#A0 .a0-search-right {
 		position: static !important;
