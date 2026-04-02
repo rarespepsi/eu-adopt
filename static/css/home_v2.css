@@ -1262,7 +1262,7 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
 
 @media (max-width: 37.5em) and (orientation: portrait) {
     body.page-home-v2 .hero-v2 {
-        min-height: 2.7rem !important; /* ~4mm mai jos fata de varianta anterioara */
+        min-height: 2.7rem !important; /* ~4mm mai jos față de varianta anterioară */
         max-height: 2.7rem !important;
         padding: 0 !important;
         overflow: hidden !important;
@@ -1339,31 +1339,27 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
         white-space: nowrap !important;
     }
 
-    /* A2 urca imediat sub A1, fara banda/gol vizual. */
+    /* A2 urcă imediat sub A1, fără bandă/gol vizual. */
     body.page-home-v2 #A1 {
         margin-bottom: 0 !important;
         padding-bottom: 0 !important;
     }
     body.page-home-v2 #A2 {
         margin-top: 0 !important;
+        margin-bottom: 0 !important;
         padding-top: 0 !important;
+        padding-bottom: 0 !important;
     }
     body.page-home-v2 #A2 .A2-casete-wrap {
         margin-top: 0 !important;
         grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
         grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
         grid-auto-rows: minmax(0, 1fr) !important;
-        aspect-ratio: 3 / 2.9 !important; /* +~10% mai jos fata de varianta anterioara */
+        aspect-ratio: 3 / 2.9 !important; /* +~10% mai jos față de varianta anterioară */
         gap: 2px !important;
     }
     body.page-home-v2 .home-v2-mobile-ads-top {
         margin-bottom: 0 !important;
-        padding-bottom: 0 !important;
-    }
-    body.page-home-v2 #A2 {
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-        padding-top: 0 !important;
         padding-bottom: 0 !important;
     }
     body.page-home-v2 .home-v2-mobile-ads-bottom {
