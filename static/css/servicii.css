@@ -1,4 +1,4 @@
-/* Servicii – SW la fel ca PW; S1/S3 la fel ca P1/P3 (benzi sus/jos) */
+/* Servicii – SW la fel ca PW; S1/S7 benzi sus/jos (poze) */
 #SW.servicii-wrapper {
   width: 100% !important;
   max-width: 100% !important;
@@ -11,11 +11,11 @@
   align-items: stretch;
 }
 
-/* Grid 3 rânduri, rândul 2 cu 3 coloane: S4 (75% lățime P4) | S2 | S5 (75% lățime P5) – ca PT */
+/* Grid 3 rânduri: S1 | S2–S6 | S7; 3 coloane mijloc */
 #SW .sw-grid {
   display: grid;
-  grid-template-columns: 0.5fr 4.5625fr 0.5625fr; /* S2 puțin îngust, mijlocul primește diferența */
-  grid-template-rows: minmax(72px, 0.28125fr) minmax(0, 2.5078125fr) minmax(72px, 0.28125fr); /* S1 și S3 egale */
+  grid-template-columns: 0.5fr 4.5625fr 0.5625fr; /* S2 puțin îngust, mijlocul primește diferența — desktop */
+  grid-template-rows: minmax(72px, 0.28125fr) minmax(0, 2.5078125fr) minmax(72px, 0.28125fr); /* S1 și S7 egale */
   column-gap: 0;
   row-gap: 0; /* fără spațiu între S1, rândul S2–S6 și S7 */
   height: 100%;
@@ -33,7 +33,7 @@
   box-sizing: border-box;
 }
 
-/* S1 = bandă sus full width, la fel ca P1 */
+/* S1 = bandă sus full width */
 #SW .sw-cell-1 {
   grid-row: 1;
   grid-column: 1 / -1;
@@ -83,7 +83,7 @@
   100% { transform: translateX(-50%); }
 }
 
-/* Casete S1/S3: aceeași lățime 200px ca P1/P3 */
+/* Casete S1/S7 bandă: aceeași lățime 200px ca P1/P3 */
 #SW .sw-strip-item--s1,
 #SW .sw-strip-item--s3 {
   flex: 0 0 200px;
@@ -492,4 +492,130 @@
 @keyframes sw-strip-s3 {
   0% { transform: translateX(-50%); }
   100% { transform: translateX(0); }
+}
+
+/* Tab-uri S2-mid (S3/S4/S5): ascunse pe desktop; vizibile la lățime ≤768px sau landscape cu înălțime ≤500px (telefon întors) */
+#SW .sw-s2-mid-tabs {
+  display: none;
+}
+
+/* ≤768px lățime SAU telefon landscape (înălțime mică), ca să prindem și lățimi >768 în landscape */
+@media (max-width: 767.98px),
+  (orientation: landscape) and (max-height: 500px) {
+  /* Portret mobil / lățime ≤768: laterale egale, mijloc dublu (1fr 2fr 1fr) */
+  #SW .sw-grid {
+    grid-template-columns: 1fr 2fr 1fr;
+  }
+
+  #SW .sw-cell-2 {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  #SW .sw-s2-mid-tabs {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: row;
+    gap: 2px;
+    width: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+    padding-bottom: 2px;
+  }
+
+  #SW .sw-s2-mid-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    margin: 0;
+    padding: 0.28rem 0.2rem;
+    font-size: clamp(0.62rem, 2.8vw, 0.78rem);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    border: 1px solid #000;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    box-sizing: border-box;
+    background: #eee;
+    color: #333;
+  }
+
+  #SW .sw-s2-mid-tab[aria-selected="true"] {
+    color: #fff;
+    border-bottom-color: transparent;
+  }
+
+  #SW .sw-s2-mid-tab[data-sw-svc-tab="S3"][aria-selected="true"] {
+    background: #c62828;
+    border-color: #8e0000;
+  }
+
+  #SW .sw-s2-mid-tab[data-sw-svc-tab="S4"][aria-selected="true"] {
+    background: #1565c0;
+    border-color: #0d47a1;
+  }
+
+  #SW .sw-s2-mid-tab[data-sw-svc-tab="S5"][aria-selected="true"] {
+    background: #2e7d32;
+    border-color: #1b5e20;
+  }
+
+  #SW .sw-cell-2 .sw-s2-inner {
+    flex: 1 1 0;
+    min-height: 0;
+    position: relative;
+    flex-direction: column;
+  }
+
+  #SW .sw-cell-2 .sw-s2-inner .sw-s2-box {
+    display: none;
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+  }
+
+  #SW .sw-cell-2 .sw-s2-inner .sw-s2-box.is-active {
+    display: flex;
+  }
+
+  #SW .sw-cell-2 .sw-s2-1-band {
+    display: none;
+  }
+
+  /* Grilă oferte: 2 coloane în panoul activ */
+  #SW .sw-cell-2 .sw-s2-1-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(12, 1fr);
+  }
+}
+
+/* Landscape cu viewport scurt (mobil întors): S1 ascuns; laterale × 2/3 → mijloc 1fr 4fr 1fr */
+@media (orientation: landscape) and (max-height: 500px) {
+  #SW .sw-cell-1 {
+    display: none !important;
+  }
+
+  #SW .sw-grid {
+    grid-template-rows: minmax(0, 1fr) minmax(72px, 0.28125fr);
+    /* față de 1fr 2fr 1fr: laterale cu 1/3 mai înguste, centrul primește diferența */
+    grid-template-columns: 1fr 4fr 1fr;
+  }
+
+  #SW .sw-cell-4,
+  #SW .sw-cell-2,
+  #SW .sw-cell-5 {
+    grid-row: 1;
+  }
+
+  #SW .sw-cell-3 {
+    grid-row: 2;
+  }
+
+  /* Mijloc: 3 coloane × 8 rânduri, înălțime 400% → ~2 rânduri vizibile în .sw-s2-1-body, restul scroll */
+  #SW .sw-cell-2 .sw-s2-1-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: repeat(8, 1fr);
+    height: 400%;
+  }
 }

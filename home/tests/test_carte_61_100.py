@@ -5,6 +5,7 @@ Carte puncte 61–100: MyPet, adopție, promo A2, magazin colaborator, mesaje, t
 import uuid
 from datetime import timedelta
 from io import BytesIO
+from urllib.parse import parse_qs, unquote, urlparse
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -539,6 +540,61 @@ class Carte81_100Tests(TestCase):
             {"name": "Ion", "email": buyer.email},
         )
         self.assertEqual(r.status_code, 302)
+
+    def test_95b_public_offer_request_anonymous_redirects_login(self):
+        collab = _collab_cabinet_user()
+        d0 = timezone.localdate()
+        d1 = d0 + timedelta(days=20)
+        offer = CollaboratorServiceOffer.objects.create(
+            collaborator=collab,
+            partner_kind=CollaboratorServiceOffer.PARTNER_KIND_CABINET,
+            title="Anon gate",
+            image=_tiny_jpeg("p95b.jpg"),
+            quantity_available=5,
+            valid_from=d0,
+            valid_until=d1,
+            price_hint="80 lei",
+            discount_percent=10,
+            species_dog=True,
+            species_cat=True,
+            species_other=False,
+            is_active=True,
+        )
+        c = Client()
+        detail_path = reverse("public_offer_detail", args=[offer.pk])
+        r = c.post(reverse("public_offer_request", args=[offer.pk]), {})
+        self.assertEqual(r.status_code, 302)
+        loc = r.get("Location", "")
+        self.assertIn(reverse("login"), loc)
+        qs = parse_qs(urlparse(loc).query)
+        next_vals = qs.get("next") or []
+        self.assertTrue(next_vals, msg="login redirect should carry next=")
+        self.assertEqual(unquote(next_vals[0]), detail_path)
+
+    def test_95c_public_offer_request_collab_rejected(self):
+        collab = _collab_cabinet_user()
+        d0 = timezone.localdate()
+        d1 = d0 + timedelta(days=20)
+        offer = CollaboratorServiceOffer.objects.create(
+            collaborator=collab,
+            partner_kind=CollaboratorServiceOffer.PARTNER_KIND_CABINET,
+            title="Collab no buy",
+            image=_tiny_jpeg("p95c.jpg"),
+            quantity_available=5,
+            valid_from=d0,
+            valid_until=d1,
+            price_hint="80 lei",
+            discount_percent=10,
+            species_dog=True,
+            species_cat=True,
+            species_other=False,
+            is_active=True,
+        )
+        c = Client()
+        c.login(username=collab.username, password="Test61_Col_pass!")
+        r = c.post(reverse("public_offer_request", args=[offer.pk]), {})
+        self.assertEqual(r.status_code, 302)
+        self.assertIn(str(offer.pk), r.get("Location", ""))
 
     def test_96_98_collab_client_messages(self):
         collab = _collab_cabinet_user()

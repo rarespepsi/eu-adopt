@@ -30,6 +30,7 @@ import os
 from django.views.decorators.http import require_POST, require_http_methods
 from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import redirect_to_login
 from django.views.decorators.csrf import csrf_protect
 from .data import DEMO_DOGS, DEMO_DOG_IMAGE, A2_QUOTE_POOL, HERO_SLIDER_IMAGES
 from .pet_age_bands import (
@@ -2756,6 +2757,9 @@ def servicii_view(request):
             "adoption_bonus_show_banner": bonus_bundle.get("adoption_bonus_show_banner"),
             "adoption_bonus_has_selection": bonus_bundle.get("adoption_bonus_has_selection"),
             "adoption_bonus_toggle_url": reverse("adoption_bonus_offer_toggle"),
+            "can_request_public_collab_offer": _user_can_request_public_collab_offer(
+                request.user
+            ),
         },
     )
 
@@ -6068,6 +6072,24 @@ def _buyer_snapshot_for_offer_request(request, post_name: str, post_email: str) 
     }
 
 
+def _account_role_for_public_offer(user) -> str:
+    if not getattr(user, "is_authenticated", False):
+        return AccountProfile.ROLE_PF
+    rid = (
+        AccountProfile.objects.filter(user_id=user.pk)
+        .values_list("role", flat=True)
+        .first()
+    )
+    return rid or AccountProfile.ROLE_PF
+
+
+def _user_can_request_public_collab_offer(user) -> bool:
+    return (
+        getattr(user, "is_authenticated", False)
+        and _account_role_for_public_offer(user) == AccountProfile.ROLE_PF
+    )
+
+
 def _cabinet_block_for_buyer_email(collab_user) -> str:
     """Text pentru cumpărător: cabinet, telefon, persoană contact, email."""
     prof = getattr(collab_user, "profile", None)
@@ -7115,13 +7137,33 @@ def public_offer_detail_view(request, pk: int):
     return render(
         request,
         "anunturi/oferta_partener_detail.html",
-        {"offer": offer},
+        {
+            "offer": offer,
+            "can_request_public_collab_offer": _user_can_request_public_collab_offer(
+                request.user
+            ),
+        },
     )
 
 
 @require_POST
 @csrf_protect
 def public_offer_request_view(request, pk: int):
+    detail_next = reverse("public_offer_detail", args=[pk])
+    if not request.user.is_authenticated:
+        messages.info(
+            request,
+            "Intră în cont sau creează cont persoană fizică pentru a solicita oferta.",
+        )
+        return redirect_to_login(detail_next, login_url=reverse("login"))
+
+    if _account_role_for_public_offer(request.user) != AccountProfile.ROLE_PF:
+        messages.error(
+            request,
+            "Solicitarea ofertelor este disponibilă doar cu cont de persoană fizică.",
+        )
+        return _redirect_after_public_offer_request(request, pk)
+
     post_name = (request.POST.get("name") or "").strip()
     post_email = (request.POST.get("email") or "").strip()
     buyer = _buyer_snapshot_for_offer_request(request, post_name, post_email)
@@ -7129,7 +7171,7 @@ def public_offer_request_view(request, pk: int):
     if not dest_email:
         messages.error(
             request,
-            "Introdu adresa de email ca să primești confirmarea și datele cabinetului.",
+            "Completează adresa de email în cont ca să primești confirmarea și datele cabinetului.",
         )
         return _redirect_after_public_offer_request(request, pk)
 

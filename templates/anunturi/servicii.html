@@ -5,14 +5,15 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=6" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=17" type="text/css" media="screen" />
 <style>
 	/* La fel ca PT: main_wrap, main_content, apoi SW cu aceleași dimensiuni ca PW */
 	body.page-servicii #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
 	body.page-servicii #main_content { min-height: 0 !important; display: flex !important; flex-direction: column !important; flex: 1 1 0 !important; overflow: hidden !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
+	/* Același offset ca padding-top navbar (#main_content): --nav-height pe body; fără --nav-h separat → fără fâșie #FCFCFC între A0 și S1 */
 	body.page-servicii #main_content #SW {
-		height: calc(100vh - var(--nav-h, 64px)) !important;
-		max-height: calc(100vh - var(--nav-h, 64px)) !important;
+		height: calc(100vh - var(--nav-height, var(--nav-h, 64px))) !important;
+		max-height: calc(100vh - var(--nav-height, var(--nav-h, 64px))) !important;
 		min-height: 0 !important;
 		display: flex !important;
 		flex-direction: column !important;
@@ -534,6 +535,54 @@
 	.sw-vet-offer-nota__cta:hover {
 		background: #1b5e20;
 	}
+	.public-offer-auth-gate__text {
+		font-size: 0.85rem;
+		line-height: 1.45;
+		color: #37474f;
+		margin: 0 0 0.5rem;
+	}
+	.public-offer-auth-gate__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		margin: 0 0 0.35rem;
+	}
+	.public-offer-auth-gate__btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-decoration: none;
+		font-size: 0.88rem;
+		font-weight: 800;
+		padding: 0.5rem 0.75rem;
+		border-radius: 8px;
+		border: 1px solid #2e7d32;
+		background: #2e7d32;
+		color: #fff;
+	}
+	.public-offer-auth-gate__btn:hover {
+		background: #1b5e20;
+		color: #fff;
+	}
+	.public-offer-auth-gate__btn--secondary {
+		background: #e8f5e9;
+		color: #1b5e20;
+		border-color: #66bb6a;
+	}
+	.public-offer-auth-gate__btn--secondary:hover {
+		background: #c8e6c9;
+		color: #0d3d0f;
+	}
+	.sw-vet-offer-nota__only-pf {
+		font-size: 0.85rem;
+		line-height: 1.45;
+		color: #6d4c41;
+		margin: 0 0 0.5rem;
+		padding: 0.5rem 0.6rem;
+		background: #fff3e0;
+		border: 1px solid #ffcc80;
+		border-radius: 8px;
+	}
 	body.page-servicii .sr-only {
 		position: absolute;
 		width: 1px;
@@ -622,8 +671,13 @@
 				</div>
 			</div>
 			<div id="S2-mid" class="sw-cell sw-cell-2" data-slot="S2-mid">
+				<div class="sw-s2-mid-tabs" role="tablist" aria-label="Categorii oferte servicii">
+					<button type="button" class="sw-s2-mid-tab" role="tab" id="sw-tab-S3" aria-selected="true" aria-controls="S3" data-sw-svc-tab="S3">Veterinare</button>
+					<button type="button" class="sw-s2-mid-tab" role="tab" id="sw-tab-S4" aria-selected="false" aria-controls="S4" data-sw-svc-tab="S4">Magazine</button>
+					<button type="button" class="sw-s2-mid-tab" role="tab" id="sw-tab-S5" aria-selected="false" aria-controls="S5" data-sw-svc-tab="S5">Saloane</button>
+				</div>
 				<div class="sw-s2-inner">
-					<div class="sw-s2-box sw-s2-box-1" id="S3" data-slot="S3">
+					<div class="sw-s2-box sw-s2-box-1 is-active" id="S3" data-slot="S3" role="tabpanel" aria-labelledby="sw-tab-S3">
 						<div class="sw-s2-1-band">CABINETE VETERINARE</div>
 						<div class="sw-s2-1-body">
 							<div class="sw-s2-1-grid">
@@ -640,7 +694,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="sw-s2-box sw-s2-box-1" id="S4" data-slot="S4">
+					<div class="sw-s2-box sw-s2-box-1" id="S4" data-slot="S4" role="tabpanel" aria-labelledby="sw-tab-S4">
 						<div class="sw-s2-1-band">MAGAZINE DE SPECIALITATE</div>
 						<div class="sw-s2-1-body">
 							<div class="sw-s2-1-grid">
@@ -657,7 +711,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="sw-s2-box sw-s2-box-1" id="S5" data-slot="S5">
+					<div class="sw-s2-box sw-s2-box-1" id="S5" data-slot="S5" role="tabpanel" aria-labelledby="sw-tab-S5">
 						<div class="sw-s2-1-band">SALOANE COSMETICA VET</div>
 						<div class="sw-s2-1-body">
 							<div class="sw-s2-1-grid">
@@ -746,22 +800,19 @@
 		<p class="sw-vet-offer-nota__note">
 			Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: primești pe <strong>email</strong> un <strong>cod alfanumeric comun</strong> cu cabinetul, datele de contact ale partenerului și detalii despre ofertă. Colaboratorul primește aceeași solicitare cu datele tale (nume, email; din cont: telefon și localitate dacă sunt completate). Verifică și folderul <strong>Spam</strong>. Dacă oferta are număr limitat de locuri, după epuizare dispare din listările publice.
 		</p>
+		{% if can_request_public_collab_offer %}
 		<form method="post" action="{% url 'public_offer_request' offer.pk %}">
 			{% csrf_token %}
-			{% if user.is_authenticated %}
 			<p class="sw-vet-offer-nota__email-hint">Vom trimite datele la: <strong>{{ user.email }}</strong></p>
-			{% else %}
-			<label class="sw-vet-offer-nota__label">
-				<span>Nume (opțional)</span>
-				<input type="text" name="name" maxlength="120" placeholder="Prenume" autocomplete="name" />
-			</label>
-			<label class="sw-vet-offer-nota__label">
-				<span>Email *</span>
-				<input type="email" name="email" required placeholder="adresa@email.com" autocomplete="email" />
-			</label>
-			{% endif %}
 			<button type="submit" class="sw-vet-offer-nota__cta">Vreau această ofertă</button>
 		</form>
+		{% elif user.is_authenticated %}
+		<p class="sw-vet-offer-nota__only-pf">Solicitarea ofertelor este disponibilă doar cu cont de persoană fizică.</p>
+		{% else %}
+		<div class="public-offer-auth-gate">
+			{% include "anunturi/includes/public_offer_request_guest_gate.html" %}
+		</div>
+		{% endif %}
 	</article>
 </template>
 {% endfor %}
@@ -802,22 +853,19 @@
 		<p class="sw-vet-offer-nota__note">
 			Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: primești pe <strong>email</strong> un <strong>cod alfanumeric comun</strong> cu partenerul, datele de contact și detalii despre ofertă. Colaboratorul primește aceeași solicitare cu datele tale (nume, email; din cont: telefon și localitate dacă sunt completate). Verifică și folderul <strong>Spam</strong>. Dacă oferta are număr limitat de locuri, după epuizare dispare din listările publice.
 		</p>
+		{% if can_request_public_collab_offer %}
 		<form method="post" action="{% url 'public_offer_request' offer.pk %}">
 			{% csrf_token %}
-			{% if user.is_authenticated %}
 			<p class="sw-vet-offer-nota__email-hint">Vom trimite datele la: <strong>{{ user.email }}</strong></p>
-			{% else %}
-			<label class="sw-vet-offer-nota__label">
-				<span>Nume (opțional)</span>
-				<input type="text" name="name" maxlength="120" placeholder="Prenume" autocomplete="name" />
-			</label>
-			<label class="sw-vet-offer-nota__label">
-				<span>Email *</span>
-				<input type="email" name="email" required placeholder="adresa@email.com" autocomplete="email" />
-			</label>
-			{% endif %}
 			<button type="submit" class="sw-vet-offer-nota__cta">Vreau această ofertă</button>
 		</form>
+		{% elif user.is_authenticated %}
+		<p class="sw-vet-offer-nota__only-pf">Solicitarea ofertelor este disponibilă doar cu cont de persoană fizică.</p>
+		{% else %}
+		<div class="public-offer-auth-gate">
+			{% include "anunturi/includes/public_offer_request_guest_gate.html" %}
+		</div>
+		{% endif %}
 	</article>
 </template>
 {% endfor %}
@@ -858,22 +906,19 @@
 		<p class="sw-vet-offer-nota__note">
 			Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: primești pe <strong>email</strong> un <strong>cod alfanumeric comun</strong> cu partenerul, datele de contact și detalii despre ofertă. Colaboratorul primește aceeași solicitare cu datele tale (nume, email; din cont: telefon și localitate dacă sunt completate). Verifică și folderul <strong>Spam</strong>. Dacă oferta are număr limitat de locuri, după epuizare dispare din listările publice.
 		</p>
+		{% if can_request_public_collab_offer %}
 		<form method="post" action="{% url 'public_offer_request' offer.pk %}">
 			{% csrf_token %}
-			{% if user.is_authenticated %}
 			<p class="sw-vet-offer-nota__email-hint">Vom trimite datele la: <strong>{{ user.email }}</strong></p>
-			{% else %}
-			<label class="sw-vet-offer-nota__label">
-				<span>Nume (opțional)</span>
-				<input type="text" name="name" maxlength="120" placeholder="Prenume" autocomplete="name" />
-			</label>
-			<label class="sw-vet-offer-nota__label">
-				<span>Email *</span>
-				<input type="email" name="email" required placeholder="adresa@email.com" autocomplete="email" />
-			</label>
-			{% endif %}
 			<button type="submit" class="sw-vet-offer-nota__cta">Vreau această ofertă</button>
 		</form>
+		{% elif user.is_authenticated %}
+		<p class="sw-vet-offer-nota__only-pf">Solicitarea ofertelor este disponibilă doar cu cont de persoană fizică.</p>
+		{% else %}
+		<div class="public-offer-auth-gate">
+			{% include "anunturi/includes/public_offer_request_guest_gate.html" %}
+		</div>
+		{% endif %}
 	</article>
 </template>
 {% endfor %}
@@ -881,6 +926,35 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+(function () {
+	/* Înălțime reală A0 → --nav-height pe html; același offset ca padding-top #main_content și ca #SW → fără fâșie #FCFCFC sub navbar (vezi PT). */
+	function swNavBarHeightPx() {
+		var a0 = document.getElementById("A0");
+		if (!a0) return 64;
+		try {
+			var px = parseFloat(window.getComputedStyle(a0).height);
+			if (isFinite(px) && px >= 28 && px <= 220) return Math.round(px);
+		} catch (e) {}
+		var h = Math.round(a0.getBoundingClientRect().height);
+		return h >= 28 && h <= 220 ? h : 64;
+	}
+	function swSyncNavHeight() {
+		var nh = Math.max(24, Math.min(220, swNavBarHeightPx()));
+		try {
+			/* Pe body, ca să bată body { --nav-height: clamp(...) } din style.css (copiii moștenesc de aici → padding-top #main_content). */
+			document.body.style.setProperty("--nav-height", nh + "px");
+		} catch (e) {}
+	}
+	swSyncNavHeight();
+	window.addEventListener("resize", swSyncNavHeight);
+	window.addEventListener("orientationchange", swSyncNavHeight);
+	if (typeof ResizeObserver !== "undefined") {
+		var a0 = document.getElementById("A0");
+		if (a0) new ResizeObserver(swSyncNavHeight).observe(a0);
+	}
+})();
+</script>
 <script>
 (function() {
 	var localitiesByCounty = {};
@@ -928,6 +1002,8 @@
 		var btns = Array.prototype.slice.call(document.querySelectorAll("#SW .sw-s2-species-btn"));
 		if (!btns.length) return;
 		var offerCards = Array.prototype.slice.call(document.querySelectorAll("#SW [data-offer-species]"));
+		/* Sloturi goale din grilă: fără data-offer-species, vechiul filtru nu le atingea — rămâneau la fel la orice județ/oraș */
+		var gridPlaceholders = Array.prototype.slice.call(document.querySelectorAll("#SW .sw-s2-1-cell:not(.sw-s2-1-cell--vet-offer)"));
 		var countyInput = document.getElementById("sw-judet");
 		var cityInput = document.getElementById("sw-oras");
 
@@ -939,6 +1015,10 @@
 		function applyFilters(species) {
 			var countyWanted = norm(countyInput ? countyInput.value : "");
 			var cityWanted = norm(cityInput ? cityInput.value : "");
+			var geoActive = !!(countyWanted || cityWanted);
+			gridPlaceholders.forEach(function(cell) {
+				cell.style.display = geoActive ? "none" : "";
+			});
 			offerCards.forEach(function(card) {
 				var dog = card.getAttribute("data-species-dog") === "1";
 				var cat = card.getAttribute("data-species-cat") === "1";
@@ -979,6 +1059,55 @@
 		}
 		var active = btns.find(function(b) { return b.classList.contains("is-active"); }) || btns[0];
 		setActive(active);
+	})();
+
+	// S2-mid: tab-uri S3/S4/S5 la lățime mobilă (portret + landscape); peste ~768px bara e ascunsă în CSS
+	(function initSwMidSvcTabs() {
+		var tablist = document.querySelector("#S2-mid .sw-s2-mid-tabs");
+		if (!tablist) return;
+		var mq = window.matchMedia("(max-width: 767.98px), (orientation: landscape) and (max-height: 500px)");
+		var tabs = Array.prototype.slice.call(tablist.querySelectorAll(".sw-s2-mid-tab"));
+		var panels = { S3: document.getElementById("S3"), S4: document.getElementById("S4"), S5: document.getElementById("S5") };
+
+		function setTab(id) {
+			tabs.forEach(function(t) {
+				var on = t.getAttribute("data-sw-svc-tab") === id;
+				t.setAttribute("aria-selected", on ? "true" : "false");
+			});
+			Object.keys(panels).forEach(function(k) {
+				var p = panels[k];
+				if (p) p.classList.toggle("is-active", k === id);
+			});
+		}
+
+		function applyMqState() {
+			if (mq.matches) {
+				var chosen = tabs.find(function(t) { return t.getAttribute("aria-selected") === "true"; });
+				var id = (chosen && chosen.getAttribute("data-sw-svc-tab")) || "S3";
+				setTab(id);
+			} else {
+				Object.keys(panels).forEach(function(k) {
+					var p = panels[k];
+					if (p) p.classList.remove("is-active");
+				});
+				tabs.forEach(function(t) { t.setAttribute("aria-selected", "false"); });
+			}
+		}
+
+		tablist.addEventListener("click", function(ev) {
+			if (!mq.matches) return;
+			var btn = ev.target.closest(".sw-s2-mid-tab");
+			if (!btn) return;
+			var id = btn.getAttribute("data-sw-svc-tab");
+			if (id) setTab(id);
+		});
+
+		if (typeof mq.addEventListener === "function") {
+			mq.addEventListener("change", applyMqState);
+		} else if (typeof mq.addListener === "function") {
+			mq.addListener(applyMqState);
+		}
+		applyMqState();
 	})();
 })();
 </script>

@@ -61,22 +61,19 @@
 				<p class="oferte-d-note">
 					Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: primești pe <strong>email</strong> un <strong>cod alfanumeric comun</strong> cu cabinetul, datele de contact ale partenerului și detalii despre ofertă. Colaboratorul primește aceeași solicitare cu datele tale (nume, email; din cont: telefon și localitate dacă sunt completate). Verifică și folderul <strong>Spam</strong>. Dacă oferta are număr limitat de locuri, după epuizare dispare din listările publice.
 				</p>
+				{% if can_request_public_collab_offer %}
 				<form class="oferte-d-form" method="post" action="{% url 'public_offer_request' offer.pk %}">
 					{% csrf_token %}
-					{% if user.is_authenticated %}
 					<p class="oferte-d-email-hint">Vom trimite datele la: <strong>{{ user.email }}</strong></p>
-					{% else %}
-					<label class="oferte-d-label">
-						<span>Nume (opțional)</span>
-						<input type="text" name="name" maxlength="120" placeholder="Prenume" autocomplete="name" />
-					</label>
-					<label class="oferte-d-label">
-						<span>Email *</span>
-						<input type="email" name="email" required placeholder="adresa@email.com" autocomplete="email" />
-					</label>
-					{% endif %}
 					<button type="submit" class="oferte-d-cta">Vreau această ofertă</button>
 				</form>
+				{% elif user.is_authenticated %}
+				<p class="oferte-d-only-pf">Solicitarea ofertelor este disponibilă doar cu cont de persoană fizică.</p>
+				{% else %}
+				<div class="public-offer-auth-gate oferte-d-auth-gate">
+					{% include "anunturi/includes/public_offer_request_guest_gate.html" %}
+				</div>
+				{% endif %}
 			</div>
 		</article>
 	</div>
@@ -210,6 +207,56 @@
 		font-size: 0.9rem;
 		margin: 0 0 0.75rem;
 		color: #37474f;
+	}
+	.oferte-d-only-pf {
+		font-size: 0.88rem;
+		line-height: 1.45;
+		color: #5d4037;
+		margin: 0 0 1rem;
+		padding: 0.65rem 0.75rem;
+		background: #fff3e0;
+		border-radius: 8px;
+		border: 1px solid #ffcc80;
+	}
+	.oferte-d-auth-gate {
+		margin: 0 0 1rem;
+	}
+	.public-offer-auth-gate__text {
+		font-size: 0.88rem;
+		line-height: 1.45;
+		color: #37474f;
+		margin: 0 0 0.55rem;
+	}
+	.public-offer-auth-gate__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+	}
+	.public-offer-auth-gate__btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-decoration: none;
+		font-size: 0.86rem;
+		font-weight: 800;
+		padding: 0.5rem 0.75rem;
+		border-radius: 8px;
+		border: 1px solid #2e7d32;
+		background: #2e7d32;
+		color: #fff;
+	}
+	.public-offer-auth-gate__btn:hover {
+		background: #1b5e20;
+		color: #fff;
+	}
+	.public-offer-auth-gate__btn--secondary {
+		background: #e3f2fd;
+		color: #0d47a1;
+		border-color: #1565c0;
+	}
+	.public-offer-auth-gate__btn--secondary:hover {
+		background: #bbdefb;
+		color: #0d47a1;
 	}
 	.oferte-d-label {
 		display: flex;
