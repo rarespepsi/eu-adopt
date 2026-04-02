@@ -70,7 +70,11 @@
 				margin: 0;
 				box-sizing: border-box;
 				overflow: hidden;
-				background: #f5e39b;
+				/* doar culoare de rezervă — imaginea WT e setată din JS pe #MW (sub tot, inclusiv colțul cu QR) */
+				background-color: #f5e39b;
+				background-size: cover;
+				background-position: center;
+				background-repeat: no-repeat;
 			}
 
 			.mypet-fisa-inner {
@@ -81,6 +85,7 @@
 				height: 100%;
 				margin: 0;
 				box-sizing: border-box;
+				background: transparent;
 			}
 			.mypet-fisa-col {
 				box-sizing: border-box;
@@ -795,6 +800,22 @@
 				user-select: none;
 				cursor: default;
 			}
+			/* Desktop: colțuri vitrate — se vede fundalul cu becuri/animale prin Adopt + QR */
+			@media (min-width: 821px) {
+				.pet-qr-corner {
+					background: rgba(255, 255, 255, 0.38);
+					backdrop-filter: blur(12px);
+					-webkit-backdrop-filter: blur(12px);
+					box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+				}
+				.pet-adopt-corner {
+					background: rgba(157, 28, 28, 0.72);
+					backdrop-filter: blur(10px);
+					-webkit-backdrop-filter: blur(10px);
+					border-color: rgba(255, 255, 255, 0.28);
+					box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+				}
+			}
 			@media (max-width: 820px) {
 				.pet-qr-corner { width: 132px; }
 				.pet-qr-corner__img { width: 116px; height: 116px; }
@@ -804,6 +825,234 @@
 					height: 132px;
 					font-size: 0.9rem;
 				}
+			}
+
+			/* Mobil portret (și foarte îngust): fișă — coloană sub coloană + scroll pagină */
+			@media (max-width: 768px) and (orientation: portrait),
+			       (max-width: 420px) {
+				body.page-pet-single #main_content {
+					height: auto;
+					min-height: calc(100dvh - var(--nav-height, 64px));
+					overflow-y: auto;
+					overflow-x: hidden;
+				}
+				.mypet-fisa-wrap {
+					height: auto;
+					min-height: calc(100dvh - var(--nav-height, 64px));
+					overflow: visible;
+					/* spațiu sub ultima casetă — butonul + QR sunt fixed și altfel acoperă textul */
+					padding-bottom: calc(240px + env(safe-area-inset-bottom, 0px));
+					box-sizing: border-box;
+				}
+				body.page-pet-single:has(#petAdoptCorner) .mypet-fisa-wrap {
+					padding-bottom: calc(340px + env(safe-area-inset-bottom, 0px));
+				}
+				.mypet-fisa-inner {
+					grid-template-columns: minmax(0, 1fr);
+					grid-template-rows: auto;
+					grid-auto-rows: auto;
+					align-content: start;
+				}
+				.mypet-fisa-header-row {
+					grid-column: 1 / -1;
+					grid-row: auto;
+					order: -1;
+				}
+				.mypet-fisa-col-photos {
+					grid-column: 1 / -1;
+					grid-row: auto;
+					order: 0;
+					height: auto;
+					min-height: 0;
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+					grid-template-rows: minmax(110px, 30vw) minmax(110px, 30vw);
+					gap: 2px;
+				}
+				.mypet-fisa-col-photos .mypet-fisa-photo-slot {
+					flex: unset;
+					min-height: 0;
+				}
+				.mypet-fisa-col-main {
+					grid-column: 1 / -1;
+					grid-row: auto;
+					order: 1;
+					padding: 0.35rem 0.45rem 0.25rem;
+				}
+				.mypet-fisa-col-traits {
+					grid-column: 1 / -1;
+					grid-row: auto;
+					order: 2;
+					padding: 0.25rem 0.45rem 1.25rem;
+				}
+				.mypet-fisa-main-box {
+					border-radius: 8px;
+				}
+				.mypet-fisa-main-cols {
+					grid-template-columns: minmax(0, 1fr);
+				}
+				.mypet-fisa-header-slot--left {
+					padding-left: 0.35rem;
+				}
+				.mypet-fisa-header-slot--right {
+					padding-right: 0.35rem;
+				}
+				/* QR jos; adopt deasupra lui (fără suprapunere). Ambele pe dreapta, lățime adaptată. */
+				.pet-qr-corner {
+					right: 10px !important;
+					bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+					width: min(132px, 38vw);
+				}
+				.pet-qr-corner__img {
+					width: min(116px, 32vw);
+					height: min(116px, 32vw);
+				}
+				.pet-adopt-corner {
+					right: 10px !important;
+					left: auto;
+					/* ~înălțime bloc QR + gap (~188px) de la baza viewport */
+					bottom: calc(188px + env(safe-area-inset-bottom, 0px)) !important;
+					width: min(132px, 38vw);
+					height: min(120px, 22vw);
+					max-height: 128px;
+					font-size: 0.82rem;
+					padding: 8px;
+				}
+				/* Etichetă stare adopție — deasupra QR (sau deasupra stivei adopt+QR) */
+				body.page-pet-single:not(:has(#petAdoptCorner)) .pet-adoption-state-corner {
+					right: 10px !important;
+					bottom: calc(198px + env(safe-area-inset-bottom, 0px)) !important;
+				}
+				body.page-pet-single:has(#petAdoptCorner) .pet-adoption-state-corner {
+					right: 10px !important;
+					bottom: calc(328px + env(safe-area-inset-bottom, 0px)) !important;
+				}
+			}
+
+			/* Mobil landscape (același prag ca PT): 3 coloane + scroll vertical; Adopt + QR în flux sub caseta din dreapta */
+			@media (max-width: 767.98px) and (orientation: landscape) {
+				body.page-pet-single #main_content {
+					height: auto !important;
+					min-height: calc(100dvh - var(--nav-height, 64px)) !important;
+					overflow-y: auto !important;
+					overflow-x: hidden !important;
+					-webkit-overflow-scrolling: touch;
+				}
+				.mypet-fisa-wrap {
+					height: auto !important;
+					min-height: 0 !important;
+					overflow: visible !important;
+					padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
+				}
+				.mypet-fisa-inner {
+					grid-template-columns: minmax(0, 0.62fr) minmax(0, 1.85fr) minmax(0, 1.02fr) !important;
+					grid-template-rows: auto auto !important;
+					grid-auto-rows: auto !important;
+					align-content: start !important;
+					height: auto !important;
+					min-height: 0 !important;
+				}
+				.mypet-fisa-header-row {
+					grid-column: 2 / 4 !important;
+					grid-row: 1 !important;
+					order: 0 !important;
+				}
+				.mypet-fisa-col-photos {
+					grid-column: 1 / 2 !important;
+					grid-row: 1 / 3 !important;
+					order: 0 !important;
+					display: flex !important;
+					flex-direction: column !important;
+					height: auto !important;
+					align-self: start !important;
+				}
+				.mypet-fisa-col-photos .mypet-fisa-photo-slot {
+					flex: 0 0 auto !important;
+					min-height: 52px !important;
+					max-height: min(22vh, 120px) !important;
+				}
+				.mypet-fisa-col-main {
+					grid-column: 2 / 3 !important;
+					grid-row: 2 !important;
+					order: 0 !important;
+					padding: 0.2rem 0.35rem !important;
+					min-width: 0 !important;
+				}
+				.mypet-fisa-col-traits {
+					grid-column: 3 / 4 !important;
+					grid-row: 2 !important;
+					order: 0 !important;
+					padding: 0.2rem 0.28rem 0.35rem 0 !important;
+					min-width: 0 !important;
+				}
+				.mypet-fisa-col-traits .mypet-fisa-traits-box,
+				.mypet-fisa-col-traits .mypet-fisa-observatii-box {
+					flex: 0 1 auto !important;
+					min-height: 0 !important;
+				}
+				.mypet-fisa-main-cols {
+					grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+				}
+				.mypet-fisa-main-box {
+					border-radius: 6px !important;
+				}
+				.mypet-fisa-traits-box {
+					border-radius: 0 6px 6px 0 !important;
+				}
+				.pet-adopt-qr-inline {
+					display: flex !important;
+					flex-direction: row !important;
+					flex-wrap: wrap !important;
+					align-items: flex-start !important;
+					justify-content: center !important;
+					gap: 8px !important;
+					margin-top: 0.4rem !important;
+					width: 100% !important;
+					box-sizing: border-box !important;
+				}
+				.mypet-fisa-col-traits .pet-adoption-state-corner {
+					position: static !important;
+					display: table !important;
+					margin: 0.35rem auto 0.15rem !important;
+					align-self: center !important;
+				}
+				.pet-adopt-qr-inline .pet-adopt-corner,
+				.pet-adopt-qr-inline .pet-qr-corner {
+					position: static !important;
+					right: auto !important;
+					bottom: auto !important;
+					left: auto !important;
+					width: min(124px, 36vw) !important;
+					height: auto !important;
+					max-height: none !important;
+					flex-shrink: 0 !important;
+					margin: 0 !important;
+					backdrop-filter: none !important;
+					-webkit-backdrop-filter: none !important;
+				}
+				.pet-adopt-qr-inline .pet-adopt-corner {
+					min-height: 96px !important;
+					display: flex !important;
+					align-items: center !important;
+					justify-content: center !important;
+					font-size: 0.78rem !important;
+				}
+				.pet-adopt-qr-inline .pet-qr-corner__img {
+					width: min(108px, 32vw) !important;
+					height: min(108px, 32vw) !important;
+				}
+			}
+
+			/* Rând Adopt+QR: pe desktop copiii rămân fixed (ies din flux); wrapperul se prăbușește */
+			.pet-adopt-qr-inline {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				align-items: flex-start;
+				justify-content: center;
+				gap: 10px;
+				width: 100%;
+				box-sizing: border-box;
 			}
 
 			/* Modal alegere: ridicare personală vs transport înainte de cerere adopție */
@@ -1228,6 +1477,30 @@
 												</div>
 											</div>
 											{% endif %}
+											<div
+												class="pet-adoption-state-corner"
+												aria-label="Stare adopție"
+												style="position:fixed;right:18px;bottom:120px;z-index:14;padding:6px 10px;border-radius:999px;background:rgba(0,0,0,0.72);color:#fff;font-size:12px;font-weight:800;letter-spacing:.02em;"
+											>{{ pet.adoption_state_label|default:"Liber" }}</div>
+											<div class="pet-adopt-qr-inline" id="petAdoptQrInline" aria-label="Adopție și cod QR">
+												{% if can_send_pet_message %}
+												<div
+													class="pet-adopt-corner"
+													id="petAdoptCorner"
+													role="button"
+													tabindex="0"
+													data-adopt-url="{% url 'pet_adoption_request' pet.pk %}"
+													data-transport-url="{% url 'transport' %}?from_adoption=1&pet={{ pet.pk }}"
+													data-servicii-url="{% url 'servicii' %}"
+													aria-label="Vreau să adopt"
+												>VREAU SĂ ADOPT</div>
+												{% endif %}
+												<div class="pet-qr-corner" id="petQrCorner" aria-label="Cod QR fișă">
+													<p class="pet-qr-corner__title">Scanează fișa</p>
+													<img class="pet-qr-corner__img" id="petQrImg" alt="Cod QR către fișă" />
+													<p class="pet-qr-corner__hint">Deschide pe telefon</p>
+												</div>
+											</div>
 										</div>
 									</div>
 								</section>
@@ -1293,27 +1566,7 @@
 				{% endif %}
 			</div>
 		</div>
-		<div
-			class="pet-adopt-corner"
-			id="petAdoptCorner"
-			role="button"
-			tabindex="0"
-			data-adopt-url="{% url 'pet_adoption_request' pet.pk %}"
-			data-transport-url="{% url 'transport' %}?from_adoption=1&pet={{ pet.pk }}"
-			data-servicii-url="{% url 'servicii' %}"
-			aria-label="Vreau să adopt"
-		>VREAU SĂ ADOPT</div>
 		{% endif %}
-		<div
-			class="pet-adoption-state-corner"
-			aria-label="Stare adopție"
-			style="position:fixed;right:18px;bottom:120px;z-index:14;padding:6px 10px;border-radius:999px;background:rgba(0,0,0,0.72);color:#fff;font-size:12px;font-weight:800;letter-spacing:.02em;"
-		>{{ pet.adoption_state_label|default:"Liber" }}</div>
-		<div class="pet-qr-corner" id="petQrCorner" aria-label="Cod QR fișă">
-			<p class="pet-qr-corner__title">Scanează fișa</p>
-			<img class="pet-qr-corner__img" id="petQrImg" alt="Cod QR către fișă" />
-			<p class="pet-qr-corner__hint">Deschide pe telefon</p>
-		</div>
 
 		{% with page_url=request.build_absolute_uri %}
 		<script>
@@ -1327,6 +1580,10 @@
 			];
 			function setRandomWT() {
 				var url = fundalUrls[Math.floor(Math.random() * fundalUrls.length)];
+				var wrap = document.getElementById("MW");
+				if (wrap) {
+					wrap.style.backgroundImage = "url(" + url + ")";
+				}
 				document.querySelectorAll("#MW .mypet-fisa-main-box, #MW .mypet-fisa-traits-box").forEach(function(el) {
 					el.style.backgroundImage = "url(" + url + ")";
 				});
@@ -1532,6 +1789,78 @@
 					}).catch(function() {});
 				} catch (e) {}
 			}
+			async function copyPetLinkToClipboard() {
+				try {
+					if (navigator.clipboard && navigator.clipboard.writeText) {
+						await navigator.clipboard.writeText(pageUrl);
+						return true;
+					}
+				} catch (e) {}
+				try {
+					var ta = document.createElement("textarea");
+					ta.value = pageUrl;
+					ta.setAttribute("readonly", "");
+					ta.style.position = "fixed";
+					ta.style.opacity = "0";
+					ta.style.left = "-9999px";
+					document.body.appendChild(ta);
+					ta.select();
+					var ok = document.execCommand("copy");
+					document.body.removeChild(ta);
+					return !!ok;
+				} catch (e2) {
+					return false;
+				}
+			}
+			function isLikelyMobileUi() {
+				try {
+					if (window.matchMedia("(pointer: coarse)").matches) return true;
+					if (window.matchMedia("(max-width: 768px)").matches) return true;
+				} catch (e) {}
+				return false;
+			}
+			/**
+			 * Distribuie nativ când există navigator.share; altfel copiază linkul.
+			 * Pe multe telefoane (WebView, browser vechi) share lipsește — mesajul nu trebuie să pară „doar pentru laptop”.
+			 */
+			async function shareOrCopyPetLink() {
+				trackPetEvent("share_click");
+				var name = "{{ pet.nume|default:''|escapejs }}";
+				var shareTitle = (name ? ("Fișa lui " + name) : "Fișa animalului") + " | EU-Adopt";
+				var fullPayload = { title: shareTitle, text: "Uite fișa pe EU-Adopt:", url: pageUrl };
+				var urlOnly = { url: pageUrl };
+				if (navigator.share) {
+					var tryShare = async function(payload) {
+						await navigator.share(payload);
+					};
+					try {
+						if (navigator.canShare && !navigator.canShare(fullPayload) && navigator.canShare(urlOnly)) {
+							await tryShare(urlOnly);
+						} else {
+							await tryShare(fullPayload);
+						}
+						return;
+					} catch (err) {
+						if (err && err.name === "AbortError") return;
+						try {
+							await tryShare(urlOnly);
+							return;
+						} catch (err2) {
+							if (err2 && err2.name === "AbortError") return;
+						}
+					}
+				}
+				var mobile = isLikelyMobileUi();
+				if (await copyPetLinkToClipboard()) {
+					showPetAppMessage(mobile
+						? "Linkul fișei a fost copiat. Deschide aplicația unde vrei să îl trimiți (WhatsApp, Mesaje etc.) și lipește acolo (ține apăsat în câmp → Lipire)."
+						: "Linkul fișei a fost copiat. Poți să îl lipești cu Ctrl+V în mesaj, e-mail sau unde vrei să trimiți fișa.");
+					return;
+				}
+				showPetAppMessage(mobile
+					? "Nu am putut copia automat linkul pe acest browser. Folosește codul QR din colț sau meniul browserului (Distribuie / Copiază link), dacă îl vezi."
+					: "Nu am putut copia automat linkul. Copiază-l din bara de adrese sau folosește codul QR din colț.");
+			}
 			// QR în colț (encodează linkul fișei ca imagine)
 			(function initQrCorner() {
 				var img = document.getElementById("petQrImg");
@@ -1540,22 +1869,10 @@
 				img.src = qrUrl;
 			})();
 			if (modalShare) {
-				modalShare.addEventListener("click", async function(e) {
+				modalShare.addEventListener("click", function(e) {
 					e.preventDefault();
 					e.stopPropagation();
-					trackPetEvent("share_click");
-					if (!navigator.share) {
-						showPetAppMessage("Distribuirea (meniul de trimitere) este disponibilă pe telefon (Chrome/Android). Pe laptop nu apare acest meniu.");
-						return;
-					}
-					try {
-						var name = "{{ pet.nume|default:''|escapejs }}";
-						await navigator.share({
-							title: (name ? ("Fișa lui " + name) : "Fișa animalului") + " | EU‑Adopt",
-							text: "Uite fișa pe EU‑Adopt:",
-							url: pageUrl
-						});
-					} catch (err) {}
+					shareOrCopyPetLink();
 				});
 			}
 			document.addEventListener("click", function(e) {
@@ -1629,26 +1946,15 @@
 					shrinkTextToFit();
 				});
 
-				async function doShare() {
-					trackPetEvent("share_click");
-					if (!navigator.share) {
-						showPetAppMessage("Distribuirea (meniul de trimitere) este disponibilă pe telefon (Chrome/Android). Pe laptop nu apare acest meniu.");
-						return;
-					}
-					try {
-						var name = "{{ pet.nume|default:''|escapejs }}";
-						await navigator.share({
-							title: (name ? ("Fișa lui " + name) : "Fișa animalului") + " | EU‑Adopt",
-							text: "Uite fișa pe EU‑Adopt:",
-							url: pageUrl
-						});
-					} catch (err) {}
-				}
-				b.addEventListener("click", function(e) { e.preventDefault(); e.stopPropagation(); doShare(); });
+				b.addEventListener("click", function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+					shareOrCopyPetLink();
+				});
 				b.addEventListener("keydown", function(e) {
 					if (e.key === "Enter" || e.key === " ") {
 						e.preventDefault();
-						doShare();
+						shareOrCopyPetLink();
 					}
 				});
 			})();

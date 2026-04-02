@@ -84,6 +84,13 @@
 		buttons.forEach(attach);
 	}
 
+	/** Apelat după P2 „mai multe” (fetch): butoanele noi nu erau legate la DOMContentLoaded. */
+	function bindWishInRoot(root) {
+		if (!root || !root.querySelectorAll) return;
+		root.querySelectorAll('.wish-btn[data-animal-id]').forEach(attach);
+	}
+	window.euadoptWishlistBindRoot = bindWishInRoot;
+
 	if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', init);
 	} else {

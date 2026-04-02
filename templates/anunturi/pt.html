@@ -7,7 +7,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt89-mobil-scroll-main" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt102-filtre-tabs" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -38,6 +38,8 @@
 			overflow-x: hidden !important;
 			-webkit-overflow-scrolling: touch;
 			overscroll-behavior-y: contain;
+			/* P3 la capătul scroll-ului nu rămâne sub bara de jos iOS / Chrome */
+			padding-bottom: max(0.65rem, env(safe-area-inset-bottom, 0px)) !important;
 		}
 	}
 	#PW .pt-strip-item--p1 img,
@@ -185,29 +187,30 @@
 								<button type="button" id="ptMobileFiltersClose" class="pt-mobile-filters-close" aria-label="Închide filtre">×</button>
 							</div>
 							<p class="p3-title">Caută prietenul tău</p>
-							<ul class="p3-tip-butoane clearfix animal_filter_list">
+							<ul class="p3-tip-butoane clearfix animal_filter_list" id="pt_animal_filter_tabs">
 								<li>
-									<a href="{% url 'pets_all' %}{% if selected_judet or selected_marime or selected_varsta or selected_sex %}?{% endif %}{% if selected_judet %}judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}{% if selected_judet %}&{% endif %}marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}{% if selected_judet or selected_marime %}&{% endif %}varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}{% if selected_judet or selected_marime or selected_varsta %}&{% endif %}sex={{ selected_sex|urlencode }}{% endif %}" class="{% if not selected_species %}active{% endif %}">
+									<a href="{% url 'pets_all' %}{% if selected_judet or selected_marime or selected_varsta or selected_sex %}?{% endif %}{% if selected_judet %}judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}{% if selected_judet %}&{% endif %}marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}{% if selected_judet or selected_marime %}&{% endif %}varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}{% if selected_judet or selected_marime or selected_varsta %}&{% endif %}sex={{ selected_sex|urlencode }}{% endif %}" class="{% if not selected_species %}active{% endif %}" data-pt-species="">
 										<span class="p3-btn-label">Toate</span><span class="p3-btn-count">—</span>
 									</a>
 								</li>
 								<li>
-									<a href="{% url 'pets_all' %}?species=dog{% if selected_judet %}&judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}&marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}&varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}&sex={{ selected_sex|urlencode }}{% endif %}" class="{% if selected_species == 'dog' %}active{% endif %}">
+									<a href="{% url 'pets_all' %}?species=dog{% if selected_judet %}&judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}&marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}&varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}&sex={{ selected_sex|urlencode }}{% endif %}" class="{% if selected_species == 'dog' %}active{% endif %}" data-pt-species="dog">
 										<span class="p3-btn-label">Câini</span><span class="p3-btn-count">—</span>
 									</a>
 								</li>
 								<li>
-									<a href="{% url 'pets_all' %}?species=cat{% if selected_judet %}&judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}&marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}&varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}&sex={{ selected_sex|urlencode }}{% endif %}" class="{% if selected_species == 'cat' %}active{% endif %}">
+									<a href="{% url 'pets_all' %}?species=cat{% if selected_judet %}&judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}&marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}&varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}&sex={{ selected_sex|urlencode }}{% endif %}" class="{% if selected_species == 'cat' %}active{% endif %}" data-pt-species="cat">
 										<span class="p3-btn-label">Pisici</span><span class="p3-btn-count">—</span>
 									</a>
 								</li>
 								<li>
-									<a href="{% url 'pets_all' %}?species=other{% if selected_judet %}&judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}&marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}&varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}&sex={{ selected_sex|urlencode }}{% endif %}" class="{% if selected_species == 'other' %}active{% endif %}">
+									<a href="{% url 'pets_all' %}?species=other{% if selected_judet %}&judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}&marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}&varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}&sex={{ selected_sex|urlencode }}{% endif %}" class="{% if selected_species == 'other' %}active{% endif %}" data-pt-species="other">
 										<span class="p3-btn-label">Altele</span><span class="p3-btn-count">—</span>
 									</a>
 								</li>
 							</ul>
 							<form method="get" action="{% url 'pets_all' %}" id="filtre-animale" class="pt-p4-filtre-form">
+								<input type="hidden" name="species" id="pt_filter_species_field" value="{{ selected_species|default:'' }}" autocomplete="off" />
 								<div class="p3-filters-grid">
 									<div class="p3-filter-cell">
 										<label for="id_judet_pt">Județ</label>
@@ -460,6 +463,8 @@
 	var grid = document.getElementById("pt_p2_grid");
 	var sentinel = document.getElementById("pt_p2_load_sentinel");
 	var scrollEl = document.querySelector("#P2 .pt-p2-scroll");
+	var mainContent = document.getElementById("main_content");
+	var mqMob = window.matchMedia("(max-width: 767.98px)");
 	if (!grid || !sentinel || !scrollEl) return;
 	var baseUrl = grid.getAttribute("data-p2-more-url") || "";
 	if (!baseUrl) return;
@@ -479,18 +484,69 @@
 		return u.toString();
 	}
 
+	var _p2MobTicker = null;
 	function finish() {
 		hasMore = false;
 		sentinel.setAttribute("hidden", "");
 		if (io) io.disconnect();
+		if (_p2MobTicker) {
+			clearInterval(_p2MobTicker);
+			_p2MobTicker = null;
+		}
+	}
+
+	/* Folosim mereu .pt-p2-scroll ca root când e scrollabil (overflow auto); fără condiția scrollHeight>clientHeight
+	   (pe mobil grid-ul încape uneori fără scrollbar în casetă → root=null strica IO / nu mai pornea următorul lot). */
+	function p2PickIoRoot() {
+		try {
+			var st = window.getComputedStyle(scrollEl);
+			var oy = st.overflowY;
+			if (oy !== "auto" && oy !== "scroll" && oy !== "overlay") return null;
+			return scrollEl;
+		} catch (e) {
+			return null;
+		}
+	}
+
+	function sentinelNearVisibleEdge() {
+		if (!sentinel || !sentinel.isConnected || !hasMore) return false;
+		var margin = mqMob.matches ? 900 : 400;
+		var r = sentinel.getBoundingClientRect();
+		var root = p2PickIoRoot();
+		if (root) {
+			var b = root.getBoundingClientRect();
+			return r.top <= b.bottom + margin && r.bottom >= b.top - margin;
+		}
+		var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+		return r.top <= vh + margin && r.bottom >= -margin;
 	}
 
 	var io = null;
+	function p2IoRootMargin() {
+		return mqMob.matches ? "900px" : "400px";
+	}
+	function p2SetupIo() {
+		if (io) {
+			try { io.disconnect(); } catch (e) {}
+			io = null;
+		}
+		if (!hasMore) return;
+		var root = p2PickIoRoot();
+		io = new IntersectionObserver(
+			function(entries) {
+				for (var i = 0; i < entries.length; i++) {
+					if (entries[i].isIntersecting) loadMore();
+				}
+			},
+			{ root: root, rootMargin: p2IoRootMargin(), threshold: 0 }
+		);
+		io.observe(sentinel);
+	}
 
 	function loadMore() {
 		if (loading || !hasMore) return;
 		loading = true;
-		fetch(buildPageUrl(), { credentials: "same-origin", headers: { Accept: "application/json" } })
+		fetch(buildPageUrl(), { credentials: "same-origin", cache: "no-store", headers: { Accept: "application/json" } })
 			.then(function(r) { return r.json(); })
 			.then(function(data) {
 				if (!data || !data.ok) throw new Error("p2-more");
@@ -498,27 +554,71 @@
 				wrap.innerHTML = data.html || "";
 				if (window.euadoptInitPetImageRotation) window.euadoptInitPetImageRotation(wrap);
 				while (wrap.firstChild) grid.appendChild(wrap.firstChild);
+				if (window.euadoptWishlistBindRoot) window.euadoptWishlistBindRoot(grid);
 				hasMore = !!data.has_more;
 				nextOffset = parseInt(data.next_offset, 10) || nextOffset;
 				grid.setAttribute("data-p2-offset", String(nextOffset));
 				grid.setAttribute("data-p2-has-more", hasMore ? "1" : "0");
 				if (!hasMore) finish();
+				return true;
 			})
-			.catch(function() {})
-			.then(function() { loading = false; });
+			.catch(function() { return false; })
+			.finally(function() { loading = false; })
+			.then(function(ok) {
+				if (ok && hasMore) {
+					requestAnimationFrame(function() {
+						p2SetupIo();
+						if (!loading && hasMore && sentinelNearVisibleEdge()) loadMore();
+					});
+				}
+			});
 	}
 
-	/* root = viewport: pe mobil .pt-p2-scroll are height:auto și nu face scroll intern — user dă scroll pe pagină;
-	   cu root = scrollEl sentinelul nu mai intersectează corect și nu se încarcă loturi noi. Desktop: scroll în P2 tot mișcă sentinelul în viewport → același root merge. */
-	io = new IntersectionObserver(
-		function(entries) {
-			for (var i = 0; i < entries.length; i++) {
-				if (entries[i].isIntersecting) loadMore();
-			}
-		},
-		{ root: null, rootMargin: "320px", threshold: 0 }
-	);
-	io.observe(sentinel);
+	p2SetupIo();
+	/* Dacă sentinelul e deja în zonă la încărcare, unele browsere nu re-trimit IO imediat */
+	requestAnimationFrame(function() {
+		requestAnimationFrame(scheduleP2ScrollProbe);
+	});
+
+	var _p2ScrollProbeT = null;
+	function scheduleP2ScrollProbe() {
+		if (!hasMore || loading) return;
+		clearTimeout(_p2ScrollProbeT);
+		_p2ScrollProbeT = setTimeout(function() {
+			_p2ScrollProbeT = null;
+			if (loading || !hasMore) return;
+			if (sentinelNearVisibleEdge()) loadMore();
+		}, 80);
+	}
+	scrollEl.addEventListener("scroll", scheduleP2ScrollProbe, { passive: true });
+	window.addEventListener("scroll", scheduleP2ScrollProbe, { passive: true });
+	if (mainContent) mainContent.addEventListener("scroll", scheduleP2ScrollProbe, { passive: true });
+	scrollEl.addEventListener("touchend", scheduleP2ScrollProbe, { passive: true });
+	if (mainContent) mainContent.addEventListener("touchend", scheduleP2ScrollProbe, { passive: true });
+	document.addEventListener("touchend", scheduleP2ScrollProbe, { passive: true });
+
+	/* Pe mobil (fără DevTools): backup periodic când IO nu trage la timp */
+	_p2MobTicker = setInterval(function() {
+		if (!hasMore) {
+			clearInterval(_p2MobTicker);
+			_p2MobTicker = null;
+			return;
+		}
+		if (!mqMob.matches) return;
+		if (!loading && sentinelNearVisibleEdge()) loadMore();
+	}, 1100);
+
+	var _p2IoResizeT = null;
+	function onP2IoResize() {
+		clearTimeout(_p2IoResizeT);
+		_p2IoResizeT = setTimeout(function() {
+			_p2IoResizeT = null;
+			if (hasMore) p2SetupIo();
+			scheduleP2ScrollProbe();
+		}, 200);
+	}
+	window.addEventListener("resize", onP2IoResize);
+	window.addEventListener("orientationchange", onP2IoResize);
 })();
 </script>
 <script>
@@ -545,13 +645,34 @@
 		Array.prototype.forEach.call(filterSelects, function(sel) {
 			snap[sel.name] = sel.value;
 		});
+		var sf = document.getElementById("pt_filter_species_field");
+		if (sf) snap.species = sf.value || "";
 		return snap;
+	}
+	function syncSpeciesTabsFromField() {
+		var sf = document.getElementById("pt_filter_species_field");
+		var list = document.getElementById("pt_animal_filter_tabs");
+		if (!sf || !list) return;
+		var v = (sf.value || "").trim().toLowerCase();
+		var want = (v === "dog" || v === "cat" || v === "other") ? v : "";
+		var links = list.querySelectorAll("a[data-pt-species]");
+		Array.prototype.forEach.call(links, function(a) {
+			var sp = (a.getAttribute("data-pt-species") || "").trim().toLowerCase();
+			if (want === "") {
+				a.classList.toggle("active", sp === "");
+			} else {
+				a.classList.toggle("active", sp === want);
+			}
+		});
 	}
 	function restoreFilterSnapshot(snap) {
 		if (!snap) return;
 		Array.prototype.forEach.call(filterSelects, function(sel) {
 			if (Object.prototype.hasOwnProperty.call(snap, sel.name)) sel.value = snap[sel.name];
 		});
+		var sf = document.getElementById("pt_filter_species_field");
+		if (sf && Object.prototype.hasOwnProperty.call(snap, "species")) sf.value = snap.species || "";
+		syncSpeciesTabsFromField();
 	}
 	function hasAppliedFiltersInUrl() {
 		try {
@@ -577,11 +698,23 @@
 			}
 		});
 	}
+	function ptMobFiltersLandscape() {
+		try {
+			return !!(window.matchMedia && window.matchMedia("(max-width: 767.98px) and (orientation: landscape)").matches);
+		} catch (e) {
+			return false;
+		}
+	}
+	function syncPtMobFiltersAboveNav() {
+		var open = !!(p4Cell && p4Cell.classList.contains("pt-mobile-filters-open"));
+		document.body.classList.toggle("pt-mob-filters-above-nav", open && ptMobFiltersLandscape());
+	}
 	function closeMobileFilters(restoreDraft) {
 		if (!p4Cell) return;
 		if (restoreDraft) restoreFilterSnapshot(filtersDraft);
 		p4Cell.classList.remove("pt-mobile-filters-open");
 		if (mobileFiltersBackdrop) mobileFiltersBackdrop.hidden = true;
+		syncPtMobFiltersAboveNav();
 		setMobileFiltersBtnState(filtersApplied);
 	}
 	function openMobileFilters() {
@@ -589,6 +722,7 @@
 		filtersDraft = getFilterSnapshot();
 		p4Cell.classList.add("pt-mobile-filters-open");
 		if (mobileFiltersBackdrop) mobileFiltersBackdrop.hidden = false;
+		syncPtMobFiltersAboveNav();
 	}
 	setMobileFiltersBtnState(hasAppliedFiltersInUrl());
 	if (filtersForm) {
@@ -599,6 +733,33 @@
 			});
 		});
 	}
+	(function() {
+		var tabList = document.getElementById("pt_animal_filter_tabs");
+		if (tabList) {
+			tabList.addEventListener("click", function(e) {
+				var a = e.target.closest("a[data-pt-species]");
+				if (!a || !tabList.contains(a)) return;
+				if (!isMobileViewport() || !p4Cell || !p4Cell.classList.contains("pt-mobile-filters-open")) return;
+				e.preventDefault();
+				var sf = document.getElementById("pt_filter_species_field");
+				if (sf) sf.value = a.getAttribute("data-pt-species") || "";
+				syncSpeciesTabsFromField();
+			});
+		}
+		var resetA = filtersForm ? filtersForm.querySelector("a.p3-reset-link") : null;
+		if (resetA) {
+			resetA.addEventListener("click", function(e) {
+				if (!isMobileViewport() || !p4Cell || !p4Cell.classList.contains("pt-mobile-filters-open")) return;
+				e.preventDefault();
+				Array.prototype.forEach.call(filterSelects, function(sel) {
+					sel.selectedIndex = 0;
+				});
+				var sf = document.getElementById("pt_filter_species_field");
+				if (sf) sf.value = "";
+				syncSpeciesTabsFromField();
+			});
+		}
+	})();
 
 	var defaultMatchText = matchBtns.length ? (matchBtns[0].textContent || "").trim() : "";
 
@@ -699,6 +860,10 @@
 	});
 	window.addEventListener("resize", function() {
 		if (!isMobileViewport()) closeMobileFilters(true);
+		else syncPtMobFiltersAboveNav();
+	});
+	window.addEventListener("orientationchange", function() {
+		setTimeout(syncPtMobFiltersAboveNav, 240);
 	});
 
 	if (form) {
@@ -804,10 +969,18 @@
 	function navHeight() {
 		var a0 = document.getElementById("A0");
 		if (!a0) return 64;
+		/* Înălțimea folosită de CSS pe #A0 (inclusiv landscape compact: --nav-height pe element);
+		   #PW moștenește --nav-height de pe html — trebuie același număr ca bara reală, altfel bandă albă sub navbar. */
+		try {
+			var px = parseFloat(window.getComputedStyle(a0).height);
+			if (isFinite(px) && px >= 28 && px <= 220) {
+				return Math.round(px);
+			}
+		} catch (e) {}
 		var r = a0.getBoundingClientRect();
-		var h = Math.floor(r.bottom);
-		if (h < 40 || h > 220) {
-			h = Math.floor(r.height);
+		var h = Math.round(r.height);
+		if (h < 28 || h > 220) {
+			h = Math.round(r.bottom);
 		}
 		return h;
 	}
@@ -819,7 +992,7 @@
 			return;
 		}
 		/* Cu A0 fix + padding-top pe #main_content, înălțimea = floor(bottom) fără -1 (lipire cursivă sub navbar) */
-		var nh = Math.max(40, Math.min(220, navHeight()));
+		var nh = Math.max(24, Math.min(220, navHeight()));
 		try {
 			document.documentElement.style.setProperty("--nav-height", nh + "px");
 		} catch (e) {}
@@ -913,6 +1086,10 @@
 			});
 		});
 		syncPlaceholder();
+		try {
+			var _pw = document.getElementById("PW");
+			if (_pw) _pw.style.removeProperty("--pt-mob-center-max");
+		} catch (eClr) {}
 		if (window.ResizeObserver && !roAttached) {
 			var b = getBar();
 			if (b) {

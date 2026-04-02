@@ -135,9 +135,8 @@
 	document.body.addEventListener('click', function(e) {
 		if (!isGuest()) return;
 		var trigger = e.target.closest('[data-require-login]');
-		if (!trigger) return;
-		// Doar click direct pe butonul restricționat (sau pe copilul lui imediat), nu pe orice element din pagină
-		if (e.target !== trigger && e.target.parentNode !== trigger) return;
+		if (!trigger || !trigger.contains(e.target)) return;
+		/* Orice tap în interior (ex. <path> în SVG inimă) — vechiul test parentNode eșua pentru path→svg→button */
 		var tag = trigger.tagName && trigger.tagName.toUpperCase();
 		var href = (tag === 'A' && trigger.getAttribute('href')) || '';
 		if (href && href !== '#' && href.indexOf('javascript:') !== 0) return;

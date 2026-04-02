@@ -218,7 +218,7 @@
 			<p class="promo-a2-note">Preț unitar: <strong>{{ unit_price }} lei</strong> · Număr pachete: <strong>{{ quantity }}</strong> · Total: <strong>{{ total_price }} lei</strong>. Acesta este un ecran v1 (demo) pentru fluxul de comandă.</p>
 			<div class="promo-a2-actions">
 				<button type="submit" class="promo-a2-btn">Plătește</button>
-				<a href="{% url 'mypet' %}" class="promo-a2-btn promo-a2-btn--ghost">Înapoi la MyPet</a>
+				<a href="{{ promo_flow_exit_url }}" class="promo-a2-btn promo-a2-btn--ghost">{{ promo_flow_exit_label }}</a>
 			</div>
 		</form>
 	</div>

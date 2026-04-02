@@ -826,15 +826,21 @@
   line-height: 0;
 }
 #PW .pt-p2-card-cell .pt-p2-card-photo-wrap {
+  display: flex;
+  flex-direction: column;
   flex: 1 1 0;
   min-height: 0;
   position: relative;
   overflow: hidden;
   margin: 0;
   padding: 0;
-  /* Primul copil real al .pt-p2-card-link; evită strut dacă rămâne text înainte de wrap */
+  /* Copil: .wish-btn (absolute) + .pt-p2-card-link (flex) — inima în afara linkului */
   font-size: 1rem;
   line-height: normal;
+}
+/* Deasupra pozei din link; Promovează-mă e z-index 3 în .pt-p2-card-photo */
+#PW .pt-p2-card-cell .pt-p2-card-photo-wrap > .wish-btn {
+  z-index: 25 !important;
 }
 #PW .pt-p2-card-cell .pt-p2-card-photo {
   position: absolute;
@@ -851,10 +857,12 @@
   object-fit: cover;
 }
 #PW .pt-p2-card-cell .pt-p2-card-link {
+  position: relative;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1 1 0;
   min-height: 0;
+  height: 100%;
   margin: 0;
   padding: 0;
   border: 0;
@@ -864,7 +872,6 @@
   /* 0 = fără strut la orice nod text rămas între taguri în interiorul <a> */
   font-size: 0;
   line-height: 0;
-  flex: 1 1 auto;
 }
 #PW .pt-p2-card-cell .pt-p2-card-tags {
   position: absolute;
@@ -1143,6 +1150,7 @@
     --pt-p1-strip-h: 72px;
     margin-top: 0 !important;
     padding-top: 0 !important;
+    overflow: visible !important;
   }
   #PW .pt-p4-box-ads {
     flex: 0 0 auto;
@@ -1274,6 +1282,8 @@
     min-width: 0;
     min-height: 0;
     box-sizing: border-box;
+    overflow: visible !important;
+    align-items: stretch !important;
   }
   #PW .pt-p4-land-rail-box,
   #PW .pt-p4-land-rail-ads {
@@ -1315,6 +1325,11 @@
     min-height: 72px !important;
     margin: 0 !important;
     padding: 0 !important;
+    /* P2 avea z-index:1 — banda P3 era desenată dedesubt, tăiată/„1/5 vizibilă”; rămâne deasupra grilei */
+    flex-shrink: 0 !important;
+    position: relative !important;
+    z-index: 8 !important;
+    overflow: visible !important;
   }
   #PW .pt-strip-wrap.pt-strip-p3 {
     min-height: 72px !important;
@@ -1337,7 +1352,7 @@
 
   #PW .pt-cell-2 {
     position: relative;
-    z-index: 1;
+    z-index: 0;
     order: 3;
     height: auto !important;
     overflow: visible !important;
@@ -1501,30 +1516,45 @@
     border-top: none !important;
     box-sizing: border-box !important;
   }
+  /* Fără min-height uriaș pe P2: banda P3 urcă după ultimul rând, nu rămâne „sub” o casetă goală */
+  #PW .pt-mob-land-center .pt-cell-2 {
+    min-height: 0 !important;
+  }
+  #PW .pt-mob-land-center .pt-cell-2 .pt-p2-scroll {
+    min-height: 0 !important;
+  }
 }
 
-/* Mobil landscape: fără bară mov portret; grilă 3 coloane (rail | P2+P3 | rail) */
+/* Mobil landscape: fără bară mov portret; P1 ascuns; rail stânga/dreapta fixe în viewport (sub zona navbar măsurată de --nav-height) */
 @media (max-width: 767.98px) and (orientation: landscape) {
+  /* Dacă --nav-height pe html și înălțimea reală A0 diferă cu câțiva px, rămâne o fâșie #fff — același ton ca pub/rail */
+  body.page-pt #main_content {
+    background-color: #fff8e1 !important;
+  }
+  #PW {
+    --pt-land-rail-w: clamp(3.25rem, 14vw, 5.75rem);
+    background-color: #fff8e1;
+  }
   #PW .pt-grid {
     padding-top: 0 !important;
   }
   #PW .pt-cell-1 {
-    position: static !important;
-    top: auto !important;
-    left: auto !important;
-    right: auto !important;
-    z-index: auto !important;
-    max-width: 100% !important;
+    display: none !important;
   }
   #PW .pt-p4-portrait-sticky {
     display: none !important;
   }
+  /* P4: în landscape conținutul vizibil e în rail-uri / modal; fără înălțime fantomă între navbar și cele 3 coloane */
   #PW .pt-cell-4 {
     margin: 0 !important;
     padding: 0 !important;
     border-width: 0 !important;
     min-height: 0 !important;
-    align-self: stretch !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    align-self: start !important;
+    box-sizing: border-box !important;
   }
   #PW .pt-p4-inner {
     gap: 0 !important;
@@ -1541,59 +1571,87 @@
     border: 0 !important;
     overflow: hidden !important;
   }
+  /* Fundal ca zona pub (P4.3 / P5.1) — fără benzi albe între casete sau de la .pt-p4-box */
   #PW .pt-mob-land-left,
   #PW .pt-mob-land-right {
     display: flex !important;
     flex-direction: column !important;
-    gap: 2px !important;
+    gap: 0 !important;
+    position: fixed !important;
+    top: var(--nav-height, var(--nav-h, 64px)) !important;
+    bottom: 0 !important;
+    width: var(--pt-land-rail-w) !important;
     min-width: 0 !important;
-    background: #8e24aa !important;
+    max-width: var(--pt-land-rail-w) !important;
+    box-sizing: border-box !important;
+    z-index: 2260 !important;
+    margin: 0 !important;
+    padding: 2px !important;
+    overflow: hidden !important;
+    background: #fff8e1 !important;
     border: 1px solid rgba(0, 0, 0, 0.5) !important;
     border-top: none !important;
-    box-sizing: border-box !important;
-    padding: 2px !important;
-    margin-top: 0 !important;
-    align-self: stretch !important;
   }
   #PW .pt-mob-land-left {
+    left: 0 !important;
     border-left: none !important;
   }
   #PW .pt-mob-land-right {
+    right: 0 !important;
     border-right: none !important;
   }
+  /* Coloana centrală în flux; P3 lipită de finalul grilei P2 (scroll pagină #main_content), nu bandă fixă în viewport */
   #PW .pt-mob-land-3col {
-    display: grid !important;
-    grid-template-columns: minmax(3.25rem, 5.75rem) minmax(0, 1fr) minmax(3.25rem, 5.75rem) !important;
-    gap: 0 !important;
-    column-gap: 0 !important;
-    row-gap: 0 !important;
-    align-items: stretch !important;
+    display: block !important;
     width: 100% !important;
     margin-top: 0 !important;
-    padding-top: 0 !important;
-    min-height: min(58vh, 340px) !important;
+    padding: 0 var(--pt-land-rail-w) !important;
+    box-sizing: border-box !important;
+    min-height: 0 !important;
   }
   #PW .pt-mob-land-center {
     display: flex !important;
     flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
     min-height: 0 !important;
     min-width: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
   #PW .pt-mob-land-center .pt-cell-2 {
-    flex: 1 1 auto !important;
-    min-height: min(48vh, 280px) !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
     max-height: none !important;
+    overflow: visible !important;
+    z-index: 0 !important;
   }
   #PW .pt-mob-land-center .pt-cell-2 .pt-p2-scroll {
-    min-height: min(42vh, 250px) !important;
-    flex: 1 1 auto !important;
+    flex: none !important;
+    min-height: 0 !important;
     max-height: none !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  #PW .pt-mob-land-left .pt-p4-box,
+  #PW .pt-mob-land-right .pt-p4-box {
+    background: #fff8e1 !important;
   }
   #PW .pt-p4-land-rail-box {
-    background: transparent !important;
+    background: #fff8e1 !important;
     flex-shrink: 0 !important;
+    flex-grow: 0 !important;
     padding: 0 !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+  }
+  #PW .pt-p4-land-rail-box.pt-p4-box-match {
+    padding: 2px 0 !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
   }
   #PW .pt-p4-land-rail-ads {
     flex: 1 1 auto !important;
@@ -1604,6 +1662,8 @@
     overscroll-behavior: contain;
     background: #fff8e1 !important;
     padding: 2px !important;
+    margin: 0 !important;
+    border: 0 !important;
   }
   #PW .pt-p4-land-rail-box .pt-p4-btn-match,
   #PW .pt-p4-land-rail-box .pt-p4-btn-filters {
@@ -1623,6 +1683,10 @@
   }
   #PW .pt-mob-land-center .pt-cell-3--footer {
     flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    position: relative !important;
+    z-index: 8 !important;
+    overflow: visible !important;
   }
   #PW .pt-cell-3--footer {
     min-height: 48px !important;
@@ -1633,6 +1697,23 @@
   }
   #PW .pt-strip-item--p3 .pt-strip-no-img {
     min-height: 48px !important;
+  }
+  /* Modal Filtre: #A0 are z-index ~2000; conținutul e în #main_content (frate după navbar) — rămâne sub bară.
+     Cu body.pt-mob-filters-above-nav ridicăm #main_content peste navbar; #P4 fără clip (landscape îl are height:0). */
+  body.page-pt.pt-mob-filters-above-nav #main_content {
+    position: relative !important;
+    z-index: 12000 !important;
+  }
+  #PW #P4.pt-mobile-filters-open.pt-cell-4 {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  #PW #P4.pt-mobile-filters-open .pt-p4-box-filters {
+    z-index: 12002 !important;
+  }
+  body.page-pt.pt-mob-filters-above-nav #PW .pt-mobile-filters-backdrop:not([hidden]) {
+    z-index: 12001 !important;
   }
 }
 

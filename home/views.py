@@ -219,11 +219,37 @@ def collab_magazin_required(view_func):
     return _wrapped
 
 
+def _user_has_published_animals(user) -> bool:
+    """True dacă userul are cel puțin un AnimalListing publicat (proprietar)."""
+    if not getattr(user, "pk", None):
+        return False
+    return AnimalListing.objects.filter(owner_id=user.pk, is_published=True).exists()
+
+
+def _promo_a2_nav_context(user) -> dict:
+    """
+    Link + etichete pentru ieșirea din fluxul promovare A2:
+    - cu animale postate → MyPet
+    - fără → Prietenul tău (PT / pets_all)
+    """
+    if _user_has_published_animals(user):
+        return {
+            "promo_flow_exit_url": reverse("mypet"),
+            "promo_flow_exit_label": "Înapoi la MyPet",
+            "promo_flow_done_label": "Mergi la MyPet",
+        }
+    return {
+        "promo_flow_exit_url": reverse("pets_all"),
+        "promo_flow_exit_label": "Înapoi la Prietenul tău",
+        "promo_flow_done_label": "Mergi la Prietenul tău",
+    }
+
+
 def _promo_a2_flow_redirect(request, pet: AnimalListing):
-    """După respingere în fluxul promovare A2: proprietar → MyPet, alt utilizator → Acasă."""
-    if getattr(request.user, "pk", None) == pet.owner_id:
+    """După respingere în fluxul promovare A2: cu anunțuri publicate → MyPet, altfel → PT."""
+    if _user_has_published_animals(request.user):
         return redirect("mypet")
-    return redirect("home")
+    return redirect("pets_all")
 
 
 HOME_BURTIERA_DEFAULT_TEXT = (
@@ -3244,22 +3270,20 @@ def promo_a2_order_view(request, pk):
         }
         return redirect("promo_a2_checkout_demo", pk=pet.pk)
 
-    return render(
-        request,
-        "anunturi/promo_a2_order.html",
-        {
-            "pet": pet,
-            "order_submitted": order_submitted,
-            "package": "6h",
-            "schedule": "intercalat",
-            "payment_method": "card",
-            "start_date": start_date,
-            "quantity": quantity,
-            "unit_price": unit_price,
-            "total_price": total_price,
-            "today_iso": timezone.localdate().isoformat(),
-        },
-    )
+    ctx_order = {
+        "pet": pet,
+        "order_submitted": order_submitted,
+        "package": "6h",
+        "schedule": "intercalat",
+        "payment_method": "card",
+        "start_date": start_date,
+        "quantity": quantity,
+        "unit_price": unit_price,
+        "total_price": total_price,
+        "today_iso": timezone.localdate().isoformat(),
+    }
+    ctx_order.update(_promo_a2_nav_context(request.user))
+    return render(request, "anunturi/promo_a2_order.html", ctx_order)
 
 
 @login_required
@@ -3282,21 +3306,19 @@ def promo_a2_checkout_demo_view(request, pk):
     if order is None:
         messages.info(request, "Nu există o comandă promo validă pentru această sesiune.")
         return redirect("promo_a2_order", pk=pet.pk)
-    return render(
-        request,
-        "anunturi/promo_a2_checkout_demo.html",
-        {
-            "pet": pet,
-            "package": checkout.get("package", "6h"),
-            "quantity": checkout.get("quantity", 1),
-            "unit_price": checkout.get("unit_price", 10),
-            "total_price": checkout.get("total_price", 10),
-            "start_date": checkout.get("start_date", ""),
-            "schedule": checkout.get("schedule", "intercalat"),
-            "payment_method": checkout.get("payment_method", "card"),
-            "promo_order_id": order.pk,
-        },
-    )
+    ctx_checkout = {
+        "pet": pet,
+        "package": checkout.get("package", "6h"),
+        "quantity": checkout.get("quantity", 1),
+        "unit_price": checkout.get("unit_price", 10),
+        "total_price": checkout.get("total_price", 10),
+        "start_date": checkout.get("start_date", ""),
+        "schedule": checkout.get("schedule", "intercalat"),
+        "payment_method": checkout.get("payment_method", "card"),
+        "promo_order_id": order.pk,
+    }
+    ctx_checkout.update(_promo_a2_nav_context(request.user))
+    return render(request, "anunturi/promo_a2_checkout_demo.html", ctx_checkout)
 
 
 @login_required
@@ -3333,6 +3355,7 @@ def promo_a2_checkout_demo_success_view(request, pk):
         "start_date": checkout.get("start_date", ""),
         "promo_order_id": order.pk,
     }
+    ctx.update(_promo_a2_nav_context(request.user))
     request.session.pop("promo_a2_checkout", None)
     return render(request, "anunturi/promo_a2_checkout_demo_success.html", ctx)
 
