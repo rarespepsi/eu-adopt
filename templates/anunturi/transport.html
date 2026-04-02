@@ -5,45 +5,103 @@
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=6" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=25" type="text/css" media="screen" />
 <style>
-	/* TW la fel ca PW/SW: fără scroll pagină, dimensiuni fixe în viewport */
-	body.page-transport { overflow: hidden !important; height: 100vh !important; }
-	body.page-transport #main_wrap {
-		min-height: 0 !important;
-		height: 100vh !important;
-		max-height: 100vh !important;
-		display: flex !important;
-		flex-direction: column !important;
-		padding: 0 !important;
-		margin: 0 !important;
-		overflow: hidden !important;
+	/* Desktop: TW ca PW/SW – fără scroll pagină, viewport fix (nu aplicăm pe mobil) */
+	@media (min-width: 769px) {
+		body.page-transport { overflow: hidden !important; height: 100vh !important; }
+		body.page-transport #main_wrap {
+			min-height: 0 !important;
+			height: 100vh !important;
+			max-height: 100vh !important;
+			display: flex !important;
+			flex-direction: column !important;
+			padding: 0 !important;
+			margin: 0 !important;
+			overflow: hidden !important;
+		}
+		body.page-transport #main_content {
+			min-height: 0 !important;
+			flex: 1 1 0 !important;
+			display: flex !important;
+			flex-direction: column !important;
+			overflow: hidden !important;
+			padding: 0 !important;
+			margin: 0 !important;
+			width: 100% !important;
+			max-width: 100% !important;
+		}
+		body.page-transport #main_content #TW {
+			height: 100% !important;
+			max-height: 100% !important;
+			min-height: 0 !important;
+			flex: 1 1 0 !important;
+			display: flex !important;
+			flex-direction: column !important;
+			overflow: hidden !important;
+		}
 	}
-	body.page-transport #main_content {
-		min-height: 0 !important;
-		flex: 1 1 0 !important;
-		display: flex !important;
-		flex-direction: column !important;
-		overflow: hidden !important;
-		padding: 0 !important;
-		margin: 0 !important;
-		width: 100% !important;
-		max-width: 100% !important;
-	}
-	body.page-transport #main_content #TW {
-		height: 100% !important;
-		max-height: 100% !important;
-		min-height: 0 !important;
-		flex: 1 1 0 !important;
-		display: flex !important;
-		flex-direction: column !important;
-		overflow: hidden !important;
-	}
+	/* Mobil (orice orientare): scroll natural; fără reguli dedicate landscape */
 	@media (max-width: 768px) {
-		body.page-transport { overflow-y: auto !important; overflow-x: hidden !important; }
-		body.page-transport #main_wrap { overflow: visible !important; min-height: 100vh !important; }
-		body.page-transport #main_content { overflow-y: auto !important; overflow-x: hidden !important; }
-		body.page-transport #main_content #TW { overflow: visible !important; height: auto !important; max-height: none !important; }
+		body.page-transport {
+			overflow-x: hidden !important;
+			overflow-y: auto !important;
+			height: auto !important;
+			min-height: 100vh !important;
+			min-height: 100dvh !important;
+		}
+		body.page-transport #main_wrap {
+			overflow: visible !important;
+			height: auto !important;
+			max-height: none !important;
+			min-height: 0 !important;
+		}
+		body.page-transport #main_content {
+			overflow: visible !important;
+			flex: 1 1 auto !important;
+			min-height: 0 !important;
+		}
+		body.page-transport #main_content #TW {
+			overflow: visible !important;
+			height: auto !important;
+			max-height: none !important;
+			flex: 1 1 auto !important;
+			min-height: 0 !important;
+		}
+	}
+	/* Mobil portrait: înălțime fixă sub A0; T1+T2 împart 50–50 spațiul de deasupra T3 */
+	@media (max-width: 768px) and (orientation: portrait) {
+		body.page-transport {
+			overflow: hidden !important;
+			height: 100vh !important;
+			height: 100dvh !important;
+		}
+		body.page-transport #main_wrap {
+			display: flex !important;
+			flex-direction: column !important;
+			overflow: hidden !important;
+			min-height: 0 !important;
+			height: 100vh !important;
+			height: 100dvh !important;
+			max-height: 100vh !important;
+			max-height: 100dvh !important;
+		}
+		body.page-transport #main_content {
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			overflow: hidden !important;
+			display: flex !important;
+			flex-direction: column !important;
+			padding: 0 !important;
+			margin: 0 !important;
+		}
+		body.page-transport #main_content #TW {
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			overflow: hidden !important;
+			display: flex !important;
+			flex-direction: column !important;
+		}
 	}
 	.transport-from-adoption-banner {
 		width: 100%;
@@ -78,9 +136,17 @@
 <section class="wrapper" id="main_content">
 	<main id="TW" class="transport-wrapper" aria-label="Conținut Transport">
 		<div class="tw-row">
+			<div class="tw-portrait-stack">
 			<div id="T1" class="tw-cell" data-slot="T1">
 				<div class="t1-inner">
 					<h2 class="t1-title">Transport veterinar – România</h2>
+					<button type="button" class="t1-portrait-open-btn" id="t1PortraitOpen" aria-expanded="false" aria-controls="t1Expandable">
+						Completează cererea
+					</button>
+					<div id="t1Expandable" class="t1-expandable">
+						<button type="button" class="t1-portrait-close-btn" id="t1PortraitClose" aria-expanded="true" aria-controls="t1Expandable">
+							Restrânge formularul
+						</button>
 					{% if from_adoption_pet_pk and continue_adoption_url %}
 					<div class="transport-from-adoption-banner" role="status">
 						<strong>Pașii adopției</strong>
@@ -166,14 +232,18 @@
 						</div>
 						<button type="submit" class="t1-submit">TRIMITE CEREREA</button>
 					</form>
+					</div>
 				</div>
 			</div>
 			<div id="T2" class="tw-cell" data-slot="T2">
 				<div class="t2-inner">
+					<button type="button" class="t2-portrait-expand-btn" id="t2PortraitExpand" aria-expanded="false">
+						FII PARTE DIN DRUM
+					</button>
+					<button type="button" class="t2-portrait-collapse-btn" id="t2PortraitCollapse" aria-expanded="true">
+						Restrânge zona autocar
+					</button>
 					{% include "components/transport_bulina.html" %}
-					<h2 class="t2-title">
-						<a href="{% url 'custi' %}">FII PARTE DIN DRUM · Harta autocar</a>
-					</h2>
 					<!-- Hub: centrul acestui div = centrul casetei centrale; inelul folosește același punct -->
 					<div class="t2-hub">
 						<a href="{% url 'custi' %}" class="t2-center">
@@ -238,8 +308,9 @@
 					</div>
 				</div>
 			</div>
+			</div>
 			<div id="T3" class="tw-cell" data-slot="T3">
-				<div class="t3-inner">
+				<div class="t3-inner" role="region" aria-label="Spații publicitate transport">
 					<h3 class="t3-title">Pentru transport...</h3>
 					<div class="t3-box t3-box-1" data-slot="T3.1"></div>
 					<div class="t3-box t3-box-2" data-slot="T3.2"></div>
@@ -296,6 +367,136 @@
 </script>
 <script>
 (function() {
+	var mq = window.matchMedia("(max-width: 768px) and (orientation: portrait)");
+	var t1 = document.getElementById("T1");
+	var t2 = document.getElementById("T2");
+	var openBtn = document.getElementById("t1PortraitOpen");
+	var closeBtn = document.getElementById("t1PortraitClose");
+	var t2Expand = document.getElementById("t2PortraitExpand");
+	var t2Collapse = document.getElementById("t2PortraitCollapse");
+	var stack = document.querySelector(".tw-portrait-stack");
+	if (!t1 || !openBtn || !closeBtn || !t2 || !t2Expand || !t2Collapse) return;
+	function refreshStack() {
+		if (!stack) return;
+		if (!mq.matches || !t2.classList.contains("tw-t2--hub-open")) {
+			stack.classList.remove("tw-stack--t2-over");
+		} else {
+			stack.classList.add("tw-stack--t2-over");
+		}
+	}
+	function syncT1Aria(expanded) {
+		openBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
+		closeBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
+	}
+	function syncT2Aria(expanded) {
+		t2Expand.setAttribute("aria-expanded", expanded ? "true" : "false");
+		t2Collapse.setAttribute("aria-expanded", expanded ? "true" : "false");
+	}
+	function closeT2() {
+		t2.classList.remove("tw-t2--hub-open");
+		syncT2Aria(false);
+		refreshStack();
+	}
+	function closeT1Form() {
+		t1.classList.remove("tw-t1--form-open");
+		syncT1Aria(false);
+	}
+	function onMq() {
+		if (!mq.matches) {
+			closeT1Form();
+			closeT2();
+			syncT1Aria(true);
+			syncT2Aria(false);
+		} else {
+			syncT1Aria(t1.classList.contains("tw-t1--form-open"));
+			syncT2Aria(t2.classList.contains("tw-t2--hub-open"));
+		}
+		refreshStack();
+	}
+	openBtn.addEventListener("click", function() {
+		if (!mq.matches) return;
+		closeT2();
+		t1.classList.add("tw-t1--form-open");
+		syncT1Aria(true);
+		syncT2Aria(false);
+		refreshStack();
+	});
+	closeBtn.addEventListener("click", function() {
+		closeT1Form();
+	});
+	t2Expand.addEventListener("click", function() {
+		if (!mq.matches) return;
+		closeT1Form();
+		t2.classList.add("tw-t2--hub-open");
+		syncT2Aria(true);
+		syncT1Aria(false);
+		refreshStack();
+	});
+	t2Collapse.addEventListener("click", function() {
+		closeT2();
+	});
+	if (typeof mq.addEventListener === "function") {
+		mq.addEventListener("change", onMq);
+	} else if (typeof mq.addListener === "function") {
+		mq.addListener(onMq);
+	}
+	onMq();
+})();
+</script>
+<script>
+(function() {
+	/* Casete galbene la cercurile numerotate din T2: tap pe mobil ≤768px (toate orientările) */
+	var mq = window.matchMedia("(max-width: 768px)");
+	var t2 = document.getElementById("T2");
+	if (!t2) return;
+	function closeAllT2Tooltips() {
+		var nodes = t2.querySelectorAll(".t2-circle.tw-t2-tooltip-open");
+		for (var i = 0; i < nodes.length; i++) {
+			nodes[i].classList.remove("tw-t2-tooltip-open");
+		}
+	}
+	function onMq() {
+		if (!mq.matches) closeAllT2Tooltips();
+	}
+	if (typeof mq.addEventListener === "function") {
+		mq.addEventListener("change", onMq);
+	} else if (typeof mq.addListener === "function") {
+		mq.addListener(onMq);
+	}
+	function toggleT2CircleTooltipFromEvent(e) {
+		if (!mq.matches) return;
+		if (e.target.closest(".t2-circle-tooltip")) return;
+		var circle = e.target.closest("#T2 .t2-circle");
+		if (circle && t2.contains(circle)) {
+			if (e.cancelable) e.preventDefault();
+			e.stopPropagation();
+			var was = circle.classList.contains("tw-t2-tooltip-open");
+			closeAllT2Tooltips();
+			if (!was) circle.classList.add("tw-t2-tooltip-open");
+			return;
+		}
+		closeAllT2Tooltips();
+	}
+	var t2TipSkipNextClick = false;
+	document.addEventListener("pointerdown", function(e) {
+		if (!mq.matches) return;
+		if (e.pointerType === "mouse") return;
+		toggleT2CircleTooltipFromEvent(e);
+		t2TipSkipNextClick = true;
+		setTimeout(function() { t2TipSkipNextClick = false; }, 700);
+	}, true);
+	document.addEventListener("click", function(e) {
+		if (!mq.matches) return;
+		if (t2TipSkipNextClick) return;
+		toggleT2CircleTooltipFromEvent(e);
+	}, true);
+	document.addEventListener("keydown", function(ev) {
+		if (ev.key === "Escape") closeAllT2Tooltips();
+	});
+})();
+</script>
+<script>
+(function() {
 	var localitiesByCounty = {};
 	var countyNames = ["Alba","Arad","Argeș","Bacău","Bihor","Bistrița-Năsăud","Botoșani","Brăila","Brașov","București","Buzău","Călărași","Caraș-Severin","Cluj","Constanța","Covasna","Dâmbovița","Dolj","Galați","Giurgiu","Gorj","Harghita","Hunedoara","Ialomița","Iași","Ilfov","Maramureș","Mehedinți","Mureș","Neamț","Olt","Prahova","Sălaj","Satu Mare","Sibiu","Suceava","Teleorman","Timiș","Tulcea","Vâlcea","Vaslui","Vrancea"];
 	function matchCounty(val) {
@@ -331,9 +532,50 @@
 <script>
 (function() {
 	var key = '{{ google_maps_api_key|escapejs }}';
+	var mapsPageOrigin = '{{ maps_page_origin|default:""|escapejs }}';
 	if (!key) return;
+	var mapPickerMap = null;
+	var mapPickerMarker = null;
+	var mapPickerModalAc = null;
+	var mapPickerMode = null;
+	/* Google apelează asta când cheia e respinsă (referrer IP, facturare, API-uri). */
+	window.gm_authFailure = function() {
+		window.__euadoptGmapsAuthFail = true;
+		mapPickerMap = null;
+		mapPickerMarker = null;
+		mapPickerModalAc = null;
+		var canvas = document.getElementById('transportMapCanvas');
+		if (canvas) {
+			canvas.innerHTML = '';
+			var box = document.createElement('div');
+			box.className = 'transport-map-auth-fail';
+			box.setAttribute('role', 'alert');
+			var strong = document.createElement('strong');
+			strong.textContent = 'Google Maps nu încarcă pe această adresă';
+			box.appendChild(strong);
+			var p1 = document.createElement('p');
+			p1.textContent = 'Cheia API respinge site-ul curent sau lipsește facturarea / API-urile. În Google Cloud Console → Credentials → cheia ta → Restricții „HTTP referrers”, adaugă exact linia de mai jos (inclusiv http/https și portul):';
+			box.appendChild(p1);
+			var code = document.createElement('code');
+			code.className = 'transport-map-auth-fail__code';
+			code.textContent = (mapsPageOrigin || window.location.origin) + '/*';
+			box.appendChild(code);
+			var p2 = document.createElement('p');
+			p2.textContent = 'Activează în același proiect: Maps JavaScript API, Places API, Geocoding API. Asigură-te că există cont de facturare activ.';
+			box.appendChild(p2);
+			var a = document.createElement('a');
+			a.href = 'https://console.cloud.google.com/google/maps-apis/credentials';
+			a.target = '_blank';
+			a.rel = 'noopener noreferrer';
+			a.textContent = 'Deschide Google Cloud – Credentials';
+			box.appendChild(a);
+			canvas.appendChild(box);
+		}
+		var mh = document.getElementById('transportMapModalHint');
+		if (mh) mh.textContent = 'Harta nu e disponibilă până la configurarea cheii pentru această adresă (vezi caseta gri).';
+	};
 	var script = document.createElement('script');
-	script.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key) + '&libraries=places&callback=transportPlacesReady';
+	script.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key) + '&libraries=places&callback=transportPlacesReady&loading=async';
 	script.async = true;
 	script.defer = true;
 	window.transportPlacesReady = function() {
@@ -436,12 +678,10 @@
 		/* ——— Hartă în modal (aceeași pagină) ——— */
 		var transportMapModal = document.getElementById('transportMapModal');
 		var transportMapCanvas = document.getElementById('transportMapCanvas');
-		var mapPickerMap = null;
-		var mapPickerMarker = null;
-		var mapPickerMode = null;
-		var mapPickerSearchBox = null;
 		function ensureMapPickerMap() {
-			if (mapPickerMap || !transportMapCanvas) return;
+			if (!transportMapCanvas) return;
+			if (mapPickerMap) return;
+			transportMapCanvas.innerHTML = '';
 			mapPickerMap = new google.maps.Map(transportMapCanvas, {
 				zoom: 12,
 				center: { lat: 45.9432, lng: 24.9668 },
@@ -449,21 +689,24 @@
 				streetViewControl: false,
 				fullscreenControl: true
 			});
-			mapPickerMarker = new google.maps.Marker({ map: mapPickerMap, draggable: true });
+			/* Fără position inițială, getPosition() poate fi gol → „Folosește locația” nu completează nimic */
+			var initialCenter = mapPickerMap.getCenter();
+			mapPickerMarker = new google.maps.Marker({
+				map: mapPickerMap,
+				draggable: true,
+				position: initialCenter
+			});
 			mapPickerMap.addListener('click', function(e) {
 				mapPickerMarker.setPosition(e.latLng);
 				mapPickerMarker.setMap(mapPickerMap);
 			});
 			var searchInput = document.getElementById('transportMapSearch');
-			if (searchInput && google.maps.places && google.maps.places.SearchBox) {
-				mapPickerSearchBox = new google.maps.places.SearchBox(searchInput);
-				mapPickerMap.addListener('bounds_changed', function() {
-					if (mapPickerSearchBox) mapPickerSearchBox.setBounds(mapPickerMap.getBounds());
-				});
-				mapPickerSearchBox.addListener('places_changed', function() {
-					var places = mapPickerSearchBox.getPlaces();
-					if (!places || !places.length) return;
-					var place = places[0];
+			if (searchInput && google.maps.places && google.maps.places.Autocomplete) {
+				var modalAcOpts = { componentRestrictions: { country: 'ro' } };
+				mapPickerModalAc = new google.maps.places.Autocomplete(searchInput, modalAcOpts);
+				mapPickerModalAc.bindTo('bounds', mapPickerMap);
+				mapPickerModalAc.addListener('place_changed', function() {
+					var place = mapPickerModalAc.getPlace();
 					if (!place.geometry || !place.geometry.location) return;
 					var loc = place.geometry.location;
 					mapPickerMarker.setPosition(loc);
@@ -476,6 +719,7 @@
 					}
 					setTimeout(function() {
 						google.maps.event.trigger(mapPickerMap, 'resize');
+						mapPickerMap.setCenter(loc);
 					}, 100);
 				});
 			}
@@ -489,6 +733,8 @@
 		}
 		function openTransportMapPicker(mode) {
 			mapPickerMode = mode;
+			var mh0 = document.getElementById('transportMapModalHint');
+			if (mh0) mh0.textContent = 'Caută mai jos sau apasă pe hartă pentru pin. Poți muta pinul.';
 			var titleEl = document.getElementById('transportMapModalTitle');
 			if (titleEl) titleEl.textContent = mode === 'plecare' ? 'Punct plecare – alege pe hartă' : 'Punct sosire – alege pe hartă';
 			if (transportMapModal) {
@@ -503,6 +749,7 @@
 			var latEl = document.getElementById(latId);
 			var lngEl = document.getElementById(lngId);
 			function finishCenter(lat, lng, zoom) {
+				if (!mapPickerMap || !mapPickerMarker) return;
 				var pos = { lat: lat, lng: lng };
 				mapPickerMap.setCenter(pos);
 				mapPickerMap.setZoom(zoom || 13);
@@ -517,7 +764,7 @@
 					if (si) si.focus();
 				}, 350);
 			}
-			setTimeout(function() {
+			function initMapView() {
 				ensureMapPickerMap();
 				if (latEl && lngEl && latEl.value && lngEl.value) {
 					var la = parseFloat(latEl.value);
@@ -538,7 +785,13 @@
 						finishCenter(45.9432, 24.9668, 7);
 					}
 				});
-			}, 100);
+			}
+			/* După ce modalul e vizibil, canvas are dimensiuni; rAF evită hartă gri la 0×0 */
+			requestAnimationFrame(function() {
+				requestAnimationFrame(function() {
+					setTimeout(initMapView, 80);
+				});
+			});
 		}
 		var btnPickP = document.getElementById('plecare_map_pick');
 		var btnPickS = document.getElementById('sosire_map_pick');

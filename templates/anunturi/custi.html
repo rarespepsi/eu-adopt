@@ -4,7 +4,7 @@
 {% block title %}Harta cuștilor autocarului | EU Adopt{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/custi.css' %}?v=1" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/custi.css' %}?v=2" type="text/css" media="screen" />
 <style>
 	/* Asigurăm fundalul unic cu poza de cuști pe tot TWW */
 	#TWW.custi-page {
@@ -458,6 +458,108 @@
 	}
 	#TWW .tww-bottom-box .tww-bottom-text {
 		text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+	}
+
+	/* Mobil portrait: evită overflow orizontal — toate cele 3 butoane vizibile, cuști încadrate */
+	@media (max-width: 768px) {
+		#TWW.custi-page {
+			overflow-x: hidden;
+			max-width: 100%;
+		}
+		#TWW .tww-top-actions {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 0.35rem;
+			padding: 0 0.35rem;
+			box-sizing: border-box;
+		}
+		#TWW .tww-top-actions-left,
+		#TWW .tww-top-actions-center,
+		#TWW .tww-top-actions-right {
+			flex: none;
+			width: 100%;
+			min-width: 0;
+		}
+		#TWW .tww-top-btn {
+			white-space: normal;
+			text-align: center;
+			width: 100%;
+			box-sizing: border-box;
+			line-height: 1.25;
+			padding: 0.35rem 0.55rem;
+			font-size: 0.72rem;
+		}
+		#TWW .tww-top-title {
+			font-size: clamp(0.62rem, 3.1vw, 1rem);
+			padding: 0.12rem 0.35rem;
+		}
+		#TWW .tww-top-subtitle {
+			font-size: 0.68rem;
+			padding: 0.08rem 0.3rem;
+		}
+		#TWW .tww-main-layout {
+			padding: 0.2rem 0.25rem;
+			margin-top: 2%;
+			min-width: 0;
+			max-width: 100%;
+		}
+		#TWW .tww-custi-labels {
+			gap: 0.35rem;
+			padding: 0 0.1rem 0.12rem;
+			font-size: 0.62rem;
+		}
+		#TWW .tww-custi-labels .tww-label-left,
+		#TWW .tww-custi-labels .tww-label-right {
+			flex: 1 1 0;
+			min-width: 0;
+		}
+		#TWW .tww-cages-wrap {
+			gap: 0.3rem;
+			min-width: 0;
+			width: 100%;
+			max-width: 100%;
+		}
+		#TWW .tww-side {
+			flex: 1 1 0;
+			min-width: 0;
+			max-width: 50%;
+		}
+		#TWW .tww-row {
+			gap: 0.15rem;
+			min-width: 0;
+		}
+		#TWW .tww-row .tww-slot {
+			min-width: 0;
+		}
+		#TWW .tww-slot {
+			font-size: clamp(0.48rem, 2.6vw, 0.64rem);
+			padding: 0.1rem 0.12rem;
+			margin: 0.04rem 0;
+		}
+		#TWW .tww-bottom-box {
+			width: min(92vw, 280px);
+			height: auto;
+			min-height: 5.5rem;
+			min-width: 0;
+		}
+		#TWW .tww-donate-content {
+			flex-direction: column;
+			max-width: calc(100vw - 1.5rem);
+			margin: 0.5rem;
+		}
+		#TWW .tww-donate-content.is-expanded .tww-donate-thanks {
+			width: 100%;
+			min-width: 0;
+			margin-left: 0;
+			padding-left: 0;
+			border-left: none;
+			border-top: 1px solid #eee;
+			padding-top: 0.75rem;
+			margin-top: 0.5rem;
+		}
+		#TWW .tww-donate-presets {
+			flex-wrap: wrap;
+		}
 	}
 </style>
 {% endblock %}

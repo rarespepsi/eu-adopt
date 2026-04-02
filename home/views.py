@@ -2768,6 +2768,7 @@ def transport_view(request):
     """Pagina Transport – wrapper TW, layout ca PW/SW."""
     ctx = {
         "google_maps_api_key": getattr(settings, "GOOGLE_MAPS_API_KEY", "") or "",
+        "maps_page_origin": request.build_absolute_uri("/").rstrip("/"),
         "from_adoption_pet_pk": None,
         "continue_adoption_url": "",
         "prefill_judet": "",

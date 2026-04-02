@@ -340,6 +340,7 @@
 	background: transparent; /* fundal din .tw-row */
 	box-sizing: border-box;
 }
+/* Desktop: banda albastră + casete (nemodificat față de referința inițială) */
 #TW #T3 .t3-title {
 	margin: 0 0 0.25rem;
 	font-size: 0.8rem;
@@ -348,17 +349,17 @@
 	letter-spacing: 0.05em;
 	text-align: center;
 	color: #ffffff;
-	background: #0050b5; /* albastru tip Pepsi */
+	background: #0050b5;
 	padding: 0.25rem 0.4rem;
 	border-radius: 4px;
-	text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 #TW #T3 .t3-box {
 	flex: 1 1 auto;
 	min-height: 0;
 	border-radius: 6px;
 	background: rgba(255, 255, 255, 0.35);
-	box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 	box-sizing: border-box;
 }
 #TW #T3 .t3-box-1 { /* rezervat viitor: ex. reclame text */ }
@@ -556,25 +557,49 @@
 #TW #T1 .t1-submit:hover { background: rgba(13, 71, 161, 0.85); }
 
 /* ========== Mobil – pagină Transport ========== */
+/* Sub 768px (inclusiv landscape): coloană + scroll pagină; fără reguli dedicate doar pentru landscape */
 @media (max-width: 768px) {
-	body.page-transport { overflow-y: auto !important; overflow-x: hidden !important; }
-	body.page-transport #main_wrap { overflow: visible !important; min-height: 100vh; }
-	body.page-transport #main_content { overflow-y: auto !important; overflow-x: hidden !important; flex: 1 1 auto !important; }
-	body.page-transport #main_content #TW { overflow: visible !important; height: auto !important; max-height: none !important; flex: 1 1 auto !important; }
+	#TW .tw-portrait-stack {
+		display: contents;
+	}
+	#TW .t2-portrait-expand-btn,
+	#TW .t2-portrait-collapse-btn {
+		display: none !important;
+	}
 	#TW .tw-row {
 		flex-direction: column;
 		overflow: visible;
 		min-height: 0;
+		flex: 0 1 auto;
 	}
 	#TW #T1.tw-cell {
 		width: 100%;
 		max-width: 100%;
 		flex: 0 0 auto;
 		min-height: 120px;
+		overflow: visible;
+		display: flex;
+		flex-direction: column;
+	}
+	#TW #T1 .t1-inner {
+		flex: 0 1 auto;
+		min-height: 0;
+		overflow: visible;
 	}
 	#TW #T2.tw-cell {
 		flex: 1 1 0;
 		min-height: 200px;
+		overflow: visible;
+		display: flex;
+		flex-direction: column;
+	}
+	#TW #T2 .t2-inner {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: visible;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 	#TW #T3.tw-cell {
 		flex: 0 0 auto;
@@ -582,6 +607,14 @@
 		max-width: 100%;
 		min-width: 0;
 		min-height: 80px;
+	}
+	/* În afara portrait: formularul mereu vizibil, fără butoane accordion */
+	#TW .t1-portrait-open-btn,
+	#TW .t1-portrait-close-btn {
+		display: none !important;
+	}
+	#TW .t1-expandable {
+		display: block !important;
 	}
 	#TW #T2 .t2-title {
 		font-size: 0.85rem;
@@ -616,6 +649,47 @@
 		font-size: 0.9rem;
 		padding: 0.5rem 0.6rem;
 	}
+	/* Cercuri 1–9: casete galbene cu text – pe mobil rămân absolute (NU fixed: transform pe cerc/hub strica fixed) */
+	#TW #T2 .t2-inner,
+	#TW #T2 .t2-hub,
+	#TW #T2 .t2-circles {
+		overflow: visible !important;
+	}
+	#TW #T2 .t2-circle .t2-circle-tooltip {
+		position: absolute !important;
+		left: 50% !important;
+		right: auto !important;
+		top: 100% !important;
+		bottom: auto !important;
+		transform: translate(-50%, 0.35rem) !important;
+		width: min(18em, calc(100vw - 1.25rem)) !important;
+		max-width: min(90vw, 20em) !important;
+		z-index: 8000 !important;
+		box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+	}
+	#TW #T2 .t2-circle:hover .t2-circle-tooltip,
+	#TW #T2 .t2-circle.tw-t2-tooltip-open .t2-circle-tooltip {
+		visibility: visible !important;
+		opacity: 1 !important;
+		pointer-events: auto !important;
+	}
+	#TW #T2 .t2-circle--5 .t2-circle-tooltip,
+	#TW #T2 .t2-circle--6 .t2-circle-tooltip {
+		top: auto !important;
+		bottom: 100% !important;
+		transform: translate(-50%, -0.35rem) !important;
+	}
+	#TW #T2 .t2-circle--5:hover .t2-circle-tooltip,
+	#TW #T2 .t2-circle--6:hover .t2-circle-tooltip,
+	#TW #T2 .t2-circle--5.tw-t2-tooltip-open .t2-circle-tooltip,
+	#TW #T2 .t2-circle--6.tw-t2-tooltip-open .t2-circle-tooltip {
+		transform: translate(-50%, -0.35rem) !important;
+	}
+	#TW #T2 .t2-circle {
+		touch-action: manipulation;
+		cursor: pointer;
+		-webkit-tap-highlight-color: rgba(255, 193, 7, 0.35);
+	}
 	#TW #T2 .t2-extra-circle {
 		width: min(18vmin, 100px);
 		height: min(18vmin, 100px);
@@ -642,29 +716,267 @@
 		font-size: 0.7rem;
 		padding: 0.5rem;
 	}
-	#TW #T3 .t3-title { font-size: 0.7rem; }
+	/* Mobil: fără banda albastră (cerere user); trei casete pătrate pe un rând */
+	#TW #T3 .t3-title {
+		display: none !important;
+	}
 	#TW #T3 .t3-inner {
 		flex-direction: row;
-		flex-wrap: wrap;
+		flex-wrap: nowrap;
+		align-items: center;
 		justify-content: center;
 		gap: 0.35rem;
+		padding: 0.35rem 0.4rem;
 	}
 	#TW #T3 .t3-box {
-		flex: 1 1 80px;
-		min-height: 50px;
+		flex: 1 1 0;
+		width: auto;
+		min-width: 0;
+		aspect-ratio: 1 / 1;
+		align-self: center;
+		max-width: calc((100% - 2 * 0.35rem) / 3);
+	}
+}
+
+/* Mobil portrait: stack T1+T2; formularul / hub-ul acoperă tot stack-ul peste celălalt rând */
+@media (max-width: 768px) and (orientation: portrait) {
+	#TW .tw-row {
+		flex: 1 1 0;
+		min-height: 0;
+		flex-direction: column;
+		overflow: hidden;
+	}
+	#TW .tw-portrait-stack {
+		display: flex !important;
+		flex-direction: column;
+		flex: 1 1 0;
+		min-height: 0;
+		position: relative;
+		width: 100%;
+		overflow: hidden;
+	}
+	#TW #T1.tw-cell {
+		flex: 1 1 0;
+		min-height: 0;
+		overflow: hidden;
+		position: relative;
+		z-index: 1;
+		width: 100%;
+	}
+	#TW #T1.tw-t1--form-open.tw-cell {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		z-index: 8;
+		flex: none !important;
+		height: 100%;
+		width: 100%;
+		box-sizing: border-box;
+		background: rgba(252, 252, 252, 0.97);
+		box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
+	}
+	#TW #T1.tw-t1--form-open ~ #T2.tw-cell {
+		flex: 0 0 0 !important;
+		min-height: 0 !important;
+		height: 0 !important;
+		max-height: 0 !important;
+		overflow: hidden !important;
+		visibility: hidden !important;
+		pointer-events: none !important;
+		margin: 0 !important;
+		padding: 0 !important;
+		border: none !important;
+	}
+	#TW .tw-portrait-stack.tw-stack--t2-over #T1.tw-cell {
+		flex: 0 0 0 !important;
+		min-height: 0 !important;
+		height: 0 !important;
+		max-height: 0 !important;
+		overflow: hidden !important;
+		visibility: hidden !important;
+		pointer-events: none !important;
+		margin: 0 !important;
+		padding: 0 !important;
+		border: none !important;
+	}
+	#TW #T2.tw-cell {
+		flex: 1 1 0;
+		min-height: 0;
+		overflow: visible;
+		position: relative;
+		z-index: 1;
+		width: 100%;
+	}
+	#TW #T2.tw-t2--hub-open.tw-cell {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		z-index: 8;
+		flex: none !important;
+		height: 100%;
+		width: 100%;
+		box-sizing: border-box;
+		background: rgba(252, 252, 252, 0.94);
+		box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
+	}
+	#TW #T1 .t1-inner {
+		flex: 1 1 0;
+		min-height: 0;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+	#TW #T2 .t2-inner {
+		flex: 1 1 0;
+		min-height: 0;
+		overflow: visible;
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		justify-content: flex-start;
+	}
+	#TW #T2.tw-t2--hub-open .t2-inner {
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+		max-height: 100%;
+	}
+	#TW #T2:not(.tw-t2--hub-open) .t2-hub {
+		flex: 1 1 0;
+		min-height: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	/* Fără transform pe hub (ar strica position:absolute la casetele galbene din cercuri) */
+	#TW #T2 .t2-hub {
+		margin-top: clamp(1.25rem, 5vmin, 2.75rem);
+	}
+	#TW #T3.tw-cell {
+		min-height: 0;
+	}
+	#TW .t1-portrait-open-btn {
+		display: block !important;
+		flex-shrink: 0;
+		width: 100%;
+		box-sizing: border-box;
+		margin: 0.35rem 0 0;
+		padding: 0.5rem 0.65rem;
+		font: inherit;
+		font-size: 0.72rem;
+		font-weight: 800;
+		color: #fff;
+		background: #1565c0;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		text-align: center;
+	}
+	#TW #T1:not(.tw-t1--form-open) .t1-expandable {
+		display: none !important;
+	}
+	#TW #T1.tw-t1--form-open .t1-portrait-open-btn {
+		display: none !important;
+	}
+	#TW #T1:not(.tw-t1--form-open) .t1-portrait-close-btn {
+		display: none !important;
+	}
+	#TW #T1.tw-t1--form-open .t1-portrait-close-btn {
+		display: block !important;
+		flex-shrink: 0;
+		width: 100%;
+		box-sizing: border-box;
+		margin: 0 0 0.4rem;
+		padding: 0.4rem 0.5rem;
+		font: inherit;
+		font-size: 0.65rem;
+		font-weight: 700;
+		color: #0d1f33;
+		background: rgba(255, 255, 255, 0.55);
+		border: 1px solid rgba(0, 0, 0, 0.35);
+		border-radius: 6px;
+		cursor: pointer;
+		text-align: center;
+	}
+	#TW #T1.tw-t1--form-open .t1-expandable {
+		display: flex !important;
+		flex-direction: column;
+		flex: 1 1 0;
+		min-height: 0;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+	#TW .t2-portrait-expand-btn,
+	#TW .t2-portrait-collapse-btn {
+		display: block !important;
+		flex-shrink: 0;
+		width: 100%;
+		box-sizing: border-box;
+		margin: 0.35rem 0 0;
+		padding: 0.5rem 0.65rem;
+		font: inherit;
+		font-size: 0.72rem;
+		font-weight: 800;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		text-align: center;
+	}
+	/* Albastru: lățime −1/3 (rămâne 2/3), lipit de dreapta casetei */
+	#TW .t2-portrait-expand-btn {
+		color: #fff;
+		background: #1565c0;
+		width: calc(200% / 3);
+		max-width: 100%;
+		margin-left: auto;
+		margin-right: 0;
+	}
+	#TW .t2-portrait-collapse-btn {
+		margin: 0 0 0.4rem;
+		padding: 0.4rem 0.5rem;
+		font-size: 0.65rem;
+		font-weight: 700;
+		color: #0d1f33;
+		background: rgba(255, 255, 255, 0.55);
+		border: 1px solid rgba(0, 0, 0, 0.35);
+		border-radius: 6px;
+	}
+	#TW #T2:not(.tw-t2--hub-open) .t2-portrait-collapse-btn {
+		display: none !important;
+	}
+	#TW #T2.tw-t2--hub-open .t2-portrait-expand-btn {
+		display: none !important;
+	}
+}
+
+@media (min-width: 769px) {
+	#TW .tw-portrait-stack {
+		display: contents;
+	}
+	#TW .t1-portrait-open-btn,
+	#TW .t1-portrait-close-btn,
+	#TW .t2-portrait-expand-btn,
+	#TW .t2-portrait-collapse-btn {
+		display: none !important;
+	}
+	#TW .t1-expandable {
+		display: block !important;
 	}
 }
 
 /* Modal hartă – alegere punct plecare/sosire pe aceeași pagină */
 /* Sugestiile Google Places deasupra modalului */
 .pac-container {
-	z-index: 10060 !important;
+	z-index: 120050 !important;
 }
 
 .transport-map-modal {
 	position: fixed;
 	inset: 0;
-	z-index: 10050;
+	z-index: 120000;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -744,6 +1056,44 @@
 	border: 1px solid rgba(0, 0, 0, 0.2);
 	overflow: hidden;
 	background: #e0e0e0;
+}
+.transport-map-auth-fail {
+	box-sizing: border-box;
+	height: 100%;
+	min-height: 280px;
+	padding: 1rem 1.1rem;
+	overflow-y: auto;
+	font-size: 0.85rem;
+	line-height: 1.45;
+	color: #1a1a1a;
+	background: #fff5f5;
+	border: 2px solid #c62828;
+	border-radius: 8px;
+}
+.transport-map-auth-fail strong {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-size: 0.95rem;
+	color: #b71c1c;
+}
+.transport-map-auth-fail p {
+	margin: 0.5rem 0;
+}
+.transport-map-auth-fail__code {
+	display: block;
+	margin: 0.65rem 0;
+	padding: 0.5rem 0.65rem;
+	font-size: 0.78rem;
+	word-break: break-all;
+	background: #fff;
+	border: 1px dashed #333;
+	border-radius: 6px;
+}
+.transport-map-auth-fail a {
+	display: inline-block;
+	margin-top: 0.5rem;
+	font-weight: 700;
+	color: #1565c0;
 }
 .transport-map-modal__actions {
 	display: flex;
