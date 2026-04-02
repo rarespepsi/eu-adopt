@@ -7,7 +7,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt87-navbar-portrait-lipit" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt89-mobil-scroll-main" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -29,6 +29,15 @@
 			overflow-y: auto !important;
 			overflow-x: hidden !important;
 			-webkit-overflow-scrolling: touch;
+		}
+	}
+	/* Mobil: #PW + grila P2 depășesc înălțimea viewport; #main_content avea overflow:hidden → tăiat la ~2 rânduri (6 carduri), fără scroll. */
+	@media (max-width: 767.98px) {
+		body.page-pt #main_content {
+			overflow-y: auto !important;
+			overflow-x: hidden !important;
+			-webkit-overflow-scrolling: touch;
+			overscroll-behavior-y: contain;
 		}
 	}
 	#PW .pt-strip-item--p1 img,
@@ -395,6 +404,30 @@
 {% block extra_js %}
 <script>
 (function() {
+	/* Un singur setInterval pentru toate pozele rotative — altfel fiecare card + fiecare lot P2 adaugă timer (zeci/sute) și blochează mobilul. */
+	var ROT_TICK_MS = 5000;
+	var rotRegistry = [];
+	var rotTimer = null;
+	function rotTick() {
+		if (document.hidden) return;
+		for (var i = rotRegistry.length - 1; i >= 0; i--) {
+			var r = rotRegistry[i];
+			if (!r.img || !r.img.isConnected) {
+				rotRegistry.splice(i, 1);
+				continue;
+			}
+			r.idx = (r.idx + 1) % r.list.length;
+			r.img.setAttribute("src", r.list[r.idx]);
+		}
+		if (!rotRegistry.length && rotTimer != null) {
+			clearInterval(rotTimer);
+			rotTimer = null;
+		}
+	}
+	function ensureRotTimer() {
+		if (rotTimer != null || !rotRegistry.length) return;
+		rotTimer = setInterval(rotTick, ROT_TICK_MS);
+	}
 	function initPetImageRotation(root) {
 		var el = root || document.getElementById("pt_p2_grid") || document;
 		var all = el.querySelectorAll ? el.querySelectorAll("img.pet-rotating-image") : [];
@@ -409,13 +442,10 @@
 				img.dataset.rotInit = "1";
 				return;
 			}
-			var idx = 0;
 			img.dataset.rotInit = "1";
-			setInterval(function() {
-				idx = (idx + 1) % list.length;
-				img.setAttribute("src", list[idx]);
-			}, 5000);
+			rotRegistry.push({ img: img, list: list, idx: 0 });
 		});
+		ensureRotTimer();
 	}
 	window.euadoptInitPetImageRotation = initPetImageRotation;
 	if (document.readyState === "loading") {
@@ -478,13 +508,15 @@
 			.then(function() { loading = false; });
 	}
 
+	/* root = viewport: pe mobil .pt-p2-scroll are height:auto și nu face scroll intern — user dă scroll pe pagină;
+	   cu root = scrollEl sentinelul nu mai intersectează corect și nu se încarcă loturi noi. Desktop: scroll în P2 tot mișcă sentinelul în viewport → același root merge. */
 	io = new IntersectionObserver(
 		function(entries) {
 			for (var i = 0; i < entries.length; i++) {
 				if (entries[i].isIntersecting) loadMore();
 			}
 		},
-		{ root: scrollEl, rootMargin: "280px", threshold: 0 }
+		{ root: null, rootMargin: "320px", threshold: 0 }
 	);
 	io.observe(sentinel);
 })();
