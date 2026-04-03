@@ -1,40 +1,40 @@
 /* Fixăm pagina cuști la aceleași dimensiuni ca TW (fără scroll) */
 body.page-custi {
-\toverflow: hidden !important;
-\theight: 100vh !important;
+  overflow: hidden !important;
+  height: 100vh !important;
 }
 
 body.page-custi #main_wrap {
-\tmin-height: 0 !important;
-\theight: 100vh !important;
-\tmax-height: 100vh !important;
-\tdisplay: flex !important;
-\tflex-direction: column !important;
-\tpadding: 0 !important;
-\tmargin: 0 !important;
-\toverflow: hidden !important;
+  min-height: 0 !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
 }
 
 body.page-custi #main_content {
-\tmin-height: 0 !important;
-\tflex: 1 1 0 !important;
-\tdisplay: flex !important;
-\tflex-direction: column !important;
-\toverflow: hidden !important;
-\tpadding: 0 !important;
-\tmargin: 0 !important;
-\twidth: 100% !important;
-\tmax-width: 100% !important;
+  min-height: 0 !important;
+  flex: 1 1 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 body.page-custi #main_content #TWW {
-\theight: 100% !important;
-\tmax-height: 100% !important;
-\tmin-height: 0 !important;
-\tflex: 1 1 0 !important;
-\tdisplay: flex !important;
-\tflex-direction: column !important;
-\toverflow: hidden !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  flex: 1 1 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
 }
 
 #TWW.custi-page {
@@ -55,74 +55,74 @@ body.page-custi #main_content #TWW {
 
 /* Două casete verticale în TWW: top = 1/10, main = rest */
 .tww-strip {
-\twidth: 100%;
-\tflex-shrink: 0;
+  width: 100%;
+  flex-shrink: 0;
 }
 
 .tww-strip--top {
-\tflex: 0 0 10%; /* 1/10 din înălțimea TWW */
-\tdisplay: flex;
-\talign-items: center;
-\tjustify-content: center;
-\t/* casetă roșie provizorie – doar pentru layout */
-\tbackground: #dc3545;
-\tborder-bottom: 2px solid #ffffff;
+  flex: 0 0 10%; /* 1/10 din înălțimea TWW */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* casetă roșie provizorie – doar pentru layout */
+  background: #dc3545;
+  border-bottom: 2px solid #ffffff;
 }
 
 .tww-top-inner {
-\ttext-align: center;
-\tpadding: 0 1.5rem;
-\tmax-width: 900px;
-\tmargin: 0 auto;
-\tdisplay: flex;
-\tflex-direction: column;
-\talign-items: center;
+  text-align: center;
+  padding: 0 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .tww-top-title {
-\tmargin: 0;
-\tfont-size: 1.3rem;
-\tfont-weight: 800;
-\ttext-transform: uppercase;
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .tww-top-subtitle {
-\tmargin: 0.2rem 0 0.4rem;
-\tfont-size: 0.85rem;
-\tfont-weight: 500;
+  margin: 0.2rem 0 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 .tww-top-actions {
-\tdisplay: flex;
-\talign-items: center;
-\tjustify-content: space-between;
-\tgap: 0.75rem;
-\twidth: 100%;
-\tmax-width: 520px;
-\tmargin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
 }
 
 .tww-top-btn {
-\tdisplay: inline-block;
-\tpadding: 0.25rem 0.9rem;
-\tborder-radius: 999px;
-\tbackground: rgba(21, 101, 192, 0.9);
-\tcolor: #fff;
-\tfont-size: 0.8rem;
-\tfont-weight: 700;
-\ttext-decoration: none;
-\twhite-space: nowrap;
+  display: inline-block;
+  padding: 0.25rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(21, 101, 192, 0.9);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .tww-top-btn:hover {
-\tbackground: rgba(13, 71, 161, 0.95);
+  background: rgba(13, 71, 161, 0.95);
 }
 
 .tww-strip--main {
-\tflex: 1 1 auto; /* restul de 9/10 */
-\t/* casetă albastră provizorie – doar pentru layout */
-\tbackground: #0d6efd;
-\tborder-top: 2px solid #ffffff;
+  flex: 1 1 auto; /* restul de 9/10 */
+  /* casetă albastră provizorie – doar pentru layout */
+  background: #0d6efd;
+  border-top: 2px solid #ffffff;
 }
 
 /* Casetă orizontală sus cu titlu + buton – ~1/8 din înălțimea TWW */

@@ -176,10 +176,15 @@ body.page-ilove .ilove-pet-card {
 	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
-body.page-ilove .ilove-pet-card a {
+body.page-ilove .ilove-pet-card .ilove-pet-card-hit {
 	display: block;
 	text-decoration: none;
 	color: inherit;
+}
+
+body.page-ilove .ilove-pet-card .ilove-pet-card-hit--muted {
+	cursor: default;
+	opacity: 0.92;
 }
 
 body.page-ilove .ilove-pet-card-photo {

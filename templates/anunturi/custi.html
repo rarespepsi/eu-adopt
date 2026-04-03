@@ -4,7 +4,7 @@
 {% block title %}Harta cuștilor autocarului | EU Adopt{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/custi.css' %}?v=9" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/custi.css' %}?v=11" type="text/css" media="screen" />
 <style>
 	/* Asigurăm fundalul unic cu poza de cuști pe tot TWW */
 	#TWW.custi-page {
@@ -464,8 +464,8 @@
 		text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 	}
 
-	/* Mobil + telefon landscape (ex. 915×412): lățimea e adesea >768px, deci și max-height scurt */
-	@media (max-width: 768px), (orientation: landscape) and (max-height: 520px) {
+	/* Mobil + telefon landscape (ex. 915×412): lățimea e adesea >768px, deci și max-height scurt; prag = 767.98 ca PT */
+	@media (max-width: 767.98px), (orientation: landscape) and (max-height: 520px) {
 		#TWW.custi-page {
 			overflow-x: hidden;
 			max-width: 100%;
@@ -648,8 +648,8 @@
 
 {% block extra_css_after %}
 <style>
-	/* După navbar: fără dunga #main_content pe mobil + landscape îngust (înălțime mică) */
-	@media (max-width: 768px), (orientation: landscape) and (max-height: 520px) {
+	/* După navbar: fără dunga #main_content pe mobil + landscape îngust (înălțime mică); prag 767.98 ca PT */
+	@media (max-width: 767.98px), (orientation: landscape) and (max-height: 520px) {
 		body.page-custi:not(.page-home-v2):not(.page-animale) #main_content {
 			padding-top: 0 !important;
 			background-color: transparent !important;

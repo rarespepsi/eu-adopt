@@ -4924,24 +4924,55 @@ def mypet_edit_view(request, pk):
     return render(request, "anunturi/mypet_add.html", _mypet_form_trait_labels_ctx(ctx))
 
 
+def _i_love_pet_from_demo(dog: dict) -> dict:
+    return {
+        "pk": dog["id"],
+        "nume": dog["nume"],
+        "varsta": dog.get("varsta", ""),
+        "descriere": dog.get("descriere", ""),
+        "imagine_fallback": dog.get("imagine_fallback", DEMO_DOG_IMAGE),
+        "imagine_url": "",
+        "listing_available": True,
+    }
+
+
+def _i_love_pet_from_listing(listing: AnimalListing) -> dict:
+    img_url = ""
+    if listing.photo_1:
+        try:
+            img_url = listing.photo_1.url
+        except Exception:
+            img_url = ""
+    return {
+        "pk": listing.pk,
+        "nume": listing.name or "—",
+        "varsta": listing.age_label or "",
+        "descriere": (listing.cine_sunt or listing.probleme_medicale or "")[:300],
+        "imagine_fallback": DEMO_DOG_IMAGE,
+        "imagine_url": img_url,
+        "listing_available": bool(listing.is_published),
+    }
+
+
 def i_love_view(request):
-    """Pagina I Love: câinii pe care userul i-a marcat cu inimioară."""
+    """Pagina I Love: animalele bifate cu inimioară (demo DEMO_DOGS + anunțuri AnimalListing)."""
     if not request.user.is_authenticated:
         return redirect(f"{reverse('login')}?next={reverse('i_love')}")
 
     ids = list(WishlistItem.objects.filter(user=request.user).order_by("-created_at").values_list("animal_id", flat=True))
-    by_id = {d["id"]: d for d in DEMO_DOGS}
+    by_demo = {d["id"]: d for d in DEMO_DOGS}
+    db_ids = [i for i in ids if i not in by_demo]
+    listings = {}
+    if db_ids:
+        listings = {x.pk: x for x in AnimalListing.objects.filter(pk__in=db_ids)}
+
     pets = []
     for animal_id in ids:
-        d = by_id.get(animal_id)
-        if d:
-            pets.append({
-                "pk": d["id"],
-                "nume": d["nume"],
-                "varsta": d.get("varsta", ""),
-                "descriere": d.get("descriere", ""),
-                "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
-            })
+        if animal_id in by_demo:
+            pets.append(_i_love_pet_from_demo(by_demo[animal_id]))
+        elif animal_id in listings:
+            pets.append(_i_love_pet_from_listing(listings[animal_id]))
+
     return render(request, "anunturi/i_love.html", {"pets": pets, "wishlist_ids": set(ids)})
 
 

@@ -5,7 +5,7 @@
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=27" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=28" type="text/css" media="screen" />
 <style>
 	/* Desktop: TW ca PW/SW – fără scroll pagină, viewport fix (nu aplicăm pe mobil) */
 	@media (min-width: 769px) {
@@ -42,7 +42,7 @@
 		}
 	}
 	/* Mobil (orice orientare): scroll natural; fără reguli dedicate landscape */
-	@media (max-width: 768px) {
+	@media (max-width: 767.98px) {
 		body.page-transport {
 			overflow-x: hidden !important;
 			overflow-y: auto !important;
@@ -70,7 +70,7 @@
 		}
 	}
 	/* Mobil portrait: înălțime fixă sub A0; T1+T2 împart 50–50 spațiul de deasupra T3 */
-	@media (max-width: 768px) and (orientation: portrait) {
+	@media (max-width: 767.98px) and (orientation: portrait) {
 		body.page-transport {
 			overflow: hidden !important;
 			height: 100vh !important;
@@ -104,7 +104,7 @@
 		}
 	}
 	/* Mobil landscape: TW ca desktop — T1 | T2 | T3 pe un rând, fără scroll pe pagină */
-	@media (max-width: 768px) and (orientation: landscape) {
+	@media (max-width: 767.98px) and (orientation: landscape) {
 		body.page-transport {
 			overflow: hidden !important;
 			height: 100vh !important;
@@ -168,10 +168,10 @@
 </style>
 {% endblock %}
 
-{# După navbar-a0-secured: fără dunga deschisă sub A0, doar max-width 768px #}
+{# După navbar-a0-secured: fără dunga deschisă sub A0; mobil = max-width 767.98px (ca PT) #}
 {% block extra_css_after %}
 <style>
-	@media (max-width: 768px) {
+	@media (max-width: 767.98px) {
 		body.page-transport:not(.page-home-v2):not(.page-animale) #main_content {
 			padding-top: 0 !important;
 			background-color: transparent !important;
@@ -403,7 +403,7 @@
 		"{% static 'images/transport/fundal_4.jpg' %}"
 	];
 	var lastFundalUrl = '';
-	var mqMobil = window.matchMedia('(max-width: 768px)');
+	var mqMobil = window.matchMedia('(max-width: 767.98px)');
 	function syncTwFundalMobil() {
 		var tw = document.getElementById('TW');
 		if (!tw || !lastFundalUrl) return;
@@ -444,7 +444,7 @@
 </script>
 <script>
 (function() {
-	var mq = window.matchMedia("(max-width: 768px)");
+	var mq = window.matchMedia("(max-width: 767.98px)");
 	var t1 = document.getElementById("T1");
 	var t2 = document.getElementById("T2");
 	var openBtn = document.getElementById("t1PortraitOpen");
@@ -522,8 +522,8 @@
 </script>
 <script>
 (function() {
-	/* Casete galbene la cercurile numerotate din T2: tap pe mobil ≤768px (toate orientările) */
-	var mq = window.matchMedia("(max-width: 768px)");
+	/* Casete galbene T2: tap pe mobil ≤767.98px (toate orientările), aliniat cu PT */
+	var mq = window.matchMedia("(max-width: 767.98px)");
 	var t2 = document.getElementById("T2");
 	if (!t2) return;
 	function closeAllT2Tooltips() {

@@ -5846,7 +5846,7 @@ body.show-skeleton #footer::before {
 	font-weight: bold;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
 	.animal-counter-navbar {
 		font-size: 11px;
 		gap: 10px;
@@ -6333,7 +6333,7 @@ body.page-cont-ong .my-pets-grid .breed { font-size: 12px; color: #666; }
 @media (max-width: 1200px) {
   body.page-cont-ong .my-pets-grid.pets-grid { grid-template-columns: repeat(3, 1fr); }
 }
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   body.page-cont-ong .my-pets-grid.pets-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 480px) {

@@ -557,8 +557,8 @@
 #TW #T1 .t1-submit:hover { background: rgba(13, 71, 161, 0.85); }
 
 /* ========== Mobil – pagină Transport ========== */
-/* Sub 768px (inclusiv landscape): coloană + scroll pagină; fără reguli dedicate doar pentru landscape */
-@media (max-width: 768px) {
+/* Sub ~768px (767.98, ca PT): coloană + scroll pagină; fără reguli dedicate doar pentru landscape */
+@media (max-width: 767.98px) {
 	#TW .tw-portrait-stack {
 		display: contents;
 	}
@@ -727,7 +727,7 @@
 }
 
 /* Mobil landscape: același principiu ca desktop — formular stânga, hub T2 centru, bandă T3 dreapta */
-@media (max-width: 768px) and (orientation: landscape) {
+@media (max-width: 767.98px) and (orientation: landscape) {
 	#TW.transport-wrapper {
 		min-height: 0;
 		flex: 1 1 0;
@@ -1052,7 +1052,7 @@
 }
 
 /* Mobil portrait: stack T1+T2; formularul / hub-ul acoperă tot stack-ul peste celălalt rând */
-@media (max-width: 768px) and (orientation: portrait) {
+@media (max-width: 767.98px) and (orientation: portrait) {
 	#TW .tw-row {
 		flex: 1 1 0;
 		min-height: 0;

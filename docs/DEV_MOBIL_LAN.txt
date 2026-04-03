@@ -1,0 +1,27 @@
+DEV – acces de pe telefon la Django (același Wi-Fi cu laptopul)
+================================================================
+
+Server:  python manage.py runserver 0.0.0.0:8000
+URL pe mobil:  http://<IPv4 laptop>:8000
+
+Două rețele (zilnic)
+--------------------
+• BIRou — Wi-Fi: 192.168.10.x
+  Ultim IP notat pentru laptop: 192.168.10.85
+  Mobil: http://192.168.10.85:8000
+
+• ACASĂ — Wi-Fi: 192.168.1.x
+  IP exemplu din proiect (ALLOWED_HOSTS): 192.168.1.15
+  Mobil: http://192.168.1.15:8000  (verifică cu ipconfig; DHCP poate schimba ultimul număr)
+
+Dacă nu merge
+-------------
+Pe laptop: ipconfig → la „Wireless LAN adapter Wi-Fi” citește „IPv4 Address”.
+Folosește exact acel IP în browserul de pe telefon.
+
+Setări Django
+-------------
+Cu DEBUG=True, ALLOWED_HOSTS include '*' (dev local) — nu trebuie adăugat manual fiecare IP.
+Opțional: variabila de mediu DJANGO_ALLOWED_HOSTS (vezi settings.py).
+
+Ultima actualizare notă: birou = 192.168.10.x (IP laptop 192.168.10.85 la momentul notării).

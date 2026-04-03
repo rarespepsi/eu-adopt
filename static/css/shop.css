@@ -1,8 +1,4 @@
 /* SHW – 3 rânduri: 1 casetă sus, 2 casete mijloc, bandă galbenă jos */
-body.page-shop #main_content {
-  padding-top: 0.25rem;
-}
-
 #SHW {
   width: 100% !important;
   max-width: 100% !important;
@@ -341,13 +337,59 @@ body.page-shop #main_content {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   #SHW {
     padding: 0 0.5rem 0.75rem;
   }
 
   #SHW .shw-layout {
     gap: 0.4rem;
+  }
+}
+
+/* Mobil portrait: 3 coloane produse, 4 rânduri; lățimea unei coloane scoase din grilă (față de 4 col) împărțită egal la stânga+dreapta — caseta mijloc păstrează aceeași lățime/celulă ca la 4 coloane */
+@media (max-width: 767.98px) and (orientation: portrait) {
+  #SHW .shw-row-middle-left,
+  #SHW .shw-row-middle-right {
+    /* 14% + jumătate din (100% - 2×14%) / 4 ≈ 23% — centrul rămâne 3× aceeași celulă ca 4-col */
+    flex: 0 0 23%;
+    min-width: 0;
+    max-width: 25%;
+  }
+
+  #SHW .shop-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #SHW .shop-grid-dogs,
+  #SHW .shop-grid-cats,
+  #SHW .shop-grid-accessories {
+    grid-auto-rows: 123px;
+    max-height: calc(4 * 123px);
+  }
+}
+
+/* Mobil landscape: coloanele laterale (SH4 / SH5) umplu înălțimea rândului mijlociu — fără alte schimbări de layout */
+@media (max-width: 767.98px) and (orientation: landscape) {
+  #SHW .shw-row-middle {
+    flex: 1 1 0;
+    min-height: 0;
+    align-items: stretch;
+  }
+
+  #SHW .shw-row-middle-left,
+  #SHW .shw-row-middle-right {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    align-self: stretch;
+    height: 100%;
+  }
+
+  #SHW .shw-side-inner-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
   }
 }
 

@@ -5,7 +5,7 @@
 {% block body_class %}page-shop{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/shop.css' %}?v=1" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/shop.css' %}?v=7" type="text/css" media="screen" />
 <style>
 	/* SHW = toată pagina vizibilă sub navbar (ca PW) */
 	body.page-shop #main_wrap {
@@ -26,9 +26,10 @@
 		width: 100% !important;
 		max-width: 100% !important;
 	}
+	/* Același offset ca padding-top #main_content (navbar A0) — var(--nav-h) singur lasă fâșie #fff sub bară */
 	body.page-shop #main_content #SHW {
-		height: calc(100vh - var(--nav-h, 64px)) !important;
-		max-height: calc(100vh - var(--nav-h, 64px)) !important;
+		height: calc(100vh - var(--nav-height, var(--nav-h, 64px))) !important;
+		max-height: calc(100vh - var(--nav-height, var(--nav-h, 64px))) !important;
 		min-height: 0 !important;
 		display: flex !important;
 		flex-direction: column !important;
@@ -471,6 +472,33 @@
 {% endblock %}
 {% block extra_js %}
 <script>
+(function () {
+	function shopNavBarHeightPx() {
+		var a0 = document.getElementById("A0");
+		if (!a0) return 64;
+		try {
+			var px = parseFloat(window.getComputedStyle(a0).height);
+			if (isFinite(px) && px >= 28 && px <= 220) return Math.round(px);
+		} catch (e) {}
+		var h = Math.round(a0.getBoundingClientRect().height);
+		return h >= 28 && h <= 220 ? h : 64;
+	}
+	function shopSyncNavHeight() {
+		var nh = Math.max(24, Math.min(220, shopNavBarHeightPx()));
+		try {
+			document.body.style.setProperty("--nav-height", nh + "px");
+		} catch (e) {}
+	}
+	shopSyncNavHeight();
+	window.addEventListener("resize", shopSyncNavHeight);
+	window.addEventListener("orientationchange", shopSyncNavHeight);
+	if (typeof ResizeObserver !== "undefined") {
+		var a0 = document.getElementById("A0");
+		if (a0) new ResizeObserver(shopSyncNavHeight).observe(a0);
+	}
+})();
+</script>
+<script>
 document.addEventListener("DOMContentLoaded", function () {
   var tabs = document.querySelectorAll(".shop-tab");
   var panels = document.querySelectorAll(".shop-panel");
@@ -500,31 +528,54 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Completează ultimul rând la 4 coloane pentru fiecare tab (CÂINI / PISICI / ACCESORII)
+  // Completează ultimul rând: 4 coloane (desktop / mobil landscape), 3 coloane (mobil portrait)
+  var shopGridColsMq = window.matchMedia("(max-width: 767.98px) and (orientation: portrait)");
+
+  function shopGridColumnCount() {
+    return shopGridColsMq.matches ? 3 : 4;
+  }
+
   function balanceGrid(panelSelector, gridClass) {
     var grid = document.querySelector(panelSelector + " ." + gridClass);
     if (!grid) return;
+
+    grid.querySelectorAll(".shop-card--balance-clone").forEach(function (n) {
+      n.remove();
+    });
 
     var cards = grid.querySelectorAll(".shop-card");
     var count = cards.length;
     if (!count) return;
 
-    var modulo = count % 4;
+    var cols = shopGridColumnCount();
+    var modulo = count % cols;
     if (modulo === 0) return;
 
-    var needed = 4 - modulo; // 1–3 duplicate ca să umplem rândul
+    var needed = cols - modulo;
 
     for (var i = 0; i < needed; i++) {
       var source = cards[i % count];
       if (!source) break;
       var clone = source.cloneNode(true);
+      clone.classList.add("shop-card--balance-clone");
       grid.appendChild(clone);
     }
   }
 
-  balanceGrid("#dogs", "shop-grid-dogs");             // SH2.1 – CÂINI
-  balanceGrid("#cats", "shop-grid-cats");             // SH2.2 – PISICI
-  balanceGrid("#accessories", "shop-grid-accessories"); // SH2.3 – ACCESORII
+  function balanceAllShopGrids() {
+    balanceGrid("#dogs", "shop-grid-dogs");
+    balanceGrid("#cats", "shop-grid-cats");
+    balanceGrid("#accessories", "shop-grid-accessories");
+  }
+
+  balanceAllShopGrids();
+
+  shopGridColsMq.addEventListener("change", function () {
+    balanceAllShopGrids();
+  });
+  window.addEventListener("orientationchange", function () {
+    setTimeout(balanceAllShopGrids, 150);
+  });
 
   // Fundal Shop – aceleași 4 imagini ca la Transport, aplicate pe SHW
   (function () {

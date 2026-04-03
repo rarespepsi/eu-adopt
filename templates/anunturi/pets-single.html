@@ -828,7 +828,7 @@
 			}
 
 			/* Mobil portret (și foarte îngust): fișă — coloană sub coloană + scroll pagină */
-			@media (max-width: 768px) and (orientation: portrait),
+			@media (max-width: 767.98px) and (orientation: portrait),
 			       (max-width: 420px) {
 				body.page-pet-single #main_content {
 					height: auto;
@@ -1815,7 +1815,7 @@
 			function isLikelyMobileUi() {
 				try {
 					if (window.matchMedia("(pointer: coarse)").matches) return true;
-					if (window.matchMedia("(max-width: 768px)").matches) return true;
+					if (window.matchMedia("(max-width: 767.98px)").matches) return true;
 				} catch (e) {}
 				return false;
 			}
