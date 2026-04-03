@@ -562,10 +562,6 @@
 	#TW .tw-portrait-stack {
 		display: contents;
 	}
-	#TW .t2-portrait-expand-btn,
-	#TW .t2-portrait-collapse-btn {
-		display: none !important;
-	}
 	#TW .tw-row {
 		flex-direction: column;
 		overflow: visible;
@@ -607,14 +603,6 @@
 		max-width: 100%;
 		min-width: 0;
 		min-height: 80px;
-	}
-	/* În afara portrait: formularul mereu vizibil, fără butoane accordion */
-	#TW .t1-portrait-open-btn,
-	#TW .t1-portrait-close-btn {
-		display: none !important;
-	}
-	#TW .t1-expandable {
-		display: block !important;
 	}
 	#TW #T2 .t2-title {
 		font-size: 0.85rem;
@@ -735,6 +723,331 @@
 		aspect-ratio: 1 / 1;
 		align-self: center;
 		max-width: calc((100% - 2 * 0.35rem) / 3);
+	}
+}
+
+/* Mobil landscape: același principiu ca desktop — formular stânga, hub T2 centru, bandă T3 dreapta */
+@media (max-width: 768px) and (orientation: landscape) {
+	#TW.transport-wrapper {
+		min-height: 0;
+		flex: 1 1 0;
+		overflow: hidden;
+	}
+	#TW .tw-row {
+		flex-direction: row;
+		align-items: stretch;
+		flex: 1 1 0;
+		min-height: 0;
+		overflow: hidden;
+	}
+	#TW #T1.tw-cell {
+		flex: 0 0 clamp(240px, 32vw, 340px);
+		width: auto;
+		max-width: 36%;
+		min-height: 0;
+		overflow: hidden;
+	}
+	#TW #T1 .t1-inner {
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	#TW #T2.tw-cell {
+		flex: 1 1 0;
+		min-width: 0;
+		min-height: 0;
+		overflow: hidden;
+	}
+	#TW #T2 .t2-inner {
+		overflow: hidden;
+		min-height: 0;
+	}
+	#TW #T2 .t2-hub {
+		min-height: 0;
+	}
+	#TW #T3.tw-cell {
+		flex: 0 0 12.5%;
+		max-width: 14%;
+		min-width: 70px;
+		width: auto;
+		min-height: 0;
+		overflow: hidden;
+	}
+	#TW #T3 .t3-title {
+		display: block !important;
+		font-size: 0.62rem;
+		padding: 0.2rem 0.25rem;
+	}
+	#TW #T3 .t3-inner {
+		flex-direction: column;
+		flex-wrap: nowrap;
+		align-items: stretch;
+		justify-content: flex-start;
+		gap: 0.2rem;
+		padding: 0.3rem 0.22rem;
+		height: 100%;
+		box-sizing: border-box;
+	}
+	#TW #T3 .t3-box {
+		flex: 1 1 auto;
+		width: 100%;
+		max-width: none;
+		aspect-ratio: auto;
+		min-height: 0;
+	}
+	#TW #T1 .t1-row-inline {
+		flex-direction: row;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.2rem;
+	}
+	#TW #T1 .t1-row-inline .t1-label {
+		margin-bottom: 0;
+	}
+	#TW #T1 .t1-title {
+		font-size: 0.82rem;
+		min-height: 2rem;
+		padding: 0.15rem 0.2rem;
+	}
+	#TW #T1 .t1-intro {
+		font-size: 0.5rem;
+		margin-bottom: 0.2rem;
+		padding: 0.15rem;
+	}
+	#TW #T1 .t1-label,
+	#TW #T1 .t1-select,
+	#TW #T1 .t1-input {
+		font-size: 0.58rem;
+	}
+	#TW #T1 .t1-map-pick-btn {
+		font-size: 0.52rem;
+		padding: 0.2rem 0.35rem;
+	}
+	#TW #T2 .t2-center {
+		width: min(30vmin, 150px);
+		height: min(30vmin, 150px);
+		min-width: 96px;
+		min-height: 96px;
+	}
+	#TW #T2 .t2-circles {
+		transform: translate(24px, 28px);
+	}
+	#TW #T2 .t2-circle {
+		width: min(10.5vmin, 54px);
+		height: min(10.5vmin, 54px);
+		margin-left: min(-5.25vmin, -27px);
+		margin-top: min(-5.25vmin, -27px);
+	}
+	#TW #T2 .t2-title {
+		font-size: 0.68rem;
+		padding: 0.1rem 0.4rem;
+		white-space: nowrap;
+		max-width: 95%;
+	}
+	#TW #T2 .t2-circle-label {
+		font-size: 0.42rem;
+		padding: 0.06rem 0.15rem;
+	}
+	#TW #T2 .t2-extra-circle {
+		width: min(15vmin, 82px);
+		height: min(15vmin, 82px);
+		top: 0.2rem;
+		left: 0.2rem;
+	}
+	#TW #T2 .t2-extra-circle-text {
+		font-size: 7px;
+	}
+	/* T1/T2 — același principiu ca portrait: butoane albastre, formular restrâns, overlay la deschidere */
+	#TW .tw-row {
+		position: relative;
+		z-index: 0;
+	}
+	#TW #T1.tw-t1--form-open.tw-cell {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		z-index: 8;
+		flex: none !important;
+		width: 100% !important;
+		max-width: none !important;
+		height: 100%;
+		box-sizing: border-box;
+		background: rgba(252, 252, 252, 0.97);
+		box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
+		overflow: hidden;
+	}
+	#TW #T1.tw-t1--form-open ~ #T2.tw-cell {
+		flex: 0 0 0 !important;
+		min-height: 0 !important;
+		height: 0 !important;
+		max-height: 0 !important;
+		overflow: hidden !important;
+		visibility: hidden !important;
+		pointer-events: none !important;
+		margin: 0 !important;
+		padding: 0 !important;
+		border: none !important;
+	}
+	#TW .tw-portrait-stack.tw-stack--t2-over #T1.tw-cell {
+		flex: 0 0 0 !important;
+		min-height: 0 !important;
+		height: 0 !important;
+		max-height: 0 !important;
+		overflow: hidden !important;
+		visibility: hidden !important;
+		pointer-events: none !important;
+		margin: 0 !important;
+		padding: 0 !important;
+		border: none !important;
+	}
+	#TW #T2.tw-t2--hub-open.tw-cell {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		z-index: 8;
+		flex: none !important;
+		width: 100% !important;
+		max-width: none !important;
+		height: 100%;
+		box-sizing: border-box;
+		background: rgba(252, 252, 252, 0.94);
+		box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
+		overflow: visible;
+	}
+	#TW #T1.tw-t1--form-open .t1-inner {
+		flex: 1 1 0;
+		min-height: 0;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+	#TW #T1:not(.tw-t1--form-open) .t1-inner {
+		flex: 1 1 0;
+		min-height: 0;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+		display: flex;
+		flex-direction: column;
+	}
+	#TW #T2 .t2-inner {
+		flex: 1 1 0;
+		min-height: 0;
+		overflow: visible;
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		justify-content: flex-start;
+	}
+	#TW #T2.tw-t2--hub-open .t2-inner {
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+		max-height: 100%;
+	}
+	#TW #T2:not(.tw-t2--hub-open) .t2-hub {
+		flex: 1 1 0;
+		min-height: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	#TW #T2 .t2-hub {
+		margin-top: clamp(0.35rem, 2.2vmin, 0.9rem);
+	}
+	#TW .t1-portrait-open-btn {
+		display: block !important;
+		flex-shrink: 0;
+		width: 100%;
+		box-sizing: border-box;
+		margin: 0.35rem 0 0;
+		padding: 0.5rem 0.65rem;
+		font: inherit;
+		font-size: 0.72rem;
+		font-weight: 800;
+		color: #fff;
+		background: #1565c0;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		text-align: center;
+	}
+	#TW #T1:not(.tw-t1--form-open) .t1-expandable {
+		display: none !important;
+	}
+	#TW #T1.tw-t1--form-open .t1-portrait-open-btn {
+		display: none !important;
+	}
+	#TW #T1:not(.tw-t1--form-open) .t1-portrait-close-btn {
+		display: none !important;
+	}
+	#TW #T1.tw-t1--form-open .t1-portrait-close-btn {
+		display: block !important;
+		flex-shrink: 0;
+		width: 100%;
+		box-sizing: border-box;
+		margin: 0 0 0.4rem;
+		padding: 0.4rem 0.5rem;
+		font: inherit;
+		font-size: 0.65rem;
+		font-weight: 700;
+		color: #0d1f33;
+		background: rgba(255, 255, 255, 0.55);
+		border: 1px solid rgba(0, 0, 0, 0.35);
+		border-radius: 6px;
+		cursor: pointer;
+		text-align: center;
+	}
+	#TW #T1.tw-t1--form-open .t1-expandable {
+		display: flex !important;
+		flex-direction: column;
+		flex: 1 1 0;
+		min-height: 0;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+	#TW .t2-portrait-expand-btn,
+	#TW .t2-portrait-collapse-btn {
+		display: block !important;
+		flex-shrink: 0;
+		width: 100%;
+		box-sizing: border-box;
+		margin: 0.35rem 0 0;
+		padding: 0.5rem 0.65rem;
+		font: inherit;
+		font-size: 0.72rem;
+		font-weight: 800;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		text-align: center;
+	}
+	#TW .t2-portrait-expand-btn {
+		color: #fff;
+		background: #1565c0;
+		width: 100%;
+		max-width: 100%;
+		margin-left: 0;
+		margin-right: 0;
+	}
+	#TW .t2-portrait-collapse-btn {
+		margin: 0 0 0.4rem;
+		padding: 0.4rem 0.5rem;
+		font-size: 0.65rem;
+		font-weight: 700;
+		color: #0d1f33;
+		background: rgba(255, 255, 255, 0.55);
+		border: 1px solid rgba(0, 0, 0, 0.35);
+		border-radius: 6px;
+	}
+	#TW #T2:not(.tw-t2--hub-open) .t2-portrait-collapse-btn {
+		display: none !important;
+	}
+	#TW #T2.tw-t2--hub-open .t2-portrait-expand-btn {
+		display: none !important;
 	}
 }
 

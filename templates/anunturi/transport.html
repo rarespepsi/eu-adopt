@@ -5,7 +5,7 @@
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=25" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=27" type="text/css" media="screen" />
 <style>
 	/* Desktop: TW ca PW/SW – fără scroll pagină, viewport fix (nu aplicăm pe mobil) */
 	@media (min-width: 769px) {
@@ -103,6 +103,42 @@
 			flex-direction: column !important;
 		}
 	}
+	/* Mobil landscape: TW ca desktop — T1 | T2 | T3 pe un rând, fără scroll pe pagină */
+	@media (max-width: 768px) and (orientation: landscape) {
+		body.page-transport {
+			overflow: hidden !important;
+			height: 100vh !important;
+			height: 100dvh !important;
+			min-height: 100dvh !important;
+		}
+		body.page-transport #main_wrap {
+			display: flex !important;
+			flex-direction: column !important;
+			overflow: hidden !important;
+			min-height: 0 !important;
+			height: 100vh !important;
+			height: 100dvh !important;
+			max-height: 100dvh !important;
+		}
+		body.page-transport #main_content {
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			overflow: hidden !important;
+			display: flex !important;
+			flex-direction: column !important;
+			padding: 0 !important;
+			margin: 0 !important;
+		}
+		body.page-transport #main_content #TW {
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			overflow: hidden !important;
+			display: flex !important;
+			flex-direction: column !important;
+			height: auto !important;
+			max-height: none !important;
+		}
+	}
 	.transport-from-adoption-banner {
 		width: 100%;
 		max-width: 100%;
@@ -129,6 +165,23 @@
 		font-size: 0.72rem;
 	}
 	.transport-from-adoption-banner a:hover { filter: brightness(1.08); }
+</style>
+{% endblock %}
+
+{# După navbar-a0-secured: fără dunga deschisă sub A0, doar max-width 768px #}
+{% block extra_css_after %}
+<style>
+	@media (max-width: 768px) {
+		body.page-transport:not(.page-home-v2):not(.page-animale) #main_content {
+			padding-top: 0 !important;
+			background-color: transparent !important;
+			box-shadow: none !important;
+		}
+		body.page-transport #TW.transport-wrapper {
+			padding-top: var(--nav-height) !important;
+			box-sizing: border-box !important;
+		}
+	}
 </style>
 {% endblock %}
 
@@ -349,13 +402,31 @@
 		"{% static 'images/transport/fundal_3.jpg' %}",
 		"{% static 'images/transport/fundal_4.jpg' %}"
 	];
+	var lastFundalUrl = '';
+	var mqMobil = window.matchMedia('(max-width: 768px)');
+	function syncTwFundalMobil() {
+		var tw = document.getElementById('TW');
+		if (!tw || !lastFundalUrl) return;
+		if (mqMobil.matches) {
+			tw.style.backgroundImage = 'url(' + lastFundalUrl + ')';
+			tw.style.backgroundSize = 'cover';
+			tw.style.backgroundPosition = 'center';
+			tw.style.backgroundRepeat = 'no-repeat';
+		} else {
+			tw.style.backgroundImage = '';
+			tw.style.backgroundSize = '';
+			tw.style.backgroundPosition = '';
+			tw.style.backgroundRepeat = '';
+		}
+	}
 	function setRandomFundal() {
-		var url = fundalUrls[Math.floor(Math.random() * fundalUrls.length)];
+		lastFundalUrl = fundalUrls[Math.floor(Math.random() * fundalUrls.length)];
 		var tw = document.getElementById('TW');
 		var row = tw && tw.querySelector('.tw-row');
 		if (row) {
-			row.style.backgroundImage = 'url(' + url + ')';
+			row.style.backgroundImage = 'url(' + lastFundalUrl + ')';
 		}
+		syncTwFundalMobil();
 	}
 	if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', setRandomFundal);
@@ -363,11 +434,17 @@
 		setRandomFundal();
 	}
 	setInterval(setRandomFundal, 60 * 60 * 1000);
+	if (typeof mqMobil.addEventListener === 'function') {
+		mqMobil.addEventListener('change', syncTwFundalMobil);
+	} else if (typeof mqMobil.addListener === 'function') {
+		mqMobil.addListener(syncTwFundalMobil);
+	}
+	window.addEventListener('resize', syncTwFundalMobil);
 })();
 </script>
 <script>
 (function() {
-	var mq = window.matchMedia("(max-width: 768px) and (orientation: portrait)");
+	var mq = window.matchMedia("(max-width: 768px)");
 	var t1 = document.getElementById("T1");
 	var t2 = document.getElementById("T2");
 	var openBtn = document.getElementById("t1PortraitOpen");
