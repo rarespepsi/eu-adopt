@@ -98,6 +98,7 @@ _CARTE_GET_CASES = [
     ("shop", {}, ""),
     ("shop_comanda_personalizate", {}, ""),
     ("shop_magazin_foto", {}, ""),
+    ("shop_magazin_foto_more", {}, "?offset=0"),
     ("pets_all", {}, ""),
     ("pets_all", {}, "?go=1"),
     ("pets_single", {"pk": 999999}, ""),

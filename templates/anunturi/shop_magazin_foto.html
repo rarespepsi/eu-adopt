@@ -6,49 +6,213 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/shop.css' %}?v=1" type="text/css" media="screen" />
-<style>
-	.shop-foto-page {
-		max-width: 840px;
-		margin: 2rem auto;
-		padding: 0 1rem;
-	}
-	.shop-foto-page h1 {
-		color: #b71c1c;
-		font-size: 1.5rem;
-		margin-bottom: 1rem;
-	}
-	.shop-foto-page p {
-		margin-bottom: 1rem;
-		line-height: 1.5;
-		color: #333;
-	}
-	.shop-foto-page .back-link {
-		display: inline-block;
-		margin-top: 1.5rem;
-		padding: 0.5rem 1rem;
-		background: #ffca28;
-		color: #4e342e;
-		font-weight: 700;
-		text-decoration: none;
-		border-radius: 8px;
-	}
-	.shop-foto-page .back-link:hover {
-		background: #ffb300;
-	}
-</style>
+<link rel="stylesheet" href="{% static 'css/shop-magazin-foto.css' %}?v=16" type="text/css" media="screen" />
 {% endblock %}
+
+{# --- Text păstrat (afișare suspendată – prima variantă layout) ---
+<h1>Magazin foto – sprijină ONG-urile prin achiziția de poze</h1>
+<p>Cumpără o poză de la un ONG și ajută-i să salveze un suflet.</p>
+<p>Vom avea licitații de poze, concursuri de distribuire imagini și alte campanii creative prin care pozele tale preferate devin șansa unui animal la o viață mai bună.</p>
+<p>(Conținutul final al magazinului foto va fi configurat ulterior – acum este doar o pagină de destinație funcțională.)</p>
+--- #}
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
-	<main id="SHW" aria-label="Shop EU-ADOPT – Magazin foto ONG">
-		<div class="shop-foto-page">
-			<h1>Magazin foto – sprijină ONG-urile prin achiziția de poze</h1>
-			<p>Cumpără o poză de la un ONG și ajută-i să salveze un suflet.</p>
-			<p>Vom avea licitații de poze, concursuri de distribuire imagini și alte campanii creative prin care pozele tale preferate devin șansa unui animal la o viață mai bună.</p>
-			<p>(Conținutul final al magazinului foto va fi configurat ulterior – acum este doar o pagină de destinație funcțională.)</p>
-			<a href="{% url 'shop' %}" class="back-link">← Înapoi la Shop</a>
+	<main id="SMF" class="smf-main" aria-label="Shop EU-ADOPT – Magazin foto ONG">
+		<header class="smf-topbar">
+			<h1 class="smf-title">Magazin foto</h1>
+			<a href="{% url 'shop' %}" class="smf-back-link">← Înapoi la Shop</a>
+		</header>
+
+		<div class="smf-cork" aria-label="Panou poze">
+			<div class="smf-grid-viewport">
+				<div
+					class="smf-grid"
+					id="smf_grid"
+					role="list"
+					data-smf-more-url="{% url 'shop_magazin_foto_more' %}"
+					data-smf-offset="{{ foto_next_offset }}"
+					data-smf-has-more="{% if foto_has_more %}1{% else %}0{% endif %}"
+				>
+					{% for slot in foto_slots %}
+						{% include "anunturi/includes/smf_print_article.html" with slot=slot %}
+					{% endfor %}
+					<div id="smf_load_sentinel" class="smf-load-sentinel"{% if not foto_has_more %} hidden{% endif %} aria-hidden="true"></div>
+				</div>
+			</div>
 		</div>
 	</main>
 </section>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+(function () {
+	var grid = document.getElementById("smf_grid");
+	if (grid) {
+		grid.addEventListener("click", function (e) {
+			var t = e.target && e.target.closest && e.target.closest("a.smf-print__link");
+			if (t && (t.getAttribute("href") || "") === "#") e.preventDefault();
+		});
+	}
+})();
+</script>
+<script>
+(function () {
+	var grid = document.getElementById("smf_grid");
+	var sentinel = document.getElementById("smf_load_sentinel");
+	var scrollEl = document.querySelector(".smf-grid-viewport");
+	var mainContent = document.getElementById("main_content");
+	var mqMob = window.matchMedia("(max-width: 767.98px)");
+	if (!grid || !sentinel || !scrollEl) return;
+	var baseUrl = grid.getAttribute("data-smf-more-url") || "";
+	if (!baseUrl) return;
+	var loading = false;
+	var hasMore = grid.getAttribute("data-smf-has-more") === "1";
+	var nextOffset = parseInt(grid.getAttribute("data-smf-offset") || "0", 10) || 0;
+	if (!hasMore) return;
+
+	function buildPageUrl() {
+		var u = new URL(baseUrl, window.location.origin);
+		u.searchParams.set("offset", String(nextOffset));
+		return u.toString();
+	}
+
+	var _smfMobTicker = null;
+	function finish() {
+		hasMore = false;
+		sentinel.setAttribute("hidden", "");
+		if (io) io.disconnect();
+		if (_smfMobTicker) {
+			clearInterval(_smfMobTicker);
+			_smfMobTicker = null;
+		}
+	}
+
+	function smfPickIoRoot() {
+		try {
+			var st = window.getComputedStyle(scrollEl);
+			var oy = st.overflowY;
+			if (oy !== "auto" && oy !== "scroll" && oy !== "overlay") return null;
+			return scrollEl;
+		} catch (e) {
+			return null;
+		}
+	}
+
+	function sentinelNearVisibleEdge() {
+		if (!sentinel || !sentinel.isConnected || !hasMore) return false;
+		var margin = mqMob.matches ? 900 : 400;
+		var r = sentinel.getBoundingClientRect();
+		var root = smfPickIoRoot();
+		if (root) {
+			var b = root.getBoundingClientRect();
+			return r.top <= b.bottom + margin && r.bottom >= b.top - margin;
+		}
+		var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+		return r.top <= vh + margin && r.bottom >= -margin;
+	}
+
+	var io = null;
+	function smfIoRootMargin() {
+		return mqMob.matches ? "900px" : "400px";
+	}
+	function smfSetupIo() {
+		if (io) {
+			try { io.disconnect(); } catch (e) {}
+			io = null;
+		}
+		if (!hasMore) return;
+		var root = smfPickIoRoot();
+		io = new IntersectionObserver(
+			function (entries) {
+				for (var i = 0; i < entries.length; i++) {
+					if (entries[i].isIntersecting) loadMore();
+				}
+			},
+			{ root: root, rootMargin: smfIoRootMargin(), threshold: 0 }
+		);
+		io.observe(sentinel);
+	}
+
+	function loadMore() {
+		if (loading || !hasMore) return;
+		loading = true;
+		fetch(buildPageUrl(), { credentials: "same-origin", cache: "no-store", headers: { Accept: "application/json" } })
+			.then(function (r) {
+				return r.json();
+			})
+			.then(function (data) {
+				if (!data || !data.ok) throw new Error("smf-more");
+				var wrap = document.createElement("div");
+				wrap.innerHTML = data.html || "";
+				while (wrap.firstChild) grid.insertBefore(wrap.firstChild, sentinel);
+				hasMore = !!data.has_more;
+				nextOffset = parseInt(data.next_offset, 10) || nextOffset;
+				grid.setAttribute("data-smf-offset", String(nextOffset));
+				grid.setAttribute("data-smf-has-more", hasMore ? "1" : "0");
+				if (!hasMore) finish();
+				return true;
+			})
+			.catch(function () {
+				return false;
+			})
+			.finally(function () {
+				loading = false;
+			})
+			.then(function (ok) {
+				if (ok && hasMore) {
+					requestAnimationFrame(function () {
+						smfSetupIo();
+						if (!loading && hasMore && sentinelNearVisibleEdge()) loadMore();
+					});
+				}
+			});
+	}
+
+	smfSetupIo();
+	requestAnimationFrame(function () {
+		requestAnimationFrame(scheduleSmfScrollProbe);
+	});
+
+	var _smfScrollProbeT = null;
+	function scheduleSmfScrollProbe() {
+		if (!hasMore || loading) return;
+		clearTimeout(_smfScrollProbeT);
+		_smfScrollProbeT = setTimeout(function () {
+			_smfScrollProbeT = null;
+			if (loading || !hasMore) return;
+			if (sentinelNearVisibleEdge()) loadMore();
+		}, 80);
+	}
+	scrollEl.addEventListener("scroll", scheduleSmfScrollProbe, { passive: true });
+	window.addEventListener("scroll", scheduleSmfScrollProbe, { passive: true });
+	if (mainContent) mainContent.addEventListener("scroll", scheduleSmfScrollProbe, { passive: true });
+	scrollEl.addEventListener("touchend", scheduleSmfScrollProbe, { passive: true });
+	if (mainContent) mainContent.addEventListener("touchend", scheduleSmfScrollProbe, { passive: true });
+	document.addEventListener("touchend", scheduleSmfScrollProbe, { passive: true });
+
+	_smfMobTicker = setInterval(function () {
+		if (!hasMore) {
+			clearInterval(_smfMobTicker);
+			_smfMobTicker = null;
+			return;
+		}
+		if (!mqMob.matches) return;
+		if (!loading && sentinelNearVisibleEdge()) loadMore();
+	}, 1100);
+
+	var _smfIoResizeT = null;
+	function onSmfIoResize() {
+		clearTimeout(_smfIoResizeT);
+		_smfIoResizeT = setTimeout(function () {
+			_smfIoResizeT = null;
+			if (hasMore) smfSetupIo();
+			scheduleSmfScrollProbe();
+		}, 200);
+	}
+	window.addEventListener("resize", onSmfIoResize);
+	window.addEventListener("orientationchange", onSmfIoResize);
+})();
+</script>
+{% endblock %}

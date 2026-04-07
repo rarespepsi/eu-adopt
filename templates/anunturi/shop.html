@@ -5,7 +5,7 @@
 {% block body_class %}page-shop{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/shop.css' %}?v=7" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/shop.css' %}?v=20" type="text/css" media="screen" />
 <style>
 	/* SHW = toată pagina vizibilă sub navbar (ca PW) */
 	body.page-shop #main_wrap {
@@ -43,18 +43,32 @@
 	<main id="SHW" aria-label="Shop EU-ADOPT">
 		<div class="shw-layout">
 			<div class="shw-row shw-row-top">
-				<div class="shw-header">
-					<h1 class="shw-title">Shop EU-ADOPT</h1>
+				<div class="shw-sh1" aria-label="SH1">
+					<div class="shw-sh1-cell shw-sh1-1">
+						<a href="{% url 'shop_magazin_foto' %}" class="shw-sh1-magazin-link" title="Magazin foto ONG">
+							<span class="shw-sh1-magazin-line">Cumpără o poză de la un ONG</span>
+							<span class="shw-sh1-magazin-line">și ajută-i să salveze un suflet!!!</span>
+						</a>
+					</div>
+					<div class="shw-sh1-cell shw-sh1-2">
+						<div class="shw-header">
+							<h1 class="shw-title">Shop EU-ADOPT</h1>
+						</div>
+					</div>
+					<div class="shw-sh1-cell shw-sh1-3">
+						<a href="{% url 'custi' %}" class="shw-sh1-donate-link" title="Harta cuștilor autocarului – donează">
+							<span class="shw-sh1-donate-line">DONEAZA SI</span>
+							<span class="shw-sh1-donate-line">AJUTA UN SUFLET!</span>
+						</a>
+					</div>
 				</div>
 			</div>
 			<div class="shw-row shw-row-middle">
 				<div class="shw-row-middle-box shw-row-middle-left">
 					<div class="shw-side-inner-grid">
-						<div class="shw-side-inner-box">SH4.1</div>
-						<a href="{% url 'shop_magazin_foto' %}" class="shw-side-inner-box shw4-announcement shw4-link">
-							Cumpără o poză de la un ONG și ajută-i să salveze un suflet!!!
-						</a>
-						<div class="shw-side-inner-box">SH4.3</div>
+						<div class="shw-side-inner-box shw-sh4-pub">SH4.1</div>
+						<div class="shw-side-inner-box shw-sh4-pub">SH4.2</div>
+						<div class="shw-side-inner-box shw-sh4-pub">SH4.3</div>
 					</div>
 				</div>
 				<div class="shw-row-middle-center">

@@ -1,0 +1,26 @@
+{% load static %}
+<article class="smf-print" role="listitem">
+	<a
+		href="#"
+		class="smf-print__link"
+		aria-label="Demo: {{ slot.nume }} – {{ slot.pret_lei }} lei"
+	>
+		<span class="smf-print__tape" aria-hidden="true"></span>
+		<div class="smf-print__mat">
+			<div class="smf-print__photo">
+				<img
+					src="{% static 'images/parteneri/placeholder.jpg' %}"
+					alt=""
+					loading="lazy"
+					width="400"
+					height="300"
+				/>
+			</div>
+			<div class="smf-print__meta">
+				<span class="smf-print__price">{{ slot.pret_lei }} lei</span>
+				<span class="smf-print__name">{{ slot.nume }}</span>
+				<span class="smf-print__buys" aria-label="{{ slot.achizitii }} achiziții">{{ slot.achizitii }}</span>
+			</div>
+		</div>
+	</a>
+</article>

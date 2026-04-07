@@ -3053,9 +3053,83 @@ def shop_comanda_personalizate_view(request):
     return render(request, "anunturi/shop_comanda_personalizate.html", {})
 
 
+# Plafon listă demo magazin foto – același ordin ca lista P2 din DB în pt_p2_list ([:200]).
+SMF_FOTO_LIST_MAX = 200
+
+
+def _shop_magazin_foto_slots_full():
+    """Lista completă de sloturi demo (înlocuiești cu query model când există date reale)."""
+    demo_names = [
+        "Rex",
+        "Bella",
+        "Maximilian",
+        "Luna",
+        "Rocky",
+        "Milo",
+        "Daisy",
+        "Charlie",
+        "Coco",
+        "Zara",
+        "Thor",
+        "Nala",
+        "Oscar",
+        "Maya",
+        "Tedi",
+        "Bruno",
+        "Loki",
+        "Numele foarte lung pentru test pe un singur rând",
+        "Grivei",
+        "Pufi",
+    ]
+    n = len(demo_names)
+    out = []
+    for i in range(SMF_FOTO_LIST_MAX):
+        out.append(
+            {
+                "nume": demo_names[i % n],
+                "pret_lei": 5 + (i % 4),
+                "achizitii": 3 + (i * 11) % 140,
+            }
+        )
+    return out
+
+
 def shop_magazin_foto_view(request):
-    """Pagina magazin foto – cumpără poze de la ONG-uri."""
-    return render(request, "anunturi/shop_magazin_foto.html", {})
+    """Magazin foto: același lot inițial ca P2 (PT_P2_PAGE_SIZE), restul prin shop_magazin_foto_more."""
+    full = _shop_magazin_foto_slots_full()
+    foto_slots = full[:PT_P2_PAGE_SIZE]
+    foto_has_more = len(full) > PT_P2_PAGE_SIZE
+    foto_next_offset = PT_P2_PAGE_SIZE if foto_has_more else len(full)
+    return render(
+        request,
+        "anunturi/shop_magazin_foto.html",
+        {
+            "foto_slots": foto_slots,
+            "foto_has_more": foto_has_more,
+            "foto_next_offset": foto_next_offset,
+            "smf_page_size": PT_P2_PAGE_SIZE,
+        },
+    )
+
+
+@require_http_methods(["GET"])
+def shop_magazin_foto_more_view(request):
+    """JSON: fragment HTML pentru următorul lot magazin foto (aceeași mărime lot ca P2)."""
+    try:
+        offset = int(request.GET.get("offset", "0") or "0")
+    except (TypeError, ValueError):
+        offset = 0
+    offset = max(0, offset)
+    full = _shop_magazin_foto_slots_full()
+    batch = full[offset : offset + PT_P2_PAGE_SIZE]
+    next_off = offset + len(batch)
+    has_more = next_off < len(full)
+    html = render_to_string(
+        "anunturi/includes/smf_grid_chunk.html",
+        {"slots": batch},
+        request=request,
+    )
+    return JsonResponse({"ok": True, "html": html, "has_more": has_more, "next_offset": next_off})
 
 
 def dog_profile_view(request, pk):

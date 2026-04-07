@@ -145,3 +145,14 @@ class Carte33_40PublicPagesTests(TestCase):
     def test_40_shop_magazin_foto_200(self):
         r = Client().get(reverse("shop_magazin_foto"))
         self.assertEqual(r.status_code, 200)
+
+    def test_41_shop_magazin_foto_more_json(self):
+        import json
+
+        r = Client().get(reverse("shop_magazin_foto_more"), {"offset": 24})
+        self.assertEqual(r.status_code, 200)
+        data = json.loads(r.content.decode())
+        self.assertTrue(data.get("ok"))
+        self.assertIn("html", data)
+        self.assertIn("has_more", data)
+        self.assertEqual(data.get("next_offset"), 48)

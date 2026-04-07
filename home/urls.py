@@ -88,6 +88,7 @@ urlpatterns = [
     path('custi/', views.custi_view, name='custi'),
     path('shop/', views.shop_view, name='shop'),
     path('shop/comanda-personalizate/', views.shop_comanda_personalizate_view, name='shop_comanda_personalizate'),
+    path('shop/magazin-foto/more/', views.shop_magazin_foto_more_view, name='shop_magazin_foto_more'),
     path('shop/magazin-foto/', views.shop_magazin_foto_view, name='shop_magazin_foto'),
 
     path('pets/', views.home_view, name='pets_all'),
