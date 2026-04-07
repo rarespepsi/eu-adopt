@@ -731,8 +731,20 @@ body.page-home-v2 #A2 .slides {
     align-items: center;
     justify-content: center;
 }
-.hero-v2-logo a {
-    /* linkul = pătratul marit, nu se strânge; cercul (parent) taie ce depășește */
+.hero-v2-logo button.hero-v2-site-note-btn {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+}
+.hero-v2-logo a,
+.hero-v2-logo button.hero-v2-site-note-btn {
+    /* linkul / butonul = pătratul marit, nu se strânge; cercul (parent) taie ce depășește */
     display: block;
     width: calc(var(--hero-logo-size) + var(--hero-logo-inner-extra) - 3mm);
     height: calc(var(--hero-logo-size) + var(--hero-logo-inner-extra) - 3mm);
@@ -1296,13 +1308,15 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
         height: 1.75rem !important;
     }
     body.page-home-v2 .hero-v2-logo a,
+    body.page-home-v2 .hero-v2-logo button.hero-v2-site-note-btn,
     body.page-home-v2 .hero-v2-logo-img {
         width: 1.75rem !important;
         height: 1.75rem !important;
         min-width: 1.75rem !important;
         min-height: 1.75rem !important;
     }
-    body.page-home-v2 .hero-v2-logo a {
+    body.page-home-v2 .hero-v2-logo a,
+    body.page-home-v2 .hero-v2-logo button.hero-v2-site-note-btn {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -1446,6 +1460,7 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
     body.page-home-v2 .hero-v2-logo,
     body.page-home-v2 .hero-v2-transport-badge,
     body.page-home-v2 .hero-v2-logo a,
+    body.page-home-v2 .hero-v2-logo button.hero-v2-site-note-btn,
     body.page-home-v2 .hero-v2-logo-img {
         width: 1.85rem !important;
         height: 1.85rem !important;
@@ -1514,4 +1529,145 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
         line-height: 1.05 !important;
         padding-right: 2.2rem !important;
     }
+}
+
+/* Notă A1: ghid pagini (click pe sigla cu câine) */
+body.page-home-v2 .home-a1-site-note-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+}
+body.page-home-v2 .home-a1-site-note-backdrop[hidden] {
+    display: none !important;
+}
+body.page-home-v2 .home-a1-site-note-panel {
+    position: relative;
+    width: min(36rem, 100%);
+    max-height: min(82vh, 32rem);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: #fffef8;
+    border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(229, 57, 53, 0.25);
+    box-sizing: border-box;
+}
+body.page-home-v2 .home-a1-site-note-close {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.45rem;
+    z-index: 2;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 0;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.06);
+    color: #333;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+body.page-home-v2 .home-a1-site-note-close:hover,
+body.page-home-v2 .home-a1-site-note-close:focus-visible {
+    background: rgba(229, 57, 53, 0.15);
+    outline: 2px solid #e53935;
+    outline-offset: 1px;
+}
+body.page-home-v2 .home-a1-site-note-title {
+    margin: 0;
+    padding: 0.85rem 2.5rem 0.5rem 1rem;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #c62828;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+}
+body.page-home-v2 .home-a1-site-note-rule {
+    margin: 0 1rem 0.5rem;
+    padding: 0.55rem 0.65rem;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: #1a1a1a;
+    background: linear-gradient(135deg, rgba(229, 57, 53, 0.12), rgba(255, 193, 7, 0.12));
+    border: 2px solid #e53935;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+body.page-home-v2 .home-a1-site-note-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0 1rem 0.5rem;
+    -webkit-overflow-scrolling: touch;
+}
+body.page-home-v2 .home-a1-site-note-sec {
+    margin-bottom: 0.65rem;
+}
+body.page-home-v2 .home-a1-site-note-sec:last-child {
+    margin-bottom: 0.25rem;
+}
+body.page-home-v2 .home-a1-site-note-h3 {
+    margin: 0 0 0.2rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #b71c1c;
+}
+body.page-home-v2 .home-a1-site-note-h3 a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+body.page-home-v2 .home-a1-site-note-h3 a:hover {
+    color: #e53935;
+}
+body.page-home-v2 .home-a1-site-note-sec p {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: #333;
+}
+body.page-home-v2 .home-a1-site-note-sec p a {
+    color: #1565c0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+body.page-home-v2 .home-a1-site-note-cta {
+    flex-shrink: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0.45rem 0.75rem 0.55rem;
+    box-sizing: border-box;
+    background: linear-gradient(90deg, rgba(255, 213, 79, 0.45), rgba(129, 199, 132, 0.35));
+    border-top: 2px solid rgba(46, 125, 50, 0.45);
+    border-radius: 0 0 12px 12px;
+    min-height: 0;
+}
+body.page-home-v2 .home-a1-site-note-cta-title {
+    margin: 0 0 0.15rem;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #1b5e20;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: center;
+}
+body.page-home-v2 .home-a1-site-note-cta-text {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    color: #263238;
+    text-align: center;
+    max-width: 42rem;
+    margin-inline: auto;
 }

@@ -4,7 +4,7 @@
 {% block title %}Harta cuștilor autocarului | EU Adopt{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/custi.css' %}?v=11" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/custi.css' %}?v=12" type="text/css" media="screen" />
 <style>
 	/* Asigurăm fundalul unic cu poza de cuști pe tot TWW */
 	#TWW.custi-page {
@@ -204,21 +204,30 @@
 		width: var(--fill, 0%);
 	}
 
-	/* Overlay fix pe viewport — nu e tăiat de overflow:hidden pe #TWW; X mereu accesibil */
+	/* Overlay: implicit = tot viewport-ul, conținut centrat (nu lipit sub navbar). Pe cușcă = ancorat la banda cu imaginea (.tww-strip--main), centrat pe „harta” cuștilor. */
 	#TWW .tww-donate-modal {
 		position: fixed;
 		inset: 0;
 		max-height: 100dvh;
 		background: rgba(0,0,0,0.55);
 		display: none;
-		align-items: flex-start;
+		align-items: center;
 		justify-content: center;
 		overflow-x: hidden;
 		overflow-y: auto;
 		-webkit-overflow-scrolling: touch;
-		padding: max(0.5rem, env(safe-area-inset-top, 0px)) 0.75rem 1rem;
+		padding: max(0.75rem, env(safe-area-inset-top, 0px)) 0.75rem max(0.75rem, env(safe-area-inset-bottom, 0px));
 		box-sizing: border-box;
 		z-index: 12000;
+	}
+	#TWW .tww-donate-modal.tww-donate-modal--slot-anchored {
+		inset: unset;
+		top: auto;
+		left: auto;
+		right: auto;
+		bottom: auto;
+		max-height: none;
+		/* top, left, width, height setate din JS după getBoundingClientRect(.tww-strip--main) */
 	}
 	/* Modal se poate deschide fie prin JS (.is-open), fie direct cu ancora #tww-donate-modal (:target) */
 	#tww-donate-modal:target,
@@ -317,6 +326,10 @@
 		margin: 0 0 0.5rem;
 		font-size: 1.1rem;
 		text-align: center;
+	}
+	#TWW .tww-donate-h2-general.is-hidden,
+	#TWW .tww-donate-h2-slot.is-hidden {
+		display: none !important;
 	}
 	#TWW .tww-donate-valori {
 		display: flex;
@@ -738,7 +751,10 @@
 			<div class="tww-donate-content" id="tww-donate-content">
 				<button type="button" id="tww-donate-close" class="tww-donate-close" aria-label="Închide">×</button>
 				<div class="tww-donate-form">
-					<h2>Donatie pentru loc <span id="tww-donate-loc"></span></h2>
+					<h2>
+						<span id="tww-donate-h2-general" class="tww-donate-h2-general is-hidden">Donație pentru servicii medicale și hrană</span>
+						<span id="tww-donate-h2-slot" class="tww-donate-h2-slot">Donație pentru loc <span id="tww-donate-loc"></span></span>
+					</h2>
 					<div class="tww-donate-valori">
 						<div class="tww-donate-valoare-col"><span class="tww-donate-label">Valoare cușcă</span><span class="tww-donate-cifra"><strong id="tww-donate-5000">5.000</strong> lei</span></div>
 						<div class="tww-donate-valoare-col"><span class="tww-donate-label">Valoare rămasă</span><span class="tww-donate-cifra"><span id="tww-donate-ramasa">5.000</span> lei</span></div>
@@ -780,8 +796,11 @@ document.addEventListener('DOMContentLoaded', function() {
   var modal = document.getElementById('tww-donate-modal');
   if (!modal) return;
 
+  var mainStrip = document.querySelector('#TWW .tww-strip--main');
   var donateContent = document.getElementById('tww-donate-content');
   var locSpan = document.getElementById('tww-donate-loc');
+  var h2General = document.getElementById('tww-donate-h2-general');
+  var h2Slot = document.getElementById('tww-donate-h2-slot');
   var ramasaSpan = document.getElementById('tww-donate-ramasa');
   var closeBtn = document.getElementById('tww-donate-close');
   var confirmBtn = document.getElementById('tww-donate-confirm');
@@ -791,6 +810,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function expandDonateBox() {
     if (donateContent) donateContent.classList.add('is-expanded');
+  }
+
+  function clearModalAnchor() {
+    modal.classList.remove('tww-donate-modal--slot-anchored');
+    modal.style.top = '';
+    modal.style.left = '';
+    modal.style.width = '';
+    modal.style.height = '';
+  }
+
+  function applySlotAnchor() {
+    if (!mainStrip) return;
+    var r = mainStrip.getBoundingClientRect();
+    modal.classList.add('tww-donate-modal--slot-anchored');
+    modal.style.top = r.top + 'px';
+    modal.style.left = r.left + 'px';
+    modal.style.width = r.width + 'px';
+    modal.style.height = r.height + 'px';
   }
 
   var currentSlot = null;
@@ -879,8 +916,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function openForSlot(slot) {
     currentSlot = slot;
+    clearModalAnchor();
+    applySlotAnchor();
+    if (h2General) h2General.classList.add('is-hidden');
+    if (h2Slot) h2Slot.classList.remove('is-hidden');
     var key = slotKey(slot);
-    locSpan.textContent = slot.textContent.trim();
+    if (locSpan) locSpan.textContent = slot.textContent.trim();
     if (amounts[key] !== undefined) {
       sumaInput.value = amounts[key];
     } else {
@@ -900,7 +941,25 @@ document.addEventListener('DOMContentLoaded', function() {
     modal.classList.remove('is-open');
     if (donateContent) donateContent.classList.remove('is-expanded');
     currentSlot = null;
+    clearModalAnchor();
   }
+
+  function openGeneralDonate(e) {
+    if (e) e.preventDefault();
+    currentSlot = null;
+    clearModalAnchor();
+    if (h2General) h2General.classList.remove('is-hidden');
+    if (h2Slot) h2Slot.classList.add('is-hidden');
+    if (ramasaSpan) ramasaSpan.textContent = '—';
+    if (sumaInput) sumaInput.value = 50;
+    updateModalProgressFromValue(sumaInput ? sumaInput.value : 50);
+    setPresetActive(50);
+    modal.classList.add('is-open');
+  }
+
+  document.querySelectorAll('.tww-top-btn--donate').forEach(function(btn) {
+    btn.addEventListener('click', openGeneralDonate);
+  });
 
   document.querySelectorAll('#TWW .tww-slot').forEach(function(slot) {
     var key = slotKey(slot);
@@ -967,6 +1026,12 @@ document.addEventListener('DOMContentLoaded', function() {
     updateModalProgressFromValue(val);
     closeModal();
   });
+
+  function onResizeAnchoredModal() {
+    if (!modal.classList.contains('is-open') || !modal.classList.contains('tww-donate-modal--slot-anchored')) return;
+    applySlotAnchor();
+  }
+  window.addEventListener('resize', onResizeAnchoredModal);
 });
 </script>
 {% endblock %}

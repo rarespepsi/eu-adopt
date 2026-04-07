@@ -6,7 +6,7 @@
 {% block body_class %}page-home-v2{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/home_v2.css' %}?v=a3m33" type="text/css" media="all" />
+<link rel="stylesheet" href="{% static 'css/home_v2.css' %}?v=a3m34" type="text/css" media="all" />
 <style>
 	.home-welcome-overlay-backdrop {
 		position: fixed;
@@ -97,9 +97,9 @@
 					</div>
 					<div class="hero-v2-inner">
 						<div class="hero-v2-logo">
-							<a href="{% url 'home' %}" title="EU Adopt">
+							<button type="button" class="hero-v2-site-note-btn" id="home-a1-open-site-note" aria-haspopup="dialog" aria-expanded="false" aria-controls="home-a1-site-note" title="Ghid scurt al paginilor EU-Adopt">
 								<img src="{% static 'images/logo-final-cu-stele.png' %}" alt="EU Adopt" class="hero-v2-logo-img" />
-							</a>
+							</button>
 						</div>
 						<div class="hero-v2-transport">
 							<a href="{% url 'transport' %}" class="hero-v2-transport-badge" title="Deschide pagina Transport">
@@ -109,6 +109,81 @@
 					</div>
 					<a href="{% url 'pets_all' %}" class="hero-v2-cta-animale" title="Vezi prietenii tăi">Hai la noi!</a>
 				</header>
+			</div>
+			<div id="home-a1-site-note-backdrop" class="home-a1-site-note-backdrop" hidden aria-hidden="true">
+				<div class="home-a1-site-note-panel" role="dialog" aria-modal="true" aria-labelledby="home-a1-site-note-title" id="home-a1-site-note" tabindex="-1">
+					<button type="button" class="home-a1-site-note-close" aria-label="Închide nota">&times;</button>
+					<h2 id="home-a1-site-note-title" class="home-a1-site-note-title">Ghid scurt – paginile EU-Adopt</h2>
+					<p class="home-a1-site-note-rule" role="note">
+						<strong>Regulă importantă:</strong> în acest site <strong>nu se cumpără și nu se vând animale</strong>. Adopția se face prin cerere și acord cu deținătorul sau ONG-ul, nu prin tranzacții comerciale pe platformă.
+					</p>
+					<div class="home-a1-site-note-body">
+						<section class="home-a1-site-note-sec">
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'home' %}">Acasă</a></h3>
+							<p>Prezentare generală, grid cu anunțuri în adopție și acces rapid la restul secțiunilor.</p>
+						</section>
+						<section class="home-a1-site-note-sec">
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'pets_all' %}">Prietenul tău</a></h3>
+							<p>Listă cu animale disponibile; filtre; deschiderea unei fișe pentru detalii, mesaje și cerere de adopție. Inimioara trimite animalul în <a href="{% url 'i_love' %}">I Love</a>.</p>
+						</section>
+						<section class="home-a1-site-note-sec">
+							<h3 class="home-a1-site-note-h3">Fișă animal (subpagină)</h3>
+							<p>Informații despre animal, mesaje către deținător, flux de adopție. Opțiunea de promovare în grid (A2) este doar vizibilitate plătită pentru anunț – nu înseamnă cumpărarea animalului.</p>
+						</section>
+						<section class="home-a1-site-note-sec">
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'servicii' %}">Servicii</a></h3>
+							<p>Servicii oferite de parteneri (ex. clinică, dresaj) legate de îngrijirea animalelor, nu comerț cu animale.</p>
+						</section>
+						<section class="home-a1-site-note-sec">
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'transport' %}">Transport</a></h3>
+							<p>Sprijin logistic pentru adopții și donații (ex. cuști). Totul rămâne în afara oricărei vânzări de animal.</p>
+						</section>
+						<section class="home-a1-site-note-sec">
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'custi' %}">Cuști</a></h3>
+							<p>Informații și implicare pentru donarea de cuști folosite la transport – fără legătură cu vânzarea animalelor.</p>
+						</section>
+						<section class="home-a1-site-note-sec">
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'shop' %}">Shop</a></h3>
+							<p>Produse și materiale; veniturile sprijină cauza. Aici nu există „preț pentru animal”.</p>
+						</section>
+						<section class="home-a1-site-note-sec">
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'shop_comanda_personalizate' %}">Shop → Comandă personalizate</a></h3>
+							<p>Comenzi cu design personalizat (ex. tricouri); banii merg spre proiect, nu spre cumpărarea unui animal.</p>
+						</section>
+						<section class="home-a1-site-note-sec">
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'shop_magazin_foto' %}">Shop → Magazin foto („cumpără o poză”)</a></h3>
+							<p>Achiziționezi o fotografie/licență de sprijin; suma este orientată către ONG-uri – este sprijin financiar, nu cumpărare animal.</p>
+						</section>
+						<section class="home-a1-site-note-sec">
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'mypet' %}">MyPet</a></h3>
+							<p>Panoul tău dacă ai cont: anunțuri proprii, mesaje, adopții în derulare. Promovarea unui anunț = vizibilitate, nu vânzare.</p>
+						</section>
+						<section class="home-a1-site-note-sec">
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'i_love' %}">I Love</a></h3>
+							<p>Lista animalelor pe care le-ai marcat cu inimioara, pentru revenire ușoară la ele.</p>
+						</section>
+						<section class="home-a1-site-note-sec">
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'public_offers_list' %}">Oferte parteneri</a></h3>
+							<p>Oferte de la colaboratori (reduceri, servicii); verifici condițiile pe fiecare ofertă.</p>
+						</section>
+						<section class="home-a1-site-note-sec">
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'publicitate_harta' %}">Publicitate</a></h3>
+							<p>Rezervare spații publicitare (ex. pe materiale PDF) pentru brandul tău sau organizația ta – nu pentru comercializarea animalelor.</p>
+						</section>
+						<section class="home-a1-site-note-sec">
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'magazinul_meu' %}">Magazinul meu</a></h3>
+							<p>Zonă pentru parteneri colaboratori: oferte și setări legate de contul de partener.</p>
+						</section>
+						<section class="home-a1-site-note-sec">
+							<h3 class="home-a1-site-note-h3">Cont, înregistrare, legale</h3>
+							<p><a href="{% url 'account' %}">Contul meu</a>, <a href="{% url 'signup_choose_type' %}">înregistrare</a>, <a href="{% url 'contact' %}">Contact</a>, <a href="{% url 'termeni' %}">Termeni</a> și politicile din subsol – pentru drepturi, confidențialitate și reguli de utilizare.</p>
+						</section>
+					</div>
+					<div class="home-a1-site-note-cta" role="region" aria-label="Implicare">
+						<p class="home-a1-site-note-cta-title">Ajută și tu!</p>
+						<p class="home-a1-site-note-cta-text">Distribuie EU-Adopt, sprijină un transport sau o cușcă, cumpără o poză din magazinul foto sau promovează un anunț pentru vizibilitate – mereu fără cumpărare sau vânzare de animale pe site.</p>
+					</div>
+				</div>
 			</div>
 			<div class="home-v2-mobile-ads home-v2-mobile-ads-top" aria-label="Publicitate sus">
 				{% for partner in left_sidebar_partners|slice:":3" %}
@@ -237,6 +312,48 @@
 	} else {
 		initPetImageRotation();
 	}
+})();
+</script>
+<script>
+(function() {
+	var openBtn = document.getElementById("home-a1-open-site-note");
+	var backdrop = document.getElementById("home-a1-site-note-backdrop");
+	var panel = document.getElementById("home-a1-site-note");
+	if (!openBtn || !backdrop || !panel) return;
+	var closeBtn = backdrop.querySelector(".home-a1-site-note-close");
+	var prevOverflow = "";
+
+	function openNote() {
+		backdrop.removeAttribute("hidden");
+		backdrop.setAttribute("aria-hidden", "false");
+		openBtn.setAttribute("aria-expanded", "true");
+		prevOverflow = document.body.style.overflow;
+		document.body.style.overflow = "hidden";
+		try { panel.focus(); } catch (e) {}
+	}
+	function closeNote() {
+		backdrop.setAttribute("hidden", "");
+		backdrop.setAttribute("aria-hidden", "true");
+		openBtn.setAttribute("aria-expanded", "false");
+		document.body.style.overflow = prevOverflow;
+		try { openBtn.focus(); } catch (e) {}
+	}
+
+	openBtn.addEventListener("click", function(e) {
+		e.preventDefault();
+		openNote();
+	});
+	if (closeBtn) closeBtn.addEventListener("click", closeNote);
+	backdrop.addEventListener("click", function(e) {
+		if (e.target === backdrop) closeNote();
+	});
+	document.addEventListener("keydown", function(e) {
+		if (backdrop.hasAttribute("hidden")) return;
+		if (e.key === "Escape") {
+			e.preventDefault();
+			closeNote();
+		}
+	});
 })();
 </script>
 {% if a2_quote_pool %}

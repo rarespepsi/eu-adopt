@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=17" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=18" type="text/css" media="screen" />
 <style>
 	/* La fel ca PT: main_wrap, main_content, apoi SW cu aceleași dimensiuni ca PW */
 	body.page-servicii #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -1116,6 +1116,10 @@
 (function () {
 	var BONUS_KIND_KEYS = ["cabinet", "servicii", "magazin"];
 	var NUDGE_DELAY_MS = 15000;
+	var BANNER_AUTO_HIDE_MS = 10000;
+	var NUDGE_AUTO_HIDE_MS = 10000;
+	var bannerHideTimer = null;
+	var nudgeAutoHideTimer = null;
 	function getCookie(name) {
 		var v = null;
 		if (document.cookie && document.cookie !== "") {
@@ -1132,11 +1136,16 @@
 		if (!b || !sw) return;
 		var anyOn = sw.querySelector(".sw-adopt-bonus-heart.is-on");
 		if (anyOn) {
+			if (bannerHideTimer) {
+				clearTimeout(bannerHideTimer);
+				bannerHideTimer = null;
+			}
 			b.classList.add("sw-adopt-bonus-banner--dismissed");
 			b.setAttribute("aria-hidden", "true");
 		} else {
 			b.classList.remove("sw-adopt-bonus-banner--dismissed");
 			b.setAttribute("aria-hidden", "false");
+			scheduleAdoptionBonusBannerAutoHide();
 		}
 	}
 	function allThreeBonusKindsSelected(sw) {
@@ -1165,11 +1174,31 @@
 		}
 	}
 	function hideAdoptionBonusGentleNudge() {
+		if (nudgeAutoHideTimer) {
+			clearTimeout(nudgeAutoHideTimer);
+			nudgeAutoHideTimer = null;
+		}
 		var el = document.getElementById("swAdoptBonusGentleNudge");
 		if (!el) return;
 		el.classList.add("sw-adopt-bonus-followup--hidden");
 		el.setAttribute("hidden", "");
 		el.setAttribute("aria-hidden", "true");
+	}
+	function hideAdoptionBonusBannerAuto() {
+		var b = document.getElementById("swAdoptBonusBanner");
+		if (!b) return;
+		b.classList.add("sw-adopt-bonus-banner--dismissed");
+		b.setAttribute("aria-hidden", "true");
+	}
+	function scheduleAdoptionBonusBannerAutoHide() {
+		var b = document.getElementById("swAdoptBonusBanner");
+		if (!b || b.classList.contains("sw-adopt-bonus-banner--dismissed")) return;
+		if (bannerHideTimer) clearTimeout(bannerHideTimer);
+		bannerHideTimer = setTimeout(function () {
+			bannerHideTimer = null;
+			if (b.classList.contains("sw-adopt-bonus-banner--dismissed")) return;
+			hideAdoptionBonusBannerAuto();
+		}, BANNER_AUTO_HIDE_MS);
 	}
 	function tryShowAdoptionBonusGentleNudge(sw) {
 		var el = document.getElementById("swAdoptBonusGentleNudge");
@@ -1178,6 +1207,11 @@
 		el.classList.remove("sw-adopt-bonus-followup--hidden");
 		el.removeAttribute("hidden");
 		el.setAttribute("aria-hidden", "false");
+		if (nudgeAutoHideTimer) clearTimeout(nudgeAutoHideTimer);
+		nudgeAutoHideTimer = setTimeout(function () {
+			nudgeAutoHideTimer = null;
+			hideAdoptionBonusGentleNudge();
+		}, NUDGE_AUTO_HIDE_MS);
 	}
 	function syncAdoptionBonusHeartVisibility(sw) {
 		if (!sw) return;
@@ -1260,6 +1294,10 @@
 				if (nudgeTimer) {
 					clearTimeout(nudgeTimer);
 					nudgeTimer = null;
+				}
+				if (bannerHideTimer) {
+					clearTimeout(bannerHideTimer);
+					bannerHideTimer = null;
 				}
 				applyBonusKindStateFromResponse(sw, x.d);
 				syncAdoptionBonusHeartVisibility(sw);
