@@ -11,6 +11,45 @@
   align-items: stretch;
 }
 
+/* Donație PT („Ajuta un Suflet”): ROGVAIV ~1,5s / culoare, culori saturate */
+@keyframes pt-rogvaiv-step {
+  0%,
+  14.285% {
+    background-color: #d32f2f;
+    color: #fff;
+  }
+  14.286%,
+  28.571% {
+    background-color: #ef6c00;
+    color: #fff;
+  }
+  28.572%,
+  42.857% {
+    background-color: #ffc400;
+    color: #212121;
+  }
+  42.858%,
+  57.143% {
+    background-color: #2e7d32;
+    color: #fff;
+  }
+  57.144%,
+  71.429% {
+    background-color: #1565c0;
+    color: #fff;
+  }
+  71.43%,
+  85.715% {
+    background-color: #283593;
+    color: #fff;
+  }
+  85.716%,
+  100% {
+    background-color: #6a1b9a;
+    color: #fff;
+  }
+}
+
 #PW .pt-grid {
   display: grid;
   /* P4 și P5 aceeași lățime (0.75fr); P2 la mijloc. Trei coloane explicite – fără coloană implicită „auto” care lățea P5. */
@@ -202,6 +241,141 @@
   box-sizing: border-box;
 }
 
+/* Casetă stack: match : sustine = 2 : 3 (sustine −50% față de cota 3/4); înălțime totală ×5/8; spațiul eliberat → P4.3 (mobil) */
+#PW .pt-p4-match-sustine-stack.pt-p4-box {
+  flex: 0 0 auto !important;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
+  margin: 0;
+  padding: 0 !important;
+  min-height: 0;
+  /* ×5/8 față de stack-ul anterior (păstrează match la S/4, sustine jumătate din 3S/4) */
+  height: clamp(3.45rem, 13.3vw, 5.25rem);
+  background: transparent;
+  border-radius: 12px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+#PW .pt-p4-match-sustine-stack > .pt-p4-box-match {
+  flex: 2 1 0;
+  min-height: 0;
+  padding: 0 !important;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  background: transparent;
+}
+#PW .pt-p4-match-sustine-stack > .pt-p4-box-sustine {
+  flex: 3 1 0;
+  min-height: 0;
+  padding: 0 !important;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  background: transparent;
+}
+#PW .pt-p4-match-sustine-stack .pt-p4-box-match .pt-p4-actions {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  gap: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+#PW .pt-p4-match-sustine-stack .pt-p4-box-match .pt-p4-btn-match,
+#PW .pt-p4-match-sustine-stack .pt-p4-box-match .pt-p4-btn-filters {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  max-width: none;
+  border-radius: 0 !important;
+  box-sizing: border-box;
+}
+#PW .pt-p4-match-sustine-stack .pt-p4-box-sustine .pt-p4-btn-sustine {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  border-radius: 12px !important;
+  align-self: stretch;
+}
+
+/* Landscape rail: proporții ca stack portret (2 : 3) */
+#PW .pt-p4-land-rail-ms {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  flex-shrink: 0;
+  min-height: 0;
+  height: clamp(2.9rem, 20vw, 4.7rem);
+  border-radius: 8px;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: transparent;
+}
+#PW .pt-p4-land-rail-ms > .pt-p4-box-match {
+  flex: 2 1 0;
+  min-height: 0;
+  padding: 0 !important;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+}
+#PW .pt-p4-land-rail-ms > .pt-p4-box-sustine {
+  flex: 3 1 0;
+  min-height: 0;
+  padding: 0 !important;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+}
+#PW .pt-p4-land-rail-ms .pt-p4-box-match .pt-p4-actions {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}
+#PW .pt-p4-land-rail-ms .pt-p4-box-match .pt-p4-btn-match {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  border-radius: 0 !important;
+}
+#PW .pt-p4-land-rail-ms .pt-p4-box-sustine .pt-p4-btn-sustine {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  border-radius: 8px !important;
+}
+#PW .pt-p4-land-rail-ms.pt-p4-ms-stack--sustine-only {
+  height: auto;
+  min-height: 2.25rem;
+}
+#PW .pt-p4-land-rail-ms.pt-p4-ms-stack--sustine-only > .pt-p4-box-sustine {
+  flex: 1 1 auto;
+}
+
 #PW .pt-p4-box {
   flex: 1 1 0;
   width: 100%;
@@ -337,7 +511,7 @@
 }
 
 #PW .pt-p4-box-match {
-  /* buton roșu, aproape de Resetează filtre */
+  /* Găsește-mi: roșu inițial; Filtre albastru separat */
   flex: 0 0 auto;
   min-height: 2.5rem;
   background: transparent;
@@ -347,6 +521,7 @@
   align-items: center;
   justify-content: center;
 }
+/* „Găsește-mi perechea”: culori inițiale, fără curcubeu */
 #PW .pt-p4-box-match .pt-p4-btn-match {
   display: flex;
   align-items: center;
@@ -354,7 +529,9 @@
   width: 100%;
   min-height: 2.25rem;
   padding: 0.35rem 0.5rem;
-  background: #c62828;
+  background: #c62828 !important;
+  background-image: none !important;
+  animation: none !important;
   color: #fff !important;
   font-weight: 700;
   font-size: clamp(0.6rem, 2vw, 0.8rem);
@@ -366,14 +543,68 @@
   line-height: 1.2;
 }
 #PW .pt-p4-box-match .pt-p4-btn-match:hover {
-  background: #b71c1c;
+  background: #b71c1c !important;
+  filter: none;
   color: #fff !important;
+}
+/* „Ajuta un Suflet !”: donație, ROGVAIV 1,5s / culoare (fără background/color !important pe fundal animat) */
+#PW .pt-p4-box-sustine .pt-p4-btn-sustine {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 2.25rem;
+  padding: 0.15rem 0.35rem;
+  background-image: none !important;
+  animation: pt-rogvaiv-step 10.5s linear infinite !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  font-weight: 700;
+  font-size: clamp(0.88rem, 4.25vw, 1.14rem);
+  text-align: center;
+  text-decoration: none;
+  border: none;
+  border-radius: 12px;
+  box-sizing: border-box;
+  line-height: 1.1;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: auto;
+}
+#PW .pt-p4-box-sustine .pt-p4-btn-sustine:hover {
+  filter: brightness(1.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #PW .pt-p4-box-match .pt-p4-btn-match {
+    animation: none !important;
+    background: #c62828 !important;
+  }
+  #PW .pt-p4-box-sustine .pt-p4-btn-sustine {
+    animation: none !important;
+    background: #6d4c41 !important;
+  }
+}
+
+/* Rând Susține între P4.2 și P4.3: același stil ca „Găsește-mi perechea”; P4.3 rămâne flex:1 → pierde înălțimea acestui rând */
+#PW .pt-p4-box-sustine {
+  flex: 0 0 auto;
+  min-height: 2.5rem;
+  background: transparent;
+  color: #fff;
+  padding: 4px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #PW .pt-p4-box-match .pt-p4-actions {
   display: flex;
+  flex-direction: column;
+  align-items: stretch;
   width: 100%;
   gap: 0;
+  box-sizing: border-box;
 }
 #PW .pt-p4-box-match .pt-p4-btn-filters {
   display: none;
@@ -1229,6 +1460,13 @@
     flex-grow: 0 !important;
     flex-shrink: 0 !important;
   }
+  /* Spațiul scurtat la stack → P4.3: bonus vechi (~S/9) + încă 3S/8 (jumătate din zona sustine + scurtare stack) */
+  #PW .pt-p4-mobile-sticky > .pt-p4-box-ads {
+    min-height: calc(
+      2rem + clamp(0.69rem, 2.67vw, 1.06rem) + clamp(2.08rem, 8vw, 3.17rem)
+    ) !important;
+    box-sizing: border-box !important;
+  }
   /* P4: fără fundal mov în flux; align-self:start evită întindere în grid care poate lăsa „hău” alb */
   #PW .pt-cell-4 {
     overflow: visible;
@@ -1484,15 +1722,25 @@
     cursor: pointer;
   }
   #PW .pt-p4-box-match .pt-p4-actions {
-    gap: 6px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
   }
   #PW .pt-p4-box-match .pt-p4-btn-match,
   #PW .pt-p4-box-match .pt-p4-btn-filters {
     flex: 1 1 0;
-    border-radius: 10px;
+    width: 100%;
+    min-height: 0;
+    border-radius: 0;
   }
   #PW .pt-p4-box-match .pt-p4-btn-filters {
     display: flex;
+  }
+  #PW .pt-p4-box-sustine .pt-p4-btn-sustine {
+    border-radius: 12px;
+  }
+  #PW .pt-p4-match-sustine-stack.pt-p4-box .pt-p4-box-sustine .pt-p4-btn-sustine {
+    border-radius: 12px !important;
   }
 }
 
@@ -1637,7 +1885,8 @@
     -webkit-overflow-scrolling: touch !important;
   }
   #PW .pt-mob-land-left .pt-p4-box,
-  #PW .pt-mob-land-right .pt-p4-box {
+  #PW .pt-mob-land-right .pt-p4-box,
+  #PW .pt-mob-land-left .pt-p4-match-sustine-stack {
     background: #fff8e1 !important;
   }
   #PW .pt-p4-land-rail-box {
@@ -1653,6 +1902,9 @@
     align-items: stretch !important;
     justify-content: flex-start !important;
   }
+  #PW .pt-p4-land-rail-ms > .pt-p4-land-rail-box.pt-p4-box-match {
+    padding: 0 !important;
+  }
   #PW .pt-p4-land-rail-ads {
     flex: 1 1 auto !important;
     min-height: 0 !important;
@@ -1665,13 +1917,35 @@
     margin: 0 !important;
     border: 0 !important;
   }
-  #PW .pt-p4-land-rail-box .pt-p4-btn-match,
-  #PW .pt-p4-land-rail-box .pt-p4-btn-filters {
-    min-height: 1.6rem !important;
-    padding: 0.15rem 0.25rem !important;
-    font-size: clamp(0.48rem, 1.65vw, 0.66rem) !important;
-    border-radius: 8px !important;
-  }
+#PW .pt-p4-land-rail-box .pt-p4-btn-match,
+#PW .pt-p4-land-rail-box .pt-p4-btn-filters,
+#PW .pt-p4-land-rail-sustine .pt-p4-btn-sustine {
+  min-height: 1.6rem !important;
+  padding: 0.15rem 0.25rem !important;
+  font-size: clamp(0.48rem, 1.65vw, 0.66rem) !important;
+  border-radius: 8px !important;
+}
+#PW .pt-p4-land-rail-ms .pt-p4-land-rail-sustine .pt-p4-btn-sustine {
+  font-size: clamp(0.52rem, 3.15vw, 0.84rem) !important;
+  line-height: 1.08 !important;
+  padding: 0.1rem 0.18rem !important;
+  white-space: normal !important;
+  overflow-wrap: break-word;
+}
+#PW .pt-p4-land-rail-sustine {
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+  padding: 2px 0 !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+  background: #fff8e1 !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+}
+#PW .pt-p4-land-rail-ms > .pt-p4-land-rail-sustine {
+  padding: 0 !important;
+  background: transparent !important;
+}
   #PW .pt-p43-mobil-col--stack .pt-p43-slot {
     aspect-ratio: 1 / 1 !important;
     max-height: 4.25rem !important;

@@ -807,6 +807,45 @@ body.page-home-v2 #A2 .slides {
     object-fit: cover;
 }
 
+/* ROGVAIV donații: o culoare vizibilă ~1,5s (7×1,5s = 10,5s / ciclu) */
+@keyframes home-v2-rogvaiv-step {
+    0%,
+    14.285% {
+        background-color: #d32f2f;
+        color: #fff;
+    }
+    14.286%,
+    28.571% {
+        background-color: #ef6c00;
+        color: #fff;
+    }
+    28.572%,
+    42.857% {
+        background-color: #ffc400;
+        color: #212121;
+    }
+    42.858%,
+    57.143% {
+        background-color: #2e7d32;
+        color: #fff;
+    }
+    57.144%,
+    71.429% {
+        background-color: #1565c0;
+        color: #fff;
+    }
+    71.43%,
+    85.715% {
+        background-color: #283593;
+        color: #fff;
+    }
+    85.716%,
+    100% {
+        background-color: #6a1b9a;
+        color: #fff;
+    }
+}
+
 /* A1 – Susține înghețat la centrul casetei; „Hai la noi!” la 0,5 cm sub marginea de jos a lui Susține */
 .hero-v2-cta-duo {
     position: absolute !important;
@@ -816,6 +855,19 @@ body.page-home-v2 #A2 .slides {
 }
 .hero-v2-cta-duo > a {
     pointer-events: auto;
+}
+/* A1 – „Susține EU-Adopt”: ROGVAIV 1,5s / culoare (fără background/color !important — altfel animația e blocată) */
+body.page-home-v2 .hero-v2-cta-sustine {
+    background-image: none !important;
+    animation: home-v2-rogvaiv-step 10.5s linear infinite !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+}
+/* „Hai la noi!”: culoare inițială (verde), fără animație curcubeu */
+body.page-home-v2 .hero-v2-cta-animale {
+    background: #2e7d32 !important;
+    background-image: none !important;
+    animation: none !important;
+    color: #fff !important;
 }
 .hero-v2-cta-sustine {
     position: absolute !important;
@@ -827,8 +879,6 @@ body.page-home-v2 #A2 .slides {
     width: max-content !important;
     max-width: calc(100% - 2rem) !important;
     padding: 0.48rem 1.275rem;
-    background: #2e7d32 !important;
-    color: #fff !important;
     font-weight: 700;
     font-size: clamp(1.21875rem, 1.425vw + 0.9rem, 1.5rem);
     text-decoration: none;
@@ -840,8 +890,7 @@ body.page-home-v2 #A2 .slides {
     box-sizing: border-box;
 }
 .hero-v2-cta-sustine:hover {
-    background: #1b5e20 !important;
-    color: #fff !important;
+    filter: brightness(1.1);
 }
 .hero-v2-cta-animale {
     position: absolute !important;
@@ -858,8 +907,6 @@ body.page-home-v2 #A2 .slides {
     box-sizing: border-box !important;
     margin: 0 !important;
     padding: 0.4rem 1rem !important;
-    background: #004B93 !important;
-    color: #f5e642 !important;
     font-weight: 700;
     font-size: var(--font-body);
     text-decoration: none;
@@ -872,8 +919,22 @@ body.page-home-v2 #A2 .slides {
     text-overflow: ellipsis;
 }
 .hero-v2-cta-animale:hover {
-    background: #003a70 !important;
+    filter: none;
+    background: #1b5e20 !important;
     color: #fff !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.page-home-v2 .hero-v2-cta-sustine {
+        animation: none !important;
+        background: #6d4c41 !important;
+        color: #fff !important;
+    }
+    body.page-home-v2 .hero-v2-cta-animale {
+        animation: none !important;
+        background: #2e7d32 !important;
+        color: #fff !important;
+    }
 }
 
 /* Mission bar sub hero */

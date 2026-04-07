@@ -7,7 +7,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt103-match-altele" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt113-rogvaiv-fix" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -263,12 +263,17 @@
 					<div class="pt-p4-sticky-placeholder" id="pt_p4_sticky_placeholder" aria-hidden="true"></div>
 					{# Mobil: bară fixă — doar butoane + pub; banda cursivă = #P3 footer, un singur rând sub P2. #}
 					<div class="pt-p4-mobile-sticky pt-p4-portrait-sticky" id="pt_p4_mobile_sticky">
-						<div class="pt-p4-box pt-p4-box-match" id="P4.2" data-slot="P4.2">
-							<div class="pt-p4-actions">
-								{% if selected_species != 'other' %}
-								<a href="#" class="pt-p4-btn-match" title="Găsește-ți sufletul pereche">Găsește-mi perechea</a>
-								{% endif %}
-								<a href="#" class="pt-p4-btn-filters js-pt-mobile-filters" id="ptMobileToggleFilters" title="Deschide filtre">Filtre</a>
+						<div class="pt-p4-box pt-p4-match-sustine-stack">
+							<div class="pt-p4-box-match" id="P4.2" data-slot="P4.2">
+								<div class="pt-p4-actions">
+									{% if selected_species != 'other' %}
+									<a href="#" class="pt-p4-btn-match" title="Găsește-ți sufletul pereche">Găsește-mi perechea</a>
+									{% endif %}
+									<a href="#" class="pt-p4-btn-filters js-pt-mobile-filters" id="ptMobileToggleFilters" title="Deschide filtre">Filtre</a>
+								</div>
+							</div>
+							<div class="pt-p4-box-sustine" id="P4.2b" data-slot="P4.2b" aria-label="Ajută un suflet">
+								<a href="{% url 'custi' %}" class="pt-p4-btn-sustine" title="Ajută un suflet">Ajuta un Suflet !</a>
 							</div>
 						</div>
 						{# Desktop: doar P4.3 aici. Mobil: sub butoane, un rând cu P4.3 + P5.1–P5.3 (aceleași date ca #P5). #}
@@ -291,13 +296,18 @@
 			</div>
 			<div class="pt-mob-land-3col">
 				<aside class="pt-mob-land-left" aria-label="Acțiuni și reclame stânga">
-					{% if selected_species != 'other' %}
-					<div class="pt-p4-box pt-p4-box-match pt-p4-land-rail-box">
-						<div class="pt-p4-actions pt-p4-actions--land-col">
-							<a href="#" class="pt-p4-btn-match" title="Găsește-ți sufletul pereche">Găsește-mi perechea</a>
+					<div class="pt-p4-match-sustine-stack pt-p4-land-rail-ms{% if selected_species == 'other' %} pt-p4-ms-stack--sustine-only{% endif %}">
+						{% if selected_species != 'other' %}
+						<div class="pt-p4-box-match pt-p4-land-rail-box">
+							<div class="pt-p4-actions pt-p4-actions--land-col">
+								<a href="#" class="pt-p4-btn-match" title="Găsește-ți sufletul pereche">Găsește-mi perechea</a>
+							</div>
+						</div>
+						{% endif %}
+						<div class="pt-p4-box-sustine pt-p4-land-rail-sustine" aria-label="Ajută un suflet">
+							<a href="{% url 'custi' %}" class="pt-p4-btn-sustine" title="Ajută un suflet">Ajuta un Suflet !</a>
 						</div>
 					</div>
-					{% endif %}
 					<div class="pt-p4-box pt-p4-box-ads pt-p4-land-rail-ads">
 						<div class="pt-p43-mobil-col pt-p43-mobil-col--stack">
 							{% for slot in pt_pub_slot_list %}
