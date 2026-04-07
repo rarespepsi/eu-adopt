@@ -667,6 +667,8 @@ body.page-home-v2 #A2 .slides {
     border-bottom: 1px solid #e0e6ea;
     padding: 1mm 0;
     overflow: hidden;
+    /* jumătate din înălțimea vizuală a butonului Susține – pentru poziția „Hai la noi!” sub el + 0,5 cm */
+    --hero-a1-sustine-half-y: 0.95rem;
 }
 .hero-v2-bg {
     position: absolute;
@@ -805,23 +807,69 @@ body.page-home-v2 #A2 .slides {
     object-fit: cover;
 }
 
-/* A1 – buton central „Hai la noi!” la 0,5 cm de limita de jos, către pagina animale */
+/* A1 – Susține înghețat la centrul casetei; „Hai la noi!” la 0,5 cm sub marginea de jos a lui Susține */
+.hero-v2-cta-duo {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 2;
+    pointer-events: none;
+}
+.hero-v2-cta-duo > a {
+    pointer-events: auto;
+}
+.hero-v2-cta-sustine {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 3;
+    display: inline-block !important;
+    width: max-content !important;
+    max-width: calc(100% - 2rem) !important;
+    padding: 0.48rem 1.275rem;
+    background: #2e7d32 !important;
+    color: #fff !important;
+    font-weight: 700;
+    font-size: clamp(1.21875rem, 1.425vw + 0.9rem, 1.5rem);
+    text-decoration: none;
+    border-radius: var(--radius-v2);
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+}
+.hero-v2-cta-sustine:hover {
+    background: #1b5e20 !important;
+    color: #fff !important;
+}
 .hero-v2-cta-animale {
     position: absolute !important;
-    bottom: 0.5cm !important;
     left: 50% !important;
+    top: min(
+        calc(100% - 1.12rem),
+        calc(50% + var(--hero-a1-sustine-half-y) + 3mm)
+    ) !important;
     transform: translateX(-50%) !important;
     z-index: 2;
-    display: inline-block;
-    padding: 0.4rem 1rem;
+    display: inline-block !important;
+    width: max-content !important;
+    max-width: calc(100% - 2rem) !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0.4rem 1rem !important;
     background: #004B93 !important;
     color: #f5e642 !important;
     font-weight: 700;
     font-size: var(--font-body);
     text-decoration: none;
-    border-radius: var(--radius-v2);
+    border-radius: var(--radius-v2) !important;
     white-space: nowrap;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    text-align: center !important;
+    line-height: 1.15 !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .hero-v2-cta-animale:hover {
     background: #003a70 !important;
@@ -1338,19 +1386,35 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
         width: 1.75rem !important;
         height: 1.75rem !important;
     }
-    body.page-home-v2 .hero-v2-cta-animale {
-        position: absolute !important;
+    body.page-home-v2 .hero-v2 {
+        --hero-a1-sustine-half-y: 0.5rem !important;
+    }
+    body.page-home-v2 .hero-v2-cta-duo {
+        inset: 0 !important;
+    }
+    body.page-home-v2 .hero-v2-cta-sustine {
         left: 50% !important;
         top: 50% !important;
-        bottom: auto !important;
         transform: translate(-50%, -50%) !important;
-        z-index: 3 !important;
-        padding: 0.1rem 0.35rem !important;
-        font-size: 0.62rem !important;
+        max-width: min(6.4rem, calc(100% - 3.2rem)) !important;
+        padding: 0.075rem 0.39rem !important;
+        font-size: 0.75rem !important;
         line-height: 1 !important;
-        max-width: 5.6rem !important;
         text-align: center !important;
         white-space: nowrap !important;
+    }
+    body.page-home-v2 .hero-v2-cta-animale {
+        left: 50% !important;
+        top: min(
+            calc(100% - 1rem),
+            calc(50% + var(--hero-a1-sustine-half-y) + 3mm)
+        ) !important;
+        transform: translateX(-50%) !important;
+        max-width: min(6.4rem, calc(100% - 3.2rem)) !important;
+        padding: 0.08rem 0.3rem !important;
+        font-size: 0.58rem !important;
+        line-height: 1 !important;
+        border-radius: var(--radius-v2) !important;
     }
 
     /* A2 urcă imediat sub A1, fără bandă/gol vizual. */
@@ -1446,6 +1510,7 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
         overflow: hidden !important;
         position: relative !important;
         padding: 0 !important;
+        --hero-a1-sustine-half-y: 0.52rem !important;
     }
     body.page-home-v2 .hero-v2-inner {
         position: absolute !important;
@@ -1467,16 +1532,40 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
         min-width: 1.85rem !important;
         min-height: 1.85rem !important;
     }
-    body.page-home-v2 .hero-v2-cta-animale {
+    body.page-home-v2 .hero-v2-cta-duo {
+        inset: 0 !important;
+        transform: none !important;
+        left: auto !important;
+        top: auto !important;
+        max-width: none !important;
+    }
+    body.page-home-v2 .hero-v2-cta-sustine {
         position: absolute !important;
         left: 50% !important;
         top: 50% !important;
         transform: translate(-50%, -50%) !important;
-        margin: 0 !important;
-        max-width: 5.8rem !important;
-        padding: 0.12rem 0.4rem !important;
-        font-size: 0.66rem !important;
+        max-width: min(6.6rem, calc(100% - 3.4rem)) !important;
+        padding: 0.09rem 0.48rem !important;
+        font-size: 0.81rem !important;
         line-height: 1 !important;
+        white-space: nowrap !important;
+        width: max-content !important;
+    }
+    body.page-home-v2 .hero-v2-cta-animale {
+        position: absolute !important;
+        left: 50% !important;
+        top: min(
+            calc(100% - 1.05rem),
+            calc(50% + var(--hero-a1-sustine-half-y) + 3mm)
+        ) !important;
+        transform: translateX(-50%) !important;
+        width: max-content !important;
+        max-width: min(6.6rem, calc(100% - 3.4rem)) !important;
+        padding: 0.1rem 0.38rem !important;
+        font-size: 0.62rem !important;
+        line-height: 1 !important;
+        border-radius: var(--radius-v2) !important;
+        display: inline-block !important;
     }
 
     body.page-home-v2 #A2 {

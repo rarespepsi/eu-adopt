@@ -6,7 +6,7 @@
 {% block body_class %}page-home-v2{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/home_v2.css' %}?v=a3m34" type="text/css" media="all" />
+<link rel="stylesheet" href="{% static 'css/home_v2.css' %}?v=a3m46" type="text/css" media="all" />
 <style>
 	.home-welcome-overlay-backdrop {
 		position: fixed;
@@ -101,13 +101,17 @@
 								<img src="{% static 'images/logo-final-cu-stele.png' %}" alt="EU Adopt" class="hero-v2-logo-img" />
 							</button>
 						</div>
+						<div class="hero-v2-cta" aria-hidden="true"></div>
 						<div class="hero-v2-transport">
 							<a href="{% url 'transport' %}" class="hero-v2-transport-badge" title="Deschide pagina Transport">
 								<img src="{% static 'images/transport/sigla1.jpeg' %}" alt="EU Adopt Transport" onerror="this.style.display='none'" />
 							</a>
 						</div>
 					</div>
-					<a href="{% url 'pets_all' %}" class="hero-v2-cta-animale" title="Vezi prietenii tăi">Hai la noi!</a>
+					<div class="hero-v2-cta-duo">
+						<a href="{% url 'custi' %}" class="hero-v2-cta-sustine" title="Susține EU-Adopt">Susține EU-Adopt</a>
+						<a href="{% url 'pets_all' %}" class="hero-v2-cta-animale" title="Vezi prietenii tăi">Hai la noi!</a>
+					</div>
 				</header>
 			</div>
 			<div id="home-a1-site-note-backdrop" class="home-a1-site-note-backdrop" hidden aria-hidden="true">
