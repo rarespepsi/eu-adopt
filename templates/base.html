@@ -6,6 +6,14 @@
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
 	<title>{% block title %}EU Adopt{% endblock %}</title>
+	<meta name="description" content="{% block meta_description %}EU-ADOPT – platformă de adopție pentru câini și pisici în România. Găsești animale spre adopție, servicii veterinare, transport și magazin.{% endblock %}" />
+	<link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}" />
+	<meta property="og:locale" content="ro_RO" />
+	<meta property="og:site_name" content="EU-ADOPT" />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="{% block og_title %}EU-ADOPT{% endblock %}" />
+	<meta property="og:description" content="{% block og_description %}EU-ADOPT – adopție și servicii pentru animale în România.{% endblock %}" />
+	<meta name="twitter:card" content="summary" />
 	<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
 	<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
 	<style>

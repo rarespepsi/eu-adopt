@@ -60,8 +60,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'django.contrib.sitemaps',
     'home.apps.HomeConfig',
 ]
+
+# django.contrib.sites – domeniu pentru sitemap URL-uri absolute.
+# În producție: Admin → Sites → Site → Domain name = www.eu-adopt.ro (sau setează EUADOPT_SITE_BASE_URL).
+# Dacă SITE_BASE_URL e setat, sitemap folosește acel host (vezi home.sitemaps.EuadoptSitemap).
+SITE_ID = 1
 
 # „Site în lucru” doar când SITE_PUBLIC e explicit False (ex. pe Render). Dacă lipsește (ex. local), site-ul e normal.
 import os as _os
@@ -169,7 +176,9 @@ if _EUADOPT_SITE_BASE_URL:
 elif not DEBUG:
     SITE_BASE_URL = "https://www.eu-adopt.ro"
 else:
-    SITE_BASE_URL = os.environ.get("EUADOPT_SITE_BASE_URL_DEV", "").strip().rstrip("/")
+    # Local: fără env, fallback explicit (sitemap / email); altfel RequestSite în euadopt_sitemap.
+    _dev_base = os.environ.get("EUADOPT_SITE_BASE_URL_DEV", "").strip().rstrip("/")
+    SITE_BASE_URL = _dev_base or "http://127.0.0.1:8000"
 
 # Google Maps JavaScript API (Places Autocomplete pe /transport/). Setează EUADOPT_GOOGLE_MAPS_API_KEY în .env.
 GOOGLE_MAPS_API_KEY = os.environ.get("EUADOPT_GOOGLE_MAPS_API_KEY", "").strip()

@@ -234,3 +234,25 @@ class SmokeMyPetAddTests(TestCase):
                 r = c.get(reverse("mypet_add"), {"species": species})
                 self.assertEqual(r.status_code, 200)
                 self.assertContains(r, "mypet-add-form", status_code=200)
+
+
+class SmokeSeoTests(TestCase):
+    """robots.txt și sitemap.xml (SEO)."""
+
+    def test_robots_txt_200_and_sitemap_line(self):
+        r = Client().get("/robots.txt")
+        self.assertEqual(r.status_code, 200)
+        text = r.content.decode("utf-8")
+        self.assertIn("User-agent:", text)
+        self.assertIn("Sitemap:", text)
+        self.assertIn("/sitemap.xml", text)
+
+    def test_sitemap_xml_200(self):
+        r = Client().get("/sitemap.xml")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"urlset", r.content.lower())
+        self.assertNotIn(
+            b"example.com",
+            r.content.lower(),
+            "sitemap must not use default django.contrib.sites domain",
+        )

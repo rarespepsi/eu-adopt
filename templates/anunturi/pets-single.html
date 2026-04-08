@@ -4,7 +4,24 @@
 <html lang="ro">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<title>{{ pet.nume }} | Adopt a Pet</title>
+		<title>{{ pet.nume }} – Adopție | EU-ADOPT</title>
+		<meta name="description" content="{% if pet.cine_sunt %}{{ pet.cine_sunt|striptags|truncatechars:155 }}{% elif pet.descriere %}{{ pet.descriere|striptags|truncatechars:155 }}{% else %}Fișă {{ pet.nume }} – adopție prin EU-ADOPT. Detalii, locație și mesaj către proprietar pe platformă.{% endif %}" />
+		<link rel="canonical" href="{{ request.build_absolute_uri }}" />
+		<meta property="og:locale" content="ro_RO" />
+		<meta property="og:site_name" content="EU-ADOPT" />
+		<meta property="og:type" content="article" />
+		<meta property="og:title" content="{{ pet.nume }} – Adopție | EU-ADOPT" />
+		<meta property="og:description" content="{% if pet.cine_sunt %}{{ pet.cine_sunt|striptags|truncatechars:200 }}{% elif pet.descriere %}{{ pet.descriere|striptags|truncatechars:200 }}{% else %}Adopție prin EU-ADOPT – {{ pet.nume }}.{% endif %}" />
+		{% if pet.imagine %}
+		<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ pet.imagine.url }}" />
+		<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ pet.imagine.url }}" />
+		{% else %}
+		{% static pet.imagine_fallback as pet_og_image_url %}
+		<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ pet_og_image_url }}" />
+		<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ pet_og_image_url }}" />
+		{% endif %}
+		<meta property="og:image:alt" content="{{ pet.nume }} – adopție EU-ADOPT" />
+		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
 		<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
 		<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}?v=20260406f" type="text/css" media="screen" />

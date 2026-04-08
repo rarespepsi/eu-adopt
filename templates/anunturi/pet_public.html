@@ -3,6 +3,10 @@
 
 {% block title %}{{ pet.name|default:"Câine pentru adopție" }} – Fișă adoptator{% endblock %}
 
+{% block meta_description %}Fișă {{ pet.name|default:"animal" }} pentru adoptator pe EU-ADOPT.{% if pet.city %} Locație: {{ pet.city }}{% endif %}{% if pet.county %} ({{ pet.county }}){% endif %} Vezi detaliile și pașii pentru adopție.{% endblock %}
+{% block og_title %}{{ pet.name|default:"EU-ADOPT" }} – Fișă adoptator{% endblock %}
+{% block og_description %}Fișă {{ pet.name|default:"animal" }} pentru adoptator pe EU-ADOPT.{% if pet.city %} Locație: {{ pet.city }}{% endif %}{% if pet.county %} ({{ pet.county }}){% endif %} Vezi detaliile și pașii pentru adopție.{% endblock %}
+
 {% block body_class %}page-pet-sheet{% endblock %}
 
 {% block extra_css %}

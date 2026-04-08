@@ -6,6 +6,14 @@ from django.conf.urls.static import static
 from django.views.static import serve as static_serve
 from django.http import Http404
 
+from home.seo_views import euadopt_sitemap
+from home.sitemaps import AnimalListingSitemap, StaticViewSitemap, robots_txt
+
+SEO_SITEMAPS = {
+    "static": StaticViewSitemap,
+    "animals": AnimalListingSitemap,
+}
+
 
 def _serve_media(request, path):
     """Servește fișiere din MEDIA_ROOT și când DEBUG=False (pentru development)."""
@@ -17,6 +25,13 @@ def _serve_media(request, path):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('robots.txt', robots_txt),
+    path(
+        'sitemap.xml',
+        euadopt_sitemap,
+        {'sitemaps': SEO_SITEMAPS},
+        name='sitemap',
+    ),
     path('', include('home.urls')),
 ]
 # Fișiere media (poze profil) – servite în development
