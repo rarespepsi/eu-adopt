@@ -22,6 +22,7 @@ PUBLIC_GET_200_NAMES = [
     "shop",
     "shop_comanda_personalizate",
     "shop_magazin_foto",
+    "shop_magazin_foto_more",
     "transport",
     "custi",
     "contact",

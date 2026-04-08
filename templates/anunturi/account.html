@@ -372,6 +372,52 @@ body.page-account .account-right-panel {
 		padding: 0;
 	}
 
+	/* Colaborator: tip partener mai strâns, ca să încapă fișa transport fără scroll în caseta Date firmă */
+	.cont-pf-left .cont-pf-firma-tip-colab {
+		margin-top: 0.35rem !important;
+		margin-bottom: 0;
+	}
+	.cont-pf-left .cont-pf-tip-colaborator-options {
+		gap: 0.04rem;
+		margin-top: 0.1rem;
+	}
+	.cont-pf-left .cont-pf-tip-colaborator-options .signup-col-tip-option {
+		font-size: 0.7rem;
+		line-height: 1.12;
+		min-height: 0;
+	}
+	.cont-pf-left .cont-pf-tip-colaborator-options .signup-col-tip-option span {
+		font-size: 0.7rem;
+		line-height: 1.12;
+	}
+
+	.cont-pf-left .cont-pf-fisa-transport {
+		margin-top: 0.2rem !important;
+		margin-bottom: 0;
+		padding: 0.25rem 0.4rem !important;
+		background: rgba(227, 242, 253, 0.45);
+		border-radius: 6px;
+		border: 1px solid rgba(21, 101, 192, 0.22);
+		box-sizing: border-box;
+		max-width: 100%;
+	}
+	.cont-pf-left .cont-pf-fisa-transport__title {
+		display: block;
+		margin: 0 0 0.1rem;
+		color: #1565c0;
+		font-size: 0.65rem;
+		font-weight: 700;
+		line-height: 1.15;
+	}
+	.cont-pf-left .cont-pf-fisa-transport__meta {
+		display: block;
+		font-size: 0.62rem;
+		line-height: 1.2;
+		color: #37474f;
+		word-break: break-word;
+		hyphens: auto;
+	}
+
 	/* Nota „Datele au fost actualizate” ca overlay mic peste primul rând de casete */
 	.cont-pf-updated {
 		position: absolute;
@@ -558,13 +604,9 @@ body.page-account .account-right-panel {
 	<aside class="cont-pf-left" aria-label="Date firmă">
 		<div class="cont-pf-edit-box cont-pf-edit-box-empty">
 			<h2>{% if display_role|default:account_profile.role == 'org' %}DATE ONG, SRL, SA, ASOCIATIE{% else %}DATE FIRMĂ{% endif %}</h2>
-			<p class="edit-intro">
-				{% if display_role|default:account_profile.role == 'org' %}
-					Date SRL;SA,PF
-				{% else %}
-					Date firmă și tip colaborator (copiate din fișa de înscriere Colaborator).
-				{% endif %}
-			</p>
+			{% if display_role|default:account_profile.role == 'org' %}
+			<p class="edit-intro">Date SRL;SA,PF</p>
+			{% endif %}
 			<form method="post" action="{% url 'account_edit' %}" class="edit-form-inner" id="firma-form">
 				{% csrf_token %}
 				<input type="hidden" name="form_type" value="firma" />
@@ -607,8 +649,8 @@ body.page-account .account-right-panel {
 						<input type="text" id="id_company_address" name="company_address" value="{{ fp_firma.company_address|default:user_profile.company_address|default:'' }}" class="firma-field" readonly />
 					</div>
 				</div>
+				{% if display_role|default:account_profile.role == 'org' %}
 				<div class="signup-field span2" style="margin-top:0.5rem;">
-					{% if display_role|default:account_profile.role == 'org' %}
 						<label>Tip adăpost *</label>
 						<div class="signup-col-tip-options">
 							<label class="signup-col-tip-option">
@@ -620,9 +662,11 @@ body.page-account .account-right-panel {
 								<input type="radio" name="is_public_shelter" value="no" class="firma-field" disabled {% if fp_firma.is_public_shelter == 'no' or not fp_firma.is_public_shelter and account_profile and not account_profile.is_public_shelter %}checked{% endif %} />
 							</label>
 						</div>
-					{% else %}
+				</div>
+				{% else %}
+				<div class="signup-field span2 cont-pf-firma-tip-colab">
 						<label>Tip colaborator *</label>
-						<div class="signup-col-tip-options">
+						<div class="signup-col-tip-options cont-pf-tip-colaborator-options">
 							<label class="signup-col-tip-option">
 								<span>Cabinet / Clinică veterinară</span>
 								<input type="radio" name="collaborator_type" value="cabinet" class="firma-field" disabled {% if fp_firma.collaborator_type == 'cabinet' or user_profile.collaborator_type == 'cabinet' %}checked{% endif %} />
@@ -640,14 +684,12 @@ body.page-account .account-right-panel {
 								<input type="radio" name="collaborator_type" value="transport" class="firma-field" disabled {% if fp_firma.collaborator_type == 'transport' or user_profile.collaborator_type == 'transport' %}checked{% endif %} />
 							</label>
 						</div>
-					{% endif %}
 				</div>
+				{% endif %}
 				{% if transport_operator_profile %}
-				<div class="signup-field span2" style="margin-top:0.5rem;padding:0.5rem 0.65rem;background:rgba(227,242,253,0.45);border-radius:8px;border:1px solid rgba(21,101,192,0.25);">
-					<strong style="display:block;margin-bottom:0.35rem;color:#1565c0;font-size:0.88rem;">Fișă transportator</strong>
-					<span style="font-size:0.82rem;">Status: {{ transport_operator_profile.get_approval_status_display }} · Capacitate: {{ transport_operator_profile.max_caini }} câini / {{ transport_operator_profile.max_pisici }} pisici ·
-					{% if transport_operator_profile.transport_national %}Național{% endif %}{% if transport_operator_profile.transport_national and transport_operator_profile.transport_international %} · {% endif %}{% if transport_operator_profile.transport_international %}Internațional{% endif %}
-					</span>
+				<div class="signup-field span2 cont-pf-fisa-transport">
+					<strong class="cont-pf-fisa-transport__title">Fișă transportator</strong>
+					<span class="cont-pf-fisa-transport__meta">Capacitate: {{ transport_operator_profile.max_caini }} câini / {{ transport_operator_profile.max_pisici }} pisici{% if transport_operator_profile.transport_national %} · Național{% endif %}{% if transport_operator_profile.transport_international %} · Internațional{% endif %}</span>
 				</div>
 				{% endif %}
 				{% endwith %}

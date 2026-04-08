@@ -3107,7 +3107,6 @@ def shop_magazin_foto_view(request):
             "foto_slots": foto_slots,
             "foto_has_more": foto_has_more,
             "foto_next_offset": foto_next_offset,
-            "smf_page_size": PT_P2_PAGE_SIZE,
         },
     )
 
