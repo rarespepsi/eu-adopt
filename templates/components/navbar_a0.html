@@ -6,15 +6,23 @@
 			<div class="clearfix a0-bar-inner">
 				<div class="a0-left">
 					<div class="animal-counter-navbar a0-counters-left">
-						<div class="counter-item">
-							<span class="counter-icon">🐶</span>
-							<span class="counter-label">În grija noastră:</span>
-							<span class="counter-value">{{ active_animals|default:0 }}</span>
+						<div class="counter-item a0-counter-chip" role="group" aria-label="În Site: {{ active_animals|default:0 }} animale">
+							<span class="a0-counter-chip-body">
+								<svg class="a0-counter-chip-ico" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24">
+									<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5"/>
+								</svg>
+								<span class="a0-counter-chip-label">În Site</span>
+								<span class="a0-counter-chip-badge">{{ active_animals|default:0 }}</span>
+							</span>
 						</div>
-						<div class="counter-item">
-							<span class="counter-icon">🏠</span>
-							<span class="counter-label">Adoptați:</span>
-							<span class="counter-value">{{ adopted_animals|default:0 }}</span>
+						<div class="counter-item a0-counter-chip" role="group" aria-label="Adoptați: {{ adopted_animals|default:0 }}">
+							<span class="a0-counter-chip-body">
+								<svg class="a0-counter-chip-ico a0-counter-chip-ico--solid" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+									<path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2ZM7.99 9a1 1 0 0 1 1-1H9a1 1 0 0 1 0 2h-.01a1 1 0 0 1-1-1ZM14 9a1 1 0 0 1 1-1h.01a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1Zm-5.506 7.216A5.5 5.5 0 0 1 6.6 13h10.81a5.5 5.5 0 0 1-8.916 3.216Z" clip-rule="evenodd"/>
+								</svg>
+								<span class="a0-counter-chip-label">Adoptați</span>
+								<span class="a0-counter-chip-badge">{{ adopted_animals|default:0 }}</span>
+							</span>
 						</div>
 					</div>
 				</div>
@@ -27,7 +35,17 @@
 					{% else %}
 					<a href="{% url 'login' %}" class="a0-ms a0-ms-love" title="I Love – intră în cont">❤️<span class="a0-ms-val">0</span></a>
 					{% endif %}
-					<span class="a0-ms a0-ms-animals" title="În grija noastră / adoptați"><span class="a0-ms-ico" aria-hidden="true">🐶</span><span class="a0-ms-val">{{ active_animals|default:0 }}</span><span class="a0-ms-sep" aria-hidden="true">·</span><span class="a0-ms-ico" aria-hidden="true">🏠</span><span class="a0-ms-val">{{ adopted_animals|default:0 }}</span></span>
+					<span class="a0-ms a0-ms-animals" title="În Site / Adoptați">
+						<span class="a0-ms-chip" aria-hidden="true">
+							<svg class="a0-ms-chip-ico" xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5"/></svg>
+							<span class="a0-ms-val a0-ms-val--pill">{{ active_animals|default:0 }}</span>
+						</span>
+						<span class="a0-ms-sep" aria-hidden="true">·</span>
+						<span class="a0-ms-chip" aria-hidden="true">
+							<svg class="a0-ms-chip-ico a0-ms-chip-ico--solid" xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2ZM7.99 9a1 1 0 0 1 1-1H9a1 1 0 0 1 0 2h-.01a1 1 0 0 1-1-1ZM14 9a1 1 0 0 1 1-1h.01a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1Zm-5.506 7.216A5.5 5.5 0 0 1 6.6 13h10.81a5.5 5.5 0 0 1-8.916 3.216Z" clip-rule="evenodd"/></svg>
+							<span class="a0-ms-val a0-ms-val--pill">{{ adopted_animals|default:0 }}</span>
+						</span>
+					</span>
 					{% if user.is_authenticated and navbar_messages_url %}
 					<div class="a0-nav-envelope-item a0-nav-envelope-item--shortcuts">
 						<a href="{{ navbar_messages_url }}" class="a0-nav-envelope-link" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}" aria-label="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}">

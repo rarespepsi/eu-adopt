@@ -6,145 +6,348 @@
 
 {% block extra_css %}
 <style>
+	/* Intra – card + câmpuri; fundal full-bleed (inclusiv sub A0) în extra_css_after */
+	body.page-login {
+		background-color: #141a22 !important;
+	}
 	body.page-login #main_wrap {
+		position: relative;
 		min-height: 100vh;
 		display: flex;
 		flex-direction: column;
 		padding: 0;
 		margin: 0;
-		background: transparent;
 	}
 	body.page-login #main_content {
+		position: relative;
 		flex: 1 1 auto;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 1.5rem 1rem;
+		padding: clamp(1.75rem, 5vw, 3rem) clamp(1.25rem, 4vw, 2rem);
 		background: transparent !important;
 		box-shadow: none !important;
+		min-height: 0;
 	}
-	.login-card {
+	body.page-login .login-main {
+		position: relative;
+		z-index: 1;
 		width: 100%;
-		max-width: 420px;
-		background: #ffffff;
-		border-radius: 16px;
-		box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-		padding: 1.75rem 1.5rem 1.5rem;
+		max-width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0;
+		padding: 0;
+	}
+	body.page-login .login-card {
+		width: 100%;
+		max-width: 28rem;
+		position: relative;
+		overflow: hidden;
+		background:
+			linear-gradient(
+				168deg,
+				rgba(24, 32, 46, 0.52) 0%,
+				rgba(18, 24, 36, 0.62) 48%,
+				rgba(14, 20, 32, 0.68) 100%
+			);
+		backdrop-filter: blur(28px) saturate(1.06);
+		-webkit-backdrop-filter: blur(28px) saturate(1.06);
+		border: 1px solid rgba(255, 255, 255, 0.055);
+		border-radius: 1.1875rem;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+			0 1px 0 rgba(255, 255, 255, 0.045) inset,
+			0 32px 64px rgba(0, 0, 0, 0.55),
+			0 12px 28px rgba(0, 0, 0, 0.32),
+			0 0 0 1px rgba(6, 182, 212, 0.04);
+		padding: clamp(2rem, 4.8vw, 2.5rem) clamp(1.85rem, 4.2vw, 2.35rem);
 		box-sizing: border-box;
+		font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 	}
-	.login-card h1 {
-		margin: 0 0 1rem;
-		font-size: 1.3rem;
-		font-weight: 800;
-		color: #e53935;
-		text-align: center;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
+	body.page-login .login-card::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
+		background: linear-gradient(
+			145deg,
+			rgba(255, 255, 255, 0.06) 0%,
+			transparent 42%,
+			transparent 58%,
+			rgba(0, 0, 0, 0.12) 100%
+		);
+		opacity: 0.85;
 	}
-	.login-card p {
-		margin: 0 0 1rem;
-		font-size: 0.9rem;
-		color: #555;
-		text-align: center;
+	body.page-login .login-card > * {
+		position: relative;
+		z-index: 1;
 	}
-	.login-field {
-		margin-bottom: 0.9rem;
-	}
-	.login-field label {
-		display: block;
-		margin-bottom: 0.25rem;
-		font-size: 0.8rem;
+	body.page-login .login-card h1 {
+		margin: 0 0 0.45rem;
+		font-size: clamp(1.28rem, 2.6vw, 1.42rem);
 		font-weight: 600;
-		color: #555;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
+		line-height: 1.22;
+		color: #f8fafc;
+		text-align: left;
+		text-transform: none;
+		letter-spacing: -0.025em;
 	}
-	.login-field input {
+	body.page-login .login-card > p {
+		margin: 0 0 1.65rem;
+		font-size: 0.90625rem;
+		font-weight: 400;
+		color: #94a3b8;
+		text-align: left;
+		line-height: 1.55;
+	}
+	body.page-login .login-field {
+		margin-bottom: 1.25rem;
+	}
+	body.page-login .login-field:last-of-type {
+		margin-bottom: 0;
+	}
+	body.page-login .login-field label {
+		display: block;
+		margin-bottom: 0.45rem;
+		font-size: 0.8125rem;
+		font-weight: 500;
+		color: #cbd5e1;
+		text-transform: none;
+		letter-spacing: 0.01em;
+	}
+	body.page-login .login-field input[type="text"],
+	body.page-login .login-field input[type="password"] {
 		width: 100%;
-		padding: 0.45rem 0.55rem;
-		border-radius: 8px;
-		border: 1px solid #ccc;
-		font-size: 0.9rem;
+		padding: 0.78rem 1rem;
+		border-radius: 0.5625rem;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		background: rgba(15, 23, 42, 0.5);
+		color: #f8fafc;
+		font-size: 0.9375rem;
+		line-height: 1.4;
 		box-sizing: border-box;
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 1px 4px rgba(0, 0, 0, 0.18);
+		transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 	}
-	.login-actions {
-		margin-top: 1rem;
+	body.page-login .login-field input::placeholder {
+		color: #6b7280;
+	}
+	body.page-login .login-field input:hover {
+		border-color: rgba(255, 255, 255, 0.12);
+		background: rgba(15, 23, 42, 0.68);
+	}
+	body.page-login .login-field input:focus {
+		outline: none;
+		border-color: rgba(6, 182, 212, 0.75);
+		background: rgba(15, 23, 42, 0.82);
+		box-shadow:
+			0 0 0 1px rgba(6, 182, 212, 0.35),
+			0 0 0 3px rgba(6, 182, 212, 0.14),
+			0 2px 10px rgba(0, 0, 0, 0.22);
+	}
+	body.page-login .login-pass-tools {
+		margin-top: 1.125rem;
+		margin-bottom: 0;
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+	}
+	body.page-login .login-pass-toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: #d1d5db;
+		cursor: pointer;
+		user-select: none;
+	}
+	body.page-login .login-pass-toggle input[type="checkbox"] {
+		width: 1.05rem;
+		height: 1.05rem;
+		margin: 0;
+		flex-shrink: 0;
+		border-radius: 0.3rem;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		background: rgba(17, 24, 39, 0.8);
+		accent-color: #06b6d4;
+		cursor: pointer;
+	}
+	body.page-login .login-forgot-link {
+		margin-left: auto;
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: #22d3ee;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+	body.page-login .login-forgot-link:hover {
+		text-decoration: underline;
+		color: #67e8f9;
+	}
+	body.page-login .login-actions {
+		margin-top: 1.75rem;
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: 1rem;
 	}
-	.login-submit {
+	body.page-login .login-submit {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		width: 100%;
-		padding: 0.55rem 0.75rem;
-		border-radius: 999px;
-		border: none;
-		background: #2e7d32;
+		padding: 0.9rem 1.25rem;
+		border-radius: 0.5625rem;
+		border: 1px solid rgba(255, 255, 255, 0.14);
+		background: linear-gradient(175deg, #2dd4e8 0%, #06b6d4 42%, #0e7490 100%);
 		color: #fff;
-		font-weight: 700;
-		font-size: 0.95rem;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
+		font-weight: 600;
+		font-size: 0.9375rem;
+		line-height: 1.3;
+		letter-spacing: 0.03em;
+		text-transform: none;
 		cursor: pointer;
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.2) inset,
+			0 3px 14px rgba(6, 182, 212, 0.32),
+			0 8px 24px rgba(0, 0, 0, 0.28);
+		box-sizing: border-box;
+		transition: filter 0.18s ease, box-shadow 0.18s ease, transform 0.14s ease;
 	}
-	.login-submit:hover {
-		background: #1b5e20;
+	body.page-login .login-submit:hover {
+		filter: brightness(1.05);
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.24) inset,
+			0 4px 18px rgba(6, 182, 212, 0.38),
+			0 10px 28px rgba(0, 0, 0, 0.32);
+		transform: translateY(-1px);
 	}
-	.login-links {
-		font-size: 0.8rem;
+	body.page-login .login-submit:active {
+		transform: translateY(0);
+		filter: brightness(0.97);
+	}
+	body.page-login .login-submit:focus {
+		outline: none;
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.2) inset,
+			0 3px 14px rgba(6, 182, 212, 0.32),
+			0 0 0 3px rgba(6, 182, 212, 0.28);
+	}
+	body.page-login .login-links {
+		font-size: 0.875rem;
+		font-weight: 500;
 		text-align: center;
+		color: #9ca3af;
+		line-height: 1.5;
 	}
-	.login-links a {
-		color: #1565c0;
+	body.page-login .login-links a {
+		color: #22d3ee;
 		text-decoration: none;
 		font-weight: 600;
 	}
-	.login-links a:hover {
+	body.page-login .login-links a:hover {
 		text-decoration: underline;
+		color: #67e8f9;
 	}
-	.login-error-box {
+	body.page-login .login-error-box {
 		display: block;
-		margin: 0 0 0.75rem;
-		padding: 0.55rem 0.7rem;
-		border-radius: 10px;
-		background: rgba(198, 40, 40, 0.08);
-		border: 1px solid rgba(198, 40, 40, 0.25);
-		color: #b71c1c;
-		font-size: 0.88rem;
-		line-height: 1.35;
+		margin: 0 0 1.25rem;
+		padding: 0.75rem 0.9rem;
+		border-radius: 0.625rem;
+		background: rgba(127, 29, 29, 0.35);
+		border: 1px solid rgba(248, 113, 113, 0.35);
+		color: #fecaca;
+		font-size: 0.875rem;
+		line-height: 1.4;
 		text-align: left;
 	}
-	.login-error-box strong {
-		font-weight: 800;
+	body.page-login .login-error-box strong {
+		font-weight: 700;
+		color: #fef2f2;
 	}
-	.login-pass-tools {
-		margin-top: 0.35rem;
-		display: flex;
-		align-items: center;
-		justify-content: flex-end;
-		gap: 0.5rem;
+	body.page-login .login-error-box.login-error-box--success {
+		background: rgba(6, 78, 59, 0.4);
+		border-color: rgba(52, 211, 153, 0.35);
+		color: #a7f3d0;
 	}
-	.login-pass-toggle {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-		font-size: 0.8rem;
-		color: #444;
-		cursor: pointer;
-		user-select: none;
+	body.page-login .login-error-box.login-error-box--success strong {
+		color: #ecfdf5;
 	}
-	.login-pass-toggle input {
-		width: auto;
-		margin: 0;
+</style>
+{% endblock %}
+
+{% block extra_css_after %}
+<style>
+	/* Fundal foto: lumină păstrată peste tot; temperare doar pe fereastra cu jaluzele (dreapta) */
+	body.page-login #main_wrap {
+		background-color: #141a22;
+		background-image: url("{% static 'images/login/slide1.png' %}");
+		background-size: cover;
+		background-position: 100% center;
+		background-repeat: no-repeat;
+		background-attachment: scroll;
+	}
+	/* Strat 1: fără „film” întunecat pe întreaga poză — doar pete înguste pe zona jaluzelelor */
+	body.page-login #main_wrap::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		background:
+			/* bandă verticală îngustă: jaluzele / geam luminos */
+			radial-gradient(
+				ellipse 22% 58% at 99% 48%,
+				rgba(15, 23, 42, 0.72) 0%,
+				rgba(15, 23, 42, 0.35) 42%,
+				transparent 68%
+			),
+			/* colț sus-dreapta dacă rămâne un punct prea strălucitor */
+			radial-gradient(
+				ellipse 18% 22% at 100% 14%,
+				rgba(12, 18, 28, 0.55) 0%,
+				transparent 55%
+			),
+			/* ușor rece, discret, pe tot cadrul (nu reduce luminozitatea foto) */
+			rgba(15, 23, 42, 0.06);
+	}
+	/* Strat 2: vignetă foarte ușoară — nu „închide” imaginea */
+	body.page-login #main_wrap::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		background: radial-gradient(
+			ellipse 85% 80% at 50% 50%,
+			transparent 35%,
+			rgba(8, 12, 20, 0.14) 100%
+		);
+	}
+	body.page-login #main_wrap > #main_content {
+		position: relative;
+		z-index: 1;
+	}
+	body.page-login:not(.page-home-v2):not(.page-animale) #A0,
+	body.page-login #A0 {
+		background-color: rgba(15, 23, 42, 0.32) !important;
+		background-image: none !important;
+		backdrop-filter: blur(14px) saturate(1.08);
+		-webkit-backdrop-filter: blur(14px) saturate(1.08);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
 	}
 </style>
 {% endblock %}
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
-	<main aria-label="Autentificare EU-ADOPT">
+	<main class="login-main" aria-label="Autentificare EU-ADOPT">
 		<div class="login-card">
 			<h1>Intră în cont</h1>
 			<p>Autentificare simplă pentru a-ți gestiona anunțurile și preferințele.</p>
@@ -152,7 +355,7 @@
 				{% csrf_token %}
 				<input type="hidden" name="next" value="{{ request.GET.next|default:'' }}" />
 				{% if password_reset_success %}
-					<div class="login-error-box" role="status" style="background:#e8f5e9;border-color:#4caf50;color:#2e7d32;">
+					<div class="login-error-box login-error-box--success" role="status">
 						<strong>Parola a fost resetată.</strong> Autentifică-te cu parola nouă.
 					</div>
 				{% endif %}
@@ -173,12 +376,13 @@
 							<input type="checkbox" id="login_show_pass" />
 							<span>Arată parola</span>
 						</label>
+						<a href="{% url 'forgot_password' %}" class="login-forgot-link">Ți-ai uitat parola?</a>
 					</div>
 				</div>
 				<div class="login-actions">
 					<button type="submit" class="login-submit">Intră</button>
 					<div class="login-links">
-						<a href="{% url 'forgot_password' %}">Ți-ai uitat parola?</a> · <a href="{% url 'signup_choose_type' %}">Creează cont (PF / ONG / Colaborator)</a>
+						Nu ai cont? <a href="{% url 'signup_choose_type' %}">Creează cont (PF / ONG / Colaborator)</a>
 					</div>
 				</div>
 			</form>
@@ -188,7 +392,6 @@
 {% endblock %}
 
 {% block extra_js %}
-{% include 'anunturi/includes/fundal_random_script.html' %}
 <script>
 (function() {
 	function prefillLoginDemo() {
