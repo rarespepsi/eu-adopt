@@ -252,6 +252,25 @@
 	/* Coloana stângă = doar cât trebuie pentru caseta mamă + casetele mici; restul → main (spațiu eliberat la dreapta coloanei) */
 	body.page-mypet {
 		--mypet-sidebar-w: 118px; /* caseta mamă îngustată; main ia spațiul de la dreapta ei */
+		/* Tema vizuală panou (inspirație admin dark) — doar MyPet */
+		--mypet-surface-deep: #0c1018;
+		--mypet-surface-panel: #141c2b;
+		--mypet-surface-raised: #1a2436;
+		--mypet-surface-header: #0f1728;
+		--mypet-border-outer: rgba(100, 130, 200, 0.38);
+		--mypet-border-inner: rgba(148, 163, 184, 0.14);
+		--mypet-text: #f1f5f9;
+		--mypet-text-muted: #94a3b8;
+		--mypet-link: #38bdf8;
+		--mypet-link-hover: #7dd3fc;
+		/* Hover rând: aceeași familie ca fundalul rândului, doar nuanță ușor diferită (fără „alb” / fără dungi) */
+		--mypet-row-hover-bg: color-mix(in srgb, var(--mypet-surface-raised) 88%, #ffffff 12%);
+		--mypet-row-hover-bg-fallback: #222c42;
+	}
+	/* Fundal panou doar pe lista MyPet (.mypet-wrap), nu pe fișă add/edit (.mypet-fisa-wrap) */
+	body.page-mypet #main_content:has(.mypet-wrap),
+	body.page-mypet .main-content:has(.mypet-wrap) {
+		background: linear-gradient(180deg, var(--mypet-surface-deep) 0%, #0f1624 55%, var(--mypet-surface-deep) 100%);
 	}
 	body.page-mypet .layout {
 		grid-template-columns: var(--mypet-sidebar-w) 1fr !important;
@@ -293,7 +312,7 @@
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
-		padding: 0.15rem 0.1rem 0.15rem 0.15rem;
+		padding: 0.35rem 0.5rem 0.45rem;
 		overflow: hidden;
 		min-height: 0;
 	}
@@ -304,11 +323,13 @@
 		min-width: 0;
 		overflow: auto;
 		box-sizing: border-box;
-		margin-top: 0.25rem;
-		border: 2px solid #d2b27a;
-		border-radius: 8px;
-		background: #fffef7;
-		box-sizing: border-box;
+		margin-top: 0.35rem;
+		border: 1px solid var(--mypet-border-outer);
+		border-radius: 12px;
+		background: var(--mypet-surface-panel);
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.04) inset,
+			0 18px 48px rgba(0, 0, 0, 0.35);
 	}
 	.mypet-table {
 		width: 100%;
@@ -323,16 +344,23 @@
 	.mypet-col-date { width: 3.9rem; }
 	.mypet-col-mesaje { width: 5.8rem; }
 	.mypet-th {
-		background: #5c3c00;
-		color: #fff;
-		padding: 0.2rem 0.25rem;
+		background: var(--mypet-surface-header);
+		color: var(--mypet-text);
+		padding: 0.35rem 0.28rem;
 		text-align: center;
 		vertical-align: bottom;
 		white-space: nowrap;
+		border-bottom: 1px solid var(--mypet-border-inner);
+		font-weight: 700;
+		letter-spacing: 0.02em;
 	}
 	.mypet-th-sort {
 		cursor: pointer;
 		user-select: none;
+	}
+	.mypet-th-sort:hover {
+		background: rgba(56, 189, 248, 0.08);
+		color: var(--mypet-link-hover);
 	}
 	.mypet-th-v,
 	.mypet-th-vertical {
@@ -351,6 +379,7 @@
 		line-height: 1.1;
 		padding: 0.1rem 0;
 		font-size: 0.7rem;
+		color: var(--mypet-text-muted);
 	}
 	.mypet-th-nr { min-width: 2rem; }
 	.mypet-th-photo { width: 120px; min-width: 120px; }
@@ -360,36 +389,43 @@
 	.mypet-th-mypet-adopt { min-width: 0; }
 	.mypet-th-mesaje { min-width: 5.6rem; }
 	.mypet-td {
-		padding: 0.12rem 0.2rem;
-		border-bottom: 1px solid #eee;
+		padding: 0.2rem 0.22rem;
+		border-bottom: 1px solid var(--mypet-border-inner);
 		vertical-align: middle;
 		font-size: 0.8rem;
+		background: var(--mypet-surface-raised);
+		color: var(--mypet-text);
 	}
-	.mypet-td-nr { text-align: center; font-weight: 600; color: #5c3c00; min-width: 2rem; }
+	.mypet-td-nr { text-align: center; font-weight: 700; color: var(--mypet-text-muted); min-width: 2rem; }
 	.mypet-td-photo { padding: 0.25rem; text-align: center; width: 120px; min-width: 120px; vertical-align: middle; }
 	.mypet-td-name {
 		min-width: 9rem;
 		text-align: center;
-		font-weight: 900;
+		font-weight: 800;
 		font-size: 0.95rem; /* puțin mai mare */
 		white-space: normal;
 		overflow: hidden; /* caseta rămâne fixă */
+		color: var(--mypet-text);
 	}
 	.mypet-td-name a {
 		display: block;
 		width: 100%;
 		text-decoration: none;
-		font-weight: 900;
-		color: inherit;
+		font-weight: 800;
+		color: var(--mypet-link);
 		white-space: nowrap;
 		overflow: hidden;
+	}
+	.mypet-td-name a:hover {
+		color: var(--mypet-link-hover);
+		text-decoration: underline;
 	}
 	.mypet-species-other-label {
 		display: block;
 		margin-top: 0.12rem;
 		font-size: 0.62rem;
 		font-weight: 700;
-		color: #6d4c41;
+		color: var(--mypet-text-muted);
 		line-height: 1.2;
 		white-space: nowrap;
 		overflow: hidden;
@@ -427,7 +463,7 @@
 	}
 	.mypet-row-adopt-empty {
 		font-size: 0.85rem;
-		color: #999;
+		color: var(--mypet-text-muted);
 	}
 	.mypet-row-adopt-btn {
 		display: inline-block;
@@ -449,17 +485,17 @@
 	}
 	.mypet-row-adopt-accept:hover { background: #1b5e20; }
 	.mypet-row-adopt-reject {
-		background: #fff5f5;
-		color: #b71c1c;
-		border: 1px solid #b71c1c;
+		background: rgba(183, 28, 28, 0.2);
+		color: #fecaca;
+		border: 1px solid rgba(248, 113, 113, 0.55);
 	}
-	.mypet-row-adopt-reject:hover { background: #ffe9e9; }
+	.mypet-row-adopt-reject:hover { background: rgba(183, 28, 28, 0.32); }
 	.mypet-row-adopt-manage {
-		background: #fff8e1;
-		color: #5c3c00;
-		border: 1px solid #d2b27a;
+		background: rgba(251, 191, 36, 0.12);
+		color: #fde68a;
+		border: 1px solid rgba(251, 191, 36, 0.45);
 	}
-	.mypet-row-adopt-manage:hover { background: #ffecb3; }
+	.mypet-row-adopt-manage:hover { background: rgba(251, 191, 36, 0.22); }
 	.mypet-td-mesaje { text-align: center; min-width: 5.6rem; }
 	.mypet-msg-badge {
 		display: inline-block;
@@ -509,14 +545,14 @@
 		box-sizing: border-box;
 	}
 	.mypet-msg-open-btn.is-unread {
-		border: 1px solid #c62828;
-		background: #ffebee;
-		color: #b71c1c;
+		border: 1px solid rgba(248, 113, 113, 0.65);
+		background: rgba(183, 28, 28, 0.22);
+		color: #fecaca;
 	}
 	.mypet-msg-open-btn.is-read {
-		border: 1px solid #1b5e20;
-		background: #e8f5e9;
-		color: #1b5e20;
+		border: 1px solid rgba(74, 222, 128, 0.45);
+		background: rgba(34, 197, 94, 0.12);
+		color: #86efac;
 	}
 	.mypet-promoveaza-btn {
 		display: inline-block;
@@ -690,7 +726,7 @@
 	.mypet-adoptie-cell {
 		font-size: 0.56rem;
 		font-weight: 700;
-		color: #5c3c00;
+		color: var(--mypet-text-muted);
 		margin-bottom: 0.06rem;
 		white-space: nowrap;
 		line-height: 1;
@@ -806,7 +842,9 @@
 		width: 120px;
 		height: 60px;
 		object-fit: cover;
-		border-radius: 4px;
+		border-radius: 8px;
+		border: 1px solid var(--mypet-border-inner);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 	}
 	.mypet-photo-link {
 		display: inline-block;
@@ -817,20 +855,29 @@
 		width: 120px;
 		height: 60px;
 		line-height: 60px;
-		background: #f5f5f5;
-		color: #999;
-		border-radius: 4px;
+		background: rgba(15, 23, 42, 0.65);
+		color: var(--mypet-text-muted);
+		border-radius: 8px;
 		font-size: 0.9rem;
+		border: 1px dashed var(--mypet-border-inner);
 	}
-	.mypet-row:hover { background: #fff8e1; }
+	.mypet-row:hover td {
+		background: var(--mypet-row-hover-bg-fallback);
+		background: var(--mypet-row-hover-bg);
+	}
+	/* Fără evidențiere diferită pe primul rând — toate rândurile aceeași bază vizuală */
 	.mypet-table tbody tr:first-child td {
-		background: #e3f2fd;
-		border: 1px solid #90caf9;
+		background: var(--mypet-surface-raised);
+		border-bottom-color: var(--mypet-border-inner);
 	}
-	/* Doar pe MyPet: evidențiem caseta mamă din stânga (A6–A8) ca să o vezi clar */
+	.mypet-table tbody tr.mypet-row:first-child:hover td {
+		background: var(--mypet-row-hover-bg-fallback);
+		background: var(--mypet-row-hover-bg);
+	}
+	/* Doar pe MyPet: caseta mamă din stânga aliniată la tema panou */
 	body.page-mypet .sidebar-left {
-		background: rgba(255, 248, 225, 0.9);
-		box-shadow: inset 0 0 0 2px rgba(255, 193, 7, 0.9);
+		background: var(--mypet-surface-panel);
+		box-shadow: inset 0 0 0 1px var(--mypet-border-outer);
 	}
 	/* 3 casete în stânga (în caseta mamă A6–A8): lățime = coloana sidebar, fără depășire viewport */
 	body.page-mypet .sidebar-left {
@@ -865,14 +912,14 @@
 		width: 100%;
 		max-width: 100%;
 		min-width: 0;
-		border-radius: 4px;
-		border: 1px solid #9e9e9e;
-		background: #f5f5f5;
-		box-shadow: none;
+		border-radius: 8px;
+		border: 1px solid var(--mypet-border-inner);
+		background: var(--mypet-surface-raised);
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 	}
 	.mypet-actions {
 		margin: 0 auto;
-		padding: 0.5rem 0.2rem 0;
+		padding: 0.55rem 0.65rem;
 		display: flex;
 		flex-wrap: wrap; /* evită scroll orizontal pe lățimi mici */
 		gap: 0.4rem 0.45rem;
@@ -883,6 +930,10 @@
 		min-width: 0;
 		box-sizing: border-box;
 		position: relative; /* pentru legendă absolute */
+		background: var(--mypet-surface-panel);
+		border: 1px solid var(--mypet-border-outer);
+		border-radius: 12px;
+		box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
 	}
 	.mypet-btn {
 		display: inline-flex;
@@ -901,9 +952,13 @@
 		color: #fff;
 	}
 	.mypet-btn-secondary {
-		background: #fff8e1;
-		color: #5d4037;
-		border-color: #ffcc80;
+		background: rgba(30, 41, 59, 0.85);
+		color: var(--mypet-text);
+		border-color: var(--mypet-border-inner);
+	}
+	.mypet-btn-secondary:hover {
+		background: rgba(51, 65, 85, 0.95);
+		border-color: rgba(148, 163, 184, 0.35);
 	}
 	/* Pepsi blue pentru "Adaugă un pet" */
 	.mypet-btn-add {
@@ -912,9 +967,9 @@
 		border-color: transparent;
 	}
 	.mypet-btn-counter {
-		background: #f5e39b; /* galben */
-		color: #5c3c00;
-		border-color: #d2b27a;
+		background: rgba(251, 191, 36, 0.12);
+		color: #fde68a;
+		border-color: rgba(251, 191, 36, 0.4);
 		cursor: default;
 		font-size: 0.72rem;
 		padding: 0.28rem 0.5rem;
@@ -961,7 +1016,7 @@
 		gap: 0.25rem;
 		font-size: 0.65rem;
 		font-weight: 900;
-		color: #5c3c00;
+		color: var(--mypet-text-muted);
 	}
 	.mypet-legend-swatch {
 		width: 10px;
