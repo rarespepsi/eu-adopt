@@ -12,22 +12,31 @@
 	}
 	body.page-login #main_wrap {
 		position: relative;
-		min-height: 100vh;
+		min-height: 100svh;
+		min-height: 100dvh;
 		display: flex;
 		flex-direction: column;
 		padding: 0;
 		margin: 0;
 	}
-	body.page-login #main_content {
+	/* Înălțime clară sub A0 fix + centrare verticală în zona vizibilă (tabletă / mobile URL bar).
+	   Selector cu :not(...) ca să bată regula #main_content { padding-top: nav } din navbar-a0-secured. */
+	body.page-login:not(.page-home-v2):not(.page-animale) #main_content {
 		position: relative;
 		flex: 1 1 auto;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: clamp(1.75rem, 5vw, 3rem) clamp(1.25rem, 4vw, 2rem);
+		box-sizing: border-box !important;
+		/* O singură „fereastră” = viewport; padding-top rezervă A0 fix; flex centrează cardul în rest. */
+		min-height: 100svh;
+		min-height: 100dvh;
+		padding-top: var(--nav-height, 56px) !important;
+		padding-left: clamp(1.25rem, 4vw, 2rem) !important;
+		padding-right: clamp(1.25rem, 4vw, 2rem) !important;
+		padding-bottom: clamp(1.25rem, 4vw, 2rem) !important;
 		background: transparent !important;
 		box-shadow: none !important;
-		min-height: 0;
 	}
 	body.page-login .login-main {
 		position: relative;

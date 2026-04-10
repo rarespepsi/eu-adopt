@@ -584,7 +584,7 @@ class AdoptionRequest(models.Model):
 class CollaboratorServiceOffer(models.Model):
     """
     Ofertă simplă postată de colaborator (cabinet / servicii): imagine, titlu, scurtă descriere,
-    preț opțional și/sau discount %. Publică pe /oferte-parteneri/; vizitatorul poate
+    preț opțional și/sau discount %. Afișată în Servicii; vizitatorul poate
     cere pe email datele de contact ale cabinetului (fără programări în platformă).
 
     partner_kind = canal la creare (snapshot): S3 cabinet / S5 servicii / S4 magazin în pagina Servicii.

@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ offer.title }} | Oferte parteneri | EU Adopt{% endblock %}
+{% block title %}{{ offer.title }} | Servicii | EU Adopt{% endblock %}
 {% block body_class %}page-oferta-partener-detail{% endblock %}
 
 {% block content %}
 <section class="oferte-d-wrap" aria-label="Detaliu ofertă">
 	<div class="oferte-d-inner">
-		<p class="oferte-d-back"><a href="{% url 'public_offers_list' %}">← Toate ofertele</a></p>
+		<p class="oferte-d-back"><a href="{% url 'servicii' %}">← Servicii</a></p>
 		<article class="oferte-d-card">
 			{% if offer.image %}
 			<div class="oferte-d-img-wrap">

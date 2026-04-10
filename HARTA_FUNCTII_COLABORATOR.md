@@ -98,7 +98,6 @@ Document scurt de orientare pentru zona **Magazinul meu / Oferte**, flux public 
 
 ## 5) Flux public oferte
 
-- `public_offers_list_view`
   - Lista publică de oferte valide.
 
 - `public_offer_detail_view`

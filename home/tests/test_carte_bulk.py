@@ -76,7 +76,6 @@ _CARTE_GET_CASES = [
     ("collab_offer_edit", {"pk": 999999}, ""),
     ("collab_offer_toggle_active", {"pk": 999999}, ""),
     ("collab_offer_delete", {"pk": 999999}, ""),
-    ("public_offers_list", {}, ""),
     ("public_offer_detail", {"pk": 999999}, ""),
     ("public_offer_request", {"pk": 999999}, ""),
     ("mypet_add", {}, ""),

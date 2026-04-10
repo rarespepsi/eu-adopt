@@ -108,9 +108,9 @@ class Carte41_60Tests(TestCase):
         r = c.get(reverse("i_love"))
         self.assertEqual(r.status_code, 200)
 
-    def test_44_public_offers_list_200(self):
-        r = Client().get(reverse("public_offers_list"))
-        self.assertEqual(r.status_code, 200)
+    def test_44_oferte_parteneri_list_removed_404(self):
+        r = Client().get("/oferte-parteneri/")
+        self.assertEqual(r.status_code, 404)
 
     def test_45_public_offer_detail_200(self):
         _, offer = _collab_user_with_offer()

@@ -1,4 +1,5 @@
 from django.urls import path
+
 from . import views
 
 urlpatterns = [
@@ -66,7 +67,6 @@ urlpatterns = [
     path('magazinul-meu/oferte/<int:pk>/editeaza/', views.collab_offer_edit_view, name='collab_offer_edit'),
     path('magazinul-meu/oferte/<int:pk>/toggle-active/', views.collab_offer_toggle_active_view, name='collab_offer_toggle_active'),
     path('magazinul-meu/oferte/<int:pk>/sterge/', views.collab_offer_delete_view, name='collab_offer_delete'),
-    path('oferte-parteneri/', views.public_offers_list_view, name='public_offers_list'),
     path('oferte-parteneri/<int:pk>/', views.public_offer_detail_view, name='public_offer_detail'),
     path('oferte-parteneri/<int:pk>/vreau/', views.public_offer_request_view, name='public_offer_request'),
     path('mypet/add/', views.mypet_add_view, name='mypet_add'),

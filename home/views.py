@@ -1531,6 +1531,10 @@ def home_view(request):
         "wishlist_ids": wishlist_ids,
         "home_burtiera_text": _get_home_burtiera_text(),
         "home_burtiera_speed_seconds": _get_home_burtiera_speed_seconds(),
+        "home_site_note_show_mypet": _user_can_use_mypet(request),
+        "home_site_note_show_ilove": bool(request.user.is_authenticated),
+        "home_site_note_show_publicitate": _user_can_use_publicitate(request),
+        "home_site_note_show_magazinul_meu": _user_can_use_magazinul_meu(request),
     })
 
 
@@ -7187,45 +7191,6 @@ def collab_offer_edit_view(request, pk: int):
             "tf_species_cat": bool(offer.species_cat),
             "tf_species_other": bool(offer.species_other),
         },
-    )
-
-
-def _animal_listing_for_public_offer_match(request):
-    """
-    Acceptă ?for_animal=<pk> (AnimalListing).
-    Public: doar anunț publicat; proprietarul autentificat poate folosi și fișa nepublicată.
-    """
-    raw = (request.GET.get("for_animal") or "").strip()
-    if not raw:
-        return None
-    try:
-        pk = int(raw)
-    except (ValueError, TypeError):
-        return None
-    listing = AnimalListing.objects.filter(pk=pk).first()
-    if not listing:
-        return None
-    if listing.is_published:
-        return listing
-    user = getattr(request, "user", None)
-    if user and user.is_authenticated and listing.owner_id == user.pk:
-        return listing
-    return None
-
-
-def public_offers_list_view(request):
-    offers = list(
-        _collab_offer_valid_public_qs(
-            CollaboratorServiceOffer.objects.filter(is_active=True).select_related("collaborator")
-        ).order_by("-created_at")[:200]
-    )
-    match_listing = _animal_listing_for_public_offer_match(request)
-    if match_listing:
-        offers = [o for o in offers if animal_listing_matches_collab_offer_targets(o, match_listing)]
-    return render(
-        request,
-        "anunturi/oferte_parteneri.html",
-        {"offers": offers},
     )
 
 

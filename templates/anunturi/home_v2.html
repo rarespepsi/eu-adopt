@@ -131,7 +131,11 @@
 						</section>
 						<section class="home-a1-site-note-sec">
 							<h3 class="home-a1-site-note-h3"><a href="{% url 'pets_all' %}">Prietenul tău</a></h3>
-							<p>Listă cu animale disponibile; filtre; deschiderea unei fișe pentru detalii, mesaje și cerere de adopție. Inimioara trimite animalul în <a href="{% url 'i_love' %}">I Love</a>.</p>
+							{% if user.is_authenticated %}
+							<p>Listă cu animale disponibile; filtre; deschiderea unei fișe pentru detalii, mesaje și cerere de adopție. Inimioara salvează animalul în <a href="{% url 'i_love' %}">I Love</a>.</p>
+							{% else %}
+							<p>Listă cu animale disponibile; filtre; deschiderea unei fișe pentru detalii, mesaje și cerere de adopție. După ce intri în cont, poți folosi inimioara ca să salvezi animale în pagina I Love.</p>
+							{% endif %}
 						</section>
 						<section class="home-a1-site-note-sec">
 							<h3 class="home-a1-site-note-h3">Fișă animal (subpagină)</h3>
@@ -161,34 +165,46 @@
 							<h3 class="home-a1-site-note-h3"><a href="{% url 'shop_magazin_foto' %}">Shop → Magazin foto („cumpără o poză”)</a></h3>
 							<p>Achiziționezi o fotografie/licență de sprijin; suma este orientată către ONG-uri – este sprijin financiar, nu cumpărare animal.</p>
 						</section>
+						{% if home_site_note_show_mypet %}
 						<section class="home-a1-site-note-sec">
 							<h3 class="home-a1-site-note-h3"><a href="{% url 'mypet' %}">MyPet</a></h3>
 							<p>Panoul tău dacă ai cont: anunțuri proprii, mesaje, adopții în derulare. Promovarea unui anunț = vizibilitate, nu vânzare.</p>
 						</section>
+						{% endif %}
+						{% if home_site_note_show_ilove %}
 						<section class="home-a1-site-note-sec">
 							<h3 class="home-a1-site-note-h3"><a href="{% url 'i_love' %}">I Love</a></h3>
 							<p>Lista animalelor pe care le-ai marcat cu inimioara, pentru revenire ușoară la ele.</p>
 						</section>
-						<section class="home-a1-site-note-sec">
-							<h3 class="home-a1-site-note-h3"><a href="{% url 'public_offers_list' %}">Oferte parteneri</a></h3>
-							<p>Oferte de la colaboratori (reduceri, servicii); verifici condițiile pe fiecare ofertă.</p>
-						</section>
+						{% endif %}
+						{% if home_site_note_show_publicitate %}
 						<section class="home-a1-site-note-sec">
 							<h3 class="home-a1-site-note-h3"><a href="{% url 'publicitate_harta' %}">Publicitate</a></h3>
 							<p>Rezervare spații publicitare (ex. pe materiale PDF) pentru brandul tău sau organizația ta – nu pentru comercializarea animalelor.</p>
 						</section>
+						{% endif %}
+						{% if home_site_note_show_magazinul_meu %}
 						<section class="home-a1-site-note-sec">
 							<h3 class="home-a1-site-note-h3"><a href="{% url 'magazinul_meu' %}">Magazinul meu</a></h3>
 							<p>Zonă pentru parteneri colaboratori: oferte și setări legate de contul de partener.</p>
 						</section>
+						{% endif %}
 						<section class="home-a1-site-note-sec">
 							<h3 class="home-a1-site-note-h3">Cont, înregistrare, legale</h3>
+							{% if user.is_authenticated %}
 							<p><a href="{% url 'account' %}">Contul meu</a>, <a href="{% url 'signup_choose_type' %}">înregistrare</a>, <a href="{% url 'contact' %}">Contact</a>, <a href="{% url 'termeni' %}">Termeni</a> și politicile din subsol – pentru drepturi, confidențialitate și reguli de utilizare.</p>
+							{% else %}
+							<p><a href="{% url 'login' %}">Intră în cont</a>, <a href="{% url 'signup_choose_type' %}">înregistrare</a>, <a href="{% url 'contact' %}">Contact</a>, <a href="{% url 'termeni' %}">Termeni</a> și politicile din subsol – pentru drepturi, confidențialitate și reguli de utilizare.</p>
+							{% endif %}
 						</section>
 					</div>
 					<div class="home-a1-site-note-cta" role="region" aria-label="Implicare">
 						<p class="home-a1-site-note-cta-title">Ajută și tu!</p>
+						{% if user.is_authenticated %}
 						<p class="home-a1-site-note-cta-text">Distribuie EU-Adopt, sprijină un transport sau o cușcă, cumpără o poză din magazinul foto sau promovează un anunț pentru vizibilitate – mereu fără cumpărare sau vânzare de animale pe site.</p>
+						{% else %}
+						<p class="home-a1-site-note-cta-text">Distribuie EU-Adopt, sprijină un transport sau o cușcă sau cumpără o poză din magazinul foto – mereu fără cumpărare sau vânzare de animale pe site.</p>
+						{% endif %}
 					</div>
 				</div>
 			</div>

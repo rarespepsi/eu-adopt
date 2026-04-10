@@ -59,7 +59,6 @@ class StaticViewSitemap(EuadoptSitemap):
             "politica_cookie",
             "politica_servicii_platite",
             "politica_moderare",
-            "public_offers_list",
             "custi",
         ]
 

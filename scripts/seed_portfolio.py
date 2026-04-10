@@ -10,6 +10,10 @@ Anunțurile PF folosesc bulk_create (nu apelează AnimalListing.save() → nu se
 Rulare (din rădăcina proiectului):
   python scripts/seed_portfolio.py
   python scripts/seed_portfolio.py --clear   # șterge doar rândurile [seed] apoi re-populează
+
+Pentru QA adopție (inimioare pe Servicii + transport în aceeași zonă), după `_align_user_roles.py` rulează:
+  python scripts/qa_adoption_transport_setup.py
+  (vezi `QA_REGISTRU_CONSTATARI.md` — Lot **AD**).
 """
 from __future__ import annotations
 

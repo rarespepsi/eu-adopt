@@ -5,7 +5,7 @@ Document pentru **administrare și dezvoltare**. Descrie fluxul dintre **utiliza
 ## Roluri
 
 - **Colaborator** (cont cu tip partener cabinet / servicii / magazin): publică oferte din **Magazinul meu → Control oferte** (`/magazinul-meu/oferte/`).
-- **Utilizator** (autentificat sau nu): vede ofertele în **Oferte parteneri** și în zona Servicii (unde UI-ul este înghețat separat); poate cere datele prin **„Vreau oferta”**.
+- **Utilizator** (autentificat sau nu): vede ofertele în **pagina Servicii** (`/servicii/`); nu mai există listă separată la `/oferte-parteneri/` (404). Detaliu ofertă: `/oferte-parteneri/<id>/`; poate cere datele prin **„Vreau oferta”** (POST la `oferte-parteneri/<id>/vreau/`).
 
 ## Trei fișe UI (după bifa colaboratorului)
 

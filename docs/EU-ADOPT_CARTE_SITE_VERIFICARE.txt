@@ -96,7 +96,7 @@ Partea C — Pagini publice principale (GET)
 [x] 41. `/transport/` | `transport` | Pagina transport utilizator
 [x] 42. `/custi/` | `custi` | Pagina cuști
 [x] 43. `/i-love/` | `i_love` | I Love
-[x] 44. `/oferte-parteneri/` | `public_offers_list` | Listă oferte publice
+[x] 44. `/oferte-parteneri/` | (eliminat) | Listă oferte publice — ruta scoasă; GET → 404
 [x] 45. `/oferte-parteneri/<pk>/` | `public_offer_detail` | Detaliu ofertă *
 [x] 46. `/contact/` | `contact` | Formular contact
 [x] 47. `/publicitate/` | `publicitate_harta` | Hartă publicitate (utilizatori autorizați)
@@ -244,11 +244,42 @@ Partea M — Verificări transversale (fără URL unic)
 
 Partea N — Matrice rapidă rol × zonă
 -------------------------------------------------
-Bifează după ce ai parcurs zona cu acel tip de cont.
+Bifează după ce ai parcurs zona cu acel tip de cont. (Utilizatori test: vezi `QA_MATRICE_UTILIZATORI.md`.)
 
+**Vizitator (delogat)** — parcurgere din navbar + subsol + nota A1 (logo)
+- [ ] Acasă
+- [ ] Prietenul tău `/pets/`
+- [ ] Servicii (inclusiv oferte în pagină, fără listă `/oferte-parteneri/`)
+- [ ] Transport, Shop (+ subpagini publice), Cuști (din CTA Acasă dacă folosiți)
+- [ ] Termeni, Contact, politici subsol
+- [ ] Nota A1: fără MyPet / I Love / Publicitate / Magazinul meu în ghid
+
+**Persoană fizică (PF)** — ex. `dpf`
+- [ ] Navbar: MyPet, I Love, Cont
+- [ ] MyPet listă + fișă; I Love; Cont / editează
+- [ ] Servicii + „Vreau oferta” unde e cazul
+
+**ONG** — ex. `rarespepsi`, `radu`
+- [ ] Cont organizație (public vs privat) conform așteptărilor
+
+**Colaborator magazin** — ex. `dm`
+- [ ] Magazinul meu → control oferte
+
+**Colaborator servicii** — ex. `dg1`, `dg2`
+- [ ] Panou My list Servicii + oferte demo
+
+**Colaborator cabinet** — ex. `nccristescu`
+- [ ] MyListVet + oferte / Servicii
+
+**Colaborator transport** — ex. `rares`
+- [ ] `/collab/transport/` panou operator
+
+**Staff** — ex. `rares` (admin)
+- [ ] Analiză, Reclama, PUB (dacă aplicabil contului)
 
 Notă tehnică
 -------------------------
+- **Oferte parteneri:** nu mai există pagină de **listă** la **`/oferte-parteneri/`** (GET → 404). Ofertele publice sunt pe **`/servicii/`**; **detaliu** + **POST „vreau”** rămân la **`/oferte-parteneri/<id>/`** și **`.../vreau/`**.
 - **Prietenul tău (PT)** este servit la **`/pets/`** (`name=pets_all`), nu la un path `prietenul-tau` separat în `urls.py`.
 - Rutele cu **`<pk>`**, **`<req_id>`**, **`<job_id>`**, **`<token>`** necesită valori reale din baza de date sau din email.
 - Acest document acoperă **toate** intrările din `home.urls` și **`/admin/`** + **`media/`** din `euadopt_final.urls`.
@@ -318,7 +349,7 @@ Fiecare rând = o intrare `path()` din `home/urls.py`. Verifică că ruta răspu
 [x] 193. `'magazinul-meu/oferte/<int:pk>/editeaza/'` | `collab_offer_edit`
 [x] 194. `'magazinul-meu/oferte/<int:pk>/toggle-active/'` | `collab_offer_toggle_active`
 [x] 195. `'magazinul-meu/oferte/<int:pk>/sterge/'` | `collab_offer_delete`
-[x] 196. `'oferte-parteneri/'` | `public_offers_list`
+[x] 196. `'oferte-parteneri/'` | (eliminat — listă oferte)
 [x] 197. `'oferte-parteneri/<int:pk>/'` | `public_offer_detail`
 [x] 198. `'oferte-parteneri/<int:pk>/vreau/'` | `public_offer_request`
 [x] 199. `'mypet/add/'` | `mypet_add`
