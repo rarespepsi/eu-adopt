@@ -5,7 +5,7 @@
 {% block body_class %}page-ilove{% endblock %}
 
 {% block extra_css_after %}
-<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=10" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=11" type="text/css" media="screen" />
 {% endblock %}
 
 {% block content %}
@@ -25,52 +25,76 @@
 		<div class="ilove-wire__main">
 			<header class="ilove-wire__head">
 				<h1>❤️ I Love</h1>
-				<p>Aici apar animalele pe care le-ai marcat cu inimioară.</p>
+				<p>Stânga: animale cu inimioară. Dreapta: coșul tău (oferte și produse marcate cu 🛒).</p>
 			</header>
 
-			<div class="ilove-main-caseta" aria-label="Lista animalelor bifate cu inimioara">
-				<div class="ilove-pets-grid">
-					{% for pet in pets %}
-						<article class="ilove-pet-card">
-							{% if pet.listing_available %}
-							<a href="{% url 'pets_single' pet.pk %}" class="ilove-pet-card-hit">
-							{% else %}
-							<div class="ilove-pet-card-hit ilove-pet-card-hit--muted" title="Anunț indisponibil sau retras">
-							{% endif %}
-								<div class="ilove-pet-card-photo">
-									<button
-										type="button"
-										class="wish-btn {% if wishlist_ids and pet.pk in wishlist_ids %}is-active{% endif %}"
-										data-animal-id="{{ pet.pk }}"
-										aria-pressed="{% if wishlist_ids and pet.pk in wishlist_ids %}true{% else %}false{% endif %}"
-										aria-label="{% if wishlist_ids and pet.pk in wishlist_ids %}Scoate din I Love{% else %}Adaugă la I Love{% endif %}"
-										title="Scoate din I Love"
-									>
-										<svg viewBox="0 0 24 24" aria-hidden="true">
-											<path class="wish-heart" d="M12 21s-7-4.6-10-9.2C-0.3 7.9 2.1 4 6 4c2 0 3.4 1.1 4 2 0.6-0.9 2-2 4-2 3.9 0 6.3 3.9 4 7.8C19 16.4 12 21 12 21z"/>
-										</svg>
-									</button>
-									{% if pet.imagine_url %}
-									<img src="{{ pet.imagine_url }}" alt="" loading="lazy" />
+			<div class="ilove-main-caseta" aria-label="I Love — animale și coș">
+				<div class="ilove-main-split">
+					<section class="ilove-main-split__pane ilove-main-split__pane--pets" aria-label="Animale cu inimioara">
+						<h2 class="ilove-split-heading">Cu inimioară</h2>
+						<div class="ilove-pets-grid">
+							{% for pet in pets %}
+								<article class="ilove-pet-card">
+									{% if pet.listing_available %}
+									<a href="{% url 'pets_single' pet.pk %}" class="ilove-pet-card-hit">
 									{% else %}
-									<img src="{% static pet.imagine_fallback %}" alt="" loading="lazy" />
+									<div class="ilove-pet-card-hit ilove-pet-card-hit--muted" title="Anunț indisponibil sau retras">
+									{% endif %}
+										<div class="ilove-pet-card-photo">
+											<button
+												type="button"
+												class="wish-btn {% if wishlist_ids and pet.pk in wishlist_ids %}is-active{% endif %}"
+												data-animal-id="{{ pet.pk }}"
+												aria-pressed="{% if wishlist_ids and pet.pk in wishlist_ids %}true{% else %}false{% endif %}"
+												aria-label="{% if wishlist_ids and pet.pk in wishlist_ids %}Scoate din I Love{% else %}Adaugă la I Love{% endif %}"
+												title="Scoate din I Love"
+											>
+												<svg viewBox="0 0 24 24" aria-hidden="true">
+													<path class="wish-heart" d="M12 21s-7-4.6-10-9.2C-0.3 7.9 2.1 4 6 4c2 0 3.4 1.1 4 2 0.6-0.9 2-2 4-2 3.9 0 6.3 3.9 4 7.8C19 16.4 12 21 12 21z"/>
+												</svg>
+											</button>
+											{% if pet.imagine_url %}
+											<img src="{{ pet.imagine_url }}" alt="" loading="lazy" />
+											{% else %}
+											<img src="{% static pet.imagine_fallback %}" alt="" loading="lazy" />
+											{% endif %}
+										</div>
+										<div class="ilove-pet-meta">
+											<div class="ilove-pet-name">{{ pet.nume }}</div>
+											<div class="ilove-pet-age">{{ pet.varsta }}</div>
+										</div>
+									{% if pet.listing_available %}
+									</a>
+									{% else %}
+									</div>
+									{% endif %}
+								</article>
+							{% empty %}
+								<div class="ilove-empty">
+									Nu ai niciun câine salvat încă. Apasă inimioara de pe poze.
+								</div>
+							{% endfor %}
+						</div>
+					</section>
+					<section class="ilove-main-split__pane ilove-main-split__pane--cart" aria-label="Cos cumparaturi">
+						<h2 class="ilove-split-heading">Coșul meu</h2>
+						<div class="ilove-cart-list">
+							{% for item in cart_items %}
+							<div class="ilove-cart-row">
+								<div class="ilove-cart-row-main">
+									{% if item.detail_url %}
+									<a href="{{ item.detail_url }}" class="ilove-cart-row-link">{{ item.title }}</a>
+									{% else %}
+									<span class="ilove-cart-row-link ilove-cart-row-link--text">{{ item.title }}</span>
 									{% endif %}
 								</div>
-								<div class="ilove-pet-meta">
-									<div class="ilove-pet-name">{{ pet.nume }}</div>
-									<div class="ilove-pet-age">{{ pet.varsta }}</div>
-								</div>
-							{% if pet.listing_available %}
-							</a>
-							{% else %}
+								<button type="button" class="ilove-cart-remove is-active" data-site-cart-toggle data-kind="{{ item.kind }}" data-ref-key="{{ item.ref_key }}" data-title="{{ item.title|escape }}" data-detail-url="{{ item.detail_url|default:''|escape }}" aria-pressed="true" title="Scoate din coș">🛒</button>
 							</div>
-							{% endif %}
-						</article>
-					{% empty %}
-						<div class="ilove-empty">
-							Nu ai niciun câine salvat încă. Apasă inimioara de pe poze.
+							{% empty %}
+							<p class="ilove-cart-empty">Nu ai produse în coș. Apasă 🛒 pe oferte în Servicii sau pe produse în Shop.</p>
+							{% endfor %}
 						</div>
-					{% endfor %}
+					</section>
 				</div>
 			</div>
 		</div>

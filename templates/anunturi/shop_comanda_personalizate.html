@@ -12,13 +12,48 @@
 	.shop-comanda-page p { margin-bottom: 1rem; line-height: 1.5; color: #333; }
 	.shop-comanda-page .back { display: inline-block; margin-top: 1.5rem; padding: 0.5rem 1rem; background: #ffca28; color: #4e342e; font-weight: 700; text-decoration: none; border-radius: 8px; }
 	.shop-comanda-page .back:hover { background: #ffb300; }
+	.shop-page-cart-btn {
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 36px;
+		height: 36px;
+		border: none;
+		border-radius: 50%;
+		background: #e3f2fd;
+		color: #1565c0;
+		font-size: 16px;
+		cursor: pointer;
+		box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+	}
+	.shop-page-cart-btn.is-active {
+		background: #1565c0;
+		color: #fff;
+	}
 </style>
 {% endblock %}
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
 	<main id="SHW" aria-label="Shop EU-ADOPT – Comandă produse personalizate">
-		<div class="shop-comanda-page">
+		<div class="shop-comanda-page" style="position:relative;padding-top:2.5rem;">
+			{% if user.is_authenticated %}
+			<button type="button"
+				class="shop-page-cart-btn{% if site_cart_ref_keys and 'shop_custom:page' in site_cart_ref_keys %} is-active{% endif %}"
+				data-site-cart-toggle
+				data-kind="shop_custom"
+				data-ref-key="shop_custom:page"
+				data-title="Comandă produse personalizate (Shop)"
+				data-detail-url="{% url 'shop_comanda_personalizate' %}"
+				aria-pressed="{% if site_cart_ref_keys and 'shop_custom:page' in site_cart_ref_keys %}true{% else %}false{% endif %}"
+				title="Adaugă sau scoate din coșul I Love"
+			>🛒</button>
+			{% endif %}
 			<h1>Comandă produse personalizate pentru animale de companie</h1>
 			<p>Tricouri, hanorace, șepci, zgărzi gravate, medalioane cu nume, tag-uri QR și multe alte idei cadou – personalizate pentru prietenul tău.</p>
 			<p>Pentru comenzi și oferte personalizate, contactați-ne (formular sau email va fi disponibil aici).</p>

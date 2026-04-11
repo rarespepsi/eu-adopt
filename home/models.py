@@ -334,6 +334,43 @@ class WishlistItem(models.Model):
         return f"{self.user} ♥ {self.animal_id}"
 
 
+class SiteCartItem(models.Model):
+    """
+    Coș „I Love”: produse/oferte marcate din Servicii, Shop, personalizate, magazin foto.
+    ref_key unic per utilizator (ex. servicii_offer:12, shop:dogs:3, shop_foto:40).
+    """
+
+    KIND_SERVICII_OFFER = "servicii_offer"
+    KIND_SHOP = "shop"
+    KIND_SHOP_CUSTOM = "shop_custom"
+    KIND_SHOP_FOTO = "shop_foto"
+    KIND_CHOICES = [
+        (KIND_SERVICII_OFFER, "Ofertă Servicii"),
+        (KIND_SHOP, "Shop"),
+        (KIND_SHOP_CUSTOM, "Shop produse personalizate"),
+        (KIND_SHOP_FOTO, "Magazin foto"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="site_cart_items")
+    ref_key = models.CharField(max_length=96, db_index=True)
+    kind = models.CharField(max_length=32, choices=KIND_CHOICES)
+    title = models.CharField(max_length=220)
+    detail_url = models.CharField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "ref_key"], name="home_sitecartitem_user_refkey_uniq"),
+        ]
+        indexes = [
+            models.Index(fields=["user", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user} 🛒 {self.ref_key}"
+
+
 @receiver(post_save, sender=User)
 def ensure_account_profile(sender, instance: User, created: bool, **kwargs):
     """

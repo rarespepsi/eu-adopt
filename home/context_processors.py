@@ -1,4 +1,4 @@
-from .models import AccountProfile, WishlistItem, PetMessage, CollabServiceMessage
+from .models import AccountProfile, WishlistItem, SiteCartItem, PetMessage, CollabServiceMessage
 from .data import DEMO_DOGS
 from django.urls import reverse
 from django.utils import timezone
@@ -56,10 +56,16 @@ def wishlist_counts(request):
     """
     user = getattr(request, "user", None)
     wishlist_count = 0
+    site_cart_count = 0
+    site_cart_ref_keys = frozenset()
     nav_avatar_url = None
     if user and user.is_authenticated:
         try:
             wishlist_count = WishlistItem.objects.filter(user=user).count()
+            site_cart_ref_keys = frozenset(
+                SiteCartItem.objects.filter(user=user).values_list("ref_key", flat=True)
+            )
+            site_cart_count = len(site_cart_ref_keys)
             profile = getattr(user, "profile", None)
             if profile and profile.poza_1:
                 try:
@@ -68,6 +74,8 @@ def wishlist_counts(request):
                     nav_avatar_url = None
         except Exception:
             wishlist_count = 0
+            site_cart_count = 0
+            site_cart_ref_keys = frozenset()
             nav_avatar_url = None
 
     # Contoare animale – demo global (aceleași cifre ca pe Home, bazate pe DEMO_DOGS)
@@ -185,6 +193,10 @@ def wishlist_counts(request):
 
     return {
         "wishlist_count": wishlist_count,
+        "site_cart_count": site_cart_count,
+        "site_cart_ref_keys": site_cart_ref_keys,
+        "site_cart_toggle_url": reverse("site_cart_toggle"),
+        "adoption_bonus_cart_unlock_url": reverse("adoption_bonus_cart_unlock"),
         "nav_avatar_url": nav_avatar_url,
         "active_animals": active_animals,
         "adopted_animals": adopted_animals,

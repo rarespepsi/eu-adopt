@@ -14,6 +14,10 @@ Rulare (din rădăcina proiectului):
 Pentru QA adopție (inimioare pe Servicii + transport în aceeași zonă), după `_align_user_roles.py` rulează:
   python scripts/qa_adoption_transport_setup.py
   (vezi `QA_REGISTRU_CONSTATARI.md` — Lot **AD**).
+
+Pentru demo Neamț / Piatra Neamț pe toate canalele (cabinet + saloane + magazin):
+  python scripts/seed_portfolio.py --neamt-zone
+  (sau după seed complet: același flag alăturat --clear dacă refaci tot).
 """
 from __future__ import annotations
 
@@ -36,20 +40,25 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
-from home.models import AnimalListing, CollaboratorServiceOffer
+from home.models import AnimalListing, CollaboratorServiceOffer, UserProfile
 
 User = get_user_model()
 
 # Aliniat cu scripts/_align_user_roles.py
 PF_USERS = ["dpf", "e2e_pf", "e2e_staff"]
 ORG_USERS = ["rarespepsi", "radu"]
+# Transportatorii nu au oferte în grila Servicii — doar fluxul /transport/.
 COLLAB_OFFERS = [
     ("nccristescu", CollaboratorServiceOffer.PARTNER_KIND_CABINET, "Cabinet"),
     ("dg1", CollaboratorServiceOffer.PARTNER_KIND_SERVICII, "Servicii"),
     ("dg2", CollaboratorServiceOffer.PARTNER_KIND_SERVICII, "Servicii"),
     ("dm", CollaboratorServiceOffer.PARTNER_KIND_MAGAZIN, "Magazin"),
-    ("rares", CollaboratorServiceOffer.PARTNER_KIND_SERVICII, "Transport"),
 ]
+
+# Aliniere QA inimioare Servicii (același județ ca adoptatorul Neamț): profil colaborator, nu câmp pe ofertă.
+NEAMT_JUD = "Neamț"
+NEAMT_ORAS = "Piatra Neamț"
+COLLAB_USERS_NEAMT_ZONE = ("nccristescu", "dg1", "dg2", "dm")
 
 SEED_NAME_PREFIX = "[seed] "
 SEED_TITLE_PREFIX = "[seed] "
@@ -127,6 +136,27 @@ def _seed_animal_photo_1_rel() -> str:
 
 def _get_user(username: str):
     return User.objects.filter(username__iexact=username.strip()).first()
+
+
+def apply_neamt_zone_collab_profiles() -> int:
+    """Setează județ/oraș firmă + persoană pentru colaboratorii cu oferte în grila S3/S4/S5."""
+    n = 0
+    for uname in COLLAB_USERS_NEAMT_ZONE:
+        u = _get_user(uname)
+        if not u:
+            print(f"  [neamt-zone] Skip: lipsește user {uname!r}")
+            continue
+        prof, _ = UserProfile.objects.get_or_create(user=u)
+        prof.company_judet = NEAMT_JUD
+        prof.company_oras = NEAMT_ORAS
+        prof.judet = NEAMT_JUD
+        prof.oras = NEAMT_ORAS
+        prof.save(
+            update_fields=["company_judet", "company_oras", "judet", "oras", "updated_at"]
+        )
+        print(f"  [neamt-zone] {uname}: {NEAMT_JUD} / {NEAMT_ORAS}")
+        n += 1
+    return n
 
 
 def clear_seed_rows() -> None:
@@ -249,6 +279,11 @@ def main() -> None:
         action="store_true",
         help="Remove existing [seed] rows before inserting.",
     )
+    parser.add_argument(
+        "--neamt-zone",
+        action="store_true",
+        help=f"După seed: setează profil colaboratori {', '.join(COLLAB_USERS_NEAMT_ZONE)} → {NEAMT_JUD} / {NEAMT_ORAS} (inimioare QA).",
+    )
     args = parser.parse_args()
 
     if args.clear:
@@ -266,6 +301,10 @@ def main() -> None:
 
     for username, pkind, label in COLLAB_OFFERS:
         total_o += seed_offers_for_collab(username, pkind, label)
+
+    if args.neamt_zone:
+        print("Neamț zone (profil colaboratori):")
+        apply_neamt_zone_collab_profiles()
 
     print(f"Done. New animals this run: {total_a}, new offers this run: {total_o}.")
 

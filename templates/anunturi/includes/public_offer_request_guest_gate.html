@@ -1,8 +1,8 @@
 {% url 'public_offer_detail' offer.pk as offer_next %}
 <p class="public-offer-auth-gate__text">
-	Intră în cont sau creează cont persoană fizică ca să soliciți oferta.
+	Intră în cont sau creează cont ca să soliciți oferta.
 </p>
 <div class="public-offer-auth-gate__actions">
 	<a class="public-offer-auth-gate__btn" href="{% url 'login' %}?next={{ offer_next|urlencode }}">Intră</a>
-	<a class="public-offer-auth-gate__btn public-offer-auth-gate__btn--secondary" href="{% url 'signup_pf' %}?next={{ offer_next|urlencode }}">Creează cont PF</a>
+	<a class="public-offer-auth-gate__btn public-offer-auth-gate__btn--secondary" href="{% url 'signup_choose_type' %}?next={{ offer_next|urlencode }}">Creează cont</a>
 </div>

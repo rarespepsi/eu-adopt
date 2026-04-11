@@ -386,6 +386,32 @@ body.page-shop-foto .smf-print__photo img {
   font-variant-numeric: tabular-nums;
 }
 
+/* Coș I Love pe „print” */
+.smf-print__site-cart {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  z-index: 4;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: #1565c0;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.smf-print__site-cart.is-active {
+  background: #1565c0;
+  color: #fff;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .smf-print,
   .smf-print__photo img {

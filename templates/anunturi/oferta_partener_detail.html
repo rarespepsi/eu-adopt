@@ -68,7 +68,7 @@
 					<button type="submit" class="oferte-d-cta">Vreau această ofertă</button>
 				</form>
 				{% elif user.is_authenticated %}
-				<p class="oferte-d-only-pf">Solicitarea ofertelor este disponibilă doar cu cont de persoană fizică.</p>
+				<p class="oferte-d-only-pf">Conturile de transportatori nu pot solicita aceste oferte din Servicii; folosește zona Transport.</p>
 				{% else %}
 				<div class="public-offer-auth-gate oferte-d-auth-gate">
 					{% include "anunturi/includes/public_offer_request_guest_gate.html" %}

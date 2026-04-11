@@ -6,6 +6,7 @@ REGULĂ: Orice modificare în home (punct, virgulă, orice) doar cu aprobarea ti
 import json
 import logging
 import random
+import re
 import secrets
 from html import escape
 from datetime import date, datetime
@@ -16,7 +17,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.http import HttpResponse, JsonResponse
-from django.db.models import Case, Count, IntegerField, Max, Q, Sum, When
+from django.db.models import Case, Count, Exists, IntegerField, Max, OuterRef, Q, Sum, When
 from django.db.models import F
 from django.db.models.functions import TruncMonth
 from django.core.files.base import ContentFile
@@ -44,6 +45,7 @@ from .pt_p2_list import PT_P2_PAGE_SIZE, pt_pets_page_context
 from .mail_helpers import email_subject_for_user
 from .models import (
     WishlistItem,
+    SiteCartItem,
     AnimalListing,
     UserAdoption,
     AccountProfile,
@@ -811,6 +813,8 @@ def _send_adoption_reject_adopter_email(ar: AdoptionRequest, *, reason: str = "o
 
 
 SESSION_ADOPTION_BONUS_AR = "adoption_bonus_focus_request_id"
+SESSION_ADOPTION_BONUS_CART_UNLOCK_AR = "adoption_bonus_cart_unlock_ar_id"
+SITE_CART_MAX_ITEMS = 80
 _ADOPTION_BONUS_CODE_ALPH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
 
@@ -916,8 +920,40 @@ def _servicii_bundle_adoption_bonus(request):
 def _servicii_tag_offer_bonus(offer, bundle: dict, county_norm: str) -> None:
     sm = bundle.get("adoption_bonus_selection_by_kind") or {}
     rid = bundle.get("adoption_bonus_request_id")
-    offer.adoption_bonus_show_heart = bool(rid) and bool(county_norm) and _offer_collab_county_norm(offer) == county_norm
+    if not rid:
+        offer.adoption_bonus_show_heart = False
+    elif not (county_norm or "").strip():
+        # Fără județ în cont: inimioare pe toate ofertele (demo / cont incomplet — evită un canal „fără ♥”).
+        offer.adoption_bonus_show_heart = True
+    else:
+        offer.adoption_bonus_show_heart = _offer_collab_county_norm(offer) == county_norm
     offer.adoption_bonus_selected = sm.get(offer.partner_kind) == offer.pk
+    offer.site_cart_ref_key = f"servicii_offer:{offer.pk}"
+
+
+def _safe_site_cart_detail_url(raw: str) -> str:
+    p = (raw or "").strip()
+    if not p.startswith("/") or p.startswith("//"):
+        return ""
+    if "\n" in p or "\r" in p:
+        return ""
+    return p[:500]
+
+
+def _servicii_show_offer_cart(request, bonus_bundle: dict) -> bool:
+    """Coș pe carduri Servicii: ascuns în flux bonus adopție până la „Salvează alegerile” (unlock în sesiune)."""
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated:
+        return False
+    rid = bonus_bundle.get("adoption_bonus_request_id")
+    if not rid:
+        return True
+    unlock = request.session.get(SESSION_ADOPTION_BONUS_CART_UNLOCK_AR)
+    try:
+        unlock_int = int(unlock)
+    except (TypeError, ValueError):
+        unlock_int = None
+    return unlock_int == int(rid)
 
 
 def _new_adoption_bonus_redemption_code() -> str:
@@ -1047,6 +1083,8 @@ def _goodwill_offers_one_per_kind(county_norm: str):
         CollaboratorServiceOffer.PARTNER_KIND_MAGAZIN,
     ):
         base = CollaboratorServiceOffer.objects.filter(is_active=True, partner_kind=kind)
+        if kind == CollaboratorServiceOffer.PARTNER_KIND_SERVICII:
+            base = _servicii_saloane_qs_exclude_transportatori(base)
         candidates = (
             _collab_offer_valid_public_qs(base)
             .select_related("collaborator")
@@ -2547,10 +2585,26 @@ def _attach_public_offer_stock(offer):
     offer.remaining_slots_public = max(0, total - claims)
 
 
+def _servicii_saloane_qs_exclude_transportatori(base_qs):
+    """
+    Grila Saloane (partner_kind=servicii): fără transportatori.
+    Transportatorii folosesc doar fluxul /transport/ (formular + dispatch).
+    """
+    return base_qs.exclude(
+        Q(collaborator__profile__collaborator_type__iexact="transport")
+    ).exclude(
+        Exists(
+            TransportOperatorProfile.objects.filter(user_id=OuterRef("collaborator_id"))
+        )
+    )
+
+
 def _servicii_offers_for_kind(partner_kind: str, max_n: int = 24):
     """Oferte publice pentru S3/S5/S4 după partner_kind (snapshot la creare), nu după bifa curentă din profil."""
     try:
         base = CollaboratorServiceOffer.objects.filter(is_active=True, partner_kind=partner_kind)
+        if partner_kind == CollaboratorServiceOffer.PARTNER_KIND_SERVICII:
+            base = _servicii_saloane_qs_exclude_transportatori(base)
         offers = list(
             _collab_offer_valid_public_qs(base)
             .select_related("collaborator")
@@ -2744,6 +2798,14 @@ def servicii_view(request):
         for off in lst:
             if off is not None:
                 _servicii_tag_offer_bonus(off, bonus_bundle, county_norm)
+    eligible_bonus_kinds = 0
+    if bonus_bundle.get("adoption_bonus_request_id"):
+        kinds_elig = set()
+        for _lst in (vet_offers, groom_offers, shop_offers):
+            for _off in _lst:
+                if _off is not None and getattr(_off, "adoption_bonus_show_heart", False):
+                    kinds_elig.add(_off.partner_kind)
+        eligible_bonus_kinds = len(kinds_elig)
     return render(
         request,
         "anunturi/servicii.html",
@@ -2760,10 +2822,16 @@ def servicii_view(request):
             "adoption_bonus_request_id": bonus_bundle.get("adoption_bonus_request_id"),
             "adoption_bonus_show_banner": bonus_bundle.get("adoption_bonus_show_banner"),
             "adoption_bonus_has_selection": bonus_bundle.get("adoption_bonus_has_selection"),
+            "adoption_bonus_eligible_kind_count": eligible_bonus_kinds,
             "adoption_bonus_toggle_url": reverse("adoption_bonus_offer_toggle"),
+            "adoption_bonus_shop_url": reverse("shop"),
             "can_request_public_collab_offer": _user_can_request_public_collab_offer(
                 request.user
             ),
+            "servicii_show_offer_cart": _servicii_show_offer_cart(request, bonus_bundle),
+            "adoption_bonus_cart_unlock_url": reverse("adoption_bonus_cart_unlock")
+            if bonus_bundle.get("adoption_bonus_request_id")
+            else "",
         },
     )
 
@@ -3101,7 +3169,11 @@ def _shop_magazin_foto_slots_full():
 def shop_magazin_foto_view(request):
     """Magazin foto: același lot inițial ca P2 (PT_P2_PAGE_SIZE), restul prin shop_magazin_foto_more."""
     full = _shop_magazin_foto_slots_full()
-    foto_slots = full[:PT_P2_PAGE_SIZE]
+    foto_slots = []
+    for i in range(min(PT_P2_PAGE_SIZE, len(full))):
+        row = dict(full[i])
+        row["slot_idx"] = i
+        foto_slots.append(row)
     foto_has_more = len(full) > PT_P2_PAGE_SIZE
     foto_next_offset = PT_P2_PAGE_SIZE if foto_has_more else len(full)
     return render(
@@ -3124,7 +3196,12 @@ def shop_magazin_foto_more_view(request):
         offset = 0
     offset = max(0, offset)
     full = _shop_magazin_foto_slots_full()
-    batch = full[offset : offset + PT_P2_PAGE_SIZE]
+    batch_raw = full[offset : offset + PT_P2_PAGE_SIZE]
+    batch = []
+    for j, row in enumerate(batch_raw):
+        r = dict(row)
+        r["slot_idx"] = offset + j
+        batch.append(r)
     next_off = offset + len(batch)
     has_more = next_off < len(full)
     html = render_to_string(
@@ -5050,7 +5127,19 @@ def i_love_view(request):
         elif animal_id in listings:
             pets.append(_i_love_pet_from_listing(listings[animal_id]))
 
-    return render(request, "anunturi/i_love.html", {"pets": pets, "wishlist_ids": set(ids)})
+    cart_items = []
+    if request.user.is_authenticated:
+        try:
+            cart_items = list(
+                SiteCartItem.objects.filter(user=request.user).order_by("-created_at")[:SITE_CART_MAX_ITEMS]
+            )
+        except Exception:
+            cart_items = []
+    return render(
+        request,
+        "anunturi/i_love.html",
+        {"pets": pets, "wishlist_ids": set(ids), "cart_items": cart_items},
+    )
 
 
 @require_POST
@@ -5081,6 +5170,99 @@ def wishlist_toggle_view(request):
         "wish_count": wish_count,
         "user_wishlist_count": user_wishlist_count,
     })
+
+
+@require_POST
+@csrf_protect
+def adoption_bonus_cart_unlock_view(request):
+    """După „Salvează alegerile” pe Servicii: permite iconița coș pe oferte (același AR ca în sesiune)."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"ok": False, "error": "login_required"}, status=401)
+    try:
+        ar_id = int((request.POST.get("adoption_request_id") or "").strip())
+    except (TypeError, ValueError):
+        return JsonResponse({"ok": False, "error": "invalid"}, status=400)
+    ar = AdoptionRequest.objects.filter(
+        pk=ar_id,
+        adopter=request.user,
+        status__in=(
+            AdoptionRequest.STATUS_PENDING,
+            AdoptionRequest.STATUS_ACCEPTED,
+        ),
+    ).first()
+    if not ar:
+        return JsonResponse({"ok": False, "error": "not_found"}, status=404)
+    request.session[SESSION_ADOPTION_BONUS_CART_UNLOCK_AR] = ar_id
+    request.session.modified = True
+    return JsonResponse({"ok": True})
+
+
+@require_POST
+@csrf_protect
+def site_cart_toggle_view(request):
+    """Adaugă / scoate articol din coșul I Love (iconița coș)."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"ok": False, "error": "login_required"}, status=401)
+    kind = (request.POST.get("kind") or "").strip()
+    ref_key = (request.POST.get("ref_key") or "").strip()[:96]
+    title = (request.POST.get("title") or "").strip()[:220]
+    detail_url = _safe_site_cart_detail_url(request.POST.get("detail_url") or "")
+    allowed_kinds = {
+        SiteCartItem.KIND_SERVICII_OFFER,
+        SiteCartItem.KIND_SHOP,
+        SiteCartItem.KIND_SHOP_CUSTOM,
+        SiteCartItem.KIND_SHOP_FOTO,
+    }
+    if kind not in allowed_kinds:
+        return JsonResponse({"ok": False, "error": "invalid_kind"}, status=400)
+    if not ref_key or not title:
+        return JsonResponse({"ok": False, "error": "missing_fields"}, status=400)
+
+    if kind == SiteCartItem.KIND_SERVICII_OFFER:
+        if not ref_key.startswith("servicii_offer:"):
+            return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
+        try:
+            pk = int(ref_key.split(":", 1)[1])
+        except (IndexError, ValueError):
+            return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
+        if not CollaboratorServiceOffer.objects.filter(pk=pk, is_active=True).exists():
+            return JsonResponse({"ok": False, "error": "offer_gone"}, status=400)
+    elif kind == SiteCartItem.KIND_SHOP:
+        if not re.match(r"^shop:[a-z]+:\d+$", ref_key):
+            return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
+    elif kind == SiteCartItem.KIND_SHOP_CUSTOM:
+        if ref_key != "shop_custom:page":
+            return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
+    elif kind == SiteCartItem.KIND_SHOP_FOTO:
+        if not ref_key.startswith("shop_foto:"):
+            return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
+        try:
+            idx = int(ref_key.split(":", 1)[1])
+        except (IndexError, ValueError):
+            return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
+        if idx < 0 or idx >= 200:
+            return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
+
+    obj = SiteCartItem.objects.filter(user=request.user, ref_key=ref_key).first()
+    if obj:
+        obj.delete()
+        active = False
+    else:
+        n = SiteCartItem.objects.filter(user=request.user).count()
+        if n >= SITE_CART_MAX_ITEMS:
+            return JsonResponse({"ok": False, "error": "cart_full"}, status=400)
+        SiteCartItem.objects.create(
+            user=request.user,
+            ref_key=ref_key,
+            kind=kind,
+            title=title,
+            detail_url=detail_url,
+        )
+        active = True
+    cnt = SiteCartItem.objects.filter(user=request.user).count()
+    return JsonResponse(
+        {"ok": True, "active": active, "ref_key": ref_key, "user_site_cart_count": cnt}
+    )
 
 
 @require_POST
@@ -5944,9 +6126,7 @@ def adoption_bonus_offer_toggle_view(request):
     if not _collab_offer_is_valid_today(offer):
         return JsonResponse({"ok": False, "error": "Oferta nu este disponibilă."}, status=400)
     ad_cn = _norm_county_str(_adopter_profile_county_raw(request.user))
-    if not ad_cn:
-        return JsonResponse({"ok": False, "error": "Completează județul în cont pentru a folosi bonusul."}, status=400)
-    if _offer_collab_county_norm(offer) != ad_cn:
+    if ad_cn and _offer_collab_county_norm(offer) != ad_cn:
         return JsonResponse({"ok": False, "error": "Oferta nu este în județul tău."}, status=403)
 
     existing = AdoptionBonusSelection.objects.filter(
@@ -6181,21 +6361,23 @@ def _buyer_snapshot_for_offer_request(request, post_name: str, post_email: str) 
     }
 
 
-def _account_role_for_public_offer(user) -> str:
+def _user_is_public_offer_transport_blocked(user) -> bool:
+    """
+    Transportatorii nu pot solicita oferte din Servicii (flux dedicat /transport/).
+    Aliniază cu _servicii_saloane_qs_exclude_transportatori (tip transport + profil operator).
+    """
     if not getattr(user, "is_authenticated", False):
-        return AccountProfile.ROLE_PF
-    rid = (
-        AccountProfile.objects.filter(user_id=user.pk)
-        .values_list("role", flat=True)
-        .first()
-    )
-    return rid or AccountProfile.ROLE_PF
+        return False
+    prof = getattr(user, "profile", None)
+    if prof and (prof.collaborator_type or "").strip().lower() == "transport":
+        return True
+    return TransportOperatorProfile.objects.filter(user_id=user.pk).exists()
 
 
 def _user_can_request_public_collab_offer(user) -> bool:
     return (
         getattr(user, "is_authenticated", False)
-        and _account_role_for_public_offer(user) == AccountProfile.ROLE_PF
+        and not _user_is_public_offer_transport_blocked(user)
     )
 
 
@@ -7223,14 +7405,14 @@ def public_offer_request_view(request, pk: int):
     if not request.user.is_authenticated:
         messages.info(
             request,
-            "Intră în cont sau creează cont persoană fizică pentru a solicita oferta.",
+            "Intră în cont sau creează cont pentru a solicita oferta.",
         )
         return redirect_to_login(detail_next, login_url=reverse("login"))
 
-    if _account_role_for_public_offer(request.user) != AccountProfile.ROLE_PF:
+    if _user_is_public_offer_transport_blocked(request.user):
         messages.error(
             request,
-            "Solicitarea ofertelor este disponibilă doar cu cont de persoană fizică.",
+            "Conturile de transportatori nu pot solicita oferte din Servicii; folosește zona Transport.",
         )
         return _redirect_after_public_offer_request(request, pk)
 

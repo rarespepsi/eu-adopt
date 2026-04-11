@@ -35,6 +35,33 @@
 		flex-direction: column !important;
 		overflow: hidden !important;
 	}
+	body.page-shop .shop-card:not(.shop-card--balance-clone) {
+		position: relative;
+	}
+	body.page-shop .shop-card-site-cart {
+		position: absolute;
+		bottom: 6px;
+		right: 6px;
+		z-index: 3;
+		width: 30px;
+		height: 30px;
+		border: none;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.95);
+		color: #1565c0;
+		font-size: 14px;
+		line-height: 1;
+		cursor: pointer;
+		box-shadow: 0 1px 5px rgba(0, 0, 0, 0.22);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+	}
+	body.page-shop .shop-card-site-cart.is-active {
+		background: #1565c0;
+		color: #fff;
+	}
 </style>
 {% endblock %}
 
@@ -571,6 +598,9 @@ document.addEventListener("DOMContentLoaded", function () {
       var source = cards[i % count];
       if (!source) break;
       var clone = source.cloneNode(true);
+      clone.querySelectorAll(".shop-card-site-cart").forEach(function (n) {
+        n.remove();
+      });
       clone.classList.add("shop-card--balance-clone");
       grid.appendChild(clone);
     }
@@ -581,6 +611,35 @@ document.addEventListener("DOMContentLoaded", function () {
     balanceGrid("#cats", "shop-grid-cats");
     balanceGrid("#accessories", "shop-grid-accessories");
   }
+
+  {% if user.is_authenticated %}
+  var SITE_CART_REFS = new Set([{% for k in site_cart_ref_keys %}"{{ k|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}]);
+  function attachShopCartButtons() {
+    document.querySelectorAll(".shop-panel").forEach(function (panel) {
+      var tabId = panel.id || "tab";
+      panel.querySelectorAll(".shop-card:not(.shop-card--balance-clone)").forEach(function (card, idx) {
+        if (card.querySelector(".shop-card-site-cart")) return;
+        var h3 = card.querySelector("h3");
+        var title = (h3 && h3.textContent ? h3.textContent : "").trim() || "Produs Shop";
+        var refKey = "shop:" + tabId + ":" + idx;
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "shop-card-site-cart" + (SITE_CART_REFS.has(refKey) ? " is-active" : "");
+        btn.setAttribute("data-site-cart-toggle", "");
+        btn.setAttribute("data-kind", "shop");
+        btn.setAttribute("data-ref-key", refKey);
+        btn.setAttribute("data-title", title);
+        btn.setAttribute("data-detail-url", "/shop/");
+        btn.setAttribute("aria-pressed", SITE_CART_REFS.has(refKey) ? "true" : "false");
+        btn.setAttribute("title", "Adaugă sau scoate din coșul I Love");
+        btn.textContent = "🛒";
+        card.appendChild(btn);
+        if (window.euadoptSiteCartBindRoot) window.euadoptSiteCartBindRoot(card);
+      });
+    });
+  }
+  attachShopCartButtons();
+  {% endif %}
 
   balanceAllShopGrids();
 

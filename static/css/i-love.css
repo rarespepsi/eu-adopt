@@ -160,11 +160,115 @@ body.page-ilove .ilove-main-caseta {
 		inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-body.page-ilove .ilove-pets-grid {
+/* Două jumătăți lângă lângă: inimioare | coș */
+body.page-ilove .ilove-main-split {
 	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 1rem;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: clamp(0.65rem, 1.8vw, 1rem);
+	align-items: stretch;
+	min-height: 0;
+}
+
+body.page-ilove .ilove-main-split__pane {
+	min-width: 0;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+body.page-ilove .ilove-split-heading {
+	margin: 0 0 0.5rem;
+	font-size: 0.92rem;
+	font-weight: 800;
+	color: #c62828;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	flex-shrink: 0;
+}
+
+body.page-ilove .ilove-main-split__pane--cart .ilove-split-heading {
+	color: #1565c0;
+}
+
+body.page-ilove .ilove-main-split__pane--pets .ilove-pets-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.65rem;
 	align-content: start;
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+body.page-ilove .ilove-cart-list {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+	display: flex;
+	flex-direction: column;
+	gap: 0.45rem;
+}
+
+body.page-ilove .ilove-cart-row {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.45rem 0.5rem;
+	border: 1px solid rgba(21, 101, 192, 0.25);
+	border-radius: 10px;
+	background: #f5f9ff;
+	min-width: 0;
+}
+
+body.page-ilove .ilove-cart-row-main {
+	flex: 1;
+	min-width: 0;
+}
+
+body.page-ilove .ilove-cart-row-link {
+	font-size: 0.86rem;
+	font-weight: 700;
+	color: #0d47a1;
+	text-decoration: none;
+	word-break: break-word;
+}
+
+body.page-ilove .ilove-cart-row-link:hover {
+	text-decoration: underline;
+}
+
+body.page-ilove .ilove-cart-row-link--text {
+	color: #37474f;
+}
+
+body.page-ilove .ilove-cart-remove {
+	flex-shrink: 0;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	border: none;
+	background: #1565c0;
+	color: #fff;
+	font-size: 14px;
+	cursor: pointer;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+body.page-ilove .ilove-cart-remove:hover {
+	background: #0d47a1;
+}
+
+body.page-ilove .ilove-cart-empty {
+	margin: 0;
+	font-size: 0.88rem;
+	color: #546e7a;
+	line-height: 1.45;
+}
+
+body.page-ilove .ilove-main-split__pane--pets .ilove-empty {
+	grid-column: 1 / -1;
 }
 
 body.page-ilove .ilove-pet-card {
@@ -350,7 +454,7 @@ body.page-ilove .ilove-empty {
 		padding-inline: clamp(0.35rem, 2vw, 0.65rem);
 		order: -1;
 	}
-	body.page-ilove .ilove-pets-grid {
+	body.page-ilove .ilove-main-split__pane--pets .ilove-pets-grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 	/* Scroll în caseta centrală când sunt multe carduri (nu trag lateralele) */
@@ -363,7 +467,7 @@ body.page-ilove .ilove-empty {
 }
 
 @media (max-width: 520px) {
-	body.page-ilove .ilove-pets-grid {
+	body.page-ilove .ilove-main-split__pane--pets .ilove-pets-grid {
 		grid-template-columns: 1fr;
 	}
 }
