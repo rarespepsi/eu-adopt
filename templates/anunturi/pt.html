@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt113-rogvaiv-fix" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt117-revino-s61" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -797,7 +797,7 @@
 		Array.prototype.forEach.call(matchBtns, function(matchBtn) {
 			if (!matchBtn) return;
 			if (active) {
-				matchBtn.textContent = "Resetează filtre";
+				matchBtn.textContent = "Renunță la potrivire";
 				matchBtn.classList.add("pt-match-btn--active");
 			} else {
 				matchBtn.textContent = defaultMatchText || "Găsește-mi perechea";

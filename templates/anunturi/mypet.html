@@ -10,42 +10,52 @@
 	<div class="mypet-inner">
 		{% csrf_token %}
 		<div class="mypet-actions">
-			<a href="{% url 'mypet' %}" class="mypet-btn mypet-btn-primary">My pets</a>
-			{% if not user_has_owned_pets %}
-				<button
-					type="button"
-					class="mypet-btn mypet-btn-secondary"
-					id="adopterInboxBtn"
-					data-list-url="{% url 'adopter_messages_list' %}"
-				>Mesaje</button>
-			{% endif %}
-			<a
-				href="{% url 'mypet_add' %}?species=dog"
-				class="mypet-btn mypet-btn-secondary mypet-btn-add"
-				data-mypet-add-base="{% url 'mypet_add' %}"
-			>Adaugă un pet</a>
-			<div class="mypet-btn mypet-btn-secondary mypet-btn-counter">
-				MyPet {{ mypet_count|default:0 }} / Adoptați {{ adopted_count|default:0 }} / Total {{ total_count|default:0 }}
-			</div>
-			<!-- Filtru specii (dog / cat / other) -->
-			<div class="mypet-species-filters" aria-label="Filtru specii">
-				<div class="mypet-btn mypet-btn-secondary mypet-btn-spec is-active" role="button" tabindex="0" data-species="dog" aria-label="Câini">Câini</div>
-				<div class="mypet-btn mypet-btn-secondary mypet-btn-spec" role="button" tabindex="0" data-species="cat" aria-label="Pisici">Pisici</div>
-				<div class="mypet-btn mypet-btn-secondary mypet-btn-spec" role="button" tabindex="0" data-species="other" aria-label="Altele">Altele</div>
-			</div>
-			<div class="mypet-fisa-legend" aria-hidden="true">
-				<span class="mypet-legend-item">
-					<span class="mypet-legend-swatch mypet-swatch-0"></span><span>&lt; 50%</span>
-				</span>
-				<span class="mypet-legend-item">
-					<span class="mypet-legend-swatch mypet-swatch-half"></span><span>50–89%</span>
-				</span>
-				<span class="mypet-legend-item">
-					<span class="mypet-legend-swatch mypet-swatch-75"></span><span>90–99%</span>
-				</span>
-				<span class="mypet-legend-item">
-					<span class="mypet-legend-swatch mypet-swatch-100"></span><span>100%</span>
-				</span>
+			<div class="mypet-actions-toolbar">
+				<div class="mypet-actions-group mypet-actions-group--nav">
+					<a href="{% url 'mypet' %}" class="mypet-btn mypet-btn-primary">My pets</a>
+					{% if not user_has_owned_pets %}
+						<button
+							type="button"
+							class="mypet-btn mypet-btn-secondary"
+							id="adopterInboxBtn"
+							data-list-url="{% url 'adopter_messages_list' %}"
+						>Mesaje</button>
+					{% endif %}
+					<a
+						href="{% url 'mypet_add' %}?species=dog"
+						class="mypet-btn mypet-btn-secondary mypet-btn-add"
+						data-mypet-add-base="{% url 'mypet_add' %}"
+					>Adaugă un pet</a>
+					<div class="mypet-btn mypet-btn-secondary mypet-btn-counter">
+						MyPet {{ mypet_count|default:0 }} / Adoptați {{ adopted_count|default:0 }} / Total {{ total_count|default:0 }}
+					</div>
+				</div>
+				<div class="mypet-actions-group mypet-actions-group--species" aria-label="Filtru specii">
+					<div class="mypet-species-filters">
+						<div class="mypet-btn mypet-btn-secondary mypet-btn-spec is-active" role="button" tabindex="0" data-species="dog" aria-label="Câini">Câini</div>
+						<div class="mypet-btn mypet-btn-secondary mypet-btn-spec" role="button" tabindex="0" data-species="cat" aria-label="Pisici">Pisici</div>
+						<div class="mypet-btn mypet-btn-secondary mypet-btn-spec" role="button" tabindex="0" data-species="other" aria-label="Altele">Altele</div>
+					</div>
+				</div>
+				<div class="mypet-actions-group mypet-actions-group--legend">
+					<details class="mypet-fisa-legend-details">
+						<summary class="mypet-fisa-legend-summary">Legendă Fișă %</summary>
+						<div class="mypet-fisa-legend" role="group" aria-label="Semnificație culori coloana Fișă %">
+							<span class="mypet-legend-item">
+								<span class="mypet-legend-swatch mypet-swatch-0"></span><span>&lt; 50%</span>
+							</span>
+							<span class="mypet-legend-item">
+								<span class="mypet-legend-swatch mypet-swatch-half"></span><span>50–89%</span>
+							</span>
+							<span class="mypet-legend-item">
+								<span class="mypet-legend-swatch mypet-swatch-75"></span><span>90–99%</span>
+							</span>
+							<span class="mypet-legend-item">
+								<span class="mypet-legend-swatch mypet-swatch-100"></span><span>100%</span>
+							</span>
+						</div>
+					</details>
+				</div>
 			</div>
 		</div>
 		<div class="mypet-table-wrap">
@@ -266,6 +276,7 @@
 		/* Hover rând: aceeași familie ca fundalul rândului, doar nuanță ușor diferită (fără „alb” / fără dungi) */
 		--mypet-row-hover-bg: color-mix(in srgb, var(--mypet-surface-raised) 88%, #ffffff 12%);
 		--mypet-row-hover-bg-fallback: #222c42;
+		--mypet-control-radius: 8px;
 	}
 	/* Fundal panou doar pe lista MyPet (.mypet-wrap), nu pe fișă add/edit (.mypet-fisa-wrap) */
 	body.page-mypet #main_content:has(.mypet-wrap),
@@ -331,6 +342,10 @@
 			0 1px 0 rgba(255, 255, 255, 0.04) inset,
 			0 18px 48px rgba(0, 0, 0, 0.35);
 	}
+	.mypet-table-wrap.is-adopt-busy {
+		cursor: wait;
+		opacity: 0.9;
+	}
 	.mypet-table {
 		width: 100%;
 		table-layout: fixed;
@@ -353,14 +368,20 @@
 		border-bottom: 1px solid var(--mypet-border-inner);
 		font-weight: 700;
 		letter-spacing: 0.02em;
+		position: sticky;
+		top: 0;
+		z-index: 8;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
 	}
 	.mypet-th-sort {
 		cursor: pointer;
 		user-select: none;
 	}
 	.mypet-th-sort:hover {
-		background: rgba(56, 189, 248, 0.08);
-		color: var(--mypet-link-hover);
+		/* Același fundal ca la hover pe rând (tabel) */
+		background: var(--mypet-row-hover-bg-fallback);
+		background: var(--mypet-row-hover-bg);
+		color: var(--mypet-text);
 	}
 	.mypet-th-v,
 	.mypet-th-vertical {
@@ -389,7 +410,9 @@
 	.mypet-th-mypet-adopt { min-width: 0; }
 	.mypet-th-mesaje { min-width: 5.6rem; }
 	.mypet-td {
-		padding: 0.2rem 0.22rem;
+		padding: 0.32rem 0.26rem;
+		min-height: 2.65rem;
+		box-sizing: border-box;
 		border-bottom: 1px solid var(--mypet-border-inner);
 		vertical-align: middle;
 		font-size: 0.8rem;
@@ -469,9 +492,10 @@
 		display: inline-block;
 		font-size: 0.64rem;
 		font-weight: 800;
-		padding: 0.16rem 0.36rem;
-		min-width: 1.55rem;
-		border-radius: 5px;
+		padding: 0.2rem 0.4rem;
+		min-width: 1.65rem;
+		min-height: 1.65rem;
+		border-radius: var(--mypet-control-radius);
 		cursor: pointer;
 		line-height: 1;
 		white-space: nowrap;
@@ -514,10 +538,10 @@
 		align-items: center;
 		justify-content: center;
 		position: relative;
-		min-width: 1.65rem;
-		min-height: 1.65rem;
-		padding: 0.12rem 0.2rem;
-		border-radius: 8px;
+		min-width: 1.75rem;
+		min-height: 1.75rem;
+		padding: 0.14rem 0.22rem;
+		border-radius: var(--mypet-control-radius);
 		font-size: 0.68rem;
 		font-weight: 800;
 		cursor: pointer;
@@ -557,8 +581,8 @@
 	.mypet-promoveaza-btn {
 		display: inline-block;
 		margin: 0.18rem auto 0;
-		padding: 0.14rem 0.34rem;
-		border-radius: 8px;
+		padding: 0.16rem 0.38rem;
+		border-radius: var(--mypet-control-radius);
 		border: 1px solid #1565c0;
 		background: #1565c0;
 		color: #fff;
@@ -734,10 +758,11 @@
 	.mypet-adopt-finalize-btn {
 		display: inline-block;
 		margin-top: 0.04rem;
-		font-size: 0.5rem;
+		font-size: 0.52rem;
 		font-weight: 800;
-		padding: 0.1rem 0.18rem;
-		border-radius: 6px;
+		padding: 0.14rem 0.24rem;
+		border-radius: var(--mypet-control-radius);
+		min-height: 1.5rem;
 		border: 1px solid #1b5e20;
 		background: #2e7d32;
 		color: #fff;
@@ -920,20 +945,42 @@
 	.mypet-actions {
 		margin: 0 auto;
 		padding: 0.55rem 0.65rem;
-		display: flex;
-		flex-wrap: wrap; /* evită scroll orizontal pe lățimi mici */
-		gap: 0.4rem 0.45rem;
-		justify-content: center;
-		align-items: center;
 		width: 100%;
 		max-width: 100%;
 		min-width: 0;
 		box-sizing: border-box;
-		position: relative; /* pentru legendă absolute */
 		background: var(--mypet-surface-panel);
 		border: 1px solid var(--mypet-border-outer);
 		border-radius: 12px;
 		box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+	}
+	.mypet-actions-toolbar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 0.65rem 1rem;
+		width: 100%;
+	}
+	.mypet-actions-group {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem 0.45rem;
+	}
+	.mypet-actions-group--species {
+		padding: 0 0.75rem;
+		border-left: 1px solid var(--mypet-border-inner);
+		border-right: 1px solid var(--mypet-border-inner);
+	}
+	@media (max-width: 640px) {
+		.mypet-actions-group--species {
+			border-left: none;
+			border-right: none;
+			padding: 0;
+			width: 100%;
+		}
 	}
 	.mypet-btn {
 		display: inline-flex;
@@ -980,13 +1027,10 @@
 	}
 	.mypet-species-filters {
 		display: flex;
-		flex-wrap: nowrap;
+		flex-wrap: wrap;
 		gap: 0.45rem;
 		align-items: center;
-		position: absolute;
-		top: 50%;
-		transform: translateY(-50%);
-		z-index: 5;
+		justify-content: center;
 	}
 	.mypet-btn-spec {
 		user-select: none;
@@ -997,18 +1041,36 @@
 		border-color: transparent;
 	}
 
+	.mypet-fisa-legend-details {
+		min-width: 0;
+	}
+	.mypet-fisa-legend-summary {
+		cursor: pointer;
+		list-style: none;
+		font-size: 0.72rem;
+		font-weight: 800;
+		color: var(--mypet-text-muted);
+		padding: 0.2rem 0.35rem;
+		border-radius: var(--mypet-control-radius);
+		user-select: none;
+	}
+	.mypet-fisa-legend-summary::-webkit-details-marker { display: none; }
+	.mypet-fisa-legend-summary:hover {
+		color: var(--mypet-link);
+		background: rgba(56, 189, 248, 0.08);
+	}
+	.mypet-fisa-legend-details[open] .mypet-fisa-legend-summary {
+		color: var(--mypet-link);
+	}
 	/* Legendă & culori pentru "Fișă %" */
 	.mypet-fisa-legend {
-		position: absolute;
-		top: 50%;
-		right: 0.35rem;
-		transform: translateY(-50%);
 		display: flex;
-		gap: 0.35rem;
+		flex-wrap: wrap;
+		gap: 0.35rem 0.5rem;
 		align-items: center;
-		justify-content: flex-end;
-		pointer-events: none; /* să nu afecteze butoanele */
-		white-space: nowrap;
+		justify-content: center;
+		padding: 0.35rem 0 0;
+		white-space: normal;
 	}
 	.mypet-legend-item {
 		display: inline-flex;
@@ -1029,17 +1091,24 @@
 	.mypet-swatch-75 { background: #f5e39b; } /* galben */
 	.mypet-swatch-100 { background: #2e7d32; } /* verde */
 
+	/* Pill Fișă % — același limbaj ca textele înguste din tabel (lizibil, încape și „100%”) */
 	.mypet-fisa-pill {
 		display: block;
 		width: 100%;
+		max-width: 100%;
 		min-width: 0;
+		margin: 0 auto;
 		text-align: center;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: clip;
-		font-weight: 900;
-		padding: 0.08rem 0.25rem;
-		border-radius: 6px;
+		font-weight: 600;
+		font-size: 0.68rem;
+		line-height: 1.2;
+		letter-spacing: -0.03em;
+		font-variant-numeric: tabular-nums;
+		padding: 0.12rem 0.1rem;
+		border-radius: var(--mypet-control-radius, 8px);
 		box-sizing: border-box;
 	}
 	.mypet-fisa-0 {
@@ -1048,15 +1117,40 @@
 	}
 	.mypet-fisa-half {
 		background: linear-gradient(to bottom, #f5e39b 50%, #2e7d32 50%);
-		color: #5c3c00;
+		color: #4a3728;
+		font-weight: 600;
 	}
 	.mypet-fisa-75 {
 		background: #f5e39b;
-		color: #5c3c00;
+		color: #4a3728;
+		font-weight: 600;
 	}
 	.mypet-fisa-100 {
 		background: #2e7d32;
 		color: #fff;
+	}
+
+	/* Focus tastatură (Flowbite-style: inel clar, fără a schimba logica) */
+	.mypet-btn:focus-visible,
+	.mypet-row-adopt-btn:focus-visible,
+	.mypet-msg-open-btn:focus-visible,
+	.mypet-adopt-finalize-btn:focus-visible,
+	.mypet-promoveaza-btn:focus-visible,
+	.mypet-photo-link:focus-visible,
+	.mypet-td-name a:focus-visible,
+	.mypet-th-sort:focus-visible,
+	.mypet-fisa-legend-summary:focus-visible,
+	.mypet-msg-close:focus-visible,
+	.mypet-msg-tab:focus-visible,
+	.mypet-confirm-btn:focus-visible,
+	#mypetMsgReplyBtn:focus-visible {
+		outline: 2px solid var(--mypet-link);
+		outline-offset: 2px;
+	}
+	.mypet-row-adopt-btn:disabled,
+	.mypet-adopt-finalize-btn:disabled {
+		opacity: 0.55;
+		cursor: not-allowed;
 	}
 
 	/* Tooltip custom pentru hover pe "Fișă %" */
@@ -1248,8 +1342,15 @@ document.addEventListener("DOMContentLoaded", function() {
 		});
 	}
 	function setAdoptBusy(on) {
-		if (on) tw.setAttribute("data-adopt-busy", "1");
-		else tw.removeAttribute("data-adopt-busy");
+		if (on) {
+			tw.setAttribute("data-adopt-busy", "1");
+			tw.classList.add("is-adopt-busy");
+			tw.setAttribute("aria-busy", "true");
+		} else {
+			tw.removeAttribute("data-adopt-busy");
+			tw.classList.remove("is-adopt-busy");
+			tw.removeAttribute("aria-busy");
+		}
 		tw.querySelectorAll(".mypet-row-adopt-btn").forEach(function(b) {
 			b.disabled = !!on;
 		});
@@ -1419,6 +1520,8 @@ document.addEventListener("DOMContentLoaded", function() {
 			var finMsg = "Marchezi adopția ca finalizată? Animalul va rămâne vizibil cu eticheta „Adoptat”, iar adoptatorul apare la „Adoptați”.";
 			var doFinalize = function() {
 			btn.disabled = true;
+			wrap.classList.add("is-adopt-busy");
+			wrap.setAttribute("aria-busy", "true");
 			fetch(url, {
 				method: "POST",
 				headers: {
@@ -1438,6 +1541,8 @@ document.addEventListener("DOMContentLoaded", function() {
 				.catch(function(err) {
 					alert(err.message || "Eroare");
 					btn.disabled = false;
+					wrap.classList.remove("is-adopt-busy");
+					wrap.removeAttribute("aria-busy");
 				});
 			};
 			if (window.mypetConfirmPromise) {

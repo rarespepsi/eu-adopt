@@ -1157,17 +1157,24 @@
   pointer-events: none !important;
 }
 
-/* Probă CTA promovare: overlay semitransparent, fără impact pe dimensiunea casetei P2 */
+/* Probă CTA promovare: lipit de latura superioară interioară a casetei pozei, centrat stânga-dreapta, fără ieșire din casetă */
 #PW .pt-p2-card-cell .pt-promoveaza-btn {
   position: absolute;
-  left: 5px;
-  top: 5px;
-  z-index: 3;
+  left: 50%;
+  top: 1px;
+  transform: translateX(-50%);
+  z-index: 4;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 1px 5px;
   min-height: 16px;
+  max-width: calc(100% - 8px);
+  min-width: 0;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 999px;
   background: rgba(21, 101, 192, 0.62);
@@ -1183,6 +1190,7 @@
 }
 #PW .pt-p2-card-cell .pt-promoveaza-btn:hover {
   background: rgba(198, 40, 40, 0.68);
+  transform: translateX(-50%);
 }
 
 /* Card partener (P5.2 în grila P4.3) */

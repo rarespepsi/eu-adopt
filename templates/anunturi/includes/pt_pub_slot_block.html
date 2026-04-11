@@ -6,8 +6,7 @@
 <div class="pt-p5-slot{% if p5_middle %} pt-p5-slot-user{% endif %}" id="{{ slot_code }}" data-slot="{{ slot_code }}">
 {% else %}
 <div class="pt-p43-slot{% if slot_code == 'P5.2' %} pt-p43-slot--p52{% endif %}" data-slot="{{ slot_code }}">
-{% endif %}
-{% if creative and creative.img %}
+{% endif %}{% if creative and creative.img %}
 	{% if creative.link %}
 	<a href="{{ creative.link }}" target="_blank" rel="noopener" class="pt-p43-creative-link pt-p43-partner-fill pt-pub-fill-link" aria-label="{{ creative.alt }}">
 	{% endif %}
