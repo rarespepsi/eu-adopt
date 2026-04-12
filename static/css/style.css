@@ -34,7 +34,7 @@ body {
 	--btn-padding-h: clamp(12px, 3vw, 24px);
 }
 
-/* Wishlist heart – overlay on dog photos */
+/* Wishlist heart – overlay pe poze; același SVG ca Servicii (contur + plin), fără cerc */
 .wish-btn {
 	position: absolute;
 	top: 8px;
@@ -43,28 +43,74 @@ body {
 	bottom: auto !important;
 	width: 28px;
 	height: 28px;
-	border-radius: 999px;
-	border: 1px solid rgba(255,255,255,0.65) !important;
-	background: rgba(46, 125, 50, 0.9) !important;
-	background-color: rgba(46, 125, 50, 0.9) !important;
-	backdrop-filter: blur(4px);
+	border-radius: 0;
+	border: none !important;
+	background: transparent !important;
+	background-color: transparent !important;
+	backdrop-filter: none;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
-	color: #FFD54F !important; /* contur galben */
+	color: rgba(255, 255, 255, 0.95) !important;
 	z-index: 5;
 	padding: 0 !important;
 	margin: 0 !important;
 	line-height: 0 !important;
 	appearance: none !important;
 }
-.wish-btn svg { width: 16px; height: 16px; pointer-events: none; }
-.wish-btn .wish-heart { fill: transparent; stroke: currentColor; stroke-width: 2; }
-.wish-btn.is-active { color: #d32f2f !important; background: rgba(255,255,255,0.75) !important; background-color: rgba(255,255,255,0.75) !important; border-color: rgba(0,0,0,0.08) !important; }
-.wish-btn.is-active .wish-heart { fill: #d32f2f; stroke: #d32f2f; }
-.wish-btn:hover { color: #FFD54F !important; background: rgba(46, 125, 50, 0.96) !important; background-color: rgba(46, 125, 50, 0.96) !important; border-color: rgba(255,255,255,0.65) !important; }
-.wish-btn.is-active:hover { color: #d32f2f !important; background: rgba(255,255,255,0.75) !important; background-color: rgba(255,255,255,0.75) !important; border-color: rgba(0,0,0,0.08) !important; }
+.wish-btn svg,
+.wish-btn .il-heart-svg {
+	width: 16px;
+	height: 16px;
+	pointer-events: none;
+	display: block;
+	filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.55));
+}
+.wish-btn .il-heart-filled {
+	display: none;
+}
+.wish-btn .il-heart-outline {
+	display: block;
+}
+.wish-btn.is-active .il-heart-outline {
+	display: none;
+}
+.wish-btn.is-active .il-heart-filled {
+	display: block;
+}
+.wish-btn.is-active {
+	color: #e53935 !important;
+	background: transparent !important;
+	background-color: transparent !important;
+	border: none !important;
+}
+.wish-btn:hover {
+	color: #ffe082 !important;
+	background: transparent !important;
+	background-color: transparent !important;
+	border: none !important;
+}
+.wish-btn.is-active:hover {
+	color: #ffcdd2 !important;
+	background: transparent !important;
+	background-color: transparent !important;
+	border: none !important;
+}
+
+/* Servicii: aceeași pereche SVG, comutare .is-on */
+.sw-adopt-bonus-heart .il-heart-filled {
+	display: none;
+}
+.sw-adopt-bonus-heart .il-heart-outline {
+	display: block;
+}
+.sw-adopt-bonus-heart.is-on .il-heart-outline {
+	display: none;
+}
+.sw-adopt-bonus-heart.is-on .il-heart-filled {
+	display: block;
+}
 
 /* ============================================== FONTS ============================================== */
 

@@ -9,6 +9,12 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  /* Fundal comun PT: fante grid (gap), zone transparente, scrollbar track */
+  background-color: #141a22;
+}
+
+body.page-pt #main_content {
+  background-color: #141a22 !important;
 }
 
 /* Donație PT („Ajuta un Suflet”): ROGVAIV ~1,5s / culoare, culori saturate */
@@ -61,6 +67,7 @@
   height: 100%;
   min-height: 0;
   flex: 1 1 0;
+  background-color: #141a22;
 }
 
 #PW .pt-cell {
@@ -210,8 +217,8 @@
 #PW .pt-cell-4 {
   grid-row: 2;
   grid-column: 1;
-  background: #8e24aa;
-  border: 2px solid #000;
+  background: #141a22;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 0;
   align-items: stretch;
   font-size: 1rem; /* resetează font-size mare de pe .pt-cell pentru caseta de filtre */
@@ -227,7 +234,8 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 2px;
+  padding: 2px;
   box-sizing: border-box;
 }
 
@@ -254,8 +262,11 @@
   min-height: 0;
   /* ×5/8 față de stack-ul anterior (păstrează match la S/4, sustine jumătate din 3S/4) */
   height: clamp(3.45rem, 13.3vw, 5.25rem);
-  background: transparent;
-  border-radius: 12px;
+  /* Același limbaj ca .pt-p5-slot (ex. P5.3) */
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.45rem;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -269,6 +280,9 @@
   align-items: stretch;
   justify-content: stretch;
   background: transparent;
+  border-radius: 0;
+  overflow: visible;
+  box-sizing: border-box;
 }
 #PW .pt-p4-match-sustine-stack > .pt-p4-box-sustine {
   flex: 3 1 0;
@@ -280,6 +294,9 @@
   align-items: stretch;
   justify-content: stretch;
   background: transparent;
+  border-radius: 0;
+  overflow: visible;
+  box-sizing: border-box;
 }
 #PW .pt-p4-match-sustine-stack .pt-p4-box-match .pt-p4-actions {
   flex: 1 1 auto;
@@ -307,7 +324,7 @@
   min-height: 0;
   height: 100%;
   width: 100%;
-  border-radius: 12px !important;
+  border-radius: 0 !important;
   align-self: stretch;
 }
 
@@ -321,10 +338,12 @@
   flex-shrink: 0;
   min-height: 0;
   height: clamp(2.9rem, 20vw, 4.7rem);
-  border-radius: 8px;
+  border-radius: 0.45rem;
   overflow: hidden;
   box-sizing: border-box;
-  background: transparent;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
 }
 #PW .pt-p4-land-rail-ms > .pt-p4-box-match {
   flex: 2 1 0;
@@ -335,6 +354,9 @@
   flex-direction: column;
   align-items: stretch;
   justify-content: stretch;
+  border-radius: 0;
+  overflow: visible;
+  box-sizing: border-box;
 }
 #PW .pt-p4-land-rail-ms > .pt-p4-box-sustine {
   flex: 3 1 0;
@@ -345,6 +367,9 @@
   flex-direction: column;
   align-items: stretch;
   justify-content: stretch;
+  border-radius: 0;
+  overflow: visible;
+  box-sizing: border-box;
 }
 #PW .pt-p4-land-rail-ms .pt-p4-box-match .pt-p4-actions {
   flex: 1 1 auto;
@@ -366,7 +391,7 @@
   min-height: 0;
   height: 100%;
   width: 100%;
-  border-radius: 8px !important;
+  border-radius: 0 !important;
 }
 #PW .pt-p4-land-rail-ms.pt-p4-ms-stack--sustine-only {
   height: auto;
@@ -385,21 +410,26 @@
   justify-content: center;
   font-size: 1.4rem;
   font-weight: 700;
-  color: #222;
-  background: rgba(255, 255, 255, 0.8);
+  color: #e2e8f0;
+  background: transparent;
   border-radius: 0;
   box-sizing: border-box;
 }
 
 #PW .pt-p4-box-filters {
-  /* P4.1 micșorat – doar înălțimea conținutului; P4.2 se ridică */
+  /* P4.1 — același limbaj ca .pt-p5-slot (P5.3): fundal slot pe coloană #141a22 */
   flex: 0 1 auto;
   min-height: 0;
-  background: rgba(255, 255, 255, 0.9);
   align-items: flex-start;
   justify-content: flex-start;
-  padding: 4px 0 2px 0;
-  border-radius: 0;
+  padding: 6px 5px 8px;
+  border-radius: 0.45rem;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-sizing: border-box;
 }
 /* P4.1: conținutul centrat în casetă */
 #PW .pt-p4-box-filters #P3,
@@ -423,6 +453,9 @@
   text-overflow: ellipsis;
   font-size: clamp(0.81rem, 3.58vw, 1.14rem);
   line-height: 1.2;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: 0.02em;
 }
 /* P4.1: butoane pe un singur rând, încap în casetă */
 #PW .pt-p4-box-filters .p3-tip-butoane {
@@ -432,7 +465,7 @@
   max-width: 100% !important;
   margin: 0 0 0.35rem 0 !important;
   padding: 0 !important;
-  gap: 4px !important;
+  gap: 2px !important;
   list-style: none !important;
   box-sizing: border-box !important;
 }
@@ -446,25 +479,60 @@
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: clamp(0.62rem, 2.4vw, 0.82rem) !important;
-  padding: 0.2rem 0.12rem !important;
+  /* Același limbaj tipografic ca linkurile din navbar A0 (#main_menu) */
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: clamp(10px, 2.15vw, 13px) !important;
+  font-weight: 600 !important;
+  letter-spacing: normal !important;
+  padding: 0.2rem 0.06rem !important;
   min-height: 0 !important;
   width: 100% !important;
   box-sizing: border-box !important;
   text-align: center !important;
-  line-height: 1.15 !important;
+  line-height: 1.25 !important;
+  text-decoration: none !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  background: rgba(15, 23, 42, 0.42) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0.45rem !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
-#PW .pt-p4-box-filters .p3-tip-butoane .p3-btn-label,
+#PW .pt-p4-box-filters .p3-tip-butoane a:hover {
+  color: #f1f5f9 !important;
+  border-color: rgba(6, 182, 212, 0.35) !important;
+}
+#PW .pt-p4-box-filters .p3-tip-butoane a.active {
+  color: rgba(255, 255, 255, 0.98) !important;
+  font-weight: 700 !important;
+  background: rgba(15, 23, 42, 0.62) !important;
+  border-color: rgba(6, 182, 212, 0.55) !important;
+  box-shadow:
+    0 0 0 1px rgba(6, 182, 212, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
+}
+/* Etichetă: „Altele” și restul — text complet (înălțime pe 2 rânduri dacă e nevoie) */
+#PW .pt-p4-box-filters .p3-tip-butoane .p3-btn-label {
+  display: block !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  max-width: 100% !important;
+  line-height: 1.15 !important;
+  text-align: center !important;
+  word-break: break-word;
+  hyphens: manual;
+}
 #PW .pt-p4-box-filters .p3-tip-butoane .p3-btn-count {
   display: block !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   max-width: 100% !important;
-}
-#PW .pt-p4-box-filters .p3-tip-butoane .p3-btn-count {
-  font-size: 0.85em !important;
+  font-size: 0.92em !important;
+  font-weight: 700 !important;
   margin-top: 0.05rem !important;
+  opacity: 0.95;
 }
 #PW .pt-p4-box-filters .pt-p4-filtre-form,
 #PW .pt-p4-box-filters form#filtre-animale {
@@ -494,13 +562,28 @@
   font-size: clamp(0.5rem, 1.6vw, 0.65rem);
   line-height: 1.2;
   text-align: center;
+  font-weight: 600;
+  color: #e2e8f0;
 }
 #PW .pt-p4-box-filters .p3-filter-cell select {
   font-size: clamp(0.5rem, 1.6vw, 0.65rem);
-  padding: 0.1rem 0.15rem;
+  padding: 0.18rem 0.28rem;
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
+  border-radius: 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.5);
+  color: #f8fafc;
+  font-family: inherit;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+#PW .pt-p4-box-filters .p3-filter-cell select:focus {
+  outline: none;
+  border-color: rgba(6, 182, 212, 0.65);
+  box-shadow:
+    0 0 0 1px rgba(6, 182, 212, 0.25),
+    0 0 0 3px rgba(6, 182, 212, 0.12);
 }
 #PW .pt-p4-box-filters .p3-reset-link {
   margin-top: 0.2rem;
@@ -508,6 +591,13 @@
   font-size: clamp(0.5rem, 1.5vw, 0.62rem);
   text-align: center;
   display: block;
+  font-weight: 600;
+  color: #22d3ee;
+  text-decoration: none;
+}
+#PW .pt-p4-box-filters .p3-reset-link:hover {
+  color: #67e8f9;
+  text-decoration: underline;
 }
 
 #PW .pt-p4-box-match {
@@ -521,7 +611,7 @@
   align-items: center;
   justify-content: center;
 }
-/* „Găsește-mi perechea”: culori inițiale, fără curcubeu */
+/* „Găsește-mi perechea” / CTA — același limbaj ca butoanele principale signup/login (cyan) */
 #PW .pt-p4-box-match .pt-p4-btn-match {
   display: flex;
   align-items: center;
@@ -529,25 +619,61 @@
   width: 100%;
   min-height: 2.25rem;
   padding: 0.35rem 0.5rem;
-  background: #c62828 !important;
-  background-image: none !important;
+  background: linear-gradient(175deg, #5ee9f3 0%, #22d3ee 28%, #06b6d4 52%, #0e7490 100%) !important;
+  background-image: linear-gradient(175deg, #5ee9f3 0%, #22d3ee 28%, #06b6d4 52%, #0e7490 100%) !important;
   animation: none !important;
   color: #fff !important;
   font-weight: 700;
   font-size: clamp(0.6rem, 2vw, 0.8rem);
   text-align: center;
   text-decoration: none;
-  border: none;
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 0.5rem;
   box-sizing: border-box;
   line-height: 1.2;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 3px 14px rgba(6, 182, 212, 0.35),
+    0 6px 18px rgba(0, 0, 0, 0.22);
 }
 #PW .pt-p4-box-match .pt-p4-btn-match:hover {
-  background: #b71c1c !important;
-  filter: none;
+  filter: brightness(1.06);
   color: #fff !important;
 }
-/* „Ajuta un Suflet !”: donație, ROGVAIV 1,5s / culoare (fără background/color !important pe fundal animat) */
+
+/* Potrivire activă sau bife selectate în modal: „Renunță la potrivire” — roșu intermitent */
+@keyframes pt-match-renunta-pulse {
+  0%,
+  100% {
+    filter: brightness(1);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.22) inset,
+      0 0 16px rgba(239, 68, 68, 0.42),
+      0 4px 14px rgba(0, 0, 0, 0.24);
+  }
+  50% {
+    filter: brightness(1.12);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.32) inset,
+      0 0 26px rgba(239, 68, 68, 0.72),
+      0 4px 18px rgba(0, 0, 0, 0.3);
+  }
+}
+#PW .pt-p4-box-match .pt-p4-btn-match.pt-match-btn--active,
+#PW .pt-p4-match-sustine-stack .pt-p4-box-match .pt-p4-btn-match.pt-match-btn--active,
+#PW .pt-p4-land-rail-ms .pt-p4-box-match .pt-p4-btn-match.pt-match-btn--active {
+  animation: pt-match-renunta-pulse 1.05s ease-in-out infinite !important;
+  background: linear-gradient(175deg, #fecaca 0%, #f87171 22%, #ef4444 48%, #b91c1c 100%) !important;
+  background-image: linear-gradient(175deg, #fecaca 0%, #f87171 22%, #ef4444 48%, #b91c1c 100%) !important;
+  border-color: rgba(254, 202, 202, 0.6) !important;
+  color: #fff !important;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.28) !important;
+}
+#PW .pt-p4-box-match .pt-p4-btn-match.pt-match-btn--active:hover {
+  color: #fff !important;
+}
+/* „Ajuta un Suflet !” — același tip CTA (fără animație ROGVAIV; text neschimbat în template) */
 #PW .pt-p4-box-sustine .pt-p4-btn-sustine {
   display: flex;
   align-items: center;
@@ -555,34 +681,51 @@
   width: 100%;
   min-height: 2.25rem;
   padding: 0.15rem 0.35rem;
-  background-image: none !important;
-  animation: pt-rogvaiv-step 10.5s linear infinite !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(175deg, #5ee9f3 0%, #22d3ee 28%, #06b6d4 52%, #0e7490 100%) !important;
+  background-image: linear-gradient(175deg, #5ee9f3 0%, #22d3ee 28%, #06b6d4 52%, #0e7490 100%) !important;
+  animation: none !important;
   font-weight: 700;
   font-size: clamp(0.88rem, 4.25vw, 1.14rem);
   text-align: center;
   text-decoration: none;
-  border: none;
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 0.5rem;
   box-sizing: border-box;
   line-height: 1.1;
   white-space: normal;
   overflow-wrap: break-word;
   word-break: normal;
   hyphens: auto;
+  color: #fff !important;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.32) inset,
+    0 3px 14px rgba(6, 182, 212, 0.32),
+    0 6px 18px rgba(0, 0, 0, 0.22);
 }
 #PW .pt-p4-box-sustine .pt-p4-btn-sustine:hover {
-  filter: brightness(1.1);
+  filter: brightness(1.06);
 }
 
 @media (prefers-reduced-motion: reduce) {
   #PW .pt-p4-box-match .pt-p4-btn-match {
     animation: none !important;
-    background: #c62828 !important;
+    background: linear-gradient(175deg, #22d3ee 0%, #06b6d4 45%, #0e7490 100%) !important;
+  }
+  #PW .pt-p4-box-match .pt-p4-btn-match.pt-match-btn--active,
+  #PW .pt-p4-match-sustine-stack .pt-p4-box-match .pt-p4-btn-match.pt-match-btn--active,
+  #PW .pt-p4-land-rail-ms .pt-p4-box-match .pt-p4-btn-match.pt-match-btn--active {
+    animation: none !important;
+    filter: none !important;
+    background: linear-gradient(175deg, #ef4444 0%, #b91c1c 100%) !important;
+    background-image: linear-gradient(175deg, #ef4444 0%, #b91c1c 100%) !important;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.2) inset,
+      0 2px 12px rgba(185, 28, 28, 0.45) !important;
   }
   #PW .pt-p4-box-sustine .pt-p4-btn-sustine {
     animation: none !important;
-    background: #6d4c41 !important;
+    background: linear-gradient(175deg, #22d3ee 0%, #06b6d4 45%, #0e7490 100%) !important;
   }
 }
 
@@ -612,20 +755,32 @@
   justify-content: center;
   min-height: 2.25rem;
   padding: 0.35rem 0.5rem;
-  background: #1565c0;
-  color: #fff !important;
+  background: rgba(15, 23, 42, 0.55);
+  color: #e2e8f0 !important;
   font-weight: 700;
   font-size: clamp(0.6rem, 2vw, 0.8rem);
   text-align: center;
   text-decoration: none;
-  border: none;
-  border-radius: 12px;
+  border: 1px solid rgba(6, 182, 212, 0.45);
+  border-radius: 0.5rem;
   box-sizing: border-box;
   line-height: 1.2;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
 }
 #PW .pt-p4-box-match .pt-p4-btn-filters:hover {
-  background: #0d47a1;
-  color: #fff !important;
+  background: rgba(15, 23, 42, 0.72);
+  border-color: rgba(6, 182, 212, 0.65);
+  color: #f1f5f9 !important;
+}
+@keyframes ptMatchBlink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.25;
+  }
 }
 #PW .pt-p4-box-match .pt-p4-btn-filters.pt-filters-btn--active {
   animation: ptMatchBlink 0.9s steps(2, end) infinite;
@@ -637,10 +792,13 @@
 }
 
 #PW .pt-p4-box-ads {
-  /* P4.3 ocupă tot spațiul rămas până la limita de jos a P4 */
+  /* P4.3 — același limbaj ca .pt-p5-slot (P5.3) */
   flex: 1 1 0;
   min-height: 2rem;
-  background: #fff8e1;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.45rem;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
   box-sizing: border-box;
   flex-direction: column;
   align-items: stretch;
@@ -689,11 +847,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff3cd;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  border-radius: 6px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
   box-sizing: border-box;
   overflow: hidden;
+  box-shadow: none;
 }
 #PW .pt-p43-desktop-slot .pt-p43-partner-fill,
 #PW .pt-p43-desktop-slot .pt-p43-creative-link {
@@ -727,8 +886,8 @@
 #PW .pt-cell-5 {
   grid-row: 1;
   grid-column: 3;
-  background: #fff8e1;
-  border: 2px solid #000;
+  background: #141a22;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 0;
   align-items: stretch;
   justify-content: stretch;
@@ -757,17 +916,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff3cd;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.45rem;
   overflow: hidden;
   box-sizing: border-box;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
 }
 #PW .pt-p5-slot .pt-p43-label {
   font-size: clamp(0.45rem, 1.1vw, 0.65rem);
-  color: #8d6e63;
+  color: #94a3b8;
   text-align: center;
   padding: 2px;
+  font-weight: 600;
 }
 #PW .pt-p5-slot .pt-p5-user-card {
   width: 100%;
@@ -799,14 +960,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff3cd;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.45rem;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
 }
 #PW .pt-p43-label {
   font-size: clamp(0.5rem, 1.5vw, 0.72rem);
-  color: #8d6e63;
+  color: #94a3b8;
   text-align: center;
+  font-weight: 600;
 }
 
 /* P5.2 în grila P4.3: link partener */
@@ -929,9 +1092,26 @@
   overflow-x: hidden !important;
   width: 100% !important;
   -webkit-overflow-scrolling: touch;
+  background-color: #141a22;
+  scrollbar-color: rgba(148, 163, 184, 0.55) #141a22;
+  scrollbar-width: thin;
   /* Ca .pt-cell-2 / .pt-p2-grid: altfel nod text/spațiu înainte de grid = strut line-height 1rem = bandă #FCFCFC pe toată lățimea */
   font-size: 0 !important;
   line-height: 0 !important;
+}
+
+#PW .pt-p2-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+#PW .pt-p2-scroll::-webkit-scrollbar-track {
+  background: #141a22;
+}
+#PW .pt-p2-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.45);
+  border-radius: 4px;
+}
+#PW .pt-p2-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(203, 213, 225, 0.55);
 }
 
 /* Grid 4×3: 3 rânduri egale (--p2-row-h), restul la scroll */
@@ -948,6 +1128,7 @@
   box-sizing: border-box !important;
   align-content: start !important;
   justify-items: stretch !important;
+  background-color: #141a22;
   /* Spații/newline din șablon = noduri text = rând fantomă în grid = bandă #FCFCFC sub marginea de sus a P2 */
   font-size: 0 !important;
   line-height: 0 !important;
@@ -971,7 +1152,7 @@
   position: relative;
   overflow: hidden;
   border-radius: 6px;
-  background: #eee;
+  background: rgba(15, 23, 42, 0.55);
   border: none;
   box-sizing: border-box;
   min-width: 0;
@@ -986,7 +1167,7 @@
   grid-column: 1 / -1;
   padding: 1rem;
   text-align: center;
-  color: #666;
+  color: #94a3b8;
 }
 
 /* Celule padding: identice cu restul – chenar, fundal, border-radius */
@@ -994,8 +1175,8 @@
   position: relative !important;
   overflow: hidden !important;
   border-radius: 2px !important;
-  background: #eee !important;
-  border: 1px solid #333 !important;
+  background: rgba(15, 23, 42, 0.55) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-sizing: border-box !important;
   min-width: 0 !important;
   pointer-events: none;
@@ -1065,13 +1246,98 @@
   overflow: hidden;
   margin: 0;
   padding: 0;
-  /* Copil: .wish-btn (absolute) + .pt-p2-card-link (flex) — inima în afara linkului */
+  /* Copil: .pt-p2-card-top-bar + .pt-p2-card-link (flex) — inima în afara linkului */
   font-size: 1rem;
   line-height: normal;
 }
-/* Deasupra pozei din link; Promovează-mă e z-index 3 în .pt-p2-card-photo */
-#PW .pt-p2-card-cell .pt-p2-card-photo-wrap > .wish-btn {
-  z-index: 25 !important;
+
+/* Bară segmentată sus (login-like: sticlă închisă + accente discrete), înălțime minimă */
+#PW .pt-p2-card-cell .pt-p2-card-top-bar {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  z-index: 25;
+  display: flex;
+  align-items: stretch;
+  min-height: 28px;
+  max-height: 30px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.92);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+#PW .pt-p2-card-cell .pt-p2-card-top-seg {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -1px;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+#PW .pt-p2-card-cell .pt-p2-card-top-seg:first-child {
+  margin-left: 0;
+  border-left: none;
+}
+#PW .pt-p2-card-cell .pt-p2-wish-btn {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: 24px !important;
+  height: 24px !important;
+  flex-shrink: 0;
+}
+#PW .pt-p2-card-cell .pt-p2-wish-btn svg {
+  width: 13px !important;
+  height: 13px !important;
+}
+/* P2 inimă: același SVG ca restul site-ului, fără cerc — cyan / roșu pe bară închisă */
+#PW .pt-p2-card-cell .pt-p2-wish-btn.wish-btn {
+  border: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #67e8f9 !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+#PW .pt-p2-card-cell .pt-p2-wish-btn.wish-btn:hover {
+  color: #a5f3fc !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+}
+#PW .pt-p2-card-cell .pt-p2-wish-btn.wish-btn.is-active {
+  color: #f87171 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+}
+#PW .pt-p2-card-cell .pt-p2-wish-btn.wish-btn.is-active:hover {
+  color: #fecaca !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+}
+#PW .pt-p2-card-cell .pt-p2-state-text {
+  display: block;
+  max-width: 100%;
+  padding: 0 4px;
+  font-size: clamp(0.45rem, 1.35vw, 0.58rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  color: #e2e8f0;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 #PW .pt-p2-card-cell .pt-p2-card-photo {
   position: absolute;
@@ -1139,58 +1405,65 @@
   background: #fff;
 }
 
-/* Nume peste poză: overlay în partea de jos, caseta rămâne fixă 4×3 */
-#PW .pt-p2-card-cell .pt-p2-card-name--overlay {
+/* Nume: bandă jos (paletă ca logarea: fundal închis + linie cyan) */
+#PW .pt-p2-card-cell .pt-p2-card-name--bar {
   position: absolute !important;
   bottom: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  padding: 6px 6px 8px !important;
+  padding: 5px 6px 6px !important;
   margin: 0 !important;
-  font-size: clamp(0.6rem, 1.8vw, 0.75rem) !important;
+  font-size: clamp(0.58rem, 1.9vw, 0.72rem) !important;
   font-weight: 700 !important;
   text-align: center !important;
-  color: #fff !important;
-  line-height: 1.2 !important;
-  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 70%, transparent 100%) !important;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.9) !important;
+  color: #f1f5f9 !important;
+  line-height: 1.15 !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+  border-top: 1px solid rgba(6, 182, 212, 0.22) !important;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.25) !important;
   pointer-events: none !important;
-}
-
-/* Probă CTA promovare: lipit de latura superioară interioară a casetei pozei, centrat stânga-dreapta, fără ieșire din casetă */
-#PW .pt-p2-card-cell .pt-promoveaza-btn {
-  position: absolute;
-  left: 50%;
-  top: 1px;
-  transform: translateX(-50%);
-  z-index: 4;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1px 5px;
-  min-height: 16px;
-  max-width: calc(100% - 8px);
-  min-width: 0;
-  box-sizing: border-box;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 999px;
-  background: rgba(21, 101, 192, 0.62);
-  color: #fff;
-  font-size: clamp(0.36rem, 0.86vw, 0.48rem);
+}
+
+/* Promovare: segment din bară — același tip CTA cyan ca P4 (compact, fără text nou) */
+#PW .pt-p2-card-cell .pt-promoveaza-btn {
+  position: static;
+  transform: none;
+  left: auto;
+  top: auto;
+  z-index: auto;
+  display: block;
+  width: 100%;
+  min-height: 0;
+  padding: 2px 4px;
+  margin: 0;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  background: linear-gradient(175deg, #5ee9f3 0%, #22d3ee 28%, #06b6d4 52%, #0e7490 100%);
+  color: #fff !important;
+  font-size: clamp(0.5rem, 1.6vw, 0.62rem);
   font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.01em;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.28) inset,
+    0 1px 6px rgba(6, 182, 212, 0.25);
   cursor: pointer;
-  backdrop-filter: blur(1px);
+  appearance: none;
+  -webkit-appearance: none;
 }
 #PW .pt-p2-card-cell .pt-promoveaza-btn:hover {
-  background: rgba(198, 40, 40, 0.68);
-  transform: translateX(-50%);
+  color: #fff !important;
+  filter: brightness(1.06);
+  transform: none;
 }
 
 /* Card partener (P5.2 în grila P4.3) */
@@ -1264,8 +1537,8 @@
     grid-row: 2;
     grid-column: 1;
     order: 0;
-    background: #8e24aa;
-    border: 2px solid #000;
+    background: #141a22;
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
   #PW .pt-cell-2 {
     grid-row: 2;
@@ -1394,7 +1667,7 @@
   #PW .pt-p4-box-ads {
     flex: 0 0 auto;
     min-height: 0;
-    padding: 2px;
+    padding: 0;
   }
   #PW .pt-p43-desktop-wrap {
     display: none !important;
@@ -1459,9 +1732,22 @@
     max-height: none !important;
     min-height: 0 !important;
     align-items: stretch;
-    background: #8e24aa;
-    border-bottom: 2px solid #000;
+    gap: 2px;
+    background: #141a22;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  }
+  /* P4.2 + P4.3: casete separate ca .pt-p5-slot, cu gap între ele */
+  #PW .pt-p4-mobile-sticky .pt-p4-match-sustine-stack.pt-p4-box {
+    border-radius: 0.45rem !important;
+  }
+  #PW .pt-p4-mobile-sticky > .pt-p4-box-ads {
+    padding: 0 !important;
+    margin-top: 0 !important;
+    border-radius: 0.45rem !important;
+  }
+  #PW .pt-p4-mobile-sticky .pt-p43-mobil-row {
+    gap: 0 !important;
   }
   #PW .pt-p4-mobile-sticky > .pt-p4-box {
     flex: 0 0 auto !important;
@@ -1530,6 +1816,7 @@
     box-sizing: border-box;
     overflow: visible !important;
     align-items: stretch !important;
+    background-color: #141a22;
   }
   #PW .pt-p4-land-rail-box,
   #PW .pt-p4-land-rail-ads {
@@ -1555,7 +1842,7 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    gap: 4px;
+    gap: 0;
     box-sizing: border-box;
   }
   #PW .pt-p4-actions--land-col .pt-p4-btn-match,
@@ -1682,11 +1969,20 @@
     max-height: 84vh;
     overflow: auto;
     z-index: 10002;
-    border: 2px solid #0d47a1;
-    border-radius: 12px;
-    background: #fff;
-    box-shadow: 0 14px 42px rgba(0, 0, 0, 0.42);
-    padding: 0.45rem 0.45rem 0.6rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.85rem;
+    background: linear-gradient(
+      168deg,
+      rgba(24, 32, 46, 0.96) 0%,
+      rgba(14, 20, 32, 0.98) 100%
+    );
+    backdrop-filter: blur(20px) saturate(1.05);
+    -webkit-backdrop-filter: blur(20px) saturate(1.05);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+      0 24px 48px rgba(0, 0, 0, 0.55),
+      0 0 0 1px rgba(6, 182, 212, 0.08);
+    padding: 0.55rem 0.6rem 0.65rem;
   }
   #PW .pt-mobile-filters-backdrop[hidden] { display: none !important; }
   #PW .pt-mobile-filters-backdrop {
@@ -1702,17 +1998,27 @@
     justify-content: space-between;
     margin-bottom: 0.35rem;
   }
+  #PW .pt-mobile-filters-head strong {
+    color: #f1f5f9;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
   #PW .pt-mobile-filters-close {
     width: 2rem;
     height: 2rem;
-    border: 2px solid #0d47a1;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 999px;
-    background: #fff;
-    color: #0d47a1;
+    background: rgba(15, 23, 42, 0.6);
+    color: #e2e8f0;
     font-size: 1.15rem;
     font-weight: 900;
     line-height: 1;
     cursor: pointer;
+  }
+  #PW .pt-mobile-filters-close:hover {
+    border-color: rgba(6, 182, 212, 0.45);
+    color: #67e8f9;
   }
   #PW .pt-mobile-filters-actions {
     display: flex;
@@ -1722,12 +2028,17 @@
   #PW .pt-mobile-filters-ok {
     min-width: 7.2rem;
     min-height: 2rem;
-    border: none;
-    border-radius: 10px;
-    background: #1b5e20;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.45rem;
+    background: linear-gradient(175deg, #5ee9f3 0%, #22d3ee 28%, #06b6d4 52%, #0e7490 100%);
     color: #fff;
-    font-weight: 900;
+    font-weight: 700;
     cursor: pointer;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 12px rgba(6, 182, 212, 0.3);
+  }
+  #PW .pt-mobile-filters-ok:hover {
+    filter: brightness(1.06);
   }
   #PW .pt-p4-box-match .pt-p4-actions {
     flex-direction: column;
@@ -1739,16 +2050,15 @@
     flex: 1 1 0;
     width: 100%;
     min-height: 0;
-    border-radius: 0;
   }
   #PW .pt-p4-box-match .pt-p4-btn-filters {
     display: flex;
   }
   #PW .pt-p4-box-sustine .pt-p4-btn-sustine {
-    border-radius: 12px;
+    border-radius: 0.5rem;
   }
   #PW .pt-p4-match-sustine-stack.pt-p4-box .pt-p4-box-sustine .pt-p4-btn-sustine {
-    border-radius: 12px !important;
+    border-radius: 0 !important;
   }
 }
 
@@ -1783,13 +2093,13 @@
 
 /* Mobil landscape: fără bară mov portret; P1 ascuns; rail stânga/dreapta fixe în viewport (sub zona navbar măsurată de --nav-height) */
 @media (max-width: 767.98px) and (orientation: landscape) {
-  /* Dacă --nav-height pe html și înălțimea reală A0 diferă cu câțiva px, rămâne o fâșie #fff — același ton ca pub/rail */
+  /* Fundal aliniat cu login/signup (#141a22), rail-uri sticlă */
   body.page-pt #main_content {
-    background-color: #fff8e1 !important;
+    background-color: #141a22 !important;
   }
   #PW {
     --pt-land-rail-w: clamp(3.25rem, 14vw, 5.75rem);
-    background-color: #fff8e1;
+    background-color: #141a22;
   }
   #PW .pt-grid {
     padding-top: 0 !important;
@@ -1827,7 +2137,7 @@
     border: 0 !important;
     overflow: hidden !important;
   }
-  /* Fundal ca zona pub (P4.3 / P5.1) — fără benzi albe între casete sau de la .pt-p4-box */
+  /* Coloană rail = aceeași familie ca #P5 (#141a22 + padding ca .pt-p5-grid) */
   #PW .pt-mob-land-left,
   #PW .pt-mob-land-right {
     display: flex !important;
@@ -1844,9 +2154,10 @@
     margin: 0 !important;
     padding: 2px !important;
     overflow: hidden !important;
-    background: #fff8e1 !important;
-    border: 1px solid rgba(0, 0, 0, 0.5) !important;
+    background: #141a22 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-top: none !important;
+    box-shadow: none;
   }
   #PW .pt-mob-land-left {
     left: 0 !important;
@@ -1895,10 +2206,10 @@
   #PW .pt-mob-land-left .pt-p4-box,
   #PW .pt-mob-land-right .pt-p4-box,
   #PW .pt-mob-land-left .pt-p4-match-sustine-stack {
-    background: #fff8e1 !important;
+    background: transparent !important;
   }
   #PW .pt-p4-land-rail-box {
-    background: #fff8e1 !important;
+    background: transparent !important;
     flex-shrink: 0 !important;
     flex-grow: 0 !important;
     padding: 0 !important;
@@ -1920,40 +2231,40 @@
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    background: #fff8e1 !important;
+    background: transparent !important;
     padding: 2px !important;
     margin: 0 !important;
     border: 0 !important;
   }
-#PW .pt-p4-land-rail-box .pt-p4-btn-match,
-#PW .pt-p4-land-rail-box .pt-p4-btn-filters,
-#PW .pt-p4-land-rail-sustine .pt-p4-btn-sustine {
-  min-height: 1.6rem !important;
-  padding: 0.15rem 0.25rem !important;
-  font-size: clamp(0.48rem, 1.65vw, 0.66rem) !important;
-  border-radius: 8px !important;
-}
-#PW .pt-p4-land-rail-ms .pt-p4-land-rail-sustine .pt-p4-btn-sustine {
-  font-size: clamp(0.52rem, 3.15vw, 0.84rem) !important;
-  line-height: 1.08 !important;
-  padding: 0.1rem 0.18rem !important;
-  white-space: normal !important;
-  overflow-wrap: break-word;
-}
-#PW .pt-p4-land-rail-sustine {
-  flex-shrink: 0 !important;
-  flex-grow: 0 !important;
-  padding: 2px 0 !important;
-  margin: 0 !important;
-  min-height: 0 !important;
-  background: #fff8e1 !important;
-  align-items: stretch !important;
-  justify-content: flex-start !important;
-}
-#PW .pt-p4-land-rail-ms > .pt-p4-land-rail-sustine {
-  padding: 0 !important;
-  background: transparent !important;
-}
+  #PW .pt-p4-land-rail-box .pt-p4-btn-match,
+  #PW .pt-p4-land-rail-box .pt-p4-btn-filters,
+  #PW .pt-p4-land-rail-sustine .pt-p4-btn-sustine {
+    min-height: 1.6rem !important;
+    padding: 0.15rem 0.25rem !important;
+    font-size: clamp(0.48rem, 1.65vw, 0.66rem) !important;
+    border-radius: 0 !important;
+  }
+  #PW .pt-p4-land-rail-ms .pt-p4-land-rail-sustine .pt-p4-btn-sustine {
+    font-size: clamp(0.52rem, 3.15vw, 0.84rem) !important;
+    line-height: 1.08 !important;
+    padding: 0.1rem 0.18rem !important;
+    white-space: normal !important;
+    overflow-wrap: break-word;
+  }
+  #PW .pt-p4-land-rail-sustine {
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    padding: 2px 0 !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+    background: transparent !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+  }
+  #PW .pt-p4-land-rail-ms > .pt-p4-land-rail-sustine {
+    padding: 0 !important;
+    background: transparent !important;
+  }
   #PW .pt-p43-mobil-col--stack .pt-p43-slot {
     aspect-ratio: 1 / 1 !important;
     max-height: 4.25rem !important;

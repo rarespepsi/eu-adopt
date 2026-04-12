@@ -293,6 +293,32 @@ body.page-account .account-right-panel {
 		flex: 0 0 30%;
 		font-size: 0.7rem;
 	}
+	.cont-pf-left .signup-col-cui-stanga .signup-cui-prefix-row {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 0.25rem;
+		flex: 1;
+		min-width: 0;
+	}
+	.cont-pf-left .signup-cui-ro-display {
+		flex: 0 0 2.6rem;
+		width: 2.6rem;
+		min-width: 2.6rem;
+		box-sizing: border-box;
+		text-align: center;
+		font-weight: 700;
+		font-size: 0.68rem;
+		letter-spacing: 0.03em;
+		color: #1a1a1a;
+		padding: 0.15rem 0.2rem;
+		min-height: 1.85rem;
+		border: 1px solid rgba(0, 0, 0, 0.12);
+		border-radius: 4px;
+		background: rgba(255, 255, 255, 0.85);
+		cursor: default;
+		pointer-events: none;
+	}
 	.cont-pf-left .signup-col-cui-stanga select {
 		font-size: 0.7rem;
 		padding: 0.15rem 0.3rem;
@@ -624,11 +650,13 @@ body.page-account .account-right-panel {
 						<label>CUI / CIF *</label>
 						<div class="signup-col-cui-row">
 							<div class="signup-col-cui-stanga">
-								<label for="id_company_cui_has_ro">RO</label>
-								<select id="id_company_cui_has_ro" name="company_cui_has_ro" class="firma-field" disabled>
-									<option value="nu" {% if fp_firma.company_cui_has_ro|default_if_none:'' != 'da' and not user_profile.company_cui_has_ro %}selected{% endif %}>Fără RO</option>
-									<option value="da" {% if fp_firma.company_cui_has_ro == 'da' or user_profile.company_cui_has_ro %}selected{% endif %}>RO</option>
+								<div class="signup-cui-prefix-row">
+									<input type="text" id="id_company_cui_ro_display" class="signup-cui-ro-display firma-field" readonly tabindex="-1" autocomplete="off" value="{% if fp_firma.company_cui_has_ro == 'da' or user_profile.company_cui_has_ro %}RO{% endif %}" aria-label="{% if fp_firma.company_cui_has_ro == 'da' or user_profile.company_cui_has_ro %}Prefix CUI: RO{% else %}Fără prefix RO{% endif %}" />
+									<select id="id_company_cui_has_ro" name="company_cui_has_ro" class="firma-field signup-cui-ro-select" disabled data-ro-display-id="id_company_cui_ro_display" aria-label="Cu sau fără prefix RO la CUI">
+									<option value="nu" {% if fp_firma.company_cui_has_ro|default_if_none:'' != 'da' and not user_profile.company_cui_has_ro %}selected{% endif %}>Fără</option>
+									<option value="da" {% if fp_firma.company_cui_has_ro == 'da' or user_profile.company_cui_has_ro %}selected{% endif %}>Cu</option>
 								</select>
+								</div>
 							</div>
 							<div class="signup-col-cui-dreapta">
 								<label for="id_company_cui">CUI</label>
@@ -962,6 +990,7 @@ body.page-account .account-right-panel {
 
 {% block extra_js %}
 {% if display_role|default:account_profile.role == 'pf' or display_role|default:account_profile.role == 'collaborator' or display_role|default:account_profile.role == 'org' %}
+<script src="{% static 'js/cui_cu_ro_display.js' %}?v=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {

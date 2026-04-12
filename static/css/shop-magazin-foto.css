@@ -269,37 +269,6 @@ button.smf-print__link {
   overflow: hidden;
 }
 
-.smf-print__tape {
-  position: absolute;
-  z-index: 2;
-  width: 38%;
-  max-width: 4.2rem;
-  height: 0.55rem;
-  top: -0.12rem;
-  left: 50%;
-  transform: translateX(-50%) rotate(-1deg);
-  border-radius: 2px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 235, 180, 0.35),
-    rgba(255, 248, 220, 0.92) 40%,
-    rgba(255, 235, 180, 0.35)
-  );
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
-  opacity: 0.95;
-  pointer-events: none;
-}
-
-.smf-print:nth-child(even) .smf-print__tape {
-  transform: translateX(-50%) rotate(1.2deg);
-  background: linear-gradient(
-    90deg,
-    rgba(220, 237, 255, 0.4),
-    rgba(236, 245, 255, 0.9) 45%,
-    rgba(220, 237, 255, 0.4)
-  );
-}
-
 /* Pioneză discretă */
 .smf-print__mat::after {
   content: "";

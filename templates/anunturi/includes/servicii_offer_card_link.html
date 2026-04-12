@@ -23,7 +23,7 @@
 		data-offer-id="{{ offer.pk }}"
 		data-adoption-bonus-kind="{{ offer.partner_kind }}"
 		aria-pressed="{% if offer.adoption_bonus_selected %}true{% else %}false{% endif %}"
-		title="Salvează oferta pentru bonus la finalizarea adopției (opțional)">♥</button>
+		title="Salvează oferta pentru bonus la finalizarea adopției (opțional)">{% include "anunturi/includes/ilove_heart_svg.html" %}</button>
 	{% endif %}
 	<a class="sw-s2-1-vet-offer-link sw-vet-offer-modal-trigger" href="{% url 'public_offer_detail' offer.pk %}" data-modal-tpl="sw-vet-offer-modal-tpl-{{ offer.pk }}">
 		{% if offer.image %}<img src="{{ offer.image.url }}" alt="{{ offer.title }}" loading="lazy" />{% endif %}

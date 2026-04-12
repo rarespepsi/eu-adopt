@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=22" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=23" type="text/css" media="screen" />
 <style>
 	/* La fel ca PT: main_wrap, main_content, apoi SW cu aceleași dimensiuni ca PW */
 	body.page-servicii #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -280,21 +280,27 @@
 		width: 26px;
 		height: 26px;
 		border: none;
-		border-radius: 50%;
-		background: rgba(255, 255, 255, 0.92);
+		border-radius: 0;
+		background: transparent;
 		color: #c62828;
-		font-size: 14px;
-		line-height: 1;
+		font-size: 0;
+		line-height: 0;
 		cursor: pointer;
-		box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+		box-shadow: none;
 		padding: 0;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 	}
+	#SW .sw-adopt-bonus-heart .il-heart-svg {
+		width: 16px;
+		height: 16px;
+		display: block;
+		filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+	}
 	#SW .sw-adopt-bonus-heart.is-on {
-		background: #c62828;
-		color: #fff;
+		background: transparent;
+		color: #c62828;
 	}
 	/* Doar inimioara aleasă rămâne vizibilă în aceeași categorie (cabinet / salon / magazin) */
 	#SW .sw-adopt-bonus-heart.sw-adopt-bonus-heart--hidden {

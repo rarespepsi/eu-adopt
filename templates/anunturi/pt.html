@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt117-revino-s61" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt127-p2-dark-gaps-scrollbar" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -66,18 +66,30 @@
 	.pt-match-modal__backdrop {
 		position: absolute;
 		inset: 0;
-		background: rgba(0,0,0,0.55);
+		background: rgba(0,0,0,0.6);
+		backdrop-filter: blur(4px);
+		-webkit-backdrop-filter: blur(4px);
 	}
 	.pt-match-modal__panel {
 		position: relative;
 		width: min(520px, calc(100vw - 2rem));
 		max-height: calc(100vh - 2rem);
 		overflow: auto;
-		background: #fff;
-		border-radius: 10px;
+		background: linear-gradient(
+			168deg,
+			rgba(24, 32, 46, 0.96) 0%,
+			rgba(14, 20, 32, 0.98) 100%
+		);
+		border-radius: 0.85rem;
 		padding: 1rem 1.1rem 1.2rem;
 		box-sizing: border-box;
-		border: 2px solid rgba(0,0,0,0.85);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+			0 24px 48px rgba(0, 0, 0, 0.5),
+			0 0 0 1px rgba(6, 182, 212, 0.08);
+		backdrop-filter: blur(20px) saturate(1.05);
+		-webkit-backdrop-filter: blur(20px) saturate(1.05);
 	}
 	.pt-match-modal__close {
 		position: absolute;
@@ -86,18 +98,23 @@
 		width: 2rem;
 		height: 2rem;
 		border-radius: 999px;
-		border: 2px solid rgba(0,0,0,0.6);
-		background: #fff;
-		color: #111;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		background: rgba(15, 23, 42, 0.65);
+		color: #e2e8f0;
 		cursor: pointer;
 		font-size: 1.3rem;
 		line-height: 1;
 	}
+	.pt-match-modal__close:hover {
+		border-color: rgba(6, 182, 212, 0.45);
+		color: #67e8f9;
+	}
 	.pt-match-modal__title {
 		margin: 0 0 0.7rem 0;
 		font-size: 1.15rem;
-		color: #1a237e;
-		font-weight: 900;
+		color: #f1f5f9;
+		font-weight: 700;
+		letter-spacing: 0.02em;
 	}
 	.pt-match-modal__traits-wrap { margin-top: 0.4rem; }
 	.pt-match-modal__traits-list {
@@ -113,9 +130,12 @@
 		gap: 0.45rem;
 		align-items: center;
 		font-size: 0.92rem;
-		font-weight: 700;
-		color: #222;
+		font-weight: 600;
+		color: #e2e8f0;
 		user-select: none;
+	}
+	.pt-match-modal__traits-list li label span {
+		color: #cbd5e1;
 	}
 	.pt-match-modal__actions {
 		margin-top: 1rem;
@@ -123,20 +143,24 @@
 		justify-content: center;
 	}
 	.pt-match-modal__submit {
-		padding: 0.55rem 1rem;
-		border: none;
-		border-radius: 10px;
-		background: #c62828;
+		padding: 0.52rem 1.1rem;
+		border: 1px solid rgba(255, 255, 255, 0.22);
+		border-radius: 0.45rem;
+		background: linear-gradient(175deg, #5ee9f3 0%, #22d3ee 28%, #06b6d4 52%, #0e7490 100%);
 		color: #fff;
-		font-weight: 900;
+		font-weight: 700;
 		cursor: pointer;
+		text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+		box-shadow: 0 2px 14px rgba(6, 182, 212, 0.35);
 	}
-	@keyframes ptMatchBlink {
-		0%, 49% { opacity: 1; }
-		50%, 100% { opacity: 0.25; }
+	.pt-match-modal__submit:hover {
+		filter: brightness(1.06);
 	}
-	.pt-match-btn--active {
-		animation: ptMatchBlink 0.9s steps(2, end) infinite;
+	.pt-match-modal__traits-list input[type="checkbox"] {
+		accent-color: #06b6d4;
+		width: 1rem;
+		height: 1rem;
+		flex-shrink: 0;
 	}
 	@media (max-width: 420px) {
 		.pt-match-modal__traits-list { grid-template-columns: 1fr; }
@@ -781,6 +805,17 @@
 	})();
 
 	var defaultMatchText = matchBtns.length ? (matchBtns[0].textContent || "").trim() : "";
+	var defaultMatchTitle = matchBtns.length ? (matchBtns[0].getAttribute("title") || "") : "";
+
+	function countCheckedTraitsInForm() {
+		if (!form) return 0;
+		var n = 0;
+		var inputs = form.querySelectorAll('input[type="checkbox"]');
+		Array.prototype.forEach.call(inputs, function(inp) {
+			if (inp.checked) n++;
+		});
+		return n;
+	}
 
 	function readSelectedTraits() {
 		try {
@@ -798,16 +833,25 @@
 			if (!matchBtn) return;
 			if (active) {
 				matchBtn.textContent = "Renunță la potrivire";
+				matchBtn.setAttribute("title", "Apasă pentru a renunța la potrivire și a reseta bifele");
+				matchBtn.setAttribute("aria-label", "Renunță la potrivire");
 				matchBtn.classList.add("pt-match-btn--active");
 			} else {
 				matchBtn.textContent = defaultMatchText || "Găsește-mi perechea";
+				if (defaultMatchTitle) matchBtn.setAttribute("title", defaultMatchTitle);
+				else matchBtn.removeAttribute("title");
+				matchBtn.setAttribute("aria-label", defaultMatchText || "Găsește-mi perechea");
 				matchBtn.classList.remove("pt-match-btn--active");
 			}
 		});
 	}
 
+	function syncMatchBtnFromTraits() {
+		setMatchBtnActive(isActive || countCheckedTraitsInForm() > 0);
+	}
+
 	var isActive = readSelectedTraits().length > 0;
-	setMatchBtnActive(isActive);
+	syncMatchBtnFromTraits();
 
 	function openModal() {
 		if (!modal) return;
@@ -828,6 +872,7 @@
 				inp.checked = selectedSet.has(inp.name);
 			});
 		} catch (e) {}
+		syncMatchBtnFromTraits();
 	}
 	function closeModal() {
 		if (!modal) return;
@@ -839,13 +884,21 @@
 	Array.prototype.forEach.call(matchBtns, function(btn) {
 		btn.addEventListener("click", function(e) {
 			e.preventDefault();
-			// Dacă există deja o selecție aplicată (din note), click pe buton = reset.
+			// Dacă există deja o selecție aplicată (localStorage + filtru), click = reset complet.
 			if (isActive) {
 				try { window.localStorage.removeItem("ptMatchTraits"); } catch (err) {}
 				isActive = false;
 				setMatchBtnActive(false);
 				closeModal();
 				window.location.href = window.location.pathname + (window.location.search || "");
+				return;
+			}
+			// Bife în modal fără OK încă: click = debifează tot și închide.
+			if (countCheckedTraitsInForm() > 0) {
+				var inputs = form ? form.querySelectorAll('input[type="checkbox"]') : [];
+				Array.prototype.forEach.call(inputs, function(inp) { inp.checked = false; });
+				syncMatchBtnFromTraits();
+				closeModal();
 				return;
 			}
 			openModal();
@@ -886,6 +939,11 @@
 	});
 
 	if (form) {
+		form.addEventListener("change", function(ev) {
+			if (ev.target && ev.target.matches && ev.target.matches('input[type="checkbox"]')) {
+				syncMatchBtnFromTraits();
+			}
+		});
 		form.addEventListener("submit", function(e) {
 			e.preventDefault();
 			try {

@@ -30,12 +30,30 @@
 		<link rel="stylesheet" href="{% static 'includes/fancybox/jquery.fancybox.css' %}" type="text/css" media="screen" />
 		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
 		<style>
+			/* PET SINGLE – fundal ca înscriere PF (signup): #141a22 + casete sticlă */
+			/* Tipografie ca la înscriere PF / ONG / Colaborator (.signup-caseta) */
+			body.page-pet-single #MW,
+			body.page-pet-single .pet-media-modal,
+			body.page-pet-single .pet-app-msg-modal,
+			body.page-pet-single .pet-adopt-choice-modal {
+				font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+			}
+			body.page-pet-single {
+				background-color: #141a22 !important;
+			}
 			/* PET SINGLE – clonă vizuală MyPet Fișă (read-only) */
 			body.page-pet-single #main_wrap,
 			body.page-pet-single #main_content {
 				min-height: 100vh;
 				margin: 0;
 				padding: 0;
+			}
+			/* Fundal: voal ~78% #141a22 peste imagine (JS) — echilibru vizibilitate / lizibilitate */
+			body.page-pet-single #main_wrap {
+				background-color: #141a22;
+				background-repeat: no-repeat, no-repeat;
+				background-position: center, center;
+				background-size: cover, cover;
 			}
 			/* Leagă layout-ul strict de viewport (fără „jos” sub ecran) */
 			body.page-pet-single #main_wrap {
@@ -51,6 +69,8 @@
 				padding-top: 0 !important;
 				padding-bottom: 0 !important;
 				margin-top: 0 !important;
+				background: transparent !important;
+				box-shadow: none !important;
 			}
 			/* fără sidebar-uri pe fișa PET */
 			body.page-pet-single .layout {
@@ -87,11 +107,8 @@
 				margin: 0;
 				box-sizing: border-box;
 				overflow: hidden;
-				/* doar culoare de rezervă — imaginea WT e setată din JS pe #MW (sub tot, inclusiv colțul cu QR) */
-				background-color: #f5e39b;
-				background-size: cover;
-				background-position: center;
-				background-repeat: no-repeat;
+				/* transparent: fundalul discret e pe #main_wrap */
+				background: transparent;
 			}
 
 			.mypet-fisa-inner {
@@ -108,17 +125,35 @@
 				box-sizing: border-box;
 			}
 
-			/* Coloana stânga – poze */
+			/* Coloana stânga – poze (casetă sticlă ca signup PF) */
 			.mypet-fisa-col-photos {
 				display: flex;
 				flex-direction: column;
 				grid-row: 1 / 3;
 				grid-column: 1 / 2;
-				padding: 0;
+				padding: 0.35rem;
 				margin: 0;
-				/* Slot 1 sus (sub navbar), slot 4 jos: ocupă toată înălțimea wrapperului */
+				gap: 4px;
 				height: 100%;
 				align-self: stretch;
+				min-height: 0;
+				box-sizing: border-box;
+				/* sticlă intermediară — fundal vizibil dar nu dominant */
+				background: linear-gradient(
+					168deg,
+					rgba(24, 32, 46, 0.22) 0%,
+					rgba(18, 24, 36, 0.28) 48%,
+					rgba(14, 20, 32, 0.34) 100%
+				);
+				backdrop-filter: blur(22px) saturate(1.04);
+				-webkit-backdrop-filter: blur(22px) saturate(1.04);
+				border: 1px solid rgba(255, 255, 255, 0.055);
+				border-radius: 0.85rem;
+				box-shadow:
+					0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+					0 1px 0 rgba(255, 255, 255, 0.045) inset,
+					0 12px 28px rgba(0, 0, 0, 0.32),
+					0 0 0 1px rgba(6, 182, 212, 0.04);
 			}
 
 			.mypet-fisa-photo-slot {
@@ -129,8 +164,10 @@
 				justify-content: flex-start;
 				gap: 0;
 				padding: 0;
-				font-size: 0.75rem;
-				font-weight: 600;
+				font-size: 0.68rem;
+				font-weight: 500;
+				line-height: 1.2;
+				letter-spacing: 0.01em;
 				border-bottom: 0;
 				box-sizing: border-box;
 			}
@@ -164,10 +201,10 @@
 				justify-content: center;
 				height: 100%;
 				background: rgba(0,0,0,0.10);
-				color: #1a1a1a;
-				font-weight: 900;
-				letter-spacing: 0.08em;
-				text-transform: uppercase;
+				color: #f1f5f9;
+				font-weight: 600;
+				letter-spacing: 0.02em;
+				text-transform: none;
 				user-select: none;
 			}
 			/* Icon Play în slotul video (semitransparent) */
@@ -229,10 +266,12 @@
 				z-index: 2;
 				width: 100%;
 				padding: 0.35rem 0.5rem;
-				font-size: 0.7rem;
-				font-weight: 700;
-				color: #333;
-				background: rgba(255,248,225,0.9);
+				font-size: 0.68rem;
+				font-weight: 500;
+				line-height: 1.32;
+				letter-spacing: 0.01em;
+				color: #f1f5f9;
+				background: rgba(15, 23, 42, 0.82);
 				border: none;
 				cursor: default;
 				text-align: center;
@@ -285,8 +324,11 @@
 				width: 100%;
 				margin-top: 0;
 				padding: 0.15rem 0.4rem;
-				font-size: 0.65rem;
-				font-weight: 700;
+				font-size: 0.68rem;
+				font-weight: 600;
+				line-height: 1.25;
+				letter-spacing: 0.01em;
+				font-family: inherit;
 				color: #fff;
 				background: #c62828;
 				border: none;
@@ -370,6 +412,12 @@
 				text-overflow: ellipsis;
 				white-space: nowrap;
 				justify-content: center;
+				/* ca .signup-form-header h1 (PF) */
+				font-size: clamp(1.02rem, 2vw, 1.2rem);
+				font-weight: 600;
+				letter-spacing: -0.02em;
+				line-height: 1.2;
+				text-transform: none;
 			}
 			.mypet-fisa-header-slot .mypet-fisa-tab {
 				align-self: center;
@@ -399,11 +447,12 @@
 				/* mai lipit de text (fără schimbare text) */
 				padding: 0.12rem 0.44rem;
 				border-radius: 18px;
-				font-size: 0.85rem; /* ca în pagina mamă */
-				font-weight: 800;
-				text-transform: uppercase;
-				letter-spacing: 0.08em;
-				line-height: 1.05;
+				font-size: 0.8rem;
+				font-weight: 600;
+				text-transform: none;
+				letter-spacing: 0.02em;
+				line-height: 1.3;
+				font-family: inherit;
 				display: inline-flex;
 				align-items: center;
 				align-self: start;
@@ -415,14 +464,27 @@
 			.mypet-fisa-main-box {
 				flex: 1 1 auto;
 				min-height: 0;
-				background: #ffecb3;
-				border-radius: 8px 0 0 8px;
+				position: relative;
+				border-radius: 0.85rem 0 0 0.85rem;
 				padding: 0.18rem 0.3rem;
 				box-sizing: border-box;
-				/* WT fundal (setat din JS) */
-				background-size: cover;
-				background-position: center;
-				background-repeat: no-repeat;
+				background-image: none !important;
+				/* sticlă intermediară — fundal vizibil dar nu dominant */
+				background: linear-gradient(
+					168deg,
+					rgba(24, 32, 46, 0.22) 0%,
+					rgba(18, 24, 36, 0.28) 48%,
+					rgba(14, 20, 32, 0.34) 100%
+				);
+				backdrop-filter: blur(22px) saturate(1.04);
+				-webkit-backdrop-filter: blur(22px) saturate(1.04);
+				border: 1px solid rgba(255, 255, 255, 0.055);
+				border-right: none;
+				box-shadow:
+					0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+					0 1px 0 rgba(255, 255, 255, 0.045) inset,
+					0 12px 28px rgba(0, 0, 0, 0.32),
+					0 0 0 1px rgba(6, 182, 212, 0.04);
 			}
 
 			.mypet-fisa-main-cols {
@@ -438,20 +500,23 @@
 				gap: 0.09rem;
 			}
 
+			/* ca .signup-caseta h2 (PF) / .signup-org-caseta h2 (ONG) */
 			.mypet-fisa-section-title {
 				margin: 0 0 0.14rem 0;
-				font-size: 0.85rem; /* ca în pagina mamă */
-				font-weight: 800;
-				text-transform: uppercase;
-				color: #0050b5;
-				line-height: 1.05;
-				display: inline-block;
-				width: fit-content;
+				font-size: 0.7rem;
+				font-weight: 600;
+				text-transform: none;
+				color: #cbd5e1;
+				letter-spacing: 0.02em;
+				line-height: 1.2;
+				display: block;
+				width: 100%;
 				max-width: 100%;
-				padding: 2px 6px;
-				border-radius: 6px;
-				background: rgba(240, 240, 240, 0.55);
-				backdrop-filter: blur(1.5px);
+				padding: 0;
+				border-radius: 0;
+				background: none;
+				backdrop-filter: none;
+				text-align: left;
 			}
 
 			.mypet-add-field {
@@ -460,52 +525,68 @@
 				gap: 0.1rem;
 			}
 
+			/* ca .signup-field label (PF) */
 			.mypet-add-field label {
-				font-size: 0.8rem; /* ca în pagina mamă */
-				font-weight: 600;
-				color: #0050b5;
-				line-height: 1.05;
-				display: inline-block;
-				width: fit-content;
+				font-size: 0.68rem;
+				font-weight: 500;
+				color: #cbd5e1;
+				letter-spacing: 0.01em;
+				line-height: 1.2;
+				text-transform: none;
+				display: block;
+				width: auto;
 				max-width: 100%;
-				padding: 2px 6px;
-				border-radius: 6px;
-				background: rgba(240, 240, 240, 0.55);
-				backdrop-filter: blur(1.5px);
+				padding: 0;
+				margin-bottom: 0.15rem;
+				border-radius: 0;
+				background: none;
+				backdrop-filter: none;
 			}
 
+			/* ca .signup-field input (PF) */
 			.mypet-add-field input,
 			.mypet-add-field textarea {
 				width: 100%;
 				box-sizing: border-box;
-				padding: 0.14rem 0.22rem;
-				font-size: 0.8rem; /* ca în pagina mamă */
-				border-radius: 4px;
-				border: 1px solid #d2b27a;
-				background: #fffef7;
-				line-height: 1.05;
+				padding: 0.38rem 0.5rem;
+				font-size: 0.78rem;
+				line-height: 1.25;
+				font-family: inherit;
+				border-radius: 0.45rem;
+				border: 1px solid rgba(255, 255, 255, 0.08);
+				background: rgba(15, 23, 42, 0.38);
+				color: #f8fafc;
+				box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 1px 4px rgba(0, 0, 0, 0.18);
 			}
 			.mypet-add-field select {
 				width: 100%;
 				box-sizing: border-box;
-				padding: 0.14rem 1.24rem 0.14rem 0.22rem;
-				font-size: 0.8rem; /* ca în pagina mamă */
-				border-radius: 4px;
-				border: 1px solid #d2b27a;
+				padding: 0.38rem 1.24rem 0.38rem 0.5rem;
+				font-size: 0.78rem;
+				line-height: 1.25;
+				font-family: inherit;
+				border-radius: 0.45rem;
+				border: 1px solid rgba(255, 255, 255, 0.08);
 				appearance: none;
 				-moz-appearance: none;
 				-webkit-appearance: none;
-				background-color: #fffef7;
+				background-color: rgba(15, 23, 42, 0.38);
+				color: #f8fafc;
 				background-image: none;
 				background-repeat: no-repeat;
 				background-position: right 0.5rem center;
+				box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 1px 4px rgba(0, 0, 0, 0.18);
 			}
 			.mypet-add-field input.mypet-fisa-input-with-arrow {
-				background-color: #fffef7;
+				background-color: rgba(15, 23, 42, 0.38);
 				background-image: none;
 				background-repeat: no-repeat;
 				background-position: right 0.5rem center;
 				padding-right: 0.22rem;
+			}
+			.mypet-add-field input::placeholder,
+			.mypet-add-field textarea::placeholder {
+				color: #6b7280;
 			}
 
 			.mypet-add-field textarea { resize: none; }
@@ -538,28 +619,42 @@
 			.mypet-fisa-traits-box {
 				flex: 1 1 auto;
 				min-height: 0;
-				background: #ffecb3;
-				border-radius: 0 8px 8px 0;
+				position: relative;
+				border-radius: 0 0.85rem 0.85rem 0;
 				padding: 0.18rem 0.3rem;
 				box-sizing: border-box;
 				display: flex;
 				flex-direction: column;
-				/* WT fundal (setat din JS) */
-				background-size: cover;
-				background-position: center;
-				background-repeat: no-repeat;
-				position: relative;
+				background-image: none !important;
+				/* sticlă intermediară — fundal vizibil dar nu dominant */
+				background: linear-gradient(
+					168deg,
+					rgba(24, 32, 46, 0.22) 0%,
+					rgba(18, 24, 36, 0.28) 48%,
+					rgba(14, 20, 32, 0.34) 100%
+				);
+				backdrop-filter: blur(22px) saturate(1.04);
+				-webkit-backdrop-filter: blur(22px) saturate(1.04);
+				border: 1px solid rgba(255, 255, 255, 0.055);
+				border-left: none;
+				box-shadow:
+					0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+					0 1px 0 rgba(255, 255, 255, 0.045) inset,
+					0 12px 28px rgba(0, 0, 0, 0.32),
+					0 0 0 1px rgba(6, 182, 212, 0.04);
 				overflow: hidden;
 			}
 
 			.mypet-fisa-observatii-box .mypet-fisa-section-title {
 				margin-bottom: 0.1rem;
 			}
+			/* ca .signup-intro */
 			.mypet-fisa-observatii-hint {
 				margin: 0 0 0.25rem 0;
-				font-size: 0.72rem;
-				line-height: 1.2;
-				color: #0050b5;
+				font-size: 0.78rem;
+				line-height: 1.35;
+				font-weight: 400;
+				color: #94a3b8;
 			}
 			.mypet-fisa-observatii-field {
 				flex: 0 1 auto;
@@ -579,16 +674,19 @@
 				align-self: stretch;
 			}
 
+			/* ca .signup-bifa-label */
 			.mypet-fisa-traits-list {
 				list-style: none !important;
 				margin: 0.14rem 0 0;
 				padding: 0 !important;
 				padding-left: 0 !important;
-				font-size: 0.8rem; /* ca în pagina mamă */
+				font-size: 0.68rem;
+				font-weight: 400;
 				display: flex;
 				flex-direction: column;
 				gap: 0.075rem;
-				line-height: 1.05;
+				line-height: 1.32;
+				letter-spacing: 0.01em;
 			}
 			.mypet-fisa-traits-list li {
 				list-style: none !important;
@@ -604,15 +702,19 @@
 				grid-template-columns: auto 1fr;
 				gap: 0.35rem;
 				align-items: center;
-				color: #1a1a1a;
-				background: rgba(240, 240, 240, 0.85);
-				border: 1px solid rgba(0, 0, 0, 0.12);
+				font-weight: 400;
+				color: #e2e8f0;
+				background: rgba(15, 23, 42, 0.45);
+				border: 1px solid rgba(255, 255, 255, 0.1);
 				border-radius: 6px;
 				padding: 0.08rem 0.18rem;
 				box-sizing: border-box;
 			}
 
-			.mypet-fisa-traits-list input[type="checkbox"] { margin: 0; }
+			.mypet-fisa-traits-list input[type="checkbox"] {
+				margin: 0;
+				accent-color: #06b6d4;
+			}
 
 			.mypet-btn {
 				display: inline-flex;
@@ -621,7 +723,10 @@
 				padding: 0.35rem 0.9rem;
 				border-radius: 999px;
 				font-size: 0.8rem;
-				font-weight: 700;
+				font-weight: 600;
+				line-height: 1.3;
+				letter-spacing: 0.02em;
+				font-family: inherit;
 				text-decoration: none;
 				border: 1px solid transparent;
 				cursor: default;
@@ -630,13 +735,19 @@
 				pointer-events: none;
 			}
 			.mypet-btn-primary { background: #9d1c1c; color: #fff; }
-			.mypet-btn-secondary { background: #fff8e1; color: #5d4037; border-color: #ffcc80; }
+			.mypet-btn-secondary {
+				background: rgba(15, 23, 42, 0.55);
+				color: #e2e8f0;
+				border-color: rgba(255, 255, 255, 0.18);
+			}
 			/* Butonul mic de trimitere mesaj (activ/clickabil) */
 			.pet-msg-send-btn {
 				padding: 0.2rem 0.58rem;
-				font-size: 0.68rem;
-				font-weight: 800;
-				line-height: 1.1;
+				font-size: 0.78rem;
+				font-weight: 600;
+				line-height: 1.25;
+				letter-spacing: 0.01em;
+				font-family: inherit;
 				border-radius: 999px;
 				background: #9d1c1c;
 				color: #fff;
@@ -670,10 +781,21 @@
 				width: min(62vw, 1100px);
 				max-width: 96vw;
 				max-height: 96vh;
-				background: rgba(255, 255, 255, 0.92);
-				border-radius: 10px;
+				color-scheme: dark;
+				background: linear-gradient(
+					168deg,
+					rgba(24, 32, 46, 0.92) 0%,
+					rgba(14, 20, 32, 0.96) 100%
+				);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				border-radius: 0.85rem;
 				overflow: hidden;
-				box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+				box-shadow:
+					0 0 0 1px rgba(0, 0, 0, 0.45) inset,
+					0 24px 48px rgba(0, 0, 0, 0.55),
+					0 0 0 1px rgba(6, 182, 212, 0.06);
+				backdrop-filter: blur(20px) saturate(1.05);
+				-webkit-backdrop-filter: blur(20px) saturate(1.05);
 				display: flex;
 				flex-direction: column;
 			}
@@ -685,10 +807,13 @@
 				width: 34px;
 				height: 34px;
 				border-radius: 999px;
-				border: 1px solid rgba(0,0,0,0.2);
-				background: rgba(255,255,255,0.9);
-				color: #111;
-				font-weight: 900;
+				border: 1px solid rgba(255, 255, 255, 0.2);
+				background: rgba(15, 23, 42, 0.75);
+				color: #f1f5f9;
+				font-size: 0.78rem;
+				font-weight: 600;
+				font-family: inherit;
+				letter-spacing: 0.02em;
 				cursor: pointer;
 				line-height: 1;
 			}
@@ -701,16 +826,20 @@
 				height: 34px;
 				padding: 0 10px;
 				border-radius: 999px;
-				border: 1px solid rgba(0,0,0,0.2);
-				background: rgba(255,255,255,0.75);
-				color: #111;
-				font-weight: 900;
+				border: 1px solid rgba(255, 255, 255, 0.18);
+				background: rgba(15, 23, 42, 0.72);
+				color: #f1f5f9;
+				font-size: 0.78rem;
+				font-weight: 600;
+				font-family: inherit;
+				letter-spacing: 0.02em;
 				cursor: pointer;
-				line-height: 1;
+				line-height: 1.25;
 				display: inline-flex;
 				align-items: center;
 				gap: 6px;
-				backdrop-filter: blur(2px);
+				backdrop-filter: blur(10px);
+				-webkit-backdrop-filter: blur(10px);
 			}
 			.pet-media-modal__share:active { transform: scale(0.99); }
 			.pet-media-modal__body {
@@ -730,8 +859,13 @@
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				background: rgba(255, 255, 255, 0.92);
-				border-top: 1px solid rgba(0,0,0,0.12);
+				background: rgba(15, 23, 42, 0.65);
+				border-top: 1px solid rgba(255, 255, 255, 0.08);
+				color: #e2e8f0;
+				font-size: 0.78rem;
+				line-height: 1.35;
+				font-weight: 400;
+				font-family: inherit;
 			}
 			.pet-media-modal__body img,
 			.pet-media-modal__body video {
@@ -745,18 +879,42 @@
 				object-fit: contain;
 			}
 
+			/* Etichetă stare adopție (fixed) — tipografie ca signup */
+			body.page-pet-single .pet-adoption-state-corner {
+				position: fixed;
+				right: 18px;
+				bottom: 120px;
+				z-index: 14;
+				padding: 6px 10px;
+				border-radius: 999px;
+				background: rgba(0, 0, 0, 0.72);
+				color: #fff;
+				font-size: 0.72rem;
+				font-weight: 600;
+				letter-spacing: 0.02em;
+				line-height: 1.35;
+				font-family: inherit;
+			}
+
 			/* QR (colț jos dreapta) */
 			.pet-qr-corner {
 				position: fixed;
 				right: 10px;
 				bottom: 10px;
 				z-index: 2500;
-				background: rgba(255, 255, 255, 0.82);
-				border: 1px solid rgba(0,0,0,0.18);
-				border-radius: 10px;
+				background: linear-gradient(
+					168deg,
+					rgba(24, 32, 46, 0.55) 0%,
+					rgba(14, 20, 32, 0.72) 100%
+				);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				border-radius: 0.85rem;
 				padding: 8px;
-				box-shadow: 0 10px 26px rgba(0,0,0,0.22);
-				backdrop-filter: blur(2px);
+				box-shadow:
+					0 0 0 1px rgba(0, 0, 0, 0.4) inset,
+					0 10px 26px rgba(0, 0, 0, 0.35);
+				backdrop-filter: blur(14px) saturate(1.05);
+				-webkit-backdrop-filter: blur(14px) saturate(1.05);
 				display: flex;
 				flex-direction: column;
 				gap: 6px;
@@ -766,13 +924,13 @@
 				box-sizing: border-box;
 			}
 			.pet-qr-corner__title {
-				font-size: 0.68rem;
-				font-weight: 900;
-				letter-spacing: 0.06em;
-				text-transform: uppercase;
-				color: #111;
+				font-size: 0.72rem;
+				font-weight: 600;
+				letter-spacing: 0.02em;
+				text-transform: none;
+				color: #f1f5f9;
 				margin: 0;
-				line-height: 1.05;
+				line-height: 1.2;
 				text-align: center;
 			}
 			.pet-qr-corner__img {
@@ -781,16 +939,17 @@
 				display: block;
 				background: #fff;
 				border-radius: 6px;
-				border: 1px solid rgba(0,0,0,0.10);
+				border: 1px solid rgba(255, 255, 255, 0.12);
 				box-sizing: border-box;
 			}
 			.pet-qr-corner__hint {
-				font-size: 0.62rem;
-				color: #222;
+				font-size: 0.72rem;
+				font-weight: 500;
+				color: #9ca3af;
 				margin: 0;
-				line-height: 1.1;
+				line-height: 1.4;
 				text-align: center;
-				opacity: 0.9;
+				opacity: 0.95;
 			}
 			.pet-adopt-corner {
 				position: fixed;
@@ -800,37 +959,50 @@
 				width: 148px;
 				height: 148px;
 				box-sizing: border-box;
-				border-radius: 10px;
-				border: 1px solid rgba(0,0,0,0.18);
-				background: rgba(157, 28, 28, 0.94);
-				box-shadow: 0 10px 26px rgba(0,0,0,0.22);
+				border-radius: 0.85rem;
+				border: 1px solid rgba(255, 255, 255, 0.22);
+				background: rgba(157, 28, 28, 0.88);
+				box-shadow:
+					0 0 0 1px rgba(0, 0, 0, 0.35) inset,
+					0 10px 26px rgba(0, 0, 0, 0.35);
 				color: #fff;
 				display: flex;
 				align-items: center;
 				justify-content: center;
 				text-align: center;
 				padding: 10px;
-				font-size: 1rem;
-				font-weight: 900;
-				letter-spacing: 0.03em;
-				text-transform: uppercase;
+				font-size: 0.8rem;
+				font-weight: 600;
+				font-family: inherit;
+				letter-spacing: 0.02em;
+				line-height: 1.3;
+				text-transform: none;
 				user-select: none;
 				cursor: default;
 			}
 			/* Desktop: colțuri vitrate — se vede fundalul cu becuri/animale prin Adopt + QR */
 			@media (min-width: 821px) {
 				.pet-qr-corner {
-					background: rgba(255, 255, 255, 0.38);
-					backdrop-filter: blur(12px);
-					-webkit-backdrop-filter: blur(12px);
-					box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+					background: linear-gradient(
+						168deg,
+						rgba(24, 32, 46, 0.42) 0%,
+						rgba(14, 20, 32, 0.58) 100%
+					);
+					backdrop-filter: blur(16px) saturate(1.05);
+					-webkit-backdrop-filter: blur(16px) saturate(1.05);
+					border-color: rgba(255, 255, 255, 0.12);
+					box-shadow:
+						0 0 0 1px rgba(0, 0, 0, 0.35) inset,
+						0 8px 28px rgba(0, 0, 0, 0.3);
 				}
 				.pet-adopt-corner {
-					background: rgba(157, 28, 28, 0.72);
-					backdrop-filter: blur(10px);
-					-webkit-backdrop-filter: blur(10px);
-					border-color: rgba(255, 255, 255, 0.28);
-					box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+					background: rgba(157, 28, 28, 0.78);
+					backdrop-filter: blur(12px);
+					-webkit-backdrop-filter: blur(12px);
+					border-color: rgba(255, 255, 255, 0.3);
+					box-shadow:
+						0 0 0 1px rgba(0, 0, 0, 0.25) inset,
+						0 8px 28px rgba(0, 0, 0, 0.35);
 				}
 			}
 			@media (max-width: 820px) {
@@ -840,7 +1012,7 @@
 					right: 150px;
 					width: 132px;
 					height: 132px;
-					font-size: 0.9rem;
+					font-size: 0.78rem;
 				}
 			}
 
@@ -903,7 +1075,9 @@
 					padding: 0.25rem 0.45rem 1.25rem;
 				}
 				.mypet-fisa-main-box {
-					border-radius: 8px;
+					border-radius: 0.85rem;
+					border: 1px solid rgba(255, 255, 255, 0.055);
+					border-right: 1px solid rgba(255, 255, 255, 0.055);
 				}
 				.mypet-fisa-main-cols {
 					grid-template-columns: minmax(0, 1fr);
@@ -932,7 +1106,7 @@
 					width: min(132px, 38vw);
 					height: min(120px, 22vw);
 					max-height: 128px;
-					font-size: 0.82rem;
+					font-size: 0.78rem;
 					padding: 8px;
 				}
 				/* Etichetă stare adopție — deasupra QR (sau deasupra stivei adopt+QR) */
@@ -1011,10 +1185,12 @@
 					grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
 				}
 				.mypet-fisa-main-box {
-					border-radius: 6px !important;
+					border-radius: 0.85rem 0 0 0.85rem !important;
+					border-right: none !important;
 				}
 				.mypet-fisa-traits-box {
-					border-radius: 0 6px 6px 0 !important;
+					border-radius: 0 0.85rem 0.85rem 0 !important;
+					border-left: none !important;
 				}
 				.pet-adopt-qr-inline {
 					display: flex !important;
@@ -1089,8 +1265,9 @@
 			.pet-adopt-choice-modal__backdrop {
 				position: absolute;
 				inset: 0;
-				background: rgba(0, 0, 0, 0.5);
-				backdrop-filter: blur(2px);
+				background: rgba(0, 0, 0, 0.62);
+				backdrop-filter: blur(4px);
+				-webkit-backdrop-filter: blur(4px);
 			}
 			.pet-adopt-choice-modal__panel {
 				position: relative;
@@ -1098,36 +1275,52 @@
 				width: min(100%, 440px);
 				max-height: 90vh;
 				overflow: auto;
-				background: #fff;
-				border: 2px solid #111;
-				border-radius: 12px;
+				color-scheme: dark;
+				background: linear-gradient(
+					168deg,
+					rgba(24, 32, 46, 0.96) 0%,
+					rgba(14, 20, 32, 0.98) 100%
+				);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				border-radius: 0.85rem;
 				padding: 1.1rem 1.2rem 1.2rem;
-				box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+				box-shadow:
+					0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+					0 24px 48px rgba(0, 0, 0, 0.5),
+					0 0 0 1px rgba(6, 182, 212, 0.08);
+				backdrop-filter: blur(20px) saturate(1.05);
+				-webkit-backdrop-filter: blur(20px) saturate(1.05);
 				box-sizing: border-box;
 			}
 			.pet-adopt-choice-modal__title {
 				margin: 0 0 0.5rem;
-				font-size: 1.05rem;
-				font-weight: 900;
-				text-transform: uppercase;
-				letter-spacing: 0.04em;
-				color: #111;
+				font-size: clamp(1.02rem, 2vw, 1.15rem);
+				font-weight: 600;
+				text-transform: none;
+				letter-spacing: -0.02em;
+				line-height: 1.2;
+				color: #f8fafc;
 			}
 			.pet-adopt-choice-modal__text {
 				margin: 0 0 0.85rem;
-				font-size: 0.88rem;
-				line-height: 1.45;
-				color: #222;
+				font-size: 0.78rem;
+				line-height: 1.35;
+				font-weight: 400;
+				color: #e2e8f0;
 			}
 			.pet-adopt-choice-modal__hint {
 				margin: 0.5rem 0 0;
 				font-size: 0.78rem;
-				line-height: 1.4;
-				color: #444;
+				line-height: 1.35;
+				font-weight: 400;
+				color: #94a3b8;
 			}
 			.pet-adopt-choice-modal__hint a {
-				color: #1565c0;
-				font-weight: 700;
+				color: #22d3ee;
+				font-weight: 600;
+			}
+			.pet-adopt-choice-modal__hint a:hover {
+				color: #67e8f9;
 			}
 			.pet-adopt-choice-modal__options {
 				display: flex;
@@ -1140,9 +1333,11 @@
 				align-items: flex-start;
 				gap: 0.5rem;
 				cursor: pointer;
-				font-size: 0.85rem;
-				line-height: 1.35;
-				color: #111;
+				font-size: 0.68rem;
+				font-weight: 400;
+				line-height: 1.32;
+				letter-spacing: 0.01em;
+				color: #e2e8f0;
 			}
 			.pet-adopt-choice-modal__opt input {
 				margin-top: 0.2rem;
@@ -1156,21 +1351,23 @@
 			}
 			.pet-adopt-choice-modal__btn {
 				padding: 0.45rem 0.95rem;
-				font-size: 0.82rem;
-				font-weight: 800;
-				border-radius: 8px;
+				font-size: 0.8rem;
+				font-weight: 600;
+				line-height: 1.3;
+				letter-spacing: 0.02em;
+				border-radius: 0.5rem;
 				cursor: pointer;
-				border: 2px solid #111;
+				border: 1px solid rgba(255, 255, 255, 0.18);
 				font-family: inherit;
 			}
 			.pet-adopt-choice-modal__btn--secondary {
-				background: #fff;
-				color: #111;
+				background: rgba(15, 23, 42, 0.65);
+				color: #f1f5f9;
 			}
 			.pet-adopt-choice-modal__btn--primary {
 				background: #9d1c1c;
 				color: #fff;
-				border-color: #6b1010;
+				border-color: rgba(255, 255, 255, 0.2);
 			}
 			.pet-adopt-choice-modal__btn--primary:hover {
 				filter: brightness(1.05);
@@ -1193,8 +1390,9 @@
 			.pet-app-msg-modal__backdrop {
 				position: absolute;
 				inset: 0;
-				background: rgba(0, 0, 0, 0.5);
-				backdrop-filter: blur(2px);
+				background: rgba(0, 0, 0, 0.62);
+				backdrop-filter: blur(4px);
+				-webkit-backdrop-filter: blur(4px);
 			}
 			.pet-app-msg-modal__panel {
 				position: relative;
@@ -1202,26 +1400,38 @@
 				width: min(100%, 420px);
 				max-height: 90vh;
 				overflow: auto;
-				background: #fff;
-				border: 2px solid #111;
-				border-radius: 12px;
+				color-scheme: dark;
+				background: linear-gradient(
+					168deg,
+					rgba(24, 32, 46, 0.96) 0%,
+					rgba(14, 20, 32, 0.98) 100%
+				);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				border-radius: 0.85rem;
 				padding: 1.1rem 1.2rem 1.2rem;
-				box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+				box-shadow:
+					0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+					0 24px 48px rgba(0, 0, 0, 0.5),
+					0 0 0 1px rgba(6, 182, 212, 0.08);
+				backdrop-filter: blur(20px) saturate(1.05);
+				-webkit-backdrop-filter: blur(20px) saturate(1.05);
 				box-sizing: border-box;
 			}
 			.pet-app-msg-modal__title {
 				margin: 0 0 0.5rem;
-				font-size: 1.05rem;
-				font-weight: 900;
-				text-transform: uppercase;
-				letter-spacing: 0.04em;
-				color: #9d1c1c;
+				font-size: clamp(1.02rem, 2vw, 1.15rem);
+				font-weight: 600;
+				text-transform: none;
+				letter-spacing: -0.02em;
+				line-height: 1.2;
+				color: #f87171;
 			}
 			.pet-app-msg-modal__text {
 				margin: 0 0 1rem;
-				font-size: 0.88rem;
-				line-height: 1.45;
-				color: #222;
+				font-size: 0.78rem;
+				line-height: 1.35;
+				font-weight: 400;
+				color: #e2e8f0;
 				white-space: pre-wrap;
 				word-break: break-word;
 			}
@@ -1252,7 +1462,8 @@
 				border: 1px solid rgba(255,255,255,0.78);
 				background: rgba(255,255,255,0.22);
 				color: #fff;
-				font-weight: 900;
+				font-weight: 600;
+				font-family: inherit;
 				font-size: 20px;
 				line-height: 1;
 				cursor: pointer;
@@ -1494,11 +1705,7 @@
 												</div>
 											</div>
 											{% endif %}
-											<div
-												class="pet-adoption-state-corner"
-												aria-label="Stare adopție"
-												style="position:fixed;right:18px;bottom:120px;z-index:14;padding:6px 10px;border-radius:999px;background:rgba(0,0,0,0.72);color:#fff;font-size:12px;font-weight:800;letter-spacing:.02em;"
-											>{{ pet.adoption_state_label|default:"Liber" }}</div>
+											<div class="pet-adoption-state-corner" aria-label="Stare adopție">{{ pet.adoption_state_label|default:"Liber" }}</div>
 											<div class="pet-adopt-qr-inline" id="petAdoptQrInline" aria-label="Adopție și cod QR">
 												{% if can_send_pet_message %}
 												<div
@@ -1588,29 +1795,24 @@
 		{% with page_url=request.build_absolute_uri %}
 		<script>
 		(function() {
-			// WT fundal (Transport): 4 variante, aplicat doar sub casetele cu text
-			var fundalUrls = [
-				"{% static 'images/transport/fundal_1.jpg' %}",
-				"{% static 'images/transport/fundal_2.jpg' %}",
-				"{% static 'images/transport/fundal_3.jpg' %}",
-				"{% static 'images/transport/fundal_4.jpg' %}"
-			];
-			function setRandomWT() {
-				var url = fundalUrls[Math.floor(Math.random() * fundalUrls.length)];
-				var wrap = document.getElementById("MW");
-				if (wrap) {
-					wrap.style.backgroundImage = "url(" + url + ")";
-				}
-				document.querySelectorAll("#MW .mypet-fisa-main-box, #MW .mypet-fisa-traits-box").forEach(function(el) {
-					el.style.backgroundImage = "url(" + url + ")";
-				});
-			}
-			if (document.readyState === "loading") {
-				document.addEventListener("DOMContentLoaded", setRandomWT);
-			} else {
-				setRandomWT();
-			}
-			setInterval(setRandomWT, 60 * 60 * 1000);
+			// Fundal: Transport + voal #141a22 (~78%) pe #main_wrap; casete sticlă echilibrate
+			(function setPetSingleSubtleFundal() {
+				var el = document.getElementById("main_wrap");
+				if (!el) return;
+				var urls = [
+					"{% static 'images/transport/fundal_1.jpg' %}",
+					"{% static 'images/transport/fundal_2.jpg' %}",
+					"{% static 'images/transport/fundal_3.jpg' %}",
+					"{% static 'images/transport/fundal_4.jpg' %}"
+				];
+				var url = urls[Math.floor(Math.random() * urls.length)];
+				var veil =
+					"linear-gradient(rgba(20, 26, 34, 0.78), rgba(20, 26, 34, 0.78))";
+				el.style.backgroundImage = veil + ', url("' + url + '")';
+				el.style.backgroundSize = "cover, cover";
+				el.style.backgroundPosition = "center, center";
+				el.style.backgroundRepeat = "no-repeat, no-repeat";
+			})();
 
 			// Autoplay preview video (slot 4) – unele browsere cer play() explicit chiar și cu muted
 			function tryPlayPreviewVideo() {

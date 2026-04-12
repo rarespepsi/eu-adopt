@@ -1,29 +1,32 @@
 {% load static %}
-{# Inima în afara <a>: altfel pe mobil tap-ul deschide profilul și nu rulează wishlist #}
+{# Inima în afara <a>: tap pe mobil nu deschide profilul. Bară sus: inimă | promovare | stare (segmente compacte). #}
 <div class="pt-p2-card-photo-wrap">
-	<button type="button" class="wish-btn {% if wishlist_ids and pet.pk in wishlist_ids %}is-active{% endif %}" data-animal-id="{{ pet.pk }}" aria-pressed="{% if wishlist_ids and pet.pk in wishlist_ids %}true{% else %}false{% endif %}" aria-label="I Love: {{ pet.nume }}" style="top:6px;right:6px;">
-		<svg viewBox="0 0 24 24" aria-hidden="true">
-			<path class="wish-heart" d="M12 21s-7-4.6-10-9.2C-0.3 7.9 2.1 4 6 4c2 0 3.4 1.1 4 2 0.6-0.9 2-2 4-2 3.9 0 6.3 3.9 4 7.8C19 16.4 12 21 12 21z"/>
-		</svg>
-	</button>
-	<a href="{% url 'pets_single' pet.pk %}" class="pt-p2-card-link" aria-label="Vezi profil {{ pet.nume }}">
-		<div class="pt-p2-card-photo" aria-hidden="true">
-			{% if pet.adoption_state_label %}
-			<span
-				class="pt-adoption-badge"
-				style="position:absolute;left:6px;top:6px;z-index:3;padding:2px 6px;border-radius:999px;background:rgba(0,0,0,0.72);color:#fff;font-size:10px;font-weight:800;letter-spacing:.02em;"
-			>{{ pet.adoption_state_label }}</span>
-			{% endif %}
+	<div class="pt-p2-card-top-bar" role="toolbar" aria-label="Acțiuni card animal">
+		<div class="pt-p2-card-top-seg pt-p2-card-top-seg--heart">
+			<button type="button" class="wish-btn pt-p2-wish-btn {% if wishlist_ids and pet.pk in wishlist_ids %}is-active{% endif %}" data-animal-id="{{ pet.pk }}" aria-pressed="{% if wishlist_ids and pet.pk in wishlist_ids %}true{% else %}false{% endif %}" aria-label="I Love: {{ pet.nume }}">
+				{% include "anunturi/includes/ilove_heart_svg.html" %}
+			</button>
+		</div>
+		<div class="pt-p2-card-top-seg pt-p2-card-top-seg--promo">
 			{% if user.is_authenticated and display_role != "collaborator" %}
 			<button
 				type="button"
 				class="pt-promoveaza-btn"
-				title="Promovare A2"
+				title="Promovare în zona A2 (Acasă)"
 				onclick="event.preventDefault(); event.stopPropagation(); window.location.href='{% url 'promo_a2_order' pet.pk %}';"
 			>
-				Promovează-mă
+				Promo
 			</button>
 			{% endif %}
+		</div>
+		<div class="pt-p2-card-top-seg pt-p2-card-top-seg--state">
+			{% if pet.adoption_state_label %}
+			<span class="pt-p2-state-text" title="{{ pet.adoption_state_label }}">{{ pet.adoption_state_label }}</span>
+			{% endif %}
+		</div>
+	</div>
+	<a href="{% url 'pets_single' pet.pk %}" class="pt-p2-card-link" aria-label="Vezi profil {{ pet.nume }}">
+		<div class="pt-p2-card-photo" aria-hidden="true">
 			{% if pet.imagine %}
 			<img
 				src="{{ pet.imagine.url }}"
@@ -42,6 +45,6 @@
 			<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" loading="lazy" decoding="async" />
 			{% endif %}
 		</div>
-		<span class="pt-p2-card-name pt-p2-card-name--overlay">{{ pet.nume }}</span>
+		<span class="pt-p2-card-name pt-p2-card-name--bar">{{ pet.nume }}</span>
 	</a>
 </div>

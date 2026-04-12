@@ -54,6 +54,7 @@
 		flex-wrap: wrap;
 		justify-content: center;
 	}
+	/* Tip adăpost: aceeași familie vizuală ca „Tip partener” (Colaborator) — auriu doar pe fundal cu tonuri calde */
 	.signup-org-public-box {
 		flex: 0 0 auto;
 		width: 200px;
@@ -64,18 +65,21 @@
 		background:
 			linear-gradient(
 				168deg,
-				rgba(234, 179, 8, 0.28) 0%,
-				rgba(180, 83, 9, 0.22) 48%,
-				rgba(146, 64, 14, 0.26) 100%
+				rgba(24, 32, 46, 0.52) 0%,
+				rgba(18, 24, 36, 0.58) 48%,
+				rgba(14, 20, 32, 0.62) 100%
 			);
-		backdrop-filter: blur(20px) saturate(1.05);
-		-webkit-backdrop-filter: blur(20px) saturate(1.05);
-		border: 1px solid rgba(250, 204, 21, 0.42);
+		backdrop-filter: blur(22px) saturate(1.04);
+		-webkit-backdrop-filter: blur(22px) saturate(1.04);
+		border: 1px solid rgba(255, 255, 255, 0.07);
 		border-radius: 0.85rem;
-		padding: 0.65rem 0.55rem;
+		padding: 0.45rem 0.5rem;
 		box-shadow:
-			0 0 0 1px rgba(0, 0, 0, 0.35) inset,
-			0 12px 32px rgba(0, 0, 0, 0.4);
+			0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+			0 1px 0 rgba(255, 255, 255, 0.045) inset,
+			0 32px 64px rgba(0, 0, 0, 0.55),
+			0 12px 28px rgba(0, 0, 0, 0.32),
+			0 0 0 1px rgba(6, 182, 212, 0.06);
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
@@ -90,8 +94,14 @@
 		inset: 0;
 		border-radius: inherit;
 		pointer-events: none;
-		background: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, transparent 50%, rgba(0, 0, 0, 0.08) 100%);
-		opacity: 0.55;
+		background: linear-gradient(
+			145deg,
+			rgba(255, 255, 255, 0.06) 0%,
+			transparent 42%,
+			transparent 58%,
+			rgba(0, 0, 0, 0.12) 100%
+		);
+		opacity: 0.75;
 		z-index: 0;
 	}
 	.signup-org-public-box > * {
@@ -99,25 +109,25 @@
 		z-index: 1;
 	}
 	.signup-org-public-title {
-		margin: 0 0 0.35rem;
-		font-size: 0.68rem;
+		margin: 0 0 0.25rem;
+		font-size: 0.72rem;
 		font-weight: 700;
-		color: #fef3c7;
+		color: #f1f5f9;
 		text-transform: none;
-		letter-spacing: 0.03em;
+		letter-spacing: 0.02em;
 		text-align: center;
 	}
 	.signup-org-public-text {
 		margin: 0 0 0.35rem;
 		font-size: 0.62rem;
-		color: #fde68a;
+		color: #cbd5e1;
 		line-height: 1.32;
 		text-align: center;
 	}
 	.signup-org-public-checkbox {
 		margin-top: auto;
 		font-size: 0.62rem;
-		color: #fef9c3;
+		color: #e2e8f0;
 		display: flex;
 		flex-direction: column;
 		gap: 0.22rem;
@@ -354,6 +364,33 @@
 		box-sizing: border-box;
 	}
 	.signup-org-cui-stanga { flex: 0 0 26%; font-size: 0.72rem; min-width: 4.5rem; color: #cbd5e1; }
+	.signup-org-cui-stanga .signup-cui-prefix-row {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 0.35rem;
+		flex: 1;
+		min-width: 0;
+	}
+	.signup-org-field-box .signup-cui-ro-display {
+		flex: 0 0 2.85rem;
+		width: 2.85rem;
+		min-width: 2.85rem;
+		box-sizing: border-box;
+		text-align: center;
+		font-weight: 700;
+		font-size: 0.68rem;
+		letter-spacing: 0.04em;
+		color: #f8fafc;
+		min-height: 2.1rem;
+		padding: 0.35rem 0.2rem;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		background: rgba(15, 23, 42, 0.38);
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 1px 4px rgba(0, 0, 0, 0.18);
+		cursor: default;
+		pointer-events: none;
+	}
 	.signup-org-cui-stanga select {
 		font-size: 0.7rem;
 		min-width: 0;
@@ -432,29 +469,56 @@
 		gap: 0.2rem;
 	}
 	.signup-org-submit {
+		position: relative;
+		overflow: hidden;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		width: 100%;
 		padding: 0.48rem 0.75rem;
 		border-radius: 0.45rem;
-		border: 1px solid rgba(255, 255, 255, 0.14);
-		background: linear-gradient(175deg, #2dd4e8 0%, #06b6d4 42%, #0e7490 100%);
+		border: 1px solid rgba(255, 255, 255, 0.22);
+		background: linear-gradient(175deg, #5ee9f3 0%, #22d3ee 28%, #06b6d4 52%, #0e7490 100%);
 		color: #fff;
 		font-weight: 600;
 		font-size: 0.8rem;
 		text-transform: none;
 		letter-spacing: 0.02em;
 		cursor: pointer;
+		text-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
 		box-shadow:
-			0 1px 0 rgba(255, 255, 255, 0.2) inset,
-			0 3px 14px rgba(6, 182, 212, 0.32),
-			0 6px 20px rgba(0, 0, 0, 0.22);
-		transition: filter 0.18s ease, transform 0.14s ease;
+			0 1px 0 rgba(255, 255, 255, 0.42) inset,
+			0 -1px 0 rgba(0, 0, 0, 0.12) inset,
+			0 4px 20px rgba(6, 182, 212, 0.45),
+			0 0 28px rgba(34, 211, 238, 0.28),
+			0 8px 24px rgba(0, 0, 0, 0.28);
+		transition: filter 0.18s ease, box-shadow 0.18s ease, transform 0.14s ease;
+	}
+	.signup-org-submit::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
+		background: linear-gradient(
+			118deg,
+			transparent 0%,
+			transparent 36%,
+			rgba(255, 255, 255, 0.28) 48%,
+			rgba(255, 255, 255, 0.08) 54%,
+			transparent 66%
+		);
+		opacity: 0.95;
 	}
 	.signup-org-submit:hover {
-		filter: brightness(1.05);
+		filter: brightness(1.06);
 		transform: translateY(-1px);
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.48) inset,
+			0 -1px 0 rgba(0, 0, 0, 0.1) inset,
+			0 6px 26px rgba(6, 182, 212, 0.52),
+			0 0 36px rgba(34, 211, 238, 0.35),
+			0 10px 28px rgba(0, 0, 0, 0.3);
 	}
 	/* Același stil ca „Creează cont”, lățime după text (lângă eticheta Adresă) */
 	.signup-org-submit.signup-org-submit--map-pick {
@@ -721,6 +785,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/cui_cu_ro_display.js' %}?v=1"></script>
 <script>
 (function() {
 	function prefillOrgDemo() {
@@ -922,11 +987,13 @@
 						</div>
 						<div class="signup-org-field signup-org-field-box signup-org-cui-row">
 							<div class="signup-org-cui-stanga">
-								<label for="id_cui_ro_org">RO</label>
-								<select id="id_cui_ro_org" name="cui_cu_ro" aria-label="Cu sau Fără">
+								<div class="signup-cui-prefix-row">
+									<input type="text" id="id_cui_ro_display_org" class="signup-cui-ro-display" readonly tabindex="-1" autocomplete="off" value="{% if form_prefill and form_prefill.cui_cu_ro == 'da' %}RO{% endif %}" aria-label="{% if form_prefill and form_prefill.cui_cu_ro == 'da' %}Prefix CUI: RO{% else %}Fără prefix RO{% endif %}" />
+									<select id="id_cui_ro_org" name="cui_cu_ro" class="signup-cui-ro-select" data-ro-display-id="id_cui_ro_display_org" aria-label="Cu sau fără prefix RO la CUI">
 									<option value="nu" {% if form_prefill and form_prefill.cui_cu_ro == 'nu' %}selected{% endif %}>Fără</option>
 									<option value="da" {% if form_prefill and form_prefill.cui_cu_ro == 'da' %}selected{% endif %}>Cu</option>
 								</select>
+								</div>
 							</div>
 							<div class="signup-org-cui-dreapta">
 								<label for="id_cui">CUI / CIF *</label>

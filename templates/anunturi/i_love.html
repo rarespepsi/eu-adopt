@@ -5,7 +5,7 @@
 {% block body_class %}page-ilove{% endblock %}
 
 {% block extra_css_after %}
-<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=11" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=12" type="text/css" media="screen" />
 {% endblock %}
 
 {% block content %}
@@ -49,9 +49,7 @@
 												aria-label="{% if wishlist_ids and pet.pk in wishlist_ids %}Scoate din I Love{% else %}Adaugă la I Love{% endif %}"
 												title="Scoate din I Love"
 											>
-												<svg viewBox="0 0 24 24" aria-hidden="true">
-													<path class="wish-heart" d="M12 21s-7-4.6-10-9.2C-0.3 7.9 2.1 4 6 4c2 0 3.4 1.1 4 2 0.6-0.9 2-2 4-2 3.9 0 6.3 3.9 4 7.8C19 16.4 12 21 12 21z"/>
-												</svg>
+												{% include "anunturi/includes/ilove_heart_svg.html" %}
 											</button>
 											{% if pet.imagine_url %}
 											<img src="{{ pet.imagine_url }}" alt="" loading="lazy" />
