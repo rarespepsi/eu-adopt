@@ -83,6 +83,7 @@
 	.signup-col-form-area.has-errors .signup-col-form-wrap {
 		padding-top: 3.5rem;
 	}
+	/* Tip partener: aceeași familie ca .signup-col-caseta (sticlă închisă + accente discrete) */
 	.signup-col-tip-box {
 		flex: 0 0 auto;
 		width: 200px;
@@ -95,18 +96,21 @@
 		background:
 			linear-gradient(
 				168deg,
-				rgba(234, 179, 8, 0.28) 0%,
-				rgba(180, 83, 9, 0.22) 48%,
-				rgba(146, 64, 14, 0.26) 100%
+				rgba(24, 32, 46, 0.52) 0%,
+				rgba(18, 24, 36, 0.58) 48%,
+				rgba(14, 20, 32, 0.62) 100%
 			);
-		backdrop-filter: blur(20px) saturate(1.05);
-		-webkit-backdrop-filter: blur(20px) saturate(1.05);
-		border: 1px solid rgba(250, 204, 21, 0.42);
+		backdrop-filter: blur(22px) saturate(1.04);
+		-webkit-backdrop-filter: blur(22px) saturate(1.04);
+		border: 1px solid rgba(255, 255, 255, 0.07);
 		border-radius: 0.85rem;
 		padding: 0.45rem 0.5rem;
 		box-shadow:
-			0 0 0 1px rgba(0, 0, 0, 0.35) inset,
-			0 12px 32px rgba(0, 0, 0, 0.4);
+			0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+			0 1px 0 rgba(255, 255, 255, 0.045) inset,
+			0 32px 64px rgba(0, 0, 0, 0.55),
+			0 12px 28px rgba(0, 0, 0, 0.32),
+			0 0 0 1px rgba(6, 182, 212, 0.06);
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
@@ -120,8 +124,14 @@
 		inset: 0;
 		border-radius: inherit;
 		pointer-events: none;
-		background: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, transparent 50%, rgba(0, 0, 0, 0.08) 100%);
-		opacity: 0.55;
+		background: linear-gradient(
+			145deg,
+			rgba(255, 255, 255, 0.06) 0%,
+			transparent 42%,
+			transparent 58%,
+			rgba(0, 0, 0, 0.12) 100%
+		);
+		opacity: 0.75;
 		z-index: 0;
 	}
 	.signup-col-tip-box > * {
@@ -132,14 +142,14 @@
 		margin: 0 0 0.25rem;
 		font-size: 0.72rem;
 		font-weight: 700;
-		color: #fef3c7;
+		color: #f1f5f9;
 		text-transform: none;
-		letter-spacing: 0.03em;
+		letter-spacing: 0.02em;
 		text-align: center;
 	}
 	.signup-col-tip-options {
 		font-size: 0.68rem;
-		color: #fef9c3;
+		color: #e2e8f0;
 		display: flex;
 		flex-direction: column;
 		gap: 0.18rem;
@@ -191,20 +201,20 @@
 		background:
 			linear-gradient(
 				168deg,
-				rgba(24, 32, 46, 0.34) 0%,
-				rgba(18, 24, 36, 0.42) 48%,
-				rgba(14, 20, 32, 0.48) 100%
+				rgba(24, 32, 46, 0.58) 0%,
+				rgba(18, 24, 36, 0.66) 48%,
+				rgba(14, 20, 32, 0.72) 100%
 			);
 		backdrop-filter: blur(22px) saturate(1.04);
 		-webkit-backdrop-filter: blur(22px) saturate(1.04);
 		border-radius: 0.85rem;
 		box-shadow:
 			0 0 0 1px rgba(0, 0, 0, 0.5) inset,
-			0 1px 0 rgba(255, 255, 255, 0.045) inset,
+			0 1px 0 rgba(255, 255, 255, 0.055) inset,
 			0 32px 64px rgba(0, 0, 0, 0.55),
 			0 12px 28px rgba(0, 0, 0, 0.32),
-			0 0 0 1px rgba(6, 182, 212, 0.04);
-		border: 1px solid rgba(255, 255, 255, 0.055);
+			0 0 0 1px rgba(6, 182, 212, 0.07);
+		border: 1px solid rgba(255, 255, 255, 0.08);
 		padding: 0.45rem 0.75rem;
 		box-sizing: border-box;
 		display: flex;
@@ -233,8 +243,8 @@
 	.signup-col-caseta h2 {
 		margin: 0 0 0.25rem;
 		font-size: 0.72rem;
-		font-weight: 600;
-		color: #cbd5e1;
+		font-weight: 700;
+		color: #f1f5f9;
 		text-align: center;
 		text-transform: none;
 		letter-spacing: 0.02em;
@@ -243,10 +253,10 @@
 		margin-bottom: 0.18rem;
 	}
 	.signup-col-field-box {
-		border: 1px solid rgba(255, 255, 255, 0.08);
+		border: 1px solid rgba(255, 255, 255, 0.1);
 		border-radius: 0.45rem;
 		padding: 0.25rem 0.4rem;
-		background: rgba(15, 23, 42, 0.22);
+		background: rgba(15, 23, 42, 0.48);
 		margin-bottom: 0.28rem;
 	}
 	.signup-pwd-wrap .signup-pwd-inner { position: relative; display: block; }
@@ -301,8 +311,8 @@
 		display: block;
 		margin-bottom: 0.06rem;
 		font-size: 0.65rem;
-		font-weight: 500;
-		color: #cbd5e1;
+		font-weight: 600;
+		color: #e2e8f0;
 		text-transform: none;
 		letter-spacing: 0.02em;
 	}
@@ -392,17 +402,19 @@
 	.signup-col-header h1 {
 		margin: 0 0 0.15rem;
 		font-size: clamp(0.95rem, 2vw, 1.08rem);
-		font-weight: 600;
-		color: #f8fafc;
+		font-weight: 700;
+		color: #ffffff;
 		text-transform: none;
 		letter-spacing: -0.02em;
 		line-height: 1.2;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 	}
 	.signup-col-header .signup-col-intro {
 		margin: 0;
 		font-size: 0.72rem;
-		color: #94a3b8;
+		color: #cbd5e1;
 		line-height: 1.35;
+		font-weight: 500;
 	}
 	.signup-col-form-stack {
 		display: flex;
@@ -431,7 +443,7 @@
 	.signup-col-caseta-transport .signup-col-transport-hint {
 		font-size: 0.68rem;
 		margin: 0 0 0.35rem;
-		color: #94a3b8;
+		color: #cbd5e1;
 		line-height: 1.25;
 	}
 	.signup-col-transport-inline-row {
@@ -589,7 +601,7 @@
 	}
 	.signup-col-adresa-hint {
 		font-size: 0.6rem;
-		color: #94a3b8;
+		color: #a8b8c8;
 		margin: 0.12rem 0 0;
 		line-height: 1.35;
 	}
@@ -607,25 +619,28 @@
 		background-repeat: no-repeat;
 		background-attachment: scroll;
 	}
+	/* Fundal foto mai estompat (doar această pagină): voal + blur ușor pe stratul de deasupra imaginii */
 	body.page-login #main_wrap::before {
 		content: "";
 		position: absolute;
 		inset: 0;
 		z-index: 0;
 		pointer-events: none;
+		backdrop-filter: blur(2px);
+		-webkit-backdrop-filter: blur(2px);
 		background:
 			radial-gradient(
 				ellipse 22% 58% at 99% 48%,
-				rgba(15, 23, 42, 0.72) 0%,
-				rgba(15, 23, 42, 0.35) 42%,
-				transparent 68%
+				rgba(15, 23, 42, 0.82) 0%,
+				rgba(15, 23, 42, 0.5) 42%,
+				transparent 72%
 			),
 			radial-gradient(
 				ellipse 18% 22% at 100% 14%,
-				rgba(12, 18, 28, 0.55) 0%,
-				transparent 55%
+				rgba(12, 18, 28, 0.68) 0%,
+				transparent 58%
 			),
-			rgba(15, 23, 42, 0.06);
+			rgba(15, 23, 42, 0.28);
 	}
 	body.page-login #main_wrap::after {
 		content: "";
@@ -635,8 +650,8 @@
 		pointer-events: none;
 		background: radial-gradient(
 			ellipse 85% 80% at 50% 50%,
-			transparent 35%,
-			rgba(8, 12, 20, 0.14) 100%
+			transparent 28%,
+			rgba(8, 12, 20, 0.38) 100%
 		);
 	}
 	body.page-login #main_wrap > #main_content {
