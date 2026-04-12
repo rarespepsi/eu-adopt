@@ -17,6 +17,19 @@ from django.urls import reverse
 from django.utils import timezone
 
 from .mail_helpers import email_subject_for_user
+from .inbox_notifications import (
+    KIND_TRANSPORT_ASSIGNED_CLIENT,
+    KIND_TRANSPORT_ASSIGNED_OPERATOR,
+    KIND_TRANSPORT_CANCELLED_USER,
+    KIND_TRANSPORT_COMPLETED,
+    KIND_TRANSPORT_DISPATCH_OPEN,
+    KIND_TRANSPORT_EXHAUSTED,
+    KIND_TRANSPORT_EXPIRED,
+    KIND_TRANSPORT_NO_TRANSPORTERS,
+    KIND_TRANSPORT_REOPENED,
+    create_inbox_notification,
+    reverse_safe,
+)
 from .models import (
     TransportDispatchJob,
     TransportDispatchRecipient,
@@ -125,6 +138,16 @@ def create_dispatch_for_tvr(request, tvr: TransportVeterinaryRequest) -> Optiona
             expires_at=None,
         )
         _email_user_no_transporters(request, tvr, job)
+        u = tvr.user
+        if u:
+            create_inbox_notification(
+                u,
+                KIND_TRANSPORT_NO_TRANSPORTERS,
+                "Transport: nu există transportatori în zonă",
+                f"Cererea #{tvr.pk} nu poate fi repartizată momentan. Poți încerca din nou mai târziu.",
+                link_url=reverse_safe("transport"),
+                metadata={"tvr_id": tvr.pk, "job_id": job.pk},
+            )
         return job
 
     exp = _expires_at_for_tvr(tvr)
@@ -143,6 +166,15 @@ def create_dispatch_for_tvr(request, tvr: TransportVeterinaryRequest) -> Optiona
     for u in users:
         _email_transporter_new_offer(request, tvr, job, u)
     _email_user_request_received(request, tvr, job)
+    if tvr.user:
+        create_inbox_notification(
+            tvr.user,
+            KIND_TRANSPORT_DISPATCH_OPEN,
+            "Cererea ta de transport a fost trimisă",
+            f"Cerere #{tvr.pk}: am notificat transportatorii eligibili. Primul care acceptă preia comanda.",
+            link_url=reverse_safe("transport"),
+            metadata={"tvr_id": tvr.pk, "job_id": job.pk},
+        )
     return job
 
 
@@ -343,6 +375,24 @@ def accept_job(request, job_id: int, transporter_user_id: int) -> tuple[bool, st
             _email_transporter_superseded(request, job, r.transporter, winner)
     _email_user_assigned(request, tvr, job, winner)
     _email_op_assigned_client(request, tvr, job, winner)
+    rate_path = rating_page_path(job.pk)
+    if tvr.user:
+        create_inbox_notification(
+            tvr.user,
+            KIND_TRANSPORT_ASSIGNED_CLIENT,
+            "Un transportator a acceptat cererea ta",
+            f"{winner.get_full_name() or winner.username} a preluat transportul pentru cererea #{tvr.pk}.",
+            link_url=rate_path,
+            metadata={"tvr_id": tvr.pk, "job_id": job.pk},
+        )
+    create_inbox_notification(
+        winner,
+        KIND_TRANSPORT_ASSIGNED_OPERATOR,
+        "Ai acceptat o cerere de transport",
+        f"Cerere #{tvr.pk}: datele clientului au fost trimise pe email.",
+        link_url=reverse_safe("transport_operator_panel"),
+        metadata={"tvr_id": tvr.pk, "job_id": job.pk},
+    )
     return True, "Ai acceptat cererea. Am trimis datele către client și ție."
 
 
@@ -384,6 +434,16 @@ def decline_job(request, job_id: int, transporter_user_id: int) -> tuple[bool, s
                 )
             except Exception:
                 logger.exception("email exhausted job=%s", job.pk)
+        cu = job.tvr.user
+        if cu:
+            create_inbox_notification(
+                cu,
+                KIND_TRANSPORT_EXHAUSTED,
+                "Transport: nu mai sunt transportatori disponibili",
+                f"Toți transportatorii contactați au refuzat cererea #{job.tvr_id} sau nu mai sunt disponibili.",
+                link_url=reverse_safe("transport"),
+                metadata={"tvr_id": job.tvr_id, "job_id": job.pk},
+            )
     return True, "Ai refuzat cererea."
 
 
@@ -401,6 +461,15 @@ def cancel_job_by_user(request, job_id: int, user_id: int) -> tuple[bool, str]:
         if job.status == TransportDispatchJob.STATUS_OPEN:
             job.status = TransportDispatchJob.STATUS_CANCELLED
             job.save(update_fields=["status", "updated_at"])
+            if tvr.user:
+                create_inbox_notification(
+                    tvr.user,
+                    KIND_TRANSPORT_CANCELLED_USER,
+                    "Cererea de transport a fost anulată",
+                    f"Cererea #{tvr.pk} a fost anulată înainte de preluare.",
+                    link_url=reverse_safe("transport"),
+                    metadata={"tvr_id": tvr.pk, "job_id": job.pk},
+                )
             return True, "Cererea a fost anulată."
         was_assigned = job.status == TransportDispatchJob.STATUS_ASSIGNED and job.assigned_transporter_id
         job.status = TransportDispatchJob.STATUS_OPEN
@@ -416,6 +485,15 @@ def cancel_job_by_user(request, job_id: int, user_id: int) -> tuple[bool, str]:
         for u in users:
             if u:
                 _email_transporter_new_offer(request, tvr, job, u)
+    if tvr.user:
+        create_inbox_notification(
+            tvr.user,
+            KIND_TRANSPORT_REOPENED,
+            "Cererea de transport a fost retrimisă",
+            f"După anulare, cererea #{tvr.pk} a fost redeschisă și trimisă din nou transportatorilor.",
+            link_url=reverse_safe("transport"),
+            metadata={"tvr_id": tvr.pk, "job_id": job.pk},
+        )
     return True, "Cererea a fost reprogramată și retrimisă transportatorilor."
 
 
@@ -452,6 +530,15 @@ def cancel_assignment_by_transporter(request, job_id: int, transporter_user_id: 
             )
         except Exception:
             logger.exception("notify user reopen job=%s", job.pk)
+    if job.tvr.user:
+        create_inbox_notification(
+            job.tvr.user,
+            KIND_TRANSPORT_REOPENED,
+            "Transport reprogramat",
+            "Transportatorul a renunțat la preluare; cererea a fost retrimisă către alți transportatori.",
+            link_url=reverse_safe("transport"),
+            metadata={"tvr_id": job.tvr_id, "job_id": job.pk},
+        )
     return True, "Ai renunțat; cererea a fost retrimisă."
 
 
@@ -469,6 +556,15 @@ def maybe_expire_job(job: TransportDispatchJob) -> bool:
 def _email_user_job_expired(job: TransportDispatchJob) -> None:
     tvr = job.tvr
     u = tvr.user
+    if u:
+        create_inbox_notification(
+            u,
+            KIND_TRANSPORT_EXPIRED,
+            "Cererea de transport a expirat",
+            f"Cererea #{tvr.pk} (job #{job.pk}) nu a fost acceptată la timp.",
+            link_url=reverse_safe("transport"),
+            metadata={"tvr_id": tvr.pk, "job_id": job.pk},
+        )
     if not u or not u.email:
         return
     extra = ""
@@ -555,3 +651,20 @@ def _maybe_mark_job_completed(job: TransportDispatchJob) -> None:
     if has_client and has_op:
         job.status = TransportDispatchJob.STATUS_COMPLETED
         job.save(update_fields=["status", "updated_at"])
+        rate_path = rating_page_path(job.pk)
+        create_inbox_notification(
+            tvr.user,
+            KIND_TRANSPORT_COMPLETED,
+            "Transport marcat ca finalizat",
+            f"Ambele părți au lăsat evaluare pentru cererea #{tvr.pk}.",
+            link_url=rate_path,
+            metadata={"tvr_id": tvr.pk, "job_id": job.pk},
+        )
+        create_inbox_notification(
+            op,
+            KIND_TRANSPORT_COMPLETED,
+            "Transport marcat ca finalizat",
+            f"Ambele părți au lăsat evaluare pentru cererea #{tvr.pk}.",
+            link_url=rate_path,
+            metadata={"tvr_id": tvr.pk, "job_id": job.pk},
+        )

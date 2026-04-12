@@ -559,6 +559,38 @@ class CollabServiceMessage(models.Model):
         return f"{self.sender_id} → {self.receiver_id} (collab={self.collaborator_id}, {self.context_type})"
 
 
+class UserInboxNotification(models.Model):
+    """
+    Notificări în inbox-ul unificat (acțiuni finalizate: adopție, transport, oferte, plăți demo, etc.).
+    Complementar conversațiilor PetMessage / CollabServiceMessage — acelea rămân în fluxurile lor.
+    """
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="inbox_notifications",
+    )
+    kind = models.CharField("Tip", max_length=64, db_index=True)
+    title = models.CharField("Titlu", max_length=200)
+    body = models.TextField("Text", max_length=4000, blank=True, default="")
+    link_url = models.CharField("Link", max_length=500, blank=True, default="")
+    metadata = models.JSONField("Meta", default=dict, blank=True)
+    is_read = models.BooleanField("Citit", default=False, db_index=True)
+    created_at = models.DateTimeField("Creat la", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Notificare inbox utilizator"
+        verbose_name_plural = "Notificări inbox utilizatori"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "is_read", "created_at"]),
+            models.Index(fields=["user", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user_id} {self.kind} @{self.created_at:%Y-%m-%d}"
+
+
 class AdoptionRequest(models.Model):
     """
     Cerere de adopție: PF apasă „Vreau să adopt”; owner acceptă în MyPet.

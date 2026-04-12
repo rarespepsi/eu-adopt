@@ -1,0 +1,156 @@
+{# Stiluri modal hartă + buton (aliniat cu transport.css, scoped la înregistrare) #}
+.pac-container {
+	z-index: 120050 !important;
+}
+.transport-map-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 120000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+	box-sizing: border-box;
+}
+.transport-map-modal[hidden] {
+	display: none !important;
+}
+.transport-map-modal__backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.55);
+	backdrop-filter: blur(2px);
+}
+.transport-map-modal__panel {
+	position: relative;
+	z-index: 1;
+	width: min(100%, 920px);
+	max-width: 96vw;
+	max-height: min(96vh, 900px);
+	display: flex;
+	flex-direction: column;
+	gap: 0.65rem;
+	background: #fff;
+	border: 2px solid #111;
+	border-radius: 12px;
+	box-shadow: 0 16px 48px rgba(0, 0, 0, 0.38);
+	padding: 1rem 1.15rem 1.15rem;
+	box-sizing: border-box;
+}
+.transport-map-modal__title {
+	margin: 0;
+	font-size: 1.2rem;
+	font-weight: 800;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #111;
+}
+.transport-map-modal__hint {
+	margin: 0;
+	font-size: 0.9rem;
+	color: #333;
+	line-height: 1.4;
+}
+.transport-map-modal__search-wrap {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+.transport-map-modal__search-label {
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: #222;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+.transport-map-modal__search {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0.55rem 0.75rem;
+	font-size: 1rem;
+	border: 2px solid rgba(0, 0, 0, 0.25);
+	border-radius: 8px;
+	background: #fafafa;
+}
+.transport-map-modal__search:focus {
+	outline: none;
+	border-color: #1565c0;
+	box-shadow: 0 0 0 2px rgba(21, 101, 192, 0.25);
+}
+.transport-map-modal__canvas {
+	width: 100%;
+	min-height: 360px;
+	height: min(58vh, 520px);
+	border-radius: 8px;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	overflow: hidden;
+	background: #e0e0e0;
+}
+.transport-map-auth-fail {
+	box-sizing: border-box;
+	height: 100%;
+	min-height: 280px;
+	padding: 1rem 1.1rem;
+	overflow-y: auto;
+	font-size: 0.85rem;
+	line-height: 1.45;
+	color: #1a1a1a;
+	background: #fff5f5;
+	border: 2px solid #c62828;
+	border-radius: 8px;
+}
+.transport-map-auth-fail strong {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-size: 0.95rem;
+	color: #b71c1c;
+}
+.transport-map-auth-fail p {
+	margin: 0.5rem 0;
+}
+.transport-map-auth-fail__code {
+	display: block;
+	margin: 0.65rem 0;
+	padding: 0.5rem 0.65rem;
+	font-size: 0.78rem;
+	word-break: break-all;
+	background: #fff;
+	border: 1px dashed #333;
+	border-radius: 6px;
+}
+.transport-map-auth-fail a {
+	display: inline-block;
+	margin-top: 0.5rem;
+	font-weight: 700;
+	color: #1565c0;
+}
+.transport-map-modal__actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 0.5rem;
+	margin-top: 0.25rem;
+}
+.transport-map-modal__btn {
+	padding: 0.45rem 0.9rem;
+	font-size: 0.85rem;
+	font-weight: 700;
+	border-radius: 6px;
+	cursor: pointer;
+	border: 2px solid #111;
+}
+.transport-map-modal__btn--cancel {
+	background: #fff;
+	color: #111;
+}
+.transport-map-modal__btn--ok {
+	background: #1565c0;
+	color: #fff;
+	border-color: #0d47a1;
+}
+.transport-map-modal__btn--ok:hover {
+	background: #0d47a1;
+}
+.transport-map-modal__btn--cancel:hover {
+	background: #f5f5f5;
+}

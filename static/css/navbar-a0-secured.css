@@ -437,15 +437,16 @@ body[data-user-authenticated="true"] #A0 #main_menu ul li a.a0-nav-account-link 
 	color: #FFC107 !important;
 	font-weight: 700 !important;
 	text-decoration: none !important;
-	background: rgba(255,193,7,0.2) !important;
-	padding: 0 10px !important;
-	border-radius: 6px !important;
-	line-height: 36px !important;
+	background: transparent !important;
+	padding: 0 calc(var(--btn-padding-h) / 3) !important;
+	border-radius: 0 !important;
+	line-height: var(--nav-height) !important;
+	height: var(--nav-height) !important;
 }
 #A0 #main_menu ul li a.current_page:hover,
 #A0 #main_menu a.current_page:hover {
 	color: #FFD54F !important;
-	background: rgba(255,193,7,0.35) !important;
+	background: transparent !important;
 }
 
 /* CTA: "Intră" mai vizibil (doar când nu e logat) */

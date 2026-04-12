@@ -7,6 +7,7 @@ from .models import (
     UserAdoption,
     UserPost,
     AdoptionRequest,
+    UserInboxNotification,
     CollabServiceMessage,
     CollaboratorServiceOffer,
     CollaboratorOfferClaim,
@@ -33,6 +34,15 @@ class UserAdoptionAdmin(admin.ModelAdmin):
     list_display = ("user", "animal_name", "animal_type", "status", "requested_at")
     list_filter = ("status", "animal_type", "source")
     search_fields = ("user__email", "user__first_name", "user__last_name", "animal_name", "source")
+
+
+@admin.register(UserInboxNotification)
+class UserInboxNotificationAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "kind", "title", "is_read", "created_at")
+    list_filter = ("is_read", "kind")
+    search_fields = ("title", "body", "user__username", "user__email")
+    raw_id_fields = ("user",)
+    readonly_fields = ("created_at",)
 
 
 @admin.register(AdoptionRequest)

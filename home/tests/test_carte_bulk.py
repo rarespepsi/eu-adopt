@@ -32,6 +32,8 @@ _CARTE_GET_CASES = [
     ("signup_colaborator", {}, ""),
     ("signup_colaborator", {}, "?tip=transport"),
     ("account", {}, ""),
+    ("unified_inbox", {}, ""),
+    ("unified_inbox_mark_read", {}, ""),
     ("account_edit_username", {}, ""),
     ("account_upload_avatar", {}, ""),
     ("account_edit", {}, ""),

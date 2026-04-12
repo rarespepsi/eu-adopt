@@ -1,0 +1,18 @@
+{% if google_maps_api_key %}
+<div id="{{ modal_prefix }}_map_modal" class="transport-map-modal" hidden aria-hidden="true">
+	<div class="transport-map-modal__backdrop" id="{{ modal_prefix }}_map_modal_backdrop" tabindex="-1"></div>
+	<div class="transport-map-modal__panel" role="dialog" aria-modal="true" aria-labelledby="{{ modal_prefix }}_map_modal_title">
+		<h3 class="transport-map-modal__title" id="{{ modal_prefix }}_map_modal_title">Alege adresa pe hartă</h3>
+		<p class="transport-map-modal__hint" id="{{ modal_prefix }}_map_modal_hint">Caută mai jos sau apasă pe hartă pentru pin. Poți muta pinul.</p>
+		<div class="transport-map-modal__search-wrap">
+			<label class="transport-map-modal__search-label" for="{{ modal_prefix }}_map_search">Caută adresă</label>
+			<input type="text" id="{{ modal_prefix }}_map_search" class="transport-map-modal__search" placeholder="Caută adresă, stradă, localitate…" autocomplete="off" />
+		</div>
+		<div id="{{ modal_prefix }}_map_canvas" class="transport-map-modal__canvas"></div>
+		<div class="transport-map-modal__actions">
+			<button type="button" class="transport-map-modal__btn transport-map-modal__btn--cancel" id="{{ modal_prefix }}_map_modal_cancel">Anulează</button>
+			<button type="button" class="transport-map-modal__btn transport-map-modal__btn--ok" id="{{ modal_prefix }}_map_modal_confirm">Folosește această locație</button>
+		</div>
+	</div>
+</div>
+{% endif %}

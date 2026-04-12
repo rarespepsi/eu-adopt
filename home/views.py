@@ -43,6 +43,7 @@ from .pet_age_bands import (
 )
 from .pt_p2_list import PT_P2_PAGE_SIZE, pt_pets_page_context
 from .mail_helpers import email_subject_for_user
+from . import inbox_notifications as _inbox
 from .models import (
     WishlistItem,
     SiteCartItem,
@@ -67,6 +68,7 @@ from .models import (
     TransportDispatchJob,
     TransportDispatchRecipient,
     TransportTripRating,
+    UserInboxNotification,
 )
 from django.contrib.auth import get_user_model
 from functools import wraps
@@ -1228,6 +1230,15 @@ def _apply_owner_decision_for_request(ad_req: AdoptionRequest, decision: str):
                 ),
                 is_read=False,
             )
+            pl_other = (other_ar.animal.name or f"Animal #{other_ar.animal.pk}").strip()
+            _inbox.create_inbox_notification(
+                other_ar.adopter,
+                _inbox.KIND_ADOPTION_SUPERSEDED_ADOPTER,
+                "Cererea ta de adopție nu mai este activă",
+                f"Pentru „{pl_other}” a fost acceptată o altă cerere.",
+                link_url=reverse("adopter_messages_list"),
+                metadata={"pet_id": other_ar.animal_id},
+            )
         _send_adoption_accept_emails(ad_req)
         PetMessage.objects.create(
             animal=ad_req.animal,
@@ -1238,6 +1249,15 @@ def _apply_owner_decision_for_request(ad_req: AdoptionRequest, decision: str):
                 "poți folosi și această conversație pentru detalii suplimentare."
             ),
             is_read=False,
+        )
+        pl = (ad_req.animal.name or f"Animal #{ad_req.animal.pk}").strip()
+        _inbox.create_inbox_notification(
+            ad_req.adopter,
+            _inbox.KIND_ADOPTION_ACCEPTED_ADOPTER,
+            "Cererea ta de adopție a fost acceptată",
+            f"Pentru „{pl}”. Verifică emailul și mesajele din cont.",
+            link_url=reverse("adopter_messages_list"),
+            metadata={"pet_id": ad_req.animal_id, "adoption_request_id": ad_req.pk},
         )
         return True, "Cererea a fost acceptată.", True
 
@@ -1250,6 +1270,15 @@ def _apply_owner_decision_for_request(ad_req: AdoptionRequest, decision: str):
             receiver=ad_req.adopter,
             body="Cererea de adopție nu a fost acceptată. Îți mulțumim pentru interes.",
             is_read=False,
+        )
+        plr = (ad_req.animal.name or f"Animal #{ad_req.animal.pk}").strip()
+        _inbox.create_inbox_notification(
+            ad_req.adopter,
+            _inbox.KIND_ADOPTION_REJECTED_ADOPTER,
+            "Cererea ta de adopție nu a fost acceptată",
+            f"Pentru „{plr}”. Îți mulțumim pentru interes.",
+            link_url=reverse("adopter_messages_list"),
+            metadata={"pet_id": ad_req.animal_id},
         )
         return True, "Cererea a fost respinsă.", True
 
@@ -2017,6 +2046,7 @@ def signup_verificare_sms_view(request):
         profile.company_cui_has_ro = (data.get("cui_cu_ro") == "da")
         profile.company_judet = data.get("judet", "")
         profile.company_oras = data.get("oras", "")
+        profile.company_address = (data.get("adresa_firma") or "").strip()
         profile.collaborator_type = ""
         profile.save()
         _log_legal_consents(
@@ -2324,10 +2354,18 @@ def _no_cache_response(response):
     return response
 
 
+def _signup_maps_ctx(request):
+    """Cheie Maps + origin pentru autocomplete / modal (ca la Transport)."""
+    return {
+        "google_maps_api_key": getattr(settings, "GOOGLE_MAPS_API_KEY", "") or "",
+        "maps_page_origin": request.build_absolute_uri("/").rstrip("/"),
+    }
+
+
 def signup_organizatie_view(request):
     """Formular înregistrare – Adăpost / ONG / Firmă. La POST: validează, salvează în sesiune, redirect SMS. La GET: prefill din sesiune dacă user a dat Back din SMS."""
     if request.method != "POST":
-        ctx = {}
+        ctx = _signup_maps_ctx(request)
         field_errors_get = {}
         if request.GET.get("phone_taken"):
             field_errors_get["telefon"] = "Acest număr de telefon este deja folosit. Te rugăm folosește alt număr."
@@ -2358,6 +2396,7 @@ def signup_organizatie_view(request):
     telefon = (request.POST.get("telefon") or "").strip()
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
+    adresa_firma = (request.POST.get("adresa_firma") or "").strip()
     parola1 = request.POST.get("parola1") or ""
     parola2 = request.POST.get("parola2") or ""
     accept_termeni = request.POST.get("accept_termeni_org") == "on"
@@ -2387,6 +2426,8 @@ def signup_organizatie_view(request):
         field_errors["judet"] = "Județul este obligatoriu."
     if not oras:
         field_errors["oras"] = "Orașul / localitatea este obligatorie."
+    if not adresa_firma:
+        field_errors["adresa_firma"] = "Adresa sediului este obligatorie."
     if len(parola1) < 8:
         field_errors["parola"] = "Parola trebuie să aibă cel puțin 8 caractere."
     elif parola1 != parola2:
@@ -2407,13 +2448,16 @@ def signup_organizatie_view(request):
             "telefon": telefon,
             "judet": judet,
             "oras": oras,
+            "adresa_firma": adresa_firma,
             "accept_termeni": accept_termeni,
             "accept_gdpr": accept_gdpr,
             "email_opt_in": email_opt_in,
             "is_public_shelter": is_public_shelter if is_public_shelter_val in ("yes", "no") else None,
             "parola1": parola1, "parola2": parola2,
         }
-        return _no_cache_response(render(request, "anunturi/signup_organizatie.html", {"field_errors": field_errors, "form_prefill": prefill}))
+        ctx = {"field_errors": field_errors, "form_prefill": prefill}
+        ctx.update(_signup_maps_ctx(request))
+        return _no_cache_response(render(request, "anunturi/signup_organizatie.html", ctx))
 
     request.session["signup_pending"] = {
         "role": "org",
@@ -2426,6 +2470,7 @@ def signup_organizatie_view(request):
         "telefon": telefon.strip(),
         "judet": judet,
         "oras": oras,
+        "adresa_firma": adresa_firma,
         "password": parola1,
         "accept_termeni": accept_termeni,
         "accept_gdpr": accept_gdpr,
@@ -2438,7 +2483,7 @@ def signup_organizatie_view(request):
 def signup_colaborator_view(request):
     """Formular înregistrare – Cabinet / Magazin / Servicii. La POST: validează, salvează în sesiune, redirect SMS. La GET: prefill din sesiune dacă user a dat Back din SMS."""
     if request.method != "POST":
-        ctx = {}
+        ctx = _signup_maps_ctx(request)
         errs = []
         if request.GET.get("phone_taken"):
             errs.append("Acest număr de telefon este deja folosit. Te rugăm folosește alt număr.")
@@ -2468,6 +2513,7 @@ def signup_colaborator_view(request):
     telefon = (request.POST.get("telefon") or "").strip()
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
+    adresa_firma = (request.POST.get("adresa_firma") or "").strip()
     tip_partener = (request.POST.get("tip_partener") or "").strip()
     transport_national = request.POST.get("transport_national") == "on"
     transport_international = request.POST.get("transport_international") == "on"
@@ -2509,6 +2555,8 @@ def signup_colaborator_view(request):
         errors.append("Județul este obligatoriu.")
     if not oras:
         errors.append("Orașul / localitatea este obligatorie.")
+    if not adresa_firma:
+        errors.append("Adresa sediului este obligatorie.")
     if len(parola1) < 8:
         errors.append("Parola trebuie să aibă cel puțin 8 caractere.")
     if parola1 != parola2:
@@ -2527,6 +2575,7 @@ def signup_colaborator_view(request):
             "pers_contact": pers_contact,
             "judet": judet,
             "oras": oras,
+            "adresa_firma": adresa_firma,
             "email": email,
             "telefon": telefon,
             "tip_partener": tip_partener if tip_partener in ("cabinet", "servicii", "magazin", "transport") else "",
@@ -2539,7 +2588,9 @@ def signup_colaborator_view(request):
             "email_opt_in": email_opt_in,
             "parola1": parola1, "parola2": parola2,
         }
-        return render(request, "anunturi/signup_colaborator.html", {"signup_errors": errors, "form_prefill": prefill})
+        ctx = {"signup_errors": errors, "form_prefill": prefill}
+        ctx.update(_signup_maps_ctx(request))
+        return render(request, "anunturi/signup_colaborator.html", ctx)
 
     pending = {
         "role": "collaborator",
@@ -2553,6 +2604,7 @@ def signup_colaborator_view(request):
         "telefon": telefon.strip(),
         "judet": judet,
         "oras": oras,
+        "adresa_firma": adresa_firma,
         "password": parola1,
         "accept_termeni": accept_termeni,
         "accept_gdpr": accept_gdpr,
@@ -3504,6 +3556,15 @@ def promo_a2_checkout_demo_success_view(request, pk):
         order.status = PromoA2Order.STATUS_PAID
         order.payment_ref = f"DEMO-{order.pk}"
         order.save(update_fields=["status", "payment_ref", "updated_at"])
+        pet_label_po = (pet.name or f"Animal #{pet.pk}").strip()
+        _inbox.create_inbox_notification(
+            request.user,
+            _inbox.KIND_PROMO_A2_PAID,
+            "Plată reușită — promovare anunț",
+            f"Comandă #{order.pk} pentru „{pet_label_po}” (demo).",
+            link_url=reverse("mypet"),
+            metadata={"promo_order_id": order.pk, "pet_id": pet.pk},
+        )
 
     ctx = {
         "pet": pet,
@@ -3596,6 +3657,47 @@ def account_view(request):
     response["Pragma"] = "no-cache"
     response["Expires"] = "0"
     return response
+
+
+@login_required
+def unified_inbox_view(request):
+    """Inbox unificat: notificări sistem + legături rapide către conversațiile existente."""
+    items = list(
+        UserInboxNotification.objects.filter(user=request.user).order_by("-created_at")[:200]
+    )
+    ap = getattr(request.user, "account_profile", None)
+    role = getattr(ap, "role", None) if ap else None
+    mypet_ok = _user_can_use_mypet(request)
+    ctx = {
+        "inbox_items": items,
+        "quick_mypet_messages_url": (reverse("mypet") + "?open_messages=1") if mypet_ok else "",
+        "quick_adopter_url": (
+            reverse("adopter_messages_list")
+            if (mypet_ok and role == AccountProfile.ROLE_PF)
+            else ""
+        ),
+        "quick_collab_client_url": reverse("servicii"),
+        "quick_collab_business_url": (
+            (reverse("collab_offers_control") + "?open_messages=1")
+            if role == AccountProfile.ROLE_COLLAB
+            else ""
+        ),
+    }
+    return render(request, "anunturi/unified_inbox.html", ctx)
+
+
+@login_required
+@require_POST
+@csrf_protect
+def unified_inbox_mark_read_view(request):
+    raw = (request.POST.get("notification_id") or "").strip()
+    if raw == "all":
+        UserInboxNotification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    elif raw.isdigit():
+        UserInboxNotification.objects.filter(pk=int(raw), user=request.user).update(is_read=True)
+    next_url = request.POST.get("next") or ""
+    safe = _safe_local_redirect_path(next_url)
+    return redirect(safe or reverse("unified_inbox"))
 
 
 @login_required
@@ -6091,6 +6193,23 @@ def pet_adoption_request_view(request, pk: int):
             body=body,
             is_read=False,
         )
+    pet_label = (pet.name or f"Animal #{pet.pk}").strip()
+    _inbox.create_inbox_notification(
+        pet.owner,
+        _inbox.KIND_ADOPTION_REQUEST_OWNER,
+        "Cerere nouă de adopție",
+        f"{request.user.get_full_name() or request.user.username} a trimis o cerere pentru „{pet_label}”.",
+        link_url=reverse("mypet") + "?open_messages=1",
+        metadata={"pet_id": pet.pk, "adoption_request_id": ar.pk},
+    )
+    _inbox.create_inbox_notification(
+        request.user,
+        _inbox.KIND_ADOPTION_REQUEST_ADOPTER,
+        "Cererea ta de adopție a fost trimisă",
+        f"Pentru „{pet_label}”. Vei fi anunțat când proprietarul răspunde.",
+        link_url=reverse("adopter_messages_list"),
+        metadata={"pet_id": pet.pk, "adoption_request_id": ar.pk},
+    )
     _send_adoption_request_owner_email(ar)
     _send_adoption_request_adopter_email(ar)
     if has_active_accepted:
@@ -6211,6 +6330,23 @@ def mypet_adoption_finalize_view(request, req_id: int):
         pet.adoption_state = AnimalListing.ADOPTION_STATE_ADOPTED
         pet.save(update_fields=["adoption_state", "updated_at"])
     _process_adoption_finalize_bonus(ar)
+    pet_label_fin = (pet.name or f"Animal #{pet.pk}").strip()
+    _inbox.create_inbox_notification(
+        request.user,
+        _inbox.KIND_ADOPTION_FINALIZED_OWNER,
+        "Adopție finalizată",
+        f"Ai marcat adopția ca finalizată pentru „{pet_label_fin}”.",
+        link_url=reverse("mypet") + "?open_messages=1",
+        metadata={"pet_id": pet.pk, "adoption_request_id": ar.pk},
+    )
+    _inbox.create_inbox_notification(
+        ar.adopter,
+        _inbox.KIND_ADOPTION_FINALIZED_ADOPTER,
+        "Adopție finalizată",
+        f"Adopția pentru „{pet_label_fin}” a fost finalizată. Îți mulțumim!",
+        link_url=reverse("adopter_messages_list"),
+        metadata={"pet_id": pet.pk, "adoption_request_id": ar.pk},
+    )
     return JsonResponse({"ok": True})
 
 
@@ -7042,6 +7178,14 @@ def publicitate_checkout_demo_confirm_view(request):
 
     request.session.pop(PUBLICITATE_SESSION_CHECKOUT_ORDER, None)
     request.session[PUBLICITATE_SESSION_LAST_PAID] = order.pk
+    _inbox.create_inbox_notification(
+        request.user,
+        _inbox.KIND_PUBLICITATE_PAID,
+        "Plată publicitate confirmată",
+        f"Comandă #{order.pk} (plată demo). Sloturile au fost rezervate conform fluxului curent.",
+        link_url=reverse("publicitate_checkout_demo_success"),
+        metadata={"publicitate_order_id": order.pk},
+    )
     messages.success(request, f"Plată demo reușită. Comandă #{order.pk}.")
     return redirect("publicitate_checkout_demo_success")
 
@@ -7499,6 +7643,25 @@ def public_offer_request_view(request, pk: int):
         return _redirect_after_public_offer_request(request, pk)
 
     _public_offer_request_rate_limit_touch(request, pk)
+
+    bu = buyer.get("user")
+    if bu:
+        _inbox.create_inbox_notification(
+            bu,
+            _inbox.KIND_OFFER_CLAIM_BUYER,
+            "Ofertă solicitată",
+            f"Cod {code}: {offer.title}. Datele au fost trimise pe email.",
+            link_url=reverse("servicii"),
+            metadata={"offer_id": offer.pk, "claim_code": code},
+        )
+    _inbox.create_inbox_notification(
+        collab,
+        _inbox.KIND_OFFER_CLAIM_COLLABORATOR,
+        "Solicitare nouă pentru ofertă",
+        f"Cod {code}: {offer.title}. Verifică emailul pentru datele solicitantului.",
+        link_url=reverse("collab_offers_control") + "?open_messages=1",
+        metadata={"offer_id": offer.pk, "claim_code": code},
+    )
 
     cabinet_txt = _cabinet_block_for_buyer_email(collab)
     buyer_subject = f"EU-Adopt – cod ofertă {code}: {offer.title}"

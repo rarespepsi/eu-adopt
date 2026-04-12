@@ -1,4 +1,11 @@
-from .models import AccountProfile, WishlistItem, SiteCartItem, PetMessage, CollabServiceMessage
+from .models import (
+    AccountProfile,
+    WishlistItem,
+    SiteCartItem,
+    PetMessage,
+    CollabServiceMessage,
+    UserInboxNotification,
+)
 from .data import DEMO_DOGS
 from django.urls import reverse
 from django.utils import timezone
@@ -126,6 +133,7 @@ def wishlist_counts(request):
     pet_message_unread_count = 0
     collab_business_unread_count = 0
     collab_client_unread_count = 0
+    inbox_notification_unread_count = 0
     message_unread_count = 0
     if user and user.is_authenticated:
         try:
@@ -150,31 +158,30 @@ def wishlist_counts(request):
                 .exclude(collaborator=user)
                 .count()
             )
-            if show_magazinul_meu_nav:
-                message_unread_count = collab_business_unread_count
-            elif show_mypet_nav:
-                # MyPet (PF/ONG) rămâne strict pe fluxul de pet.
-                message_unread_count = pet_message_unread_count
-            else:
-                message_unread_count = (
-                    pet_message_unread_count
-                    + collab_business_unread_count
-                    + collab_client_unread_count
-                )
+            inbox_notification_unread_count = UserInboxNotification.objects.filter(
+                user=user,
+                is_read=False,
+                created_at__gte=active_since,
+            ).count()
+            # Inbox unificat în navbar: toate canalele + notificări sistem.
+            message_unread_count = (
+                pet_message_unread_count
+                + collab_business_unread_count
+                + collab_client_unread_count
+                + inbox_notification_unread_count
+            )
         except Exception:
             pet_message_unread_count = 0
             collab_business_unread_count = 0
             collab_client_unread_count = 0
+            inbox_notification_unread_count = 0
             message_unread_count = 0
 
-    # Link unic mesaje navbar (MyPet vs Magazinul meu / colaborator)
+    # Link unic mesaje → inbox unificat (toate tipurile de cont)
     navbar_messages_url = ""
     if user and user.is_authenticated:
         try:
-            if show_magazinul_meu_nav:
-                navbar_messages_url = f"{reverse('collab_offers_control')}?open_messages=1"
-            else:
-                navbar_messages_url = f"{reverse('mypet')}?open_messages=1"
+            navbar_messages_url = reverse("unified_inbox")
         except Exception:
             navbar_messages_url = ""
 
@@ -208,6 +215,7 @@ def wishlist_counts(request):
         "pet_message_unread_count": pet_message_unread_count,
         "collab_business_unread_count": collab_business_unread_count,
         "collab_client_unread_count": collab_client_unread_count,
+        "inbox_notification_unread_count": inbox_notification_unread_count,
         "nav_magazinul_meu_label": nav_magazinul_meu_label,
         "navbar_messages_url": navbar_messages_url,
     }

@@ -5,116 +5,163 @@
 {% block body_class %}page-login{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/w-cadru.css' %}?v=1" type="text/css" media="screen" />
 <style>
+	/* PF signup – același limbaj vizual ca pagina Intra (login): fundal închis, card sticlă, câmpuri întunecate */
 	body.page-login {
-		min-height: 100vh;
+		background-color: #141a22 !important;
 	}
 	body.page-login #main_wrap {
-		min-height: 100vh !important;
-		display: flex !important;
-		flex-direction: column !important;
-		padding: 0 !important;
-		margin: 0 !important;
-		background: transparent;
+		position: relative;
+		min-height: 100svh;
+		min-height: 100dvh;
+		display: flex;
+		flex-direction: column;
+		padding: 0;
+		margin: 0;
 	}
-	body.page-login #main_content {
-		min-height: 0 !important;
-		display: flex !important;
-		flex-direction: column !important;
-		flex: 1 1 0 !important;
-		overflow: hidden !important;
-		padding: 0 !important;
-		margin: 0 !important;
-		width: 100% !important;
-		max-width: 100% !important;
-		background: transparent !important;
-		box-shadow: none !important;
-	}
-	body.page-login #main_content #W {
-		height: calc(100vh - var(--nav-h, 64px)) !important;
-		max-height: calc(100vh - var(--nav-h, 64px)) !important;
-		min-height: 0 !important;
-		display: flex !important;
-		flex-direction: column !important;
-		overflow: auto !important;
+	body.page-login:not(.page-home-v2):not(.page-animale) #main_content {
+		position: relative;
+		flex: 1 1 auto;
+		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 0.75rem 1rem 0.75rem 0;
+		box-sizing: border-box !important;
+		min-height: 100svh;
+		min-height: 100dvh;
+		padding-top: var(--nav-height, 56px) !important;
+		padding-left: clamp(0.65rem, 2vw, 1.25rem) !important;
+		padding-right: clamp(0.65rem, 2vw, 1.25rem) !important;
+		padding-bottom: clamp(0.5rem, 1.5vw, 0.85rem) !important;
+		background: transparent !important;
+		box-shadow: none !important;
+		overflow-y: auto !important;
 	}
-	.signup-main {
+	body.page-login .login-main.signup-pf-main {
 		width: 100%;
-		max-width: 1040px;
+		max-width: 100%;
 		display: flex;
-		flex-direction: row;
-		align-items: flex-start;
-		gap: 1rem;
-		flex-wrap: wrap;
-		margin-left: -6.25rem;
+		align-items: center;
+		justify-content: center;
+		margin: 0;
+		padding: 0;
+	}
+	.signup-pf-stack {
+		width: 100%;
+		max-width: 52rem;
+		position: relative;
+		z-index: 1;
 	}
 	.signup-form-wrap {
-		flex: 1 1 400px;
-		min-width: 0;
+		width: 100%;
+	}
+	.signup-form-header {
+		text-align: center;
+		margin-bottom: 0.5rem;
+	}
+	.signup-form-header h1 {
+		margin: 0 0 0.2rem;
+		font-size: clamp(1.02rem, 2vw, 1.2rem);
+		font-weight: 600;
+		color: #f8fafc;
+		text-transform: none;
+		letter-spacing: -0.02em;
+		line-height: 1.2;
+	}
+	.signup-form-header .signup-intro {
+		margin: 0;
+		font-size: 0.78rem;
+		color: #94a3b8;
+		line-height: 1.35;
 	}
 	.signup-casete-row {
 		display: flex;
-		gap: 1rem;
+		gap: 0.65rem;
 		justify-content: center;
 		align-items: stretch;
 		flex-wrap: wrap;
 	}
+	/* Card „sticlă” — compact, fără scroll intern (încadrare în viewport) */
 	.signup-caseta {
-		flex: 1 1 300px;
-		min-width: 280px;
-		max-width: 500px;
-		background: rgba(255, 255, 255, 0.72);
-		border-radius: 12px;
-		box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-		border: 1px solid rgba(255, 255, 255, 0.5);
-		padding: 1rem 1.25rem;
+		flex: 1 1 260px;
+		min-width: min(100%, 240px);
+		max-width: 420px;
+		position: relative;
+		background:
+			linear-gradient(
+				168deg,
+				rgba(24, 32, 46, 0.34) 0%,
+				rgba(18, 24, 36, 0.42) 48%,
+				rgba(14, 20, 32, 0.48) 100%
+			);
+		backdrop-filter: blur(22px) saturate(1.04);
+		-webkit-backdrop-filter: blur(22px) saturate(1.04);
+		border: 1px solid rgba(255, 255, 255, 0.055);
+		border-radius: 0.85rem;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+			0 1px 0 rgba(255, 255, 255, 0.045) inset,
+			0 32px 64px rgba(0, 0, 0, 0.55),
+			0 12px 28px rgba(0, 0, 0, 0.32),
+			0 0 0 1px rgba(6, 182, 212, 0.04);
+		padding: 0.55rem 0.65rem 0.6rem;
 		box-sizing: border-box;
-		max-height: calc(100vh - var(--nav-h, 64px) - 5rem);
-		overflow-y: auto;
+		max-height: none;
+		overflow: visible;
+		font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	}
+	.signup-caseta::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
+		background: linear-gradient(
+			145deg,
+			rgba(255, 255, 255, 0.06) 0%,
+			transparent 42%,
+			transparent 58%,
+			rgba(0, 0, 0, 0.12) 100%
+		);
+		opacity: 0.62;
+		z-index: 0;
+	}
+	.signup-caseta > * {
+		position: relative;
+		z-index: 1;
 	}
 	.signup-caseta h2 {
-		margin: 0 0 0.6rem;
-		font-size: 1rem;
-		font-weight: 800;
-		color: #e53935;
-		text-align: center;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-	}
-	.signup-form-header {
-		text-align: center;
-		margin-bottom: 0.75rem;
-	}
-	.signup-form-header h1 {
 		margin: 0 0 0.35rem;
-		font-size: 1.15rem;
-		font-weight: 800;
-		color: #e53935;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-	.signup-form-header .signup-intro {
-		margin: 0;
-		font-size: 0.8rem;
-		color: #555;
+		font-size: 0.7rem;
+		font-weight: 600;
+		color: #cbd5e1;
+		text-align: center;
+		text-transform: none;
+		letter-spacing: 0.02em;
+		line-height: 1.2;
 	}
 	.signup-field {
-		margin-bottom: 0.5rem;
+		margin-bottom: 0.28rem;
 	}
 	.signup-field-box {
-		border: 1px solid rgba(255, 255, 255, 0.6);
-		border-radius: 8px;
-		padding: 0.5rem 0.65rem;
-		background: rgba(255, 255, 255, 0.5);
-		margin-bottom: 0.5rem;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 0.45rem;
+		padding: 0.28rem 0.4rem;
+		background: rgba(15, 23, 42, 0.22);
+		margin-bottom: 0.28rem;
 	}
 	.signup-pwd-wrap .signup-pwd-inner { position: relative; display: block; }
-	.signup-pwd-wrap .signup-pwd-inner input { padding-right: 2rem; box-sizing: border-box; width: 100%; }
-	.signup-pwd-eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; cursor: pointer; opacity: 0.6; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>') center/contain no-repeat; }
+	.signup-pwd-wrap .signup-pwd-inner input { padding-right: 1.65rem; box-sizing: border-box; width: 100%; }
+	.signup-pwd-eye {
+		position: absolute;
+		right: 5px;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 17px;
+		height: 17px;
+		cursor: pointer;
+		opacity: 0.75;
+		background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%2394a3b8" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>') center/contain no-repeat;
+	}
 	.signup-pwd-eye:hover { opacity: 1; }
 	.signup-field-box:last-child {
 		margin-bottom: 0;
@@ -122,40 +169,114 @@
 	.signup-field label {
 		display: block;
 		margin-bottom: 0.15rem;
-		font-size: 0.72rem;
-		font-weight: 600;
-		color: #555;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
+		font-size: 0.68rem;
+		font-weight: 500;
+		color: #cbd5e1;
+		text-transform: none;
+		letter-spacing: 0.01em;
+		line-height: 1.2;
 	}
-	.signup-field input {
+	.signup-field-box label a {
+		color: #22d3ee;
+		font-weight: 600;
+		text-decoration: none;
+	}
+	.signup-field-box label a:hover {
+		text-decoration: underline;
+		color: #67e8f9;
+	}
+	.signup-field input[type="text"],
+	.signup-field input[type="email"],
+	.signup-field input[type="tel"],
+	.signup-field input[type="password"] {
 		width: 100%;
-		padding: 0.35rem 0.45rem;
-		border-radius: 6px;
-		border: 1px solid #ccc;
-		font-size: 0.85rem;
+		padding: 0.38rem 0.5rem;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		background: rgba(15, 23, 42, 0.38);
+		color: #f8fafc;
+		font-size: 0.78rem;
+		line-height: 1.25;
 		box-sizing: border-box;
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 1px 4px rgba(0, 0, 0, 0.18);
+		transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+	}
+	.signup-field input::placeholder {
+		color: #6b7280;
+	}
+	.signup-field input:hover {
+		border-color: rgba(255, 255, 255, 0.12);
+		background: rgba(15, 23, 42, 0.68);
+	}
+	.signup-field input:focus {
+		outline: none;
+		border-color: rgba(6, 182, 212, 0.75);
+		background: rgba(15, 23, 42, 0.82);
+		box-shadow:
+			0 0 0 1px rgba(6, 182, 212, 0.35),
+			0 0 0 3px rgba(6, 182, 212, 0.14),
+			0 2px 10px rgba(0, 0, 0, 0.22);
+	}
+	.signup-bifa-label input[type="checkbox"] {
+		width: 0.92rem;
+		height: 0.92rem;
+		margin: 0.12rem 0 0;
+		flex-shrink: 0;
+		border-radius: 0.3rem;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		accent-color: #06b6d4;
+		cursor: pointer;
+	}
+	.signup-bifa-label {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.32rem;
+		font-size: 0.68rem;
+		font-weight: 400;
+		color: #e2e8f0;
+		line-height: 1.32;
+		cursor: pointer;
+	}
+	.signup-bifa-label span {
+		min-width: 0;
 	}
 	.signup-phone-row {
 		display: flex;
 		gap: 0.35rem;
+		align-items: stretch;
 	}
 	.signup-phone-prefix {
-		flex: 0 0 90px;
+		flex: 0 0 78px;
+		min-width: 0;
+		display: flex;
+		align-items: stretch;
 	}
 	.signup-phone-number {
 		flex: 1 1 auto;
+		min-width: 0;
 	}
+	/* Select: line-height + padding vertical + min-height evită tăierea glyph-urilor (+, cifre) pe Windows/Chrome */
 	.signup-phone-prefix select {
 		width: 100%;
-		padding: 0.35rem 0.45rem;
-		border-radius: 6px;
-		border: 1px solid #ccc;
-		font-size: 0.8rem;
+		min-height: 2.42rem;
+		padding: 0.48rem 0.32rem 0.52rem;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		font-size: 0.72rem;
+		line-height: 1.5;
+		font-family: inherit;
 		box-sizing: border-box;
+		background-color: rgba(15, 23, 42, 0.38);
+		color: #f8fafc;
+		cursor: pointer;
+		overflow: visible;
+	}
+	.signup-phone-prefix select:focus {
+		outline: none;
+		border-color: rgba(6, 182, 212, 0.75);
 	}
 	.signup-actions {
-		margin-top: 0.5rem;
+		margin-top: 0.4rem;
 		display: flex;
 		flex-direction: column;
 		gap: 0.35rem;
@@ -165,42 +286,106 @@
 		align-items: center;
 		justify-content: center;
 		width: 100%;
-		padding: 0.45rem 0.75rem;
-		border-radius: 999px;
-		border: none;
-		background: #d32f2f;
+		padding: 0.52rem 0.85rem;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(255, 255, 255, 0.14);
+		background: linear-gradient(175deg, #2dd4e8 0%, #06b6d4 42%, #0e7490 100%);
 		color: #fff;
-		font-weight: 700;
-		font-size: 0.88rem;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
+		font-weight: 600;
+		font-size: 0.8rem;
+		line-height: 1.3;
+		letter-spacing: 0.02em;
+		text-transform: none;
 		cursor: pointer;
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.2) inset,
+			0 3px 14px rgba(6, 182, 212, 0.32),
+			0 8px 24px rgba(0, 0, 0, 0.28);
+		box-sizing: border-box;
+		transition: filter 0.18s ease, box-shadow 0.18s ease, transform 0.14s ease;
 	}
 	.signup-submit:hover {
-		background: #e53935;
+		filter: brightness(1.05);
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.24) inset,
+			0 4px 18px rgba(6, 182, 212, 0.38),
+			0 10px 28px rgba(0, 0, 0, 0.32);
+		transform: translateY(-1px);
+	}
+	.signup-submit:active {
+		transform: translateY(0);
+		filter: brightness(0.97);
+	}
+	.signup-submit:focus {
+		outline: none;
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.2) inset,
+			0 3px 14px rgba(6, 182, 212, 0.32),
+			0 0 0 3px rgba(6, 182, 212, 0.28);
 	}
 	.signup-small {
-		font-size: 0.8rem;
-		color: #555;
+		font-size: 0.72rem;
+		font-weight: 500;
 		text-align: center;
+		color: #9ca3af;
+		line-height: 1.4;
 	}
 	.signup-small a {
-		color: #1565c0;
-		font-weight: 600;
+		color: #22d3ee;
 		text-decoration: none;
+		font-weight: 600;
 	}
 	.signup-small a:hover {
 		text-decoration: underline;
+		color: #67e8f9;
 	}
 	.signup-optional-note {
 		font-size: 0.7rem;
-		color: #555;
+		color: #94a3b8;
 		text-align: center;
 		margin: 0.25rem 0 0;
 		line-height: 1.3;
 	}
 	.signup-optional-note strong {
-		color: #e53935;
+		color: #fcd34d;
+	}
+	.signup-errors {
+		margin-bottom: 0.45rem !important;
+		padding: 0.45rem 0.55rem !important;
+		font-size: 0.75rem !important;
+		border-radius: 0.45rem !important;
+		background: rgba(127, 29, 29, 0.35) !important;
+		border: 1px solid rgba(248, 113, 113, 0.35) !important;
+		color: #fecaca !important;
+		font-size: 0.875rem;
+		line-height: 1.4;
+	}
+	.signup-errors ul {
+		margin: 0 !important;
+		padding-left: 1.1rem !important;
+		color: inherit;
+	}
+	/* Ecrane joase: încă puțin mai compact ca să încapă fără scroll în casete */
+	@media (max-height: 820px) {
+		.signup-form-header { margin-bottom: 0.35rem; }
+		.signup-form-header .signup-intro { font-size: 0.72rem; }
+		.signup-caseta { padding: 0.45rem 0.55rem 0.5rem; }
+		.signup-field-box { padding: 0.22rem 0.32rem; margin-bottom: 0.22rem; }
+		.signup-field input[type="text"],
+		.signup-field input[type="email"],
+		.signup-field input[type="tel"],
+		.signup-field input[type="password"] {
+			padding: 0.32rem 0.42rem;
+			font-size: 0.74rem;
+		}
+		.signup-phone-prefix select {
+			min-height: 2.2rem;
+			padding: 0.4rem 0.26rem 0.44rem;
+			font-size: 0.68rem;
+			line-height: 1.48;
+		}
+		.signup-bifa-label { font-size: 0.64rem; line-height: 1.28; }
+		.signup-submit { padding: 0.45rem 0.7rem; font-size: 0.76rem; }
 	}
 	/* Overlay verificare SMS */
 	.signup-main-blurred {
@@ -219,44 +404,54 @@
 	.signup-sms-overlay {
 		max-width: 420px;
 		width: 90%;
-		background: rgba(255, 255, 255, 0.96);
-		border-radius: 14px;
-		box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+		background: linear-gradient(168deg, rgba(24, 32, 46, 0.92) 0%, rgba(14, 20, 32, 0.96) 100%);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 1.1875rem;
+		box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(6, 182, 212, 0.06);
 		padding: 1.25rem 1.5rem 1.1rem;
 		box-sizing: border-box;
+		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(20px);
 	}
 	.signup-sms-title {
 		margin: 0 0 0.4rem;
 		font-size: 1rem;
-		font-weight: 800;
-		color: #e53935;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
+		font-weight: 600;
+		color: #f8fafc;
+		text-transform: none;
+		letter-spacing: 0;
 	}
 	.signup-sms-text {
 		margin: 0 0 0.6rem;
-		font-size: 0.85rem;
-		color: #444;
-		line-height: 1.4;
+		font-size: 0.875rem;
+		color: #94a3b8;
+		line-height: 1.45;
 	}
 	.signup-sms-code-label {
-		font-size: 0.78rem;
-		font-weight: 600;
-		color: #555;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		margin-bottom: 0.25rem;
+		font-size: 0.8125rem;
+		font-weight: 500;
+		color: #cbd5e1;
+		text-transform: none;
+		letter-spacing: 0.01em;
+		margin-bottom: 0.35rem;
 		display: block;
 	}
 	.signup-sms-code-input {
 		width: 100%;
-		padding: 0.4rem 0.55rem;
-		border-radius: 8px;
-		border: 1px solid #ccc;
+		padding: 0.65rem 0.85rem;
+		border-radius: 0.5625rem;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: rgba(15, 23, 42, 0.55);
+		color: #f8fafc;
 		font-size: 1rem;
 		letter-spacing: 0.3em;
 		text-align: center;
 		box-sizing: border-box;
+	}
+	.signup-sms-code-input:focus {
+		outline: none;
+		border-color: rgba(6, 182, 212, 0.75);
+		box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
 	}
 	.signup-sms-actions {
 		margin-top: 0.75rem;
@@ -267,28 +462,32 @@
 	}
 	.signup-sms-btn-primary {
 		flex: 1 1 auto;
-		padding: 0.45rem 0.7rem;
-		border-radius: 999px;
-		border: none;
-		background: #d32f2f;
+		padding: 0.75rem 1rem;
+		border-radius: 0.5625rem;
+		border: 1px solid rgba(255, 255, 255, 0.14);
+		background: linear-gradient(175deg, #2dd4e8 0%, #06b6d4 42%, #0e7490 100%);
 		color: #fff;
-		font-weight: 700;
+		font-weight: 600;
 		font-size: 0.9rem;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
+		text-transform: none;
+		letter-spacing: 0.02em;
 		cursor: pointer;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		box-shadow: 0 3px 14px rgba(6, 182, 212, 0.28);
 	}
 	.signup-sms-btn-primary:disabled {
 		opacity: 0.6;
 		cursor: default;
 	}
 	.signup-sms-hint {
-		font-size: 0.7rem;
-		color: #666;
-		margin-top: 0.25rem;
+		font-size: 0.72rem;
+		color: #94a3b8;
+		margin-top: 0.35rem;
+	}
+	.signup-sms-hint strong {
+		color: #fcd34d;
 	}
 	/* Overlay notă de bun venit */
 	.signup-welcome-overlay-backdrop {
@@ -304,51 +503,112 @@
 		max-width: 640px;
 		width: 92%;
 		max-height: 80vh;
-		background: rgba(255, 255, 255, 0.97);
-		border-radius: 16px;
-		box-shadow: 0 10px 36px rgba(0, 0, 0, 0.4);
+		background: linear-gradient(168deg, rgba(24, 32, 46, 0.94) 0%, rgba(14, 20, 32, 0.97) 100%);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 1.1875rem;
+		box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(6, 182, 212, 0.06);
 		padding: 1.5rem 1.75rem 1.25rem;
 		box-sizing: border-box;
 		overflow-y: auto;
+		backdrop-filter: blur(22px);
+		-webkit-backdrop-filter: blur(22px);
 	}
 	.signup-welcome-title {
 		margin: 0 0 0.6rem;
-		font-size: 1.05rem;
-		font-weight: 800;
-		color: #e53935;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
+		font-size: 1.1rem;
+		font-weight: 600;
+		color: #f8fafc;
+		text-transform: none;
+		letter-spacing: -0.02em;
 		text-align: center;
 	}
 	.signup-welcome-text p {
 		margin: 0 0 0.6rem;
 		font-size: 0.9rem;
-		color: #444;
-		line-height: 1.5;
+		color: #cbd5e1;
+		line-height: 1.55;
 	}
 	.signup-welcome-text ul {
 		margin: 0 0 0.6rem 1.2rem;
 		padding: 0;
 		font-size: 0.9rem;
-		color: #444;
-		line-height: 1.5;
+		color: #cbd5e1;
+		line-height: 1.55;
 	}
 	.signup-welcome-text li {
 		margin-bottom: 0.25rem;
 	}
 	.signup-welcome-close {
-		margin-top: 0.4rem;
+		margin-top: 0.5rem;
 		text-align: center;
-		font-size: 0.75rem;
-		color: #666;
+		font-size: 0.78rem;
+		color: #94a3b8;
+	}
+</style>
+{% endblock %}
+
+{% block extra_css_after %}
+<style>
+	body.page-login #main_wrap {
+		background-color: #141a22;
+		background-image: url("{% static 'images/login/slide1.png' %}");
+		background-size: cover;
+		background-position: 100% center;
+		background-repeat: no-repeat;
+		background-attachment: scroll;
+	}
+	body.page-login #main_wrap::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		background:
+			radial-gradient(
+				ellipse 22% 58% at 99% 48%,
+				rgba(15, 23, 42, 0.72) 0%,
+				rgba(15, 23, 42, 0.35) 42%,
+				transparent 68%
+			),
+			radial-gradient(
+				ellipse 18% 22% at 100% 14%,
+				rgba(12, 18, 28, 0.55) 0%,
+				transparent 55%
+			),
+			rgba(15, 23, 42, 0.06);
+	}
+	body.page-login #main_wrap::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		background: radial-gradient(
+			ellipse 85% 80% at 50% 50%,
+			transparent 35%,
+			rgba(8, 12, 20, 0.14) 100%
+		);
+	}
+	body.page-login #main_wrap > #main_content {
+		position: relative;
+		z-index: 1;
+	}
+	body.page-login:not(.page-home-v2):not(.page-animale) #A0,
+	body.page-login #A0 {
+		background-color: rgba(15, 23, 42, 0.32) !important;
+		background-image: none !important;
+		backdrop-filter: blur(14px) saturate(1.08);
+		-webkit-backdrop-filter: blur(14px) saturate(1.08);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
 	}
 </style>
 {% endblock %}
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
-	<div id="W" aria-label="Cadru principal">
-	<main aria-label="Înregistrare Persoană Fizică EU-ADOPT" class="signup-main">
+	<main class="login-main signup-pf-main signup-main" aria-label="Înregistrare Persoană Fizică EU-ADOPT">
+		<div class="signup-pf-stack">
 		<div class="signup-form-wrap">
 			<div class="signup-form-header">
 				<h1>Înregistrare Persoană Fizică</h1>
@@ -357,8 +617,8 @@
 			<form id="signup-pf-form" method="post" action="{% url 'signup_pf' %}" enctype="multipart/form-data" autocomplete="off">
 				{% csrf_token %}
 				{% if signup_errors %}
-				<div class="signup-errors" role="alert" style="background:#ffebee;border:1px solid #c62828;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;">
-					<ul style="margin:0;padding-left:1.25rem;">
+				<div class="signup-errors" role="alert">
+					<ul>
 						{% for err in signup_errors %}<li>{{ err }}</li>{% endfor %}
 					</ul>
 				</div>
@@ -433,24 +693,24 @@
 						</span>
 					</div>
 					<div class="signup-field signup-field-box">
-						<label>
+						<label class="signup-bifa-label">
 							<input type="checkbox" id="id_accept_termeni" name="accept_termeni" required {% if form_prefill and form_prefill.accept_termeni %}checked{% endif %} />
-							Accept <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">Termenii și condițiile de utilizare</a> *
+							<span>Accept <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">Termenii și condițiile de utilizare</a> *</span>
 						</label>
 					</div>
 					<div class="signup-field signup-field-box">
-						<label>
+						<label class="signup-bifa-label">
 							<input type="checkbox" id="id_accept_gdpr" name="accept_gdpr" required {% if form_prefill and form_prefill.accept_gdpr %}checked{% endif %} />
-							Accept <a href="{% url 'politica_confidentialitate' %}" target="_blank" rel="noopener">Politica de confidențialitate (GDPR)</a> *
+							<span>Accept <a href="{% url 'politica_confidentialitate' %}" target="_blank" rel="noopener">Politica de confidențialitate (GDPR)</a> *</span>
 						</label>
 					</div>
 					<div class="signup-field signup-field-box">
-						<label>
+						<label class="signup-bifa-label">
 							<input type="checkbox" id="id_email_opt_in_wishlist" name="email_opt_in_wishlist" {% if form_prefill and form_prefill.email_opt_in_wishlist %}checked{% endif %} />
-							Doresc notificări email EU-Adopt (opțional)
+							<span>Doresc notificări email EU-Adopt (opțional)</span>
 						</label>
 					</div>
-					<div class="signup-actions" style="margin-top:0.75rem;">
+					<div class="signup-actions">
 						<button type="submit" class="signup-submit">Creează cont</button>
 						<p class="signup-small">
 							<a href="{% url 'signup_choose_type' %}">Înapoi la alegerea tipului de cont</a> ·
@@ -461,8 +721,8 @@
 				</div>
 			</form>
 		</div>
+		</div>
 	</main>
-	</div>
 </section>
 <div class="signup-sms-overlay-backdrop" id="signup-sms-backdrop" aria-hidden="true">
 	<div class="signup-sms-overlay">
@@ -510,7 +770,6 @@
 {% endblock %}
 
 {% block extra_js %}
-{% include 'anunturi/includes/fundal_random_script.html' %}
 <script>
 (function() {
 	var form = document.getElementById('signup-pf-form');

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mesaje și notificări | EU Adopt{% endblock %}
+
+{% block body_class %}page-unified-inbox{% endblock %}
+
+{% block content %}
+<style>
+	.unified-inbox-wrap { max-width: 44rem; margin: 1.25rem auto; padding: 0 1rem 2.5rem; }
+	.unified-inbox-wrap h1 { font-size: 1.35rem; margin-bottom: 0.35rem; }
+	.unified-inbox-lead { color: #444; font-size: 0.95rem; margin-bottom: 1.25rem; }
+	.unified-inbox-quick { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+	.unified-inbox-quick a {
+		display: inline-block; padding: 0.45rem 0.75rem; border-radius: 8px;
+		background: #f3f4f6; color: #111; text-decoration: none; font-size: 0.9rem;
+		border: 1px solid #e5e7eb;
+	}
+	.unified-inbox-quick a:hover { background: #e8eaef; }
+	.unified-inbox-toolbar { display: flex; justify-content: flex-end; margin-bottom: 0.75rem; }
+	.unified-inbox-toolbar button {
+		background: transparent; border: 1px solid #c4c9d4; border-radius: 8px;
+		padding: 0.35rem 0.75rem; font-size: 0.85rem; cursor: pointer;
+	}
+	.unified-inbox-toolbar button:hover { background: #f9fafb; }
+	.unified-inbox-list { list-style: none; margin: 0; padding: 0; }
+	.unified-inbox-item {
+		border: 1px solid #e5e7eb; border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 0.65rem;
+		background: #fff;
+	}
+	.unified-inbox-item.unread { border-color: #93c5fd; background: #f8fafc; }
+	.unified-inbox-item h2 { font-size: 1rem; margin: 0 0 0.35rem; font-weight: 600; }
+	.unified-inbox-item p { margin: 0; font-size: 0.9rem; color: #374151; white-space: pre-wrap; }
+	.unified-inbox-meta { font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem; }
+	.unified-inbox-item a.action-link { font-size: 0.88rem; font-weight: 600; color: #1d4ed8; }
+	.unified-inbox-empty { color: #6b7280; font-size: 0.95rem; padding: 1rem 0; }
+</style>
+
+<section class="unified-inbox-wrap">
+	<h1>Mesaje și notificări</h1>
+	<p class="unified-inbox-lead">
+		Notificări pentru acțiuni finalizate pe site (adopție, transport, oferte, plăți demo) și legături rapide către conversațiile tale.
+	</p>
+
+	<div class="unified-inbox-quick">
+		{% if quick_mypet_messages_url %}
+			<a href="{{ quick_mypet_messages_url }}">MyPet — mesaje despre animale</a>
+		{% endif %}
+		{% if quick_adopter_url %}
+			<a href="{{ quick_adopter_url }}">Mesaje ca adoptator</a>
+		{% endif %}
+		{% if quick_collab_client_url %}
+			<a href="{{ quick_collab_client_url }}">Servicii — oferte parteneri</a>
+		{% endif %}
+		{% if quick_collab_business_url %}
+			<a href="{{ quick_collab_business_url }}">Magazinul meu — inbox partener</a>
+		{% endif %}
+	</div>
+
+	{% if inbox_items %}
+		<div class="unified-inbox-toolbar">
+			<form method="post" action="{% url 'unified_inbox_mark_read' %}">
+				{% csrf_token %}
+				<input type="hidden" name="notification_id" value="all" />
+				<input type="hidden" name="next" value="{% url 'unified_inbox' %}" />
+				<button type="submit">Marchează toate notificările ca citite</button>
+			</form>
+		</div>
+		<ul class="unified-inbox-list">
+			{% for n in inbox_items %}
+				<li class="unified-inbox-item{% if not n.is_read %} unread{% endif %}">
+					<h2>{{ n.title }}</h2>
+					{% if n.body %}<p>{{ n.body }}</p>{% endif %}
+					<div class="unified-inbox-meta">
+						{{ n.created_at|date:"d.m.Y H:i" }}
+						{% if n.kind %} · <span>{{ n.kind }}</span>{% endif %}
+					</div>
+					<div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center;">
+						{% if n.link_url %}
+							<a class="action-link" href="{{ n.link_url }}">Deschide</a>
+						{% endif %}
+						{% if not n.is_read %}
+							<form method="post" action="{% url 'unified_inbox_mark_read' %}" style="display:inline;">
+								{% csrf_token %}
+								<input type="hidden" name="notification_id" value="{{ n.pk }}" />
+								<input type="hidden" name="next" value="{% url 'unified_inbox' %}" />
+								<button type="submit" class="action-link" style="background:none;border:none;padding:0;cursor:pointer;font:inherit;color:#1d4ed8;">
+									Marchează citit
+								</button>
+							</form>
+						{% endif %}
+					</div>
+				</li>
+			{% endfor %}
+		</ul>
+	{% else %}
+		<p class="unified-inbox-empty">Nu ai notificări înregistrate aici. Folosește legăturile de mai sus pentru conversații.</p>
+	{% endif %}
+</section>
+{% endblock %}

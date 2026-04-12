@@ -5,7 +5,7 @@
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=28" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=30" type="text/css" media="screen" />
 <style>
 	/* Desktop: TW ca PW/SW – fără scroll pagină, viewport fix (nu aplicăm pe mobil) */
 	@media (min-width: 769px) {
@@ -258,8 +258,8 @@
 							<label class="t1-label">DATA ȘI ORA</label>
 							<div class="t1-date-ora-wrap">
 								<div class="t1-input-wrap">
-									<input type="text" class="t1-input t1-input-date" name="data" placeholder="mm/dd/yyyy" />
-									<span class="t1-cal-icon" aria-hidden="true">📅</span>
+									<input type="date" class="t1-input t1-input-date" id="tw-data" name="data" title="Selectează data" autocomplete="off" />
+									<button type="button" class="t1-cal-btn" id="tw-cal-btn" aria-label="Deschide calendarul">📅</button>
 								</div>
 								<input type="time" class="t1-input t1-input-time" name="ora" value="12:00" />
 							</div>
@@ -304,55 +304,46 @@
 						</a>
 						<div class="t2-circles">
 						<div class="t2-circle t2-circle--1">
-							<span class="t2-circle-nr">1</span>
 							<img src="{% static 'images/transport/servicii/servicii_1.jpeg' %}" alt="" />
 							<span class="t2-circle-label">Transport internațional</span>
 							<span class="t2-circle-tooltip">Transport sigur al animalelor în țară și peste graniță, cu vehicul dedicat.</span>
 						</div>
 						<div class="t2-circle t2-circle--2">
-							<span class="t2-circle-nr">2</span>
 							<img src="{% static 'images/transport/servicii/servicii_2.jpeg' %}" alt="" />
 							<span class="t2-circle-label">Facilități la interior</span>
 							<span class="t2-circle-tooltip">60 de locuri special amenajate pentru transport în siguranță.</span>
 						</div>
 						<div class="t2-circle t2-circle--3">
-							<span class="t2-circle-nr">3</span>
 							<img src="{% static 'images/transport/servicii/servicii_3.jpeg' %}" alt="" />
 							<span class="t2-circle-label">Ventilație / căldură</span>
 							<span class="t2-circle-tooltip">Aer condiționat și încălzire pentru temperatură constantă în drum.</span>
 						</div>
 						<div class="t2-circle t2-circle--4">
-							<span class="t2-circle-nr">4</span>
 							<img src="{% static 'images/transport/servicii/servicii_4.jpeg' %}" alt="" />
 							<span class="t2-circle-label">Localizare GPS</span>
 							<span class="t2-circle-tooltip">Urmărire în timp real a traseului și a locației vehiculului.</span>
 						</div>
 						<div class="t2-circle t2-circle--5">
-							<span class="t2-circle-nr">5</span>
 							<img src="{% static 'images/transport/servicii/servicii_5.jpeg' %}" alt="" />
 							<span class="t2-circle-label">VET · Asistență VET</span>
 							<span class="t2-circle-tooltip">Veterinar la bord sau asistență veterinară la cerere în timpul transportului.</span>
 						</div>
 						<div class="t2-circle t2-circle--6">
-							<span class="t2-circle-nr">6</span>
 							<img src="{% static 'images/transport/servicii/servicii_6.jpeg' %}" alt="" />
 							<span class="t2-circle-label">Popas hrană</span>
 							<span class="t2-circle-tooltip">Opriri regulate pentru apă, mâncare și odihnă pe traseu.</span>
 						</div>
 						<div class="t2-circle t2-circle--7">
-							<span class="t2-circle-nr">7</span>
 							<img src="{% static 'images/transport/servicii/servicii_3.jpeg' %}" alt="" />
 							<span class="t2-circle-label">Confort individual</span>
 							<span class="t2-circle-tooltip">Fiecare animal are cușcă proprie pentru siguranță și liniște.</span>
 						</div>
 						<div class="t2-circle t2-circle--8">
-							<span class="t2-circle-nr">8</span>
 							<img src="{% static 'images/transport/servicii/servicii_8.jpeg' %}" alt="" />
 							<span class="t2-circle-label">Medical VET</span>
 							<span class="t2-circle-tooltip">Echipament și tratament medical veterinar disponibil în timpul călătoriei.</span>
 						</div>
 						<div class="t2-circle t2-circle--9">
-							<span class="t2-circle-nr">9</span>
 							<img src="{% static 'images/transport/servicii/servicii_9.jpeg' %}" alt="" />
 							<span class="t2-circle-label">Toaletare VET</span>
 							<span class="t2-circle-tooltip">Toaletare și îngrijire veterinară la cerere în pauzele de drum.</span>
@@ -605,6 +596,28 @@
 	}
 })();
 </script>
+<script>
+(function() {
+	var inp = document.getElementById("tw-data");
+	var btn = document.getElementById("tw-cal-btn");
+	if (!inp || !btn) return;
+	function openTransportDatePicker() {
+		try {
+			if (typeof inp.showPicker === "function") {
+				inp.showPicker();
+			} else {
+				inp.focus();
+			}
+		} catch (e) {
+			inp.focus();
+		}
+	}
+	btn.addEventListener("click", function(ev) {
+		ev.preventDefault();
+		openTransportDatePicker();
+	});
+})();
+</script>
 {% if google_maps_api_key %}
 <script>
 (function() {
@@ -615,6 +628,8 @@
 	var mapPickerMarker = null;
 	var mapPickerModalAc = null;
 	var mapPickerMode = null;
+	var transportModalSearchTimer = null;
+	var transportModalSearchInputBound = false;
 	/* Google apelează asta când cheia e respinsă (referrer IP, facturare, API-uri). */
 	window.gm_authFailure = function() {
 		window.__euadoptGmapsAuthFail = true;
@@ -755,6 +770,69 @@
 		/* ——— Hartă în modal (aceeași pagină) ——— */
 		var transportMapModal = document.getElementById('transportMapModal');
 		var transportMapCanvas = document.getElementById('transportMapCanvas');
+		function setTransportModalAcBoundsFromForm() {
+			if (!mapPickerModalAc) return;
+			var judet = judetEl && judetEl.value ? String(judetEl.value).trim() : '';
+			var oras = orasEl && orasEl.value ? String(orasEl.value).trim() : '';
+			if (!judet) {
+				mapPickerModalAc.setBounds(romaniaBounds);
+				return;
+			}
+			var q = oras ? (oras + ', ' + judet + ', România') : (judet + ', România');
+			geocoder.geocode({ address: q, region: 'ro' }, function(results, status) {
+				if (status !== 'OK' || !results || !results[0] || !results[0].geometry) {
+					mapPickerModalAc.setBounds(romaniaBounds);
+					return;
+				}
+				var g = results[0].geometry;
+				if (g.viewport) {
+					mapPickerModalAc.setBounds(g.viewport);
+				} else if (g.location) {
+					var la = g.location.lat();
+					var ln = g.location.lng();
+					mapPickerModalAc.setBounds(boundsAroundPoint(la, ln, oras ? 22 : 45));
+				} else {
+					mapPickerModalAc.setBounds(romaniaBounds);
+				}
+			});
+		}
+		function buildTransportModalGeocodeQuery(raw) {
+			var t = (raw || '').trim();
+			if (t.length < 3) return null;
+			var judet = judetEl && judetEl.value ? String(judetEl.value).trim() : '';
+			var oras = orasEl && orasEl.value ? String(orasEl.value).trim() : '';
+			var parts = [t];
+			if (oras) parts.push(oras);
+			if (judet) parts.push(judet);
+			parts.push('România');
+			return parts.join(', ');
+		}
+		function scheduleTransportModalSearchGeocode() {
+			if (transportModalSearchTimer) clearTimeout(transportModalSearchTimer);
+			transportModalSearchTimer = setTimeout(function() {
+				var si = document.getElementById('transportMapSearch');
+				if (!si || !mapPickerMap || !mapPickerMarker) return;
+				var q = buildTransportModalGeocodeQuery(si.value);
+				if (!q) return;
+				geocoder.geocode({ address: q, region: 'ro' }, function(results, status) {
+					if (status !== 'OK' || !results || !results[0] || !results[0].geometry) return;
+					var g = results[0].geometry;
+					var loc = g.location;
+					mapPickerMarker.setPosition(loc);
+					mapPickerMarker.setMap(mapPickerMap);
+					if (g.viewport) {
+						mapPickerMap.fitBounds(g.viewport);
+					} else {
+						mapPickerMap.panTo(loc);
+						var z = mapPickerMap.getZoom();
+						if (z < 14) mapPickerMap.setZoom(15);
+					}
+					setTimeout(function() {
+						google.maps.event.trigger(mapPickerMap, 'resize');
+					}, 60);
+				});
+			}, 420);
+		}
 		function ensureMapPickerMap() {
 			if (!transportMapCanvas) return;
 			if (mapPickerMap) return;
@@ -781,7 +859,7 @@
 			if (searchInput && google.maps.places && google.maps.places.Autocomplete) {
 				var modalAcOpts = { componentRestrictions: { country: 'ro' } };
 				mapPickerModalAc = new google.maps.places.Autocomplete(searchInput, modalAcOpts);
-				mapPickerModalAc.bindTo('bounds', mapPickerMap);
+				mapPickerModalAc.setBounds(romaniaBounds);
 				mapPickerModalAc.addListener('place_changed', function() {
 					var place = mapPickerModalAc.getPlace();
 					if (!place.geometry || !place.geometry.location) return;
@@ -799,6 +877,11 @@
 						mapPickerMap.setCenter(loc);
 					}, 100);
 				});
+				if (!transportModalSearchInputBound) {
+					transportModalSearchInputBound = true;
+					searchInput.addEventListener('input', scheduleTransportModalSearchGeocode);
+				}
+				setTransportModalAcBoundsFromForm();
 			}
 		}
 		function closeTransportMapModal() {
@@ -843,11 +926,15 @@
 			}
 			function initMapView() {
 				ensureMapPickerMap();
+				function afterMapCentered() {
+					setTimeout(setTransportModalAcBoundsFromForm, 180);
+				}
 				if (latEl && lngEl && latEl.value && lngEl.value) {
 					var la = parseFloat(latEl.value);
 					var ln = parseFloat(lngEl.value);
 					if (!isNaN(la) && !isNaN(ln)) {
 						finishCenter(la, ln, 15);
+						afterMapCentered();
 						return;
 					}
 				}
@@ -861,6 +948,7 @@
 					} else {
 						finishCenter(45.9432, 24.9668, 7);
 					}
+					afterMapCentered();
 				});
 			}
 			/* După ce modalul e vizibil, canvas are dimensiuni; rAF evită hartă gri la 0×0 */

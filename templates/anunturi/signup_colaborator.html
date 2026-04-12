@@ -5,38 +5,44 @@
 {% block body_class %}page-login{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/w-cadru.css' %}?v=1" type="text/css" media="screen" />
 <style>
+	/* Colaborator – același limbaj vizual ca login / PF / ONG */
+	body.page-login { background-color: #141a22 !important; }
 	body.page-login #main_wrap {
-		min-height: 100vh !important;
-		display: flex !important;
-		flex-direction: column !important;
-		padding: 0 !important;
-		margin: 0 !important;
-		background: transparent;
+		position: relative;
+		min-height: 100svh;
+		min-height: 100dvh;
+		display: flex;
+		flex-direction: column;
+		padding: 0;
+		margin: 0;
 	}
-	body.page-login #main_content {
-		min-height: 0 !important;
-		display: flex !important;
-		flex-direction: column !important;
-		flex: 1 1 0 !important;
-		overflow: hidden !important;
-		padding: 0 !important;
-		margin: 0 !important;
-		width: 100% !important;
-		max-width: 100% !important;
-		background: transparent !important;
-	}
-	body.page-login #main_content #W {
-		height: calc(100vh - var(--nav-h, 64px)) !important;
-		max-height: calc(100vh - var(--nav-h, 64px)) !important;
-		min-height: 0 !important;
-		display: flex !important;
-		flex-direction: column !important;
-		overflow: auto !important;
+	body.page-login:not(.page-home-v2):not(.page-animale) #main_content {
+		position: relative;
+		flex: 1 1 auto;
+		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 0.4rem 1rem 0.4rem 0;
+		box-sizing: border-box !important;
+		min-height: 100svh;
+		min-height: 100dvh;
+		padding-top: var(--nav-height, 56px) !important;
+		padding-left: clamp(0.45rem, 1.5vw, 1rem) !important;
+		padding-right: clamp(0.45rem, 1.5vw, 1rem) !important;
+		padding-bottom: clamp(0.5rem, 1.5vw, 0.85rem) !important;
+		background: transparent !important;
+		box-shadow: none !important;
+		overflow-y: auto !important;
+	}
+	body.page-login .login-main {
+		width: 100%;
+		max-width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0;
+		padding: 0.35rem 0 0.75rem;
+		box-sizing: border-box;
 	}
 	.signup-col-main {
 		width: 100%;
@@ -47,6 +53,7 @@
 		gap: 1rem;
 		flex-wrap: wrap;
 		box-sizing: border-box;
+		justify-content: center;
 	}
 	/* Mesaj eroare deasupra formularului, fără să deranjeze poziția casetelor (tip + două coloane) */
 	.signup-col-form-area {
@@ -61,6 +68,17 @@
 		right: 0;
 		z-index: 5;
 		margin: 0;
+		background: rgba(127, 29, 29, 0.35);
+		border: 1px solid rgba(248, 113, 113, 0.35);
+		border-radius: 0.5rem;
+		padding: 0.5rem 0.65rem;
+		color: #fecaca;
+		font-size: 0.75rem;
+		line-height: 1.35;
+	}
+	.signup-col-form-area .signup-errors ul {
+		margin: 0;
+		padding-left: 1.1rem;
 	}
 	.signup-col-form-area.has-errors .signup-col-form-wrap {
 		padding-top: 3.5rem;
@@ -72,11 +90,23 @@
 		height: auto;
 		align-self: center;
 		margin-left: -2.5rem;
-		background: rgba(255, 241, 118, 0.9);
-		border: 1px solid rgba(255, 255, 255, 0.5);
-		border-radius: 10px;
-		padding: 0.4rem 0.5rem;
-		box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+		position: relative;
+		overflow: visible;
+		background:
+			linear-gradient(
+				168deg,
+				rgba(234, 179, 8, 0.28) 0%,
+				rgba(180, 83, 9, 0.22) 48%,
+				rgba(146, 64, 14, 0.26) 100%
+			);
+		backdrop-filter: blur(20px) saturate(1.05);
+		-webkit-backdrop-filter: blur(20px) saturate(1.05);
+		border: 1px solid rgba(250, 204, 21, 0.42);
+		border-radius: 0.85rem;
+		padding: 0.45rem 0.5rem;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.35) inset,
+			0 12px 32px rgba(0, 0, 0, 0.4);
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
@@ -84,21 +114,35 @@
 		align-items: center;
 		text-align: center;
 	}
+	.signup-col-tip-box::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
+		background: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, transparent 50%, rgba(0, 0, 0, 0.08) 100%);
+		opacity: 0.55;
+		z-index: 0;
+	}
+	.signup-col-tip-box > * {
+		position: relative;
+		z-index: 1;
+	}
 	.signup-col-tip-title {
 		margin: 0 0 0.25rem;
-		font-size: 0.8rem;
-		font-weight: 800;
-		color: #b71c1c;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: #fef3c7;
+		text-transform: none;
+		letter-spacing: 0.03em;
 		text-align: center;
 	}
 	.signup-col-tip-options {
-		font-size: 0.78rem;
-		color: #333;
+		font-size: 0.68rem;
+		color: #fef9c3;
 		display: flex;
 		flex-direction: column;
-		gap: 0.2rem;
+		gap: 0.18rem;
 		align-items: center;
 		justify-content: center;
 	}
@@ -111,23 +155,28 @@
 		box-sizing: border-box;
 		padding-left: 0.5rem;
 	}
+	.signup-col-tip-option input[type="radio"] {
+		accent-color: #06b6d4;
+		flex-shrink: 0;
+	}
 	.signup-col-tip-nota {
 		display: none;
-		margin: 0.5rem 0 0;
-		padding: 0.35rem 0.5rem;
-		font-size: 0.72rem;
-		font-weight: 700;
-		color: #b71c1c;
-		background: rgba(255,255,255,0.9);
-		border-radius: 6px;
+		margin: 0.45rem 0 0;
+		padding: 0.32rem 0.45rem;
+		font-size: 0.65rem;
+		font-weight: 600;
+		color: #fecaca;
+		background: rgba(127, 29, 29, 0.45);
+		border: 1px solid rgba(248, 113, 113, 0.4);
+		border-radius: 0.4rem;
 		text-align: center;
 	}
 	.signup-col-tip-nota.visible {
 		display: block;
 	}
 	@keyframes signup-col-tip-flash {
-		0%, 100% { filter: brightness(1); background-color: rgba(255, 241, 118, 0.9); }
-		50% { filter: brightness(1.35); background-color: rgba(255, 235, 59, 0.98); }
+		0%, 100% { filter: brightness(1); }
+		50% { filter: brightness(1.12); }
 	}
 	.signup-col-tip-box.flash {
 		animation: signup-col-tip-flash 0.55s ease;
@@ -137,37 +186,72 @@
 		flex: 1 1 250px;
 		min-width: 235px;
 		max-width: 420px;
-		background: rgba(255, 255, 255, 0.72);
-		border-radius: 12px;
-		box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-		border: 1px solid rgba(255, 255, 255, 0.5);
+		position: relative;
+		overflow: visible;
+		background:
+			linear-gradient(
+				168deg,
+				rgba(24, 32, 46, 0.34) 0%,
+				rgba(18, 24, 36, 0.42) 48%,
+				rgba(14, 20, 32, 0.48) 100%
+			);
+		backdrop-filter: blur(22px) saturate(1.04);
+		-webkit-backdrop-filter: blur(22px) saturate(1.04);
+		border-radius: 0.85rem;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+			0 1px 0 rgba(255, 255, 255, 0.045) inset,
+			0 32px 64px rgba(0, 0, 0, 0.55),
+			0 12px 28px rgba(0, 0, 0, 0.32),
+			0 0 0 1px rgba(6, 182, 212, 0.04);
+		border: 1px solid rgba(255, 255, 255, 0.055);
 		padding: 0.45rem 0.75rem;
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 	}
+	.signup-col-caseta::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
+		background: linear-gradient(
+			145deg,
+			rgba(255, 255, 255, 0.06) 0%,
+			transparent 42%,
+			transparent 58%,
+			rgba(0, 0, 0, 0.12) 100%
+		);
+		opacity: 0.62;
+		z-index: 0;
+	}
+	.signup-col-caseta > * {
+		position: relative;
+		z-index: 1;
+	}
 	.signup-col-caseta h2 {
 		margin: 0 0 0.25rem;
-		font-size: 0.85rem;
-		font-weight: 800;
-		color: #e53935;
+		font-size: 0.72rem;
+		font-weight: 600;
+		color: #cbd5e1;
 		text-align: center;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
+		text-transform: none;
+		letter-spacing: 0.02em;
 	}
 	.signup-col-field {
 		margin-bottom: 0.18rem;
 	}
 	.signup-col-field-box {
-		border: 1px solid rgba(255, 255, 255, 0.6);
-		border-radius: 6px;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 0.45rem;
 		padding: 0.25rem 0.4rem;
-		background: rgba(255, 255, 255, 0.5);
+		background: rgba(15, 23, 42, 0.22);
 		margin-bottom: 0.28rem;
 	}
 	.signup-pwd-wrap .signup-pwd-inner { position: relative; display: block; }
 	.signup-pwd-wrap .signup-pwd-inner input { padding-right: 2rem; box-sizing: border-box; width: 100%; }
-	.signup-pwd-eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; cursor: pointer; opacity: 0.6; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>') center/contain no-repeat; }
+	.signup-pwd-eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; cursor: pointer; opacity: 0.75; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%2394a3b8" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>') center/contain no-repeat; }
 	.signup-pwd-eye:hover { opacity: 1; }
 	.signup-col-field-box:last-child {
 		margin-bottom: 0;
@@ -189,8 +273,22 @@
 		min-width: 0;
 		box-sizing: border-box;
 	}
-	.signup-col-cui-stanga { flex: 0 0 26%; font-size: 0.75rem; min-width: 4.5rem; }
-	.signup-col-cui-stanga select { font-size: 0.75rem; padding: 0.25rem 0.35rem; min-width: 0; }
+	.signup-col-cui-stanga { flex: 0 0 26%; font-size: 0.72rem; min-width: 4.5rem; color: #cbd5e1; }
+	.signup-col-cui-stanga select {
+		font-size: 0.7rem;
+		min-width: 0;
+		min-height: 2.1rem;
+		padding: 0.4rem 0.26rem 0.44rem;
+		line-height: 1.45;
+		font-family: inherit;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		background-color: rgba(15, 23, 42, 0.38);
+		color: #f8fafc;
+		box-sizing: border-box;
+		overflow: visible;
+		cursor: pointer;
+	}
 	.signup-col-cui-dreapta { flex: 1 1 74%; max-width: 74%; }
 	.signup-col-cui-row .signup-col-cui-stanga label,
 	.signup-col-cui-row .signup-col-cui-dreapta label {
@@ -203,18 +301,46 @@
 		display: block;
 		margin-bottom: 0.06rem;
 		font-size: 0.65rem;
-		font-weight: 600;
-		color: #555;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
+		font-weight: 500;
+		color: #cbd5e1;
+		text-transform: none;
+		letter-spacing: 0.02em;
 	}
 	.signup-col-field input {
 		width: 100%;
-		padding: 0.22rem 0.35rem;
-		border-radius: 5px;
-		border: 1px solid #ccc;
-		font-size: 0.7rem;
+		padding: 0.26rem 0.38rem;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		font-size: 0.68rem;
+		line-height: 1.25;
 		box-sizing: border-box;
+		background: rgba(15, 23, 42, 0.38);
+		color: #f8fafc;
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 1px 4px rgba(0, 0, 0, 0.18);
+	}
+	.signup-col-field input::placeholder {
+		color: #6b7280;
+	}
+	.signup-col-field input:hover {
+		border-color: rgba(255, 255, 255, 0.12);
+		background: rgba(15, 23, 42, 0.55);
+	}
+	.signup-col-field input:focus {
+		outline: none;
+		border-color: rgba(6, 182, 212, 0.75);
+		background: rgba(15, 23, 42, 0.72);
+		box-shadow:
+			0 0 0 1px rgba(6, 182, 212, 0.35),
+			0 0 0 3px rgba(6, 182, 212, 0.14);
+	}
+	.signup-col-bifa-row a {
+		color: #22d3ee;
+		font-weight: 600;
+		text-decoration: none;
+	}
+	.signup-col-bifa-row a:hover {
+		color: #67e8f9;
+		text-decoration: underline;
 	}
 	.signup-col-caseta .signup-col-bife-actions {
 		margin-top: auto;
@@ -242,6 +368,7 @@
 	}
 	.signup-col-bifa-row input[type="checkbox"] {
 		justify-self: end;
+		accent-color: #06b6d4;
 	}
 	/* Formular + buton + scris sub buton – copiat din ONG; poziție ca la ONG */
 	#signup-col-form {
@@ -257,11 +384,41 @@
 		gap: 0.28rem;
 		min-width: 0;
 	}
+	.signup-col-header {
+		text-align: center;
+		margin-bottom: 0.35rem;
+		width: 100%;
+	}
+	.signup-col-header h1 {
+		margin: 0 0 0.15rem;
+		font-size: clamp(0.95rem, 2vw, 1.08rem);
+		font-weight: 600;
+		color: #f8fafc;
+		text-transform: none;
+		letter-spacing: -0.02em;
+		line-height: 1.2;
+	}
+	.signup-col-header .signup-col-intro {
+		margin: 0;
+		font-size: 0.72rem;
+		color: #94a3b8;
+		line-height: 1.35;
+	}
+	.signup-col-form-stack {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		width: fit-content;
+		max-width: 100%;
+		margin-left: auto;
+		margin-right: auto;
+		box-sizing: border-box;
+	}
 	.signup-col-casete-row {
 		display: flex;
 		flex-direction: row;
 		gap: 1rem;
-		justify-content: center;
+		justify-content: flex-start;
 		align-items: stretch;
 		flex-wrap: wrap;
 	}
@@ -274,7 +431,7 @@
 	.signup-col-caseta-transport .signup-col-transport-hint {
 		font-size: 0.68rem;
 		margin: 0 0 0.35rem;
-		color: #444;
+		color: #94a3b8;
 		line-height: 1.25;
 	}
 	.signup-col-transport-inline-row {
@@ -311,39 +468,54 @@
 		gap: 0.2rem;
 	}
 	.signup-col-actions-bottom {
-		align-items: center;
+		align-items: stretch;
 	}
 	.signup-col-submit {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		width: 100%;
-		padding: 0.35rem 0.6rem;
-		border-radius: 999px;
-		border: none;
-		background: #d32f2f;
+		padding: 0.48rem 0.75rem;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(255, 255, 255, 0.14);
+		background: linear-gradient(175deg, #2dd4e8 0%, #06b6d4 42%, #0e7490 100%);
 		color: #fff;
-		font-weight: 700;
-		font-size: 0.88rem;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
+		font-weight: 600;
+		font-size: 0.8rem;
+		text-transform: none;
+		letter-spacing: 0.02em;
 		cursor: pointer;
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.2) inset,
+			0 3px 14px rgba(6, 182, 212, 0.32),
+			0 6px 20px rgba(0, 0, 0, 0.22);
+		transition: filter 0.18s ease, transform 0.14s ease;
 	}
 	.signup-col-submit:hover {
-		background: #e53935;
+		filter: brightness(1.05);
+		transform: translateY(-1px);
+	}
+	.signup-col-submit.signup-col-submit--map-pick {
+		width: auto;
+		max-width: 100%;
+		flex-shrink: 0;
+		font-family: inherit;
+		white-space: nowrap;
 	}
 	.signup-col-small {
-		font-size: 0.8rem;
-		color: #555;
+		font-size: 0.75rem;
+		color: #94a3b8;
 		text-align: center;
+		line-height: 1.45;
 	}
 	.signup-col-small a {
-		color: #1565c0;
+		color: #22d3ee;
 		font-weight: 600;
 		text-decoration: none;
 	}
 	.signup-col-small a:hover {
 		text-decoration: underline;
+		color: #67e8f9;
 	}
 	/* Overlay SMS + blur (același traseu ca la ONG) */
 	.signup-col-main-blurred {
@@ -362,20 +534,23 @@
 	.signup-col-sms-box {
 		max-width: 420px;
 		width: 90%;
-		background: rgba(255, 255, 255, 0.96);
-		border-radius: 14px;
-		box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+		background: linear-gradient(168deg, rgba(24, 32, 46, 0.92) 0%, rgba(14, 20, 32, 0.96) 100%);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 1.1875rem;
+		box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(6, 182, 212, 0.06);
 		padding: 1.25rem 1.5rem 1.1rem;
 		box-sizing: border-box;
+		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(20px);
 	}
-	.signup-col-sms-title { margin: 0 0 0.4rem; font-size: 1rem; font-weight: 800; color: #e53935; text-transform: uppercase; letter-spacing: 0.05em; }
-	.signup-col-sms-text { margin: 0 0 0.6rem; font-size: 0.85rem; color: #444; line-height: 1.4; }
-	.signup-col-sms-code-label { font-size: 0.78rem; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.25rem; display: block; }
-	.signup-col-sms-code-input { width: 100%; padding: 0.4rem 0.55rem; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; letter-spacing: 0.3em; text-align: center; box-sizing: border-box; }
+	.signup-col-sms-title { margin: 0 0 0.4rem; font-size: 1rem; font-weight: 600; color: #f8fafc; text-transform: none; letter-spacing: -0.02em; }
+	.signup-col-sms-text { margin: 0 0 0.6rem; font-size: 0.875rem; color: #94a3b8; line-height: 1.45; }
+	.signup-col-sms-code-label { font-size: 0.8125rem; font-weight: 500; color: #cbd5e1; text-transform: none; letter-spacing: 0.01em; margin-bottom: 0.25rem; display: block; }
+	.signup-col-sms-code-input { width: 100%; padding: 0.45rem 0.55rem; border-radius: 0.45rem; border: 1px solid rgba(255, 255, 255, 0.1); font-size: 1rem; letter-spacing: 0.3em; text-align: center; box-sizing: border-box; background: rgba(15, 23, 42, 0.55); color: #f8fafc; }
 	.signup-col-sms-actions { margin-top: 0.75rem; }
-	.signup-col-sms-btn { width: 100%; padding: 0.45rem 0.7rem; border-radius: 999px; border: none; background: #d32f2f; color: #fff; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-	.signup-col-sms-hint { font-size: 0.7rem; color: #666; margin-top: 0.25rem; }
-	.signup-col-sms-err { display: none; margin-top: 0.35rem; font-size: 0.8rem; color: #b71c1c; font-weight: 600; }
+	.signup-col-sms-btn { width: 100%; padding: 0.48rem 0.75rem; border-radius: 0.45rem; border: 1px solid rgba(255, 255, 255, 0.14); background: linear-gradient(175deg, #2dd4e8 0%, #06b6d4 42%, #0e7490 100%); color: #fff; font-weight: 600; font-size: 0.85rem; text-transform: none; letter-spacing: 0.02em; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 14px rgba(6, 182, 212, 0.28); }
+	.signup-col-sms-hint { font-size: 0.72rem; color: #94a3b8; margin-top: 0.25rem; }
+	.signup-col-sms-err { display: none; margin-top: 0.35rem; font-size: 0.78rem; color: #fecaca; font-weight: 600; }
 	.signup-col-sms-err.visible { display: block; }
 	.signup-col-done-backdrop {
 		position: fixed;
@@ -386,17 +561,104 @@
 		justify-content: center;
 		z-index: 1100;
 	}
-	.signup-col-done-box { max-width: 440px; width: 90%; background: rgba(255, 255, 255, 0.97); border-radius: 14px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35); padding: 1.25rem 1.5rem; box-sizing: border-box; }
-	.signup-col-done-title { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 800; color: #e53935; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; }
-	.signup-col-done-text { font-size: 0.9rem; color: #444; line-height: 1.5; margin: 0 0 1rem; }
-	.signup-col-done-btn { width: 100%; padding: 0.5rem; border-radius: 999px; border: none; background: #d32f2f; color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+	.signup-col-done-box { max-width: 440px; width: 90%; background: linear-gradient(168deg, rgba(24, 32, 46, 0.94) 0%, rgba(14, 20, 32, 0.97) 100%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1.1875rem; box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5); padding: 1.25rem 1.5rem; box-sizing: border-box; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+	.signup-col-done-title { margin: 0 0 0.5rem; font-size: 1.05rem; font-weight: 600; color: #f8fafc; text-transform: none; letter-spacing: -0.02em; text-align: center; }
+	.signup-col-done-text { font-size: 0.9rem; color: #cbd5e1; line-height: 1.5; margin: 0 0 1rem; }
+	.signup-col-done-btn { width: 100%; padding: 0.5rem 0.75rem; border-radius: 0.45rem; border: 1px solid rgba(255, 255, 255, 0.14); background: linear-gradient(175deg, #2dd4e8 0%, #06b6d4 42%, #0e7490 100%); color: #fff; font-weight: 600; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 14px rgba(6, 182, 212, 0.28); }
+	.signup-col-adresa-label-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.35rem;
+		margin-bottom: 0.06rem;
+	}
+	.signup-col-adresa-label-row > label {
+		margin-bottom: 0 !important;
+	}
+	.signup-col-maps-link {
+		font-size: 0.62rem;
+		font-weight: 700;
+		color: #22d3ee;
+		text-decoration: none;
+		flex-shrink: 0;
+	}
+	.signup-col-maps-link:hover {
+		text-decoration: underline;
+		color: #67e8f9;
+	}
+	.signup-col-adresa-hint {
+		font-size: 0.6rem;
+		color: #94a3b8;
+		margin: 0.12rem 0 0;
+		line-height: 1.35;
+	}
+{% include "anunturi/includes/signup_adresa_map_styles.html" %}
+</style>
+{% endblock %}
+
+{% block extra_css_after %}
+<style>
+	body.page-login #main_wrap {
+		background-color: #141a22;
+		background-image: url("{% static 'images/login/slide1.png' %}");
+		background-size: cover;
+		background-position: 100% center;
+		background-repeat: no-repeat;
+		background-attachment: scroll;
+	}
+	body.page-login #main_wrap::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		background:
+			radial-gradient(
+				ellipse 22% 58% at 99% 48%,
+				rgba(15, 23, 42, 0.72) 0%,
+				rgba(15, 23, 42, 0.35) 42%,
+				transparent 68%
+			),
+			radial-gradient(
+				ellipse 18% 22% at 100% 14%,
+				rgba(12, 18, 28, 0.55) 0%,
+				transparent 55%
+			),
+			rgba(15, 23, 42, 0.06);
+	}
+	body.page-login #main_wrap::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		background: radial-gradient(
+			ellipse 85% 80% at 50% 50%,
+			transparent 35%,
+			rgba(8, 12, 20, 0.14) 100%
+		);
+	}
+	body.page-login #main_wrap > #main_content {
+		position: relative;
+		z-index: 1;
+	}
+	body.page-login:not(.page-home-v2):not(.page-animale) #A0,
+	body.page-login #A0 {
+		background-color: rgba(15, 23, 42, 0.32) !important;
+		background-image: none !important;
+		backdrop-filter: blur(14px) saturate(1.08);
+		-webkit-backdrop-filter: blur(14px) saturate(1.08);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+	}
 </style>
 {% endblock %}
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
-	<div id="W" aria-label="Cadru principal">
-		<main aria-label="Înregistrare Cabinet / Magazin / Servicii / Transport EU-ADOPT" class="signup-col-main" id="signup-col-main">
+	<main class="login-main" aria-label="Înregistrare Cabinet / Magazin / Servicii / Transport EU-ADOPT">
+		<div class="signup-col-main" id="signup-col-main">
 			<div class="signup-col-tip-box">
 				<h2 class="signup-col-tip-title">Tip partener</h2>
 				<label class="signup-col-tip-options">
@@ -421,8 +683,8 @@
 			</div>
 			<div class="signup-col-form-area{% if signup_errors %} has-errors{% endif %}">
 			{% if signup_errors %}
-			<div class="signup-errors" role="alert" style="background:#ffebee;border:1px solid #c62828;border-radius:8px;padding:0.75rem 1rem;">
-				<ul style="margin:0;padding-left:1.25rem;">
+			<div class="signup-errors" role="alert">
+				<ul>
 					{% for err in signup_errors %}<li>{{ err }}</li>{% endfor %}
 				</ul>
 			</div>
@@ -435,6 +697,11 @@
 					<input type="password" name="password_fake" tabindex="-1" autocomplete="current-password">
 				</div>
 				<div class="signup-col-form-wrap">
+				<div class="signup-col-header">
+					<h1>Înregistrare Cabinet / Magazin / Servicii / Transport</h1>
+					<p class="signup-col-intro">Completează datele de bază pentru înregistrarea ca partener EU-ADOPT.</p>
+				</div>
+				<div class="signup-col-form-stack">
 					<div class="signup-col-casete-row">
 			<div class="signup-col-caseta">
 				<h2>Date partener</h2>
@@ -472,6 +739,20 @@
 					<label for="id_oras_col">Oraș / Localitate *</label>
 					<input type="text" id="id_oras_col" name="oras" required autocomplete="off" list="city-list-col" value="{% if form_prefill %}{{ form_prefill.oras|default:'' }}{% endif %}" />
 					<datalist id="city-list-col"></datalist>
+				</div>
+				<div class="signup-col-field signup-col-field-box">
+					<div class="signup-col-adresa-label-row">
+						<label for="id_adresa_firma_col">Adresă sediu *</label>
+						{% if google_maps_api_key %}
+						<button type="button" class="signup-col-submit signup-col-submit--map-pick" id="signup_col_map_pick" title="Deschide harta aici și alege locația">Alege pe hartă</button>
+						{% else %}
+						<a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer" class="signup-col-maps-link" id="signup_col_maps_link" title="Deschide în Google Maps">🗺️ Google Maps</a>
+						{% endif %}
+					</div>
+					<input type="text" id="id_adresa_firma_col" name="adresa_firma" required autocomplete="off" placeholder="Stradă, număr, detalii (sugestii la tastare)" value="{% if form_prefill %}{{ form_prefill.adresa_firma|default:'' }}{% endif %}" />
+					<input type="hidden" name="adresa_firma_lat" id="id_adresa_lat_col" value="" />
+					<input type="hidden" name="adresa_firma_lng" id="id_adresa_lng_col" value="" />
+					<p class="signup-col-adresa-hint">{% if google_maps_api_key %}Sugestii Google la tastare sau „Alege pe hartă”, în zona județului / localității.{% else %}Poți deschide harta în tab-ul alăturat.{% endif %}</p>
 				</div>
 			</div>
 			<div class="signup-col-caseta">
@@ -556,11 +837,13 @@
 						</p>
 					</div>
 				</div>
+				</div>
 			</form>
 			</div>
-		</main>
-	</div>
+		</div>
+	</main>
 </section>
+{% include "anunturi/includes/signup_adresa_map_modal.html" with modal_prefix="signup_col" %}
 <div class="signup-col-sms-backdrop" id="signup-col-sms-backdrop" aria-hidden="true">
 	<div class="signup-col-sms-box">
 		<h2 class="signup-col-sms-title">Verificare număr de telefon</h2>
@@ -588,7 +871,6 @@
 {% endblock %}
 
 {% block extra_js %}
-{% include 'anunturi/includes/fundal_random_script.html' %}
 <script>
 (function() {
 	// Asigură token CSRF la submit (fallback dacă lipsește din cache)
@@ -742,4 +1024,5 @@
 	});
 })();
 </script>
+{% include "anunturi/includes/signup_adresa_google_maps_script.html" with modal_prefix="signup_col" maps_callback="signupColAdresaPlacesReady" judet_input_id="id_judet_col" oras_input_id="id_oras_col" addr_input_id="id_adresa_firma_col" lat_hidden_id="id_adresa_lat_col" lng_hidden_id="id_adresa_lng_col" maps_link_id="signup_col_maps_link" %}
 {% endblock %}
