@@ -5,6 +5,7 @@ REGULĂ: Orice modificare în home (punct, virgulă, orice) doar cu aprobarea ti
 """
 import json
 import logging
+from urllib.parse import urlencode
 import random
 import re
 import secrets
@@ -17,7 +18,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.http import HttpResponse, JsonResponse
-from django.db.models import Case, Count, Exists, IntegerField, Max, OuterRef, Q, Sum, When
+from django.db.models import Case, Count, Exists, IntegerField, Max, OuterRef, Q, Subquery, Sum, When
 from django.db.models import F
 from django.db.models.functions import TruncMonth
 from django.core.files.base import ContentFile
@@ -42,7 +43,8 @@ from .pet_age_bands import (
     build_age_band_filter_q,
 )
 from .pt_p2_list import PT_P2_PAGE_SIZE, pt_pets_page_context
-from .mail_helpers import email_subject_for_user
+from .mail_helpers import email_subject_for_user, send_mail_text_and_html
+from .context_processors import get_navbar_unread_counts
 from . import inbox_notifications as _inbox
 from .models import (
     WishlistItem,
@@ -415,6 +417,24 @@ def _phone_already_used(phone_input):
             return True
     return False
 
+
+def _email_duplicate_blocked(email, *, exclude_user_pk=None):
+    """
+    True dacă emailul e deja folosit de alt cont (unicitate la nivel de aplicație).
+    Dezactivare temporară (doar dev/QA): setează EUADOPT_RELAX_EMAIL_UNIQUE=1 în `.env`.
+    """
+    if getattr(settings, "EUADOPT_RELAX_EMAIL_UNIQUE", False):
+        return False
+    em = (email or "").strip()
+    if not em:
+        return False
+    User = get_user_model()
+    qs = User.objects.filter(email__iexact=em)
+    if exclude_user_pk is not None:
+        qs = qs.exclude(pk=exclude_user_pk)
+    return qs.exists()
+
+
 # A2 selection: 12 dogs. New (added in last 24h) first, then fill randomly from PT. Never empty if any available.
 A2_SLOT_COUNT = 12
 A2_NEW_HOURS = 24
@@ -533,11 +553,15 @@ def _adoption_contact_block(user):
 
 
 def _send_adoption_accept_emails(ar: AdoptionRequest):
-    """După accept: owner primește date adoptator; adoptator primește date owner."""
+    """
+    După accept: owner primește date adoptator; adoptator primește date owner
+    + rezumat oferte Servicii bifate pentru bonus (fără coduri — acestea la finalizare în MyPet).
+    """
     pet = ar.animal
     owner = pet.owner
     adopter = ar.adopter
     pet_label = (pet.name or f"Animal #{pet.pk}").strip()
+    bonus_txt, bonus_html = _adoption_bonus_selection_summary(ar)
     sub_owner = f"EU-Adopt: datele adoptatorului – {pet_label}"
     sub_adopter = f"EU-Adopt: date de contact pentru {pet_label}"
     body_owner = (
@@ -552,28 +576,46 @@ def _send_adoption_accept_emails(ar: AdoptionRequest):
         f"Cererea ta de adopție pentru „{pet_label}” a fost acceptată.\n\n"
         f"Date organizație / proprietar (discutați direct):\n"
         f"---\n{_adoption_contact_block(owner)}\n---\n\n"
-        f"Aplicația EU-Adopt\n"
+        + (f"{bonus_txt}\n\n" if bonus_txt else "")
+        + f"Aplicația EU-Adopt\n"
+    )
+    html_owner = (
+        f"<p>Bună ziua,</p>"
+        f"<p>Ai acceptat cererea de adopție pentru <strong>{escape(pet_label)}</strong>.</p>"
+        f"<p><strong>Date adoptator</strong> (discutați direct):</p>"
+        f"<pre style=\"white-space:pre-wrap;font-family:inherit;\">{escape(_adoption_contact_block(adopter))}</pre>"
+        f"<p>Aplicația EU-Adopt</p>"
+    )
+    html_adopter = (
+        f"<p>Bună ziua,</p>"
+        f"<p>Cererea ta de adopție pentru <strong>{escape(pet_label)}</strong> a fost <strong>acceptată</strong>.</p>"
+        f"<p><strong>Date proprietar / organizație</strong> (discutați direct):</p>"
+        f"<pre style=\"white-space:pre-wrap;font-family:inherit;\">{escape(_adoption_contact_block(owner))}</pre>"
+        + (bonus_html or "")
+        + "<p>Aplicația EU-Adopt</p>"
     )
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
     try:
         if owner.email:
-            send_mail(
+            send_mail_text_and_html(
                 email_subject_for_user(owner.username, sub_owner),
                 body_owner,
                 from_email,
                 [owner.email],
-                fail_silently=False,
+                html_owner,
+                mail_kind="adoption_accept_owner",
             )
     except Exception as exc:
         logging.getLogger(__name__).exception("adoption_accept_email_owner: %s", exc)
     try:
         if adopter.email:
-            send_mail(
+            send_mail_text_and_html(
                 email_subject_for_user(adopter.username, sub_adopter),
                 body_adopter,
                 from_email,
                 [adopter.email],
-                fail_silently=False,
+                html_adopter,
+                mail_kind="adoption_accept_adopter",
             )
     except Exception as exc:
         logging.getLogger(__name__).exception("adoption_accept_email_adopter: %s", exc)
@@ -661,24 +703,32 @@ def _send_adoption_request_adopter_email(ar: AdoptionRequest):
     )
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
     try:
-        send_mail(
+        send_mail_text_and_html(
             email_subject_for_user(adopter.username, sub),
             body,
             from_email,
             [adopter.email],
-            fail_silently=False,
-            html_message=html_body,
+            html_body,
+            mail_kind="adoption_request_adopter",
         )
     except Exception as exc:
         logging.getLogger(__name__).exception("adoption_request_email_adopter: %s", exc)
 
 
 def _send_adoption_request_owner_email(ar: AdoptionRequest):
-    """Owner primește notificare pentru cerere nouă + link către MyPet."""
+    """Owner primește notificare pentru cerere nouă + link către MyPet (accept/respinge din email)."""
     pet = ar.animal
     owner = pet.owner
     adopter = ar.adopter
-    if not owner.email:
+    owner_to = (getattr(owner, "email", None) or "").strip()
+    if not owner_to:
+        logging.getLogger(__name__).warning(
+            "adoption_request_owner_email skipped: owner has no email (user_id=%s username=%s ar_id=%s). "
+            "Completează câmpul E-mail în contul Django / admin pentru a primi linkurile Accept/Respinge.",
+            owner.pk,
+            owner.username,
+            ar.pk,
+        )
         return
     pet_label = (pet.name or f"Animal #{pet.pk}").strip()
     adopter_name = (f"{adopter.first_name} {adopter.last_name}").strip() or adopter.username
@@ -691,11 +741,12 @@ def _send_adoption_request_owner_email(ar: AdoptionRequest):
     token = signer.sign(f"{ar.pk}:{owner.pk}")
     site_base = (getattr(settings, "SITE_BASE_URL", "") or "").rstrip("/")
     try:
-        accept_path = reverse("adoption_email_owner_action", args=[token, "accept"])
-        reject_path = reverse("adoption_email_owner_action", args=[token, "reject"])
+        decide_path = reverse("adoption_email_owner_action")
+        accept_path = f"{decide_path}?{urlencode({'t': token, 'd': 'accept'})}"
+        reject_path = f"{decide_path}?{urlencode({'t': token, 'd': 'reject'})}"
     except Exception:
-        accept_path = f"/adoption/email/{token}/accept/"
-        reject_path = f"/adoption/email/{token}/reject/"
+        accept_path = f"/adoption/email/d/?{urlencode({'t': token, 'd': 'accept'})}"
+        reject_path = f"/adoption/email/d/?{urlencode({'t': token, 'd': 'reject'})}"
     accept_link = f"{site_base}{accept_path}" if site_base else accept_path
     reject_link = f"{site_base}{reject_path}" if site_base else reject_path
 
@@ -723,16 +774,22 @@ def _send_adoption_request_owner_email(ar: AdoptionRequest):
     )
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
     try:
-        send_mail(
+        send_mail_text_and_html(
             email_subject_for_user(owner.username, sub),
             body,
             from_email,
-            [owner.email],
-            fail_silently=False,
-            html_message=html_body,
+            [owner_to],
+            html_body,
+            mail_kind="adoption_request_owner",
         )
     except Exception as exc:
-        logging.getLogger(__name__).exception("adoption_request_email_owner: %s", exc)
+        logging.getLogger(__name__).exception(
+            "adoption_request_email_owner: ar_id=%s owner_id=%s to=%s err=%s",
+            ar.pk,
+            owner.pk,
+            owner_to,
+            exc,
+        )
 
 
 def _send_adoption_reject_adopter_email(ar: AdoptionRequest, *, reason: str = "owner_reject"):
@@ -816,6 +873,8 @@ def _send_adoption_reject_adopter_email(ar: AdoptionRequest, *, reason: str = "o
 
 SESSION_ADOPTION_BONUS_AR = "adoption_bonus_focus_request_id"
 SESSION_ADOPTION_BONUS_CART_UNLOCK_AR = "adoption_bonus_cart_unlock_ar_id"
+# După „Salvează alegerile”: afișează nota blocată o singură dată la următoarea vizită GET pe Servicii, apoi se consumă.
+SESSION_ADOPTION_BONUS_SHOW_LOCKED_NOTICE_AR = "adoption_bonus_show_locked_notice_ar_id"
 SITE_CART_MAX_ITEMS = 80
 _ADOPTION_BONUS_CODE_ALPH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
@@ -901,6 +960,8 @@ def _servicii_bundle_adoption_bonus(request):
         "adoption_bonus_selection_by_kind": {},
         "adoption_bonus_show_banner": False,
         "adoption_bonus_has_selection": False,
+        "adoption_bonus_servicii_locked": False,
+        "adoption_bonus_ar_pending": False,
     }
     user = getattr(request, "user", None)
     if not user or not user.is_authenticated:
@@ -913,6 +974,8 @@ def _servicii_bundle_adoption_bonus(request):
         return bundle
     bundle["adoption_bonus_request_id"] = ar.pk
     bundle["adoption_bonus_show_banner"] = True
+    bundle["adoption_bonus_servicii_locked"] = bool(getattr(ar, "bonus_servicii_locked_at", None))
+    bundle["adoption_bonus_ar_pending"] = ar.status == AdoptionRequest.STATUS_PENDING
     for s in AdoptionBonusSelection.objects.filter(adoption_request=ar):
         bundle["adoption_bonus_selection_by_kind"][s.partner_kind] = s.offer_id
     bundle["adoption_bonus_has_selection"] = bool(bundle["adoption_bonus_selection_by_kind"])
@@ -922,14 +985,22 @@ def _servicii_bundle_adoption_bonus(request):
 def _servicii_tag_offer_bonus(offer, bundle: dict, county_norm: str) -> None:
     sm = bundle.get("adoption_bonus_selection_by_kind") or {}
     rid = bundle.get("adoption_bonus_request_id")
+    offer.adoption_bonus_heart_frozen = False
     if not rid:
         offer.adoption_bonus_show_heart = False
+    elif bundle.get("adoption_bonus_servicii_locked"):
+        # După „Salvează alegerile”: doar ofertele deja alese rămân vizibile (♥ blocat, fără toggle).
+        chosen_id = sm.get(offer.partner_kind)
+        offer.adoption_bonus_show_heart = chosen_id == offer.pk
+        offer.adoption_bonus_heart_frozen = bool(offer.adoption_bonus_show_heart)
+        offer.adoption_bonus_selected = offer.adoption_bonus_show_heart
     elif not (county_norm or "").strip():
         # Fără județ în cont: inimioare pe toate ofertele (demo / cont incomplet — evită un canal „fără ♥”).
         offer.adoption_bonus_show_heart = True
     else:
         offer.adoption_bonus_show_heart = _offer_collab_county_norm(offer) == county_norm
-    offer.adoption_bonus_selected = sm.get(offer.partner_kind) == offer.pk
+    if not getattr(offer, "adoption_bonus_heart_frozen", False):
+        offer.adoption_bonus_selected = sm.get(offer.partner_kind) == offer.pk
     offer.site_cart_ref_key = f"servicii_offer:{offer.pk}"
 
 
@@ -949,6 +1020,8 @@ def _servicii_show_offer_cart(request, bonus_bundle: dict) -> bool:
         return False
     rid = bonus_bundle.get("adoption_bonus_request_id")
     if not rid:
+        return True
+    if bonus_bundle.get("adoption_bonus_servicii_locked"):
         return True
     unlock = request.session.get(SESSION_ADOPTION_BONUS_CART_UNLOCK_AR)
     try:
@@ -972,6 +1045,49 @@ def _offer_public_absolute_url(offer: CollaboratorServiceOffer) -> str:
     except Exception:
         path = f"/oferte-parteneri/{offer.pk}/"
     return f"{site_base}{path}" if site_base else path
+
+
+def _adoption_bonus_selection_summary(ar: AdoptionRequest) -> tuple[str, str]:
+    """
+    Rezumat oferte Servicii bifate pentru bonus (text + HTML), fără coduri de revendicare.
+    Codurile se generează și se trimit pe email la finalizarea adopției în MyPet.
+    """
+    sels = list(
+        AdoptionBonusSelection.objects.filter(adoption_request=ar)
+        .select_related("offer")
+        .order_by("partner_kind", "pk")
+    )
+    if not sels:
+        return "", ""
+    lines_txt: list[str] = []
+    lines_html: list[str] = []
+    for sel in sels:
+        off = sel.offer
+        kind_label = off.get_partner_kind_display()
+        url = _offer_public_absolute_url(off)
+        bits: list[str] = []
+        ph = (off.price_hint or "").strip()
+        if ph:
+            bits.append(f"preț indicativ: {ph}")
+        if getattr(off, "discount_percent", None):
+            bits.append(f"discount {off.discount_percent}%")
+        extra = (" (" + ", ".join(bits) + ")") if bits else ""
+        lines_txt.append(f"- [{kind_label}] {off.title}{extra}\n  {url}")
+        bits_esc = escape(extra) if extra else ""
+        lines_html.append(
+            f"<li><strong>{escape(kind_label)}</strong> — {escape(off.title)}{bits_esc}<br/>"
+            f"<a href=\"{escape(url)}\">{escape(url)}</a></li>"
+        )
+    head_txt = (
+        "Oferte Servicii bifate pentru bonus (rezumat — codurile de revendicare se trimit pe email "
+        "după ce adopția este finalizată în MyPet):\n"
+    )
+    head_html = (
+        "<p><strong>Oferte Servicii bifate pentru bonus</strong> (rezumat). "
+        "<strong>Codurile de revendicare</strong> pentru parteneri le primești pe email "
+        "după <strong>finalizarea adopției</strong> în MyPet.</p>"
+    )
+    return head_txt + "\n".join(lines_txt), head_html + "<ul style=\"margin:0 0 1em 1.1em;padding:0;\">" + "".join(lines_html) + "</ul>"
 
 
 def _process_adoption_finalize_bonus(ar: AdoptionRequest):
@@ -1236,7 +1352,7 @@ def _apply_owner_decision_for_request(ad_req: AdoptionRequest, decision: str):
                 _inbox.KIND_ADOPTION_SUPERSEDED_ADOPTER,
                 "Cererea ta de adopție nu mai este activă",
                 f"Pentru „{pl_other}” a fost acceptată o altă cerere.",
-                link_url=reverse("adopter_messages_list"),
+                link_url=reverse("mypet") + "?open_messages=1",
                 metadata={"pet_id": other_ar.animal_id},
             )
         _send_adoption_accept_emails(ad_req)
@@ -1256,7 +1372,7 @@ def _apply_owner_decision_for_request(ad_req: AdoptionRequest, decision: str):
             _inbox.KIND_ADOPTION_ACCEPTED_ADOPTER,
             "Cererea ta de adopție a fost acceptată",
             f"Pentru „{pl}”. Verifică emailul și mesajele din cont.",
-            link_url=reverse("adopter_messages_list"),
+            link_url=reverse("mypet") + "?open_messages=1",
             metadata={"pet_id": ad_req.animal_id, "adoption_request_id": ad_req.pk},
         )
         return True, "Cererea a fost acceptată.", True
@@ -1277,7 +1393,7 @@ def _apply_owner_decision_for_request(ad_req: AdoptionRequest, decision: str):
             _inbox.KIND_ADOPTION_REJECTED_ADOPTER,
             "Cererea ta de adopție nu a fost acceptată",
             f"Pentru „{plr}”. Îți mulțumim pentru interes.",
-            link_url=reverse("adopter_messages_list"),
+            link_url=reverse("mypet") + "?open_messages=1",
             metadata={"pet_id": ad_req.animal_id},
         )
         return True, "Cererea a fost respinsă.", True
@@ -1286,11 +1402,25 @@ def _apply_owner_decision_for_request(ad_req: AdoptionRequest, decision: str):
 
 
 @require_http_methods(["GET"])
-def adoption_email_owner_action_view(request, token: str, decision: str):
+def adoption_email_owner_action_view(request, token=None, decision=None):
     """
     Acțiune rapidă din email: accept/reject pentru owner.
     Link semnat, valabil 48h.
+
+    URL recomandat (email): /adoption/email/d/?t=<token>&d=accept|reject
+    (tokenul conține ':' — query evită clienți de email care strică path-ul.)
+
+    Compatibilitate: /adoption/email/<token>/<decision>/ (vezi adoption_email_owner_action_path).
     """
+    if token is None or decision is None:
+        token = (request.GET.get("t") or request.GET.get("token") or "").strip()
+        decision = (request.GET.get("d") or request.GET.get("decision") or "").strip()
+    if not token or not decision:
+        return HttpResponse(
+            "<h3>Link incomplet</h3><p>Lipsește tokenul sau decizia. Deschide linkul din email din nou.</p>",
+            status=400,
+        )
+
     signer = TimestampSigner(salt="adoption-owner-email-v1")
     try:
         payload = signer.unsign(token, max_age=48 * 3600)
@@ -1305,11 +1435,11 @@ def adoption_email_owner_action_view(request, token: str, decision: str):
     ad_req = get_object_or_404(AdoptionRequest, pk=req_id, animal__owner_id=owner_id)
     ok, msg, _changed = _apply_owner_decision_for_request(ad_req, decision)
 
-    opposite = "reject" if decision == "accept" else "accept"
+    opposite = "reject" if (decision or "").strip().lower() == "accept" else "accept"
     try:
-        opposite_path = reverse("adoption_email_owner_action", args=[token, opposite])
+        opposite_path = f"{reverse('adoption_email_owner_action')}?{urlencode({'t': token, 'd': opposite})}"
     except Exception:
-        opposite_path = f"/adoption/email/{token}/{opposite}/"
+        opposite_path = f"/adoption/email/d/?{urlencode({'t': token, 'd': opposite})}"
     try:
         mypet_path = reverse("mypet")
     except Exception:
@@ -1778,7 +1908,7 @@ def signup_pf_view(request):
     errors = []
     if not email:
         errors.append("Email obligatoriu.")
-    if User.objects.filter(email=email).exists():
+    if _email_duplicate_blocked(email):
         errors.append("Acest email este deja folosit.")
     if not first_name:
         errors.append("Prenumele este obligatoriu.")
@@ -1985,7 +2115,7 @@ def signup_verificare_sms_view(request):
         return redirect(_redirect_for_role(role, "phone") + "?phone_taken=1")
 
     User = get_user_model()
-    if User.objects.filter(email=email).exists():
+    if _email_duplicate_blocked(email):
         # Nu ștergem signup_pending – ca la redirect pe formular datele să rămână
         return redirect(_redirect_for_role(role, "email") + "?email_taken=1")
 
@@ -2410,7 +2540,7 @@ def signup_organizatie_view(request):
         field_errors["is_public_shelter"] = "Trebuie să alegi una dintre variante: Sunt adăpost public / Nu sunt adăpost public."
     if not email:
         field_errors["email"] = "Email obligatoriu."
-    elif User.objects.filter(email=email).exists():
+    elif _email_duplicate_blocked(email):
         field_errors["email"] = "Acest email este deja folosit."
     if not denumire:
         field_errors["denumire"] = "Denumirea organizației este obligatorie."
@@ -2539,7 +2669,7 @@ def signup_colaborator_view(request):
             errors.append("Bifează cel puțin una: TRANSPORT NAȚIONAL sau TRANSPORT INTERNATIONAL.")
     if not email:
         errors.append("Email obligatoriu.")
-    if User.objects.filter(email=email).exists():
+    if _email_duplicate_blocked(email):
         errors.append("Acest email este deja folosit.")
     if not denumire:
         errors.append("Denumirea este obligatorie.")
@@ -2858,6 +2988,17 @@ def servicii_view(request):
                 if _off is not None and getattr(_off, "adoption_bonus_show_heart", False):
                     kinds_elig.add(_off.partner_kind)
         eligible_bonus_kinds = len(kinds_elig)
+    show_locked_notice_once = False
+    rid = bonus_bundle.get("adoption_bonus_request_id")
+    if bonus_bundle.get("adoption_bonus_servicii_locked") and rid:
+        try:
+            pending = int(request.session.get(SESSION_ADOPTION_BONUS_SHOW_LOCKED_NOTICE_AR) or 0)
+        except (TypeError, ValueError):
+            pending = 0
+        if pending == int(rid):
+            show_locked_notice_once = True
+            request.session.pop(SESSION_ADOPTION_BONUS_SHOW_LOCKED_NOTICE_AR, None)
+            request.session.modified = True
     return render(
         request,
         "anunturi/servicii.html",
@@ -2884,6 +3025,9 @@ def servicii_view(request):
             "adoption_bonus_cart_unlock_url": reverse("adoption_bonus_cart_unlock")
             if bonus_bundle.get("adoption_bonus_request_id")
             else "",
+            "adoption_bonus_servicii_locked": bonus_bundle.get("adoption_bonus_servicii_locked"),
+            "adoption_bonus_ar_pending": bonus_bundle.get("adoption_bonus_ar_pending"),
+            "adoption_bonus_show_locked_notice_once": show_locked_notice_once,
         },
     )
 
@@ -3659,29 +3803,343 @@ def account_view(request):
     return response
 
 
+def _unified_inbox_owner_pet_message_rows(user, limit=20):
+    """Rânduri rezumat: mesaje MyPet ca proprietar, grupate pe animal."""
+    active_since = _messages_active_since()
+    pet_ids = list(AnimalListing.objects.filter(owner=user).values_list("pk", flat=True))
+    if not pet_ids:
+        return []
+    agg = (
+        PetMessage.objects.filter(animal_id__in=pet_ids, created_at__gte=active_since)
+        .filter(Q(sender=user) | Q(receiver=user))
+        .values("animal_id")
+        .annotate(
+            last_at=Max("created_at"),
+            unread=Count("id", filter=Q(receiver=user, is_read=False)),
+        )
+        .order_by("-last_at")[:limit]
+    )
+    animal_ids = [int(x["animal_id"]) for x in agg]
+    pets = {p.pk: p for p in AnimalListing.objects.filter(pk__in=animal_ids)}
+    out = []
+    for row in agg:
+        aid = int(row["animal_id"])
+        pet = pets.get(aid)
+        if not pet:
+            continue
+        last_msg = (
+            PetMessage.objects.filter(animal_id=aid, created_at__gte=active_since)
+            .filter(Q(sender=user) | Q(receiver=user))
+            .order_by("-created_at")
+            .first()
+        )
+        body = (last_msg.body or "") if last_msg else ""
+        preview = (body[:100] + "…") if len(body) > 100 else body
+        out.append(
+            {
+                "animal_id": aid,
+                "name": pet.name or f"Pet #{aid}",
+                "unread": int(row.get("unread") or 0),
+                "preview": preview,
+                "open_url": reverse("mypet") + f"?open_messages=1&open_pet_messages={aid}",
+            }
+        )
+    aids = [int(r["animal_id"]) for r in out]
+    if aids:
+        ur = {
+            int(x["animal_id"]): x["t"]
+            for x in PetMessage.objects.filter(
+                animal_id__in=aids,
+                receiver=user,
+                is_read=False,
+                created_at__gte=active_since,
+            )
+            .values("animal_id")
+            .annotate(t=Max("created_at"))
+        }
+        ia = {
+            int(x["animal_id"]): x["t"]
+            for x in PetMessage.objects.filter(
+                animal_id__in=aids,
+                receiver=user,
+                created_at__gte=active_since,
+            )
+            .values("animal_id")
+            .annotate(t=Max("created_at"))
+        }
+
+        def _owner_row_ts(r):
+            aid = int(r["animal_id"])
+            u = int(r.get("unread") or 0)
+            if u > 0:
+                return ur.get(aid) or ia.get(aid)
+            return ia.get(aid)
+
+        def _owner_sort_key(r):
+            t = _owner_row_ts(r)
+            return (0 if int(r.get("unread") or 0) > 0 else 1, -(t.timestamp() if t else 0))
+
+        out.sort(key=_owner_sort_key)
+    return out
+
+
+def _unified_inbox_adopter_pet_message_rows(user, limit=20):
+    """Rânduri rezumat: mesaje ca adoptator, grupate pe animal."""
+    active_since = _messages_active_since()
+    base = (
+        PetMessage.objects.filter(Q(sender=user) | Q(receiver=user), created_at__gte=active_since)
+        .exclude(animal__owner=user)
+    )
+    agg = (
+        base.values("animal_id")
+        .annotate(
+            last_at=Max("created_at"),
+            unread=Count("id", filter=Q(receiver=user, is_read=False)),
+        )
+        .order_by("-last_at")[:limit]
+    )
+    animal_ids = [int(x["animal_id"]) for x in agg]
+    pets = {p.pk: p for p in AnimalListing.objects.filter(pk__in=animal_ids).select_related("owner")}
+    out = []
+    for row in agg:
+        aid = int(row["animal_id"])
+        pet = pets.get(aid)
+        if not pet:
+            continue
+        owner = pet.owner
+        last_msg = (
+            PetMessage.objects.filter(animal_id=aid, created_at__gte=active_since)
+            .filter(Q(sender=user, receiver=owner) | Q(sender=owner, receiver=user))
+            .order_by("-created_at")
+            .first()
+        )
+        body = (last_msg.body or "") if last_msg else ""
+        preview = (body[:100] + "…") if len(body) > 100 else body
+        owner_name = (f"{owner.first_name} {owner.last_name}").strip() if owner else ""
+        owner_name = owner_name or (owner.username if owner else "Proprietar")
+        out.append(
+            {
+                "animal_id": aid,
+                "name": pet.name or f"Pet #{aid}",
+                "subtitle": owner_name,
+                "unread": int(row.get("unread") or 0),
+                "preview": preview,
+                "open_url": reverse("mypet") + f"?open_messages=1&open_adopter_animal={aid}",
+            }
+        )
+    if out:
+        ur_map = {}
+        ia_map = {}
+        for r in out:
+            aid = int(r["animal_id"])
+            pet = pets.get(aid)
+            if not pet or not pet.owner_id:
+                continue
+            oid = pet.owner_id
+            lu = (
+                PetMessage.objects.filter(
+                    animal_id=aid,
+                    sender_id=oid,
+                    receiver=user,
+                    is_read=False,
+                    created_at__gte=active_since,
+                )
+                .aggregate(t=Max("created_at"))
+                .get("t")
+            )
+            la = (
+                PetMessage.objects.filter(
+                    animal_id=aid,
+                    sender_id=oid,
+                    receiver=user,
+                    created_at__gte=active_since,
+                )
+                .aggregate(t=Max("created_at"))
+                .get("t")
+            )
+            ur_map[aid] = lu
+            ia_map[aid] = la
+
+        def _adopter_row_ts(row):
+            aid = int(row["animal_id"])
+            u = int(row.get("unread") or 0)
+            if u > 0:
+                return ur_map.get(aid) or ia_map.get(aid)
+            return ia_map.get(aid)
+
+        def _adopter_sort_key(r):
+            t = _adopter_row_ts(r)
+            return (0 if int(r.get("unread") or 0) > 0 else 1, -(t.timestamp() if t else 0))
+
+        out.sort(key=_adopter_sort_key)
+    return out
+
+
+def _unified_inbox_collab_client_rows(user, limit=20):
+    """Rânduri rezumat: thread-uri mesaje Servicii (client ↔ colaborator)."""
+    active_since = _messages_active_since()
+    base = CollabServiceMessage.objects.filter(Q(sender=user) | Q(receiver=user)).exclude(
+        collaborator=user
+    )
+    base = base.filter(created_at__gte=active_since)
+    threads_map = {}
+    for m in base.order_by("-created_at"):
+        key = (m.collaborator_id, m.context_type, m.context_ref or "")
+        if key not in threads_map:
+            threads_map[key] = m
+    UserModel = get_user_model()
+    out = []
+    for (collab_id, ct, cref), last in threads_map.items():
+        collab_u = UserModel.objects.filter(pk=collab_id).first()
+        cname = ""
+        if collab_u:
+            cname = (f"{collab_u.first_name} {collab_u.last_name}").strip() or collab_u.username
+        unread = (
+            CollabServiceMessage.objects.filter(
+                collaborator_id=collab_id,
+                context_type=ct,
+                context_ref=cref,
+                sender_id=collab_id,
+                receiver=user,
+                is_read=False,
+                created_at__gte=active_since,
+            ).count()
+        )
+        last_unread_in = (
+            CollabServiceMessage.objects.filter(
+                collaborator_id=collab_id,
+                context_type=ct,
+                context_ref=cref,
+                sender_id=collab_id,
+                receiver=user,
+                is_read=False,
+                created_at__gte=active_since,
+            )
+            .aggregate(t=Max("created_at"))
+            .get("t")
+        )
+        last_in_any = (
+            CollabServiceMessage.objects.filter(
+                collaborator_id=collab_id,
+                context_type=ct,
+                context_ref=cref,
+                sender_id=collab_id,
+                receiver=user,
+                created_at__gte=active_since,
+            )
+            .aggregate(t=Max("created_at"))
+            .get("t")
+        )
+        preview = last.body or ""
+        if len(preview) > 80:
+            preview = preview[:80] + "…"
+        sort_ts = last_unread_in if unread > 0 else (last_in_any or last.created_at)
+        out.append(
+            {
+                "collaborator_id": collab_id,
+                "collaborator_name": cname or f"Colaborator {collab_id}",
+                "context_label": _collab_context_label(ct),
+                "unread": unread,
+                "preview": preview,
+                "last_at": last.created_at,
+                "_sort_ts": sort_ts,
+            }
+        )
+    out.sort(
+        key=lambda x: (
+            0 if x["unread"] > 0 else 1,
+            -((x["_sort_ts"].timestamp() if x.get("_sort_ts") else 0)),
+        )
+    )
+    for x in out:
+        x.pop("_sort_ts", None)
+    return out[:limit]
+
+
+@login_required
+def adoption_bonus_offers_portal_view(request):
+    """Portal adoptator: oferte bonus alese la adopție, coduri, link ofertă, date contact partener."""
+    user = request.user
+    selections = list(
+        AdoptionBonusSelection.objects.filter(adoption_request__adopter=user)
+        .select_related("offer", "offer__collaborator", "adoption_request", "adoption_request__animal")
+        .order_by("-adoption_request__finalized_at", "-adoption_request__accepted_at", "-created_at")
+    )
+    status_lbl = dict(AdoptionRequest.STATUS_CHOICES)
+    kind_lbl = dict(CollaboratorServiceOffer.PARTNER_KIND_CHOICES)
+    rows = []
+    for sel in selections:
+        ar = sel.adoption_request
+        pet = ar.animal
+        off = sel.offer
+        collab = off.collaborator
+        code = (sel.redemption_code or "").strip()
+        rows.append(
+            {
+                "selection": sel,
+                "request": ar,
+                "pet": pet,
+                "offer": off,
+                "collaborator": collab,
+                "partner_kind_display": kind_lbl.get(sel.partner_kind, sel.partner_kind),
+                "code_display": code if code else "— (după finalizare adopție)",
+                "status_display": status_lbl.get(ar.status, ar.status),
+                "contact_lines": _adoption_contact_block(collab).splitlines(),
+            }
+        )
+    response = render(
+        request,
+        "anunturi/adoption_bonus_portal.html",
+        {
+            "bonus_rows": rows,
+            "bonus_empty": not rows,
+            "has_adoption_activity": AdoptionRequest.objects.filter(adopter=user).exists(),
+        },
+    )
+    response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    return response
+
+
 @login_required
 def unified_inbox_view(request):
-    """Inbox unificat: notificări sistem + legături rapide către conversațiile existente."""
-    items = list(
-        UserInboxNotification.objects.filter(user=request.user).order_by("-created_at")[:200]
-    )
-    ap = getattr(request.user, "account_profile", None)
+    """Inbox mesaje: trei canale (MyPet proprietar / adoptator / parteneri) + legături în casete."""
+    user = request.user
+    ap = getattr(user, "account_profile", None)
     role = getattr(ap, "role", None) if ap else None
     mypet_ok = _user_can_use_mypet(request)
+    active_since = _messages_active_since()
+    inbox_owner_pet_unread = (
+        PetMessage.objects.filter(
+            receiver=user,
+            is_read=False,
+            created_at__gte=active_since,
+            animal__owner=user,
+        ).count()
+    )
+    inbox_adopter_pet_unread = (
+        PetMessage.objects.filter(receiver=user, is_read=False, created_at__gte=active_since)
+        .exclude(animal__owner=user)
+        .count()
+    )
+    owner_rows = _unified_inbox_owner_pet_message_rows(user) if mypet_ok else []
+    adopter_rows = _unified_inbox_adopter_pet_message_rows(user) if mypet_ok else []
+    collab_rows = _unified_inbox_collab_client_rows(user)
+    has_adoption_activity = AdoptionRequest.objects.filter(adopter=user).exists()
     ctx = {
-        "inbox_items": items,
+        "inbox_owner_pet_unread": inbox_owner_pet_unread,
+        "inbox_adopter_pet_unread": inbox_adopter_pet_unread,
+        "inbox_owner_thread_rows": owner_rows,
+        "inbox_adopter_thread_rows": adopter_rows,
+        "inbox_collab_thread_rows": collab_rows,
         "quick_mypet_messages_url": (reverse("mypet") + "?open_messages=1") if mypet_ok else "",
-        "quick_adopter_url": (
-            reverse("adopter_messages_list")
-            if (mypet_ok and role == AccountProfile.ROLE_PF)
-            else ""
-        ),
-        "quick_collab_client_url": reverse("servicii"),
+        "quick_adopter_url": ((reverse("mypet") + "?open_messages=1") if mypet_ok else ""),
+        "quick_adoption_bonus_url": reverse("adoption_bonus_portal") if has_adoption_activity else "",
         "quick_collab_business_url": (
             (reverse("collab_offers_control") + "?open_messages=1")
             if role == AccountProfile.ROLE_COLLAB
             else ""
         ),
+        "mypet_ok": mypet_ok,
     }
     return render(request, "anunturi/unified_inbox.html", ctx)
 
@@ -4199,7 +4657,7 @@ def account_edit_view(request):
     errors = []
     if not email:
         errors.append("Email obligatoriu.")
-    if User.objects.filter(email__iexact=email).exclude(pk=user.pk).exists():
+    if _email_duplicate_blocked(email, exclude_user_pk=user.pk):
         errors.append("Acest email este deja folosit.")
     if not first_name:
         errors.append("Prenumele este obligatoriu.")
@@ -4457,6 +4915,83 @@ def edit_verify_email_view(request):
     return redirect(reverse("account") + "?updated=1")
 
 
+def _build_mypet_as_adopter_rows(user, active_since):
+    """Cereri AdoptionRequest unde userul e adoptator (animale care nu îi aparțin)."""
+    mypet_as_adopter_rows = []
+    try:
+        qs_ad = list(
+            AdoptionRequest.objects.filter(adopter=user)
+            .exclude(animal__owner_id=user.id)
+            .filter(
+                status__in=[
+                    AdoptionRequest.STATUS_PENDING,
+                    AdoptionRequest.STATUS_ACCEPTED,
+                    AdoptionRequest.STATUS_FINALIZED,
+                    AdoptionRequest.STATUS_EXPIRED,
+                ]
+            )
+            .select_related("animal", "animal__owner")
+            .order_by("-updated_at")[:40]
+        )
+        if not qs_ad:
+            return []
+        status_lbl_ar = dict(AdoptionRequest.STATUS_CHOICES)
+        aids_ad = [int(ar.animal_id) for ar in qs_ad if ar.animal_id]
+        pets_ad = {
+            p.pk: p
+            for p in AnimalListing.objects.filter(pk__in=aids_ad).select_related("owner")
+        }
+        unread_ad = {}
+        for row in PetMessage.objects.filter(
+            animal_id__in=aids_ad,
+            receiver=user,
+            is_read=False,
+            created_at__gte=active_since,
+        ).values("animal_id", "sender_id"):
+            aid = int(row["animal_id"])
+            pet_o = pets_ad.get(aid)
+            if not pet_o or not pet_o.owner_id or int(row["sender_id"]) != int(pet_o.owner_id):
+                continue
+            unread_ad[aid] = unread_ad.get(aid, 0) + 1
+        for ar in qs_ad:
+            pet = getattr(ar, "animal", None) or pets_ad.get(int(ar.animal_id))
+            if not pet:
+                continue
+            own = pet.owner
+            ol = (f"{own.first_name} {own.last_name}").strip() if own else ""
+            ol = ol or (own.username if own else "Proprietar")
+            sp = (pet.species or "").strip().lower()
+            if sp not in ("dog", "cat"):
+                sp = "other"
+            try:
+                pet_url = (
+                    reverse("pets_single", args=[pet.pk]) if getattr(pet, "is_published", False) else ""
+                )
+            except Exception:
+                pet_url = ""
+            try:
+                photo_url = pet.photo_1.url if getattr(pet, "photo_1", None) else ""
+            except Exception:
+                photo_url = ""
+            mypet_as_adopter_rows.append(
+                {
+                    "request": ar,
+                    "animal": pet,
+                    "owner_label": ol,
+                    "status_label": status_lbl_ar.get(ar.status, ar.status),
+                    "species_key": sp,
+                    "pet_url": pet_url,
+                    "photo_url": photo_url,
+                    "messages_open_url": reverse("mypet")
+                    + f"?open_messages=1&open_adopter_animal={pet.pk}",
+                    "unread_from_owner": int(unread_ad.get(int(pet.pk), 0)),
+                }
+            )
+    except Exception:
+        return []
+    return mypet_as_adopter_rows
+
+
 @login_required
 @mypet_pf_org_required
 def mypet_view(request):
@@ -4571,6 +5106,20 @@ def mypet_view(request):
         if p is None:
             continue
         p.unread_messages = unread_by_pet.get(p.pk, 0)
+    # Mesaje necitite ca adoptator (pe animale care nu îți aparțin) — pentru ?open_messages=1.
+    adopter_pet_message_unread = 0
+    try:
+        adopter_pet_message_unread = (
+            PetMessage.objects.filter(
+                receiver=user,
+                is_read=False,
+                created_at__gte=active_since,
+            )
+            .exclude(animal__owner_id=user.id)
+            .count()
+        )
+    except Exception:
+        adopter_pet_message_unread = 0
     # Adopție: coloana „În curs” + buton finalizare (cerere acceptată)
     pending_counts = {}
     if pet_ids:
@@ -4656,18 +5205,27 @@ def mypet_view(request):
         p.adoption_can_next = False
         p.adoption_manage_is_expired = False
         if manage_ar:
-            p.adoption_manage_req_id = manage_ar.pk
             ext = int(getattr(manage_ar, "extension_count", 0) or 0)
-            p.adoption_can_extend = manage_ar.status in (
+            has_waitlist = npc > 0
+            can_extend = manage_ar.status in (
                 AdoptionRequest.STATUS_ACCEPTED,
                 AdoptionRequest.STATUS_EXPIRED,
             ) and ext < 2
-            p.adoption_can_next = manage_ar.status in (
+            # „Următorul adoptator” are sens doar dacă există cereri în așteptare.
+            can_next = manage_ar.status in (
                 AdoptionRequest.STATUS_ACCEPTED,
                 AdoptionRequest.STATUS_EXPIRED,
-            )
+            ) and has_waitlist
             exp = getattr(manage_ar, "accepted_expires_at", None)
             p.adoption_manage_is_expired = bool(exp and exp < now) or manage_ar.status == AdoptionRequest.STATUS_EXPIRED
+            # Expirat + zero în coadă: nu mai afișăm ⚙ (nu există „următorul”; prelungirea după expirare fără coadă nu e oferită).
+            show_manage = (can_extend or can_next) and not (
+                manage_ar.status == AdoptionRequest.STATUS_EXPIRED and not has_waitlist
+            )
+            if show_manage:
+                p.adoption_manage_req_id = manage_ar.pk
+                p.adoption_can_extend = can_extend
+                p.adoption_can_next = can_next
         elif pend_ar:
             p.adoption_pending_req_id = pend_ar.pk
     # Minim 20 rânduri pentru a vedea scroll-ul
@@ -4681,7 +5239,24 @@ def mypet_view(request):
         "adopted_count": adopted_count,
         "total_count": total_count,
         "user_has_owned_pets": user_has_owned_pets,
+        "adopter_pet_message_unread": adopter_pet_message_unread,
     })
+
+
+@login_required
+@mypet_pf_org_required
+def mypet_adopter_adoptions_view(request):
+    """Grilă carduri: adopții în care userul e adoptator (animale de la alții)."""
+    active_since = _messages_active_since()
+    rows = _build_mypet_as_adopter_rows(request.user, active_since)
+    return render(
+        request,
+        "anunturi/mypet_adopter_adoptions.html",
+        {
+            "mypet_as_adopter_rows": rows,
+            "mypet_home_url": reverse("mypet"),
+        },
+    )
 
 
 @login_required
@@ -5294,7 +5869,11 @@ def adoption_bonus_cart_unlock_view(request):
     ).first()
     if not ar:
         return JsonResponse({"ok": False, "error": "not_found"}, status=404)
+    if ar.bonus_servicii_locked_at is None:
+        ar.bonus_servicii_locked_at = timezone.now()
+        ar.save(update_fields=["bonus_servicii_locked_at", "updated_at"])
     request.session[SESSION_ADOPTION_BONUS_CART_UNLOCK_AR] = ar_id
+    request.session[SESSION_ADOPTION_BONUS_SHOW_LOCKED_NOTICE_AR] = ar_id
     request.session.modified = True
     return JsonResponse({"ok": True})
 
@@ -5498,8 +6077,47 @@ def mypet_messages_list_view(request, pk: int):
             "unread_count": unread,
             "last_at": row["last_at"].isoformat() if row.get("last_at") else "",
         })
-    # Necitite primele, apoi celelalte; ordinea inițială (-last_at) rămâne în fiecare grup.
-    out.sort(key=lambda x: 0 if int(x.get("unread_count") or 0) > 0 else 1)
+    sender_ids = [int(x["sender_id"]) for x in out]
+    if sender_ids:
+        q_in = PetMessage.objects.filter(
+            animal=pet,
+            receiver=request.user,
+            sender_id__in=sender_ids,
+        )
+        if scope == "active":
+            q_in = q_in.filter(created_at__gte=active_since)
+        else:
+            q_in = q_in.filter(
+                created_at__lt=active_since,
+                created_at__gte=now - timezone.timedelta(days=MESSAGE_DELETE_DAYS),
+            )
+        ur_map = {
+            int(x["sender_id"]): x["t"]
+            for x in q_in.filter(is_read=False).values("sender_id").annotate(t=Max("created_at"))
+        }
+        ia_map = {
+            int(x["sender_id"]): x["t"]
+            for x in q_in.values("sender_id").annotate(t=Max("created_at"))
+        }
+
+        def _mypet_owner_list_ts(o):
+            sid = int(o["sender_id"])
+            u = int(o.get("unread_count") or 0)
+            if u > 0:
+                return ur_map.get(sid) or ia_map.get(sid)
+            return ia_map.get(sid)
+
+        for o in out:
+            ts = _mypet_owner_list_ts(o)
+            o["_sort_ts"] = ts
+        out.sort(
+            key=lambda o: (
+                0 if int(o.get("unread_count") or 0) > 0 else 1,
+                -((o["_sort_ts"].timestamp() if o.get("_sort_ts") else 0)),
+            )
+        )
+        for o in out:
+            o.pop("_sort_ts", None)
     return JsonResponse({"ok": True, "threads": out, "scope": scope})
 
 
@@ -5527,13 +6145,6 @@ def mypet_messages_thread_view(request, pk: int, sender_id: int):
         })
     user = request.user
     unread_total = PetMessage.objects.filter(receiver=user, is_read=False, created_at__gte=active_since).count()
-    collab_client_unread = (
-        CollabServiceMessage.objects.filter(
-            receiver=user, is_read=False, created_at__gte=active_since
-        )
-        .exclude(collaborator=user)
-        .count()
-    )
     adoption_payload = None
     ar = (
         AdoptionRequest.objects.filter(animal=pet, adopter_id=sender_id)
@@ -5544,6 +6155,23 @@ def mypet_messages_thread_view(request, pk: int, sender_id: int):
         now = timezone.now()
         expires_at = getattr(ar, "accepted_expires_at", None)
         is_expired = bool(expires_at and expires_at < now)
+        has_waitlist = AdoptionRequest.objects.filter(
+            animal=pet,
+            status=AdoptionRequest.STATUS_PENDING,
+        ).exists()
+        ext_ct = int(getattr(ar, "extension_count", 0) or 0)
+        can_extend_base = ar.status in {
+            AdoptionRequest.STATUS_ACCEPTED,
+            AdoptionRequest.STATUS_EXPIRED,
+        } and ext_ct < 2
+        # Aliniat cu rândul MyPet: fără coadă + expirat → fără prelungire / următor în UI.
+        can_extend = can_extend_base and not (
+            ar.status == AdoptionRequest.STATUS_EXPIRED and not has_waitlist
+        )
+        can_next = ar.status in {
+            AdoptionRequest.STATUS_ACCEPTED,
+            AdoptionRequest.STATUS_EXPIRED,
+        } and has_waitlist
         adoption_payload = {
             "id": ar.id,
             "status": ar.status,
@@ -5551,15 +6179,16 @@ def mypet_messages_thread_view(request, pk: int, sender_id: int):
             "can_reject": ar.status == AdoptionRequest.STATUS_PENDING,
             "accepted_expires_at": expires_at.isoformat() if expires_at else "",
             "is_expired": is_expired or ar.status == AdoptionRequest.STATUS_EXPIRED,
-            "can_extend": ar.status in {AdoptionRequest.STATUS_ACCEPTED, AdoptionRequest.STATUS_EXPIRED} and int(getattr(ar, "extension_count", 0) or 0) < 2,
-            "can_next": ar.status in {AdoptionRequest.STATUS_ACCEPTED, AdoptionRequest.STATUS_EXPIRED},
+            "can_extend": can_extend,
+            "can_next": can_next,
         }
+    nav_unread = get_navbar_unread_counts(user)
     return JsonResponse(
         {
             "ok": True,
             "messages": items,
             "unread_total": unread_total,
-            "navbar_unread_total": unread_total + collab_client_unread,
+            "navbar_unread_total": nav_unread["total"],
             "adoption_request": adoption_payload,
         }
     )
@@ -5594,7 +6223,11 @@ def mypet_messages_reply_view(request, pk: int, sender_id: int):
 def adopter_messages_list_view(request):
     """
     Lista conversațiilor pentru adoptator (grupare pe animal).
+    Răspuns JSON pentru fetch din MyPet; la navigare din browser (ex. „Deschide” din inbox)
+    redirecționăm către MyPet cu deschidere automată a modului adoptator.
     """
+    if (request.headers.get("Sec-Fetch-Mode") or "").lower() == "navigate":
+        return redirect(reverse("mypet") + "?open_messages=1")
     scope = (request.GET.get("scope") or "active").strip().lower()
     if scope not in {"active", "archived"}:
         scope = "active"
@@ -5647,8 +6280,45 @@ def adopter_messages_list_view(request):
             "unread_count": unread,
             "last_at": row["last_at"].isoformat() if row.get("last_at") else "",
         })
-    # Necitite primele, apoi celelalte; ordinea inițială (-last_at) rămâne în fiecare grup.
-    out.sort(key=lambda x: 0 if int(x.get("unread_count") or 0) > 0 else 1)
+    if out:
+        aids = [int(o["animal_id"]) for o in out]
+        owner_sub = AnimalListing.objects.filter(pk=OuterRef("animal_id")).values("owner_id")
+        if scope == "active":
+            q_time = Q(created_at__gte=active_since)
+        else:
+            q_time = Q(
+                created_at__lt=active_since,
+                created_at__gte=now - timezone.timedelta(days=MESSAGE_DELETE_DAYS),
+            )
+        base_pm = (
+            PetMessage.objects.filter(animal_id__in=aids, receiver=user)
+            .filter(q_time)
+            .annotate(_oid=Subquery(owner_sub[:1]))
+            .filter(sender_id=F("_oid"))
+        )
+        ur_animal = {
+            int(x["animal_id"]): x["t"]
+            for x in base_pm.filter(is_read=False).values("animal_id").annotate(t=Max("created_at"))
+        }
+        ia_animal = {
+            int(x["animal_id"]): x["t"]
+            for x in base_pm.values("animal_id").annotate(t=Max("created_at"))
+        }
+        for o in out:
+            aid = int(o["animal_id"])
+            u = int(o.get("unread_count") or 0)
+            if u > 0:
+                o["_sort_ts"] = ur_animal.get(aid) or ia_animal.get(aid)
+            else:
+                o["_sort_ts"] = ia_animal.get(aid)
+
+        def _adopter_list_sort_key(o):
+            t = o.get("_sort_ts")
+            return (0 if int(o.get("unread_count") or 0) > 0 else 1, -(t.timestamp() if t else 0))
+
+        out.sort(key=_adopter_list_sort_key)
+        for o in out:
+            o.pop("_sort_ts", None)
     return JsonResponse({"ok": True, "threads": out, "scope": scope})
 
 
@@ -5656,7 +6326,13 @@ def adopter_messages_list_view(request):
 def adopter_messages_thread_view(request, pk: int):
     """
     Thread adoptator <-> owner pentru un animal.
+    Răspuns JSON pentru fetch din MyPet; la navigare în browser redirecționăm (evită pagină JSON brut).
     """
+    if (request.headers.get("Sec-Fetch-Mode") or "").lower() == "navigate":
+        pet = AnimalListing.objects.filter(pk=pk).first()
+        if pet and getattr(pet, "is_published", False) and pet.owner_id != request.user.id:
+            return redirect(reverse("pets_single", args=[pk]))
+        return redirect(reverse("mypet") + "?open_messages=1")
     active_since = _messages_active_since()
     user = request.user
     pet = get_object_or_404(AnimalListing, pk=pk, is_published=True)
@@ -5681,20 +6357,14 @@ def adopter_messages_thread_view(request, pk: int):
             "is_read": bool(msg.is_read),
         })
     unread_total = PetMessage.objects.filter(receiver=user, is_read=False, created_at__gte=active_since).count()
-    collab_client_unread = (
-        CollabServiceMessage.objects.filter(
-            receiver=user, is_read=False, created_at__gte=active_since
-        )
-        .exclude(collaborator=user)
-        .count()
-    )
+    nav_unread = get_navbar_unread_counts(user)
     return JsonResponse(
         {
             "ok": True,
             "messages": items,
             "animal_name": pet.name or "",
             "unread_total": unread_total,
-            "navbar_unread_total": unread_total + collab_client_unread,
+            "navbar_unread_total": nav_unread["total"],
         }
     )
 
@@ -5798,6 +6468,23 @@ def collab_inbox_list_view(request):
                 created_at__gte=now - timezone.timedelta(days=MESSAGE_DELETE_DAYS),
             )
         unread = unread_qs.count()
+        last_unread_in = unread_qs.aggregate(t=Max("created_at")).get("t")
+        any_in = CollabServiceMessage.objects.filter(
+            collaborator=user,
+            context_type=ct,
+            context_ref=cref,
+            sender_id=client_id,
+            receiver=user,
+        )
+        if scope == "active":
+            any_in = any_in.filter(created_at__gte=active_since)
+        else:
+            any_in = any_in.filter(
+                created_at__lt=active_since,
+                created_at__gte=now - timezone.timedelta(days=MESSAGE_DELETE_DAYS),
+            )
+        last_in_any = any_in.aggregate(t=Max("created_at")).get("t")
+        sort_ts = last_unread_in if unread > 0 else (last_in_any or last.created_at)
         preview = last.body or ""
         if len(preview) > 80:
             preview = preview[:80] + "…"
@@ -5811,9 +6498,17 @@ def collab_inbox_list_view(request):
                 "last_message": preview,
                 "unread_count": unread,
                 "last_at": last.created_at.isoformat() if last.created_at else "",
+                "_sort_ts": sort_ts,
             }
         )
-    out.sort(key=lambda x: 0 if int(x.get("unread_count") or 0) > 0 else 1)
+    out.sort(
+        key=lambda x: (
+            0 if int(x.get("unread_count") or 0) > 0 else 1,
+            -((x["_sort_ts"].timestamp() if x.get("_sort_ts") else 0)),
+        )
+    )
+    for x in out:
+        x.pop("_sort_ts", None)
     return JsonResponse({"ok": True, "threads": out, "scope": scope})
 
 
@@ -5878,12 +6573,14 @@ def collab_inbox_thread_view(request):
         is_read=False,
         created_at__gte=active_since,
     ).count()
+    nav_unread = get_navbar_unread_counts(collab)
     return JsonResponse(
         {
             "ok": True,
             "messages": items,
             "context_label": _collab_context_label(ct),
             "unread_total": unread_total,
+            "navbar_unread_total": nav_unread["total"],
         }
     )
 
@@ -5970,6 +6667,23 @@ def collab_client_inbox_list_view(request):
                 created_at__gte=now - timezone.timedelta(days=MESSAGE_DELETE_DAYS),
             )
         unread = unread_qs.count()
+        last_unread_in = unread_qs.aggregate(t=Max("created_at")).get("t")
+        any_in = CollabServiceMessage.objects.filter(
+            collaborator_id=collab_id,
+            context_type=ct,
+            context_ref=cref,
+            sender_id=collab_id,
+            receiver=user,
+        )
+        if scope == "active":
+            any_in = any_in.filter(created_at__gte=active_since)
+        else:
+            any_in = any_in.filter(
+                created_at__lt=active_since,
+                created_at__gte=now - timezone.timedelta(days=MESSAGE_DELETE_DAYS),
+            )
+        last_in_any = any_in.aggregate(t=Max("created_at")).get("t")
+        sort_ts = last_unread_in if unread > 0 else (last_in_any or last.created_at)
         preview = last.body or ""
         if len(preview) > 80:
             preview = preview[:80] + "…"
@@ -5983,9 +6697,17 @@ def collab_client_inbox_list_view(request):
                 "last_message": preview,
                 "unread_count": unread,
                 "last_at": last.created_at.isoformat() if last.created_at else "",
+                "_sort_ts": sort_ts,
             }
         )
-    out.sort(key=lambda x: 0 if int(x.get("unread_count") or 0) > 0 else 1)
+    out.sort(
+        key=lambda x: (
+            0 if int(x.get("unread_count") or 0) > 0 else 1,
+            -((x["_sort_ts"].timestamp() if x.get("_sort_ts") else 0)),
+        )
+    )
+    for x in out:
+        x.pop("_sort_ts", None)
     return JsonResponse({"ok": True, "threads": out, "scope": scope})
 
 
@@ -6049,16 +6771,14 @@ def collab_client_thread_view(request):
         .exclude(collaborator=user)
         .count()
     )
-    pet_unread = PetMessage.objects.filter(
-        receiver=user, is_read=False, created_at__gte=active_since
-    ).count()
+    nav_unread = get_navbar_unread_counts(user)
     return JsonResponse(
         {
             "ok": True,
             "messages": items,
             "context_label": _collab_context_label(ct),
             "unread_total": collab_client_unread,
-            "navbar_unread_total": pet_unread + collab_client_unread,
+            "navbar_unread_total": nav_unread["total"],
         }
     )
 
@@ -6207,7 +6927,7 @@ def pet_adoption_request_view(request, pk: int):
         _inbox.KIND_ADOPTION_REQUEST_ADOPTER,
         "Cererea ta de adopție a fost trimisă",
         f"Pentru „{pet_label}”. Vei fi anunțat când proprietarul răspunde.",
-        link_url=reverse("adopter_messages_list"),
+        link_url=reverse("mypet") + "?open_messages=1",
         metadata={"pet_id": pet.pk, "adoption_request_id": ar.pk},
     )
     _send_adoption_request_owner_email(ar)
@@ -6236,6 +6956,11 @@ def adoption_bonus_offer_toggle_view(request):
         pk=rid,
         adopter=request.user,
     )
+    if getattr(ar, "bonus_servicii_locked_at", None):
+        return JsonResponse(
+            {"ok": False, "error": "Ofertele bonus au fost deja salvate și nu mai pot fi modificate."},
+            status=403,
+        )
     if ar.status not in (
         AdoptionRequest.STATUS_PENDING,
         AdoptionRequest.STATUS_ACCEPTED,
@@ -6344,7 +7069,7 @@ def mypet_adoption_finalize_view(request, req_id: int):
         _inbox.KIND_ADOPTION_FINALIZED_ADOPTER,
         "Adopție finalizată",
         f"Adopția pentru „{pet_label_fin}” a fost finalizată. Îți mulțumim!",
-        link_url=reverse("adopter_messages_list"),
+        link_url=reverse("mypet") + "?open_messages=1",
         metadata={"pet_id": pet.pk, "adoption_request_id": ar.pk},
     )
     return JsonResponse({"ok": True})

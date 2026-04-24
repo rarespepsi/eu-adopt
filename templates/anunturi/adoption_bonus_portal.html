@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Oferte bonus adopție | EU Adopt{% endblock %}
+
+{% block body_class %}page-adoption-bonus-portal{% endblock %}
+
+{% block content %}
+<style>
+	.abp-wrap { max-width: 48rem; margin: 1.25rem auto; padding: 0 1rem 2.5rem; }
+	.abp-wrap h1 { font-size: 1.35rem; margin-bottom: 0.35rem; }
+	.abp-lead { color: #444; font-size: 0.95rem; margin-bottom: 1.25rem; line-height: 1.5; }
+	.abp-card {
+		border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem 1.1rem; margin-bottom: 1rem;
+		background: #fff;
+	}
+	.abp-card h2 { font-size: 1.05rem; margin: 0 0 0.5rem; font-weight: 600; }
+	.abp-meta { font-size: 0.8rem; color: #6b7280; margin-bottom: 0.5rem; }
+	.abp-code {
+		font-family: ui-monospace, monospace; font-size: 0.95rem; padding: 0.35rem 0.5rem;
+		background: #f3f4f6; border-radius: 6px; display: inline-block; margin: 0.25rem 0;
+	}
+	.abp-contact { font-size: 0.88rem; color: #374151; margin-top: 0.65rem; white-space: pre-wrap; }
+	.abp-actions { margin-top: 0.65rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+	.abp-actions a {
+		display: inline-block; padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.88rem;
+		background: #1d4ed8; color: #fff; text-decoration: none;
+	}
+	.abp-actions a.secondary { background: #f3f4f6; color: #111; border: 1px solid #e5e7eb; }
+	.abp-empty { color: #6b7280; font-size: 0.95rem; padding: 1rem 0; }
+</style>
+
+<section class="abp-wrap">
+	<h1>Oferte bonus la adopție</h1>
+	<p class="abp-lead">
+		Aici vezi ofertele partenerilor pe care le-ai ales în demersul de adopție: titlu, canal, cod (după finalizare),
+		link către ofertă și date de contact ale partenerului (ca în emailul de confirmare).
+	</p>
+	<p class="abp-lead" style="margin-top:-0.5rem;">
+		<a href="{% url 'unified_inbox' %}">← Mesaje și notificări</a>
+	</p>
+
+	{% if bonus_empty %}
+		<p class="abp-empty">
+			{% if has_adoption_activity %}
+				Nu ai încă selecții de bonus înregistrate pentru cererile tale de adopție.
+			{% else %}
+				Portalul se completează după ce trimiți o cerere de adopție și alegi oferte bonus în fluxul Servicii.
+			{% endif %}
+		</p>
+	{% endif %}
+
+	{% for row in bonus_rows %}
+		<article class="abp-card">
+			<h2>{{ row.offer.title|escape }}</h2>
+			<div class="abp-meta">
+				Animal: <strong>{{ row.pet.name|default:"—"|escape }}</strong>
+				· Cerere adopție #{{ row.request.pk }} — {{ row.status_display|escape }}
+				· Canal: {{ row.partner_kind_display|escape }}
+			</div>
+			<div><span class="abp-meta">Cod:</span> <span class="abp-code">{{ row.code_display|escape }}</span></div>
+			{% if row.offer.external_url %}
+				<div class="abp-actions">
+					<a href="{{ row.offer.external_url }}" rel="noopener noreferrer" target="_blank">Deschide oferta (link extern)</a>
+				</div>
+			{% endif %}
+			{% if row.contact_lines %}
+				<div class="abp-contact"><strong>Contact partener</strong><br>{% for line in row.contact_lines %}{{ line|escape }}<br>{% endfor %}</div>
+			{% endif %}
+		</article>
+	{% endfor %}
+</section>
+{% endblock %}

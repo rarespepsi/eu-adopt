@@ -6,13 +6,20 @@
 {% block body_class %}page-mypet{% if show_mypet_nav %} page-mypet-magazin{% endif %}{% endblock %}
 
 {% block content %}
-<section id="MW" class="mypet-wrap" data-pet-msg-unread="{{ pet_message_unread_count|default:0 }}">
+<section
+	id="MW"
+	class="mypet-wrap"
+	data-pet-msg-unread="{{ pet_message_unread_count|default:0 }}"
+	data-adopter-pet-unread="{{ adopter_pet_message_unread|default:0 }}"
+	data-adopter-list-url="{% url 'adopter_messages_list' %}"
+>
 	<div class="mypet-inner">
 		{% csrf_token %}
 		<div class="mypet-actions">
 			<div class="mypet-actions-toolbar">
 				<div class="mypet-actions-group mypet-actions-group--nav">
 					<a href="{% url 'mypet' %}" class="mypet-btn mypet-btn-primary">My pets</a>
+					<a href="{% url 'mypet_adopter_adoptions' %}" class="mypet-btn mypet-btn-secondary">Adopțiile mele</a>
 					{% if not user_has_owned_pets %}
 						<button
 							type="button"
@@ -59,7 +66,7 @@
 			</div>
 		</div>
 		<div class="mypet-table-wrap">
-			<table class="mypet-table" aria-label="Lista animalelor mele">
+			<table class="mypet-table" aria-label="Lista animalelor mele postate">
 				<colgroup>
 					<col class="mypet-col-nr" />
 					<col class="mypet-col-photo" />
@@ -1449,7 +1456,11 @@ document.addEventListener("DOMContentLoaded", function() {
 								})
 								.catch(function(err) {
 									setAdoptBusy(false);
-									alert(err.message || "Eroare");
+									var msg = err.message || "Eroare";
+									alert(msg);
+									if (msg.indexOf("Nu există un utilizator următor") !== -1) {
+										window.location.reload();
+									}
 								});
 						});
 					}
@@ -1472,7 +1483,11 @@ document.addEventListener("DOMContentLoaded", function() {
 						})
 						.catch(function(err) {
 							setAdoptBusy(false);
-							alert(err.message || "Eroare");
+							var msg = err.message || "Eroare";
+							alert(msg);
+							if (msg.indexOf("Nu există un utilizator următor") !== -1) {
+								window.location.reload();
+							}
 						});
 				});
 			}
@@ -1954,11 +1969,14 @@ document.addEventListener("DOMContentLoaded", function() {
 				.catch(function() { threadsEl.textContent = "Eroare la încărcarea conversațiilor."; });
 		}
 
-		function openAdopterModal(listUrl) {
+		function openAdopterModal(listUrl, preferredAnimalId) {
 			state.mode = "adopter";
 			state.petId = null;
 			state.petName = "Mesajele mele";
 			state.listUrl = listUrl || "";
+			var preferAid = preferredAnimalId != null && preferredAnimalId !== ""
+				? String(preferredAnimalId)
+				: "";
 			title.textContent = "Mesaje - " + state.petName;
 			modal.hidden = false;
 			modal.style.display = "flex";
@@ -1974,16 +1992,26 @@ document.addEventListener("DOMContentLoaded", function() {
 						threadsEl.textContent = "Fără conversații.";
 						return;
 					}
-					threads.forEach(function(t, idx) {
+					var ordered = threads.slice();
+					if (preferAid) {
+						var ix = ordered.findIndex(function(t) {
+							return String(t.animal_id) === preferAid;
+						});
+						if (ix > 0) {
+							var chosen = ordered.splice(ix, 1)[0];
+							ordered.unshift(chosen);
+						}
+					}
+					ordered.forEach(function(t, idx) {
 						var baseLabel = (t.animal_name || "Pet") + " - " + (t.owner_name || "Owner");
-						var title = baseLabel;
+						var th = baseLabel;
 						if (state.scope === "active" && t.unread_count) {
-							title += " (" + t.unread_count + " noi)";
+							th += " (" + t.unread_count + " noi)";
 						}
 						var item = makeThreadItem({
 							senderId: (t.owner_id || 0),
 							baseLabel: baseLabel,
-							title: title,
+							title: th,
 							sub: (t.owner_name || "Owner"),
 							preview: t.last_message || "",
 							photoUrl: t.animal_photo_url || "",
@@ -2011,14 +2039,14 @@ document.addEventListener("DOMContentLoaded", function() {
 		var adopterInboxBtn = document.getElementById("adopterInboxBtn");
 		if (adopterInboxBtn) {
 			adopterInboxBtn.addEventListener("click", function() {
-				openAdopterModal(adopterInboxBtn.getAttribute("data-list-url") || "");
+				openAdopterModal(adopterInboxBtn.getAttribute("data-list-url") || "", null);
 			});
 		}
 		tabActive.addEventListener("click", function() {
 			if (state.scope === "active") return;
 			setScope("active");
 			if (!modal.hidden) {
-				if (state.mode === "adopter") openAdopterModal(state.listUrl);
+				if (state.mode === "adopter") openAdopterModal(state.listUrl, null);
 				else {
 					var btn = document.querySelector('.mypet-msg-open-btn[data-pet-id="' + String(state.petId || "") + '"]');
 					if (btn) openModal(btn);
@@ -2029,7 +2057,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			if (state.scope === "archived") return;
 			setScope("archived");
 			if (!modal.hidden) {
-				if (state.mode === "adopter") openAdopterModal(state.listUrl);
+				if (state.mode === "adopter") openAdopterModal(state.listUrl, null);
 				else {
 					var btn = document.querySelector('.mypet-msg-open-btn[data-pet-id="' + String(state.petId || "") + '"]');
 					if (btn) openModal(btn);
@@ -2037,20 +2065,56 @@ document.addEventListener("DOMContentLoaded", function() {
 			}
 		});
 
-		// Deschidere automată din plic (?open_messages=1): flux doar mesaje pet.
+		function stripMypetOpenQueryParams(params) {
+			params.delete("open_messages");
+			params.delete("open_pet_messages");
+			params.delete("open_adopter_animal");
+		}
+
+		// Deschidere din inbox: ?open_pet_messages=<id> | ?open_adopter_animal=<id> | ?open_messages=1 (plic).
 		try {
 			var params = new URLSearchParams(window.location.search || "");
-			if (params.get("open_messages") === "1") {
-				var mw = document.getElementById("MW");
-				var petU = mw ? (parseInt(mw.getAttribute("data-pet-msg-unread") || "0", 10) || 0) : 0;
-				var allBtns = Array.prototype.slice.call(document.querySelectorAll(".mypet-msg-open-btn"));
-				if (allBtns.length) {
-					var firstUnreadBtn = allBtns.find(function(b) { return (parseInt(b.getAttribute("data-unread") || "0", 10) || 0) > 0; });
-					var targetBtn = firstUnreadBtn || allBtns[0];
-					if (targetBtn) setTimeout(function() { openModal(targetBtn); }, 80);
-				} else if (adopterInboxBtn) {
-					setTimeout(function() { openAdopterModal(adopterInboxBtn.getAttribute("data-list-url") || ""); }, 80);
+			var openPet = (params.get("open_pet_messages") || "").trim();
+			var openAdopterAnimal = (params.get("open_adopter_animal") || "").trim();
+			var mw = document.getElementById("MW");
+			var adopterListUrl = mw ? (mw.getAttribute("data-adopter-list-url") || "").trim() : "";
+
+			if (/^\d+$/.test(openPet)) {
+				var btnPet = document.querySelector('.mypet-msg-open-btn[data-pet-id="' + openPet + '"]');
+				if (btnPet) {
+					setTimeout(function() { openModal(btnPet); }, 80);
 				}
+				try {
+					stripMypetOpenQueryParams(params);
+					var qs0 = params.toString();
+					window.history.replaceState({}, "", window.location.pathname + (qs0 ? ("?" + qs0) : ""));
+				} catch (e0) {}
+			} else if (/^\d+$/.test(openAdopterAnimal) && adopterInboxBtn) {
+				var listU = adopterListUrl || (adopterInboxBtn.getAttribute("data-list-url") || "");
+				setTimeout(function() { openAdopterModal(listU, openAdopterAnimal); }, 80);
+				try {
+					stripMypetOpenQueryParams(params);
+					var qs1 = params.toString();
+					window.history.replaceState({}, "", window.location.pathname + (qs1 ? ("?" + qs1) : ""));
+				} catch (e1) {}
+			} else if (params.get("open_messages") === "1") {
+				var allBtns = Array.prototype.slice.call(document.querySelectorAll(".mypet-msg-open-btn"));
+				var firstUnreadBtn = allBtns.find(function(b) {
+					return (parseInt(b.getAttribute("data-unread") || "0", 10) || 0) > 0;
+				});
+				var adopterUnread = mw ? (parseInt(mw.getAttribute("data-adopter-pet-unread") || "0", 10) || 0) : 0;
+				if (firstUnreadBtn) {
+					setTimeout(function() { openModal(firstUnreadBtn); }, 80);
+				} else if (adopterUnread > 0 && adopterListUrl) {
+					setTimeout(function() { openAdopterModal(adopterListUrl, null); }, 80);
+				} else if (adopterInboxBtn) {
+					setTimeout(function() { openAdopterModal(adopterInboxBtn.getAttribute("data-list-url") || "", null); }, 80);
+				}
+				try {
+					stripMypetOpenQueryParams(params);
+					var qs = params.toString();
+					window.history.replaceState({}, "", window.location.pathname + (qs ? ("?" + qs) : ""));
+				} catch (e2) {}
 			}
 		} catch (e) {}
 

@@ -1,7 +1,7 @@
 {% comment %}
   Card ofertă în grila Servicii (imagine + overlay preț / stoc).
   Variabile: offer, show_pdf_badge (opțional, default False)
-  adoption_bonus_show_heart / adoption_bonus_selected setate în servicii_view
+  adoption_bonus_show_heart / adoption_bonus_selected / adoption_bonus_heart_frozen — servicii_view
 {% endcomment %}
 <div class="sw-s2-1-vet-offer-inner" style="position:relative;width:100%;height:100%;min-height:0;">
 	{% if user.is_authenticated and servicii_show_offer_cart and not offer.adoption_bonus_show_heart %}
@@ -18,12 +18,21 @@
 	>🛒</button>
 	{% endif %}
 	{% if offer.adoption_bonus_show_heart %}
+		{% if offer.adoption_bonus_heart_frozen %}
+		<span
+			class="sw-adopt-bonus-heart sw-adopt-bonus-heart--frozen is-on"
+			role="img"
+			aria-label="Ofertă salvată pentru bonus (nu se poate modifica)"
+			title="Salvat pentru bonus"
+		>{% include "anunturi/includes/ilove_heart_svg.html" %}</span>
+		{% else %}
 	<button type="button"
 		class="sw-adopt-bonus-heart{% if offer.adoption_bonus_selected %} is-on{% endif %}"
 		data-offer-id="{{ offer.pk }}"
 		data-adoption-bonus-kind="{{ offer.partner_kind }}"
 		aria-pressed="{% if offer.adoption_bonus_selected %}true{% else %}false{% endif %}"
 		title="Salvează oferta pentru bonus la finalizarea adopției (opțional)">{% include "anunturi/includes/ilove_heart_svg.html" %}</button>
+		{% endif %}
 	{% endif %}
 	<a class="sw-s2-1-vet-offer-link sw-vet-offer-modal-trigger" href="{% url 'public_offer_detail' offer.pk %}" data-modal-tpl="sw-vet-offer-modal-tpl-{{ offer.pk }}">
 		{% if offer.image %}<img src="{{ offer.image.url }}" alt="{{ offer.title }}" loading="lazy" />{% endif %}

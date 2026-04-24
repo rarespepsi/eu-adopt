@@ -118,6 +118,11 @@ DATABASES = {
     }
 }
 
+# Dev/QA: EUADOPT_RELAX_EMAIL_UNIQUE=1 → formularele (signup + cont) nu resping email duplicat.
+# În producție NU seta; rămâne False → validare „email deja folosit” ca înainte.
+_relax_email = os.environ.get("EUADOPT_RELAX_EMAIL_UNIQUE", "").strip().lower()
+EUADOPT_RELAX_EMAIL_UNIQUE = _relax_email in ("1", "true", "yes", "on")
+
 # Cache pentru waiting_id / one-time login (activare din mail pe alt device)
 CACHES = {
     'default': {
@@ -188,17 +193,26 @@ GOOGLE_MAPS_API_KEY = os.environ.get("EUADOPT_GOOGLE_MAPS_API_KEY", "").strip()
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25 MB
 
-# Email – trimitere din euadopt@gmail.com (Gmail)
-# Parola: folosește „Parolă pentru aplicații” din contul Google (nu parola contului).
-# Setează EMAIL_HOST_PASSWORD în .env sau variabile de mediu; dacă lipsește, mailurile merg în consolă.
-_email_password = _os.environ.get('EMAIL_HOST_PASSWORD', '')
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' if _email_password else 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'euadopt@gmail.com'
+# Email – implicit Gmail (SMTP). Parola: „Parolă pentru aplicații” Google.
+# Setează EMAIL_HOST_PASSWORD în .env; dacă lipsește → backend consolă (fără inbox real).
+_email_password = _os.environ.get("EMAIL_HOST_PASSWORD", "").strip()
+_email_user = _os.environ.get("EMAIL_HOST_USER", "").strip() or "euadopt@gmail.com"
+EMAIL_BACKEND = (
+    "django.core.mail.backends.smtp.EmailBackend"
+    if _email_password
+    else "django.core.mail.backends.console.EmailBackend"
+)
+EMAIL_HOST = _os.environ.get("EMAIL_HOST", "smtp.gmail.com").strip() or "smtp.gmail.com"
+try:
+    EMAIL_PORT = int((_os.environ.get("EMAIL_PORT", "587") or "587").strip())
+except ValueError:
+    EMAIL_PORT = 587
+EMAIL_USE_TLS = _os.environ.get("EMAIL_USE_TLS", "1").strip().lower() not in ("0", "false", "no")
+EMAIL_HOST_USER = _email_user
 EMAIL_HOST_PASSWORD = _email_password
-DEFAULT_FROM_EMAIL = 'euadopt@gmail.com'
+DEFAULT_FROM_EMAIL = _os.environ.get("DEFAULT_FROM_EMAIL", "").strip() or _email_user
+# Opțional: domeniu FQDN pentru antet Message-ID la emailuri (ex. euadopt.ro). Lasă gol → primul ALLOWED_HOSTS valid.
+EMAIL_MESSAGE_ID_DOMAIN = _os.environ.get("EMAIL_MESSAGE_ID_DOMAIN", "").strip() or None
 
 # WhiteNoise + stocare fișiere (Django 6: STORAGES cu cheie "default" pentru upload-uri)
 STORAGES = {

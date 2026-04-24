@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=23" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=27" type="text/css" media="screen" />
 <style>
 	/* La fel ca PT: main_wrap, main_content, apoi SW cu aceleași dimensiuni ca PW */
 	body.page-servicii #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -197,16 +197,19 @@
 		overflow: hidden;
 		line-height: 1.2;
 	}
+	/* Discount centrat sus — nu se suprapune cu ♥ / coș (dreapta-sus) sau PDF (stânga-sus) */
 	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-disc {
 		position: absolute;
-		top: 2px;
-		right: 2px;
+		top: 4px;
+		left: 50%;
+		right: auto;
+		transform: translateX(-50%);
 		z-index: 2;
 		background: rgba(198, 40, 40, 0.82);
 		color: #fff;
 		font-size: 9px;
 		font-weight: 900;
-		padding: 1px 4px;
+		padding: 1px 6px;
 		border-radius: 999px;
 		line-height: 1.2;
 	}
@@ -345,6 +348,14 @@
 	}
 	#SW .sw-adopt-bonus-banner.sw-adopt-bonus-banner--dismissed {
 		display: none !important;
+	}
+	#SW .sw-adopt-bonus-banner--locked {
+		background: linear-gradient(90deg, rgba(46, 125, 50, 0.1), rgba(129, 199, 132, 0.16));
+		border-color: rgba(27, 94, 32, 0.4);
+	}
+	#SW .sw-adopt-bonus-heart.sw-adopt-bonus-heart--frozen {
+		pointer-events: none;
+		cursor: default;
 	}
 	#SW .sw-adopt-bonus-followup {
 		flex: 0 0 auto;
@@ -727,6 +738,32 @@
 <section class="wrapper" id="main_content">
 	<main id="SW" class="servicii-wrapper" aria-label="Conținut Servicii">
 		{% if adoption_bonus_show_banner %}
+		{% if adoption_bonus_servicii_locked and adoption_bonus_show_locked_notice_once %}
+		<div id="swAdoptBonusBanner" class="sw-adopt-bonus-banner sw-adopt-bonus-banner--locked" aria-hidden="false">
+			<strong>Bonus adopție:</strong> ofertele alese au fost <strong>salvate</strong> și nu mai pot fi modificate pe această pagină.
+			{% if adoption_bonus_ar_pending %}
+			<p class="sw-adopt-bonus-kind-note" style="display:block;margin:0.45rem 0 0;">
+				<strong>În așteptare:</strong> răspunsul proprietarului / organizației la cererea ta de adopție. După decizie, fluxul bonus continuă (ex. coduri la e-mail după finalizarea adopției, conform regulilor site-ului).
+			</p>
+			{% else %}
+			<p class="sw-adopt-bonus-kind-note" style="display:block;margin:0.45rem 0 0;">
+				Cererea de adopție este <strong>acceptată</strong>. Selecțiile pentru bonus rămân cele salvate.
+			</p>
+			{% endif %}
+			<p class="sw-adopt-bonus-mail-note" style="margin-top:0.35rem;">Pe cardurile tale, <strong>♥</strong> indică ofertele salvate (doar vizualizare).</p>
+		</div>
+		<script>
+		(function () {
+			var LOCK_HIDE_MS = 5000;
+			var el = document.getElementById("swAdoptBonusBanner");
+			if (!el || !el.classList.contains("sw-adopt-bonus-banner--locked")) return;
+			setTimeout(function () {
+				el.classList.add("sw-adopt-bonus-banner--dismissed");
+				el.setAttribute("aria-hidden", "true");
+			}, LOCK_HIDE_MS);
+		})();
+		</script>
+		{% elif not adoption_bonus_servicii_locked %}
 		<div id="swAdoptBonusBanner" class="sw-adopt-bonus-banner" aria-hidden="false">
 			<strong>Bonus adopție:</strong> din bunătatea ta de a adopta, partenerii pot oferi servicii cu preț special.
 			Apasă <strong>♥</strong> pe cel mult <strong>o ofertă</strong> din fiecare categorie din <strong>județul din contul tău</strong> (cabinet, salon, magazin).
@@ -746,6 +783,7 @@
 			din fiecare categorie — totul este <strong>opțional</strong>.
 			Dacă nu alegi nimic, nu e nicio problemă; <strong>codurile bonus</strong> se trimit doar dacă ai selecții și adopția se <strong>finalizează</strong>.
 		</div>
+		{% endif %}
 		{% endif %}
 		<div class="sw-grid">
 			<div id="S1" class="sw-cell sw-cell-1" data-slot="S1">
@@ -1245,7 +1283,7 @@
 	})();
 })();
 </script>
-{% if adoption_bonus_request_id %}
+{% if adoption_bonus_request_id and not adoption_bonus_servicii_locked %}
 <script>
 (function () {
 	var NUDGE_DELAY_MS = 15000;

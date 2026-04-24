@@ -10,6 +10,62 @@ from .data import DEMO_DOGS
 from django.urls import reverse
 from django.utils import timezone
 
+# Aliniat cu home.views.MESSAGE_ARCHIVE_DAYS (fereastra „mesaje active”).
+_NAVBAR_UNREAD_DAYS = 30
+
+
+def get_navbar_unread_counts(user):
+    """
+    Contoare pentru plicul din navbar (aceeași logică ca în wishlist_counts).
+    Folosit în JSON-uri thread ca `navbar_unread_total` să coincidă cu HTML-ul inițial.
+    """
+    empty = {
+        "pet_message": 0,
+        "collab_business": 0,
+        "collab_client": 0,
+        "inbox_notification": 0,
+        "total": 0,
+    }
+    if not user or not user.is_authenticated:
+        return empty
+    try:
+        active_since = timezone.now() - timezone.timedelta(days=_NAVBAR_UNREAD_DAYS)
+        pet_message = PetMessage.objects.filter(
+            receiver=user,
+            is_read=False,
+            created_at__gte=active_since,
+        ).count()
+        collab_business = CollabServiceMessage.objects.filter(
+            receiver=user,
+            collaborator=user,
+            is_read=False,
+            created_at__gte=active_since,
+        ).count()
+        collab_client = (
+            CollabServiceMessage.objects.filter(
+                receiver=user,
+                is_read=False,
+                created_at__gte=active_since,
+            )
+            .exclude(collaborator=user)
+            .count()
+        )
+        inbox_notification = UserInboxNotification.objects.filter(
+            user=user,
+            is_read=False,
+            created_at__gte=active_since,
+        ).count()
+        total = pet_message + collab_business + collab_client + inbox_notification
+        return {
+            "pet_message": pet_message,
+            "collab_business": collab_business,
+            "collab_client": collab_client,
+            "inbox_notification": inbox_notification,
+            "total": total,
+        }
+    except Exception:
+        return {**empty}
+
 
 def _collaborator_tip_partener_for_nav(request):
     """
@@ -129,53 +185,19 @@ def wishlist_counts(request):
         and request.session.get("view_as_role") == "collaborator"
     )
 
-    # Mesaje necitite: PetMessage (animale) + CollabServiceMessage (servicii/produse).
+    # Mesaje necitite: PetMessage (animale) + CollabServiceMessage (servicii/produse) + inbox.
     pet_message_unread_count = 0
     collab_business_unread_count = 0
     collab_client_unread_count = 0
     inbox_notification_unread_count = 0
     message_unread_count = 0
     if user and user.is_authenticated:
-        try:
-            active_since = timezone.now() - timezone.timedelta(days=30)
-            pet_message_unread_count = PetMessage.objects.filter(
-                receiver=user,
-                is_read=False,
-                created_at__gte=active_since,
-            ).count()
-            collab_business_unread_count = CollabServiceMessage.objects.filter(
-                receiver=user,
-                collaborator=user,
-                is_read=False,
-                created_at__gte=active_since,
-            ).count()
-            collab_client_unread_count = (
-                CollabServiceMessage.objects.filter(
-                    receiver=user,
-                    is_read=False,
-                    created_at__gte=active_since,
-                )
-                .exclude(collaborator=user)
-                .count()
-            )
-            inbox_notification_unread_count = UserInboxNotification.objects.filter(
-                user=user,
-                is_read=False,
-                created_at__gte=active_since,
-            ).count()
-            # Inbox unificat în navbar: toate canalele + notificări sistem.
-            message_unread_count = (
-                pet_message_unread_count
-                + collab_business_unread_count
-                + collab_client_unread_count
-                + inbox_notification_unread_count
-            )
-        except Exception:
-            pet_message_unread_count = 0
-            collab_business_unread_count = 0
-            collab_client_unread_count = 0
-            inbox_notification_unread_count = 0
-            message_unread_count = 0
+        nav_u = get_navbar_unread_counts(user)
+        pet_message_unread_count = nav_u["pet_message"]
+        collab_business_unread_count = nav_u["collab_business"]
+        collab_client_unread_count = nav_u["collab_client"]
+        inbox_notification_unread_count = nav_u["inbox_notification"]
+        message_unread_count = nav_u["total"]
 
     # Link unic mesaje → inbox unificat (toate tipurile de cont)
     navbar_messages_url = ""

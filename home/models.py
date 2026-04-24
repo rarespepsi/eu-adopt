@@ -632,6 +632,12 @@ class AdoptionRequest(models.Model):
     extension_count = models.PositiveSmallIntegerField("Număr prelungiri", default=0)
     finalized_at = models.DateTimeField("Adopție finalizată la", null=True, blank=True)
     goodwill_email_sent_at = models.DateTimeField("Mail bun venit +15 zile trimis la", null=True, blank=True)
+    bonus_servicii_locked_at = models.DateTimeField(
+        "Bonus Servicii — alegeri salvate la",
+        null=True,
+        blank=True,
+        help_text="După „Salvează alegerile” pe pagina Servicii: ofertele bonus nu mai pot fi modificate până la decizia proprietarului.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -644,6 +650,7 @@ class AdoptionRequest(models.Model):
             models.Index(fields=["adopter", "status"]),
             models.Index(fields=["status", "goodwill_email_sent_at"]),
             models.Index(fields=["status", "finalized_at"]),
+            models.Index(fields=["adopter", "bonus_servicii_locked_at"]),
         ]
 
     def __str__(self):

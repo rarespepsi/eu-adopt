@@ -5,7 +5,7 @@ Carte puncte 61–100: MyPet, adopție, promo A2, magazin colaborator, mesaje, t
 import uuid
 from datetime import timedelta
 from io import BytesIO
-from urllib.parse import parse_qs, unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlencode, urlparse
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -313,9 +313,24 @@ class Carte61_80Tests(TestCase):
         )
         signer = TimestampSigner(salt="adoption-owner-email-v1")
         token = signer.sign(f"{ar.pk}:{owner.pk}")
-        r = Client().get(
-            reverse("adoption_email_owner_action", args=[token, "accept"]),
+        r = Client().get(reverse("adoption_email_owner_action") + "?" + urlencode({"t": token, "d": "accept"}))
+        self.assertEqual(r.status_code, 200)
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AdoptionRequest.STATUS_ACCEPTED)
+
+    def test_79b_adoption_email_owner_action_path_legacy(self):
+        """Link vechi în path (/adoption/email/<token>/accept/) rămâne valid pentru emailuri deja trimise."""
+        owner = _pf_user()
+        adopter = _pf_user("mailown2")
+        pet = _published_pet(owner)
+        ar = AdoptionRequest.objects.create(
+            animal=pet,
+            adopter=adopter,
+            status=AdoptionRequest.STATUS_PENDING,
         )
+        signer = TimestampSigner(salt="adoption-owner-email-v1")
+        token = signer.sign(f"{ar.pk}:{owner.pk}")
+        r = Client().get(reverse("adoption_email_owner_action_path", args=[token, "accept"]))
         self.assertEqual(r.status_code, 200)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AdoptionRequest.STATUS_ACCEPTED)
@@ -387,6 +402,10 @@ class Carte81_100Tests(TestCase):
         c.login(username=owner.username, password="Test61_PF_pass!")
         r = c.post(reverse("mypet_adoption_next", args=[ar.pk]), {})
         self.assertEqual(r.status_code, 400)
+        r_page = c.get(reverse("mypet"))
+        self.assertEqual(r_page.status_code, 200)
+        # Butonul ⚙ (nu regula CSS `.mypet-row-adopt-manage` din același șablon).
+        self.assertNotIn(b'class="mypet-row-adopt-btn mypet-row-adopt-manage"', r_page.content)
 
     def test_84_mypet_adoption_finalize(self):
         owner = _pf_user()
