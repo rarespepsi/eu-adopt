@@ -218,4 +218,12 @@
 	window.addEventListener("orientationchange", onSmfIoResize);
 })();
 </script>
+<script>
+/* Re-legare coș după tot JS-ul paginii (evită cazuri rare de ordine la init). */
+document.addEventListener("DOMContentLoaded", function () {
+	if (typeof window.euadoptSiteCartBindRoot === "function") {
+		window.euadoptSiteCartBindRoot(document.getElementById("smf_grid") || document.body);
+	}
+});
+</script>
 {% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Materiale comandă publicitate #{{ pub_order.pk }} | EU Adopt{% endblock %}
+{% block body_class %}page-publicitate-creative-form{% endblock %}
+
+{% block extra_css_after %}
+<style>
+	.pub-cr-wrap { max-width: 46rem; margin: 1.25rem auto 2.5rem; padding: 0 1rem; }
+	.pub-cr-card {
+		background: linear-gradient(180deg, #fffef7 0%, #fff 40%);
+		border: 1px solid #d2b27a;
+		border-radius: 14px;
+		box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+		padding: clamp(1rem, 2.5vw, 1.35rem);
+	}
+	.pub-cr-card h1 { margin: 0 0 0.35rem; font-size: 1.35rem; color: #4e342e; }
+	.pub-cr-lead { margin: 0 0 1rem; font-size: 0.9rem; color: #6d4c41; line-height: 1.45; }
+	.pub-cr-slot {
+		border: 1px dashed #bcaaa4;
+		border-radius: 10px;
+		padding: 0.85rem 1rem;
+		margin-bottom: 1rem;
+		background: #fff;
+	}
+	.pub-cr-slot h2 { margin: 0 0 0.5rem; font-size: 1rem; color: #1565c0; }
+	.pub-cr-meta { font-size: 0.78rem; color: #78909c; margin-bottom: 0.65rem; }
+	.pub-cr-field { margin-bottom: 0.55rem; }
+	.pub-cr-field label { display: block; font-size: 0.78rem; font-weight: 700; color: #37474f; margin-bottom: 0.2rem; }
+	.pub-cr-field input[type="url"], .pub-cr-field input[type="file"] { width: 100%; box-sizing: border-box; font-size: 0.85rem; }
+	.pub-cr-field textarea { width: 100%; min-height: 4.5rem; box-sizing: border-box; font-size: 0.85rem; border-radius: 8px; border: 1px solid #b0bec5; padding: 0.4rem; }
+	.pub-cr-submit {
+		display: inline-flex; align-items: center; justify-content: center;
+		padding: 0.55rem 1.25rem; border-radius: 10px; border: none;
+		background: #1565c0; color: #fff; font-weight: 800; font-size: 0.95rem; cursor: pointer;
+	}
+	.pub-cr-submit:hover { filter: brightness(1.05); }
+	.pub-cr-done { background: #e8f5e9; border: 1px solid #66bb6a; color: #1b5e20; padding: 0.65rem 0.85rem; border-radius: 10px; font-size: 0.88rem; margin-bottom: 1rem; }
+	.pub-cr-foot { margin-top: 1rem; font-size: 0.78rem; color: #78909c; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pub-cr-wrap">
+	<div class="pub-cr-card">
+		<h1>Materiale publicitate</h1>
+		<p class="pub-cr-lead">
+			Comandă <strong>#{{ pub_order.pk }}</strong> — total <strong>{{ pub_order.total_lei }} lei</strong>.
+			Completați pentru fiecare slot: imagine (recomandat), link țintă (https) și detalii. După trimitere, conținutul se aplică pe site acolo unde există integrare automată (ex. PT <strong>P4.3 / P5.1–P5.3</strong>, burtieră <strong>HOME</strong>).
+			Fereastră verificare recomandată: <strong>{{ pub_review_hours }} h</strong>. Limită fișier: <strong>{{ pub_max_mb }} MB</strong> / imagine.
+		</p>
+		{% if pub_all_live %}
+		<div class="pub-cr-done" role="status">
+			Toate sloturile din această comandă au materiale trimise și marcate ca aplicate. Puteți retrimite pentru a actualiza (suprascrie pe site unde e cazul).
+		</div>
+		{% endif %}
+		<form method="post" enctype="multipart/form-data" class="pub-cr-form">
+			{% csrf_token %}
+			{% for line in pub_lines %}
+			{% with b=line.creative_bundle %}
+			<div class="pub-cr-slot">
+				<h2>{{ line.section|upper }} · {{ line.slot_code }}</h2>
+				<div class="pub-cr-meta">{{ line.title_snapshot }} — {{ line.quantity }} {{ line.unit_label }} — {{ line.line_total_lei }} lei
+					{% if b.status == 'live' %}<span style="color:#2e7d32;font-weight:700;"> · trimis</span>{% endif %}
+				</div>
+				<div class="pub-cr-field">
+					<label for="img_{{ line.pk }}">Imagine reclamă</label>
+					<input type="file" id="img_{{ line.pk }}" name="image_{{ line.pk }}" accept="image/jpeg,image/png,image/webp,image/gif" />
+					{% if b.image %}<p style="font-size:0.72rem;margin:0.25rem 0 0;color:#546e7a;">Fișier curent: {{ b.image.name|default:"—" }}</p>{% endif %}
+				</div>
+				<div class="pub-cr-field">
+					<label for="link_{{ line.pk }}">Link (https)</label>
+					<input type="url" id="link_{{ line.pk }}" name="link_{{ line.pk }}" value="{{ b.external_link }}" placeholder="https://…" />
+				</div>
+				<div class="pub-cr-field">
+					<label for="notes_{{ line.pk }}">Detalii / text</label>
+					<textarea id="notes_{{ line.pk }}" name="notes_{{ line.pk }}" placeholder="Mesaj scurt, alt text, instrucțiuni…">{{ b.extra_notes }}</textarea>
+				</div>
+			</div>
+			{% endwith %}
+			{% endfor %}
+			<button type="submit" class="pub-cr-submit">Trimite materialele</button>
+		</form>
+		<p class="pub-cr-foot">
+			Link securizat expiră la {{ pub_access.expires_at|date:"Y-m-d H:i" }}.
+			{% if user.is_authenticated %}Puteți reveni din <a href="{% url 'account' %}">Contul meu</a>.{% endif %}
+		</p>
+	</div>
+</div>
+{% endblock %}

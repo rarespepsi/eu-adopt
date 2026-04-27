@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Plată coș cumpărături | EU-ADOPT{% endblock %}
+{% block body_class %}page-ilove page-ilove--cart-checkout page-site-cart-checkout euadopt-checkout-intra-skin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/checkout-intra-skin.css' %}?v=2" type="text/css" media="screen" />
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<div class="euadopt-pay-card ilove-cos-checkout-card" aria-label="Plată coș cumpărături">
+		<h1 class="euadopt-pay-title">Plată — coș cumpărături</h1>
+		<p class="euadopt-pay-sub">Publicitate, promovare animale (MyPet), servicii, shop: tot ce ai în coșul din navbar. Completezi datele (preluate din fișă), alegi modul de plată; primești confirmare pe e-mail, iar echipa finalizează conform produsului.</p>
+
+		<div class="euadopt-pay-box ilove-cos-checkout-lines" aria-label="Articole">
+			<ul class="ilove-cos-checkout-line-list">
+				{% for row in checkout_lines %}
+				<li>
+					<span class="ilove-cos-checkout-kind">{{ row.kind_label }}</span>
+					{% if row.detail_url %}
+					<a href="{{ row.detail_url }}" class="ilove-cos-checkout-title-link">{{ row.title }}</a>
+					{% else %}
+					<span class="ilove-cos-checkout-title">{{ row.title }}</span>
+					{% endif %}
+					{% if row.line_lei %}
+					<span class="ilove-cos-checkout-lei">{{ row.line_lei }} lei</span>
+					{% else %}
+					<span class="ilove-cos-checkout-lei ilove-cos-checkout-lei--na">—</span>
+					{% endif %}
+				</li>
+				{% endfor %}
+			</ul>
+			<div class="euadopt-pay-total">
+				Total estimativ: <strong>{{ checkout_total_display }} lei</strong>
+				{% if checkout_unpriced_count %}
+				<span class="ilove-cos-checkout-total-note">({{ checkout_unpriced_count }} articol(e) fără sumă în titlu — total incomplet)</span>
+				{% endif %}
+			</div>
+		</div>
+
+		{% if form_errors %}
+		<div class="ilove-cos-checkout-errors" role="alert">
+			{% for err in form_errors %}<p>{{ err }}</p>{% endfor %}
+		</div>
+		{% endif %}
+
+		<form method="post" action="{% url 'site_cart_checkout' %}" class="ilove-cos-checkout-form">
+			{% csrf_token %}
+			<h2 class="ilove-cos-checkout-h2">Date cumpărător (din fișă — poți modifica)</h2>
+			<div class="ilove-cos-checkout-grid">
+				<label class="ilove-cos-checkout-field">
+					<span>Nume complet <span class="req">*</span></span>
+					<input type="text" name="buyer_full_name" required maxlength="160" value="{{ form_prefill.buyer_full_name|escape }}" autocomplete="name" />
+				</label>
+				<label class="ilove-cos-checkout-field">
+					<span>E-mail <span class="req">*</span></span>
+					<input type="email" name="buyer_email" required maxlength="254" value="{{ form_prefill.buyer_email|escape }}" autocomplete="email" />
+				</label>
+				<label class="ilove-cos-checkout-field">
+					<span>Telefon</span>
+					<input type="text" name="buyer_phone" maxlength="40" value="{{ form_prefill.buyer_phone|escape }}" autocomplete="tel" />
+				</label>
+				<label class="ilove-cos-checkout-field">
+					<span>Județ</span>
+					<input type="text" name="buyer_county" maxlength="120" value="{{ form_prefill.buyer_county|escape }}" />
+				</label>
+				<label class="ilove-cos-checkout-field">
+					<span>Oraș / localitate</span>
+					<input type="text" name="buyer_city" maxlength="120" value="{{ form_prefill.buyer_city|escape }}" />
+				</label>
+				<label class="ilove-cos-checkout-field ilove-cos-checkout-field--full">
+					<span>Adresă livrare / observații adresă</span>
+					<input type="text" name="buyer_address" maxlength="500" value="{{ form_prefill.buyer_address|escape }}" />
+				</label>
+			</div>
+
+			<h2 class="ilove-cos-checkout-h2">Date facturare firmă (opțional)</h2>
+			<div class="ilove-cos-checkout-grid">
+				<label class="ilove-cos-checkout-field">
+					<span>Denumire afișată</span>
+					<input type="text" name="buyer_company_display" maxlength="255" value="{{ form_prefill.buyer_company_display|escape }}" />
+				</label>
+				<label class="ilove-cos-checkout-field">
+					<span>Denumire juridică</span>
+					<input type="text" name="buyer_company_legal" maxlength="255" value="{{ form_prefill.buyer_company_legal|escape }}" />
+				</label>
+				<label class="ilove-cos-checkout-field">
+					<span>CUI / CIF</span>
+					<input type="text" name="buyer_company_cui" maxlength="40" value="{{ form_prefill.buyer_company_cui|escape }}" />
+				</label>
+			</div>
+
+			<label class="ilove-cos-checkout-field ilove-cos-checkout-field--full">
+				<span>Mesaj pentru echipă (opțional)</span>
+				<textarea name="buyer_note" rows="3" maxlength="2000">{{ buyer_note|escape }}</textarea>
+			</label>
+
+			<h2 class="ilove-cos-checkout-h2">Mod de plată <span class="req">*</span></h2>
+			<div class="ilove-cos-checkout-payments" role="radiogroup" aria-label="Mod de plată">
+				{% for pm in payment_methods %}
+				<label class="ilove-cos-checkout-pm">
+					<input type="radio" name="payment_method" value="{{ pm.value }}" {% if selected_payment %}{% if selected_payment == pm.value %}checked{% endif %}{% elif forloop.first %}checked{% endif %} required />
+					<span class="ilove-cos-checkout-pm-body">
+						<strong class="ilove-cos-checkout-pm-label">{{ pm.label }}</strong>
+						<span class="ilove-cos-checkout-pm-help">{{ pm.help }}</span>
+					</span>
+				</label>
+				{% endfor %}
+			</div>
+
+			<div class="euadopt-pay-actions ilove-cos-checkout-actions">
+				<button type="submit" class="euadopt-pay-btn">Trimite cererea de plată</button>
+				<a class="euadopt-pay-btn euadopt-pay-btn--ghost" href="{% url 'i_love_cos' %}">Înapoi la coș</a>
+			</div>
+		</form>
+		<p class="euadopt-pay-note">Nu se percepe automat cardul aici. După trimitere, EU-ADOPT (sau partenerul de plată) te contactează pentru pasul următor, conform modului ales.</p>
+	</div>
+</section>
+{% endblock %}

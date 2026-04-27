@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Publicitate | EU Adopt{% endblock %}
+{% block title %}{% if pub_nav == 'cos' %}Coș publicitate — achiziție spații{% else %}Publicitate{% endif %} | EU Adopt{% endblock %}
 {% block body_class %}page-publicitate-harta{% endblock %}
 
 {% block content %}
-<section id="PUBW" class="pub-wrap" aria-label="Harta comenzi publicitate" data-pub-checkout-url="{% url 'publicitate_checkout_create' %}">
+<section id="PUBW" class="pub-wrap" aria-label="{% if pub_nav == 'cos' %}Publicitate — coș și comandă{% else %}Harta comenzi publicitate{% endif %}">
 	<form id="pubCsrfHolder" class="pub-csrf-holder" style="display:none" aria-hidden="true">{% csrf_token %}</form>
 	<div class="pub-top-tabs">
 		{% for s in pub_sections %}
-			<a href="{% url 'publicitate_harta' %}?sect={{ s.code }}" class="pub-tab{% if pub_selected_section == s.code %} is-active{% endif %}">{{ s.label }}</a>
+			<a href="{% if pub_nav == 'cos' %}{% url 'publicitate_cos' %}?sect={{ s.code }}{% else %}{% url 'publicitate_harta' %}?sect={{ s.code }}{% endif %}" class="pub-tab{% if pub_selected_section == s.code %} is-active{% endif %}"{% if s.code == 'i_love' %} title="Hartă tarife pentru casetele publicitare pe pagina I Love din site — nu este pagina cu inimioare (/i-love/)"{% elif s.code == 'cos_pub' %} title="Hartă CC1–CC4 pentru fluxul Coș publicitate — separată de Spații I Love (IL.*)"{% endif %}>{{ s.label }}</a>
 		{% endfor %}
 	</div>
 	<div class="pub-grid">
@@ -111,6 +111,17 @@
 						<strong>Schema I Love</strong> — <strong>IL.L1</strong>, <strong>IL.L2</strong> stânga; mijloc gol; <strong>IL.R1</strong>, <strong>IL.R2</strong> dreapta. Aliniată cu pagina I Love din site. Tarife în catalog.
 					</p>
 				</div>
+				{% elif pub_selected_section == 'cos_pub' %}
+				<div class="pub-c2-map-half" aria-label="Schemă Coș publicitate">
+					<div class="pub-home-wire-clip pub-home-wire-clip--pub-cos">
+						{% include "anunturi/reclama/wires/pub_cos.html" with pub_interactive_wire=True %}
+					</div>
+				</div>
+				<div class="pub-c2-below-map">
+					<p class="pub-map-hint">
+						<strong>Schema Coș pub.</strong> — aceeași formă ca Spațiile I Love: <strong>CC1</strong>, <strong>CC2</strong> stânga; mijloc <strong>neînchiriat</strong>; <strong>CC3</strong>, <strong>CC4</strong> dreapta. Catalog separat de <strong>IL.*</strong>.
+					</p>
+				</div>
 				{% else %}
 				<div class="pub-c2-map-half pub-c2-map-half--solo">
 					<div id="pubSlotGrid" class="pub-slot-grid"></div>
@@ -122,7 +133,7 @@
 			<h3>Coș publicitate</h3>
 			<div id="pubCartList" class="pub-cart-list"></div>
 			<div class="pub-cart-total">Total: <strong id="pubCartTotal">0 lei</strong></div>
-			<button type="button" class="pub-pay-btn" disabled>Plătește (demo)</button>
+			<button type="button" class="pub-pay-btn pub-pay-btn--site-cart" id="pubTransferSiteCartBtn" data-transfer-url="{% url 'publicitate_transfer_site_cart' %}" data-fallback-url="{% url 'i_love_cos' %}" title="Trimite liniile din coșul publicitar în coșul site (navbar), apoi deschide pagina coșului">Continuă în coș site</button>
 		</aside>
 	</div>
 </section>
@@ -1074,6 +1085,10 @@
 	body.page-publicitate-harta .pub-home-wire-clip--i-love .reclama-il-wire [data-slot] {
 		cursor: pointer;
 	}
+	/* Coș pub. — aceeași grilă ca I Love, sloturi CC* */
+	body.page-publicitate-harta .pub-home-wire-clip--pub-cos .reclama-il-wire [data-slot] {
+		cursor: pointer;
+	}
 	body.page-publicitate-harta .reclama-il-wire {
 		display: grid;
 		grid-template-columns: 0.75fr 4.5fr 0.75fr;
@@ -1148,7 +1163,26 @@
 	.pub-add-btn, .pub-pay-btn {
 		border: 1px solid #1565c0; background: #1565c0; color: #fff; border-radius: 7px; font-weight: 800; padding: 0.42rem 0.55rem;
 	}
-	.pub-pay-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+	button.pub-pay-btn.pub-pay-btn--site-cart {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		box-sizing: border-box;
+		margin-top: 0.35rem;
+		cursor: pointer;
+		font: inherit;
+	}
+	button.pub-pay-btn.pub-pay-btn--site-cart:hover {
+		filter: brightness(1.06);
+		color: #fff;
+	}
+	button.pub-pay-btn.pub-pay-btn--site-cart:focus-visible {
+		outline: 2px solid #0d47a1;
+		outline-offset: 2px;
+	}
+	.pub-c1-cart-link { margin: 0 0 0.35rem; font-size: 0.72rem; line-height: 1.35; flex-shrink: 0; }
+	.pub-c1-cart-link a { color: #1565c0; font-weight: 700; }
 	.pub-cart-list { display: grid; gap: 0.24rem; flex: 1 1 auto; min-height: 0; overflow: hidden; }
 	.pub-cart-item {
 		border: 1px dashed #d2b27a; border-radius: 6px; padding: 0.3rem 0.35rem; font-size: 0.74rem; background: #fffdf4;
@@ -1194,13 +1228,33 @@ document.addEventListener("DOMContentLoaded", function () {
 	const infoEl = document.getElementById("pubDetailsInfo");
 	const cartList = document.getElementById("pubCartList");
 	const cartTotal = document.getElementById("pubCartTotal");
-	const payBtn = document.querySelector(".pub-pay-btn");
 	const qtyEl = document.getElementById("pubQty");
 	const noteEl = document.getElementById("pubNote");
 	const addBtn = document.getElementById("pubAddBtn");
 
+	var PUB_CART_STORAGE_KEY = "euadopt_pub_cart_v1";
+	function loadPubCartFromStorage() {
+		try {
+			var raw = sessionStorage.getItem(PUB_CART_STORAGE_KEY);
+			if (!raw) return [];
+			var arr = JSON.parse(raw);
+			if (!Array.isArray(arr)) return [];
+			return arr.filter(function (it) {
+				return it && typeof it.section === "string" && typeof it.code === "string"
+					&& Number.isFinite(Number(it.unit_price)) && Number.isFinite(Number(it.qty)) && Number.isFinite(Number(it.total));
+			});
+		} catch (e) {
+			return [];
+		}
+	}
+	function savePubCartToStorage(items) {
+		try {
+			sessionStorage.setItem(PUB_CART_STORAGE_KEY, JSON.stringify(items));
+		} catch (e) {}
+	}
+
 	let selected = null;
-	const cart = [];
+	let cart = loadPubCartFromStorage();
 
 	function catalogByCode(codes) {
 		const o = {};
@@ -1422,6 +1476,25 @@ document.addEventListener("DOMContentLoaded", function () {
 		});
 	}
 
+	function initCosPubWire() {
+		var root = document.querySelector(".pub-home-wire-clip--pub-cos .reclama-il-wire");
+		if (!root) return;
+		var cat = catalogByCode("cos_pub");
+		root.querySelectorAll("[data-slot]").forEach(function (n) {
+			n.addEventListener("click", function () {
+				root.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
+				n.classList.add("pub-wire-selected");
+				var slotCode = (n.getAttribute("data-slot") || "").trim();
+				var s = cat[slotCode];
+				if (s) {
+					showDetails(s);
+					return;
+				}
+				showInfo("Slotul <strong>" + slotCode + "</strong> nu are încă tarif configurat pentru comandă online.");
+			});
+		});
+	}
+
 	function initPtWire() {
 		var root = document.querySelector(".pub-home-wire-clip--pt .reclama-pt-wire");
 		if (!root) return;
@@ -1460,7 +1533,11 @@ document.addEventListener("DOMContentLoaded", function () {
 			row.className = "pub-cart-item";
 			var text = document.createElement("span");
 			text.className = "pub-cart-item-text";
-			text.textContent = (item.section || "?").toUpperCase() + " · " + item.code + " | " + item.qty + " " + item.unit + " | " + item.total + " lei";
+			var den = (item.title && String(item.title).trim()) ? String(item.title).trim() : item.code;
+			text.textContent =
+				"Cant. " + item.qty + " " + item.unit
+				+ " · Casetă " + (item.section || "?").toUpperCase() + " / " + item.code + " — " + den
+				+ " · Valoare " + item.total + " lei";
 			var rm = document.createElement("button");
 			rm.type = "button";
 			rm.className = "pub-cart-remove";
@@ -1476,7 +1553,68 @@ document.addEventListener("DOMContentLoaded", function () {
 			cartList.appendChild(row);
 		});
 		cartTotal.textContent = total + " lei";
-		payBtn.disabled = cart.length === 0;
+		savePubCartToStorage(cart);
+	}
+
+	var transferBtn = document.getElementById("pubTransferSiteCartBtn");
+	function getPubCsrfToken() {
+		var csrfForm = document.getElementById("pubCsrfHolder");
+		if (!csrfForm) return "";
+		var inp = csrfForm.querySelector("input[name=csrfmiddlewaretoken]");
+		return inp ? inp.value : "";
+	}
+	if (transferBtn) {
+		transferBtn.addEventListener("click", function () {
+			var fallback = transferBtn.getAttribute("data-fallback-url") || "";
+			var transferUrl = transferBtn.getAttribute("data-transfer-url") || "";
+			cart = loadPubCartFromStorage();
+			if (!cart.length) {
+				if (fallback) window.location.href = fallback;
+				return;
+			}
+			if (!transferUrl) return;
+			var lines = cart.map(function (it) {
+				return {
+					section: it.section,
+					code: it.code,
+					unit: it.unit,
+					unit_price: it.unit_price,
+					qty: it.qty,
+					note: it.note || ""
+				};
+			});
+			transferBtn.disabled = true;
+			fetch(transferUrl, {
+				method: "POST",
+				credentials: "same-origin",
+				headers: {
+					"Content-Type": "application/json",
+					"X-CSRFToken": getPubCsrfToken()
+				},
+				body: JSON.stringify({ lines: lines })
+			})
+				.then(function (r) {
+					return r.json().catch(function () { return {}; }).then(function (data) {
+						return { ok: r.ok, data: data };
+					});
+				})
+				.then(function (res) {
+					transferBtn.disabled = false;
+					if (res.ok && res.data && res.data.ok && res.data.redirect) {
+						try { sessionStorage.removeItem(PUB_CART_STORAGE_KEY); } catch (e1) {}
+						cart = [];
+						renderCart();
+						window.location.href = res.data.redirect;
+						return;
+					}
+					var msg = (res.data && res.data.error) ? res.data.error : "Nu s-a putut transfera în coș.";
+					window.alert(msg);
+				})
+				.catch(function () {
+					transferBtn.disabled = false;
+					window.alert("Eroare de rețea.");
+				});
+		});
 	}
 
 	if (addBtn) {
@@ -1521,61 +1659,21 @@ document.addEventListener("DOMContentLoaded", function () {
 	} else if (section === "i_love") {
 		initILoveWire();
 		showEmpty();
+	} else if (section === "cos_pub") {
+		initCosPubWire();
+		showEmpty();
 	} else {
 		renderSlots();
 		showEmpty();
 	}
 	renderCart();
 
-	function getPubCsrfToken() {
-		var el = document.querySelector("#pubCsrfHolder input[name=csrfmiddlewaretoken]");
-		return el ? el.value : "";
-	}
-	var pubW = document.getElementById("PUBW");
-	var pubCheckoutUrl = pubW ? pubW.getAttribute("data-pub-checkout-url") : "";
-	if (payBtn && pubCheckoutUrl) {
-		payBtn.addEventListener("click", function () {
-			if (!cart.length) return;
-			payBtn.disabled = true;
-			fetch(pubCheckoutUrl, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					"X-CSRFToken": getPubCsrfToken()
-				},
-				body: JSON.stringify({
-					lines: cart.map(function (it) {
-						return {
-							section: it.section,
-							code: it.code,
-							unit: it.unit,
-							unit_price: it.unit_price,
-							qty: it.qty,
-							note: it.note || ""
-						};
-					})
-				}),
-				credentials: "same-origin"
-			})
-				.then(function (r) {
-					return r.json().catch(function () {
-						return { ok: false, error: "Răspuns invalid de la server." };
-					});
-				})
-				.then(function (data) {
-					if (data.ok && data.redirect) {
-						window.location.href = data.redirect;
-						return;
-					}
-					alert(data.error || "Eroare la crearea comenzii.");
-					payBtn.disabled = cart.length === 0;
-				})
-				.catch(function () {
-					alert("Eroare de rețea.");
-					payBtn.disabled = cart.length === 0;
-				});
-		});
-	}
+	window.addEventListener("storage", function (ev) {
+		if (ev.key === PUB_CART_STORAGE_KEY) {
+			cart = loadPubCartFromStorage();
+			renderCart();
+		}
+	});
 });
 </script>
 <style>

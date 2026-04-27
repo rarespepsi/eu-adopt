@@ -31,7 +31,7 @@
 				</button>
 				<div class="a0-mobile-shortcuts" aria-label="I Love, animale în grijă, adoptați">
 					{% if user.is_authenticated %}
-					<a href="{% url 'i_love' %}" class="a0-ms a0-ms-love" title="I Love">❤️<span class="a0-ms-val" data-wishlist-count>{{ wishlist_count|default:0 }}</span><span class="a0-ms-sep" aria-hidden="true">·</span>🛒<span class="a0-ms-val" data-site-cart-count>{{ site_cart_count|default:0 }}</span></a>
+					<a href="{% url 'i_love' %}" class="a0-ms a0-ms-love{% if wishlist_count|default:0 %} a0-nav-has-items{% endif %}" data-a0-wishlist-nav="1" title="I Love — inimioare">❤️<span class="a0-ms-val" data-wishlist-count>{{ wishlist_count|default:0 }}</span></a><span class="a0-ms-sep" aria-hidden="true">·</span><a href="{% url 'i_love_cos' %}" class="a0-ms a0-ms-love{% if site_cart_count|default:0 %} a0-nav-has-items{% endif %}" data-a0-site-cart-nav="1" title="Coș cumpărături">🛒<span class="a0-ms-val" data-site-cart-count>{{ site_cart_count|default:0 }}</span></a>
 					{% else %}
 					<a href="{% url 'login' %}" class="a0-ms a0-ms-love" title="I Love – intră în cont">❤️<span class="a0-ms-val">0</span><span class="a0-ms-sep" aria-hidden="true">·</span>🛒<span class="a0-ms-val">0</span></a>
 					{% endif %}
@@ -100,7 +100,9 @@
 							{% endif %}
 							<li class="a0-nav-ilove-start">
 								{% if user.is_authenticated %}
-									<a href="{% url 'i_love' %}">❤️ I Love (<span data-wishlist-count>{{ wishlist_count|default:0 }}</span>) · 🛒 <span data-site-cart-count>{{ site_cart_count|default:0 }}</span></a>
+									<a href="{% url 'i_love' %}" class="{% if wishlist_count|default:0 %}a0-nav-has-items{% endif %}" data-a0-wishlist-nav="1">❤️ I Love (<span data-wishlist-count>{{ wishlist_count|default:0 }}</span>)</a>
+									<span class="a0-nav-ilove-sep" aria-hidden="true"> · </span>
+									<a href="{% url 'i_love_cos' %}" class="{% if site_cart_count|default:0 %}a0-nav-has-items{% endif %}" data-a0-site-cart-nav="1">Coș (<span data-site-cart-count>{{ site_cart_count|default:0 }}</span>)</a>
 								{% else %}
 									<a href="{% url 'login' %}">❤️ I Love</a>
 								{% endif %}

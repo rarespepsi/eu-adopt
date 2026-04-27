@@ -22,16 +22,14 @@
 			</div>
 		</div>
 	</a>
-	{% with item_ref="shop_foto:"|add:slot.slot_idx %}
 	<button type="button"
-		class="smf-print__site-cart{% if site_cart_ref_keys and item_ref in site_cart_ref_keys %} is-active{% endif %}"
+		class="smf-print__site-cart{% if site_cart_ref_keys and slot.ref_key in site_cart_ref_keys %} is-active{% endif %}"
 		data-site-cart-toggle
 		data-kind="shop_foto"
-		data-ref-key="{{ item_ref }}"
+		data-ref-key="{{ slot.ref_key }}"
 		data-title="Poză ONG — {{ slot.nume }} ({{ slot.pret_lei }} lei)"
 		data-detail-url="{% url 'shop_magazin_foto' %}"
-		aria-pressed="{% if site_cart_ref_keys and item_ref in site_cart_ref_keys %}true{% else %}false{% endif %}"
+		aria-pressed="{% if site_cart_ref_keys and slot.ref_key in site_cart_ref_keys %}true{% else %}false{% endif %}"
 		title="{% if user.is_authenticated %}Adaugă sau scoate din coșul I Love{% else %}Intră sau creează cont pentru a adăuga în coș{% endif %}"
 	>🛒</button>
-	{% endwith %}
 </article>

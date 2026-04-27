@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.utils import timezone
 from .models import (
     UserProfile,
+    SiteCartCheckoutIntent,
     UserAdoption,
     UserPost,
     AdoptionRequest,
@@ -15,6 +16,8 @@ from .models import (
     ReclamaSlotNote,
     PublicitateOrder,
     PublicitateOrderLine,
+    PublicitateOrderCreativeAccess,
+    PublicitateLineCreative,
     TransportVeterinaryRequest,
     TransportOperatorProfile,
     TransportDispatchJob,
@@ -123,6 +126,23 @@ class PromoA2OrderAdmin(admin.ModelAdmin):
     raw_id_fields = ("pet", "payer_user")
 
 
+@admin.register(SiteCartCheckoutIntent)
+class SiteCartCheckoutIntentAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "user",
+        "payment_method",
+        "total_lei",
+        "unpriced_count",
+        "buyer_email",
+        "created_at",
+    )
+    list_filter = ("payment_method",)
+    search_fields = ("buyer_email", "buyer_full_name", "user__username", "user__email")
+    raw_id_fields = ("user",)
+    readonly_fields = ("lines_json", "created_at")
+
+
 @admin.register(ReclamaSlotNote)
 class ReclamaSlotNoteAdmin(admin.ModelAdmin):
     list_display = ("section", "slot_code", "updated_by", "updated_at")
@@ -136,6 +156,35 @@ class PublicitateOrderLineInline(admin.TabularInline):
     extra = 0
     readonly_fields = ("section", "slot_code", "title_snapshot", "unit_label", "unit_price_lei", "quantity", "line_total_lei")
     can_delete = False
+
+
+@admin.register(PublicitateOrderCreativeAccess)
+class PublicitateOrderCreativeAccessAdmin(admin.ModelAdmin):
+    list_display = ("id", "order", "expires_at", "email_sent_at", "created_at")
+    search_fields = ("order__pk", "secret_token", "order__user__username", "order__user__email")
+    raw_id_fields = ("order",)
+    readonly_fields = ("secret_token", "created_at")
+
+
+@admin.action(description="Resetează materiale + revocă pe site (PT/burtieră: placeholder)")
+def publicitate_line_creative_reset_on_site(modeladmin, request, queryset):
+    from home.views import reset_publicitate_line_creative_bundle
+
+    n = 0
+    for obj in queryset:
+        reset_publicitate_line_creative_bundle(obj)
+        n += 1
+    modeladmin.message_user(request, f"Au fost resetate {n} materiale; pe site s-a reaplicat starea goală/placeholder acolo unde există integrare.")
+
+
+@admin.register(PublicitateLineCreative)
+class PublicitateLineCreativeAdmin(admin.ModelAdmin):
+    list_display = ("id", "line", "status", "submitted_at", "live_at", "review_until")
+    list_filter = ("status",)
+    search_fields = ("line__slot_code", "line__section", "line__order__pk")
+    raw_id_fields = ("line",)
+    readonly_fields = ("submitted_at", "live_at")
+    actions = [publicitate_line_creative_reset_on_site]
 
 
 @admin.register(PublicitateOrder)

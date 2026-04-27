@@ -41,6 +41,9 @@ ANONYMOUS_REDIRECT_OR_FORBIDDEN_NAMES = [
     "account",
     "mypet",
     "i_love",
+    "i_love_cos",
+    "site_cart_checkout",
+    "site_cart_checkout_success",
     "magazinul_meu",
     "transport_operator_panel",
 ]

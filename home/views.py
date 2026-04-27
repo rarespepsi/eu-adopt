@@ -9,6 +9,7 @@ from urllib.parse import quote, urlencode
 import random
 import re
 import secrets
+import uuid
 from html import escape
 from datetime import date, datetime
 from copy import deepcopy
@@ -50,6 +51,7 @@ from . import inbox_notifications as _inbox
 from .models import (
     WishlistItem,
     SiteCartItem,
+    SiteCartCheckoutIntent,
     AnimalListing,
     UserAdoption,
     AccountProfile,
@@ -66,6 +68,8 @@ from .models import (
     ReclamaSlotNote,
     PublicitateOrder,
     PublicitateOrderLine,
+    PublicitateOrderCreativeAccess,
+    PublicitateLineCreative,
     TransportVeterinaryRequest,
     TransportOperatorProfile,
     TransportDispatchJob,
@@ -3567,6 +3571,7 @@ def shop_magazin_foto_view(request):
     for i in range(min(PT_P2_PAGE_SIZE, len(full))):
         row = dict(full[i])
         row["slot_idx"] = i
+        row["ref_key"] = f"shop_foto:{i}"
         foto_slots.append(row)
     foto_has_more = len(full) > PT_P2_PAGE_SIZE
     foto_next_offset = PT_P2_PAGE_SIZE if foto_has_more else len(full)
@@ -3594,7 +3599,9 @@ def shop_magazin_foto_more_view(request):
     batch = []
     for j, row in enumerate(batch_raw):
         r = dict(row)
-        r["slot_idx"] = offset + j
+        idx = offset + j
+        r["slot_idx"] = idx
+        r["ref_key"] = f"shop_foto:{idx}"
         batch.append(r)
     next_off = offset + len(batch)
     has_more = next_off < len(full)
@@ -3969,6 +3976,27 @@ def account_view(request):
                 pending_tr.append(dj)
         if pending_tr:
             ctx["transport_pending_rating_jobs"] = pending_tr
+    if _user_can_use_publicitate(request):
+        pub_rows = []
+        for o in (
+            PublicitateOrder.objects.filter(user=request.user, status=PublicitateOrder.STATUS_PAID)
+            .order_by("-pk")[:24]
+        ):
+            if not PublicitateOrderCreativeAccess.objects.filter(order=o).exists():
+                continue
+            pending = PublicitateLineCreative.objects.filter(
+                line__order=o,
+                status=PublicitateLineCreative.STATUS_PENDING,
+            ).exists()
+            pub_rows.append(
+                {
+                    "order": o,
+                    "materials_url": reverse("publicitate_creative_order", kwargs={"order_id": o.pk}),
+                    "pending": pending,
+                }
+            )
+        if pub_rows:
+            ctx["pub_paid_creative_orders"] = pub_rows
     # Statistici + form_prefill pentru PF/ONG/Colaborator (caseta modificare profil în pagină)
     if account_profile and account_profile.role in (AccountProfile.ROLE_PF, AccountProfile.ROLE_ORG, AccountProfile.ROLE_COLLAB):
         ctx["animale_in_grija"] = AnimalListing.objects.filter(owner=user).count()
@@ -6012,6 +6040,352 @@ def _i_love_pet_from_listing(listing: AnimalListing) -> dict:
     }
 
 
+def _i_love_site_cart_items(user):
+    """Articole în coșul de cumpărături (pagina /i-love/cos/)."""
+    if not user.is_authenticated:
+        return []
+    try:
+        return list(
+            SiteCartItem.objects.filter(user=user).order_by("-created_at")[:SITE_CART_MAX_ITEMS]
+        )
+    except Exception:
+        return []
+
+
+_TITLE_LEI_TAIL = re.compile(r"(\d+(?:[.,]\d+)?)\s*lei\b", re.IGNORECASE)
+
+
+def _site_cart_title_last_lei_amount(title: str) -> Decimal | None:
+    """Ultimul număr dinainte de „lei” din titlu (ex. linii publicitate); altfel None."""
+    if not title:
+        return None
+    matches = _TITLE_LEI_TAIL.findall(title)
+    if not matches:
+        return None
+    raw = matches[-1].replace(",", ".")
+    try:
+        return Decimal(raw).quantize(Decimal("0.01"))
+    except Exception:
+        return None
+
+
+SITE_CART_KIND_LABELS = {
+    SiteCartItem.KIND_SERVICII_OFFER: "Servicii (ofertă partener)",
+    SiteCartItem.KIND_SHOP: "Shop",
+    SiteCartItem.KIND_SHOP_CUSTOM: "Shop — produse personalizate",
+    SiteCartItem.KIND_SHOP_FOTO: "Shop — magazin foto",
+    SiteCartItem.KIND_PUBLICITATE: "Publicitate",
+    SiteCartItem.KIND_PROMO_A2: "Promovare animal (MyPet / A2)",
+}
+
+
+def _site_cart_buyer_prefill(user) -> dict:
+    """Date cumpărător din cont + UserProfile (fișă)."""
+    full_name = (user.get_full_name() or user.username or "").strip()
+    email = (user.email or "").strip()
+    out = {
+        "buyer_full_name": full_name,
+        "buyer_email": email,
+        "buyer_phone": "",
+        "buyer_county": "",
+        "buyer_city": "",
+        "buyer_address": "",
+        "buyer_company_display": "",
+        "buyer_company_legal": "",
+        "buyer_company_cui": "",
+    }
+    try:
+        prof = user.profile
+    except UserProfile.DoesNotExist:
+        return out
+    out["buyer_phone"] = (prof.phone or "").strip()
+    out["buyer_county"] = (prof.judet or "").strip()
+    out["buyer_city"] = (prof.oras or "").strip()
+    disp = (prof.company_display_name or "").strip()
+    legal = (prof.company_legal_name or "").strip()
+    out["buyer_company_display"] = disp or legal
+    out["buyer_company_legal"] = legal
+    out["buyer_company_cui"] = (prof.company_cui or "").strip()
+    addr = (prof.company_address or "").strip()
+    cj = (prof.company_judet or "").strip()
+    co = (prof.company_oras or "").strip()
+    if addr or cj or co:
+        out["buyer_address"] = " ".join(x for x in (addr, cj, co) if x).strip()[:500]
+    return out
+
+
+def _site_cart_build_checkout_snapshot(user):
+    """Linii coș curente + total estimativ (parser lei din titlu)."""
+    items = list(
+        SiteCartItem.objects.filter(user=user).order_by("-created_at")[:SITE_CART_MAX_ITEMS]
+    )
+    lines = []
+    total = Decimal("0.00")
+    unpriced = 0
+    for it in items:
+        lei = _site_cart_title_last_lei_amount(it.title)
+        if lei is not None:
+            total += lei
+        else:
+            unpriced += 1
+        lines.append(
+            {
+                "ref_key": it.ref_key,
+                "kind": it.kind,
+                "kind_label": SITE_CART_KIND_LABELS.get(it.kind, it.kind),
+                "title": it.title,
+                "detail_url": it.detail_url or "",
+                "line_lei": str(lei) if lei is not None else None,
+            }
+        )
+    return items, lines, total.quantize(Decimal("0.01")), unpriced
+
+
+SITE_CART_PAYMENT_METHOD_UI = [
+    {
+        "value": SiteCartCheckoutIntent.PAYMENT_CARD_ONLINE,
+        "label": "Card bancar online (Visa / Mastercard)",
+        "help": "Procesatorul de plată se leagă la confirmare; după trimiterea cererii vei primi instrucțiuni pe e-mail.",
+    },
+    {
+        "value": SiteCartCheckoutIntent.PAYMENT_BANK_TRANSFER,
+        "label": "Transfer bancar / ordin de plată (OP)",
+        "help": "Date cont și referință comandă îți sunt comunicate după validarea cererii.",
+    },
+    {
+        "value": SiteCartCheckoutIntent.PAYMENT_INSTALLMENTS,
+        "label": "Plată în rate (bancă partener)",
+        "help": "Confirmare manuală cu echipa EU-ADOPT după analiza eligibilității.",
+    },
+    {
+        "value": SiteCartCheckoutIntent.PAYMENT_COD_COURIER,
+        "label": "Ramburs la livrare (curier)",
+        "help": "Pentru comenzi cu livrare fizică (ex. Shop, servicii la domiciliu unde e cazul).",
+    },
+    {
+        "value": SiteCartCheckoutIntent.PAYMENT_CASH_POS,
+        "label": "Numerar sau card POS la punct de lucru / partener",
+        "help": "Ridicare sau plată la sediu / partener, conform produsului.",
+    },
+    {
+        "value": SiteCartCheckoutIntent.PAYMENT_COMPANY_INVOICE,
+        "label": "Factură pe firmă",
+        "help": "Folosim CUI și datele firmă din fișă; poți completa corecții în formular înainte de trimitere.",
+    },
+]
+
+
+def _site_cart_checkout_staff_recipient_emails() -> list[str]:
+    raw = (getattr(settings, "SITE_CART_CHECKOUT_STAFF_EMAILS", None) or "").strip()
+    if raw:
+        return [x.strip() for x in raw.split(",") if x.strip()][:12]
+    return _publicitate_creative_staff_recipient_emails()
+
+
+def _send_site_cart_checkout_staff_email(request, intent: SiteCartCheckoutIntent) -> None:
+    recipients = _site_cart_checkout_staff_recipient_emails()
+    if not recipients:
+        return
+    from_email = (getattr(settings, "DEFAULT_FROM_EMAIL", None) or "").strip() or None
+    if not from_email:
+        return
+    pm_label = dict(SiteCartCheckoutIntent.PAYMENT_CHOICES).get(intent.payment_method, intent.payment_method)
+    try:
+        admin_path = reverse("admin:home_sitecartcheckoutintent_change", args=[intent.pk])
+        base = (getattr(settings, "SITE_BASE_URL", None) or "").strip().rstrip("/")
+        admin_hint = f"{base}{admin_path}" if base else admin_path
+    except Exception:
+        admin_hint = f"admin SiteCartCheckoutIntent #{intent.pk}"
+    line_txt = []
+    for row in intent.lines_json or []:
+        line_txt.append(
+            f"- [{row.get('kind_label', row.get('kind', ''))}] {row.get('title', '')} "
+            f"(ref {row.get('ref_key', '')}) sumă titlu: {row.get('line_lei', '—')}"
+        )
+    body = "\n".join(
+        [
+            f"Cerere plată coș site #{intent.pk}",
+            f"Utilizator: {intent.user.username} (id {intent.user_id}) — {intent.user.email or '-'}",
+            f"Mod plată: {pm_label}",
+            "",
+            "Date cumpărător (formular):",
+            f"Nume: {intent.buyer_full_name}",
+            f"E-mail: {intent.buyer_email}",
+            f"Telefon: {intent.buyer_phone or '-'}",
+            f"Județ: {intent.buyer_county or '-'} | Oraș: {intent.buyer_city or '-'}",
+            f"Adresă / note adresă: {intent.buyer_address or '-'}",
+            f"Firmă: {intent.buyer_company_display or '-'} | Juridic: {intent.buyer_company_legal or '-'} | CUI: {intent.buyer_company_cui or '-'}",
+            f"Mesaj client: {(intent.buyer_note or '').strip() or '-'}",
+            "",
+            f"Total estimativ: {intent.total_lei} lei | Articole fără sumă în titlu: {intent.unpriced_count}",
+            "",
+            "Linii:",
+            "\n".join(line_txt) if line_txt else "(gol)",
+            "",
+            f"Admin: {admin_hint}",
+        ]
+    )
+    try:
+        EmailMessage(
+            subject=f"[EU-Adopt staff] Plată coș #{intent.pk} — {intent.total_lei} lei",
+            body=body,
+            from_email=from_email,
+            to=recipients[:8],
+        ).send(fail_silently=False)
+    except Exception:
+        logging.getLogger(__name__).exception("site_cart_checkout_staff_email")
+    buyer_copy = (
+        f"Bună,\n\n"
+        f"Am înregistrat cererea ta de plată pentru coșul de cumpărături (referință #{intent.pk}).\n"
+        f"Total estimativ: {intent.total_lei} lei.\n"
+        f"Mod de plată ales: {pm_label}.\n\n"
+        f"Echipa EU-ADOPT te contactează pentru pasul următor.\n\n"
+        f"— EU-ADOPT"
+    )
+    try:
+        if intent.buyer_email:
+            EmailMessage(
+                subject=f"[EU-Adopt] Cerere plată coș #{intent.pk} înregistrată",
+                body=buyer_copy,
+                from_email=from_email,
+                to=[intent.buyer_email],
+            ).send(fail_silently=True)
+    except Exception:
+        pass
+
+
+def i_love_cos_view(request):
+    """Pagina dedicată coșului (oferte/produse marcate cu 🛒), separată de lista inimioare."""
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login')}?next={reverse('i_love_cos')}")
+    cart_items = _i_love_site_cart_items(request.user)
+    total_lei = Decimal("0.00")
+    unpriced = 0
+    for it in cart_items:
+        v = _site_cart_title_last_lei_amount(it.title)
+        if v is not None:
+            total_lei += v
+        else:
+            unpriced += 1
+    return render(
+        request,
+        "anunturi/i_love_cos.html",
+        {
+            "cart_items": cart_items,
+            "cart_total_lei": total_lei,
+            "cart_total_lei_display": f"{total_lei:.2f}".replace(".", ","),
+            "cart_unpriced_count": unpriced,
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+@csrf_protect
+def site_cart_checkout_view(request):
+    """Formular plată unificat: date din fișă + moduri de plată pentru tot coșul site."""
+    items, lines, total_lei, unpriced = _site_cart_build_checkout_snapshot(request.user)
+    if not items:
+        messages.info(request, "Coșul este gol. Adaugă articole înainte de plată.")
+        return redirect("i_love_cos")
+
+    allowed_pm = {x[0] for x in SiteCartCheckoutIntent.PAYMENT_CHOICES}
+    form_errors: list[str] = []
+    prefill = _site_cart_buyer_prefill(request.user)
+    buyer_note_value = ""
+
+    if request.method == "POST":
+        buyer_full_name = (request.POST.get("buyer_full_name") or "").strip()[:160]
+        buyer_email = (request.POST.get("buyer_email") or "").strip()[:254].lower()
+        buyer_phone = (request.POST.get("buyer_phone") or "").strip()[:40]
+        buyer_county = (request.POST.get("buyer_county") or "").strip()[:120]
+        buyer_city = (request.POST.get("buyer_city") or "").strip()[:120]
+        buyer_address = (request.POST.get("buyer_address") or "").strip()[:500]
+        buyer_company_display = (request.POST.get("buyer_company_display") or "").strip()[:255]
+        buyer_company_legal = (request.POST.get("buyer_company_legal") or "").strip()[:255]
+        buyer_company_cui = (request.POST.get("buyer_company_cui") or "").strip()[:40]
+        buyer_note = (request.POST.get("buyer_note") or "").strip()[:2000]
+        buyer_note_value = buyer_note
+        payment_method = (request.POST.get("payment_method") or "").strip()
+
+        prefill = {
+            "buyer_full_name": buyer_full_name,
+            "buyer_email": buyer_email,
+            "buyer_phone": buyer_phone,
+            "buyer_county": buyer_county,
+            "buyer_city": buyer_city,
+            "buyer_address": buyer_address,
+            "buyer_company_display": buyer_company_display,
+            "buyer_company_legal": buyer_company_legal,
+            "buyer_company_cui": buyer_company_cui,
+        }
+
+        if not buyer_full_name:
+            form_errors.append("Numele complet este obligatoriu.")
+        if not buyer_email or "@" not in buyer_email:
+            form_errors.append("E-mailul este obligatoriu și trebuie să fie valid.")
+        if payment_method not in allowed_pm:
+            form_errors.append("Alege un mod de plată din listă.")
+
+        if not form_errors:
+            try:
+                intent = SiteCartCheckoutIntent.objects.create(
+                    user=request.user,
+                    payment_method=payment_method,
+                    buyer_full_name=buyer_full_name,
+                    buyer_email=buyer_email,
+                    buyer_phone=buyer_phone,
+                    buyer_county=buyer_county,
+                    buyer_city=buyer_city,
+                    buyer_address=buyer_address,
+                    buyer_company_display=buyer_company_display,
+                    buyer_company_legal=buyer_company_legal,
+                    buyer_company_cui=buyer_company_cui,
+                    lines_json=lines,
+                    total_lei=total_lei,
+                    unpriced_count=unpriced,
+                    buyer_note=buyer_note,
+                )
+            except Exception:
+                logging.getLogger(__name__).exception("site_cart_checkout_create")
+                messages.error(request, "Nu am putut salva cererea. Încearcă din nou.")
+                return redirect("site_cart_checkout")
+
+            _send_site_cart_checkout_staff_email(request, intent)
+            return redirect(f"{reverse('site_cart_checkout_success')}?id={intent.pk}")
+
+    return render(
+        request,
+        "anunturi/i_love_cos_checkout.html",
+        {
+            "checkout_lines": lines,
+            "checkout_total_lei": total_lei,
+            "checkout_total_display": f"{total_lei:.2f}".replace(".", ","),
+            "checkout_unpriced_count": unpriced,
+            "form_prefill": prefill,
+            "buyer_note": buyer_note_value,
+            "form_errors": form_errors,
+            "payment_methods": SITE_CART_PAYMENT_METHOD_UI,
+            "selected_payment": (request.POST.get("payment_method") or "").strip() if request.method == "POST" else "",
+        },
+    )
+
+
+@login_required
+def site_cart_checkout_success_view(request):
+    intent_id = (request.GET.get("id") or "").strip()
+    intent = None
+    if intent_id.isdigit():
+        intent = SiteCartCheckoutIntent.objects.filter(
+            pk=int(intent_id), user=request.user
+        ).first()
+    return render(
+        request,
+        "anunturi/i_love_cos_checkout_success.html",
+        {"intent": intent},
+    )
+
+
 def i_love_view(request):
     """Pagina I Love: animalele bifate cu inimioară (demo DEMO_DOGS + anunțuri AnimalListing)."""
     if not request.user.is_authenticated:
@@ -6069,18 +6443,10 @@ def i_love_view(request):
                 ).count()
             )
 
-    cart_items = []
-    if request.user.is_authenticated:
-        try:
-            cart_items = list(
-                SiteCartItem.objects.filter(user=request.user).order_by("-created_at")[:SITE_CART_MAX_ITEMS]
-            )
-        except Exception:
-            cart_items = []
     return render(
         request,
         "anunturi/i_love.html",
-        {"pets": pets, "wishlist_ids": set(ids), "cart_items": cart_items},
+        {"pets": pets, "wishlist_ids": set(ids)},
     )
 
 
@@ -6146,7 +6512,7 @@ def adoption_bonus_cart_unlock_view(request):
 @require_POST
 @csrf_protect
 def site_cart_toggle_view(request):
-    """Adaugă / scoate articol din coșul I Love (iconița coș)."""
+    """Adaugă / scoate articol din coșul de cumpărături (iconița 🛒 din navbar)."""
     if not request.user.is_authenticated:
         return JsonResponse({"ok": False, "error": "login_required"}, status=401)
     kind = (request.POST.get("kind") or "").strip()
@@ -6158,6 +6524,8 @@ def site_cart_toggle_view(request):
         SiteCartItem.KIND_SHOP,
         SiteCartItem.KIND_SHOP_CUSTOM,
         SiteCartItem.KIND_SHOP_FOTO,
+        SiteCartItem.KIND_PUBLICITATE,
+        SiteCartItem.KIND_PROMO_A2,
     }
     if kind not in allowed_kinds:
         return JsonResponse({"ok": False, "error": "invalid_kind"}, status=400)
@@ -6188,6 +6556,24 @@ def site_cart_toggle_view(request):
             return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
         if idx < 0 or idx >= 200:
             return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
+    elif kind == SiteCartItem.KIND_PUBLICITATE:
+        if not re.match(r"^pub:[a-f0-9]{16}$", ref_key):
+            return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
+    elif kind == SiteCartItem.KIND_PROMO_A2:
+        if not ref_key.startswith("promo_a2:"):
+            return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
+        try:
+            pet_pk = int(ref_key.split(":", 1)[1])
+        except (IndexError, ValueError):
+            return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
+        pet_ok = AnimalListing.objects.filter(
+            pk=pet_pk,
+            owner=request.user,
+            is_published=True,
+            species__in=["dog", "cat"],
+        ).exists()
+        if not pet_ok:
+            return JsonResponse({"ok": False, "error": "promo_pet_invalid"}, status=400)
 
     obj = SiteCartItem.objects.filter(user=request.user, ref_key=ref_key).first()
     if obj:
@@ -8154,7 +8540,27 @@ PUBLICITATE_SLOT_MAP = {
         {"code": "IL.R1", "title": "I Love R1", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
         {"code": "IL.R2", "title": "I Love R2", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
     ],
+    # Hartă tip I Love, sloturi independente (CC*) pentru fluxul „Coș pub.”
+    "cos_pub": [
+        {"code": "CC1", "title": "Coș pub. CC1", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
+        {"code": "CC2", "title": "Coș pub. CC2", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
+        {"code": "CC3", "title": "Coș pub. CC3", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
+        {"code": "CC4", "title": "Coș pub. CC4", "types": ["image", "link", "video"], "unit": "luna", "price": 85},
+    ],
 }
+
+# Taburi navigare hartă publicitate (+ pagina Coș dedicată); `code` = query `sect=` pe hartă.
+PUBLICITATE_NAV_SECTIONS = [
+    {"code": "home", "label": "Home"},
+    {"code": "pt", "label": "PT"},
+    {"code": "servicii", "label": "Servicii"},
+    {"code": "transport", "label": "Transport"},
+    {"code": "shop", "label": "Shop"},
+    {"code": "mypet", "label": "MyPet"},
+    # Nu e pagina /i-love/ (inimioare); e doar secțiunea de hartă pentru spații pe layout-ul „I Love”.
+    {"code": "i_love", "label": "Spații I Love"},
+    {"code": "cos_pub", "label": "Coș pub."},
+]
 
 PUBLICITATE_SESSION_CHECKOUT_ORDER = "pub_checkout_order_id"
 PUBLICITATE_SESSION_LAST_PAID = "pub_last_paid_order_id"
@@ -8225,31 +8631,20 @@ def _apply_publicitate_paid_order(order: PublicitateOrder):
         _apply_publicitate_line_to_site(line, order)
 
 
-@login_required
-def publicitate_harta_view(request):
-    if not _user_can_use_publicitate(request):
-        messages.info(
-            request,
-            "Pagina Publicitate este pentru conturi colaborator (admin are acces pentru operare rapidă).",
-        )
-        return redirect("home")
-
-    sections = [
-        {"code": "home", "label": "Home"},
-        {"code": "pt", "label": "PT"},
-        {"code": "servicii", "label": "Servicii"},
-        {"code": "transport", "label": "Transport"},
-        {"code": "shop", "label": "Shop"},
-        {"code": "mypet", "label": "MyPet"},
-        {"code": "i_love", "label": "I Love"},
-    ]
-    selected_section = (request.GET.get("sect") or "home").strip().lower()
+def _publicitate_harta_context(request, pub_nav: str) -> dict:
+    """Context comun pentru harta `/publicitate/` și fluxul complet `/publicitate/cos/` (același șablon, 3 coloane)."""
+    sections = PUBLICITATE_NAV_SECTIONS
     valid_codes = {s["code"] for s in sections}
-    if selected_section not in valid_codes:
+    raw_sect = (request.GET.get("sect") or "").strip().lower()
+    if raw_sect in valid_codes:
+        selected_section = raw_sect
+    elif pub_nav == "cos" and not raw_sect:
+        selected_section = "cos_pub"
+    else:
         selected_section = "home"
-
-    ctx = {
+    return {
         "pub_sections": sections,
+        "pub_nav": pub_nav,
         "pub_selected_section": selected_section,
         "pub_slot_map": PUBLICITATE_SLOT_MAP,
         "pub_a2_images": [d.get("imagine_fallback") for d in DEMO_DOGS if d.get("imagine_fallback")][:12],
@@ -8260,47 +8655,66 @@ def publicitate_harta_view(request):
             (getattr(settings, "DEFAULT_FROM_EMAIL", None) or "").strip() or "euadopt@gmail.com"
         ),
     }
-    return render(request, "anunturi/publicitate_harta.html", ctx)
 
 
 @login_required
-@require_POST
-def publicitate_checkout_create_view(request):
-    """Primește coșul JSON, validează tarifele pe server, creează comanda `pending_payment`."""
+def publicitate_harta_view(request):
     if not _user_can_use_publicitate(request):
-        return JsonResponse({"ok": False, "error": "Acces nepermis."}, status=403)
-    try:
-        body = json.loads(request.body.decode() or "{}")
-    except json.JSONDecodeError:
-        return JsonResponse({"ok": False, "error": "JSON invalid."}, status=400)
-    lines_in = body.get("lines")
-    if not isinstance(lines_in, list) or not lines_in:
-        return JsonResponse({"ok": False, "error": "Coșul este gol."}, status=400)
+        messages.info(
+            request,
+            "Pagina Publicitate este pentru conturi colaborator (admin are acces pentru operare rapidă).",
+        )
+        return redirect("home")
+    return render(request, "anunturi/publicitate_harta.html", _publicitate_harta_context(request, "harta"))
 
+
+@login_required
+def publicitate_cos_view(request):
+    """Aceeași interfață ca harta (Detalii slot | Hartă | Coș), pentru achiziție pe pagina dedicată coșului."""
+    if not _user_can_use_publicitate(request):
+        messages.info(
+            request,
+            "Pagina Publicitate este pentru conturi colaborator (admin are acces pentru operare rapidă).",
+        )
+        return redirect("home")
+    return render(request, "anunturi/publicitate_harta.html", _publicitate_harta_context(request, "cos"))
+
+
+def _publicitate_parse_cart_lines(lines_in):
+    """
+    Validează linii coș publicitate (același reguli ca la checkout).
+    Returnează (validated, total_lei, None) sau (None, None, JsonResponse).
+    """
+    if not isinstance(lines_in, list) or not lines_in:
+        return None, None, JsonResponse({"ok": False, "error": "Coșul este gol."}, status=400)
     validated = []
     total = Decimal("0.00")
     for raw in lines_in:
         if not isinstance(raw, dict):
-            return JsonResponse({"ok": False, "error": "Linie invalidă."}, status=400)
+            return None, None, JsonResponse({"ok": False, "error": "Linie invalidă."}, status=400)
         section = (raw.get("section") or "").strip().lower()
         code = (raw.get("code") or "").strip()
         cat = _publicitate_catalog_row(section, code)
         if not cat:
-            return JsonResponse({"ok": False, "error": f"Slot necunoscut: {section}/{code}"}, status=400)
+            return None, None, JsonResponse(
+                {"ok": False, "error": f"Slot necunoscut: {section}/{code}"}, status=400
+            )
         try:
             unit_price = Decimal(str(raw.get("unit_price")))
         except Exception:
-            return JsonResponse({"ok": False, "error": "Preț invalid."}, status=400)
+            return None, None, JsonResponse({"ok": False, "error": "Preț invalid."}, status=400)
         catalog_price = Decimal(str(cat["price"]))
         if unit_price != catalog_price:
-            return JsonResponse({"ok": False, "error": "Prețul nu corespunde catalogului. Reîncarcă pagina."}, status=400)
+            return None, None, JsonResponse(
+                {"ok": False, "error": "Prețul nu corespunde catalogului. Reîncarcă pagina."}, status=400
+            )
         qty_raw = raw.get("qty", 1)
         try:
             qty = int(qty_raw)
         except (TypeError, ValueError):
             qty = 0
         if qty < 1 or qty > 12:
-            return JsonResponse({"ok": False, "error": "Perioada trebuie să fie 1–12."}, status=400)
+            return None, None, JsonResponse({"ok": False, "error": "Perioada trebuie să fie 1–12."}, status=400)
         unit_label = (raw.get("unit") or cat.get("unit") or "luna").strip()[:32]
         if unit_label != (cat.get("unit") or ""):
             unit_label = cat.get("unit") or "luna"
@@ -8319,8 +8733,23 @@ def publicitate_checkout_create_view(request):
                 "buyer_note": note,
             }
         )
+    return validated, total.quantize(Decimal("0.01")), None
 
-    total = total.quantize(Decimal("0.01"))
+
+@login_required
+@require_POST
+def publicitate_checkout_create_view(request):
+    """Primește coșul JSON, validează tarifele pe server, creează comanda `pending_payment`."""
+    if not _user_can_use_publicitate(request):
+        return JsonResponse({"ok": False, "error": "Acces nepermis."}, status=403)
+    try:
+        body = json.loads(request.body.decode() or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"ok": False, "error": "JSON invalid."}, status=400)
+    lines_in = body.get("lines")
+    validated, total, err = _publicitate_parse_cart_lines(lines_in)
+    if err:
+        return err
     try:
         with transaction.atomic():
             order = PublicitateOrder.objects.create(
@@ -8343,6 +8772,62 @@ def publicitate_checkout_create_view(request):
             "order_id": order.pk,
         }
     )
+
+
+@login_required
+@require_POST
+def publicitate_transfer_to_site_cart_view(request):
+    """Mută liniile din coșul publicitate (browser) în coșul de cumpărături din site (SiteCartItem)."""
+    if not _user_can_use_publicitate(request):
+        return JsonResponse({"ok": False, "error": "Acces nepermis."}, status=403)
+    try:
+        body = json.loads(request.body.decode() or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"ok": False, "error": "JSON invalid."}, status=400)
+    lines_in = body.get("lines")
+    validated, _total, err = _publicitate_parse_cart_lines(lines_in)
+    if err:
+        return err
+    n_existing = SiteCartItem.objects.filter(user=request.user).count()
+    if n_existing + len(validated) > SITE_CART_MAX_ITEMS:
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": (
+                    f"Coșul site are deja {n_existing} articole; nu încap toate liniile "
+                    f"(limită {SITE_CART_MAX_ITEMS})."
+                ),
+            },
+            status=400,
+        )
+    base_path = reverse("publicitate_harta")
+    try:
+        with transaction.atomic():
+            for row in validated:
+                ref_key = "pub:" + uuid.uuid4().hex[:16]
+                sec = row["section"]
+                code = row["slot_code"]
+                qty = row["quantity"]
+                unit = row["unit_label"]
+                lt = row["line_total_lei"]
+                snap = row["title_snapshot"]
+                title = f"{sec.upper()} · {code} · cant. {qty} {unit} · {lt} lei — {snap}"
+                if len(title) > 220:
+                    title = title[:217] + "…"
+                du = f"{base_path}?sect={quote(sec)}"
+                if len(du) > 500:
+                    du = base_path[:500]
+                SiteCartItem.objects.create(
+                    user=request.user,
+                    ref_key=ref_key,
+                    kind=SiteCartItem.KIND_PUBLICITATE,
+                    title=title,
+                    detail_url=_safe_site_cart_detail_url(du),
+                )
+    except Exception:
+        logging.getLogger(__name__).exception("publicitate_transfer_to_site_cart")
+        return JsonResponse({"ok": False, "error": "Nu am putut salva în coș."}, status=500)
+    return JsonResponse({"ok": True, "redirect": reverse("i_love_cos")})
 
 
 @login_required
@@ -8397,6 +8882,11 @@ def publicitate_checkout_demo_confirm_view(request):
             if order.status == PublicitateOrder.STATUS_PAID:
                 request.session.pop(PUBLICITATE_SESSION_CHECKOUT_ORDER, None)
                 request.session[PUBLICITATE_SESSION_LAST_PAID] = order.pk
+                try:
+                    access = _ensure_publicitate_creative_for_order(order)
+                    _send_publicitate_creative_email(order, access)
+                except Exception:
+                    logging.getLogger(__name__).exception("publicitate_creative_email_idempotent")
                 return redirect("publicitate_checkout_demo_success")
             if order.status != PublicitateOrder.STATUS_PENDING:
                 messages.error(request, "Comanda nu poate fi plătită.")
@@ -8410,6 +8900,12 @@ def publicitate_checkout_demo_confirm_view(request):
         logging.getLogger(__name__).exception("publicitate_checkout_demo_confirm")
         messages.error(request, "Eroare la confirmarea plății demo.")
         return redirect("publicitate_checkout_demo")
+
+    try:
+        access = _ensure_publicitate_creative_for_order(order)
+        _send_publicitate_creative_email(order, access)
+    except Exception:
+        logging.getLogger(__name__).exception("publicitate_creative_email_after_pay")
 
     request.session.pop(PUBLICITATE_SESSION_CHECKOUT_ORDER, None)
     request.session[PUBLICITATE_SESSION_LAST_PAID] = order.pk
@@ -8433,11 +8929,359 @@ def publicitate_checkout_demo_success_view(request):
     order = None
     if last_id:
         order = PublicitateOrder.objects.filter(pk=last_id, user=request.user).first()
+    pub_creative_form_url = None
+    if order:
+        try:
+            acc = order.creative_access
+            if acc and timezone.now() <= acc.expires_at:
+                base = (getattr(settings, "SITE_BASE_URL", None) or "").strip().rstrip("/")
+                if base:
+                    pub_creative_form_url = (
+                        f"{base}{reverse('publicitate_creative_token', kwargs={'token': acc.secret_token})}"
+                    )
+        except PublicitateOrderCreativeAccess.DoesNotExist:
+            pass
     return render(
         request,
         "anunturi/publicitate_checkout_demo_success.html",
-        {"pub_order": order},
+        {
+            "pub_order": order,
+            "pub_creative_form_url": pub_creative_form_url,
+        },
     )
+
+
+def _pub_creative_review_hours() -> int:
+    try:
+        return max(1, int(getattr(settings, "PUBLICITATE_CREATIVE_REVIEW_HOURS", 12)))
+    except (TypeError, ValueError):
+        return 12
+
+
+def _pub_creative_token_days() -> int:
+    try:
+        return max(1, int(getattr(settings, "PUBLICITATE_CREATIVE_TOKEN_DAYS", 90)))
+    except (TypeError, ValueError):
+        return 90
+
+
+def _pub_creative_max_upload_bytes() -> int:
+    try:
+        mb = max(1, int(getattr(settings, "PUBLICITATE_CREATIVE_MAX_UPLOAD_MB", 4)))
+    except (TypeError, ValueError):
+        mb = 4
+    return mb * 1024 * 1024
+
+
+def _ensure_publicitate_creative_for_order(order: PublicitateOrder) -> PublicitateOrderCreativeAccess:
+    """Creează token + rânduri materiale per linie (idempotent)."""
+    token_days = _pub_creative_token_days()
+    access, _created = PublicitateOrderCreativeAccess.objects.get_or_create(
+        order=order,
+        defaults={
+            "secret_token": secrets.token_hex(32),
+            "expires_at": timezone.now() + timezone.timedelta(days=token_days),
+        },
+    )
+    for line in order.lines.all():
+        PublicitateLineCreative.objects.get_or_create(line=line, defaults={})
+    return access
+
+
+def _send_publicitate_creative_email(order: PublicitateOrder, access: PublicitateOrderCreativeAccess) -> None:
+    if access.email_sent_at:
+        return
+    to = (order.user.email or "").strip()
+    if not to:
+        return
+    base = (getattr(settings, "SITE_BASE_URL", None) or "").strip().rstrip("/")
+    if not base:
+        return
+    form_url = f"{base}{reverse('publicitate_creative_token', kwargs={'token': access.secret_token})}"
+    subject = email_subject_for_user(order.user.username, "EU-Adopt: încărcați materialele pentru comanda publicitate")
+    body_txt = (
+        f"Bună,\n\n"
+        f"Plata pentru comanda publicitate #{order.pk} a fost înregistrată.\n"
+        f"Completați formularul (poză, link, detalii) pentru fiecare slot comandat:\n{form_url}\n\n"
+        f"Linkul expiră la {access.expires_at.strftime('%Y-%m-%d %H:%M')} (ora serverului).\n"
+        f"După trimitere, materialele se aplică pe site acolo unde există integrare automată (ex. PT P4.3/P5.x, burtieră HOME).\n\n"
+        f"— EU-Adopt"
+    )
+    html = (
+        f"<p>Bună,</p>"
+        f"<p>Plata pentru <strong>comanda publicitate #{order.pk}</strong> a fost înregistrată.</p>"
+        f"<p>Deschideți formularul și încărcați materialele (poză, link, detalii) per slot:</p>"
+        f'<p><a href="{escape(form_url)}">Formular materiale publicitate</a></p>'
+        f"<p><small>Expiră: {escape(str(access.expires_at))}</small></p>"
+        f"<p>— EU-Adopt</p>"
+    )
+    from_email = (getattr(settings, "DEFAULT_FROM_EMAIL", None) or "").strip() or None
+    if not from_email:
+        return
+    try:
+        send_mail_text_and_html(
+            subject,
+            body_txt,
+            from_email,
+            [to],
+            html_body=html,
+            mail_kind="publicitate_creative",
+        )
+    except Exception:
+        logging.getLogger(__name__).exception("publicitate_creative_send_mail")
+        return
+    access.email_sent_at = timezone.now()
+    access.save(update_fields=["email_sent_at"])
+
+
+def _publicitate_creative_staff_recipient_emails() -> list[str]:
+    """
+    Destinatari notificări materiale publicitate (staff).
+    Ordine: PUBLICITATE_CREATIVE_STAFF_EMAILS → ADMINS → DEFAULT_FROM_EMAIL (implicit operațional, fără .env extra).
+    """
+    raw = (getattr(settings, "PUBLICITATE_CREATIVE_STAFF_EMAILS", None) or "").strip()
+    if raw:
+        return [x.strip() for x in raw.split(",") if x.strip()][:12]
+    out: list[str] = []
+    admins = getattr(settings, "ADMINS", None) or ()
+    for _name, em in admins:
+        e = (em or "").strip()
+        if e and e not in out:
+            out.append(e)
+    if out:
+        return out[:8]
+    fallback = (getattr(settings, "DEFAULT_FROM_EMAIL", None) or "").strip()
+    if fallback:
+        return [fallback]
+    return []
+
+
+def _send_staff_publicitate_materials_submitted(request, order: PublicitateOrder, summaries: list[tuple[str, str]]) -> None:
+    """Notifică echipa după ce clientul a trimis materiale (una sau mai multe linii)."""
+    recipients = _publicitate_creative_staff_recipient_emails()
+    if not summaries or not recipients:
+        return
+    from_email = (getattr(settings, "DEFAULT_FROM_EMAIL", None) or "").strip() or None
+    if not from_email:
+        return
+    base = (getattr(settings, "SITE_BASE_URL", None) or "").strip().rstrip("/")
+    try:
+        admin_path = reverse("admin:home_publicitateorder_change", args=[order.pk])
+        admin_hint = f"{base}{admin_path}" if base else admin_path
+    except Exception:
+        admin_hint = f"{base}/admin/" if base else f"Comanda #{order.pk}"
+    body_lines = "\n".join(f"- {code}: {preview[:400]}" for code, preview in summaries)
+    subject = f"[EU-Adopt staff] Materiale publicitate trimise — comanda #{order.pk}"
+    body_txt = (
+        f"Comandă publicitate #{order.pk} — utilizator: {order.user.username} ({order.user.email or 'fără email'}).\n"
+        f"Sloturi actualizate:\n{body_lines}\n\n"
+        f"Admin: {admin_hint}\n"
+        f"Fereastră verificare recomandată: {_pub_creative_review_hours()} h de la trimitere.\n"
+    )
+    html = (
+        f"<p><strong>Comandă #{order.pk}</strong> — {escape(order.user.username)} "
+        f"({escape(order.user.email or '')})</p>"
+        f"<p>Sloturi actualizate:</p><pre style=\"white-space:pre-wrap;font-size:0.9rem;\">{escape(body_lines)}</pre>"
+        f"<p><a href=\"{escape(admin_hint)}\">Deschide în admin</a></p>"
+    )
+    try:
+        send_mail_text_and_html(
+            subject,
+            body_txt,
+            from_email,
+            recipients,
+            html_body=html,
+            mail_kind="publicitate_creative_staff",
+        )
+    except Exception:
+        logging.getLogger(__name__).exception("publicitate_creative_staff_notify")
+
+
+def _bundle_to_buyer_note(request, bundle: PublicitateLineCreative) -> str:
+    notes = (bundle.extra_notes or "").strip()
+    link = (bundle.external_link or "").strip()
+    img_url = ""
+    if bundle.image:
+        try:
+            img_url = request.build_absolute_uri(bundle.image.url)
+        except Exception:
+            img_url = bundle.image.url or ""
+    if img_url and link:
+        return json.dumps({"img": img_url, "link": link, "alt": notes[:240]}, ensure_ascii=False)
+    if img_url:
+        return img_url
+    if link:
+        return link
+    return notes
+
+
+def _line_creative_has_post_data(request, line_pk: int) -> bool:
+    if request.FILES.get(f"image_{line_pk}"):
+        return True
+    if (request.POST.get(f"link_{line_pk}") or "").strip():
+        return True
+    if (request.POST.get(f"notes_{line_pk}") or "").strip():
+        return True
+    return False
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_protect
+def publicitate_creative_by_token_view(request, token: str):
+    token = (token or "").strip().lower()
+    if len(token) != 64 or any(c not in "0123456789abcdef" for c in token):
+        return render(
+            request,
+            "anunturi/publicitate_creative_gate.html",
+            {"pub_creative_error": "Link invalid."},
+            status=404,
+        )
+    access = PublicitateOrderCreativeAccess.objects.select_related("order", "order__user").filter(secret_token=token).first()
+    if access is None:
+        return render(
+            request,
+            "anunturi/publicitate_creative_gate.html",
+            {"pub_creative_error": "Link invalid sau expirat."},
+            status=404,
+        )
+    if timezone.now() > access.expires_at:
+        return render(
+            request,
+            "anunturi/publicitate_creative_gate.html",
+            {"pub_creative_error": "Acest link a expirat. Autentificați-vă în cont și deschideți materialele din secțiunea dedicată sau contactați suportul."},
+            status=410,
+        )
+    return _publicitate_creative_form_response(request, access)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+@csrf_protect
+def publicitate_creative_by_order_view(request, order_id: int):
+    if not _user_can_use_publicitate(request):
+        messages.info(request, "Acces publicitate doar pentru conturi autorizate.")
+        return redirect("home")
+    order = get_object_or_404(PublicitateOrder, pk=order_id, user=request.user)
+    if order.status != PublicitateOrder.STATUS_PAID:
+        messages.error(request, "Comanda nu este plătită.")
+        return redirect("account")
+    access = PublicitateOrderCreativeAccess.objects.filter(order=order).first()
+    if access is None:
+        access = _ensure_publicitate_creative_for_order(order)
+    if timezone.now() > access.expires_at:
+        messages.error(request, "Linkul de materiale a expirat.")
+        return redirect("account")
+    return _publicitate_creative_form_response(request, access)
+
+
+def _publicitate_creative_form_response(request, access: PublicitateOrderCreativeAccess):
+    order = access.order
+    lines = list(order.lines.select_related("creative_bundle").order_by("id"))
+    max_b = _pub_creative_max_upload_bytes()
+    review_h = _pub_creative_review_hours()
+
+    if request.method == "POST":
+        applied = 0
+        errors = []
+        staff_summaries: list[tuple[str, str]] = []
+        try:
+            with transaction.atomic():
+                for line in lines:
+                    bundle = line.creative_bundle
+                    pk = line.pk
+                    if not _line_creative_has_post_data(request, pk):
+                        continue
+                    up = request.FILES.get(f"image_{pk}")
+                    if up and up.size > max_b:
+                        errors.append(f"{line.slot_code}: fișierul depășește limita de {max_b // (1024 * 1024)} MB.")
+                        continue
+                    link = (request.POST.get(f"link_{pk}") or "").strip()[:500]
+                    notes = (request.POST.get(f"notes_{pk}") or "").strip()[:8000]
+                    if link:
+                        try:
+                            URLValidator()(link)
+                        except DjangoValidationError:
+                            errors.append(f"{line.slot_code}: link invalid (folosiți https://…).")
+                            continue
+                    if up:
+                        bundle.image.save(up.name, up, save=False)
+                    bundle.external_link = link
+                    bundle.extra_notes = notes
+                    buyer = _bundle_to_buyer_note(request, bundle)
+                    if not (buyer or "").strip():
+                        errors.append(f"{line.slot_code}: lipsește conținut util.")
+                        continue
+                    line.buyer_note = buyer[:8000]
+                    line.save(update_fields=["buyer_note"])
+                    _apply_publicitate_line_to_site(line, order)
+                    now = timezone.now()
+                    bundle.status = PublicitateLineCreative.STATUS_LIVE
+                    bundle.submitted_at = now
+                    bundle.live_at = now
+                    bundle.review_until = now + timezone.timedelta(hours=review_h)
+                    bundle.save()
+                    applied += 1
+                    staff_summaries.append((f"{line.section.upper()}/{line.slot_code}", buyer))
+        except Exception:
+            logging.getLogger(__name__).exception("publicitate_creative_submit")
+            errors.append("Eroare la salvare. Reîncercați.")
+
+        if applied > 0 and staff_summaries:
+            _send_staff_publicitate_materials_submitted(request, order, staff_summaries)
+
+        if errors:
+            for e in errors[:5]:
+                messages.error(request, e)
+        elif applied == 0:
+            messages.warning(
+                request,
+                "Nu s-a trimis nimic: completați cel puțin o linie (poză, link sau detalii) și apăsați din nou „Trimite materialele”.",
+            )
+        else:
+            messages.success(
+                request,
+                f"Materiale trimise pentru {applied} slot(uri). S-au aplicat pe site unde există integrare automată. "
+                f"Aveți până la ~{review_h} h pentru verificare internă (contactați suportul dacă e nevoie de corecție).",
+            )
+        return redirect(request.path)
+
+    all_live = (
+        all(line.creative_bundle.status == PublicitateLineCreative.STATUS_LIVE for line in lines) if lines else True
+    )
+    return render(
+        request,
+        "anunturi/publicitate_creative_form.html",
+        {
+            "pub_access": access,
+            "pub_order": order,
+            "pub_lines": lines,
+            "pub_max_mb": max_b // (1024 * 1024),
+            "pub_review_hours": review_h,
+            "pub_all_live": all_live,
+        },
+    )
+
+
+def reset_publicitate_line_creative_bundle(creative: PublicitateLineCreative) -> None:
+    """
+    Staff admin: șterge fișierul, golește câmpurile, revocă buyer_note și reaplică pe site (placeholder PT / fără burtieră).
+    """
+    line = creative.line
+    order = line.order
+    with transaction.atomic():
+        if creative.image:
+            creative.image.delete(save=False)
+        creative.image = None
+        creative.external_link = ""
+        creative.extra_notes = ""
+        creative.status = PublicitateLineCreative.STATUS_PENDING
+        creative.submitted_at = None
+        creative.live_at = None
+        creative.review_until = None
+        creative.save()
+        line.buyer_note = ""
+        line.save(update_fields=["buyer_note"])
+        _apply_publicitate_line_to_site(line, order)
 
 
 def _tp_parse_coord_deg(raw) -> float | None:

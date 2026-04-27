@@ -140,6 +140,23 @@ class Carte41_60Tests(TestCase):
         r = c.get(reverse("publicitate_harta"))
         self.assertEqual(r.status_code, 200)
 
+    def test_47_publicitate_cos_anonymous_redirects_login(self):
+        r = Client().get(reverse("publicitate_cos"))
+        self.assertEqual(r.status_code, 302)
+
+    def test_47_publicitate_cos_collab_200_and_harta_links_cos(self):
+        c = Client()
+        user, _ = _collab_user_with_offer()
+        c.login(username=user.username, password="CollCarte41!")
+        r = c.get(reverse("publicitate_cos"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Detalii slot", status_code=200, html=False)
+        self.assertContains(r, "pub-grid", status_code=200, html=False)
+        self.assertContains(r, reverse("publicitate_harta"), status_code=200, html=False)
+        rh = c.get(reverse("publicitate_harta"))
+        self.assertEqual(rh.status_code, 200)
+        self.assertContains(rh, reverse("publicitate_cos"), status_code=200, html=False)
+
     # --- Legale 48–54 ---
 
     def test_48_termeni_200(self):

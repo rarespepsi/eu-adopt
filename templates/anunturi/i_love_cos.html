@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Coș cumpărături – EU-ADOPT{% endblock %}
+{% block body_class %}page-ilove page-ilove--cart{% endblock %}
+
+{% block extra_css_after %}
+<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=20" type="text/css" media="screen" />
+{% endblock %}
+
+{% block content %}
+<main id="ILW" class="ilove-page" aria-label="Coș cumpărături">
+	<div class="ilove-wire">
+		<aside class="ilove-wire__col ilove-wire__col--left" aria-label="Casete stânga">
+			<div class="ilove-case ilove-case--a5">
+				<span class="ilove-case__ref">IL-C.L1</span>
+				<span class="ilove-case__mark">Oferte în evidență</span>
+			</div>
+			<div class="ilove-case ilove-case--a5">
+				<span class="ilove-case__ref">IL-C.L2</span>
+				<span class="ilove-case__mark">Parteneri vertical</span>
+			</div>
+		</aside>
+
+		<div class="ilove-wire__main">
+			<header class="ilove-wire__head">
+				<h1>🛒 Coș cumpărături</h1>
+				<p class="ilove-wire__head-lead">Articole din Servicii, Shop, Magazin foto sau Publicitate (mutate în coșul site).</p>
+			</header>
+
+			<div class="ilove-main-caseta" aria-label="Coș cumpărături">
+				<div class="ilove-main-split">
+					<section class="ilove-main-split__pane ilove-main-split__pane--cart" aria-label="Coș cumpărături">
+						<h2 class="ilove-split-heading">Coșul meu</h2>
+						<div class="ilove-cart-list">
+							{% for item in cart_items %}
+							<div class="ilove-cart-row">
+								<div class="ilove-cart-row-main">
+									{% if item.detail_url %}
+									<a href="{{ item.detail_url }}" class="ilove-cart-row-link">{{ item.title }}</a>
+									{% else %}
+									<span class="ilove-cart-row-link ilove-cart-row-link--text">{{ item.title }}</span>
+									{% endif %}
+								</div>
+								<button type="button" class="ilove-cart-remove is-active" data-site-cart-toggle data-kind="{{ item.kind }}" data-ref-key="{{ item.ref_key }}" data-title="{{ item.title|escape }}" data-detail-url="{{ item.detail_url|default:''|escape }}" aria-pressed="true" title="Scoate din coș">🛒</button>
+							</div>
+							{% empty %}
+							<p class="ilove-cart-empty">Nu ai articole în coș. Adaugă din Servicii, Shop, Magazin foto, promovare MyPet (🛒) sau mută linii din Publicitate („Continuă în coș site”).</p>
+							{% endfor %}
+						</div>
+						{% if cart_items %}
+						<div class="ilove-cart-summary" aria-label="Rezumat plată">
+							<div class="ilove-cart-summary-row">
+								<span class="ilove-cart-summary-label">Total estimativ</span>
+								{% if cart_total_lei > 0 %}
+								<strong class="ilove-cart-summary-amount">{{ cart_total_lei_display }} lei</strong>
+								{% else %}
+								<strong class="ilove-cart-summary-amount ilove-cart-summary-amount--na">—</strong>
+								{% endif %}
+							</div>
+							{% if cart_unpriced_count %}
+							<p class="ilove-cart-summary-note">{{ cart_unpriced_count }} articol(e) fără sumă în titlu — totalul poate fi incomplet.</p>
+							{% endif %}
+							<a href="{% url 'site_cart_checkout' %}" class="ilove-cart-pay-btn">PLATESTE</a>
+							<p class="ilove-cart-pay-hint">Completezi datele din fișă, alegi modul de plată; echipa primește cererea și te contactează pentru finalizare.</p>
+						</div>
+						{% endif %}
+					</section>
+				</div>
+			</div>
+		</div>
+
+		<aside class="ilove-wire__col ilove-wire__col--right" aria-label="Casete dreapta">
+			<div class="ilove-case ilove-case--a6">
+				<span class="ilove-case__ref">IL-C.R1</span>
+				<span class="ilove-case__mark">Promo portret</span>
+			</div>
+			<div class="ilove-case ilove-case--a6">
+				<span class="ilove-case__ref">IL-C.R2</span>
+				<span class="ilove-case__mark">Publicitate locală</span>
+			</div>
+		</aside>
+	</div>
+</main>
+{% endblock %}

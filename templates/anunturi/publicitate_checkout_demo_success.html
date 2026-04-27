@@ -22,6 +22,14 @@
 		<div class="euadopt-pay-box">
 			<p style="margin:0 0 0.5rem;">Comandă <strong>#{{ pub_order.pk }}</strong> — total <strong>{{ pub_order.total_lei }} lei</strong>.</p>
 			<p style="margin:0;">Referință: <code>{{ pub_order.payment_ref }}</code></p>
+			{% if pub_creative_form_url %}
+			<p style="margin:0.75rem 0 0;font-size:0.92rem;line-height:1.45;">
+				<strong>Materiale reclamă:</strong> am trimis și un e-mail cu link securizat. Puteți deschide direct formularul:
+			</p>
+			<p style="margin:0.5rem 0 0;">
+				<a href="{{ pub_creative_form_url }}" class="euadopt-pay-btn" style="display:inline-block;text-decoration:none;">Încarcă materialele (poză, link, detalii)</a>
+			</p>
+			{% endif %}
 		</div>
 		{% else %}
 		<div class="euadopt-pay-box"><p style="margin:0;">Comanda a fost înregistrată.</p></div>
@@ -30,4 +38,7 @@
 		<a href="{% url 'publicitate_harta' %}" class="euadopt-pay-btn">Înapoi la publicitate</a>
 	</div>
 </section>
+<script>
+try { sessionStorage.removeItem("euadopt_pub_cart_v1"); } catch (e) {}
+</script>
 {% endblock %}

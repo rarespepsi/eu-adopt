@@ -50,6 +50,22 @@ if _extra_allowed:
 if DEBUG and "*" not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append("*")
 
+# POST-uri AJAX (ex. coș site-cart) verifică Origin/Referer; listă explicită pentru www/apex și dev local.
+CSRF_TRUSTED_ORIGINS = [
+    "https://www.eu-adopt.ro",
+    "https://eu-adopt.ro",
+    "https://*.onrender.com",
+]
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS.extend(
+        [
+            "http://127.0.0.1:8000",
+            "http://127.0.0.1:8001",
+            "http://localhost:8000",
+            "http://localhost:8001",
+        ]
+    )
+
 
 # Application definition
 
@@ -235,3 +251,12 @@ if os.environ.get("DJANGO_SECURE_SSL", "").strip().lower() in ("1", "true", "yes
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Publicitate — materiale post-plată (formular + email cu token)
+PUBLICITATE_CREATIVE_TOKEN_DAYS = int(os.environ.get("PUBLICITATE_CREATIVE_TOKEN_DAYS", "90") or "90")
+PUBLICITATE_CREATIVE_REVIEW_HOURS = int(os.environ.get("PUBLICITATE_CREATIVE_REVIEW_HOURS", "12") or "12")
+PUBLICITATE_CREATIVE_MAX_UPLOAD_MB = int(os.environ.get("PUBLICITATE_CREATIVE_MAX_UPLOAD_MB", "4") or "4")
+# Listă separată prin virgulă pentru notificări „materiale publicitate”. Gol = ADMINS, apoi DEFAULT_FROM_EMAIL (în views).
+PUBLICITATE_CREATIVE_STAFF_EMAILS = os.environ.get("PUBLICITATE_CREATIVE_STAFF_EMAILS", "").strip()
+# Notificări cereri plată coș site (navbar). Gol = aceeași cascadă ca materiale publicitate în views.
+SITE_CART_CHECKOUT_STAFF_EMAILS = os.environ.get("SITE_CART_CHECKOUT_STAFF_EMAILS", "").strip()

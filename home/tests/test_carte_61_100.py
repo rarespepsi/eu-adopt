@@ -21,6 +21,8 @@ from home.models import (
     AnimalListing,
     CollaboratorServiceOffer,
     PetMessage,
+    SiteCartCheckoutIntent,
+    SiteCartItem,
     UserProfile,
 )
 
@@ -722,6 +724,63 @@ class Carte81_100Tests(TestCase):
         c.login(username=user.username, password="Test61_PF_pass!")
         r = c.get(reverse("i_love"))
         self.assertEqual(r.status_code, 200)
+
+    def test_108b_i_love_cos_logged_in_200(self):
+        user = _pf_user("il108b")
+        c = Client()
+        c.login(username=user.username, password="Test61_PF_pass!")
+        r = c.get(reverse("i_love_cos"))
+        self.assertEqual(r.status_code, 200)
+
+    def test_108c_site_cart_checkout_anonymous_redirects(self):
+        r = Client().get(reverse("site_cart_checkout"))
+        self.assertEqual(r.status_code, 302)
+
+    def test_108d_site_cart_checkout_empty_cart_redirects(self):
+        user = _pf_user("cos108d")
+        c = Client()
+        c.login(username=user.username, password="Test61_PF_pass!")
+        r = c.get(reverse("site_cart_checkout"))
+        self.assertEqual(r.status_code, 302)
+        self.assertIn("i-love/cos", r.url or "")
+
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_108e_site_cart_checkout_post_creates_intent(self):
+        user = _pf_user("cos108e")
+        c = Client()
+        c.login(username=user.username, password="Test61_PF_pass!")
+        SiteCartItem.objects.create(
+            user=user,
+            ref_key="shop:dogs:1",
+            kind=SiteCartItem.KIND_SHOP,
+            title="Produs demo 49,99 lei",
+            detail_url="/shop/",
+        )
+        r = c.get(reverse("site_cart_checkout"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Trimite cererea de plată")
+        r2 = c.post(
+            reverse("site_cart_checkout"),
+            {
+                "buyer_full_name": "Ion Test",
+                "buyer_email": "ion@test.local",
+                "buyer_phone": "0712345678",
+                "buyer_county": "București",
+                "buyer_city": "București",
+                "buyer_address": "",
+                "buyer_company_display": "",
+                "buyer_company_legal": "",
+                "buyer_company_cui": "",
+                "buyer_note": "",
+                "payment_method": SiteCartCheckoutIntent.PAYMENT_BANK_TRANSFER,
+            },
+        )
+        self.assertEqual(r2.status_code, 302)
+        self.assertIn("confirmat", r2.url or "")
+        intent = SiteCartCheckoutIntent.objects.filter(user=user).first()
+        self.assertIsNotNone(intent)
+        self.assertEqual(intent.buyer_full_name, "Ion Test")
+        self.assertGreaterEqual(intent.total_lei, 0)
 
     def test_109_114_admin_analysis_staff(self):
         staff = User.objects.create_user(

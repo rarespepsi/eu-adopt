@@ -319,3 +319,188 @@ body.page-shop-foto.euadopt-checkout-intra-skin .smf-cork {
 body.page-shop-foto.euadopt-checkout-intra-skin .smf-cork::before {
 	opacity: 0.2;
 }
+
+/* Coș site — formular plată unificat */
+body.page-site-cart-checkout .euadopt-pay-card,
+body.page-site-cart-checkout-success .euadopt-pay-card {
+	max-width: 42rem;
+}
+
+.ilove-cos-checkout-line-list {
+	margin: 0;
+	padding-left: 0;
+	list-style: none;
+}
+
+.ilove-cos-checkout-line-list li {
+	display: grid;
+	grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr) auto;
+	gap: 0.35rem 0.5rem;
+	align-items: baseline;
+	padding: 0.35rem 0;
+	border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+	font-size: 0.88rem;
+	color: #e2e8f0;
+}
+
+.ilove-cos-checkout-kind {
+	font-size: 0.68rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #94a3b8;
+}
+
+.ilove-cos-checkout-title-link {
+	color: #38bdf8;
+	text-decoration: none;
+	word-break: break-word;
+}
+
+.ilove-cos-checkout-title-link:hover {
+	text-decoration: underline;
+}
+
+.ilove-cos-checkout-title {
+	color: #cbd5e1;
+	word-break: break-word;
+}
+
+.ilove-cos-checkout-lei {
+	font-weight: 700;
+	color: #f8fafc;
+	white-space: nowrap;
+}
+
+.ilove-cos-checkout-lei--na {
+	color: #64748b;
+	font-weight: 600;
+}
+
+.ilove-cos-checkout-total-note {
+	display: block;
+	margin-top: 0.35rem;
+	font-size: 0.78rem;
+	font-weight: 500;
+	color: #fbbf24;
+}
+
+.ilove-cos-checkout-errors {
+	margin: 0.75rem 0;
+	padding: 0.65rem 0.85rem;
+	border-radius: 0.5rem;
+	background: rgba(239, 68, 68, 0.12);
+	border: 1px solid rgba(248, 113, 113, 0.35);
+	color: #fecaca;
+	font-size: 0.88rem;
+}
+
+.ilove-cos-checkout-h2 {
+	margin: 1.25rem 0 0.5rem;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: #f1f5f9;
+}
+
+.ilove-cos-checkout-h2 .req {
+	color: #f87171;
+}
+
+.ilove-cos-checkout-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.55rem 0.75rem;
+}
+
+@media (max-width: 520px) {
+	.ilove-cos-checkout-grid {
+		grid-template-columns: 1fr;
+	}
+	.ilove-cos-checkout-line-list li {
+		grid-template-columns: 1fr;
+	}
+}
+
+.ilove-cos-checkout-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	font-size: 0.78rem;
+	color: #94a3b8;
+}
+
+.ilove-cos-checkout-field--full {
+	grid-column: 1 / -1;
+}
+
+.ilove-cos-checkout-field .req {
+	color: #f87171;
+}
+
+.ilove-cos-checkout-field input,
+.ilove-cos-checkout-field textarea {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0.45rem 0.55rem;
+	border-radius: 0.45rem;
+	border: 1px solid rgba(148, 163, 184, 0.25);
+	background: rgba(15, 23, 42, 0.55);
+	color: #f8fafc;
+	font-size: 0.9rem;
+}
+
+.ilove-cos-checkout-field textarea {
+	min-height: 4rem;
+	resize: vertical;
+}
+
+.ilove-cos-checkout-payments {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin-top: 0.35rem;
+}
+
+.ilove-cos-checkout-pm {
+	display: flex;
+	gap: 0.55rem;
+	align-items: flex-start;
+	padding: 0.55rem 0.65rem;
+	border-radius: 0.55rem;
+	border: 1px solid rgba(148, 163, 184, 0.18);
+	background: rgba(15, 23, 42, 0.35);
+	cursor: pointer;
+}
+
+.ilove-cos-checkout-pm:has(input:checked) {
+	border-color: rgba(45, 212, 191, 0.45);
+	background: rgba(6, 182, 212, 0.08);
+}
+
+.ilove-cos-checkout-pm input {
+	margin-top: 0.2rem;
+	flex-shrink: 0;
+}
+
+.ilove-cos-checkout-pm-body {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	min-width: 0;
+}
+
+.ilove-cos-checkout-pm-label {
+	font-size: 0.88rem;
+	color: #f1f5f9;
+}
+
+.ilove-cos-checkout-pm-help {
+	font-size: 0.76rem;
+	color: #94a3b8;
+	line-height: 1.35;
+}
+
+.ilove-cos-checkout-actions {
+	margin-top: 1.25rem;
+	flex-wrap: wrap;
+}

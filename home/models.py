@@ -336,19 +336,23 @@ class WishlistItem(models.Model):
 
 class SiteCartItem(models.Model):
     """
-    Coș „I Love”: produse/oferte marcate din Servicii, Shop, personalizate, magazin foto.
-    ref_key unic per utilizator (ex. servicii_offer:12, shop:dogs:3, shop_foto:40).
+    Coș de cumpărături (navbar): oferte Servicii, produse Shop / personalizate / magazin foto, publicitate.
+    ref_key unic per utilizator (ex. servicii_offer:12, shop:dogs:3, shop_foto:40, pub:…).
     """
 
     KIND_SERVICII_OFFER = "servicii_offer"
     KIND_SHOP = "shop"
     KIND_SHOP_CUSTOM = "shop_custom"
     KIND_SHOP_FOTO = "shop_foto"
+    KIND_PUBLICITATE = "publicitate"
+    KIND_PROMO_A2 = "promo_a2"
     KIND_CHOICES = [
         (KIND_SERVICII_OFFER, "Ofertă Servicii"),
         (KIND_SHOP, "Shop"),
         (KIND_SHOP_CUSTOM, "Shop produse personalizate"),
         (KIND_SHOP_FOTO, "Magazin foto"),
+        (KIND_PUBLICITATE, "Publicitate"),
+        (KIND_PROMO_A2, "Promovare animal (A2 / MyPet)"),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="site_cart_items")
@@ -369,6 +373,53 @@ class SiteCartItem(models.Model):
 
     def __str__(self):
         return f"{self.user} 🛒 {self.ref_key}"
+
+
+class SiteCartCheckoutIntent(models.Model):
+    """
+    Cerere de plată trimisă din coșul site (navbar): snapshot linii + date cumpărător + mod plată.
+    Procesarea reală (gateway, OP, factură) rămâne operațională; înregistrarea e pentru staff și istoric.
+    """
+
+    PAYMENT_CARD_ONLINE = "card_online"
+    PAYMENT_BANK_TRANSFER = "bank_transfer"
+    PAYMENT_INSTALLMENTS = "installments"
+    PAYMENT_COD_COURIER = "cod_courier"
+    PAYMENT_CASH_POS = "cash_pos"
+    PAYMENT_COMPANY_INVOICE = "company_invoice"
+    PAYMENT_CHOICES = [
+        (PAYMENT_CARD_ONLINE, "Card bancar online (Visa / Mastercard)"),
+        (PAYMENT_BANK_TRANSFER, "Transfer bancar / ordin de plată (OP)"),
+        (PAYMENT_INSTALLMENTS, "Plată în rate (bancă partener — confirmare manuală)"),
+        (PAYMENT_COD_COURIER, "Ramburs la livrare (curier)"),
+        (PAYMENT_CASH_POS, "Numerar sau card POS la punct de lucru / partener"),
+        (PAYMENT_COMPANY_INVOICE, "Factură pe firmă (date din fișă / completare manuală)"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="site_cart_checkout_intents")
+    payment_method = models.CharField("Mod de plată", max_length=32, choices=PAYMENT_CHOICES)
+    buyer_full_name = models.CharField("Nume complet", max_length=160)
+    buyer_email = models.EmailField("E-mail")
+    buyer_phone = models.CharField("Telefon", max_length=40, blank=True, default="")
+    buyer_county = models.CharField("Județ", max_length=120, blank=True, default="")
+    buyer_city = models.CharField("Oraș / localitate", max_length=120, blank=True, default="")
+    buyer_address = models.CharField("Adresă livrare / observații adresă", max_length=500, blank=True, default="")
+    buyer_company_display = models.CharField("Firmă (afișat)", max_length=255, blank=True, default="")
+    buyer_company_legal = models.CharField("Denumire juridică", max_length=255, blank=True, default="")
+    buyer_company_cui = models.CharField("CUI / CIF", max_length=40, blank=True, default="")
+    lines_json = models.JSONField("Linii coș (snapshot)", default=list)
+    total_lei = models.DecimalField("Total estimativ (lei)", max_digits=12, decimal_places=2, default=0)
+    unpriced_count = models.PositiveSmallIntegerField("Articole fără sumă în titlu", default=0)
+    buyer_note = models.TextField("Mesaj pentru echipă", blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Cerere plată coș site"
+        verbose_name_plural = "Cereri plată coș site"
+
+    def __str__(self):
+        return f"#{self.pk} {self.user} {self.total_lei} lei {self.payment_method}"
 
 
 @receiver(post_save, sender=User)
@@ -1188,6 +1239,74 @@ class PublicitateOrderLine(models.Model):
 
     def __str__(self):
         return f"{self.section}/{self.slot_code} ×{self.quantity}"
+
+
+class PublicitateOrderCreativeAccess(models.Model):
+    """Link securizat (token) + expirare: formular materiale după plată publicitate."""
+
+    order = models.OneToOneField(
+        PublicitateOrder,
+        on_delete=models.CASCADE,
+        related_name="creative_access",
+    )
+    secret_token = models.CharField("Token acces", max_length=64, unique=True, db_index=True)
+    expires_at = models.DateTimeField("Expiră la")
+    email_sent_at = models.DateTimeField("Email trimis la", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Acces materiale publicitate (comandă)"
+        verbose_name_plural = "Acces materiale publicitate"
+
+    def __str__(self):
+        return f"PUB-creative #{self.order_id}"
+
+
+class PublicitateLineCreative(models.Model):
+    """Materiale încărcate per linie comandă (imagine, link, note) — după submit se aplică pe site unde e integrat."""
+
+    STATUS_PENDING = "pending"
+    STATUS_LIVE = "live"
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "În așteptare încărcare"),
+        (STATUS_LIVE, "Încărcat / aplicat pe site"),
+    ]
+
+    line = models.OneToOneField(
+        PublicitateOrderLine,
+        on_delete=models.CASCADE,
+        related_name="creative_bundle",
+    )
+    image = models.ImageField(
+        "Imagine banner",
+        upload_to="pub_creative/%Y/%m/",
+        null=True,
+        blank=True,
+    )
+    external_link = models.CharField("Link țintă (https)", max_length=500, blank=True, default="")
+    extra_notes = models.TextField("Detalii / text reclamă", blank=True, default="")
+    status = models.CharField(
+        "Status",
+        max_length=16,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING,
+        db_index=True,
+    )
+    submitted_at = models.DateTimeField("Trimis la", null=True, blank=True)
+    live_at = models.DateTimeField("Live pe site la", null=True, blank=True)
+    review_until = models.DateTimeField(
+        "Verificare staff până la",
+        null=True,
+        blank=True,
+        help_text="După încărcare: fereastră recomandată pentru verificare (ex. +12h).",
+    )
+
+    class Meta:
+        verbose_name = "Materiale creative linie publicitate"
+        verbose_name_plural = "Materiale creative linii publicitate"
+
+    def __str__(self):
+        return f"{self.line.section}/{self.line.slot_code} [{self.status}]"
 
 
 class TransportOperatorProfile(models.Model):

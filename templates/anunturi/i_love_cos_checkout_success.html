@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Cerere înregistrată | Coș EU-ADOPT{% endblock %}
+{% block body_class %}page-ilove page-ilove--cart-checkout page-site-cart-checkout-success euadopt-checkout-intra-skin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/checkout-intra-skin.css' %}?v=2" type="text/css" media="screen" />
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<div class="euadopt-pay-card" aria-label="Confirmare">
+		<h1 class="euadopt-pay-title">Cererea ta a fost înregistrată</h1>
+		{% if intent %}
+		<p class="euadopt-pay-sub">Referință cerere plată coș: <strong>#{{ intent.pk }}</strong>. Total estimativ: <strong>{{ intent.total_lei }} lei</strong>. Am trimis o copie a rezumatului la <strong>{{ intent.buyer_email }}</strong> dacă serverul de e-mail permite trimiterea.</p>
+		{% else %}
+		<p class="euadopt-pay-sub">Cererea a fost trimisă. Dacă nu vezi număr de referință mai sus, verifică coșul sau istoricul din cont.</p>
+		{% endif %}
+		<div class="euadopt-pay-actions">
+			<a href="{% url 'i_love_cos' %}" class="euadopt-pay-btn">Înapoi la coș</a>
+			<a href="{% url 'i_love' %}" class="euadopt-pay-btn euadopt-pay-btn--ghost">I Love</a>
+		</div>
+	</div>
+</section>
+{% endblock %}

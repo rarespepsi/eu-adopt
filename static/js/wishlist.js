@@ -50,8 +50,13 @@
 
 				// Update navbar badge if present (desktop meniu + bandă mobilă)
 				if (typeof data.user_wishlist_count === 'number') {
+					var wn = data.user_wishlist_count;
 					document.querySelectorAll('[data-wishlist-count]').forEach(function (nav) {
-						nav.textContent = String(data.user_wishlist_count);
+						nav.textContent = String(wn);
+					});
+					var wHas = wn > 0;
+					document.querySelectorAll('[data-a0-wishlist-nav]').forEach(function (el) {
+						el.classList.toggle('a0-nav-has-items', wHas);
 					});
 				}
 

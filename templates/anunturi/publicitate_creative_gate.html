@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Materiale publicitate | EU Adopt{% endblock %}
+{% block body_class %}page-publicitate-creative-gate{% endblock %}
+{% block content %}
+<section class="wrapper" id="main_content" style="max-width:36rem;margin:2rem auto;padding:0 1rem;">
+	<h1 style="font-size:1.25rem;color:#37474f;">Materiale publicitate</h1>
+	<p style="color:#c62828;font-weight:600;">{{ pub_creative_error|default:"Acces indisponibil." }}</p>
+	<p style="font-size:0.92rem;color:#546e7a;line-height:1.5;">Dacă aveți cont pe EU-Adopt, puteți deschide <a href="{% url 'account' %}">Contul meu</a> și secțiunea Publicitate — materiale după plată.</p>
+</section>
+{% endblock %}

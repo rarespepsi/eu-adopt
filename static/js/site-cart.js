@@ -1,4 +1,4 @@
-// Coș I Love: toggle pe carduri + badge navbar
+// Coș cumpărături: toggle pe carduri + contor navbar
 (function () {
 	'use strict';
 
@@ -35,6 +35,10 @@
 		document.querySelectorAll('[data-site-cart-count]').forEach(function (el) {
 			el.textContent = String(n);
 		});
+		var has = typeof n === 'number' && n > 0;
+		document.querySelectorAll('[data-a0-site-cart-nav]').forEach(function (el) {
+			el.classList.toggle('a0-nav-has-items', has);
+		});
 	}
 
 	function syncAllByRefKey(refKey, active) {
@@ -66,10 +70,37 @@
 			},
 			body: fd.toString()
 		})
-			.then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+			.then(function (r) {
+				return r.text().then(function (text) {
+					var d = null;
+					if (text) {
+						try {
+							d = JSON.parse(text);
+						} catch (e) {
+							d = null;
+						}
+					}
+					return { ok: r.ok, status: r.status, d: d, nonJson: !d && !!text };
+				});
+			})
 			.then(function (x) {
 				if (!x.ok || !x.d || !x.d.ok) {
 					if (x.d && x.d.error === 'login_required') return;
+					var hint = 'site-cart toggle eșuat';
+					if (x.status === 403) {
+						hint += ': CSRF/forbidden (403). Reîncarcă pagina sau verifică că ești pe același domeniu.';
+					} else if (x.status === 401) {
+						hint += ': nu ești logat (401).';
+					} else if (x.d && x.d.error) {
+						hint += ': ' + x.d.error;
+					} else if (x.nonJson) {
+						hint += ': răspuns non-JSON (status ' + x.status + ').';
+					} else if (!x.ok) {
+						hint += ': HTTP ' + x.status;
+					}
+					try {
+						console.warn('[EU-Adopt]', hint, x);
+					} catch (e2) {}
 					return;
 				}
 				var act = !!x.d.active;
@@ -78,7 +109,7 @@
 				if (typeof x.d.user_site_cart_count === 'number') {
 					updateNavCartCount(x.d.user_site_cart_count);
 				}
-				// Elimină rândul din coș pe I Love
+				// Elimină rândul din pagina coș cumpărături (layout I Love)
 				if (document.body.classList.contains('page-ilove') && !act) {
 					var row = btn.closest('.ilove-cart-row');
 					if (row && row.parentNode) row.remove();
@@ -86,7 +117,7 @@
 					if (list && !list.querySelector('.ilove-cart-row')) {
 						var empty = document.createElement('p');
 						empty.className = 'ilove-cart-empty';
-						empty.textContent = 'Nu ai produse în coș. Apasă coșul pe oferte sau în Shop.';
+						empty.textContent = 'Nu ai articole în coș. Adaugă din Servicii, Shop, Magazin foto, promovare MyPet (🛒) sau mută linii din Publicitate („Continuă în coș site”).';
 						list.appendChild(empty);
 					}
 				}

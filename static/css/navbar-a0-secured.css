@@ -1224,3 +1224,27 @@ body.page-animale #A0 {
 		right: 3px !important;
 	}
 }
+
+/* I Love + Coș: două linkuri în același <li> (meniu desktop) */
+#A0 #menu-main-menu > li.a0-nav-ilove-start {
+	display: inline-flex !important;
+	align-items: center !important;
+	flex-wrap: wrap !important;
+	gap: 0.15rem !important;
+}
+#A0 #menu-main-menu > li.a0-nav-ilove-start .a0-nav-ilove-sep {
+	color: rgba(255, 255, 255, 0.55) !important;
+	font-weight: 600 !important;
+}
+
+/* I Love / Coș: galben când există articole (contor > 0) */
+#A0 #menu-main-menu > li.a0-nav-ilove-start > a.a0-nav-has-items {
+	color: #ffeb3b !important;
+	text-shadow: 0 0 1px rgba(0, 0, 0, 0.35);
+	font-weight: 800 !important;
+}
+#A0 #main_menu .a0-mobile-shortcuts .a0-ms.a0-nav-has-items {
+	color: #ffeb3b !important;
+	text-shadow: 0 0 1px rgba(0, 0, 0, 0.35);
+	font-weight: 800 !important;
+}

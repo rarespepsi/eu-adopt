@@ -2,33 +2,33 @@
 {% load static %}
 
 {% block title %}I Love – EU-ADOPT{% endblock %}
-{% block body_class %}page-ilove{% endblock %}
+{% block body_class %}page-ilove page-ilove--pets{% endblock %}
 
 {% block extra_css_after %}
-<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=14" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=20" type="text/css" media="screen" />
 {% endblock %}
 
 {% block content %}
-<main id="ILW" class="ilove-page" aria-label="I Love">
+<main id="ILW" class="ilove-page" aria-label="I Love — inimioare">
 	<div class="ilove-wire">
 		<aside class="ilove-wire__col ilove-wire__col--left" aria-label="Casete stânga">
 			<div class="ilove-case ilove-case--a5">
-				<span class="ilove-case__ref">IL.L1</span>
-				<span class="ilove-case__mark">Zona Publi</span>
+				<span class="ilove-case__ref">IL-H.L1</span>
+				<span class="ilove-case__mark">Promo lateral (favoriți)</span>
 			</div>
 			<div class="ilove-case ilove-case--a5">
-				<span class="ilove-case__ref">IL.L2</span>
-				<span class="ilove-case__mark">Zona Publi</span>
+				<span class="ilove-case__ref">IL-H.L2</span>
+				<span class="ilove-case__mark">Spațiu sponsor vertical</span>
 			</div>
 		</aside>
 
 		<div class="ilove-wire__main">
 			<header class="ilove-wire__head">
 				<h1>❤️ I Love</h1>
-				<p>Stânga: animale cu inimioară. Dreapta: coșul tău (oferte și produse marcate cu 🛒).</p>
+				<p class="ilove-wire__head-lead">Animalele tale cu inimioară.</p>
 			</header>
 
-			<div class="ilove-main-caseta" aria-label="I Love — animale și coș">
+			<div class="ilove-main-caseta" aria-label="I Love — animale cu inimioară">
 				<div class="ilove-main-split">
 					<section class="ilove-main-split__pane ilove-main-split__pane--pets" aria-label="Animale cu inimioara">
 						<h2 class="ilove-split-heading">Cu inimioară</h2>
@@ -84,37 +84,18 @@
 							{% endfor %}
 						</div>
 					</section>
-					<section class="ilove-main-split__pane ilove-main-split__pane--cart" aria-label="Cos cumparaturi">
-						<h2 class="ilove-split-heading">Coșul meu</h2>
-						<div class="ilove-cart-list">
-							{% for item in cart_items %}
-							<div class="ilove-cart-row">
-								<div class="ilove-cart-row-main">
-									{% if item.detail_url %}
-									<a href="{{ item.detail_url }}" class="ilove-cart-row-link">{{ item.title }}</a>
-									{% else %}
-									<span class="ilove-cart-row-link ilove-cart-row-link--text">{{ item.title }}</span>
-									{% endif %}
-								</div>
-								<button type="button" class="ilove-cart-remove is-active" data-site-cart-toggle data-kind="{{ item.kind }}" data-ref-key="{{ item.ref_key }}" data-title="{{ item.title|escape }}" data-detail-url="{{ item.detail_url|default:''|escape }}" aria-pressed="true" title="Scoate din coș">🛒</button>
-							</div>
-							{% empty %}
-							<p class="ilove-cart-empty">Nu ai produse în coș. Apasă 🛒 pe oferte în Servicii sau pe produse în Shop.</p>
-							{% endfor %}
-						</div>
-					</section>
 				</div>
 			</div>
 		</div>
 
 		<aside class="ilove-wire__col ilove-wire__col--right" aria-label="Casete dreapta">
 			<div class="ilove-case ilove-case--a6">
-				<span class="ilove-case__ref">IL.R1</span>
-				<span class="ilove-case__mark">Zona Publi</span>
+				<span class="ilove-case__ref">IL-H.R1</span>
+				<span class="ilove-case__mark">Anunț portret</span>
 			</div>
 			<div class="ilove-case ilove-case--a6">
-				<span class="ilove-case__ref">IL.R2</span>
-				<span class="ilove-case__mark">Zona Publi</span>
+				<span class="ilove-case__ref">IL-H.R2</span>
+				<span class="ilove-case__mark">Recomandări parteneri</span>
 			</div>
 		</aside>
 	</div>
