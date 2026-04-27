@@ -1,89 +1,42 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block title %}Plată demo publicitate | EU Adopt{% endblock %}
-{% block body_class %}page-publicitate-checkout-demo{% endblock %}
+{% block body_class %}page-publicitate-checkout-demo euadopt-checkout-intra-skin{% endblock %}
 
 {% block extra_css %}
-<style>
-	body.page-publicitate-checkout-demo #main_content {
-		min-height: calc(100vh - var(--nav-h, 64px));
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0.8rem;
-		box-sizing: border-box;
-	}
-	.pub-pay-wrap {
-		width: min(720px, 100%);
-		background: #fff;
-		border: 1px solid #dbe3ef;
-		border-radius: 12px;
-		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-		padding: 1rem 1.1rem;
-	}
-	.pub-pay-wrap h1 { margin: 0 0 0.4rem; font-size: 1.1rem; font-weight: 800; color: #1565c0; }
-	.pub-pay-wrap > p { margin: 0 0 0.85rem; font-size: 0.86rem; color: #455a64; }
-	.pub-pay-lines {
-		border: 1px solid #d8e7fb;
-		background: #f5f9ff;
-		border-radius: 10px;
-		padding: 0.55rem 0.65rem;
-		font-size: 0.82rem;
-		max-height: min(40vh, 280px);
-		overflow-y: auto;
-	}
-	.pub-pay-lines li { margin: 0.25rem 0; padding-left: 0.35rem; border-left: 3px solid #90caf9; }
-	.pub-pay-total { margin-top: 0.65rem; font-size: 0.95rem; font-weight: 800; color: #1b5e20; }
-	.pub-pay-actions { margin-top: 0.9rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-	.pub-pay-actions form { display: inline; }
-	.pub-pay-btn {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0.45rem 0.9rem;
-		border-radius: 8px;
-		border: 1px solid #1565c0;
-		background: #1565c0;
-		color: #fff;
-		font-size: 0.84rem;
-		font-weight: 800;
-		cursor: pointer;
-	}
-	.pub-pay-btn--ghost {
-		background: #fff;
-		color: #1565c0;
-		text-decoration: none;
-	}
-	.pub-pay-note { font-size: 0.78rem; color: #6d4c41; margin-top: 0.75rem; line-height: 1.4; }
-</style>
+<link rel="stylesheet" href="{% static 'css/checkout-intra-skin.css' %}?v=1" type="text/css" media="screen" />
 {% endblock %}
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
-	<div class="pub-pay-wrap">
-		<h1>Plată demo (simulare)</h1>
-		<p>Procesator: <strong>demo</strong> — fără card real. La go-live înlocuim acest pas cu gateway-ul ales; comanda și liniile rămân în DB.</p>
+	<div class="euadopt-pay-card">
+		<h1 class="euadopt-pay-title">Notă de plată (demo)</h1>
+		<p class="euadopt-pay-sub">Procesator: <strong style="color:#cbd5e1;">demo</strong> — fără card real. La go-live acest pas se înlocuiește cu gateway-ul ales; comanda rămâne în DB.</p>
 
-		<ul class="pub-pay-lines" aria-label="Linii comandă">
-			{% for line in pub_order_lines %}
-			<li>
-				<strong>{{ line.section|upper }} · {{ line.slot_code }}</strong> — {{ line.title_snapshot }}<br />
-				{{ line.quantity }} × {{ line.unit_price_lei }} lei / {{ line.unit_label }} = <strong>{{ line.line_total_lei }} lei</strong>
-				{% if line.buyer_note %}<br /><span style="color:#5d4037;">Notă: {{ line.buyer_note|truncatechars:120 }}</span>{% endif %}
-			</li>
-			{% empty %}
-			<li>Fără linii.</li>
-			{% endfor %}
-		</ul>
-		<div class="pub-pay-total">Total comandă #{{ pub_order.pk }}: {{ pub_order.total_lei }} lei</div>
-
-		<div class="pub-pay-actions">
-			<form method="post" action="{% url 'publicitate_checkout_demo_confirm' %}">
-				{% csrf_token %}
-				<button type="submit" class="pub-pay-btn">Confirmă plata demo</button>
-			</form>
-			<a class="pub-pay-btn pub-pay-btn--ghost" href="{% url 'publicitate_harta' %}">Înapoi la hartă</a>
+		<div class="euadopt-pay-box" aria-label="Linii comandă">
+			<ul style="margin:0;padding-left:0;list-style:none;">
+				{% for line in pub_order_lines %}
+				<li>
+					<strong>{{ line.section|upper }} · {{ line.slot_code }}</strong> — {{ line.title_snapshot }}<br />
+					{{ line.quantity }} × {{ line.unit_price_lei }} lei / {{ line.unit_label }} = <strong>{{ line.line_total_lei }} lei</strong>
+					{% if line.buyer_note %}<br /><span style="color:#94a3b8;">Notă: {{ line.buyer_note|truncatechars:120 }}</span>{% endif %}
+				</li>
+				{% empty %}
+				<li>Fără linii.</li>
+				{% endfor %}
+			</ul>
+			<div class="euadopt-pay-total">Total comandă #{{ pub_order.pk }}: {{ pub_order.total_lei }} lei</div>
 		</div>
-		<p class="pub-pay-note">După confirmare: sloturile <strong>PT</strong> (P4.3, P5.1–P5.3) se actualizează din notă (JSON sau URL). <strong>Burtieră</strong> HOME primește textul din notă. Alte zone: înregistrate în comandă pentru procesare manuală.</p>
+
+		<div class="euadopt-pay-actions">
+			<form method="post" action="{% url 'publicitate_checkout_demo_confirm' %}" style="display:inline;">
+				{% csrf_token %}
+				<button type="submit" class="euadopt-pay-btn">Confirmă plata demo</button>
+			</form>
+			<a class="euadopt-pay-btn euadopt-pay-btn--ghost" href="{% url 'publicitate_harta' %}">Înapoi la hartă</a>
+		</div>
+		<p class="euadopt-pay-note">După confirmare: sloturile <strong>PT</strong> (P4.3, P5.1–P5.3) se actualizează din notă. <strong>Burtiera</strong> HOME primește textul din notă. Alte zone: înregistrate pentru procesare manuală.</p>
 	</div>
 </section>
 {% endblock %}

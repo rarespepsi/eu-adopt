@@ -130,8 +130,86 @@
 			if (!modal.hidden && (e.key === "Escape" || e.key === "Esc")) closeModal();
 		});
 
-		function renderThread(messages) {
+		function renderLocationStrip(strip) {
+			if (!strip || !strip.displayName) return;
+			var hasLoc = strip.mapsUrl || (strip.lines && strip.lines.length);
+			if (!hasLoc) return;
+			var card = document.createElement("div");
+			card.className = "collab-svc-client-card";
+			var ct = document.createElement("div");
+			ct.className = "collab-svc-client-card-title";
+			ct.textContent = (strip.cardTitle || "Fișă") + ": " + (strip.displayName || "");
+			card.appendChild(ct);
+			(strip.lines || []).forEach(function (ln) {
+				var row = document.createElement("div");
+				row.className = "collab-svc-client-card-line";
+				row.textContent = ln;
+				card.appendChild(row);
+			});
+			var act = document.createElement("div");
+			act.className = "collab-svc-client-card-actions";
+			if (strip.mapsUrl) {
+				var mapA = document.createElement("a");
+				mapA.href = strip.mapsUrl;
+				mapA.target = "_blank";
+				mapA.rel = "noopener noreferrer";
+				mapA.className = "collab-svc-client-card-map-btn";
+				mapA.textContent = "DU-MĂ LA LOCAȚIE";
+				act.appendChild(mapA);
+				var shareBtn = document.createElement("button");
+				shareBtn.type = "button";
+				shareBtn.className = "collab-svc-client-card-share-btn";
+				shareBtn.textContent = "Distribuie locația";
+				shareBtn.addEventListener("click", function () {
+					var url = strip.mapsUrl;
+					var text = strip.shareText || "";
+					var title = strip.shareTitle || "EU-Adopt";
+					if (navigator.share) {
+						navigator.share({ title: title, text: text, url: url }).catch(function () {});
+						return;
+					}
+					if (navigator.clipboard && navigator.clipboard.writeText) {
+						navigator.clipboard.writeText(url).then(function () {
+							alert("Link copiat în clipboard.");
+						}).catch(function () {
+							window.prompt("Copiază linkul:", url);
+						});
+						return;
+					}
+					window.prompt("Copiază linkul:", url);
+				});
+				act.appendChild(shareBtn);
+			}
+			card.appendChild(act);
+			threadEl.appendChild(card);
+		}
+
+		function renderThread(messages, threadData) {
 			threadEl.innerHTML = "";
+			var td = threadData || {};
+			var strip = null;
+			if (mode === "collaborator" && td.client_card) {
+				var c = td.client_card;
+				strip = {
+					displayName: c.client_name,
+					cardTitle: "Fișă client",
+					lines: c.lines || [],
+					mapsUrl: c.maps_url || "",
+					shareText: c.share_text || "",
+					shareTitle: "Locație client EU-Adopt",
+				};
+			} else if (mode === "client" && td.partner_card) {
+				var p = td.partner_card;
+				strip = {
+					displayName: p.partner_name,
+					cardTitle: "Locație partener",
+					lines: p.lines || [],
+					mapsUrl: p.maps_url || "",
+					shareText: p.share_text || "",
+					shareTitle: "Locație partener EU-Adopt",
+				};
+			}
+			renderLocationStrip(strip);
 			if (!messages || !messages.length) {
 				var empty = document.createElement("div");
 				empty.className = "mypet-msg-thread-empty";
@@ -167,7 +245,7 @@
 				})
 				.then(function (data) {
 					if (!data || !data.ok) throw new Error("Thread indisponibil.");
-					renderThread(data.messages || []);
+					renderThread(data.messages || [], data);
 					applyUnreadBadge(data);
 					document.querySelectorAll(".mypet-msg-thread-item[data-thread-key]").forEach(function (it) {
 						it.classList.toggle("is-active", (it.getAttribute("data-thread-key") || "") === state.threadKey);
@@ -368,5 +446,24 @@
 			state.listUrl = listUrl;
 			openListModal();
 		};
+
+		if (cfg.exposeThreadOpenFn && typeof cfg.exposeThreadOpenFn === "string") {
+			window[cfg.exposeThreadOpenFn] = function (collaboratorId, contextType, contextRef) {
+				var cid = parseInt(collaboratorId, 10) || 0;
+				if (!cid) return;
+				state.collaboratorId = cid;
+				state.contextType = contextType ? String(contextType).trim().toLowerCase() : "general";
+				if (!state.contextType) state.contextType = "general";
+				state.contextRef =
+					contextRef != null ? String(contextRef).trim().slice(0, 120) : "";
+				state.peerId = null;
+				state.listUrl = listUrl;
+				modal.hidden = false;
+				modal.style.display = "flex";
+				if (threadsEl) threadsEl.innerHTML = "";
+				if (title) title.textContent = "Mesaje cu partenerul";
+				openThread();
+			};
+		}
 	};
 })(window);

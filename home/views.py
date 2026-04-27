@@ -5,7 +5,7 @@ REGULĂ: Orice modificare în home (punct, virgulă, orice) doar cu aprobarea ti
 """
 import json
 import logging
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 import random
 import re
 import secrets
@@ -28,6 +28,7 @@ from django.conf import settings
 from django.core.mail import send_mail, EmailMessage
 from decimal import Decimal
 from django.db import transaction
+import math
 import os
 from django.views.decorators.http import require_POST, require_http_methods
 from django.core.cache import cache
@@ -462,14 +463,22 @@ def _messages_active_since():
 
 
 def _adopter_messaging_allowed(pet, user) -> bool:
-    """Mesaje libere (textarea Send) doar după ce owner a acceptat cererea de adopție."""
+    """
+    Mesaje libere din fișă către owner (hibrid): același criteriu ca pe fișa publică —
+    utilizator autentificat, nu proprietarul, poate adopta, anunț publicat, animal nu e deja adoptat.
+    """
     if not user or not user.is_authenticated:
         return False
-    return AdoptionRequest.objects.filter(
-        animal=pet,
-        adopter=user,
-        status=AdoptionRequest.STATUS_ACCEPTED,
-    ).exists()
+    if pet.owner_id == user.id:
+        return False
+    if not getattr(pet, "is_published", True):
+        return False
+    if (pet.adoption_state or "").strip() == AnimalListing.ADOPTION_STATE_ADOPTED:
+        return False
+    ap = getattr(user, "account_profile", None)
+    if ap and not ap.can_adopt_animals:
+        return False
+    return True
 
 
 def _adoption_state_label(state: str) -> str:
@@ -3656,7 +3665,6 @@ def dog_profile_view(request, pk):
     }
 
     adoption_request_status = None
-    adopter_messaging_unlocked = False
     if request.user.is_authenticated and request.user.pk != listing.owner_id:
         last_ar = (
             AdoptionRequest.objects.filter(animal=listing, adopter=request.user)
@@ -3669,8 +3677,6 @@ def dog_profile_view(request, pk):
             AdoptionRequest.STATUS_FINALIZED,
         ):
             adoption_request_status = last_ar.status
-        if last_ar and last_ar.status == AdoptionRequest.STATUS_ACCEPTED:
-            adopter_messaging_unlocked = True
 
     # Promovare plătită: orice utilizator autentificat (sponsor), nu doar proprietarul.
     promote_allowed = bool(
@@ -3691,17 +3697,28 @@ def dog_profile_view(request, pk):
     after_transport = (request.GET.get("after_transport") == "1")
     has_county = _adopter_has_county_for_transport(request.user) if request.user.is_authenticated else False
 
+    can_send_pet_message = bool(
+        request.user.is_authenticated
+        and request.user.pk != listing.owner_id
+        and viewer_can_adopt
+        and listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
+    )
+    # Buton „VREAU SĂ ADOPT”: separat de mesaje — vizibil și neautentificaților (login la click), ascuns doar owner / adoptat.
+    show_pet_adopt_corner = bool(
+        listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
+        and (
+            not request.user.is_authenticated
+            or request.user.pk != listing.owner_id
+        )
+    )
     ctx = {
         "pet": pet,
-        "can_send_pet_message": bool(
-            request.user.is_authenticated
-            and request.user.pk != listing.owner_id
-            and viewer_can_adopt
-            and listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
-        ),
+        "can_send_pet_message": can_send_pet_message,
+        "show_pet_adopt_corner": show_pet_adopt_corner,
         "pet_owner_id": listing.owner_id,
         "adoption_request_status": adoption_request_status,
-        "adopter_messaging_unlocked": adopter_messaging_unlocked,
+        # Hibrid: mesaje înainte de accept — același prag ca can_send_pet_message (șabloane vechi).
+        "adopter_messaging_unlocked": can_send_pet_message,
         "promote_allowed": promote_allowed,
         "adoption_after_transport": bool(after_transport),
         "adoption_transport_option_available": bool(has_county and not after_transport),
@@ -4227,6 +4244,8 @@ def _unified_inbox_collab_client_rows(user, limit=20):
             {
                 "collaborator_id": collab_id,
                 "collaborator_name": cname or f"Colaborator {collab_id}",
+                "context_type": ct,
+                "context_ref": cref or "",
                 "context_label": _collab_context_label(ct),
                 "unread": unread,
                 "preview": preview,
@@ -5966,6 +5985,9 @@ def _i_love_pet_from_demo(dog: dict) -> dict:
         "imagine_fallback": dog.get("imagine_fallback", DEMO_DOG_IMAGE),
         "imagine_url": "",
         "listing_available": True,
+        "ilove_msg_demo": True,
+        "ilove_msg_unread": 0,
+        "ilove_msg_owner_inbox": False,
     }
 
 
@@ -5984,6 +6006,9 @@ def _i_love_pet_from_listing(listing: AnimalListing) -> dict:
         "imagine_fallback": DEMO_DOG_IMAGE,
         "imagine_url": img_url,
         "listing_available": bool(listing.is_published),
+        "ilove_msg_demo": False,
+        "ilove_msg_unread": 0,
+        "ilove_msg_owner_inbox": False,
     }
 
 
@@ -6005,6 +6030,44 @@ def i_love_view(request):
             pets.append(_i_love_pet_from_demo(by_demo[animal_id]))
         elif animal_id in listings:
             pets.append(_i_love_pet_from_listing(listings[animal_id]))
+
+    user = request.user
+    active_since = _messages_active_since()
+    owned_wish_pks = [p["pk"] for p in pets if not p.get("ilove_msg_demo") and listings.get(p["pk"], None) and listings[p["pk"]].owner_id == user.id]
+    unread_owned = {}
+    if owned_wish_pks:
+        for row in (
+            PetMessage.objects.filter(
+                animal_id__in=owned_wish_pks,
+                receiver=user,
+                is_read=False,
+                created_at__gte=active_since,
+            )
+            .values("animal_id")
+            .annotate(c=Count("id"))
+        ):
+            unread_owned[int(row["animal_id"])] = int(row["c"])
+    for p in pets:
+        if p.get("ilove_msg_demo"):
+            continue
+        pk = int(p["pk"])
+        lst = listings.get(pk)
+        if not lst:
+            continue
+        if lst.owner_id == user.id:
+            p["ilove_msg_owner_inbox"] = True
+            p["ilove_msg_unread"] = int(unread_owned.get(pk, 0))
+        else:
+            p["ilove_msg_owner_inbox"] = False
+            p["ilove_msg_unread"] = int(
+                PetMessage.objects.filter(
+                    animal_id=pk,
+                    receiver=user,
+                    sender_id=lst.owner_id,
+                    is_read=False,
+                    created_at__gte=active_since,
+                ).count()
+            )
 
     cart_items = []
     if request.user.is_authenticated:
@@ -6204,7 +6267,7 @@ def pet_send_message_view(request, pk: int):
         return JsonResponse(
             {
                 "ok": False,
-                "error": "Mesajele libere sunt disponibile după ce organizația acceptă cererea de adopție (butonul „VREAU SĂ ADOPT”).",
+                "error": "Nu poți trimite mesaj în această situație (cont, anunț sau animal deja adoptat).",
             },
             status=403,
         )
@@ -6221,6 +6284,68 @@ def pet_send_message_view(request, pk: int):
         is_read=False,
     )
     return JsonResponse({"ok": True})
+
+
+def _owner_pet_message_unread_counts_map(user):
+    """
+    Pentru proprietar: id animal (string) -> număr mesaje necitite (receiver=user, fereastra activă).
+    Aliniat cu agregarea din mypet_view (PetMessage, is_read=False, created_at >= active_since).
+    """
+    if not user or not getattr(user, "is_authenticated", False):
+        return {}
+    active_since = _messages_active_since()
+    owned_ids = list(AnimalListing.objects.filter(owner=user).values_list("pk", flat=True))
+    if not owned_ids:
+        return {}
+    out = {}
+    for row in (
+        PetMessage.objects.filter(
+            animal_id__in=owned_ids,
+            receiver=user,
+            is_read=False,
+            created_at__gte=active_since,
+        )
+        .values("animal_id")
+        .annotate(c=Count("id"))
+    ):
+        out[str(int(row["animal_id"]))] = int(row["c"])
+    return out
+
+
+def _adopter_pet_message_unread_total(user):
+    """Total mesaje pet necitite ca adoptator (receiver=user, animalul nu îți aparține)."""
+    if not user or not getattr(user, "is_authenticated", False):
+        return 0
+    active_since = _messages_active_since()
+    return int(
+        PetMessage.objects.filter(
+            receiver=user,
+            is_read=False,
+            created_at__gte=active_since,
+        )
+        .exclude(animal__owner_id=user.id)
+        .count()
+    )
+
+
+def _mypet_message_badge_payload(user):
+    """JSON comun: plic navbar + plicuri pe rânduri MyPet + inbox adoptator."""
+    nav = get_navbar_unread_counts(user)
+    return {
+        "navbar_unread_total": int(nav.get("total") or 0),
+        "owner_pet_unread": _owner_pet_message_unread_counts_map(user),
+        "adopter_pet_unread_total": _adopter_pet_message_unread_total(user),
+    }
+
+
+@login_required
+@mypet_pf_org_required_json
+def mypet_messages_unread_badges_view(request):
+    """GET: sincronizare contoare mesaje (navbar + rânduri animal + adoptator)."""
+    if request.method != "GET":
+        return JsonResponse({"ok": False, "error": "Metodă nepermisă."}, status=405)
+    payload = _mypet_message_badge_payload(request.user)
+    return JsonResponse({"ok": True, **payload})
 
 
 @login_required
@@ -6320,7 +6445,8 @@ def mypet_messages_list_view(request, pk: int):
         )
         for o in out:
             o.pop("_sort_ts", None)
-    return JsonResponse({"ok": True, "threads": out, "scope": scope})
+    badges = _mypet_message_badge_payload(request.user)
+    return JsonResponse({"ok": True, "threads": out, "scope": scope, **badges})
 
 
 @login_required
@@ -6384,13 +6510,13 @@ def mypet_messages_thread_view(request, pk: int, sender_id: int):
             "can_extend": can_extend,
             "can_next": can_next,
         }
-    nav_unread = get_navbar_unread_counts(user)
+    badges = _mypet_message_badge_payload(user)
     return JsonResponse(
         {
             "ok": True,
             "messages": items,
             "unread_total": unread_total,
-            "navbar_unread_total": nav_unread["total"],
+            **badges,
             "adoption_request": adoption_payload,
         }
     )
@@ -6418,7 +6544,8 @@ def mypet_messages_reply_view(request, pk: int, sender_id: int):
         body=text,
         is_read=False,
     )
-    return JsonResponse({"ok": True})
+    badges = _mypet_message_badge_payload(request.user)
+    return JsonResponse({"ok": True, **badges})
 
 
 @login_required
@@ -6521,7 +6648,8 @@ def adopter_messages_list_view(request):
         out.sort(key=_adopter_list_sort_key)
         for o in out:
             o.pop("_sort_ts", None)
-    return JsonResponse({"ok": True, "threads": out, "scope": scope})
+    badges = _mypet_message_badge_payload(request.user)
+    return JsonResponse({"ok": True, "threads": out, "scope": scope, **badges})
 
 
 @login_required
@@ -6559,14 +6687,14 @@ def adopter_messages_thread_view(request, pk: int):
             "is_read": bool(msg.is_read),
         })
     unread_total = PetMessage.objects.filter(receiver=user, is_read=False, created_at__gte=active_since).count()
-    nav_unread = get_navbar_unread_counts(user)
+    badges = _mypet_message_badge_payload(user)
     return JsonResponse(
         {
             "ok": True,
             "messages": items,
             "animal_name": pet.name or "",
             "unread_total": unread_total,
-            "navbar_unread_total": nav_unread["total"],
+            **badges,
         }
     )
 
@@ -6586,7 +6714,7 @@ def adopter_messages_reply_view(request, pk: int):
         return JsonResponse(
             {
                 "ok": False,
-                "error": "Poți trimite mesaje după acceptarea cererii de adopție de către organizație.",
+                "error": "Nu poți trimite mesaj în această situație (cont, anunț sau animal deja adoptat).",
             },
             status=403,
         )
@@ -6602,7 +6730,8 @@ def adopter_messages_reply_view(request, pk: int):
         body=text,
         is_read=False,
     )
-    return JsonResponse({"ok": True})
+    badges = _mypet_message_badge_payload(user)
+    return JsonResponse({"ok": True, **badges})
 
 
 def _collab_context_choice_keys():
@@ -6776,6 +6905,10 @@ def collab_inbox_thread_view(request):
         created_at__gte=active_since,
     ).count()
     nav_unread = get_navbar_unread_counts(collab)
+    client_card = None
+    cli = get_user_model().objects.filter(pk=client_id).first()
+    if cli:
+        client_card = _collab_peer_location_card(cli)
     return JsonResponse(
         {
             "ok": True,
@@ -6783,6 +6916,7 @@ def collab_inbox_thread_view(request):
             "context_label": _collab_context_label(ct),
             "unread_total": unread_total,
             "navbar_unread_total": nav_unread["total"],
+            "client_card": client_card,
         }
     )
 
@@ -6974,6 +7108,7 @@ def collab_client_thread_view(request):
         .count()
     )
     nav_unread = get_navbar_unread_counts(user)
+    partner_card = _partner_location_card_for_client(collab)
     return JsonResponse(
         {
             "ok": True,
@@ -6981,6 +7116,7 @@ def collab_client_thread_view(request):
             "context_label": _collab_context_label(ct),
             "unread_total": collab_client_unread,
             "navbar_unread_total": nav_unread["total"],
+            "partner_card": partner_card,
         }
     )
 
@@ -7459,8 +7595,145 @@ def _user_can_request_public_collab_offer(user) -> bool:
     )
 
 
+def _google_maps_search_url_from_query(query: str) -> str:
+    q = (query or "").strip()
+    if not q:
+        return ""
+    return f"https://www.google.com/maps/search/?api=1&query={quote(q, safe='')}"
+
+
+def _user_location_maps_query(user) -> str:
+    """
+    Șir pentru căutare Google Maps: firmă (ONG / colaborator) sau localitate PF.
+    """
+    prof = getattr(user, "profile", None)
+    if not prof:
+        return ""
+    ap = getattr(user, "account_profile", None)
+    role = getattr(ap, "role", None) if ap else None
+    if role in (AccountProfile.ROLE_ORG, AccountProfile.ROLE_COLLAB):
+        parts = []
+        for bit in (prof.company_address, prof.company_oras, prof.company_judet):
+            s = (bit or "").strip()
+            if s:
+                parts.append(s)
+        if parts:
+            blob = " ".join(parts).lower()
+            if "românia" not in blob and "romania" not in blob:
+                parts.append("România")
+            return ", ".join(parts)
+    parts = []
+    for bit in (prof.oras, prof.judet):
+        s = (bit or "").strip()
+        if s:
+            parts.append(s)
+    if parts:
+        parts.append("România")
+        return ", ".join(parts)
+    return ""
+
+
+def _html_email_maps_cta_button(maps_url: str, label: str = "DU-MĂ LA LOCAȚIE") -> str:
+    if not maps_url:
+        return ""
+    safe_href = escape(maps_url, quote=True)
+    safe_label = escape(label)
+    return (
+        f'<p style="margin:18px 0 10px;">'
+        f'<a href="{safe_href}" style="display:inline-block;padding:12px 20px;'
+        "background:#1565c0;color:#fff;text-decoration:none;border-radius:10px;"
+        f'font-weight:700;font-family:system-ui,sans-serif;">{safe_label}</a></p>'
+    )
+
+
+def _collab_peer_location_card(client_user) -> dict:
+    """
+    Date afișabile pentru colaborator: locație client (PF localitate / firmă ONG)
+    + link Maps pentru navigare.
+    """
+    name = (f"{client_user.first_name} {client_user.last_name}").strip() or client_user.username
+    prof = getattr(client_user, "profile", None)
+    ap = getattr(client_user, "account_profile", None)
+    role = getattr(ap, "role", None) if ap else None
+    lines: list[str] = []
+    if role == AccountProfile.ROLE_ORG and prof:
+        if (prof.company_display_name or "").strip():
+            lines.append(f"Firmă / ONG: {(prof.company_display_name or '').strip()}")
+        if (prof.company_address or "").strip():
+            lines.append(f"Adresă: {(prof.company_address or '').strip()}")
+        loc = ", ".join(
+            x
+            for x in [(prof.company_oras or "").strip(), (prof.company_judet or "").strip()]
+            if x
+        )
+        if loc:
+            lines.append(f"Localitate: {loc}")
+    elif prof:
+        loc = ", ".join(x for x in [(prof.oras or "").strip(), (prof.judet or "").strip()] if x)
+        if loc:
+            lines.append(f"Localitate: {loc}")
+    phone = (prof.phone or "").strip() if prof else ""
+    if phone:
+        lines.append(f"Telefon: {phone}")
+    em = (client_user.email or "").strip()
+    if em:
+        lines.append(f"Email: {em}")
+    q = _user_location_maps_query(client_user)
+    maps_url = _google_maps_search_url_from_query(q) if q else ""
+    share_text = q or "\n".join(lines)
+    return {
+        "client_name": name,
+        "lines": lines,
+        "maps_url": maps_url,
+        "share_text": (share_text or name).strip(),
+    }
+
+
+def _partner_location_card_for_client(collaborator_user) -> dict:
+    """
+    Fișă locație partener (colaborator) pentru clientul PF/ONG care deschide conversația.
+    """
+    prof = getattr(collaborator_user, "profile", None)
+    display = ""
+    if prof and (prof.company_display_name or "").strip():
+        display = (prof.company_display_name or "").strip()
+    if not display:
+        display = (
+            f"{collaborator_user.first_name} {collaborator_user.last_name}".strip()
+            or collaborator_user.username
+        )
+    lines: list[str] = []
+    lines.append(f"Partener: {display}")
+    if prof and (prof.company_address or "").strip():
+        lines.append(f"Adresă: {(prof.company_address or '').strip()}")
+    loc = ""
+    if prof:
+        loc = ", ".join(
+            x
+            for x in [(prof.company_oras or "").strip(), (prof.company_judet or "").strip()]
+            if x
+        )
+    if loc:
+        lines.append(f"Localitate: {loc}")
+    phone = (prof.phone or "").strip() if prof else ""
+    if phone:
+        lines.append(f"Telefon: {phone}")
+    em = (collaborator_user.email or "").strip()
+    if em:
+        lines.append(f"Email: {em}")
+    q = _user_location_maps_query(collaborator_user)
+    maps_url = _google_maps_search_url_from_query(q) if q else ""
+    share_text = q or display
+    return {
+        "partner_name": display,
+        "lines": lines,
+        "maps_url": maps_url,
+        "share_text": (share_text or display).strip(),
+    }
+
+
 def _cabinet_block_for_buyer_email(collab_user) -> str:
-    """Text pentru cumpărător: cabinet, telefon, persoană contact, email."""
+    """Text pentru cumpărător: cabinet, telefon, persoană contact, email, adresă firmă dacă există."""
     prof = getattr(collab_user, "profile", None)
     contact_person = (collab_user.get_full_name() or "").strip() or collab_user.username
     lines = []
@@ -7473,7 +7746,27 @@ def _cabinet_block_for_buyer_email(collab_user) -> str:
     if collab_user.email:
         lines.append(f"Email: {collab_user.email}")
     lines.append(f"Persoană de contact: {contact_person}")
+    if prof:
+        addr = (prof.company_address or "").strip()
+        if addr:
+            lines.append(f"Adresă: {addr}")
+        loc_bits = [x for x in [(prof.company_oras or "").strip(), (prof.company_judet or "").strip()] if x]
+        if loc_bits:
+            lines.append(f"Localitate: {', '.join(loc_bits)}")
     return "\n".join(lines)
+
+
+def _cabinet_maps_url_for_buyer_email(collab_user) -> str:
+    return _google_maps_search_url_from_query(_user_location_maps_query(collab_user))
+
+
+def _buyer_maps_url_for_collab_email(buyer: dict) -> str:
+    """Link Maps pentru solicitant (email către colaborator)."""
+    u = buyer.get("user")
+    if u:
+        return _google_maps_search_url_from_query(_user_location_maps_query(u))
+    loc = (buyer.get("locality") or "").strip()
+    return _google_maps_search_url_from_query(loc) if loc else ""
 
 
 def _redirect_after_public_offer_request(request, pk: int):
@@ -8147,6 +8440,153 @@ def publicitate_checkout_demo_success_view(request):
     )
 
 
+def _tp_parse_coord_deg(raw) -> float | None:
+    try:
+        s = (raw or "").strip().replace(",", ".")
+        if not s:
+            return None
+        v = float(s)
+        if math.isnan(v) or abs(v) > 180:
+            return None
+        return v
+    except (TypeError, ValueError):
+        return None
+
+
+def _tp_haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    r = 6371.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    d1 = math.radians(lat2 - lat1)
+    d2 = math.radians(lon2 - lon1)
+    a = math.sin(d1 / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(d2 / 2) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(max(0.0, 1.0 - a)))
+    return round(r * c, 1)
+
+
+def _tp_transport_op_can_view_job(user, job: TransportDispatchJob) -> bool:
+    if not user or not getattr(user, "is_authenticated", False) or not job:
+        return False
+    if job.assigned_transporter_id == user.id:
+        return True
+    return TransportDispatchRecipient.objects.filter(job=job, transporter=user).exists()
+
+
+def _tp_google_maps_directions_url(tvr: TransportVeterinaryRequest) -> str:
+    plat = _tp_parse_coord_deg(getattr(tvr, "plecare_lat", None))
+    plng = _tp_parse_coord_deg(getattr(tvr, "plecare_lng", None))
+    slat = _tp_parse_coord_deg(getattr(tvr, "sosire_lat", None))
+    slng = _tp_parse_coord_deg(getattr(tvr, "sosire_lng", None))
+    if plat is not None and plng is not None and slat is not None and slng is not None:
+        return f"https://www.google.com/maps/dir/?api=1&origin={plat},{plng}&destination={slat},{slng}"
+    po = quote((tvr.plecare or "").strip())
+    so = quote((tvr.sosire or "").strip())
+    if po and so:
+        return f"https://www.google.com/maps/dir/?api=1&origin={po}&destination={so}"
+    if so:
+        return f"https://www.google.com/maps/search/?api=1&query={so}"
+    if po:
+        return f"https://www.google.com/maps/search/?api=1&query={po}"
+    return ""
+
+
+def _tp_waze_nav_url(lat: float | None, lng: float | None, address: str) -> str:
+    if lat is not None and lng is not None:
+        return f"https://waze.com/ul?ll={lat}%2C{lng}&navigate=yes"
+    q = quote((address or "").strip())
+    if q:
+        return f"https://waze.com/ul?q={q}&navigate=yes"
+    return ""
+
+
+def _tp_osm_embed_url(tvr: TransportVeterinaryRequest) -> str:
+    plat = _tp_parse_coord_deg(getattr(tvr, "plecare_lat", None))
+    plng = _tp_parse_coord_deg(getattr(tvr, "plecare_lng", None))
+    slat = _tp_parse_coord_deg(getattr(tvr, "sosire_lat", None))
+    slng = _tp_parse_coord_deg(getattr(tvr, "sosire_lng", None))
+    if plat is None or plng is None or slat is None or slng is None:
+        return ""
+    min_lon, max_lon = min(plng, slng), max(plng, slng)
+    min_lat, max_lat = min(plat, slat), max(plat, slat)
+    pad = 0.025
+    bbox = f"{min_lon - pad},{min_lat - pad},{max_lon + pad},{max_lat + pad}"
+    return f"https://www.openstreetmap.org/export/embed.html?bbox={bbox}&layer=mapnik"
+
+
+@login_required
+@collab_magazin_required
+def transport_operator_job_detail_view(request, job_id: int):
+    """JSON: detalii cerere pentru transportator (panou); acces doar dacă e invitat sau asignat la job."""
+    gate = _transport_operator_panel_gate(request)
+    if gate is not None:
+        return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
+    job = TransportDispatchJob.objects.select_related("tvr", "tvr__user", "tvr__related_animal").filter(pk=job_id).first()
+    if not job:
+        return JsonResponse({"ok": False, "error": "not_found"}, status=404)
+    if not _tp_transport_op_can_view_job(request.user, job):
+        return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
+    tvr = job.tvr
+    cu = tvr.user
+    phone = ""
+    if cu:
+        prof = getattr(cu, "profile", None)
+        if prof and getattr(prof, "phone", None):
+            phone = (prof.phone or "").strip()
+    full_name = ""
+    if cu:
+        full_name = (f"{cu.first_name} {cu.last_name}").strip() or ""
+    plat = _tp_parse_coord_deg(getattr(tvr, "plecare_lat", None))
+    plng = _tp_parse_coord_deg(getattr(tvr, "plecare_lng", None))
+    slat = _tp_parse_coord_deg(getattr(tvr, "sosire_lat", None))
+    slng = _tp_parse_coord_deg(getattr(tvr, "sosire_lng", None))
+    straight_km = None
+    if plat is not None and plng is not None and slat is not None and slng is not None:
+        straight_km = _tp_haversine_km(plat, plng, slat, slng)
+    animal_label = ""
+    ra = getattr(tvr, "related_animal", None)
+    if ra is not None:
+        animal_label = (getattr(ra, "name", None) or f"Anunț #{getattr(ra, 'pk', '')}") or ""
+    payload = {
+        "ok": True,
+        "job_id": job.pk,
+        "job_status": job.status,
+        "job_status_label": job.get_status_display(),
+        "tvr_id": tvr.pk,
+        "created_at": tvr.created_at.isoformat() if getattr(tvr, "created_at", None) else "",
+        "judet": tvr.judet or "",
+        "oras": tvr.oras or "",
+        "plecare": tvr.plecare or "",
+        "sosire": tvr.sosire or "",
+        "plecare_lat": tvr.plecare_lat or "",
+        "plecare_lng": tvr.plecare_lng or "",
+        "sosire_lat": tvr.sosire_lat or "",
+        "sosire_lng": tvr.sosire_lng or "",
+        "data_raw": tvr.data_raw or "",
+        "ora_raw": tvr.ora_raw or "",
+        "nr_caini": int(tvr.nr_caini or 0),
+        "route_scope": tvr.route_scope or "",
+        "route_scope_label": tvr.get_route_scope_display(),
+        "urgency_window": tvr.urgency_window or "",
+        "urgency_label": tvr.get_urgency_window_display(),
+        "related_animal_id": int(tvr.related_animal_id) if getattr(tvr, "related_animal_id", None) else None,
+        "related_animal_label": animal_label,
+        "related_animal_url": (
+            reverse("pets_single", args=[int(tvr.related_animal_id)])
+            if getattr(tvr, "related_animal_id", None)
+            else ""
+        ),
+        "client_username": (cu.username if cu else "") or "",
+        "client_email": (cu.email if cu else "") or "",
+        "client_full_name": full_name,
+        "client_phone": phone,
+        "straight_line_km": straight_km,
+        "maps_google_directions": _tp_google_maps_directions_url(tvr),
+        "maps_waze_start": _tp_waze_nav_url(plat, plng, tvr.plecare or ""),
+        "maps_waze_end": _tp_waze_nav_url(slat, slng, tvr.sosire or ""),
+        "maps_osm_embed": _tp_osm_embed_url(tvr),
+    }
+    return JsonResponse(payload)
+
+
 @login_required
 @collab_magazin_required
 def transport_operator_panel_view(request):
@@ -8210,6 +8650,7 @@ def transport_operator_panel_view(request):
             "tp_count_pending": len(pending_invites),
             "tp_count_active": len(jobs_active),
             "tp_count_completed": len(jobs_completed),
+            "tp_job_detail_url_base": reverse("transport_operator_job_detail", args=[0]),
         },
     )
 
@@ -8636,28 +9077,69 @@ def public_offer_request_view(request, pk: int):
         collab_body += f"Localitate: {buyer['locality']}\n"
     collab_body += "\n---\nEU-Adopt\n"
 
+    cabinet_maps_url = _cabinet_maps_url_for_buyer_email(collab)
+    if cabinet_maps_url:
+        buyer_body += f"Navigare la cabinet (hartă): {cabinet_maps_url}\n"
+    buyer_maps_html = _html_email_maps_cta_button(cabinet_maps_url, "DU-MĂ LA LOCAȚIE")
+    buyer_html = (
+        f"<p>Bună {escape(buyer['name'])},</p>"
+        f"<p>Codul ofertei (îl au și cabinetul și tu): <strong>{escape(code)}</strong></p>"
+        f"<p>Ofertă: <strong>{escape(offer.title)}</strong></p>"
+        f"<p><strong>Date cabinet (contact)</strong></p>"
+        f"<pre style=\"white-space:pre-wrap;font-family:inherit;\">{escape(cabinet_txt)}</pre>"
+    )
+    if offer.description:
+        buyer_html += f"<p><strong>Descriere</strong><br>{escape(offer.description)}</p>"
+    if offer.price_hint:
+        buyer_html += f"<p>Preț indicat: {escape(offer.price_hint)}</p>"
+    if offer.discount_percent:
+        buyer_html += f"<p>Discount: {escape(str(offer.discount_percent))}%</p>"
+    buyer_html += buyer_maps_html + "<p>—<br>EU-Adopt</p>"
+
+    buyer_loc_url = _buyer_maps_url_for_collab_email(buyer)
+    if buyer_loc_url:
+        collab_body += f"Navigare la solicitant (hartă): {buyer_loc_url}\n"
+    collab_maps_html = _html_email_maps_cta_button(buyer_loc_url, "DU-MĂ LA LOCAȚIE")
+    collab_buyer_block = f"Nume: {buyer['name']}\nEmail: {dest_email}\n"
+    if buyer["phone"]:
+        collab_buyer_block += f"Telefon: {buyer['phone']}\n"
+    if buyer["locality"]:
+        collab_buyer_block += f"Localitate: {buyer['locality']}\n"
+    collab_html = (
+        "<p>Ai o nouă solicitare pentru ofertă.</p>"
+        f"<p>Cod ofertă (același ca la cumpărător): <strong>{escape(code)}</strong><br>"
+        f"Titlu ofertă: <strong>{escape(offer.title)}</strong></p>"
+        "<p><strong>Date cumpărător</strong></p>"
+        f"<pre style=\"white-space:pre-wrap;font-family:inherit;\">{escape(collab_buyer_block)}</pre>"
+        + collab_maps_html
+        + "<p>—<br>EU-Adopt</p>"
+    )
+
     mail_errors = []
     buyer_uname = buyer["user"].username if buyer.get("user") else None
     if not buyer_uname and dest_email:
         buyer_uname = dest_email.split("@", 1)[0] if "@" in dest_email else None
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
     try:
-        send_mail(
+        send_mail_text_and_html(
             email_subject_for_user(buyer_uname, buyer_subject),
             buyer_body,
-            None,
+            from_email,
             [dest_email],
-            fail_silently=False,
+            buyer_html,
+            mail_kind="offer_claim_buyer",
         )
     except Exception:
         logging.exception("send_mail buyer offer claim")
         mail_errors.append("cumpărător")
     try:
-        send_mail(
+        send_mail_text_and_html(
             email_subject_for_user(collab.username, collab_subject),
             collab_body,
-            None,
+            from_email,
             [collab_mail],
-            fail_silently=False,
+            collab_html,
+            mail_kind="offer_claim_collaborator",
         )
     except Exception:
         logging.exception("send_mail collab offer claim")

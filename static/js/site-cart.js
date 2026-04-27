@@ -13,6 +13,14 @@
 		return '';
 	}
 
+	/** Cookie (dacă există) sau input din pagină (ex. Magazin foto: #smfCsrfHolder). */
+	function getCsrfToken() {
+		var c = getCookie('csrftoken');
+		if (c) return c;
+		var inp = document.querySelector('input[name=csrfmiddlewaretoken]');
+		return inp && inp.value ? inp.value : '';
+	}
+
 	function toggleUrl() {
 		return (document.body.getAttribute('data-site-cart-toggle-url') || '').trim() || '/site-cart/toggle/';
 	}
@@ -54,7 +62,7 @@
 			credentials: 'same-origin',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-				'X-CSRFToken': getCookie('csrftoken') || ''
+				'X-CSRFToken': getCsrfToken()
 			},
 			body: fd.toString()
 		})

@@ -6,6 +6,11 @@
 			<button type="button" class="wish-btn pt-p2-wish-btn {% if wishlist_ids and pet.pk in wishlist_ids %}is-active{% endif %}" data-animal-id="{{ pet.pk }}" aria-pressed="{% if wishlist_ids and pet.pk in wishlist_ids %}true{% else %}false{% endif %}" aria-label="I Love: {{ pet.nume }}">
 				{% include "anunturi/includes/ilove_heart_svg.html" %}
 			</button>
+			{% if pet.show_pt_ask_plic %}
+			<a href="{% url 'pets_single' pet.pk %}#pet-messages-field-wrap" class="pt-p2-ask-plic-btn" title="ÎNTREABĂ DESPRE MINE?" aria-label="Întreabă despre mine — deschide fișa la mesaje" onclick="event.stopPropagation();">
+				<svg class="pt-p2-ask-plic-btn__svg" viewBox="0 0 16 12" width="12" height="10" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 1.5C0 .67.67 0 1.5 0h13c.83 0 1.5.67 1.5 1.5v9c0 .83-.67 1.5-1.5 1.5h-13A1.5 1.5 0 0 1 0 10.5v-9Zm1.5-.5-.01 9L8 6.2l6.5 4.08V1H1.5ZM8 5.3 1.64 1h12.72L8 5.28Z"/></svg>
+			</a>
+			{% endif %}
 		</div>
 		<div class="pt-p2-card-top-seg pt-p2-card-top-seg--promo">
 			{% if user.is_authenticated and display_role != "collaborator" %}

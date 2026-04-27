@@ -71,7 +71,7 @@
 									<td>#{{ t.pk }}</td>
 									<td>#{{ r.job.pk }}</td>
 									<td>{{ t.created_at|date:"d.m.Y H:i" }}</td>
-									<td>{% if t.user %}{{ t.user.username }}{% else %}—{% endif %}</td>
+									<td class="tp-td-client">{% if t.user %}<button type="button" class="tp-client-open" data-job-id="{{ r.job.pk }}">{{ t.user.username }}</button>{% else %}—{% endif %}</td>
 									<td class="tp-td-clip">{% if t.user and t.user.email %}{{ t.user.email }}{% else %}—{% endif %}</td>
 									<td>{{ t.nr_caini }}</td>
 									<td>{{ t.judet|default:"—" }}</td>
@@ -132,7 +132,7 @@
 									<td>#{{ t.pk }}</td>
 									<td>#{{ job.pk }}</td>
 									<td>{% if job.assigned_at %}{{ job.assigned_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}</td>
-									<td>{% if t.user %}{{ t.user.username }}{% else %}—{% endif %}</td>
+									<td class="tp-td-client">{% if t.user %}<button type="button" class="tp-client-open" data-job-id="{{ job.pk }}">{{ t.user.username }}</button>{% else %}—{% endif %}</td>
 									<td class="tp-td-clip">{% if t.user and t.user.email %}{{ t.user.email }}{% else %}—{% endif %}</td>
 									<td>{{ t.nr_caini }}</td>
 									<td>{{ t.judet|default:"—" }}</td>
@@ -187,7 +187,7 @@
 									<td>#{{ t.pk }}</td>
 									<td>#{{ job.pk }}</td>
 									<td>{{ job.updated_at|date:"d.m.Y H:i" }}</td>
-									<td>{% if t.user %}{{ t.user.username }}{% else %}—{% endif %}</td>
+									<td class="tp-td-client">{% if t.user %}<button type="button" class="tp-client-open" data-job-id="{{ job.pk }}">{{ t.user.username }}</button>{% else %}—{% endif %}</td>
 									<td class="tp-td-clip">{% if t.user and t.user.email %}{{ t.user.email }}{% else %}—{% endif %}</td>
 									<td>{{ t.nr_caini }}</td>
 									<td>{{ t.judet|default:"—" }}</td>
@@ -209,6 +209,16 @@
 					</div>
 				</section>
 			</div>
+		</div>
+	</div>
+	<div id="tpDetailModal" class="tp-detail-modal" role="dialog" aria-modal="true" aria-labelledby="tpDetailTitle" hidden>
+		<div class="tp-detail-backdrop" data-tp-detail-close tabindex="-1"></div>
+		<div class="tp-detail-panel">
+			<div class="tp-detail-head">
+				<h3 id="tpDetailTitle" class="tp-detail-title">Detaliu cerere transport</h3>
+				<button type="button" class="tp-detail-close" data-tp-detail-close aria-label="Închide">×</button>
+			</div>
+			<div id="tpDetailBody" class="tp-detail-body">Se încarcă…</div>
 		</div>
 	</div>
 </section>
@@ -570,5 +580,270 @@
 	.transport-panou-wrap .tp-btn-danger:hover {
 		background: #ffebee;
 	}
+	.transport-panou-wrap .tp-td-client .tp-client-open {
+		background: none;
+		border: none;
+		padding: 0;
+		margin: 0;
+		font: inherit;
+		color: #1565c0;
+		font-weight: 700;
+		cursor: pointer;
+		text-decoration: underline;
+		text-align: left;
+	}
+	.transport-panou-wrap .tp-td-client .tp-client-open:hover {
+		color: #0d47a1;
+	}
+	.transport-panou-wrap .tp-detail-modal {
+		position: fixed;
+		inset: 0;
+		z-index: 200000;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.75rem;
+		box-sizing: border-box;
+	}
+	.transport-panou-wrap .tp-detail-modal[hidden] {
+		display: none !important;
+	}
+	.transport-panou-wrap .tp-detail-backdrop {
+		position: absolute;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.45);
+	}
+	.transport-panou-wrap .tp-detail-panel {
+		position: relative;
+		width: min(34rem, 100%);
+		max-height: min(88vh, 720px);
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		background: #fffef7;
+		border: 2px solid #d2b27a;
+		border-radius: 10px;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+	}
+	.transport-panou-wrap .tp-detail-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 0.55rem 0.65rem;
+		border-bottom: 1px solid #d2b27a;
+		background: rgba(255, 248, 225, 0.95);
+		flex-shrink: 0;
+	}
+	.transport-panou-wrap .tp-detail-title {
+		margin: 0;
+		font-size: 0.95rem;
+		font-weight: 800;
+		color: #5c3c00;
+	}
+	.transport-panou-wrap .tp-detail-close {
+		border: none;
+		background: transparent;
+		font-size: 1.35rem;
+		line-height: 1;
+		cursor: pointer;
+		color: #5d4037;
+		padding: 0.15rem 0.35rem;
+		border-radius: 4px;
+	}
+	.transport-panou-wrap .tp-detail-close:hover {
+		background: rgba(210, 178, 122, 0.35);
+	}
+	.transport-panou-wrap .tp-detail-body {
+		padding: 0.65rem 0.75rem 0.85rem;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+		font-size: 0.82rem;
+		line-height: 1.45;
+		color: #333;
+	}
+	.transport-panou-wrap .tp-detail-k {
+		font-weight: 800;
+		color: #5c3c00;
+		margin-top: 0.5rem;
+	}
+	.transport-panou-wrap .tp-detail-k:first-child {
+		margin-top: 0;
+	}
+	.transport-panou-wrap .tp-detail-v {
+		margin: 0.12rem 0 0.35rem;
+		white-space: pre-wrap;
+		word-break: break-word;
+	}
+	.transport-panou-wrap .tp-detail-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin: 0.5rem 0 0.35rem;
+	}
+	.transport-panou-wrap .tp-detail-actions a {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.35rem 0.55rem;
+		border-radius: 8px;
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-decoration: none;
+		border: 1px solid #1565c0;
+		background: #e3f2fd;
+		color: #0d47a1;
+	}
+	.transport-panou-wrap .tp-detail-actions a:hover {
+		background: #bbdefb;
+	}
+	.transport-panou-wrap .tp-detail-actions .tp-detail-share-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.35rem 0.55rem;
+		border-radius: 8px;
+		font-size: 0.75rem;
+		font-weight: 700;
+		border: 1px solid #1565c0;
+		background: #1565c0;
+		color: #fff;
+		cursor: pointer;
+		font-family: inherit;
+	}
+	.transport-panou-wrap .tp-detail-actions .tp-detail-share-btn:hover {
+		background: #0d47a1;
+		border-color: #0d47a1;
+	}
+	.transport-panou-wrap .tp-detail-note {
+		font-size: 0.72rem;
+		color: #666;
+		margin-top: 0.35rem;
+	}
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+	var modal = document.getElementById("tpDetailModal");
+	var bodyEl = document.getElementById("tpDetailBody");
+	var titleEl = document.getElementById("tpDetailTitle");
+	if (!modal || !bodyEl) return;
+	var baseUrl = "{{ tp_job_detail_url_base|escapejs }}";
+	function detailUrl(jobId) {
+		return baseUrl.replace(/\/job\/\d+\//, "/job/" + String(jobId) + "/");
+	}
+	function esc(s) {
+		return String(s == null ? "" : s)
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;")
+			.replace(/"/g, "&quot;");
+	}
+	function row(k, v) {
+		return '<div class="tp-detail-k">' + esc(k) + '</div><div class="tp-detail-v">' + esc(v) + '</div>';
+	}
+	function openModal() {
+		modal.hidden = false;
+		document.body.style.overflow = "hidden";
+	}
+	function closeModal() {
+		modal.hidden = true;
+		document.body.style.overflow = "";
+	}
+	function render(d) {
+		if (!d || !d.ok) {
+			bodyEl.textContent = (d && d.error) ? ("Eroare: " + d.error) : "Nu s-au putut încărca detaliile.";
+			return;
+		}
+		var h = [];
+		h.push(row("Job", "#" + d.job_id + " — " + (d.job_status_label || d.job_status)));
+		h.push(row("Cerere (TVR)", "#" + d.tvr_id));
+		if (d.client_username || d.client_full_name) {
+			h.push(row("Client", (d.client_full_name ? d.client_full_name + " · " : "") + (d.client_username || "")));
+		}
+		if (d.client_phone) h.push(row("Telefon", d.client_phone));
+		if (d.client_email) h.push(row("Email", d.client_email));
+		h.push(row("Nr. animale", String(d.nr_caini)));
+		h.push(row("Județ / oraș (formular)", (d.judet || "—") + " / " + (d.oras || "—")));
+		h.push(row("Dată / oră dorită", (d.data_raw || "—") + " " + (d.ora_raw || "").trim()));
+		h.push(row("Urgență", d.urgency_label || d.urgency_window));
+		h.push(row("Tip traseu", d.route_scope_label || d.route_scope));
+		h.push(row("Punct plecare", d.plecare));
+		h.push(row("Punct sosire", d.sosire));
+		if (d.straight_line_km != null) {
+			h.push(row("Distanță aprox. (dreaptă, km)", String(d.straight_line_km) + " (nu include drumul real)"));
+		}
+		if (d.related_animal_id && d.related_animal_label) {
+			var animalBlock = '<div class="tp-detail-k">Anunț asociat</div><div class="tp-detail-v">';
+			if (d.related_animal_url) {
+				animalBlock += '<a href="' + esc(d.related_animal_url) + '" target="_blank" rel="noopener">' + esc(d.related_animal_label) + '</a>';
+			} else {
+				animalBlock += esc(d.related_animal_label);
+			}
+			animalBlock += "</div>";
+			h.push(animalBlock);
+		}
+		var actions = [];
+		if (d.maps_google_directions) {
+			var gurl = d.maps_google_directions;
+			actions.push('<a href="' + esc(gurl) + '" target="_blank" rel="noopener">Rută în Google Maps</a>');
+			actions.push(
+				'<button type="button" class="tp-detail-share-btn" data-tp-share-url="' +
+					esc(gurl) +
+					'" data-tp-share-title="Traseu EU-Adopt transport">Distribuie ruta</button>'
+			);
+		}
+		if (actions.length) {
+			h.push('<div class="tp-detail-k">Navigare</div>');
+			h.push('<div class="tp-detail-actions">' + actions.join("") + '</div>');
+			h.push('<p class="tp-detail-note">Deschide linkul în Google Maps sau folosește „Distribuie ruta” (telefon: share; altfel se copiază linkul).</p>');
+		}
+		bodyEl.innerHTML = h.join("");
+		bodyEl.querySelectorAll("[data-tp-share-url]").forEach(function (btn) {
+			btn.addEventListener("click", function () {
+				var url = btn.getAttribute("data-tp-share-url") || "";
+				var title = btn.getAttribute("data-tp-share-title") || "Traseu";
+				if (!url) return;
+				if (navigator.share) {
+					navigator.share({ title: title, text: title, url: url }).catch(function () {});
+					return;
+				}
+				if (navigator.clipboard && navigator.clipboard.writeText) {
+					navigator.clipboard.writeText(url).then(function () {
+						alert("Linkul rută a fost copiat în clipboard.");
+					}).catch(function () {
+						window.prompt("Copiază linkul:", url);
+					});
+					return;
+				}
+				window.prompt("Copiază linkul:", url);
+			});
+		});
+		if (titleEl) titleEl.textContent = "Cerere #" + d.tvr_id + " · Job #" + d.job_id;
+	}
+	document.getElementById("TW").addEventListener("click", function (e) {
+		var btn = e.target.closest && e.target.closest(".tp-client-open");
+		if (!btn) return;
+		e.preventDefault();
+		var jid = btn.getAttribute("data-job-id");
+		if (!jid) return;
+		bodyEl.textContent = "Se încarcă…";
+		openModal();
+		fetch(detailUrl(jid), { credentials: "same-origin" })
+			.then(function (r) { return r.json(); })
+			.then(render)
+			.catch(function () {
+				bodyEl.textContent = "Eroare la încărcare.";
+			});
+	});
+	modal.addEventListener("click", function (e) {
+		if (e.target.hasAttribute && e.target.hasAttribute("data-tp-detail-close")) closeModal();
+	});
+	document.addEventListener("keydown", function (e) {
+		if (!modal.hidden && (e.key === "Escape" || e.key === "Esc")) closeModal();
+	});
+})();
+</script>
 {% endblock %}

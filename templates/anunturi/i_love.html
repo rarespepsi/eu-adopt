@@ -5,7 +5,7 @@
 {% block body_class %}page-ilove{% endblock %}
 
 {% block extra_css_after %}
-<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=12" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=14" type="text/css" media="screen" />
 {% endblock %}
 
 {% block content %}
@@ -41,6 +41,16 @@
 									<div class="ilove-pet-card-hit ilove-pet-card-hit--muted" title="Anunț indisponibil sau retras">
 									{% endif %}
 										<div class="ilove-pet-card-photo">
+											<button
+												type="button"
+												class="ilove-pet-msg-btn{% if pet.ilove_msg_unread %} is-unread{% else %} is-read{% endif %}"
+												data-ilove-msg-url="{% if pet.ilove_msg_demo %}{% url 'mypet' %}?open_messages=1{% else %}{% url 'mypet' %}?open_messages=1&amp;{% if pet.ilove_msg_owner_inbox %}open_pet_messages{% else %}open_adopter_animal{% endif %}={{ pet.pk }}{% endif %}"
+												title="{% if pet.ilove_msg_unread %}Mesaje noi: {{ pet.ilove_msg_unread }}{% else %}Mesaje{% endif %}"
+												aria-label="{% if pet.ilove_msg_unread %}Mesaje noi: {{ pet.ilove_msg_unread }}{% else %}Mesaje{% endif %}"
+											>
+												<span class="ilove-pet-msg-icon" aria-hidden="true">✉</span>
+												{% if pet.ilove_msg_unread %}<span class="ilove-pet-msg-count">{{ pet.ilove_msg_unread }}</span>{% endif %}
+											</button>
 											<button
 												type="button"
 												class="wish-btn {% if wishlist_ids and pet.pk in wishlist_ids %}is-active{% endif %}"
@@ -109,4 +119,21 @@
 		</aside>
 	</div>
 </main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+	var root = document.getElementById("ILW");
+	if (!root) return;
+	root.addEventListener("click", function (e) {
+		var btn = e.target && e.target.closest && e.target.closest(".ilove-pet-msg-btn");
+		if (!btn) return;
+		e.preventDefault();
+		e.stopPropagation();
+		var u = btn.getAttribute("data-ilove-msg-url");
+		if (u) window.location.href = u;
+	});
+})();
+</script>
 {% endblock %}

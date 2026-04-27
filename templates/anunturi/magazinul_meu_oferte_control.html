@@ -1157,6 +1157,58 @@
 		color: #666;
 		padding: 0.25rem 0;
 	}
+	.collab-svc-client-card {
+		margin-bottom: 0.5rem;
+		padding: 0.45rem 0.5rem;
+		border-radius: 10px;
+		border: 1px solid #90caf9;
+		background: #e3f2fd;
+		font-size: 0.78rem;
+		line-height: 1.35;
+	}
+	.collab-svc-client-card-title {
+		font-weight: 800;
+		margin-bottom: 0.25rem;
+		color: #0d47a1;
+	}
+	.collab-svc-client-card-line {
+		margin: 0.08rem 0;
+		word-break: break-word;
+	}
+	.collab-svc-client-card-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		margin-top: 0.4rem;
+	}
+	.collab-svc-client-card-map-btn {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.3rem 0.55rem;
+		border-radius: 8px;
+		font-weight: 700;
+		font-size: 0.72rem;
+		text-decoration: none;
+		background: #1565c0;
+		color: #fff;
+		border: 1px solid #1565c0;
+	}
+	.collab-svc-client-card-map-btn:hover {
+		background: #0d47a1;
+		border-color: #0d47a1;
+		color: #fff;
+	}
+	.collab-svc-client-card-share-btn {
+		padding: 0.3rem 0.55rem;
+		border-radius: 8px;
+		font-weight: 700;
+		font-size: 0.72rem;
+		cursor: pointer;
+		font-family: inherit;
+		border: 1px solid #5c3c00;
+		background: #fff8e1;
+		color: #5c3c00;
+	}
 	.mypet-msg-reply {
 		border-top: 1px solid #ecd9b8;
 		padding: 0.45rem;
@@ -1280,7 +1332,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/collab-service-inbox.js' %}?v=2"></script>
+<script src="{% static 'js/collab-service-inbox.js' %}?v=4"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
 	var el = document.getElementById("mesaje-collab");

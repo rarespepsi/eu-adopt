@@ -19,6 +19,33 @@ def _adoption_state_label(state: str) -> str:
     return mapping.get((state or "").strip(), "Liber")
 
 
+def _pt_p2_annotate_ask_plic(p2_list, request):
+    """Card PT: plic lângă inimă — doar dacă userul ar putea trimite mesaj din fișă către owner."""
+    for row in p2_list:
+        row["show_pt_ask_plic"] = False
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated:
+        return
+    ap = getattr(user, "account_profile", None)
+    viewer_can_adopt = bool(ap.can_adopt_animals) if ap else True
+    if not viewer_can_adopt:
+        return
+    uid = int(user.pk)
+    for row in p2_list:
+        oid = row.get("owner_id")
+        if oid is None:
+            continue
+        try:
+            if int(oid) == uid:
+                continue
+        except (TypeError, ValueError):
+            continue
+        st = (row.get("adoption_state") or "").strip()
+        if st == AnimalListing.ADOPTION_STATE_ADOPTED:
+            continue
+        row["show_pt_ask_plic"] = True
+
+
 def pt_pets_page_context(request):
     """
     Construiește p2_list + câmpurile de filtru pentru șablonul PT.
@@ -133,6 +160,7 @@ def pt_pets_page_context(request):
                         "imagine_fallback": DEMO_DOG_IMAGE,
                         "adoption_state": listing.adoption_state,
                         "adoption_state_label": _adoption_state_label(listing.adoption_state),
+                        "owner_id": listing.owner_id,
                         "traits": [],
                     }
                 )
@@ -219,6 +247,7 @@ def pt_pets_page_context(request):
                         "imagine_fallback": DEMO_DOG_IMAGE,
                         "adoption_state": listing.adoption_state,
                         "adoption_state_label": _adoption_state_label(listing.adoption_state),
+                        "owner_id": listing.owner_id,
                         "traits": [],
                     }
                 )
@@ -238,6 +267,8 @@ def pt_pets_page_context(request):
                 if len(p2_list) >= 24:
                     break
                 p2_list.append(d)
+
+    _pt_p2_annotate_ask_plic(p2_list, request)
 
     return {
         "p2_list": p2_list,

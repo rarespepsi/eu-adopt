@@ -240,11 +240,7 @@ class Carte61_80Tests(TestCase):
         owner = _pf_user()
         adopter = _pf_user("sendmsg")
         pet = _published_pet(owner)
-        AdoptionRequest.objects.create(
-            animal=pet,
-            adopter=adopter,
-            status=AdoptionRequest.STATUS_ACCEPTED,
-        )
+        # Hibrid: mesaj din fișă fără cerere de adopție acceptată în prealabil
         c = Client()
         c.login(username=adopter.username, password="Test61_PF_pass!")
         r = c.post(
@@ -638,6 +634,10 @@ class Carte81_100Tests(TestCase):
             {"collaborator_id": str(collab.pk)},
         )
         self.assertEqual(r2.status_code, 200)
+        j2 = r2.json()
+        self.assertTrue(j2.get("ok"))
+        self.assertIn("partner_card", j2)
+        self.assertIn("partner_name", j2["partner_card"])
         r3 = c.post(
             reverse("collab_client_reply"),
             {"message": "Mulțumesc", "collaborator_id": str(collab.pk)},

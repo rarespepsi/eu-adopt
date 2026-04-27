@@ -1654,15 +1654,13 @@
 															<textarea id="id_story" rows="2" class="mypet-fisa-textarea" disabled>{{ pet.descriere|default:'' }}</textarea>
 														</div>
 
-														<div class="mypet-add-field mypet-fisa-field-story">
+														<div class="mypet-add-field mypet-fisa-field-story" id="pet-messages-field-wrap">
 															<label for="id_messages">MESAJE</label>
-															{% if can_send_pet_message and adopter_messaging_unlocked %}
+															{% if can_send_pet_message %}
 																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" placeholder="Scrie mesajul tău către ONG / owner..."></textarea>
 																<div style="margin-top:.35rem;display:flex;justify-content:flex-end;">
 																	<button type="button" id="petSendMessageBtn" class="pet-msg-send-btn" data-send-url="{% url 'pet_send_message' pet.pk %}">Send</button>
 																</div>
-															{% elif can_send_pet_message %}
-																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled>{% if adoption_request_status == "in_asteptare" %}Cererea de adopție e în așteptare. După acceptare, poți scrie aici.{% else %}Folosește „VREAU SĂ ADOPT”. După acceptarea cererii, poți scrie aici.{% endif %}</textarea>
 															{% elif user.is_authenticated %}
 																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled>Acesta este anunțul tău.</textarea>
 															{% else %}
@@ -1707,7 +1705,7 @@
 											{% endif %}
 											<div class="pet-adoption-state-corner" aria-label="Stare adopție">{{ pet.adoption_state_label|default:"Liber" }}</div>
 											<div class="pet-adopt-qr-inline" id="petAdoptQrInline" aria-label="Adopție și cod QR">
-												{% if can_send_pet_message %}
+												{% if show_pet_adopt_corner %}
 												<div
 													class="pet-adopt-corner"
 													id="petAdoptCorner"
@@ -1716,6 +1714,8 @@
 													data-adopt-url="{% url 'pet_adoption_request' pet.pk %}"
 													data-transport-url="{% url 'transport' %}?from_adoption=1&pet={{ pet.pk }}"
 													data-servicii-url="{% url 'servicii' %}"
+													data-login-url="{% url 'login' %}"
+													data-login-next="{{ request.get_full_path|urlencode }}"
 													aria-label="Vreau să adopt"
 												>VREAU SĂ ADOPT</div>
 												{% endif %}
@@ -1755,7 +1755,7 @@
 			</div>
 		</div>
 
-		{% if can_send_pet_message %}
+		{% if show_pet_adopt_corner and user.is_authenticated %}
 		<div id="petAdoptChoiceModal" class="pet-adopt-choice-modal" {% if not adoption_after_transport %}hidden{% endif %} aria-hidden="{% if adoption_after_transport %}false{% else %}true{% endif %}">
 			<div class="pet-adopt-choice-modal__backdrop" id="petAdoptChoiceBackdrop"></div>
 			<div class="pet-adopt-choice-modal__panel" role="dialog" aria-modal="true" aria-labelledby="petAdoptChoiceTitle">
@@ -1831,6 +1831,38 @@
 			} else {
 				tryPlayPreviewVideo();
 			}
+
+			/* Din PT (plic): URL cu #pet-messages-field-wrap — scroll + focus pe mobil/desktop */
+			(function petSingleScrollToMessagesFromHash() {
+				function go() {
+					if ((window.location.hash || "").trim() !== "#pet-messages-field-wrap") return;
+					var wrap = document.getElementById("pet-messages-field-wrap");
+					var ta = document.getElementById("id_messages");
+					if (wrap) {
+						try {
+							wrap.scrollIntoView({ behavior: "smooth", block: "center" });
+						} catch (e) {
+							try {
+								wrap.scrollIntoView(true);
+							} catch (e2) {}
+						}
+					}
+					if (ta && !ta.disabled) {
+						try {
+							ta.focus();
+						} catch (e3) {}
+					}
+				}
+				function schedule() {
+					setTimeout(go, 80);
+					setTimeout(go, 450);
+				}
+				if (document.readyState === "loading") {
+					document.addEventListener("DOMContentLoaded", schedule);
+				} else {
+					schedule();
+				}
+			})();
 
 			// Modal poze/video (click -> preview mare, close X / click afară / Esc)
 			var modal = document.getElementById("petMediaModal");
@@ -2312,6 +2344,9 @@
 				var adoptUrl = adoptCorner.getAttribute("data-adopt-url") || "";
 				var transportUrl = adoptCorner.getAttribute("data-transport-url") || "";
 				var serviciiUrl = adoptCorner.getAttribute("data-servicii-url") || "";
+				var loginBase = adoptCorner.getAttribute("data-login-url") || "";
+				var loginNextEnc = adoptCorner.getAttribute("data-login-next") || "";
+				var isAuth = document.body.getAttribute("data-user-authenticated") === "true";
 				function goToServicii() {
 					if (!serviciiUrl) return;
 					window.location.href = serviciiUrl;
@@ -2416,6 +2451,11 @@
 				});
 				adoptCorner.addEventListener("click", function(e) {
 					e.preventDefault();
+					if (!isAuth && loginBase) {
+						var q = loginNextEnc ? "?next=" + loginNextEnc : "";
+						window.location.href = loginBase + q;
+						return;
+					}
 					if (afterTransportMode) {
 						submitAdoptRequest();
 						return;
@@ -2425,6 +2465,11 @@
 				adoptCorner.addEventListener("keydown", function(e) {
 					if (e.key === "Enter" || e.key === " ") {
 						e.preventDefault();
+						if (!isAuth && loginBase) {
+							var q2 = loginNextEnc ? "?next=" + loginNextEnc : "";
+							window.location.href = loginBase + q2;
+							return;
+						}
 						if (afterTransportMode) submitAdoptRequest();
 						else openAdoptChoiceModal();
 					}

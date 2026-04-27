@@ -1,0 +1,321 @@
+/**
+ * Skin „Intra” pentru notă de plată / checkout demo (publicitate, promovare A2, magazin foto).
+ * Se activează cu body.euadopt-checkout-intra-skin (parola site 1977 – include SHOP magazin foto).
+ * Nu modifică login.html; replică paletă + card „sticlă” din body.page-login.
+ */
+
+/* --- Fundal comun (ca Intra) --- */
+body.euadopt-checkout-intra-skin {
+	background-color: #141a22 !important;
+}
+
+body.euadopt-checkout-intra-skin #main_wrap {
+	background-color: #141a22;
+}
+
+/* Pagini checkout simple: centrat vertical (nu magazin foto) */
+body.euadopt-checkout-intra-skin:not(.page-shop-foto) #main_content {
+	position: relative;
+	flex: 1 1 auto;
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box !important;
+	min-height: calc(100svh - var(--nav-height, 56px));
+	min-height: calc(100dvh - var(--nav-height, 56px));
+	padding-top: var(--nav-height, 56px) !important;
+	padding-left: clamp(1.25rem, 4vw, 2rem) !important;
+	padding-right: clamp(1.25rem, 4vw, 2rem) !important;
+	padding-bottom: clamp(1.25rem, 4vw, 2rem) !important;
+	background: transparent !important;
+	box-shadow: none !important;
+}
+
+body.euadopt-checkout-intra-skin:not(.page-shop-foto) .wrapper#main_content {
+	width: 100%;
+	max-width: 100%;
+}
+
+/* --- Card principal (ca .login-card) --- */
+.euadopt-pay-card {
+	width: 100%;
+	max-width: 28rem;
+	position: relative;
+	overflow: hidden;
+	margin: 0 auto;
+	box-sizing: border-box;
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	background: linear-gradient(
+		168deg,
+		rgba(24, 32, 46, 0.52) 0%,
+		rgba(18, 24, 36, 0.62) 48%,
+		rgba(14, 20, 32, 0.68) 100%
+	);
+	backdrop-filter: blur(28px) saturate(1.06);
+	-webkit-backdrop-filter: blur(28px) saturate(1.06);
+	border: 1px solid rgba(255, 255, 255, 0.055);
+	border-radius: 1.1875rem;
+	box-shadow:
+		0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+		0 1px 0 rgba(255, 255, 255, 0.045) inset,
+		0 32px 64px rgba(0, 0, 0, 0.55),
+		0 12px 28px rgba(0, 0, 0, 0.32),
+		0 0 0 1px rgba(6, 182, 212, 0.04);
+	padding: clamp(1.65rem, 4vw, 2.15rem) clamp(1.5rem, 3.8vw, 2rem);
+}
+
+body.page-publicitate-checkout-demo .euadopt-pay-card,
+body.page-publicitate-checkout-success .euadopt-pay-card {
+	max-width: 36rem;
+}
+
+.euadopt-pay-card::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	pointer-events: none;
+	background: linear-gradient(
+		145deg,
+		rgba(255, 255, 255, 0.06) 0%,
+		transparent 42%,
+		transparent 58%,
+		rgba(0, 0, 0, 0.12) 100%
+	);
+	opacity: 0.85;
+}
+
+.euadopt-pay-card > * {
+	position: relative;
+	z-index: 1;
+}
+
+.euadopt-pay-title {
+	margin: 0 0 0.45rem;
+	font-size: clamp(1.2rem, 2.5vw, 1.38rem);
+	font-weight: 600;
+	line-height: 1.22;
+	color: #f8fafc;
+	text-align: left;
+	letter-spacing: -0.025em;
+}
+
+.euadopt-pay-sub {
+	margin: 0 0 1.1rem;
+	font-size: 0.90625rem;
+	font-weight: 400;
+	color: #94a3b8;
+	text-align: left;
+	line-height: 1.55;
+}
+
+/* Casetă rezumat (echivalent .login-field / zonă informativă) */
+.euadopt-pay-box {
+	border-radius: 0.5625rem;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	background: rgba(15, 23, 42, 0.5);
+	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 1px 4px rgba(0, 0, 0, 0.18);
+	padding: 0.75rem 0.9rem;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: #e2e8f0;
+}
+
+.euadopt-pay-box strong {
+	color: #f8fafc;
+	font-weight: 600;
+}
+
+.euadopt-pay-box code {
+	font-size: 0.88em;
+	color: #a5f3fc;
+	background: rgba(0, 0, 0, 0.25);
+	padding: 0.12rem 0.35rem;
+	border-radius: 4px;
+}
+
+.euadopt-pay-box ul {
+	margin: 0;
+	padding: 0 0 0 1rem;
+	list-style: disc;
+	color: #cbd5e1;
+}
+
+.euadopt-pay-box li {
+	margin: 0.35rem 0;
+	border-left: 2px solid rgba(6, 182, 212, 0.45);
+	padding-left: 0.5rem;
+	list-style: none;
+}
+
+.euadopt-pay-total {
+	margin-top: 0.85rem;
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: #5eead4;
+}
+
+.euadopt-pay-note {
+	margin-top: 1rem;
+	font-size: 0.8125rem;
+	line-height: 1.45;
+	color: #94a3b8;
+	background: rgba(15, 23, 42, 0.35);
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	border-radius: 0.5625rem;
+	padding: 0.55rem 0.65rem;
+}
+
+.euadopt-pay-note strong {
+	color: #cbd5e1;
+}
+
+.euadopt-pay-actions {
+	margin-top: 1.25rem;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.65rem;
+	align-items: center;
+}
+
+/* Buton principal (ca .login-submit) */
+.euadopt-pay-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.78rem 1.15rem;
+	border-radius: 0.5625rem;
+	border: 1px solid rgba(255, 255, 255, 0.14);
+	background: linear-gradient(175deg, #2dd4e8 0%, #06b6d4 42%, #0e7490 100%);
+	color: #fff !important;
+	font-weight: 600;
+	font-size: 0.9rem;
+	line-height: 1.3;
+	letter-spacing: 0.03em;
+	text-decoration: none !important;
+	cursor: pointer;
+	font-family: inherit;
+	box-shadow:
+		0 1px 0 rgba(255, 255, 255, 0.2) inset,
+		0 3px 14px rgba(6, 182, 212, 0.32),
+		0 8px 24px rgba(0, 0, 0, 0.28);
+	box-sizing: border-box;
+	transition: filter 0.18s ease, box-shadow 0.18s ease, transform 0.14s ease;
+}
+
+.euadopt-pay-btn:hover {
+	filter: brightness(1.05);
+	box-shadow:
+		0 1px 0 rgba(255, 255, 255, 0.24) inset,
+		0 4px 18px rgba(6, 182, 212, 0.38),
+		0 10px 28px rgba(0, 0, 0, 0.32);
+	transform: translateY(-1px);
+	color: #fff !important;
+}
+
+.euadopt-pay-btn:active {
+	transform: translateY(0);
+	filter: brightness(0.97);
+}
+
+.euadopt-pay-btn--ghost {
+	background: rgba(15, 23, 42, 0.55);
+	color: #22d3ee !important;
+	border-color: rgba(6, 182, 212, 0.45);
+	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+}
+
+.euadopt-pay-btn--ghost:hover {
+	color: #67e8f9 !important;
+	border-color: rgba(6, 182, 212, 0.65);
+	filter: brightness(1.08);
+}
+
+/* Succes (ton ca login-error-box--success, pe fundal închis) */
+.euadopt-pay-banner--success {
+	margin: 0 0 1rem;
+	padding: 0.75rem 0.9rem;
+	border-radius: 0.625rem;
+	background: rgba(6, 78, 59, 0.45);
+	border: 1px solid rgba(52, 211, 153, 0.35);
+	color: #a7f3d0;
+	font-size: 0.875rem;
+	line-height: 1.4;
+}
+
+.euadopt-pay-banner--success strong {
+	color: #ecfdf5;
+}
+
+.euadopt-pay-footer-link {
+	display: inline-block;
+	margin-top: 1rem;
+	font-weight: 600;
+	font-size: 0.875rem;
+	color: #22d3ee;
+	text-decoration: none;
+}
+
+.euadopt-pay-footer-link:hover {
+	color: #67e8f9;
+	text-decoration: underline;
+}
+
+/* --- Magazin foto: înveliș Intra, păstrează grila --- */
+body.page-shop-foto.euadopt-checkout-intra-skin {
+	background-color: #141a22 !important;
+}
+
+body.page-shop-foto.euadopt-checkout-intra-skin #main_wrap {
+	background-color: #141a22;
+}
+
+body.page-shop-foto.euadopt-checkout-intra-skin #SMF.smf-main {
+	background: linear-gradient(
+		168deg,
+		rgba(24, 32, 46, 0.72) 0%,
+		rgba(18, 24, 36, 0.82) 50%,
+		rgba(14, 20, 32, 0.88) 100%
+	);
+	backdrop-filter: blur(20px) saturate(1.05);
+	-webkit-backdrop-filter: blur(20px) saturate(1.05);
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	border-radius: 1.1875rem;
+	box-shadow:
+		0 0 0 1px rgba(0, 0, 0, 0.45) inset,
+		0 24px 48px rgba(0, 0, 0, 0.45);
+}
+
+body.page-shop-foto.euadopt-checkout-intra-skin .smf-title {
+	color: #f8fafc;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.page-shop-foto.euadopt-checkout-intra-skin .smf-back-link {
+	background: linear-gradient(175deg, rgba(45, 212, 232, 0.25) 0%, rgba(6, 182, 212, 0.2) 100%);
+	color: #e0f2fe;
+	border: 1px solid rgba(6, 182, 212, 0.45);
+	box-shadow: 0 2px 12px rgba(6, 182, 212, 0.15);
+}
+
+body.page-shop-foto.euadopt-checkout-intra-skin .smf-back-link:hover {
+	background: linear-gradient(175deg, rgba(45, 212, 232, 0.38) 0%, rgba(6, 182, 212, 0.32) 100%);
+	color: #fff;
+}
+
+body.page-shop-foto.euadopt-checkout-intra-skin .smf-cork {
+	background: linear-gradient(
+		168deg,
+		rgba(30, 41, 59, 0.65) 0%,
+		rgba(15, 23, 42, 0.75) 55%,
+		rgba(15, 23, 42, 0.85) 100%
+	);
+	border: 1px solid rgba(255, 255, 255, 0.07);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.06),
+		0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+body.page-shop-foto.euadopt-checkout-intra-skin .smf-cork::before {
+	opacity: 0.2;
+}

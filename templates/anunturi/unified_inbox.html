@@ -81,6 +81,66 @@
 	}
 	.unified-inbox-filter-empty.is-visible { display: block; }
 	.unified-inbox-wrap.is-filtering .is-filter-hidden { display: none !important; }
+	.unified-inbox-thread-list li[data-partner-thread-open] { cursor: pointer; border-radius: 8px; }
+	.unified-inbox-thread-list li[data-partner-thread-open]:hover { background: #f1f5f9; }
+	.uni-collab-inbox-msg-modal.mypet-msg-modal[hidden] { display: none !important; }
+	.uni-collab-inbox-msg-modal .mypet-msg-body { grid-template-columns: 1fr !important; }
+	.uni-collab-inbox-msg-modal .mypet-msg-threads { display: none !important; }
+	.uni-collab-inbox-msg-modal .mypet-msg-tabs { display: none !important; }
+	.uni-collab-inbox-msg-modal.mypet-msg-modal {
+		position: fixed; inset: 0; z-index: 1200; display: none; align-items: center; justify-content: center;
+		background: rgba(0,0,0,0.45); padding: 1rem;
+	}
+	.uni-collab-inbox-msg-modal .mypet-msg-panel {
+		width: min(520px, 94vw); max-height: min(78vh, 640px); background: #fffef7;
+		border-radius: 10px; border: 2px solid #d2b27a; display: flex; flex-direction: column;
+	}
+	.uni-collab-inbox-msg-modal .mypet-msg-head {
+		display: flex; align-items: center; justify-content: space-between;
+		padding: 0.45rem 0.7rem; border-bottom: 1px solid #e6d2ab;
+	}
+	.uni-collab-inbox-msg-modal .mypet-msg-close {
+		border: 1px solid #c62828; background: #fff; color: #c62828; border-radius: 6px;
+		padding: 0.1rem 0.45rem; font-weight: 900; cursor: pointer;
+	}
+	.uni-collab-inbox-msg-modal .mypet-msg-thread {
+		overflow: auto; padding: 0.45rem; flex: 1 1 auto; min-height: 0;
+	}
+	.uni-collab-inbox-msg-modal .mypet-msg-bubble {
+		max-width: 85%; padding: 0.35rem 0.5rem; border-radius: 8px; margin-bottom: 0.3rem;
+		font-size: 0.78rem; line-height: 1.25; white-space: pre-wrap;
+	}
+	.uni-collab-inbox-msg-modal .mypet-msg-bubble.from-owner { margin-left: auto; background: #e3f2fd; }
+	.uni-collab-inbox-msg-modal .mypet-msg-bubble.from-user { margin-right: auto; background: #f5f5f5; }
+	.uni-collab-inbox-msg-modal .mypet-msg-thread-empty { font-size: 0.8rem; color: #666; padding: 0.25rem 0; }
+	.uni-collab-inbox-msg-modal .mypet-msg-reply {
+		border-top: 1px solid #ecd9b8; padding: 0.45rem; display: grid;
+		grid-template-columns: 1fr auto; gap: 0.45rem;
+	}
+	.uni-collab-inbox-msg-modal #uniCollabSvcMsgReplyTa {
+		min-height: 64px; resize: vertical; border-radius: 8px; border: 1px solid #d2b27a; padding: 0.35rem;
+	}
+	.uni-collab-inbox-msg-modal #uniCollabSvcMsgReplyBtn {
+		border-radius: 8px; border: 1px solid #5c3c00; background: #fff8e1; color: #5c3c00;
+		font-weight: 800; padding: 0.35rem 0.65rem; cursor: pointer;
+	}
+	.collab-svc-client-card {
+		margin-bottom: 0.5rem; padding: 0.45rem 0.5rem; border-radius: 10px;
+		border: 1px solid #90caf9; background: #e3f2fd; font-size: 0.78rem; line-height: 1.35;
+	}
+	.collab-svc-client-card-title { font-weight: 800; margin-bottom: 0.25rem; color: #0d47a1; }
+	.collab-svc-client-card-line { margin: 0.08rem 0; word-break: break-word; }
+	.collab-svc-client-card-actions { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.4rem; }
+	.collab-svc-client-card-map-btn {
+		display: inline-flex; align-items: center; padding: 0.3rem 0.55rem; border-radius: 8px;
+		font-weight: 700; font-size: 0.72rem; text-decoration: none; background: #1565c0; color: #fff;
+		border: 1px solid #1565c0;
+	}
+	.collab-svc-client-card-map-btn:hover { background: #0d47a1; border-color: #0d47a1; color: #fff; }
+	.collab-svc-client-card-share-btn {
+		padding: 0.3rem 0.55rem; border-radius: 8px; font-weight: 700; font-size: 0.72rem;
+		cursor: pointer; font-family: inherit; border: 1px solid #5c3c00; background: #fff8e1; color: #5c3c00;
+	}
 </style>
 
 <section class="unified-inbox-wrap" id="unified-inbox-root">
@@ -212,7 +272,14 @@
 			{% if inbox_collab_thread_rows %}
 			<ul class="unified-inbox-thread-list">
 				{% for row in inbox_collab_thread_rows %}
-				<li data-inbox-thread-unread="{% if row.unread %}1{% else %}0{% endif %}">
+				<li data-inbox-thread-unread="{% if row.unread %}1{% else %}0{% endif %}"
+					data-partner-thread-open="1"
+					data-collaborator-id="{{ row.collaborator_id }}"
+					data-context-type="{{ row.context_type|default:'general' }}"
+					data-context-ref="{{ row.context_ref|default:'' }}"
+					role="button"
+					tabindex="0"
+					title="Deschide conversația cu partenerul">
 					<div class="t-block">
 						<span class="t-name">{{ row.collaborator_name }}</span>
 						<span class="t-sub"> — {{ row.context_label }}</span>
@@ -229,6 +296,28 @@
 	</div>
 	{% endif %}
 </section>
+
+<div class="mypet-msg-modal uni-collab-inbox-msg-modal" id="uniCollabSvcMsgModal" hidden>
+	<div class="mypet-msg-panel" role="dialog" aria-modal="true" aria-labelledby="uniCollabSvcMsgTitle">
+		<div class="mypet-msg-head">
+			<strong id="uniCollabSvcMsgTitle">Mesaje cu partenerul</strong>
+			<button type="button" id="uniCollabSvcMsgClose" class="mypet-msg-close" aria-label="Închide">X</button>
+		</div>
+		<div class="mypet-msg-tabs">
+			<button type="button" class="mypet-msg-tab is-active" id="uniCollabSvcMsgTabActive" data-scope="active">Active</button>
+			<button type="button" class="mypet-msg-tab" id="uniCollabSvcMsgTabArchived" data-scope="archived">Arhivă</button>
+		</div>
+		<div class="mypet-msg-body">
+			<div class="mypet-msg-threads" id="uniCollabSvcMsgThreads"></div>
+			<div class="mypet-msg-thread" id="uniCollabSvcMsgThread"></div>
+		</div>
+		<div class="mypet-msg-reply">
+			<textarea id="uniCollabSvcMsgReplyTa" placeholder="Răspunde aici…"></textarea>
+			<button type="button" id="uniCollabSvcMsgReplyBtn">Trimite</button>
+		</div>
+	</div>
+</div>
+
 <script>
 (function () {
 	var root = document.getElementById("unified-inbox-root");
@@ -351,5 +440,42 @@
 	} catch (e3) {}
 	setTab(initial, false);
 })();
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/collab-service-inbox.js' %}?v=4"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+	if (typeof window.initCollabServiceInbox === "function") {
+		window.initCollabServiceInbox({
+			mode: "client",
+			idPrefix: "uniCollabSvc",
+			listUrl: "{% url 'collab_client_inbox_list' %}",
+			threadUrl: "{% url 'collab_client_thread' %}",
+			replyUrl: "{% url 'collab_client_reply' %}",
+			useNavbarCombinedUnread: false,
+			exposeThreadOpenFn: "__uniCollabOpenPartnerThread",
+		});
+	}
+	document.querySelectorAll("[data-partner-thread-open]").forEach(function (li) {
+		function openFromRow() {
+			var fn = window.__uniCollabOpenPartnerThread;
+			if (typeof fn !== "function") return;
+			fn(
+				li.getAttribute("data-collaborator-id"),
+				li.getAttribute("data-context-type"),
+				li.getAttribute("data-context-ref")
+			);
+		}
+		li.addEventListener("click", openFromRow);
+		li.addEventListener("keydown", function (e) {
+			if (e.key === "Enter" || e.key === " ") {
+				e.preventDefault();
+				openFromRow();
+			}
+		});
+	});
+});
 </script>
 {% endblock %}

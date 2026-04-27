@@ -1,41 +1,33 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block title %}Publicitate – plată reușită | EU Adopt{% endblock %}
-{% block body_class %}page-publicitate-checkout-success{% endblock %}
+{% block body_class %}page-publicitate-checkout-success euadopt-checkout-intra-skin{% endblock %}
 
 {% block extra_css %}
-<style>
-	body.page-publicitate-checkout-success #main_content {
-		min-height: calc(100vh - var(--nav-h, 64px));
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0.8rem;
-	}
-	.pub-ok-wrap {
-		width: min(560px, 100%);
-		background: #e8f5e9;
-		border: 2px solid #43a047;
-		border-radius: 12px;
-		padding: 1.1rem;
-		text-align: center;
-	}
-	.pub-ok-wrap h1 { margin: 0 0 0.5rem; font-size: 1.15rem; color: #1b5e20; }
-	.pub-ok-wrap p { margin: 0.35rem 0; font-size: 0.88rem; color: #2e7d32; }
-	.pub-ok-wrap a { display: inline-block; margin-top: 0.75rem; font-weight: 800; color: #1565c0; }
-</style>
+<link rel="stylesheet" href="{% static 'css/checkout-intra-skin.css' %}?v=1" type="text/css" media="screen" />
 {% endblock %}
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
-	<div class="pub-ok-wrap">
-		<h1>Plată demo finalizată</h1>
+	<div class="euadopt-pay-card">
+		<h1 class="euadopt-pay-title">Plată demo finalizată</h1>
+		<p class="euadopt-pay-sub">Comanda a fost marcată plătită în regim simulare.</p>
+
+		<div class="euadopt-pay-banner--success" role="status">
+			<strong>Succes.</strong> Nu s-a folosit un procesator real de card.
+		</div>
+
 		{% if pub_order %}
-		<p>Comandă <strong>#{{ pub_order.pk }}</strong> — total <strong>{{ pub_order.total_lei }} lei</strong>.</p>
-		<p>Referință: <code>{{ pub_order.payment_ref }}</code></p>
+		<div class="euadopt-pay-box">
+			<p style="margin:0 0 0.5rem;">Comandă <strong>#{{ pub_order.pk }}</strong> — total <strong>{{ pub_order.total_lei }} lei</strong>.</p>
+			<p style="margin:0;">Referință: <code>{{ pub_order.payment_ref }}</code></p>
+		</div>
 		{% else %}
-		<p>Comanda a fost înregistrată.</p>
+		<div class="euadopt-pay-box"><p style="margin:0;">Comanda a fost înregistrată.</p></div>
 		{% endif %}
-		<a href="{% url 'publicitate_harta' %}">Înapoi la publicitate</a>
+
+		<a href="{% url 'publicitate_harta' %}" class="euadopt-pay-btn">Înapoi la publicitate</a>
 	</div>
 </section>
 {% endblock %}

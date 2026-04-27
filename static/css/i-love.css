@@ -296,6 +296,61 @@ body.page-ilove .ilove-pet-card-photo {
 	overflow: hidden;
 }
 
+/* Plic mesaje (MyPet) — stânga-sus pe poză; inima rămâne dreapta-sus */
+body.page-ilove .ilove-pet-card-photo .ilove-pet-msg-btn {
+	position: absolute;
+	top: 6px;
+	left: 6px;
+	z-index: 6;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 1.75rem;
+	min-height: 1.75rem;
+	padding: 0.14rem 0.22rem;
+	border-radius: 10px;
+	font-size: 0.68rem;
+	font-weight: 800;
+	cursor: pointer;
+	line-height: 1;
+	appearance: none;
+	border: 1px solid transparent;
+	box-sizing: border-box;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+body.page-ilove .ilove-pet-card-photo .ilove-pet-msg-icon {
+	font-size: 1.05rem;
+	line-height: 1;
+	display: block;
+	filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
+}
+body.page-ilove .ilove-pet-card-photo .ilove-pet-msg-count {
+	position: absolute;
+	top: -0.2rem;
+	right: -0.28rem;
+	min-width: 0.92rem;
+	height: 0.92rem;
+	padding: 0 0.18rem;
+	border-radius: 999px;
+	background: #c62828;
+	color: #fff;
+	font-size: 0.55rem;
+	font-weight: 900;
+	line-height: 0.92rem;
+	text-align: center;
+	box-sizing: border-box;
+}
+body.page-ilove .ilove-pet-card-photo .ilove-pet-msg-btn.is-unread {
+	border: 1px solid rgba(248, 113, 113, 0.65);
+	background: rgba(183, 28, 28, 0.88);
+	color: #fecaca;
+}
+body.page-ilove .ilove-pet-card-photo .ilove-pet-msg-btn.is-read {
+	border: 1px solid rgba(74, 222, 128, 0.45);
+	background: rgba(34, 197, 94, 0.55);
+	color: #ecfdf5;
+}
+
 body.page-ilove .ilove-pet-card-photo .wish-btn {
 	top: 6px;
 	right: 6px;

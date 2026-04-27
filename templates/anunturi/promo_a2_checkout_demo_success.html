@@ -1,82 +1,32 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Plată demo reușită | EU-ADOPT{% endblock %}
-{% block body_class %}page-promo-a2-checkout-success{% endblock %}
+{% block body_class %}page-promo-a2-checkout-success euadopt-checkout-intra-skin{% endblock %}
 
 {% block extra_css %}
-<style>
-	body.page-promo-a2-checkout-success #main_content {
-		min-height: calc(100vh - var(--nav-h, 64px));
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0.8rem;
-		box-sizing: border-box;
-	}
-	.promo-success-wrap {
-		width: min(680px, 100%);
-		background: #fff;
-		border: 1px solid #dbe3ef;
-		border-radius: 12px;
-		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-		padding: 1rem;
-	}
-	.promo-success-title {
-		margin: 0 0 0.35rem;
-		font-size: 1.06rem;
-		font-weight: 800;
-		color: #1b5e20;
-	}
-	.promo-success-sub {
-		margin: 0 0 0.8rem;
-		font-size: 0.84rem;
-		color: #455a64;
-	}
-	.promo-success-box {
-		border: 1px solid #c8e6c9;
-		background: #e8f5e9;
-		border-radius: 10px;
-		padding: 0.65rem 0.75rem;
-		display: grid;
-		gap: 0.35rem;
-		font-size: 0.84rem;
-		color: #1f2d3d;
-	}
-	.promo-success-actions {
-		margin-top: 0.8rem;
-		display: flex;
-		gap: 0.5rem;
-		flex-wrap: wrap;
-	}
-	.promo-success-btn {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0.42rem 0.8rem;
-		border-radius: 8px;
-		border: 1px solid #1565c0;
-		background: #1565c0;
-		color: #fff;
-		font-size: 0.82rem;
-		font-weight: 800;
-		text-decoration: none;
-	}
-</style>
+<link rel="stylesheet" href="{% static 'css/checkout-intra-skin.css' %}?v=1" type="text/css" media="screen" />
 {% endblock %}
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
-	<div class="promo-success-wrap" aria-label="Plată demo reușită">
-		<h1 class="promo-success-title">Plata demo a fost înregistrată cu succes</h1>
-		<p class="promo-success-sub">Comanda de promovare A2 este confirmată în regim demo.</p>
-		<div class="promo-success-box">
+	<div class="euadopt-pay-card" aria-label="Plată demo reușită">
+		<h1 class="euadopt-pay-title">Plată înregistrată</h1>
+		<p class="euadopt-pay-sub">Comanda de promovare A2 este confirmată în regim demo.</p>
+
+		<div class="euadopt-pay-banner--success" role="status">
+			<strong>Succes.</strong> Nu s-a debitat un card real.
+		</div>
+
+		<div class="euadopt-pay-box">
 			<div>Pet: <strong>{{ pet.name|default:"—" }}</strong></div>
 			<div>Ofertă: <strong>{{ package }}</strong> · Număr oferte: <strong>{{ quantity }}</strong></div>
 			<div>Data start: <strong>{{ start_date }}</strong></div>
 			<div>Preț unitar: <strong>{{ unit_price }} lei</strong> · Total: <strong>{{ total_price }} lei</strong></div>
 		</div>
-		<div class="promo-success-actions">
-			<a href="{{ promo_flow_exit_url }}" class="promo-success-btn">{{ promo_flow_done_label }}</a>
+
+		<div class="euadopt-pay-actions">
+			<a href="{{ promo_flow_exit_url }}" class="euadopt-pay-btn">{{ promo_flow_done_label }}</a>
 		</div>
 	</div>
 </section>

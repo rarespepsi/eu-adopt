@@ -12,6 +12,7 @@
 	data-pet-msg-unread="{{ pet_message_unread_count|default:0 }}"
 	data-adopter-pet-unread="{{ adopter_pet_message_unread|default:0 }}"
 	data-adopter-list-url="{% url 'adopter_messages_list' %}"
+	data-unread-badges-url="{% url 'mypet_messages_unread_badges' %}"
 >
 	<div class="mypet-inner">
 		{% csrf_token %}
@@ -35,10 +36,13 @@
 					{% if not user_has_owned_pets %}
 						<button
 							type="button"
-							class="mypet-btn mypet-btn-secondary"
+							class="mypet-btn mypet-btn-secondary{% if adopter_pet_message_unread %} is-unread{% else %} is-read{% endif %}"
 							id="adopterInboxBtn"
 							data-list-url="{% url 'adopter_messages_list' %}"
-						>Mesaje</button>
+							data-unread="{{ adopter_pet_message_unread|default:0 }}"
+							title="{% if adopter_pet_message_unread %}Mesaje noi: {{ adopter_pet_message_unread }}{% else %}Mesaje{% endif %}"
+							aria-label="{% if adopter_pet_message_unread %}Mesaje noi: {{ adopter_pet_message_unread }}{% else %}Mesaje{% endif %}"
+						>Mesaje{% if adopter_pet_message_unread %}<span class="mypet-adopter-inbox-count">{{ adopter_pet_message_unread }}</span>{% endif %}</button>
 					{% endif %}
 					<a
 						href="{% url 'mypet_add' %}?species=dog"
@@ -596,6 +600,34 @@
 		border: 1px solid rgba(74, 222, 128, 0.45);
 		background: rgba(34, 197, 94, 0.12);
 		color: #86efac;
+	}
+	#adopterInboxBtn {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.2rem;
+	}
+	#adopterInboxBtn.is-unread {
+		border-color: rgba(248, 113, 113, 0.65);
+		background: rgba(183, 28, 28, 0.22);
+		color: #fecaca;
+	}
+	.mypet-adopter-inbox-count {
+		position: absolute;
+		top: -0.22rem;
+		right: -0.3rem;
+		min-width: 0.92rem;
+		height: 0.92rem;
+		padding: 0 0.18rem;
+		border-radius: 999px;
+		background: #c62828;
+		color: #fff;
+		font-size: 0.55rem;
+		font-weight: 900;
+		line-height: 0.92rem;
+		text-align: center;
+		box-sizing: border-box;
 	}
 	.mypet-promoveaza-btn {
 		display: inline-block;
@@ -1915,6 +1947,80 @@ document.addEventListener("DOMContentLoaded", function() {
 				});
 			} catch (e) {}
 		}
+		function syncMyPetMessageBadges(data) {
+			if (!data) return;
+			var nav = data.navbar_unread_total != null ? data.navbar_unread_total : null;
+			if (nav == null && data.unread_total != null) nav = data.unread_total;
+			if (nav != null) updateEnvelopeCount(nav);
+			if (data.owner_pet_unread && typeof data.owner_pet_unread === "object") {
+				document.querySelectorAll(".mypet-msg-open-btn[data-pet-id]").forEach(function(btn) {
+					var id = btn.getAttribute("data-pet-id");
+					if (!id) return;
+					var n = Object.prototype.hasOwnProperty.call(data.owner_pet_unread, id)
+						? (parseInt(data.owner_pet_unread[id], 10) || 0)
+						: 0;
+					btn.setAttribute("data-unread", String(n));
+					btn.classList.toggle("is-unread", n > 0);
+					btn.classList.toggle("is-read", n === 0);
+					setMyPetMsgBtnContent(btn, n);
+				});
+			}
+			if (data.adopter_pet_unread_total != null) {
+				var adopterTot = parseInt(data.adopter_pet_unread_total, 10) || 0;
+				var mwEl = document.getElementById("MW");
+				if (mwEl) mwEl.setAttribute("data-adopter-pet-unread", String(adopterTot));
+				var aib = document.getElementById("adopterInboxBtn");
+				if (aib) {
+					aib.setAttribute("data-unread", String(adopterTot));
+					aib.classList.toggle("is-unread", adopterTot > 0);
+					aib.classList.toggle("is-read", adopterTot === 0);
+					var ab = aib.querySelector(".mypet-adopter-inbox-count");
+					if (adopterTot > 0) {
+						if (!ab) {
+							ab = document.createElement("span");
+							ab.className = "mypet-adopter-inbox-count";
+							aib.appendChild(ab);
+						}
+						ab.textContent = String(adopterTot);
+					} else if (ab && ab.parentNode) {
+						ab.parentNode.removeChild(ab);
+					}
+					var albl = adopterTot > 0 ? ("Mesaje noi: " + adopterTot) : "Mesaje";
+					aib.setAttribute("aria-label", albl);
+					aib.setAttribute("title", albl);
+				}
+			}
+		}
+		function applyMessageBadgeResponse(data) {
+			if (!data) return;
+			var hasOwnerMap = data.owner_pet_unread && typeof data.owner_pet_unread === "object";
+			var hasAdopter = data.adopter_pet_unread_total != null;
+			if (hasOwnerMap && hasAdopter) {
+				syncMyPetMessageBadges(data);
+				return;
+			}
+			var mwEl = document.getElementById("MW");
+			var badgesUrl = mwEl ? (mwEl.getAttribute("data-unread-badges-url") || "").trim() : "";
+			var onMypet = !!(document.body && document.body.classList && document.body.classList.contains("page-mypet"));
+			if (mwEl && badgesUrl && onMypet) {
+				var fallbackNav = data.navbar_unread_total != null ? data.navbar_unread_total : data.unread_total;
+				fetch(badgesUrl, { credentials: "same-origin" })
+					.then(function(r) { return r.json(); })
+					.then(function(d) {
+						if (d && d.ok) syncMyPetMessageBadges(d);
+						else if (fallbackNav != null) updateEnvelopeCount(fallbackNav);
+					})
+					.catch(function() {
+						if (fallbackNav != null) updateEnvelopeCount(fallbackNav);
+					});
+				return;
+			}
+			if (typeof data.navbar_unread_total !== "undefined") {
+				updateEnvelopeCount(data.navbar_unread_total);
+			} else if (typeof data.unread_total !== "undefined") {
+				updateEnvelopeCount(data.unread_total);
+			}
+		}
 		function escapeHtml(s) {
 			return String(s || "")
 				.replace(/&/g, "&amp;")
@@ -1973,11 +2079,7 @@ document.addEventListener("DOMContentLoaded", function() {
 				.then(function(data) {
 					if (!data || !data.ok) throw new Error("Thread indisponibil.");
 					renderThread(data.messages || []);
-					if (typeof data.navbar_unread_total !== "undefined") {
-						updateEnvelopeCount(data.navbar_unread_total);
-					} else if (typeof data.unread_total !== "undefined") {
-						updateEnvelopeCount(data.unread_total);
-					}
+					applyMessageBadgeResponse(data);
 					document.querySelectorAll(".mypet-msg-thread-item").forEach(function(it) {
 						it.classList.toggle("is-active", (it.getAttribute("data-sender-id") || "") === String(senderId));
 					});
@@ -1990,10 +2092,6 @@ document.addEventListener("DOMContentLoaded", function() {
 			state.petId = btn.getAttribute("data-pet-id");
 			state.petName = btn.getAttribute("data-pet-name") || "";
 			state.listUrl = btn.getAttribute("data-list-url") || "";
-			btn.classList.remove("is-unread");
-			btn.classList.add("is-read");
-			btn.setAttribute("data-unread", "0");
-			setMyPetMsgBtnContent(btn, 0);
 			title.textContent = "Mesaje - " + (state.petName || ("Pet #" + state.petId));
 			modal.hidden = false;
 			modal.style.display = "flex";
@@ -2003,6 +2101,7 @@ document.addEventListener("DOMContentLoaded", function() {
 				.then(function(r) { return r.json(); })
 				.then(function(data) {
 					if (!data || !data.ok) throw new Error("Listă indisponibilă.");
+					applyMessageBadgeResponse(data);
 					var threads = data.threads || [];
 					threadsEl.innerHTML = "";
 					if (!threads.length) {
@@ -2049,6 +2148,7 @@ document.addEventListener("DOMContentLoaded", function() {
 				.then(function(r) { return r.json(); })
 				.then(function(data) {
 					if (!data || !data.ok) throw new Error("Listă indisponibilă.");
+					applyMessageBadgeResponse(data);
 					var threads = data.threads || [];
 					threadsEl.innerHTML = "";
 					if (!threads.length) {
