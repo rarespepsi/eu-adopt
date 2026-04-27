@@ -1,27 +1,45 @@
-DEV – acces de pe telefon la Django (același Wi-Fi cu laptopul)
-================================================================
+DEV – acces de pe alt dispozitiv (telefon sau laptop 2), același Wi-Fi cu PC-ul pe care rulează Django
+====================================================================================================
 
-Server:  python manage.py runserver 0.0.0.0:8000
-URL pe mobil:  http://<IPv4 laptop>:8000
+IMPORTANT (rețea Wi-Fi se schimbă)
+----------------------------------
+La **acasă** și la **birou** sunt **rețele Wi-Fi diferite** → **IPv4-ul laptopului se schimbă** când te muți între locuri sau când routerul dă alt IP (DHCP).
 
-Două rețele (zilnic)
---------------------
-• BIRou — Wi-Fi: 192.168.10.x
-  Ultim IP notat pentru laptop: 192.168.10.85
-  Mobil: http://192.168.10.85:8000
+**La fiecare schimbare de loc / după ce nu mai merge URL-ul vechi:**
+1. Pe laptopul **server** (unde rulezi `runserver`): `ipconfig` → „Wireless LAN adapter Wi-Fi” (sau Ethernet) → **IPv4 Address**.
+2. **Actualizează tabelul de mai jos** în acest fișier (commit opțional), ca să nu mai repetăm în chat aceleași adrese.
 
-• ACASĂ — Wi-Fi: 192.168.1.x
-  IP exemplu din proiect (ALLOWED_HOSTS): 192.168.1.15
-  Mobil: http://192.168.1.15:8000  (verifică cu ipconfig; DHCP poate schimba ultimul număr)
+Server Django
+-------------
+  python manage.py runserver 0.0.0.0:8000
+
+URL pe telefon / pe laptop 2
+-----------------------------
+  http://<IPv4 laptop server>:8000
+
+Tabel notă – ACASĂ vs BIROU (completat de voi; IP-urile de mai jos sunt istoric / exemplu)
+--------------------------------------------------------------------------------------------
+
+| Locație | Segment Wi-Fi (orientativ) | IPv4 laptop SERVER (ultimul verificat) | Data verificării |
+|---------|----------------------------|----------------------------------------|------------------|
+| BIROU   | 192.168.10.x               | 192.168.10.85                          | (completați)     |
+| ACASĂ   | 192.168.1.x                | 192.168.1.15                           | (completați)     |
+
+Exemple URL (înlocuiți cu IP-ul curent din ipconfig):
+  Birou:  http://192.168.10.85:8000
+  Acasă:  http://192.168.1.15:8000
 
 Dacă nu merge
 -------------
-Pe laptop: ipconfig → la „Wireless LAN adapter Wi-Fi” citește „IPv4 Address”.
-Folosește exact acel IP în browserul de pe telefon.
+• Ambele dispozitive pe **același** Wi-Fi (sau același LAN).
+• Firewall pe laptopul server: permite portul **8000** (intrare).
+• Pe laptop 2 **nu** setezi „IP static” aleator — în browser deschizi doar `http://IP:8000` cu IP-ul citit de pe server.
 
 Setări Django
 -------------
-Cu DEBUG=True, ALLOWED_HOSTS include '*' (dev local) — nu trebuie adăugat manual fiecare IP.
-Opțional: variabila de mediu DJANGO_ALLOWED_HOSTS (vezi settings.py).
+• Cu **DEBUG=True**, `ALLOWED_HOSTS` include `*` (vezi `euadopt_final/settings.py`) — de obicei nu trebuie adăugat manual fiecare IP.
+• Cu **DEBUG=False**: în `.env` puteți lista IP-uri: `DJANGO_ALLOWED_HOSTS=192.168.x.x,...`
 
-Ultima actualizare notă: birou = 192.168.10.x (IP laptop 192.168.10.85 la momentul notării).
+Istoric notă (nu șterge; actualizați rândul din tabel de sus)
+-------------------------------------------------------------
+• Ultima structură clară „acasă / birou + laptop 2”: fișier refăcut pentru rețele Wi-Fi care se schimbă.

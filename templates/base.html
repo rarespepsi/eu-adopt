@@ -48,6 +48,7 @@
 	{% block extra_css_after %}{% endblock %}
 	{# Paletă caldă – după CSS-ul paginilor, ca să fie vizibilă pe Magazinul meu / cont #}
 	<link rel="stylesheet" href="{% static 'css/warm-theme.css' %}?v=3" type="text/css" media="screen" />
+	<link rel="stylesheet" href="{% static 'css/navbar-envelope-unread.css' %}?v=1" type="text/css" media="screen" />
 </head>
 <body class="content_left scheme_red {{ body_class|default:'' }} {% block body_class %}{% endblock %}" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}" data-site-cart-toggle-url="{% url 'site_cart_toggle' %}">
 	<section id="main_wrap">

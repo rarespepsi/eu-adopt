@@ -96,6 +96,8 @@ _CARTE_GET_CASES = [
     ("transport_dispatch_decline", {}, ""),
     ("transport_dispatch_cancel_user", {}, ""),
     ("transport_op_release_job", {}, ""),
+    ("transport_op_accept_pending", {}, ""),
+    ("transport_op_decline_pending", {}, ""),
     ("transport_dispatch_rate", {"job_id": 999999}, ""),
     ("custi", {}, ""),
     ("shop", {}, ""),

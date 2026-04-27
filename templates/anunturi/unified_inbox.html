@@ -34,15 +34,67 @@
 	.unified-inbox-thread-list .t-sub { color: #6b7280; font-size: 0.78rem; }
 	.unified-inbox-thread-list .t-prev { color: #4b5563; margin-top: 0.15rem; line-height: 1.35; }
 	.unified-inbox-thread-list .badge { color: #b91c1c; font-weight: 700; font-size: 0.78rem; }
+	.unified-inbox-sys-wrap {
+		border: 1px solid #e5e7eb; border-radius: 12px; padding: 0.85rem 1rem 1rem; margin-bottom: 1.25rem;
+		background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+	}
+	.unified-inbox-sys-wrap h2 { font-size: 1rem; margin: 0 0 0.35rem; font-weight: 700; }
+	.unified-inbox-sys-lead { font-size: 0.82rem; color: #6b7280; margin: 0 0 0.65rem; line-height: 1.45; }
+	.unified-inbox-sys-actions { margin-bottom: 0.65rem; }
+	.unified-inbox-sys-btn-all,
+	.unified-inbox-sys-btn {
+		font-size: 0.78rem; font-weight: 600; padding: 0.28rem 0.55rem; border-radius: 8px;
+		border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; color: #1e293b;
+	}
+	.unified-inbox-sys-btn-all:hover, .unified-inbox-sys-btn:hover { background: #e2e8f0; }
+	.unified-inbox-sys-list { list-style: none; margin: 0; padding: 0; max-height: 22rem; overflow-y: auto; }
+	.unified-inbox-sys-item {
+		border-top: 1px solid #eee; padding: 0.55rem 0; font-size: 0.84rem;
+	}
+	.unified-inbox-sys-item:first-child { border-top: none; }
+	.unified-inbox-sys-item.is-unread { background: #fff7f7; margin: 0 -0.5rem; padding-left: 0.5rem; padding-right: 0.5rem; border-radius: 8px; }
+	.unified-inbox-sys-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.35rem; align-items: baseline; }
+	.unified-inbox-sys-title { font-weight: 700; color: #111827; }
+	.unified-inbox-sys-date { font-size: 0.72rem; color: #9ca3af; white-space: nowrap; }
+	.unified-inbox-sys-body { margin: 0.25rem 0 0; color: #4b5563; line-height: 1.4; }
+	.unified-inbox-sys-actions-row { margin-top: 0.35rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+	.unified-inbox-sys-link { font-size: 0.8rem; font-weight: 600; color: #1d4ed8; text-decoration: none; }
+	.unified-inbox-sys-link:hover { text-decoration: underline; }
+	.unified-inbox-sys-one { display: inline; margin: 0; }
+	.unified-inbox-tabs {
+		display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem;
+		align-items: center;
+	}
+	.unified-inbox-tabs button {
+		font-size: 0.78rem; font-weight: 600; padding: 0.35rem 0.65rem; border-radius: 999px;
+		border: 1px solid #cbd5e1; background: #fff; color: #334155; cursor: pointer;
+		line-height: 1.2;
+	}
+	.unified-inbox-tabs button:hover { background: #f1f5f9; border-color: #94a3b8; }
+	.unified-inbox-tabs button[aria-selected="true"] {
+		background: #1e40af; border-color: #1e40af; color: #fff;
+	}
+	.unified-inbox-tabs button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
+	.unified-inbox-filter-empty {
+		display: none; padding: 0.85rem 1rem; border-radius: 12px; border: 1px dashed #cbd5e1;
+		background: #f8fafc; color: #64748b; font-size: 0.88rem; margin-bottom: 1rem;
+	}
+	.unified-inbox-filter-empty.is-visible { display: block; }
+	.unified-inbox-wrap.is-filtering .is-filter-hidden { display: none !important; }
 </style>
 
-<section class="unified-inbox-wrap">
+<section class="unified-inbox-wrap" id="unified-inbox-root">
 	<h1>Mesaje și notificări</h1>
-	<p class="unified-inbox-lead">
-		Acces la cele trei canale de conversație: MyPet (animalele tale), mesaje ca adoptator și mesaje cu parteneri.
-	</p>
+	<nav class="unified-inbox-tabs" role="tablist" aria-label="Filtru mesaje și notificări">
+		<button type="button" role="tab" id="inbox-tab-all" data-inbox-tab="all" aria-selected="true">Toate</button>
+		<button type="button" role="tab" id="inbox-tab-unread" data-inbox-tab="unread" aria-selected="false">Necitite</button>
+		<button type="button" role="tab" id="inbox-tab-system" data-inbox-tab="system" aria-selected="false">Sistem</button>
+		<button type="button" role="tab" id="inbox-tab-adoption" data-inbox-tab="adoption" aria-selected="false">Adopție · MyPet</button>
+		<button type="button" role="tab" id="inbox-tab-partners" data-inbox-tab="partners" aria-selected="false">Parteneri</button>
+	</nav>
+	<p class="unified-inbox-filter-empty" id="unified-inbox-filter-empty" role="status" aria-live="polite"></p>
 	{% if message_unread_count|default:0 > 0 %}
-	<p class="unified-inbox-lead" style="margin-top:-0.75rem;font-size:0.9rem;">
+	<p class="unified-inbox-lead" style="margin-top:0;font-size:0.9rem;">
 		<strong>Plic ({{ message_unread_count }}):</strong>
 		{% if pet_message_unread_count %}mesaje animale {{ pet_message_unread_count }}{% endif %}
 		{% if pet_message_unread_count and collab_client_unread_count %} · {% endif %}
@@ -52,9 +104,54 @@
 	</p>
 	{% endif %}
 
-	<div class="unified-inbox-channels">
+	<section class="unified-inbox-sys-wrap" aria-labelledby="unified-inbox-sys-h" data-inbox-zone="system">
+		<h2 id="unified-inbox-sys-h">Notificări sistem</h2>
+		{% if inbox_notification_unread_count %}
+		<form method="post" action="{% url 'unified_inbox_mark_read' %}" class="unified-inbox-sys-actions">
+			{% csrf_token %}
+			<input type="hidden" name="notification_id" value="all" />
+			<input type="hidden" name="next" value="{% url 'unified_inbox' %}" />
+			<button type="submit" class="unified-inbox-sys-btn-all">Marchează citite toate notificările</button>
+		</form>
+		{% endif %}
+		{% if inbox_system_notifications %}
+		<ul class="unified-inbox-sys-list">
+			{% for n in inbox_system_notifications %}
+			<li class="unified-inbox-sys-item{% if not n.is_read %} is-unread{% endif %}" data-inbox-sys-read="{% if n.is_read %}1{% else %}0{% endif %}">
+				<div class="unified-inbox-sys-head">
+					<span class="unified-inbox-sys-title">{{ n.title }}</span>
+					<span class="unified-inbox-sys-date">{{ n.created_at|date:"d.m.Y H:i" }}</span>
+				</div>
+				{% if n.body %}
+				<p class="unified-inbox-sys-body">{{ n.body|truncatechars:220 }}</p>
+				{% endif %}
+				<div class="unified-inbox-sys-actions-row">
+					{% if n.link_url %}
+					<a class="unified-inbox-sys-link" href="{{ n.link_url }}">Deschide legătura</a>
+					{% endif %}
+					{% if not n.is_read %}
+					<form method="post" action="{% url 'unified_inbox_mark_read' %}" class="unified-inbox-sys-one">
+						{% csrf_token %}
+						<input type="hidden" name="notification_id" value="{{ n.pk }}" />
+						<input type="hidden" name="next" value="{% url 'unified_inbox' %}" />
+						<button type="submit" class="unified-inbox-sys-btn">Marchează citită</button>
+					</form>
+					{% else %}
+					<span class="unified-inbox-sys-date">Citită</span>
+					{% endif %}
+				</div>
+			</li>
+			{% endfor %}
+		</ul>
+		{% else %}
+		<p class="unified-inbox-sys-lead" style="margin-bottom:0;">Nicio notificare.</p>
+		{% endif %}
+	</section>
+
+	{% if not hide_inbox_channel_cards %}
+	<div class="unified-inbox-channels" data-inbox-zone="channels">
 		{% if mypet_ok %}
-		<div class="unified-inbox-channel{% if inbox_owner_pet_unread %} has-unread{% endif %}">
+		<div class="unified-inbox-channel{% if inbox_owner_pet_unread %} has-unread{% endif %}" data-inbox-zone="adoption-owner">
 			<h2>MyPet — animalele tale</h2>
 			<div class="ch-meta">
 				{% if inbox_owner_pet_unread %}<span class="badge">{{ inbox_owner_pet_unread }} necitite</span>{% else %}Fără mesaje necitite ca proprietar.{% endif %}
@@ -65,7 +162,7 @@
 			{% if inbox_owner_thread_rows %}
 			<ul class="unified-inbox-thread-list">
 				{% for row in inbox_owner_thread_rows %}
-				<li>
+				<li data-inbox-thread-unread="{% if row.unread %}1{% else %}0{% endif %}">
 					<a href="{{ row.open_url }}">
 						<span class="t-name">{{ row.name }}</span>
 						{% if row.unread %}<span class="badge"> · {{ row.unread }} noi</span>{% endif %}
@@ -78,7 +175,7 @@
 			<p class="ch-meta" style="margin:0;">Niciun fir recent pe animalele tale.</p>
 			{% endif %}
 		</div>
-		<div class="unified-inbox-channel{% if inbox_adopter_pet_unread %} has-unread{% endif %}">
+		<div class="unified-inbox-channel{% if inbox_adopter_pet_unread %} has-unread{% endif %}" data-inbox-zone="adoption-adopter">
 			<h2>Mesaje ca adoptator</h2>
 			<div class="ch-meta">
 				{% if inbox_adopter_pet_unread %}<span class="badge">{{ inbox_adopter_pet_unread }} necitite</span>{% else %}Fără mesaje necitite în conversațiile cu proprietarii.{% endif %}
@@ -89,7 +186,7 @@
 			{% if inbox_adopter_thread_rows %}
 			<ul class="unified-inbox-thread-list">
 				{% for row in inbox_adopter_thread_rows %}
-				<li>
+				<li data-inbox-thread-unread="{% if row.unread %}1{% else %}0{% endif %}">
 					<a href="{{ row.open_url }}">
 						<span class="t-name">{{ row.name }}</span>
 						{% if row.subtitle %}<span class="t-sub"> — {{ row.subtitle }}</span>{% endif %}
@@ -104,7 +201,7 @@
 			{% endif %}
 		</div>
 		{% endif %}
-		<div class="unified-inbox-channel{% if collab_client_unread_count %} has-unread{% endif %}">
+		<div class="unified-inbox-channel{% if collab_client_unread_count %} has-unread{% endif %}" data-inbox-zone="partners">
 			<h2>Mesaje cu parteneri</h2>
 			<div class="ch-meta">
 				{% if collab_client_unread_count %}<span class="badge">{{ collab_client_unread_count }} mesaje necitite</span>{% else %}Fără mesaje necitite cu parteneri.{% endif %}
@@ -115,7 +212,7 @@
 			{% if inbox_collab_thread_rows %}
 			<ul class="unified-inbox-thread-list">
 				{% for row in inbox_collab_thread_rows %}
-				<li>
+				<li data-inbox-thread-unread="{% if row.unread %}1{% else %}0{% endif %}">
 					<div class="t-block">
 						<span class="t-name">{{ row.collaborator_name }}</span>
 						<span class="t-sub"> — {{ row.context_label }}</span>
@@ -125,11 +222,134 @@
 				</li>
 				{% endfor %}
 			</ul>
-			<p class="ch-meta" style="margin:0.35rem 0 0;">Rezumat conversații; răspunsul îl poți trimite de unde ai deschis inițial discuția cu partenerul.</p>
 			{% else %}
 			<p class="ch-meta" style="margin:0;">Niciun fir recent cu parteneri.</p>
 			{% endif %}
 		</div>
 	</div>
+	{% endif %}
 </section>
+<script>
+(function () {
+	var root = document.getElementById("unified-inbox-root");
+	if (!root) return;
+	var emptyEl = document.getElementById("unified-inbox-filter-empty");
+	var tabs = root.querySelectorAll("[data-inbox-tab]");
+	var KEY = "euadopt_inbox_tab";
+
+	function clearHidden() {
+		root.classList.remove("is-filtering");
+		root.querySelectorAll(".is-filter-hidden").forEach(function (el) {
+			el.classList.remove("is-filter-hidden");
+		});
+		if (emptyEl) {
+			emptyEl.classList.remove("is-visible");
+			emptyEl.textContent = "";
+		}
+	}
+
+	function hide(el) {
+		if (!el) return;
+		el.classList.add("is-filter-hidden");
+		root.classList.add("is-filtering");
+	}
+
+	function applyTab(mode) {
+		clearHidden();
+		var adoptionZones = root.querySelectorAll('[data-inbox-zone="adoption-owner"], [data-inbox-zone="adoption-adopter"]');
+		var partnersZone = root.querySelector('[data-inbox-zone="partners"]');
+		var systemZone = root.querySelector('[data-inbox-zone="system"]');
+		var channelsWrap = root.querySelector('[data-inbox-zone="channels"]');
+
+		if (mode === "all") {
+			if (emptyEl) emptyEl.classList.remove("is-visible");
+			return;
+		}
+		root.classList.add("is-filtering");
+
+		if (mode === "system") {
+			if (channelsWrap) hide(channelsWrap);
+		} else if (mode === "adoption") {
+			if (systemZone) hide(systemZone);
+			if (partnersZone) hide(partnersZone);
+		} else if (mode === "partners") {
+			if (systemZone) hide(systemZone);
+			adoptionZones.forEach(function (z) { hide(z); });
+		} else if (mode === "unread") {
+			root.querySelectorAll(".unified-inbox-sys-item[data-inbox-sys-read='1']").forEach(function (li) {
+				hide(li);
+			});
+			root.querySelectorAll(".unified-inbox-channel").forEach(function (ch) {
+				if (!ch.classList.contains("has-unread")) hide(ch);
+			});
+			root.querySelectorAll("li[data-inbox-thread-unread='0']").forEach(function (li) {
+				hide(li);
+			});
+		}
+
+		var showBar = false;
+		if (mode === "unread") {
+			var uSys = root.querySelector('.unified-inbox-sys-item[data-inbox-sys-read="0"]:not(.is-filter-hidden)');
+			var uCh = root.querySelector(".unified-inbox-channel.has-unread:not(.is-filter-hidden)");
+			showBar = !uSys && !uCh;
+		} else if (mode === "adoption") {
+			var o = root.querySelector('[data-inbox-zone="adoption-owner"]');
+			var ad = root.querySelector('[data-inbox-zone="adoption-adopter"]');
+			var visO = o && !o.classList.contains("is-filter-hidden");
+			var visA = ad && !ad.classList.contains("is-filter-hidden");
+			showBar = !visO && !visA;
+		} else if (mode === "partners") {
+			showBar = !partnersZone || partnersZone.classList.contains("is-filter-hidden");
+		}
+
+		if (showBar && emptyEl) {
+			var msgs = {
+				unread: "Nimic necitit în filtrul curent.",
+				adoption: "Nu ai canal Adopție / MyPet aici (sau nu e activ).",
+				partners: "Niciun mesaj cu parteneri de afișat."
+			};
+			emptyEl.textContent = msgs[mode] || "Niciun rezultat.";
+			emptyEl.classList.add("is-visible");
+		}
+	}
+
+	function setTab(mode, persist) {
+		tabs.forEach(function (btn) {
+			var on = btn.getAttribute("data-inbox-tab") === mode;
+			btn.setAttribute("aria-selected", on ? "true" : "false");
+		});
+		try {
+			if (persist) localStorage.setItem(KEY, mode);
+		} catch (e) {}
+		applyTab(mode);
+	}
+
+	tabs.forEach(function (btn) {
+		btn.addEventListener("click", function () {
+			var mode = btn.getAttribute("data-inbox-tab") || "all";
+			setTab(mode, true);
+			try {
+				if (history.replaceState) {
+					var u = new URL(window.location.href);
+					if (mode === "all") u.searchParams.delete("inbox_tab");
+					else u.searchParams.set("inbox_tab", mode);
+					history.replaceState(null, "", u.pathname + u.search + u.hash);
+				}
+			} catch (e2) {}
+		});
+	});
+
+	var initial = "all";
+	try {
+		var u = new URL(window.location.href);
+		var q = (u.searchParams.get("inbox_tab") || "").trim();
+		if (["all", "unread", "system", "adoption", "partners"].indexOf(q) >= 0) initial = q;
+		else {
+			var s = localStorage.getItem(KEY);
+			if (s && ["all", "unread", "system", "adoption", "partners"].indexOf(s) >= 0) initial = s;
+		}
+	} catch (e3) {}
+	setTab(initial, false);
+})();
+</script>
 {% endblock %}

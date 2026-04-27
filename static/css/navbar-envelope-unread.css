@@ -1,0 +1,38 @@
+/**
+ * Plic mesaje necitite — evidențiere roșie pe toate paginile (MyPet, Magazin, Transport, etc.).
+ * Încărcat după navbar-a0-secured.css și warm-theme.css din base.html.
+ * Clasa .is-hot este setată în navbar când message_unread_count > 0; JS (MyPet / collab) o păstrează la fel.
+ */
+
+/* Icon ✉ — contrast puternic față de bara închisă */
+#A0 #main_menu .a0-nav-envelope-icon.is-hot {
+	color: #f87171 !important;
+	filter: drop-shadow(0 0 1px rgba(127, 29, 29, 0.9));
+}
+
+/* Butonul rotund din jurul plicului */
+#A0 #main_menu .a0-nav-envelope-link:has(.a0-nav-envelope-icon.is-hot) {
+	border-color: rgba(252, 165, 165, 0.95) !important;
+	background: rgba(127, 29, 29, 0.42) !important;
+	box-shadow:
+		0 0 0 1px rgba(248, 113, 113, 0.35) inset,
+		0 0 10px rgba(220, 38, 38, 0.25) !important;
+}
+
+#A0 #main_menu .a0-nav-envelope-link:has(.a0-nav-envelope-icon.is-hot):hover {
+	background: rgba(153, 27, 27, 0.55) !important;
+	border-color: #fecaca !important;
+}
+
+/* Reclama staff — același semnal vizual pe „✉ Mesaje” */
+body.page-reclama-staff a.reclama-nav-btn.reclama-nav-btn--envelope.reclama-nav-btn--has-unread:not(.reclama-nav-btn--current) {
+	color: #b91c1c !important;
+	border-color: rgba(185, 28, 28, 0.55) !important;
+	background: rgba(254, 242, 242, 0.98) !important;
+	font-weight: 800 !important;
+}
+
+body.page-reclama-staff a.reclama-nav-btn.reclama-nav-btn--envelope.reclama-nav-btn--has-unread:not(.reclama-nav-btn--current):hover {
+	background: #fecaca !important;
+	color: #7f1d1d !important;
+}

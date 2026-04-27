@@ -19,6 +19,18 @@
 			<div class="mypet-actions-toolbar">
 				<div class="mypet-actions-group mypet-actions-group--nav">
 					<a href="{% url 'mypet' %}" class="mypet-btn mypet-btn-primary">My pets</a>
+					<div class="mypet-arc-filters" role="group" aria-label="Animale active sau adoptate">
+						<button
+							type="button"
+							class="mypet-btn mypet-btn-secondary mypet-btn-arc{% if mypet_initial_arc != 'adopted' %} is-active{% endif %}"
+							data-arc="active"
+						>Active</button>
+						<button
+							type="button"
+							class="mypet-btn mypet-btn-secondary mypet-btn-arc{% if mypet_initial_arc == 'adopted' %} is-active{% endif %}"
+							data-arc="adopted"
+						>Adoptate</button>
+					</div>
 					<a href="{% url 'mypet_adopter_adoptions' %}" class="mypet-btn mypet-btn-secondary">Adopțiile mele</a>
 					{% if not user_has_owned_pets %}
 						<button
@@ -100,7 +112,7 @@
 				</thead>
 				<tbody>
 					{% for pet in pets %}
-					<tr class="mypet-row" data-species="{% if pet %}{% if pet.species == 'dog' %}dog{% elif pet.species == 'cat' %}cat{% else %}other{% endif %}{% else %}none{% endif %}">
+					<tr class="mypet-row" data-species="{% if pet %}{% if pet.species == 'dog' %}dog{% elif pet.species == 'cat' %}cat{% else %}other{% endif %}{% else %}none{% endif %}" data-adoption-arc="{% if pet %}{% if pet.adoption_state == 'adoptat' %}adopted{% else %}active{% endif %}{% else %}none{% endif %}">
 						<td class="mypet-td mypet-td-nr">{{ forloop.counter }}</td>
 						<td class="mypet-td mypet-td-photo">
 							{% if pet %}
@@ -1047,6 +1059,20 @@
 		color: #fff;
 		border-color: transparent;
 	}
+	.mypet-arc-filters {
+		display: inline-flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		align-items: center;
+	}
+	.mypet-btn-arc {
+		user-select: none;
+	}
+	.mypet-btn-arc.is-active {
+		background: #0050b5;
+		color: #fff;
+		border-color: transparent;
+	}
 
 	.mypet-fisa-legend-details {
 		min-width: 0;
@@ -1658,7 +1684,23 @@ document.addEventListener("DOMContentLoaded", function() {
 		var filtersWrap = document.querySelector(".mypet-species-filters");
 		var actionsWrap = document.querySelector(".mypet-actions");
 		var counterBtn = document.querySelector(".mypet-btn-counter");
+		var arcBtns = Array.prototype.slice.call(document.querySelectorAll(".mypet-btn-arc"));
 		var activeSpecies = "dog";
+		var rawArcInit = "{{ mypet_initial_arc|default:'active'|escapejs }}";
+		var activeArc = rawArcInit === "adopted" ? "adopted" : "active";
+
+		function setArcQueryParam(arc) {
+			try {
+				var u = new URL(window.location.href);
+				if (arc === "adopted") {
+					u.searchParams.set("arc", "adopted");
+				} else {
+					u.searchParams.delete("arc");
+				}
+				var qs = u.searchParams.toString();
+				window.history.replaceState({}, "", u.pathname + (qs ? "?" + qs : ""));
+			} catch (e) {}
+		}
 
 		function placeFilters() {
 			try {
@@ -1692,6 +1734,9 @@ document.addEventListener("DOMContentLoaded", function() {
 			filters.forEach(function(btn) {
 				btn.classList.toggle("is-active", (btn.getAttribute("data-species") || "") === species);
 			});
+			arcBtns.forEach(function(btn) {
+				btn.classList.toggle("is-active", (btn.getAttribute("data-arc") || "") === activeArc);
+			});
 			if (addBtn) {
 				var base = addBtn.getAttribute("data-mypet-add-base");
 				if (base) {
@@ -1705,9 +1750,28 @@ document.addEventListener("DOMContentLoaded", function() {
 			rows.forEach(function(tr) {
 				var sp = (tr.getAttribute("data-species") || "");
 				var speciesOk = (species === "all") ? true : (sp === species);
-				tr.style.display = speciesOk ? "" : "none";
+				var ar = (tr.getAttribute("data-adoption-arc") || "active");
+				var arcOk = activeArc === "adopted" ? (ar === "adopted") : (ar !== "adopted");
+				tr.style.display = speciesOk && arcOk ? "" : "none";
 			});
 		}
+
+		arcBtns.forEach(function(btn) {
+			var arc = btn.getAttribute("data-arc") || "";
+			btn.addEventListener("click", function() {
+				activeArc = arc;
+				setArcQueryParam(activeArc);
+				applyFilters();
+			});
+			btn.addEventListener("keydown", function(e) {
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault();
+					activeArc = arc;
+					setArcQueryParam(activeArc);
+					applyFilters();
+				}
+			});
+		});
 
 		filters.forEach(function(btn) {
 			var species = btn.getAttribute("data-species") || "";
@@ -1805,7 +1869,6 @@ document.addEventListener("DOMContentLoaded", function() {
 			if (!modal.hidden && (e.key === "Escape" || e.key === "Esc")) closeModal();
 		});
 
-		/* Acțiuni adopție (Acceptă / Gestionare) sunt pe rândul din tabel, nu în thread. */
 		function renderThread(messages) {
 			threadEl.innerHTML = "";
 			if (!messages || !messages.length) {
@@ -1934,7 +1997,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			title.textContent = "Mesaje - " + (state.petName || ("Pet #" + state.petId));
 			modal.hidden = false;
 			modal.style.display = "flex";
-			threadEl.textContent = "Alege o conversație.";
+			threadEl.textContent = "";
 			threadsEl.textContent = "Se încarcă...";
 			fetch(listUrlWithScope(state.listUrl), { credentials: "same-origin" })
 				.then(function(r) { return r.json(); })
@@ -1980,7 +2043,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			title.textContent = "Mesaje - " + state.petName;
 			modal.hidden = false;
 			modal.style.display = "flex";
-			threadEl.textContent = "Alege o conversație.";
+			threadEl.textContent = "";
 			threadsEl.textContent = "Se încarcă...";
 			fetch(listUrlWithScope(state.listUrl), { credentials: "same-origin" })
 				.then(function(r) { return r.json(); })

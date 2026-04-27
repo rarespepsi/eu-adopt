@@ -5,7 +5,6 @@
 {% block body_class %}page-magazinul-meu page-magazinul-meu-panel page-magazinul-meu-oferte{% endblock %}
 
 {% block content %}
-{# Schelet copiat din MyPet: mylvet-wrap / inner / actions / counter / casetă tabel cu scroll — fără editare mypet.html #}
 <section id="MGW" class="mylvet-wrap magazinul-meu-wrap" aria-label="Control oferte active">
 	<div class="mylvet-inner magazinul-meu-inner magazinul-meu-inner--oferte">
 		{% if tip_just_updated %}
@@ -206,9 +205,6 @@
 				<p><strong>Potrivire animal (orientativ):</strong> {% for t in o.target_filter_tag_list %}{% if not forloop.first %} · {% endif %}{{ t }}{% endfor %}</p>
 				{% endif %}
 			</div>
-			<p class="collab-preview-foot">
-				Previzualizare — așa apare oferta publică. Utilizatorii pot solicita datele de contact din pagina <strong>Servicii</strong>.
-			</p>
 		</div>
 	</article>
 </template>
@@ -977,16 +973,6 @@
 	.collab-preview-meta p {
 		margin: 0.2rem 0;
 	}
-	.collab-preview-foot {
-		margin: 0;
-		padding: 0.55rem 0.65rem;
-		font-size: 0.8rem;
-		line-height: 1.4;
-		color: #37474f;
-		background: rgba(227, 242, 253, 0.65);
-		border: 1px solid #90caf9;
-		border-radius: 8px;
-	}
 	.collab-oferte-disc {
 		font-weight: 800;
 		color: #c62828;
@@ -1294,7 +1280,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/collab-service-inbox.js' %}"></script>
+<script src="{% static 'js/collab-service-inbox.js' %}?v=2"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
 	var el = document.getElementById("mesaje-collab");

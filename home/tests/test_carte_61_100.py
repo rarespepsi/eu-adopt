@@ -678,6 +678,9 @@ class Carte81_100Tests(TestCase):
         c.login(username=user.username, password="Test61_Tr_pass!")
         r = c.get(reverse("transport_operator_panel"))
         self.assertEqual(r.status_code, 200)
+        html = r.content.decode("utf-8")
+        self.assertIn(reverse("unified_inbox"), html)
+        self.assertIn(reverse("transport"), html)
 
     def test_101_transport_submit_post_anon_400_or_redirect(self):
         c = Client()
@@ -695,6 +698,8 @@ class Carte81_100Tests(TestCase):
             ("transport_dispatch_decline", {}),
             ("transport_dispatch_cancel_user", {}),
             ("transport_op_release_job", {}),
+            ("transport_op_accept_pending", {}),
+            ("transport_op_decline_pending", {}),
             ("transport_dispatch_rate", {"job_id": 999999}),
         ]:
             kwargs = extra if "job_id" in extra else {}

@@ -8,18 +8,21 @@
 <section id="TW" class="mypet-wrap transport-panou-wrap" aria-label="My transport">
 	<div class="mypet-inner">
 		<header class="tp-toolbar">
+			<div class="tp-toolbar-note" role="note">
+				Ofertele deschise le poți <strong>accepta sau refuza</strong> din tabel (coloana Acțiuni) sau din linkurile din email.
+			</div>
 			<div class="tp-row tp-row-primary">
-				<div class="mypet-btn mypet-btn-primary transport-panou-fake">My transport</div>
-				<div class="mypet-btn mypet-btn-secondary transport-panou-fake">Mesaje</div>
-				<div class="mypet-btn mypet-btn-secondary mypet-btn-add transport-panou-fake">Nou transport</div>
+				<span class="mypet-btn mypet-btn-primary tp-tab-current" aria-current="page">My transport</span>
+				<a href="{% url 'unified_inbox' %}?from_transport=1" class="mypet-btn mypet-btn-secondary tp-toolbar-link">Mesaje</a>
+				<a href="{% url 'transport' %}" class="mypet-btn mypet-btn-secondary mypet-btn-add tp-toolbar-link">Cerere transport</a>
 				<div class="mypet-btn mypet-btn-secondary mypet-btn-counter transport-panou-fake">
 					Oferte {{ tp_count_pending|default:0 }} / În curs {{ tp_count_active|default:0 }} / Finalizate {{ tp_count_completed|default:0 }}
 				</div>
 			</div>
 			<div class="tp-row tp-row-filters" aria-hidden="true">
-				<div class="mypet-btn mypet-btn-secondary mypet-btn-spec is-active transport-panou-fake">Național</div>
-				<div class="mypet-btn mypet-btn-secondary mypet-btn-spec transport-panou-fake">Internațional</div>
-				<div class="mypet-btn mypet-btn-secondary mypet-btn-spec transport-panou-fake">Toate</div>
+				<div class="mypet-btn mypet-btn-secondary mypet-btn-spec is-active transport-panou-fake" title="În pregătire">Național</div>
+				<div class="mypet-btn mypet-btn-secondary mypet-btn-spec transport-panou-fake" title="În pregătire">Internațional</div>
+				<div class="mypet-btn mypet-btn-secondary mypet-btn-spec transport-panou-fake" title="În pregătire">Toate</div>
 			</div>
 			<div class="tp-row tp-row-legend" aria-hidden="true">
 				<span class="mypet-legend-item">
@@ -39,7 +42,7 @@
 		<div class="tp-body" aria-label="Comenzi și cereri transport">
 			<div class="tp-body-pad">
 				<section class="tp-section" aria-labelledby="tp-h-pending">
-					<h3 id="tp-h-pending" class="tp-section-title">Oferte deschise (răspuns din email)</h3>
+					<h3 id="tp-h-pending" class="tp-section-title">Oferte deschise</h3>
 					<div class="tp-table-wrap">
 						<table class="tp-table">
 							<thead>
@@ -57,7 +60,8 @@
 									<th>Dată/oră dorită</th>
 									<th>Traseu</th>
 									<th>Urgent</th>
-									<th>Status</th>
+									<th>Situație</th>
+									<th>Acțiuni</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -77,11 +81,23 @@
 									<td>{{ t.data_raw|default:"—" }} {{ t.ora_raw|default:"" }}</td>
 									<td>{{ t.get_route_scope_display }}</td>
 									<td>{{ t.get_urgency_window_display }}</td>
-									<td><span class="tp-badge tp-badge-pending">Așteaptă răspuns</span></td>
+									<td><span class="tp-status-label">Ofertă activă</span></td>
+									<td class="tp-td-actions tp-td-actions-stack">
+										<form method="post" action="{% url 'transport_op_accept_pending' %}" class="tp-inline-form">
+											{% csrf_token %}
+											<input type="hidden" name="job_id" value="{{ r.job.pk }}" />
+											<button type="submit" class="tp-btn-accept">Acceptă</button>
+										</form>
+										<form method="post" action="{% url 'transport_op_decline_pending' %}" class="tp-inline-form">
+											{% csrf_token %}
+											<input type="hidden" name="job_id" value="{{ r.job.pk }}" />
+											<button type="submit" class="tp-btn-decline">Refuză</button>
+										</form>
+									</td>
 								</tr>
 								{% endwith %}
 								{% empty %}
-								<tr><td colspan="14" class="tp-empty">Nicio ofertă deschisă către tine.</td></tr>
+								<tr><td colspan="15" class="tp-empty">Nicio ofertă deschisă către tine.</td></tr>
 								{% endfor %}
 							</tbody>
 						</table>
@@ -280,6 +296,27 @@
 		box-sizing: border-box;
 		border-bottom: 1px solid rgba(210, 178, 122, 0.55);
 	}
+	.transport-panou-wrap .tp-toolbar-note {
+		margin: 0 0 0.15rem;
+		padding: 0.35rem 0.45rem;
+		font-size: 0.72rem;
+		line-height: 1.35;
+		color: #4e342e;
+		background: rgba(255, 248, 225, 0.9);
+		border: 1px solid rgba(210, 178, 122, 0.65);
+		border-radius: 6px;
+	}
+	.transport-panou-wrap a.tp-toolbar-link {
+		text-decoration: none;
+		cursor: pointer;
+		pointer-events: auto;
+	}
+	.transport-panou-wrap a.tp-toolbar-link:hover {
+		filter: brightness(0.97);
+	}
+	.transport-panou-wrap .tp-tab-current {
+		cursor: default;
+	}
 	.transport-panou-wrap .tp-row {
 		display: flex;
 		flex-wrap: wrap;
@@ -411,7 +448,7 @@
 		width: 100%;
 		border-collapse: collapse;
 		font-size: 0.72rem;
-		min-width: 920px;
+		min-width: 980px;
 	}
 	.transport-panou-wrap .tp-table th {
 		background: #5c3c00;
@@ -457,6 +494,50 @@
 		background: #e3f2fd;
 		color: #0d47a1;
 		border: 1px solid #90caf9;
+	}
+	.transport-panou-wrap .tp-status-label {
+		font-size: 0.68rem;
+		font-weight: 700;
+		color: #5d4037;
+	}
+	.transport-panou-wrap .tp-td-actions-stack {
+		white-space: normal;
+		vertical-align: middle;
+	}
+	.transport-panou-wrap .tp-td-actions-stack .tp-inline-form {
+		display: block;
+		margin-bottom: 0.28rem;
+	}
+	.transport-panou-wrap .tp-td-actions-stack .tp-inline-form:last-child {
+		margin-bottom: 0;
+	}
+	.transport-panou-wrap .tp-btn-accept {
+		font-size: 0.68rem;
+		font-weight: 700;
+		padding: 0.18rem 0.5rem;
+		border-radius: 5px;
+		border: 1px solid #1b5e20;
+		background: #e8f5e9;
+		color: #1b5e20;
+		cursor: pointer;
+		min-width: 5.2rem;
+	}
+	.transport-panou-wrap .tp-btn-accept:hover {
+		background: #c8e6c9;
+	}
+	.transport-panou-wrap .tp-btn-decline {
+		font-size: 0.68rem;
+		font-weight: 700;
+		padding: 0.18rem 0.5rem;
+		border-radius: 5px;
+		border: 1px solid #6d4c41;
+		background: #fafafa;
+		color: #5d4037;
+		cursor: pointer;
+		min-width: 5.2rem;
+	}
+	.transport-panou-wrap .tp-btn-decline:hover {
+		background: #efebe9;
 	}
 	.transport-panou-wrap .tp-td-actions {
 		white-space: nowrap;

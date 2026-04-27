@@ -143,9 +143,9 @@ Bifează când **ai parcurs** loturile pentru acel rol (bifa = doar în acest re
 
 **Date DB înainte de probe (o dată pe mediu, după `scripts/_align_user_roles.py`):**
 
-1. `python scripts/qa_adoption_transport_setup.py` — pune **București / București** pe profilurile relevante (adoptatori `dpf`, `e2e_pf`; ONG privat test `radu`; colaboratori `nccristescu`, `dg1`, `dg2`, `dm`; transportator `rares` + **TransportOperatorProfile aprobat** + național).
+1. `python scripts/qa_adoption_transport_setup.py` — pune **Iași / Iași** pe profilurile relevante (adoptatori `dpf`, `e2e_pf`; ONG privat test `radu`; colaboratori `nccristescu`, `dg1`, `dg2`, `dm`; transportator `rares` + **TransportOperatorProfile aprobat** + național).
 2. `python scripts/seed_portfolio.py` — animale `[seed]` și oferte `[seed]` (cabinet / servicii / magazin / oferte pe `rares`), dacă lipsesc.
-3. **Variantă „fără inimioare magazin” în București:** `python scripts/qa_adoption_transport_setup.py --magazin-remote` (mută doar `dm` în Timiș) — apoi reverifici cu setup-ul normal.
+3. **Variantă „fără inimioare magazin” în Iași:** `python scripts/qa_adoption_transport_setup.py --magazin-remote` (mută doar `dm` în Timiș) — apoi reverifici cu setup-ul normal.
 
 **Reguli din cod (rezumat):**
 
@@ -176,7 +176,7 @@ Bifează când **ai parcurs** loturile pentru acel rol (bifa = doar în acest re
 | **M6** | ONG privat `radu` | PF | Opțional | Fără | [ ] |
 | **M7** | ONG privat `radu` | PF | Opțional | Cu | [ ] |
 | **M8** | PF | ONG privat `radu` (cont separat de proprietarul anunțului) | Opțional | Fără sau cu | [ ] |
-| **M9** | Oricare | Oricare | **`--magazin-remote`**: max 2 canale cu inimioare (fără magazin în București) | La alegere | [ ] |
+| **M9** | Oricare | Oricare | **`--magazin-remote`**: max 2 canale cu inimioare (fără magazin în Iași) | La alegere | [ ] |
 
 ---
 
@@ -197,7 +197,7 @@ Bifează când **ai parcurs** loturile pentru acel rol (bifa = doar în acest re
 | AD-P3 | Proprietar: în MyPet, vede cererea; **acceptă** (`mypet/adoption/<id>/accept/`). | L | [ ] |
 | AD-P4 | Adoptator: pe fișă, mesajele / starea după accept (deblocare mesagerie dacă e cazul). | T | [ ] |
 | AD-P5 | Adoptator: deschide **`/servicii/`** — dacă are județ + cerere pending/acceptată: **banner** bonus; ofertele din **același județ** au **inimioară**; click inimioară (max 1 / tip: cabinet / servicii / magazin). | T | [ ] |
-| AD-P6 | *Doar dacă turul include transport:* din fișă / flux adopție, ajungi la **Transport** cu `from_adoption=1`; completezi formularul; **județ/oraș** = aceleași ca la `rares` (București după setup). | T | [ ] |
+| AD-P6 | *Doar dacă turul include transport:* din fișă / flux adopție, ajungi la **Transport** cu `from_adoption=1`; completezi formularul; **județ/oraș** = aceleași ca la `rares` (Iași după setup). | T | [ ] |
 | AD-P7 | *Cu transport:* pe **telefon** sau laptop logat `rares` — e-mail **accept** dispatch (sau panou transportator); cererea intră „asignată”; utilizatorul primește confirmare. | M sau L | [ ] |
 | AD-P8 | Adoptator: revenire la fișă cu `?after_transport=1` dacă fluxul o cere — opțiunea transport nu mai blochează incorect. | T | [ ] |
 | AD-P9 | Proprietar: **finalizează adopția** (`mypet/adoption/<id>/finalize/`); animal marcat adoptat; adoptator vede starea finală. | L | [ ] |

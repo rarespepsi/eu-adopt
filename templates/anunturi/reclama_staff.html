@@ -25,9 +25,9 @@
 				<a href="{% url 'reclama_termeni' %}" class="reclama-nav-btn{% if reclama_section == 'termeni' %} reclama-nav-btn--current{% endif %}">Termeni și condiții</a>
 				<a href="{% url 'reclama_contact' %}" class="reclama-nav-btn{% if reclama_section == 'contact' %} reclama-nav-btn--current{% endif %}">Contact</a>
 				{% if user.is_authenticated and show_mypet_nav %}
-					<a href="{% url 'reclama_mesaje' %}" class="reclama-nav-btn reclama-nav-btn--envelope{% if reclama_section == 'mesaje' %} reclama-nav-btn--current{% endif %}" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Mesaje{% endif %}">✉ Mesaje{% if message_unread_count|default:0 > 0 %} ({{ message_unread_count }}){% endif %}</a>
+					<a href="{% url 'reclama_mesaje' %}" class="reclama-nav-btn reclama-nav-btn--envelope{% if message_unread_count|default:0 > 0 %} reclama-nav-btn--has-unread{% endif %}{% if reclama_section == 'mesaje' %} reclama-nav-btn--current{% endif %}" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Mesaje{% endif %}">✉ Mesaje{% if message_unread_count|default:0 > 0 %} ({{ message_unread_count }}){% endif %}</a>
 				{% elif user.is_authenticated and show_magazinul_meu_nav %}
-					<a href="{% url 'reclama_mesaje' %}" class="reclama-nav-btn reclama-nav-btn--envelope{% if reclama_section == 'mesaje' %} reclama-nav-btn--current{% endif %}" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Mesaje{% endif %}">✉ Mesaje{% if message_unread_count|default:0 > 0 %} ({{ message_unread_count }}){% endif %}</a>
+					<a href="{% url 'reclama_mesaje' %}" class="reclama-nav-btn reclama-nav-btn--envelope{% if message_unread_count|default:0 > 0 %} reclama-nav-btn--has-unread{% endif %}{% if reclama_section == 'mesaje' %} reclama-nav-btn--current{% endif %}" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Mesaje{% endif %}">✉ Mesaje{% if message_unread_count|default:0 > 0 %} ({{ message_unread_count }}){% endif %}</a>
 				{% endif %}
 			</nav>
 			<div class="reclama-staff-main-col">

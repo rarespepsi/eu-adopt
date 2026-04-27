@@ -1662,7 +1662,7 @@
 																	<button type="button" id="petSendMessageBtn" class="pet-msg-send-btn" data-send-url="{% url 'pet_send_message' pet.pk %}">Send</button>
 																</div>
 															{% elif can_send_pet_message %}
-																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled>{% if adoption_request_status == "in_asteptare" %}Cererea ta de adopție este în așteptare. După ce organizația o acceptă în MyPet, vei putea trimite mesaje libere aici.{% else %}Folosește butonul „VREAU SĂ ADOPT” (lângă QR). După ce cererea este acceptată, poți folosi acest câmp pentru mesaje către organizație.{% endif %}</textarea>
+																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled>{% if adoption_request_status == "in_asteptare" %}Cererea de adopție e în așteptare. După acceptare, poți scrie aici.{% else %}Folosește „VREAU SĂ ADOPT”. După acceptarea cererii, poți scrie aici.{% endif %}</textarea>
 															{% elif user.is_authenticated %}
 																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled>Acesta este anunțul tău.</textarea>
 															{% else %}

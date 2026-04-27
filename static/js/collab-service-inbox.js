@@ -205,10 +205,10 @@
 		}
 
 		function openListModal() {
-			title.textContent = mode === "collaborator" ? "Mesaje — servicii / produse" : "Mesaje — colaboratori";
+			title.textContent = "Mesaje";
 			modal.hidden = false;
 			modal.style.display = "flex";
-			threadEl.textContent = "Alege o conversație.";
+			threadEl.textContent = "";
 			threadsEl.textContent = "Se încarcă...";
 			fetch(listUrlWithScope(state.listUrl), { credentials: "same-origin" })
 				.then(function (r) {

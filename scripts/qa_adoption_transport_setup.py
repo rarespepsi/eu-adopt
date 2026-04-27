@@ -11,7 +11,7 @@ Condiții din cod:
 Rulare (din rădăcina proiectului):
   python scripts/qa_adoption_transport_setup.py           # aplică zona canonică
   python scripts/qa_adoption_transport_setup.py --dry-run
-  python scripts/qa_adoption_transport_setup.py --magazin-remote   # dm în alt județ → fără inimioare magazin în București
+  python scripts/qa_adoption_transport_setup.py --magazin-remote   # dm în alt județ → fără inimioare magazin în zona QA (Iași)
 
 După aliniere: rulează opțional seed oferte/anunțuri:
   python scripts/seed_portfolio.py
@@ -37,8 +37,9 @@ from home.models import TransportOperatorProfile, UserProfile
 User = get_user_model()
 
 # Zonă unică QA: adoptatorul lasă formularul cu aceste valori (prefill din profil).
-QA_COUNTY = "București"
-QA_CITY = "București"
+# Iași — aliniat la dropdown-uri site + verificare transport / dispatch cu `rares`.
+QA_COUNTY = "Iași"
+QA_CITY = "Iași"
 
 # PF / conturi care pot juca rolul adoptatorului (județ persoană).
 PF_ADOPTERS = ("dpf", "e2e_pf")
@@ -140,7 +141,7 @@ def main() -> None:
     parser.add_argument(
         "--magazin-remote",
         action="store_true",
-        help="Mută doar colaboratorul 'dm' în Timiș/Timișoara (fără inimioare canal magazin pentru adoptatori din București).",
+        help="Mută doar colaboratorul 'dm' în Timiș/Timișoara (fără inimioare canal magazin pentru adoptatori din zona QA / Iași).",
     )
     args = parser.parse_args()
     dry = args.dry_run

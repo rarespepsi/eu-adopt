@@ -30,18 +30,18 @@
 	box-sizing: border-box;
 	position: relative;
 }
-/* T1 = 1/3, T2 = 2/3 din TW */
+/* T1 = formular: lățime plafonată (max-content lățea tot rândul pe desktop) */
 #TW #T1.tw-cell {
 	flex: 0 0 auto;
-	width: max-content;
-	max-width: 100%;
+	width: clamp(260px, 30vw, 400px);
+	max-width: min(400px, 42vw);
 	min-width: 0;
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	background: rgba(255, 255, 255, 0.04);
-	backdrop-filter: blur(1px);
+	align-items: stretch;
+	background: rgba(255, 255, 255, 0.06);
+	backdrop-filter: blur(4px);
 	border-color: #999;
 }
 #TW #T1.tw-cell .t1-inner {
@@ -347,14 +347,18 @@
 #TW #T3 .t3-box-2 { /* rezervat viitor: ex. logo-uri parteneri */ }
 #TW #T3 .t3-box-3 { /* rezervat viitor: ex. CTA sau info legală */ }
 
-/* T1 – formular transport, redus ~25% (minim lizibil) */
+/* T1 – formular transport: panou compact, contrast mai bun pe fundal .tw-row */
 #TW #T1 .t1-inner {
-	padding: 0 0.42rem 0.38rem 0.42rem;
+	padding: 0.45rem 0.5rem 0.5rem;
 	box-sizing: border-box;
-	background: transparent;
-	border-radius: 4px;
+	background: rgba(248, 250, 252, 0.88);
+	border-radius: 10px;
+	box-shadow: 0 6px 28px rgba(0, 0, 0, 0.14);
 	width: 100%;
 	min-width: 0;
+	margin: 0.2rem 0.25rem 0.25rem;
+	max-width: calc(100% - 0.5rem);
+	align-self: center;
 }
 #TW #T1 .t1-title {
 	margin: 0 0 0.26rem;
@@ -366,7 +370,7 @@
 	font-size: 1.1rem;
 	font-weight: 700;
 	color: #0a0a0a;
-	background: rgba(255, 255, 255, 0.4);
+	background: rgba(255, 255, 255, 0.75);
 	border-radius: 3px;
 	box-sizing: border-box;
 	flex-shrink: 0;
@@ -378,7 +382,7 @@
 	font-size: 0.6rem;
 	line-height: 1.25;
 	color: #0a0a0a;
-	background: rgba(255, 255, 255, 0.4);
+	background: rgba(255, 255, 255, 0.75);
 	border-radius: 3px;
 	box-sizing: border-box;
 	flex-shrink: 0;
@@ -394,10 +398,10 @@
 }
 #TW #T1 .t1-caseta {
 	min-width: 0;
-	padding: 0.26rem 0.28rem;
-	background: rgba(255, 255, 255, 0.4);
-	border: 1px solid rgba(0, 0, 0, 0.15);
-	border-radius: 4px;
+	padding: 0.3rem 0.32rem;
+	background: rgba(255, 255, 255, 0.92);
+	border: 1px solid rgba(0, 0, 0, 0.12);
+	border-radius: 6px;
 	box-sizing: border-box;
 }
 #TW #T1 .t1-row-inline {
@@ -432,7 +436,7 @@
 	letter-spacing: 0.02em;
 	color: #0a0a0a;
 	margin-bottom: 0;
-	background: rgba(255, 255, 255, 0.4);
+	background: rgba(255, 255, 255, 0.82);
 	border-radius: 2px;
 	box-sizing: border-box;
 }
@@ -447,7 +451,7 @@
 	border: 1px solid rgba(0, 0, 0, 0.25);
 	border-radius: 3px;
 	box-sizing: border-box;
-	background: rgba(255, 255, 255, 0.4);
+	background: rgba(255, 255, 255, 0.95);
 }
 #TW #T1 .t1-input::placeholder {
 	color: #1a1a1a;

@@ -632,6 +632,18 @@ class AdoptionRequest(models.Model):
     extension_count = models.PositiveSmallIntegerField("Număr prelungiri", default=0)
     finalized_at = models.DateTimeField("Adopție finalizată la", null=True, blank=True)
     goodwill_email_sent_at = models.DateTimeField("Mail bun venit +15 zile trimis la", null=True, blank=True)
+    owner_reminder_24h_sent_at = models.DateTimeField(
+        "Reminder 24h proprietar trimis la",
+        null=True,
+        blank=True,
+        help_text="Setat când s-a trimis emailul de reamintire la 24h pentru cerere în așteptare.",
+    )
+    owner_reminder_72h_sent_at = models.DateTimeField(
+        "Reminder 72h proprietar trimis la",
+        null=True,
+        blank=True,
+        help_text="Setat când s-a trimis emailul de reamintire la 72h pentru cerere în așteptare.",
+    )
     bonus_servicii_locked_at = models.DateTimeField(
         "Bonus Servicii — alegeri salvate la",
         null=True,

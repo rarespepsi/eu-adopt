@@ -792,11 +792,113 @@ def _send_adoption_request_owner_email(ar: AdoptionRequest):
         )
 
 
+def _send_adoption_pending_owner_reminder_email(ar: AdoptionRequest, *, variant: str) -> bool:
+    """
+    Reminder proprietar: cerere de adopție încă în așteptare (Accept/Respinge).
+    variant: '24h' | '72h'. Returnează True dacă emailul a fost trimis cu succes.
+    """
+    if variant not in ("24h", "72h"):
+        raise ValueError(variant)
+    pet = ar.animal
+    owner = pet.owner
+    owner_to = (getattr(owner, "email", None) or "").strip()
+    if not owner_to:
+        logging.getLogger(__name__).warning(
+            "adoption_pending_owner_reminder skipped: owner has no email (ar_id=%s)",
+            ar.pk,
+        )
+        return False
+    adopter = ar.adopter
+    pet_label = (pet.name or f"Animal #{pet.pk}").strip()
+    adopter_name = (f"{adopter.first_name} {adopter.last_name}").strip() or adopter.username
+    mypet_link = ""
+    try:
+        mypet_link = (getattr(settings, "SITE_BASE_URL", "") or "").rstrip("/") + reverse("mypet")
+    except Exception:
+        mypet_link = reverse("mypet")
+    signer = TimestampSigner(salt="adoption-owner-email-v1")
+    token = signer.sign(f"{ar.pk}:{owner.pk}")
+    site_base = (getattr(settings, "SITE_BASE_URL", "") or "").rstrip("/")
+    try:
+        decide_path = reverse("adoption_email_owner_action")
+        accept_path = f"{decide_path}?{urlencode({'t': token, 'd': 'accept'})}"
+        reject_path = f"{decide_path}?{urlencode({'t': token, 'd': 'reject'})}"
+    except Exception:
+        accept_path = f"/adoption/email/d/?{urlencode({'t': token, 'd': 'accept'})}"
+        reject_path = f"/adoption/email/d/?{urlencode({'t': token, 'd': 'reject'})}"
+    accept_link = f"{site_base}{accept_path}" if site_base else accept_path
+    reject_link = f"{site_base}{reject_path}" if site_base else reject_path
+
+    if variant == "24h":
+        sub = f"EU-Adopt: reamintire – aveți o cerere de adopție pentru {pet_label}"
+        intro_txt = (
+            f"Aveți în continuare o cerere de adopție nerezolvată pentru „{pet_label}”, "
+            f"de la utilizatorul {adopter_name}. Vă rugăm să acceptați sau să respingeți cererea în MyPet "
+            f"sau din linkurile de mai jos."
+        )
+        intro_html = (
+            f"<p>Aveți în continuare o cerere de adopție nerezolvată pentru <strong>{escape(pet_label)}</strong>, "
+            f"de la utilizatorul <strong>{escape(adopter_name)}</strong>. Vă rugăm să acceptați sau să respingeți "
+            f"cererea în MyPet sau din linkurile de mai jos.</p>"
+        )
+        mail_kind = "adoption_pending_owner_reminder_24h"
+    else:
+        sub = f"EU-Adopt: a doua reamintire – cerere de adopție pentru {pet_label}"
+        intro_txt = (
+            f"Aveți încă o cerere de adopție nerezolvată pentru „{pet_label}”, "
+            f"de la utilizatorul {adopter_name}. Dacă nu răspundeți în 7 zile de la data cererii, "
+            f"aceasta poate fi închisă automat (fără acceptare)."
+        )
+        intro_html = (
+            f"<p>Aveți încă o cerere de adopție nerezolvată pentru <strong>{escape(pet_label)}</strong>, "
+            f"de la <strong>{escape(adopter_name)}</strong>. Dacă nu răspundeți în 7 zile de la data cererii, "
+            f"aceasta poate fi închisă automat.</p>"
+        )
+        mail_kind = "adoption_pending_owner_reminder_72h"
+
+    body = (
+        f"Bună ziua,\n\n"
+        f"{intro_txt}\n\n"
+        f"- Acceptă cererea: {accept_link}\n"
+        f"- Respinge cererea: {reject_link}\n\n"
+        f"Sau deschideți MyPet: {mypet_link}\n\n"
+        f"Aplicația EU-Adopt\n"
+    )
+    html_body = (
+        f"<p>Bună ziua,</p>"
+        f"{intro_html}"
+        f"<p>"
+        f"<a href=\"{accept_link}\" style=\"display:inline-block;padding:10px 14px;border-radius:8px;background:#2e7d32;color:#fff;text-decoration:none;font-weight:700;margin-right:8px;\">Acceptă cererea</a>"
+        f"<a href=\"{reject_link}\" style=\"display:inline-block;padding:10px 14px;border-radius:8px;background:#fff;color:#b71c1c;border:1px solid #b71c1c;text-decoration:none;font-weight:700;\">Respinge cererea</a>"
+        f"</p>"
+        f"<p>Gestionare în MyPet: <a href=\"{mypet_link}\">{mypet_link}</a></p>"
+        f"<p>Aplicația EU-Adopt</p>"
+    )
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
+    try:
+        send_mail_text_and_html(
+            email_subject_for_user(owner.username, sub),
+            body,
+            from_email,
+            [owner_to],
+            html_body,
+            mail_kind=mail_kind,
+        )
+    except Exception as exc:
+        logging.getLogger(__name__).exception(
+            "adoption_pending_owner_reminder: ar_id=%s variant=%s err=%s",
+            ar.pk,
+            variant,
+            exc,
+        )
+        return False
+    return True
+
+
 def _send_adoption_reject_adopter_email(ar: AdoptionRequest, *, reason: str = "owner_reject"):
     """
-    Adoptator: cerere închisă (respingere explicită sau înlocuită de altă cerere acceptată).
-    reason: owner_reject | superseded (altă cerere acceptată pentru același animal).
-    Textele pot fi ajustate ulterior.
+    Adoptator: cerere închisă (respingere explicită, înlocuită de altă cerere acceptată sau expirată fără răspuns).
+    reason: owner_reject | superseded | pending_timeout.
     """
     pet = ar.animal
     adopter = ar.adopter
@@ -828,6 +930,26 @@ def _send_adoption_reject_adopter_email(ar: AdoptionRequest, *, reason: str = "o
             f"anunțul a acceptat o altă cerere de adopție. Cererea ta nu mai este activă în acest moment.</p>"
             f"<p>Îți mulțumim pentru interes. Îți recomandăm să verifici disponibilitatea altor animale "
             f"din zona ta pe EU-Adopt.</p>"
+            f"<p>Pagina cu anunțuri: <a href=\"{escape(pets_link)}\">{escape(pets_link)}</a></p>"
+            f"<p>Cu stimă,<br/>Echipa EU-Adopt</p>"
+        )
+    elif reason == "pending_timeout":
+        sub = "EU-Adopt: cererea ta de adopție a fost închisă automat (fără răspuns în 7 zile)"
+        body = (
+            f"Bună ziua,\n\n"
+            f"Ne pare rău: pentru „{pet_label}”, persoana sau organizația care publică anunțul nu a "
+            f"răspuns la cererea ta de adopție în termenul prevăzut (7 zile). Cererea a fost închisă automat.\n\n"
+            f"Îți mulțumim pentru interes. Poți căuta alte animale disponibile pe EU-Adopt.\n\n"
+            f"Pagina cu anunțuri: {pets_link}\n\n"
+            f"Cu stimă,\n"
+            f"Echipa EU-Adopt\n"
+        )
+        html_body = (
+            f"<p>Bună ziua,</p>"
+            f"<p>Ne pare rău: pentru <strong>{escape(pet_label)}</strong>, persoana sau organizația care publică "
+            f"anunțul nu a răspuns la cererea ta de adopție în termenul prevăzut (7 zile). "
+            f"Cererea a fost închisă automat.</p>"
+            f"<p>Îți mulțumim pentru interes. Poți căuta alte animale disponibile pe EU-Adopt.</p>"
             f"<p>Pagina cu anunțuri: <a href=\"{escape(pets_link)}\">{escape(pets_link)}</a></p>"
             f"<p>Cu stimă,<br/>Echipa EU-Adopt</p>"
         )
@@ -1352,7 +1474,7 @@ def _apply_owner_decision_for_request(ad_req: AdoptionRequest, decision: str):
                 _inbox.KIND_ADOPTION_SUPERSEDED_ADOPTER,
                 "Cererea ta de adopție nu mai este activă",
                 f"Pentru „{pl_other}” a fost acceptată o altă cerere.",
-                link_url=reverse("mypet") + "?open_messages=1",
+                link_url=reverse("mypet") + f"?open_messages=1&open_adopter_animal={other_ar.animal_id}",
                 metadata={"pet_id": other_ar.animal_id},
             )
         _send_adoption_accept_emails(ad_req)
@@ -1372,7 +1494,7 @@ def _apply_owner_decision_for_request(ad_req: AdoptionRequest, decision: str):
             _inbox.KIND_ADOPTION_ACCEPTED_ADOPTER,
             "Cererea ta de adopție a fost acceptată",
             f"Pentru „{pl}”. Verifică emailul și mesajele din cont.",
-            link_url=reverse("mypet") + "?open_messages=1",
+            link_url=reverse("mypet") + f"?open_messages=1&open_adopter_animal={ad_req.animal_id}",
             metadata={"pet_id": ad_req.animal_id, "adoption_request_id": ad_req.pk},
         )
         return True, "Cererea a fost acceptată.", True
@@ -1393,7 +1515,7 @@ def _apply_owner_decision_for_request(ad_req: AdoptionRequest, decision: str):
             _inbox.KIND_ADOPTION_REJECTED_ADOPTER,
             "Cererea ta de adopție nu a fost acceptată",
             f"Pentru „{plr}”. Îți mulțumim pentru interes.",
-            link_url=reverse("mypet") + "?open_messages=1",
+            link_url=reverse("mypet") + f"?open_messages=1&open_adopter_animal={ad_req.animal_id}",
             metadata={"pet_id": ad_req.animal_id},
         )
         return True, "Cererea a fost respinsă.", True
@@ -3228,6 +3350,73 @@ def transport_op_release_job_view(request):
     return redirect("transport_operator_panel")
 
 
+def _transport_operator_panel_gate(request):
+    """Returnează None dacă userul e colaborator transport; altfel redirect ca la panoul My transport."""
+    ap = getattr(request.user, "account_profile", None)
+    prof = getattr(request.user, "profile", None)
+    if not ap or ap.role != AccountProfile.ROLE_COLLAB:
+        return redirect("home")
+    if (getattr(prof, "collaborator_type", None) or "").strip().lower() != "transport":
+        return redirect("collab_offers_control")
+    return None
+
+
+@login_required
+@require_POST
+@collab_magazin_required
+def transport_op_accept_pending_view(request):
+    """Acceptă oferta din panou (alternativă la linkul din email)."""
+    from .transport_dispatch import accept_job, maybe_expire_job
+
+    gate = _transport_operator_panel_gate(request)
+    if gate is not None:
+        return gate
+    try:
+        job_id = int((request.POST.get("job_id") or "").strip() or "0")
+    except ValueError:
+        job_id = 0
+    if not job_id:
+        messages.error(request, "Lipsește cererea.")
+        return redirect("transport_operator_panel")
+    job = TransportDispatchJob.objects.filter(pk=job_id).first()
+    if job:
+        maybe_expire_job(job)
+    ok, msg = accept_job(request, job_id, request.user.pk)
+    if ok:
+        messages.success(request, msg)
+    else:
+        messages.error(request, msg)
+    return redirect("transport_operator_panel")
+
+
+@login_required
+@require_POST
+@collab_magazin_required
+def transport_op_decline_pending_view(request):
+    """Refuză oferta din panou (alternativă la linkul din email)."""
+    from .transport_dispatch import decline_job, maybe_expire_job
+
+    gate = _transport_operator_panel_gate(request)
+    if gate is not None:
+        return gate
+    try:
+        job_id = int((request.POST.get("job_id") or "").strip() or "0")
+    except ValueError:
+        job_id = 0
+    if not job_id:
+        messages.error(request, "Lipsește cererea.")
+        return redirect("transport_operator_panel")
+    job = TransportDispatchJob.objects.filter(pk=job_id).first()
+    if job:
+        maybe_expire_job(job)
+    ok, msg = decline_job(request, job_id, request.user.pk)
+    if ok:
+        messages.success(request, msg)
+    else:
+        messages.error(request, msg)
+    return redirect("transport_operator_panel")
+
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def transport_dispatch_rate_view(request, job_id: int):
@@ -4102,10 +4291,15 @@ def adoption_bonus_offers_portal_view(request):
 
 @login_required
 def unified_inbox_view(request):
-    """Inbox mesaje: trei canale (MyPet proprietar / adoptator / parteneri) + legături în casete."""
+    """Inbox mesaje: trei canale + listă notificări sistem (UserInboxNotification), ușor de citit fără admin."""
     user = request.user
     ap = getattr(user, "account_profile", None)
     role = getattr(ap, "role", None) if ap else None
+    prof = getattr(user, "profile", None)
+    collab_tip = (getattr(prof, "collaborator_type", None) or "").strip().lower()
+    hide_inbox_channel_cards = (request.GET.get("from_transport") == "1") or (
+        role == AccountProfile.ROLE_COLLAB and collab_tip == "transport"
+    )
     mypet_ok = _user_can_use_mypet(request)
     active_since = _messages_active_since()
     inbox_owner_pet_unread = (
@@ -4125,12 +4319,16 @@ def unified_inbox_view(request):
     adopter_rows = _unified_inbox_adopter_pet_message_rows(user) if mypet_ok else []
     collab_rows = _unified_inbox_collab_client_rows(user)
     has_adoption_activity = AdoptionRequest.objects.filter(adopter=user).exists()
+    inbox_system_notifications = list(
+        UserInboxNotification.objects.filter(user=user, created_at__gte=active_since).order_by("-created_at")[:50]
+    )
     ctx = {
         "inbox_owner_pet_unread": inbox_owner_pet_unread,
         "inbox_adopter_pet_unread": inbox_adopter_pet_unread,
         "inbox_owner_thread_rows": owner_rows,
         "inbox_adopter_thread_rows": adopter_rows,
         "inbox_collab_thread_rows": collab_rows,
+        "inbox_system_notifications": inbox_system_notifications,
         "quick_mypet_messages_url": (reverse("mypet") + "?open_messages=1") if mypet_ok else "",
         "quick_adopter_url": ((reverse("mypet") + "?open_messages=1") if mypet_ok else ""),
         "quick_adoption_bonus_url": reverse("adoption_bonus_portal") if has_adoption_activity else "",
@@ -4140,6 +4338,7 @@ def unified_inbox_view(request):
             else ""
         ),
         "mypet_ok": mypet_ok,
+        "hide_inbox_channel_cards": hide_inbox_channel_cards,
     }
     return render(request, "anunturi/unified_inbox.html", ctx)
 
@@ -5004,6 +5203,8 @@ def mypet_view(request):
         AnimalListing.objects.filter(owner=user)
         .order_by("-id")[:50]
     )
+    arc_q = (request.GET.get("arc") or "").strip().lower()
+    mypet_initial_arc = "adopted" if arc_q == "adopted" else "active"
     mypet_count = len([p for p in pets if p is not None])
     user_has_owned_pets = mypet_count > 0
     adopted_count = 0
@@ -5240,6 +5441,7 @@ def mypet_view(request):
         "total_count": total_count,
         "user_has_owned_pets": user_has_owned_pets,
         "adopter_pet_message_unread": adopter_pet_message_unread,
+        "mypet_initial_arc": mypet_initial_arc,
     })
 
 
@@ -6919,7 +7121,7 @@ def pet_adoption_request_view(request, pk: int):
         _inbox.KIND_ADOPTION_REQUEST_OWNER,
         "Cerere nouă de adopție",
         f"{request.user.get_full_name() or request.user.username} a trimis o cerere pentru „{pet_label}”.",
-        link_url=reverse("mypet") + "?open_messages=1",
+        link_url=reverse("mypet") + f"?open_messages=1&open_pet_messages={pet.pk}",
         metadata={"pet_id": pet.pk, "adoption_request_id": ar.pk},
     )
     _inbox.create_inbox_notification(
@@ -6927,7 +7129,7 @@ def pet_adoption_request_view(request, pk: int):
         _inbox.KIND_ADOPTION_REQUEST_ADOPTER,
         "Cererea ta de adopție a fost trimisă",
         f"Pentru „{pet_label}”. Vei fi anunțat când proprietarul răspunde.",
-        link_url=reverse("mypet") + "?open_messages=1",
+        link_url=reverse("mypet") + f"?open_messages=1&open_adopter_animal={pet.pk}",
         metadata={"pet_id": pet.pk, "adoption_request_id": ar.pk},
     )
     _send_adoption_request_owner_email(ar)
@@ -7061,7 +7263,7 @@ def mypet_adoption_finalize_view(request, req_id: int):
         _inbox.KIND_ADOPTION_FINALIZED_OWNER,
         "Adopție finalizată",
         f"Ai marcat adopția ca finalizată pentru „{pet_label_fin}”.",
-        link_url=reverse("mypet") + "?open_messages=1",
+        link_url=reverse("mypet") + f"?open_messages=1&open_pet_messages={pet.pk}",
         metadata={"pet_id": pet.pk, "adoption_request_id": ar.pk},
     )
     _inbox.create_inbox_notification(
@@ -7069,7 +7271,7 @@ def mypet_adoption_finalize_view(request, req_id: int):
         _inbox.KIND_ADOPTION_FINALIZED_ADOPTER,
         "Adopție finalizată",
         f"Adopția pentru „{pet_label_fin}” a fost finalizată. Îți mulțumim!",
-        link_url=reverse("mypet") + "?open_messages=1",
+        link_url=reverse("mypet") + f"?open_messages=1&open_adopter_animal={pet.pk}",
         metadata={"pet_id": pet.pk, "adoption_request_id": ar.pk},
     )
     return JsonResponse({"ok": True})
@@ -7092,6 +7294,11 @@ def mypet_adoption_extend_view(request, req_id: int):
             return JsonResponse({"ok": False, "error": "Cererea nu mai există."}, status=404)
         if ar.status not in {AdoptionRequest.STATUS_ACCEPTED, AdoptionRequest.STATUS_EXPIRED}:
             return JsonResponse({"ok": False, "error": "Cererea nu poate fi prelungită în starea curentă."}, status=400)
+        if ar.status == AdoptionRequest.STATUS_EXPIRED and not ar.accepted_at:
+            return JsonResponse(
+                {"ok": False, "error": "Prelungirea se aplică doar după ce o cerere a fost acceptată."},
+                status=400,
+            )
         if locked_qs.filter(status=AdoptionRequest.STATUS_ACCEPTED).exclude(pk=ar.pk).exists():
             return JsonResponse(
                 {"ok": False, "error": "Există deja o altă adopție activă pentru acest animal."},
@@ -7121,6 +7328,11 @@ def mypet_adoption_next_view(request, req_id: int):
     )
     if ar.status not in {AdoptionRequest.STATUS_ACCEPTED, AdoptionRequest.STATUS_EXPIRED}:
         return JsonResponse({"ok": False, "error": "Poți trece la următorul doar dintr-o adopție activă/expirată."}, status=400)
+    if ar.status == AdoptionRequest.STATUS_EXPIRED and not ar.accepted_at:
+        return JsonResponse(
+            {"ok": False, "error": "„Următorul” este disponibil după o cerere acceptată care a expirat, nu pentru cereri închise fără răspuns."},
+            status=400,
+        )
     pet = ar.animal
     with transaction.atomic():
         locked_qs = AdoptionRequest.objects.select_for_update().filter(animal=pet)
@@ -7129,6 +7341,11 @@ def mypet_adoption_next_view(request, req_id: int):
             return JsonResponse({"ok": False, "error": "Cererea nu mai există."}, status=404)
         if ar.status not in {AdoptionRequest.STATUS_ACCEPTED, AdoptionRequest.STATUS_EXPIRED}:
             return JsonResponse({"ok": False, "error": "Poți trece la următorul doar dintr-o adopție activă/expirată."}, status=400)
+        if ar.status == AdoptionRequest.STATUS_EXPIRED and not ar.accepted_at:
+            return JsonResponse(
+                {"ok": False, "error": "„Următorul” este disponibil după o cerere acceptată care a expirat, nu pentru cereri închise fără răspuns."},
+                status=400,
+            )
         if ar.status == AdoptionRequest.STATUS_ACCEPTED:
             ar.status = AdoptionRequest.STATUS_EXPIRED
             ar.save(update_fields=["status", "updated_at"])

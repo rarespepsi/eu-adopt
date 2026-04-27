@@ -32,20 +32,16 @@
 
 <section class="abp-wrap">
 	<h1>Oferte bonus la adopție</h1>
-	<p class="abp-lead">
-		Aici vezi ofertele partenerilor pe care le-ai ales în demersul de adopție: titlu, canal, cod (după finalizare),
-		link către ofertă și date de contact ale partenerului (ca în emailul de confirmare).
-	</p>
-	<p class="abp-lead" style="margin-top:-0.5rem;">
+	<p class="abp-lead" style="margin-bottom:0.75rem;">
 		<a href="{% url 'unified_inbox' %}">← Mesaje și notificări</a>
 	</p>
 
 	{% if bonus_empty %}
 		<p class="abp-empty">
 			{% if has_adoption_activity %}
-				Nu ai încă selecții de bonus înregistrate pentru cererile tale de adopție.
+				Nu ai încă oferte bonus salvate pentru cererile tale de adopție.
 			{% else %}
-				Portalul se completează după ce trimiți o cerere de adopție și alegi oferte bonus în fluxul Servicii.
+				Ofertele bonus apar după ce trimiți o cerere de adopție și le alegi din Servicii.
 			{% endif %}
 		</p>
 	{% endif %}

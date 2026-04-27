@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
+from html import escape as html_escape
 from typing import List, Optional
 
 from django.conf import settings
@@ -25,6 +26,7 @@ from .inbox_notifications import (
     KIND_TRANSPORT_DISPATCH_OPEN,
     KIND_TRANSPORT_EXHAUSTED,
     KIND_TRANSPORT_EXPIRED,
+    KIND_TRANSPORT_INVITE_OPERATOR,
     KIND_TRANSPORT_NO_TRANSPORTERS,
     KIND_TRANSPORT_REOPENED,
     create_inbox_notification,
@@ -101,6 +103,23 @@ def _expires_at_for_tvr(tvr: TransportVeterinaryRequest) -> Optional[timezone.da
     return None
 
 
+def _notify_transporters_dispatch_invite(request, tvr: TransportVeterinaryRequest, job: TransportDispatchJob, users: List[User]) -> None:
+    """Notificare inbox + plic navbar pentru fiecare transportator invitat (nu doar email)."""
+    panel_url = reverse_safe("transport_operator_panel")
+    summary = f"Cerere #{tvr.pk} · job #{job.pk} · {tvr.judet or '—'} / {tvr.oras or '—'}"
+    for u in users:
+        if not u:
+            continue
+        create_inbox_notification(
+            u,
+            KIND_TRANSPORT_INVITE_OPERATOR,
+            "Ofertă nouă de transport",
+            f"{summary}. Răspunde din email sau deschide My transport.",
+            link_url=panel_url,
+            metadata={"tvr_id": tvr.pk, "job_id": job.pk},
+        )
+
+
 def _absolute(request, path: str) -> str:
     if request is None:
         base = (getattr(settings, "SITE_URL", None) or "").rstrip("/")
@@ -165,6 +184,7 @@ def create_dispatch_for_tvr(request, tvr: TransportVeterinaryRequest) -> Optiona
             )
     for u in users:
         _email_transporter_new_offer(request, tvr, job, u)
+    _notify_transporters_dispatch_invite(request, tvr, job, users)
     _email_user_request_received(request, tvr, job)
     if tvr.user:
         create_inbox_notification(
@@ -251,8 +271,38 @@ def _email_transporter_new_offer(
         f"Sau refuză: {url_d}\n\n"
         "Echipa EU-Adopt"
     )
+    summary_esc = html_escape(_tvr_summary_lines(tvr).rstrip("\n"))
+    url_e = html_escape(url)
+    url_de = html_escape(url_d)
+    html_body = (
+        "<html><body style=\"font-family:Arial,Helvetica,sans-serif;line-height:1.45;color:#111;font-size:15px;\">"
+        "<p>Bună ziua,</p>"
+        "<p>Ai o <strong>cerere nouă de transport</strong> în zona ta.</p>"
+        f"<pre style=\"white-space:pre-wrap;font-family:inherit;font-size:14px;background:#f5f5f5;"
+        f"border:1px solid #ddd;border-radius:8px;padding:12px 14px;margin:12px 0;\">{summary_esc}</pre>"
+        "<p style=\"margin:16px 0 8px;\">"
+        f"<a href=\"{url_e}\" style=\"display:inline-block;padding:12px 18px;border-radius:8px;"
+        "background:#2e7d32;color:#fff !important;text-decoration:none;font-weight:700;margin:6px 8px 6px 0;\">"
+        "Acceptă</a>"
+        f"<a href=\"{url_de}\" style=\"display:inline-block;padding:12px 18px;border-radius:8px;"
+        "background:#fff;color:#b71c1c !important;border:2px solid #b71c1c;text-decoration:none;font-weight:700;"
+        "margin:6px 0;\">Refuză</a>"
+        "</p>"
+        "<p style=\"font-size:13px;color:#555;margin-top:12px;\">"
+        "Primul care <strong>acceptă</strong> preia comanda. Dacă nu vezi butoane, folosește linkurile din versiunea text de mai sus."
+        "</p>"
+        "<p>Echipa EU-Adopt</p>"
+        "</body></html>"
+    )
     try:
-        send_mail(subj, body, settings.DEFAULT_FROM_EMAIL, [transporter.email], fail_silently=False)
+        send_mail(
+            subj,
+            body,
+            settings.DEFAULT_FROM_EMAIL,
+            [transporter.email],
+            fail_silently=False,
+            html_message=html_body,
+        )
     except Exception:
         logger.exception("email transporter offer job=%s to=%s", job.pk, transporter.pk)
 
@@ -485,6 +535,7 @@ def cancel_job_by_user(request, job_id: int, user_id: int) -> tuple[bool, str]:
         for u in users:
             if u:
                 _email_transporter_new_offer(request, tvr, job, u)
+        _notify_transporters_dispatch_invite(request, tvr, job, users)
     if tvr.user:
         create_inbox_notification(
             tvr.user,
@@ -516,6 +567,7 @@ def cancel_assignment_by_transporter(request, job_id: int, transporter_user_id: 
     users = [r.transporter for r in TransportDispatchRecipient.objects.filter(job_id=job.pk).select_related("transporter")]
     for u in users:
         _email_transporter_new_offer(request, job.tvr, job, u)
+    _notify_transporters_dispatch_invite(request, job.tvr, job, users)
     if job.tvr.user and job.tvr.user.email:
         try:
             send_mail(
