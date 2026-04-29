@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=27" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=28-strip-pub" type="text/css" media="screen" />
 <style>
 	/* La fel ca PT: main_wrap, main_content, apoi SW cu aceleași dimensiuni ca PW */
 	body.page-servicii #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -731,6 +731,93 @@
 			min-height: min(200px, 19vh);
 		}
 	}
+	/* Benzi S1/S7: celule EU + pub (lățime ca .sw-strip-item--s1) */
+	#SW .sw-strip-cell--eu {
+		display: flex !important;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		background: linear-gradient(160deg, #e3f2fd 0%, #bbdefb 100%) !important;
+		color: #0d47a1 !important;
+		padding: 0.2rem 0.25rem !important;
+		box-sizing: border-box;
+	}
+	#SW .sw-strip-cell-label {
+		display: block;
+		font-weight: 900;
+		font-size: 0.52rem;
+		letter-spacing: 0.02em;
+		margin-bottom: 0.12rem;
+		line-height: 1.1;
+		text-align: center;
+	}
+	#SW .sw-strip-cell-eu-msg {
+		font-size: 0.48rem;
+		font-weight: 600;
+		text-align: center;
+		line-height: 1.15;
+		overflow: hidden;
+		display: -webkit-box;
+		-webkit-line-clamp: 5;
+		-webkit-box-orient: vertical;
+		word-break: break-word;
+	}
+	#SW .sw-strip-cell--pub {
+		display: flex !important;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-start;
+		padding: 0.12rem !important;
+		background: #ffeb3b !important;
+		color: #b71c1c !important;
+		box-sizing: border-box;
+		position: relative;
+	}
+	#SW .sw-strip-cell--pub .sw-strip-pub-link {
+		display: block;
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		margin-top: 0.1rem;
+		position: relative;
+	}
+	#SW .sw-strip-cell--pub img,
+	#SW .sw-strip-cell--pub video {
+		width: 100% !important;
+		height: 100% !important;
+		min-height: 36px;
+		object-fit: cover !important;
+		display: block !important;
+	}
+	#SW .sw-pub-mini-badges {
+		position: absolute;
+		top: 0.14rem;
+		left: 0.14rem;
+		right: 0.14rem;
+		display: flex;
+		justify-content: space-between;
+		gap: 0.2rem;
+		pointer-events: none;
+		z-index: 4;
+	}
+	#SW .sw-pub-mini-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		max-width: 48%;
+		padding: 0.05rem 0.28rem;
+		border-radius: 999px;
+		font-size: 0.5rem;
+		font-weight: 800;
+		line-height: 1.1;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		border: 1px solid rgba(12, 20, 34, 0.25);
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+	}
+	#SW .sw-pub-mini-badge--price { background: #e8f5e9; color: #1b5e20; }
+	#SW .sw-pub-mini-badge--discount { background: #ffebee; color: #b71c1c; }
 </style>
 {% endblock %}
 
@@ -787,14 +874,10 @@
 		{% endif %}
 		<div class="sw-grid">
 			<div id="S1" class="sw-cell sw-cell-1" data-slot="S1">
-				<div class="sw-strip-wrap sw-strip-s1" aria-label="Banda poze">
+				<div class="sw-strip-wrap sw-strip-s1" aria-label="Bandă publicitate S1">
 					<div class="sw-strip-track sw-strip-track--s1">
-						{% for pet in strip_pets %}
-						<span class="sw-strip-item sw-strip-item--s1"><img src="{% static pet.imagine_fallback %}" alt="" loading="lazy" /></span>
-						{% if forloop.counter|divisibleby:10 %}<span class="sw-strip-item sw-strip-item--s1 sw-strip-disclaimer">Adoptă, nu cumpăra.</span>{% endif %}
-						{% empty %}
-						<span class="sw-strip-item sw-strip-item--s1 sw-strip-no-img">—</span>
-						{% endfor %}
+						{% include "anunturi/includes/servicii_strip_band_track.html" with cells=servicii_strip_s1_cells strip_variant="s1" only %}
+						{% include "anunturi/includes/servicii_strip_band_track.html" with cells=servicii_strip_s1_cells strip_variant="s1" only %}
 					</div>
 				</div>
 			</div>
@@ -892,14 +975,10 @@
 				</div>
 			</div>
 			<div id="S7" class="sw-cell sw-cell-3" data-slot="S7">
-				<div class="sw-strip-wrap sw-strip-s3" aria-label="Banda poze">
+				<div class="sw-strip-wrap sw-strip-s3" aria-label="Bandă publicitate S7">
 					<div class="sw-strip-track sw-strip-track--s3">
-						{% for pet in strip_pets %}
-						<span class="sw-strip-item sw-strip-item--s3"><img src="{% static pet.imagine_fallback %}" alt="" loading="lazy" /></span>
-						{% if forloop.counter|divisibleby:10 %}<span class="sw-strip-item sw-strip-item--s3 sw-strip-disclaimer">Adoptă, nu cumpăra.</span>{% endif %}
-						{% empty %}
-						<span class="sw-strip-item sw-strip-item--s3 sw-strip-no-img">—</span>
-						{% endfor %}
+						{% include "anunturi/includes/servicii_strip_band_track.html" with cells=servicii_strip_s7_cells strip_variant="s3" only %}
+						{% include "anunturi/includes/servicii_strip_band_track.html" with cells=servicii_strip_s7_cells strip_variant="s3" only %}
 					</div>
 				</div>
 			</div>

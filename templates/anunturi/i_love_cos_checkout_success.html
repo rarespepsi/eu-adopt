@@ -14,12 +14,18 @@
 		<h1 class="euadopt-pay-title">Cererea ta a fost înregistrată</h1>
 		{% if intent %}
 		<p class="euadopt-pay-sub">Referință cerere plată coș: <strong>#{{ intent.pk }}</strong>. Total estimativ: <strong>{{ intent.total_lei }} lei</strong>. Am trimis o copie a rezumatului la <strong>{{ intent.buyer_email }}</strong> dacă serverul de e-mail permite trimiterea.</p>
+		{% if partner_codes %}
+		<div class="euadopt-pay-box" style="margin-top:0.85rem;">
+			<p style="margin:0 0 0.4rem;"><strong>Coduri emise pentru colaboratori:</strong></p>
+			<p style="margin:0;line-height:1.45;">{% for c in partner_codes %}<code style="font-weight:700;">{{ c }}</code>{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+		</div>
+		{% endif %}
 		{% else %}
 		<p class="euadopt-pay-sub">Cererea a fost trimisă. Dacă nu vezi număr de referință mai sus, verifică coșul sau istoricul din cont.</p>
 		{% endif %}
 		<div class="euadopt-pay-actions">
 			<a href="{% url 'i_love_cos' %}" class="euadopt-pay-btn">Înapoi la coș</a>
-			<a href="{% url 'i_love' %}" class="euadopt-pay-btn euadopt-pay-btn--ghost">I Love</a>
+			<a href="{% url 'pets_all' %}" class="euadopt-pay-btn euadopt-pay-btn--ghost">PT</a>
 		</div>
 	</div>
 </section>

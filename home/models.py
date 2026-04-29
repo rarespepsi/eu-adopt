@@ -387,6 +387,12 @@ class SiteCartCheckoutIntent(models.Model):
     PAYMENT_COD_COURIER = "cod_courier"
     PAYMENT_CASH_POS = "cash_pos"
     PAYMENT_COMPANY_INVOICE = "company_invoice"
+    BUYER_TYPE_PF = "pf"
+    BUYER_TYPE_PJ = "pj"
+    BUYER_TYPE_CHOICES = [
+        (BUYER_TYPE_PF, "Persoană fizică"),
+        (BUYER_TYPE_PJ, "Persoană juridică"),
+    ]
     PAYMENT_CHOICES = [
         (PAYMENT_CARD_ONLINE, "Card bancar online (Visa / Mastercard)"),
         (PAYMENT_BANK_TRANSFER, "Transfer bancar / ordin de plată (OP)"),
@@ -397,6 +403,7 @@ class SiteCartCheckoutIntent(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="site_cart_checkout_intents")
+    buyer_type = models.CharField("Tip cumpărător", max_length=8, choices=BUYER_TYPE_CHOICES, default=BUYER_TYPE_PF)
     payment_method = models.CharField("Mod de plată", max_length=32, choices=PAYMENT_CHOICES)
     buyer_full_name = models.CharField("Nume complet", max_length=160)
     buyer_email = models.EmailField("E-mail")
@@ -1231,6 +1238,11 @@ class PublicitateOrderLine(models.Model):
     quantity = models.PositiveSmallIntegerField("Cantitate (luni/ore)")
     line_total_lei = models.DecimalField("Subtotal linie", max_digits=10, decimal_places=2)
     buyer_note = models.TextField("Notă / creative (text sau JSON)", blank=True, default="")
+    starts_at = models.DateTimeField("Data începere", null=True, blank=True, db_index=True)
+    ends_at = models.DateTimeField("Data finalizare", null=True, blank=True, db_index=True)
+    validation_code = models.CharField("Cod validare casetă", max_length=16, blank=True, default="", db_index=True)
+    activated_at = models.DateTimeField("Activat la", null=True, blank=True)
+    reactivation_count = models.PositiveSmallIntegerField("Număr reactivări", default=0)
 
     class Meta:
         ordering = ["id"]
@@ -1279,6 +1291,12 @@ class PublicitateLineCreative(models.Model):
     )
     image = models.ImageField(
         "Imagine banner",
+        upload_to="pub_creative/%Y/%m/",
+        null=True,
+        blank=True,
+    )
+    video = models.FileField(
+        "Video banner",
         upload_to="pub_creative/%Y/%m/",
         null=True,
         blank=True,

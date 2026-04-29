@@ -15,8 +15,10 @@
 		<p class="euadopt-pay-sub">Publicitate, promovare animale (MyPet), servicii, shop: tot ce ai în coșul din navbar. Completezi datele (preluate din fișă), alegi modul de plată; primești confirmare pe e-mail, iar echipa finalizează conform produsului.</p>
 
 		<div class="euadopt-pay-box ilove-cos-checkout-lines" aria-label="Articole">
+			{% if has_eu_paid %}
+			<h3 class="ilove-cos-checkout-split-title">Se plătesc la EU-ADOPT</h3>
 			<ul class="ilove-cos-checkout-line-list">
-				{% for row in checkout_lines %}
+				{% for row in eu_paid_lines %}
 				<li>
 					<span class="ilove-cos-checkout-kind">{{ row.kind_label }}</span>
 					{% if row.detail_url %}
@@ -32,6 +34,28 @@
 				</li>
 				{% endfor %}
 			</ul>
+			{% endif %}
+			{% if has_partner_direct %}
+			<h3 class="ilove-cos-checkout-split-title">Se transmit către colaboratori (plată directă)</h3>
+			<ul class="ilove-cos-checkout-line-list">
+				{% for row in partner_direct_lines %}
+				<li>
+					<span class="ilove-cos-checkout-kind">{{ row.kind_label }}</span>
+					{% if row.detail_url %}
+					<a href="{{ row.detail_url }}" class="ilove-cos-checkout-title-link">{{ row.title }}</a>
+					{% else %}
+					<span class="ilove-cos-checkout-title">{{ row.title }}</span>
+					{% endif %}
+					{% if row.line_lei %}
+					<span class="ilove-cos-checkout-lei">{{ row.line_lei }} lei</span>
+					{% else %}
+					<span class="ilove-cos-checkout-lei ilove-cos-checkout-lei--na">—</span>
+					{% endif %}
+				</li>
+				{% endfor %}
+			</ul>
+			<p class="ilove-cos-checkout-partner-note">Pentru această secțiune, prețul este informativ în site; plata finală se face direct la colaborator.</p>
+			{% endif %}
 			<div class="euadopt-pay-total">
 				Total estimativ: <strong>{{ checkout_total_display }} lei</strong>
 				{% if checkout_unpriced_count %}
@@ -48,6 +72,16 @@
 
 		<form method="post" action="{% url 'site_cart_checkout' %}" class="ilove-cos-checkout-form">
 			{% csrf_token %}
+			<h2 class="ilove-cos-checkout-h2">Tip cumpărător <span class="req">*</span></h2>
+			<div class="ilove-cos-checkout-buyer-type-row" role="radiogroup" aria-label="Tip cumpărător">
+				{% for bt_value, bt_label in buyer_types %}
+				<label class="ilove-cos-checkout-buyer-type">
+					<input type="radio" name="buyer_type" value="{{ bt_value }}" {% if selected_buyer_type == bt_value %}checked{% endif %} required />
+					<span>{{ bt_label }}</span>
+				</label>
+				{% endfor %}
+			</div>
+
 			<h2 class="ilove-cos-checkout-h2">Date cumpărător (din fișă — poți modifica)</h2>
 			<div class="ilove-cos-checkout-grid">
 				<label class="ilove-cos-checkout-field">
@@ -76,28 +110,32 @@
 				</label>
 			</div>
 
-			<h2 class="ilove-cos-checkout-h2">Date facturare firmă (opțional)</h2>
+			<div class="ilove-cos-checkout-buyer-block ilove-cos-checkout-buyer-block--pj" data-buyer-block="pj">
+			<h2 class="ilove-cos-checkout-h2">Date facturare firmă (persoană juridică)</h2>
 			<div class="ilove-cos-checkout-grid">
 				<label class="ilove-cos-checkout-field">
 					<span>Denumire afișată</span>
 					<input type="text" name="buyer_company_display" maxlength="255" value="{{ form_prefill.buyer_company_display|escape }}" />
 				</label>
 				<label class="ilove-cos-checkout-field">
-					<span>Denumire juridică</span>
+					<span>Denumire juridică <span class="req">*</span></span>
 					<input type="text" name="buyer_company_legal" maxlength="255" value="{{ form_prefill.buyer_company_legal|escape }}" />
 				</label>
 				<label class="ilove-cos-checkout-field">
-					<span>CUI / CIF</span>
+					<span>CUI / CIF <span class="req">*</span></span>
 					<input type="text" name="buyer_company_cui" maxlength="40" value="{{ form_prefill.buyer_company_cui|escape }}" />
 				</label>
+			</div>
 			</div>
 
 			<label class="ilove-cos-checkout-field ilove-cos-checkout-field--full">
 				<span>Mesaj pentru echipă (opțional)</span>
-				<textarea name="buyer_note" rows="3" maxlength="2000">{{ buyer_note|escape }}</textarea>
+				<textarea name="buyer_note" rows="2" maxlength="600" data-autogrow data-char-limit="600">{{ buyer_note|escape }}</textarea>
+				<span class="ilove-cos-checkout-char-count" data-char-count-for="buyer_note">0 / 600</span>
 			</label>
 
-			<h2 class="ilove-cos-checkout-h2">Mod de plată <span class="req">*</span></h2>
+			{% if has_eu_paid %}
+			<h2 class="ilove-cos-checkout-h2">Mod de plată pentru liniile EU-ADOPT <span class="req">*</span></h2>
 			<div class="ilove-cos-checkout-payments" role="radiogroup" aria-label="Mod de plată">
 				{% for pm in payment_methods %}
 				<label class="ilove-cos-checkout-pm">
@@ -109,13 +147,64 @@
 				</label>
 				{% endfor %}
 			</div>
+			{% endif %}
+			{% if has_partner_direct %}
+			<p class="ilove-cos-checkout-partner-note">Pentru liniile colaboratorilor nu se încasează în checkout-ul EU-ADOPT; după trimitere primești pe e-mail datele și codul colaboratorului.</p>
+			{% endif %}
 
 			<div class="euadopt-pay-actions ilove-cos-checkout-actions">
-				<button type="submit" class="euadopt-pay-btn">Trimite cererea de plată</button>
+				<button type="submit" class="euadopt-pay-btn">{% if has_eu_paid %}Trimite comanda și cererile{% else %}Trimite cererile către colaboratori{% endif %}</button>
 				<a class="euadopt-pay-btn euadopt-pay-btn--ghost" href="{% url 'i_love_cos' %}">Înapoi la coș</a>
 			</div>
 		</form>
-		<p class="euadopt-pay-note">Nu se percepe automat cardul aici. După trimitere, EU-ADOPT (sau partenerul de plată) te contactează pentru pasul următor, conform modului ales.</p>
+		<p class="euadopt-pay-note">Checkout-ul separă automat ce încasează EU-ADOPT de liniile trimise către colaboratori. Pentru colaboratori, plata rămâne directă.</p>
 	</div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+	function syncBuyerTypeSections() {
+		var checked = document.querySelector('input[name="buyer_type"]:checked');
+		var buyerType = checked ? checked.value : 'pf';
+		var pjBlocks = document.querySelectorAll('[data-buyer-block="pj"]');
+		var showPj = buyerType === 'pj';
+		pjBlocks.forEach(function (el) {
+			el.style.display = showPj ? '' : 'none';
+		});
+		document.querySelectorAll('input[name="buyer_company_legal"], input[name="buyer_company_cui"]').forEach(function (inp) {
+			if (showPj) {
+				inp.setAttribute('required', 'required');
+			} else {
+				inp.removeAttribute('required');
+			}
+		});
+	}
+	document.querySelectorAll('input[name="buyer_type"]').forEach(function (el) {
+		el.addEventListener('change', syncBuyerTypeSections);
+	});
+	syncBuyerTypeSections();
+
+	function bindAutoGrowAndCounter() {
+		var ta = document.querySelector('textarea[name="buyer_note"][data-autogrow]');
+		var counter = document.querySelector('[data-char-count-for="buyer_note"]');
+		if (!ta) return;
+		var max = parseInt(ta.getAttribute('data-char-limit') || ta.getAttribute('maxlength') || '600', 10);
+		if (!max || max < 1) max = 600;
+		function refresh() {
+			ta.style.height = 'auto';
+			ta.style.height = Math.min(ta.scrollHeight, 220) + 'px';
+			if (counter) {
+				var n = (ta.value || '').length;
+				counter.textContent = n + ' / ' + max;
+				counter.classList.toggle('is-limit', n >= max);
+			}
+		}
+		ta.addEventListener('input', refresh);
+		refresh();
+	}
+	bindAutoGrowAndCounter();
+})();
+</script>
 {% endblock %}

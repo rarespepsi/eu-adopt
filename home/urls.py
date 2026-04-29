@@ -66,6 +66,7 @@ urlpatterns = [
     path('publicitate/cos/', views.publicitate_cos_view, name='publicitate_cos'),
     path('publicitate/', views.publicitate_harta_view, name='publicitate_harta'),
     path('publicitate/transfer-cos-site/', views.publicitate_transfer_to_site_cart_view, name='publicitate_transfer_site_cart'),
+    path('publicitate/comenzile-mele/', views.publicitate_my_orders_view, name='publicitate_my_orders'),
     path('publicitate/comanda/', views.publicitate_checkout_create_view, name='publicitate_checkout_create'),
     path('publicitate/plata-demo/', views.publicitate_checkout_demo_view, name='publicitate_checkout_demo'),
     path('publicitate/plata-demo/confirma/', views.publicitate_checkout_demo_confirm_view, name='publicitate_checkout_demo_confirm'),

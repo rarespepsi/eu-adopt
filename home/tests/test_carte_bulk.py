@@ -73,6 +73,7 @@ _CARTE_GET_CASES = [
     ("transport_operator_panel", {}, ""),
     ("publicitate_harta", {}, ""),
     ("publicitate_cos", {}, ""),
+    ("publicitate_my_orders", {}, ""),
     ("publicitate_checkout_demo", {}, ""),
     ("publicitate_checkout_demo_success", {}, ""),
     ("publicitate_creative_token", {"token": "a" * 64}, ""),

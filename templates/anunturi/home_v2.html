@@ -62,6 +62,35 @@
 		font-size: 0.75rem;
 		color: #666;
 	}
+	.home-v2-pub-badges {
+		position: absolute;
+		top: 0.18rem;
+		left: 0.22rem;
+		right: 0.22rem;
+		display: flex;
+		justify-content: space-between;
+		gap: 0.25rem;
+		pointer-events: none;
+		z-index: 4;
+	}
+	.home-v2-pub-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		max-width: 48%;
+		padding: 0.08rem 0.36rem;
+		border-radius: 999px;
+		font-size: 0.58rem;
+		font-weight: 800;
+		line-height: 1.15;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		border: 1px solid rgba(12, 20, 34, 0.25);
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+	}
+	.home-v2-pub-badge--price { background: #e8f5e9; color: #1b5e20; }
+	.home-v2-pub-badge--discount { background: #ffebee; color: #b71c1c; }
 </style>
 {% endblock %}
 
@@ -76,8 +105,13 @@
 				<div class="home-v2-slot home-v2-slot-white home-v2-slot-img home-v2-slot-partener">
 					{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A5.{{ forloop.counter }}</span>{% endif %}
 					{% if partner %}
-					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener">
-						{% if partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
+					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener" style="position:relative;display:block;">
+						{% if partner.price or partner.discount %}
+						<span class="home-v2-pub-badges">{% if partner.price %}<span class="home-v2-pub-badge home-v2-pub-badge--price">{{ partner.price }}</span>{% endif %}{% if partner.discount %}<span class="home-v2-pub-badge home-v2-pub-badge--discount">{{ partner.discount }}</span>{% endif %}</span>
+						{% endif %}
+						{% if partner.video_url %}<video src="{{ partner.video_url }}" class="slot-img-fit" autoplay muted loop playsinline controls preload="metadata"></video>
+						{% elif partner.image_url %}<img src="{{ partner.image_url }}" alt="{{ partner.name }}" class="slot-img-fit" />
+						{% elif partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
 						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.name }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
 					</a>
 					{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
@@ -212,8 +246,13 @@
 				{% for partner in left_sidebar_partners|slice:":3" %}
 				<div class="home-v2-mobile-ad-slot">
 					{% if partner %}
-					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener">
-						{% if partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
+					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener" style="position:relative;display:block;">
+						{% if partner.price or partner.discount %}
+						<span class="home-v2-pub-badges">{% if partner.price %}<span class="home-v2-pub-badge home-v2-pub-badge--price">{{ partner.price }}</span>{% endif %}{% if partner.discount %}<span class="home-v2-pub-badge home-v2-pub-badge--discount">{{ partner.discount }}</span>{% endif %}</span>
+						{% endif %}
+						{% if partner.video_url %}<video src="{{ partner.video_url }}" class="slot-img-fit" autoplay muted loop playsinline controls preload="metadata"></video>
+						{% elif partner.image_url %}<img src="{{ partner.image_url }}" alt="{{ partner.name }}" class="slot-img-fit" />
+						{% elif partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
 						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.name }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
 					</a>
 					{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
@@ -232,8 +271,13 @@
 				{% for partner in right_sidebar_partners|slice:":3" %}
 				<div class="home-v2-mobile-ad-slot">
 					{% if partner %}
-					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener">
-						{% if partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
+					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener" style="position:relative;display:block;">
+						{% if partner.price or partner.discount %}
+						<span class="home-v2-pub-badges">{% if partner.price %}<span class="home-v2-pub-badge home-v2-pub-badge--price">{{ partner.price }}</span>{% endif %}{% if partner.discount %}<span class="home-v2-pub-badge home-v2-pub-badge--discount">{{ partner.discount }}</span>{% endif %}</span>
+						{% endif %}
+						{% if partner.video_url %}<video src="{{ partner.video_url }}" class="slot-img-fit" autoplay muted loop playsinline controls preload="metadata"></video>
+						{% elif partner.image_url %}<img src="{{ partner.image_url }}" alt="{{ partner.name }}" class="slot-img-fit" />
+						{% elif partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
 						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.name }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
 					</a>
 					{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
@@ -255,8 +299,13 @@
 				<div class="home-v2-slot home-v2-slot-white home-v2-slot-img home-v2-slot-partener">
 					{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A6.{{ forloop.counter }}</span>{% endif %}
 					{% if partner %}
-					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener">
-						{% if partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
+					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener" style="position:relative;display:block;">
+						{% if partner.price or partner.discount %}
+						<span class="home-v2-pub-badges">{% if partner.price %}<span class="home-v2-pub-badge home-v2-pub-badge--price">{{ partner.price }}</span>{% endif %}{% if partner.discount %}<span class="home-v2-pub-badge home-v2-pub-badge--discount">{{ partner.discount }}</span>{% endif %}</span>
+						{% endif %}
+						{% if partner.video_url %}<video src="{{ partner.video_url }}" class="slot-img-fit" autoplay muted loop playsinline controls preload="metadata"></video>
+						{% elif partner.image_url %}<img src="{{ partner.image_url }}" alt="{{ partner.name }}" class="slot-img-fit" />
+						{% elif partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
 						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.name }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
 					</a>
 					{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}

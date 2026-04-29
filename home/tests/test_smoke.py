@@ -46,6 +46,7 @@ ANONYMOUS_REDIRECT_OR_FORBIDDEN_NAMES = [
     "site_cart_checkout_success",
     "magazinul_meu",
     "transport_operator_panel",
+    "publicitate_my_orders",
 ]
 
 

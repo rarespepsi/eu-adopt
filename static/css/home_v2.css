@@ -462,6 +462,7 @@ body.page-home-v2 #home-col-right .home-v2-slot-partener {
     align-items: center !important;
     justify-content: center !important;
     background: #f5f5f5 !important;
+    overflow: hidden !important;
 }
 body.page-home-v2 #home-col-left .home-v2-slot-partener a,
 body.page-home-v2 #home-col-right .home-v2-slot-partener a {
@@ -474,6 +475,14 @@ body.page-home-v2 #home-col-right .home-v2-slot-partener a {
     padding: 6px !important;
     box-sizing: border-box !important;
 }
+body.page-home-v2 #home-col-left .home-v2-slot-partener:has(video.slot-img-fit),
+body.page-home-v2 #home-col-right .home-v2-slot-partener:has(video.slot-img-fit) {
+    background: transparent !important;
+}
+body.page-home-v2 #home-col-left .home-v2-slot-partener a:has(video.slot-img-fit),
+body.page-home-v2 #home-col-right .home-v2-slot-partener a:has(video.slot-img-fit) {
+    padding: 0 !important;
+}
 body.page-home-v2 #home-col-left .slot-img-fit,
 body.page-home-v2 #home-col-right .slot-img-fit {
     max-width: 100% !important;
@@ -481,6 +490,15 @@ body.page-home-v2 #home-col-right .slot-img-fit {
     width: auto !important;
     height: auto !important;
     object-fit: contain !important;
+    display: block !important;
+}
+body.page-home-v2 #home-col-left video.slot-img-fit,
+body.page-home-v2 #home-col-right video.slot-img-fit {
+    max-width: none !important;
+    max-height: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
     display: block !important;
 }
 body.page-home-v2 #home-col-left .home-v2-slot-img a,

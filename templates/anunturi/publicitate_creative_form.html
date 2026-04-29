@@ -4,16 +4,37 @@
 
 {% block extra_css_after %}
 <style>
-	.pub-cr-wrap { max-width: 46rem; margin: 1.25rem auto 2.5rem; padding: 0 1rem; }
+	body.page-publicitate-creative-form #main_wrap {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+	}
+	body.page-publicitate-creative-form #main_content {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: hidden;
+	}
+	.pub-cr-wrap {
+		max-width: 46rem;
+		height: calc(100vh - var(--nav-height, var(--nav-h, 64px)) - 0.85rem);
+		margin: 0.4rem auto 0.45rem;
+		padding: 0 0.8rem;
+		box-sizing: border-box;
+	}
 	.pub-cr-card {
 		background: linear-gradient(180deg, #fffef7 0%, #fff 40%);
 		border: 1px solid #d2b27a;
 		border-radius: 14px;
 		box-shadow: 0 8px 28px rgba(0,0,0,0.08);
-		padding: clamp(1rem, 2.5vw, 1.35rem);
+		padding: clamp(0.75rem, 2vw, 1.1rem);
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+		overflow: hidden;
 	}
-	.pub-cr-card h1 { margin: 0 0 0.35rem; font-size: 1.35rem; color: #4e342e; }
-	.pub-cr-lead { margin: 0 0 1rem; font-size: 0.9rem; color: #6d4c41; line-height: 1.45; }
+	.pub-cr-card h1 { margin: 0 0 0.2rem; font-size: 1.08rem; color: #4e342e; line-height: 1.15; }
+	.pub-cr-lead { margin: 0 0 0.45rem; font-size: 0.76rem; color: #6d4c41; line-height: 1.23; }
 	.pub-cr-slot {
 		border: 1px dashed #bcaaa4;
 		border-radius: 10px;
@@ -22,19 +43,118 @@
 		background: #fff;
 	}
 	.pub-cr-slot h2 { margin: 0 0 0.5rem; font-size: 1rem; color: #1565c0; }
-	.pub-cr-meta { font-size: 0.78rem; color: #78909c; margin-bottom: 0.65rem; }
-	.pub-cr-field { margin-bottom: 0.55rem; }
-	.pub-cr-field label { display: block; font-size: 0.78rem; font-weight: 700; color: #37474f; margin-bottom: 0.2rem; }
-	.pub-cr-field input[type="url"], .pub-cr-field input[type="file"] { width: 100%; box-sizing: border-box; font-size: 0.85rem; }
+	.pub-cr-meta { font-size: 0.7rem; color: #78909c; margin-bottom: 0.4rem; }
+	.pub-cr-field { margin-bottom: 0.42rem; }
+	.pub-cr-field label { display: block; font-size: 0.72rem; font-weight: 700; color: #37474f; margin-bottom: 0.16rem; }
+	.pub-cr-field input[type="url"], .pub-cr-field input[type="file"] { width: 100%; box-sizing: border-box; font-size: 0.78rem; }
 	.pub-cr-field textarea { width: 100%; min-height: 4.5rem; box-sizing: border-box; font-size: 0.85rem; border-radius: 8px; border: 1px solid #b0bec5; padding: 0.4rem; }
+	.pub-cr-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+	.pub-cr-media-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+	.pub-cr-field input[type="text"] { width: 100%; box-sizing: border-box; font-size: 0.75rem; border-radius: 8px; border: 1px solid #b0bec5; padding: 0.26rem 0.4rem; }
+	.pub-cr-affix {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		border: 1px solid #b0bec5;
+		border-radius: 8px;
+		overflow: hidden;
+		background: #fff;
+	}
+	.pub-cr-affix input[type="text"] {
+		border: 0;
+		border-radius: 0;
+		padding-right: 0.3rem;
+	}
+	.pub-cr-affix-mark {
+		padding: 0.24rem 0.42rem;
+		font-size: 0.72rem;
+		font-weight: 800;
+		color: #546e7a;
+		background: #eceff1;
+		border-left: 1px solid #cfd8dc;
+	}
+	.pub-cr-media-hint {
+		margin: 0.22rem 0 0;
+		font-size: 0.68rem;
+		color: #607d8b;
+	}
+	.pub-cr-preview-wrap { margin-top: 0.35rem; }
+	.pub-cr-preview-label { font-size: 0.72rem; font-weight: 700; color: #37474f; margin-bottom: 0.16rem; display: block; }
+	.pub-cr-layout-two-cols {
+		display: grid;
+		grid-template-columns: minmax(0, 1.05fr) minmax(14rem, 0.95fr);
+		gap: 0.7rem;
+		align-items: start;
+	}
+	.pub-cr-layout-left .pub-cr-field:last-child,
+	.pub-cr-layout-left .pub-cr-field-row:last-child {
+		margin-bottom: 0;
+	}
+	.pub-cr-layout-right .pub-cr-preview-wrap {
+		margin-top: 0;
+	}
+	.pub-cr-preview-box {
+		width: min(100%, 14rem);
+		background: #eceff1;
+		border: 1px solid #cfd8dc;
+		border-radius: 10px;
+		position: relative;
+		overflow: hidden;
+		aspect-ratio: 1 / 1;
+	}
+	.pub-cr-preview-box[data-shape="strip"] { aspect-ratio: 8 / 1; width: min(100%, 22rem); }
+	.pub-cr-preview-box[data-shape="wide"] { aspect-ratio: 16 / 9; width: min(100%, 22rem); }
+	.pub-cr-preview-box[data-shape="banner"] { aspect-ratio: 5 / 1; width: min(100%, 22rem); }
+	.pub-cr-preview-box img,
+	.pub-cr-preview-box video {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+	.pub-cr-preview-empty {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		padding: 0.55rem;
+		font-size: 0.66rem;
+		color: #546e7a;
+	}
 	.pub-cr-submit {
 		display: inline-flex; align-items: center; justify-content: center;
 		padding: 0.55rem 1.25rem; border-radius: 10px; border: none;
 		background: #1565c0; color: #fff; font-weight: 800; font-size: 0.95rem; cursor: pointer;
 	}
 	.pub-cr-submit:hover { filter: brightness(1.05); }
-	.pub-cr-done { background: #e8f5e9; border: 1px solid #66bb6a; color: #1b5e20; padding: 0.65rem 0.85rem; border-radius: 10px; font-size: 0.88rem; margin-bottom: 1rem; }
-	.pub-cr-foot { margin-top: 1rem; font-size: 0.78rem; color: #78909c; }
+	.pub-cr-foot { margin-top: 0.45rem; font-size: 0.7rem; color: #78909c; }
+	.pub-cr-form { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 0.2rem; }
+	.pub-cr-burtiera-hint {
+		font-size: 0.82rem; color: #5d4037; line-height: 1.45; margin: 0 0 0.65rem;
+		padding: 0.5rem 0.65rem; background: #fff8e1; border-radius: 8px; border: 1px solid #ffe082;
+	}
+	@media (max-width: 767.98px) {
+		.pub-cr-wrap {
+			height: calc(100vh - var(--nav-height, var(--nav-h, 64px)) - 0.45rem);
+			margin: 0.2rem auto 0.25rem;
+			padding: 0 0.45rem;
+		}
+		.pub-cr-card {
+			padding: 0.7rem 0.65rem;
+			border-radius: 10px;
+		}
+		.pub-cr-layout-two-cols {
+			grid-template-columns: 1fr;
+			gap: 0.5rem;
+		}
+	}
+	@media (min-width: 768px) and (max-width: 991.98px) {
+		.pub-cr-preview-box {
+			width: min(100%, 12.5rem);
+		}
+	}
 </style>
 {% endblock %}
 
@@ -44,14 +164,9 @@
 		<h1>Materiale publicitate</h1>
 		<p class="pub-cr-lead">
 			Comandă <strong>#{{ pub_order.pk }}</strong> — total <strong>{{ pub_order.total_lei }} lei</strong>.
-			Completați pentru fiecare slot: imagine (recomandat), link țintă (https) și detalii. După trimitere, conținutul se aplică pe site acolo unde există integrare automată (ex. PT <strong>P4.3 / P5.1–P5.3</strong>, burtieră <strong>HOME</strong>).
-			Fereastră verificare recomandată: <strong>{{ pub_review_hours }} h</strong>. Limită fișier: <strong>{{ pub_max_mb }} MB</strong> / imagine.
+			Completați pentru fiecare slot: <strong>imagine sau video</strong> (nu ambele), link țintă (https) și opțional badge-uri <strong>Preț</strong> + <strong>Discount</strong>. După trimitere, conținutul se aplică pe site acolo unde există integrare automată (ex. PT <strong>P4.3 / P5.1–P5.3</strong>, burtieră <strong>HOME</strong>).
+			Fereastră verificare recomandată: <strong>{{ pub_review_hours }} h</strong>. Limită fișier: <strong>{{ pub_max_mb }} MB</strong> / upload.
 		</p>
-		{% if pub_all_live %}
-		<div class="pub-cr-done" role="status">
-			Toate sloturile din această comandă au materiale trimise și marcate ca aplicate. Puteți retrimite pentru a actualiza (suprascrie pe site unde e cazul).
-		</div>
-		{% endif %}
 		<form method="post" enctype="multipart/form-data" class="pub-cr-form">
 			{% csrf_token %}
 			{% for line in pub_lines %}
@@ -61,19 +176,71 @@
 				<div class="pub-cr-meta">{{ line.title_snapshot }} — {{ line.quantity }} {{ line.unit_label }} — {{ line.line_total_lei }} lei
 					{% if b.status == 'live' %}<span style="color:#2e7d32;font-weight:700;"> · trimis</span>{% endif %}
 				</div>
+				{% if line.section == 'home' and line.slot_code == 'Burtieră' %}
+				<p class="pub-cr-burtiera-hint">
+					O singură bandă: <strong>fie</strong> link <strong>fie</strong> text (nu ambele), maximum <strong>100</strong> caractere, fără imagine.
+					Pentru două benzi diferite sunt necesare <strong>două poziții</strong> în coș (două linii / două comenzi de același slot).
+				</p>
 				<div class="pub-cr-field">
-					<label for="img_{{ line.pk }}">Imagine reclamă</label>
-					<input type="file" id="img_{{ line.pk }}" name="image_{{ line.pk }}" accept="image/jpeg,image/png,image/webp,image/gif" />
-					{% if b.image %}<p style="font-size:0.72rem;margin:0.25rem 0 0;color:#546e7a;">Fișier curent: {{ b.image.name|default:"—" }}</p>{% endif %}
+					<label for="link_{{ line.pk }}">Link (https) — lăsați gol dacă folosiți mesajul</label>
+					<input type="url" id="link_{{ line.pk }}" name="link_{{ line.pk }}" value="{{ b.external_link }}" maxlength="100" placeholder="https://…" />
 				</div>
 				<div class="pub-cr-field">
-					<label for="link_{{ line.pk }}">Link (https)</label>
-					<input type="url" id="link_{{ line.pk }}" name="link_{{ line.pk }}" value="{{ b.external_link }}" placeholder="https://…" />
+					<label for="notes_{{ line.pk }}">Mesaj bandă — lăsați gol dacă folosiți linkul</label>
+					<textarea id="notes_{{ line.pk }}" name="notes_{{ line.pk }}" maxlength="100" placeholder="Textul care apare pe bandă…">{{ b.extra_notes }}</textarea>
 				</div>
-				<div class="pub-cr-field">
-					<label for="notes_{{ line.pk }}">Detalii / text</label>
-					<textarea id="notes_{{ line.pk }}" name="notes_{{ line.pk }}" placeholder="Mesaj scurt, alt text, instrucțiuni…">{{ b.extra_notes }}</textarea>
+				{% else %}
+				<div class="pub-cr-media-row">
+					<div class="pub-cr-field">
+						<label for="img_{{ line.pk }}">Imagine reclamă</label>
+						<input type="file" id="img_{{ line.pk }}" name="image_{{ line.pk }}" accept="image/jpeg,image/png,image/webp,image/gif" data-media-kind="image" data-line-id="{{ line.pk }}" />
+					</div>
+					<div class="pub-cr-field">
+						<label for="video_{{ line.pk }}">Video reclamă</label>
+						<input type="file" id="video_{{ line.pk }}" name="video_{{ line.pk }}" accept="video/mp4,video/webm,video/ogg" data-media-kind="video" data-line-id="{{ line.pk }}" />
+					</div>
 				</div>
+				<p class="pub-cr-media-hint">Alegeți un singur tip media (imagine XOR video).</p>
+				<div class="pub-cr-layout-two-cols">
+					<div class="pub-cr-layout-left">
+						<div class="pub-cr-field">
+							<label for="link_{{ line.pk }}">Link (https)</label>
+							<input type="url" id="link_{{ line.pk }}" name="link_{{ line.pk }}" value="{{ b.external_link }}" placeholder="https://…" />
+						</div>
+						<div class="pub-cr-field-row">
+							<div class="pub-cr-field">
+								<label for="price_{{ line.pk }}">Preț</label>
+								<div class="pub-cr-affix">
+									<input type="text" id="price_{{ line.pk }}" name="price_{{ line.pk }}" maxlength="20" value="{{ line.creative_price_input|default:'' }}" placeholder="123" />
+									<span class="pub-cr-affix-mark">lei</span>
+								</div>
+							</div>
+							<div class="pub-cr-field">
+								<label for="discount_{{ line.pk }}">Discount (ex. 20%)</label>
+								<div class="pub-cr-affix">
+									<input type="text" id="discount_{{ line.pk }}" name="discount_{{ line.pk }}" maxlength="3" value="{{ line.creative_discount_input|default:'' }}" placeholder="20" />
+									<span class="pub-cr-affix-mark">%</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="pub-cr-layout-right">
+						<div class="pub-cr-preview-wrap">
+							<span class="pub-cr-preview-label">Previzualizare slot</span>
+							<div
+								class="pub-cr-preview-box"
+								data-line-id="{{ line.pk }}"
+								data-shape="{% if line.slot_code|slice:':3' == 'P1.' or line.slot_code|slice:':3' == 'P3.' or line.slot_code|slice:':3' == 'S1.' or line.slot_code|slice:':3' == 'S7.' %}strip{% elif line.section == 'home' and line.slot_code == 'Burtieră' %}banner{% elif line.section == 'pt' and line.slot_code|slice:':3' == 'P4.' %}wide{% else %}square{% endif %}"
+								data-existing-image="{% if b.image %}{{ b.image.url }}{% endif %}"
+								data-existing-video="{% if b.video %}{{ b.video.url }}{% endif %}"
+								data-alt="{{ line.slot_code }}"
+							>
+								<span class="pub-cr-preview-empty">Nu există media încărcată</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				{% endif %}
 			</div>
 			{% endwith %}
 			{% endfor %}
@@ -85,4 +252,88 @@
 		</p>
 	</div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+	function updatePreview(lineId) {
+		var box = document.querySelector('.pub-cr-preview-box[data-line-id="' + lineId + '"]');
+		if (!box) return;
+		var imageInput = document.getElementById('img_' + lineId);
+		var videoInput = document.getElementById('video_' + lineId);
+		var existingImage = box.getAttribute('data-existing-image') || '';
+		var existingVideo = box.getAttribute('data-existing-video') || '';
+		var alt = box.getAttribute('data-alt') || 'Preview';
+
+		box.innerHTML = '';
+		function showEmpty(text) {
+			var empty = document.createElement('span');
+			empty.className = 'pub-cr-preview-empty';
+			empty.textContent = text || 'Nu există media încărcată';
+			box.appendChild(empty);
+		}
+		if (imageInput && imageInput.files && imageInput.files[0]) {
+			var imageEl = document.createElement('img');
+			imageEl.alt = alt;
+			imageEl.src = URL.createObjectURL(imageInput.files[0]);
+			box.appendChild(imageEl);
+			return;
+		}
+		if (videoInput && videoInput.files && videoInput.files[0]) {
+			var videoEl = document.createElement('video');
+			videoEl.src = URL.createObjectURL(videoInput.files[0]);
+			videoEl.muted = true;
+			videoEl.loop = true;
+			videoEl.autoplay = true;
+			videoEl.playsInline = true;
+			videoEl.controls = true;
+			box.appendChild(videoEl);
+			return;
+		}
+		if (existingVideo) {
+			var existingVideoEl = document.createElement('video');
+			existingVideoEl.src = existingVideo;
+			existingVideoEl.muted = true;
+			existingVideoEl.loop = true;
+			existingVideoEl.autoplay = true;
+			existingVideoEl.playsInline = true;
+			existingVideoEl.controls = true;
+			box.appendChild(existingVideoEl);
+			return;
+		}
+		if (existingImage) {
+			var existingImageEl = document.createElement('img');
+			existingImageEl.alt = alt;
+			existingImageEl.src = existingImage;
+			box.appendChild(existingImageEl);
+			return;
+		}
+		showEmpty('Nu există media încărcată');
+	}
+
+	function bindXor(lineId) {
+		var imageInput = document.getElementById('img_' + lineId);
+		var videoInput = document.getElementById('video_' + lineId);
+		if (!imageInput || !videoInput) return;
+		imageInput.addEventListener('change', function () {
+			if (imageInput.files && imageInput.files.length > 0 && videoInput.files && videoInput.files.length > 0) {
+				videoInput.value = '';
+			}
+			updatePreview(lineId);
+		});
+		videoInput.addEventListener('change', function () {
+			if (videoInput.files && videoInput.files.length > 0 && imageInput.files && imageInput.files.length > 0) {
+				imageInput.value = '';
+			}
+			updatePreview(lineId);
+		});
+		updatePreview(lineId);
+	}
+
+	document.querySelectorAll('.pub-cr-preview-box[data-line-id]').forEach(function (box) {
+		bindXor(box.getAttribute('data-line-id'));
+	});
+})();
+</script>
 {% endblock %}

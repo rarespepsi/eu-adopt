@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Comenzile mele publicitare | EU Adopt{% endblock %}
+{% block body_class %}page-publicitate-my-orders euadopt-checkout-intra-skin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/checkout-intra-skin.css' %}?v=2" type="text/css" media="screen" />
+<style>
+	body.page-publicitate-my-orders #main_wrap {
+		background: linear-gradient(180deg, #d9e3f7 0%, #cad8f2 45%, #c1d1ee 100%) !important;
+	}
+	body.page-publicitate-my-orders #main_content,
+	body.page-publicitate-my-orders .wrapper,
+	body.page-publicitate-my-orders .pubmo-wrap {
+		background: transparent !important;
+	}
+	.pubmo-wrap { width: min(68rem, 100%); margin: 0 auto; padding: 0 0.9rem; box-sizing: border-box; }
+	.pubmo-card { max-width: none; width: 100%; background: rgba(13, 27, 56, 0.78); }
+	.pubmo-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.7rem 0 0.95rem; }
+	.pubmo-tab {
+		display: inline-flex; align-items: center; justify-content: center;
+		min-height: 2rem; padding: 0.35rem 0.7rem; border-radius: 10px;
+		border: 1px solid rgba(148, 163, 184, 0.32);
+		background: rgba(15, 23, 42, 0.55); color: #e2e8f0; text-decoration: none;
+		font-size: 0.83rem; font-weight: 700;
+	}
+	.pubmo-tab.is-active { background: #1d4ed8; border-color: #1d4ed8; color: #fff; }
+	.pubmo-table-wrap {
+		overflow-x: auto;
+		overflow-y: auto;
+		max-height: min(58vh, 34rem);
+		border: 1px solid rgba(148, 163, 184, 0.32);
+		border-radius: 12px;
+		background: rgba(11, 20, 38, 0.62);
+	}
+	.pubmo-table { width: 100%; border-collapse: collapse; min-width: 940px; }
+	.pubmo-table th, .pubmo-table td { padding: 0.55rem 0.62rem; border-bottom: 1px solid rgba(148, 163, 184, 0.24); font-size: 0.81rem; vertical-align: top; }
+	.pubmo-table thead tr { background: #0f1c39 !important; }
+	.pubmo-table th {
+		background: #0f1c39 !important;
+		color: #ffffff !important;
+		text-align: left;
+		font-size: 0.79rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		position: sticky;
+		top: 0;
+		z-index: 2;
+	}
+	.pubmo-table tbody tr:nth-child(odd) { background: rgba(19, 31, 56, 0.45); }
+	.pubmo-table tbody tr:nth-child(even) { background: rgba(14, 24, 44, 0.56); }
+	.pubmo-table td { color: #f3f6ff; }
+	.pubmo-table tr:last-child td { border-bottom: none; }
+	.pubmo-chip {
+		display: inline-flex; align-items: center; justify-content: center;
+		padding: 0.02rem 0.3rem;
+		border-radius: 7px;
+		font-size: 0.6rem;
+		font-weight: 700;
+		border: 1px solid rgba(147, 197, 253, 0.45);
+		background: rgba(30, 64, 175, 0.2);
+		color: #dbeafe;
+		line-height: 1.05;
+		min-height: 0.86rem;
+	}
+	.pubmo-chip--ok {
+		background: rgba(22, 163, 74, 0.22);
+		border-color: rgba(74, 222, 128, 0.45);
+		color: #dcfce7;
+	}
+	.pubmo-chip--warn {
+		background: rgba(234, 88, 12, 0.24);
+		border-color: rgba(251, 146, 60, 0.48);
+		color: #ffedd5;
+	}
+	.pubmo-chip--neutral {
+		background: rgba(30, 64, 175, 0.2);
+		border-color: rgba(147, 197, 253, 0.45);
+		color: #dbeafe;
+	}
+	.pubmo-empty { color: #94a3b8; font-size: 0.86rem; margin: 0.3rem 0 0; }
+	.pubmo-reactivate { display: inline-flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; }
+	.pubmo-reactivate input {
+		width: 8.4rem; min-height: 2rem; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.36);
+		padding: 0.25rem 0.45rem; background: rgba(15, 23, 42, 0.6); color: #f8fafc;
+	}
+	.pubmo-note { color: #c2cde2; font-size: 0.74rem; margin-top: 0.15rem; }
+</style>
+{% endblock %}
+
+{% block main_wrap_after_header %}
+<section class="wrapper" id="main_content">
+	<div class="pubmo-wrap">
+		<div class="euadopt-pay-card pubmo-card">
+			<h1 class="euadopt-pay-title">Comenzile mele publicitare</h1>
+			<p class="euadopt-pay-sub">Model agendă cu perioadă de rulare și acțiuni pe fiecare casetă. Păstrezi același flux vizual, dar lucrezi acum pe rânduri clare.</p>
+
+			<div class="pubmo-tabs">
+				<a href="{% url 'publicitate_my_orders' %}?tab=de_incarcat" class="pubmo-tab{% if pub_tab == 'de_incarcat' %} is-active{% endif %}">
+					De încărcat ({{ pub_count_de_incarcat }})
+				</a>
+				<a href="{% url 'publicitate_my_orders' %}?tab=active" class="pubmo-tab{% if pub_tab == 'active' %} is-active{% endif %}">
+					Active ({{ pub_count_active }})
+				</a>
+				<a href="{% url 'publicitate_my_orders' %}?tab=trecute" class="pubmo-tab{% if pub_tab == 'trecute' %} is-active{% endif %}">
+					Trecute ({{ pub_count_trecute }})
+				</a>
+			</div>
+
+			{% if pub_rows_current %}
+			<div class="pubmo-table-wrap">
+				<table class="pubmo-table">
+					<thead>
+						<tr>
+							<th>Comandă / Casetă</th>
+							<th>Perioadă</th>
+							<th>Status</th>
+							<th>Cod validare</th>
+							<th>Acțiuni</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for r in pub_rows_current %}
+						<tr>
+							<td>
+								<strong>#{{ r.order.pk }}</strong> · {{ r.line.section|upper }}/{{ r.line.slot_code }}<br>
+								<span class="pubmo-note">{{ r.line.title_snapshot }} · {{ r.line.line_total_lei }} lei</span>
+							</td>
+							<td>
+								<div><strong>Start:</strong> {{ r.line.starts_at|date:"Y-m-d H:i" }}</div>
+								<div><strong>Final:</strong> {{ r.line.ends_at|date:"Y-m-d H:i" }}</div>
+							</td>
+							<td>
+								{% if r.period_status_label == 'Trecută' %}
+								<span class="pubmo-chip pubmo-chip--neutral">Trecută</span>
+								{% elif r.material_status_label == 'Neîncărcat' %}
+								<span class="pubmo-chip pubmo-chip--warn">Neîncărcat</span>
+								{% elif r.activation_status_label == 'Neactivată' %}
+								<span class="pubmo-chip pubmo-chip--neutral">Neactivată</span>
+								{% else %}
+								<span class="pubmo-chip pubmo-chip--ok">Activă</span>
+								{% endif %}
+							</td>
+							<td>
+								<code>{{ r.line.validation_code }}</code>
+								<div class="pubmo-note">Reactivări: {{ r.line.reactivation_count }}</div>
+							</td>
+							<td>
+								{% if pub_tab == 'active' or pub_tab == 'de_incarcat' %}
+								<a href="{{ r.materials_url }}" class="euadopt-pay-btn euadopt-pay-btn--ghost">Editează materiale</a>
+								{% endif %}
+								{% if pub_tab == 'trecute' %}
+								<form method="post" class="pubmo-reactivate">
+									{% csrf_token %}
+									<input type="hidden" name="action" value="reactivate">
+									<input type="hidden" name="line_id" value="{{ r.line.pk }}">
+									<input type="text" name="validation_code" value="" maxlength="16" placeholder="Cod reactivare post-plată">
+									<button type="submit" class="euadopt-pay-btn">Activează cu cod</button>
+								</form>
+								<div class="pubmo-note">Folosește codul primit după achiziția unei perioade libere pentru aceeași casetă.</div>
+								{% endif %}
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			{% else %}
+				{% if pub_tab == 'de_incarcat' %}
+				<p class="pubmo-empty">Nu există casete în așteptare de materiale.</p>
+				{% elif pub_tab == 'active' %}
+				<p class="pubmo-empty">Nu există casete active în această perioadă.</p>
+				{% else %}
+				<p class="pubmo-empty">Nu există casete trecute pentru reactivare.</p>
+				{% endif %}
+			{% endif %}
+		</div>
+	</div>
+</section>
+{% endblock %}

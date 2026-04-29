@@ -1,0 +1,38 @@
+{% load static %}
+{% for cell in cells %}
+	{% if cell.kind == "eu" %}
+	<span class="pt-strip-item pt-strip-item--{{ strip_variant }} pt-strip-cell--eu" data-slot="{{ cell.code }}">
+		<span class="pt-strip-cell-label">{{ cell.label }}</span>
+		<span class="pt-strip-cell-eu-msg">{{ cell.eu_text }}</span>
+	</span>
+	{% else %}
+	<span class="pt-strip-item pt-strip-item--{{ strip_variant }} pt-strip-cell--pub" data-slot="{{ cell.code }}">
+		<span class="pt-strip-cell-label">{{ cell.label }}</span>
+		{% if cell.creative %}
+		{% if cell.creative.img or cell.creative.video %}
+		{% if cell.creative.link %}
+		<a href="{{ cell.creative.link }}" target="_blank" rel="noopener" class="pt-strip-pub-link">
+			{% if cell.creative.price or cell.creative.discount %}
+			<span class="pt-pub-mini-badges">{% if cell.creative.price %}<span class="pt-pub-mini-badge pt-pub-mini-badge--price">{{ cell.creative.price }}</span>{% endif %}{% if cell.creative.discount %}<span class="pt-pub-mini-badge pt-pub-mini-badge--discount">{{ cell.creative.discount }}</span>{% endif %}</span>
+			{% endif %}
+			{% if cell.creative.video %}
+			<video src="{{ cell.creative.video }}" autoplay muted loop playsinline controls preload="metadata"></video>
+			{% else %}
+			<img src="{{ cell.creative.img }}" alt="{{ cell.creative.alt }}" loading="lazy" decoding="async" />
+			{% endif %}
+		</a>
+		{% else %}
+		{% if cell.creative.price or cell.creative.discount %}
+		<span class="pt-pub-mini-badges">{% if cell.creative.price %}<span class="pt-pub-mini-badge pt-pub-mini-badge--price">{{ cell.creative.price }}</span>{% endif %}{% if cell.creative.discount %}<span class="pt-pub-mini-badge pt-pub-mini-badge--discount">{{ cell.creative.discount }}</span>{% endif %}</span>
+		{% endif %}
+		{% if cell.creative.video %}
+		<video src="{{ cell.creative.video }}" autoplay muted loop playsinline controls preload="metadata"></video>
+		{% else %}
+		<img src="{{ cell.creative.img }}" alt="{{ cell.creative.alt }}" loading="lazy" decoding="async" />
+		{% endif %}
+		{% endif %}
+		{% endif %}
+		{% endif %}
+	</span>
+	{% endif %}
+{% endfor %}

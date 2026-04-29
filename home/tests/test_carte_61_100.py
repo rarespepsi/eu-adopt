@@ -758,7 +758,7 @@ class Carte81_100Tests(TestCase):
         )
         r = c.get(reverse("site_cart_checkout"))
         self.assertEqual(r.status_code, 200)
-        self.assertContains(r, "Trimite cererea de plată")
+        self.assertContains(r, "Trimite cererile către colaboratori")
         r2 = c.post(
             reverse("site_cart_checkout"),
             {
@@ -772,6 +772,7 @@ class Carte81_100Tests(TestCase):
                 "buyer_company_legal": "",
                 "buyer_company_cui": "",
                 "buyer_note": "",
+                "buyer_type": SiteCartCheckoutIntent.BUYER_TYPE_PF,
                 "payment_method": SiteCartCheckoutIntent.PAYMENT_BANK_TRANSFER,
             },
         )

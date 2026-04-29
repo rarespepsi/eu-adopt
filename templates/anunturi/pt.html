@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt128-ask-plic-pt" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt129-strip-pub-cells" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -165,6 +165,93 @@
 	@media (max-width: 420px) {
 		.pt-match-modal__traits-list { grid-template-columns: 1fr; }
 	}
+	/* Benzi P1/P3: celule EU + pub (aceeași lățime ca .pt-strip-item--p1) */
+	#PW .pt-strip-cell--eu {
+		display: flex !important;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		background: linear-gradient(160deg, #e3f2fd 0%, #bbdefb 100%) !important;
+		color: #0d47a1 !important;
+		padding: 0.2rem 0.25rem !important;
+		box-sizing: border-box;
+	}
+	#PW .pt-strip-cell-label {
+		display: block;
+		font-weight: 900;
+		font-size: 0.52rem;
+		letter-spacing: 0.02em;
+		margin-bottom: 0.12rem;
+		line-height: 1.1;
+		text-align: center;
+	}
+	#PW .pt-strip-cell-eu-msg {
+		font-size: 0.48rem;
+		font-weight: 600;
+		text-align: center;
+		line-height: 1.15;
+		overflow: hidden;
+		display: -webkit-box;
+		-webkit-line-clamp: 5;
+		-webkit-box-orient: vertical;
+		word-break: break-word;
+	}
+	#PW .pt-strip-cell--pub {
+		display: flex !important;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-start;
+		padding: 0.12rem !important;
+		background: #ffeb3b !important;
+		color: #b71c1c !important;
+		box-sizing: border-box;
+		position: relative;
+	}
+	#PW .pt-strip-cell--pub .pt-strip-pub-link {
+		display: block;
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		margin-top: 0.1rem;
+		position: relative;
+	}
+	#PW .pt-strip-cell--pub img,
+	#PW .pt-strip-cell--pub video {
+		width: 100% !important;
+		height: 100% !important;
+		min-height: 36px;
+		object-fit: cover !important;
+		display: block !important;
+	}
+	#PW .pt-pub-mini-badges {
+		position: absolute;
+		top: 0.14rem;
+		left: 0.14rem;
+		right: 0.14rem;
+		display: flex;
+		justify-content: space-between;
+		gap: 0.2rem;
+		pointer-events: none;
+		z-index: 4;
+	}
+	#PW .pt-pub-mini-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		max-width: 48%;
+		padding: 0.05rem 0.28rem;
+		border-radius: 999px;
+		font-size: 0.5rem;
+		font-weight: 800;
+		line-height: 1.1;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		border: 1px solid rgba(12, 20, 34, 0.25);
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+	}
+	#PW .pt-pub-mini-badge--price { background: #e8f5e9; color: #1b5e20; }
+	#PW .pt-pub-mini-badge--discount { background: #ffebee; color: #b71c1c; }
 </style>
 {% endblock %}
 
@@ -194,14 +281,10 @@
 	<main id="PW">
 		<div class="pt-grid">
 			<div id="P1" class="pt-cell pt-cell-1" data-slot="P1">
-				<div class="pt-strip-wrap pt-strip-p1" aria-label="Banda poze animale sus">
+				<div class="pt-strip-wrap pt-strip-p1" aria-label="Bandă publicitate P1">
 					<div class="pt-strip-track pt-strip-track--p1">
-						{% for pet in strip_pets %}
-						<span class="pt-strip-item pt-strip-item--p1"><img src="{% static pet.imagine_fallback %}" alt="" loading="lazy" /></span>
-						{% if forloop.counter|divisibleby:7 %}<span class="pt-strip-item pt-strip-item--p1 pt-strip-disclaimer">NU CUMPĂRĂM<br />NU VINDEM<br />ANIMALE!!</span>{% endif %}
-						{% empty %}
-						<span class="pt-strip-item pt-strip-item--p1 pt-strip-no-img">—</span>
-						{% endfor %}
+						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
+						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
 					</div>
 				</div>
 			</div>
@@ -359,14 +442,10 @@
 						</div>
 					</div>
 					<div id="P3" class="pt-cell pt-cell-3 pt-cell-3--footer" data-slot="P3">
-						<div class="pt-strip-wrap pt-strip-p3" aria-label="Banda poze animale">
+						<div class="pt-strip-wrap pt-strip-p3" aria-label="Bandă publicitate P3">
 							<div class="pt-strip-track pt-strip-track--p3">
-								{% for pet in strip_pets %}
-								<span class="pt-strip-item pt-strip-item--p3"><img src="{% static pet.imagine_fallback %}" alt="" loading="lazy" /></span>
-								{% if forloop.counter|divisibleby:7 %}<span class="pt-strip-item pt-strip-item--p3 pt-strip-disclaimer">NU CUMPĂRĂM<br />NU VINDEM<br />ANIMALE!!</span>{% endif %}
-								{% empty %}
-								<span class="pt-strip-item pt-strip-item--p3 pt-strip-no-img">—</span>
-								{% endfor %}
+								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
+								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
 							</div>
 						</div>
 					</div>
