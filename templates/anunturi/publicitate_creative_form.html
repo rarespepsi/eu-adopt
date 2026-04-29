@@ -78,6 +78,46 @@
 		font-size: 0.68rem;
 		color: #607d8b;
 	}
+	.pub-cr-schedule-wrap {
+		margin-top: 0.38rem;
+		padding: 0.45rem 0.5rem;
+		border: 1px dashed #b0bec5;
+		border-radius: 8px;
+		background: #fafafa;
+	}
+	.pub-cr-schedule-title {
+		display: block;
+		font-size: 0.72rem;
+		font-weight: 800;
+		color: #37474f;
+		margin-bottom: 0.3rem;
+	}
+	.pub-cr-schedule-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr 1fr;
+		gap: 0.35rem;
+	}
+	.pub-cr-schedule-cell {
+		border: 1px solid #d7dee2;
+		border-radius: 8px;
+		padding: 0.28rem;
+		background: #fff;
+	}
+	.pub-cr-schedule-cell h4 {
+		margin: 0 0 0.2rem;
+		font-size: 0.68rem;
+		color: #0d47a1;
+	}
+	.pub-cr-schedule-cell input[type="number"] {
+		width: 100%;
+		box-sizing: border-box;
+		border: 1px solid #b0bec5;
+		border-radius: 6px;
+		padding: 0.2rem 0.3rem;
+		font-size: 0.72rem;
+	}
+	.pub-cr-schedule-cell .pub-cr-field { margin-bottom: 0.28rem; }
+	.pub-cr-schedule-cell .pub-cr-field:last-child { margin-bottom: 0; }
 	.pub-cr-preview-wrap { margin-top: 0.35rem; }
 	.pub-cr-preview-label { font-size: 0.72rem; font-weight: 700; color: #37474f; margin-bottom: 0.16rem; display: block; }
 	.pub-cr-layout-two-cols {
@@ -102,7 +142,7 @@
 		overflow: hidden;
 		aspect-ratio: 1 / 1;
 	}
-	.pub-cr-preview-box[data-shape="strip"] { aspect-ratio: 8 / 1; width: min(100%, 22rem); }
+	.pub-cr-preview-box[data-shape="strip"] { aspect-ratio: 3 / 1; width: min(100%, 22rem); }
 	.pub-cr-preview-box[data-shape="wide"] { aspect-ratio: 16 / 9; width: min(100%, 22rem); }
 	.pub-cr-preview-box[data-shape="banner"] { aspect-ratio: 5 / 1; width: min(100%, 22rem); }
 	.pub-cr-preview-box img,
@@ -149,6 +189,9 @@
 			grid-template-columns: 1fr;
 			gap: 0.5rem;
 		}
+		.pub-cr-schedule-grid {
+			grid-template-columns: 1fr 1fr;
+		}
 	}
 	@media (min-width: 768px) and (max-width: 991.98px) {
 		.pub-cr-preview-box {
@@ -173,7 +216,7 @@
 			{% with b=line.creative_bundle %}
 			<div class="pub-cr-slot">
 				<h2>{{ line.section|upper }} · {{ line.slot_code }}</h2>
-				<div class="pub-cr-meta">{{ line.title_snapshot }} — {{ line.quantity }} {{ line.unit_label }} — {{ line.line_total_lei }} lei
+				<div class="pub-cr-meta">{{ line.title_snapshot }} — {% if line.pub_period_human %}{{ line.pub_period_human }}{% else %}{{ line.quantity }} {{ line.unit_label }}{% endif %} — {{ line.line_total_lei }} lei
 					{% if b.status == 'live' %}<span style="color:#2e7d32;font-weight:700;"> · trimis</span>{% endif %}
 				</div>
 				{% if line.section == 'home' and line.slot_code == 'Burtieră' %}
@@ -201,6 +244,41 @@
 					</div>
 				</div>
 				<p class="pub-cr-media-hint">Alegeți un singur tip media (imagine XOR video).</p>
+				{% if line.quantity >= 7 %}
+				<div class="pub-cr-schedule-wrap">
+					<label class="pub-cr-schedule-title">
+						<input type="checkbox" name="sched_enabled_{{ line.pk }}" value="1" {% if line.creative_sched_enabled %}checked{% endif %} />
+						Programare campanie (max. 4 materiale distincte pe perioada rezervată)
+					</label>
+					<div class="pub-cr-schedule-grid">
+						{% for i in "1234" %}
+						<div class="pub-cr-schedule-cell">
+							<h4>Material {{ i }}</h4>
+							<div class="pub-cr-field">
+								<label for="sch_img_{{ line.pk }}_{{ i }}">Imagine</label>
+								<input type="file" id="sch_img_{{ line.pk }}_{{ i }}" name="sch_image_{{ line.pk }}_{{ i }}" accept="image/jpeg,image/png,image/webp,image/gif" />
+							</div>
+							<div class="pub-cr-field">
+								<label for="sch_video_{{ line.pk }}_{{ i }}">Video</label>
+								<input type="file" id="sch_video_{{ line.pk }}_{{ i }}" name="sch_video_{{ line.pk }}_{{ i }}" accept="video/mp4,video/webm,video/ogg" />
+							</div>
+							<div class="pub-cr-field">
+								<label for="sch_link_{{ line.pk }}_{{ i }}">Link</label>
+								<input type="url" id="sch_link_{{ line.pk }}_{{ i }}" name="sch_link_{{ line.pk }}_{{ i }}" placeholder="https://…" />
+							</div>
+							<div class="pub-cr-field">
+								<label for="sch_day_start_{{ line.pk }}_{{ i }}">Zi start (1-{{ line.quantity }})</label>
+								<input type="number" id="sch_day_start_{{ line.pk }}_{{ i }}" name="sch_day_start_{{ line.pk }}_{{ i }}" min="1" max="{{ line.quantity }}" value="1" />
+							</div>
+							<div class="pub-cr-field">
+								<label for="sch_day_end_{{ line.pk }}_{{ i }}">Zi final (1-{{ line.quantity }})</label>
+								<input type="number" id="sch_day_end_{{ line.pk }}_{{ i }}" name="sch_day_end_{{ line.pk }}_{{ i }}" min="1" max="{{ line.quantity }}" value="{{ line.quantity }}" />
+							</div>
+						</div>
+						{% endfor %}
+					</div>
+				</div>
+				{% endif %}
 				<div class="pub-cr-layout-two-cols">
 					<div class="pub-cr-layout-left">
 						<div class="pub-cr-field">

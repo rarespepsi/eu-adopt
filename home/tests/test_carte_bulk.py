@@ -93,6 +93,7 @@ _CARTE_GET_CASES = [
     ("promo_a2_checkout_demo_success", {"pk": 999999}, ""),
     ("i_love", {}, ""),
     ("i_love_cos", {}, ""),
+    ("i_love_cos_istoric", {}, ""),
     ("site_cart_checkout", {}, ""),
     ("site_cart_checkout_success", {}, "?id=1"),
     ("wishlist_toggle", {}, ""),

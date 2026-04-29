@@ -1093,9 +1093,11 @@ class PromoA2Order(models.Model):
 
     PACKAGE_6H = "6h"
     PACKAGE_12H = "12h"
+    PACKAGE_A2_24 = "a2_24"
     PACKAGE_CHOICES = [
-        (PACKAGE_6H, "6h"),
-        (PACKAGE_12H, "12h"),
+        (PACKAGE_A2_24, "A2 — 24 apariții × 5 minute (10 lei)"),
+        (PACKAGE_6H, "6h (legacy)"),
+        (PACKAGE_12H, "12h (legacy)"),
     ]
     SLOT_A2 = "A2"
 
@@ -1116,7 +1118,9 @@ class PromoA2Order(models.Model):
     payer_email = models.EmailField("Email plătitor")
     payer_name_snapshot = models.CharField("Nume plătitor (snapshot)", max_length=200, blank=True)
 
-    package = models.CharField("Pachet", max_length=8, choices=PACKAGE_CHOICES, default=PACKAGE_6H)
+    package = models.CharField(
+        "Pachet", max_length=16, choices=PACKAGE_CHOICES, default=PACKAGE_A2_24
+    )
     quantity = models.PositiveIntegerField("Cantitate", default=1)
     unit_price = models.PositiveIntegerField("Preț unitar (lei)", default=10)
     total_price = models.PositiveIntegerField("Total (lei)", default=10)
@@ -1124,7 +1128,7 @@ class PromoA2Order(models.Model):
     schedule = models.CharField("Programare", max_length=20, default="intercalat")
     slot_code = models.CharField("Caseta promovare", max_length=20, default=SLOT_A2, db_index=True)
 
-    start_date = models.DateField("Data start")
+    start_date = models.DateField("Data start", null=True, blank=True)
     starts_at = models.DateTimeField("Pornire promovare", null=True, blank=True)
     ends_at = models.DateTimeField("Final promovare", null=True, blank=True)
 
@@ -1134,6 +1138,17 @@ class PromoA2Order(models.Model):
 
     summary_sent_at = models.DateTimeField("Rezumat final trimis la", null=True, blank=True)
     summary_manual_sent_at = models.DateTimeField("Rezumat trimis manual la", null=True, blank=True)
+    activation_at = models.DateTimeField(
+        "Activare plată",
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+    fulfillment_report_sent_at = models.DateTimeField(
+        "Raport apariții A2 trimis la",
+        null=True,
+        blank=True,
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1149,6 +1164,47 @@ class PromoA2Order(models.Model):
 
     def __str__(self):
         return f"A2#{self.pk} pet={self.pet_id} {self.status}"
+
+
+class PromoA2SlotPlan(models.Model):
+    """
+    O apariție planificată în grila HOME A2: casetă 1–12, fereastră 5 minute.
+    Coadă globală: după ultimul window_end al planurilor existente.
+    """
+
+    order = models.ForeignKey(
+        PromoA2Order,
+        on_delete=models.CASCADE,
+        related_name="slot_plans",
+        db_index=True,
+    )
+    sequence = models.PositiveSmallIntegerField("Index apariție 1–24")
+    cell_index = models.PositiveSmallIntegerField("Casetă A2 (1–12)")
+    window_start = models.DateTimeField("Început fereastră")
+    window_end = models.DateTimeField("Sfârșit fereastră")
+    logged_at = models.DateTimeField(
+        "Înregistrată (vizualizare sau backfill)",
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["order_id", "sequence"]
+        verbose_name = "Slot Promo A2"
+        verbose_name_plural = "Sloturi Promo A2"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["order", "sequence"],
+                name="uniq_promoa2_slot_order_seq",
+            )
+        ]
+        indexes = [
+            models.Index(fields=["window_start", "window_end"]),
+        ]
+
+    def __str__(self):
+        return f"promo-a2-slot o={self.order_id}#{self.sequence} c{self.cell_index}"
 
 
 class ReclamaSlotNote(models.Model):
@@ -1210,6 +1266,12 @@ class PublicitateOrder(models.Model):
     )
     payment_ref = models.CharField("Referință plată", max_length=120, blank=True, default="")
     paid_at = models.DateTimeField("Plătit la", null=True, blank=True)
+    contract_posting_email_sent_at = models.DateTimeField(
+        "Email detalii postare trimis la",
+        null=True,
+        blank=True,
+        help_text="După plată: e-mail cu rezumat sloturi/perioade/coduri (idempotent).",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

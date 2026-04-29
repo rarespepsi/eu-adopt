@@ -160,6 +160,14 @@ body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-text {
     font-weight: 700;
     line-height: 1.35;
 }
+body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-link {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+body.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-link:hover {
+    text-decoration-thickness: 2px;
+}
 @keyframes home-burtiera-marquee {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }

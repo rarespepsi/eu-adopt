@@ -643,3 +643,135 @@ body.page-ilove .ilove-empty {
 		grid-template-columns: 1fr;
 	}
 }
+
+/* Coș: link Istoric achiziții */
+body.page-ilove.page-ilove--cart .ilove-cos-head-actions {
+	margin: 0.35rem 0 0;
+}
+body.page-ilove.page-ilove--cart .ilove-cos-history-btn {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.38rem 0.75rem;
+	border-radius: 999px;
+	border: 1px solid #1565c0;
+	background: #fff;
+	color: #0d47a1 !important;
+	font-weight: 800;
+	font-size: 0.82rem;
+	text-decoration: none;
+}
+body.page-ilove.page-ilove--cart .ilove-cos-history-btn:hover {
+	background: rgba(21, 101, 192, 0.08);
+}
+
+/* Pagina istoric achiziții */
+body.page-ilove.page-ilove--istoric .ilove-history-back {
+	margin: 0.25rem 0 0;
+}
+body.page-ilove.page-ilove--istoric .ilove-history-back-link {
+	font-size: 0.86rem;
+	font-weight: 700;
+	color: #1565c0 !important;
+	text-decoration: none;
+}
+body.page-ilove.page-ilove--istoric .ilove-history-section {
+	margin-bottom: 1.5rem;
+}
+body.page-ilove.page-ilove--istoric .ilove-history-h2 {
+	margin: 0 0 0.6rem;
+	font-size: 1.05rem;
+	font-weight: 800;
+	color: #1a237e;
+}
+body.page-ilove.page-ilove--istoric .ilove-history-table-wrap {
+	width: 100%;
+	overflow-x: auto;
+	border: 1px solid #e0e0e0;
+	border-radius: 10px;
+	background: #fff;
+}
+body.page-ilove.page-ilove--istoric .ilove-history-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.84rem;
+}
+body.page-ilove.page-ilove--istoric .ilove-history-table th,
+body.page-ilove.page-ilove--istoric .ilove-history-table td {
+	padding: 0.45rem 0.55rem;
+	text-align: left;
+	border-bottom: 1px solid #eceff1;
+	vertical-align: top;
+}
+body.page-ilove.page-ilove--istoric .ilove-history-table thead th {
+	background: #f5f5f5;
+	font-weight: 800;
+	font-size: 0.74rem;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	color: #455a64;
+}
+body.page-ilove.page-ilove--istoric .ilove-history-table .ilove-history-sub td {
+	padding-top: 0.25rem;
+	padding-bottom: 0.65rem;
+	background: #fafafa;
+	border-bottom: 1px solid #eceff1;
+}
+body.page-ilove.page-ilove--istoric .ilove-history-preview-ul {
+	margin: 0;
+	padding-left: 1.1rem;
+	font-size: 0.76rem;
+	color: #546e7a;
+	line-height: 1.35;
+}
+body.page-ilove.page-ilove--istoric .ilove-history-mini {
+	font-weight: 800;
+	font-size: 0.82rem;
+	color: #2e7d32 !important;
+	text-decoration: none;
+	white-space: nowrap;
+}
+body.page-ilove.page-ilove--istoric .ilove-history-mini:hover {
+	text-decoration: underline;
+}
+body.page-ilove.page-ilove--istoric .ilove-history-empty {
+	margin: 0;
+	font-size: 0.9rem;
+	color: #78909c;
+}
+body.page-ilove.page-ilove--istoric .ilove-history-hint {
+	margin: 0.75rem 0 0;
+	font-size: 0.82rem;
+	color: #546e7a;
+}
+@media (max-width: 640px) {
+	body.page-ilove.page-ilove--istoric .ilove-history-table thead {
+		display: none;
+	}
+	body.page-ilove.page-ilove--istoric .ilove-history-table tr {
+		display: block;
+		border-bottom: 1px solid #eceff1;
+		padding: 0.45rem 0.35rem;
+	}
+	body.page-ilove.page-ilove--istoric .ilove-history-table td {
+		display: block;
+		border: none;
+		padding: 0.2rem 0.35rem;
+	}
+	body.page-ilove.page-ilove--istoric .ilove-history-table td::before {
+		content: attr(data-label);
+		font-weight: 800;
+		font-size: 0.72rem;
+		color: #78909c;
+		display: block;
+		margin-bottom: 0.1rem;
+	}
+	body.page-ilove.page-ilove--istoric .ilove-history-table .ilove-history-actions {
+		padding-top: 0.35rem;
+	}
+	body.page-ilove.page-ilove--istoric .ilove-history-table .ilove-history-sub td {
+		padding-bottom: 0.5rem;
+	}
+	body.page-ilove.page-ilove--istoric .ilove-history-table .ilove-history-sub td::before {
+		display: none;
+	}
+}

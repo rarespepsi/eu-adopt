@@ -91,6 +91,22 @@
 	}
 	.home-v2-pub-badge--price { background: #e8f5e9; color: #1b5e20; }
 	.home-v2-pub-badge--discount { background: #ffebee; color: #b71c1c; }
+	body.page-home-v2 #A2 .dog-card--a2-promo.dog-card-link { position: relative; }
+	body.page-home-v2 #A2 .a2-promo-pill {
+		position: absolute;
+		top: 3px;
+		left: 3px;
+		z-index: 4;
+		font-size: 0.5rem;
+		font-weight: 800;
+		padding: 0.09rem 0.32rem;
+		border-radius: 4px;
+		background: rgba(21, 101, 192, 0.94);
+		color: #fff;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+		pointer-events: none;
+	}
 </style>
 {% endblock %}
 
@@ -318,8 +334,13 @@
 	<div id="home-burtiera-galbena" class="home-v2-burtiera-disclaimer" aria-label="Disclaimer EU Adopt">
 		<div class="home-v2-burtiera-marquee-wrap" aria-hidden="true">
 			<div class="home-v2-burtiera-marquee-track" style="animation-duration: {{ home_burtiera_speed_seconds|default:28 }}s;">
+				{% if home_burtiera_link %}
+				<a class="home-v2-burtiera-text home-v2-burtiera-link" href="{{ home_burtiera_link }}" target="_blank" rel="noopener">{{ home_burtiera_text|default:"#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană." }}</a>
+				<a class="home-v2-burtiera-text home-v2-burtiera-link" href="{{ home_burtiera_link }}" target="_blank" rel="noopener">{{ home_burtiera_text|default:"#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană." }}</a>
+				{% else %}
 				<span class="home-v2-burtiera-text">{{ home_burtiera_text|default:"#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană." }}</span>
 				<span class="home-v2-burtiera-text">{{ home_burtiera_text|default:"#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană." }}</span>
+				{% endif %}
 			</div>
 		</div>
 	</div>

@@ -24,6 +24,7 @@ from django.db.models import Case, Count, Exists, IntegerField, Max, OuterRef, Q
 from django.db.models import F
 from django.db.models.functions import TruncMonth
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.conf import settings
@@ -66,6 +67,7 @@ from .models import (
     CollaboratorServiceOffer,
     CollaboratorOfferClaim,
     PromoA2Order,
+    PromoA2SlotPlan,
     ReclamaSlotNote,
     PublicitateOrder,
     PublicitateOrderLine,
@@ -279,6 +281,17 @@ def _get_home_burtiera_text() -> str:
     return txt or HOME_BURTIERA_DEFAULT_TEXT
 
 
+def _get_home_burtiera_link() -> str:
+    txt = _get_home_burtiera_text().strip()
+    if not txt:
+        return ""
+    try:
+        URLValidator(schemes=["http", "https"])(txt)
+        return txt
+    except DjangoValidationError:
+        return ""
+
+
 def _get_home_burtiera_speed_seconds() -> int:
     note = ReclamaSlotNote.objects.filter(section="home", slot_code="BurtierăSpeed").first()
     raw = ((note.text if note else "") or "").strip()
@@ -299,6 +312,185 @@ def _promo_a2_compute_window(start_date, package: str, quantity: int):
     starts_at = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
     ends_at = starts_at + timezone.timedelta(hours=hours * qty)
     return starts_at, ends_at
+
+
+# Promo A2 standard (a2_24): 24 apariții × 5 min în grilă HOME (batch 12+12 paralel pe celule).
+PROMO_A2_STD_PRICE_LEI = 10
+PROMO_A2_STD_IMPRESSIONS = 24
+PROMO_A2_DWELL_MINUTES = 5
+
+
+def _promo_a2_listing_to_home_dict(al: AnimalListing, quote: str | None) -> dict:
+    return {
+        "pk": al.pk,
+        "nume": al.name or "—",
+        "varsta": al.age_label or "",
+        "descriere": (al.cine_sunt or al.probleme_medicale or "")[:220],
+        "imagine": al.photo_1,
+        "imagine_2": al.photo_2,
+        "imagine_3": al.photo_3,
+        "imagine_fallback": DEMO_DOG_IMAGE,
+        "quote": quote,
+        "a2_promo": True,
+    }
+
+
+def _promo_a2_backfill_logged_past_windows(now_ts) -> None:
+    """Pentru ferestre trecute fără trafic HOME, considerăm înregistrarea la sfârșitul ferestrei."""
+    PromoA2SlotPlan.objects.filter(
+        logged_at__isnull=True,
+        window_end__lte=now_ts,
+        order__status=PromoA2Order.STATUS_PAID,
+    ).update(logged_at=F("window_end"))
+
+
+def _promo_a2_try_send_fulfillment_reports() -> int:
+    """Trimite un singur email cu desfășurător când toate cele 24 apariții au logged_at. Returnează nr. mesaje trimise în această rulare."""
+    now_ts = timezone.now()
+    _promo_a2_backfill_logged_past_windows(now_ts)
+    candidates = (
+        PromoA2Order.objects.filter(
+            status=PromoA2Order.STATUS_PAID,
+            package=PromoA2Order.PACKAGE_A2_24,
+            fulfillment_report_sent_at__isnull=True,
+        )
+        .annotate(
+            n_ok=Count("slot_plans", filter=Q(slot_plans__logged_at__isnull=False)),
+            n_all=Count("slot_plans"),
+        )
+        .filter(n_all=24, n_ok=24)
+    )
+    sent = 0
+    for order in candidates[:20]:
+        if _promo_a2_send_fulfillment_report_email(order):
+            order.fulfillment_report_sent_at = now_ts
+            order.save(update_fields=["fulfillment_report_sent_at", "updated_at"])
+            sent += 1
+    return sent
+
+
+def _promo_a2_send_fulfillment_report_email(order: PromoA2Order) -> bool:
+    to = (order.payer_email or "").strip()
+    if not to:
+        return False
+    pet = getattr(order, "pet", None)
+    pet_label = (getattr(pet, "name", None) or f"Anunț #{getattr(order, 'pet_id', '—')}")[:200]
+    lines = list(
+        order.slot_plans.order_by("sequence").values_list("sequence", "logged_at", "cell_index")
+    )
+    body_lines = []
+    for seq, logged, cell in lines:
+        ts = timezone.localtime(logged) if logged else None
+        ts_txt = ts.strftime("%d.%m.%Y %H:%M") if ts else "—"
+        body_lines.append(f"{int(seq):02d}. {ts_txt} · casetă A2 nr. {int(cell)}")
+    body_txt = (
+        f"Bună,\n\n"
+        f"Aceasta este înregistrarea celor {PROMO_A2_STD_IMPRESSIONS} apariții în zona A2 (Acasă) pentru „{pet_label}”.\n"
+        f"Comandă #{order.pk}.\n\n"
+        + "\n".join(body_lines)
+        + "\n\n— EU-Adopt\n"
+    )
+    uname = None
+    try:
+        if order.payer_user_id and order.payer_user:
+            uname = order.payer_user.username
+    except Exception:
+        uname = None
+    if not uname and to:
+        uname = (to.split("@", 1)[0] if "@" in to else None) or "oaspete"
+    subj = email_subject_for_user(
+        uname,
+        f"EU-Adopt: raport apariții A2 – {pet_label}",
+    )
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
+    try:
+        send_mail(subj, body_txt, from_email, [to], fail_silently=False)
+    except Exception:
+        logging.getLogger(__name__).exception("promo_a2_fulfillment_report_email")
+        return False
+    return True
+
+
+def _promo_a2_activate_and_schedule(order: PromoA2Order) -> None:
+    """
+    După plată: setează activation_at și creează 24 sloturi în două valuri consecutive.
+
+    - `cursor` (începutul primului val pe toate cele 12 casete): între `[now]` și poziția
+      din coadă (`max(now, tail)`), dar **nu mai târziu de `now + dwell`**
+      (**dwell** = PROMO_A2_DWELL_MINUTES, în prezent 5). Astfel prima fereastră activă pentru
+      acest client începe **cel târziu la now + 5 minute** dacă nu e deja înainte în coadă.
+    - La suprapuneri pe casetă, overlay-ul ia planul mai nou (`order_id` mai mare).
+    """
+    if order.package != PromoA2Order.PACKAGE_A2_24:
+        return
+    if order.status != PromoA2Order.STATUS_PAID:
+        return
+    if PromoA2SlotPlan.objects.filter(order=order).exists():
+        return
+    now_ts = timezone.now()
+    dwell = timezone.timedelta(minutes=PROMO_A2_DWELL_MINUTES)
+    tail = PromoA2SlotPlan.objects.aggregate(mx=Max("window_end")).get("mx")
+    base = max(now_ts, tail) if tail is not None else now_ts
+    deadline = now_ts + dwell
+    cursor = min(base, deadline)
+    order.activation_at = now_ts
+    order.starts_at = now_ts
+    order.ends_at = now_ts + timezone.timedelta(hours=24)
+    order.save(update_fields=["activation_at", "starts_at", "ends_at", "updated_at"])
+    rows = []
+    for batch in (0, 1):
+        for cell_idx in range(12):
+            seq = batch * 12 + cell_idx + 1
+            ws = cursor + batch * dwell
+            we = cursor + (batch + 1) * dwell
+            rows.append(
+                PromoA2SlotPlan(
+                    order_id=order.pk,
+                    sequence=seq,
+                    cell_index=cell_idx + 1,
+                    window_start=ws,
+                    window_end=we,
+                )
+            )
+    PromoA2SlotPlan.objects.bulk_create(rows)
+
+
+def _promo_a2_apply_overlay_to_home_a2(a2_pets: list, now_ts, with_quotes: bool) -> None:
+    """
+    Înlocuiește conținutul celulelor A2 active cu anunțul din campaniile plătite a2_24.
+    `a2_pets` trebuie să aibă lungime 12.
+    """
+    if len(a2_pets) != 12:
+        return
+    _promo_a2_backfill_logged_past_windows(now_ts)
+    active = (
+        PromoA2SlotPlan.objects.filter(
+            order__status=PromoA2Order.STATUS_PAID,
+            order__package=PromoA2Order.PACKAGE_A2_24,
+            window_start__lte=now_ts,
+            window_end__gt=now_ts,
+        )
+        .select_related("order__pet")
+        .order_by("window_start", "-order_id", "sequence")
+    )
+    chosen = {}
+    for plan in active:
+        cid = int(plan.cell_index)
+        if not (1 <= cid <= 12):
+            continue
+        if cid in chosen:
+            continue
+        chosen[cid] = plan
+    for cid, plan in chosen.items():
+        listing = getattr(plan.order, "pet", None)
+        if not listing or not listing.is_published:
+            continue
+        idx = cid - 1
+        q = random.choice(A2_QUOTE_POOL) if with_quotes else None
+        a2_pets[idx] = _promo_a2_listing_to_home_dict(listing, quote=q)
+        if plan.logged_at is None:
+            PromoA2SlotPlan.objects.filter(pk=plan.pk, logged_at__isnull=True).update(logged_at=now_ts)
+    _promo_a2_try_send_fulfillment_reports()
 
 
 def _promo_a2_build_summary_payload(order: PromoA2Order) -> dict:
@@ -1727,8 +1919,6 @@ def _pt_pub_slot_parse_note(note):
         return None
     img = (data.get("img") or "").strip()
     video = (data.get("video") or "").strip()
-    if not img and not video:
-        return None
     link = (data.get("link") or "").strip()
     alt = (data.get("alt") or "").strip()
     price = (data.get("price") or "").strip()[:24]
@@ -1754,6 +1944,37 @@ def _pt_pub_slot_parse_note(note):
         if any(c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./_-" for c in raw_value):
             return ""
         return django_static(raw_value)
+
+    assets = data.get("assets") if isinstance(data.get("assets"), list) else []
+    selected_asset = None
+    if assets:
+        today_local = timezone.localdate()
+        for a in assets:
+            if not isinstance(a, dict):
+                continue
+            st_raw = (a.get("start") or "").strip()
+            en_raw = (a.get("end") or "").strip()
+            try:
+                st = date.fromisoformat(st_raw) if st_raw else None
+                en = date.fromisoformat(en_raw) if en_raw else None
+            except ValueError:
+                st = None
+                en = None
+            if st and en and st <= today_local <= en:
+                selected_asset = a
+                break
+        if selected_asset is None:
+            for a in assets:
+                if isinstance(a, dict):
+                    selected_asset = a
+                    break
+    if selected_asset:
+        img = (selected_asset.get("img") or "").strip()
+        video = (selected_asset.get("video") or "").strip()
+        link = (selected_asset.get("link") or link).strip()
+        alt = (selected_asset.get("alt") or alt).strip()
+        price = (selected_asset.get("price") or price).strip()[:24]
+        discount = (selected_asset.get("discount") or discount).strip()[:8]
 
     img_href = _resolve_media_href(img)
     video_href = _resolve_media_href(video)
@@ -1883,6 +2104,7 @@ def home_view(request):
         )
 
     is_home = request.resolver_match.url_name == "home"
+    now_promo = timezone.now()
 
     # Available dogs pentru A2 (HOME) / PT:
     # 1) întâi din DB (AnimalListing, is_published=True), cu added_at = created_at
@@ -1931,6 +2153,9 @@ def home_view(request):
             pet["quote"] = random.choice(A2_QUOTE_POOL)
         a2_pets.append(pet)
 
+    if is_home and a2_pets and len(a2_pets) == 12:
+        _promo_a2_apply_overlay_to_home_a2(a2_pets, now_promo, with_quotes=True)
+
     hero_slider_images = HERO_SLIDER_IMAGES[:5]
     # Notă bun venit: welcome=1 (după activare cont); welcome_demo=1 e legacy
     show_welcome_demo = request.GET.get("welcome_demo") == "1" or request.GET.get("welcome") == "1"
@@ -1953,6 +2178,7 @@ def home_view(request):
         "show_welcome_demo": show_welcome_demo,
         "wishlist_ids": wishlist_ids,
         "home_burtiera_text": _get_home_burtiera_text(),
+        "home_burtiera_link": _get_home_burtiera_link(),
         "home_burtiera_speed_seconds": _get_home_burtiera_speed_seconds(),
         "home_site_note_show_mypet": _user_can_use_mypet(request),
         "home_site_note_show_ilove": bool(request.user.is_authenticated),
@@ -3823,8 +4049,9 @@ def dog_profile_view(request, pk):
 @login_required
 def promo_a2_order_view(request, pk):
     """
-    Notă comandă promovare A2 (v1).
-    Poate plăti orice cont autentificat (sponsor); anunțul trebuie publicat, câine sau pisică.
+    Promovare A2: 24 apariții × 5 minute în casetele HOME, 10 lei.
+    Nota de comandă încarcă linia în coșul site (/i-love/cos/); plata unificată este la site_cart_checkout.
+    Orice utilizator autentificat poate sponsoriza un anunț publicat (câine/pisică).
     """
     pet = get_object_or_404(AnimalListing, pk=pk)
     if not pet.is_published:
@@ -3842,100 +4069,58 @@ def promo_a2_order_view(request, pk):
         )
         return _promo_a2_flow_redirect(request, pet)
 
-    price_map = {"6h": 10, "12h": 15}
     order_submitted = False
-    start_date = timezone.localdate().isoformat()
-    package = "6h"
+    today = timezone.localdate()
+    schedule = "intercalat"
     quantity = 1
-    unit_price = price_map[package]
-    total_price = unit_price * quantity
+    unit_price = PROMO_A2_STD_PRICE_LEI
+    total_price = PROMO_A2_STD_PRICE_LEI
     if request.method == "POST":
-        package = (request.POST.get("package") or "6h").strip()
-        schedule = "intercalat"
-        payment_method = "card"
-        start_date_raw = (request.POST.get("start_date") or "").strip()
-        quantity_raw = (request.POST.get("quantity") or "1").strip()
-        if package not in ("6h", "12h"):
-            package = "6h"
-        try:
-            quantity = int(quantity_raw)
-        except ValueError:
-            quantity = 1
-        if quantity < 1:
-            quantity = 1
-        if quantity > 30:
-            quantity = 30
-        unit_price = price_map[package]
-        total_price = unit_price * quantity
-        try:
-            selected_start_date = date.fromisoformat(start_date_raw)
-            if selected_start_date < timezone.localdate():
-                raise ValueError("date in the past")
-            start_date = selected_start_date.isoformat()
-        except ValueError:
-            messages.error(request, "Selectează o dată de start validă (astăzi sau o dată viitoare).")
-            return render(
-                request,
-                "anunturi/promo_a2_order.html",
-                {
-                    "pet": pet,
-                    "order_submitted": order_submitted,
-                    "package": package,
-                    "schedule": schedule,
-                    "payment_method": payment_method,
-                    "start_date": start_date,
-                    "quantity": quantity,
-                    "unit_price": unit_price,
-                    "total_price": total_price,
-                    "today_iso": timezone.localdate().isoformat(),
-                },
-            )
-        starts_at, ends_at = _promo_a2_compute_window(selected_start_date, package, quantity)
-        payer_name = (request.user.get_full_name() or request.user.username or "").strip()
-        order = PromoA2Order.objects.create(
-            pet=pet,
-            payer_user=request.user,
-            payer_email=(request.user.email or "").strip(),
-            payer_name_snapshot=payer_name,
-            package=package,
-            quantity=quantity,
-            unit_price=unit_price,
-            total_price=total_price,
-            payment_method=payment_method,
-            schedule=schedule,
-            slot_code="A2",
-            start_date=selected_start_date,
-            starts_at=starts_at,
-            ends_at=ends_at,
-            status=PromoA2Order.STATUS_CHECKOUT_PENDING,
-            payment_provider="demo",
+        ref_key = f"promo_a2:{pet.pk}"
+        titlu = (
+            f"Promovare A2 · {(pet.name or 'Anunț').strip()} — {PROMO_A2_STD_PRICE_LEI} lei "
+            f"({PROMO_A2_STD_IMPRESSIONS} apariții × {PROMO_A2_DWELL_MINUTES} min)"
         )
-
-        # v1: pregătim datele pentru checkout demo securizat
-        request.session["promo_a2_checkout"] = {
-            "order_id": order.pk,
-            "pet_id": pet.pk,
-            "package": package,
-            "schedule": schedule,
-            "payment_method": payment_method,
-            "start_date": start_date,
-            "quantity": quantity,
-            "unit_price": unit_price,
-            "total_price": total_price,
-        }
-        return redirect("promo_a2_checkout_demo", pk=pet.pk)
+        det_url = reverse("promo_a2_order", args=[pet.pk])
+        existing = SiteCartItem.objects.filter(user=request.user, ref_key=ref_key).first()
+        if existing:
+            messages.info(
+                request,
+                "Acest anunț este deja în coș pentru promovare A2.",
+            )
+            return redirect("i_love_cos")
+        n_cart = SiteCartItem.objects.filter(user=request.user).count()
+        if n_cart >= SITE_CART_MAX_ITEMS:
+            messages.warning(
+                request,
+                f"Coșul are deja articole (limită {SITE_CART_MAX_ITEMS}). Elimină articole în coș dacă ai nevoie de loc.",
+            )
+            return redirect("promo_a2_order", pk=pk)
+        SiteCartItem.objects.create(
+            user=request.user,
+            ref_key=ref_key,
+            kind=SiteCartItem.KIND_PROMO_A2,
+            title=titlu,
+            detail_url=det_url,
+        )
+        messages.success(
+            request,
+            "Am adăugat promovarea A2 în coș. Continuă spre Plată pentru a încasa totalul și a confirma.",
+        )
+        return redirect("i_love_cos")
 
     ctx_order = {
         "pet": pet,
         "order_submitted": order_submitted,
-        "package": "6h",
-        "schedule": "intercalat",
-        "payment_method": "card",
-        "start_date": start_date,
+        "schedule": schedule,
+        "start_date": today.isoformat(),
         "quantity": quantity,
         "unit_price": unit_price,
         "total_price": total_price,
-        "today_iso": timezone.localdate().isoformat(),
+        "today_iso": today.isoformat(),
+        "promo_a2_standard": True,
+        "promo_a2_imp": PROMO_A2_STD_IMPRESSIONS,
+        "promo_a2_minutes_each": PROMO_A2_DWELL_MINUTES,
     }
     ctx_order.update(_promo_a2_nav_context(request.user))
     return render(request, "anunturi/promo_a2_order.html", ctx_order)
@@ -3963,13 +4148,12 @@ def promo_a2_checkout_demo_view(request, pk):
         return redirect("promo_a2_order", pk=pet.pk)
     ctx_checkout = {
         "pet": pet,
-        "package": checkout.get("package", "6h"),
+        "package": checkout.get("package", PromoA2Order.PACKAGE_A2_24),
         "quantity": checkout.get("quantity", 1),
-        "unit_price": checkout.get("unit_price", 10),
-        "total_price": checkout.get("total_price", 10),
+        "unit_price": checkout.get("unit_price", PROMO_A2_STD_PRICE_LEI),
+        "total_price": checkout.get("total_price", PROMO_A2_STD_PRICE_LEI),
         "start_date": checkout.get("start_date", ""),
         "schedule": checkout.get("schedule", "intercalat"),
-        "payment_method": checkout.get("payment_method", "card"),
         "promo_order_id": order.pk,
     }
     ctx_checkout.update(_promo_a2_nav_context(request.user))
@@ -3996,7 +4180,8 @@ def promo_a2_checkout_demo_success_view(request, pk):
     if order is None:
         messages.info(request, "Comanda promo nu a fost găsită.")
         return redirect("promo_a2_order", pk=pet.pk)
-    if order.status != PromoA2Order.STATUS_PAID:
+    was_pending = order.status != PromoA2Order.STATUS_PAID
+    if was_pending:
         order.status = PromoA2Order.STATUS_PAID
         order.payment_ref = f"DEMO-{order.pk}"
         order.save(update_fields=["status", "payment_ref", "updated_at"])
@@ -4006,16 +4191,17 @@ def promo_a2_checkout_demo_success_view(request, pk):
             _inbox.KIND_PROMO_A2_PAID,
             "Plată reușită — promovare anunț",
             f"Comandă #{order.pk} pentru „{pet_label_po}” (demo).",
-            link_url=reverse("mypet"),
+            link_url=f"{reverse('home')}#A2",
             metadata={"promo_order_id": order.pk, "pet_id": pet.pk},
         )
+    _promo_a2_activate_and_schedule(order)
 
     ctx = {
         "pet": pet,
-        "package": checkout.get("package", "6h"),
+        "package": checkout.get("package", PromoA2Order.PACKAGE_A2_24),
         "quantity": checkout.get("quantity", 1),
-        "unit_price": checkout.get("unit_price", 10),
-        "total_price": checkout.get("total_price", 10),
+        "unit_price": checkout.get("unit_price", PROMO_A2_STD_PRICE_LEI),
+        "total_price": checkout.get("total_price", PROMO_A2_STD_PRICE_LEI),
         "start_date": checkout.get("start_date", ""),
         "promo_order_id": order.pk,
     }
@@ -6265,13 +6451,19 @@ def _site_cart_publicitate_lines_from_checkout(lines: list[dict]) -> tuple[list[
             continue
         unit = (qty_m.group(2) or "").strip() or "luna"
         section = ""
+        note = ""
+        start_date = ""
         detail_url = (row.get("detail_url") or "").strip()
         if detail_url:
             try:
                 q = parse_qs(urlparse(detail_url).query or "")
                 section = (q.get("sect") or [""])[0].strip().lower()
+                note = (q.get("n") or [""])[0].strip()[:8000]
+                start_date = (q.get("sd") or [""])[0].strip()[:10]
             except Exception:
                 section = ""
+                note = ""
+                start_date = ""
         if not section:
             section = (parts[0] or "").strip().lower()
         if section not in PUBLICITATE_SLOT_MAP:
@@ -6286,8 +6478,8 @@ def _site_cart_publicitate_lines_from_checkout(lines: list[dict]) -> tuple[list[
                 "unit": unit,
                 "unit_price": str(cat["price"]),
                 "qty": qty,
-                "note": "",
-                "start_date": "",
+                "note": note,
+                "start_date": start_date,
             }
         )
         rk = (row.get("ref_key") or "").strip()
@@ -6331,6 +6523,83 @@ def _site_cart_checkout_create_publicitate_order(request, checkout_lines: list[d
     except Exception:
         logging.getLogger(__name__).exception("publicitate_creative_email_site_cart_checkout")
     return order, pub_ref_keys
+
+
+def _site_cart_checkout_create_promo_a2_orders(
+    request,
+    checkout_lines: list[dict],
+    intent: SiteCartCheckoutIntent,
+) -> tuple[list[str], list[int]]:
+    """
+    Comenzi PromoA2Order PAID pentru liniile KIND_PROMO_A2 din snapshot-ul coșului.
+    Apelat din checkout-ul general (intent deja salvat în DB).
+    """
+    consumed_refs: list[str] = []
+    order_ids: list[int] = []
+    pref = f"SITECART-{intent.pk}"
+    payer_name = ((intent.buyer_full_name or "") or "").strip()[:200]
+    buyer_email = ((intent.buyer_email or "") or "").strip()[:254]
+    if not buyer_email:
+        buyer_email = (request.user.email or "").strip()[:254]
+    pm_snap = ((intent.payment_method or "") or "card_online")[:20]
+
+    promo_rows = [
+        r
+        for r in checkout_lines
+        if (r.get("kind") or "").strip() == SiteCartItem.KIND_PROMO_A2
+    ]
+    for row in promo_rows:
+        ref_key = (row.get("ref_key") or "").strip()
+        if not ref_key.startswith("promo_a2:"):
+            raise ValueError("Linia de promovare A2 nu are referința așteptată în coș.")
+        try:
+            pet_pk = int(ref_key.split(":", 1)[1])
+        except (IndexError, ValueError):
+            raise ValueError("Referința promovării A2 este invalidă.")
+        pet = (
+            AnimalListing.objects.filter(pk=pet_pk).select_related("owner").first()
+        )
+        if not pet or not getattr(pet, "is_published", False):
+            raise ValueError("Anunțul pentru promovarea A2 nu mai este disponibil.")
+        species = (pet.species or "").strip().lower()
+        if species not in ("dog", "cat"):
+            raise ValueError("Promovarea A2 este disponibilă doar pentru câini și pisici.")
+        payment_ref_unique = f"{pref}-promo-{pet.pk}"
+        if PromoA2Order.objects.filter(payment_ref=payment_ref_unique).exists():
+            consumed_refs.append(ref_key)
+            continue
+        order = PromoA2Order.objects.create(
+            pet=pet,
+            payer_user=request.user,
+            payer_email=buyer_email,
+            payer_name_snapshot=payer_name,
+            package=PromoA2Order.PACKAGE_A2_24,
+            quantity=1,
+            unit_price=PROMO_A2_STD_PRICE_LEI,
+            total_price=PROMO_A2_STD_PRICE_LEI,
+            payment_method=pm_snap or "card",
+            schedule="intercalat",
+            slot_code=PromoA2Order.SLOT_A2,
+            start_date=timezone.localdate(),
+            starts_at=None,
+            ends_at=None,
+            status=PromoA2Order.STATUS_PAID,
+            payment_provider="site_cart_checkout",
+            payment_ref=payment_ref_unique[:120],
+        )
+        _promo_a2_activate_and_schedule(order)
+        consumed_refs.append(ref_key)
+        order_ids.append(order.pk)
+        pet_label_po = (pet.name or f"Animal #{pet.pk}").strip()
+        _inbox.create_inbox_notification(
+            request.user,
+            _inbox.KIND_PROMO_A2_PAID,
+            "Plată reușită — promovare anunț",
+            f"Comandă #{order.pk} pentru „{pet_label_po}” (coș checkout).",
+            link_url=f"{reverse('home')}#A2",
+            metadata={"promo_order_id": order.pk, "pet_id": pet.pk},
+        )
+    return consumed_refs, order_ids
 
 
 def _site_cart_line_is_donation(line: dict) -> bool:
@@ -6404,7 +6673,7 @@ def _site_cart_owner_for_line(line: dict) -> dict:
         if pet_id:
             pet = AnimalListing.objects.filter(pk=pet_id).only("owner_id").first()
             if pet and pet.owner_id:
-                owner = User.objects.filter(pk=pet.owner_id).only("username").first()
+                owner = get_user_model().objects.filter(pk=pet.owner_id).only("username").first()
                 return {
                     "owner_user_id": pet.owner_id,
                     "owner_username": ((owner.username if owner else "") or "").strip().lower(),
@@ -6806,6 +7075,52 @@ def i_love_cos_view(request):
     )
 
 
+def _site_cart_intent_line_previews(intent: SiteCartCheckoutIntent, limit: int = 6) -> list[str]:
+    """Scurt preview din snapshot lines_json pentru pagina istoric."""
+    rows = intent.lines_json or []
+    out: list[str] = []
+    for row in rows[:limit] if isinstance(rows, list) else []:
+        kind = (row.get("kind") or "").strip()
+        lbl = SITE_CART_KIND_LABELS.get(kind, kind or "articole")
+        title = (row.get("title") or "").strip().replace("\n", " ")
+        out.append((f"{lbl} — " + title)[:240] if title else lbl)
+    return out
+
+
+@login_required
+def i_love_cos_istoric_view(request):
+    """Istoric achiziții: cereri plată din coș (SiteCartCheckoutIntent) + comenzi Promo A2 pentru utilizator."""
+    user = request.user
+    pm_label = dict(SiteCartCheckoutIntent.PAYMENT_CHOICES)
+
+    intents = SiteCartCheckoutIntent.objects.filter(user=user).order_by("-created_at")[:80]
+    intent_rows = []
+    for intent in intents:
+        intent_rows.append(
+            {
+                "intent": intent,
+                "payment_label": pm_label.get(intent.payment_method, intent.payment_method),
+                "line_previews": _site_cart_intent_line_previews(intent),
+                "confirm_url": f"{reverse('site_cart_checkout_success')}?id={intent.pk}",
+            }
+        )
+
+    promo_orders = (
+        PromoA2Order.objects.filter(payer_user=user)
+        .select_related("pet")
+        .order_by("-created_at")[:80]
+    )
+
+    return render(
+        request,
+        "anunturi/i_love_cos_istoric.html",
+        {
+            "intent_rows": intent_rows,
+            "promo_orders": promo_orders,
+        },
+    )
+
+
 @login_required
 @require_http_methods(["GET", "POST"])
 @csrf_protect
@@ -6874,6 +7189,7 @@ def site_cart_checkout_view(request):
 
         if not form_errors:
             pub_order = None
+            promo_order_ids: list[int] = []
             try:
                 with transaction.atomic():
                     intent = SiteCartCheckoutIntent.objects.create(
@@ -6899,8 +7215,17 @@ def site_cart_checkout_view(request):
                         lines,
                         payment_ref=f"SITECART-{intent.pk}",
                     )
-                    if pub_ref_keys:
-                        SiteCartItem.objects.filter(user=request.user, ref_key__in=pub_ref_keys).delete()
+                    promo_ref_keys, promo_order_ids = _site_cart_checkout_create_promo_a2_orders(
+                        request,
+                        lines,
+                        intent,
+                    )
+                    _all_ref_keys = list(dict.fromkeys((pub_ref_keys or []) + (promo_ref_keys or [])))
+                    if _all_ref_keys:
+                        SiteCartItem.objects.filter(
+                            user=request.user,
+                            ref_key__in=_all_ref_keys,
+                        ).delete()
             except Exception:
                 logging.getLogger(__name__).exception("site_cart_checkout_create")
                 messages.error(request, "Nu am putut salva cererea. Încearcă din nou.")
@@ -6928,6 +7253,13 @@ def site_cart_checkout_view(request):
                 messages.success(
                     request,
                     f"Publicitatea a fost înregistrată în Comenzile mele publicitare (comanda #{pub_order.pk}).",
+                )
+            if promo_order_ids:
+                msgs = ", ".join(f"#{pk}" for pk in promo_order_ids[:8])
+                more = f" (+{len(promo_order_ids) - 8} altele)" if len(promo_order_ids) > 8 else ""
+                messages.success(
+                    request,
+                    f"Promovările A2 au fost activate (comenzile {msgs}{more}).",
                 )
             return redirect(f"{reverse('site_cart_checkout_success')}?id={intent.pk}")
 
@@ -7156,7 +7488,6 @@ def site_cart_toggle_view(request):
             return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
         pet_ok = AnimalListing.objects.filter(
             pk=pet_pk,
-            owner=request.user,
             is_published=True,
             species__in=["dog", "cat"],
         ).exists()
@@ -9087,7 +9418,7 @@ PUBLICITATE_SLOT_MAP = {
         {
             "code": "Burtieră",
             "title": "Home – bandă galbenă (burtieră)",
-            "types": ["text", "link", "video"],
+            "types": ["text", "link"],
             "unit": "luna",
             "price": 150,
         },
@@ -9215,7 +9546,8 @@ def _buyer_note_to_pt_slot_json(buyer_note: str) -> str:
         if isinstance(data, dict):
             img_v = (data.get("img") or "").strip()
             video_v = (data.get("video") or "").strip()
-            if img_v or video_v:
+            assets_v = data.get("assets") if isinstance(data.get("assets"), list) else []
+            if img_v or video_v or assets_v:
                 return json.dumps(data, ensure_ascii=False)
     except json.JSONDecodeError:
         pass
@@ -9277,6 +9609,114 @@ def _apply_publicitate_paid_order(order: PublicitateOrder):
         _publicitate_ensure_line_schedule_and_code(order, line)
         if line.activated_at:
             _apply_publicitate_line_to_site(line, order)
+    transaction.on_commit(lambda oid=order.pk: _publicitate_send_contract_posting_email_if_needed(oid))
+
+
+def _publicitate_send_contract_posting_email_if_needed(order_id: int) -> None:
+    """
+    După plată: trimite cumpărătorului un e-mail text+HTML cu rezumatul postării
+    (comandă, linii, perioade, coduri validare) — util lângă factură / arhivă.
+    Idempotent: `PublicitateOrder.contract_posting_email_sent_at`.
+    Separat de e-mailul „materiale creative” (link formular).
+    """
+    log = logging.getLogger(__name__)
+    try:
+        order = (
+            PublicitateOrder.objects.filter(pk=order_id)
+            .select_related("user")
+            .prefetch_related("lines")
+            .first()
+        )
+    except Exception:
+        log.exception("publicitate_contract_posting_email_load order_id=%s", order_id)
+        return
+    if order is None or order.status != PublicitateOrder.STATUS_PAID:
+        return
+    if order.contract_posting_email_sent_at:
+        return
+    to = (getattr(order.user, "email", None) or "").strip()
+    if not to:
+        log.warning("publicitate_contract_posting_email_no_address order_id=%s", order_id)
+        return
+    from_email = (getattr(settings, "DEFAULT_FROM_EMAIL", None) or "").strip() or None
+    if not from_email:
+        log.warning("publicitate_contract_posting_email_no_from order_id=%s", order_id)
+        return
+
+    def _fmt_dt(dt):
+        if not dt:
+            return "—"
+        try:
+            return timezone.localtime(dt).strftime("%Y-%m-%d %H:%M")
+        except Exception:
+            return str(dt)
+
+    lines = list(order.lines.all())
+    parts: list[str] = [
+        "Bună,",
+        "",
+        "Confirmarea comenzii tale de publicitate EU-Adopt (detalii postare / rezumat lângă factură).",
+        "",
+        f"Comandă #{order.pk}",
+        "Status: plătită",
+        f"Total: {order.total_lei} lei",
+        f"Plătit la: {_fmt_dt(order.paid_at)}",
+        f"Procesator plată: {(order.payment_provider or '').strip() or '—'}",
+        f"Referință plată: {(order.payment_ref or '').strip() or '—'}",
+        "",
+        "Linii comandă:",
+        "",
+    ]
+    for i, line in enumerate(lines, start=1):
+        note = (line.buyer_note or "").strip()
+        if len(note) > 400:
+            note = note[:400] + "…"
+        act = _fmt_dt(line.activated_at) if line.activated_at else "— (încă neactivat pe site)"
+        parts.extend(
+            [
+                f"--- Linia {i} ---",
+                f"  Secțiune: {line.section}",
+                f"  Slot: {line.slot_code}",
+                f"  Titlu (snapshot): {line.title_snapshot}",
+                f"  Unitate: {line.unit_label} × cantitate {line.quantity}",
+                f"  Preț unitar: {line.unit_price_lei} lei | Subtotal: {line.line_total_lei} lei",
+                f"  Perioadă: {_fmt_dt(line.starts_at)} → {_fmt_dt(line.ends_at)}",
+                f"  Cod validare (reactivare casetă): {(line.validation_code or '').strip() or '—'}",
+                f"  Activat la: {act}",
+            ]
+        )
+        if note:
+            parts.append(f"  Notă cumpărător: {note}")
+        parts.append("")
+    parts.extend(
+        [
+            "Pentru încărcarea materialelor (imagini, link) folosește e-mailul separat cu formularul securizat.",
+            "",
+            "— EU-Adopt",
+        ]
+    )
+    body_txt = "\n".join(parts)
+    esc_txt = escape(body_txt)
+    html_body = f"<p style=\"white-space:pre-wrap;font-family:sans-serif\">{esc_txt.replace(chr(10), '<br>')}</p>"
+    subject = email_subject_for_user(
+        order.user.username,
+        "EU-Adopt: publicitate – detalii comandă și postare (sloturi)",
+    )
+    try:
+        send_mail_text_and_html(
+            subject,
+            body_txt,
+            from_email,
+            [to],
+            html_body=html_body,
+            mail_kind="publicitate_contract_posting",
+        )
+    except Exception:
+        log.exception("publicitate_contract_posting_send_mail order_id=%s", order_id)
+        return
+    PublicitateOrder.objects.filter(pk=order_id, contract_posting_email_sent_at__isnull=True).update(
+        contract_posting_email_sent_at=timezone.now()
+    )
 
 
 def _publicitate_duration_td(unit_label: str, quantity: int) -> timezone.timedelta:
@@ -9286,7 +9726,92 @@ def _publicitate_duration_td(unit_label: str, quantity: int) -> timezone.timedel
         return timezone.timedelta(hours=q)
     if "zi" in ul:
         return timezone.timedelta(days=q)
+    if "sapt" in ul or "săpt" in ul:
+        return timezone.timedelta(days=7 * q)
     return timezone.timedelta(days=30 * q)
+
+
+def _publicitate_discount_percent_for_weeks(weeks: int) -> Decimal:
+    w = max(1, int(weeks or 1))
+    if w >= 48:
+        return Decimal("30.0")
+    if w >= 32:
+        return Decimal("20.0")
+    if w >= 16:
+        return Decimal("15.0")
+    if w >= 8:
+        return Decimal("10.0")
+    if w >= 4:
+        return Decimal("7.5")
+    if w >= 2:
+        return Decimal("5.0")
+    return Decimal("0.0")
+
+
+def _publicitate_slot_anchor_weekday(section: str, slot_code: str) -> int | None:
+    first_line = (
+        PublicitateOrderLine.objects.filter(
+            order__status=PublicitateOrder.STATUS_PAID,
+            section=section,
+            slot_code=slot_code,
+            starts_at__isnull=False,
+        )
+        .order_by("starts_at")
+        .values("starts_at")
+        .first()
+    )
+    if not first_line:
+        return None
+    st = first_line.get("starts_at")
+    if not st:
+        return None
+    return timezone.localtime(st).weekday()
+
+
+def _publicitate_align_to_weekday(dt: datetime, target_weekday: int) -> tuple[datetime, bool]:
+    base = timezone.localtime(dt)
+    add_days = (int(target_weekday) - base.weekday()) % 7
+    if add_days == 0:
+        return dt, False
+    aligned_local = (base + timezone.timedelta(days=add_days)).replace(hour=0, minute=0, second=0, microsecond=0)
+    if timezone.is_naive(aligned_local):
+        aligned = timezone.make_aware(aligned_local)
+    else:
+        aligned = aligned_local
+    return aligned, True
+
+
+def _publicitate_first_available_week_aligned_start(
+    section: str,
+    slot_code: str,
+    desired_start: datetime,
+    duration: timezone.timedelta,
+    anchor_weekday: int,
+) -> tuple[datetime, bool]:
+    start = desired_start
+    moved = False
+    for _ in range(180):
+        end = start + duration
+        conflict = (
+            PublicitateOrderLine.objects.filter(
+                order__status=PublicitateOrder.STATUS_PAID,
+                section=section,
+                slot_code=slot_code,
+                starts_at__isnull=False,
+                ends_at__isnull=False,
+                starts_at__lt=end,
+                ends_at__gt=start,
+            )
+            .order_by("ends_at")
+            .first()
+        )
+        if not conflict:
+            return start, moved
+        moved = True
+        nxt, aligned_moved = _publicitate_align_to_weekday(conflict.ends_at, anchor_weekday)
+        moved = moved or aligned_moved
+        start = nxt
+    return start, moved
 
 
 def _publicitate_first_available_start(
@@ -9329,6 +9854,21 @@ def _publicitate_build_validation_code(order: PublicitateOrder, line: Publicitat
     return f"PV-{digest}"
 
 
+def _publicitate_line_period_human(line: PublicitateOrderLine) -> str:
+    """
+    Text scurt pentru perioada rezervată: prima zi – ultima zi inclusiv.
+    `ends_at` e capăt exclusiv (ca la crearea liniilor din coș); ultima zi afișată = ziua dinaintea capătului.
+    """
+    if not (line.starts_at and line.ends_at):
+        return ""
+    st = timezone.localtime(line.starts_at).date()
+    end_cap = timezone.localtime(line.ends_at)
+    last = (end_cap - timezone.timedelta(days=1)).date()
+    if last < st:
+        last = end_cap.date()
+    return f"{st.strftime('%d.%m.%Y')}–{last.strftime('%d.%m.%Y')}"
+
+
 def _publicitate_ensure_line_schedule_and_code(order: PublicitateOrder, line: PublicitateOrderLine) -> None:
     if line.starts_at and line.ends_at and line.validation_code:
         return
@@ -9345,7 +9885,10 @@ def _publicitate_ensure_line_schedule_and_code(order: PublicitateOrder, line: Pu
 
 def _publicitate_harta_context(request, pub_nav: str) -> dict:
     """Context comun pentru harta `/publicitate/` și fluxul complet `/publicitate/cos/` (același șablon, 3 coloane)."""
-    sections = PUBLICITATE_NAV_SECTIONS
+    sections = list(PUBLICITATE_NAV_SECTIONS)
+    # Pentru colaboratorii transport ascundem secțiunea MyPet din harta Publicitate.
+    if _collaborator_tip_partener(request) == "transport":
+        sections = [s for s in sections if s.get("code") != "mypet"]
     valid_codes = {s["code"] for s in sections}
     raw_sect = (request.GET.get("sect") or "").strip().lower()
     if raw_sect in valid_codes:
@@ -9573,11 +10116,19 @@ def _publicitate_parse_cart_lines(lines_in):
             qty = int(qty_raw)
         except (TypeError, ValueError):
             qty = 0
-        if qty < 1 or qty > 12:
-            return None, None, None, JsonResponse({"ok": False, "error": "Perioada trebuie să fie 1–12."}, status=400)
+        is_transport = section == "transport"
+        if is_transport:
+            if qty < 1 or qty > 60:
+                return None, None, None, JsonResponse({"ok": False, "error": "Perioada trebuie să fie 1–60."}, status=400)
+        else:
+            if qty < 1 or qty > 48:
+                return None, None, None, JsonResponse({"ok": False, "error": "Numărul de săptămâni trebuie să fie 1–48."}, status=400)
         unit_label = (raw.get("unit") or cat.get("unit") or "luna").strip()[:32]
-        if unit_label != (cat.get("unit") or ""):
-            unit_label = cat.get("unit") or "luna"
+        if is_transport:
+            if unit_label != (cat.get("unit") or ""):
+                unit_label = cat.get("unit") or "ora"
+        else:
+            unit_label = "saptamana"
         raw_start = (raw.get("start_date") or "").strip()
         desired_start = now
         if raw_start:
@@ -9588,20 +10139,25 @@ def _publicitate_parse_cart_lines(lines_in):
                 desired_start = now
         if desired_start < now:
             desired_start = now
+        selected_weeks: list[date] = []
+        selected_weeks_raw = raw.get("selected_weeks")
+        if not is_transport and isinstance(selected_weeks_raw, list):
+            for ws in selected_weeks_raw:
+                if not isinstance(ws, str):
+                    continue
+                try:
+                    wd = datetime.strptime(ws.strip(), "%Y-%m-%d").date()
+                except Exception:
+                    continue
+                if wd >= timezone.localtime(now).date():
+                    selected_weeks.append(wd)
+            selected_weeks = sorted(set(selected_weeks))
         duration = _publicitate_duration_td(unit_label, qty)
-        starts_at, moved = _publicitate_first_available_start(section, code, desired_start, duration)
-        ends_at = starts_at + duration
-        if moved:
-            adjustments.append(
-                {
-                    "section": section,
-                    "code": code,
-                    "from": desired_start.strftime("%Y-%m-%d"),
-                    "to": starts_at.strftime("%Y-%m-%d"),
-                }
-            )
-        line_total = (catalog_price * qty).quantize(Decimal("0.01"))
-        total += line_total
+        line_subtotal = (catalog_price * qty).quantize(Decimal("0.01"))
+        discount_pct = _publicitate_discount_percent_for_weeks(qty) if not is_transport else Decimal("0.0")
+        line_total = (
+            line_subtotal * (Decimal("100.0") - discount_pct) / Decimal("100.0")
+        ).quantize(Decimal("0.01"))
         note = (raw.get("note") or "").strip()
         if section == "home" and code == "Burtieră":
             if not note:
@@ -9628,21 +10184,238 @@ def _publicitate_parse_cart_lines(lines_in):
                 )
         else:
             note = note[:8000]
-        validated.append(
+        if not is_transport and selected_weeks:
+            if len(selected_weeks) > 48:
+                return None, None, None, JsonResponse({"ok": False, "error": "Puteți selecta maximum 48 săptămâni."}, status=400)
+            anchor_wd_existing = _publicitate_slot_anchor_weekday(section, code)
+            anchor_wd = anchor_wd_existing if anchor_wd_existing is not None else selected_weeks[0].weekday()
+            for wd in selected_weeks:
+                if wd.weekday() != anchor_wd:
+                    return None, None, None, JsonResponse(
+                        {"ok": False, "error": "Blocurile selectate nu respectă ritmul casetei (ziua de start)."},
+                        status=400,
+                    )
+            weekly_spans = []
+            for wd in selected_weeks:
+                st = timezone.make_aware(datetime.combine(wd, datetime.min.time()))
+                en = st + timezone.timedelta(days=7)
+                weekly_spans.append((st, en))
+            for st, en in weekly_spans:
+                overlap = PublicitateOrderLine.objects.filter(
+                    order__status=PublicitateOrder.STATUS_PAID,
+                    section=section,
+                    slot_code=code,
+                    starts_at__lt=en,
+                    ends_at__gt=st,
+                ).exists()
+                if overlap:
+                    return None, None, None, JsonResponse(
+                        {"ok": False, "error": "Unul dintre blocurile săptămânale selectate nu mai este disponibil."},
+                        status=400,
+                    )
+            qty = len(selected_weeks)
+            line_subtotal = (catalog_price * qty).quantize(Decimal("0.01"))
+            discount_pct = _publicitate_discount_percent_for_weeks(qty)
+            line_total = (line_subtotal * (Decimal("100.0") - discount_pct) / Decimal("100.0")).quantize(Decimal("0.01"))
+            base_week_total = (line_total / qty).quantize(Decimal("0.01"))
+            allocated = Decimal("0.00")
+            for idx, (st, en) in enumerate(weekly_spans):
+                if idx == len(weekly_spans) - 1:
+                    week_total = (line_total - allocated).quantize(Decimal("0.01"))
+                else:
+                    week_total = base_week_total
+                allocated += week_total
+                validated.append(
+                    {
+                        "section": section,
+                        "slot_code": code,
+                        "title_snapshot": (cat.get("title") or code)[:220],
+                        "unit_label": unit_label,
+                        "unit_price_lei": catalog_price,
+                        "quantity": 1,
+                        "line_total_lei": week_total,
+                        "buyer_note": note if len(weekly_spans) == 1 else f"{note}\n[Bloc {timezone.localtime(st).strftime('%Y-%m-%d')} → {timezone.localtime((en - timezone.timedelta(days=1))).strftime('%Y-%m-%d')}]".strip(),
+                        "starts_at": st,
+                        "ends_at": en,
+                    }
+                )
+            total += line_total
+        elif not is_transport:
+            anchor_wd = _publicitate_slot_anchor_weekday(section, code)
+            moved = False
+            starts_at = desired_start
+            if anchor_wd is not None:
+                starts_at, moved = _publicitate_align_to_weekday(desired_start, anchor_wd)
+                starts_at, moved2 = _publicitate_first_available_week_aligned_start(
+                    section, code, starts_at, duration, anchor_wd
+                )
+                moved = moved or moved2
+            else:
+                starts_at, moved = _publicitate_first_available_start(section, code, desired_start, duration)
+            ends_at = starts_at + duration
+            if moved:
+                adjustments.append(
+                    {
+                        "section": section,
+                        "code": code,
+                        "from": desired_start.strftime("%Y-%m-%d"),
+                        "to": starts_at.strftime("%Y-%m-%d"),
+                    }
+                )
+            validated.append(
+                {
+                    "section": section,
+                    "slot_code": code,
+                    "title_snapshot": (cat.get("title") or code)[:220],
+                    "unit_label": unit_label,
+                    "unit_price_lei": catalog_price,
+                    "quantity": qty,
+                    "line_total_lei": line_total,
+                    "buyer_note": note,
+                    "starts_at": starts_at,
+                    "ends_at": ends_at,
+                }
+            )
+            total += line_total
+        else:
+            starts_at, moved = _publicitate_first_available_start(section, code, desired_start, duration)
+            ends_at = starts_at + duration
+            if moved:
+                adjustments.append(
+                    {
+                        "section": section,
+                        "code": code,
+                        "from": desired_start.strftime("%Y-%m-%d"),
+                        "to": starts_at.strftime("%Y-%m-%d"),
+                    }
+                )
+            validated.append(
+                {
+                    "section": section,
+                    "slot_code": code,
+                    "title_snapshot": (cat.get("title") or code)[:220],
+                    "unit_label": unit_label,
+                    "unit_price_lei": catalog_price,
+                    "quantity": qty,
+                    "line_total_lei": line_total,
+                    "buyer_note": note,
+                    "starts_at": starts_at,
+                    "ends_at": ends_at,
+                }
+            )
+            total += line_total
+    return validated, total.quantize(Decimal("0.01")), adjustments, None
+
+
+@login_required
+@require_http_methods(["GET"])
+def publicitate_slot_availability_view(request):
+    if not _user_can_use_publicitate(request):
+        return JsonResponse({"ok": False, "error": "Acces nepermis."}, status=403)
+    section = (request.GET.get("section") or "").strip().lower()
+    code = (request.GET.get("code") or "").strip()
+    cat = _publicitate_catalog_row(section, code)
+    if not cat:
+        return JsonResponse({"ok": False, "error": "Slot invalid."}, status=400)
+    try:
+        qty = int((request.GET.get("qty") or "1").strip())
+    except (TypeError, ValueError):
+        qty = 1
+    is_transport = section == "transport"
+    if is_transport:
+        qty = max(1, min(60, qty))
+    else:
+        qty = max(1, min(48, qty))
+    unit_label = (cat.get("unit") or "luna").strip()[:32]
+    if not is_transport:
+        unit_label = "saptamana"
+    raw_start = (request.GET.get("start_date") or "").strip()
+    now = timezone.now()
+    desired_start = now
+    if raw_start:
+        try:
+            d = datetime.strptime(raw_start, "%Y-%m-%d").date()
+            desired_start = timezone.make_aware(datetime.combine(d, datetime.min.time()))
+        except Exception:
+            desired_start = now
+    if desired_start < now:
+        desired_start = now
+    duration = _publicitate_duration_td(unit_label, qty)
+    if not is_transport:
+        anchor_wd = _publicitate_slot_anchor_weekday(section, code)
+        if anchor_wd is not None:
+            desired_start, _ = _publicitate_align_to_weekday(desired_start, anchor_wd)
+            first_free, _moved = _publicitate_first_available_week_aligned_start(
+                section, code, desired_start, duration, anchor_wd
+            )
+        else:
+            first_free, _moved = _publicitate_first_available_start(section, code, desired_start, duration)
+    else:
+        first_free, _moved = _publicitate_first_available_start(section, code, desired_start, duration)
+    horizon_end = now + timezone.timedelta(days=370)
+    busy_qs = (
+        PublicitateOrderLine.objects.filter(
+            order__status=PublicitateOrder.STATUS_PAID,
+            section=section,
+            slot_code=code,
+            starts_at__isnull=False,
+            ends_at__isnull=False,
+            starts_at__lt=horizon_end,
+            ends_at__gt=now,
+        )
+        .order_by("starts_at")
+        .values("starts_at", "ends_at")
+    )
+    busy = []
+    for row in busy_qs[:120]:
+        st = row.get("starts_at")
+        en = row.get("ends_at")
+        if not st or not en:
+            continue
+        busy.append(
             {
-                "section": section,
-                "slot_code": code,
-                "title_snapshot": (cat.get("title") or code)[:220],
-                "unit_label": unit_label,
-                "unit_price_lei": catalog_price,
-                "quantity": qty,
-                "line_total_lei": line_total,
-                "buyer_note": note,
-                "starts_at": starts_at,
-                "ends_at": ends_at,
+                "start": timezone.localtime(st).strftime("%Y-%m-%d"),
+                "end": timezone.localtime(en).strftime("%Y-%m-%d"),
             }
         )
-    return validated, total.quantize(Decimal("0.01")), adjustments, None
+    free_blocks = []
+    if not is_transport:
+        block_duration = timezone.timedelta(days=7)
+        anchor_wd = _publicitate_slot_anchor_weekday(section, code)
+        if anchor_wd is None:
+            anchor_wd = timezone.localtime(desired_start).weekday()
+        start_cursor, _ = _publicitate_align_to_weekday(desired_start, anchor_wd)
+        for _ in range(84):
+            st = start_cursor
+            en = st + block_duration
+            overlap = PublicitateOrderLine.objects.filter(
+                order__status=PublicitateOrder.STATUS_PAID,
+                section=section,
+                slot_code=code,
+                starts_at__lt=en,
+                ends_at__gt=st,
+            ).exists()
+            if not overlap:
+                free_blocks.append(
+                    {
+                        "start": timezone.localtime(st).strftime("%Y-%m-%d"),
+                        "end": timezone.localtime((en - timezone.timedelta(days=1))).strftime("%Y-%m-%d"),
+                    }
+                )
+            start_cursor = start_cursor + block_duration
+    return JsonResponse(
+        {
+            "ok": True,
+            "section": section,
+            "code": code,
+            "unit": unit_label,
+            "qty": qty,
+            "first_available_start": timezone.localtime(first_free).strftime("%Y-%m-%d"),
+            "busy": busy,
+            "free_blocks": free_blocks,
+            "max_days": 60 if is_transport else 48,
+        }
+    )
 
 
 @login_required
@@ -9721,10 +10494,37 @@ def publicitate_transfer_to_site_cart_view(request):
                 unit = row["unit_label"]
                 lt = row["line_total_lei"]
                 snap = row["title_snapshot"]
-                title = f"{sec.upper()} · {code} · cant. {qty} {unit} · {lt} lei — {snap}"
+                starts_at = row.get("starts_at")
+                ends_at = row.get("ends_at")
+                period_txt = ""
+                if starts_at and ends_at:
+                    try:
+                        st_txt = timezone.localtime(starts_at).strftime("%Y-%m-%d")
+                        en_txt = timezone.localtime(ends_at - timezone.timedelta(days=1)).strftime("%Y-%m-%d")
+                        period_txt = f"{st_txt} → {en_txt}"
+                    except Exception:
+                        period_txt = ""
+                if sec != "transport" and period_txt:
+                    title = f"{sec.upper()} · {code} · perioada {period_txt} · {lt} lei — {snap}"
+                else:
+                    title = f"{sec.upper()} · {code} · cant. {qty} {unit} · {lt} lei — {snap}"
                 if len(title) > 220:
                     title = title[:217] + "…"
-                du = f"{base_path}?sect={quote(sec)}"
+                buyer_note = (row.get("buyer_note") or "").strip()[:8000]
+                raw_start = starts_at
+                start_iso = ""
+                try:
+                    if raw_start:
+                        start_iso = timezone.localtime(raw_start).date().isoformat()
+                except Exception:
+                    start_iso = ""
+                params = [f"sect={quote(sec)}"]
+                # Persistăm metadatele minime necesare pentru reconstrucția comenzii la checkout general.
+                if buyer_note:
+                    params.append(f"n={quote(buyer_note)}")
+                if start_iso:
+                    params.append(f"sd={quote(start_iso)}")
+                du = f"{base_path}?{'&'.join(params)}"
                 if len(du) > 500:
                     du = base_path[:500]
                 SiteCartItem.objects.create(
@@ -9799,6 +10599,9 @@ def publicitate_checkout_demo_confirm_view(request):
             if order.status == PublicitateOrder.STATUS_PAID:
                 request.session.pop(PUBLICITATE_SESSION_CHECKOUT_ORDER, None)
                 request.session[PUBLICITATE_SESSION_LAST_PAID] = order.pk
+                transaction.on_commit(
+                    lambda oid=order.pk: _publicitate_send_contract_posting_email_if_needed(oid)
+                )
                 try:
                     access = _ensure_publicitate_creative_for_order(order)
                     _send_publicitate_creative_email(order, access)
@@ -10037,20 +10840,42 @@ def _publicitate_unpack_notes_meta(raw_notes: str) -> tuple[str, str, str]:
     return note, price, discount
 
 
-def _publicitate_pack_notes_meta(note: str, price: str, discount: str) -> str:
+def _publicitate_unpack_notes_schedule_assets(raw_notes: str) -> list[dict]:
+    raw = (raw_notes or "").strip()
+    if not raw:
+        return []
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return []
+    if not isinstance(data, dict):
+        return []
+    assets = data.get("assets")
+    if not isinstance(assets, list):
+        return []
+    out = []
+    for a in assets[:4]:
+        if isinstance(a, dict):
+            out.append(a)
+    return out
+
+
+def _publicitate_pack_notes_meta(note: str, price: str, discount: str, assets: list[dict] | None = None) -> str:
     note_v = (note or "").strip()[:8000]
     price_v = (price or "").strip()[:24]
     discount_v = (discount or "").strip()[:8]
-    if not price_v and not discount_v:
+    assets_v = assets or []
+    if not price_v and not discount_v and not assets_v:
         return note_v
-    return json.dumps(
-        {"note": note_v, "price": price_v, "discount": discount_v},
-        ensure_ascii=False,
-    )
+    payload = {"note": note_v, "price": price_v, "discount": discount_v}
+    if assets_v:
+        payload["assets"] = assets_v[:4]
+    return json.dumps(payload, ensure_ascii=False)
 
 
-def _bundle_to_buyer_note(request, bundle: PublicitateLineCreative) -> str:
+def _bundle_to_buyer_note(request, bundle: PublicitateLineCreative, line: PublicitateOrderLine | None = None) -> str:
     notes, price, discount = _publicitate_unpack_notes_meta(bundle.extra_notes or "")
+    schedule_assets = _publicitate_unpack_notes_schedule_assets(bundle.extra_notes or "")
     link = (bundle.external_link or "").strip()
     img_url = ""
     video_url = ""
@@ -10064,6 +10889,17 @@ def _bundle_to_buyer_note(request, bundle: PublicitateLineCreative) -> str:
             video_url = request.build_absolute_uri(bundle.video.url)
         except Exception:
             video_url = bundle.video.url or ""
+    if schedule_assets:
+        return json.dumps(
+            {
+                "assets": schedule_assets[:4],
+                "link": link,
+                "alt": notes[:240],
+                "price": price,
+                "discount": discount,
+            },
+            ensure_ascii=False,
+        )
     if img_url or video_url:
         return json.dumps(
             {
@@ -10094,6 +10930,13 @@ def _line_creative_has_post_data(request, line_pk: int) -> bool:
         return True
     if (request.POST.get(f"discount_{line_pk}") or "").strip():
         return True
+    if (request.POST.get(f"sched_enabled_{line_pk}") or "").strip():
+        return True
+    for idx in (1, 2, 3, 4):
+        if request.FILES.get(f"sch_image_{line_pk}_{idx}") or request.FILES.get(f"sch_video_{line_pk}_{idx}"):
+            return True
+        if (request.POST.get(f"sch_link_{line_pk}_{idx}") or "").strip():
+            return True
     return False
 
 
@@ -10150,11 +10993,16 @@ def _publicitate_creative_form_response(request, access: PublicitateOrderCreativ
     order = access.order
     lines = list(order.lines.select_related("creative_bundle").order_by("id"))
     for _line in lines:
+        if order.status == PublicitateOrder.STATUS_PAID:
+            _publicitate_ensure_line_schedule_and_code(order, _line)
         _note, _price, _discount = _publicitate_unpack_notes_meta((_line.creative_bundle.extra_notes or ""))
+        _assets = _publicitate_unpack_notes_schedule_assets((_line.creative_bundle.extra_notes or ""))
         _line.creative_price = _price
         _line.creative_discount = _discount
         _line.creative_price_input = re.sub(r"\s*lei\s*$", "", _price, flags=re.IGNORECASE).strip()
         _line.creative_discount_input = re.sub(r"\s*%\s*$", "", _discount).strip()
+        _line.creative_sched_enabled = bool(_assets)
+        _line.pub_period_human = _publicitate_line_period_human(_line)
     max_b = _pub_creative_max_upload_bytes()
     review_h = _pub_creative_review_hours()
 
@@ -10238,6 +11086,107 @@ def _publicitate_creative_form_response(request, access: PublicitateOrderCreativ
                         except DjangoValidationError:
                             errors.append(f"{line.slot_code}: link invalid (folosiți https://…).")
                             continue
+                    use_schedule = (
+                        not is_burtiera
+                        and int(line.quantity or 0) >= 7
+                        and (request.POST.get(f"sched_enabled_{pk}") or "").strip() == "1"
+                    )
+                    schedule_assets: list[dict] = []
+                    if use_schedule:
+                        base_start = timezone.localtime(line.starts_at).date() if line.starts_at else timezone.localdate()
+                        windows: list[tuple[int, int]] = []
+                        for idx in (1, 2, 3, 4):
+                            sup = request.FILES.get(f"sch_image_{pk}_{idx}")
+                            svp = request.FILES.get(f"sch_video_{pk}_{idx}")
+                            slink = (request.POST.get(f"sch_link_{pk}_{idx}") or "").strip()[:500]
+                            sprice_raw = (request.POST.get(f"sch_price_{pk}_{idx}") or "").strip()
+                            sdiscount_raw = (request.POST.get(f"sch_discount_{pk}_{idx}") or "").strip()
+                            sday_start_raw = (request.POST.get(f"sch_day_start_{pk}_{idx}") or "").strip()
+                            sday_end_raw = (request.POST.get(f"sch_day_end_{pk}_{idx}") or "").strip()
+                            if not (sup or svp or slink or sprice_raw or sdiscount_raw or sday_start_raw or sday_end_raw):
+                                continue
+                            if sup and svp:
+                                errors.append(f"{line.slot_code}: material programat #{idx} are atât imagine, cât și video.")
+                                continue
+                            if sup and sup.size > max_b:
+                                errors.append(f"{line.slot_code}: material programat #{idx} depășește limita de fișier.")
+                                continue
+                            if svp and svp.size > max_b:
+                                errors.append(f"{line.slot_code}: video programat #{idx} depășește limita de fișier.")
+                                continue
+                            if svp:
+                                sct = (getattr(svp, "content_type", "") or "").lower()
+                                if not sct.startswith("video/"):
+                                    errors.append(f"{line.slot_code}: material programat #{idx} are video invalid.")
+                                    continue
+                            if slink:
+                                try:
+                                    URLValidator()(slink)
+                                except DjangoValidationError:
+                                    errors.append(f"{line.slot_code}: link invalid la materialul programat #{idx}.")
+                                    continue
+                            try:
+                                sday_start = int(sday_start_raw or "1")
+                            except ValueError:
+                                sday_start = 1
+                            try:
+                                sday_end = int(sday_end_raw or str(line.quantity))
+                            except ValueError:
+                                sday_end = int(line.quantity)
+                            sday_start = max(1, min(int(line.quantity), sday_start))
+                            sday_end = max(1, min(int(line.quantity), sday_end))
+                            if sday_end < sday_start:
+                                sday_start, sday_end = sday_end, sday_start
+                            overlap = False
+                            for w0, w1 in windows:
+                                if not (sday_end < w0 or sday_start > w1):
+                                    errors.append(f"{line.slot_code}: intervalele materialelor programate se suprapun.")
+                                    overlap = True
+                                    break
+                            if not overlap:
+                                windows.append((sday_start, sday_end))
+                            if overlap:
+                                continue
+                            simg_url = ""
+                            svideo_url = ""
+                            if sup:
+                                ext = os.path.splitext(os.path.basename(sup.name or ""))[1][:10]
+                                media_name = default_storage.save(
+                                    f"pub_creative/scheduled/{timezone.now():%Y/%m}/{uuid.uuid4().hex}{ext}",
+                                    sup,
+                                )
+                                simg_url = default_storage.url(media_name)
+                            if svp:
+                                ext = os.path.splitext(os.path.basename(svp.name or ""))[1][:10]
+                                media_name = default_storage.save(
+                                    f"pub_creative/scheduled/{timezone.now():%Y/%m}/{uuid.uuid4().hex}{ext}",
+                                    svp,
+                                )
+                                svideo_url = default_storage.url(media_name)
+                            if not simg_url and not svideo_url:
+                                errors.append(f"{line.slot_code}: materialul programat #{idx} trebuie să aibă imagine sau video.")
+                                continue
+                            if sprice_raw and re.match(r"^\d+(?:[.,]\d{1,2})?$", sprice_raw):
+                                sprice_raw = f"{sprice_raw} lei"
+                            if sdiscount_raw and re.match(r"^\d{1,3}$", sdiscount_raw):
+                                sdiscount_raw = f"{sdiscount_raw}%"
+                            st_day = base_start + timezone.timedelta(days=sday_start - 1)
+                            en_day = base_start + timezone.timedelta(days=sday_end - 1)
+                            schedule_assets.append(
+                                {
+                                    "img": simg_url,
+                                    "video": svideo_url,
+                                    "link": slink,
+                                    "alt": f"{line.slot_code} #{idx}",
+                                    "price": sprice_raw[:24],
+                                    "discount": sdiscount_raw[:8],
+                                    "start": st_day.isoformat(),
+                                    "end": en_day.isoformat(),
+                                }
+                            )
+                        if not schedule_assets:
+                            errors.append(f"{line.slot_code}: activați programarea doar dacă încărcați materiale programate.")
+                            continue
                     if up:
                         if bundle.video:
                             bundle.video.delete(save=False)
@@ -10249,8 +11198,8 @@ def _publicitate_creative_form_response(request, access: PublicitateOrderCreativ
                             bundle.image = None
                         bundle.video.save(vp.name, vp, save=False)
                     bundle.external_link = link
-                    bundle.extra_notes = _publicitate_pack_notes_meta(notes, price, discount)
-                    buyer = _bundle_to_buyer_note(request, bundle)
+                    bundle.extra_notes = _publicitate_pack_notes_meta(notes, price, discount, schedule_assets if use_schedule else None)
+                    buyer = _bundle_to_buyer_note(request, bundle, line=line)
                     if not (buyer or "").strip():
                         errors.append(f"{line.slot_code}: lipsește conținut util.")
                         continue

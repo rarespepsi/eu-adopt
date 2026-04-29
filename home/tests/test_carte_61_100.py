@@ -151,10 +151,12 @@ class Carte61_80Tests(TestCase):
             },
         )
         self.assertEqual(r2.status_code, 302)
-        r3 = c.get(reverse("promo_a2_checkout_demo", args=[pet.pk]))
-        self.assertEqual(r3.status_code, 200)
-        r4 = c.get(reverse("promo_a2_checkout_demo_success", args=[pet.pk]))
-        self.assertEqual(r4.status_code, 200)
+        self.assertEqual(r2.url, reverse("i_love_cos"))
+        item = SiteCartItem.objects.filter(
+            user=owner, ref_key=f"promo_a2:{pet.pk}"
+        ).first()
+        self.assertIsNotNone(item)
+        self.assertEqual(item.kind, SiteCartItem.KIND_PROMO_A2)
 
     def test_68_mypet_observatii_post_json(self):
         owner = _pf_user()
@@ -782,6 +784,29 @@ class Carte81_100Tests(TestCase):
         self.assertIsNotNone(intent)
         self.assertEqual(intent.buyer_full_name, "Ion Test")
         self.assertGreaterEqual(intent.total_lei, 0)
+
+    def test_108f_site_cart_checkout_get_with_promo_a2_line_200(self):
+        """GET /i-love/cos/plata/ cu linie promo A2: _site_cart_owner_for_line trebuie să ruleze fără NameError."""
+        owner = _pf_user("cos108f")
+        pet = _published_pet(owner)
+        c = Client()
+        c.login(username=owner.username, password="Test61_PF_pass!")
+        SiteCartItem.objects.create(
+            user=owner,
+            ref_key=f"promo_a2:{pet.pk}",
+            kind=SiteCartItem.KIND_PROMO_A2,
+            title="Promovare A2 · RexTest — 10 lei (24 apariții × 5 min)",
+            detail_url=reverse("promo_a2_order", args=[pet.pk]),
+        )
+        r = c.get(reverse("site_cart_checkout"))
+        self.assertEqual(r.status_code, 200)
+
+    def test_108g_i_love_cos_istoric_logged_in_200(self):
+        user = _pf_user("cos108g")
+        c = Client()
+        c.login(username=user.username, password="Test61_PF_pass!")
+        r = c.get(reverse("i_love_cos_istoric"))
+        self.assertEqual(r.status_code, 200)
 
     def test_109_114_admin_analysis_staff(self):
         staff = User.objects.create_user(

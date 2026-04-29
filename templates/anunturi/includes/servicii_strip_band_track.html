@@ -6,7 +6,7 @@
 		<span class="sw-strip-cell-eu-msg">{{ cell.eu_text }}</span>
 	</span>
 	{% else %}
-	<span class="sw-strip-item sw-strip-item--{{ strip_variant }} sw-strip-cell--pub" data-slot="{{ cell.code }}">
+	<span class="sw-strip-item sw-strip-item--{{ strip_variant }} sw-strip-cell--pub{% if cell.creative %}{% if cell.creative.img or cell.creative.video %} sw-strip-cell--has-creative{% endif %}{% endif %}" data-slot="{{ cell.code }}">
 		<span class="sw-strip-cell-label">{{ cell.label }}</span>
 		{% if cell.creative %}
 		{% if cell.creative.img or cell.creative.video %}

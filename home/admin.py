@@ -13,6 +13,7 @@ from .models import (
     CollaboratorServiceOffer,
     CollaboratorOfferClaim,
     PromoA2Order,
+    PromoA2SlotPlan,
     ReclamaSlotNote,
     PublicitateOrder,
     PublicitateOrderLine,
@@ -105,6 +106,20 @@ class CollaboratorOfferClaimAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
 
 
+class PromoA2SlotPlanInline(admin.TabularInline):
+    model = PromoA2SlotPlan
+    extra = 0
+    readonly_fields = (
+        "sequence",
+        "cell_index",
+        "window_start",
+        "window_end",
+        "logged_at",
+        "created_at",
+    )
+    can_delete = False
+
+
 @admin.register(PromoA2Order)
 class PromoA2OrderAdmin(admin.ModelAdmin):
     list_display = (
@@ -115,15 +130,18 @@ class PromoA2OrderAdmin(admin.ModelAdmin):
         "quantity",
         "total_price",
         "status",
+        "activation_at",
         "start_date",
         "starts_at",
         "ends_at",
+        "fulfillment_report_sent_at",
         "summary_sent_at",
         "created_at",
     )
     list_filter = ("status", "package", "payment_provider")
     search_fields = ("payer_email", "payer_name_snapshot", "payment_ref", "pet__name")
     raw_id_fields = ("pet", "payer_user")
+    inlines = (PromoA2SlotPlanInline,)
 
 
 @admin.register(SiteCartCheckoutIntent)
@@ -197,12 +215,13 @@ class PublicitateOrderAdmin(admin.ModelAdmin):
         "payment_provider",
         "payment_ref",
         "paid_at",
+        "contract_posting_email_sent_at",
         "created_at",
     )
     list_filter = ("status", "payment_provider")
     search_fields = ("user__username", "user__email", "payment_ref")
     raw_id_fields = ("user",)
-    readonly_fields = ("created_at", "updated_at", "paid_at")
+    readonly_fields = ("created_at", "updated_at", "paid_at", "contract_posting_email_sent_at")
     inlines = [PublicitateOrderLineInline]
 
 

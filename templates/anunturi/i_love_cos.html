@@ -5,7 +5,7 @@
 {% block body_class %}page-ilove page-ilove--cart{% endblock %}
 
 {% block extra_css_after %}
-<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=20" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=21" type="text/css" media="screen" />
 {% endblock %}
 
 {% block content %}
@@ -26,6 +26,9 @@
 			<header class="ilove-wire__head">
 				<h1>🛒 Coș cumpărături</h1>
 				<p class="ilove-wire__head-lead">Articole din Servicii, Shop, Magazin foto sau Publicitate (mutate în coșul site).</p>
+				<p class="ilove-cos-head-actions">
+					<a href="{% url 'i_love_cos_istoric' %}" class="ilove-cos-history-btn">Istoric achiziții</a>
+				</p>
 			</header>
 
 			<div class="ilove-main-caseta" aria-label="Coș cumpărături">

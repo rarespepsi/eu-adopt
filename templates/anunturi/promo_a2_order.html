@@ -183,71 +183,26 @@
 					{% endif %}
 				</div>
 				<div class="promo-a2-fields">
-					<div class="promo-a2-fields-row">
-						<div class="promo-a2-field">
-							<label for="id_package">Ofertă</label>
-							<select name="package" id="id_package">
-								<option value="6h" {% if package == "6h" %}selected{% endif %}>6 apariții / 6 ore</option>
-								<option value="12h" {% if package == "12h" %}selected{% endif %}>12 apariții / 12 ore</option>
-							</select>
-						</div>
-						<div class="promo-a2-field">
-							<label for="id_quantity">Număr oferte</label>
-							<input type="number" id="id_quantity" name="quantity" min="1" max="30" step="1" value="{{ quantity }}" required />
-						</div>
-					</div>
 					<div class="promo-a2-field">
-						<label for="id_price_info">Preț ofertă</label>
-						<input type="text" id="id_price_info" value="" readonly />
+						<label for="id_price_info">Serviciu inclus</label>
+						<input type="text" id="id_price_info" value="{{ promo_a2_imp }} apariții în grila A2 (Acasă), câte {{ promo_a2_minutes_each }} minute fiecare · {{ unit_price }} lei" readonly />
 						<p class="promo-a2-field-help">
-							Promovarea asigură apariția anunțului în pagina Acasă, în caseta centrală A2. Afișările sunt distribuite intercalat, în intervale de câte 1 oră, pe durata a 24 de ore calculate de la momentul achiziției promovării. În intervalele nealocate promovării, caseta A2 afișează anunțuri organice din platformă.
+							După activarea plății, anunțul intră în programul de rotație pentru grila centrală A2 (12 casete): câte o apariție per casetă, în două valuri consecutive.
+							Dacă platforma e aglomerată, livrarea întregului pachet poate depăși 24 h, fără să pierzi apariții — vei primi pe email raport cu data/ora și numărul casetei pentru fiecare apariție.
 						</p>
-					</div>
-					<div class="promo-a2-field">
-						<label>Metodă plată</label>
-						<select id="id_payment_method" disabled>
-							<option selected>Card</option>
-						</select>
-					</div>
-					<div class="promo-a2-field">
-						<label for="id_start_date">Data de start</label>
-						<input type="date" id="id_start_date" name="start_date" value="{{ start_date }}" min="{{ today_iso }}" required />
 					</div>
 				</div>
 			</div>
-			<p class="promo-a2-note">Preț unitar: <strong>{{ unit_price }} lei</strong> · Număr pachete: <strong>{{ quantity }}</strong> · Total: <strong>{{ total_price }} lei</strong>. Acesta este un ecran v1 (demo) pentru fluxul de comandă.</p>
+			<p class="promo-a2-note">Total: <strong>{{ total_price }} lei</strong>. Metoda și plata se stabilesc la finalizarea comenzii din coș.</p>
 			<div class="promo-a2-actions">
-				<button type="submit" class="promo-a2-btn">Plătește</button>
+				<button type="submit" class="promo-a2-btn">Adaugă în coș</button>
 				<a href="{{ promo_flow_exit_url }}" class="promo-a2-btn promo-a2-btn--ghost">{{ promo_flow_exit_label }}</a>
 			</div>
 		</form>
 	</div>
 </section>
 <script>
-	(function initPromoA2PriceInfo() {
-		var packageEl = document.getElementById("id_package");
-		var quantityEl = document.getElementById("id_quantity");
-		var priceInfoEl = document.getElementById("id_price_info");
-		if (!packageEl || !quantityEl || !priceInfoEl) return;
-
-		function computeUnitPrice(pkg) {
-			return pkg === "12h" ? 15 : 10;
-		}
-
-		function refreshPriceInfo() {
-			var pkg = packageEl.value || "6h";
-			var qty = parseInt(quantityEl.value || "1", 10);
-			if (!Number.isFinite(qty) || qty < 1) qty = 1;
-			if (qty > 30) qty = 30;
-			var unit = computeUnitPrice(pkg);
-			var total = unit * qty;
-			priceInfoEl.value = unit + " lei/ofertă × " + qty + " = " + total + " lei";
-		}
-
-		packageEl.addEventListener("change", refreshPriceInfo);
-		quantityEl.addEventListener("input", refreshPriceInfo);
-		refreshPriceInfo();
-	})();
+	(function noopPromoA2Statics() {})();
 	(function autoHidePromoA2Note() {
 		var noteEl = document.getElementById("promoA2SimpleNote");
 		if (!noteEl) return;

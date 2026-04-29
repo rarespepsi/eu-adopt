@@ -25,15 +25,53 @@
 				<div class="pub-row"><span>Tip:</span> <strong id="pubDetailTypes">-</strong></div>
 				<div class="pub-row"><span>Unitate:</span> <strong id="pubDetailUnit">-</strong></div>
 				<div class="pub-row"><span>Preț unitar:</span> <strong id="pubDetailPrice">-</strong></div>
-				<label for="pubQty">Perioadă:</label>
-				<input id="pubQty" type="number" min="1" max="12" value="1" />
-				<label for="pubStartDate">Data start:</label>
-				<input id="pubStartDate" type="date" />
-				<label for="pubNote">Notă / creative:</label>
-				<textarea id="pubNote" rows="4" placeholder="PT: JSON {&quot;img&quot;:&quot;…&quot;,&quot;link&quot;:&quot;…&quot;} sau un singur URL https… · Burtieră: textul benzii"></textarea>
-				<p id="pubNoteHint" class="pub-note-hint" style="margin:0;font-size:0.72rem;color:#6d4c41;line-height:1.35;">Același conținut se aplică pe <strong>desktop și mobil</strong> (PT). După plată demo se salvează automat pe site pentru PT și burtieră.</p>
+				<div class="pub-row"><span>Preț perioadă:</span> <strong id="pubDetailPeriodPrice">-</strong></div>
+				<div class="pub-row"><span>Discount aplicat:</span> <strong id="pubDetailDiscount">-</strong></div>
+				<div class="pub-row"><span>Preț final:</span> <strong id="pubDetailFinalPrice">-</strong></div>
+				<label for="pubQty">Pachete (săptămâni):</label>
+				<input id="pubQty" type="number" min="1" max="48" value="1" />
+				<div class="pub-qty-presets" aria-label="Preset perioadă">
+					<button type="button" class="pub-qty-chip" data-days="1">1</button>
+					<button type="button" class="pub-qty-chip" data-days="2">2</button>
+					<button type="button" class="pub-qty-chip" data-days="4">4</button>
+					<button type="button" class="pub-qty-chip" data-days="8">8</button>
+					<button type="button" class="pub-qty-chip" data-days="16">16</button>
+					<button type="button" class="pub-qty-chip" data-days="32">32</button>
+					<button type="button" class="pub-qty-chip" data-days="48">48</button>
+				</div>
+				<label for="pubStartDate">Perioada publicitate:</label>
+				<div class="pub-start-row">
+					<input id="pubStartDate" type="hidden" />
+					<button type="button" id="pubOpenWeekPicker" class="pub-cal-icon-btn" title="Selectează blocuri săptămânale">📅</button>
+				</div>
+				<div id="pubWeekSummary" class="pub-week-summary" hidden></div>
+				<button type="button" id="pubWeekModifyBtn" class="pub-qty-chip" hidden>Modifică perioada</button>
+				<div id="pubAvailabilityInfo" class="pub-availability-info" aria-live="polite"></div>
+				<div id="pubNoteWrap" hidden>
+					<label for="pubNote">Notă / creative:</label>
+					<textarea id="pubNote" rows="4" placeholder="Burtieră: textul benzii sau link"></textarea>
+					<p id="pubNoteHint" class="pub-note-hint" style="margin:0;font-size:0.72rem;color:#6d4c41;line-height:1.35;">Burtieră: completarea este obligatorie (max. 100 caractere).</p>
+				</div>
 				<button id="pubAddBtn" type="button" class="pub-add-btn">Adaugă în coș</button>
 			</form>
+			<div id="pubWeekModal" class="pub-week-modal" hidden>
+				<div class="pub-week-modal__card">
+					<div class="pub-week-modal__head">
+						<button type="button" id="pubWeekPrev" class="pub-cal-nav">‹</button>
+						<strong id="pubWeekHeadTitle">Selectare perioade săptămânale</strong>
+						<div style="display:flex;gap:0.3rem;justify-content:flex-end;">
+							<button type="button" id="pubWeekNext" class="pub-cal-nav">›</button>
+							<button type="button" id="pubWeekCloseBtn" class="pub-cal-nav" title="Închide">×</button>
+						</div>
+					</div>
+					<p style="margin:0 0 0.45rem;font-size:0.72rem;color:#546e7a;">Bifează blocurile de 7 zile dorite, apoi apasă „Acceptă selecția”.</p>
+					<div id="pubWeekMonths" class="pub-week-months"></div>
+					<div class="pub-week-modal__foot">
+						<button type="button" id="pubWeekCancelBtn" class="pub-qty-chip">Anulează</button>
+						<button type="button" id="pubWeekAcceptBtn" class="pub-add-btn">Acceptă selecția</button>
+					</div>
+				</div>
+			</div>
 		</aside>
 		<main class="pub-c2">
 			<h3 class="pub-c2-heading">Hartă · {{ pub_selected_section|upper }}</h3>
@@ -47,7 +85,7 @@
 				<div class="pub-c2-below-map">
 					<p class="pub-map-hint">
 						<strong>Schema HOME</strong> — pozițiile corespund paginii principale. Apasă pe <strong>A5</strong>, <strong>A6</strong> sau <strong>Burtieră</strong> pentru detalii și coș.
-						Casetele <strong>A1</strong> și <strong>A3</strong> sunt <strong>închiriabile la cerere</strong> (nu se comandă direct din această pagină). Grila <strong>A2</strong> este pentru promovarea anunțurilor de adopție (flux separat).
+						Caseta <strong>A3</strong> este <strong>închiriabilă la cerere</strong> (nu se comandă direct din această pagină). Grila <strong>A2</strong> este pentru promovarea anunțurilor de adopție (flux separat).
 					</p>
 				</div>
 				{% elif pub_selected_section == 'pt' %}
@@ -440,7 +478,6 @@
 		0% { transform: translateX(0); }
 		100% { transform: translateX(-50%); }
 	}
-	body.page-publicitate-harta .reclama-home-wire-a1 .reclama-slot-name::after,
 	body.page-publicitate-harta .reclama-home-wire-a3 .reclama-slot-name::after {
 		content: " · la cerere";
 		color: #1565c0;
@@ -1268,6 +1305,81 @@
 	.pub-add-btn, .pub-pay-btn {
 		border: 1px solid #1565c0; background: #1565c0; color: #fff; border-radius: 7px; font-weight: 800; padding: 0.42rem 0.55rem;
 	}
+	.pub-qty-presets {
+		display: flex;
+		flex-wrap: nowrap;
+		gap: 0.28rem;
+		margin: 0.28rem 0 0.35rem;
+		overflow-x: auto;
+		overflow-y: hidden;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: thin;
+		padding-bottom: 0.08rem;
+	}
+	.pub-qty-chip {
+		flex: 0 0 auto;
+		border: 1px solid #d7ccc8;
+		background: #fff;
+		color: #5d4037;
+		border-radius: 999px;
+		padding: 0.16rem 0.52rem;
+		font-size: 0.72rem;
+		font-weight: 700;
+		line-height: 1.1;
+		cursor: pointer;
+		white-space: nowrap;
+	}
+	.pub-qty-chip:hover { border-color: #8d6e63; }
+	.pub-availability-info {
+		margin: 0.34rem 0 0.45rem;
+		padding: 0.4rem 0.46rem;
+		border: 1px solid #e0e0e0;
+		border-radius: 8px;
+		background: #fafafa;
+		font-size: 0.74rem;
+		line-height: 1.35;
+		color: #37474f;
+	}
+	.pub-availability-info strong { color: #0d47a1; }
+	.pub-start-row { display: grid; grid-template-columns: 1fr auto; gap: 0.3rem; align-items: center; }
+	.pub-cal-icon-btn {
+		width: 2.15rem;
+		height: 2.15rem;
+		border: 1px solid #1565c0;
+		border-radius: 8px;
+		background: linear-gradient(180deg,#e3f2fd,#bbdefb);
+		color: #0d47a1;
+		font-size: 1.08rem;
+		cursor: pointer;
+		box-shadow: 0 1px 4px rgba(13,71,161,0.2);
+	}
+	.pub-week-summary { font-size: 0.73rem; color: #455a64; margin-top: 0.15rem; }
+	.pub-week-modal {
+		position: fixed; inset: 0; background: rgba(0,0,0,0.46); z-index: 9999;
+		display: flex; align-items: center; justify-content: center; padding: 0.7rem;
+	}
+	.pub-week-modal[hidden] { display: none !important; }
+	.pub-week-modal__card {
+		width: min(980px, 96vw); max-height: 84vh; overflow: auto;
+		background: #fff; border-radius: 12px; border: 1px solid #cfd8dc; padding: 0.6rem;
+	}
+	.pub-week-modal__head {
+		display: grid; grid-template-columns: auto 1fr auto; align-items: center;
+		gap: 0.5rem; margin-bottom: 0.45rem;
+	}
+	.pub-week-months { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 0.5rem; }
+	.pub-week-month {
+		border: 1px solid #eceff1; border-radius: 8px; padding: 0.35rem; background: #fafafa;
+	}
+	.pub-week-month h4 { margin: 0 0 0.28rem; font-size: 0.75rem; color: #1565c0; }
+	.pub-week-row {
+		display: grid; grid-template-columns: auto 1fr; gap: 0.3rem; align-items: center;
+		border: 1px solid #d7dee2; border-radius: 7px; padding: 0.22rem 0.28rem; margin-bottom: 0.2rem; background: #fff;
+	}
+	.pub-week-row.is-selected { border-color: #1565c0; background: #e3f2fd; }
+	.pub-week-row.is-occupied { opacity: 0.55; background: #fbe9e7; }
+	.pub-week-row small { font-size: 0.66rem; color: #546e7a; }
+	.pub-week-modal__foot { margin-top: 0.42rem; display: flex; justify-content: flex-end; gap: 0.4rem; }
 	button.pub-pay-btn.pub-pay-btn--site-cart {
 		display: inline-flex;
 		align-items: center;
@@ -1500,6 +1612,13 @@
 		}
 		.pub-c2-map-half { flex: 0 0 68.3vh; max-height: 68.3vh; }
 		.pub-slot-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+		.pub-qty-presets { gap: 0.22rem; margin: 0.24rem 0 0.3rem; }
+		.pub-qty-chip { padding: 0.1rem 0.4rem; font-size: 0.66rem; font-weight: 600; }
+	}
+	@media (max-width: 560px) {
+		.pub-qty-presets { gap: 0.18rem; }
+		.pub-qty-chip { padding: 0.08rem 0.34rem; font-size: 0.62rem; }
+		.pub-week-months { grid-template-columns: 1fr; }
 	}
 </style>
 {% endblock %}
@@ -1520,9 +1639,23 @@ document.addEventListener("DOMContentLoaded", function () {
 	const cartTotal = document.getElementById("pubCartTotal");
 	const qtyEl = document.getElementById("pubQty");
 	const startDateEl = document.getElementById("pubStartDate");
+	const openWeekPickerEl = document.getElementById("pubOpenWeekPicker");
+	const weekSummaryEl = document.getElementById("pubWeekSummary");
+	const weekModifyBtnEl = document.getElementById("pubWeekModifyBtn");
+	const weekModalEl = document.getElementById("pubWeekModal");
+	const weekPrevEl = document.getElementById("pubWeekPrev");
+	const weekNextEl = document.getElementById("pubWeekNext");
+	const weekCloseBtnEl = document.getElementById("pubWeekCloseBtn");
+	const weekCancelBtnEl = document.getElementById("pubWeekCancelBtn");
+	const weekHeadTitleEl = document.getElementById("pubWeekHeadTitle");
+	const weekMonthsEl = document.getElementById("pubWeekMonths");
+	const weekAcceptBtnEl = document.getElementById("pubWeekAcceptBtn");
+	const noteWrapEl = document.getElementById("pubNoteWrap");
 	const noteEl = document.getElementById("pubNote");
 	const noteHintEl = document.getElementById("pubNoteHint");
 	const addBtn = document.getElementById("pubAddBtn");
+	const availabilityEl = document.getElementById("pubAvailabilityInfo");
+	const availabilityUrl = "{% url 'publicitate_slot_availability' %}";
 	var PUB_BURT_MAX = 100;
 	var PUB_NOTE_HINT_DEFAULT =
 		"Același conținut se aplică pe <strong>desktop și mobil</strong> (PT). După plată demo se salvează automat pe site pentru PT și burtieră.";
@@ -1563,6 +1696,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	let selected = null;
 	let cart = loadPubCartFromStorage();
+	const PUB_MAX_WEEKS = 48;
+	let availableWeekBlocks = [];
+	let selectedWeekStarts = [];
+	let pendingWeekStarts = [];
+	let weekMonthOffset = 0;
 
 	function catalogByCode(codes) {
 		const o = {};
@@ -1570,16 +1708,145 @@ document.addEventListener("DOMContentLoaded", function () {
 		return o;
 	}
 
+	function calcDiscountPercent(weeks, isTransport) {
+		if (isTransport) return 0;
+		var w = Math.max(1, parseInt(weeks || 1, 10) || 1);
+		if (w >= 48) return 30;
+		if (w >= 32) return 20;
+		if (w >= 16) return 15;
+		if (w >= 8) return 10;
+		if (w >= 4) return 7.5;
+		if (w >= 2) return 5;
+		return 0;
+	}
+
+	function monthLabel(ym) {
+		var parts = String(ym || "").split("-");
+		var y = parseInt(parts[0] || "0", 10) || 0;
+		var m = parseInt(parts[1] || "1", 10) || 1;
+		var names = ["Ian", "Feb", "Mar", "Apr", "Mai", "Iun", "Iul", "Aug", "Sep", "Oct", "Noi", "Dec"];
+		return (names[m - 1] || "") + " " + y;
+	}
+
+	function renderWeekSummary() {
+		if (!weekSummaryEl) return;
+		if (!selectedWeekStarts.length) {
+			weekSummaryEl.hidden = true;
+			weekSummaryEl.textContent = "";
+			if (weekModifyBtnEl) weekModifyBtnEl.hidden = true;
+			return;
+		}
+		var first = selectedWeekStarts[0] || "";
+		var last = selectedWeekStarts[selectedWeekStarts.length - 1] || "";
+		weekSummaryEl.hidden = false;
+		weekSummaryEl.textContent = selectedWeekStarts.length + " blocuri selectate (" + first + " .. " + last + ")";
+		if (weekModifyBtnEl) weekModifyBtnEl.hidden = false;
+	}
+
+	function openWeekModal() {
+		if (!weekModalEl) return;
+		weekModalEl.hidden = false;
+	}
+	function closeWeekModal() {
+		if (!weekModalEl) return;
+		weekModalEl.hidden = true;
+	}
+
+	function renderWeekModal() {
+		if (!weekMonthsEl) return;
+		weekMonthsEl.innerHTML = "";
+		var months = [];
+		availableWeekBlocks.forEach(function (b) {
+			var ym = String((b.start || "")).slice(0, 7);
+			if (ym && months.indexOf(ym) === -1) months.push(ym);
+		});
+		months.sort();
+		var visibleMonths = months.slice(weekMonthOffset, weekMonthOffset + 3);
+		if (weekHeadTitleEl) weekHeadTitleEl.textContent = visibleMonths.length ? ("Calendar blocuri · " + visibleMonths.map(monthLabel).join(" | ")) : "Calendar blocuri";
+		if (!visibleMonths.length) {
+			weekMonthsEl.innerHTML = "<div class=\"pub-week-month\"><small>Nu există blocuri libere în fereastra curentă.</small></div>";
+			return;
+		}
+		visibleMonths.forEach(function (ym) {
+			var col = document.createElement("div");
+			col.className = "pub-week-month";
+			var title = document.createElement("h4");
+			title.textContent = monthLabel(ym);
+			col.appendChild(title);
+			availableWeekBlocks.filter(function (b) { return String(b.start || "").slice(0, 7) === ym; }).forEach(function (b) {
+				var row = document.createElement("label");
+				row.className = "pub-week-row";
+				var cb = document.createElement("input");
+				cb.type = "checkbox";
+				cb.checked = pendingWeekStarts.indexOf(b.start) !== -1;
+				if (cb.checked) row.classList.add("is-selected");
+				cb.addEventListener("change", function () {
+					var idx = pendingWeekStarts.indexOf(b.start);
+					if (cb.checked) {
+						if (idx === -1) pendingWeekStarts.push(b.start);
+					} else if (idx !== -1) {
+						pendingWeekStarts.splice(idx, 1);
+					}
+					if (pendingWeekStarts.length > PUB_MAX_WEEKS) {
+						pendingWeekStarts = pendingWeekStarts.slice(0, PUB_MAX_WEEKS);
+					}
+					renderWeekModal();
+				});
+				var txt = document.createElement("span");
+				txt.innerHTML = "<strong>" + b.start + " → " + b.end + "</strong><br><small>bloc 7 zile</small>";
+				row.appendChild(cb);
+				row.appendChild(txt);
+				col.appendChild(row);
+			});
+			weekMonthsEl.appendChild(col);
+		});
+	}
+
+	function updateDetailPricing() {
+		var periodEl = document.getElementById("pubDetailPeriodPrice");
+		var discountEl = document.getElementById("pubDetailDiscount");
+		var finalEl = document.getElementById("pubDetailFinalPrice");
+		if (!periodEl || !discountEl || !finalEl) return;
+		if (!selected) {
+			periodEl.textContent = "-";
+			discountEl.textContent = "-";
+			finalEl.textContent = "-";
+			return;
+		}
+		var isTransport = section === "transport";
+		var cap = isTransport ? 60 : PUB_MAX_WEEKS;
+		var qty = Math.max(1, Math.min(cap, parseInt((qtyEl && qtyEl.value) || "1", 10) || 1));
+		var unitPrice = Number(selected.price || 0);
+		var subtotal = Math.round((unitPrice * qty) * 100) / 100;
+		var discount = calcDiscountPercent(qty, isTransport);
+		var total = Math.round((subtotal * (100 - discount) / 100) * 100) / 100;
+		var unitLabel = isTransport ? "ore" : "săpt.";
+		periodEl.textContent = qty + " " + unitLabel + " × " + unitPrice + " lei = " + subtotal + " lei";
+		if (discount > 0) {
+			var discountValue = Math.round((subtotal - total) * 100) / 100;
+			discountEl.textContent = discount + "% (−" + discountValue + " lei)";
+			finalEl.textContent = total + " lei";
+		} else {
+			discountEl.textContent = "0% (−0 lei)";
+			finalEl.textContent = total + " lei";
+		}
+	}
+
 	function showInfo(html) {
 		selected = null;
 		empty.hidden = true;
 		form.hidden = true;
 		if (addBtn) addBtn.disabled = true;
+		if (noteWrapEl) noteWrapEl.hidden = true;
 		if (noteEl) {
 			noteEl.removeAttribute("maxLength");
 			noteEl.placeholder = PUB_NOTE_PLACEHOLDER_DEFAULT;
 		}
 		if (noteHintEl) noteHintEl.innerHTML = PUB_NOTE_HINT_DEFAULT;
+		selectedWeekStarts = [];
+		pendingWeekStarts = [];
+		availableWeekBlocks = [];
+		renderWeekSummary();
 		infoEl.hidden = false;
 		infoEl.innerHTML = html;
 	}
@@ -1596,11 +1863,18 @@ document.addEventListener("DOMContentLoaded", function () {
 		document.getElementById("pubDetailCode").textContent = slot.code;
 		document.getElementById("pubDetailTitle").textContent = slot.title;
 		document.getElementById("pubDetailTypes").textContent = (slot.types || []).join(", ");
-		document.getElementById("pubDetailUnit").textContent = slot.unit;
+		document.getElementById("pubDetailUnit").textContent = section === "transport" ? slot.unit : "săptămână";
 		document.getElementById("pubDetailPrice").textContent = slot.price + " lei";
 		selected = slot;
+		selectedWeekStarts = [];
+		pendingWeekStarts = [];
+		availableWeekBlocks = [];
+		renderWeekSummary();
+		updateDetailPricing();
+		loadAvailability();
 		if (noteEl) {
 			var isBurt = section === "home" && slot.code === "Burtieră";
+			if (noteWrapEl) noteWrapEl.hidden = !isBurt;
 			if (isBurt) {
 				noteEl.maxLength = PUB_BURT_MAX;
 				noteEl.placeholder =
@@ -1613,8 +1887,7 @@ document.addEventListener("DOMContentLoaded", function () {
 				}
 			} else {
 				noteEl.removeAttribute("maxLength");
-				noteEl.placeholder = PUB_NOTE_PLACEHOLDER_DEFAULT;
-				if (noteHintEl) noteHintEl.innerHTML = PUB_NOTE_HINT_DEFAULT;
+				noteEl.value = "";
 			}
 		}
 	}
@@ -1624,12 +1897,123 @@ document.addEventListener("DOMContentLoaded", function () {
 		empty.hidden = false;
 		form.hidden = true;
 		if (addBtn) addBtn.disabled = true;
+		if (noteWrapEl) noteWrapEl.hidden = true;
 		if (noteEl) {
 			noteEl.removeAttribute("maxLength");
 			noteEl.placeholder = PUB_NOTE_PLACEHOLDER_DEFAULT;
 		}
 		if (noteHintEl) noteHintEl.innerHTML = PUB_NOTE_HINT_DEFAULT;
 		selected = null;
+		selectedWeekStarts = [];
+		pendingWeekStarts = [];
+		availableWeekBlocks = [];
+		renderWeekSummary();
+		updateDetailPricing();
+		if (availabilityEl) availabilityEl.textContent = "";
+	}
+
+	async function loadAvailability() {
+		if (!selected || !availabilityEl) return;
+		var cap = section === "transport" ? 60 : PUB_MAX_WEEKS;
+		var qty = Math.max(1, Math.min(cap, parseInt((qtyEl && qtyEl.value) || "1", 10) || 1));
+		var sd = (startDateEl && startDateEl.value) ? startDateEl.value : todayIso();
+		var qs = new URLSearchParams({
+			section: section,
+			code: selected.code,
+			qty: String(qty),
+			start_date: sd
+		});
+		availabilityEl.innerHTML = "Verific disponibilitatea…";
+		try {
+			var res = await fetch(availabilityUrl + "?" + qs.toString(), { headers: { "X-Requested-With": "XMLHttpRequest" } });
+			var data = await res.json();
+			if (!res.ok || !data.ok) {
+				availabilityEl.innerHTML = "Nu am putut încărca disponibilitatea acum.";
+				return;
+			}
+			var busy = Array.isArray(data.busy) ? data.busy : [];
+			availableWeekBlocks = Array.isArray(data.free_blocks) ? data.free_blocks.slice(0, 144) : [];
+			var busyHtml = "fără rezervări active în fereastra următoare.";
+			if (busy.length) {
+				var top = busy.slice(0, 4).map(function (b) {
+					return b.start + " → " + b.end;
+				});
+				busyHtml = top.join(" | ");
+				if (busy.length > 4) busyHtml += " | …";
+			}
+			if (section === "transport") {
+				availabilityEl.innerHTML =
+					"<strong>Primul start liber:</strong> " + (data.first_available_start || sd) +
+					"<br><strong>Perioade rezervate:</strong> " + busyHtml;
+			} else {
+				availabilityEl.innerHTML =
+					"<strong>Primul start liber (ritm casetă, 7 zile):</strong> " + (data.first_available_start || sd) +
+					"<br><strong>Perioade rezervate (blocuri):</strong> " + busyHtml;
+			}
+		} catch (e) {
+			availabilityEl.innerHTML = "Nu am putut încărca disponibilitatea acum.";
+		}
+	}
+
+	if (openWeekPickerEl) {
+		openWeekPickerEl.addEventListener("click", async function () {
+			if (section === "transport") {
+				window.alert("Selecția pe blocuri săptămânale este disponibilă doar pentru Publicitate (non-transport).");
+				return;
+			}
+			pendingWeekStarts = selectedWeekStarts.slice();
+			weekMonthOffset = 0;
+			openWeekModal();
+			if (weekMonthsEl) {
+				weekMonthsEl.innerHTML = "<div class=\"pub-week-month\"><small>Se încarcă blocurile disponibile…</small></div>";
+			}
+			try {
+				await loadAvailability();
+			} catch (e) {}
+			renderWeekModal();
+		});
+	}
+	if (weekModifyBtnEl) {
+		weekModifyBtnEl.addEventListener("click", function () {
+			pendingWeekStarts = selectedWeekStarts.slice();
+			weekMonthOffset = 0;
+			renderWeekModal();
+			openWeekModal();
+		});
+	}
+	if (weekPrevEl) {
+		weekPrevEl.addEventListener("click", function () {
+			weekMonthOffset = Math.max(0, weekMonthOffset - 3);
+			renderWeekModal();
+		});
+	}
+	if (weekNextEl) {
+		weekNextEl.addEventListener("click", function () {
+			weekMonthOffset += 3;
+			renderWeekModal();
+		});
+	}
+	if (weekAcceptBtnEl) {
+		weekAcceptBtnEl.addEventListener("click", function () {
+			selectedWeekStarts = pendingWeekStarts.slice().sort();
+			if (selectedWeekStarts.length && qtyEl) qtyEl.value = String(selectedWeekStarts.length);
+			if (selectedWeekStarts.length && startDateEl) startDateEl.value = selectedWeekStarts[0];
+			renderWeekSummary();
+			updateDetailPricing();
+			closeWeekModal();
+			loadAvailability();
+		});
+	}
+	if (weekCloseBtnEl) {
+		weekCloseBtnEl.addEventListener("click", closeWeekModal);
+	}
+	if (weekCancelBtnEl) {
+		weekCancelBtnEl.addEventListener("click", closeWeekModal);
+	}
+	if (weekModalEl) {
+		weekModalEl.addEventListener("click", function (ev) {
+			if (ev.target === weekModalEl) closeWeekModal();
+		});
 	}
 
 	function renderSlots() {
@@ -1678,7 +2062,13 @@ document.addEventListener("DOMContentLoaded", function () {
 		homeRoot.querySelectorAll("[data-slot]").forEach(function (n) {
 			var slotCode = (n.getAttribute("data-slot") || "").trim();
 			if (!slotCode) return;
-			if (slotCode === "A1" || slotCode === "A3") {
+			if (slotCode === "A1") {
+				n.classList.add("is-disabled-history");
+				n.setAttribute("title", "A1");
+				setCursivePreview(n);
+				return;
+			}
+			if (slotCode === "A3") {
 				n.classList.add("is-disabled-history");
 				n.setAttribute("title", "Slot închiriabil la cerere");
 				setCursivePreview(n);
@@ -1876,11 +2266,15 @@ document.addEventListener("DOMContentLoaded", function () {
 			var text = document.createElement("span");
 			text.className = "pub-cart-item-text";
 			var den = (item.title && String(item.title).trim()) ? String(item.title).trim() : item.code;
-			text.textContent =
+			var baseText =
 				"Cant. " + item.qty + " " + item.unit
 				+ " · Casetă " + (item.section || "?").toUpperCase() + " / " + item.code + " — " + den
 				+ " · Start " + (item.start_date || "-")
 				+ " · Valoare " + item.total + " lei";
+			if (Array.isArray(item.selected_weeks) && item.selected_weeks.length) {
+				baseText += " · Blocuri: " + item.selected_weeks.length;
+			}
+			text.textContent = baseText;
 			var rm = document.createElement("button");
 			rm.type = "button";
 			rm.className = "pub-cart-remove";
@@ -1924,7 +2318,8 @@ document.addEventListener("DOMContentLoaded", function () {
 					unit_price: it.unit_price,
 					qty: it.qty,
 					note: it.note || "",
-					start_date: it.start_date || ""
+					start_date: it.start_date || "",
+					selected_weeks: Array.isArray(it.selected_weeks) ? it.selected_weeks : []
 				};
 			});
 			transferBtn.disabled = true;
@@ -1992,24 +2387,56 @@ document.addEventListener("DOMContentLoaded", function () {
 				}
 			}
 			var qtyRaw = parseInt(qtyEl.value || "1", 10);
-			var qty = Number.isFinite(qtyRaw) ? Math.max(1, Math.min(12, qtyRaw)) : 1;
+			var qty = Number.isFinite(qtyRaw) ? Math.max(1, Math.min(48, qtyRaw)) : 1;
 			var startDate = (startDateEl && startDateEl.value) ? String(startDateEl.value) : todayIso();
-			var total = qty * Number(selected.price || 0);
+			if (section !== "transport") {
+				if (!selectedWeekStarts.length) {
+					window.alert("Selectați blocurile săptămânale din iconița calendar.");
+					return;
+				}
+				qty = selectedWeekStarts.length;
+				startDate = selectedWeekStarts[0];
+			}
+			var subtotal = qty * Number(selected.price || 0);
+			var discount = calcDiscountPercent(qty, section === "transport");
+			var total = Math.round((subtotal * (100 - discount)) * 100) / 100;
 			cart.push({
 				section: section,
 				code: selected.code,
 				title: selected.title || "",
-				unit: selected.unit,
+				unit: section === "transport" ? selected.unit : "săptămână",
 				unit_price: Number(selected.price || 0),
 				qty: qty,
 				start_date: startDate,
+				selected_weeks: section === "transport" ? [] : selectedWeekStarts.slice(),
 				note: noteTrim,
 				total: total
 			});
 			renderCart();
 			noteEl.value = "";
+			selectedWeekStarts = [];
+			pendingWeekStarts = [];
+			renderWeekSummary();
 		});
 	}
+
+	document.querySelectorAll(".pub-qty-chip[data-days]").forEach(function (chip) {
+		chip.addEventListener("click", function () {
+			var days = parseInt(chip.getAttribute("data-days") || "1", 10) || 1;
+			var target = Math.max(1, Math.min(48, days));
+			if (qtyEl) qtyEl.value = String(target);
+			updateDetailPricing();
+			loadAvailability();
+		});
+	});
+	if (qtyEl) qtyEl.addEventListener("change", function () {
+		selectedWeekStarts = [];
+		pendingWeekStarts = [];
+		renderWeekSummary();
+		updateDetailPricing();
+		loadAvailability();
+	});
+	if (startDateEl) startDateEl.addEventListener("change", loadAvailability);
 
 	if (section === "home") {
 		initHomeWire();

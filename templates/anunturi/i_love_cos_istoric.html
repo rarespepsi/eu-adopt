@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Istoric achiziții – EU-ADOPT{% endblock %}
+{% block body_class %}page-ilove page-ilove--istoric{% endblock %}
+
+{% block extra_css_after %}
+<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=21" type="text/css" media="screen" />
+{% endblock %}
+
+{% block content %}
+<main id="ILW" class="ilove-page" aria-label="Istoric achiziții">
+	<div class="ilove-wire">
+		<aside class="ilove-wire__col ilove-wire__col--left" aria-hidden="true">
+			<div class="ilove-case ilove-case--a5">
+				<span class="ilove-case__ref">IL-I.L1</span>
+				<span class="ilove-case__mark">Istoric</span>
+			</div>
+		</aside>
+
+		<div class="ilove-wire__main">
+			<header class="ilove-wire__head">
+				<h1>📋 Istoric achiziții</h1>
+				<p class="ilove-wire__head-lead">Cereri de plată trimise din coșul site și comenzi Promo A2 asociate contului tău.</p>
+				<p class="ilove-history-back">
+					<a href="{% url 'i_love_cos' %}" class="ilove-history-back-link">← Înapoi la Coș cumpărături</a>
+				</p>
+			</header>
+
+			<div class="ilove-main-caseta" aria-label="Istoric achiziții">
+				<section class="ilove-history-section" aria-labelledby="hist-intents">
+					<h2 id="hist-intents" class="ilove-history-h2">Cereri din coș (plată unificată)</h2>
+					{% if intent_rows %}
+					<div class="ilove-history-table-wrap">
+						<table class="ilove-history-table">
+							<thead>
+								<tr>
+									<th>#</th>
+									<th>Data</th>
+									<th>Total estimat</th>
+									<th>Mod plată</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for row in intent_rows %}
+								<tr>
+									<td data-label="#">{{ row.intent.pk }}</td>
+									<td data-label="Data">{{ row.intent.created_at|date:"d.m.Y H:i" }}</td>
+									<td data-label="Total">{{ row.intent.total_lei }} lei</td>
+									<td data-label="Plată">{{ row.payment_label }}</td>
+									<td class="ilove-history-actions">
+										<a href="{{ row.confirm_url }}" class="ilove-history-mini">Confirmare</a>
+									</td>
+								</tr>
+								{% if row.line_previews %}
+								<tr class="ilove-history-sub">
+									<td colspan="5">
+										<ul class="ilove-history-preview-ul">
+											{% for line in row.line_previews %}<li>{{ line }}</li>{% endfor %}
+										</ul>
+									</td>
+								</tr>
+								{% endif %}
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+					{% else %}
+					<p class="ilove-history-empty">Nu există încă cereri înregistrate din coș pentru acest cont.</p>
+					{% endif %}
+				</section>
+
+				<section class="ilove-history-section" aria-labelledby="hist-promo">
+					<h2 id="hist-promo" class="ilove-history-h2">Promovare A2 (animal)</h2>
+					{% if promo_orders %}
+					<div class="ilove-history-table-wrap">
+						<table class="ilove-history-table">
+							<thead>
+								<tr>
+									<th>#</th>
+									<th>Data</th>
+									<th>Anunț</th>
+									<th>Total</th>
+									<th>Status</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for o in promo_orders %}
+								<tr>
+									<td data-label="#">#{{ o.pk }}</td>
+									<td data-label="Data">{{ o.created_at|date:"d.m.Y H:i" }}</td>
+									<td data-label="Anunț">
+										{% if o.pet %}
+										<a href="{% url 'pets_single' o.pet.pk %}">{{ o.pet.name|default:"Anunț" }}</a>
+										{% else %}—{% endif %}
+									</td>
+									<td data-label="Total">{{ o.total_price }} lei</td>
+									<td data-label="Status">{% if o.status == "paid" %}Plătit{% elif o.status == "checkout_pending" %}Checkout în așteptare{% elif o.status == "draft" %}Draft{% elif o.status == "failed" %}Eșuat{% elif o.status == "cancelled" %}Anulat{% else %}{{ o.status }}{% endif %}</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+					<p class="ilove-history-hint">Grila A2 pe Acasă: <a href="{% url 'home' %}#A2">deschide Acasă – zona A2</a>.</p>
+					{% else %}
+					<p class="ilove-history-empty">Nu există comenzi Promo A2 înregistrate pentru acest cont.</p>
+					{% endif %}
+				</section>
+			</div>
+		</div>
+
+		<aside class="ilove-wire__col ilove-wire__col--right" aria-hidden="true">
+			<div class="ilove-case ilove-case--a6">
+				<span class="ilove-case__ref">IL-I.R1</span>
+				<span class="ilove-case__mark">Rezumat</span>
+			</div>
+		</aside>
+	</div>
+</main>
+{% endblock %}

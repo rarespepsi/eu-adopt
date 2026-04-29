@@ -16,10 +16,10 @@
 
 		<div class="euadopt-pay-box">
 			<div>Pet: <strong>{{ pet.name|default:"—" }}</strong> ({{ pet.species|default:"—" }})</div>
-			<div>Ofertă: <strong>{{ package }}</strong> · Număr oferte: <strong>{{ quantity }}</strong></div>
-			<div>Program: <strong>{{ schedule }}</strong> · Data start: <strong>{{ start_date }}</strong></div>
-			<div>Metodă: <strong>{{ payment_method }}</strong></div>
-			<div>Preț unitar: <strong>{{ unit_price }} lei</strong> · Total de plată: <strong>{{ total_price }} lei</strong></div>
+			<div>Serviciu: <strong>Promovare A2</strong> — 24 apariții în grila Acasă (casete 1–12), câte ~5 min/apariție.</div>
+			<div>Referință comandă: <strong>#{{ promo_order_id }}</strong></div>
+			<div>Program: <strong>{{ schedule }}</strong>{% if start_date %} · Înregistrare comandă: <strong>{{ start_date }}</strong>{% endif %}</div>
+			<div>Total de plată (demo): <strong>{{ total_price }} lei</strong></div>
 		</div>
 
 		<div class="euadopt-pay-actions">
