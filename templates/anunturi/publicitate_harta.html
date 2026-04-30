@@ -10,6 +10,11 @@
 		{% for s in pub_sections %}
 			<a href="{% if pub_nav == 'cos' %}{% url 'publicitate_cos' %}?sect={{ s.code }}{% else %}{% url 'publicitate_harta' %}?sect={{ s.code }}{% endif %}" class="pub-tab{% if pub_selected_section == s.code %} is-active{% endif %}"{% if s.code == 'i_love' %} title="Hartă tarife pentru casetele publicitare pe pagina I Love din site — nu este pagina cu inimioare (/i-love/)"{% elif s.code == 'cos_pub' %} title="Hartă CC1–CC4 pentru fluxul Coș publicitate — separată de Spații I Love (IL.*)"{% endif %}>{{ s.label }}</a>
 		{% endfor %}
+		{% if pub_nav == 'harta' %}
+		<a href="{% url 'publicitate_cos' %}?sect={{ pub_selected_section }}" class="pub-tab pub-tab--pub-flow" title="Deschide fluxul coș și comandă">Coș publicitate</a>
+		{% elif pub_nav == 'cos' %}
+		<a href="{% url 'publicitate_harta' %}?sect={{ pub_selected_section }}" class="pub-tab pub-tab--pub-flow" title="Înapoi la hartă tarife">Hartă tarife</a>
+		{% endif %}
 		<a href="{{ pub_my_orders_url }}" class="pub-tab pub-tab--my-orders" title="Vezi comenzile publicitare plătite și formularul de materiale">
 			Comenzile mele publicitare{% if pub_my_orders_pending_materials %} <span class="pub-my-orders-badge">{{ pub_my_orders_pending_materials }}</span>{% elif pub_my_orders_total %} <span class="pub-my-orders-badge pub-my-orders-badge--muted">{{ pub_my_orders_total }}</span>{% endif %}
 		</a>

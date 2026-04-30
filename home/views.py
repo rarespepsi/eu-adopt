@@ -13,6 +13,7 @@ import secrets
 import uuid
 from html import escape
 from datetime import date, datetime
+import calendar
 from copy import deepcopy
 from itertools import cycle
 from django.shortcuts import render, redirect, get_object_or_404
@@ -318,6 +319,8 @@ def _promo_a2_compute_window(start_date, package: str, quantity: int):
 PROMO_A2_STD_PRICE_LEI = 10
 PROMO_A2_STD_IMPRESSIONS = 24
 PROMO_A2_DWELL_MINUTES = 5
+PROMO_A2_SLOT_CAPACITY = 12
+PROMO_A2_SLOT_CODES = [f"A2.{i}" for i in range(1, 13)]
 
 
 def _promo_a2_listing_to_home_dict(al: AnimalListing, quote: str | None) -> dict:
@@ -413,13 +416,8 @@ def _promo_a2_send_fulfillment_report_email(order: PromoA2Order) -> bool:
 
 def _promo_a2_activate_and_schedule(order: PromoA2Order) -> None:
     """
-    După plată: setează activation_at și creează 24 sloturi în două valuri consecutive.
-
-    - `cursor` (începutul primului val pe toate cele 12 casete): între `[now]` și poziția
-      din coadă (`max(now, tail)`), dar **nu mai târziu de `now + dwell`**
-      (**dwell** = PROMO_A2_DWELL_MINUTES, în prezent 5). Astfel prima fereastră activă pentru
-      acest client începe **cel târziu la now + 5 minute** dacă nu e deja înainte în coadă.
-    - La suprapuneri pe casetă, overlay-ul ia planul mai nou (`order_id` mai mare).
+    După plată: setează activation_at și creează 24 apariții pentru slotul alocat comenzii.
+    Model: 5 minute în fiecare oră, timp de 24h.
     """
     if order.package != PromoA2Order.PACKAGE_A2_24:
         return
@@ -429,30 +427,66 @@ def _promo_a2_activate_and_schedule(order: PromoA2Order) -> None:
         return
     now_ts = timezone.now()
     dwell = timezone.timedelta(minutes=PROMO_A2_DWELL_MINUTES)
-    tail = PromoA2SlotPlan.objects.aggregate(mx=Max("window_end")).get("mx")
-    base = max(now_ts, tail) if tail is not None else now_ts
-    deadline = now_ts + dwell
-    cursor = min(base, deadline)
+    slot = (order.slot_code or "").strip()
+    if slot not in PROMO_A2_SLOT_CODES:
+        slot = PROMO_A2_SLOT_CODES[0]
+    round_date = order.start_date or timezone.localdate()
+    slot_rank = (
+        PromoA2Order.objects.filter(
+            status=PromoA2Order.STATUS_PAID,
+            package=PromoA2Order.PACKAGE_A2_24,
+            slot_code=slot,
+            start_date=round_date,
+        )
+        .exclude(pk=order.pk)
+        .count()
+    )
+    slot_rank = max(0, min(PROMO_A2_SLOT_CAPACITY - 1, int(slot_rank)))
+    order_start = now_ts.replace(minute=0, second=0, microsecond=0)
+    order_end = order_start + timezone.timedelta(hours=24)
     order.activation_at = now_ts
-    order.starts_at = now_ts
-    order.ends_at = now_ts + timezone.timedelta(hours=24)
+    order.starts_at = order_start
+    order.ends_at = order_end
     order.save(update_fields=["activation_at", "starts_at", "ends_at", "updated_at"])
     rows = []
-    for batch in (0, 1):
-        for cell_idx in range(12):
-            seq = batch * 12 + cell_idx + 1
-            ws = cursor + batch * dwell
-            we = cursor + (batch + 1) * dwell
-            rows.append(
-                PromoA2SlotPlan(
-                    order_id=order.pk,
-                    sequence=seq,
-                    cell_index=cell_idx + 1,
-                    window_start=ws,
-                    window_end=we,
-                )
+    slot_index = int(slot.split(".", 1)[1]) if "." in slot else 1
+    for hour_idx in range(PROMO_A2_STD_IMPRESSIONS):
+        seq = hour_idx + 1
+        ws = order_start + timezone.timedelta(hours=hour_idx, minutes=slot_rank * PROMO_A2_DWELL_MINUTES)
+        we = ws + dwell
+        rows.append(
+            PromoA2SlotPlan(
+                order_id=order.pk,
+                sequence=seq,
+                cell_index=slot_index,
+                window_start=ws,
+                window_end=we,
             )
+        )
     PromoA2SlotPlan.objects.bulk_create(rows)
+
+
+def _promo_a2_pick_available_slot(round_date: date | None = None) -> str | None:
+    d = round_date or timezone.localdate()
+    counts = {code: 0 for code in PROMO_A2_SLOT_CODES}
+    for row in (
+        PromoA2Order.objects.filter(
+            status=PromoA2Order.STATUS_PAID,
+            package=PromoA2Order.PACKAGE_A2_24,
+            start_date=d,
+            slot_code__in=PROMO_A2_SLOT_CODES,
+        )
+        .values("slot_code")
+        .annotate(c=Count("id"))
+    ):
+        code = (row.get("slot_code") or "").strip()
+        if code in counts:
+            counts[code] = int(row.get("c") or 0)
+    available = [code for code in PROMO_A2_SLOT_CODES if counts.get(code, 0) < PROMO_A2_SLOT_CAPACITY]
+    if not available:
+        return None
+    available.sort(key=lambda code: (counts.get(code, 0), code))
+    return available[0]
 
 
 def _promo_a2_apply_overlay_to_home_a2(a2_pets: list, now_ts, with_quotes: bool) -> None:
@@ -4748,12 +4782,15 @@ def admin_analysis_alerts_view(request):
 # Reclama: hărți sloturi per „pagină” (nu navigăm către site-ul public, ci între sub-rute /reclama/...).
 RECLAMA_WIRE_TEMPLATES = {
     "home": "anunturi/reclama/wires/home.html",
+    "pub_a2": "anunturi/reclama/wires/pub_a2.html",
     "pt": "anunturi/reclama/wires/pt.html",
     "servicii": "anunturi/reclama/wires/servicii.html",
     "transport": "anunturi/reclama/wires/transport.html",
     "shop": "anunturi/reclama/wires/shop.html",
     "mypet": "anunturi/reclama/wires/mypet.html",
-    "magazinul_meu": "anunturi/reclama/wires/generic.html",
+    "cos_pub": "anunturi/reclama/wires/pub_cos.html",
+    "magazinul_meu": "anunturi/reclama/wires/magazinul_meu.html",
+    "magazin_foto": "anunturi/reclama/wires/magazin_foto.html",
     "i_love": "anunturi/reclama/wires/i_love.html",
     "termeni": "anunturi/reclama/wires/generic.html",
     "contact": "anunturi/reclama/wires/generic.html",
@@ -4763,12 +4800,15 @@ RECLAMA_WIRE_TEMPLATES = {
 # (secțiune, titlu browser, etichetă Caseta 2)
 RECLAMA_META = {
     "home": ("Acasă", "Caseta 2 – schemă HOME"),
+    "pub_a2": ("Pub A2", "Caseta 2 – schemă A2"),
     "pt": ("Prietenul tău", "Caseta 2 – schemă Prietenul tău (PW)"),
     "servicii": ("Servicii", "Caseta 2 – schemă Servicii (SW)"),
     "transport": ("Transport", "Caseta 2 – schemă Transport (TW)"),
     "shop": ("Shop", "Caseta 2 – schemă Shop (SHW)"),
     "mypet": ("MyPet", "Caseta 2 – schemă MyPet (sloturi)"),
-    "magazinul_meu": ("Magazinul meu", "Caseta 2 – schemă Magazinul meu (sloturi)"),
+    "cos_pub": ("Coș pub.", "Caseta 2 – schemă Coș pub. (CC)"),
+    "magazinul_meu": ("Magazinul meu", "Caseta 2 – schemă Magazinul meu (3 casete stânga)"),
+    "magazin_foto": ("Magazin Foto", "Caseta 2 – schemă Magazin Foto (SHW)"),
     "i_love": ("I Love", "Caseta 2 – schemă I Love (sloturi)"),
     "termeni": ("Termeni", "Caseta 2 – schemă Termeni (sloturi)"),
     "contact": ("Contact", "Caseta 2 – schemă Contact (sloturi)"),
@@ -4843,12 +4883,70 @@ def reclama_staff_view(request, reclama_section="home"):
         status=PromoA2Order.STATUS_PAID,
         updated_at__date=timezone.localdate(),
     ).count()
+    puba2_slot_previews: dict[str, dict[str, str]] = {}
+    for o in active_orders:
+        slot = (o.slot_code or "").strip()
+        if not slot.startswith("A2"):
+            continue
+        image_url = ""
+        try:
+            if o.pet and getattr(o.pet, "photo_1", None):
+                image_url = (o.pet.photo_1.url or "").strip()
+        except Exception:
+            image_url = ""
+        if not image_url:
+            continue
+        puba2_slot_previews[slot] = {
+            "image_url": image_url,
+            "video_url": "",
+            "url": reverse("promo_a2_order", kwargs={"pk": o.pk}),
+        }
+    puba2_capacity: dict[str, dict[str, int | str]] = {}
+    if section == "pub_a2":
+        today_local = timezone.localdate()
+        counts = {code: 0 for code in PROMO_A2_SLOT_CODES}
+        for row in (
+            PromoA2Order.objects.filter(
+                status=PromoA2Order.STATUS_PAID,
+                package=PromoA2Order.PACKAGE_A2_24,
+                start_date=today_local,
+                slot_code__in=PROMO_A2_SLOT_CODES,
+            )
+            .values("slot_code")
+            .annotate(c=Count("id"))
+        ):
+            code = (row.get("slot_code") or "").strip()
+            if code in counts:
+                counts[code] = int(row.get("c") or 0)
+        for code in PROMO_A2_SLOT_CODES:
+            used = int(counts.get(code, 0))
+            free = max(0, PROMO_A2_SLOT_CAPACITY - used)
+            if used <= 0:
+                status = "free"
+            elif free <= 0:
+                status = "busy"
+            else:
+                status = "partial"
+            puba2_capacity[code] = {
+                "used": used,
+                "free": free,
+                "capacity": PROMO_A2_SLOT_CAPACITY,
+                "status": status,
+            }
 
-    slot_allowed = {
-        "A2.1", "A2.2", "A2.3", "A2.4", "A2.5", "A2.6",
-        "A2.7", "A2.8", "A2.9", "A2.10", "A2.11", "A2.12",
-        "A5.1", "A5.2", "A5.3", "A6.1", "A6.2", "A6.3", "Burtieră",
-    }
+    section_for_catalog = "shop" if section == "magazinul_meu" else section
+    slot_allowed: set[str] = set()
+    if section == "pub_a2":
+        slot_allowed = {
+            "A2.1", "A2.2", "A2.3", "A2.4", "A2.5", "A2.6",
+            "A2.7", "A2.8", "A2.9", "A2.10", "A2.11", "A2.12",
+        }
+    else:
+        slot_allowed = {
+            str(r.get("code") or "").strip()
+            for r in (PUBLICITATE_SLOT_MAP.get(section_for_catalog) or [])
+            if str(r.get("code") or "").strip()
+        }
     selected_slot = (request.GET.get("slot") or "").strip()
     raw_months = request.GET.getlist("months")
     selected_months = []
@@ -4869,29 +4967,224 @@ def reclama_staff_view(request, reclama_section="home"):
     history_rows = []
     history_total_orders = 0
     history_total_revenue = 0
+    calendar_months = []
     burtiera_note_text = ""
-    if section == "home" and selected_slot:
+    if selected_slot:
         if selected_slot == "Burtieră":
             # În editorul C3 afișăm textul curent efectiv din burtieră (fie notă salvată, fie default).
             burtiera_note_text = _get_home_burtiera_text()
         else:
             current_year = timezone.localdate().year
-            month_qs = (
-                PromoA2Order.objects.filter(
-                    status=PromoA2Order.STATUS_PAID,
-                    slot_code=selected_slot,
-                    starts_at__year=current_year,
-                    starts_at__month__in=selected_months,
+            if section == "pub_a2":
+                month_qs = (
+                    PromoA2Order.objects.filter(
+                        status=PromoA2Order.STATUS_PAID,
+                        slot_code=selected_slot,
+                        starts_at__year=current_year,
+                        starts_at__month__in=selected_months,
+                    )
+                    .annotate(month=TruncMonth("starts_at"))
+                    .values("month")
+                    .annotate(total_orders=Count("id"), total_revenue=Sum("total_price"))
+                    .order_by("month")
                 )
-                .annotate(month=TruncMonth("starts_at"))
-                .values("month")
-                .annotate(total_orders=Count("id"), total_revenue=Sum("total_price"))
-                .order_by("month")
-            )
+            else:
+                month_qs = (
+                    PublicitateOrderLine.objects.filter(
+                        order__status=PublicitateOrder.STATUS_PAID,
+                        section=section_for_catalog,
+                        slot_code=selected_slot,
+                        starts_at__year=current_year,
+                        starts_at__month__in=selected_months,
+                    )
+                    .annotate(month=TruncMonth("starts_at"))
+                    .values("month")
+                    .annotate(total_orders=Count("id"), total_revenue=Sum("line_total_lei"))
+                    .order_by("month")
+                )
             history_rows = list(month_qs)
             for r in history_rows:
                 history_total_orders += int(r.get("total_orders") or 0)
                 history_total_revenue += int(r.get("total_revenue") or 0)
+            busy_ranges: list[tuple[datetime, datetime]] = []
+            if section == "pub_a2":
+                busy_qs = (
+                    PromoA2Order.objects.filter(
+                        status=PromoA2Order.STATUS_PAID,
+                        slot_code=selected_slot,
+                        starts_at__isnull=False,
+                        ends_at__isnull=False,
+                    )
+                    .values("starts_at", "ends_at")
+                    .order_by("starts_at")
+                )
+            else:
+                busy_qs = (
+                    PublicitateOrderLine.objects.filter(
+                        order__status=PublicitateOrder.STATUS_PAID,
+                        section=section_for_catalog,
+                        slot_code=selected_slot,
+                        starts_at__isnull=False,
+                        ends_at__isnull=False,
+                    )
+                    .values("starts_at", "ends_at")
+                    .order_by("starts_at")
+                )
+            for row in busy_qs[:240]:
+                st = row.get("starts_at")
+                en = row.get("ends_at")
+                if not st or not en:
+                    continue
+                busy_ranges.append((st, en))
+            ro_month_names = [
+                "",
+                "Ianuarie",
+                "Februarie",
+                "Martie",
+                "Aprilie",
+                "Mai",
+                "Iunie",
+                "Iulie",
+                "August",
+                "Septembrie",
+                "Octombrie",
+                "Noiembrie",
+                "Decembrie",
+            ]
+            today_local = timezone.localdate()
+            for offset in range(12):
+                month_idx = (today_local.month - 1) + offset
+                year = today_local.year + (month_idx // 12)
+                month = (month_idx % 12) + 1
+                _, days_in_month = calendar.monthrange(year, month)
+                first_weekday = date(year, month, 1).weekday()  # luni=0
+                cells = []
+                for _ in range(first_weekday):
+                    cells.append({"day": None, "status": "empty"})
+                for day in range(1, days_in_month + 1):
+                    day_date = date(year, month, day)
+                    day_start = timezone.make_aware(datetime.combine(day_date, datetime.min.time()))
+                    day_end = day_start + timezone.timedelta(days=1)
+                    status = "free"
+                    for st, en in busy_ranges:
+                        if st < day_end and en > day_start:
+                            if st <= day_start and en >= day_end:
+                                status = "busy"
+                                break
+                            if status != "busy":
+                                status = "partial"
+                    cells.append({"day": day, "status": status})
+                while len(cells) % 7 != 0:
+                    cells.append({"day": None, "status": "empty"})
+                calendar_months.append(
+                    {
+                        "year": year,
+                        "month": month,
+                        "label": f"{ro_month_names[month]} {year}",
+                        "cells": cells,
+                    }
+                )
+    home_left, home_right = _home_sidebar_pub_slots_for_template()
+    home_slot_previews: dict[str, dict[str, str]] = {}
+    for row in (home_left + home_right):
+        if not row:
+            continue
+        slot_name = (row.get("name") or "").strip()
+        image_url = (row.get("image_url") or "").strip()
+        video_url = (row.get("video_url") or "").strip()
+        if slot_name and (image_url or video_url):
+            home_slot_previews[slot_name] = {
+                "image_url": image_url,
+                "video_url": video_url,
+                "url": (row.get("url") or "").strip(),
+            }
+    preview_section = section_for_catalog
+    generic_slot_previews: dict[str, dict[str, str]] = {}
+    try:
+        notes_qs = ReclamaSlotNote.objects.filter(section=preview_section)
+        for note in notes_qs:
+            slot_name = (note.slot_code or "").strip()
+            if not slot_name:
+                continue
+            creative = _pt_pub_slot_parse_note(note)
+            if not creative:
+                continue
+            image_url = (creative.get("img") or "").strip()
+            video_url = (creative.get("video") or "").strip()
+            if not image_url and not video_url:
+                continue
+            generic_slot_previews[slot_name] = {
+                "image_url": image_url,
+                "video_url": video_url,
+                "url": (creative.get("link") or "").strip(),
+            }
+    except Exception:
+        generic_slot_previews = {}
+    generic_slot_previews.update(puba2_slot_previews)
+    generic_slot_previews.update(home_slot_previews)
+    c1_rows: list[dict] = []
+    if selected_slot:
+        if section == "pub_a2":
+            p_rows = (
+                PromoA2Order.objects.filter(status=PromoA2Order.STATUS_PAID, slot_code=selected_slot)
+                .select_related("payer_user", "pet")
+                .order_by("-starts_at", "-id")[:120]
+            )
+            for o in p_rows:
+                c1_rows.append(
+                    {
+                        "source": "promo_a2",
+                        "user_name": (o.payer_user.username if o.payer_user else "-"),
+                        "user_email": (o.payer_email or (o.payer_user.email if o.payer_user else "") or "-"),
+                        "order_id": o.pk,
+                        "order_total": o.total_price,
+                        "payment_ref": o.payment_ref or "-",
+                        "payment_provider": o.payment_provider or "-",
+                        "paid_at": o.updated_at,
+                        "starts_at": o.starts_at,
+                        "ends_at": o.ends_at,
+                        "unit_label": o.package,
+                        "quantity": o.quantity,
+                        "line_total": o.total_price,
+                        "validation_code": "-",
+                        "activated_at": "-",
+                        "material_status": "-",
+                    }
+                )
+        else:
+            p_rows = (
+                PublicitateOrderLine.objects.filter(
+                    order__status=PublicitateOrder.STATUS_PAID,
+                    section=section_for_catalog,
+                    slot_code=selected_slot,
+                )
+                .select_related("order", "order__user")
+                .prefetch_related("creative_bundle")
+                .order_by("-starts_at", "-id")[:120]
+            )
+            for ln in p_rows:
+                bundle = getattr(ln, "creative_bundle", None)
+                mat_status = "live" if (bundle and bundle.status == PublicitateLineCreative.STATUS_LIVE) else "pending"
+                c1_rows.append(
+                    {
+                        "source": "publicitate",
+                        "user_name": (ln.order.user.username if ln.order and ln.order.user else "-"),
+                        "user_email": (ln.order.user.email if ln.order and ln.order.user else "-"),
+                        "order_id": ln.order_id,
+                        "order_total": (ln.order.total_lei if ln.order else "-"),
+                        "payment_ref": (ln.order.payment_ref if ln.order else "-"),
+                        "payment_provider": (ln.order.payment_provider if ln.order else "-"),
+                        "paid_at": (ln.order.paid_at if ln.order else None),
+                        "starts_at": ln.starts_at,
+                        "ends_at": ln.ends_at,
+                        "unit_label": ln.unit_label,
+                        "quantity": ln.quantity,
+                        "line_total": ln.line_total_lei,
+                        "validation_code": ln.validation_code or "-",
+                        "activated_at": ln.activated_at or "-",
+                        "material_status": mat_status,
+                    }
+                )
     ctx = {
         "reclama_section": section,
         "reclama_page_title": meta[0],
@@ -4901,15 +5194,20 @@ def reclama_staff_view(request, reclama_section="home"):
         "promo_active_total": len(active_orders),
         "promo_expiring_soon": expiring_soon,
         "promo_paid_today": paid_today,
+        "reclama_c1_slot": selected_slot,
+        "reclama_c1_rows": c1_rows,
         "reclama_selected_slot": selected_slot,
         "reclama_selected_months": selected_months,
         "reclama_month_options": list(range(1, 13)),
         "reclama_slot_history_rows": history_rows,
         "reclama_slot_history_total_orders": history_total_orders,
         "reclama_slot_history_total_revenue": history_total_revenue,
+        "reclama_calendar_months": calendar_months,
         "reclama_burtiera_note_text": burtiera_note_text,
         "reclama_burtiera_display_text": _get_home_burtiera_text(),
         "reclama_burtiera_speed_seconds": _get_home_burtiera_speed_seconds(),
+        "reclama_slot_previews": generic_slot_previews,
+        "reclama_puba2_capacity": puba2_capacity,
         "pub_site_contact_email": (
             (getattr(settings, "DEFAULT_FROM_EMAIL", None) or "").strip() or "euadopt@gmail.com"
         ),
@@ -4920,6 +5218,12 @@ def reclama_staff_view(request, reclama_section="home"):
     elif section == "servicii":
         ctx["pub_strip_s1_cells"] = _enrich_pub_strip_sequence("servicii", PUB_STRIP_SEQ_S1)
         ctx["pub_strip_s7_cells"] = _enrich_pub_strip_sequence("servicii", PUB_STRIP_SEQ_S7)
+    elif section == "magazin_foto":
+        foto = _shop_magazin_foto_slots_full()[:30]
+        for i, row in enumerate(foto):
+            row["slot_idx"] = i
+            row["ref_key"] = f"shop_foto:{i}"
+        ctx["reclama_magazin_foto_slots"] = foto
     return render(request, "anunturi/reclama_staff.html", ctx)
 
 
@@ -6568,6 +6872,9 @@ def _site_cart_checkout_create_promo_a2_orders(
         if PromoA2Order.objects.filter(payment_ref=payment_ref_unique).exists():
             consumed_refs.append(ref_key)
             continue
+        chosen_slot = _promo_a2_pick_available_slot(timezone.localdate())
+        if not chosen_slot:
+            raise ValueError("Toate casetele A2 sunt ocupate pentru intervalul curent. Încearcă puțin mai târziu.")
         order = PromoA2Order.objects.create(
             pet=pet,
             payer_user=request.user,
@@ -6579,7 +6886,7 @@ def _site_cart_checkout_create_promo_a2_orders(
             total_price=PROMO_A2_STD_PRICE_LEI,
             payment_method=pm_snap or "card",
             schedule="intercalat",
-            slot_code=PromoA2Order.SLOT_A2,
+            slot_code=chosen_slot,
             start_date=timezone.localdate(),
             starts_at=None,
             ends_at=None,
@@ -9601,6 +9908,15 @@ def _apply_publicitate_line_to_site(line: PublicitateOrderLine, order: Publicita
             section="home",
             slot_code="Burtieră",
             defaults={"text": note[:8000], "updated_by": order.user},
+        )
+        return
+    allowed_codes = {str(r.get("code") or "").strip() for r in (PUBLICITATE_SLOT_MAP.get(line.section) or [])}
+    if line.slot_code in allowed_codes:
+        body = _buyer_note_to_pt_slot_json(note)
+        ReclamaSlotNote.objects.update_or_create(
+            section=line.section,
+            slot_code=line.slot_code,
+            defaults={"text": body, "updated_by": order.user},
         )
 
 

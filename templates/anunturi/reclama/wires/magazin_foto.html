@@ -1,0 +1,23 @@
+{% load static %}
+<div class="reclama-mzf-wire" aria-hidden="{% if pub_interactive_wire %}false{% else %}true{% endif %}">
+	{% for slot in reclama_magazin_foto_slots %}
+	<article class="reclama-mzf-card" data-slot="MZF.{{ forloop.counter }}">
+		<div class="reclama-mzf-photo">
+			<img
+				src="{% static 'images/parteneri/placeholder.jpg' %}"
+				alt="{{ slot.nume|default:'Poză ONG' }}"
+				loading="lazy"
+				width="400"
+				height="300"
+			/>
+		</div>
+		<div class="reclama-mzf-meta">
+			<span class="reclama-mzf-price">{{ slot.pret_lei }} lei</span>
+			<span class="reclama-mzf-name">{{ slot.nume }}</span>
+			<span class="reclama-mzf-buys">{{ slot.achizitii }}</span>
+		</div>
+	</article>
+	{% empty %}
+	<div class="reclama-c3-empty">Nu există poze disponibile în Magazin Foto.</div>
+	{% endfor %}
+</div>
