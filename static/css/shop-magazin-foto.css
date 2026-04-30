@@ -64,14 +64,28 @@ body.page-shop-foto #main_content {
 }
 
 .smf-topbar {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.5rem;
   padding: 0 0.1rem;
   flex-shrink: 0;
+}
+
+body.page-shop-foto .smf-legal-note {
+  margin: 0 0 0.4rem;
+  padding: 0.25rem clamp(0.35rem, 1.2vw, 0.6rem);
+  font-size: clamp(0.55rem, 1.05vw, 0.72rem);
+  line-height: 1.35;
+  color: #455a64;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+body.page-shop-foto .smf-legal-note a {
+  color: #1565c0;
+  font-weight: 700;
 }
 
 .smf-title {
@@ -80,11 +94,33 @@ body.page-shop-foto #main_content {
   font-weight: 800;
   color: #4e342e;
   letter-spacing: 0.02em;
+  justify-self: start;
+}
+
+.smf-donate-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: center;
+  padding: 0.45rem 0.9rem;
+  background: #00e676;
+  color: #1b5e20;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+  font-size: 0.9rem;
+}
+
+.smf-donate-link:hover {
+  background: #00c853;
+  color: #0d3d12;
 }
 
 .smf-back-link {
   display: inline-flex;
   align-items: center;
+  justify-self: end;
   padding: 0.45rem 0.9rem;
   background: #ffca28;
   color: #4e342e;
@@ -258,6 +294,8 @@ button.smf-print__link {
 /* Margine „hârtie”: imaginea merge stânga–dreapta la muchie; padding doar sus/jos + pe bara meta */
 .smf-print__mat {
   position: relative;
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(180deg, #fffef9 0%, #f5f0e6 100%);
   padding: 0;
   padding-top: clamp(0.38rem, 0.9vw, 0.5rem);
@@ -299,6 +337,28 @@ button.smf-print__link {
   flex-shrink: 0;
 }
 
+.smf-print__collected-badge {
+  position: absolute;
+  top: 0.32rem;
+  left: 0.32rem;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  max-width: calc(100% - 0.64rem);
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1b5e20;
+  font-size: clamp(0.56rem, 1.1vw, 0.64rem);
+  font-weight: 800;
+  line-height: 1.15;
+  border: 1px solid rgba(27, 94, 32, 0.24);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Peste img { max-width:100%; height:auto } din style.css */
 body.page-shop-foto .smf-print__photo img {
   width: 100% !important;
@@ -315,70 +375,173 @@ body.page-shop-foto .smf-print__photo img {
   transform: scale(1.07);
 }
 
-/* Bară info: preț | nume (cursiv, ellipsis) | achiziții */
+/* Bară info: un singur rând — preț | multiplicator | nume | coș (înăuntrul padding-ului casetei).
+   style.css aplică input[type="number"] { width 350px; min-width: 50%; } și
+   button { height 30px; padding 0 10px; } → reset încapsulat mai jos cu !important. */
 .smf-print__meta {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: max-content auto minmax(0, 1fr) max-content;
   align-items: center;
-  gap: 0.35rem;
-  margin-top: 0.28rem;
-  padding: 0 clamp(0.2rem, 0.5vw, 0.35rem);
-  min-height: 1.35rem;
-  font-size: clamp(0.62rem, 1.35vw, 0.72rem);
-  line-height: 1.2;
+  gap: clamp(0.06rem, 0.55vw, 0.18rem);
+  margin-top: 0.22rem;
+  padding: 0 clamp(0.14rem, 0.42vw, 0.26rem);
+  min-height: 1.2rem;
+  font-size: clamp(0.52rem, 1.08vw, 0.62rem);
+  line-height: 1.15;
 }
 
 .smf-print__price {
-  flex: 0 0 auto;
+  grid-column: 1;
   font-weight: 800;
   color: #b71c1c;
   white-space: nowrap;
 }
 
 .smf-print__name {
-  flex: 1 1 auto;
+  grid-column: 3;
   min-width: 0;
-  font-style: italic;
-  font-weight: 600;
-  color: #37474f;
+  font-style: normal;
+  font-weight: 800;
+  font-size: clamp(0.66rem, 1.55vw, 0.88rem);
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: #1a2733;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: center;
 }
 
-.smf-print__buys {
-  flex: 0 0 auto;
-  font-weight: 700;
-  color: #5d4037;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
+.smf-print__multiplier--bar {
+  grid-column: 2;
 }
 
-/* Coș I Love pe „print” */
 .smf-print__site-cart {
-  position: absolute;
-  bottom: 6px;
-  right: 6px;
-  z-index: 6;
-  width: 30px;
-  height: 30px;
+  grid-column: 4;
+}
+
+/* Multiplicator și coș integrate în meta */
+.smf-print__multiplier {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  justify-self: start;
+  min-height: 0;
+  font-size: inherit;
+}
+
+.smf-print__multiplier--bar {
+  padding: 1px 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(96, 125, 139, 0.22);
+  max-width: 100%;
+}
+
+/* Coș I Love în bară */
+.smf-print__site-cart {
+  position: relative;
+  justify-self: end;
+  z-index: 2;
+  margin: 0;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
-  color: #1565c0;
-  font-size: 14px;
-  line-height: 1;
   cursor: pointer;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.22);
-  display: flex;
+  box-sizing: border-box;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
 }
-.smf-print__site-cart.is-active {
-  background: #1565c0;
-  color: #fff;
+
+/* Forțare față de style.css (inputs / buttons globale) */
+body.page-shop-foto .smf-print__mult-btn {
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  max-width: 14px !important;
+  min-height: 14px !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  border: 1px solid rgba(96, 125, 139, 0.45) !important;
+  border-radius: 3px !important;
+  background: linear-gradient(180deg, #fff 0%, #eceff1 100%) !important;
+  color: #37474f !important;
+  font-weight: 800 !important;
+  font-size: 9px !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-family: inherit !important;
+  box-shadow: none !important;
+}
+
+body.page-shop-foto .smf-print__mult-btn:active {
+  background: #e0e0e0 !important;
+}
+
+body.page-shop-foto .smf-print__mult-input {
+  width: 24px !important;
+  max-width: 24px !important;
+  min-width: 0 !important;
+  height: 14px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+  border: 1px solid rgba(96, 125, 139, 0.38) !important;
+  border-radius: 3px !important;
+  text-align: center !important;
+  font-size: 8px !important;
+  font-weight: 800 !important;
+  font-family: inherit !important;
+  color: #263238 !important;
+  background: #fff !important;
+  vertical-align: middle !important;
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+}
+
+body.page-shop-foto .smf-print__mult-input::-webkit-outer-spin-button,
+body.page-shop-foto .smf-print__mult-input::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+body.page-shop-foto .smf-print__site-cart {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  max-width: 18px !important;
+  min-height: 18px !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #1565c0 !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18) !important;
+}
+
+body.page-shop-foto .smf-print__site-cart.is-active {
+  background: #1565c0 !important;
+  color: #fff !important;
+}
+
+body.page-shop-foto .smf-print__mult-total {
+  margin-left: 3px;
+  font-weight: 800;
+  color: #0d47a1;
+  white-space: nowrap;
+  font-size: 8px !important;
+  line-height: 1.15 !important;
+  font-variant-numeric: tabular-nums;
+  max-width: 38px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (prefers-reduced-motion: reduce) {

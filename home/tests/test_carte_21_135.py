@@ -156,12 +156,13 @@ class Carte115_126ReclamaStaffTests(TestCase):
     """115–125: rute Reclama staff GET 200; 126 export rezumat promo."""
 
     def setUp(self):
+        # Reclama: acces doar superuser (admin Django).
         self.staff = User.objects.create_user(
             username=f"st_{_uniq()}",
             email=f"st_{_uniq()}@carte-test.local",
             password="StaffCarte12!",
             is_staff=True,
-            is_superuser=False,
+            is_superuser=True,
         )
 
     def test_115_125_reclama_sections_200(self):
@@ -169,6 +170,7 @@ class Carte115_126ReclamaStaffTests(TestCase):
         c.login(username=self.staff.username, password="StaffCarte12!")
         names = [
             "reclama_staff",
+            "reclama_magazin_foto",
             "reclama_pt",
             "reclama_servicii",
             "reclama_transport",
@@ -183,6 +185,20 @@ class Carte115_126ReclamaStaffTests(TestCase):
         for name in names:
             r = c.get(reverse(name))
             self.assertEqual(r.status_code, 200, msg=name)
+
+    def test_reclama_redirects_staff_without_superuser(self):
+        plain_staff = User.objects.create_user(
+            username=f"pst_{_uniq()}",
+            email=f"pst_{_uniq()}@carte-test.local",
+            password="PlainStaffCarte12!",
+            is_staff=True,
+            is_superuser=False,
+        )
+        c = Client()
+        c.login(username=plain_staff.username, password="PlainStaffCarte12!")
+        r = c.get(reverse("reclama_staff"))
+        self.assertEqual(r.status_code, 302)
+        self.assertIn(reverse("home"), r.url or "")
 
     def test_126_promo_export_redirects_staff(self):
         owner = User.objects.create_user(

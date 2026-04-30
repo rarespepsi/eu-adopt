@@ -39,6 +39,7 @@ from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
 from django.views.decorators.csrf import csrf_protect
+from django.contrib.staticfiles import finders
 from .data import DEMO_DOGS, DEMO_DOG_IMAGE, A2_QUOTE_POOL, HERO_SLIDER_IMAGES
 from .pet_age_bands import (
     AGE_LABELS_ORDERED,
@@ -1931,6 +1932,75 @@ def _enrich_pub_strip_sequence(section: str, sequence: list[dict]) -> list[dict]
     return out
 
 
+# Celule EU „fixe” în benzi cursivă PT / Servicii → pagina unică Donații.
+_PT_DONATII_EU_STRIP_SLOTS = frozenset({"EUP1.1", "EUP3.1"})
+_SERVICII_DONATII_EU_STRIP_SLOTS = frozenset({"EUS1.1", "EUS7.1"})
+# A doua celulă EU din fiecare bandă: mesaj + link către secțiunea SMS pe /donatii/
+_PT_SMS_STRIP_EU_SLOTS = frozenset({"EUP1.2", "EUP3.2"})
+_SERVICII_SMS_STRIP_EU_SLOTS = frozenset({"EUS1.2", "EUS7.2"})
+
+
+def _strip_cells_apply_donatii_eu_href(section: str, cells: list[dict]) -> list[dict]:
+    if section == "pt":
+        targets = _PT_DONATII_EU_STRIP_SLOTS
+    elif section == "servicii":
+        targets = _SERVICII_DONATII_EU_STRIP_SLOTS
+    else:
+        return cells
+    try:
+        don = reverse("donatii_generale")
+    except Exception:
+        return cells
+    out = []
+    for c in cells:
+        if c.get("kind") == "eu" and c.get("code") in targets:
+            q = urlencode({"sursa": section + "_strip"})
+            out.append({**c, "eu_donatii_href": f"{don}?{q}"})
+        else:
+            out.append(c)
+    return out
+
+
+def _strip_cells_apply_sms_strip_href(section: str, cells: list[dict]) -> list[dict]:
+    """Celule EU dedicate SMS în P1/P3 și S1/S7 → /donatii/#donatii-sms."""
+    if section == "pt":
+        targets = _PT_SMS_STRIP_EU_SLOTS
+    elif section == "servicii":
+        targets = _SERVICII_SMS_STRIP_EU_SLOTS
+    else:
+        return cells
+    try:
+        don = reverse("donatii_generale")
+    except Exception:
+        return cells
+    from home.donatii_constants import (
+        EUADOPT_DONATION_SMS_PAGE_ANCHOR,
+        EUADOPT_SMS_STRIP_LABEL,
+        EUADOPT_SMS_STRIP_MSG,
+    )
+
+    out = []
+    for c in cells:
+        if c.get("kind") == "eu" and c.get("code") in targets:
+            q = urlencode({"sursa": section + "_strip", "intent": "sms"})
+            out.append(
+                {
+                    **c,
+                    "eu_sms_strip_href": f"{don}?{q}#{EUADOPT_DONATION_SMS_PAGE_ANCHOR}",
+                    "eu_sms_strip_label": EUADOPT_SMS_STRIP_LABEL,
+                    "eu_sms_strip_msg": EUADOPT_SMS_STRIP_MSG,
+                }
+            )
+        else:
+            out.append(c)
+    return out
+
+
+def _strip_cells_donatii_pt_or_servicii(section: str, cells: list[dict]) -> list[dict]:
+    """Aplică linkuri donații generale + celulă SMS pe benzile cursivă PT / Servicii."""
+    return _strip_cells_apply_sms_strip_href(section, _strip_cells_apply_donatii_eu_href(section, cells))
+
+
 def _pt_pub_slot_parse_note(note):
     """
     Creative pentru slot PT din ReclamaSlotNote (section='pt', slot_code=P4.3 / P5.1 / …).
@@ -2132,8 +2202,12 @@ def home_view(request):
                 "pt_p2_page_size": PT_P2_PAGE_SIZE,
                 "wishlist_ids": wishlist_ids,
                 "pt_pub_slot_list": _pt_pub_slot_list_for_template(),
-                "pt_strip_p1_cells": _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P1),
-                "pt_strip_p3_cells": _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P3),
+                "pt_strip_p1_cells": _strip_cells_donatii_pt_or_servicii(
+                    "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P1)
+                ),
+                "pt_strip_p3_cells": _strip_cells_donatii_pt_or_servicii(
+                    "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P3)
+                ),
             },
         )
 
@@ -3484,8 +3558,12 @@ def servicii_view(request):
         request,
         "anunturi/servicii.html",
         {
-            "servicii_strip_s1_cells": _enrich_pub_strip_sequence("servicii", PUB_STRIP_SEQ_S1),
-            "servicii_strip_s7_cells": _enrich_pub_strip_sequence("servicii", PUB_STRIP_SEQ_S7),
+            "servicii_strip_s1_cells": _strip_cells_donatii_pt_or_servicii(
+                "servicii", _enrich_pub_strip_sequence("servicii", PUB_STRIP_SEQ_S1)
+            ),
+            "servicii_strip_s7_cells": _strip_cells_donatii_pt_or_servicii(
+                "servicii", _enrich_pub_strip_sequence("servicii", PUB_STRIP_SEQ_S7)
+            ),
             "vet_offers": vet_offers,
             "vet_offer_empty_slots": vet_offer_empty_slots,
             "groom_offers": groom_offers,
@@ -3860,6 +3938,31 @@ def custi_view(request):
     return render(request, "anunturi/custi.html", {})
 
 
+def donatii_generale_view(request):
+    """
+    Pagină unică de donații (hub): intrări din HOME, PT, Servicii, Shop, Transport, Cuști.
+    Parametri GET opționali: sursa, intent, loc (ex. L12), suma — afișați rezumat pentru continuitate.
+    """
+    from home.donatii_constants import EUADOPT_DONATION_ORG, EUADOPT_PARTNER_NGO
+
+    sursa = (request.GET.get("sursa") or "").strip()[:96]
+    intent = (request.GET.get("intent") or "").strip()[:96]
+    loc = (request.GET.get("loc") or "").strip()[:24]
+    suma_raw = (request.GET.get("suma") or "").strip()[:16]
+    return render(
+        request,
+        "anunturi/donatii_generale.html",
+        {
+            "donatii_query_sursa": sursa,
+            "donatii_query_intent": intent,
+            "donatii_query_loc": loc,
+            "donatii_query_suma": suma_raw,
+            "donatii_org": EUADOPT_DONATION_ORG,
+            "donatii_partner": EUADOPT_PARTNER_NGO,
+        },
+    )
+
+
 def shop_view(request):
     """Pagina Shop (placeholder)."""
     return render(request, "anunturi/shop.html", {})
@@ -3911,14 +4014,54 @@ def _shop_magazin_foto_slots_full():
     return out
 
 
+def _shop_magazin_foto_collected_map() -> tuple[dict[int, Decimal], dict[int, int]]:
+    """Sume colectate + nr. plăți per poză (`shop_foto:N`) din snapshot-ul de checkout."""
+    sums: dict[int, Decimal] = {}
+    counts: dict[int, int] = {}
+    qs = SiteCartCheckoutIntent.objects.order_by("-created_at")
+    for intent in qs.iterator(chunk_size=200):
+        lines = intent.lines_json or []
+        if not isinstance(lines, list):
+            continue
+        for line in lines:
+            if (line.get("kind") or "").strip() != SiteCartItem.KIND_SHOP_FOTO:
+                continue
+            ref_key = (line.get("ref_key") or "").strip()
+            if not ref_key.startswith("shop_foto:"):
+                continue
+            try:
+                idx = int(ref_key.split(":", 1)[1])
+            except (IndexError, ValueError):
+                continue
+            if idx < 0 or idx >= SMF_FOTO_LIST_MAX:
+                continue
+            lei_s = line.get("line_lei")
+            try:
+                lei = Decimal(str(lei_s)).quantize(Decimal("0.01"))
+            except Exception:
+                lei = Decimal("0.00")
+            sums[idx] = (sums.get(idx) or Decimal("0.00")) + lei
+            counts[idx] = int(counts.get(idx) or 0) + 1
+    return sums, counts
+
+
+def _shop_magazin_foto_enrich_row_with_collected(row: dict, idx: int, sums: dict[int, Decimal], counts: dict[int, int]) -> None:
+    total = (sums.get(idx) or Decimal("0.00")).quantize(Decimal("0.01"))
+    row["collected_lei"] = str(total)
+    row["collected_lei_display"] = f"{total:.2f}".replace(".", ",")
+    row["collected_count"] = int(counts.get(idx) or 0)
+
+
 def shop_magazin_foto_view(request):
     """Magazin foto: același lot inițial ca P2 (PT_P2_PAGE_SIZE), restul prin shop_magazin_foto_more."""
     full = _shop_magazin_foto_slots_full()
+    collected_sums, collected_counts = _shop_magazin_foto_collected_map()
     foto_slots = []
     for i in range(min(PT_P2_PAGE_SIZE, len(full))):
         row = dict(full[i])
         row["slot_idx"] = i
         row["ref_key"] = f"shop_foto:{i}"
+        _shop_magazin_foto_enrich_row_with_collected(row, i, collected_sums, collected_counts)
         foto_slots.append(row)
     foto_has_more = len(full) > PT_P2_PAGE_SIZE
     foto_next_offset = PT_P2_PAGE_SIZE if foto_has_more else len(full)
@@ -3942,6 +4085,7 @@ def shop_magazin_foto_more_view(request):
         offset = 0
     offset = max(0, offset)
     full = _shop_magazin_foto_slots_full()
+    collected_sums, collected_counts = _shop_magazin_foto_collected_map()
     batch_raw = full[offset : offset + PT_P2_PAGE_SIZE]
     batch = []
     for j, row in enumerate(batch_raw):
@@ -3949,6 +4093,7 @@ def shop_magazin_foto_more_view(request):
         idx = offset + j
         r["slot_idx"] = idx
         r["ref_key"] = f"shop_foto:{idx}"
+        _shop_magazin_foto_enrich_row_with_collected(r, idx, collected_sums, collected_counts)
         batch.append(r)
     next_off = offset + len(batch)
     has_more = next_off < len(full)
@@ -3958,6 +4103,95 @@ def shop_magazin_foto_more_view(request):
         request=request,
     )
     return JsonResponse({"ok": True, "html": html, "has_more": has_more, "next_offset": next_off})
+
+
+def _shop_magazin_foto_collect_transactions(ref_key: str) -> list[dict]:
+    """
+    Doar înregistrări legate de poza din ref_key: linia shop_foto din snapshot (`line_lei`, titlu).
+    Fără total coș și fără alte artefacte de comandă combinată în răspunsul UI Magazin foto.
+    """
+    rows: list[dict] = []
+    qs = SiteCartCheckoutIntent.objects.select_related("user").order_by("-created_at")
+    for intent in qs.iterator(chunk_size=200):
+        lines = intent.lines_json or []
+        if not isinstance(lines, list):
+            continue
+        for line in lines:
+            if (line.get("kind") or "").strip() != SiteCartItem.KIND_SHOP_FOTO:
+                continue
+            if (line.get("ref_key") or "").strip() != ref_key:
+                continue
+            lei_s = line.get("line_lei")
+            lei = None
+            if lei_s is not None:
+                try:
+                    lei = Decimal(str(lei_s)).quantize(Decimal("0.01"))
+                except Exception:
+                    pass
+            lt = timezone.localtime(intent.created_at)
+            rows.append(
+                {
+                    "intent_id": intent.pk,
+                    "created_at_display": lt.strftime("%d.%m.%Y %H:%M"),
+                    "line_lei": str(lei) if lei is not None else None,
+                    "line_title": (line.get("title") or "")[:220],
+                    "user_username": intent.user.username,
+                    "user_email": intent.user.email or "",
+                    "buyer_full_name": intent.buyer_full_name,
+                    "buyer_email": intent.buyer_email or "",
+                }
+            )
+            break
+    return rows
+
+
+@require_http_methods(["GET"])
+def reclama_magazin_foto_transactions_view(request):
+    """
+    JSON: tranzacții coș (SiteCartCheckoutIntent) pentru o poză shop_foto:N.
+    Doar superuser (aceeași poartă ca pagina Reclama / harta Magazin foto).
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({"ok": False, "error": "auth"}, status=401)
+    if not request.user.is_superuser:
+        return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
+    ref_key = (request.GET.get("ref_key") or "").strip()
+    if not ref_key.startswith("shop_foto:"):
+        return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
+    try:
+        idx = int(ref_key.split(":", 1)[1])
+    except (ValueError, IndexError):
+        return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
+    if idx < 0 or idx >= SMF_FOTO_LIST_MAX:
+        return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
+    raw_rows = _shop_magazin_foto_collect_transactions(ref_key)
+    transactions: list[dict] = []
+    sum_line = Decimal("0.00")
+    for r in raw_rows:
+        lei_dec = Decimal(r["line_lei"]) if r.get("line_lei") else None
+        if lei_dec is not None:
+            sum_line += lei_dec
+        transactions.append(
+            {
+                "intent_id": r["intent_id"],
+                "created_at_display": r["created_at_display"],
+                "line_lei": r["line_lei"],
+                "line_title": r["line_title"],
+                "user_username": r["user_username"],
+                "user_email": r["user_email"],
+                "buyer_full_name": r["buyer_full_name"],
+                "buyer_email": r["buyer_email"],
+            }
+        )
+    return JsonResponse(
+        {
+            "ok": True,
+            "ref_key": ref_key,
+            "count": len(transactions),
+            "sum_line_lei": str(sum_line.quantize(Decimal("0.01"))),
+            "transactions": transactions,
+        }
+    )
 
 
 def dog_profile_view(request, pk):
@@ -4818,8 +5052,8 @@ RECLAMA_META = {
 
 @login_required
 def reclama_staff_view(request, reclama_section="home"):
-    """Pagină Reclama (doar staff). Non-staff → Acasă. Sub-rute: hărți sloturi per zonă, nu paginile publice."""
-    if not (request.user.is_superuser or request.user.is_staff):
+    """Pagină Reclama — doar superuser (admin Django). Alt cont → Acasă. Sub-rute: hărți sloturi per zonă."""
+    if not request.user.is_superuser:
         return redirect(reverse("home"))
     section = (reclama_section or "home").strip().lower()
     if section not in RECLAMA_WIRE_TEMPLATES:
@@ -5230,7 +5464,7 @@ def reclama_staff_view(request, reclama_section="home"):
 @login_required
 @require_POST
 def reclama_promo_export_summary_now_view(request, order_id: int):
-    if not (request.user.is_superuser or request.user.is_staff):
+    if not request.user.is_superuser:
         return redirect("home")
     order = get_object_or_404(PromoA2Order.objects.select_related("pet"), pk=order_id)
     try:
@@ -7272,6 +7506,167 @@ def _site_cart_checkout_staff_recipient_emails() -> list[str]:
     return _publicitate_creative_staff_recipient_emails()
 
 
+def _shop_magazin_foto_abs_path_for_slot(slot_idx: int | None) -> str | None:
+    """
+    Fișier imagine pentru Magazin foto (slot `shop_foto:{index}`).
+    Demo: același placeholder pentru toate; ulterior poți mapa `slot_idx` → fișiere dedicate.
+    """
+    del slot_idx  # folosit când imaginile sunt per index
+    rel = "images/parteneri/placeholder.jpg"
+    path = None
+    try:
+        path = finders.find(rel)
+    except Exception:
+        path = None
+    if path and os.path.isfile(path):
+        return path
+    sr = getattr(settings, "STATIC_ROOT", None)
+    if sr:
+        cand = os.path.join(sr, *rel.split("/"))
+        if os.path.isfile(cand):
+            return cand
+    return None
+
+
+def _send_shop_foto_thanks_email_to_buyer(
+    from_email: str,
+    buyer_to: str,
+    intent: SiteCartCheckoutIntent,
+    foto_lines: list[dict],
+) -> None:
+    """
+    Email cu mulțumiri + atașamente (poză / poze din Magazin foto).
+    Trimis pentru fiecare cerere de plată care conține linii KIND_SHOP_FOTO.
+    """
+    pm_label = dict(SiteCartCheckoutIntent.PAYMENT_CHOICES).get(intent.payment_method, intent.payment_method)
+    first_name = ((intent.buyer_full_name or "") or "").strip().split(",")[0].strip().split(maxsplit=1)[0][:80]
+    salut = f"Bună, {first_name}," if first_name else "Bună,"
+
+    attach_paths: list[str] = []
+    missing_hints: list[str] = []
+    for ln in foto_lines:
+        rk = ((ln.get("ref_key") or "") or "").strip()
+        idx: int | None = None
+        if rk.startswith("shop_foto:"):
+            try:
+                idx = int(rk.split(":", 1)[1])
+            except (IndexError, ValueError):
+                idx = None
+        abs_path = _shop_magazin_foto_abs_path_for_slot(idx)
+        if abs_path:
+            attach_paths.append(abs_path)
+        else:
+            ttl = ((ln.get("title") or "") or "").strip().replace("\r", " ").replace("\n", " ")[:120]
+            missing_hints.append(f"  • Imagine indisponibilă pentru: {ttl or rk}")
+
+    body_lines = [
+        salut,
+        "",
+        "Îți mulțumim din suflet că sprijini cauza prin Magazinul foto EU-ADOPT!",
+        "Regăsești în atașament poza / pozele achiziționate (ordinea urmează lista de mai jos).",
+        "",
+        f"Referință cerere coș: #{intent.pk}",
+        f"Total estimativ (toate liniile din această cerere): {intent.total_lei} lei.",
+        f"Mod de plată ales pentru liniile EU-ADOPT: {pm_label}.",
+        "",
+        "Articole din Magazin foto în această comandă:",
+    ]
+    for j, ln in enumerate(foto_lines, start=1):
+        ttl = ((ln.get("title") or "") or "").strip().replace("\r", " ").replace("\n", " ")
+        lei = ln.get("line_lei")
+        extra = f" — {lei} lei (estimativ în titlu)" if lei else ""
+        body_lines.append(f"  {j}. {ttl}{extra}")
+
+    if missing_hints:
+        body_lines.extend(["", "Notă tehnică (atașamente lipsă pe server):"] + missing_hints)
+
+    body_lines.extend(
+        [
+            "",
+            "Cu prietenie și mulțumiri,",
+            "Echipa EU-ADOPT",
+        ]
+    )
+    body = "\n".join(body_lines)
+
+    subject = email_subject_for_user(
+        getattr(intent.user, "username", None),
+        "Mulțumim — Magazin foto EU-ADOPT (poze atașate)",
+    )
+    msg = EmailMessage(subject=subject, body=body, from_email=from_email, to=[buyer_to])
+    attached = 0
+    for abs_path in attach_paths:
+        try:
+            msg.attach_file(abs_path)
+            attached += 1
+        except Exception:
+            logging.getLogger(__name__).exception(
+                "shop_foto_thanks_attach fail intent=%s path=%s", intent.pk, abs_path
+            )
+
+    try:
+        msg.send(fail_silently=False)
+    except Exception:
+        logging.getLogger(__name__).exception("shop_foto_thanks_email intent=%s", intent.pk)
+        return
+
+    if attached == 0 and foto_lines:
+        logging.getLogger(__name__).warning(
+            "shop_foto_thanks_email intent=%s: no attachments sent (paths missing or attach failed)",
+            intent.pk,
+        )
+
+
+def _send_site_cart_checkout_buyer_notification_email(intent: SiteCartCheckoutIntent) -> None:
+    """
+    Notificare email cumpărător după `_send_site_cart_checkout_staff_email` (staff).
+    - dacă sunt linii Magazin foto: mesaj cu mulțumiri + atașamente poze;
+    - altfel: mesaj generic de înregistrare cerere (comportamentul anterior).
+    Adresa destinatar: buyer_email din formularul de plată, altfel email cont.
+    """
+    from_email = (getattr(settings, "DEFAULT_FROM_EMAIL", None) or "").strip() or None
+    if not from_email:
+        return
+
+    buyer_to = (
+        ((intent.buyer_email or "") or "").strip().lower()
+        or ((getattr(intent.user, "email", None) or "") or "").strip().lower()
+    )
+    if not buyer_to or "@" not in buyer_to:
+        return
+
+    raw_lines = intent.lines_json if isinstance(intent.lines_json, list) else []
+    foto_lines = [
+        ln
+        for ln in raw_lines
+        if isinstance(ln, dict) and (ln.get("kind") or "").strip() == SiteCartItem.KIND_SHOP_FOTO
+    ]
+
+    if foto_lines:
+        _send_shop_foto_thanks_email_to_buyer(from_email, buyer_to, intent, foto_lines)
+        return
+
+    pm_label = dict(SiteCartCheckoutIntent.PAYMENT_CHOICES).get(intent.payment_method, intent.payment_method)
+    buyer_copy = (
+        f"Bună,\n\n"
+        f"Am înregistrat cererea ta de plată pentru coșul de cumpărături (referință #{intent.pk}).\n"
+        f"Total estimativ: {intent.total_lei} lei.\n"
+        f"Mod de plată ales (pentru liniile EU-ADOPT): {pm_label}.\n"
+        f"Pentru liniile colaboratorilor, plata se face direct la colaborator.\n\n"
+        f"Echipa EU-ADOPT te contactează pentru pasul următor.\n\n"
+        f"— EU-ADOPT"
+    )
+    try:
+        EmailMessage(
+            subject=f"[EU-Adopt] Cerere plată coș #{intent.pk} înregistrată",
+            body=buyer_copy,
+            from_email=from_email,
+            to=[buyer_to],
+        ).send(fail_silently=True)
+    except Exception:
+        pass
+
+
 def _send_site_cart_checkout_staff_email(request, intent: SiteCartCheckoutIntent) -> None:
     recipients = _site_cart_checkout_staff_recipient_emails()
     if not recipients:
@@ -7336,25 +7731,6 @@ def _send_site_cart_checkout_staff_email(request, intent: SiteCartCheckoutIntent
         ).send(fail_silently=False)
     except Exception:
         logging.getLogger(__name__).exception("site_cart_checkout_staff_email")
-    buyer_copy = (
-        f"Bună,\n\n"
-        f"Am înregistrat cererea ta de plată pentru coșul de cumpărături (referință #{intent.pk}).\n"
-        f"Total estimativ: {intent.total_lei} lei.\n"
-        f"Mod de plată ales (pentru liniile EU-ADOPT): {pm_label}.\n"
-        f"Pentru liniile colaboratorilor, plata se face direct la colaborator.\n\n"
-        f"Echipa EU-ADOPT te contactează pentru pasul următor.\n\n"
-        f"— EU-ADOPT"
-    )
-    try:
-        if intent.buyer_email:
-            EmailMessage(
-                subject=f"[EU-Adopt] Cerere plată coș #{intent.pk} înregistrată",
-                body=buyer_copy,
-                from_email=from_email,
-                to=[intent.buyer_email],
-            ).send(fail_silently=True)
-    except Exception:
-        pass
 
 
 def i_love_cos_view(request):
@@ -7539,6 +7915,7 @@ def site_cart_checkout_view(request):
                 return redirect("site_cart_checkout")
 
             _send_site_cart_checkout_staff_email(request, intent)
+            _send_site_cart_checkout_buyer_notification_email(intent)
             partner_claim_result = _issue_partner_direct_claims_from_checkout(
                 request, intent, partner_direct_lines
             )
@@ -7801,10 +8178,17 @@ def site_cart_toggle_view(request):
         if not pet_ok:
             return JsonResponse({"ok": False, "error": "promo_pet_invalid"}, status=400)
 
+    force_add = (request.POST.get("force_add") or "").strip() == "1"
+
     obj = SiteCartItem.objects.filter(user=request.user, ref_key=ref_key).first()
-    if obj:
+    if obj and not force_add:
         obj.delete()
         active = False
+    elif obj and force_add:
+        obj.title = title
+        obj.detail_url = detail_url
+        obj.save(update_fields=["title", "detail_url"])
+        active = True
     else:
         n = SiteCartItem.objects.filter(user=request.user).count()
         if n >= SITE_CART_MAX_ITEMS:

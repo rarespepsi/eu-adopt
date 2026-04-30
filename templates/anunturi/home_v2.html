@@ -156,13 +156,13 @@
 						</div>
 						<div class="hero-v2-cta" aria-hidden="true"></div>
 						<div class="hero-v2-transport">
-							<a href="{% url 'transport' %}" class="hero-v2-transport-badge" title="Deschide pagina Transport">
-								<img src="{% static 'images/transport/sigla1.jpeg' %}" alt="EU Adopt Transport" onerror="this.style.display='none'" />
+							<a href="{% url 'donatii_generale' %}?sursa=home_autocar" class="hero-v2-transport-badge" title="Donații — continuă către autocar și cuști">
+								<img src="{% static 'images/transport/sigla1.jpeg' %}" alt="EU Adopt — cuști autocar, fii parte din drum" onerror="this.style.display='none'" />
 							</a>
 						</div>
 					</div>
 					<div class="hero-v2-cta-duo">
-						<a href="{% url 'custi' %}" class="hero-v2-cta-sustine" title="Susține EU-Adopt">Susține EU-Adopt</a>
+						<a href="{% url 'donatii_generale' %}?sursa=home_sustine" class="hero-v2-cta-sustine" title="Susține EU-Adopt">Susține EU-Adopt</a>
 						<a href="{% url 'pets_all' %}" class="hero-v2-cta-animale" title="Vezi prietenii tăi">Hai la noi!</a>
 					</div>
 				</header>
@@ -305,7 +305,7 @@
 				<div class="mission-bar-v2" aria-label="Info adopții">
 					<span class="mission-bar-v2-item">În grija noastră: <strong>{{ adopted_animals|default:0 }}</strong> adoptați</span>
 					<span class="mission-bar-v2-item">🐾 <span class="mission-bar-v2-count">{{ active_animals|default:0 }}</span> animale caută casă chiar acum</span>
-					<a href="{% url 'transport' %}" class="mission-bar-v2-link">❤️ Fii parte din drum →</a>
+					<a href="{% url 'donatii_generale' %}?sursa=home_bara" class="mission-bar-v2-link" title="Susține proiectul — donații">❤️ Fii parte din drum →</a>
 				</div>
 			</div>
 		</div>

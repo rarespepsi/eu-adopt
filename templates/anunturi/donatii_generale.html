@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Donații | EU-ADOPT{% endblock %}
+{% block body_class %}page-donatii-generale{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/donatii-generale.css' %}?v=8" type="text/css" media="all" />
+{% endblock %}
+
+{% block content %}
+<section class="donatii-gen-wrap" aria-label="Donații EU-ADOPT">
+	{% if donatii_query_sursa or donatii_query_intent or donatii_query_loc or donatii_query_suma %}
+	<section class="donatii-gen-summary" aria-labelledby="donatii-rezumat-t">
+		<h2 id="donatii-rezumat-t">Rezumat solicitare</h2>
+		<ul>
+			{% if donatii_query_sursa %}<li><strong>Sursă:</strong> {{ donatii_query_sursa }}</li>{% endif %}
+			{% if donatii_query_intent %}<li><strong>Tip:</strong> {{ donatii_query_intent }}</li>{% endif %}
+			{% if donatii_query_loc %}<li><strong>Loc cușcă:</strong> {{ donatii_query_loc }}</li>{% endif %}
+			{% if donatii_query_suma %}<li><strong>Sumă propusă (lei):</strong> {{ donatii_query_suma }}</li>{% endif %}
+		</ul>
+	</section>
+	{% endif %}
+
+	<header class="donatii-gen-hero">
+		<div class="donatii-gen-hero-text">
+			<h1>Donații — sprijină proiectul</h1>
+			<p class="donatii-gen-lead">
+				Mulțumim că vrei să contribui. Poți folosi <strong>transfer bancar</strong>, <strong>formularul 230 (3,5%)</strong>
+				și <strong>contractul de sponsorizare</strong> pentru firmă — alături de partenerul nostru pentru cauza animalelor.
+				Documentele PDF se generează din site; IBAN-ul afișat rămâne provizoriu până la activarea completă a contului partenerului.
+			</p>
+		</div>
+		<aside class="donatii-gen-brand-card" aria-label="Partener pentru cauza animalelor">
+			<div class="donatii-gen-brand-mark" aria-hidden="true"><span class="donatii-gen-brand-heart">&#9829;</span></div>
+			<p class="donatii-gen-brand-name">{{ donatii_partner.name }}</p>
+			<p class="donatii-gen-brand-legal">{{ donatii_partner.legal_name }}</p>
+			<p class="donatii-gen-brand-badge">{{ donatii_partner.badge }}</p>
+			<p class="donatii-gen-brand-blurb">{{ donatii_partner.blurb }}</p>
+		</aside>
+	</header>
+
+	<ul class="donatii-gen-pillars" aria-label="Simboluri — ce susținem">
+		<li class="donatii-gen-pillar">
+			<span class="donatii-gen-pillar-ic" aria-hidden="true">&#9829;</span>
+			<span class="donatii-gen-pillar-txt">Iubire și empatie pentru animale</span>
+		</li>
+		<li class="donatii-gen-pillar">
+			<span class="donatii-gen-pillar-ic" aria-hidden="true">&#9994;</span>
+			<span class="donatii-gen-pillar-txt">Sprijin, protecție și siguranță</span>
+		</li>
+		<li class="donatii-gen-pillar">
+			<span class="donatii-gen-pillar-ic" aria-hidden="true">&#128062;</span>
+			<span class="donatii-gen-pillar-txt">Suflete îngrijite cu grijă</span>
+		</li>
+		<li class="donatii-gen-pillar">
+			<span class="donatii-gen-pillar-ic" aria-hidden="true">&#10024;</span>
+			<span class="donatii-gen-pillar-txt">Responsabilitate și caracter</span>
+		</li>
+	</ul>
+
+	<section id="donatii-sms" class="donatii-gen-sms" aria-labelledby="donatii-sms-h">
+		<h2 id="donatii-sms-h">Donație prin SMS</h2>
+		<p>
+			Aici vor fi descrise <strong>modalitățile de donație prin SMS</strong>: număr scurt (când e activat), textul mesajului,
+			preț per SMS, condiții legale și <strong>sisteme de completare</strong> (ex. confirmare, facturare, raportare către operator).
+			Până la contractarea serviciului, informațiile rămân provizorii.
+		</p>
+		<ul class="donatii-gen-sms-list">
+			<li>Activare număr scurt și cuvânt-cheie cu operator / agregator autorizat.</li>
+			<li>Instrucțiuni clare pentru utilizator (ce trimite, cât costă, cum se oprește).</li>
+			<li>Integrare ulterioară în panou (dacă e cazul) pentru reconciliere plăți SMS.</li>
+		</ul>
+	</section>
+
+	<section class="donatii-hub-grid" aria-label="Opțiuni donație">
+		<article class="donatii-hub-card">
+			<h2 id="donatii-quick-title">Pentru o cauză nobilă</h2>
+			<p>Alege o sumă orientativă; continuă cu <strong>transfer bancar</strong> (IBAN în caseta următoare) și notează în detaliul plății donație EU-ADOPT.</p>
+			<div class="donatii-quick-amounts" role="group" aria-label="Sume în lei" data-donatii-base="{% url 'donatii_generale' %}">
+				<div class="donatii-quick-row-one">
+					<a class="donatii-quick-amt" href="{% url 'donatii_generale' %}?suma=25#donatii-transfer-bank">25 lei</a>
+					<a class="donatii-quick-amt" href="{% url 'donatii_generale' %}?suma=50#donatii-transfer-bank">50 lei</a>
+					<a class="donatii-quick-amt" href="{% url 'donatii_generale' %}?suma=100#donatii-transfer-bank">100 lei</a>
+					<input type="number" class="donatii-quick-custom-input" id="donatiiCustomSuma" name="donatii_custom_suma" min="1" max="999999" step="1" inputmode="decimal" placeholder="Altă sumă" title="Altă sumă în lei" aria-label="Altă sumă în lei" autocomplete="off" />
+				</div>
+				<div class="donatii-quick-row-two">
+					<button type="button" class="donatii-quick-custom-btn" id="donatiiCustomSumaGo">Aplică</button>
+				</div>
+			</div>
+		</article>
+		<article class="donatii-hub-card" id="donatii-transfer-bank">
+			<h2>Transfer bancar</h2>
+			<p class="donatii-iban-label">IBAN (provizoriu)</p>
+			<p class="donatii-iban-value" id="donatiiIbanText">{{ donatii_org.iban }}</p>
+			<p class="donatii-bank-note">{{ donatii_org.bank }}</p>
+			<button type="button" class="donatii-copy-btn" id="donatiiCopyIban" data-copy="{{ donatii_org.iban }}">Copiază IBAN</button>
+		</article>
+		<article class="donatii-hub-card">
+			<h2>Formular 230 (3,5%)</h2>
+			<p>PDF cu datele tale și beneficiarul din configurația site-ului. Nu trimite automat la ANAF.</p>
+			<a href="{% url 'donatii_formular_230' %}" class="donatii-gen-btn-primary">Generează formular</a>
+		</article>
+		<article class="donatii-hub-card">
+			<h2>Sponsorizare firmă</h2>
+			<p>Contract-model PDF pentru persoană juridică (date firmă + beneficiar provizoriu).</p>
+			<a href="{% url 'donatii_contract_sponsorizare' %}" class="donatii-gen-btn-primary">Generează contract</a>
+		</article>
+	</section>
+
+	<div class="donatii-gen-info" role="status">
+		<span class="donatii-gen-info-ic" aria-hidden="true">i</span>
+		<div class="donatii-gen-info-body">
+			<strong>Important:</strong> documentele PDF sunt <strong>orientative</strong>; verifică cu specialist fiscal sau juridic înainte de depunere sau semnare.
+			IBAN-ul din caseta „Transfer bancar” este în curs de aliniere la contul partenerului <strong>{{ donatii_partner.name }}</strong>.
+			Pentru întrebări: <a href="{% url 'contact' %}">Contact</a>.
+		</div>
+	</div>
+
+	<div class="donatii-gen-values-row">
+		<section class="donatii-gen-values" aria-labelledby="donatii-values-h">
+			<h2 id="donatii-values-h">Fiecare contribuție contează</h2>
+			<ul class="donatii-gen-values-list">
+				<li><span class="donatii-gen-value-dot" aria-hidden="true"></span> Încredere</li>
+				<li><span class="donatii-gen-value-dot" aria-hidden="true"></span> Compasiune</li>
+				<li><span class="donatii-gen-value-dot" aria-hidden="true"></span> Respect</li>
+				<li><span class="donatii-gen-value-dot" aria-hidden="true"></span> Comunitate</li>
+			</ul>
+		</section>
+		<p class="donatii-gen-slogan" lang="ro">Fii vocea celor care nu pot vorbi.</p>
+	</div>
+
+	<nav class="donatii-gen-actions" aria-label="Linkuri rapide">
+		<a href="{% url 'custi' %}" class="donatii-gen-btn-ghost">Harta cuștilor autocarului</a>
+		<a href="{% url 'transport' %}" class="donatii-gen-btn-ghost">Pagina Transport</a>
+		{% if user.is_authenticated %}
+		<a href="{% url 'account_edit' %}" class="donatii-gen-btn-ghost">Completează datele mele</a>
+		{% else %}
+		<a href="{% url 'login' %}?next={% url 'donatii_generale' %}" class="donatii-gen-btn-ghost">Intră în cont (autocompletare)</a>
+		{% endif %}
+	</nav>
+</section>
+<script>
+(function() {
+	var btn = document.getElementById('donatiiCopyIban');
+	if (btn) btn.addEventListener('click', function() {
+		var t = btn.getAttribute('data-copy') || '';
+		if (!t) return;
+		if (navigator.clipboard && navigator.clipboard.writeText) {
+			navigator.clipboard.writeText(t).then(function() {
+				btn.textContent = 'Copiat!';
+				setTimeout(function() { btn.textContent = 'Copiază IBAN'; }, 2000);
+			}).catch(function() {});
+		}
+	});
+	var wrap = document.querySelector('.donatii-quick-amounts[data-donatii-base]');
+	var go = document.getElementById('donatiiCustomSumaGo');
+	var inp = document.getElementById('donatiiCustomSuma');
+	if (wrap && go && inp) {
+		function donatiiApplyCustomSuma() {
+			var base = wrap.getAttribute('data-donatii-base') || '';
+			var raw = String(inp.value || '').trim().replace(',', '.');
+			var n = parseFloat(raw);
+			if (!base || !isFinite(n) || n < 1) return;
+			var whole = Math.floor(n);
+			if (whole < 1 || whole > 999999) return;
+			window.location.href = base + '?suma=' + encodeURIComponent(String(whole)) + '#donatii-transfer-bank';
+		}
+		go.addEventListener('click', donatiiApplyCustomSuma);
+		inp.addEventListener('keydown', function(ev) {
+			if (ev.key === 'Enter') {
+				ev.preventDefault();
+				donatiiApplyCustomSuma();
+			}
+		});
+	}
+})();
+</script>
+{% endblock %}

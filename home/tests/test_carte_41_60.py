@@ -96,6 +96,32 @@ class Carte41_60Tests(TestCase):
         r = Client().get(reverse("custi"))
         self.assertEqual(r.status_code, 200)
 
+    def test_42b_donatii_generale_200(self):
+        r = Client().get(reverse("donatii_generale"))
+        self.assertEqual(r.status_code, 200)
+        r2 = Client().get(reverse("donatii_generale"), {"sursa": "custi", "intent": "cusca", "loc": "L5", "suma": "100"})
+        self.assertEqual(r2.status_code, 200)
+        self.assertContains(r2, "L5", status_code=200)
+        self.assertContains(r2, "100", status_code=200)
+
+    def test_42c_donatii_formular_230_get_and_pdf_post(self):
+        c = Client()
+        self.assertEqual(c.get(reverse("donatii_formular_230")).status_code, 200)
+        payload = {
+            "prenume": "Ion",
+            "nume": "Popescu",
+            "cnp": "1234567890123",
+            "adresa": "Str. Exemplu nr. 1",
+            "judet": "București",
+            "localitate": "Sector 1",
+            "email": "ion@example.com",
+            "telefon": "0700000000",
+        }
+        r = c.post(reverse("donatii_formular_230"), payload)
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r["Content-Type"], "application/pdf")
+        self.assertTrue(r.content.startswith(b"%PDF"))
+
     def test_43_i_love_anon_redirects_to_login(self):
         r = Client().get(reverse("i_love"))
         self.assertEqual(r.status_code, 302)

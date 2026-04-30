@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+	<meta charset="utf-8" />
+	<title>Formular 230 — EU-ADOPT</title>
+	<style>
+		@page { size: A4; margin: 18mm; }
+		body { font-family: DejaVu Sans, Helvetica, Arial, sans-serif; font-size: 10pt; color: #111; }
+		h1 { font-size: 14pt; margin: 0 0 8px; }
+		.meta { font-size: 8.5pt; color: #444; margin-bottom: 14px; }
+		table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+		th, td { border: 1px solid #333; padding: 6px 8px; vertical-align: top; }
+		th { background: #f0f4f8; width: 32%; text-align: left; font-size: 9pt; }
+		td { font-size: 9.5pt; }
+		.benef { margin-top: 16px; padding: 8px; border: 1px dashed #555; background: #fafafa; font-size: 9pt; }
+	</style>
+</head>
+<body>
+	<h1>Declarație orientativă — direcționare 3,5% (model EU-ADOPT)</h1>
+	<p class="meta">Document generat automat de platforma EU-ADOPT. Nu reprezintă formular oficial ANAF. Verifică versiunea în vigoare pe site-ul ANAF.</p>
+	<table>
+		<tr><th>Nume</th><td>{{ d.nume }}</td></tr>
+		<tr><th>Prenume</th><td>{{ d.prenume }}</td></tr>
+		<tr><th>CNP</th><td>{{ d.cnp }}</td></tr>
+		<tr><th>Adresă</th><td>{{ d.adresa|linebreaksbr }}</td></tr>
+		<tr><th>Județ</th><td>{{ d.judet }}</td></tr>
+		<tr><th>Localitate</th><td>{{ d.localitate }}</td></tr>
+		<tr><th>E-mail</th><td>{{ d.email }}</td></tr>
+		{% if d.telefon %}<tr><th>Telefon</th><td>{{ d.telefon }}</td></tr>{% endif %}
+	</table>
+	<div class="benef">
+		<strong>Beneficiar (date provizorii site):</strong><br />
+		{{ org.name }} — CUI: {{ org.cui }}<br />
+		Adresă: {{ org.address }}<br />
+		IBAN: {{ org.iban }} — {{ org.bank }}
+	</div>
+</body>
+</html>

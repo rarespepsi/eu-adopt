@@ -1,7 +1,12 @@
 {% load static %}
 <div class="reclama-mzf-wire" aria-hidden="{% if pub_interactive_wire %}false{% else %}true{% endif %}">
 	{% for slot in reclama_magazin_foto_slots %}
-	<article class="reclama-mzf-card" data-slot="MZF.{{ forloop.counter }}">
+	<article
+		class="reclama-mzf-card reclama-mzf-card--pickable{% if pub_interactive_wire %} reclama-mzf-card--interactive{% endif %}"
+		data-ref-key="{{ slot.ref_key }}"
+		{% if pub_interactive_wire %}role="button" tabindex="0"{% endif %}
+		aria-label="Poză {{ slot.nume }} — {{ slot.pret_lei }} lei — apasă pentru tranzacții în caseta 1"
+	>
 		<div class="reclama-mzf-photo">
 			<img
 				src="{% static 'images/parteneri/placeholder.jpg' %}"

@@ -785,6 +785,49 @@ class Carte81_100Tests(TestCase):
         self.assertEqual(intent.buyer_full_name, "Ion Test")
         self.assertGreaterEqual(intent.total_lei, 0)
 
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+        DEFAULT_FROM_EMAIL="noreply@test-eu.local",
+    )
+    def test_108e2_site_cart_checkout_shop_foto_buyer_mail_with_attachment(self):
+        """Magazin foto: după plată trimitem cumpărătorului mesaj cu mulțumiri și fișier(e) atașate."""
+        from django.core import mail
+
+        mail.outbox.clear()
+        user = _pf_user("cos108e2f")
+        c = Client()
+        c.login(username=user.username, password="Test61_PF_pass!")
+        SiteCartItem.objects.create(
+            user=user,
+            ref_key="shop_foto:2",
+            kind=SiteCartItem.KIND_SHOP_FOTO,
+            title="Poză ONG — Bella (1x × 6 lei = 6 lei)",
+            detail_url=reverse("shop_magazin_foto"),
+        )
+        r2 = c.post(
+            reverse("site_cart_checkout"),
+            {
+                "buyer_full_name": "Ion FotoTest",
+                "buyer_email": "ion.foto@test.local",
+                "buyer_phone": "0712333444",
+                "buyer_county": "Cluj",
+                "buyer_city": "Cluj-Napoca",
+                "buyer_address": "",
+                "buyer_company_display": "",
+                "buyer_company_legal": "",
+                "buyer_company_cui": "",
+                "buyer_note": "",
+                "buyer_type": SiteCartCheckoutIntent.BUYER_TYPE_PF,
+                "payment_method": SiteCartCheckoutIntent.PAYMENT_BANK_TRANSFER,
+            },
+        )
+        self.assertEqual(r2.status_code, 302)
+        buyer_msgs = [m for m in mail.outbox if "ion.foto@test.local" in (m.to or [])]
+        self.assertEqual(len(buyer_msgs), 1)
+        self.assertIn("Magazin foto EU-ADOPT", buyer_msgs[0].subject)
+        attach = getattr(buyer_msgs[0], "attachments", None) or []
+        self.assertGreaterEqual(len(attach), 1)
+
     def test_108f_site_cart_checkout_get_with_promo_a2_line_200(self):
         """GET /i-love/cos/plata/ cu linie promo A2: _site_cart_owner_for_line trebuie să ruleze fără NameError."""
         owner = _pf_user("cos108f")

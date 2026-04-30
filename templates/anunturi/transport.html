@@ -5,7 +5,7 @@
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=31" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=32" type="text/css" media="screen" />
 <style>
 	/* Desktop: TW ca PW/SW – fără scroll pagină, viewport fix (nu aplicăm pe mobil) */
 	@media (min-width: 769px) {
@@ -299,7 +299,7 @@
 					{% include "components/transport_bulina.html" %}
 					<!-- Hub: centrul acestui div = centrul casetei centrale; inelul folosește același punct -->
 					<div class="t2-hub">
-						<a href="{% url 'custi' %}" class="t2-center">
+						<a href="{% url 'donatii_generale' %}?sursa=transport_hub" class="t2-center">
 							<img src="{% static 'images/transport/servicii/central.jpeg' %}" alt="" class="t2-center-img" />
 						</a>
 						<div class="t2-circles">
@@ -349,6 +349,9 @@
 							<span class="t2-circle-tooltip">Toaletare și îngrijire veterinară la cerere în pauzele de drum.</span>
 						</div>
 						</div>
+					</div>
+					<div class="t2-donate-cause-wrap">
+						<a href="{% url 'donatii_generale' %}?sursa=transport" class="t2-donate-cause-link">Donează pentru o cauză</a>
 					</div>
 				</div>
 			</div>

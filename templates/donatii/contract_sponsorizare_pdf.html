@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+	<meta charset="utf-8" />
+	<title>Contract sponsorizare — EU-ADOPT</title>
+	<style>
+		@page { size: A4; margin: 18mm; }
+		body { font-family: DejaVu Sans, Helvetica, Arial, sans-serif; font-size: 10pt; color: #111; }
+		h1 { font-size: 13pt; margin: 0 0 6px; }
+		.meta { font-size: 8.5pt; color: #444; margin-bottom: 12px; }
+		table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+		th, td { border: 1px solid #333; padding: 6px 8px; vertical-align: top; }
+		th { background: #f5f5f5; width: 34%; text-align: left; font-size: 9pt; }
+		.clauze { margin-top: 14px; font-size: 9pt; line-height: 1.35; }
+	</style>
+</head>
+<body>
+	<h1>Contract de sponsorizare (model)</h1>
+	<p class="meta">Document generat de EU-ADOPT — spre verificare juridică. Date beneficiar provizorii.</p>
+	<table>
+		<tr><th>Sponsor (firmă)</th><td>{{ c.denumire_firma }}</td></tr>
+		<tr><th>CUI / CIF</th><td>{{ c.cui }}</td></tr>
+		<tr><th>Nr. Reg. Com.</th><td>{{ c.nr_reg_com }}</td></tr>
+		<tr><th>Adresă sediu</th><td>{{ c.adresa_firma|linebreaksbr }}</td></tr>
+		<tr><th>Reprezentant legal</th><td>{{ c.reprezentant }}</td></tr>
+		<tr><th>Valoare (RON)</th><td>{{ c.suma }}</td></tr>
+	</table>
+	<table>
+		<tr><th>Beneficiar</th><td>{{ org.name }} — CUI {{ org.cui }} — {{ org.address }}</td></tr>
+		<tr><th>IBAN</th><td>{{ org.iban }} ({{ org.bank }})</td></tr>
+		<tr><th>Contact</th><td>{{ org.email_contact }}</td></tr>
+	</table>
+	<div class="clauze">
+		<strong>Obiect (rezumat):</strong> {{ c.descriere|linebreaksbr }}<br /><br />
+		<strong>Notă:</strong> clauze complete, termene, semnături și înregistrări se stabilesc între părți conform legii.
+		Documentul nu include semnătură electronică.
+	</div>
+</body>
+</html>

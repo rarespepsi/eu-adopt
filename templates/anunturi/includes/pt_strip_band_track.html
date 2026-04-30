@@ -1,10 +1,22 @@
 {% load static %}
 {% for cell in cells %}
 	{% if cell.kind == "eu" %}
+	{% if cell.eu_sms_strip_href %}
+	<a href="{{ cell.eu_sms_strip_href }}" class="pt-strip-item pt-strip-item--{{ strip_variant }} pt-strip-cell--eu pt-strip-cell--sms-strip" data-slot="{{ cell.code }}">
+		<span class="pt-strip-cell-label">{{ cell.eu_sms_strip_label }}</span>
+		<span class="pt-strip-cell-eu-msg">{{ cell.eu_sms_strip_msg }}</span>
+	</a>
+	{% elif cell.eu_donatii_href %}
+	<a href="{{ cell.eu_donatii_href }}" class="pt-strip-item pt-strip-item--{{ strip_variant }} pt-strip-cell--eu pt-strip-cell--donatii-link" data-slot="{{ cell.code }}">
+		<span class="pt-strip-cell-label">{{ cell.label }}</span>
+		<span class="pt-strip-cell-eu-msg">{{ cell.eu_text }}</span>
+	</a>
+	{% else %}
 	<span class="pt-strip-item pt-strip-item--{{ strip_variant }} pt-strip-cell--eu" data-slot="{{ cell.code }}">
 		<span class="pt-strip-cell-label">{{ cell.label }}</span>
 		<span class="pt-strip-cell-eu-msg">{{ cell.eu_text }}</span>
 	</span>
+	{% endif %}
 	{% else %}
 	<span class="pt-strip-item pt-strip-item--{{ strip_variant }} pt-strip-cell--pub{% if cell.creative %}{% if cell.creative.img or cell.creative.video %} pt-strip-cell--has-creative{% endif %}{% endif %}" data-slot="{{ cell.code }}">
 		<span class="pt-strip-cell-label">{{ cell.label }}</span>

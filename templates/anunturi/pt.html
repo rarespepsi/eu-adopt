@@ -176,6 +176,12 @@
 		padding: 0.2rem 0.25rem !important;
 		box-sizing: border-box;
 	}
+	#PW a.pt-strip-cell--eu.pt-strip-cell--donatii-link,
+	#PW a.pt-strip-cell--eu.pt-strip-cell--sms-strip {
+		text-decoration: none !important;
+		color: inherit !important;
+		cursor: pointer;
+	}
 	#PW .pt-strip-cell-label {
 		display: block;
 		font-weight: 900;
@@ -393,7 +399,7 @@
 								</div>
 							</div>
 							<div class="pt-p4-box-sustine" id="P4.2b" data-slot="P4.2b" aria-label="Ajută un suflet">
-								<a href="{% url 'custi' %}" class="pt-p4-btn-sustine" title="Ajută un suflet">Ajuta un Suflet !</a>
+								<a href="{% url 'donatii_generale' %}?sursa=pt" class="pt-p4-btn-sustine" title="Susține EU-ADOPT">Ajuta un Suflet !</a>
 							</div>
 						</div>
 						{# Desktop: doar P4.3 aici. Mobil: sub butoane, un rând cu P4.3 + P5.1–P5.3 (aceleași date ca #P5). #}
@@ -425,7 +431,7 @@
 						</div>
 						{% endif %}
 						<div class="pt-p4-box-sustine pt-p4-land-rail-sustine" aria-label="Ajută un suflet">
-							<a href="{% url 'custi' %}" class="pt-p4-btn-sustine" title="Ajută un suflet">Ajuta un Suflet !</a>
+							<a href="{% url 'donatii_generale' %}?sursa=pt" class="pt-p4-btn-sustine" title="Susține EU-ADOPT">Ajuta un Suflet !</a>
 						</div>
 					</div>
 					<div class="pt-p4-box pt-p4-box-ads pt-p4-land-rail-ads">

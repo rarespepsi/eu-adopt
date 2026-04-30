@@ -1,0 +1,639 @@
+/* Pagină hub donații — scoped */
+body.page-donatii-generale #main_content {
+	padding-top: clamp(0.85rem, 2.5vw, 1.75rem);
+	padding-bottom: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.donatii-gen-wrap {
+	max-width: min(100%, 76rem);
+	margin: 0 auto;
+	padding: 0 clamp(0.75rem, 2.5vw, 1.25rem);
+}
+
+.donatii-gen-wrap h1 {
+	font-size: clamp(1.35rem, 3.2vw, 1.85rem);
+	font-weight: 800;
+	color: #0d2840;
+	margin: 0 0 0.65rem;
+	line-height: 1.2;
+}
+
+.donatii-gen-lead {
+	font-size: 1.05rem;
+	color: #334155;
+	line-height: 1.55;
+	margin: 0;
+}
+
+/* Hero: text + card partener (inspirat layout donații partener) */
+.donatii-gen-hero {
+	display: grid;
+	grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+	gap: clamp(1rem, 3vw, 1.75rem);
+	align-items: start;
+	margin-bottom: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+@media (max-width: 768px) {
+	.donatii-gen-hero {
+		grid-template-columns: 1fr;
+	}
+}
+
+.donatii-gen-hero-text {
+	min-width: 0;
+}
+
+.donatii-gen-brand-card {
+	border-radius: 16px;
+	border: 1px solid rgba(57, 73, 171, 0.28);
+	background: linear-gradient(165deg, #ffffff 0%, #e8eaf6 100%);
+	box-shadow: 0 6px 24px rgba(26, 35, 126, 0.1);
+	padding: clamp(1rem, 2.2vw, 1.35rem);
+	text-align: center;
+}
+
+.donatii-gen-brand-mark {
+	width: clamp(4rem, 12vw, 5.25rem);
+	height: clamp(4rem, 12vw, 5.25rem);
+	margin: 0 auto 0.75rem;
+	border-radius: 50%;
+	background: linear-gradient(145deg, #5c6bc0, #283593);
+	display: grid;
+	place-items: center;
+	box-shadow: 0 4px 14px rgba(40, 53, 147, 0.35);
+}
+
+.donatii-gen-brand-heart {
+	font-size: clamp(1.75rem, 5vw, 2.35rem);
+	line-height: 1;
+	color: #fff;
+}
+
+.donatii-gen-brand-name {
+	margin: 0 0 0.25rem;
+	font-size: clamp(1.15rem, 2.5vw, 1.45rem);
+	font-weight: 800;
+	color: #1a237e;
+	line-height: 1.2;
+}
+
+.donatii-gen-brand-legal {
+	margin: 0 0 0.5rem;
+	font-size: 0.82rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #3949ab;
+	line-height: 1.35;
+}
+
+.donatii-gen-brand-badge {
+	margin: 0 0 0.55rem;
+	font-size: 0.78rem;
+	font-weight: 700;
+	color: #6a1b9a;
+	background: rgba(106, 27, 154, 0.08);
+	border-radius: 999px;
+	padding: 0.35rem 0.65rem;
+	display: inline-block;
+	line-height: 1.25;
+}
+
+.donatii-gen-brand-blurb {
+	margin: 0;
+	font-size: 0.88rem;
+	line-height: 1.5;
+	color: #37474f;
+	text-align: left;
+}
+
+/* Bandă simboluri sub hero */
+.donatii-gen-pillars {
+	list-style: none;
+	margin: 0 0 1.25rem;
+	padding: 0.65rem 0.5rem;
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 0.5rem;
+	border-radius: 14px;
+	background: linear-gradient(90deg, rgba(227, 242, 253, 0.65) 0%, rgba(187, 222, 251, 0.45) 100%);
+	border: 1px solid rgba(13, 71, 161, 0.12);
+}
+
+@media (max-width: 640px) {
+	.donatii-gen-pillars {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.donatii-gen-pillar {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 0.35rem;
+	padding: 0.35rem 0.2rem;
+	min-width: 0;
+}
+
+.donatii-gen-pillar-ic {
+	font-size: 1.35rem;
+	line-height: 1;
+}
+
+.donatii-gen-pillar-txt {
+	font-size: 0.78rem;
+	font-weight: 700;
+	color: #0d47a1;
+	line-height: 1.25;
+}
+
+/* Casetă informare cu icon „i” */
+.donatii-gen-info {
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+	border-radius: 14px;
+	border: 1px solid rgba(3, 169, 244, 0.35);
+	background: linear-gradient(165deg, #e1f5fe 0%, #b3e5fc 35%);
+	padding: 1rem 1.1rem;
+	margin-bottom: 1.25rem;
+	color: #01579b;
+	font-size: 0.95rem;
+	line-height: 1.5;
+}
+
+.donatii-gen-info-ic {
+	flex: 0 0 auto;
+	width: 1.85rem;
+	height: 1.85rem;
+	border-radius: 50%;
+	background: #0277bd;
+	color: #fff;
+	font-weight: 900;
+	font-style: italic;
+	font-family: Georgia, serif;
+	display: grid;
+	place-items: center;
+	font-size: 1rem;
+	line-height: 1;
+}
+
+.donatii-gen-info-body {
+	min-width: 0;
+}
+
+.donatii-gen-info-body a {
+	font-weight: 700;
+	color: #0d47a1 !important;
+}
+
+/* Valori + slogan */
+.donatii-gen-values-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+	gap: 1rem 1.25rem;
+	align-items: center;
+	margin-bottom: 1.35rem;
+}
+
+@media (max-width: 720px) {
+	.donatii-gen-values-row {
+		grid-template-columns: 1fr;
+	}
+}
+
+.donatii-gen-values {
+	min-width: 0;
+}
+
+.donatii-gen-values h2 {
+	font-size: 0.95rem;
+	font-weight: 800;
+	color: #0d47a1;
+	margin: 0 0 0.5rem;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+
+.donatii-gen-values-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem 1rem;
+	font-size: 0.88rem;
+	font-weight: 700;
+	color: #263238;
+}
+
+.donatii-gen-value-dot {
+	display: inline-block;
+	width: 0.45rem;
+	height: 0.45rem;
+	border-radius: 50%;
+	background: #3949ab;
+	margin-right: 0.35rem;
+	vertical-align: middle;
+}
+
+.donatii-gen-slogan {
+	margin: 0;
+	font-size: clamp(1.05rem, 2.8vw, 1.35rem);
+	font-style: italic;
+	font-weight: 600;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	color: #283593;
+	line-height: 1.35;
+	text-align: right;
+}
+
+@media (max-width: 720px) {
+	.donatii-gen-slogan {
+		text-align: center;
+	}
+}
+
+/* Secțiune SMS (ancoră din benzile PT / Servicii) */
+.donatii-gen-sms {
+	border: 1px solid rgba(13, 71, 161, 0.2);
+	border-radius: 14px;
+	background: linear-gradient(165deg, #faf8ff 0%, #e8eaf6 55%);
+	padding: 1rem 1.1rem;
+	margin-bottom: 1.25rem;
+}
+
+.donatii-gen-sms h2 {
+	font-size: 1.05rem;
+	font-weight: 800;
+	color: #311b92;
+	margin: 0 0 0.5rem;
+}
+
+.donatii-gen-sms p {
+	margin: 0 0 0.65rem;
+	font-size: 0.95rem;
+	line-height: 1.5;
+	color: #37474f;
+}
+
+.donatii-gen-sms-list {
+	margin: 0;
+	padding-left: 1.2rem;
+	font-size: 0.92rem;
+	line-height: 1.45;
+	color: #455a64;
+}
+
+/* Sume rapide — în interiorul unei casete hub (ca celelalte) */
+.donatii-hub-card .donatii-quick-amounts {
+	display: flex;
+	flex-direction: column;
+	gap: 0.55rem;
+	margin-top: 0.15rem;
+}
+
+.donatii-hub-card .donatii-quick-row-one {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	gap: 0.35rem;
+	width: 100%;
+}
+
+.donatii-hub-card .donatii-quick-row-one .donatii-quick-amt {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+.donatii-hub-card a.donatii-quick-amt {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.45rem 0.35rem;
+	border-radius: 10px;
+	font-weight: 700;
+	font-size: 0.82rem;
+	text-decoration: none !important;
+	color: #fff !important;
+	background: #0d47a1;
+	border: none;
+	box-shadow: 0 2px 8px rgba(13, 71, 161, 0.22);
+	text-align: center;
+	line-height: 1.2;
+}
+
+.donatii-hub-card a.donatii-quick-amt:hover {
+	filter: brightness(1.06);
+}
+
+.donatii-hub-card a.donatii-quick-amt:focus-visible {
+	outline: 2px solid #0d47a1;
+	outline-offset: 2px;
+}
+
+.donatii-hub-card .donatii-quick-row-one .donatii-quick-custom-input {
+	flex: 1.15 1 0;
+	min-width: 0;
+	box-sizing: border-box;
+	padding: 0.4rem 0.35rem;
+	border: 1px solid #94a3b8;
+	border-radius: 8px;
+	font: inherit;
+	font-size: 0.78rem;
+	text-align: center;
+}
+
+.donatii-hub-card .donatii-quick-row-two {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	margin-top: 0.4rem;
+}
+
+.donatii-hub-card .donatii-quick-custom-btn {
+	font: inherit;
+	font-weight: 700;
+	font-size: 0.82rem;
+	padding: 0.42rem 1.25rem;
+	border-radius: 10px;
+	border: none;
+	cursor: pointer;
+	background: #0d47a1;
+	color: #fff;
+	box-shadow: 0 2px 8px rgba(13, 71, 161, 0.22);
+}
+
+.donatii-hub-card .donatii-quick-custom-btn:hover {
+	filter: brightness(1.06);
+}
+
+.donatii-gen-summary {
+	border: 1px solid rgba(13, 71, 161, 0.22);
+	border-radius: 14px;
+	background: linear-gradient(165deg, rgba(227, 242, 253, 0.55) 0%, rgba(187, 222, 251, 0.35) 100%);
+	padding: 1rem 1.1rem;
+	margin-bottom: 1.35rem;
+}
+
+.donatii-gen-summary h2 {
+	font-size: 1rem;
+	font-weight: 800;
+	color: #0d47a1;
+	margin: 0 0 0.5rem;
+}
+
+.donatii-gen-summary ul {
+	margin: 0;
+	padding-left: 1.15rem;
+	color: #102a43;
+	font-size: 0.95rem;
+	line-height: 1.45;
+}
+
+.donatii-gen-placeholder {
+	border-radius: 14px;
+	border: 1px dashed rgba(100, 116, 139, 0.55);
+	background: #f8fafc;
+	padding: 1.1rem 1.15rem;
+	color: #475569;
+	font-size: 0.98rem;
+	line-height: 1.5;
+	margin-bottom: 1.25rem;
+}
+
+.donatii-gen-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.65rem 1rem;
+	align-items: center;
+}
+
+.donatii-gen-actions a.donatii-gen-btn-primary {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.55rem 1.1rem;
+	border-radius: 10px;
+	font-weight: 700;
+	text-decoration: none;
+	background: #0d47a1;
+	color: #fff !important;
+	border: none;
+	box-shadow: 0 2px 10px rgba(13, 71, 161, 0.28);
+}
+
+.donatii-gen-actions a.donatii-gen-btn-primary:hover {
+	filter: brightness(1.06);
+}
+
+.donatii-gen-actions a.donatii-gen-btn-ghost {
+	display: inline-flex;
+	align-items: center;
+	font-weight: 600;
+	color: #0d47a1 !important;
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+}
+
+/* Hub — 4 casete; pe ecran lat toate pe un rând */
+.donatii-hub-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.75rem;
+	margin-bottom: 1.35rem;
+}
+
+@media (min-width: 1000px) {
+	.donatii-hub-grid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 0.85rem;
+	}
+}
+
+@media (max-width: 520px) {
+	.donatii-hub-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.donatii-hub-card {
+	border: 1px solid rgba(13, 71, 161, 0.18);
+	border-radius: 14px;
+	padding: 1rem 1.05rem;
+	background: #fff;
+	box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+}
+
+.donatii-hub-card--muted {
+	background: #f1f5f9;
+	color: #64748b;
+}
+
+.donatii-hub-card h2 {
+	font-size: 1rem;
+	font-weight: 800;
+	color: #0d47a1;
+	margin: 0 0 0.45rem;
+}
+
+.donatii-hub-card p {
+	margin: 0 0 0.65rem;
+	font-size: 0.92rem;
+	line-height: 1.45;
+	color: #334155;
+}
+
+.donatii-iban-label {
+	font-weight: 700;
+	font-size: 0.82rem;
+	color: #0d47a1;
+	margin-bottom: 0.2rem !important;
+}
+
+.donatii-iban-value {
+	font-family: ui-monospace, monospace;
+	font-size: 0.95rem;
+	font-weight: 700;
+	word-break: break-all;
+	color: #102a43;
+	margin-bottom: 0.35rem !important;
+}
+
+.donatii-bank-note {
+	font-size: 0.82rem;
+	color: #64748b;
+	margin-bottom: 0.65rem !important;
+}
+
+.donatii-copy-btn {
+	font: inherit;
+	font-size: 0.85rem;
+	font-weight: 700;
+	padding: 0.4rem 0.85rem;
+	border-radius: 8px;
+	border: 1px solid #0d47a1;
+	background: #fff;
+	color: #0d47a1;
+	cursor: pointer;
+}
+
+.donatii-copy-btn:hover {
+	background: #e3f2fd;
+}
+
+a.donatii-gen-btn-primary {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.5rem 1rem;
+	border-radius: 10px;
+	font-weight: 700;
+	text-decoration: none;
+	background: #0d47a1;
+	color: #fff !important;
+	box-shadow: 0 2px 8px rgba(13, 71, 161, 0.22);
+}
+
+a.donatii-gen-btn-primary:hover {
+	filter: brightness(1.06);
+}
+
+/* Formulare 230 / contract */
+.donatii-form-wrap .donatii-back {
+	margin: 0 0 0.75rem;
+}
+
+.donatii-form-wrap .donatii-back a {
+	font-weight: 600;
+	color: #0d47a1 !important;
+}
+
+.donatii-profile-hint {
+	background: #fff8e1;
+	border: 1px solid #ffe082;
+	border-radius: 10px;
+	padding: 0.65rem 0.85rem;
+	font-size: 0.92rem;
+	margin-bottom: 1rem;
+	color: #5d4037;
+}
+
+.donatii-native-form .donatii-field-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+	gap: 0.85rem 1rem;
+	margin-bottom: 1rem;
+}
+
+.donatii-native-form label {
+	display: block;
+	font-weight: 700;
+	font-size: 0.86rem;
+	color: #0d2840;
+	margin-bottom: 0.25rem;
+}
+
+.donatii-input {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+	padding: 0.45rem 0.55rem;
+	border: 1px solid #94a3b8;
+	border-radius: 8px;
+	font: inherit;
+	font-size: 0.95rem;
+}
+
+textarea.donatii-input {
+	min-height: 4.5rem;
+	resize: vertical;
+}
+
+.donatii-field--error .donatii-input {
+	border-color: #c62828;
+}
+
+.donatii-help {
+	display: block;
+	font-size: 0.78rem;
+	color: #64748b;
+	margin-top: 0.2rem;
+}
+
+.donatii-err {
+	display: block;
+	font-size: 0.82rem;
+	color: #b71c1c;
+	margin-top: 0.2rem;
+}
+
+.donatii-form-errors {
+	color: #b71c1c;
+	margin-bottom: 0.75rem;
+}
+
+.donatii-field--check label {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.45rem;
+	font-weight: 600;
+}
+
+.donatii-field--check input {
+	margin-top: 0.15rem;
+}
+
+.donatii-form-actions {
+	margin-top: 0.5rem;
+}
+
+button.donatii-submit-btn {
+	font: inherit;
+	cursor: pointer;
+	border: none;
+}

@@ -67,6 +67,24 @@
 								</tbody>
 							</table>
 						</div>
+						{% elif reclama_section == "magazin_foto" %}
+						<div class="reclama-mzf-c1" id="reclama_mzf_c1" data-tx-url="{% url 'reclama_magazin_foto_transactions' %}">
+							<div class="reclama-c1-title">Magazin foto — tranzacții pe poză</div>
+							<p class="reclama-mzf-c1-hint" id="reclama_mzf_c1_hint">
+								Apasă pe o poză în <strong>Caseta 2</strong>. Aici vezi strict ce ține de acea poză (sumă poză și cine a inițiat plata pentru linia foto).
+							</p>
+							<div class="reclama-mzf-c1-loading" id="reclama_mzf_c1_loading" hidden>Se încarcă…</div>
+							<div class="reclama-mzf-c1-error" id="reclama_mzf_c1_error" hidden></div>
+							<div class="reclama-c3-summary" id="reclama_mzf_c1_summary" hidden></div>
+							<div class="reclama-c1-table-wrap" id="reclama_mzf_c1_table_wrap" hidden>
+								<table class="reclama-c1-table reclama-mzf-tx-table" aria-label="Tranzacții magazin foto">
+									<thead>
+										<tr id="reclama_mzf_tx_head"></tr>
+									</thead>
+									<tbody id="reclama_mzf_tx_body"></tbody>
+								</table>
+							</div>
+						</div>
 						{% elif reclama_section == "pub_a2" %}
 						<div class="reclama-c1-title">Comenzi promo A2 active (locație: Reclama / Caseta 1)</div>
 						<div class="reclama-c1-summary">
@@ -130,7 +148,7 @@
 						<div class="reclama-staff-pane reclama-staff-pane--caseta2" aria-label="{{ reclama_caseta2_label|default:'Caseta 2' }}">
 							<span class="reclama-staff-pane-label">{{ reclama_caseta2_label|default:"Caseta 2 – schemă HOME" }}</span>
 							<div class="reclama-home-wire-clip">
-								{% include reclama_wire_template %}
+								{% include reclama_wire_template with pub_interactive_wire=True %}
 							</div>
 						</div>
 						<div class="reclama-staff-pane reclama-staff-pane--caseta3" aria-label="Caseta 3">
@@ -1456,6 +1474,31 @@
 		min-height: 0;
 		height: 100%;
 	}
+	body.page-reclama-staff .reclama-mzf-card.reclama-mzf-card--pickable.reclama-mzf-card--interactive {
+		cursor: pointer;
+	}
+	body.page-reclama-staff .reclama-mzf-card.reclama-mzf-card--interactive:focus-visible {
+		outline: 2px solid #ffca28;
+		outline-offset: 2px;
+	}
+	body.page-reclama-staff .reclama-mzf-card.is-mzf-selected {
+		box-shadow: 0 0 0 3px #ffca28;
+		border-color: rgba(255, 152, 0, 0.85);
+	}
+	body.page-reclama-staff .reclama-mzf-c1-hint {
+		margin: 0 0 0.35rem;
+		font-size: 0.75rem;
+		line-height: 1.4;
+		color: #37474f;
+	}
+	body.page-reclama-staff .reclama-mzf-c1-loading,
+	body.page-reclama-staff .reclama-mzf-c1-error {
+		font-size: 0.72rem;
+		margin-bottom: 0.35rem;
+	}
+	body.page-reclama-staff .reclama-mzf-c1-error {
+		color: #c62828;
+	}
 	body.page-reclama-staff .reclama-mzf-photo {
 		aspect-ratio: 4 / 3;
 		background: #f2f5f8;
@@ -1698,4 +1741,139 @@ document.addEventListener("DOMContentLoaded", function() {
 	}
 });
 </script>
+{% if reclama_section == "magazin_foto" %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+	var root = document.querySelector(".reclama-mzf-wire");
+	var c1 = document.getElementById("reclama_mzf_c1");
+	var hintEl = document.getElementById("reclama_mzf_c1_hint");
+	var loadingEl = document.getElementById("reclama_mzf_c1_loading");
+	var errEl = document.getElementById("reclama_mzf_c1_error");
+	var sumEl = document.getElementById("reclama_mzf_c1_summary");
+	var tableWrap = document.getElementById("reclama_mzf_c1_table_wrap");
+	var theadRow = document.getElementById("reclama_mzf_tx_head");
+	var tbody = document.getElementById("reclama_mzf_tx_body");
+	if (!root || !c1) return;
+	var txUrl = (c1.getAttribute("data-tx-url") || "").trim();
+
+	function fmtComma(s) {
+		return String(s != null ? s : "0").replace(".", ",");
+	}
+
+	function setLoading(on) {
+		if (loadingEl) loadingEl.hidden = !on;
+		if (on && errEl) {
+			errEl.hidden = true;
+			errEl.textContent = "";
+		}
+	}
+
+	function renderTable(rows) {
+		if (!theadRow || !tbody) return;
+		theadRow.innerHTML = "";
+		tbody.innerHTML = "";
+		var cols = [
+			"Data",
+			"Cerere plată (#)",
+			"Poză (lei)",
+			"Poză (titlu salvat în coș)",
+			"Utilizator cont",
+			"E-mail cont",
+			"Plătitor (formular)",
+			"E-mail plată",
+		];
+		for (var h = 0; h < cols.length; h++) {
+			var th = document.createElement("th");
+			th.textContent = cols[h];
+			theadRow.appendChild(th);
+		}
+		for (var i = 0; i < rows.length; i++) {
+			var tx = rows[i];
+			var tr = document.createElement("tr");
+			function td(t) {
+				var x = document.createElement("td");
+				x.textContent = t != null ? String(t) : "";
+				tr.appendChild(x);
+			}
+			td(tx.created_at_display || "");
+			td(tx.intent_id != null ? String(tx.intent_id) : "");
+			td(tx.line_lei != null ? fmtComma(tx.line_lei) : "—");
+			td(tx.line_title || "—");
+			td(tx.user_username || "");
+			td(tx.user_email || "");
+			td(tx.buyer_full_name || "");
+			td(tx.buyer_email || "");
+			tbody.appendChild(tr);
+		}
+	}
+
+	function pickCard(card) {
+		root.querySelectorAll(".reclama-mzf-card.is-mzf-selected").forEach(function (x) {
+			x.classList.remove("is-mzf-selected");
+		});
+		if (card) card.classList.add("is-mzf-selected");
+	}
+
+	function loadTx(refKey) {
+		if (!refKey || !txUrl) return;
+		setLoading(true);
+		if (hintEl) hintEl.hidden = true;
+		if (sumEl) sumEl.hidden = true;
+		if (tableWrap) tableWrap.hidden = true;
+		var sep = txUrl.indexOf("?") >= 0 ? "&" : "?";
+		var url = txUrl + sep + "ref_key=" + encodeURIComponent(refKey);
+		fetch(url, { credentials: "same-origin", cache: "no-store", headers: { Accept: "application/json" } })
+			.then(function (r) {
+				return r.json();
+			})
+			.then(function (data) {
+				setLoading(false);
+				if (!data || !data.ok) throw new Error("mzf_tx");
+				var n = data.count || 0;
+				if (sumEl) {
+					sumEl.hidden = false;
+					sumEl.textContent =
+						n === 0
+							? "Nu există achiziții înregistrate pentru această poză."
+							: "Linii foto: " + n + " | Total sume poză: " + fmtComma(data.sum_line_lei) + " lei";
+				}
+				renderTable(data.transactions || []);
+				if (tableWrap) tableWrap.hidden = n === 0;
+				return true;
+			})
+			.catch(function () {
+				setLoading(false);
+				if (hintEl) hintEl.hidden = false;
+				if (errEl) {
+					errEl.hidden = false;
+					errEl.textContent = "Nu s-au încărcat datele (verifică sesiunea admin).";
+				}
+				if (sumEl) sumEl.hidden = true;
+				if (tableWrap) tableWrap.hidden = true;
+			});
+	}
+
+	function activateCard(card) {
+		if (!card || !card.getAttribute("data-ref-key")) return;
+		pickCard(card);
+		loadTx(card.getAttribute("data-ref-key"));
+	}
+
+	root.addEventListener("click", function (e) {
+		var card = e.target && e.target.closest && e.target.closest(".reclama-mzf-card[data-ref-key]");
+		if (!card || !root.contains(card)) return;
+		e.preventDefault();
+		activateCard(card);
+	});
+
+	root.addEventListener("keydown", function (e) {
+		if (e.key !== "Enter" && e.key !== " ") return;
+		var card = e.target && e.target.closest && e.target.closest(".reclama-mzf-card[data-ref-key]");
+		if (!card || !root.contains(card)) return;
+		e.preventDefault();
+		activateCard(card);
+	});
+});
+</script>
+{% endif %}
 {% endblock %}

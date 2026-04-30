@@ -55,11 +55,13 @@
 		var refKey = btn.getAttribute('data-ref-key') || '';
 		var title = btn.getAttribute('data-title') || '';
 		var detailUrl = btn.getAttribute('data-detail-url') || '';
+		var forceAdd = btn.getAttribute('data-force-add') || '';
 		var fd = new URLSearchParams();
 		fd.set('kind', kind);
 		fd.set('ref_key', refKey);
 		fd.set('title', title);
 		fd.set('detail_url', detailUrl);
+		if (forceAdd === '1') fd.set('force_add', '1');
 		btn.setAttribute('aria-busy', 'true');
 		fetch(toggleUrl(), {
 			method: 'POST',

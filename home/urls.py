@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import donatii_views, views
 
 urlpatterns = [
     path('', views.home_view, name='home'),
@@ -46,6 +46,7 @@ urlpatterns = [
     path('reclama/cos-pub/', views.reclama_staff_view, {'reclama_section': 'cos_pub'}, name='reclama_cos_pub'),
     path('reclama/magazinul-meu/', views.reclama_staff_view, {'reclama_section': 'magazinul_meu'}, name='reclama_magazinul_meu'),
     path('reclama/i-love/', views.reclama_staff_view, {'reclama_section': 'i_love'}, name='reclama_i_love'),
+    path('reclama/magazin-foto/tranzactii/', views.reclama_magazin_foto_transactions_view, name='reclama_magazin_foto_transactions'),
     path('reclama/magazin-foto/', views.reclama_staff_view, {'reclama_section': 'magazin_foto'}, name='reclama_magazin_foto'),
     path('reclama/termeni/', views.reclama_staff_view, {'reclama_section': 'termeni'}, name='reclama_termeni'),
     path('reclama/contact/', views.reclama_staff_view, {'reclama_section': 'contact'}, name='reclama_contact'),
@@ -107,6 +108,9 @@ urlpatterns = [
     path('transport/dispatch/<int:job_id>/rate/', views.transport_dispatch_rate_view, name='transport_dispatch_rate'),
 
     path('custi/', views.custi_view, name='custi'),
+    path('donatii/', views.donatii_generale_view, name='donatii_generale'),
+    path('donatii/formular-230/', donatii_views.donatii_formular_230_view, name='donatii_formular_230'),
+    path('donatii/contract/', donatii_views.donatii_contract_sponsorizare_view, name='donatii_contract_sponsorizare'),
     path('shop/', views.shop_view, name='shop'),
     path('shop/comanda-personalizate/', views.shop_comanda_personalizate_view, name='shop_comanda_personalizate'),
     path('shop/magazin-foto/more/', views.shop_magazin_foto_more_view, name='shop_magazin_foto_more'),

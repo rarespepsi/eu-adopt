@@ -4,3 +4,4 @@ gunicorn
 whitenoise
 pillow
 psycopg2-binary
+fpdf2==2.8.2

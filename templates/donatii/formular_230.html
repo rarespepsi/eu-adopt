@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Formular 230 (3,5%) | Donații EU-ADOPT{% endblock %}
+{% block body_class %}page-donatii-generale page-donatii-230{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/donatii-generale.css' %}?v=2" type="text/css" media="all" />
+{% endblock %}
+
+{% block content %}
+<section class="donatii-gen-wrap donatii-form-wrap" aria-label="Formular 230">
+	<p class="donatii-back"><a href="{% url 'donatii_generale' %}">← Înapoi la Donații</a></p>
+	<h1>Formular 230 — direcționare 3,5% (model PDF)</h1>
+	<p class="donatii-gen-lead">
+		Completează datele pentru un <strong>PDF informativ</strong> generat de site. Acest document <strong>nu</strong> înlocuiește
+		formularul oficial ANAF și <strong>nu</strong> este transmis automat la ANAF. Îl depui tu la organul fiscal sau prin canalele oficiale.
+	</p>
+
+	{% if user.is_authenticated and profile_missing_fields %}
+	<p class="donatii-profile-hint" role="status">
+		În profil lipsesc: <strong>{{ profile_missing_fields|join:", " }}</strong>.
+		<a href="{{ profile_complete_url }}">Completează datele mele</a>
+	</p>
+	{% elif not user.is_authenticated %}
+	<p class="donatii-profile-hint">
+		Ești neautentificat — poți completa manual. Pentru autocompletare,
+		<a href="{% url 'login' %}?next={% url 'donatii_formular_230' %}">Intră în cont</a>.
+	</p>
+	{% endif %}
+
+	<form method="post" action="{% url 'donatii_formular_230' %}" class="donatii-native-form">
+		{% csrf_token %}
+		{% if form.non_field_errors %}
+		<div class="donatii-form-errors">{{ form.non_field_errors }}</div>
+		{% endif %}
+		<div class="donatii-field-grid">
+			{% for field in form %}
+			{% if field.name != 'memoreaza_in_profil' %}
+			<div class="donatii-field{% if field.errors %} donatii-field--error{% endif %}">
+				<label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+				{{ field }}
+				{% if field.help_text %}<span class="donatii-help">{{ field.help_text }}</span>{% endif %}
+				{% for e in field.errors %}<span class="donatii-err">{{ e }}</span>{% endfor %}
+			</div>
+			{% endif %}
+			{% endfor %}
+		</div>
+		{% if donatii_show_mem_checkbox %}
+		<div class="donatii-field donatii-field--check">
+			<label>{{ form.memoreaza_in_profil }} {{ form.memoreaza_in_profil.label }}</label>
+		</div>
+		{% endif %}
+		<div class="donatii-form-actions">
+			<button type="submit" class="donatii-gen-btn-primary donatii-submit-btn">Generează și descarcă PDF</button>
+		</div>
+	</form>
+</section>
+{% endblock %}

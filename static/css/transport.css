@@ -1456,3 +1456,27 @@
 #TW #T1 .t1-map-pick-btn:hover {
 	background: #0d47a1;
 }
+
+/* Donații – link sub hub T2 (pagina unică donatii/) */
+#TW #T2 .t2-donate-cause-wrap {
+	flex-shrink: 0;
+	width: 100%;
+	text-align: center;
+	margin-top: 0.35rem;
+	padding-bottom: 0.15rem;
+}
+#TW #T2 .t2-donate-cause-link {
+	display: inline-block;
+	font-size: clamp(0.62rem, 1.85vmin, 0.76rem);
+	font-weight: 800;
+	color: #fff !important;
+	background: linear-gradient(180deg, #c62828 0%, #8e0000 100%);
+	padding: 0.35rem 0.85rem;
+	border-radius: 999px;
+	text-decoration: none !important;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+	border: 1px solid rgba(0, 0, 0, 0.22);
+}
+#TW #T2 .t2-donate-cause-link:hover {
+	filter: brightness(1.06);
+}

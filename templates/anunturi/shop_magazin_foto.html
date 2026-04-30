@@ -6,7 +6,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/shop.css' %}?v=1" type="text/css" media="screen" />
-<link rel="stylesheet" href="{% static 'css/shop-magazin-foto.css' %}?v=20" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/shop-magazin-foto.css' %}?v=30" type="text/css" media="screen" />
 <link rel="stylesheet" href="{% static 'css/checkout-intra-skin.css' %}?v=1" type="text/css" media="screen" />
 {% endblock %}
 
@@ -23,8 +23,13 @@
 		<form id="smfCsrfHolder" class="smf-csrf-holder" style="display:none" aria-hidden="true">{% csrf_token %}</form>
 		<header class="smf-topbar">
 			<h1 class="smf-title">Magazin foto</h1>
+			<a href="{% url 'donatii_generale' %}?sursa=magazin_foto" class="smf-donate-link">Donează</a>
 			<a href="{% url 'shop' %}" class="smf-back-link">← Înapoi la Shop</a>
 		</header>
+		<p class="smf-legal-note" role="note">
+			Fotografiile sunt puse la dispoziție prin intermediul Platformei EU-ADOPT de către utilizatori/parteneri; EU-ADOPT nu solicită să fie prezentată ca proprietar exclusiv al drepturilor de autor asupra acestor imagini —
+			explicații complete și condiții în <a href="{% url 'termeni_read' %}#termeni-magazin-foto">Termeni și condiții (secțiunea 11)</a>. Textul este supus revizuirii juridice.
+		</p>
 
 		<div class="smf-cork" aria-label="Panou poze">
 			<div class="smf-grid-viewport">
@@ -51,12 +56,87 @@
 <script>
 (function () {
 	var grid = document.getElementById("smf_grid");
-	if (grid) {
-		grid.addEventListener("click", function (e) {
-			var t = e.target && e.target.closest && e.target.closest("a.smf-print__link");
-			if (t && (t.getAttribute("href") || "") === "#") e.preventDefault();
-		});
+	if (!grid) return;
+
+	function clampQty(v) {
+		var n = parseInt(v, 10);
+		if (!isFinite(n) || n < 1) n = 1;
+		if (n > 20) n = 20;
+		return n;
 	}
+
+	function fmtLei(v) {
+		return String(v.toFixed(2)).replace(".", ",");
+	}
+
+	function updateCardMultiplier(article, qty) {
+		if (!article) return;
+		var q = clampQty(qty);
+		var input = article.querySelector("[data-smf-mult-input]");
+		var totalEl = article.querySelector("[data-smf-mult-total]");
+		var cartBtn = article.querySelector("[data-site-cart-toggle]");
+		if (!cartBtn) return;
+		var basePrice = parseFloat(cartBtn.getAttribute("data-base-price") || "0");
+		if (!isFinite(basePrice) || basePrice < 0) basePrice = 0;
+		var baseName = (cartBtn.getAttribute("data-base-name") || "").trim();
+		var total = basePrice * q;
+		if (input) input.value = String(q);
+		if (totalEl) totalEl.textContent = fmtLei(total) + " lei";
+		cartBtn.setAttribute("data-smf-multiplier", String(q));
+		cartBtn.setAttribute("data-force-add", "1");
+		cartBtn.setAttribute(
+			"data-title",
+			"Poză ONG — " + baseName + " (" + q + "x × " + fmtLei(basePrice) + " lei = " + fmtLei(total) + " lei)"
+		);
+		cartBtn.setAttribute("title", "Adaugă sau actualizează în coș cu multiplicatorul selectat");
+	}
+
+	function ensureCard(article) {
+		if (!article || article.__smfMultBound) return;
+		article.__smfMultBound = true;
+		var input = article.querySelector("[data-smf-mult-input]");
+		var dec = article.querySelector("[data-smf-mult-dec]");
+		var inc = article.querySelector("[data-smf-mult-inc]");
+		updateCardMultiplier(article, input ? input.value : 1);
+		if (dec) {
+			dec.addEventListener("click", function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+				var cur = input ? input.value : "1";
+				updateCardMultiplier(article, clampQty(cur) - 1);
+			});
+		}
+		if (inc) {
+			inc.addEventListener("click", function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+				var cur = input ? input.value : "1";
+				updateCardMultiplier(article, clampQty(cur) + 1);
+			});
+		}
+		if (input) {
+			input.addEventListener("change", function () {
+				updateCardMultiplier(article, input.value);
+			});
+			input.addEventListener("click", function (e) {
+				e.stopPropagation();
+			});
+		}
+	}
+
+	window.euadoptSmfEnsureCards = function (root) {
+		var scope = root && root.querySelectorAll ? root : grid;
+		if (!scope) return;
+		scope.querySelectorAll("article.smf-print").forEach(ensureCard);
+	};
+	window.euadoptSmfEnsureCards(grid);
+
+	grid.addEventListener("click", function (e) {
+		var t = e.target && e.target.closest && e.target.closest("a.smf-print__link");
+		if (t && (t.getAttribute("href") || "") === "#") e.preventDefault();
+		var art = e.target && e.target.closest && e.target.closest("article.smf-print");
+		if (art) ensureCard(art);
+	});
 })();
 </script>
 <script>
@@ -149,6 +229,7 @@
 				var wrap = document.createElement("div");
 				wrap.innerHTML = data.html || "";
 				while (wrap.firstChild) grid.insertBefore(wrap.firstChild, sentinel);
+				if (typeof window.euadoptSmfEnsureCards === "function") window.euadoptSmfEnsureCards(grid);
 				if (typeof window.euadoptSiteCartBindRoot === "function") window.euadoptSiteCartBindRoot(grid);
 				hasMore = !!data.has_more;
 				nextOffset = parseInt(data.next_offset, 10) || nextOffset;

@@ -697,7 +697,7 @@
 				<p class="tww-top-subtitle">Fiecare loc oferă siguranță și condiții unui suflet în drum spre casă. Alege o cușcă și sprijină să îndeplinim proiectul!</p>
 				<div class="tww-top-actions">
 					<div class="tww-top-actions-left"><a href="{% url 'pets_all' %}" class="tww-top-btn">Înapoi la Prietenii tăi</a></div>
-					<div class="tww-top-actions-center"><a href="#" class="tww-top-btn tww-top-btn--donate">Donează pentru servicii medicale și hrană</a></div>
+					<div class="tww-top-actions-center"><a href="{% url 'donatii_generale' %}?sursa=custi&amp;intent=medicale_hrana" class="tww-top-btn">Donează pentru servicii medicale și hrană</a></div>
 					<div class="tww-top-actions-right"><a href="{% url 'transport' %}" class="tww-top-btn">Înapoi la Transport</a></div>
 				</div>
 			</div>
@@ -792,6 +792,7 @@
 
 {% block extra_js %}
 <script>
+var EUADOPT_DONATII_GENERALE_URL = "{% url 'donatii_generale' %}";
 document.addEventListener('DOMContentLoaded', function() {
   var modal = document.getElementById('tww-donate-modal');
   if (!modal) return;
@@ -944,23 +945,6 @@ document.addEventListener('DOMContentLoaded', function() {
     clearModalAnchor();
   }
 
-  function openGeneralDonate(e) {
-    if (e) e.preventDefault();
-    currentSlot = null;
-    clearModalAnchor();
-    if (h2General) h2General.classList.remove('is-hidden');
-    if (h2Slot) h2Slot.classList.add('is-hidden');
-    if (ramasaSpan) ramasaSpan.textContent = '—';
-    if (sumaInput) sumaInput.value = 50;
-    updateModalProgressFromValue(sumaInput ? sumaInput.value : 50);
-    setPresetActive(50);
-    modal.classList.add('is-open');
-  }
-
-  document.querySelectorAll('.tww-top-btn--donate').forEach(function(btn) {
-    btn.addEventListener('click', openGeneralDonate);
-  });
-
   document.querySelectorAll('#TWW .tww-slot').forEach(function(slot) {
     var key = slotKey(slot);
     var percent;
@@ -1014,17 +998,18 @@ document.addEventListener('DOMContentLoaded', function() {
   confirmBtn.addEventListener('click', function() {
     if (!currentSlot) { closeModal(); return; }
     var key = slotKey(currentSlot);
-    var val = parseInt(sumaInput.value, 10);
-    if (!isNaN(val) && val > 0) {
-      amounts[key] = val;
-      var percent = Math.max(0, Math.min(100, (val / 5000) * 100));
-      currentSlot.style.setProperty('--fill', percent + '%');
-      var colors = getColorsForPercent(percent);
-      currentSlot.style.setProperty('--slot-bg', colors.slotBg);
-      currentSlot.style.setProperty('--bar-color', colors.bar);
+    var val = parseInt(sumaInput ? sumaInput.value : '', 10);
+    if (!isFinite(val) || val < 25) {
+      window.alert('Alege sau introdu o sumă de cel puțin 25 lei.');
+      return;
     }
-    updateModalProgressFromValue(val);
-    closeModal();
+    var base = (typeof EUADOPT_DONATII_GENERALE_URL !== 'undefined' && EUADOPT_DONATII_GENERALE_URL) ? EUADOPT_DONATII_GENERALE_URL : '/donatii/';
+    var q = new URLSearchParams();
+    q.set('sursa', 'custi');
+    q.set('intent', 'cuscă');
+    q.set('loc', key);
+    q.set('suma', String(val));
+    window.location.href = base + (base.indexOf('?') >= 0 ? '&' : '?') + q.toString();
   });
 
   function onResizeAnchoredModal() {
