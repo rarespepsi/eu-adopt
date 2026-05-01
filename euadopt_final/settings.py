@@ -201,6 +201,12 @@ else:
     _dev_base = os.environ.get("EUADOPT_SITE_BASE_URL_DEV", "").strip().rstrip("/")
     SITE_BASE_URL = _dev_base or "http://127.0.0.1:8000"
 
+# DEBUG: același origin ca SITE_BASE_URL (ex. LAN http://192.168.x.x:8000 pentru telefon pe Wi-Fi)
+if DEBUG:
+    _csrf_site_origin = SITE_BASE_URL.strip().rstrip("/")
+    if _csrf_site_origin and _csrf_site_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_csrf_site_origin)
+
 # Google Maps JavaScript API (Places Autocomplete pe /transport/). Setează EUADOPT_GOOGLE_MAPS_API_KEY în .env.
 GOOGLE_MAPS_API_KEY = os.environ.get("EUADOPT_GOOGLE_MAPS_API_KEY", "").strip()
 

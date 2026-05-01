@@ -91,6 +91,22 @@ LEGAL_TERMS_VERSION = "1.0"
 LEGAL_PRIVACY_VERSION = "1.0"
 LEGAL_MARKETING_VERSION = "1.0"
 
+# Validare „Activează contul”: aliniază cu `expires_at` + mesaj „5 minute” pe pagina Verifică email.
+SIGNUP_VERIFY_EMAIL_TOKEN_MAX_AGE = 300
+
+
+def _absolute_url_using_site_base(request, path_query: str) -> str:
+    """
+    Link absolut pentru email-uri: folosește SITE_BASE_URL din settings dacă există,
+    nu Host-ul brute al requestului. Evită linkuri http://localhost... inaccesibile de pe alt device
+    (ex. telefon); pentru LAN setează EUADOPT_SITE_BASE_URL_DEV=http://IP:port în .env.
+    """
+    pq = path_query if path_query.startswith("/") else "/" + path_query
+    base = (getattr(settings, "SITE_BASE_URL", None) or "").strip().rstrip("/")
+    if base:
+        return base + pq
+    return request.build_absolute_uri(pq)
+
 
 def _user_can_use_mypet(request):
     """
@@ -2808,10 +2824,9 @@ def signup_verificare_sms_view(request):
     waiting_id = str(uuid.uuid4())
     request.session["signup_waiting_id"] = waiting_id
     cache.set("signup_waiting_" + waiting_id, "pending", timeout=600)
-    verify_url = (
-        request.build_absolute_uri(reverse("signup_verify_email"))
-        + "?token=" + quote(token)
-        + "&waiting_id=" + quote(waiting_id)
+    verify_url = _absolute_url_using_site_base(
+        request,
+        reverse("signup_verify_email") + "?token=" + quote(token) + "&waiting_id=" + quote(waiting_id),
     )
     plain_msg = f"Bună ziua,\n\nApasă pe link pentru a-ți activa contul:\n{verify_url}\n\nDacă nu ai creat cont, poți ignora acest email."
     html_msg = (
@@ -2878,7 +2893,7 @@ def signup_pf_check_email_view(request):
     email = request.GET.get("email", "")
     waiting_id = request.session.get("signup_waiting_id", "")
     created = request.session.get("signup_link_created_at") or time.time()
-    expires_at = int(created) + 300
+    expires_at = int(created) + SIGNUP_VERIFY_EMAIL_TOKEN_MAX_AGE
     email_resend_count = request.session.get("signup_email_resend_count", 0)
     email_cooldown_until = request.session.get("signup_email_cooldown_until") or 0
     now_ts = int(time.time())
@@ -2926,10 +2941,12 @@ def signup_retrimite_email_view(request):
     signer = TimestampSigner()
     token = signer.sign(user.pk)
     waiting_id = request.session.get("signup_waiting_id", "")
-    verify_url = (
-        request.build_absolute_uri(reverse("signup_verify_email"))
-        + "?token=" + quote(token)
-        + ("&waiting_id=" + quote(waiting_id) if waiting_id else "")
+    verify_url = _absolute_url_using_site_base(
+        request,
+        reverse("signup_verify_email")
+        + "?token="
+        + quote(token)
+        + ("&waiting_id=" + quote(waiting_id) if waiting_id else ""),
     )
     plain_msg = f"Bună ziua,\n\nApasă pe link pentru a-ți activa contul:\n{verify_url}\n\nDacă nu ai creat cont, poți ignora acest email."
     html_msg = (
@@ -2970,7 +2987,7 @@ def signup_verify_email_view(request):
         return redirect(reverse("signup_choose_type") + "?link_invalid=1")
     signer = TimestampSigner()
     try:
-        user_pk = signer.unsign(token, max_age=300)
+        user_pk = signer.unsign(token, max_age=SIGNUP_VERIFY_EMAIL_TOKEN_MAX_AGE)
     except SignatureExpired:
         return redirect(reverse("signup_choose_type") + "?link_expirat=1")
     except Exception:

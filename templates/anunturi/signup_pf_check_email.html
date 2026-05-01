@@ -46,7 +46,8 @@
 	{% if email_cooldown_until %}<p class="signup-check-cooldown-timer" data-until="{{ email_cooldown_until }}">Timp rămas: <span class="cooldown-clock">--:--</span></p>{% endif %}
 	{% else %}
 	<p>Am trimis un link de activare la <strong>{{ email }}</strong>.</p>
-	<p>Deschide emailul și apasă pe link pentru a-ți activa contul. Linkul este valabil 5 minute.</p>
+	<p>Deschide emailul (Spam/Promoții dacă nu vezi mesajul), apoi <strong>„Activează contul”</strong> sau copiază linkul întreg în browser.</p>
+	<p>Linkul este valabil <strong>5 minute</strong>. Pentru activare <strong>de pe telefon</strong> în aceeași rețea cu PC-ul, administratorul poate seta în <code>.env</code>: <code>EUADOPT_SITE_BASE_URL_DEV=http://IP-ul-PC-lui:8000</code> și să ruleze serverul cu <code>runserver 0.0.0.0:8000</code>.</p>
 	{% if expires_at %}{% include 'anunturi/includes/countdown_5min.html' with expires_at=expires_at label="Link valabil" %}{% endif %}
 	<div class="signup-check-retrimite-wrap" id="email-retrimite-wrap" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid #e0e0e0;">
 		<p>Linkul a expirat. Poți solicita un link nou. Mai ai <strong id="email-ramase">{{ email_resend_remaining|default:3 }}</strong> încercări (din 3).</p>
