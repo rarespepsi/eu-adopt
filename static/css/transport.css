@@ -1279,6 +1279,17 @@
 	#TW .t1-expandable {
 		display: block !important;
 	}
+	/* Hub + „Donează…” nu pe același rând flex (row implicit) — altfel T2 împarte lățimea și inelul se strică */
+	#TW #T2 .t2-inner {
+		flex-direction: column;
+		justify-content: center;
+		align-items: stretch;
+	}
+	#TW #T2 .t2-hub {
+		flex: 1 1 0;
+		min-height: 0;
+		width: 100%;
+	}
 }
 
 /* Modal hartă – alegere punct plecare/sosire pe aceeași pagină */
@@ -1457,25 +1468,42 @@
 	background: #0d47a1;
 }
 
-/* Donații – link sub hub T2 (pagina unică donatii/) */
+/* Donații – colț dreapta-sus casetă T2 (.t2-inner are position: relative) */
 #TW #T2 .t2-donate-cause-wrap {
-	flex-shrink: 0;
-	width: 100%;
-	text-align: center;
-	margin-top: 0.35rem;
-	padding-bottom: 0.15rem;
+	position: absolute;
+	top: 0.35rem;
+	right: 0.35rem;
+	left: auto;
+	bottom: auto;
+	z-index: 55;
+	width: auto;
+	max-width: min(55%, 15.5rem);
+	margin: 0;
+	padding: 0;
+	text-align: right;
+	pointer-events: auto;
+}
+@media (max-width: 767.98px) {
+	#TW #T2 .t2-donate-cause-wrap {
+		top: 3rem;
+		right: 0.28rem;
+		max-width: min(72%, 13rem);
+	}
 }
 #TW #T2 .t2-donate-cause-link {
 	display: inline-block;
-	font-size: clamp(0.62rem, 1.85vmin, 0.76rem);
+	font-size: clamp(0.55rem, 1.65vmin, 0.72rem);
 	font-weight: 800;
 	color: #fff !important;
 	background: linear-gradient(180deg, #c62828 0%, #8e0000 100%);
-	padding: 0.35rem 0.85rem;
+	padding: 0.28rem 0.65rem;
 	border-radius: 999px;
 	text-decoration: none !important;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 	border: 1px solid rgba(0, 0, 0, 0.22);
+	white-space: nowrap;
+	max-width: 100%;
+	box-sizing: border-box;
 }
 #TW #T2 .t2-donate-cause-link:hover {
 	filter: brightness(1.06);

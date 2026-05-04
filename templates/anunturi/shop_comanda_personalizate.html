@@ -7,11 +7,24 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/shop.css' %}?v=1" type="text/css" media="screen" />
 <style>
-	.shop-comanda-page { max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
-	.shop-comanda-page h1 { color: #b71c1c; font-size: 1.4rem; margin-bottom: 1rem; }
-	.shop-comanda-page p { margin-bottom: 1rem; line-height: 1.5; color: #333; }
-	.shop-comanda-page .back { display: inline-block; margin-top: 1.5rem; padding: 0.5rem 1rem; background: #ffca28; color: #4e342e; font-weight: 700; text-decoration: none; border-radius: 8px; }
-	.shop-comanda-page .back:hover { background: #ffb300; }
+	.shop-comanda-page {
+		max-width: min(1080px, 100%);
+		margin: 2rem auto;
+		padding: 0 1rem;
+	}
+	.shop-comanda-page .back {
+		display: inline-block;
+		margin-top: 1.5rem;
+		padding: 0.5rem 1rem;
+		background: #ffca28;
+		color: #4e342e;
+		font-weight: 700;
+		text-decoration: none;
+		border-radius: 8px;
+	}
+	.shop-comanda-page .back:hover {
+		background: #ffb300;
+	}
 	.shop-page-cart-btn {
 		position: absolute;
 		top: 0;
@@ -35,6 +48,342 @@
 		background: #1565c0;
 		color: #fff;
 	}
+	.shop-comanda-products {
+		margin-top: 0.25rem;
+		margin-bottom: 0.5rem;
+	}
+	.shop-comanda-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 1rem;
+		align-content: start;
+	}
+	.shop-comanda-card {
+		min-height: 11rem;
+		border: 1px solid rgba(0, 0, 0, 0.12);
+		border-radius: 10px;
+		background: #fafafa;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+	}
+	/* Card demo — stil Flowbite dark: 3 imagini (centru în față, laterale în plan secund), text alb, buton cyan */
+	.shop-comanda-card--demo {
+		min-height: 0;
+		padding: 0;
+		overflow: hidden;
+		background: linear-gradient(180deg, #2d3a4d 0%, #1e2632 40%, #1a1f28 100%);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 14px;
+		box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+		display: flex;
+		flex-direction: column;
+	}
+	.shop-comanda-card--demo .shop-comanda-card__fan {
+		position: relative;
+		height: 11.5rem;
+		overflow: hidden;
+		background: radial-gradient(ellipse 85% 70% at 50% 85%, #3d4f66 0%, #1e2632 55%, #151a22 100%);
+		flex-shrink: 0;
+		perspective: 960px;
+	}
+	.shop-comanda-card--demo .shop-comanda-card__fan-pivot {
+		position: absolute;
+		inset: 0;
+		transform-style: preserve-3d;
+		transform-origin: 50% 88%;
+		transition: transform 0.7s cubic-bezier(0.33, 1, 0.68, 1);
+		will-change: transform;
+	}
+	.shop-comanda-fan-wrap {
+		position: absolute;
+		border-radius: 12px;
+		transform-style: preserve-3d;
+		transition:
+			transform 0.65s cubic-bezier(0.33, 1, 0.68, 1),
+			left 0.65s cubic-bezier(0.33, 1, 0.68, 1),
+			right 0.65s cubic-bezier(0.33, 1, 0.68, 1),
+			bottom 0.65s ease,
+			width 0.65s ease,
+			height 0.65s ease;
+	}
+	.shop-comanda-fan-wrap__img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 12px;
+		display: block;
+		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+		pointer-events: none;
+		user-select: none;
+		transition:
+			filter 0.45s ease,
+			opacity 0.5s ease,
+			object-position 0.45s ease;
+	}
+	.shop-comanda-fan-wrap--side {
+		width: 46%;
+		height: 7.25rem;
+		bottom: -0.35rem;
+		z-index: 1;
+	}
+	/* filter/opacity pe img, nu pe wrap — evită „flattening” 3D (un singur strat vizibil) */
+	.shop-comanda-fan-wrap--side .shop-comanda-fan-wrap__img {
+		filter: brightness(0.88);
+		opacity: 0.95;
+	}
+	.shop-comanda-fan-wrap--left {
+		left: -2%;
+		transform: translateZ(-36px) rotate(-14deg) rotateY(42deg);
+		transform-origin: 90% 100%;
+	}
+	.shop-comanda-fan-wrap--left .shop-comanda-fan-wrap__img {
+		object-position: 20% center;
+	}
+	.shop-comanda-fan-wrap--right {
+		right: -2%;
+		transform: translateZ(-36px) rotate(14deg) rotateY(-42deg);
+		transform-origin: 10% 100%;
+	}
+	.shop-comanda-fan-wrap--right .shop-comanda-fan-wrap__img {
+		object-position: 80% center;
+	}
+	/* Imagine principală: click → dialog fișă */
+	.shop-comanda-card--demo .shop-comanda-card__fan-center-open {
+		position: absolute;
+		left: 50%;
+		right: auto;
+		bottom: 0.15rem;
+		transform: translateX(-50%) translateZ(48px);
+		width: 52%;
+		height: 8.5rem;
+		z-index: 4;
+		padding: 0;
+		margin: 0;
+		border: none;
+		background: transparent;
+		cursor: pointer;
+		border-radius: 12px;
+		transform-style: preserve-3d;
+		opacity: 1;
+		overflow: hidden;
+		transition:
+			transform 0.65s cubic-bezier(0.33, 1, 0.68, 1),
+			left 0.65s cubic-bezier(0.33, 1, 0.68, 1),
+			right 0.65s cubic-bezier(0.33, 1, 0.68, 1),
+			width 0.65s ease,
+			height 0.65s ease,
+			bottom 0.65s ease,
+			opacity 0.45s ease,
+			box-shadow 0.45s ease;
+	}
+	.shop-comanda-card--demo .shop-comanda-card__fan-center-open:focus-visible {
+		outline: 2px solid #38bdf8;
+		outline-offset: 3px;
+	}
+	.shop-comanda-card--demo .shop-comanda-card__fan-center-open img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center center;
+		border-radius: 12px;
+		display: block;
+		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+		pointer-events: none;
+	}
+	/*
+	 * Rotație „în trei”: mouse pe zona fan → clasa shop-comanda-demo-fan-active (JS).
+	 * Stânga (prima) → fundal; dreapta → centru (devine fața); fosta față (buton) → dreapta aplecată.
+	 */
+	.shop-comanda-card--demo.shop-comanda-demo-fan-active .shop-comanda-card__fan-pivot {
+		transform: rotateY(-22deg);
+	}
+	/* Stânga (prima din stânga) → fundal */
+	.shop-comanda-card--demo.shop-comanda-demo-fan-active .shop-comanda-fan-wrap--left {
+		left: 50%;
+		right: auto;
+		bottom: 0.45rem;
+		width: 30%;
+		height: 3.75rem;
+		z-index: 0;
+		transform: translateX(-50%) translateZ(-95px) scale(0.48) rotate(0deg) rotateY(0deg);
+	}
+	.shop-comanda-card--demo.shop-comanda-demo-fan-active .shop-comanda-fan-wrap--left .shop-comanda-fan-wrap__img {
+		opacity: 0.35;
+		filter: brightness(0.4);
+	}
+	/* Dreapta → ocupă locul din stânga (fost „prima” laterală) */
+	.shop-comanda-card--demo.shop-comanda-demo-fan-active .shop-comanda-fan-wrap--right {
+		left: -3%;
+		right: auto;
+		bottom: -0.35rem;
+		width: 46%;
+		height: 7.25rem;
+		z-index: 2;
+		transform: translateZ(-28px) rotate(-15deg) rotateY(38deg) scale(0.94);
+		pointer-events: none;
+		cursor: default;
+	}
+	.shop-comanda-card--demo.shop-comanda-demo-fan-active .shop-comanda-fan-wrap--right .shop-comanda-fan-wrap__img {
+		opacity: 0.96;
+		filter: brightness(0.9);
+	}
+	.shop-comanda-card--demo.shop-comanda-demo-fan-active .shop-comanda-fan-wrap--right .shop-comanda-fan-wrap__img {
+		object-position: 75% center;
+	}
+	/* Centru (a doua din dreapta) → devine fața principală, mare în mijloc */
+	.shop-comanda-card--demo.shop-comanda-demo-fan-active .shop-comanda-card__fan-center-open {
+		left: 50%;
+		right: auto;
+		bottom: 0.05rem;
+		width: 58%;
+		height: 9.1rem;
+		z-index: 6;
+		opacity: 1;
+		transform: translateX(-50%) translateZ(64px) scale(1.06) rotate(0deg) rotateY(0deg);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.shop-comanda-card--demo .shop-comanda-card__fan-pivot,
+		.shop-comanda-card--demo .shop-comanda-fan-wrap,
+		.shop-comanda-card--demo .shop-comanda-card__fan-center-open {
+			transition: none !important;
+		}
+	}
+	.shop-comanda-card--demo .shop-comanda-card__body {
+		padding: 0.85rem 1rem 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		flex: 1;
+	}
+	.shop-comanda-card--demo .shop-comanda-card__title {
+		margin: 0;
+		font-size: 1rem;
+		font-weight: 700;
+		color: #f8fafc;
+		line-height: 1.35;
+		letter-spacing: -0.02em;
+	}
+	.shop-comanda-card--demo .shop-comanda-card__footer {
+		margin-top: auto;
+		padding-top: 0.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.65rem;
+		flex-wrap: wrap;
+	}
+	.shop-comanda-card--demo .shop-comanda-card__price {
+		font-size: 1.45rem;
+		font-weight: 800;
+		color: #f8fafc;
+		letter-spacing: -0.03em;
+	}
+	.shop-comanda-card--demo .shop-comanda-card__btn-demo {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+		padding: 0.45rem 0.75rem;
+		border-radius: 10px;
+		border: none;
+		background: #38bdf8;
+		color: #0f172a;
+		cursor: default;
+		white-space: nowrap;
+		box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35);
+	}
+	.shop-comanda-card--demo .shop-comanda-card__btn-demo svg {
+		flex-shrink: 0;
+		width: 1rem;
+		height: 1rem;
+	}
+	@media (max-width: 767.98px) {
+		.shop-comanda-card--demo .shop-comanda-card__fan {
+			height: 10rem;
+		}
+		.shop-comanda-card--demo .shop-comanda-fan-wrap--side {
+			height: 6.25rem;
+		}
+		.shop-comanda-card--demo .shop-comanda-card__fan-center-open {
+			height: 7.5rem;
+		}
+		.shop-comanda-card--demo.shop-comanda-demo-fan-active .shop-comanda-fan-wrap--right {
+			height: 6rem;
+			width: 48%;
+		}
+		.shop-comanda-card--demo.shop-comanda-demo-fan-active .shop-comanda-card__fan-center-open {
+			height: 7.85rem;
+			width: 60%;
+		}
+		.shop-comanda-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+	@media (min-width: 768px) and (max-width: 991.98px) {
+		.shop-comanda-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+	/* Fișă produs (dialog) — doar pagina comanda personalizate */
+	.shop-comanda-fisa-dialog {
+		border: none;
+		border-radius: 14px;
+		padding: 0;
+		max-width: min(92vw, 520px);
+		width: 100%;
+		background: #fff;
+		color: #1a1a1a;
+		box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+	}
+	.shop-comanda-fisa-dialog::backdrop {
+		background: rgba(15, 23, 42, 0.55);
+	}
+	.shop-comanda-fisa-inner {
+		position: relative;
+		padding: 1rem 1.1rem 1.2rem;
+	}
+	.shop-comanda-fisa-close {
+		position: absolute;
+		top: 0.5rem;
+		right: 0.5rem;
+		width: 2.25rem;
+		height: 2.25rem;
+		border: none;
+		border-radius: 50%;
+		background: rgba(0, 0, 0, 0.06);
+		color: #333;
+		font-size: 1.35rem;
+		line-height: 1;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 1;
+	}
+	.shop-comanda-fisa-close:hover {
+		background: rgba(0, 0, 0, 0.12);
+	}
+	.shop-comanda-fisa-hero {
+		width: 100%;
+		max-height: min(48vh, 320px);
+		object-fit: contain;
+		border-radius: 10px;
+		background: #f5f5f5;
+		display: block;
+		margin-bottom: 0.75rem;
+	}
+	.shop-comanda-fisa-inner h2 {
+		margin: 0 0 0.5rem;
+		font-size: 1.15rem;
+		color: #b71c1c;
+		padding-right: 2.5rem;
+	}
+	.shop-comanda-fisa-inner p {
+		margin: 0;
+		font-size: 0.95rem;
+		line-height: 1.5;
+		color: #424242;
+	}
 </style>
 {% endblock %}
 
@@ -54,11 +403,140 @@
 				title="Adaugă sau scoate din coșul I Love"
 			>🛒</button>
 			{% endif %}
-			<h1>Comandă produse personalizate pentru animale de companie</h1>
-			<p>Tricouri, hanorace, șepci, zgărzi gravate, medalioane cu nume, tag-uri QR și multe alte idei cadou – personalizate pentru prietenul tău.</p>
-			<p>Pentru comenzi și oferte personalizate, contactați-ne (formular sau email va fi disponibil aici).</p>
+			<div class="shop-comanda-products" role="region" aria-label="Casete produse personalizate">
+				<div class="shop-comanda-grid">
+					<article class="shop-comanda-card shop-comanda-card--demo" aria-label="Demo produs personalizat">
+						<div class="shop-comanda-card__fan">
+							<div class="shop-comanda-card__fan-pivot">
+								<div class="shop-comanda-fan-wrap shop-comanda-fan-wrap--side shop-comanda-fan-wrap--left">
+									<img id="shop-comanda-demo-fan-img-left" class="shop-comanda-fan-wrap__img" src="{% static 'images/login/slide1.png' %}" width="400" height="300" alt="" loading="lazy" />
+								</div>
+								<div class="shop-comanda-fan-wrap shop-comanda-fan-wrap--side shop-comanda-fan-wrap--right">
+									<img id="shop-comanda-demo-fan-img-right" class="shop-comanda-fan-wrap__img" src="{% static 'images/transport/custi-autocar.png' %}" width="400" height="300" alt="" loading="lazy" data-fisa-title="Autocar / custi — variantă foto (demo)" />
+								</div>
+								<button type="button" class="shop-comanda-card__fan-center-open" id="shop-comanda-demo-open-fisa" aria-haspopup="dialog" aria-controls="shop-comanda-demo-fisa" title="Deschide fișa produsului (demo)">
+									<img id="shop-comanda-demo-fan-img-center" class="shop-comanda-fan-wrap__img" src="{% static 'images/parteneri/placeholder.jpg' %}" width="400" height="280" alt="Tricou personalizat demo — apasă pentru fișă" loading="lazy" />
+								</button>
+							</div>
+						</div>
+						<div class="shop-comanda-card__body">
+							<h3 class="shop-comanda-card__title">Tricou personalizat unisex, bumbac, print „Prietenul tău” — demo</h3>
+							<div class="shop-comanda-card__footer">
+								<span class="shop-comanda-card__price">89 lei</span>
+								<button type="button" class="shop-comanda-card__btn-demo" disabled title="Exemplu vizual — fără acțiune">
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312"/></svg>
+									Adaugă în coș
+								</button>
+							</div>
+						</div>
+					</article>
+					<article class="shop-comanda-card" aria-label="Casetă produs 2"></article>
+					<article class="shop-comanda-card" aria-label="Casetă produs 3"></article>
+					<article class="shop-comanda-card" aria-label="Casetă produs 4"></article>
+					<article class="shop-comanda-card" aria-label="Casetă produs 5"></article>
+					<article class="shop-comanda-card" aria-label="Casetă produs 6"></article>
+					<article class="shop-comanda-card" aria-label="Casetă produs 7"></article>
+					<article class="shop-comanda-card" aria-label="Casetă produs 8"></article>
+					<article class="shop-comanda-card" aria-label="Casetă produs 9"></article>
+				</div>
+			</div>
 			<a href="{% url 'shop' %}" class="back">← Înapoi la Shop</a>
 		</div>
 	</main>
 </section>
+<dialog
+	id="shop-comanda-demo-fisa"
+	class="shop-comanda-fisa-dialog"
+	aria-labelledby="shop-comanda-fisa-title"
+	data-default-hero="{% static 'images/parteneri/placeholder.jpg' %}"
+	data-default-title="Tricou personalizat unisex, bumbac, print „Prietenul tău” — demo"
+>
+	<div class="shop-comanda-fisa-inner">
+		<button type="button" class="shop-comanda-fisa-close" id="shop-comanda-demo-fisa-close" aria-label="Închide fișa">×</button>
+		<img id="shop-comanda-fisa-hero" class="shop-comanda-fisa-hero" src="{% static 'images/parteneri/placeholder.jpg' %}" width="800" height="560" alt="" />
+		<h2 id="shop-comanda-fisa-title">Tricou personalizat unisex, bumbac, print „Prietenul tău” — demo</h2>
+		<p>Fișă demo: produs personalizat pentru animale de companie. Aici poți adăuga descriere, mărimi, termen de livrare și date de contact.</p>
+	</div>
+</dialog>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+	var dlg = document.getElementById("shop-comanda-demo-fisa");
+	var card = document.querySelector(".shop-comanda-card--demo");
+	var fan = card && card.querySelector(".shop-comanda-card__fan");
+	var openBtn = document.getElementById("shop-comanda-demo-open-fisa");
+	var closeBtn = document.getElementById("shop-comanda-demo-fisa-close");
+	var hero = document.getElementById("shop-comanda-fisa-hero");
+	var fisaTitle = document.getElementById("shop-comanda-fisa-title");
+	var imgL = document.getElementById("shop-comanda-demo-fan-img-left");
+	var imgC = document.getElementById("shop-comanda-demo-fan-img-center");
+	var imgR = document.getElementById("shop-comanda-demo-fan-img-right");
+	if (!dlg || !card || !fan || !imgL || !imgC || !imgR) return;
+
+	var FAN_META = [
+		{ src: "{% static 'images/login/slide1.png' %}", fisaTitle: "" },
+		{ src: "{% static 'images/parteneri/placeholder.jpg' %}", fisaTitle: "" },
+		{ src: "{% static 'images/transport/custi-autocar.png' %}", fisaTitle: "Autocar / custi — variantă foto (demo)" }
+	];
+	/* care index din FAN_META e în stânga / centru / dreapta; la fiecare intrare cu mouse: rotire stânga←centru←dreapta */
+	var fanSlotIdx = [0, 1, 2];
+
+	function applyFanImagesFromSlots() {
+		var imgs = [imgL, imgC, imgR];
+		for (var i = 0; i < 3; i++) {
+			var meta = FAN_META[fanSlotIdx[i]];
+			var el = imgs[i];
+			el.setAttribute("src", meta.src);
+			if (meta.fisaTitle) el.setAttribute("data-fisa-title", meta.fisaTitle);
+			else el.removeAttribute("data-fisa-title");
+		}
+	}
+
+	function rotateFanSlotsOnce() {
+		fanSlotIdx = [fanSlotIdx[1], fanSlotIdx[2], fanSlotIdx[0]];
+		applyFanImagesFromSlots();
+	}
+
+	function fisaApplyFromCenterImg() {
+		var dh = dlg.getAttribute("data-default-hero");
+		var dt = dlg.getAttribute("data-default-title");
+		var src = imgC.getAttribute("src");
+		var ft = imgC.getAttribute("data-fisa-title");
+		if (hero && src) hero.setAttribute("src", src);
+		else if (hero && dh) hero.setAttribute("src", dh);
+		if (fisaTitle) {
+			if (ft && ft.length) fisaTitle.textContent = ft;
+			else if (dt) fisaTitle.textContent = dt;
+		}
+	}
+
+	fan.addEventListener("mouseenter", function () {
+		rotateFanSlotsOnce();
+		card.classList.add("shop-comanda-demo-fan-active");
+	});
+	fan.addEventListener("mouseleave", function () {
+		card.classList.remove("shop-comanda-demo-fan-active");
+	});
+
+	if (openBtn) {
+		openBtn.addEventListener("click", function () {
+			if (typeof dlg.showModal !== "function") return;
+			fisaApplyFromCenterImg();
+			dlg.showModal();
+			if (closeBtn) closeBtn.focus();
+		});
+	}
+
+	if (closeBtn) {
+		closeBtn.addEventListener("click", function () {
+			dlg.close();
+		});
+	}
+	dlg.addEventListener("click", function (ev) {
+		if (ev.target === dlg) dlg.close();
+	});
+})();
+</script>
 {% endblock %}
