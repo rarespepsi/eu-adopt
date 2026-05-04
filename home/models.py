@@ -999,7 +999,8 @@ class CollaboratorServiceOffer(models.Model):
 class AdoptionBonusSelection(models.Model):
     """
     Oferte partener alese cu inimioara în timpul unui demers de adopție (max 1 / partner_kind).
-    La adopție finalizată: cod comun + mail adoptator + mail colaborator.
+    La adopție finalizată: se emite CollaboratorOfferClaim (consum stoc ca la checkout), cod comun,
+    mail adoptator + mail colaborator.
     """
 
     adoption_request = models.ForeignKey(

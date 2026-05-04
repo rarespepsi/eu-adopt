@@ -1471,8 +1471,9 @@ def _adoption_bonus_selection_summary(ar: AdoptionRequest) -> tuple[str, str]:
 
 def _process_adoption_finalize_bonus(ar: AdoptionRequest):
     """
-    După finalizare: coduri + mail adoptator (toate ofertele) + mail per colaborator.
-    Idempotent dacă bonus_emails_sent_at e deja setat.
+    După finalizare: pentru fiecare selecție — consum stoc (CollaboratorOfferClaim, ca la checkout),
+    cod EUADOPT-…, mail colaborator + rezumat adoptator.
+    Idempotent: rândurile cu bonus_emails_sent_at deja setat sunt sărite.
     """
     sels = list(
         AdoptionBonusSelection.objects.filter(
@@ -1487,15 +1488,59 @@ def _process_adoption_finalize_bonus(ar: AdoptionRequest):
     adopter = ar.adopter
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
     now = timezone.now()
+    snap = _collab_claim_buyer_snapshot_from_user(adopter)
+    buyer_email_claim = (snap["email"] or "").strip() or f"adopter-{adopter.pk}-ar{ar.pk}@example.com"
 
-    lines_adopter = []
-    html_items = []
+    lines_adopter: list[str] = []
+    html_items: list[str] = []
+    log = logging.getLogger(__name__)
+
     for sel in sels:
-        code = _new_adoption_bonus_redemption_code()
-        sel.redemption_code = code
-        sel.bonus_emails_sent_at = now
-        sel.save(update_fields=["redemption_code", "bonus_emails_sent_at", "updated_at"])
         off = sel.offer
+        code = None
+        try:
+            with transaction.atomic():
+                off_locked = (
+                    CollaboratorServiceOffer.objects.select_for_update()
+                    .filter(pk=off.pk, is_active=True)
+                    .first()
+                )
+                if not off_locked or not _collab_offer_is_valid_today(off_locked):
+                    log.warning("adoption_bonus_claim skip_invalid offer=%s ar=%s", off.pk, ar.pk)
+                    continue
+                claimed = CollaboratorOfferClaim.objects.filter(offer_id=off_locked.pk).count()
+                if off_locked.quantity_available is not None and claimed >= int(off_locked.quantity_available):
+                    log.warning("adoption_bonus_claim skip_no_stock offer=%s ar=%s", off_locked.pk, ar.pk)
+                    continue
+                for _attempt in range(24):
+                    code = _new_adoption_bonus_redemption_code()
+                    if not CollaboratorOfferClaim.objects.filter(code=code).exists():
+                        break
+                else:
+                    log.error("adoption_bonus_claim code_collision offer=%s ar=%s", off_locked.pk, ar.pk)
+                    continue
+                CollaboratorOfferClaim.objects.create(
+                    offer=off_locked,
+                    code=code,
+                    buyer_user=snap["user"],
+                    buyer_email=buyer_email_claim[:254],
+                    buyer_name_snapshot=(snap["name"] or "")[:200],
+                    buyer_phone_snapshot=(snap["phone"] or "")[:40],
+                    buyer_locality_snapshot=(snap["locality"] or "")[:200],
+                )
+                new_count = claimed + 1
+                if off_locked.quantity_available is not None and new_count >= int(off_locked.quantity_available):
+                    off_locked.is_active = False
+                    off_locked.save(update_fields=["is_active", "updated_at"])
+                sel.redemption_code = code
+                sel.bonus_emails_sent_at = now
+                sel.save(update_fields=["redemption_code", "bonus_emails_sent_at", "updated_at"])
+        except Exception:
+            log.exception("adoption_bonus_claim fail ar=%s offer=%s", ar.pk, off.pk)
+            continue
+
+        if not code:
+            continue
         url = _offer_public_absolute_url(off)
         kind_label = off.get_partner_kind_display()
         lines_adopter.append(f"- [{kind_label}] {off.title}\n  Cod: {code}\n  Link: {url}\n")
@@ -1535,9 +1580,29 @@ def _process_adoption_finalize_bonus(ar: AdoptionRequest):
                     html_message=html_c,
                 )
             except Exception as exc:
-                logging.getLogger(__name__).exception("adoption_bonus_email_collab: %s", exc)
+                log.exception("adoption_bonus_email_collab: %s", exc)
+        try:
+            if snap.get("user"):
+                _inbox.create_inbox_notification(
+                    snap["user"],
+                    _inbox.KIND_OFFER_CLAIM_BUYER,
+                    "Ofertă din bonus adopție",
+                    f"Cod {code}: {off.title}. Datele au fost trimise pe email.",
+                    link_url=reverse("adoption_bonus_portal"),
+                    metadata={"offer_id": off.pk, "claim_code": code, "source": "adoption_bonus_finalize"},
+                )
+            _inbox.create_inbox_notification(
+                collab,
+                _inbox.KIND_OFFER_CLAIM_COLLABORATOR,
+                "Achiziție din bonus adopție",
+                f"Cod {code}: {off.title}. Verifică emailul pentru datele adoptatorului.",
+                link_url=reverse("collab_offers_control") + "?open_messages=1",
+                metadata={"offer_id": off.pk, "claim_code": code, "source": "adoption_bonus_finalize"},
+            )
+        except Exception:
+            log.exception("adoption_bonus_claim inbox ar=%s offer=%s", ar.pk, off.pk)
 
-    if not adopter.email:
+    if not lines_adopter or not adopter.email:
         return
     sub_a = f"EU-Adopt: oferte partener după adopția lui {pet_label}"
     body_a = (
@@ -9586,6 +9651,27 @@ def _buyer_snapshot_for_offer_request(request, post_name: str, post_email: str) 
         "locality": locality,
         "user": buyer_user,
     }
+
+
+def _collab_claim_buyer_snapshot_from_user(user):
+    """Snapshot cumpărător/adoptator pentru CollaboratorOfferClaim (din cont)."""
+    email = (user.email or "").strip()
+    fn = (user.first_name or "").strip()
+    ln = (user.last_name or "").strip()
+    name = (f"{fn} {ln}".strip() or user.get_full_name() or user.username or "Utilizator").strip()
+    phone = ""
+    locality = ""
+    prof = getattr(user, "profile", None)
+    ap = getattr(user, "account_profile", None)
+    if prof:
+        phone = (prof.phone or "").strip()[:40]
+        if ap and ap.role == AccountProfile.ROLE_PF:
+            loc_bits = [x for x in (prof.oras, prof.judet) if x and str(x).strip()]
+            locality = ", ".join(loc_bits)[:200]
+        elif ap and ap.role == AccountProfile.ROLE_ORG:
+            loc_bits = [x for x in (prof.company_oras, prof.company_judet) if x and str(x).strip()]
+            locality = ", ".join(loc_bits)[:200]
+    return {"email": email, "name": name, "phone": phone, "locality": locality, "user": user}
 
 
 def _user_is_public_offer_transport_blocked(user) -> bool:
