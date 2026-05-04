@@ -5,8 +5,19 @@
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=34" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=35-profi-servicii" type="text/css" media="screen" />
 <style>
+	/* Fundal pagină ca Servicii / Intra */
+	body.page-transport {
+		background-color: #141a22 !important;
+	}
+	body.page-transport #main_wrap {
+		background: #141a22 !important;
+	}
+	body.page-transport #main_content {
+		background: transparent !important;
+		box-shadow: none !important;
+	}
 	/* Desktop: TW ca PW/SW – fără scroll pagină, viewport fix (nu aplicăm pe mobil) */
 	@media (min-width: 769px) {
 		body.page-transport { overflow: hidden !important; height: 100vh !important; }
@@ -145,26 +156,27 @@
 		box-sizing: border-box;
 		margin-bottom: 0.5rem;
 		padding: 0.5rem 0.65rem;
-		background: linear-gradient(135deg, rgba(21, 101, 192, 0.12), rgba(157, 28, 28, 0.08));
-		border: 2px solid #1565c0;
+		background: rgba(30, 41, 59, 0.72);
+		border: 1px solid rgba(6, 182, 212, 0.28);
 		border-radius: 8px;
 		font-size: 0.72rem;
 		line-height: 1.35;
-		color: #0d1f33;
+		color: #cbd5e1;
 	}
-	.transport-from-adoption-banner strong { display: block; margin-bottom: 0.25rem; font-size: 0.75rem; }
+	.transport-from-adoption-banner strong { display: block; margin-bottom: 0.25rem; font-size: 0.75rem; color: #f8fafc; }
 	.transport-from-adoption-banner a {
 		display: inline-block;
 		margin-top: 0.35rem;
 		padding: 0.35rem 0.65rem;
-		background: #1565c0;
+		background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
 		color: #fff !important;
 		font-weight: 800;
 		text-decoration: none;
 		border-radius: 6px;
 		font-size: 0.72rem;
+		border: 1px solid rgba(255, 255, 255, 0.18);
 	}
-	.transport-from-adoption-banner a:hover { filter: brightness(1.08); }
+	.transport-from-adoption-banner a:hover { filter: brightness(1.06); }
 </style>
 {% endblock %}
 

@@ -1,4 +1,4 @@
-/* Servicii – SW la fel ca PW; S1/S7 benzi sus/jos (poze) */
+/* Servicii – aceeași familie vizuală ca Intra / signup: fundal închis, accente discrete */
 #SW.servicii-wrapper {
   width: 100% !important;
   max-width: 100% !important;
@@ -9,6 +9,8 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  background: #141a22;
+  color: #e2e8f0;
 }
 
 /* Grid 3 rânduri: S1 | S2–S6 | S7; 3 coloane mijloc */
@@ -29,7 +31,7 @@
   justify-content: center;
   overflow: hidden;
   padding: 0;
-  border: 2px solid #000;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   box-sizing: border-box;
 }
 
@@ -37,11 +39,12 @@
 #SW .sw-cell-1 {
   grid-row: 1;
   grid-column: 1 / -1;
-  background: #2e7d32;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
   align-items: stretch;
   justify-content: stretch;
   min-height: 72px;
   cursor: default;
+  border-bottom: 1px solid rgba(6, 182, 212, 0.12);
 }
 
 #SW .sw-strip-wrap {
@@ -54,11 +57,11 @@
 }
 
 #SW .sw-strip-wrap.sw-strip-s1 {
-  background: #2e7d32;
+  background: transparent;
 }
 
 #SW .sw-strip-wrap.sw-strip-s3 {
-  background: #2e7d32;
+  background: transparent;
   min-height: 72px;
 }
 
@@ -97,7 +100,9 @@
   padding: 0;
   overflow: hidden;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.35rem;
   position: relative;
 }
 
@@ -111,13 +116,15 @@
   align-items: center;
   justify-content: center;
   padding: 0.15rem 0.25rem;
-  background: #ffeb3b;
-  color: #b71c1c;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  color: #fcd34d;
   font-size: 0.6rem;
   font-weight: 700;
   text-align: center;
   line-height: 1.2;
   word-break: break-word;
+  border-radius: 0.35rem;
 }
 
 #SW .sw-strip-item--s1 img,
@@ -139,9 +146,9 @@
   width: 100%;
   height: 100%;
   min-height: 72px;
-  background: #e0e0e0;
+  background: rgba(30, 41, 59, 0.85);
   font-size: 0.75rem;
-  color: #333;
+  color: #94a3b8;
   text-align: center;
 }
 
@@ -153,7 +160,7 @@
 #SW .sw-cell-4 {
   grid-row: 2;
   grid-column: 1;
-  background: #8e24aa;
+  background: linear-gradient(165deg, rgba(88, 28, 135, 0.22) 0%, rgba(15, 23, 42, 0.98) 45%, #0f172a 100%);
   align-items: stretch;
   font-size: 1rem;
   cursor: default;
@@ -181,18 +188,27 @@
 
 #SW .sw-s2-judet-btn {
   width: 100%;
-  padding: 0.35rem 0.5rem;
+  padding: 0.38rem 0.5rem;
   font-size: clamp(0.7rem, 1.8vw, 0.9rem);
-  font-weight: 700;
-  text-transform: uppercase;
-  background: #e3f2fd;
-  color: #1565c0;
-  border: 1px solid #1565c0;
-  border-radius: 6px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  border-radius: 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.38);
+  color: #f8fafc;
   cursor: pointer;
   box-sizing: border-box;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 1px 4px rgba(0, 0, 0, 0.18);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+#SW .sw-s2-judet-btn:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.68);
 }
 
+/* Casete S4 – aceeași „sticlă” ca .signup-caseta (signup PF / Intra) */
 #SW .sw-s4-box {
   flex: 1 1 0;
   width: 100%;
@@ -202,17 +218,54 @@
   justify-content: center;
   font-size: 1.4rem;
   font-weight: 700;
-  color: #222;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 6px;
+  color: #cbd5e1;
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      168deg,
+      rgba(24, 32, 46, 0.34) 0%,
+      rgba(18, 24, 36, 0.42) 48%,
+      rgba(14, 20, 32, 0.48) 100%
+    );
+  backdrop-filter: blur(22px) saturate(1.04);
+  -webkit-backdrop-filter: blur(22px) saturate(1.04);
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 0.85rem;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+    0 1px 0 rgba(255, 255, 255, 0.045) inset,
+    0 32px 64px rgba(0, 0, 0, 0.55),
+    0 12px 28px rgba(0, 0, 0, 0.32),
+    0 0 0 1px rgba(6, 182, 212, 0.04);
   box-sizing: border-box;
+}
+#SW .sw-s4-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 42%,
+    transparent 58%,
+    rgba(0, 0, 0, 0.12) 100%
+  );
+  opacity: 0.62;
+  z-index: 0;
+}
+#SW .sw-s4-box > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* S4: cele 3 casete egale (flex 1 1 0) */
 #SW .sw-s4-box-filters {
   flex: 1 1 0;
   min-height: 0;
-  background: rgba(255, 255, 255, 0.9);
+  background: transparent;
   padding: 4px 0 2px 0;
 }
 
@@ -225,12 +278,14 @@
 #SW .sw-s4-box-ads {
   flex: 1 1 0;
   min-height: 0;
-  background: #fff8e1;
+  background: transparent;
 }
 
 #SW .sw-s4-label {
   font-size: 0.75rem;
   padding: 0 4px;
+  color: #cbd5e1;
+  font-weight: 600;
 }
 
 /* S2 = mijloc, 3 casete pe orizontală (unu lângă altul) */
@@ -238,8 +293,8 @@
   grid-row: 2;
   grid-column: 2;
   min-height: 0;
-  background: #fff;
-  border: 2px solid #000;
+  background: #141a22;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 2px;
   box-sizing: border-box;
   overflow: hidden;
@@ -263,11 +318,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff8e1;
-  border-radius: 6px;
+  background: transparent;
+  border-radius: 0.85rem;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #8d6e63;
+  color: #94a3b8;
   text-align: center;
 }
 
@@ -279,9 +334,11 @@
   justify-content: flex-start;
   padding: 0;
   overflow: hidden;
-  border-left: 6px solid #c62828;
-  border-bottom: 6px solid #c62828;
+  border-left: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   box-sizing: border-box;
+  border-radius: 0.5rem;
+  background: rgba(15, 23, 42, 0.38);
 }
 
 #SW .sw-cell-2 .sw-s2-1-band {
@@ -290,32 +347,40 @@
   box-sizing: border-box;
   padding: 0.25rem 0.4rem;
   font-size: clamp(0.85rem, 2.2vw, 1.1rem);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: #fff;
-  background: #c62828;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #cbd5e1;
+  background: linear-gradient(90deg, rgba(51, 65, 85, 0.55) 0%, rgba(15, 23, 42, 0.95) 100%);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-radius: 6px 6px 0 0;
+  border-radius: 0.5rem 0.5rem 0 0;
   text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* S4: bandă + cadru albastru */
-#SW .sw-cell-2 #S4 .sw-s2-1-band { background: #1565c0; }
+/* S4 / S5: doar nuanță de luminanță față de S3 (fără roșu / cyan / verde puternic) */
+#SW .sw-cell-2 #S4 .sw-s2-1-band {
+  color: #d4d4d8;
+  background: linear-gradient(90deg, rgba(51, 65, 85, 0.48) 0%, rgba(15, 23, 42, 0.94) 100%);
+}
 #SW .sw-cell-2 #S4 {
-  border-left: 6px solid #1565c0;
-  border-bottom: 6px solid #1565c0;
-  border-radius: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 0.5rem;
+  background: rgba(15, 23, 42, 0.34);
 }
 
-/* S5: bandă + cadru verde */
-#SW .sw-cell-2 #S5 .sw-s2-1-band { background: #2e7d32; }
+#SW .sw-cell-2 #S5 .sw-s2-1-band {
+  color: #d1d5db;
+  background: linear-gradient(90deg, rgba(51, 65, 85, 0.42) 0%, rgba(15, 23, 42, 0.93) 100%);
+}
 #SW .sw-cell-2 #S5 {
-  border-left: 6px solid #2e7d32;
-  border-bottom: 6px solid #2e7d32;
-  border-radius: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: 0.5rem;
+  background: rgba(15, 23, 42, 0.3);
 }
 
 /* S2.1 body: scroll ca P2; vizibil 3×2, restul la scroll */
@@ -331,55 +396,44 @@
   width: 10px;
 }
 
+/* Scrollbar discret, același spirit ca focus cyan signup */
 #SW .sw-cell-2 .sw-s2-1-body::-webkit-scrollbar-track {
-  background: #c62828;
+  background: rgba(15, 23, 42, 0.75);
 }
 
-/* Capete fără săgeți (doar fundal roșu) */
 #SW .sw-cell-2 .sw-s2-1-body::-webkit-scrollbar-button:vertical:decrement,
 #SW .sw-cell-2 .sw-s2-1-body::-webkit-scrollbar-button:vertical:increment {
   height: 4px;
-  background: #c62828;
+  background: rgba(15, 23, 42, 0.75);
 }
 
-/* Săgeți pe butonul mic (thumb): 3 sus, 3 jos */
 #SW .sw-cell-2 .sw-s2-1-body::-webkit-scrollbar-thumb {
-  background-color: #ffeb3b;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 11'%3E%3Cpath fill='%23c62828' d='M4 0L0 3h8L4 0z'/%3E%3Cpath fill='%23c62828' d='M4 4L0 7h8L4 4z'/%3E%3Cpath fill='%23c62828' d='M4 8L0 11h8L4 8z'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 11'%3E%3Cpath fill='%23c62828' d='M4 11L0 8h8L4 11z'/%3E%3Cpath fill='%23c62828' d='M4 7L0 4h8L4 7z'/%3E%3Cpath fill='%23c62828' d='M4 3L0 0h8L4 3z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center 2px, center calc(100% - 2px);
-  background-size: 5px 9px;
-  border-radius: 4px;
+  background-color: rgba(6, 182, 212, 0.5);
+  background-image: none;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 #SW .sw-cell-2 .sw-s2-1-body::-webkit-scrollbar-thumb:hover {
-  background-color: #fff59d;
+  background-color: rgba(6, 182, 212, 0.72);
 }
 
-/* S4: scrollbar albastru */
-#SW .sw-cell-2 #S4 .sw-s2-1-body::-webkit-scrollbar-track { background: #1565c0; }
+#SW .sw-cell-2 #S4 .sw-s2-1-body::-webkit-scrollbar-track,
+#SW .sw-cell-2 #S5 .sw-s2-1-body::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.75);
+}
 #SW .sw-cell-2 #S4 .sw-s2-1-body::-webkit-scrollbar-button:vertical:decrement,
-#SW .sw-cell-2 #S4 .sw-s2-1-body::-webkit-scrollbar-button:vertical:increment { background: #1565c0; }
-#SW .sw-cell-2 #S4 .sw-s2-1-body::-webkit-scrollbar-thumb {
-  background-color: #ffeb3b;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 11'%3E%3Cpath fill='%231565c0' d='M4 0L0 3h8L4 0z'/%3E%3Cpath fill='%231565c0' d='M4 4L0 7h8L4 4z'/%3E%3Cpath fill='%231565c0' d='M4 8L0 11h8L4 8z'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 11'%3E%3Cpath fill='%231565c0' d='M4 11L0 8h8L4 11z'/%3E%3Cpath fill='%231565c0' d='M4 7L0 4h8L4 7z'/%3E%3Cpath fill='%231565c0' d='M4 3L0 0h8L4 3z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center 2px, center calc(100% - 2px);
-  background-size: 5px 9px;
-  border-radius: 4px;
-}
-
-/* S5: scrollbar verde */
-#SW .sw-cell-2 #S5 .sw-s2-1-body::-webkit-scrollbar-track { background: #2e7d32; }
+#SW .sw-cell-2 #S4 .sw-s2-1-body::-webkit-scrollbar-button:vertical:increment,
 #SW .sw-cell-2 #S5 .sw-s2-1-body::-webkit-scrollbar-button:vertical:decrement,
-#SW .sw-cell-2 #S5 .sw-s2-1-body::-webkit-scrollbar-button:vertical:increment { background: #2e7d32; }
+#SW .sw-cell-2 #S5 .sw-s2-1-body::-webkit-scrollbar-button:vertical:increment {
+  background: rgba(15, 23, 42, 0.75);
+}
+#SW .sw-cell-2 #S4 .sw-s2-1-body::-webkit-scrollbar-thumb,
 #SW .sw-cell-2 #S5 .sw-s2-1-body::-webkit-scrollbar-thumb {
-  background-color: #ffeb3b;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 11'%3E%3Cpath fill='%232e7d32' d='M4 0L0 3h8L4 0z'/%3E%3Cpath fill='%232e7d32' d='M4 4L0 7h8L4 4z'/%3E%3Cpath fill='%232e7d32' d='M4 8L0 11h8L4 8z'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 11'%3E%3Cpath fill='%232e7d32' d='M4 11L0 8h8L4 11z'/%3E%3Cpath fill='%232e7d32' d='M4 7L0 4h8L4 7z'/%3E%3Cpath fill='%232e7d32' d='M4 3L0 0h8L4 3z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center 2px, center calc(100% - 2px);
-  background-size: 5px 9px;
-  border-radius: 4px;
+  background-color: rgba(6, 182, 212, 0.5);
+  background-image: none;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 /* S2.1: grid 3 col × 8 rânduri; înălțime 400% ca 2 rânduri = viewport, casete strict aceeași dimensiune */
@@ -400,9 +454,9 @@
   min-width: 0;
   overflow: hidden;
   position: relative;
-  background: #f5f5f5;
-  border-radius: 4px;
-  border: 1px solid #9e9e9e;
+  background: rgba(15, 23, 42, 0.45);
+  border-radius: 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -412,6 +466,7 @@
 #SW .sw-cell-2 .sw-s3-cell-label {
   font-size: 10px;
   padding: 0 4px;
+  color: #94a3b8;
 }
 
 #SW .sw-cell-2 .sw-s2-1-cell img {
@@ -431,13 +486,14 @@
 
 #SW .sw-cell-2 .sw-s2-label {
   padding: 0 6px;
+  color: #94a3b8;
 }
 
 /* S5 = dreapta, la fel ca P5, 75% lățime */
 #SW .sw-cell-5 {
   grid-row: 2;
   grid-column: 3;
-  background: #d32f2f;
+  background: linear-gradient(195deg, rgba(30, 41, 59, 0.55) 0%, rgba(15, 23, 42, 0.98) 45%, #0f172a 100%);
   padding: 2px;
   box-sizing: border-box;
   align-items: stretch;
@@ -461,28 +517,46 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  background: #fff8e1;
-  border-radius: 6px;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      168deg,
+      rgba(24, 32, 46, 0.34) 0%,
+      rgba(18, 24, 36, 0.42) 48%,
+      rgba(14, 20, 32, 0.48) 100%
+    );
+  backdrop-filter: blur(22px) saturate(1.04);
+  -webkit-backdrop-filter: blur(22px) saturate(1.04);
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 0.85rem;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.45) inset,
+    0 1px 0 rgba(255, 255, 255, 0.045) inset,
+    0 12px 28px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(6, 182, 212, 0.04);
   font-size: 0.9rem;
   font-weight: 600;
-  color: #8d6e63;
+  color: #cbd5e1;
   text-align: center;
 }
 
 #SW .sw-s5-label,
 #SW .sw-s6-label {
   padding: 0 6px;
+  color: #cbd5e1;
+  font-weight: 600;
 }
 
 /* S3 = bandă jos full width, aceeași înălțime ca S1 (72px) */
 #SW .sw-cell-3 {
   grid-row: 3;
   grid-column: 1 / -1;
-  background: #2e7d32;
+  background: linear-gradient(0deg, #1e293b 0%, #0f172a 100%);
   align-items: stretch;
   justify-content: stretch;
   min-height: 72px;
   cursor: default;
+  border-top: 1px solid rgba(6, 182, 212, 0.1);
 }
 
 #SW .sw-strip-track--s3 {
@@ -530,15 +604,16 @@
     margin: 0;
     padding: 0.28rem 0.2rem;
     font-size: clamp(0.62rem, 2.8vw, 0.78rem);
-    font-weight: 800;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.02em;
-    border: 1px solid #000;
-    border-radius: 6px 6px 0 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.45rem 0.45rem 0 0;
     cursor: pointer;
     box-sizing: border-box;
-    background: #eee;
-    color: #333;
+    background: rgba(15, 23, 42, 0.55);
+    color: #cbd5e1;
+    transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
   }
 
   #SW .sw-s2-mid-tab[aria-selected="true"] {
@@ -547,18 +622,21 @@
   }
 
   #SW .sw-s2-mid-tab[data-sw-svc-tab="S3"][aria-selected="true"] {
-    background: #c62828;
-    border-color: #8e0000;
+    background: linear-gradient(175deg, rgba(51, 65, 85, 0.65) 0%, rgba(15, 23, 42, 0.98) 100%);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #f1f5f9;
   }
 
   #SW .sw-s2-mid-tab[data-sw-svc-tab="S4"][aria-selected="true"] {
-    background: #1565c0;
-    border-color: #0d47a1;
+    background: linear-gradient(175deg, rgba(51, 65, 85, 0.55) 0%, rgba(15, 23, 42, 0.96) 100%);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #f8fafc;
   }
 
   #SW .sw-s2-mid-tab[data-sw-svc-tab="S5"][aria-selected="true"] {
-    background: #2e7d32;
-    border-color: #1b5e20;
+    background: linear-gradient(175deg, rgba(51, 65, 85, 0.48) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
   }
 
   #SW .sw-cell-2 .sw-s2-inner {

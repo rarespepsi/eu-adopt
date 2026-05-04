@@ -5,11 +5,15 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=28-strip-pub" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=33-card-foot-slate" type="text/css" media="screen" />
 <style>
+	/* Fundal pagină ca Intra / signup (linie profesională) */
+	body.page-servicii {
+		background-color: #141a22 !important;
+	}
 	/* La fel ca PT: main_wrap, main_content, apoi SW cu aceleași dimensiuni ca PW */
-	body.page-servicii #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
-	body.page-servicii #main_content { min-height: 0 !important; display: flex !important; flex-direction: column !important; flex: 1 1 0 !important; overflow: hidden !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
+	body.page-servicii #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; background: #141a22 !important; }
+	body.page-servicii #main_content { min-height: 0 !important; display: flex !important; flex-direction: column !important; flex: 1 1 0 !important; overflow: hidden !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; background: transparent !important; box-shadow: none !important; }
 	/* Același offset ca padding-top navbar (#main_content): --nav-height pe body; fără --nav-h separat → fără fâșie #FCFCFC între A0 și S1 */
 	body.page-servicii #main_content #SW {
 		height: calc(100vh - var(--nav-height, var(--nav-h, 64px))) !important;
@@ -35,17 +39,38 @@
 		display: flex;
 		align-items: stretch;
 	}
+	/* Filtre județ/oraș = aceleași caracteristici ca .signup-field input (signup PF) */
 	#SW .sw-s2-filter-btn {
 		width: 100%;
-		padding: 0.35rem 0.5rem;
-		font-size: clamp(0.7rem, 1.8vw, 0.9rem);
-		font-weight: 700;
-		text-transform: uppercase;
-		background: #e3f2fd;
-		color: #1565c0;
-		border: 1px solid #1565c0;
-		border-radius: 6px;
+		padding: 0.38rem 0.5rem;
+		font-size: clamp(0.68rem, 1.8vw, 0.85rem);
+		font-weight: 600;
+		text-transform: none;
+		letter-spacing: 0.01em;
+		line-height: 1.25;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		background: rgba(15, 23, 42, 0.38);
+		color: #f8fafc;
 		box-sizing: border-box;
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 1px 4px rgba(0, 0, 0, 0.18);
+		transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+	}
+	#SW .sw-s2-filter-btn::placeholder {
+		color: #6b7280;
+	}
+	#SW .sw-s2-filter-btn:hover {
+		border-color: rgba(255, 255, 255, 0.12);
+		background: rgba(15, 23, 42, 0.68);
+	}
+	#SW .sw-s2-filter-btn:focus {
+		outline: none;
+		border-color: rgba(6, 182, 212, 0.75);
+		background: rgba(15, 23, 42, 0.82);
+		box-shadow:
+			0 0 0 1px rgba(6, 182, 212, 0.35),
+			0 0 0 3px rgba(6, 182, 212, 0.14),
+			0 2px 10px rgba(0, 0, 0, 0.22);
 	}
 	#SW .sw-s2-filter-reset-wrap {
 		flex: 0 0 auto;
@@ -57,20 +82,24 @@
 	#SW .sw-s2-filter-reset-btn {
 		width: 100%;
 		box-sizing: border-box;
-		padding: 0.1rem 0.45rem;
+		padding: 0.38rem 0.5rem;
 		min-height: 0;
 		font-size: clamp(0.58rem, 1.45vw, 0.72rem);
-		font-weight: 700;
-		text-transform: uppercase;
-		line-height: 1.05;
-		background: #eceff1;
-		color: #37474f;
-		border: 1px solid #78909c;
-		border-radius: 6px;
+		font-weight: 600;
+		text-transform: none;
+		line-height: 1.25;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		background: rgba(15, 23, 42, 0.45);
+		color: #cbd5e1;
 		cursor: pointer;
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 1px 4px rgba(0, 0, 0, 0.2);
+		transition: border-color 0.18s ease, background 0.18s ease, filter 0.18s ease;
 	}
 	#SW .sw-s2-filter-reset-btn:hover {
-		background: #dfe3e6;
+		border-color: rgba(255, 255, 255, 0.18);
+		background: rgba(15, 23, 42, 0.62);
+		filter: brightness(1.05);
 	}
 	/* S2.1, S2.2, S2.3 mai mici ca să încapă cele două butoane de filtru */
 	#SW .sw-s4-box-filters,
@@ -103,25 +132,70 @@
 		align-items: stretch;
 		box-sizing: border-box;
 	}
+	/* Specii: inactiv = câmp signup; activ = .signup-submit (signup PF) */
 	#SW .sw-s2-species-btn {
 		display: block;
 		flex: 1 1 auto;
 		width: 100%;
 		min-width: 0;
-		padding: 0.32rem 0.35rem;
+		position: relative;
+		padding: 0.38rem 0.45rem;
 		font-size: 0.78rem;
-		font-weight: 800;
+		font-weight: 700;
 		text-transform: uppercase;
-		background: #e3f2fd;
-		color: #1565c0;
-		border: 1px solid #1565c0;
-		border-radius: 7px;
+		letter-spacing: 0.02em;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		background: rgba(15, 23, 42, 0.38);
+		color: #e2e8f0;
 		cursor: pointer;
 		box-sizing: border-box;
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 1px 4px rgba(0, 0, 0, 0.18);
+		transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, filter 0.18s ease, transform 0.14s ease;
+	}
+	#SW .sw-s2-species-btn:hover:not(.is-active) {
+		border-color: rgba(255, 255, 255, 0.12);
+		background: rgba(15, 23, 42, 0.68);
 	}
 	#SW .sw-s2-species-btn.is-active {
-		background: #1565c0;
+		overflow: hidden;
+		border: 1px solid rgba(255, 255, 255, 0.22);
+		background: linear-gradient(175deg, #5ee9f3 0%, #22d3ee 28%, #06b6d4 52%, #0e7490 100%);
 		color: #fff;
+		font-weight: 600;
+		text-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.42) inset,
+			0 -1px 0 rgba(0, 0, 0, 0.12) inset,
+			0 4px 20px rgba(6, 182, 212, 0.45),
+			0 0 28px rgba(34, 211, 238, 0.28),
+			0 8px 24px rgba(0, 0, 0, 0.28);
+	}
+	#SW .sw-s2-species-btn.is-active::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
+		background: linear-gradient(
+			118deg,
+			transparent 0%,
+			transparent 36%,
+			rgba(255, 255, 255, 0.28) 48%,
+			rgba(255, 255, 255, 0.08) 54%,
+			transparent 66%
+		);
+		opacity: 0.95;
+	}
+	#SW .sw-s2-species-btn.is-active:hover {
+		filter: brightness(1.06);
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.48) inset,
+			0 -1px 0 rgba(0, 0, 0, 0.1) inset,
+			0 6px 26px rgba(6, 182, 212, 0.52),
+			0 0 36px rgba(34, 211, 238, 0.35),
+			0 10px 28px rgba(0, 0, 0, 0.32);
+		transform: translateY(-1px);
 	}
 
 	/* Redistribuire înălțime în S2: S2.1 doar cât conținutul,
@@ -143,44 +217,61 @@
 		padding: 0;
 	}
 	#SW .sw-s2-1-cell--vet-offer .sw-s2-1-vet-offer-link {
-		display: block;
+		display: flex;
+		flex-direction: column;
 		width: 100%;
 		height: 100%;
 		min-height: 0;
 		position: relative;
 		text-decoration: none;
 		color: inherit;
+		box-sizing: border-box;
 	}
-	#SW .sw-s2-1-cell--vet-offer .sw-s2-1-vet-offer-link img {
+	/* Zonă imagine (preț peste poză) + subsol titlu — fără bandă întunecată peste fotografie */
+	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-card-stack {
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+		height: 100%;
+		min-height: 0;
+		flex: 1 1 0;
+		box-sizing: border-box;
+	}
+	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-media {
+		position: relative;
+		flex: 1 1 0;
+		min-height: 0;
+		overflow: hidden;
+		display: block;
+	}
+	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-media img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 		object-position: center;
 		display: block;
 	}
-	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-cap {
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		z-index: 2;
-		max-height: 48%;
+	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-card-foot {
+		flex: 0 0 auto;
+		max-height: 40%;
 		overflow: hidden;
-		padding: 2px 4px 3px;
+		padding: 3px 4px 4px;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		justify-content: flex-end;
+		justify-content: center;
 		gap: 1px;
 		line-height: 1.15;
-		color: #fff;
-		background: linear-gradient(transparent, rgba(0, 0, 0, 0.82));
 		text-align: center;
+		background: rgba(30, 41, 59, 0.96);
+		border-top: 1px solid rgba(255, 255, 255, 0.08);
+		box-sizing: border-box;
 	}
 	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-title {
 		font-size: clamp(8px, 1.5vw, 11px);
 		font-weight: 800;
 		width: 100%;
+		color: #e2e8f0;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
@@ -189,35 +280,19 @@
 	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-desc {
 		font-size: clamp(7px, 1.15vw, 9px);
 		font-weight: 600;
-		opacity: 0.95;
 		width: 100%;
+		color: #94a3b8;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 		line-height: 1.2;
 	}
-	/* Discount centrat sus — nu se suprapune cu ♥ / coș (dreapta-sus) sau PDF (stânga-sus) */
-	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-disc {
-		position: absolute;
-		top: 4px;
-		left: 50%;
-		right: auto;
-		transform: translateX(-50%);
-		z-index: 2;
-		background: rgba(198, 40, 40, 0.82);
-		color: #fff;
-		font-size: 9px;
-		font-weight: 900;
-		padding: 1px 6px;
-		border-radius: 999px;
-		line-height: 1.2;
-	}
 	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-mid {
 		position: absolute;
 		left: 0;
 		right: 0;
-		top: 18%;
+		top: 12%;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -260,7 +335,8 @@
 		top: 2px;
 		left: 2px;
 		z-index: 2;
-		background: rgba(13, 71, 161, 0.88);
+		background: rgba(8, 145, 178, 0.85);
+		border: 1px solid rgba(34, 211, 238, 0.35);
 		color: #fff;
 		font-size: 8px;
 		font-weight: 900;
@@ -285,7 +361,7 @@
 		border: none;
 		border-radius: 0;
 		background: transparent;
-		color: #c62828;
+		color: #f43f5e;
 		font-size: 0;
 		line-height: 0;
 		cursor: pointer;
@@ -303,7 +379,7 @@
 	}
 	#SW .sw-adopt-bonus-heart.is-on {
 		background: transparent;
-		color: #c62828;
+		color: #fb7185;
 	}
 	/* Doar inimioara aleasă rămâne vizibilă în aceeași categorie (cabinet / salon / magazin) */
 	#SW .sw-adopt-bonus-heart.sw-adopt-bonus-heart--hidden {
@@ -318,22 +394,23 @@
 		z-index: 4;
 		width: 28px;
 		height: 28px;
-		border: none;
+		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-radius: 50%;
-		background: rgba(255, 255, 255, 0.95);
-		color: #1565c0;
+		background: rgba(15, 23, 42, 0.75);
+		color: #22d3ee;
 		font-size: 13px;
 		line-height: 1;
 		cursor: pointer;
-		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
 		padding: 0;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 	}
 	#SW .sw-s2-1-site-cart.is-active {
-		background: #1565c0;
+		background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 55%, #0e7490 100%);
 		color: #fff;
+		border-color: rgba(255, 255, 255, 0.22);
 	}
 	#SW .sw-adopt-bonus-banner {
 		flex: 0 0 auto;
@@ -341,17 +418,18 @@
 		padding: 6px 8px;
 		font-size: clamp(0.68rem, 1.6vw, 0.82rem);
 		line-height: 1.35;
-		background: linear-gradient(90deg, rgba(229, 57, 53, 0.12), rgba(255, 193, 7, 0.15));
-		border: 1px solid rgba(198, 40, 40, 0.35);
-		border-radius: 8px;
-		color: #1a1a1a;
+		background: rgba(127, 29, 29, 0.22);
+		border: 1px solid rgba(248, 113, 113, 0.28);
+		border-radius: 0.45rem;
+		color: #fecdd3;
 	}
 	#SW .sw-adopt-bonus-banner.sw-adopt-bonus-banner--dismissed {
 		display: none !important;
 	}
 	#SW .sw-adopt-bonus-banner--locked {
-		background: linear-gradient(90deg, rgba(46, 125, 50, 0.1), rgba(129, 199, 132, 0.16));
-		border-color: rgba(27, 94, 32, 0.4);
+		background: rgba(21, 128, 61, 0.22);
+		border-color: rgba(52, 211, 153, 0.32);
+		color: #bbf7d0;
 	}
 	#SW .sw-adopt-bonus-heart.sw-adopt-bonus-heart--frozen {
 		pointer-events: none;
@@ -363,38 +441,42 @@
 		padding: 8px 10px;
 		font-size: clamp(0.68rem, 1.6vw, 0.84rem);
 		line-height: 1.45;
-		border-radius: 8px;
-		color: #1a1a1a;
+		border-radius: 0.45rem;
+		color: #e2e8f0;
 		box-sizing: border-box;
+		background: rgba(15, 23, 42, 0.55);
+		border: 1px solid rgba(255, 255, 255, 0.08);
 	}
 	#SW .sw-adopt-bonus-followup.sw-adopt-bonus-followup--hidden,
 	#SW .sw-adopt-bonus-followup[hidden] {
 		display: none !important;
 	}
 	#SW .sw-adopt-bonus-followup--complete {
-		background: linear-gradient(90deg, rgba(46, 125, 50, 0.14), rgba(129, 199, 132, 0.2));
-		border: 1px solid rgba(27, 94, 32, 0.45);
+		background: rgba(21, 128, 61, 0.2);
+		border: 1px solid rgba(52, 211, 153, 0.3);
+		color: #d1fae5;
 	}
 	#SW .sw-adopt-bonus-followup--complete strong {
-		color: #1b5e20;
+		color: #6ee7b7;
 	}
 	#SW .sw-adopt-bonus-followup--nudge {
-		background: linear-gradient(90deg, rgba(21, 101, 192, 0.1), rgba(227, 242, 253, 0.65));
-		border: 1px solid rgba(21, 101, 192, 0.32);
+		background: rgba(8, 145, 178, 0.18);
+		border: 1px solid rgba(34, 211, 238, 0.28);
+		color: #e0f2fe;
 	}
 	#SW .sw-adopt-bonus-followup--nudge strong {
-		color: #0d47a1;
+		color: #7dd3fc;
 	}
 	#SW .sw-adopt-bonus-kind-note {
 		margin: 0.35rem 0 0.25rem;
 		font-weight: 700;
-		color: #4a148c;
+		color: #c4b5fd;
 	}
 	#SW .sw-adopt-bonus-mail-note {
 		margin: 0.2rem 0 0;
 		font-size: 0.92em;
 		font-weight: 500;
-		color: #37474f;
+		color: #94a3b8;
 	}
 	#SW .sw-adopt-bonus-save-row {
 		margin-top: 0.45rem;
@@ -407,17 +489,50 @@
 		display: none !important;
 	}
 	#SW .sw-adopt-bonus-save-btn {
+		position: relative;
+		overflow: hidden;
 		font-size: clamp(0.65rem, 1.45vw, 0.78rem);
-		font-weight: 700;
-		padding: 0.35rem 0.65rem;
-		border-radius: 6px;
-		border: 1px solid #2e7d32;
-		background: #2e7d32;
+		font-weight: 600;
+		padding: 0.52rem 0.85rem;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(255, 255, 255, 0.22);
+		background: linear-gradient(175deg, #5ee9f3 0%, #22d3ee 28%, #06b6d4 52%, #0e7490 100%);
 		color: #fff;
 		cursor: pointer;
+		text-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.42) inset,
+			0 -1px 0 rgba(0, 0, 0, 0.12) inset,
+			0 4px 20px rgba(6, 182, 212, 0.45),
+			0 0 28px rgba(34, 211, 238, 0.28),
+			0 8px 24px rgba(0, 0, 0, 0.28);
+		transition: filter 0.18s ease, box-shadow 0.18s ease, transform 0.14s ease;
+	}
+	#SW .sw-adopt-bonus-save-btn::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
+		background: linear-gradient(
+			118deg,
+			transparent 0%,
+			transparent 36%,
+			rgba(255, 255, 255, 0.28) 48%,
+			rgba(255, 255, 255, 0.08) 54%,
+			transparent 66%
+		);
+		opacity: 0.95;
 	}
 	#SW .sw-adopt-bonus-save-btn:hover {
-		background: #1b5e20;
+		filter: brightness(1.06);
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.48) inset,
+			0 -1px 0 rgba(0, 0, 0, 0.1) inset,
+			0 6px 26px rgba(6, 182, 212, 0.52),
+			0 0 36px rgba(34, 211, 238, 0.35),
+			0 10px 28px rgba(0, 0, 0, 0.32);
+		transform: translateY(-1px);
 	}
 	#SW .sw-adopt-bonus-thankyou {
 		flex: 0 0 auto;
@@ -425,14 +540,14 @@
 		padding: 10px 12px;
 		font-size: clamp(0.72rem, 1.65vw, 0.88rem);
 		line-height: 1.45;
-		border-radius: 8px;
+		border-radius: 0.45rem;
 		text-align: center;
-		background: linear-gradient(90deg, rgba(46, 125, 50, 0.16), rgba(129, 199, 132, 0.22));
-		border: 1px solid rgba(27, 94, 32, 0.45);
-		color: #1a1a1a;
+		background: rgba(21, 128, 61, 0.22);
+		border: 1px solid rgba(52, 211, 153, 0.32);
+		color: #d1fae5;
 	}
 	#SW .sw-adopt-bonus-thankyou strong {
-		color: #1b5e20;
+		color: #6ee7b7;
 	}
 	#SW .sw-adopt-bonus-thankyou.sw-adopt-bonus-followup--hidden,
 	#SW .sw-adopt-bonus-thankyou[hidden] {
@@ -457,9 +572,9 @@
 	.sw-vet-offer-modal__backdrop {
 		position: absolute;
 		inset: 0;
-		background: rgba(15, 20, 30, 0.42);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
+		background: rgba(15, 23, 42, 0.65);
+		backdrop-filter: blur(18px);
+		-webkit-backdrop-filter: blur(18px);
 		cursor: pointer;
 	}
 	.sw-vet-offer-modal__panel {
@@ -473,14 +588,26 @@
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
-		background: #fffef7;
-		border: 2px solid #d2b27a;
-		border-radius: 12px;
-		box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
+		background:
+			linear-gradient(
+				168deg,
+				rgba(24, 32, 46, 0.52) 0%,
+				rgba(18, 24, 36, 0.62) 48%,
+				rgba(14, 20, 32, 0.68) 100%
+			);
+		backdrop-filter: blur(22px) saturate(1.04);
+		-webkit-backdrop-filter: blur(22px) saturate(1.04);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 1.1875rem;
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+			0 32px 64px rgba(0, 0, 0, 0.55),
+			0 0 0 1px rgba(6, 182, 212, 0.06);
 		overflow-x: hidden;
 		overflow-y: auto;
 		-webkit-overflow-scrolling: touch;
 		margin-bottom: 0.25rem;
+		color: #e2e8f0;
 	}
 	.sw-vet-offer-modal__head {
 		flex: 0 0 auto;
@@ -488,14 +615,14 @@
 		align-items: center;
 		justify-content: flex-end;
 		padding: 0.25rem 0.35rem 0;
-		background: linear-gradient(180deg, rgba(255, 248, 225, 0.95), #fffef7);
-		border-bottom: 1px solid #e6d5a8;
+		background: transparent;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 	}
 	.sw-vet-offer-modal__close {
-		border: 1px solid #c62828;
-		background: #fff;
-		color: #c62828;
-		border-radius: 8px;
+		border: 1px solid rgba(255, 255, 255, 0.14);
+		background: rgba(15, 23, 42, 0.5);
+		color: #f8fafc;
+		border-radius: 0.45rem;
 		width: 2rem;
 		height: 2rem;
 		font-size: 1.35rem;
@@ -508,7 +635,9 @@
 		padding: 0;
 	}
 	.sw-vet-offer-modal__close:hover {
-		background: #ffebee;
+		background: rgba(248, 113, 113, 0.25);
+		border-color: rgba(248, 113, 113, 0.45);
+		color: #fecdd3;
 	}
 	.sw-vet-offer-modal__body {
 		flex: 0 1 auto;
@@ -519,7 +648,7 @@
 	.sw-vet-offer-nota {
 		margin: 0;
 		font-size: 0.92rem;
-		color: #4e342e;
+		color: #cbd5e1;
 		line-height: 1.4;
 	}
 	/* Zonă poză: −50% pe înălțime față de varianta mare, ca nota să fie vizibilă fără scroll */
@@ -528,9 +657,9 @@
 		width: 100%;
 		height: min(750px, 32vh);
 		min-height: min(400px, 21vh);
-		border-radius: 8px;
+		border-radius: 0.45rem;
 		overflow: hidden;
-		background: #e0e0e0;
+		background: rgba(15, 23, 42, 0.5);
 		margin-bottom: 0.55rem;
 		flex-shrink: 0;
 	}
@@ -543,44 +672,33 @@
 		object-fit: cover;
 		object-position: center;
 	}
-	.sw-vet-offer-nota__pill {
-		position: absolute;
-		top: 0.45rem;
-		right: 0.45rem;
-		background: #c62828;
-		color: #fff;
-		font-size: 0.85rem;
-		font-weight: 800;
-		padding: 0.18rem 0.55rem;
-		border-radius: 999px;
-	}
 	.sw-vet-offer-nota__partner {
 		margin: 0 0 0.3rem;
 		font-size: 0.85rem;
-		color: #546e7a;
+		color: #94a3b8;
 	}
 	.sw-vet-offer-nota__title {
 		margin: 0 0 0.4rem;
 		font-size: 1.2rem;
 		font-weight: 800;
-		color: #1b5e20;
+		color: #f8fafc;
 		line-height: 1.25;
 	}
 	.sw-vet-offer-nota__desc {
 		margin: 0 0 0.45rem;
 		font-size: 0.88rem;
-		color: #5d4037;
+		color: #cbd5e1;
 		white-space: pre-wrap;
 	}
 	.sw-vet-offer-nota__target {
 		font-size: 0.8rem;
 		line-height: 1.42;
-		color: #37474f;
+		color: #e2e8f0;
 		margin: 0 0 0.5rem;
 		padding: 0.45rem 0.55rem;
-		border-radius: 8px;
-		border: 1px solid #c5e1a5;
-		background: #f9fff5;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(52, 211, 153, 0.25);
+		background: rgba(21, 128, 61, 0.15);
 		box-sizing: border-box;
 	}
 	.sw-vet-offer-nota__target-line {
@@ -589,12 +707,12 @@
 	.sw-vet-offer-nota__target-mini {
 		margin: 0;
 		font-size: 0.74rem;
-		color: #546e7a;
+		color: #94a3b8;
 	}
 	.sw-vet-offer-nota__meta {
 		font-size: 0.86rem;
 		margin: 0 0 0.45rem;
-		color: #6d4c41;
+		color: #94a3b8;
 	}
 	.sw-vet-offer-nota__meta p {
 		margin: 0.15rem 0;
@@ -605,24 +723,25 @@
 		justify-content: center;
 		text-decoration: none;
 		font-size: 0.78rem;
-		font-weight: 800;
+		font-weight: 700;
 		padding: 0.34rem 0.5rem;
-		border-radius: 7px;
-		border: 1px solid #1565c0;
-		background: #e3f2fd;
-		color: #0d47a1;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(34, 211, 238, 0.35);
+		background: rgba(8, 145, 178, 0.2);
+		color: #7dd3fc;
 	}
 	.sw-vet-offer-nota__ext-link:hover {
-		background: #bbdefb;
+		background: rgba(8, 145, 178, 0.32);
+		color: #e0f2fe;
 	}
 	.sw-vet-offer-nota__note {
 		font-size: 0.84rem;
 		line-height: 1.4;
-		color: #37474f;
+		color: #cbd5e1;
 		padding: 0.55rem 0.65rem;
-		background: #e3f2fd;
-		border: 1px solid #90caf9;
-		border-radius: 8px;
+		background: rgba(15, 23, 42, 0.45);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 0.45rem;
 		margin: 0 0 0.55rem;
 	}
 	.sw-vet-offer-nota__label {
@@ -631,39 +750,45 @@
 		gap: 0.2rem;
 		margin-bottom: 0.45rem;
 		font-size: 0.82rem;
-		font-weight: 700;
-		color: #5d4037;
+		font-weight: 600;
+		color: #cbd5e1;
 	}
 	.sw-vet-offer-nota__label input {
 		font: inherit;
-		padding: 0.35rem 0.45rem;
-		border: 1px solid #b0bec5;
-		border-radius: 6px;
+		padding: 0.38rem 0.5rem;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 0.45rem;
+		background: rgba(15, 23, 42, 0.55);
+		color: #f8fafc;
 	}
 	.sw-vet-offer-nota__email-hint {
 		font-size: 0.85rem;
 		margin: 0 0 0.45rem;
-		color: #37474f;
+		color: #94a3b8;
 	}
 	.sw-vet-offer-nota__cta {
 		width: 100%;
 		margin-top: 0.3rem;
 		padding: 0.6rem 0.85rem;
 		font-size: 1rem;
-		font-weight: 800;
+		font-weight: 600;
 		color: #fff;
-		background: #2e7d32;
-		border: none;
-		border-radius: 8px;
+		border: 1px solid rgba(255, 255, 255, 0.22);
+		background: linear-gradient(175deg, #5ee9f3 0%, #22d3ee 28%, #06b6d4 52%, #0e7490 100%);
+		border-radius: 0.45rem;
 		cursor: pointer;
+		text-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.35) inset,
+			0 4px 18px rgba(6, 182, 212, 0.35);
 	}
 	.sw-vet-offer-nota__cta:hover {
-		background: #1b5e20;
+		filter: brightness(1.06);
 	}
 	.public-offer-auth-gate__text {
 		font-size: 0.85rem;
 		line-height: 1.45;
-		color: #37474f;
+		color: #cbd5e1;
 		margin: 0 0 0.5rem;
 	}
 	.public-offer-auth-gate__actions {
@@ -678,35 +803,35 @@
 		justify-content: center;
 		text-decoration: none;
 		font-size: 0.88rem;
-		font-weight: 800;
+		font-weight: 600;
 		padding: 0.5rem 0.75rem;
-		border-radius: 8px;
-		border: 1px solid #2e7d32;
-		background: #2e7d32;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(255, 255, 255, 0.22);
+		background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 55%, #0e7490 100%);
 		color: #fff;
 	}
 	.public-offer-auth-gate__btn:hover {
-		background: #1b5e20;
+		filter: brightness(1.06);
 		color: #fff;
 	}
 	.public-offer-auth-gate__btn--secondary {
-		background: #e8f5e9;
-		color: #1b5e20;
-		border-color: #66bb6a;
+		background: rgba(15, 23, 42, 0.55);
+		color: #e2e8f0;
+		border-color: rgba(255, 255, 255, 0.18);
 	}
 	.public-offer-auth-gate__btn--secondary:hover {
-		background: #c8e6c9;
-		color: #0d3d0f;
+		background: rgba(30, 41, 59, 0.85);
+		color: #f8fafc;
 	}
 	.sw-vet-offer-nota__only-pf {
 		font-size: 0.85rem;
 		line-height: 1.45;
-		color: #6d4c41;
+		color: #fcd34d;
 		margin: 0 0 0.5rem;
 		padding: 0.5rem 0.6rem;
-		background: #fff3e0;
-		border: 1px solid #ffcc80;
-		border-radius: 8px;
+		background: rgba(251, 191, 36, 0.1);
+		border: 1px solid rgba(251, 191, 36, 0.28);
+		border-radius: 0.45rem;
 	}
 	body.page-servicii .sr-only {
 		position: absolute;
@@ -737,10 +862,12 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		background: linear-gradient(160deg, #e3f2fd 0%, #bbdefb 100%) !important;
-		color: #0d47a1 !important;
+		background: linear-gradient(165deg, rgba(8, 145, 178, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%) !important;
+		color: #a5f3fc !important;
+		border: 1px solid rgba(34, 211, 238, 0.2) !important;
 		padding: 0.2rem 0.25rem !important;
 		box-sizing: border-box;
+		border-radius: 0.35rem;
 	}
 	#SW a.sw-strip-cell--eu.sw-strip-cell--donatii-link,
 	#SW a.sw-strip-cell--eu.sw-strip-cell--sms-strip {
@@ -774,10 +901,12 @@
 		align-items: center;
 		justify-content: flex-start;
 		padding: 0.12rem !important;
-		background: #ffeb3b !important;
-		color: #b71c1c !important;
+		background: rgba(251, 191, 36, 0.12) !important;
+		border: 1px solid rgba(251, 191, 36, 0.28) !important;
+		color: #fcd34d !important;
 		box-sizing: border-box;
 		position: relative;
+		border-radius: 0.35rem;
 	}
 	#SW .sw-strip-cell--pub.sw-strip-cell--has-creative {
 		padding: 0 !important;
@@ -832,8 +961,8 @@
 		border: 1px solid rgba(12, 20, 34, 0.25);
 		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
 	}
-	#SW .sw-pub-mini-badge--price { background: #e8f5e9; color: #1b5e20; }
-	#SW .sw-pub-mini-badge--discount { background: #ffebee; color: #b71c1c; }
+	#SW .sw-pub-mini-badge--price { background: rgba(52, 211, 153, 0.2); color: #a7f3d0; border-color: rgba(52, 211, 153, 0.35); }
+	#SW .sw-pub-mini-badge--discount { background: rgba(127, 29, 29, 0.45); color: #fecdd3; border-color: rgba(248, 113, 113, 0.35); }
 </style>
 {% endblock %}
 
@@ -1019,10 +1148,7 @@
 		{% if offer.image %}
 		<div class="sw-vet-offer-nota__img-wrap">
 			<img class="sw-vet-offer-nota__img" src="{{ offer.image.url }}" alt="" loading="lazy" />
-			{% if offer.discount_percent %}<span class="sw-vet-offer-nota__pill">−{{ offer.discount_percent }}%</span>{% endif %}
 		</div>
-		{% elif offer.discount_percent %}
-		<p style="margin:0 0 0.35rem;"><span class="sw-vet-offer-nota__pill" style="position:static;display:inline-block;">−{{ offer.discount_percent }}%</span></p>
 		{% endif %}
 		<p class="sw-vet-offer-nota__partner"><strong>Partener:</strong> {{ offer.partner_display_name }}</p>
 		<h2 class="sw-vet-offer-nota__title">{{ offer.title }}</h2>
@@ -1072,10 +1198,7 @@
 		{% if offer.image %}
 		<div class="sw-vet-offer-nota__img-wrap">
 			<img class="sw-vet-offer-nota__img" src="{{ offer.image.url }}" alt="" loading="lazy" />
-			{% if offer.discount_percent %}<span class="sw-vet-offer-nota__pill">−{{ offer.discount_percent }}%</span>{% endif %}
 		</div>
-		{% elif offer.discount_percent %}
-		<p style="margin:0 0 0.35rem;"><span class="sw-vet-offer-nota__pill" style="position:static;display:inline-block;">−{{ offer.discount_percent }}%</span></p>
 		{% endif %}
 		<p class="sw-vet-offer-nota__partner"><strong>Partener:</strong> {{ offer.partner_display_name }}</p>
 		<h2 class="sw-vet-offer-nota__title">{{ offer.title }}</h2>
@@ -1125,10 +1248,7 @@
 		{% if offer.image %}
 		<div class="sw-vet-offer-nota__img-wrap">
 			<img class="sw-vet-offer-nota__img" src="{{ offer.image.url }}" alt="" loading="lazy" />
-			{% if offer.discount_percent %}<span class="sw-vet-offer-nota__pill">−{{ offer.discount_percent }}%</span>{% endif %}
 		</div>
-		{% elif offer.discount_percent %}
-		<p style="margin:0 0 0.35rem;"><span class="sw-vet-offer-nota__pill" style="position:static;display:inline-block;">−{{ offer.discount_percent }}%</span></p>
 		{% endif %}
 		<p class="sw-vet-offer-nota__partner"><strong>Partener:</strong> {{ offer.partner_display_name }}</p>
 		<h2 class="sw-vet-offer-nota__title">{{ offer.title }}</h2>

@@ -3,7 +3,7 @@ Populează DB cu date de test „realiste” pentru ~10 useri aliniați în scri
 
 - PF + ONG: 15 anunțuri animal / user (5 câini, 5 pisici, 5 alte specii) — nume prefix [seed]
 - Colaboratori: 15 oferte / user (5 țintă câine, 5 pisică, 5 oricare/altele) — titlu prefix [seed]
-- Pe fiecare imagine generată de script apare vizibil textul **PRODUS DEMO** (Pillow); nu se modifică casete sau setări UI în site.
+- Imaginile generate pentru oferte/anunțuri seed sunt **placeholder-uri slate neutre** (fără text promo); nu modifică UI-ul site-ului.
 
 Anunțurile PF folosesc bulk_create (nu apelează AnimalListing.save() → nu se aplică limita 3/lună).
 
@@ -63,41 +63,19 @@ COLLAB_USERS_NEAMT_ZONE = ("nccristescu", "dg1", "dg2", "dm")
 SEED_NAME_PREFIX = "[seed] "
 SEED_TITLE_PREFIX = "[seed] "
 
-# Text vizibil pe fiecare imagine generată de acest script (nu modifică casete / UI site).
-DEMO_IMAGE_LABEL = "PRODUS DEMO"
 # Fișier partajat pentru photo_1 la anunțuri seed (scriere directă în MEDIA_ROOT).
 SEED_ANIMAL_PHOTO_REL = "animals/seed_produs_demo.jpg"
 
 
 def _demo_jpeg_bytes() -> bytes:
-    """JPEG cu text PRODUS DEMO vizibil (necesită Pillow)."""
-    from PIL import Image, ImageDraw, ImageFont
+    """JPEG placeholder discret (slate), fără bandă sau text — aliniat la tema Servicii / profi."""
+    from PIL import Image
 
     w, h = 520, 340
-    img = Image.new("RGB", (w, h), (88, 96, 108))
-    draw = ImageDraw.Draw(img)
-    banner_h = 78
-    draw.rectangle([0, h - banner_h, w, h], fill=(198, 52, 42))
-    font = None
-    for fp in (
-        os.path.join(os.environ.get("WINDIR", r"C:\Windows"), "Fonts", "arialbd.ttf"),
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-    ):
-        if os.path.isfile(fp):
-            try:
-                font = ImageFont.truetype(fp, 34)
-                break
-            except OSError:
-                continue
-    if font is None:
-        font = ImageFont.load_default()
-    bbox = draw.textbbox((0, 0), DEMO_IMAGE_LABEL, font=font)
-    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    tx = (w - tw) // 2
-    ty = h - banner_h + (banner_h - th) // 2 - 2
-    draw.text((tx, ty), DEMO_IMAGE_LABEL, fill=(255, 255, 255), font=font)
+    # #1e293b — același spirit ca subsolul cardurilor Servicii
+    img = Image.new("RGB", (w, h), (30, 41, 59))
     buf = BytesIO()
-    img.save(buf, format="JPEG", quality=90)
+    img.save(buf, format="JPEG", quality=88)
     buf.seek(0)
     return buf.read()
 
@@ -106,7 +84,7 @@ def _tiny_jpeg_upload(filename: str = "offer.jpg") -> SimpleUploadedFile:
     try:
         data = _demo_jpeg_bytes()
     except Exception:
-        # Fără Pillow: imagine minimală (fără text — instală Pillow pentru PRODUS DEMO).
+        # Fără Pillow: imagine minimală 1×1 (instalează Pillow pentru placeholder 520×340).
         raw = base64.b64decode(
             "/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAX/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwAA8A/9k="
         )
@@ -118,7 +96,7 @@ _SEED_ANIMAL_PHOTO_CACHED: str | None = None
 
 
 def _seed_animal_photo_1_rel() -> str:
-    """Cale relativă media pentru photo_1 (PRODUS DEMO) sau '' dacă nu s-a putut genera."""
+    """Cale relativă media pentru photo_1 (placeholder slate) sau '' dacă nu s-a putut genera."""
     global _SEED_ANIMAL_PHOTO_CACHED
     if _SEED_ANIMAL_PHOTO_CACHED is not None:
         return _SEED_ANIMAL_PHOTO_CACHED

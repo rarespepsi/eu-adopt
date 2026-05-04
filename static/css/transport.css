@@ -9,6 +9,8 @@
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
+	background: #141a22;
+	color: #e2e8f0;
 }
 
 /* Rând cu 2 casete – fundal comun pe acest rând (imaginea acoperă T1 și T2 dintr-o bucată) */
@@ -26,7 +28,7 @@
 #TW .tw-cell {
 	min-width: 0;
 	min-height: 0;
-	border: 3px solid #000;
+	border: 1px solid rgba(255, 255, 255, 0.08);
 	box-sizing: border-box;
 	position: relative;
 }
@@ -40,9 +42,10 @@
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
-	background: rgba(255, 255, 255, 0.06);
-	backdrop-filter: blur(4px);
-	border-color: #999;
+	background: rgba(15, 23, 42, 0.55);
+	backdrop-filter: blur(12px) saturate(1.05);
+	-webkit-backdrop-filter: blur(12px) saturate(1.05);
+	border-color: rgba(6, 182, 212, 0.22);
 }
 #TW #T1.tw-cell .t1-inner {
 	flex: 1 1 0;
@@ -57,7 +60,7 @@
 #TW #T2.tw-cell {
 	flex: 2 2 0;
 	background: transparent;
-	border-color: #2e7d32;
+	border-color: rgba(34, 211, 238, 0.18);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -91,8 +94,9 @@
 	min-height: 144px;
 	border-radius: 8px;
 	overflow: hidden;
-	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-	background: #fff;
+	box-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+	background: rgba(15, 23, 42, 0.5);
+	border: 1px solid rgba(255, 255, 255, 0.1);
 	flex-shrink: 0;
 	display: block;
 	cursor: pointer;
@@ -171,13 +175,14 @@
 	width: min(24vmin, 150px);  /* mai mare, pentru text circular mai aerisit */
 	height: min(24vmin, 150px);
 	border-radius: 50%;
-	background: rgba(255, 193, 7, 0.95);
-	box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+	background: rgba(30, 41, 59, 0.92);
+	border: 1px solid rgba(6, 182, 212, 0.35);
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
-	color: #1a1a1a;
+	color: #e2e8f0;
 	text-decoration: none;
 	cursor: pointer;
 	font-weight: 800;
@@ -192,7 +197,7 @@
 	transform: translate(-50%, -50%);
 	border-radius: 50%;
 	object-fit: cover;
-	box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.95); /* inel galben în jurul capului */
+	box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.45);
 	z-index: 1;
 }
 #TW #T2 .t2-extra-circle-svg {
@@ -206,7 +211,7 @@
 	font-size: 11px; /* ~10% mai mare decât înainte */
 	letter-spacing: 0.7px; /* păstrăm spațiul mai strâns între litere/cuvinte */
 	text-transform: none; /* păstrăm majuscula doar la începutul fiecărui cuvânt, cum e în text */
-	fill: #1a1a1a;
+	fill: #e2e8f0;
 	font-weight: 800;
 }
 
@@ -229,10 +234,11 @@
 	padding: 0.12rem 0.32rem;
 	font-size: 0.55rem;
 	font-weight: 600;
-	color: #1a1a1a;
-	background: rgba(255, 193, 7, 0.95);
+	color: #f8fafc;
+	background: rgba(15, 23, 42, 0.92);
+	border: 1px solid rgba(6, 182, 212, 0.28);
 	border-radius: 4px;
-	box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 	white-space: nowrap;
 	max-width: 140%;
 	text-overflow: ellipsis;
@@ -250,10 +256,11 @@
 	padding: 0.7rem 1rem;
 	font-size: 1.16rem;
 	line-height: 1.35;
-	color: #1a1a1a;
-	background: rgba(255, 193, 7, 0.95);
+	color: #e2e8f0;
+	background: rgba(30, 41, 59, 0.96);
+	border: 1px solid rgba(255, 255, 255, 0.1);
 	border-radius: 8px;
-	box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+	box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
 	white-space: normal;
 	text-align: center;
 	pointer-events: none;
@@ -301,8 +308,8 @@
 	max-width: 14%;
 	min-width: 0;
 	min-height: 0;
-	border: 3px solid #000;
-	border-left-color: #2e7d32;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-left-color: rgba(6, 182, 212, 0.25);
 	box-sizing: border-box;
 	display: flex;
 	align-items: center;
@@ -329,18 +336,20 @@
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	text-align: center;
-	color: #ffffff;
-	background: #0050b5;
+	color: #e2e8f0;
+	background: linear-gradient(90deg, rgba(51, 65, 85, 0.75) 0%, rgba(15, 23, 42, 0.95) 100%);
 	padding: 0.25rem 0.4rem;
 	border-radius: 4px;
-	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+	text-shadow: none;
+	border: 1px solid rgba(255, 255, 255, 0.08);
 }
 #TW #T3 .t3-box {
 	flex: 1 1 auto;
 	min-height: 0;
 	border-radius: 6px;
-	background: rgba(255, 255, 255, 0.35);
-	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+	background: rgba(15, 23, 42, 0.45);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
 	box-sizing: border-box;
 }
 #TW #T3 .t3-box-1 { /* rezervat viitor: ex. reclame text */ }
@@ -351,9 +360,10 @@
 #TW #T1 .t1-inner {
 	padding: 0.45rem 0.5rem 0.5rem;
 	box-sizing: border-box;
-	background: rgba(248, 250, 252, 0.88);
+	background: rgba(30, 41, 59, 0.55);
+	border: 1px solid rgba(255, 255, 255, 0.1);
 	border-radius: 10px;
-	box-shadow: 0 6px 28px rgba(0, 0, 0, 0.14);
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 	width: 100%;
 	min-width: 0;
 	margin: 0.2rem 0.25rem 0.25rem;
@@ -369,9 +379,10 @@
 	justify-content: center;
 	font-size: 1.1rem;
 	font-weight: 700;
-	color: #0a0a0a;
-	background: rgba(255, 255, 255, 0.75);
-	border-radius: 3px;
+	color: #f8fafc;
+	background: rgba(15, 23, 42, 0.65);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 8px;
 	box-sizing: border-box;
 	flex-shrink: 0;
 	text-align: center;
@@ -381,9 +392,10 @@
 	padding: 0.22rem 0.22rem;
 	font-size: 0.6rem;
 	line-height: 1.25;
-	color: #0a0a0a;
-	background: rgba(255, 255, 255, 0.75);
-	border-radius: 3px;
+	color: #cbd5e1;
+	background: rgba(15, 23, 42, 0.45);
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	border-radius: 8px;
 	box-sizing: border-box;
 	flex-shrink: 0;
 }
@@ -399,8 +411,8 @@
 #TW #T1 .t1-caseta {
 	min-width: 0;
 	padding: 0.3rem 0.32rem;
-	background: rgba(255, 255, 255, 0.92);
-	border: 1px solid rgba(0, 0, 0, 0.12);
+	background: rgba(15, 23, 42, 0.5);
+	border: 1px solid rgba(255, 255, 255, 0.1);
 	border-radius: 6px;
 	box-sizing: border-box;
 }
@@ -434,10 +446,11 @@
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.02em;
-	color: #0a0a0a;
+	color: #e2e8f0;
 	margin-bottom: 0;
-	background: rgba(255, 255, 255, 0.82);
-	border-radius: 2px;
+	background: rgba(30, 41, 59, 0.75);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 4px;
 	box-sizing: border-box;
 }
 #TW #T1 .t1-select,
@@ -447,44 +460,44 @@
 	max-width: 100%;
 	padding: 0.22rem 0.26rem;
 	font-size: 0.6rem;
-	color: #0a0a0a;
-	border: 1px solid rgba(0, 0, 0, 0.25);
-	border-radius: 3px;
+	color: #f1f5f9;
+	border: 1px solid rgba(255, 255, 255, 0.14);
+	border-radius: 6px;
 	box-sizing: border-box;
-	background: rgba(255, 255, 255, 0.95);
+	background: rgba(15, 23, 42, 0.75);
 }
 #TW #T1 .t1-input::placeholder {
-	color: #1a1a1a;
-	opacity: 0.9;
+	color: #94a3b8;
+	opacity: 1;
 }
 #TW #T1 .t1-hint {
 	margin: 0;
 	font-size: 0.5rem;
-	color: #1a1a1a;
+	color: #94a3b8;
 }
 #TW #T1 .t1-link {
 	font-size: 0.7rem; /* mai mare, mai vizibil */
 	font-weight: 700;
 	text-transform: uppercase;
-	color: #ff1744; /* roșu mai aprins, foarte vizibil */
+	color: #67e8f9;
 	text-decoration: none;
 	margin-top: 0;
 	display: inline-block;
 }
 #TW #T1 .t1-link:hover {
 	text-decoration: underline;
-	color: #d50000; /* roșu aprins, ușor mai închis la hover */
+	color: #a5f3fc;
 }
-/* Link secundar către Google Maps (lângă PUNCT PLECARE/SOSIRE) – nu roșu ca „ALEGE DE PE HARTĂ” */
+/* Link secundar către Google Maps (lângă PUNCT PLECARE/SOSIRE) */
 #TW #T1 .t1-maps-link {
-	color: #1565c0;
+	color: #5ee9f3;
 	font-size: 0.55rem;
 	font-weight: 700;
 	text-transform: none;
 	letter-spacing: 0;
 }
 #TW #T1 .t1-maps-link:hover {
-	color: #0d47a1;
+	color: #a5f3fc;
 }
 #TW #T1 .t1-input-wrap {
 	position: relative;
@@ -547,15 +560,17 @@
 	font-size: 0.6rem;
 	font-weight: 700;
 	color: #fff;
-	background: rgba(21, 101, 192, 0.7);
-	border: none;
-	border-radius: 3px;
+	background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	border-radius: 8px;
 	cursor: pointer;
 	text-align: center;
 	line-height: 1.2;
 	box-sizing: border-box;
 }
-#TW #T1 .t1-submit:hover { background: rgba(13, 71, 161, 0.85); }
+#TW #T1 .t1-submit:hover {
+	filter: brightness(1.05);
+}
 
 /* ========== Mobil – pagină Transport ========== */
 /* Sub ~768px (767.98, ca PT): coloană + scroll pagină; fără reguli dedicate doar pentru landscape */
@@ -677,7 +692,7 @@
 	#TW #T2 .t2-circle {
 		touch-action: manipulation;
 		cursor: pointer;
-		-webkit-tap-highlight-color: rgba(255, 193, 7, 0.35);
+		-webkit-tap-highlight-color: rgba(6, 182, 212, 0.25);
 	}
 	#TW #T2 .t2-extra-circle {
 		width: min(18vmin, 100px);
@@ -876,7 +891,7 @@
 		max-width: none !important;
 		height: 100%;
 		box-sizing: border-box;
-		background: rgba(252, 252, 252, 0.97);
+		background: rgba(20, 26, 34, 0.97);
 		box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
 		overflow: hidden;
 	}
@@ -916,7 +931,7 @@
 		max-width: none !important;
 		height: 100%;
 		box-sizing: border-box;
-		background: rgba(252, 252, 252, 0.94);
+		background: rgba(20, 26, 34, 0.96);
 		box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
 		overflow: visible;
 	}
@@ -970,8 +985,8 @@
 		font-size: 0.72rem;
 		font-weight: 800;
 		color: #fff;
-		background: #1565c0;
-		border: none;
+		background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
+		border: 1px solid rgba(255, 255, 255, 0.18);
 		border-radius: 8px;
 		cursor: pointer;
 		text-align: center;
@@ -995,9 +1010,9 @@
 		font: inherit;
 		font-size: 0.65rem;
 		font-weight: 700;
-		color: #0d1f33;
-		background: rgba(255, 255, 255, 0.55);
-		border: 1px solid rgba(0, 0, 0, 0.35);
+		color: #e2e8f0;
+		background: rgba(51, 65, 85, 0.7);
+		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-radius: 6px;
 		cursor: pointer;
 		text-align: center;
@@ -1028,7 +1043,8 @@
 	}
 	#TW .t2-portrait-expand-btn {
 		color: #fff;
-		background: #1565c0;
+		background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
+		border: 1px solid rgba(255, 255, 255, 0.18);
 		width: 100%;
 		max-width: 100%;
 		margin-left: 0;
@@ -1039,9 +1055,9 @@
 		padding: 0.4rem 0.5rem;
 		font-size: 0.65rem;
 		font-weight: 700;
-		color: #0d1f33;
-		background: rgba(255, 255, 255, 0.55);
-		border: 1px solid rgba(0, 0, 0, 0.35);
+		color: #e2e8f0;
+		background: rgba(51, 65, 85, 0.7);
+		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-radius: 6px;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-portrait-collapse-btn {
@@ -1088,7 +1104,7 @@
 		height: 100%;
 		width: 100%;
 		box-sizing: border-box;
-		background: rgba(252, 252, 252, 0.97);
+		background: rgba(20, 26, 34, 0.97);
 		box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
 	}
 	#TW #T1.tw-t1--form-open ~ #T2.tw-cell {
@@ -1134,7 +1150,7 @@
 		height: 100%;
 		width: 100%;
 		box-sizing: border-box;
-		background: rgba(252, 252, 252, 0.94);
+		background: rgba(20, 26, 34, 0.96);
 		box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
 	}
 	#TW #T1 .t1-inner {
@@ -1183,8 +1199,8 @@
 		font-size: 0.72rem;
 		font-weight: 800;
 		color: #fff;
-		background: #1565c0;
-		border: none;
+		background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
+		border: 1px solid rgba(255, 255, 255, 0.18);
 		border-radius: 8px;
 		cursor: pointer;
 		text-align: center;
@@ -1208,9 +1224,9 @@
 		font: inherit;
 		font-size: 0.65rem;
 		font-weight: 700;
-		color: #0d1f33;
-		background: rgba(255, 255, 255, 0.55);
-		border: 1px solid rgba(0, 0, 0, 0.35);
+		color: #e2e8f0;
+		background: rgba(51, 65, 85, 0.7);
+		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-radius: 6px;
 		cursor: pointer;
 		text-align: center;
@@ -1242,7 +1258,8 @@
 	/* Albastru: lățime −1/3 (rămâne 2/3), lipit de dreapta casetei */
 	#TW .t2-portrait-expand-btn {
 		color: #fff;
-		background: #1565c0;
+		background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
+		border: 1px solid rgba(255, 255, 255, 0.18);
 		width: calc(200% / 3);
 		max-width: 100%;
 		margin-left: auto;
@@ -1253,9 +1270,9 @@
 		padding: 0.4rem 0.5rem;
 		font-size: 0.65rem;
 		font-weight: 700;
-		color: #0d1f33;
-		background: rgba(255, 255, 255, 0.55);
-		border: 1px solid rgba(0, 0, 0, 0.35);
+		color: #e2e8f0;
+		background: rgba(51, 65, 85, 0.7);
+		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-radius: 6px;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-portrait-collapse-btn {
@@ -1314,8 +1331,9 @@
 .transport-map-modal__backdrop {
 	position: absolute;
 	inset: 0;
-	background: rgba(0, 0, 0, 0.55);
-	backdrop-filter: blur(2px);
+	background: rgba(0, 0, 0, 0.62);
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
 }
 .transport-map-modal__panel {
 	position: relative;
@@ -1326,10 +1344,10 @@
 	display: flex;
 	flex-direction: column;
 	gap: 0.65rem;
-	background: #fff;
-	border: 2px solid #111;
+	background: linear-gradient(165deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.99) 100%);
+	border: 1px solid rgba(255, 255, 255, 0.1);
 	border-radius: 12px;
-	box-shadow: 0 16px 48px rgba(0, 0, 0, 0.38);
+	box-shadow: 0 20px 56px rgba(0, 0, 0, 0.5);
 	padding: 1rem 1.15rem 1.15rem;
 	box-sizing: border-box;
 }
@@ -1339,12 +1357,12 @@
 	font-weight: 800;
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
-	color: #111;
+	color: #f8fafc;
 }
 .transport-map-modal__hint {
 	margin: 0;
 	font-size: 0.9rem;
-	color: #333;
+	color: #94a3b8;
 	line-height: 1.4;
 }
 .transport-map-modal__search-wrap {
@@ -1355,7 +1373,7 @@
 .transport-map-modal__search-label {
 	font-size: 0.75rem;
 	font-weight: 700;
-	color: #222;
+	color: #cbd5e1;
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
 }
@@ -1364,23 +1382,24 @@
 	box-sizing: border-box;
 	padding: 0.55rem 0.75rem;
 	font-size: 1rem;
-	border: 2px solid rgba(0, 0, 0, 0.25);
+	border: 1px solid rgba(255, 255, 255, 0.14);
 	border-radius: 8px;
-	background: #fafafa;
+	background: rgba(15, 23, 42, 0.85);
+	color: #f1f5f9;
 }
 .transport-map-modal__search:focus {
 	outline: none;
-	border-color: #1565c0;
-	box-shadow: 0 0 0 2px rgba(21, 101, 192, 0.25);
+	border-color: rgba(6, 182, 212, 0.55);
+	box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
 }
 .transport-map-modal__canvas {
 	width: 100%;
 	min-height: 360px;
 	height: min(58vh, 520px);
 	border-radius: 8px;
-	border: 1px solid rgba(0, 0, 0, 0.2);
+	border: 1px solid rgba(255, 255, 255, 0.1);
 	overflow: hidden;
-	background: #e0e0e0;
+	background: rgba(15, 23, 42, 0.6);
 }
 .transport-map-auth-fail {
 	box-sizing: border-box;
@@ -1390,16 +1409,16 @@
 	overflow-y: auto;
 	font-size: 0.85rem;
 	line-height: 1.45;
-	color: #1a1a1a;
-	background: #fff5f5;
-	border: 2px solid #c62828;
+	color: #fecdd3;
+	background: rgba(127, 29, 29, 0.22);
+	border: 1px solid rgba(248, 113, 113, 0.35);
 	border-radius: 8px;
 }
 .transport-map-auth-fail strong {
 	display: block;
 	margin-bottom: 0.5rem;
 	font-size: 0.95rem;
-	color: #b71c1c;
+	color: #fecdd3;
 }
 .transport-map-auth-fail p {
 	margin: 0.5rem 0;
@@ -1410,15 +1429,16 @@
 	padding: 0.5rem 0.65rem;
 	font-size: 0.78rem;
 	word-break: break-all;
-	background: #fff;
-	border: 1px dashed #333;
+	background: rgba(15, 23, 42, 0.75);
+	border: 1px dashed rgba(255, 255, 255, 0.25);
 	border-radius: 6px;
+	color: #e2e8f0;
 }
 .transport-map-auth-fail a {
 	display: inline-block;
 	margin-top: 0.5rem;
 	font-weight: 700;
-	color: #1565c0;
+	color: #67e8f9;
 }
 .transport-map-modal__actions {
 	display: flex;
@@ -1433,22 +1453,22 @@
 	font-weight: 700;
 	border-radius: 6px;
 	cursor: pointer;
-	border: 2px solid #111;
+	border: 1px solid rgba(255, 255, 255, 0.14);
 }
 .transport-map-modal__btn--cancel {
-	background: #fff;
-	color: #111;
+	background: rgba(51, 65, 85, 0.65);
+	color: #e2e8f0;
 }
 .transport-map-modal__btn--ok {
-	background: #1565c0;
+	background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
+	border: 1px solid rgba(255, 255, 255, 0.22);
 	color: #fff;
-	border-color: #0d47a1;
 }
 .transport-map-modal__btn--ok:hover {
-	background: #0d47a1;
+	filter: brightness(1.06);
 }
 .transport-map-modal__btn--cancel:hover {
-	background: #f5f5f5;
+	background: rgba(71, 85, 105, 0.85);
 }
 
 #TW #T1 .t1-map-pick-btn {
@@ -1457,15 +1477,15 @@
 	text-transform: uppercase;
 	letter-spacing: 0.03em;
 	color: #fff;
-	background: #1565c0;
-	border: 1px solid #0d47a1;
-	border-radius: 4px;
+	background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	border-radius: 6px;
 	padding: 0.2rem 0.45rem;
 	cursor: pointer;
 	font-family: inherit;
 }
 #TW #T1 .t1-map-pick-btn:hover {
-	background: #0d47a1;
+	filter: brightness(1.06);
 }
 
 /* Donații – colț dreapta-sus casetă T2 (.t2-inner are position: relative) */
@@ -1495,12 +1515,12 @@
 	font-size: clamp(0.55rem, 1.65vmin, 0.72rem);
 	font-weight: 800;
 	color: #fff !important;
-	background: linear-gradient(180deg, #c62828 0%, #8e0000 100%);
+	background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
 	padding: 0.28rem 0.65rem;
 	border-radius: 999px;
 	text-decoration: none !important;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-	border: 1px solid rgba(0, 0, 0, 0.22);
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+	border: 1px solid rgba(255, 255, 255, 0.18);
 	white-space: nowrap;
 	max-width: 100%;
 	box-sizing: border-box;
