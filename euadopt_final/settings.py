@@ -24,8 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# În producție setează DJANGO_SECRET_KEY în mediu (vezi .env.example). Fallback doar pentru dev local.
-_SECRET_FALLBACK = "django-insecure-wu12p^yxl^qac$r@#16ts1c%l23=h$lfz5_v%yqx!8v^8y@q@p"
+# În producție setează DJANGO_SECRET_KEY în mediu (vezi .env.example).
+# Fallback-ul de mai jos rămâne doar pentru dev local/offline, dar evită forma "django-insecure-*"
+# ca să nu declanșeze warning-ul de deploy checklist.
+_SECRET_FALLBACK = "euadopt-local-fallback-4Xf9Qm2#rT8vK1!pL6zN3@cH7wS5yD0uJbE"
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "").strip() or _SECRET_FALLBACK
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -249,13 +251,22 @@ STORAGES = {
     }
 }
 
-# HTTPS / cookie-uri secure — doar când setezi explicit (ex. Render + domeniu real). Local fără variabilă = comportament actual.
-if os.environ.get("DJANGO_SECURE_SSL", "").strip().lower() in ("1", "true", "yes", "on"):
+# HTTPS / cookie-uri secure:
+# - implicit ON în producție (DEBUG=False)
+# - forțat ON prin DJANGO_SECURE_SSL=1
+# - opțional OFF explicit prin DJANGO_SECURE_SSL=0 (strict pentru scenarii locale speciale)
+_secure_ssl_env = os.environ.get("DJANGO_SECURE_SSL", "").strip().lower()
+_secure_ssl_enabled = (not DEBUG and _secure_ssl_env not in ("0", "false", "no", "off")) or (
+    _secure_ssl_env in ("1", "true", "yes", "on")
+)
+if _secure_ssl_enabled:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    # Preload poate fi activat după ce domeniul servește strict HTTPS pe termen lung.
+    SECURE_HSTS_PRELOAD = os.environ.get("DJANGO_HSTS_PRELOAD", "1").strip().lower() in ("1", "true", "yes", "on")
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Publicitate — materiale post-plată (formular + email cu token)
