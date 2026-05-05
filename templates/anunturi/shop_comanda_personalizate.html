@@ -5,48 +5,37 @@
 {% block body_class %}page-shop page-shop-comanda{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/shop.css' %}?v=1" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/shop.css' %}?v=23-comanda-cos-grid" type="text/css" media="screen" />
 <style>
+	body.page-shop-comanda {
+		background-color: #141a22 !important;
+	}
+	body.page-shop-comanda #main_wrap {
+		background: #141a22 !important;
+	}
+	body.page-shop-comanda #main_content {
+		background: transparent !important;
+		box-shadow: none !important;
+	}
 	.shop-comanda-page {
 		max-width: min(1080px, 100%);
 		margin: 2rem auto;
 		padding: 0 1rem;
+		color: #e2e8f0;
 	}
 	.shop-comanda-page .back {
 		display: inline-block;
 		margin-top: 1.5rem;
 		padding: 0.5rem 1rem;
-		background: #ffca28;
-		color: #4e342e;
+		background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
+		color: #fff;
 		font-weight: 700;
 		text-decoration: none;
 		border-radius: 8px;
+		border: 1px solid rgba(255, 255, 255, 0.18);
 	}
 	.shop-comanda-page .back:hover {
-		background: #ffb300;
-	}
-	.shop-page-cart-btn {
-		position: absolute;
-		top: 0;
-		right: 0;
-		width: 36px;
-		height: 36px;
-		border: none;
-		border-radius: 50%;
-		background: #e3f2fd;
-		color: #1565c0;
-		font-size: 16px;
-		cursor: pointer;
-		box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
-		z-index: 2;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0;
-	}
-	.shop-page-cart-btn.is-active {
-		background: #1565c0;
-		color: #fff;
+		filter: brightness(1.06);
 	}
 	.shop-comanda-products {
 		margin-top: 0.25rem;
@@ -59,13 +48,14 @@
 		align-content: start;
 	}
 	.shop-comanda-card {
+		position: relative;
 		min-height: 11rem;
-		border: 1px solid rgba(0, 0, 0, 0.12);
+		border: 1px solid rgba(255, 255, 255, 0.1);
 		border-radius: 10px;
-		background: #fafafa;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+		background: rgba(30, 41, 59, 0.55);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 	}
-	/* Card demo — stil Flowbite dark: 3 imagini (centru în față, laterale în plan secund), text alb, buton cyan */
+	/* Card demo — stil Flowbite dark: 3 imagini (centru în față, laterale în plan secund), text alb */
 	.shop-comanda-card--demo {
 		min-height: 0;
 		padding: 0;
@@ -225,8 +215,6 @@
 	.shop-comanda-card--demo.shop-comanda-demo-fan-active .shop-comanda-fan-wrap--right .shop-comanda-fan-wrap__img {
 		opacity: 0.96;
 		filter: brightness(0.9);
-	}
-	.shop-comanda-card--demo.shop-comanda-demo-fan-active .shop-comanda-fan-wrap--right .shop-comanda-fan-wrap__img {
 		object-position: 75% center;
 	}
 	/* Centru (a doua din dreapta) → devine fața principală, mare în mijloc */
@@ -247,14 +235,19 @@
 			transition: none !important;
 		}
 	}
-	.shop-comanda-card--demo .shop-comanda-card__body {
+	.shop-comanda-card:not(.shop-comanda-card--demo) {
+		display: flex;
+		flex-direction: column;
+	}
+	.shop-comanda-card .shop-comanda-card__body {
 		padding: 0.85rem 1rem 1rem;
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
 		flex: 1;
+		min-height: 0;
 	}
-	.shop-comanda-card--demo .shop-comanda-card__title {
+	.shop-comanda-card .shop-comanda-card__title {
 		margin: 0;
 		font-size: 1rem;
 		font-weight: 700;
@@ -262,7 +255,7 @@
 		line-height: 1.35;
 		letter-spacing: -0.02em;
 	}
-	.shop-comanda-card--demo .shop-comanda-card__footer {
+	.shop-comanda-card .shop-comanda-card__footer {
 		margin-top: auto;
 		padding-top: 0.5rem;
 		display: flex;
@@ -271,31 +264,49 @@
 		gap: 0.65rem;
 		flex-wrap: wrap;
 	}
-	.shop-comanda-card--demo .shop-comanda-card__price {
+	.shop-comanda-card .shop-comanda-card__price {
 		font-size: 1.45rem;
 		font-weight: 800;
 		color: #f8fafc;
 		letter-spacing: -0.03em;
 	}
-	.shop-comanda-card--demo .shop-comanda-card__btn-demo {
+	.shop-comanda-card__actions {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.35rem;
-		font-size: 0.8rem;
-		font-weight: 600;
-		padding: 0.45rem 0.75rem;
-		border-radius: 10px;
-		border: none;
-		background: #38bdf8;
-		color: #0f172a;
-		cursor: default;
-		white-space: nowrap;
-		box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35);
-	}
-	.shop-comanda-card--demo .shop-comanda-card__btn-demo svg {
+		gap: 0.45rem;
 		flex-shrink: 0;
-		width: 1rem;
-		height: 1rem;
+	}
+	.shop-comanda-icon-btn {
+		width: 2.35rem;
+		height: 2.35rem;
+		border-radius: 50%;
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		background: rgba(15, 23, 42, 0.88);
+		color: #5ee9f3;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		cursor: pointer;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+		transition:
+			background 0.18s ease,
+			border-color 0.18s ease,
+			color 0.18s ease,
+			transform 0.12s ease;
+	}
+	.shop-comanda-icon-btn:hover {
+		filter: brightness(1.08);
+	}
+	.shop-comanda-icon-btn:focus-visible {
+		outline: 2px solid #38bdf8;
+		outline-offset: 2px;
+	}
+	.shop-comanda-icon-btn--cart { font-size: 1rem; }
+	.shop-comanda-icon-btn.is-active.shop-comanda-icon-btn--cart {
+		background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
+		color: #fff;
+		border-color: rgba(255, 255, 255, 0.22);
 	}
 	@media (max-width: 767.98px) {
 		.shop-comanda-card--demo .shop-comanda-card__fan {
@@ -326,17 +337,18 @@
 	}
 	/* Fișă produs (dialog) — doar pagina comanda personalizate */
 	.shop-comanda-fisa-dialog {
-		border: none;
+		border: 1px solid rgba(255, 255, 255, 0.1);
 		border-radius: 14px;
 		padding: 0;
 		max-width: min(92vw, 520px);
 		width: 100%;
-		background: #fff;
-		color: #1a1a1a;
-		box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+		background: linear-gradient(165deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.99) 100%);
+		color: #e2e8f0;
+		box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
 	}
 	.shop-comanda-fisa-dialog::backdrop {
-		background: rgba(15, 23, 42, 0.55);
+		background: rgba(0, 0, 0, 0.58);
+		backdrop-filter: blur(4px);
 	}
 	.shop-comanda-fisa-inner {
 		position: relative;
@@ -348,10 +360,10 @@
 		right: 0.5rem;
 		width: 2.25rem;
 		height: 2.25rem;
-		border: none;
+		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-radius: 50%;
-		background: rgba(0, 0, 0, 0.06);
-		color: #333;
+		background: rgba(51, 65, 85, 0.7);
+		color: #e2e8f0;
 		font-size: 1.35rem;
 		line-height: 1;
 		cursor: pointer;
@@ -361,28 +373,28 @@
 		z-index: 1;
 	}
 	.shop-comanda-fisa-close:hover {
-		background: rgba(0, 0, 0, 0.12);
+		background: rgba(71, 85, 105, 0.9);
 	}
 	.shop-comanda-fisa-hero {
 		width: 100%;
 		max-height: min(48vh, 320px);
 		object-fit: contain;
 		border-radius: 10px;
-		background: #f5f5f5;
+		background: rgba(15, 23, 42, 0.6);
 		display: block;
 		margin-bottom: 0.75rem;
 	}
 	.shop-comanda-fisa-inner h2 {
 		margin: 0 0 0.5rem;
 		font-size: 1.15rem;
-		color: #b71c1c;
+		color: #a5f3fc;
 		padding-right: 2.5rem;
 	}
 	.shop-comanda-fisa-inner p {
 		margin: 0;
 		font-size: 0.95rem;
 		line-height: 1.5;
-		color: #424242;
+		color: #cbd5e1;
 	}
 </style>
 {% endblock %}
@@ -390,22 +402,15 @@
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
 	<main id="SHW" aria-label="Shop EU-ADOPT – Comandă produse personalizate">
-		<div class="shop-comanda-page" style="position:relative;padding-top:2.5rem;">
-			{% if user.is_authenticated %}
-			<button type="button"
-				class="shop-page-cart-btn{% if site_cart_ref_keys and 'shop_custom:page' in site_cart_ref_keys %} is-active{% endif %}"
-				data-site-cart-toggle
-				data-kind="shop_custom"
-				data-ref-key="shop_custom:page"
-				data-title="Comandă produse personalizate (Shop)"
-				data-detail-url="{% url 'shop_comanda_personalizate' %}"
-				aria-pressed="{% if site_cart_ref_keys and 'shop_custom:page' in site_cart_ref_keys %}true{% else %}false{% endif %}"
-				title="Adaugă sau scoate din coșul I Love"
-			>🛒</button>
-			{% endif %}
+		<div class="shop-comanda-page" style="position:relative;padding-top:1rem;">
 			<div class="shop-comanda-products" role="region" aria-label="Casete produse personalizate">
+				<!-- Produs nou: article cu body (h3 + footer cu pret si div data-comanda-cart-slot); refKey optional: data-cart-ref-key pe article, altfel shop_custom:comanda:N -->
 				<div class="shop-comanda-grid">
-					<article class="shop-comanda-card shop-comanda-card--demo" aria-label="Demo produs personalizat">
+					<article
+						class="shop-comanda-card shop-comanda-card--demo"
+						aria-label="Demo produs personalizat"
+						data-cart-ref-key="shop_custom:demo-tricou-unisex"
+					>
 						<div class="shop-comanda-card__fan">
 							<div class="shop-comanda-card__fan-pivot">
 								<div class="shop-comanda-fan-wrap shop-comanda-fan-wrap--side shop-comanda-fan-wrap--left">
@@ -423,10 +428,7 @@
 							<h3 class="shop-comanda-card__title">Tricou personalizat unisex, bumbac, print „Prietenul tău” — demo</h3>
 							<div class="shop-comanda-card__footer">
 								<span class="shop-comanda-card__price">89 lei</span>
-								<button type="button" class="shop-comanda-card__btn-demo" disabled title="Exemplu vizual — fără acțiune">
-									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312"/></svg>
-									Adaugă în coș
-								</button>
+								<div class="shop-comanda-card__actions" data-comanda-cart-slot role="group" aria-label="Coș produs"></div>
 							</div>
 						</div>
 					</article>
@@ -462,6 +464,71 @@
 
 {% block extra_js %}
 <script>
+(function () {
+	/* Coș I Love: un buton 🛒 pe fiecare casetă care are titlu (h3); ref stabil din data-cart-ref-key sau shop_custom:comanda:N */
+	var DETAIL_URL = "{% url 'shop_comanda_personalizate' %}";
+	var SITE_CART_REFS = new Set([
+		{% for k in site_cart_ref_keys %}"{{ k|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}
+	]);
+	var TITLE_CART = {% if user.is_authenticated %}"Adaugă sau scoate din coșul I Love"{% else %}"Intră sau creează cont pentru a adăuga în coș"{% endif %};
+
+	function attachComandaCartButtons() {
+		var grid = document.querySelector(".shop-comanda-grid");
+		if (!grid) return;
+		var cards = grid.querySelectorAll(":scope > .shop-comanda-card");
+		cards.forEach(function (card, idx) {
+			if (card.getAttribute("data-no-cart") === "1") return;
+			var h3 = card.querySelector("h3.shop-comanda-card__title, h3");
+			if (!h3 || !(h3.textContent || "").trim()) return;
+
+			var slot = card.querySelector("[data-comanda-cart-slot]");
+			var footer = card.querySelector(".shop-comanda-card__footer");
+			if (!slot && footer) {
+				slot = document.createElement("div");
+				slot.className = "shop-comanda-card__actions";
+				slot.setAttribute("data-comanda-cart-slot", "");
+				slot.setAttribute("role", "group");
+				slot.setAttribute("aria-label", "Coș produs");
+				footer.appendChild(slot);
+			}
+			if (!slot) return;
+			if (slot.querySelector("[data-site-cart-toggle]")) return;
+
+			var refKey = (card.getAttribute("data-cart-ref-key") || "").trim();
+			if (!refKey) refKey = "shop_custom:comanda:" + idx;
+
+			var title = h3.textContent.trim();
+			var priceEl = card.querySelector(".shop-comanda-card__price");
+			var priceTxt = priceEl ? priceEl.textContent.trim() : "";
+			var fullTitle = title + (priceTxt ? " — " + priceTxt : "") + " (Shop personalizate)";
+
+			var btn = document.createElement("button");
+			btn.type = "button";
+			btn.className =
+				"shop-comanda-icon-btn shop-comanda-icon-btn--cart" + (SITE_CART_REFS.has(refKey) ? " is-active" : "");
+			btn.setAttribute("data-site-cart-toggle", "");
+			btn.setAttribute("data-kind", "shop_custom");
+			btn.setAttribute("data-ref-key", refKey);
+			btn.setAttribute("data-title", fullTitle);
+			btn.setAttribute("data-detail-url", DETAIL_URL);
+			btn.setAttribute("aria-pressed", SITE_CART_REFS.has(refKey) ? "true" : "false");
+			btn.setAttribute("title", TITLE_CART);
+			btn.setAttribute("aria-label", "Adaugă în coș");
+			btn.textContent = "🛒";
+
+			slot.appendChild(btn);
+			if (typeof window.euadoptSiteCartBindRoot === "function") {
+				window.euadoptSiteCartBindRoot(card);
+			}
+		});
+	}
+
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", attachComandaCartButtons);
+	} else {
+		attachComandaCartButtons();
+	}
+})();
 (function () {
 	var dlg = document.getElementById("shop-comanda-demo-fisa");
 	var card = document.querySelector(".shop-comanda-card--demo");

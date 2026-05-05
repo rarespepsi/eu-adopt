@@ -8231,7 +8231,9 @@ def site_cart_toggle_view(request):
         if not re.match(r"^shop:[a-z]+:\d+$", ref_key):
             return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
     elif kind == SiteCartItem.KIND_SHOP_CUSTOM:
-        if ref_key != "shop_custom:page":
+        # Acceptă atât cheia veche de pagină, cât și chei per-produs
+        # (ex. shop_custom:demo-tricou-unisex / shop_custom:comanda:3).
+        if not re.match(r"^shop_custom:[a-z0-9][a-z0-9:_-]{0,94}$", ref_key):
             return JsonResponse({"ok": False, "error": "bad_ref"}, status=400)
     elif kind == SiteCartItem.KIND_SHOP_FOTO:
         if not ref_key.startswith("shop_foto:"):

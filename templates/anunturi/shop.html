@@ -5,10 +5,14 @@
 {% block body_class %}page-shop{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/shop.css' %}?v=20" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/shop.css' %}?v=21-profi-servicii" type="text/css" media="screen" />
 <style>
+	body.page-shop {
+		background-color: #141a22 !important;
+	}
 	/* SHW = toată pagina vizibilă sub navbar (ca PW) */
 	body.page-shop #main_wrap {
+		background: #141a22 !important;
 		min-height: 100vh !important;
 		display: flex !important;
 		flex-direction: column !important;
@@ -16,6 +20,8 @@
 		margin: 0 !important;
 	}
 	body.page-shop #main_content {
+		background: transparent !important;
+		box-shadow: none !important;
 		min-height: 0 !important;
 		display: flex !important;
 		flex-direction: column !important;
@@ -45,22 +51,23 @@
 		z-index: 3;
 		width: 30px;
 		height: 30px;
-		border: none;
+		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-radius: 50%;
-		background: rgba(255, 255, 255, 0.95);
-		color: #1565c0;
+		background: rgba(15, 23, 42, 0.85);
+		color: #5ee9f3;
 		font-size: 14px;
 		line-height: 1;
 		cursor: pointer;
-		box-shadow: 0 1px 5px rgba(0, 0, 0, 0.22);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		padding: 0;
 	}
 	body.page-shop .shop-card-site-cart.is-active {
-		background: #1565c0;
+		background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
 		color: #fff;
+		border-color: rgba(255, 255, 255, 0.22);
 	}
 </style>
 {% endblock %}

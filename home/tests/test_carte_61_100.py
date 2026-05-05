@@ -734,6 +734,64 @@ class Carte81_100Tests(TestCase):
         r = c.get(reverse("i_love_cos"))
         self.assertEqual(r.status_code, 200)
 
+    def test_108b2_site_cart_toggle_shop_custom_accepts_product_ref(self):
+        user = _pf_user("il108b2")
+        c = Client()
+        c.login(username=user.username, password="Test61_PF_pass!")
+        r = c.post(
+            reverse("site_cart_toggle"),
+            {
+                "kind": SiteCartItem.KIND_SHOP_CUSTOM,
+                "ref_key": "shop_custom:demo-tricou-unisex",
+                "title": "Tricou personalizat demo — 89 lei",
+                "detail_url": reverse("shop_comanda_personalizate"),
+            },
+        )
+        self.assertEqual(r.status_code, 200)
+        body = r.json()
+        self.assertTrue(body.get("ok"))
+        self.assertTrue(body.get("active"))
+        self.assertEqual(body.get("ref_key"), "shop_custom:demo-tricou-unisex")
+        self.assertTrue(
+            SiteCartItem.objects.filter(
+                user=user,
+                kind=SiteCartItem.KIND_SHOP_CUSTOM,
+                ref_key="shop_custom:demo-tricou-unisex",
+            ).exists()
+        )
+
+    def test_108b3_site_cart_toggle_shop_custom_rejects_invalid_ref(self):
+        user = _pf_user("il108b3")
+        c = Client()
+        c.login(username=user.username, password="Test61_PF_pass!")
+        r = c.post(
+            reverse("site_cart_toggle"),
+            {
+                "kind": SiteCartItem.KIND_SHOP_CUSTOM,
+                "ref_key": "shop_custom:*invalid*",
+                "title": "Produs invalid",
+                "detail_url": reverse("shop_comanda_personalizate"),
+            },
+        )
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(r.json().get("error"), "bad_ref")
+
+    def test_108b4_site_cart_toggle_shop_custom_legacy_page_ref_kept(self):
+        user = _pf_user("il108b4")
+        c = Client()
+        c.login(username=user.username, password="Test61_PF_pass!")
+        r = c.post(
+            reverse("site_cart_toggle"),
+            {
+                "kind": SiteCartItem.KIND_SHOP_CUSTOM,
+                "ref_key": "shop_custom:page",
+                "title": "Comandă produse personalizate (legacy)",
+                "detail_url": reverse("shop_comanda_personalizate"),
+            },
+        )
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.json().get("ok"))
+
     def test_108c_site_cart_checkout_anonymous_redirects(self):
         r = Client().get(reverse("site_cart_checkout"))
         self.assertEqual(r.status_code, 302)

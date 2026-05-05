@@ -23,6 +23,7 @@ body.page-shop-foto {
   overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
+  background-color: #141a22 !important;
 }
 
 /* Navbar A0 e fixed — #main_content are padding-top; umplem înălțimea vizibilă */
@@ -34,6 +35,7 @@ body.page-shop-foto #main_wrap {
   overflow: hidden !important;
   height: auto !important;
   max-height: none !important;
+  background: #141a22 !important;
 }
 
 body.page-shop-foto #main_content {
@@ -44,6 +46,8 @@ body.page-shop-foto #main_content {
   overflow: hidden !important;
   height: auto !important;
   max-height: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 /* --- Panou + container (id SMF, nu SHW) --- */
@@ -60,7 +64,7 @@ body.page-shop-foto #main_content {
   height: auto !important;
   max-height: none !important;
   overflow: hidden !important;
-  background: linear-gradient(180deg, #f5f5f5 0%, #eeeeee 40%, #f5f5f5 100%);
+  background: #141a22;
 }
 
 .smf-topbar {
@@ -78,13 +82,13 @@ body.page-shop-foto .smf-legal-note {
   padding: 0.25rem clamp(0.35rem, 1.2vw, 0.6rem);
   font-size: clamp(0.55rem, 1.05vw, 0.72rem);
   line-height: 1.35;
-  color: #455a64;
+  color: #94a3b8;
   text-align: center;
   flex-shrink: 0;
 }
 
 body.page-shop-foto .smf-legal-note a {
-  color: #1565c0;
+  color: #5ee9f3;
   font-weight: 700;
 }
 
@@ -92,7 +96,7 @@ body.page-shop-foto .smf-legal-note a {
   margin: 0;
   font-size: clamp(1.15rem, 2.2vw, 1.45rem);
   font-weight: 800;
-  color: #4e342e;
+  color: #f8fafc;
   letter-spacing: 0.02em;
   justify-self: start;
 }
@@ -103,18 +107,18 @@ body.page-shop-foto .smf-legal-note a {
   justify-content: center;
   justify-self: center;
   padding: 0.45rem 0.9rem;
-  background: #00e676;
-  color: #1b5e20;
+  background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
+  color: #fff;
   font-weight: 700;
   text-decoration: none;
   border-radius: 8px;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   font-size: 0.9rem;
 }
 
 .smf-donate-link:hover {
-  background: #00c853;
-  color: #0d3d12;
+  filter: brightness(1.06);
 }
 
 .smf-back-link {
@@ -122,18 +126,19 @@ body.page-shop-foto .smf-legal-note a {
   align-items: center;
   justify-self: end;
   padding: 0.45rem 0.9rem;
-  background: #ffca28;
-  color: #4e342e;
+  background: rgba(51, 65, 85, 0.75);
+  color: #e2e8f0;
   font-weight: 700;
   text-decoration: none;
   border-radius: 8px;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   font-size: 0.9rem;
 }
 
 .smf-back-link:hover {
-  background: #ffb300;
-  color: #3e2723;
+  background: rgba(71, 85, 105, 0.9);
+  color: #f8fafc;
 }
 
 /* Fundal plută + hârtie ușoară */
@@ -151,22 +156,22 @@ body.page-shop-foto .smf-legal-note a {
   padding: clamp(0.45rem, 1vw, 0.75rem) clamp(0.35rem, 0.85vw, 0.55rem);
   box-sizing: border-box;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 -2px 8px rgba(0, 0, 0, 0.15),
-    0 8px 28px rgba(62, 39, 35, 0.22);
-  background-color: #6d4c41;
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -2px 12px rgba(0, 0, 0, 0.35),
+    0 12px 36px rgba(0, 0, 0, 0.4);
+  background-color: #1e293b;
   background-image:
-    radial-gradient(ellipse 120% 80% at 15% 20%, rgba(255, 255, 255, 0.07) 0%, transparent 45%),
-    radial-gradient(ellipse 90% 70% at 85% 75%, rgba(0, 0, 0, 0.12) 0%, transparent 42%),
+    radial-gradient(ellipse 120% 80% at 15% 20%, rgba(255, 255, 255, 0.06) 0%, transparent 45%),
+    radial-gradient(ellipse 90% 70% at 85% 75%, rgba(0, 0, 0, 0.2) 0%, transparent 42%),
     repeating-linear-gradient(
       -8deg,
       transparent,
       transparent 2px,
-      rgba(0, 0, 0, 0.03) 2px,
-      rgba(0, 0, 0, 0.03) 3px
+      rgba(255, 255, 255, 0.02) 2px,
+      rgba(255, 255, 255, 0.02) 3px
     ),
-    linear-gradient(168deg, #8d6e63 0%, #5d4037 48%, #4e342e 100%);
-  border: 1px solid rgba(62, 39, 35, 0.35);
+    linear-gradient(168deg, #334155 0%, #1e293b 48%, #0f172a 100%);
+  border: 1px solid rgba(6, 182, 212, 0.15);
 }
 
 .smf-cork::before {
@@ -287,7 +292,7 @@ button.smf-print__link {
 }
 
 .smf-print__link:focus-visible {
-  outline: 3px solid #ffca28;
+  outline: 2px solid rgba(6, 182, 212, 0.65);
   outline-offset: 3px;
 }
 
@@ -296,7 +301,7 @@ button.smf-print__link {
   position: relative;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #fffef9 0%, #f5f0e6 100%);
+  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
   padding: 0;
   padding-top: clamp(0.38rem, 0.9vw, 0.5rem);
   padding-bottom: clamp(0.2rem, 0.45vw, 0.3rem);
@@ -333,7 +338,7 @@ button.smf-print__link {
   width: 100%;
   aspect-ratio: 4 / 3;
   height: auto;
-  background: #d7ccc8;
+  background: #334155;
   flex-shrink: 0;
 }
 
@@ -347,12 +352,12 @@ button.smf-print__link {
   max-width: calc(100% - 0.64rem);
   padding: 0.2rem 0.45rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #1b5e20;
+  background: rgba(15, 23, 42, 0.88);
+  color: #bbf7d0;
   font-size: clamp(0.56rem, 1.1vw, 0.64rem);
   font-weight: 800;
   line-height: 1.15;
-  border: 1px solid rgba(27, 94, 32, 0.24);
+  border: 1px solid rgba(52, 211, 153, 0.35);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
   white-space: nowrap;
   overflow: hidden;
@@ -393,7 +398,7 @@ body.page-shop-foto .smf-print__photo img {
 .smf-print__price {
   grid-column: 1;
   font-weight: 800;
-  color: #b71c1c;
+  color: #0891b2;
   white-space: nowrap;
 }
 
@@ -405,7 +410,7 @@ body.page-shop-foto .smf-print__photo img {
   font-size: clamp(0.66rem, 1.55vw, 0.88rem);
   line-height: 1.2;
   letter-spacing: 0.01em;
-  color: #1a2733;
+  color: #1e293b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -464,10 +469,10 @@ body.page-shop-foto .smf-print__mult-btn {
   min-height: 14px !important;
   padding: 0 !important;
   line-height: 1 !important;
-  border: 1px solid rgba(96, 125, 139, 0.45) !important;
   border-radius: 3px !important;
-  background: linear-gradient(180deg, #fff 0%, #eceff1 100%) !important;
-  color: #37474f !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   font-weight: 800 !important;
   font-size: 9px !important;
   text-transform: none !important;
@@ -477,7 +482,7 @@ body.page-shop-foto .smf-print__mult-btn {
 }
 
 body.page-shop-foto .smf-print__mult-btn:active {
-  background: #e0e0e0 !important;
+  background: rgba(30, 41, 59, 0.95) !important;
 }
 
 body.page-shop-foto .smf-print__mult-input {
@@ -495,8 +500,8 @@ body.page-shop-foto .smf-print__mult-input {
   font-size: 8px !important;
   font-weight: 800 !important;
   font-family: inherit !important;
-  color: #263238 !important;
-  background: #fff !important;
+  color: #f1f5f9 !important;
+  background: rgba(15, 23, 42, 0.85) !important;
   vertical-align: middle !important;
   -moz-appearance: textfield !important;
   appearance: textfield !important;
@@ -517,8 +522,9 @@ body.page-shop-foto .smf-print__site-cart {
   min-height: 18px !important;
   padding: 0 !important;
   line-height: 1 !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  color: #1565c0 !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+  color: #5ee9f3 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   font-size: 11px !important;
   font-weight: 400 !important;
   text-transform: none !important;
@@ -527,14 +533,15 @@ body.page-shop-foto .smf-print__site-cart {
 }
 
 body.page-shop-foto .smf-print__site-cart.is-active {
-  background: #1565c0 !important;
+  background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%) !important;
   color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 body.page-shop-foto .smf-print__mult-total {
   margin-left: 3px;
   font-weight: 800;
-  color: #0d47a1;
+  color: #0891b2;
   white-space: nowrap;
   font-size: 8px !important;
   line-height: 1.15 !important;
