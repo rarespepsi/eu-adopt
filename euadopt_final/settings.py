@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
+from urllib.parse import parse_qs, unquote, urlparse
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -101,6 +102,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'euadopt_final.login_required_middleware.LoginRequiredMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -129,12 +131,41 @@ WSGI_APPLICATION = 'euadopt_final.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+def _database_from_env():
+    raw = (os.environ.get("DATABASE_URL", "") or "").strip()
+    if not raw:
+        return {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": BASE_DIR / "db.sqlite3",
+            }
+        }
+
+    parsed = urlparse(raw)
+    scheme = (parsed.scheme or "").lower()
+    if scheme in ("postgres", "postgresql"):
+        db_cfg = {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": unquote((parsed.path or "").lstrip("/")),
+            "USER": unquote(parsed.username or ""),
+            "PASSWORD": unquote(parsed.password or ""),
+            "HOST": parsed.hostname or "",
+            "PORT": str(parsed.port or "5432"),
+        }
+        if not db_cfg["NAME"]:
+            raise RuntimeError("DATABASE_URL is set but database name is missing.")
+        q = parse_qs(parsed.query or "")
+        sslmode = (q.get("sslmode") or [""])[0].strip()
+        if sslmode:
+            db_cfg["OPTIONS"] = {"sslmode": sslmode}
+        return {"default": db_cfg}
+
+    raise RuntimeError(
+        "Unsupported DATABASE_URL scheme. Use postgres:// or postgresql:// for Render PostgreSQL."
+    )
+
+
+DATABASES = _database_from_env()
 
 # Dev/QA: EUADOPT_RELAX_EMAIL_UNIQUE=1 → formularele (signup + cont) nu resping email duplicat.
 # În producție NU seta; rămâne False → validare „email deja folosit” ca înainte.
@@ -250,6 +281,8 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     }
 }
+
+LOGIN_URL = "/login/"
 
 # HTTPS / cookie-uri secure:
 # - implicit ON în producție (DEBUG=False)

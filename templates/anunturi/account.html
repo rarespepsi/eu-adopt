@@ -136,8 +136,45 @@ body.page-account .account-right-panel {
 	.cont-pf-edit-box .btn-modificare-profil { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 0.4rem; border-radius: 6px; border: none; background: #c62828; color: #fff; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
 	.cont-pf-edit-box .btn-modificare-profil:hover { background: #b71c1c; color: #fff; }
 	.cont-pf-edit-box .btn-save[disabled] { opacity: 0.7; cursor: not-allowed; }
+	/* Ștergere cont: același lățime ca celelalte butoane din casetă, fără schimbare dimensiuni casetă/colonă */
+	.cont-pf-edit-box .btn-sterge-cont {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		margin-top: 0.35rem;
+		padding: 0.4rem;
+		border-radius: 6px;
+		border: 1px solid #b71c1c;
+		background: transparent;
+		color: #b71c1c;
+		font-weight: 600;
+		font-size: 0.85rem;
+		cursor: pointer;
+		box-sizing: border-box;
+	}
+	.cont-pf-edit-box .btn-sterge-cont:hover { background: #ffebee; color: #7f0000; }
 	.cont-pf-edit-box .signup-field label.check { display: flex; align-items: center; gap: 0.35rem; font-weight: normal; font-size: 0.75rem; }
 	.cont-pf-edit-box .signup-field input[type="checkbox"] { width: auto; }
+	/* Doar caseta „Date persoană contact”: rânduri mai strânse la cele 3 bife ca să încapă butonul Ștergere cont fără scroll */
+	#profil-form .signup-field.span2:has(> label.check) {
+		margin-bottom: 0.08rem;
+	}
+	#profil-form .signup-field label.check {
+		line-height: 1.18;
+		margin-bottom: 0;
+		gap: 0.28rem;
+		font-size: 0.72rem;
+	}
+	#profil-form .signup-actions {
+		margin-top: 0.3rem;
+	}
+	#profil-box #account-delete-form.signup-actions {
+		margin-top: 0.2rem;
+	}
+	#profil-box #account-delete-form .btn-sterge-cont {
+		margin-top: 0;
+	}
 	@media (max-width: 760px) {
 		.cont-pf-edit-box .edit-form-grid { grid-template-columns: 1fr; }
 	}
@@ -593,9 +630,25 @@ body.page-account .account-right-panel {
 	@media (max-width: 560px) {
 		.cont-pf-body { grid-template-columns: 1fr; }
 	}
-	/* Modificare user: caseta editabilă */
-	.cont-username-view { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+	/* Modificare user: buton la dreapta în caseta Identificare, fără suprapunere peste username */
+	.cont-username-view {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		flex-wrap: nowrap;
+		width: 100%;
+		box-sizing: border-box;
+	}
+	.cont-username-view .cont-username-text {
+		min-width: 0;
+		flex: 1 1 auto;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
 	.cont-username-view .btn-modificare-user {
+		flex: 0 0 auto;
 		font-size: 0.78rem; padding: 0.25rem 0.5rem; border-radius: 6px; border: 1px solid #c62828;
 		background: #fff; color: #c62828; cursor: pointer; text-decoration: none; font-weight: 600;
 	}
@@ -742,20 +795,6 @@ body.page-account .account-right-panel {
 			{% endfor %}
 		</div>
 		{% endif %}
-		{% if pub_paid_creative_orders %}
-		<div id="pub-orders" class="cont-pf-pub-creative-banner" style="background:#fff8e1;border:1px solid #d2b27a;border-radius:10px;padding:0.65rem 0.85rem;margin-bottom:0.75rem;font-size:0.86rem;line-height:1.45;">
-			<strong style="color:#6d4c41;">Publicitate — materiale după plată:</strong>
-			<ul style="margin:0.4rem 0 0;padding-left:1.1rem;">
-				{% for row in pub_paid_creative_orders %}
-				<li>
-					Comandă <strong>#{{ row.order.pk }}</strong> — total {{ row.order.total_lei }} lei
-					{% if row.pending %}<span style="color:#c62828;">(materiale de trimis)</span>{% else %}<span style="color:#2e7d32;">(materiale trimise)</span>{% endif %}
-					— <a href="{{ row.materials_url }}" style="font-weight:700;">Încarcă materialele acum</a>
-				</li>
-				{% endfor %}
-			</ul>
-		</div>
-		{% endif %}
 		<div class="cont-pf-header-row">
 			<div class="cont-pf-header-card">
 				<div class="cont-pf-stats">
@@ -816,7 +855,7 @@ body.page-account .account-right-panel {
 				<h2>Identificare</h2>
 				<p class="cont-username-row{% if username_updated %} after-username-success{% endif %}">
 					<span class="cont-username-view" id="cont-username-view">
-						<strong>User:</strong> {{ user.username }}
+						<span class="cont-username-text"><strong>User:</strong> {{ user.username }}</span>
 						<button type="button" class="btn-modificare-user" id="btn-modificare-user" aria-label="Modificare user">Modificare user</button>
 					</span>
 					<div id="cont-username-edit-wrap" class="cont-username-edit-wrap" {% if not show_username_edit %}style="display:none;"{% endif %}>
@@ -945,6 +984,10 @@ body.page-account .account-right-panel {
 					<button type="submit" id="btn-save-profil" class="btn-save" {% if not edit_errors %}style="display:none;"{% endif %} {% if not edit_errors %}disabled{% endif %}>Salvează profil</button>
 				</div>
 			</form>
+			<form method="post" action="{% url 'account_delete' %}" class="signup-actions" id="account-delete-form">
+				{% csrf_token %}
+				<button type="submit" class="btn-sterge-cont">Ștergere cont</button>
+			</form>
 		</div>
 	</div>
 </div>
@@ -1049,6 +1092,21 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		profilForm.addEventListener('input', enableSaveProfil);
 		profilForm.addEventListener('change', enableSaveProfil);
+	}
+	/* Ștergere cont: două confirmări înainte de POST */
+	var delForm = document.getElementById('account-delete-form');
+	if (delForm) {
+		delForm.addEventListener('submit', function(e) {
+			if (!window.confirm('Ești sigur că vrei să ștergi contul? Această acțiune este definitivă.')) {
+				e.preventDefault();
+				return false;
+			}
+			if (!window.confirm('Confirmi ștergerea definitivă a contului și a datelor asociate?')) {
+				e.preventDefault();
+				return false;
+			}
+			return true;
+		});
 	}
 	/* DATE FIRMĂ (Colaborator): Modificare date firmă → câmpuri editabile, apoi Salvează */
 	var firmaForm = document.getElementById('firma-form');

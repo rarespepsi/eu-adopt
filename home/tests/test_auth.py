@@ -50,3 +50,12 @@ class LoginLogoutTests(TestCase):
         r = c.get(reverse("logout"))
         self.assertEqual(r.status_code, 302)
         self.assertFalse(c.session.get("_auth_user_id"))
+
+    def test_account_delete_post_removes_user(self):
+        c = Client()
+        c.login(username=self.user.username, password="AuthTest_Pass12")
+        uid = self.user.pk
+        r = c.post(reverse("account_delete"))
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(User.objects.filter(pk=uid).exists())
+        self.assertFalse(c.session.get("_auth_user_id"))

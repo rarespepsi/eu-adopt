@@ -4599,27 +4599,6 @@ def account_view(request):
                 pending_tr.append(dj)
         if pending_tr:
             ctx["transport_pending_rating_jobs"] = pending_tr
-    if _user_can_use_publicitate(request):
-        pub_rows = []
-        for o in (
-            PublicitateOrder.objects.filter(user=request.user, status=PublicitateOrder.STATUS_PAID)
-            .order_by("-pk")[:24]
-        ):
-            if not PublicitateOrderCreativeAccess.objects.filter(order=o).exists():
-                continue
-            pending = PublicitateLineCreative.objects.filter(
-                line__order=o,
-                status=PublicitateLineCreative.STATUS_PENDING,
-            ).exists()
-            pub_rows.append(
-                {
-                    "order": o,
-                    "materials_url": reverse("publicitate_creative_order", kwargs={"order_id": o.pk}),
-                    "pending": pending,
-                }
-            )
-        if pub_rows:
-            ctx["pub_paid_creative_orders"] = pub_rows
     # Statistici + form_prefill pentru PF/ONG/Colaborator (caseta modificare profil în pagină)
     if account_profile and account_profile.role in (AccountProfile.ROLE_PF, AccountProfile.ROLE_ORG, AccountProfile.ROLE_COLLAB):
         ctx["animale_in_grija"] = AnimalListing.objects.filter(owner=user).count()
@@ -5678,6 +5657,26 @@ def account_upload_avatar_view(request):
     if not url:
         return JsonResponse({"ok": False, "error": "Poza s-a salvat dar URL-ul lipsește."}, status=500)
     return JsonResponse({"ok": True, "url": url})
+
+
+@login_required
+@require_POST
+def account_delete_view(request):
+    """Șterge definitiv utilizatorul curent și datele legate (CASCADE). Evită blocarea Django admin dacă e singurul superuser."""
+    from django.contrib.auth import logout as auth_logout
+
+    User = get_user_model()
+    user_pk = request.user.pk
+    if request.user.is_superuser and User.objects.filter(is_superuser=True).count() <= 1:
+        messages.error(
+            request,
+            "Nu poți șterge singurul cont superuser. Creează un alt superuser din admin înainte.",
+        )
+        return redirect(reverse("account"))
+    auth_logout(request)
+    User.objects.filter(pk=user_pk).delete()
+    messages.success(request, "Contul tău a fost șters definitiv.")
+    return redirect(reverse("login"))
 
 
 def _parse_phone_for_edit(phone_str):

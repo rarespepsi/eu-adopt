@@ -13,6 +13,10 @@ media/
 # Local DB (keep out of git to avoid noise)
 db.sqlite3
 
+# User export dumps (password hashes / PII) — never commit
+user_migration_sqlite.json
+**/user_migration_sqlite.json
+
 # Playwright / Node (E2E)
 node_modules/
 playwright-report/
