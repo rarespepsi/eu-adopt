@@ -128,6 +128,8 @@ def _normalize_collab_subtype(raw: str) -> str:
     t = (raw or "").strip().lower()
     mapping = {
         "cabinet": StaffOnboardingLead.COLLAB_CABINET,
+        "cabinet veterinar": StaffOnboardingLead.COLLAB_CABINET,
+        "cv": StaffOnboardingLead.COLLAB_CV,
         "vet": StaffOnboardingLead.COLLAB_CABINET,
         "veterinar": StaffOnboardingLead.COLLAB_CABINET,
         "servicii": StaffOnboardingLead.COLLAB_SERVICII,

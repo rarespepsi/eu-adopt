@@ -624,16 +624,16 @@ def _collaborator_tip_partener(request) -> str:
     if getattr(user, "is_staff", False) or getattr(user, "is_superuser", False):
         if request.session.get("view_as_role") == "collaborator":
             st = (request.session.get("view_as_collab_tip") or "servicii").strip().lower()
-            if st in ("cabinet", "servicii", "magazin", "transport"):
-                return st
+            if st in ("cabinet", "cv", "servicii", "magazin", "transport"):
+                return "cabinet" if st == "cv" else st
             return "servicii"
     try:
         prof = getattr(user, "profile", None)
         tip = (getattr(prof, "collaborator_type", None) or "").strip().lower()
     except Exception:
         tip = ""
-    if tip in ("cabinet", "servicii", "magazin", "transport"):
-        return tip
+    if tip in ("cabinet", "cv", "servicii", "magazin", "transport"):
+        return "cabinet" if tip == "cv" else tip
     return "servicii"
 
 
@@ -2510,6 +2510,18 @@ STAFF_INVITE_SESSION_KEY = "staff_onboarding_invite_token"
 STAFF_INVITE_GET_PARAM = "inv"
 
 
+def _staff_collab_subtype_matches_lead_profile(lead_subtype: str, profile_collab_type: str) -> bool:
+    """Lead CMVRO poate avea subtip „cv”; profilul colaborator folosește adesea „cabinet” — le considerăm echivalente."""
+    ls = (lead_subtype or "").strip()
+    pt = (profile_collab_type or "").strip()
+    if not ls:
+        return True
+    if ls == pt:
+        return True
+    vet = frozenset({StaffOnboardingLead.COLLAB_CABINET, StaffOnboardingLead.COLLAB_CV})
+    return ls in vet and pt in vet
+
+
 def _capture_staff_invite_token_for_signup(request, expected_lead_kind: str) -> None:
     raw = (request.GET.get(STAFF_INVITE_GET_PARAM) or "").strip()
     if not raw or len(raw) > 72:
@@ -2554,7 +2566,7 @@ def _attach_staff_onboarding_lead_from_inv_token(user, token: str) -> None:
         if sub:
             prof = getattr(user, "profile", None)
             ut = (getattr(prof, "collaborator_type", None) or "").strip() if prof else ""
-            if ut != sub:
+            if not _staff_collab_subtype_matches_lead_profile(sub, ut):
                 return
     if not is_placeholder_lead_email(lead.email):
         if (user.email or "").strip().lower() != (lead.email or "").strip().lower():
@@ -3375,7 +3387,7 @@ def signup_colaborator_view(request):
     email_opt_in = request.POST.get("email_opt_in_col") == "on"
 
     errors = []
-    if tip_partener not in ("cabinet", "servicii", "magazin", "transport"):
+    if tip_partener not in ("cabinet", "cv", "servicii", "magazin", "transport"):
         errors.append("Trebuie să alegi tipul de partener: Cabinet, Servicii, Magazin sau Transportator.")
     if tip_partener == "transport":
         if not transport_national and not transport_international:
@@ -3421,7 +3433,7 @@ def signup_colaborator_view(request):
             "adresa_firma": adresa_firma,
             "email": email,
             "telefon": telefon,
-            "tip_partener": tip_partener if tip_partener in ("cabinet", "servicii", "magazin", "transport") else "",
+            "tip_partener": tip_partener if tip_partener in ("cabinet", "cv", "servicii", "magazin", "transport") else "",
             "transport_national": transport_national,
             "transport_international": transport_international,
             "max_caini": max_caini,
@@ -5255,6 +5267,21 @@ def _staff_onboarding_leads_qs(request):
     loc = (request.GET.get("oras") or "").strip()
     if loc:
         qs = qs.filter(Q(oras__icontains=loc) | Q(company_oras__icontains=loc))
+    csub = (request.GET.get("collab_subtype") or "").strip()
+    if csub in ("cabinet", "cv"):
+        qs = qs.filter(
+            account_kind=StaffOnboardingLead.KIND_COLLAB,
+            collaborator_subtype__in=(
+                StaffOnboardingLead.COLLAB_CABINET,
+                StaffOnboardingLead.COLLAB_CV,
+            ),
+        )
+    elif csub in (
+        StaffOnboardingLead.COLLAB_SERVICII,
+        StaffOnboardingLead.COLLAB_MAGAZIN,
+        StaffOnboardingLead.COLLAB_TRANSPORT,
+    ):
+        qs = qs.filter(account_kind=StaffOnboardingLead.KIND_COLLAB, collaborator_subtype=csub)
     return qs.select_related("created_by").order_by("-created_at")[:500]
 
 
@@ -5452,6 +5479,7 @@ def admin_analysis_add_user_view(request):
             "filter_account_kind": (request.GET.get("account_kind") or "").strip(),
             "filter_judet": (request.GET.get("judet") or "").strip(),
             "filter_oras": (request.GET.get("oras") or "").strip(),
+            "filter_collab_subtype": (request.GET.get("collab_subtype") or "").strip(),
             "staff_invite_cooldown_days": STAFF_LEAD_INVITE_COOLDOWN_DAYS,
             "staff_invite_max_batch": STAFF_LEAD_INVITE_MAX_BATCH,
             "show_imported_active": show_imported_active,
@@ -6257,7 +6285,7 @@ def account_edit_view(request):
         if not company_oras:
             errors.append("Orașul/localitatea firmei este obligatorie.")
         if account_profile.role == AccountProfile.ROLE_COLLAB:
-            if collaborator_type not in ("cabinet", "servicii", "magazin", "transport"):
+            if collaborator_type not in ("cabinet", "cv", "servicii", "magazin", "transport"):
                 errors.append("Tipul de colaborator trebuie să fie Cabinet, Servicii, Magazin sau Transportator.")
         elif account_profile.role == AccountProfile.ROLE_ORG:
             if is_public_shelter_val not in ("yes", "no"):

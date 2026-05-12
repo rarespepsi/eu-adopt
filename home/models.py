@@ -1686,12 +1686,14 @@ class StaffOnboardingLead(models.Model):
     ]
 
     COLLAB_CABINET = "cabinet"
+    COLLAB_CV = "cv"
     COLLAB_SERVICII = "servicii"
     COLLAB_MAGAZIN = "magazin"
     COLLAB_TRANSPORT = "transport"
     COLLAB_SUBTYPE_CHOICES = [
         ("", "—"),
         (COLLAB_CABINET, "Cabinet veterinar"),
+        (COLLAB_CV, "CV"),
         (COLLAB_SERVICII, "Servicii (altele)"),
         (COLLAB_MAGAZIN, "Magazin / grooming"),
         (COLLAB_TRANSPORT, "Transportator"),

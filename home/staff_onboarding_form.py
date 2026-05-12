@@ -13,6 +13,7 @@ SEGMENT_CHOICES = [
 
 _COLLAB_RADIO = [
     (StaffOnboardingLead.COLLAB_CABINET, "Cabinet veterinar"),
+    (StaffOnboardingLead.COLLAB_CV, "CV"),
     (StaffOnboardingLead.COLLAB_SERVICII, "Servicii (altele)"),
     (StaffOnboardingLead.COLLAB_MAGAZIN, "Magazin / grooming"),
     (StaffOnboardingLead.COLLAB_TRANSPORT, "Transportator"),

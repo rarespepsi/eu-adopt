@@ -188,6 +188,16 @@
 				</select>
 			</div>
 			<div>
+				<label for="f-collab-sub">Colaboratori</label>
+				<select id="f-collab-sub" name="collab_subtype">
+					<option value="" {% if not filter_collab_subtype %}selected{% endif %}>— Toate —</option>
+					<option value="cabinet" {% if filter_collab_subtype == "cabinet" %}selected{% endif %}>Cabinet veterinar</option>
+					<option value="servicii" {% if filter_collab_subtype == "servicii" %}selected{% endif %}>Servicii (altele)</option>
+					<option value="magazin" {% if filter_collab_subtype == "magazin" %}selected{% endif %}>Magazin / grooming</option>
+					<option value="transport" {% if filter_collab_subtype == "transport" %}selected{% endif %}>Transportator</option>
+				</select>
+			</div>
+			<div>
 				<label for="f-jud">Județ</label>
 				<input id="f-jud" type="text" name="judet" list="county-list-adduser-filt" value="{{ filter_judet }}" placeholder="Scrie sau alege din listă" autocomplete="off" />
 				{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-adduser-filt" %}
@@ -214,7 +224,7 @@
 			</form>
 			<button type="button" class="add-user-btn add-user-btn--secondary" onclick="var d=document.getElementById('manual-lead-add');if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'nearest'});}">Către formular manual</button>
 		</div>
-		<p class="add-user-note">Afișare maximă 500 rânduri după filtre. Implicit se ascund prospectele deja legate de un cont creat pe site (butonul „Afișează și importați”). Export respectă aceleași filtre. Filtrele <strong>Tip cont</strong>, <strong>Județ</strong> și <strong>Localitate</strong> caută și în datele firmă (ONG/colaborator) acolo unde e cazul.</p>
+		<p class="add-user-note">Afișare maximă 500 rânduri după filtre. Implicit se ascund prospectele deja legate de un cont creat pe site (butonul „Afișează și importați”). Export respectă aceleași filtre. Filtrele <strong>Tip cont</strong>, <strong>Colaboratori</strong> (patru categorii: cabinet inclusiv CV, servicii, magazin, transport — doar rânduri Colaborator), <strong>Județ</strong> și <strong>Localitate</strong> caută și în datele firmă (ONG/colaborator) acolo unde e cazul.</p>
 
 		<form id="invite-send-form" class="add-user-invite-bar" method="post" action="{% url 'admin_analysis_add_user_invite_send' %}">
 			{% csrf_token %}
