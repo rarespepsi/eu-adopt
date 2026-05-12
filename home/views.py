@@ -20,7 +20,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, QueryDict
 from django.db.models import Case, Count, Exists, IntegerField, Max, OuterRef, Q, Subquery, Sum, When
 from django.db.models import F
 from django.db.models.functions import TruncMonth
@@ -89,6 +89,7 @@ from django.contrib.auth import get_user_model
 from functools import wraps
 from django.contrib import messages
 from django.core.signing import TimestampSigner, SignatureExpired, BadSignature
+from django.core.paginator import Paginator
 
 LEGAL_TERMS_VERSION = "1.0"
 LEGAL_PRIVACY_VERSION = "1.0"
@@ -2560,7 +2561,12 @@ def _attach_staff_onboarding_lead_from_inv_token(user, token: str) -> None:
     if not lead:
         return
     kind = _user_staff_lead_kind(user)
-    if not kind or lead.account_kind != kind:
+    if not kind:
+        return
+    if lead.account_kind == StaffOnboardingLead.KIND_ADAPOST:
+        if kind != StaffOnboardingLead.KIND_ORG:
+            return
+    elif lead.account_kind != kind:
         return
     if lead.account_kind == StaffOnboardingLead.KIND_COLLAB:
         sub = (lead.collaborator_subtype or "").strip()
@@ -3220,6 +3226,7 @@ def signup_organizatie_view(request):
     """Formular înregistrare – Adăpost / ONG / Firmă. La POST: validează, salvează în sesiune, redirect SMS. La GET: prefill din sesiune dacă user a dat Back din SMS."""
     if request.method != "POST":
         _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_ORG)
+        _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_ADAPOST)
         ctx = _signup_maps_ctx(request)
         field_errors_get = {}
         if request.GET.get("phone_taken"):
@@ -5255,20 +5262,38 @@ def admin_analysis_alerts_view(request):
     return render(request, "anunturi/admin_analysis_alerts.html", {})
 
 
-def _staff_onboarding_leads_qs(request):
+STAFF_ONBOARDING_LEADS_PER_PAGE = 100
+
+
+def _add_user_filter_querydict(request) -> QueryDict:
+    """GET sau, la POST cu `preserve_query`, aceleași parametri ca lista Add USER."""
+    if request.method == "POST":
+        pq = (request.POST.get("preserve_query") or "").strip()
+        if pq and "\n" not in pq and "://" not in pq and len(pq) < 4000:
+            return QueryDict(pq)
+    return request.GET
+
+
+def _staff_onboarding_leads_filtered_qs_from_querydict(qd: QueryDict):
+    """Prospecte după filtre (fără limită) — export, validare POST, paginare."""
     qs = StaffOnboardingLead.objects.all()
-    if (request.GET.get("show_imported") or "").strip().lower() not in ("1", "true", "da", "yes"):
+    if (qd.get("show_imported") or "").strip().lower() not in ("1", "true", "da", "yes"):
         qs = qs.filter(imported_user__isnull=True)
-    kind = (request.GET.get("account_kind") or "").strip()
-    if kind in (StaffOnboardingLead.KIND_PF, StaffOnboardingLead.KIND_ORG, StaffOnboardingLead.KIND_COLLAB):
+    kind = (qd.get("account_kind") or "").strip()
+    if kind in (
+        StaffOnboardingLead.KIND_PF,
+        StaffOnboardingLead.KIND_ORG,
+        StaffOnboardingLead.KIND_COLLAB,
+        StaffOnboardingLead.KIND_ADAPOST,
+    ):
         qs = qs.filter(account_kind=kind)
-    jud = (request.GET.get("judet") or "").strip()
+    jud = (qd.get("judet") or "").strip()
     if jud:
         qs = qs.filter(Q(judet__icontains=jud) | Q(company_judet__icontains=jud))
-    loc = (request.GET.get("oras") or "").strip()
+    loc = (qd.get("oras") or "").strip()
     if loc:
         qs = qs.filter(Q(oras__icontains=loc) | Q(company_oras__icontains=loc))
-    csub = (request.GET.get("collab_subtype") or "").strip()
+    csub = (qd.get("collab_subtype") or "").strip()
     if csub in ("cabinet", "cv"):
         qs = qs.filter(
             account_kind=StaffOnboardingLead.KIND_COLLAB,
@@ -5283,7 +5308,26 @@ def _staff_onboarding_leads_qs(request):
         StaffOnboardingLead.COLLAB_TRANSPORT,
     ):
         qs = qs.filter(account_kind=StaffOnboardingLead.KIND_COLLAB, collaborator_subtype=csub)
-    return qs.select_related("created_by").order_by("-created_at")[:500]
+    elif csub in (StaffOnboardingLead.COLLAB_ADPUB, StaffOnboardingLead.COLLAB_ADPRV):
+        qs = qs.filter(account_kind=StaffOnboardingLead.KIND_ADAPOST, collaborator_subtype=csub)
+    return qs.order_by("-created_at")
+
+
+def _staff_onboarding_leads_filtered_qs(request):
+    """Prospecte după filtrele din URL-ul curent (GET)."""
+    return _staff_onboarding_leads_filtered_qs_from_querydict(request.GET)
+
+
+def _staff_onboarding_leads_page(request):
+    """O pagină din tabelul Add USER (`page` în GET sau în preserve_query)."""
+    qd = _add_user_filter_querydict(request)
+    qs = _staff_onboarding_leads_filtered_qs_from_querydict(qd)
+    raw = (qd.get("page") or "").strip()
+    try:
+        num = int(raw)
+    except ValueError:
+        num = 1
+    return Paginator(qs, STAFF_ONBOARDING_LEADS_PER_PAGE).get_page(num if num >= 1 else 1)
 
 
 STAFF_LEAD_INVITE_COOLDOWN_DAYS = 14
@@ -5294,7 +5338,7 @@ def _staff_invite_subject_body(request, lead: StaffOnboardingLead) -> tuple[str,
     kind_label = lead.get_account_kind_display()
     if lead.account_kind == StaffOnboardingLead.KIND_PF:
         signup_path = reverse("signup_pf")
-    elif lead.account_kind == StaffOnboardingLead.KIND_ORG:
+    elif lead.account_kind in (StaffOnboardingLead.KIND_ORG, StaffOnboardingLead.KIND_ADAPOST):
         signup_path = reverse("signup_organizatie")
     else:
         signup_path = reverse("signup_colaborator")
@@ -5325,7 +5369,11 @@ def _staff_invite_subject_body(request, lead: StaffOnboardingLead) -> tuple[str,
 def admin_analysis_add_user_invite_send_view(request):
     if not (request.user.is_superuser or request.user.is_staff):
         return redirect(reverse("home"))
-    allowed_ids = frozenset(_staff_onboarding_leads_qs(request).values_list("pk", flat=True))
+    allowed_ids = frozenset(
+        _staff_onboarding_leads_filtered_qs_from_querydict(_add_user_filter_querydict(request)).values_list(
+            "pk", flat=True
+        )
+    )
     raw_ids = request.POST.getlist("lead_id")
     now = timezone.now()
     cooldown = timezone.timedelta(days=STAFF_LEAD_INVITE_COOLDOWN_DAYS)
@@ -5410,9 +5458,13 @@ def admin_analysis_add_user_view(request):
     if not (request.user.is_superuser or request.user.is_staff):
         return redirect(reverse("home"))
 
-    qd = request.GET.copy()
+    qd = _add_user_filter_querydict(request).copy()
     qd.pop("edit", None)
     filter_query = qd.urlencode()
+    qd_np = _add_user_filter_querydict(request).copy()
+    qd_np.pop("edit", None)
+    qd_np.pop("page", None)
+    filter_query_no_page = qd_np.urlencode()
     show_imported_active = (qd.get("show_imported") or "").strip().lower() in ("1", "true", "da", "yes")
     qd_toggle = qd.copy()
     if show_imported_active:
@@ -5458,21 +5510,26 @@ def admin_analysis_add_user_view(request):
         if editing_lead is None:
             form = StaffOnboardingLeadForm()
 
-    recent_qs = _staff_onboarding_leads_qs(request)
-    recent_leads = list(recent_qs)
+    page_obj = _staff_onboarding_leads_page(request)
+    recent_leads = list(page_obj.object_list)
     now = timezone.now()
     invite_cd = timezone.timedelta(days=STAFF_LEAD_INVITE_COOLDOWN_DAYS)
     for L in recent_leads:
         em_raw = (L.email or "").strip()
         em_ok = bool(em_raw) and not is_placeholder_lead_email(em_raw)
-        L.invite_mail_checkbox = em_ok and not L.imported_user_id
+        L.invite_mail_em_ok = em_ok
         L.invite_mail_cooldown = bool(L.invite_email_last_sent_at and (now - L.invite_email_last_sent_at) < invite_cd)
+        # Bifă în tabel pentru toate rândurile care pot fi selectate; trimiterea reală sare peste email gol/placeholder.
+        L.invite_mail_checkbox = (not L.imported_user_id) and (not L.invite_mail_cooldown)
     return render(
         request,
         "anunturi/admin_analysis_add_user.html",
         {
             "form": form,
             "recent_leads": recent_leads,
+            "leads_page_obj": page_obj,
+            "staff_leads_per_page": STAFF_ONBOARDING_LEADS_PER_PAGE,
+            "filter_query_no_page": filter_query_no_page,
             "segment_labels": dict(SEGMENT_CHOICES),
             "filter_query": filter_query,
             "open_manual_form": open_manual_form,
@@ -5499,7 +5556,10 @@ def admin_analysis_add_user_lead_delete_view(request):
     if not raw.isdigit():
         messages.error(request, "ID lead invalid.")
         return _redirect_admin_add_user_preserve(request)
-    lead = get_object_or_404(StaffOnboardingLead, pk=int(raw))
+    lead = get_object_or_404(
+        _staff_onboarding_leads_filtered_qs_from_querydict(_add_user_filter_querydict(request)),
+        pk=int(raw),
+    )
     em = lead.email
     lead.delete()
     messages.success(request, f"Lead șters: {em}")
@@ -5551,7 +5611,7 @@ def admin_analysis_add_user_import_view(request):
 def admin_analysis_add_user_export_view(request):
     if not (request.user.is_superuser or request.user.is_staff):
         return redirect(reverse("home"))
-    qs = _staff_onboarding_leads_qs(request)
+    qs = _staff_onboarding_leads_filtered_qs(request)
     payload = export_csv_bytes(qs)
     resp = HttpResponse(payload, content_type="text/csv; charset=utf-8")
     resp["Content-Disposition"] = 'attachment; filename="euadopt_prospecte_neinregistrati.csv"'

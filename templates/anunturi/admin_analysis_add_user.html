@@ -6,70 +6,615 @@
 
 {% block extra_css %}
 <style>
-	body.page-admin-analysis { overflow: hidden !important; height: 100dvh; }
-	body.page-admin-analysis #main_wrap { height: 100dvh !important; overflow: hidden !important; display: flex; flex-direction: column; }
+	body.page-admin-analysis {
+		overflow: hidden !important;
+		height: 100dvh;
+		background-color: #141a22 !important;
+		color-scheme: dark;
+		font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	}
+	body.page-admin-analysis #main_wrap {
+		height: 100dvh !important;
+		overflow: hidden !important;
+		display: flex;
+		flex-direction: column;
+		position: relative;
+	}
 	body.page-admin-analysis .layout { grid-template-columns: 1fr; height: 100%; min-height: 0; }
 	body.page-admin-analysis .sidebar-left, body.page-admin-analysis .sidebar-right { display: none; }
-	body.page-admin-analysis #main_content { height: calc(100dvh - var(--nav-h, 64px)) !important; min-height: calc(100dvh - var(--nav-h, 64px)) !important; flex: 1 1 auto; overflow: hidden; padding: 0; box-sizing: border-box; }
+	body.page-admin-analysis #main_content {
+		height: calc(100dvh - var(--nav-h, 64px)) !important;
+		min-height: calc(100dvh - var(--nav-h, 64px)) !important;
+		flex: 1 1 auto;
+		overflow: hidden;
+		padding: 0 clamp(0.65rem, 2.2vw, 1.15rem) !important;
+		box-sizing: border-box;
+		background: transparent !important;
+		box-shadow: none !important;
+	}
 	body.page-admin-analysis .main-content { max-width: 100%; padding: 0; height: 100%; overflow: hidden; }
-	.analysis-shell { min-height: 100%; height: 100%; border: 2px solid rgba(21, 101, 192, 0.75); border-radius: 14px; padding: 0.75rem; box-sizing: border-box; background: transparent; display: flex; flex-direction: column; gap: 0.5rem; min-height: 0; }
-	.analysis-shell h1 { margin: 0; font-size: 1rem; font-weight: 800; color: #0d47a1; text-transform: uppercase; }
+	.analysis-shell {
+		position: relative;
+		overflow: hidden;
+		min-height: 100%;
+		height: 100%;
+		border: 1px solid rgba(255, 255, 255, 0.055);
+		border-radius: 1.1875rem;
+		padding: clamp(0.85rem, 2.2vw, 1.15rem);
+		box-sizing: border-box;
+		background: linear-gradient(
+			168deg,
+			rgba(24, 32, 46, 0.52) 0%,
+			rgba(18, 24, 36, 0.62) 48%,
+			rgba(14, 20, 32, 0.68) 100%
+		);
+		backdrop-filter: blur(22px) saturate(1.06);
+		-webkit-backdrop-filter: blur(22px) saturate(1.06);
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+			0 1px 0 rgba(255, 255, 255, 0.045) inset,
+			0 24px 48px rgba(0, 0, 0, 0.45),
+			0 10px 22px rgba(0, 0, 0, 0.28),
+			0 0 0 1px rgba(6, 182, 212, 0.05);
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		min-height: 0;
+	}
+	.analysis-shell::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
+		background: linear-gradient(
+			145deg,
+			rgba(255, 255, 255, 0.05) 0%,
+			transparent 42%,
+			transparent 58%,
+			rgba(0, 0, 0, 0.1) 100%
+		);
+		opacity: 0.85;
+		z-index: 0;
+	}
+	.analysis-shell > * { position: relative; z-index: 1; }
+	.add-user-header-row {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem 0.75rem;
+		flex-shrink: 0;
+		width: 100%;
+		min-width: 0;
+	}
+	.add-user-header-row h1 {
+		margin: 0;
+		font-size: clamp(1rem, 2.2vw, 1.15rem);
+		font-weight: 600;
+		color: #f8fafc;
+		text-transform: none;
+		letter-spacing: -0.02em;
+		min-width: 0;
+		flex: 1 1 auto;
+		line-height: 1.22;
+	}
+	.add-user-header-row .analysis-subnav { flex-shrink: 0; margin: 0; }
+	@media (max-width: 520px) {
+		.add-user-header-row { flex-wrap: wrap; }
+		.add-user-header-row .analysis-subnav { width: 100%; justify-content: flex-start; }
+	}
 	.analysis-subnav { display: flex; gap: 0.4rem; flex-wrap: wrap; flex-shrink: 0; align-items: center; }
-	.analysis-subnav a { text-decoration: none; padding: 0.2rem 0.45rem; border-radius: 999px; border: 1px solid rgba(13, 71, 161, 0.5); color: #0d47a1; font-size: 0.72rem; font-weight: 700; }
-	.add-user-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 0.55rem; }
-	.add-user-toolbar { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: flex-end; }
+	.analysis-subnav a {
+		text-decoration: none;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 2rem;
+		max-height: 2rem;
+		padding: 0 0.65rem;
+		border-radius: 999px;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		color: #22d3ee;
+		font-size: 0.74rem;
+		font-weight: 600;
+		background: rgba(15, 23, 42, 0.35);
+		box-sizing: border-box;
+		transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+	}
+	.analysis-subnav a:hover {
+		border-color: rgba(6, 182, 212, 0.45);
+		color: #67e8f9;
+		background: rgba(15, 23, 42, 0.55);
+	}
+	.add-user-scroll {
+		flex: 0 1 auto;
+		min-height: 0;
+		max-height: calc(100dvh - var(--nav-h, 64px) - 5.5rem);
+		overflow-x: hidden;
+		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+		gap: 0.55rem;
+	}
+	.add-user-scroll::-webkit-scrollbar { width: 8px; }
+	.add-user-scroll::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.12);
+		border-radius: 999px;
+	}
+	.add-user-top-bar {
+		display: flex;
+		flex-wrap: nowrap;
+		align-items: flex-end;
+		gap: 0.45rem;
+		background: rgba(15, 23, 42, 0.45);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 0.75rem;
+		padding: 0.38rem 0.55rem 0.42rem;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		flex-shrink: 0;
+		min-width: 0;
+	}
+	/* Export + Import: același rând, centrat vertical cu butoanele din stânga */
+	.add-user-top-bar-tail {
+		display: flex;
+		flex-wrap: nowrap;
+		align-items: center;
+		align-self: flex-end;
+		gap: 0.45rem;
+		flex: 0 0 auto;
+		min-width: 0;
+		border-left: 1px solid rgba(255, 255, 255, 0.1);
+		padding-left: 0.55rem;
+		margin-left: 0.05rem;
+		min-height: 2rem;
+	}
+	.add-user-top-bar-tail > a.add-user-btn {
+		flex-shrink: 0;
+	}
+	.add-user-import-form {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		gap: 0.4rem;
+		flex: 0 1 auto;
+		min-width: 0;
+		margin: 0;
+		min-height: 2rem;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		position: relative;
+	}
+	.add-user-import-form > input[type="hidden"],
+	.add-user-import-form > input[name="csrfmiddlewaretoken"] {
+		display: none !important;
+	}
+	/* Fișier: invizibil; deschiderea dialogului = clic pe eticheta „Import CSV”; trimitere la change (JS) */
+	.add-user-import-form input.add-user-import-file-hidden[type="file"] {
+		position: absolute !important;
+		width: 1px !important;
+		height: 1px !important;
+		padding: 0 !important;
+		margin: -1px !important;
+		overflow: hidden !important;
+		clip: rect(0, 0, 0, 0) !important;
+		white-space: nowrap !important;
+		border: 0 !important;
+		opacity: 0 !important;
+	}
+	/* Bară unelte: aceeași înălțime + același chip ca „Aplică filtre” (Export, butoane filtre) */
+	.add-user-top-bar button.add-user-btn {
+		appearance: none;
+		-webkit-appearance: none;
+		font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+		margin: 0;
+	}
+	.add-user-top-bar a.add-user-btn,
+	.add-user-top-bar button.add-user-btn,
+	.add-user-import-form label.add-user-btn,
+	.add-user-filters .add-user-btn {
+		display: inline-flex !important;
+		align-items: center;
+		justify-content: center;
+		height: 2rem;
+		min-height: 2rem;
+		max-height: 2rem;
+		padding: 0 0.7rem;
+		font-size: 0.76rem;
+		font-weight: 600;
+		line-height: 1.15;
+		box-sizing: border-box;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(255, 255, 255, 0.14) !important;
+		background: linear-gradient(175deg, #2dd4e8 0%, #06b6d4 42%, #0e7490 100%) !important;
+		color: #fff !important;
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.18) inset,
+			0 2px 8px rgba(6, 182, 212, 0.22) !important;
+		text-decoration: none !important;
+	}
+	.add-user-filters .add-user-btn--secondary,
+	.add-user-import-form label.add-user-btn--secondary {
+		background: rgba(15, 23, 42, 0.55) !important;
+		color: #e2e8f0 !important;
+		border-color: rgba(255, 255, 255, 0.14) !important;
+		box-shadow: none !important;
+	}
+	.add-user-filters .add-user-btn--secondary:hover,
+	.add-user-import-form label.add-user-btn--secondary:hover {
+		filter: none !important;
+		transform: none;
+		border-color: rgba(6, 182, 212, 0.4) !important;
+		color: #f8fafc !important;
+		background: rgba(15, 23, 42, 0.78) !important;
+	}
+	.add-user-top-bar a.add-user-btn:hover,
+	.add-user-top-bar button.add-user-btn:hover,
+	.add-user-filters .add-user-btn:not(.add-user-btn--secondary):hover {
+		filter: brightness(1.06);
+		transform: translateY(-1px);
+	}
 	.add-user-filters {
-		display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: flex-end;
-		background: rgba(255,255,255,0.55); border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; padding: 0.45rem 0.55rem;
+		display: flex;
+		flex-wrap: nowrap;
+		gap: 0.4rem;
+		align-items: flex-end;
+		flex: 1 1 auto;
+		min-width: 0;
+		background: none;
+		border: none;
+		padding: 0;
+		margin: 0;
+		overflow: visible;
 	}
-	.add-user-filters label { font-size: 0.68rem; font-weight: 800; color: #1565c0; display: block; margin-bottom: 0.08rem; }
-	.add-user-filters input, .add-user-filters select { font-size: 0.78rem; padding: 0.22rem 0.35rem; border-radius: 6px; border: 1px solid rgba(0,0,0,0.2); }
+	.add-user-filters > div { flex: 0 0 auto; min-width: 0; }
+	.add-user-filters label {
+		font-size: 0.72rem; font-weight: 500; color: #cbd5e1; display: block; margin-bottom: 0.2rem; white-space: nowrap;
+	}
+	.add-user-filters input, .add-user-filters select {
+		font-size: 0.8rem;
+		padding: 0.45rem 0.55rem;
+		border-radius: 0.5rem;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: rgba(15, 23, 42, 0.55);
+		color: #f8fafc;
+		width: 100%; max-width: 7rem; box-sizing: border-box;
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+	}
+	.add-user-filters input::placeholder { color: #6b7280; }
+	.add-user-filters input:focus, .add-user-filters select:focus {
+		outline: none;
+		border-color: rgba(6, 182, 212, 0.65);
+		box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.15);
+	}
+	.add-user-filters #f-jud, .add-user-filters #f-oras { max-width: 8.75rem; }
+	.add-user-filters-actions {
+		display: flex;
+		flex-wrap: nowrap;
+		gap: 0.35rem;
+		align-items: center;
+		flex: 0 0 auto;
+		margin-left: 0.1rem;
+	}
 	.add-user-btn {
-		text-decoration: none; padding: 0.28rem 0.65rem; border-radius: 8px; font-size: 0.74rem; font-weight: 800;
-		border: 1px solid #0d47a1; background: #1565c0; color: #fff !important; cursor: pointer; display: inline-block;
+		text-decoration: none;
+		padding: 0.42rem 0.75rem;
+		border-radius: 0.5rem;
+		font-size: 0.78rem;
+		font-weight: 600;
+		border: 1px solid rgba(255, 255, 255, 0.14);
+		background: linear-gradient(175deg, #2dd4e8 0%, #06b6d4 42%, #0e7490 100%);
+		color: #fff !important;
+		cursor: pointer;
+		display: inline-block;
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.18) inset,
+			0 2px 10px rgba(6, 182, 212, 0.25);
+		transition: filter 0.15s ease, transform 0.12s ease;
 	}
-	.add-user-btn--secondary { background: #fff; color: #0d47a1 !important; }
+	.add-user-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+	.add-user-btn:active { transform: translateY(0); filter: brightness(0.98); }
+	.add-user-btn--secondary {
+		background: rgba(15, 23, 42, 0.5);
+		color: #e2e8f0 !important;
+		border-color: rgba(255, 255, 255, 0.14);
+		box-shadow: none;
+	}
+	.add-user-btn--secondary:hover {
+		filter: none;
+		border-color: rgba(6, 182, 212, 0.4);
+		color: #f8fafc !important;
+		background: rgba(15, 23, 42, 0.72);
+	}
 	.add-user-form-wrap {
-		background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 10px; padding: 0.6rem 0.85rem;
+		background: rgba(15, 23, 42, 0.42);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 0.75rem;
+		padding: 0.65rem 0.9rem;
 	}
-	.add-user-form-wrap form p { margin: 0 0 0.45rem; }
-	.add-user-form-wrap label { display: block; font-size: 0.72rem; font-weight: 800; color: #1565c0; margin-bottom: 0.12rem; }
+	.add-user-form-wrap form p { margin: 0 0 0.5rem; }
+	.add-user-form-wrap label { display: block; font-size: 0.78rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.22rem; }
 	.add-user-form-wrap input[type="text"], .add-user-form-wrap input[type="email"], .add-user-form-wrap select, .add-user-form-wrap textarea {
-		width: 100%; max-width: 28rem; box-sizing: border-box; padding: 0.28rem 0.4rem; font-size: 0.82rem; border: 1px solid rgba(0,0,0,0.2); border-radius: 6px;
+		width: 100%; max-width: 28rem; box-sizing: border-box;
+		padding: 0.52rem 0.65rem;
+		font-size: 0.88rem;
+		border-radius: 0.5rem;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: rgba(15, 23, 42, 0.55);
+		color: #f8fafc;
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+	}
+	.add-user-form-wrap input:focus, .add-user-form-wrap select:focus, .add-user-form-wrap textarea:focus {
+		outline: none;
+		border-color: rgba(6, 182, 212, 0.65);
+		box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.14);
 	}
 	.add-user-form-wrap textarea { min-height: 3.2rem; max-width: 100%; }
-	.add-user-form-wrap ul.errorlist { margin: 0 0 0.35rem; padding-left: 1.1rem; color: #b71c1c; font-size: 0.72rem; }
-	.add-user-form-wrap .helptext { font-size: 0.68rem; color: #546e7a; margin: 0.1rem 0 0.35rem; }
-	.add-user-submit { margin-top: 0.35rem; padding: 0.35rem 0.85rem; font-weight: 800; font-size: 0.78rem; border-radius: 8px; border: 1px solid #0d47a1; background: #1565c0; color: #fff; cursor: pointer; }
-	.add-user-table-wrap { overflow: auto; max-height: 38vh; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; background: rgba(255,255,255,0.5); }
-	.add-user-table { width: 100%; border-collapse: collapse; font-size: 0.64rem; }
-	.add-user-table th, .add-user-table td { border-bottom: 1px solid rgba(0,0,0,0.08); padding: 0.25rem 0.32rem; text-align: left; vertical-align: top; }
+	.add-user-form-wrap ul.errorlist { margin: 0 0 0.4rem; padding-left: 1.1rem; color: #fecaca; font-size: 0.75rem; }
+	.add-user-form-wrap .helptext { font-size: 0.7rem; color: #94a3b8; margin: 0.12rem 0 0.35rem; }
+	.add-user-edit-banner {
+		margin: 0 0 0.55rem;
+		padding: 0.5rem 0.65rem;
+		border-radius: 0.5rem;
+		font-size: 0.78rem;
+		font-weight: 600;
+		color: #a7f3d0;
+		background: rgba(6, 78, 59, 0.42);
+		border: 1px solid rgba(52, 211, 153, 0.35);
+	}
+	.add-user-edit-banner a {
+		margin-left: 0.5rem;
+		font-weight: 700;
+		color: #5eead4;
+		text-decoration: none;
+	}
+	.add-user-edit-banner a:hover { text-decoration: underline; color: #99f6e4; }
+	.add-user-submit {
+		margin-top: 0.45rem;
+		padding: 0.72rem 1.1rem;
+		font-weight: 600;
+		font-size: 0.9rem;
+		border-radius: 0.5rem;
+		border: 1px solid rgba(255, 255, 255, 0.14);
+		background: linear-gradient(175deg, #2dd4e8 0%, #06b6d4 42%, #0e7490 100%);
+		color: #fff;
+		cursor: pointer;
+		width: 100%;
+		max-width: 28rem;
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.2) inset,
+			0 3px 14px rgba(6, 182, 212, 0.28);
+	}
+	.add-user-submit:hover { filter: brightness(1.05); }
+	/* Tabel + bară */
+	.add-user-table-brick {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		align-content: flex-start;
+		width: 100%;
+		min-height: 0;
+		box-sizing: border-box;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 0.75rem;
+		background: rgba(15, 23, 42, 0.35);
+		overflow: hidden;
+		height: fit-content;
+		max-height: none;
+	}
+	.add-user-table-wrap {
+		flex: 0 1 auto;
+		min-height: 0;
+		max-height: min(55vh, calc(100dvh - var(--nav-h, 64px) - 12rem));
+		overflow: auto;
+		-webkit-overflow-scrolling: touch;
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+	}
+	.add-user-table-wrap::-webkit-scrollbar { width: 8px; height: 8px; }
+	.add-user-table-wrap::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 999px; }
+	.add-user-table { width: 100%; border-collapse: collapse; font-size: 0.66rem; color: #e2e8f0; }
+	.add-user-table th, .add-user-table td {
+		border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+		padding: 0.28rem 0.35rem;
+		text-align: left;
+		vertical-align: top;
+	}
+	.add-user-table tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
 	.add-user-table td.add-user-td-actions { white-space: nowrap; }
-	.add-user-tbl-actions { display: flex; flex-wrap: wrap; gap: 0.2rem; align-items: center; }
+	.add-user-tbl-actions { display: flex; flex-wrap: wrap; gap: 0.22rem; align-items: center; }
 	.add-user-tbl-btn {
-		display: inline-block;
-		padding: 0.12rem 0.38rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 1.85rem;
+		padding: 0.2rem 0.45rem;
 		font-size: 0.58rem;
-		font-weight: 800;
-		border-radius: 5px;
-		border: 1px solid #0d47a1;
-		background: #1565c0;
-		color: #fff !important;
+		font-weight: 600;
+		border-radius: 0.4rem;
+		border: 1px solid rgba(6, 182, 212, 0.45);
+		background: linear-gradient(175deg, #22d3ee 0%, #0891b2 100%);
+		color: #0f172a !important;
 		text-decoration: none;
 		cursor: pointer;
 		font-family: inherit;
 		line-height: 1.2;
+		box-sizing: border-box;
 	}
-	.add-user-tbl-btn--secondary { background: #fff; color: #0d47a1 !important; }
-	.add-user-tbl-btn--danger { border-color: #b71c1c; background: #c62828; color: #fff !important; }
-	.add-user-table th { position: sticky; top: 0; background: #e3f2fd; font-weight: 800; color: #0d47a1; white-space: nowrap; }
-	.seg-pill { display: inline-block; margin: 0.08rem 0.12rem 0 0; padding: 0.06rem 0.28rem; border-radius: 999px; background: rgba(21, 101, 192, 0.12); font-size: 0.6rem; font-weight: 700; color: #0d47a1; }
-	.add-user-invite-bar {
-		display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center;
-		background: rgba(255, 248, 225, 0.75); border: 1px solid rgba(255, 193, 7, 0.45); border-radius: 10px; padding: 0.45rem 0.55rem;
+	.add-user-tbl-btn--secondary {
+		background: rgba(15, 23, 42, 0.65);
+		color: #e0f2fe !important;
+		border-color: rgba(255, 255, 255, 0.15);
 	}
-	.add-user-invite-bar .add-user-note { margin: 0; flex: 1 1 12rem; }
+	.add-user-tbl-btn--danger {
+		border-color: rgba(248, 113, 113, 0.45);
+		background: linear-gradient(175deg, #f87171 0%, #b91c1c 100%);
+		color: #fff !important;
+	}
+	.add-user-table th {
+		position: sticky;
+		top: 0;
+		background: rgba(15, 23, 42, 0.92);
+		font-weight: 600;
+		color: #cbd5e1;
+		white-space: nowrap;
+		backdrop-filter: blur(8px);
+	}
+	.add-user-table td:first-child input[type="checkbox"] {
+		width: 1.05rem;
+		height: 1.05rem;
+		min-width: 1.05rem;
+		min-height: 1.05rem;
+		margin: 0;
+		vertical-align: middle;
+		cursor: pointer;
+		accent-color: #06b6d4;
+	}
+	.add-user-table td span[title] { color: #94a3b8; font-size: 0.58rem; }
+	.add-user-table-footer {
+		display: flex;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: flex-start;
+		align-content: center;
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		flex: 0 0 auto;
+		flex-grow: 0;
+		flex-shrink: 0;
+		align-self: stretch;
+		max-height: none;
+		height: auto;
+		gap: 0.45rem;
+		margin: 0;
+		padding: 0.42rem 0.5rem;
+		line-height: 1.2;
+		background: rgba(12, 18, 28, 0.75);
+		border: 0;
+		border-top: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 0;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+	.add-user-table-footer-actions {
+		display: flex;
+		flex-wrap: nowrap;
+		align-items: center;
+		align-content: center;
+		gap: 0.35rem;
+		flex: 0 0 auto;
+		margin-left: auto;
+		min-height: 0;
+	}
+	.add-user-table-footer-summary {
+		font-size: 0.68rem;
+		font-weight: 600;
+		color: #94a3b8;
+		line-height: 1.2;
+		margin: 0;
+		padding: 0;
+		flex: 1 1 auto;
+		min-width: 0;
+		text-align: left;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.add-user-table-footer .add-user-pagination--footer {
+		flex: 0 0 auto; margin: 0;
+		width: fit-content; max-width: 100%;
+		gap: 0.22rem 0.38rem;
+		font-size: 0.66rem; line-height: 1.2;
+	}
+	.add-user-table-footer .add-user-pagination a {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 2rem;
+		max-height: 2rem;
+		padding: 0 0.55rem;
+		font-size: 0.72rem;
+		line-height: 1.15;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		color: #22d3ee;
+		background: rgba(15, 23, 42, 0.55);
+		text-decoration: none;
+		font-weight: 600;
+		box-sizing: border-box;
+	}
+	.add-user-table-footer .add-user-pagination a:hover {
+		border-color: rgba(6, 182, 212, 0.45);
+		color: #67e8f9;
+	}
+	.add-user-invite-footer {
+		display: flex; flex-wrap: nowrap; align-items: center; flex: 0 0 auto; margin: 0;
+	}
+	.add-user-table-footer .add-user-invite-footer .add-user-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 2rem;
+		max-height: 2rem;
+		padding: 0 0.65rem;
+		font-size: 0.74rem;
+		line-height: 1.15;
+		white-space: nowrap;
+		box-sizing: border-box;
+	}
+	.add-user-table-panel-title {
+		margin: 0 0 0.4rem;
+		font-size: 0.88rem;
+		font-weight: 600;
+		color: #f1f5f9;
+		letter-spacing: -0.02em;
+	}
+	.add-user-table-panel {
+		display: flex;
+		flex-direction: column;
+		flex: 0 0 auto;
+		width: 100%;
+		min-width: 0;
+		min-height: 0;
+	}
+	.add-user-pagination {
+		display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.55rem;
+		font-size: 0.68rem; font-weight: 600; color: #94a3b8; margin: 0;
+	}
+	.add-user-pagination--footer {
+		margin-top: 0;
+		margin-bottom: 0;
+		width: fit-content;
+		max-width: 100%;
+	}
+	.add-user-pagination a {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 2rem;
+		max-height: 2rem;
+		padding: 0 0.55rem;
+		text-decoration: none;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		color: #22d3ee;
+		background: rgba(15, 23, 42, 0.55);
+		font-weight: 600;
+		font-size: 0.72rem;
+		box-sizing: border-box;
+	}
+	.add-user-pagination a:hover {
+		border-color: rgba(6, 182, 212, 0.45);
+		color: #67e8f9;
+	}
 	.add-user-manual-details { align-self: flex-start; width: 100%; max-width: 100%; }
+	.add-user-manual-details[open] .add-user-form-wrap { margin-top: 0.35rem; }
 	.add-user-manual-summary--sr {
 		position: absolute;
 		width: 1px;
@@ -84,20 +629,111 @@
 		list-style: none;
 	}
 	.add-user-manual-summary--sr::-webkit-details-marker { display: none; }
-	.add-user-manual-section { margin-bottom: 0.5rem; padding: 0.45rem 0.55rem; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.35); }
-	.add-user-manual-section h3 { margin: 0 0 0.35rem; font-size: 0.72rem; font-weight: 900; color: #0d47a1; text-transform: uppercase; letter-spacing: 0.04em; }
+	.add-user-manual-section {
+		margin-bottom: 0.5rem;
+		padding: 0.5rem 0.6rem;
+		border-radius: 0.55rem;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		background: rgba(15, 23, 42, 0.4);
+	}
+	.add-user-manual-section h3 {
+		margin: 0 0 0.4rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: #e2e8f0;
+		text-transform: none;
+		letter-spacing: 0.02em;
+	}
 	.add-user-manual-section.is-hidden { display: none !important; }
 	.add-user-manual-collab-box {
-		border: 1px solid rgba(21, 101, 192, 0.45);
-		border-radius: 10px;
+		border: 1px solid rgba(6, 182, 212, 0.35);
+		border-radius: 0.55rem;
 		padding: 0.5rem 0.6rem;
-		background: rgba(227, 242, 253, 0.5);
+		background: rgba(6, 182, 212, 0.08);
 	}
 	.add-user-form-wrap ul:not(.errorlist) { list-style: none; margin: 0.2rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
-	.add-user-form-wrap ul:not(.errorlist) li { display: flex; align-items: flex-start; gap: 0.45rem; font-size: 0.78rem; font-weight: 600; color: #1f2937; }
-	.add-user-form-wrap ul:not(.errorlist) li label { margin: 0; font-weight: 600; color: #1f2937; }
-	.add-user-form-wrap ul:not(.errorlist) input[type="radio"] { margin-top: 0.2rem; width: auto; }
-	.add-user-form-wrap .manual-checkbox { width: auto; }
+	.add-user-form-wrap ul:not(.errorlist) li { display: flex; align-items: flex-start; gap: 0.45rem; font-size: 0.8rem; font-weight: 500; color: #e2e8f0; }
+	.add-user-form-wrap ul:not(.errorlist) li label { margin: 0; font-weight: 500; color: #cbd5e1; }
+	.add-user-form-wrap ul:not(.errorlist) input[type="radio"] { margin-top: 0.2rem; width: auto; accent-color: #06b6d4; }
+	.add-user-form-wrap .manual-checkbox { width: auto; accent-color: #06b6d4; }
+	body.page-admin-analysis #djangoMessagesBanner {
+		background: rgba(30, 41, 59, 0.92) !important;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+		color: #e2e8f0 !important;
+	}
+	@media (max-width: 900px) {
+		.add-user-table-footer {
+			flex-wrap: wrap;
+			align-items: flex-start;
+		}
+		.add-user-table-footer-summary {
+			white-space: normal;
+			overflow: visible;
+			flex: 1 1 100%;
+		}
+		.add-user-table-footer-actions {
+			margin-left: 0;
+			width: 100%;
+			justify-content: flex-start;
+		}
+	}
+</style>
+{% endblock %}
+
+{% block extra_css_after %}
+<style>
+	body.page-admin-analysis #main_wrap {
+		background-color: #141a22;
+		background-image: url("{% static 'images/login/slide1.png' %}");
+		background-size: cover;
+		background-position: 100% center;
+		background-repeat: no-repeat;
+		background-attachment: scroll;
+	}
+	body.page-admin-analysis #main_wrap::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		background:
+			radial-gradient(
+				ellipse 22% 58% at 99% 48%,
+				rgba(15, 23, 42, 0.72) 0%,
+				rgba(15, 23, 42, 0.35) 42%,
+				transparent 68%
+			),
+			radial-gradient(
+				ellipse 18% 22% at 100% 14%,
+				rgba(12, 18, 28, 0.55) 0%,
+				transparent 55%
+			),
+			rgba(15, 23, 42, 0.06);
+	}
+	body.page-admin-analysis #main_wrap::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		background: radial-gradient(
+			ellipse 85% 80% at 50% 50%,
+			transparent 35%,
+			rgba(8, 12, 20, 0.14) 100%
+		);
+	}
+	body.page-admin-analysis #main_wrap > #main_content {
+		position: relative;
+		z-index: 1;
+	}
+	body.page-admin-analysis #A0 {
+		background-color: rgba(15, 23, 42, 0.32) !important;
+		background-image: none !important;
+		backdrop-filter: blur(14px) saturate(1.08);
+		-webkit-backdrop-filter: blur(14px) saturate(1.08);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+	}
 </style>
 {% endblock %}
 
@@ -157,14 +793,45 @@
 			}
 		}
 		show(".manual-show-pf", v === "pf");
-		show(".manual-show-org", v === "org");
-		show(".manual-show-firma", v === "org" || v === "collaborator");
-		show(".manual-show-collab", v === "collaborator");
+		show(".manual-show-org", v === "org" || v === "adapost");
+		show(".manual-show-firma", v === "org" || v === "collaborator" || v === "adapost");
+		show(".manual-show-collab-type", v === "collaborator" || v === "adapost");
+		var titleEl = document.getElementById("add-user-collab-type-title");
+		if (titleEl) {
+			if (v === "adapost") titleEl.textContent = "Adăpost — ADPUB (public) / ADPRV (privat)";
+			else if (v === "collaborator") titleEl.textContent = "Tip colaborator";
+			else titleEl.textContent = "Tip colaborator / adăpost";
+		}
+		var valsCollab = ["cabinet", "cv", "servicii", "magazin", "transport"];
+		var valsAdap = ["adpub", "adprv"];
+		var radios = document.querySelectorAll("#manual-lead-form input[name='collaborator_subtype']");
+		for (var ri = 0; ri < radios.length; ri++) {
+			var val = radios[ri].value;
+			var showR = false;
+			if (v === "collaborator") showR = valsCollab.indexOf(val) >= 0;
+			else if (v === "adapost") showR = valsAdap.indexOf(val) >= 0;
+			var wrap = radios[ri].closest("li");
+			if (!wrap) wrap = radios[ri].closest("label");
+			if (wrap) wrap.style.display = showR ? "" : "none";
+			if (!showR && radios[ri].checked) radios[ri].checked = false;
+		}
 	}
 	var ak = document.getElementById("id_account_kind");
 	if (ak) {
 		ak.addEventListener("change", syncManualLeadRoleSections);
 		syncManualLeadRoleSections();
+	}
+	var csvImportInput = document.getElementById("csv-import");
+	var csvImportForm = csvImportInput && csvImportInput.form;
+	if (csvImportInput && csvImportForm) {
+		csvImportInput.addEventListener("change", function() {
+			if (!csvImportInput.files || csvImportInput.files.length === 0) return;
+			if (typeof csvImportForm.requestSubmit === "function") {
+				csvImportForm.requestSubmit();
+			} else {
+				csvImportForm.submit();
+			}
+		});
 	}
 })();
 </script>
@@ -172,11 +839,14 @@
 
 {% block content %}
 <section class="analysis-shell" aria-label="Add USER staff">
-	<h1>Add USER — prospecte (neînregistrați)</h1>
-	<div class="analysis-subnav">
-		<a href="{% url 'admin_analysis_home' %}">Înapoi la Analiza (central)</a>
+	<div class="add-user-header-row">
+		<h1>Add USER — prospecte (neînregistrați)</h1>
+		<div class="analysis-subnav">
+			<a href="{% url 'admin_analysis_home' %}">Înapoi la Analiza (central)</a>
+		</div>
 	</div>
 	<div class="add-user-scroll">
+		<div class="add-user-top-bar">
 		<form class="add-user-filters" method="get" action="{% url 'admin_analysis_add_user' %}">
 			<div>
 				<label for="f-kind">Tip cont</label>
@@ -184,6 +854,7 @@
 					<option value="" {% if not filter_account_kind %}selected{% endif %}>— Toate —</option>
 					<option value="pf" {% if filter_account_kind == "pf" %}selected{% endif %}>PF</option>
 					<option value="org" {% if filter_account_kind == "org" %}selected{% endif %}>ONG / adăpost</option>
+					<option value="adapost" {% if filter_account_kind == "adapost" %}selected{% endif %}>Adăpost</option>
 					<option value="collaborator" {% if filter_account_kind == "collaborator" %}selected{% endif %}>Colaborator</option>
 				</select>
 			</div>
@@ -192,6 +863,9 @@
 				<select id="f-collab-sub" name="collab_subtype">
 					<option value="" {% if not filter_collab_subtype %}selected{% endif %}>— Toate —</option>
 					<option value="cabinet" {% if filter_collab_subtype == "cabinet" %}selected{% endif %}>Cabinet veterinar</option>
+					<option value="cv" {% if filter_collab_subtype == "cv" %}selected{% endif %}>CV</option>
+					<option value="adpub" {% if filter_collab_subtype == "adpub" %}selected{% endif %}>ADPUB</option>
+					<option value="adprv" {% if filter_collab_subtype == "adprv" %}selected{% endif %}>ADPRV</option>
 					<option value="servicii" {% if filter_collab_subtype == "servicii" %}selected{% endif %}>Servicii (altele)</option>
 					<option value="magazin" {% if filter_collab_subtype == "magazin" %}selected{% endif %}>Magazin / grooming</option>
 					<option value="transport" {% if filter_collab_subtype == "transport" %}selected{% endif %}>Transportator</option>
@@ -208,33 +882,25 @@
 				<datalist id="city-list-adduser-filt"></datalist>
 			</div>
 			{% if show_imported_active %}<input type="hidden" name="show_imported" value="1" />{% endif %}
-			<button type="submit" class="add-user-btn">Aplică filtre</button>
-			<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user' %}">Resetează</a>
-			<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user' %}?{{ filter_query_toggle_imported }}">{% if show_imported_active %}Doar prospecte active{% else %}Afișează și importați{% endif %}</a>
+			<div class="add-user-filters-actions">
+				<button type="submit" class="add-user-btn">Aplică filtre</button>
+				<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user' %}">Resetează</a>
+				<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user' %}?{{ filter_query_toggle_imported }}">{% if show_imported_active %}Doar prospecte active{% else %}Afișează și importați{% endif %}</a>
+			</div>
 		</form>
-
-		<div class="add-user-toolbar">
+			<div class="add-user-top-bar-tail">
 			<a class="add-user-btn" href="{% url 'admin_analysis_add_user_export' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Export CSV</a>
-			<form method="post" action="{% url 'admin_analysis_add_user_import' %}" enctype="multipart/form-data" style="display:flex;flex-wrap:wrap;gap:0.35rem;align-items:center;">
+			<form class="add-user-import-form" method="post" action="{% url 'admin_analysis_add_user_import' %}" enctype="multipart/form-data">
 				{% csrf_token %}
 				<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
-				<label for="csv-import" style="font-size:0.72rem;font-weight:800;color:#1565c0;">Import CSV</label>
-				<input id="csv-import" type="file" name="csv_file" accept=".csv,text/csv" required />
-				<button type="submit" class="add-user-btn">Încarcă</button>
+				<label for="csv-import" class="add-user-btn add-user-btn--secondary" title="Alege un fișier CSV; după Deschidere în Windows se trimite automat.">Import CSV</label>
+				<input id="csv-import" class="add-user-import-file-hidden" type="file" name="csv_file" accept=".csv,text/csv" required tabindex="-1" aria-label="Fișier CSV de importat" />
 			</form>
-			<button type="button" class="add-user-btn add-user-btn--secondary" onclick="var d=document.getElementById('manual-lead-add');if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'nearest'});}">Către formular manual</button>
+			</div>
 		</div>
-		<p class="add-user-note">Afișare maximă 500 rânduri după filtre. Implicit se ascund prospectele deja legate de un cont creat pe site (butonul „Afișează și importați”). Export respectă aceleași filtre. Filtrele <strong>Tip cont</strong>, <strong>Colaboratori</strong> (patru categorii: cabinet inclusiv CV, servicii, magazin, transport — doar rânduri Colaborator), <strong>Județ</strong> și <strong>Localitate</strong> caută și în datele firmă (ONG/colaborator) acolo unde e cazul.</p>
-
-		<form id="invite-send-form" class="add-user-invite-bar" method="post" action="{% url 'admin_analysis_add_user_invite_send' %}">
-			{% csrf_token %}
-			<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
-			<button type="submit" class="add-user-btn">Trimite MAIL invitație</button>
-			<p class="add-user-note">Bifează rândurile dorite, apoi trimite. Nu se retrimite aceluiași email mai devreme de <strong>{{ staff_invite_cooldown_days }}</strong> zile. Maxim <strong>{{ staff_invite_max_batch }}</strong> invitații per clic.</p>
-		</form>
 
 		<details id="manual-lead-add" class="add-user-manual-details" {% if open_manual_form %}open{% endif %}>
-			<summary class="add-user-manual-summary--sr">Formular manual lead — deschide din linkul „Către formular manual”</summary>
+			<summary class="add-user-manual-summary--sr">Formular manual lead — se deschide la editare din tabel (Modifică) sau când pagina se încarcă cu formularul deschis</summary>
 			<div class="add-user-form-wrap">
 				{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-adduser-manual" %}
 				<datalist id="city-list-adduser-manual"></datalist>
@@ -245,9 +911,9 @@
 					<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
 					{% if editing_lead %}
 					<input type="hidden" name="lead_id" value="{{ editing_lead.pk }}" />
-					<p class="add-user-edit-banner" style="margin:0 0 0.5rem;padding:0.4rem 0.5rem;background:rgba(227,242,253,0.9);border-radius:8px;font-size:0.74rem;font-weight:700;color:#0d47a1;">
+					<p class="add-user-edit-banner">
 						Editezi lead #{{ editing_lead.pk }} — {{ editing_lead.email }}
-						<a href="{% url 'admin_analysis_add_user' %}{% if filter_query %}?{{ filter_query }}{% endif %}" style="margin-left:0.5rem;font-weight:800;color:#1565c0;">Renunță</a>
+						<a href="{% url 'admin_analysis_add_user' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Renunță</a>
 					</p>
 					{% endif %}
 					{{ form.non_field_errors }}
@@ -361,8 +1027,8 @@
 						</p>
 					</div>
 
-					<div class="add-user-manual-section manual-show-collab manual-collab-box is-hidden">
-						<h3>Tip colaborator</h3>
+					<div class="add-user-manual-section manual-show-collab-type manual-collab-box is-hidden">
+						<h3 id="add-user-collab-type-title">Tip colaborator</h3>
 						{{ form.collaborator_subtype.errors }}
 						{{ form.collaborator_subtype }}
 					</div>
@@ -372,8 +1038,9 @@
 			</div>
 		</details>
 
-		<div>
-			<h2 style="margin:0 0 0.35rem;font-size:0.82rem;color:#0d47a1;">Tabel prospecte</h2>
+		<div class="add-user-table-panel">
+			<h2 class="add-user-table-panel-title">Tabel prospecte</h2>
+			<div class="add-user-table-brick">
 			<div class="add-user-table-wrap">
 				<table class="add-user-table">
 					<thead>
@@ -388,10 +1055,7 @@
 							<th>Județ</th>
 							<th>Loc.</th>
 							<th>CUI</th>
-							<th>Segmente</th>
-							<th>Mail?</th>
 							<th>Ultima invitație</th>
-							<th>Staff</th>
 							<th>Acțiuni</th>
 						</tr>
 					</thead>
@@ -399,35 +1063,26 @@
 						{% for lead in recent_leads %}
 						<tr>
 							<td>
-								{% if lead.invite_mail_checkbox and not lead.invite_mail_cooldown %}
-								<input type="checkbox" form="invite-send-form" name="lead_id" value="{{ lead.pk }}" title="Include la trimitere" />
+								{% if lead.imported_user_id %}
+								<span title="Deja importat ca utilizator">import</span>
 								{% elif lead.invite_mail_cooldown %}
 								<span title="Reinvitație după {{ staff_invite_cooldown_days }} zile">aștept.</span>
-								{% elif lead.imported_user_id %}
-								<span title="Deja importat ca utilizator">import</span>
+								{% elif lead.invite_mail_checkbox %}
+								<input type="checkbox" form="invite-send-form" name="lead_id" value="{{ lead.pk }}" title="{% if lead.invite_mail_em_ok %}Include la trimitere invitație email{% else %}Email lipsă sau placeholder — bifarea nu trimite până nu pui un email valid (Modifică).{% endif %}" />
 								{% else %}
-								<span title="Fără email">—</span>
+								<span title="Nu se poate selecta">—</span>
 								{% endif %}
 							</td>
 							<td>{{ lead.created_at|date:"d.m.Y H:i" }}</td>
 							<td>{{ lead.email }}</td>
 							<td>{{ lead.phone|default:"—" }}</td>
-							<td>{{ lead.display_name }}{% if lead.org_display_name %}<br><small>{{ lead.org_display_name }}</small>{% endif %}</td>
+							<td>{% if lead.org_display_name and lead.org_display_name|lower != lead.display_name|lower %}{{ lead.display_name }} — {{ lead.org_display_name }}{% else %}{{ lead.display_name|default:lead.org_display_name|default:"—" }}{% endif %}</td>
 							<td>{{ lead.get_account_kind_display }}</td>
 							<td>{% if lead.collaborator_subtype %}{{ lead.get_collaborator_subtype_display }}{% else %}—{% endif %}</td>
 							<td>{{ lead.judet|default:"—" }}</td>
 							<td>{{ lead.oras|default:"—" }}</td>
 							<td>{{ lead.company_cui|default:"—" }}</td>
-							<td>
-								{% for s in lead.segments %}
-									{% for key, label in segment_labels.items %}
-										{% if key == s %}<span class="seg-pill">{{ label }}</span>{% endif %}
-									{% endfor %}
-								{% empty %}—{% endfor %}
-							</td>
-							<td>{% if lead.marketing_emails_requested %}da{% else %}nu{% endif %}</td>
 							<td>{% if lead.invite_email_last_sent_at %}<span title="{{ lead.invite_email_last_sent_at|date:'d.m.Y H:i' }}">{{ lead.invite_email_last_sent_at|timesince }}</span>{% else %}—{% endif %}</td>
-							<td>{% if lead.created_by %}{{ lead.created_by.username }}{% else %}—{% endif %}</td>
 							<td class="add-user-td-actions">
 								<div class="add-user-tbl-actions">
 									<a class="add-user-tbl-btn add-user-tbl-btn--secondary" href="{% url 'admin_analysis_add_user' %}?{% if filter_query %}{{ filter_query }}&amp;{% endif %}edit={{ lead.pk }}" onclick="var d=document.getElementById('manual-lead-add');if(d){d.open=true;}">Modifică</a>
@@ -441,10 +1096,36 @@
 							</td>
 						</tr>
 						{% empty %}
-						<tr><td colspan="15">Niciun rând (schimbă filtrele sau importă CSV).</td></tr>
+						<tr><td colspan="12">Niciun rând (schimbă filtrele sau importă CSV).</td></tr>
 						{% endfor %}
 					</tbody>
 				</table>
+			</div>
+			<div class="add-user-table-footer">
+			<p class="add-user-table-footer-summary" role="status">
+				{% if leads_page_obj.paginator.count %}
+					{{ leads_page_obj.paginator.count }} prospect{% if leads_page_obj.paginator.count != 1 %}e{% endif %}
+					{% if leads_page_obj.paginator.num_pages > 1 %}
+						— pagina {{ leads_page_obj.number }}/{{ leads_page_obj.paginator.num_pages }} ({{ staff_leads_per_page }} pe pagină)
+					{% endif %}
+				{% else %}0 prospecte{% endif %}
+			</p>
+			<div class="add-user-table-footer-actions">
+			<nav class="add-user-pagination add-user-pagination--footer" aria-label="Paginare prospecte (sub tabel)">
+				{% if leads_page_obj.has_previous %}
+				<a href="{% url 'admin_analysis_add_user' %}?{% if filter_query_no_page %}{{ filter_query_no_page }}&amp;{% endif %}page={{ leads_page_obj.previous_page_number }}">← Anterior</a>
+				{% endif %}
+				{% if leads_page_obj.has_next %}
+				<a href="{% url 'admin_analysis_add_user' %}?{% if filter_query_no_page %}{{ filter_query_no_page }}&amp;{% endif %}page={{ leads_page_obj.next_page_number }}">Următor →</a>
+				{% endif %}
+			</nav>
+			<form id="invite-send-form" class="add-user-invite-footer" method="post" action="{% url 'admin_analysis_add_user_invite_send' %}">
+				{% csrf_token %}
+				<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
+				<button type="submit" class="add-user-btn">Trimite MAIL invitație</button>
+			</form>
+			</div>
+			</div>
 			</div>
 		</div>
 	</div>

@@ -18,6 +18,10 @@ _COLLAB_RADIO = [
     (StaffOnboardingLead.COLLAB_MAGAZIN, "Magazin / grooming"),
     (StaffOnboardingLead.COLLAB_TRANSPORT, "Transportator"),
 ]
+_ADAPOST_SUBTYPE_RADIO = [
+    (StaffOnboardingLead.COLLAB_ADPUB, "ADPUB"),
+    (StaffOnboardingLead.COLLAB_ADPRV, "ADPRV"),
+]
 
 
 class StaffOnboardingLeadForm(forms.ModelForm):
@@ -103,7 +107,7 @@ class StaffOnboardingLeadForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["collaborator_subtype"].choices = _COLLAB_RADIO
+        self.fields["collaborator_subtype"].choices = list(_COLLAB_RADIO) + list(_ADAPOST_SUBTYPE_RADIO)
         self.fields["collaborator_subtype"].required = False
 
     def clean(self):
@@ -113,6 +117,11 @@ class StaffOnboardingLeadForm(forms.ModelForm):
         if kind == StaffOnboardingLead.KIND_COLLAB:
             if not sub:
                 self.add_error("collaborator_subtype", "Alege unul dintre tipurile de colaborator.")
+            elif sub in (StaffOnboardingLead.COLLAB_ADPUB, StaffOnboardingLead.COLLAB_ADPRV):
+                self.add_error("collaborator_subtype", "ADPUB/ADPRV sunt doar pentru tipul Adăpost.")
+        elif kind == StaffOnboardingLead.KIND_ADAPOST:
+            if sub not in (StaffOnboardingLead.COLLAB_ADPUB, StaffOnboardingLead.COLLAB_ADPRV):
+                self.add_error("collaborator_subtype", "Alege ADPUB (public) sau ADPRV (privat).")
         else:
             cleaned["collaborator_subtype"] = ""
 
@@ -133,5 +142,10 @@ class StaffOnboardingLeadForm(forms.ModelForm):
 
         if kind == StaffOnboardingLead.KIND_COLLAB:
             cleaned["is_public_shelter"] = False
+        elif kind == StaffOnboardingLead.KIND_ADAPOST and sub in (
+            StaffOnboardingLead.COLLAB_ADPUB,
+            StaffOnboardingLead.COLLAB_ADPRV,
+        ):
+            cleaned["is_public_shelter"] = sub == StaffOnboardingLead.COLLAB_ADPUB
 
         return cleaned

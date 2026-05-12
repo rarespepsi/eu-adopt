@@ -1679,10 +1679,12 @@ class StaffOnboardingLead(models.Model):
     KIND_PF = "pf"
     KIND_ORG = "org"
     KIND_COLLAB = "collaborator"
+    KIND_ADAPOST = "adapost"
     ACCOUNT_KIND_CHOICES = [
         (KIND_PF, "Persoană fizică"),
         (KIND_ORG, "ONG / Asociație / Adăpost"),
         (KIND_COLLAB, "Colaborator"),
+        (KIND_ADAPOST, "Adăpost"),
     ]
 
     COLLAB_CABINET = "cabinet"
@@ -1690,6 +1692,8 @@ class StaffOnboardingLead(models.Model):
     COLLAB_SERVICII = "servicii"
     COLLAB_MAGAZIN = "magazin"
     COLLAB_TRANSPORT = "transport"
+    COLLAB_ADPUB = "adpub"
+    COLLAB_ADPRV = "adprv"
     COLLAB_SUBTYPE_CHOICES = [
         ("", "—"),
         (COLLAB_CABINET, "Cabinet veterinar"),
@@ -1697,6 +1701,8 @@ class StaffOnboardingLead(models.Model):
         (COLLAB_SERVICII, "Servicii (altele)"),
         (COLLAB_MAGAZIN, "Magazin / grooming"),
         (COLLAB_TRANSPORT, "Transportator"),
+        (COLLAB_ADPUB, "ADPUB"),
+        (COLLAB_ADPRV, "ADPRV"),
     ]
 
     ST_DRAFT = "draft"

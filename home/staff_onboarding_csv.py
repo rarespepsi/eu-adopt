@@ -117,7 +117,9 @@ def _normalize_tip_cont(raw: str) -> str:
     t = (raw or "").strip().lower()
     if t in ("pf", "persoana_fizica", "persoană fizică", "fizica", "fizic"):
         return StaffOnboardingLead.KIND_PF
-    if t in ("org", "ong", "asociatie", "asociație", "adapost", "adăpost", "firma", "firmă", "srl"):
+    if t in ("adapost", "adăpost", "adapost caini", "adăpost câini"):
+        return StaffOnboardingLead.KIND_ADAPOST
+    if t in ("org", "ong", "asociatie", "asociație", "firma", "firmă", "srl"):
         return StaffOnboardingLead.KIND_ORG
     if t in ("collaborator", "colaborator", "colab", "partener"):
         return StaffOnboardingLead.KIND_COLLAB
@@ -137,6 +139,8 @@ def _normalize_collab_subtype(raw: str) -> str:
         "grooming": StaffOnboardingLead.COLLAB_MAGAZIN,
         "transport": StaffOnboardingLead.COLLAB_TRANSPORT,
         "transportator": StaffOnboardingLead.COLLAB_TRANSPORT,
+        "adpub": StaffOnboardingLead.COLLAB_ADPUB,
+        "adprv": StaffOnboardingLead.COLLAB_ADPRV,
     }
     return mapping.get(t, "")
 
@@ -222,7 +226,13 @@ def row_canon_to_lead_kwargs(canon: dict[str, str]) -> dict[str, Any]:
     email = g("email")
     tip = _normalize_tip_cont(g("tip_cont"))
     sub = _normalize_collab_subtype(g("tip_colaborator"))
-    if tip != StaffOnboardingLead.KIND_COLLAB:
+    if tip == StaffOnboardingLead.KIND_COLLAB:
+        if sub in (StaffOnboardingLead.COLLAB_ADPUB, StaffOnboardingLead.COLLAB_ADPRV):
+            sub = ""
+    elif tip == StaffOnboardingLead.KIND_ADAPOST:
+        if sub not in (StaffOnboardingLead.COLLAB_ADPUB, StaffOnboardingLead.COLLAB_ADPRV):
+            sub = ""
+    else:
         sub = ""
 
     prenume = g("prenume")
@@ -236,6 +246,13 @@ def row_canon_to_lead_kwargs(canon: dict[str, str]) -> dict[str, Any]:
     segments = _parse_segments(g("segmente"))
     notes_raw = g("nota_interna")
     notes = notes_raw[:5000]
+
+    is_public_shelter = _bool_cell(g("adapost_public_ong"))
+    if tip == StaffOnboardingLead.KIND_ADAPOST:
+        if sub == StaffOnboardingLead.COLLAB_ADPUB:
+            is_public_shelter = True
+        elif sub == StaffOnboardingLead.COLLAB_ADPRV:
+            is_public_shelter = False
 
     return {
         "email": email,
@@ -253,7 +270,7 @@ def row_canon_to_lead_kwargs(canon: dict[str, str]) -> dict[str, Any]:
         "company_representative": g("reprezentant_legal")[:255],
         "company_judet": g("judet_firma")[:120],
         "company_oras": g("localitate_firma")[:120],
-        "is_public_shelter": _bool_cell(g("adapost_public_ong")),
+        "is_public_shelter": is_public_shelter,
         "account_kind": tip,
         "collaborator_subtype": sub,
         "judet": g("judet")[:120],
