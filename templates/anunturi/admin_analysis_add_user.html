@@ -197,8 +197,10 @@
 				<input id="f-oras" type="text" name="oras" list="city-list-adduser-filt" value="{{ filter_oras }}" placeholder="După județ: alege sau scrie" autocomplete="off" />
 				<datalist id="city-list-adduser-filt"></datalist>
 			</div>
+			{% if show_imported_active %}<input type="hidden" name="show_imported" value="1" />{% endif %}
 			<button type="submit" class="add-user-btn">Aplică filtre</button>
 			<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user' %}">Resetează</a>
+			<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user' %}?{{ filter_query_toggle_imported }}">{% if show_imported_active %}Doar prospecte active{% else %}Afișează și importați{% endif %}</a>
 		</form>
 
 		<div class="add-user-toolbar">
@@ -212,7 +214,7 @@
 			</form>
 			<button type="button" class="add-user-btn add-user-btn--secondary" onclick="var d=document.getElementById('manual-lead-add');if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'nearest'});}">Către formular manual</button>
 		</div>
-		<p class="add-user-note">Afișare maximă 500 rânduri după filtre. Export respectă aceleași filtre. Filtrele <strong>Tip cont</strong>, <strong>Județ</strong> și <strong>Localitate</strong> caută și în datele firmă (ONG/colaborator) acolo unde e cazul.</p>
+		<p class="add-user-note">Afișare maximă 500 rânduri după filtre. Implicit se ascund prospectele deja legate de un cont creat pe site (butonul „Afișează și importați”). Export respectă aceleași filtre. Filtrele <strong>Tip cont</strong>, <strong>Județ</strong> și <strong>Localitate</strong> caută și în datele firmă (ONG/colaborator) acolo unde e cazul.</p>
 
 		<form id="invite-send-form" class="add-user-invite-bar" method="post" action="{% url 'admin_analysis_add_user_invite_send' %}">
 			{% csrf_token %}

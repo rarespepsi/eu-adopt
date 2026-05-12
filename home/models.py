@@ -1,4 +1,5 @@
 import re
+import secrets
 from typing import Optional
 
 from django.db import models
@@ -1777,6 +1778,11 @@ class StaffOnboardingLead(models.Model):
             models.Index(fields=["account_kind", "status"]),
             models.Index(fields=["judet", "oras"]),
         ]
+
+    def save(self, *args, **kwargs):
+        if not (self.consent_invite_token or "").strip():
+            self.consent_invite_token = secrets.token_urlsafe(32)[:64]
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.email} ({self.get_account_kind_display()})"

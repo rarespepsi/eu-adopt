@@ -1012,6 +1012,36 @@ class Carte81_100Tests(TestCase):
         self.assertEqual(obj.created_by_id, staff.id)
         self.assertEqual(obj.judet, "TM")
 
+    def test_109d2_add_user_import_csv_partial_no_email_column(self):
+        """Import parțial: fără coloană email, doar județ/localitate — prospect cu adresă provizorie."""
+        from home.models import StaffOnboardingLead
+        from home.staff_onboarding_csv import is_placeholder_lead_email
+
+        staff = User.objects.create_user(
+            username=f"stimp2_{uuid.uuid4().hex[:6]}",
+            email="stimp2@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        h = "judet,localitate"
+        row = "Cluj,Cluj-Napoca"
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        up = SimpleUploadedFile(
+            "import_partial.csv",
+            (h + "\n" + row).encode("utf-8-sig"),
+            content_type="text/csv",
+        )
+        r = c.post(
+            reverse("admin_analysis_add_user_import"),
+            {"csv_file": up},
+        )
+        self.assertEqual(r.status_code, 302)
+        obj = StaffOnboardingLead.objects.filter(judet="Cluj", oras="Cluj-Napoca").first()
+        self.assertIsNotNone(obj)
+        self.assertTrue(is_placeholder_lead_email(obj.email))
+        self.assertEqual(obj.created_by_id, staff.id)
+
     def test_109g_staff_delete_onboarding_lead(self):
         from home.models import StaffOnboardingLead
 
@@ -1106,6 +1136,154 @@ class Carte81_100Tests(TestCase):
         self.assertIn("invitee@test.local", mail.outbox[0].to)
         lead.refresh_from_db()
         self.assertIsNotNone(lead.invite_email_last_sent_at)
+
+    def test_109i2_staff_invite_skips_placeholder_email(self):
+        from django.core import mail
+
+        from home.models import StaffOnboardingLead
+
+        staff = User.objects.create_user(
+            username=f"stinv2_{uuid.uuid4().hex[:6]}",
+            email="stinv2@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        lead = StaffOnboardingLead.objects.create(
+            email="test-placeholder@lead-placeholder.invalid",
+            display_name="No real email",
+            account_kind=StaffOnboardingLead.KIND_PF,
+            judet="Cluj",
+        )
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        mail.outbox.clear()
+        r = c.post(
+            reverse("admin_analysis_add_user_invite_send"),
+            {"lead_id": [str(lead.pk)]},
+        )
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(len(mail.outbox), 0)
+        lead.refresh_from_db()
+        self.assertIsNone(lead.invite_email_last_sent_at)
+
+    def test_109k_verify_email_inv_param_attaches_staff_lead(self):
+        from urllib.parse import urlencode
+
+        from home.models import StaffOnboardingLead
+
+        lead = StaffOnboardingLead.objects.create(
+            email=f"inv_att_{uuid.uuid4().hex[:8]}@test.local",
+            display_name="Inv Attach",
+            account_kind=StaffOnboardingLead.KIND_PF,
+        )
+        lead.refresh_from_db()
+        inv = lead.consent_invite_token
+        self.assertGreater(len(inv), 8)
+
+        u = User.objects.create_user(
+            username=f"uinv_{uuid.uuid4().hex[:6]}",
+            email=lead.email,
+            password="PassWord61!",
+            is_active=False,
+        )
+        UserProfile.objects.get_or_create(user=u, defaults={})
+
+        signer = TimestampSigner()
+        vtok = signer.sign(str(u.pk))
+        c = Client()
+        q = urlencode({"token": vtok, "inv": inv})
+        r = c.get(f"{reverse('signup_verify_email')}?{q}")
+        self.assertEqual(r.status_code, 200)
+        lead.refresh_from_db()
+        self.assertEqual(lead.imported_user_id, u.pk)
+        self.assertEqual(lead.status, StaffOnboardingLead.ST_IMPORTED)
+        u.refresh_from_db()
+        self.assertTrue(u.is_active)
+
+    def test_109l_verify_email_inv_wrong_email_no_attach(self):
+        from urllib.parse import urlencode
+
+        from home.models import StaffOnboardingLead
+
+        lead = StaffOnboardingLead.objects.create(
+            email=f"lead_only_{uuid.uuid4().hex[:8]}@test.local",
+            display_name="Lead Only",
+            account_kind=StaffOnboardingLead.KIND_PF,
+        )
+        lead.refresh_from_db()
+        inv = lead.consent_invite_token
+
+        u = User.objects.create_user(
+            username=f"uother_{uuid.uuid4().hex[:6]}",
+            email=f"other_{uuid.uuid4().hex[:6]}@test.local",
+            password="PassWord61!",
+            is_active=False,
+        )
+        UserProfile.objects.get_or_create(user=u, defaults={})
+        signer = TimestampSigner()
+        vtok = signer.sign(str(u.pk))
+        c = Client()
+        q = urlencode({"token": vtok, "inv": inv})
+        r = c.get(f"{reverse('signup_verify_email')}?{q}")
+        self.assertEqual(r.status_code, 200)
+        lead.refresh_from_db()
+        self.assertIsNone(lead.imported_user_id)
+
+    def test_109i3_invite_email_includes_invite_token_param(self):
+        from django.core import mail
+
+        from home.models import StaffOnboardingLead
+
+        staff = User.objects.create_user(
+            username=f"stinv3_{uuid.uuid4().hex[:6]}",
+            email="stinv3@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        lead = StaffOnboardingLead.objects.create(
+            email=f"invbody_{uuid.uuid4().hex[:6]}@test.local",
+            display_name="Inv Body",
+            account_kind=StaffOnboardingLead.KIND_PF,
+        )
+        lead.refresh_from_db()
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        mail.outbox.clear()
+        c.post(
+            reverse("admin_analysis_add_user_invite_send"),
+            {"lead_id": [str(lead.pk)]},
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        msg = mail.outbox[0]
+        blob = (msg.body or "") + "".join(a[0] for a in (msg.alternatives or []) if a and a[0])
+        self.assertIn("inv=", blob)
+        self.assertIn(lead.consent_invite_token, blob)
+
+    def test_109n_add_user_table_hides_imported_without_show_imported(self):
+        from home.models import StaffOnboardingLead
+
+        staff = User.objects.create_user(
+            username=f"sthid_{uuid.uuid4().hex[:6]}",
+            email="sthid@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        u = User.objects.create_user(username=f"imp_{uuid.uuid4().hex[:4]}", email="imp_u@t.local", password="x")
+        em = f"hid_{uuid.uuid4().hex[:8]}@t.local"
+        StaffOnboardingLead.objects.create(
+            email=em,
+            display_name="Hidden",
+            account_kind=StaffOnboardingLead.KIND_PF,
+            imported_user=u,
+            status=StaffOnboardingLead.ST_IMPORTED,
+        )
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        r = c.get(reverse("admin_analysis_add_user"))
+        self.assertEqual(r.status_code, 200)
+        self.assertNotContains(r, em)
+        r2 = c.get(reverse("admin_analysis_add_user"), {"show_imported": "1"})
+        self.assertContains(r2, em)
 
     def test_109e_users_bulk_mail_staff_redirects_without_account_kind(self):
         staff = User.objects.create_user(

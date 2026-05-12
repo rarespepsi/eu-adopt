@@ -83,7 +83,7 @@ from .models import (
     StaffOnboardingLead,
 )
 from .staff_onboarding_form import StaffOnboardingLeadForm, SEGMENT_CHOICES
-from .staff_onboarding_csv import export_csv_bytes, import_csv_bytes
+from .staff_onboarding_csv import export_csv_bytes, import_csv_bytes, is_placeholder_lead_email
 from django.contrib.auth import get_user_model
 from functools import wraps
 from django.contrib import messages
@@ -2506,6 +2506,65 @@ def reset_password_view(request):
     return render(request, "anunturi/reset_password.html", {"token": token, "error": error})
 
 
+STAFF_INVITE_SESSION_KEY = "staff_onboarding_invite_token"
+STAFF_INVITE_GET_PARAM = "inv"
+
+
+def _capture_staff_invite_token_for_signup(request, expected_lead_kind: str) -> None:
+    raw = (request.GET.get(STAFF_INVITE_GET_PARAM) or "").strip()
+    if not raw or len(raw) > 72:
+        return
+    if StaffOnboardingLead.objects.filter(
+        consent_invite_token=raw,
+        imported_user__isnull=True,
+        account_kind=expected_lead_kind,
+    ).exists():
+        request.session[STAFF_INVITE_SESSION_KEY] = raw
+
+
+def _user_staff_lead_kind(user):
+    acc = AccountProfile.objects.filter(user_id=user.pk).first()
+    if not acc:
+        return None
+    if acc.role == AccountProfile.ROLE_PF:
+        return StaffOnboardingLead.KIND_PF
+    if acc.role == AccountProfile.ROLE_ORG:
+        return StaffOnboardingLead.KIND_ORG
+    if acc.role == AccountProfile.ROLE_COLLAB:
+        return StaffOnboardingLead.KIND_COLLAB
+    return None
+
+
+def _attach_staff_onboarding_lead_from_inv_token(user, token: str) -> None:
+    """După activarea contului: leagă lead-ul prospect dacă token-ul din URL e valid."""
+    token = (token or "").strip()
+    if not token or len(token) > 72:
+        return
+    lead = StaffOnboardingLead.objects.filter(
+        consent_invite_token=token,
+        imported_user__isnull=True,
+    ).first()
+    if not lead:
+        return
+    kind = _user_staff_lead_kind(user)
+    if not kind or lead.account_kind != kind:
+        return
+    if lead.account_kind == StaffOnboardingLead.KIND_COLLAB:
+        sub = (lead.collaborator_subtype or "").strip()
+        if sub:
+            prof = getattr(user, "profile", None)
+            ut = (getattr(prof, "collaborator_type", None) or "").strip() if prof else ""
+            if ut != sub:
+                return
+    if not is_placeholder_lead_email(lead.email):
+        if (user.email or "").strip().lower() != (lead.email or "").strip().lower():
+            return
+    StaffOnboardingLead.objects.filter(pk=lead.pk, imported_user__isnull=True).update(
+        imported_user=user,
+        status=StaffOnboardingLead.ST_IMPORTED,
+    )
+
+
 def signup_choose_type_view(request):
     """Pagina de alegere tip cont (persoană fizică / firmă / ONG / colaborator)."""
     ctx = {}
@@ -2519,6 +2578,7 @@ def signup_choose_type_view(request):
 def signup_pf_view(request):
     """Formular înregistrare – Persoană fizică. La POST: validează, salvează în sesiune, redirect SMS. La GET: prefill din sesiune dacă user a dat Back din SMS."""
     if request.method != "POST":
+        _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_PF)
         ctx = {}
         if request.GET.get("phone_taken"):
             ctx["signup_errors"] = ["Acest număr de telefon este deja folosit. Te rugăm folosește alt număr."]
@@ -2895,6 +2955,9 @@ def signup_verificare_sms_view(request):
         request,
         reverse("signup_verify_email") + "?token=" + quote(token) + "&waiting_id=" + quote(waiting_id),
     )
+    staff_inv = (request.session.get(STAFF_INVITE_SESSION_KEY) or "").strip()
+    if staff_inv and len(staff_inv) <= 72:
+        verify_url += "&" + STAFF_INVITE_GET_PARAM + "=" + quote(staff_inv, safe="")
     plain_msg = f"Bună ziua,\n\nApasă pe link pentru a-ți activa contul:\n{verify_url}\n\nDacă nu ai creat cont, poți ignora acest email."
     html_msg = (
         f'<p>Bună ziua,</p>'
@@ -3068,6 +3131,10 @@ def signup_verify_email_view(request):
 
     user.is_active = True
     user.save()
+    inv = (request.GET.get(STAFF_INVITE_GET_PARAM) or "").strip()
+    if inv:
+        _attach_staff_onboarding_lead_from_inv_token(user, inv)
+    request.session.pop(STAFF_INVITE_SESSION_KEY, None)
     auth_login(request, user)
     # Curățare sesiune după activare – un singur set de chei signup_*
     for key in ("signup_waiting_id", "signup_waiting_user_pk", "signup_email_resend_count", "signup_email_cooldown_until",
@@ -3139,6 +3206,7 @@ def _signup_maps_ctx(request):
 def signup_organizatie_view(request):
     """Formular înregistrare – Adăpost / ONG / Firmă. La POST: validează, salvează în sesiune, redirect SMS. La GET: prefill din sesiune dacă user a dat Back din SMS."""
     if request.method != "POST":
+        _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_ORG)
         ctx = _signup_maps_ctx(request)
         field_errors_get = {}
         if request.GET.get("phone_taken"):
@@ -3257,6 +3325,7 @@ def signup_organizatie_view(request):
 def signup_colaborator_view(request):
     """Formular înregistrare – Cabinet / Magazin / Servicii. La POST: validează, salvează în sesiune, redirect SMS. La GET: prefill din sesiune dacă user a dat Back din SMS."""
     if request.method != "POST":
+        _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_COLLAB)
         ctx = _signup_maps_ctx(request)
         errs = []
         if request.GET.get("phone_taken"):
@@ -5175,6 +5244,8 @@ def admin_analysis_alerts_view(request):
 
 def _staff_onboarding_leads_qs(request):
     qs = StaffOnboardingLead.objects.all()
+    if (request.GET.get("show_imported") or "").strip().lower() not in ("1", "true", "da", "yes"):
+        qs = qs.filter(imported_user__isnull=True)
     kind = (request.GET.get("account_kind") or "").strip()
     if kind in (StaffOnboardingLead.KIND_PF, StaffOnboardingLead.KIND_ORG, StaffOnboardingLead.KIND_COLLAB):
         qs = qs.filter(account_kind=kind)
@@ -5199,13 +5270,18 @@ def _staff_invite_subject_body(request, lead: StaffOnboardingLead) -> tuple[str,
         signup_path = reverse("signup_organizatie")
     else:
         signup_path = reverse("signup_colaborator")
+    if not (lead.consent_invite_token or "").strip():
+        lead.save()
+    inv_tok = (lead.consent_invite_token or "").strip()
     signup_url = request.build_absolute_uri(signup_path)
+    if inv_tok:
+        signup_url = f"{signup_url}?{STAFF_INVITE_GET_PARAM}={quote(inv_tok, safe='')}"
     terms_url = request.build_absolute_uri(reverse("termeni"))
     privacy_url = request.build_absolute_uri(reverse("politica_confidentialitate"))
     body = (
         f"Bună ziua,\n\n"
         f"Vă scriem din EU-ADOPT în legătură cu înregistrarea ca utilizator ({kind_label}).\n"
-        f"Vă invităm să completați formularul de creare cont aici:\n{signup_url}\n\n"
+        f"Vă invităm să completați formularul de creare cont aici (link personal — folosiți-l pentru a vă asocia automat cu invitația):\n{signup_url}\n\n"
         f"Documente legale:\n"
         f"- Termeni și condiții: {terms_url}\n"
         f"- Politica de confidențialitate (GDPR): {privacy_url}\n\n"
@@ -5252,7 +5328,7 @@ def admin_analysis_add_user_invite_send_view(request):
             skip_invalid += 1
             continue
         em = (lead.email or "").strip()
-        if not em:
+        if not em or is_placeholder_lead_email(em):
             skip_no_email += 1
             continue
         if lead.imported_user_id:
@@ -5309,6 +5385,13 @@ def admin_analysis_add_user_view(request):
     qd = request.GET.copy()
     qd.pop("edit", None)
     filter_query = qd.urlencode()
+    show_imported_active = (qd.get("show_imported") or "").strip().lower() in ("1", "true", "da", "yes")
+    qd_toggle = qd.copy()
+    if show_imported_active:
+        qd_toggle.pop("show_imported", None)
+    else:
+        qd_toggle["show_imported"] = "1"
+    filter_query_toggle_imported = qd_toggle.urlencode()
 
     editing_lead = None
     open_manual_form = False
@@ -5352,7 +5435,8 @@ def admin_analysis_add_user_view(request):
     now = timezone.now()
     invite_cd = timezone.timedelta(days=STAFF_LEAD_INVITE_COOLDOWN_DAYS)
     for L in recent_leads:
-        em_ok = bool((L.email or "").strip())
+        em_raw = (L.email or "").strip()
+        em_ok = bool(em_raw) and not is_placeholder_lead_email(em_raw)
         L.invite_mail_checkbox = em_ok and not L.imported_user_id
         L.invite_mail_cooldown = bool(L.invite_email_last_sent_at and (now - L.invite_email_last_sent_at) < invite_cd)
     return render(
@@ -5370,6 +5454,8 @@ def admin_analysis_add_user_view(request):
             "filter_oras": (request.GET.get("oras") or "").strip(),
             "staff_invite_cooldown_days": STAFF_LEAD_INVITE_COOLDOWN_DAYS,
             "staff_invite_max_batch": STAFF_LEAD_INVITE_MAX_BATCH,
+            "show_imported_active": show_imported_active,
+            "filter_query_toggle_imported": filter_query_toggle_imported,
         },
     )
 
@@ -5406,7 +5492,7 @@ def admin_analysis_add_user_import_view(request):
         messages.error(request, "Fișierul depășește 5 MB.")
         return _redirect_admin_add_user_preserve(request)
     try:
-        errors, n = import_csv_bytes(raw, created_by=request.user)
+        errors, n, n_placeholder_email = import_csv_bytes(raw, created_by=request.user)
     except UnicodeDecodeError:
         messages.error(request, "Fișierul nu e UTF-8 valid. Salvează din Excel ca „CSV UTF-8”.")
         return _redirect_admin_add_user_preserve(request)
@@ -5414,7 +5500,13 @@ def admin_analysis_add_user_import_view(request):
         messages.error(request, f"Eroare la citirea CSV: {ex}")
         return _redirect_admin_add_user_preserve(request)
     if n:
-        messages.success(request, f"Import reușit: {n} rânduri adăugate în prospecte.")
+        msg = f"Import reușit: {n} rânduri adăugate în prospecte."
+        if n_placeholder_email:
+            msg += (
+                f" {n_placeholder_email} fără email în CSV — adresă provizorie; "
+                "completează email în „Modifică” înainte de invitație."
+            )
+        messages.success(request, msg)
     if errors:
         preview = "\n".join(errors[:12])
         if len(errors) > 12:

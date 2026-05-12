@@ -17,6 +17,7 @@ class LoginRequiredMiddleware:
         path = request.path or "/"
         public_prefixes = (
             "/login/",
+            "/signup/",
             "/admin/",
             "/static/",
             "/media/",

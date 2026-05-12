@@ -1,7 +1,8 @@
 """
 CSV import/export pentru lead-uri staff (Add USER) — format prietenos ChatGPT / Excel.
 Capete de tabel aliniate la câmpuri din fișele de înregistrare (PF/ONG/colaborator).
-Coloanele neaplicabile (ex. CUI pentru PF) rămân goale.
+Coloanele neaplicabile (ex. CUI pentru PF) rămân goale; nu e nevoie de toate coloanele din șablon.
+Rândurile fără email dar cu alte date (județ, telefon, nume etc.) se importă cu email provizoriu pentru căutări.
 """
 
 from __future__ import annotations
@@ -9,6 +10,7 @@ from __future__ import annotations
 import csv
 import io
 import re
+import uuid
 from typing import Any
 
 from home.models import StaffOnboardingLead
@@ -147,6 +149,55 @@ def _normalize_status(raw: str) -> str:
 
 _CANON_KEYS = frozenset(CSV_HEADER_ROW)
 
+# Adrese generate când lipsește coloana / valoarea email — prospect doar pentru căutare; nu se trimit invitații.
+PLACEHOLDER_EMAIL_SUFFIX = "@lead-placeholder.invalid"
+
+
+def is_placeholder_lead_email(email: str | None) -> bool:
+    e = (email or "").strip().lower()
+    return bool(e) and e.endswith(PLACEHOLDER_EMAIL_SUFFIX)
+
+
+def _placeholder_email_for_csv_row(line_no: int) -> str:
+    return f"prospect-l{line_no}-{uuid.uuid4().hex[:12]}{PLACEHOLDER_EMAIL_SUFFIX}"
+
+
+def _csv_row_has_identity(canon: dict[str, str]) -> bool:
+    """True dacă rândul are cel puțin o informație utilă în afară de email (import parțial)."""
+    for key in (
+        "telefon",
+        "tip_cont",
+        "tip_colaborator",
+        "prenume",
+        "nume",
+        "denumire_afisata_contact",
+        "username_propus",
+        "judet",
+        "localitate",
+        "denumire_organizatie",
+        "denumire_legala",
+        "cui",
+        "reg_com",
+        "adresa_firma",
+        "reprezentant_legal",
+        "judet_firma",
+        "localitate_firma",
+        "nota_interna",
+        "segmente",
+    ):
+        if (canon.get(key) or "").strip():
+            return True
+    if _bool_cell(canon.get("cui_cu_ro") or ""):
+        return True
+    if _bool_cell(canon.get("marketing_email_viitor") or ""):
+        return True
+    if _bool_cell(canon.get("adapost_public_ong") or ""):
+        return True
+    st = (canon.get("stare") or "").strip().lower()
+    if st and st not in ("ready", "pregatit", "draft"):
+        return True
+    return False
+
 
 def _canon_row_from_reader(row: dict[str, str | None]) -> dict[str, str]:
     out: dict[str, str] = {}
@@ -251,18 +302,22 @@ def export_csv_bytes(qs) -> bytes:
     return buf.getvalue().encode("utf-8-sig")
 
 
-def import_csv_bytes(data: bytes, created_by=None) -> tuple[list[str], int]:
+def import_csv_bytes(data: bytes, created_by=None) -> tuple[list[str], int, int]:
     """
-    Importă rânduri CSV. Returnează (lista erorilor pe rând), număr rânduri create).
+    Importă rânduri CSV. Returnează (erori, număr rânduri create, număr rânduri fără email cu adresă provizorie).
+
+    Nu e obligatoriu să existe coloana `email` sau să fie completate toate câmpurile: dacă rândul are alte
+    date (județ, telefon, nume, firmă etc.), se creează prospectul cu email provizoriu (completat ulterior în UI).
     """
     text = data.decode("utf-8-sig")
     f = io.StringIO(text)
     reader = csv.DictReader(f)
     if not reader.fieldnames:
-        return (["Fișier CSV fără antet."], 0)
+        return (["Fișier CSV fără antet."], 0, 0)
 
     errors: list[str] = []
     created = 0
+    placeholder_emails = 0
     line_no = 1
     for row in reader:
         line_no += 1
@@ -277,9 +332,12 @@ def import_csv_bytes(data: bytes, created_by=None) -> tuple[list[str], int]:
             errors.append(f"Linia {line_no}: parse {e}")
             continue
         if not kwargs.get("email"):
-            errors.append(f"Linia {line_no}: lipsește email.")
-            continue
+            if _csv_row_has_identity(canon):
+                kwargs["email"] = _placeholder_email_for_csv_row(line_no)
+                placeholder_emails += 1
+            else:
+                continue
         StaffOnboardingLead.objects.create(created_by=created_by, **kwargs)
         created += 1
 
-    return errors, created
+    return errors, created, placeholder_emails
