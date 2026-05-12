@@ -6,8 +6,12 @@ Rulează: python manage.py test home.tests.test_auth
 import uuid
 
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.utils import timezone
+
+from home.models import AccountProfile
 
 User = get_user_model()
 
@@ -51,11 +55,40 @@ class LoginLogoutTests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertFalse(c.session.get("_auth_user_id"))
 
-    def test_account_delete_post_removes_user(self):
+    def test_account_delete_schedule_then_cancel(self):
+        AccountProfile.objects.get_or_create(
+            user=self.user,
+            defaults={"role": AccountProfile.ROLE_PF},
+        )
         c = Client()
         c.login(username=self.user.username, password="AuthTest_Pass12")
-        uid = self.user.pk
-        r = c.post(reverse("account_delete"))
-        self.assertEqual(r.status_code, 302)
-        self.assertFalse(User.objects.filter(pk=uid).exists())
-        self.assertFalse(c.session.get("_auth_user_id"))
+        r = c.get(reverse("account_delete"))
+        self.assertEqual(r.status_code, 200)
+        r2 = c.post(
+            reverse("account_delete"),
+            {"password": "AuthTest_Pass12", "confirm_deletion": "1"},
+        )
+        self.assertEqual(r2.status_code, 302)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+        ap = self.user.account_profile
+        self.assertIsNotNone(ap.pending_deletion_grace_until)
+        r3 = c.post(reverse("account_delete_cancel"), {})
+        self.assertEqual(r3.status_code, 302)
+        ap.refresh_from_db()
+        self.assertIsNone(ap.pending_deletion_grace_until)
+
+    def test_finalize_pending_account_deletions_command(self):
+        AccountProfile.objects.get_or_create(
+            user=self.user,
+            defaults={"role": AccountProfile.ROLE_PF},
+        )
+        ap = self.user.account_profile
+        ap.pending_deletion_requested_at = timezone.now() - timezone.timedelta(days=20)
+        ap.pending_deletion_grace_until = timezone.now() - timezone.timedelta(days=1)
+        ap.save()
+        call_command("finalize_pending_account_deletions")
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_active)
+        ap.refresh_from_db()
+        self.assertIsNotNone(ap.pending_deletion_finalized_at)

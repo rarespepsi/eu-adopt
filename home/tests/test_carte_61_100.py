@@ -925,6 +925,235 @@ class Carte81_100Tests(TestCase):
             "admin_analysis_requests",
             "admin_analysis_users",
             "admin_analysis_alerts",
+            "admin_analysis_add_user",
+            "admin_analysis_add_user_export",
         ):
             r = c.get(reverse(name))
             self.assertIn(r.status_code, (200, 302), msg=name)
+
+    def test_109b_add_user_staff_post_creates_lead(self):
+        from home.models import StaffOnboardingLead
+
+        staff = User.objects.create_user(
+            username=f"stlead_{uuid.uuid4().hex[:6]}",
+            email="stlead@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        r = c.post(
+            reverse("admin_analysis_add_user"),
+            {
+                "email": "nou_lead@test.local",
+                "phone": "0700000000",
+                "display_name": "Ion Lead",
+                "org_display_name": "",
+                "account_kind": StaffOnboardingLead.KIND_PF,
+                "collaborator_subtype": "",
+                "judet": "Iași",
+                "oras": "",
+            },
+        )
+        self.assertEqual(r.status_code, 302)
+        lead = StaffOnboardingLead.objects.get(email="nou_lead@test.local")
+        self.assertEqual(lead.display_name, "Ion Lead")
+        self.assertEqual(lead.created_by_id, staff.id)
+        self.assertFalse(lead.marketing_emails_requested)
+        self.assertEqual(lead.segments, [])
+
+    def test_109c_add_user_export_csv_staff(self):
+        from home.models import StaffOnboardingLead
+
+        staff = User.objects.create_user(
+            username=f"stexp_{uuid.uuid4().hex[:6]}",
+            email="stexp@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        StaffOnboardingLead.objects.create(
+            email="export_me@test.local",
+            display_name="Export Me",
+            account_kind=StaffOnboardingLead.KIND_PF,
+            judet="Cluj",
+            created_by=staff,
+        )
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        r = c.get(reverse("admin_analysis_add_user_export"))
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"export_me@test.local", r.content)
+        self.assertIn(b"email", r.content)
+
+    def test_109d_add_user_import_csv_staff(self):
+        from home.models import StaffOnboardingLead
+
+        staff = User.objects.create_user(
+            username=f"stimp_{uuid.uuid4().hex[:6]}",
+            email="stimp@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        h = "email,telefon,tip_cont,tip_colaborator,prenume,nume,denumire_afisata_contact,username_propus,judet,localitate,denumire_organizatie,denumire_legala,cui,cui_cu_ro,reg_com,adresa_firma,reprezentant_legal,judet_firma,localitate_firma,adapost_public_ong,segmente,marketing_email_viitor,nota_interna,stare"
+        row = "csvimp@test.local,,pf,,A,B,AB,,TM,,,,,,,,,,,,,,ready"
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        up = SimpleUploadedFile(
+            "import.csv",
+            (h + "\n" + row).encode("utf-8-sig"),
+            content_type="text/csv",
+        )
+        r = c.post(
+            reverse("admin_analysis_add_user_import"),
+            {"csv_file": up},
+        )
+        self.assertEqual(r.status_code, 302)
+        obj = StaffOnboardingLead.objects.get(email="csvimp@test.local")
+        self.assertEqual(obj.created_by_id, staff.id)
+        self.assertEqual(obj.judet, "TM")
+
+    def test_109g_staff_delete_onboarding_lead(self):
+        from home.models import StaffOnboardingLead
+
+        staff = User.objects.create_user(
+            username=f"stdel_{uuid.uuid4().hex[:6]}",
+            email="stdel@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        lead = StaffOnboardingLead.objects.create(
+            email="del@test.local",
+            display_name="Del Me",
+            account_kind=StaffOnboardingLead.KIND_PF,
+        )
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        r = c.post(
+            reverse("admin_analysis_add_user_lead_delete"),
+            {"lead_id": str(lead.pk)},
+        )
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(StaffOnboardingLead.objects.filter(pk=lead.pk).exists())
+
+    def test_109h_staff_edit_onboarding_lead_get_and_post(self):
+        from home.models import StaffOnboardingLead
+
+        staff = User.objects.create_user(
+            username=f"sted_{uuid.uuid4().hex[:6]}",
+            email="sted@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        lead = StaffOnboardingLead.objects.create(
+            email="edit_me@test.local",
+            display_name="Old Name",
+            account_kind=StaffOnboardingLead.KIND_PF,
+            judet="Cluj",
+            created_by=staff,
+        )
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        r = c.get(reverse("admin_analysis_add_user"), {"edit": str(lead.pk)})
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Editezi lead")
+        r2 = c.post(
+            reverse("admin_analysis_add_user"),
+            {
+                "lead_id": str(lead.pk),
+                "email": "edit_me@test.local",
+                "phone": "",
+                "display_name": "New Name",
+                "username_suggested": "",
+                "account_kind": StaffOnboardingLead.KIND_PF,
+                "first_name": "A",
+                "last_name": "B",
+                "judet": "Alba",
+                "oras": "Alba Iulia",
+            },
+        )
+        self.assertEqual(r2.status_code, 302)
+        lead.refresh_from_db()
+        self.assertEqual(lead.display_name, "New Name")
+        self.assertEqual(lead.first_name, "A")
+        self.assertEqual(lead.judet, "Alba")
+
+    def test_109i_staff_invite_email_sends_and_sets_timestamp(self):
+        from django.core import mail
+
+        from home.models import StaffOnboardingLead
+
+        staff = User.objects.create_user(
+            username=f"stinv_{uuid.uuid4().hex[:6]}",
+            email="stinv@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        lead = StaffOnboardingLead.objects.create(
+            email="invitee@test.local",
+            display_name="Inv",
+            account_kind=StaffOnboardingLead.KIND_PF,
+            judet="Cluj",
+        )
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        mail.outbox.clear()
+        r = c.post(
+            reverse("admin_analysis_add_user_invite_send"),
+            {"lead_id": [str(lead.pk)]},
+        )
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("invitee@test.local", mail.outbox[0].to)
+        lead.refresh_from_db()
+        self.assertIsNotNone(lead.invite_email_last_sent_at)
+
+    def test_109e_users_bulk_mail_staff_redirects_without_account_kind(self):
+        staff = User.objects.create_user(
+            username=f"stbm_{uuid.uuid4().hex[:6]}",
+            email="stbm@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        from django.core import mail
+
+        mail.outbox.clear()
+        r = c.post(
+            reverse("admin_analysis_users_bulk_mail"),
+            {"subject": "S", "body": "B"},
+        )
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_109f_users_bulk_mail_sends_to_pf_with_marketing_opt_in(self):
+        from django.core import mail
+
+        staff = User.objects.create_user(
+            username=f"stbm2_{uuid.uuid4().hex[:6]}",
+            email="stbm2@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        u = _pf_user("bm_pf")
+        prof = u.profile
+        prof.email_opt_in_wishlist = True
+        prof.judet = "Timiș"
+        prof.oras = "Timișoara"
+        prof.save()
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        mail.outbox.clear()
+        r = c.post(
+            reverse("admin_analysis_users_bulk_mail"),
+            {
+                "account_kind": ["pf"],
+                "judet": "Timiș",
+                "oras": "",
+                "subject": "Subj bulk",
+                "body": "Body bulk",
+            },
+        )
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(u.email, mail.outbox[0].to)

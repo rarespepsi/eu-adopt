@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Add USER — EU-ADOPT{% endblock %}
+{% block body_class %}page-admin-analysis{% endblock %}
+
+{% block extra_css %}
+<style>
+	body.page-admin-analysis { overflow: hidden !important; height: 100dvh; }
+	body.page-admin-analysis #main_wrap { height: 100dvh !important; overflow: hidden !important; display: flex; flex-direction: column; }
+	body.page-admin-analysis .layout { grid-template-columns: 1fr; height: 100%; min-height: 0; }
+	body.page-admin-analysis .sidebar-left, body.page-admin-analysis .sidebar-right { display: none; }
+	body.page-admin-analysis #main_content { height: calc(100dvh - var(--nav-h, 64px)) !important; min-height: calc(100dvh - var(--nav-h, 64px)) !important; flex: 1 1 auto; overflow: hidden; padding: 0; box-sizing: border-box; }
+	body.page-admin-analysis .main-content { max-width: 100%; padding: 0; height: 100%; overflow: hidden; }
+	.analysis-shell { min-height: 100%; height: 100%; border: 2px solid rgba(21, 101, 192, 0.75); border-radius: 14px; padding: 0.75rem; box-sizing: border-box; background: transparent; display: flex; flex-direction: column; gap: 0.5rem; min-height: 0; }
+	.analysis-shell h1 { margin: 0; font-size: 1rem; font-weight: 800; color: #0d47a1; text-transform: uppercase; }
+	.analysis-subnav { display: flex; gap: 0.4rem; flex-wrap: wrap; flex-shrink: 0; align-items: center; }
+	.analysis-subnav a { text-decoration: none; padding: 0.2rem 0.45rem; border-radius: 999px; border: 1px solid rgba(13, 71, 161, 0.5); color: #0d47a1; font-size: 0.72rem; font-weight: 700; }
+	.add-user-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 0.55rem; }
+	.add-user-toolbar { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: flex-end; }
+	.add-user-filters {
+		display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: flex-end;
+		background: rgba(255,255,255,0.55); border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; padding: 0.45rem 0.55rem;
+	}
+	.add-user-filters label { font-size: 0.68rem; font-weight: 800; color: #1565c0; display: block; margin-bottom: 0.08rem; }
+	.add-user-filters input, .add-user-filters select { font-size: 0.78rem; padding: 0.22rem 0.35rem; border-radius: 6px; border: 1px solid rgba(0,0,0,0.2); }
+	.add-user-btn {
+		text-decoration: none; padding: 0.28rem 0.65rem; border-radius: 8px; font-size: 0.74rem; font-weight: 800;
+		border: 1px solid #0d47a1; background: #1565c0; color: #fff !important; cursor: pointer; display: inline-block;
+	}
+	.add-user-btn--secondary { background: #fff; color: #0d47a1 !important; }
+	.add-user-form-wrap {
+		background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 10px; padding: 0.6rem 0.85rem;
+	}
+	.add-user-form-wrap form p { margin: 0 0 0.45rem; }
+	.add-user-form-wrap label { display: block; font-size: 0.72rem; font-weight: 800; color: #1565c0; margin-bottom: 0.12rem; }
+	.add-user-form-wrap input[type="text"], .add-user-form-wrap input[type="email"], .add-user-form-wrap select, .add-user-form-wrap textarea {
+		width: 100%; max-width: 28rem; box-sizing: border-box; padding: 0.28rem 0.4rem; font-size: 0.82rem; border: 1px solid rgba(0,0,0,0.2); border-radius: 6px;
+	}
+	.add-user-form-wrap textarea { min-height: 3.2rem; max-width: 100%; }
+	.add-user-form-wrap ul.errorlist { margin: 0 0 0.35rem; padding-left: 1.1rem; color: #b71c1c; font-size: 0.72rem; }
+	.add-user-form-wrap .helptext { font-size: 0.68rem; color: #546e7a; margin: 0.1rem 0 0.35rem; }
+	.add-user-submit { margin-top: 0.35rem; padding: 0.35rem 0.85rem; font-weight: 800; font-size: 0.78rem; border-radius: 8px; border: 1px solid #0d47a1; background: #1565c0; color: #fff; cursor: pointer; }
+	.add-user-table-wrap { overflow: auto; max-height: 38vh; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; background: rgba(255,255,255,0.5); }
+	.add-user-table { width: 100%; border-collapse: collapse; font-size: 0.64rem; }
+	.add-user-table th, .add-user-table td { border-bottom: 1px solid rgba(0,0,0,0.08); padding: 0.25rem 0.32rem; text-align: left; vertical-align: top; }
+	.add-user-table td.add-user-td-actions { white-space: nowrap; }
+	.add-user-tbl-actions { display: flex; flex-wrap: wrap; gap: 0.2rem; align-items: center; }
+	.add-user-tbl-btn {
+		display: inline-block;
+		padding: 0.12rem 0.38rem;
+		font-size: 0.58rem;
+		font-weight: 800;
+		border-radius: 5px;
+		border: 1px solid #0d47a1;
+		background: #1565c0;
+		color: #fff !important;
+		text-decoration: none;
+		cursor: pointer;
+		font-family: inherit;
+		line-height: 1.2;
+	}
+	.add-user-tbl-btn--secondary { background: #fff; color: #0d47a1 !important; }
+	.add-user-tbl-btn--danger { border-color: #b71c1c; background: #c62828; color: #fff !important; }
+	.add-user-table th { position: sticky; top: 0; background: #e3f2fd; font-weight: 800; color: #0d47a1; white-space: nowrap; }
+	.seg-pill { display: inline-block; margin: 0.08rem 0.12rem 0 0; padding: 0.06rem 0.28rem; border-radius: 999px; background: rgba(21, 101, 192, 0.12); font-size: 0.6rem; font-weight: 700; color: #0d47a1; }
+	.add-user-invite-bar {
+		display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center;
+		background: rgba(255, 248, 225, 0.75); border: 1px solid rgba(255, 193, 7, 0.45); border-radius: 10px; padding: 0.45rem 0.55rem;
+	}
+	.add-user-invite-bar .add-user-note { margin: 0; flex: 1 1 12rem; }
+	.add-user-manual-details { align-self: flex-start; width: 100%; max-width: 100%; }
+	.add-user-manual-summary--sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		clip-path: inset(50%);
+		white-space: nowrap;
+		border: 0;
+		list-style: none;
+	}
+	.add-user-manual-summary--sr::-webkit-details-marker { display: none; }
+	.add-user-manual-section { margin-bottom: 0.5rem; padding: 0.45rem 0.55rem; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.35); }
+	.add-user-manual-section h3 { margin: 0 0 0.35rem; font-size: 0.72rem; font-weight: 900; color: #0d47a1; text-transform: uppercase; letter-spacing: 0.04em; }
+	.add-user-manual-section.is-hidden { display: none !important; }
+	.add-user-manual-collab-box {
+		border: 1px solid rgba(21, 101, 192, 0.45);
+		border-radius: 10px;
+		padding: 0.5rem 0.6rem;
+		background: rgba(227, 242, 253, 0.5);
+	}
+	.add-user-form-wrap ul:not(.errorlist) { list-style: none; margin: 0.2rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+	.add-user-form-wrap ul:not(.errorlist) li { display: flex; align-items: flex-start; gap: 0.45rem; font-size: 0.78rem; font-weight: 600; color: #1f2937; }
+	.add-user-form-wrap ul:not(.errorlist) li label { margin: 0; font-weight: 600; color: #1f2937; }
+	.add-user-form-wrap ul:not(.errorlist) input[type="radio"] { margin-top: 0.2rem; width: auto; }
+	.add-user-form-wrap .manual-checkbox { width: auto; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+	var localitiesByCounty = {};
+	var countyNames = ["Alba","Arad","Argeș","Bacău","Bihor","Bistrița-Năsăud","Botoșani","Brăila","Brașov","București","Buzău","Călărași","Caraș-Severin","Cluj","Constanța","Covasna","Dâmbovița","Dolj","Galați","Giurgiu","Gorj","Harghita","Hunedoara","Ialomița","Iași","Ilfov","Maramureș","Mehedinți","Mureș","Neamț","Olt","Prahova","Sălaj","Satu Mare","Sibiu","Suceava","Teleorman","Timiș","Tulcea","Vâlcea","Vaslui","Vrancea"];
+	function matchCounty(val) {
+		if (!val) return null;
+		val = String(val).trim();
+		for (var i = 0; i < countyNames.length; i++) if (countyNames[i].toLowerCase() === val.toLowerCase()) return countyNames[i];
+		return null;
+	}
+	function updateCityListFor(countyInputId, cityListId) {
+		var countyInput = document.getElementById(countyInputId);
+		var cityList = document.getElementById(cityListId);
+		if (!countyInput || !cityList) return;
+		var county = matchCounty(countyInput.value);
+		cityList.innerHTML = "";
+		if (county && localitiesByCounty[county]) {
+			var list = localitiesByCounty[county];
+			for (var i = 0; i < list.length; i++) { var opt = document.createElement("option"); opt.value = list[i]; cityList.appendChild(opt); }
+		}
+	}
+	function wireCountyLocality(countyInputId, cityListId) {
+		var countyInput = document.getElementById(countyInputId);
+		if (!countyInput) return;
+		function upd() { updateCityListFor(countyInputId, cityListId); }
+		countyInput.addEventListener("input", upd);
+		countyInput.addEventListener("change", upd);
+		upd();
+	}
+	fetch("{% static 'data/ro_counties_cities.json' %}").then(function(r) { return r.json(); }).then(function(data) {
+		for (var k in data) localitiesByCounty[k] = data[k];
+		wireCountyLocality("f-jud", "city-list-adduser-filt");
+		wireCountyLocality("id_judet", "city-list-adduser-manual");
+		wireCountyLocality("id_company_judet", "city-list-adduser-co");
+	}).catch(function() {
+		wireCountyLocality("f-jud", "city-list-adduser-filt");
+		wireCountyLocality("id_judet", "city-list-adduser-manual");
+		wireCountyLocality("id_company_judet", "city-list-adduser-co");
+	});
+	function syncManualLeadRoleSections() {
+		var sel = document.getElementById("id_account_kind");
+		if (!sel) return;
+		var v = sel.value || "";
+		function show(selClass, on) {
+			var nodes = document.querySelectorAll(selClass);
+			for (var i = 0; i < nodes.length; i++) {
+				nodes[i].classList.toggle("is-hidden", !on);
+				var inside = nodes[i].querySelectorAll("input, select, textarea");
+				for (var j = 0; j < inside.length; j++) {
+					if (inside[j].type === "hidden") continue;
+					inside[j].disabled = !on;
+				}
+			}
+		}
+		show(".manual-show-pf", v === "pf");
+		show(".manual-show-org", v === "org");
+		show(".manual-show-firma", v === "org" || v === "collaborator");
+		show(".manual-show-collab", v === "collaborator");
+	}
+	var ak = document.getElementById("id_account_kind");
+	if (ak) {
+		ak.addEventListener("change", syncManualLeadRoleSections);
+		syncManualLeadRoleSections();
+	}
+})();
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="analysis-shell" aria-label="Add USER staff">
+	<h1>Add USER — prospecte (neînregistrați)</h1>
+	<div class="analysis-subnav">
+		<a href="{% url 'admin_analysis_home' %}">Înapoi la Analiza (central)</a>
+	</div>
+	<div class="add-user-scroll">
+		<form class="add-user-filters" method="get" action="{% url 'admin_analysis_add_user' %}">
+			<div>
+				<label for="f-kind">Tip cont</label>
+				<select id="f-kind" name="account_kind">
+					<option value="" {% if not filter_account_kind %}selected{% endif %}>— Toate —</option>
+					<option value="pf" {% if filter_account_kind == "pf" %}selected{% endif %}>PF</option>
+					<option value="org" {% if filter_account_kind == "org" %}selected{% endif %}>ONG / adăpost</option>
+					<option value="collaborator" {% if filter_account_kind == "collaborator" %}selected{% endif %}>Colaborator</option>
+				</select>
+			</div>
+			<div>
+				<label for="f-jud">Județ</label>
+				<input id="f-jud" type="text" name="judet" list="county-list-adduser-filt" value="{{ filter_judet }}" placeholder="Scrie sau alege din listă" autocomplete="off" />
+				{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-adduser-filt" %}
+			</div>
+			<div>
+				<label for="f-oras">Localitate</label>
+				<input id="f-oras" type="text" name="oras" list="city-list-adduser-filt" value="{{ filter_oras }}" placeholder="După județ: alege sau scrie" autocomplete="off" />
+				<datalist id="city-list-adduser-filt"></datalist>
+			</div>
+			<button type="submit" class="add-user-btn">Aplică filtre</button>
+			<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user' %}">Resetează</a>
+		</form>
+
+		<div class="add-user-toolbar">
+			<a class="add-user-btn" href="{% url 'admin_analysis_add_user_export' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Export CSV</a>
+			<form method="post" action="{% url 'admin_analysis_add_user_import' %}" enctype="multipart/form-data" style="display:flex;flex-wrap:wrap;gap:0.35rem;align-items:center;">
+				{% csrf_token %}
+				<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
+				<label for="csv-import" style="font-size:0.72rem;font-weight:800;color:#1565c0;">Import CSV</label>
+				<input id="csv-import" type="file" name="csv_file" accept=".csv,text/csv" required />
+				<button type="submit" class="add-user-btn">Încarcă</button>
+			</form>
+			<button type="button" class="add-user-btn add-user-btn--secondary" onclick="var d=document.getElementById('manual-lead-add');if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'nearest'});}">Către formular manual</button>
+		</div>
+		<p class="add-user-note">Afișare maximă 500 rânduri după filtre. Export respectă aceleași filtre. Filtrele <strong>Tip cont</strong>, <strong>Județ</strong> și <strong>Localitate</strong> caută și în datele firmă (ONG/colaborator) acolo unde e cazul.</p>
+
+		<form id="invite-send-form" class="add-user-invite-bar" method="post" action="{% url 'admin_analysis_add_user_invite_send' %}">
+			{% csrf_token %}
+			<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
+			<button type="submit" class="add-user-btn">Trimite MAIL invitație</button>
+			<p class="add-user-note">Bifează rândurile dorite, apoi trimite. Nu se retrimite aceluiași email mai devreme de <strong>{{ staff_invite_cooldown_days }}</strong> zile. Maxim <strong>{{ staff_invite_max_batch }}</strong> invitații per clic.</p>
+		</form>
+
+		<details id="manual-lead-add" class="add-user-manual-details" {% if open_manual_form %}open{% endif %}>
+			<summary class="add-user-manual-summary--sr">Formular manual lead — deschide din linkul „Către formular manual”</summary>
+			<div class="add-user-form-wrap">
+				{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-adduser-manual" %}
+				<datalist id="city-list-adduser-manual"></datalist>
+				{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-adduser-co" %}
+				<datalist id="city-list-adduser-co"></datalist>
+				<form method="post" action="{% url 'admin_analysis_add_user' %}" id="manual-lead-form">
+					{% csrf_token %}
+					<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
+					{% if editing_lead %}
+					<input type="hidden" name="lead_id" value="{{ editing_lead.pk }}" />
+					<p class="add-user-edit-banner" style="margin:0 0 0.5rem;padding:0.4rem 0.5rem;background:rgba(227,242,253,0.9);border-radius:8px;font-size:0.74rem;font-weight:700;color:#0d47a1;">
+						Editezi lead #{{ editing_lead.pk }} — {{ editing_lead.email }}
+						<a href="{% url 'admin_analysis_add_user' %}{% if filter_query %}?{{ filter_query }}{% endif %}" style="margin-left:0.5rem;font-weight:800;color:#1565c0;">Renunță</a>
+					</p>
+					{% endif %}
+					{{ form.non_field_errors }}
+
+					<p>
+						{{ form.email.label_tag }}
+						{{ form.email }}
+						{% if form.email.help_text %}<span class="helptext">{{ form.email.help_text }}</span>{% endif %}
+						{{ form.email.errors }}
+					</p>
+					<p>
+						{{ form.phone.label_tag }}
+						{{ form.phone }}
+						{{ form.phone.errors }}
+					</p>
+					<p>
+						{{ form.account_kind.label_tag }}
+						{{ form.account_kind }}
+						{{ form.account_kind.errors }}
+					</p>
+					<p>
+						{{ form.display_name.label_tag }}
+						{{ form.display_name }}
+						{{ form.display_name.errors }}
+					</p>
+					<p>
+						{{ form.username_suggested.label_tag }}
+						{{ form.username_suggested }}
+						{{ form.username_suggested.errors }}
+					</p>
+
+					<div class="add-user-manual-section manual-show-pf is-hidden">
+						<h3>Persoană fizică</h3>
+						<p>
+							{{ form.first_name.label_tag }}
+							{{ form.first_name }}
+							{{ form.first_name.errors }}
+						</p>
+						<p>
+							{{ form.last_name.label_tag }}
+							{{ form.last_name }}
+							{{ form.last_name.errors }}
+						</p>
+						<p>
+							{{ form.judet.label_tag }}
+							{{ form.judet }}
+							{{ form.judet.errors }}
+						</p>
+						<p>
+							{{ form.oras.label_tag }}
+							{{ form.oras }}
+							{{ form.oras.errors }}
+						</p>
+					</div>
+
+					<div class="add-user-manual-section manual-show-org is-hidden">
+						<h3>ONG / firmă</h3>
+						<p>
+							{{ form.org_display_name.label_tag }}
+							{{ form.org_display_name }}
+							{{ form.org_display_name.errors }}
+						</p>
+						<p>
+							<label for="{{ form.is_public_shelter.id_for_label }}">{{ form.is_public_shelter.label }}</label>
+							{{ form.is_public_shelter }}
+							{{ form.is_public_shelter.errors }}
+						</p>
+					</div>
+
+					<div class="add-user-manual-section manual-show-firma is-hidden">
+						<h3>Date firmă</h3>
+						<p>
+							{{ form.company_legal_name.label_tag }}
+							{{ form.company_legal_name }}
+							{{ form.company_legal_name.errors }}
+						</p>
+						<p>
+							{{ form.company_cui.label_tag }}
+							{{ form.company_cui }}
+							{{ form.company_cui.errors }}
+						</p>
+						<p>
+							<label for="{{ form.company_cui_has_ro.id_for_label }}">{{ form.company_cui_has_ro.label }}</label>
+							{{ form.company_cui_has_ro }}
+							{{ form.company_cui_has_ro.errors }}
+						</p>
+						<p>
+							{{ form.company_reg_com.label_tag }}
+							{{ form.company_reg_com }}
+							{{ form.company_reg_com.errors }}
+						</p>
+						<p>
+							{{ form.company_address.label_tag }}
+							{{ form.company_address }}
+							{{ form.company_address.errors }}
+						</p>
+						<p>
+							{{ form.company_representative.label_tag }}
+							{{ form.company_representative }}
+							{{ form.company_representative.errors }}
+						</p>
+						<p>
+							{{ form.company_judet.label_tag }}
+							{{ form.company_judet }}
+							{{ form.company_judet.errors }}
+						</p>
+						<p>
+							{{ form.company_oras.label_tag }}
+							{{ form.company_oras }}
+							{{ form.company_oras.errors }}
+						</p>
+					</div>
+
+					<div class="add-user-manual-section manual-show-collab manual-collab-box is-hidden">
+						<h3>Tip colaborator</h3>
+						{{ form.collaborator_subtype.errors }}
+						{{ form.collaborator_subtype }}
+					</div>
+
+					<button type="submit" class="add-user-submit">{% if editing_lead %}Salvează modificările{% else %}Salvează lead{% endif %}</button>
+				</form>
+			</div>
+		</details>
+
+		<div>
+			<h2 style="margin:0 0 0.35rem;font-size:0.82rem;color:#0d47a1;">Tabel prospecte</h2>
+			<div class="add-user-table-wrap">
+				<table class="add-user-table">
+					<thead>
+						<tr>
+							<th>Bifă</th>
+							<th>Data</th>
+							<th>Email</th>
+							<th>Telefon</th>
+							<th>Nume</th>
+							<th>Tip</th>
+							<th>Colab.</th>
+							<th>Județ</th>
+							<th>Loc.</th>
+							<th>CUI</th>
+							<th>Segmente</th>
+							<th>Mail?</th>
+							<th>Ultima invitație</th>
+							<th>Staff</th>
+							<th>Acțiuni</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for lead in recent_leads %}
+						<tr>
+							<td>
+								{% if lead.invite_mail_checkbox and not lead.invite_mail_cooldown %}
+								<input type="checkbox" form="invite-send-form" name="lead_id" value="{{ lead.pk }}" title="Include la trimitere" />
+								{% elif lead.invite_mail_cooldown %}
+								<span title="Reinvitație după {{ staff_invite_cooldown_days }} zile">aștept.</span>
+								{% elif lead.imported_user_id %}
+								<span title="Deja importat ca utilizator">import</span>
+								{% else %}
+								<span title="Fără email">—</span>
+								{% endif %}
+							</td>
+							<td>{{ lead.created_at|date:"d.m.Y H:i" }}</td>
+							<td>{{ lead.email }}</td>
+							<td>{{ lead.phone|default:"—" }}</td>
+							<td>{{ lead.display_name }}{% if lead.org_display_name %}<br><small>{{ lead.org_display_name }}</small>{% endif %}</td>
+							<td>{{ lead.get_account_kind_display }}</td>
+							<td>{% if lead.collaborator_subtype %}{{ lead.get_collaborator_subtype_display }}{% else %}—{% endif %}</td>
+							<td>{{ lead.judet|default:"—" }}</td>
+							<td>{{ lead.oras|default:"—" }}</td>
+							<td>{{ lead.company_cui|default:"—" }}</td>
+							<td>
+								{% for s in lead.segments %}
+									{% for key, label in segment_labels.items %}
+										{% if key == s %}<span class="seg-pill">{{ label }}</span>{% endif %}
+									{% endfor %}
+								{% empty %}—{% endfor %}
+							</td>
+							<td>{% if lead.marketing_emails_requested %}da{% else %}nu{% endif %}</td>
+							<td>{% if lead.invite_email_last_sent_at %}<span title="{{ lead.invite_email_last_sent_at|date:'d.m.Y H:i' }}">{{ lead.invite_email_last_sent_at|timesince }}</span>{% else %}—{% endif %}</td>
+							<td>{% if lead.created_by %}{{ lead.created_by.username }}{% else %}—{% endif %}</td>
+							<td class="add-user-td-actions">
+								<div class="add-user-tbl-actions">
+									<a class="add-user-tbl-btn add-user-tbl-btn--secondary" href="{% url 'admin_analysis_add_user' %}?{% if filter_query %}{{ filter_query }}&amp;{% endif %}edit={{ lead.pk }}" onclick="var d=document.getElementById('manual-lead-add');if(d){d.open=true;}">Modifică</a>
+									<form method="post" action="{% url 'admin_analysis_add_user_lead_delete' %}" style="display:inline;margin:0;" onsubmit="return confirm('Ștergi definitiv acest lead ({{ lead.email }})?');">
+										{% csrf_token %}
+										<input type="hidden" name="lead_id" value="{{ lead.pk }}" />
+										<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
+										<button type="submit" class="add-user-tbl-btn add-user-tbl-btn--danger">Șterge</button>
+									</form>
+								</div>
+							</td>
+						</tr>
+						{% empty %}
+						<tr><td colspan="15">Niciun rând (schimbă filtrele sau importă CSV).</td></tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</section>
+{% endblock %}

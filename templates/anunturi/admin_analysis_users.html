@@ -14,8 +14,21 @@
 	body.page-admin-analysis .main-content { max-width: 100%; padding: 0; height: 100%; overflow: hidden; }
 	.analysis-shell { min-height: 100%; height: 100%; border: 2px solid rgba(21, 101, 192, 0.75); border-radius: 14px; padding: 0.75rem; box-sizing: border-box; background: transparent; }
 	.analysis-shell h1 { margin: 0; font-size: 1rem; font-weight: 800; color: #0d47a1; text-transform: uppercase; }
-	.analysis-subnav { margin-top: 0.45rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+	.analysis-subnav { margin-top: 0.45rem; display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
 	.analysis-subnav a { text-decoration: none; padding: 0.2rem 0.45rem; border-radius: 999px; border: 1px solid rgba(13, 71, 161, 0.5); color: #0d47a1; font-size: 0.72rem; font-weight: 700; }
+	.users-mail-btn {
+		margin-left: auto;
+		text-decoration: none;
+		padding: 0.28rem 0.65rem;
+		border-radius: 8px;
+		font-size: 0.74rem;
+		font-weight: 800;
+		border: 1px solid #0d47a1;
+		background: #1565c0;
+		color: #fff !important;
+		cursor: pointer;
+		font-family: inherit;
+	}
 	.users-layout {
 		margin-top: 0.6rem;
 		height: calc(100% - 2.8rem);
@@ -112,7 +125,85 @@
 		font-weight: 700;
 		color: #1f2937;
 	}
+	#users-bulk-mail-dialog {
+		border: 1px solid rgba(13, 71, 161, 0.45);
+		border-radius: 12px;
+		padding: 0;
+		max-width: min(32rem, 96vw);
+		box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+	}
+	#users-bulk-mail-dialog::backdrop { background: rgba(0,0,0,0.35); }
+	.users-bulk-mail-inner { padding: 0.75rem 0.9rem; }
+	.users-bulk-mail-inner h2 { margin: 0 0 0.45rem; font-size: 0.88rem; color: #0d47a1; }
+	.users-bulk-mail-note {
+		font-size: 0.68rem;
+		color: #546e7a;
+		margin: 0 0 0.55rem;
+		line-height: 1.35;
+	}
+	.users-bulk-mail-form label { display: block; font-size: 0.72rem; font-weight: 800; color: #1565c0; margin: 0.35rem 0 0.12rem; }
+	.users-bulk-mail-form input[type="text"], .users-bulk-mail-form input[type="email"], .users-bulk-mail-form textarea {
+		width: 100%; max-width: 100%; box-sizing: border-box; padding: 0.28rem 0.4rem; font-size: 0.82rem; border: 1px solid rgba(0,0,0,0.2); border-radius: 6px;
+	}
+	.users-bulk-mail-form textarea { min-height: 5.5rem; resize: vertical; }
+	.users-bulk-kind-row {
+		display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center;
+		margin: 0.15rem 0 0.35rem;
+		font-size: 0.78rem;
+	}
+	.users-bulk-kind-row label { display: inline-flex; align-items: center; gap: 0.28rem; font-weight: 700; color: #1f2937; margin: 0; cursor: pointer; }
+	.users-bulk-mail-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.65rem; }
+	.users-bulk-mail-actions button {
+		padding: 0.32rem 0.75rem; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; border: 1px solid #0d47a1; font-family: inherit;
+	}
+	.users-bulk-mail-actions button[type="submit"] { background: #1565c0; color: #fff; }
+	.users-bulk-mail-actions button[type="button"] { background: #fff; color: #0d47a1; }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+	var localitiesByCounty = {};
+	var countyNames = ["Alba","Arad","Argeș","Bacău","Bihor","Bistrița-Năsăud","Botoșani","Brăila","Brașov","București","Buzău","Călărași","Caraș-Severin","Cluj","Constanța","Covasna","Dâmbovița","Dolj","Galați","Giurgiu","Gorj","Harghita","Hunedoara","Ialomița","Iași","Ilfov","Maramureș","Mehedinți","Mureș","Neamț","Olt","Prahova","Sălaj","Satu Mare","Sibiu","Suceava","Teleorman","Timiș","Tulcea","Vâlcea","Vaslui","Vrancea"];
+	function matchCounty(val) {
+		if (!val) return null;
+		val = String(val).trim();
+		for (var i = 0; i < countyNames.length; i++) if (countyNames[i].toLowerCase() === val.toLowerCase()) return countyNames[i];
+		return null;
+	}
+	function updateCityListFor(countyInputId, cityListId) {
+		var countyInput = document.getElementById(countyInputId);
+		var cityList = document.getElementById(cityListId);
+		if (!countyInput || !cityList) return;
+		var county = matchCounty(countyInput.value);
+		cityList.innerHTML = "";
+		if (county && localitiesByCounty[county]) {
+			var list = localitiesByCounty[county];
+			for (var i = 0; i < list.length; i++) { var opt = document.createElement("option"); opt.value = list[i]; cityList.appendChild(opt); }
+		}
+	}
+	function wireCountyLocality(countyInputId, cityListId) {
+		var countyInput = document.getElementById(countyInputId);
+		if (!countyInput) return;
+		function upd() { updateCityListFor(countyInputId, cityListId); }
+		countyInput.addEventListener("input", upd);
+		countyInput.addEventListener("change", upd);
+		upd();
+	}
+	fetch("{% static 'data/ro_counties_cities.json' %}").then(function(r) { return r.json(); }).then(function(data) {
+		for (var k in data) localitiesByCounty[k] = data[k];
+		wireCountyLocality("bulk-mail-jud", "city-list-users-bulk");
+	}).catch(function() {
+		wireCountyLocality("bulk-mail-jud", "city-list-users-bulk");
+	});
+	var dlg = document.getElementById("users-bulk-mail-dialog");
+	var openBtn = document.getElementById("users-bulk-mail-open");
+	if (openBtn && dlg) {
+		openBtn.addEventListener("click", function() { dlg.showModal(); });
+	}
+})();
+</script>
 {% endblock %}
 
 {% block content %}
@@ -123,7 +214,40 @@
 		<a href="{% url 'admin_analysis_dogs' %}">Dogs</a>
 		<a href="{% url 'admin_analysis_requests' %}">Requests</a>
 		<a href="{% url 'admin_analysis_alerts' %}">Alerts</a>
+		<button type="button" class="users-mail-btn" id="users-bulk-mail-open">Send mail</button>
 	</div>
+	<dialog id="users-bulk-mail-dialog" aria-labelledby="users-bulk-mail-title">
+		<div class="users-bulk-mail-inner">
+			<h2 id="users-bulk-mail-title">Trimitere email în masă</h2>
+			<p class="users-bulk-mail-note">
+				Se trimit doar utilizatori activi cu email, care au bifă <strong>noutăți / marketing</strong> în cont
+				și corespund tipurilor și opțional județului și localității (PF sau date firmă). Limită {{ bulk_mail_cap }} destinatari per trimitere.
+			</p>
+			<form class="users-bulk-mail-form" method="post" action="{% url 'admin_analysis_users_bulk_mail' %}">
+				{% csrf_token %}
+				<span style="display:block;font-size:0.72rem;font-weight:800;color:#1565c0;margin-bottom:0.08rem;">Tip cont (poți bifa mai multe)</span>
+				<div class="users-bulk-kind-row">
+					<label><input type="checkbox" name="account_kind" value="pf" /> PF</label>
+					<label><input type="checkbox" name="account_kind" value="org" /> ONG / Firmă</label>
+					<label><input type="checkbox" name="account_kind" value="collaborator" /> Colaborator</label>
+				</div>
+				<label for="bulk-mail-jud">Județ (opțional)</label>
+				<input id="bulk-mail-jud" type="text" name="judet" list="county-list-users-bulk" placeholder="Scrie sau alege din listă" autocomplete="off" />
+				{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-users-bulk" %}
+				<label for="bulk-mail-oras">Localitate (opțional)</label>
+				<input id="bulk-mail-oras" type="text" name="oras" list="city-list-users-bulk" placeholder="După județ: alege sau scrie" autocomplete="off" />
+				<datalist id="city-list-users-bulk"></datalist>
+				<label for="bulk-mail-subject">Subiect</label>
+				<input id="bulk-mail-subject" type="text" name="subject" required maxlength="200" placeholder="Subiect email" />
+				<label for="bulk-mail-body">Mesaj</label>
+				<textarea id="bulk-mail-body" name="body" required placeholder="Textul emailului (doar text simplu)"></textarea>
+				<div class="users-bulk-mail-actions">
+					<button type="submit">Trimite</button>
+					<button type="button" onclick="document.getElementById('users-bulk-mail-dialog').close()">Anulează</button>
+				</div>
+			</form>
+		</div>
+	</dialog>
 	<div class="users-layout">
 		<div class="users-row users-kpis">
 			<div class="users-kpi users-kpi-1">Total useri</div>
@@ -163,4 +287,3 @@
 	</div>
 </section>
 {% endblock %}
-

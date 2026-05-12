@@ -169,11 +169,15 @@ body.page-account .account-right-panel {
 	#profil-form .signup-actions {
 		margin-top: 0.3rem;
 	}
-	#profil-box #account-delete-form.signup-actions {
+	#profil-box .signup-actions--delete {
 		margin-top: 0.2rem;
 	}
-	#profil-box #account-delete-form .btn-sterge-cont {
+	#profil-box .signup-actions--delete .btn-sterge-cont {
 		margin-top: 0;
+	}
+	a.btn-sterge-cont {
+		text-decoration: none;
+		text-align: center;
 	}
 	@media (max-width: 760px) {
 		.cont-pf-edit-box .edit-form-grid { grid-template-columns: 1fr; }
@@ -795,6 +799,18 @@ body.page-account .account-right-panel {
 			{% endfor %}
 		</div>
 		{% endif %}
+		{% if pending_account_deletion and pending_account_deletion_until %}
+		<div class="cont-pf-pending-deletion-banner" style="background:#fff3e0;border:1px solid #e65100;border-radius:10px;padding:0.65rem 0.85rem;margin-bottom:0.75rem;font-size:0.86rem;line-height:1.45;">
+			<strong style="color:#bf360c;">Ștergere cont programată.</strong>
+			Până la <strong>{{ pending_account_deletion_until|date:"d.m.Y H:i" }}</strong> te poți autentifica și poți
+			<strong>anula cererea</strong> de mai jos. După această dată contul va fi dezactivat definitiv, iar datele personale vor fi anonimizate sau ascise
+			(inclusiv pentru istoric ONG/colaborator), conform politicii platformei.
+			<form method="post" action="{% url 'account_delete_cancel' %}" style="margin-top:0.5rem;">
+				{% csrf_token %}
+				<button type="submit" class="btn-pf btn-pf-secondary" style="font-size:0.82rem;padding:0.35rem 0.75rem;">Anulează cererea de ștergere</button>
+			</form>
+		</div>
+		{% endif %}
 		<div class="cont-pf-header-row">
 			<div class="cont-pf-header-card">
 				<div class="cont-pf-stats">
@@ -984,10 +1000,9 @@ body.page-account .account-right-panel {
 					<button type="submit" id="btn-save-profil" class="btn-save" {% if not edit_errors %}style="display:none;"{% endif %} {% if not edit_errors %}disabled{% endif %}>Salvează profil</button>
 				</div>
 			</form>
-			<form method="post" action="{% url 'account_delete' %}" class="signup-actions" id="account-delete-form">
-				{% csrf_token %}
-				<button type="submit" class="btn-sterge-cont">Ștergere cont</button>
-			</form>
+			<div class="signup-actions signup-actions--delete">
+				<a href="{% url 'account_delete' %}" class="btn-sterge-cont">Ștergere cont</a>
+			</div>
 		</div>
 	</div>
 </div>
@@ -995,6 +1010,12 @@ body.page-account .account-right-panel {
 <section class="cont-meu" aria-label="Fișa contului">
 	<h1 class="cont-meu-title">Fișa contului</h1>
 	<p class="cont-meu-subtitle">Datele contului tău sunt afișate mai jos.</p>
+	{% if pending_account_deletion and pending_account_deletion_until %}
+	<div style="background:#fff3e0;border:1px solid #e65100;border-radius:10px;padding:0.65rem 0.85rem;margin-bottom:1rem;font-size:0.9rem;line-height:1.45;">
+		<strong style="color:#bf360c;">Ștergere cont programată</strong> până la {{ pending_account_deletion_until|date:"d.m.Y H:i" }}.
+		<form method="post" action="{% url 'account_delete_cancel' %}" style="display:inline;margin-left:0.5rem;">{% csrf_token %}<button type="submit" style="font-size:0.85rem;padding:0.25rem 0.5rem;">Anulează cererea</button></form>
+	</div>
+	{% endif %}
 	<div class="cont-meu-grid">
 		<div class="cont-meu-card">
 			<h2>Identificare</h2>
@@ -1092,21 +1113,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		profilForm.addEventListener('input', enableSaveProfil);
 		profilForm.addEventListener('change', enableSaveProfil);
-	}
-	/* Ștergere cont: două confirmări înainte de POST */
-	var delForm = document.getElementById('account-delete-form');
-	if (delForm) {
-		delForm.addEventListener('submit', function(e) {
-			if (!window.confirm('Ești sigur că vrei să ștergi contul? Această acțiune este definitivă.')) {
-				e.preventDefault();
-				return false;
-			}
-			if (!window.confirm('Confirmi ștergerea definitivă a contului și a datelor asociate?')) {
-				e.preventDefault();
-				return false;
-			}
-			return true;
-		});
 	}
 	/* DATE FIRMĂ (Colaborator): Modificare date firmă → câmpuri editabile, apoi Salvează */
 	var firmaForm = document.getElementById('firma-form');

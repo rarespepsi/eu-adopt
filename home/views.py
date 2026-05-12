@@ -48,7 +48,6 @@ from .pet_age_bands import (
     animal_listing_matches_collab_offer_targets,
     build_age_band_filter_q,
 )
-from .pt_p2_list import PT_P2_PAGE_SIZE, pt_pets_page_context
 from .mail_helpers import email_subject_for_user, send_mail_text_and_html
 from .context_processors import get_navbar_unread_counts
 from . import inbox_notifications as _inbox
@@ -81,7 +80,10 @@ from .models import (
     TransportDispatchRecipient,
     TransportTripRating,
     UserInboxNotification,
+    StaffOnboardingLead,
 )
+from .staff_onboarding_form import StaffOnboardingLeadForm, SEGMENT_CHOICES
+from .staff_onboarding_csv import export_csv_bytes, import_csv_bytes
 from django.contrib.auth import get_user_model
 from functools import wraps
 from django.contrib import messages
@@ -4624,6 +4626,16 @@ def account_view(request):
             }
     ctx["account_updated"] = request.GET.get("updated") == "1"
     ctx["username_updated"] = request.GET.get("username_updated") == "1"
+    from . import account_deletion as _acct_del
+
+    ctx["pending_account_deletion"] = (
+        bool(account_profile and _acct_del.account_has_pending_deletion(account_profile))
+    )
+    ctx["pending_account_deletion_until"] = (
+        account_profile.pending_deletion_grace_until
+        if ctx["pending_account_deletion"]
+        else None
+    )
     # Mesaj/sugestii după încercare schimbare username (PF)
     if account_profile and account_profile.role == AccountProfile.ROLE_PF:
         if "username_error" in request.session:
@@ -5060,11 +5072,98 @@ def admin_analysis_requests_view(request):
     return render(request, "anunturi/admin_analysis_requests.html", {})
 
 
+_ADMIN_USERS_BULK_MAIL_MAX = 200
+
+
+def _admin_users_bulk_mail_queryset(account_kinds: list[str], judet: str, oras: str):
+    """
+    Utilizatori activi cu email, rol în account_kinds, bifă noutăți/marketing în profil;
+    opțional filtru județ și localitate (câmpuri PF sau firmă pe UserProfile).
+    """
+    User = get_user_model()
+    qs = (
+        User.objects.filter(is_active=True)
+        .exclude(email__exact="")
+        .filter(account_profile__role__in=account_kinds)
+        .filter(profile__email_opt_in_wishlist=True)
+        .select_related("account_profile", "profile")
+    )
+    judet = (judet or "").strip()
+    oras = (oras or "").strip()
+    if judet:
+        qs = qs.filter(Q(profile__judet__icontains=judet) | Q(profile__company_judet__icontains=judet))
+    if oras:
+        qs = qs.filter(Q(profile__oras__icontains=oras) | Q(profile__company_oras__icontains=oras))
+    return qs.order_by("id")
+
+
+@login_required
+@require_POST
+def admin_analysis_users_bulk_mail_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    kinds = [
+        k
+        for k in request.POST.getlist("account_kind")
+        if k in (AccountProfile.ROLE_PF, AccountProfile.ROLE_ORG, AccountProfile.ROLE_COLLAB)
+    ]
+    if not kinds:
+        messages.error(request, "Selectează cel puțin un tip de cont (PF, ONG/Firmă sau Colaborator).")
+        return redirect(reverse("admin_analysis_users"))
+    judet = (request.POST.get("judet") or "").strip()
+    oras = (request.POST.get("oras") or "").strip()
+    subject = (request.POST.get("subject") or "").strip()
+    body = (request.POST.get("body") or "").strip()
+    if not subject:
+        messages.error(request, "Completează subiectul emailului.")
+        return redirect(reverse("admin_analysis_users"))
+    if not body:
+        messages.error(request, "Completează mesajul (corpul emailului).")
+        return redirect(reverse("admin_analysis_users"))
+    qs = _admin_users_bulk_mail_queryset(kinds, judet, oras)
+    total = qs.count()
+    if total == 0:
+        messages.warning(
+            request,
+            "Niciun destinatar nu corespunde filtrelor (tip cont, localitate, bifă noutăți/marketing în cont).",
+        )
+        return redirect(reverse("admin_analysis_users"))
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@eu-adopt.ro"
+    batch = list(qs[:_ADMIN_USERS_BULK_MAIL_MAX])
+    sent = 0
+    errors = 0
+    log = logging.getLogger(__name__)
+    for u in batch:
+        try:
+            send_mail(subject, body, from_email, [u.email], fail_silently=False)
+            sent += 1
+        except Exception:
+            log.exception("admin_analysis_users_bulk_mail user_id=%s", u.pk)
+            errors += 1
+    remainder = total - len(batch)
+    if remainder > 0:
+        messages.warning(
+            request,
+            f"Trimise {sent} emailuri ({errors} erori). Încă {remainder} destinatari nu au fost incluși "
+            f"(limită {_ADMIN_USERS_BULK_MAIL_MAX} per trimitere).",
+        )
+    else:
+        msg = f"Trimise {sent} emailuri către destinatarii filtrați."
+        if errors:
+            msg += f" ({errors} erori la trimitere.)"
+        messages.success(request, msg)
+    return redirect(reverse("admin_analysis_users"))
+
+
 @login_required
 def admin_analysis_users_view(request):
     if not (request.user.is_superuser or request.user.is_staff):
         return redirect(reverse("home"))
-    return render(request, "anunturi/admin_analysis_users.html", {})
+    return render(
+        request,
+        "anunturi/admin_analysis_users.html",
+        {"bulk_mail_cap": _ADMIN_USERS_BULK_MAIL_MAX},
+    )
 
 
 @login_required
@@ -5072,6 +5171,270 @@ def admin_analysis_alerts_view(request):
     if not (request.user.is_superuser or request.user.is_staff):
         return redirect(reverse("home"))
     return render(request, "anunturi/admin_analysis_alerts.html", {})
+
+
+def _staff_onboarding_leads_qs(request):
+    qs = StaffOnboardingLead.objects.all()
+    kind = (request.GET.get("account_kind") or "").strip()
+    if kind in (StaffOnboardingLead.KIND_PF, StaffOnboardingLead.KIND_ORG, StaffOnboardingLead.KIND_COLLAB):
+        qs = qs.filter(account_kind=kind)
+    jud = (request.GET.get("judet") or "").strip()
+    if jud:
+        qs = qs.filter(Q(judet__icontains=jud) | Q(company_judet__icontains=jud))
+    loc = (request.GET.get("oras") or "").strip()
+    if loc:
+        qs = qs.filter(Q(oras__icontains=loc) | Q(company_oras__icontains=loc))
+    return qs.select_related("created_by").order_by("-created_at")[:500]
+
+
+STAFF_LEAD_INVITE_COOLDOWN_DAYS = 14
+STAFF_LEAD_INVITE_MAX_BATCH = 100
+
+
+def _staff_invite_subject_body(request, lead: StaffOnboardingLead) -> tuple[str, str]:
+    kind_label = lead.get_account_kind_display()
+    if lead.account_kind == StaffOnboardingLead.KIND_PF:
+        signup_path = reverse("signup_pf")
+    elif lead.account_kind == StaffOnboardingLead.KIND_ORG:
+        signup_path = reverse("signup_organizatie")
+    else:
+        signup_path = reverse("signup_colaborator")
+    signup_url = request.build_absolute_uri(signup_path)
+    terms_url = request.build_absolute_uri(reverse("termeni"))
+    privacy_url = request.build_absolute_uri(reverse("politica_confidentialitate"))
+    body = (
+        f"Bună ziua,\n\n"
+        f"Vă scriem din EU-ADOPT în legătură cu înregistrarea ca utilizator ({kind_label}).\n"
+        f"Vă invităm să completați formularul de creare cont aici:\n{signup_url}\n\n"
+        f"Documente legale:\n"
+        f"- Termeni și condiții: {terms_url}\n"
+        f"- Politica de confidențialitate (GDPR): {privacy_url}\n\n"
+        f"Cu stimă,\nEchipa EU-ADOPT\n"
+    )
+    subject = f"EU-ADOPT — invitație completare cont ({kind_label})"
+    return subject, body
+
+
+@login_required
+@csrf_protect
+@require_http_methods(["POST"])
+def admin_analysis_add_user_invite_send_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    allowed_ids = frozenset(_staff_onboarding_leads_qs(request).values_list("pk", flat=True))
+    raw_ids = request.POST.getlist("lead_id")
+    now = timezone.now()
+    cooldown = timezone.timedelta(days=STAFF_LEAD_INVITE_COOLDOWN_DAYS)
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@eu-adopt.ro"
+    log = logging.getLogger(__name__)
+    sent = 0
+    skip_no_email = 0
+    skip_imported = 0
+    skip_cooldown = 0
+    skip_invalid = 0
+    skip_errors = 0
+    seen: set[int] = set()
+    for raw in raw_ids:
+        if sent >= STAFF_LEAD_INVITE_MAX_BATCH:
+            break
+        if not str(raw).isdigit():
+            skip_invalid += 1
+            continue
+        pk = int(raw)
+        if pk in seen:
+            continue
+        seen.add(pk)
+        if pk not in allowed_ids:
+            skip_invalid += 1
+            continue
+        lead = StaffOnboardingLead.objects.filter(pk=pk).first()
+        if not lead:
+            skip_invalid += 1
+            continue
+        em = (lead.email or "").strip()
+        if not em:
+            skip_no_email += 1
+            continue
+        if lead.imported_user_id:
+            skip_imported += 1
+            continue
+        if lead.invite_email_last_sent_at and (now - lead.invite_email_last_sent_at) < cooldown:
+            skip_cooldown += 1
+            continue
+        subj, body = _staff_invite_subject_body(request, lead)
+        try:
+            send_mail(subj, body, from_email, [em], fail_silently=False)
+        except Exception:
+            log.exception("staff_invite_send lead_id=%s", pk)
+            skip_errors += 1
+            continue
+        lead.invite_email_last_sent_at = now
+        lead.save(update_fields=["invite_email_last_sent_at"])
+        sent += 1
+    parts = [f"Trimise {sent} invitații email."]
+    if skip_no_email:
+        parts.append(f"fără email: {skip_no_email}")
+    if skip_imported:
+        parts.append(f"deja importați: {skip_imported}")
+    if skip_cooldown:
+        parts.append(f"în așteptare (min. {STAFF_LEAD_INVITE_COOLDOWN_DAYS} zile): {skip_cooldown}")
+    if skip_invalid:
+        parts.append(f"ignorate: {skip_invalid}")
+    if skip_errors:
+        parts.append(f"erori trimitere: {skip_errors}")
+    if sent:
+        messages.success(request, " ".join(parts))
+    elif skip_cooldown and not (skip_no_email or skip_imported or skip_invalid or skip_errors):
+        messages.warning(request, " ".join(parts))
+    else:
+        messages.warning(request, " ".join(parts) if len(parts) > 1 else "Nu s-a trimis nicio invitație (bifați lead-uri valide cu email).")
+    return _redirect_admin_add_user_preserve(request)
+
+
+def _redirect_admin_add_user_preserve(request):
+    pq = (request.POST.get("preserve_query") or "").strip()
+    base = reverse("admin_analysis_add_user")
+    if pq and "\n" not in pq and "://" not in pq and len(pq) < 4000:
+        return redirect(f"{base}?{pq}")
+    return redirect(base)
+
+
+@login_required
+@csrf_protect
+def admin_analysis_add_user_view(request):
+    """Staff: lead-uri înainte de cont Django; import/export CSV; filtre tip/județ/localitate; edit GET ?edit=pk."""
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+
+    qd = request.GET.copy()
+    qd.pop("edit", None)
+    filter_query = qd.urlencode()
+
+    editing_lead = None
+    open_manual_form = False
+
+    if request.method == "POST":
+        lead_id_post = (request.POST.get("lead_id") or "").strip()
+        if lead_id_post.isdigit():
+            lead_obj = get_object_or_404(StaffOnboardingLead, pk=int(lead_id_post))
+            form = StaffOnboardingLeadForm(request.POST, instance=lead_obj)
+            if form.is_valid():
+                form.save()
+                messages.success(request, f"Lead actualizat: {lead_obj.email}")
+                return _redirect_admin_add_user_preserve(request)
+            open_manual_form = True
+            editing_lead = lead_obj
+        else:
+            form = StaffOnboardingLeadForm(request.POST)
+            if form.is_valid():
+                lead = form.save(commit=False)
+                lead.created_by = request.user
+                lead.status = StaffOnboardingLead.ST_READY
+                lead.save()
+                messages.success(request, f"Lead salvat: {lead.email}")
+                return _redirect_admin_add_user_preserve(request)
+            open_manual_form = True
+    else:
+        edit_raw = (request.GET.get("edit") or "").strip()
+        if edit_raw.isdigit():
+            try:
+                editing_lead = StaffOnboardingLead.objects.get(pk=int(edit_raw))
+            except StaffOnboardingLead.DoesNotExist:
+                messages.error(request, "Lead inexistent.")
+            else:
+                form = StaffOnboardingLeadForm(instance=editing_lead)
+                open_manual_form = True
+        if editing_lead is None:
+            form = StaffOnboardingLeadForm()
+
+    recent_qs = _staff_onboarding_leads_qs(request)
+    recent_leads = list(recent_qs)
+    now = timezone.now()
+    invite_cd = timezone.timedelta(days=STAFF_LEAD_INVITE_COOLDOWN_DAYS)
+    for L in recent_leads:
+        em_ok = bool((L.email or "").strip())
+        L.invite_mail_checkbox = em_ok and not L.imported_user_id
+        L.invite_mail_cooldown = bool(L.invite_email_last_sent_at and (now - L.invite_email_last_sent_at) < invite_cd)
+    return render(
+        request,
+        "anunturi/admin_analysis_add_user.html",
+        {
+            "form": form,
+            "recent_leads": recent_leads,
+            "segment_labels": dict(SEGMENT_CHOICES),
+            "filter_query": filter_query,
+            "open_manual_form": open_manual_form,
+            "editing_lead": editing_lead,
+            "filter_account_kind": (request.GET.get("account_kind") or "").strip(),
+            "filter_judet": (request.GET.get("judet") or "").strip(),
+            "filter_oras": (request.GET.get("oras") or "").strip(),
+            "staff_invite_cooldown_days": STAFF_LEAD_INVITE_COOLDOWN_DAYS,
+            "staff_invite_max_batch": STAFF_LEAD_INVITE_MAX_BATCH,
+        },
+    )
+
+
+@login_required
+@csrf_protect
+@require_http_methods(["POST"])
+def admin_analysis_add_user_lead_delete_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    raw = (request.POST.get("lead_id") or "").strip()
+    if not raw.isdigit():
+        messages.error(request, "ID lead invalid.")
+        return _redirect_admin_add_user_preserve(request)
+    lead = get_object_or_404(StaffOnboardingLead, pk=int(raw))
+    em = lead.email
+    lead.delete()
+    messages.success(request, f"Lead șters: {em}")
+    return _redirect_admin_add_user_preserve(request)
+
+
+@login_required
+@csrf_protect
+@require_http_methods(["POST"])
+def admin_analysis_add_user_import_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    upload = request.FILES.get("csv_file")
+    if not upload:
+        messages.error(request, "Selectează un fișier CSV (UTF-8).")
+        return _redirect_admin_add_user_preserve(request)
+    raw = upload.read()
+    if len(raw) > 5 * 1024 * 1024:
+        messages.error(request, "Fișierul depășește 5 MB.")
+        return _redirect_admin_add_user_preserve(request)
+    try:
+        errors, n = import_csv_bytes(raw, created_by=request.user)
+    except UnicodeDecodeError:
+        messages.error(request, "Fișierul nu e UTF-8 valid. Salvează din Excel ca „CSV UTF-8”.")
+        return _redirect_admin_add_user_preserve(request)
+    except Exception as ex:
+        messages.error(request, f"Eroare la citirea CSV: {ex}")
+        return _redirect_admin_add_user_preserve(request)
+    if n:
+        messages.success(request, f"Import reușit: {n} rânduri adăugate în prospecte.")
+    if errors:
+        preview = "\n".join(errors[:12])
+        if len(errors) > 12:
+            preview += f"\n… +{len(errors) - 12} altele."
+        messages.warning(request, f"Probleme la import ({len(errors)}):\n{preview}")
+    if not n and not errors:
+        messages.info(request, "Nu s-a importat niciun rând (fișier gol sau doar antet).")
+    return _redirect_admin_add_user_preserve(request)
+
+
+@login_required
+@require_http_methods(["GET"])
+def admin_analysis_add_user_export_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    qs = _staff_onboarding_leads_qs(request)
+    payload = export_csv_bytes(qs)
+    resp = HttpResponse(payload, content_type="text/csv; charset=utf-8")
+    resp["Content-Disposition"] = 'attachment; filename="euadopt_prospecte_neinregistrati.csv"'
+    return resp
 
 
 # Reclama: hărți sloturi per „pagină” (nu navigăm către site-ul public, ci între sub-rute /reclama/...).
@@ -5660,23 +6023,82 @@ def account_upload_avatar_view(request):
 
 
 @login_required
-@require_POST
-def account_delete_view(request):
-    """Șterge definitiv utilizatorul curent și datele legate (CASCADE). Evită blocarea Django admin dacă e singurul superuser."""
-    from django.contrib.auth import logout as auth_logout
+@require_http_methods(["GET", "POST"])
+def account_delete_confirm_view(request):
+    """
+    Programare ștergere cont: parolă + confirmare → grație 14 zile (nu ștergere imediată).
+    Finalizarea (anonimizare / dezactivare) rulează din management command după expirare.
+    """
+    from django.contrib.auth import authenticate as auth_authenticate
 
+    from . import account_deletion as ad
+
+    user = request.user
     User = get_user_model()
-    user_pk = request.user.pk
-    if request.user.is_superuser and User.objects.filter(is_superuser=True).count() <= 1:
+    if user.is_superuser and User.objects.filter(is_superuser=True).count() <= 1:
         messages.error(
             request,
-            "Nu poți șterge singurul cont superuser. Creează un alt superuser din admin înainte.",
+            "Nu poți programa ștergerea singurului cont superuser. Creează un alt superuser din admin înainte.",
         )
         return redirect(reverse("account"))
-    auth_logout(request)
-    User.objects.filter(pk=user_pk).delete()
-    messages.success(request, "Contul tău a fost șters definitiv.")
-    return redirect(reverse("login"))
+
+    ap, _ = AccountProfile.objects.get_or_create(
+        user=user,
+        defaults={"role": AccountProfile.ROLE_PF},
+    )
+    if ad.account_has_pending_deletion(ap):
+        messages.info(
+            request,
+            "Ai deja o cerere de ștergere în perioada de grație. O poți anula din pagina Cont.",
+        )
+        return redirect(reverse("account"))
+
+    if request.method == "GET":
+        return render(
+            request,
+            "anunturi/account_delete_confirm.html",
+            {"grace_days": ad.ACCOUNT_DELETION_GRACE_DAYS},
+        )
+
+    password = (request.POST.get("password") or "").strip()
+    confirm = request.POST.get("confirm_deletion") == "1"
+    if not password:
+        messages.error(request, "Introdu parola contului.")
+        return redirect(reverse("account_delete"))
+    if not confirm:
+        messages.error(request, "Bifează că ești de acord cu programarea ștergerii pentru a continua.")
+        return redirect(reverse("account_delete"))
+    auth_user = auth_authenticate(request, username=user.username, password=password)
+    if auth_user is None or auth_user.pk != user.pk:
+        messages.error(request, "Parolă incorectă.")
+        return redirect(reverse("account_delete"))
+
+    until = ad.schedule_account_deletion(user, ap)
+    ad.send_deletion_scheduled_email(user=user, grace_until=until)
+    messages.success(
+        request,
+        "Cererea de ștergere a fost înregistrată. În următoarele "
+        f"{ad.ACCOUNT_DELETION_GRACE_DAYS} zile te poți autentifica și poți anula cererea din pagina Cont. "
+        f"După {until.strftime('%d.%m.%Y %H:%M')} contul va fi dezactivat definitiv, iar datele personale vor fi "
+        "anonimizate sau ascise (inclusiv pentru istoric ONG/colaborator), conform politicii platformei. "
+        "Ți-am trimis un email cu aceleași detalii.",
+    )
+    return redirect(reverse("account"))
+
+
+@login_required
+@require_POST
+def account_delete_cancel_view(request):
+    """Anulează cererea de ștergere în perioada de grație."""
+    from . import account_deletion as ad
+
+    ap = getattr(request.user, "account_profile", None)
+    if not ap or not ad.account_has_pending_deletion(ap):
+        messages.info(request, "Nu există o cerere de ștergere activă în perioada de grație.")
+        return redirect(reverse("account"))
+    ad.clear_pending_deletion(ap)
+    messages.success(request, "Cererea de ștergere a fost anulată. Contul tău rămâne activ.")
+    return redirect(reverse("account"))
 
 
 def _parse_phone_for_edit(phone_str):

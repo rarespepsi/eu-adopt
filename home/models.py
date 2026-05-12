@@ -157,6 +157,22 @@ class AccountProfile(models.Model):
     )
     role = models.CharField("Rol cont", max_length=20, choices=ROLE_CHOICES, default=ROLE_PF)
     is_public_shelter = models.BooleanField("Adăpost public", default=False)
+    # Ștergere cont cu grație (14 zile): programare → anulare din Cont sau finalizare soft la expirare.
+    pending_deletion_requested_at = models.DateTimeField(
+        "Cerere ștergere la",
+        null=True,
+        blank=True,
+    )
+    pending_deletion_grace_until = models.DateTimeField(
+        "Ștergere finală după (sfârșit grație)",
+        null=True,
+        blank=True,
+    )
+    pending_deletion_finalized_at = models.DateTimeField(
+        "Ștergere/anonymizare finalizată la",
+        null=True,
+        blank=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -1651,4 +1667,117 @@ class TransportTripRating(models.Model):
 
     def __str__(self):
         return f"Rating #{self.pk} job={self.job_id} {self.stars}*"
+
+
+class StaffOnboardingLead(models.Model):
+    """
+    Persoană / entitate înainte de cont Django: date din fișă, rol, segmente pentru mailuri.
+    Consimțământ demonstrabil (T&C, GDPR, marketing) se înregistrează la confirmare (link/token), nu doar aici.
+    """
+
+    KIND_PF = "pf"
+    KIND_ORG = "org"
+    KIND_COLLAB = "collaborator"
+    ACCOUNT_KIND_CHOICES = [
+        (KIND_PF, "Persoană fizică"),
+        (KIND_ORG, "ONG / Asociație / Adăpost"),
+        (KIND_COLLAB, "Colaborator"),
+    ]
+
+    COLLAB_CABINET = "cabinet"
+    COLLAB_SERVICII = "servicii"
+    COLLAB_MAGAZIN = "magazin"
+    COLLAB_TRANSPORT = "transport"
+    COLLAB_SUBTYPE_CHOICES = [
+        ("", "—"),
+        (COLLAB_CABINET, "Cabinet veterinar"),
+        (COLLAB_SERVICII, "Servicii (altele)"),
+        (COLLAB_MAGAZIN, "Magazin / grooming"),
+        (COLLAB_TRANSPORT, "Transportator"),
+    ]
+
+    ST_DRAFT = "draft"
+    ST_READY = "ready"
+    ST_INVITED = "invited"
+    ST_CONSENTED = "consented"
+    ST_IMPORTED = "imported"
+    ST_ARCHIVED = "archived"
+    STATUS_CHOICES = [
+        (ST_DRAFT, "Draft"),
+        (ST_READY, "Pregătit"),
+        (ST_INVITED, "Invitație trimisă"),
+        (ST_CONSENTED, "Consimțăminte confirmate"),
+        (ST_IMPORTED, "Importat ca utilizator"),
+        (ST_ARCHIVED, "Arhivat"),
+    ]
+
+    email = models.EmailField("E-mail", db_index=True)
+    phone = models.CharField("Telefon", max_length=40, blank=True, default="")
+    display_name = models.CharField("Nume afișat / persoană contact", max_length=200)
+    org_display_name = models.CharField("Denumire organizație (ONG/adăpost)", max_length=255, blank=True, default="")
+    username_suggested = models.CharField("Username propus (login)", max_length=150, blank=True, default="")
+    first_name = models.CharField("Prenume", max_length=150, blank=True, default="")
+    last_name = models.CharField("Nume", max_length=150, blank=True, default="")
+    company_legal_name = models.CharField("Denumire legală firmă / ONG", max_length=255, blank=True, default="")
+    company_cui = models.CharField("CUI/CIF", max_length=32, blank=True, default="")
+    company_cui_has_ro = models.BooleanField("CUI cu RO", default=False)
+    company_address = models.CharField("Adresă firmă", max_length=255, blank=True, default="")
+    company_reg_com = models.CharField("Nr. Reg. Com. / J", max_length=64, blank=True, default="")
+    company_representative = models.CharField("Reprezentant legal", max_length=255, blank=True, default="")
+    company_judet = models.CharField("Județ firmă", max_length=120, blank=True, default="")
+    company_oras = models.CharField("Oraș firmă", max_length=120, blank=True, default="")
+    is_public_shelter = models.BooleanField("Adăpost public (ONG)", default=False)
+    account_kind = models.CharField("Rol în site (țintă)", max_length=20, choices=ACCOUNT_KIND_CHOICES, db_index=True)
+    collaborator_subtype = models.CharField("Tip colaborator", max_length=20, blank=True, default="", choices=COLLAB_SUBTYPE_CHOICES)
+    judet = models.CharField("Județ", max_length=120, blank=True, default="")
+    oras = models.CharField("Oraș / localitate", max_length=120, blank=True, default="")
+    segments = models.JSONField("Segmente / categorii mail", default=list, blank=True)
+    marketing_emails_requested = models.BooleanField(
+        "Include în viitoare mailuri (după confirmare dublă / bifă pe site)",
+        default=False,
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=ST_READY, db_index=True)
+    notes = models.TextField("Notițe staff", blank=True, default="")
+
+    invite_email_last_sent_at = models.DateTimeField(
+        "Ultima invitație email (staff)",
+        null=True,
+        blank=True,
+    )
+
+    consent_invite_token = models.CharField(max_length=64, blank=True, default="", db_index=True)
+    consent_terms_at = models.DateTimeField("Accept termeni (confirmare)", null=True, blank=True)
+    consent_privacy_at = models.DateTimeField("Accept GDPR (confirmare)", null=True, blank=True)
+    consent_marketing_at = models.DateTimeField("Accept marketing (confirmare)", null=True, blank=True)
+    legal_docs_version = models.CharField("Versiune documente la confirmare", max_length=20, blank=True, default="")
+
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="staff_onboarding_leads_created",
+    )
+    imported_user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="staff_onboarding_lead_source",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Lead onboarding (staff)"
+        verbose_name_plural = "Lead-uri onboarding (staff)"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["-created_at"]),
+            models.Index(fields=["account_kind", "status"]),
+            models.Index(fields=["judet", "oras"]),
+        ]
+
+    def __str__(self):
+        return f"{self.email} ({self.get_account_kind_display()})"
 
