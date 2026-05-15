@@ -1,0 +1,11 @@
+# EU-ADOPT — marker import StaffOnboardingLead (Add USER)
+#
+# CSV-ul alăturat (registru_caini_adaposturi.csv) a fost deja importat într-o sesiune anterioară,
+# înainte de generarea automată a acestui fișier. Valori raportate atunci:
+#   rows_created: 205
+#   placeholder_emails: 63
+#   created_by: rares (pk=3)
+#
+marker_added_post_factum_at_utc: 2026-05-13T10:52:11+00:00
+import_prospecte_csv_rows_created: 205
+import_prospecte_csv_placeholder_emails: 63

@@ -1,0 +1,7 @@
+# EU-ADOPT — marker import StaffOnboardingLead (Add USER)
+imported_at_utc: 2026-05-14T05:41:56.144605+00:00
+source_csv: ramses_adaposturi.csv
+rows_created: 74
+placeholder_emails: 23
+created_by: rares (pk=3)
+django_command: import_prospecte_csv --path 'database\exports\ramses_adaposturi.csv'
