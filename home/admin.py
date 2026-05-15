@@ -319,13 +319,14 @@ class StaffOnboardingLeadAdmin(admin.ModelAdmin):
         "oras",
         "company_cui",
         "collaborator_subtype",
+        "vet_prospect_kind",
         "status",
         "invite_email_last_sent_at",
         "marketing_emails_requested",
         "created_at",
         "created_by",
     )
-    list_filter = ("account_kind", "status", "marketing_emails_requested")
+    list_filter = ("account_kind", "status", "marketing_emails_requested", "vet_prospect_kind")
     search_fields = ("email", "display_name", "org_display_name", "phone", "judet")
     raw_id_fields = ("created_by", "imported_user")
     readonly_fields = (

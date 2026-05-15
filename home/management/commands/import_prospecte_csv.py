@@ -12,13 +12,44 @@ Exemple:
 from __future__ import annotations
 
 from pathlib import Path
+import shlex
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from home.staff_onboarding_csv import import_csv_bytes
 
 User = get_user_model()
+
+
+def _write_import_marker(
+    csv_path: Path,
+    *,
+    user,
+    rows_created: int,
+    placeholder_emails: int,
+    errors: list[str],
+) -> None:
+    """Lângă fiecare CSV importat: `<nume>.imported` (text) — semn că a trecut prin import_prospecte_csv."""
+    marker_path = csv_path.parent / f"{csv_path.name}.imported"
+    lines = [
+        "# EU-ADOPT — marker import StaffOnboardingLead (Add USER)",
+        f"imported_at_utc: {timezone.now().isoformat()}",
+        f"source_csv: {csv_path.name}",
+        f"rows_created: {rows_created}",
+        f"placeholder_emails: {placeholder_emails}",
+        f"created_by: {user.username} (pk={user.pk})",
+        f"django_command: import_prospecte_csv --path {shlex.quote(str(csv_path))}",
+    ]
+    if errors:
+        lines.append(f"errors_count: {len(errors)}")
+        lines.append("errors_preview:")
+        for e in errors[:15]:
+            lines.append(f"  - {e}")
+        if len(errors) > 15:
+            lines.append(f"  … +{len(errors) - 15} altele")
+    marker_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 class Command(BaseCommand):
@@ -98,7 +129,11 @@ class Command(BaseCommand):
             for e in errors:
                 all_errors.append(f"{fp.name}: {e}")
             self.stdout.write(self.style.SUCCESS(f"  {fp.name}: +{n} rânduri (placeholder email: {n_ph})\n"))
-
+            try:
+                _write_import_marker(fp, user=user, rows_created=n, placeholder_emails=n_ph, errors=errors)
+                self.stdout.write(f"  → semn import: {fp.name}.imported\n")
+            except OSError as ex:
+                self.stderr.write(self.style.WARNING(f"  Nu s-a putut scrie markerul .imported: {ex}\n"))
         self.stdout.write(self.style.SUCCESS(f"\nTotal importat: {total_created} prospecte.\n"))
         if all_errors:
             preview = "\n".join(all_errors[:20])

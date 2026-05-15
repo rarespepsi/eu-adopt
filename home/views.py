@@ -2513,7 +2513,7 @@ STAFF_INVITE_GET_PARAM = "inv"
 
 
 def _staff_collab_subtype_matches_lead_profile(lead_subtype: str, profile_collab_type: str) -> bool:
-    """Lead CMVRO poate avea subtip „cv”; profilul colaborator folosește adesea „cabinet” — le considerăm echivalente."""
+    """Lead CMVRO putea avea subtip „cv” (alias cabinet veterinar); unificat la „cabinet” în DB."""
     ls = (lead_subtype or "").strip()
     pt = (profile_collab_type or "").strip()
     if not ls:
@@ -2521,7 +2521,9 @@ def _staff_collab_subtype_matches_lead_profile(lead_subtype: str, profile_collab
     if ls == pt:
         return True
     vet = frozenset({StaffOnboardingLead.COLLAB_CABINET, StaffOnboardingLead.COLLAB_CV})
-    return ls in vet and pt in vet
+    if ls in vet and pt in vet:
+        return True
+    return False
 
 
 def _capture_staff_invite_token_for_signup(request, expected_lead_kind: str) -> None:
@@ -5297,19 +5299,31 @@ def _staff_onboarding_leads_filtered_qs_from_querydict(qd: QueryDict):
     if csub in ("cabinet", "cv"):
         qs = qs.filter(
             account_kind=StaffOnboardingLead.KIND_COLLAB,
-            collaborator_subtype__in=(
-                StaffOnboardingLead.COLLAB_CABINET,
-                StaffOnboardingLead.COLLAB_CV,
-            ),
+            collaborator_subtype=StaffOnboardingLead.COLLAB_CABINET,
         )
     elif csub in (
         StaffOnboardingLead.COLLAB_SERVICII,
         StaffOnboardingLead.COLLAB_MAGAZIN,
+        StaffOnboardingLead.COLLAB_GROOMING,
         StaffOnboardingLead.COLLAB_TRANSPORT,
     ):
         qs = qs.filter(account_kind=StaffOnboardingLead.KIND_COLLAB, collaborator_subtype=csub)
     elif csub in (StaffOnboardingLead.COLLAB_ADPUB, StaffOnboardingLead.COLLAB_ADPRV):
         qs = qs.filter(account_kind=StaffOnboardingLead.KIND_ADAPOST, collaborator_subtype=csub)
+    vk = (qd.get("vet_kind") or "").strip().lower()
+    if vk == StaffOnboardingLead.VET_PROSPECT_FV:
+        qs = qs.filter(
+            account_kind=StaffOnboardingLead.KIND_COLLAB,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_CABINET,
+            vet_prospect_kind=StaffOnboardingLead.VET_PROSPECT_FV,
+        )
+    elif vk == StaffOnboardingLead.VET_PROSPECT_CV:
+        qs = qs.filter(
+            account_kind=StaffOnboardingLead.KIND_COLLAB,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_CABINET,
+        ).filter(
+            Q(vet_prospect_kind=StaffOnboardingLead.VET_PROSPECT_CV) | Q(vet_prospect_kind=""),
+        )
     return qs.order_by("-created_at")
 
 
@@ -5538,6 +5552,7 @@ def admin_analysis_add_user_view(request):
             "filter_judet": (request.GET.get("judet") or "").strip(),
             "filter_oras": (request.GET.get("oras") or "").strip(),
             "filter_collab_subtype": (request.GET.get("collab_subtype") or "").strip(),
+            "filter_vet_kind": (request.GET.get("vet_kind") or "").strip(),
             "staff_invite_cooldown_days": STAFF_LEAD_INVITE_COOLDOWN_DAYS,
             "staff_invite_max_batch": STAFF_LEAD_INVITE_MAX_BATCH,
             "show_imported_active": show_imported_active,

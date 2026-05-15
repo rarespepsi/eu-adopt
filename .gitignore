@@ -28,3 +28,7 @@ playwright/.cache/
 # Local snapshots/backups (keep only on disk)
 _archive/project_snapshots/*.zip
 _archive/project_snapshots/*.txt
+
+# Copii DB / dump-uri locale (vezi database/README.md)
+database/backups/**
+!database/backups/.gitkeep

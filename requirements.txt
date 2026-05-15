@@ -6,3 +6,5 @@ pillow
 psycopg2-binary
 fpdf2==2.8.2
 pdfplumber==0.11.5
+beautifulsoup4>=4.12.0
+duckduckgo-search>=7.0.0

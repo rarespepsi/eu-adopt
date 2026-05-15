@@ -1688,21 +1688,33 @@ class StaffOnboardingLead(models.Model):
     ]
 
     COLLAB_CABINET = "cabinet"
+    # Prescurtare istorică în importuri CSV / profiluri vechi; valoarea canonică în DB este COLLAB_CABINET.
     COLLAB_CV = "cv"
     COLLAB_SERVICII = "servicii"
     COLLAB_MAGAZIN = "magazin"
+    COLLAB_GROOMING = "grooming"
     COLLAB_TRANSPORT = "transport"
     COLLAB_ADPUB = "adpub"
     COLLAB_ADPRV = "adprv"
     COLLAB_SUBTYPE_CHOICES = [
         ("", "—"),
-        (COLLAB_CABINET, "Cabinet veterinar"),
-        (COLLAB_CV, "CV"),
+        (COLLAB_CABINET, "CV"),
         (COLLAB_SERVICII, "Servicii (altele)"),
-        (COLLAB_MAGAZIN, "Magazin / grooming"),
+        (COLLAB_MAGAZIN, "Magazin"),
+        (COLLAB_GROOMING, "Grooming"),
         (COLLAB_TRANSPORT, "Transportator"),
         (COLLAB_ADPUB, "ADPUB"),
         (COLLAB_ADPRV, "ADPRV"),
+    ]
+
+    # Colaborator + subtip cabinet (afișat „CV”): clinică vs farmacie veterinară în prospectare.
+    VET_PROSPECT_NONE = ""
+    VET_PROSPECT_CV = "cv"
+    VET_PROSPECT_FV = "fv"
+    VET_PROSPECT_KIND_CHOICES = [
+        (VET_PROSPECT_NONE, "—"),
+        (VET_PROSPECT_CV, "CV"),
+        (VET_PROSPECT_FV, "FV"),
     ]
 
     ST_DRAFT = "draft"
@@ -1738,6 +1750,15 @@ class StaffOnboardingLead(models.Model):
     is_public_shelter = models.BooleanField("Adăpost public (ONG)", default=False)
     account_kind = models.CharField("Rol în site (țintă)", max_length=20, choices=ACCOUNT_KIND_CHOICES, db_index=True)
     collaborator_subtype = models.CharField("Tip colaborator", max_length=20, blank=True, default="", choices=COLLAB_SUBTYPE_CHOICES)
+    vet_prospect_kind = models.CharField(
+        "Prospect vet. (cabinet colab.)",
+        max_length=3,
+        blank=True,
+        default="",
+        db_index=True,
+        choices=VET_PROSPECT_KIND_CHOICES,
+        help_text="Doar pentru colaborator cu tip cabinet: clinică (CV) sau farmacie (FV).",
+    )
     judet = models.CharField("Județ", max_length=120, blank=True, default="")
     oras = models.CharField("Oraș / localitate", max_length=120, blank=True, default="")
     segments = models.JSONField("Segmente / categorii mail", default=list, blank=True)

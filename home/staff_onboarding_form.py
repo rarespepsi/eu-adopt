@@ -11,11 +11,11 @@ SEGMENT_CHOICES = [
     ("noutati_evenimente_site", "Evenimente site / EU-ADOPT"),
 ]
 
-_COLLAB_RADIO = [
-    (StaffOnboardingLead.COLLAB_CABINET, "Cabinet veterinar"),
-    (StaffOnboardingLead.COLLAB_CV, "CV"),
-    (StaffOnboardingLead.COLLAB_SERVICII, "Servicii (altele)"),
-    (StaffOnboardingLead.COLLAB_MAGAZIN, "Magazin / grooming"),
+# Pagina Add USER (staff): 4 tipuri colaborator (fără servicii în lista principală).
+_COLLAB_RADIO_STAFF_ADD_USER = [
+    (StaffOnboardingLead.COLLAB_CABINET, "CV"),
+    (StaffOnboardingLead.COLLAB_MAGAZIN, "Magazin"),
+    (StaffOnboardingLead.COLLAB_GROOMING, "Grooming"),
     (StaffOnboardingLead.COLLAB_TRANSPORT, "Transportator"),
 ]
 _ADAPOST_SUBTYPE_RADIO = [
@@ -23,8 +23,19 @@ _ADAPOST_SUBTYPE_RADIO = [
     (StaffOnboardingLead.COLLAB_ADPRV, "ADPRV"),
 ]
 
+SEGMENT_KEYS = frozenset(dict(SEGMENT_CHOICES).keys())
+
 
 class StaffOnboardingLeadForm(forms.ModelForm):
+    """Prospect staff — câmpuri aliniate la fișele de înregistrare (PF / ONG / colaborator / adăpost)."""
+
+    segments = forms.MultipleChoiceField(
+        label="Segmente / noutăți email (ca la înregistrare)",
+        choices=SEGMENT_CHOICES,
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+    )
+
     class Meta:
         model = StaffOnboardingLead
         fields = [
@@ -48,6 +59,10 @@ class StaffOnboardingLeadForm(forms.ModelForm):
             "company_judet",
             "company_oras",
             "collaborator_subtype",
+            "vet_prospect_kind",
+            "segments",
+            "marketing_emails_requested",
+            "notes",
         ]
         widgets = {
             "judet": forms.TextInput(
@@ -79,8 +94,11 @@ class StaffOnboardingLeadForm(forms.ModelForm):
                 }
             ),
             "collaborator_subtype": forms.RadioSelect,
+            "vet_prospect_kind": forms.RadioSelect,
             "is_public_shelter": forms.CheckboxInput(attrs={"class": "manual-checkbox"}),
             "company_cui_has_ro": forms.CheckboxInput(attrs={"class": "manual-checkbox"}),
+            "marketing_emails_requested": forms.CheckboxInput(attrs={"class": "manual-checkbox"}),
+            "notes": forms.Textarea(attrs={"rows": 4, "cols": 56, "class": "manual-notes-text"}),
         }
         labels = {
             "email": "E-mail",
@@ -103,12 +121,45 @@ class StaffOnboardingLeadForm(forms.ModelForm):
             "company_judet": "Județ firmă",
             "company_oras": "Oraș / localitate firmă",
             "collaborator_subtype": "Tip colaborator",
+            "vet_prospect_kind": "Prospect cabinet (clinică vs farmacie)",
+            "marketing_emails_requested": "Notificări email EU-Adopt (noutăți — ca la înregistrare)",
+            "notes": "Notă internă staff",
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["collaborator_subtype"].choices = list(_COLLAB_RADIO) + list(_ADAPOST_SUBTYPE_RADIO)
+        collab_choices = list(_COLLAB_RADIO_STAFF_ADD_USER)
+        inst = getattr(self, "instance", None)
+        if inst and getattr(inst, "pk", None):
+            s = (inst.collaborator_subtype or "").strip()
+            if s == StaffOnboardingLead.COLLAB_SERVICII:
+                label = dict(StaffOnboardingLead.COLLAB_SUBTYPE_CHOICES).get(s, s)
+                collab_choices = [(s, label)] + collab_choices
+        self.fields["collaborator_subtype"].choices = collab_choices + list(_ADAPOST_SUBTYPE_RADIO)
         self.fields["collaborator_subtype"].required = False
+        self.fields["vet_prospect_kind"].choices = [
+            (StaffOnboardingLead.VET_PROSPECT_CV, "CV — clinică veterinară"),
+            (StaffOnboardingLead.VET_PROSPECT_FV, "FV — farmacie veterinară"),
+        ]
+        self.fields["vet_prospect_kind"].required = False
+        # Prospect nou: rol implicit PF ca să nu rămână ascunse toate secțiunile specifice rolului.
+        if not self.data and not getattr(self.instance, "pk", None):
+            self.initial.setdefault("account_kind", StaffOnboardingLead.KIND_PF)
+        if self.instance and getattr(self.instance, "pk", None):
+            seg = self.instance.segments
+            if isinstance(seg, list) and seg:
+                valid = [x for x in seg if x in SEGMENT_KEYS]
+                if valid:
+                    self.initial["segments"] = valid
+            if (
+                self.instance.account_kind == StaffOnboardingLead.KIND_COLLAB
+                and (self.instance.collaborator_subtype or "").strip() == StaffOnboardingLead.COLLAB_CABINET
+                and (self.instance.vet_prospect_kind or "").strip() not in (
+                    StaffOnboardingLead.VET_PROSPECT_CV,
+                    StaffOnboardingLead.VET_PROSPECT_FV,
+                )
+            ):
+                self.initial.setdefault("vet_prospect_kind", StaffOnboardingLead.VET_PROSPECT_CV)
 
     def clean(self):
         cleaned = super().clean()
@@ -124,6 +175,14 @@ class StaffOnboardingLeadForm(forms.ModelForm):
                 self.add_error("collaborator_subtype", "Alege ADPUB (public) sau ADPRV (privat).")
         else:
             cleaned["collaborator_subtype"] = ""
+
+        segs = cleaned.get("segments")
+        if not segs:
+            cleaned["segments"] = []
+        elif isinstance(segs, tuple):
+            cleaned["segments"] = list(segs)
+        else:
+            cleaned["segments"] = list(segs)
 
         if kind == StaffOnboardingLead.KIND_PF:
             cleaned["org_display_name"] = ""
@@ -147,5 +206,15 @@ class StaffOnboardingLeadForm(forms.ModelForm):
             StaffOnboardingLead.COLLAB_ADPRV,
         ):
             cleaned["is_public_shelter"] = sub == StaffOnboardingLead.COLLAB_ADPUB
+
+        sub_final = (cleaned.get("collaborator_subtype") or "").strip()
+        if kind == StaffOnboardingLead.KIND_COLLAB and sub_final == StaffOnboardingLead.COLLAB_CABINET:
+            vk = (cleaned.get("vet_prospect_kind") or "").strip()
+            if vk == StaffOnboardingLead.VET_PROSPECT_FV:
+                cleaned["vet_prospect_kind"] = StaffOnboardingLead.VET_PROSPECT_FV
+            else:
+                cleaned["vet_prospect_kind"] = StaffOnboardingLead.VET_PROSPECT_CV
+        else:
+            cleaned["vet_prospect_kind"] = ""
 
         return cleaned

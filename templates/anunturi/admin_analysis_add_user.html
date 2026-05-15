@@ -645,6 +645,15 @@
 		letter-spacing: 0.02em;
 	}
 	.add-user-manual-section.is-hidden { display: none !important; }
+	/* Secțiuni pe rol: mereu în pagină; inactive = estompat (nu ascunse complet) */
+	.add-user-manual-section.manual-section-inactive {
+		opacity: 0.48;
+		filter: saturate(0.75);
+		transition: opacity 0.15s ease, filter 0.15s ease;
+	}
+	.add-user-manual-details .add-user-radio-row-inactive {
+		opacity: 0.42;
+	}
 	.add-user-manual-collab-box {
 		border: 1px solid rgba(6, 182, 212, 0.35);
 		border-radius: 0.55rem;
@@ -655,7 +664,29 @@
 	.add-user-form-wrap ul:not(.errorlist) li { display: flex; align-items: flex-start; gap: 0.45rem; font-size: 0.8rem; font-weight: 500; color: #e2e8f0; }
 	.add-user-form-wrap ul:not(.errorlist) li label { margin: 0; font-weight: 500; color: #cbd5e1; }
 	.add-user-form-wrap ul:not(.errorlist) input[type="radio"] { margin-top: 0.2rem; width: auto; accent-color: #06b6d4; }
+	.add-user-form-wrap ul:not(.errorlist) input[type="checkbox"]:not(.manual-checkbox) { margin-top: 0.15rem; width: auto; accent-color: #06b6d4; flex-shrink: 0; }
 	.add-user-form-wrap .manual-checkbox { width: auto; accent-color: #06b6d4; }
+	.add-user-form-wrap .manual-notes-text {
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+		background: rgba(15, 23, 42, 0.6);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 0.4rem;
+		color: #e2e8f0;
+		font-size: 0.82rem;
+		padding: 0.45rem 0.5rem;
+		resize: vertical;
+		min-height: 5rem;
+	}
+	.add-user-manual-section--residence .add-user-manual-hint,
+	.add-user-manual-section--prefs .add-user-manual-hint {
+		margin: 0 0 0.45rem;
+		font-size: 0.72rem;
+		color: #94a3b8;
+		line-height: 1.35;
+	}
+	.manual-segments-label { margin: 0 0 0.25rem; font-size: 0.78rem; font-weight: 600; color: #cbd5e1; }
 	body.page-admin-analysis #djangoMessagesBanner {
 		background: rgba(30, 41, 59, 0.92) !important;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -780,11 +811,11 @@
 	function syncManualLeadRoleSections() {
 		var sel = document.getElementById("id_account_kind");
 		if (!sel) return;
-		var v = sel.value || "";
+		var v = (sel.value || "").trim();
 		function show(selClass, on) {
 			var nodes = document.querySelectorAll(selClass);
 			for (var i = 0; i < nodes.length; i++) {
-				nodes[i].classList.toggle("is-hidden", !on);
+				nodes[i].classList.toggle("manual-section-inactive", !on);
 				var inside = nodes[i].querySelectorAll("input, select, textarea");
 				for (var j = 0; j < inside.length; j++) {
 					if (inside[j].type === "hidden") continue;
@@ -796,13 +827,22 @@
 		show(".manual-show-org", v === "org" || v === "adapost");
 		show(".manual-show-firma", v === "org" || v === "collaborator" || v === "adapost");
 		show(".manual-show-collab-type", v === "collaborator" || v === "adapost");
+		var subCabinet = false;
+		var radiosSub = document.querySelectorAll("#manual-lead-form input[name='collaborator_subtype']");
+		for (var si = 0; si < radiosSub.length; si++) {
+			if (radiosSub[si].value === "cabinet" && radiosSub[si].checked) {
+				subCabinet = true;
+				break;
+			}
+		}
+		show(".manual-show-vet-cabinet", v === "collaborator" && subCabinet);
 		var titleEl = document.getElementById("add-user-collab-type-title");
 		if (titleEl) {
 			if (v === "adapost") titleEl.textContent = "Adăpost — ADPUB (public) / ADPRV (privat)";
 			else if (v === "collaborator") titleEl.textContent = "Tip colaborator";
 			else titleEl.textContent = "Tip colaborator / adăpost";
 		}
-		var valsCollab = ["cabinet", "cv", "servicii", "magazin", "transport"];
+		var valsCollab = ["cabinet", "magazin", "grooming", "transport", "servicii"];
 		var valsAdap = ["adpub", "adprv"];
 		var radios = document.querySelectorAll("#manual-lead-form input[name='collaborator_subtype']");
 		for (var ri = 0; ri < radios.length; ri++) {
@@ -812,7 +852,11 @@
 			else if (v === "adapost") showR = valsAdap.indexOf(val) >= 0;
 			var wrap = radios[ri].closest("li");
 			if (!wrap) wrap = radios[ri].closest("label");
-			if (wrap) wrap.style.display = showR ? "" : "none";
+			if (wrap) {
+				wrap.classList.toggle("add-user-radio-row-inactive", !showR);
+				wrap.style.display = "";
+			}
+			radios[ri].disabled = !showR;
 			if (!showR && radios[ri].checked) radios[ri].checked = false;
 		}
 	}
@@ -820,6 +864,38 @@
 	if (ak) {
 		ak.addEventListener("change", syncManualLeadRoleSections);
 		syncManualLeadRoleSections();
+	}
+	var manualForm = document.getElementById("manual-lead-form");
+	if (manualForm) {
+		var subRadios = manualForm.querySelectorAll("input[name='collaborator_subtype']");
+		for (var sri = 0; sri < subRadios.length; sri++) {
+			subRadios[sri].addEventListener("change", syncManualLeadRoleSections);
+		}
+	}
+	var manualDetails = document.getElementById("manual-lead-add");
+	var toggleManualBtn = document.getElementById("add-user-toggle-manual");
+	if (manualDetails && toggleManualBtn) {
+		function syncManualFormToggleButton() {
+			var o = manualDetails.open;
+			toggleManualBtn.setAttribute("aria-expanded", o ? "true" : "false");
+			toggleManualBtn.textContent = o ? "Ascunde formularul" : "Formular manual";
+		}
+		syncManualFormToggleButton();
+		toggleManualBtn.addEventListener("click", function() {
+			manualDetails.open = !manualDetails.open;
+			syncManualFormToggleButton();
+		});
+		manualDetails.addEventListener("toggle", function() {
+			syncManualFormToggleButton();
+			if (manualDetails.open) {
+				syncManualLeadRoleSections();
+				try {
+					manualDetails.scrollIntoView({ block: "nearest", behavior: "smooth" });
+				} catch (e) {
+					manualDetails.scrollIntoView(true);
+				}
+			}
+		});
 	}
 	var csvImportInput = document.getElementById("csv-import");
 	var csvImportForm = csvImportInput && csvImportInput.form;
@@ -862,13 +938,18 @@
 				<label for="f-collab-sub">Colaboratori</label>
 				<select id="f-collab-sub" name="collab_subtype">
 					<option value="" {% if not filter_collab_subtype %}selected{% endif %}>— Toate —</option>
-					<option value="cabinet" {% if filter_collab_subtype == "cabinet" %}selected{% endif %}>Cabinet veterinar</option>
-					<option value="cv" {% if filter_collab_subtype == "cv" %}selected{% endif %}>CV</option>
-					<option value="adpub" {% if filter_collab_subtype == "adpub" %}selected{% endif %}>ADPUB</option>
-					<option value="adprv" {% if filter_collab_subtype == "adprv" %}selected{% endif %}>ADPRV</option>
-					<option value="servicii" {% if filter_collab_subtype == "servicii" %}selected{% endif %}>Servicii (altele)</option>
-					<option value="magazin" {% if filter_collab_subtype == "magazin" %}selected{% endif %}>Magazin / grooming</option>
+					<option value="cabinet" {% if filter_collab_subtype == "cabinet" %}selected{% endif %}>CV</option>
+					<option value="magazin" {% if filter_collab_subtype == "magazin" %}selected{% endif %}>Magazin</option>
+					<option value="grooming" {% if filter_collab_subtype == "grooming" %}selected{% endif %}>Grooming</option>
 					<option value="transport" {% if filter_collab_subtype == "transport" %}selected{% endif %}>Transportator</option>
+				</select>
+			</div>
+			<div>
+				<label for="f-vet-kind">Cabinet vet. (prospect)</label>
+				<select id="f-vet-kind" name="vet_kind">
+					<option value="" {% if not filter_vet_kind %}selected{% endif %}>— Toate —</option>
+					<option value="cv" {% if filter_vet_kind == "cv" %}selected{% endif %}>CV (clinică)</option>
+					<option value="fv" {% if filter_vet_kind == "fv" %}selected{% endif %}>FV (farmacie)</option>
 				</select>
 			</div>
 			<div>
@@ -889,6 +970,7 @@
 			</div>
 		</form>
 			<div class="add-user-top-bar-tail">
+			<button type="button" id="add-user-toggle-manual" class="add-user-btn add-user-btn--secondary" aria-expanded="{% if open_manual_form %}true{% else %}false{% endif %}" aria-controls="manual-lead-add">{% if open_manual_form %}Ascunde formularul{% else %}Formular manual{% endif %}</button>
 			<a class="add-user-btn" href="{% url 'admin_analysis_add_user_export' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Export CSV</a>
 			<form class="add-user-import-form" method="post" action="{% url 'admin_analysis_add_user_import' %}" enctype="multipart/form-data">
 				{% csrf_token %}
@@ -900,7 +982,7 @@
 		</div>
 
 		<details id="manual-lead-add" class="add-user-manual-details" {% if open_manual_form %}open{% endif %}>
-			<summary class="add-user-manual-summary--sr">Formular manual lead — se deschide la editare din tabel (Modifică) sau când pagina se încarcă cu formularul deschis</summary>
+			<summary class="add-user-manual-summary--sr">Formular manual prospect — deschide din bara de sus (înainte de Export CSV) sau la editare din tabel</summary>
 			<div class="add-user-form-wrap">
 				{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-adduser-manual" %}
 				<datalist id="city-list-adduser-manual"></datalist>
@@ -934,6 +1016,9 @@
 						{{ form.account_kind }}
 						{{ form.account_kind.errors }}
 					</p>
+					<p class="add-user-manual-hint" style="margin-top:-0.15rem;margin-bottom:0.45rem;max-width:36rem;">
+						Toate casetele de mai jos rămân vizibile; cele care nu se aplică rolului ales sunt estompate și nu se trimit la salvare. Schimbă „Rol țintă în site” pentru a completa alt set.
+					</p>
 					<p>
 						{{ form.display_name.label_tag }}
 						{{ form.display_name }}
@@ -945,18 +1030,9 @@
 						{{ form.username_suggested.errors }}
 					</p>
 
-					<div class="add-user-manual-section manual-show-pf is-hidden">
-						<h3>Persoană fizică</h3>
-						<p>
-							{{ form.first_name.label_tag }}
-							{{ form.first_name }}
-							{{ form.first_name.errors }}
-						</p>
-						<p>
-							{{ form.last_name.label_tag }}
-							{{ form.last_name }}
-							{{ form.last_name.errors }}
-						</p>
+					<div class="add-user-manual-section add-user-manual-section--residence">
+						<h3>Reședință (județ / localitate)</h3>
+						<p class="add-user-manual-hint">Același tip de câmpuri ca în fișele de înregistrare — vizibil pentru toate categoriile.</p>
 						<p>
 							{{ form.judet.label_tag }}
 							{{ form.judet }}
@@ -969,7 +1045,21 @@
 						</p>
 					</div>
 
-					<div class="add-user-manual-section manual-show-org is-hidden">
+					<div class="add-user-manual-section manual-show-pf">
+						<h3>Persoană fizică</h3>
+						<p>
+							{{ form.first_name.label_tag }}
+							{{ form.first_name }}
+							{{ form.first_name.errors }}
+						</p>
+						<p>
+							{{ form.last_name.label_tag }}
+							{{ form.last_name }}
+							{{ form.last_name.errors }}
+						</p>
+					</div>
+
+					<div class="add-user-manual-section manual-show-org">
 						<h3>ONG / firmă</h3>
 						<p>
 							{{ form.org_display_name.label_tag }}
@@ -983,7 +1073,7 @@
 						</p>
 					</div>
 
-					<div class="add-user-manual-section manual-show-firma is-hidden">
+					<div class="add-user-manual-section manual-show-firma">
 						<h3>Date firmă</h3>
 						<p>
 							{{ form.company_legal_name.label_tag }}
@@ -1027,10 +1117,34 @@
 						</p>
 					</div>
 
-					<div class="add-user-manual-section manual-show-collab-type manual-collab-box is-hidden">
+					<div class="add-user-manual-section manual-show-collab-type manual-collab-box">
 						<h3 id="add-user-collab-type-title">Tip colaborator</h3>
 						{{ form.collaborator_subtype.errors }}
 						{{ form.collaborator_subtype }}
+					</div>
+
+					<div class="add-user-manual-section manual-show-vet-cabinet manual-section-inactive manual-collab-box">
+						<h3>Prospect cabinet veterinar</h3>
+						<p class="add-user-manual-hint">Pentru colaborator cu tip <strong>CV</strong> (cabinet): marchează dacă e <strong>clinică</strong> (CV) sau <strong>farmacie veterinară</strong> (FV). Implicit: clinică.</p>
+						{{ form.vet_prospect_kind.errors }}
+						{{ form.vet_prospect_kind }}
+					</div>
+
+					<div class="add-user-manual-section add-user-manual-section--prefs">
+						<h3>Preferințe email &amp; notă (ca la înregistrare)</h3>
+						<p class="add-user-manual-hint">Segmentele și bifarea de noutăți corespund opțiunilor din formularul public; consimțământul legal se confirmă la link/token.</p>
+						<p class="manual-segments-label">{{ form.segments.label }}</p>
+						<div class="manual-segments-wrap">{{ form.segments }}{{ form.segments.errors }}</div>
+						<p>
+							<label for="{{ form.marketing_emails_requested.id_for_label }}">{{ form.marketing_emails_requested.label }}</label>
+							{{ form.marketing_emails_requested }}
+							{{ form.marketing_emails_requested.errors }}
+						</p>
+						<p>
+							{{ form.notes.label_tag }}
+							{{ form.notes }}
+							{{ form.notes.errors }}
+						</p>
 					</div>
 
 					<button type="submit" class="add-user-submit">{% if editing_lead %}Salvează modificările{% else %}Salvează lead{% endif %}</button>
@@ -1052,6 +1166,7 @@
 							<th>Nume</th>
 							<th>Tip</th>
 							<th>Colab.</th>
+							<th>CV/FV</th>
 							<th>Județ</th>
 							<th>Loc.</th>
 							<th>CUI</th>
@@ -1079,6 +1194,7 @@
 							<td>{% if lead.org_display_name and lead.org_display_name|lower != lead.display_name|lower %}{{ lead.display_name }} — {{ lead.org_display_name }}{% else %}{{ lead.display_name|default:lead.org_display_name|default:"—" }}{% endif %}</td>
 							<td>{{ lead.get_account_kind_display }}</td>
 							<td>{% if lead.collaborator_subtype %}{{ lead.get_collaborator_subtype_display }}{% else %}—{% endif %}</td>
+							<td>{% if lead.account_kind == "collaborator" and lead.collaborator_subtype == "cabinet" %}{% if lead.vet_prospect_kind == "fv" %}FV{% else %}CV{% endif %}{% else %}—{% endif %}</td>
 							<td>{{ lead.judet|default:"—" }}</td>
 							<td>{{ lead.oras|default:"—" }}</td>
 							<td>{{ lead.company_cui|default:"—" }}</td>
@@ -1096,7 +1212,7 @@
 							</td>
 						</tr>
 						{% empty %}
-						<tr><td colspan="12">Niciun rând (schimbă filtrele sau importă CSV).</td></tr>
+						<tr><td colspan="13">Niciun rând (schimbă filtrele sau importă CSV).</td></tr>
 						{% endfor %}
 					</tbody>
 				</table>

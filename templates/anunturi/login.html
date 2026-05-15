@@ -390,6 +390,10 @@
 				</div>
 				<div class="login-actions">
 					<button type="submit" class="login-submit">Intră</button>
+					<div class="login-links">
+						Nu ai cont?
+						<a href="{% url 'signup_choose_type' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">Creează cont</a>
+					</div>
 				</div>
 			</form>
 		</div>

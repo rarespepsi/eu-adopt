@@ -1335,3 +1335,35 @@ class Carte81_100Tests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn(u.email, mail.outbox[0].to)
+
+    def test_109j_ramses_parse_minimal_html_offline(self):
+        """Parsare offline Ramses (structură Elementor minimală)."""
+        from home.ramses_adaposturi_scrape import parse_ramses_adaposturi_html
+
+        html = """
+        <html><body><div class="adaposturi-private">
+        <div class="elementor-widget-wrap elementor-element-populated">
+          <div class="elementor-widget elementor-widget-text-editor">
+            <div class="elementor-widget-container"><h5>Test Ramses Shelter</h5></div>
+          </div>
+          <div class="elementor-widget elementor-widget-icon-list">
+            <div class="elementor-widget-container">
+              <ul class="elementor-icon-list-items">
+                <li class="elementor-icon-list-item"><span class="elementor-icon-list-text">Cluj-Napoca, str. X nr. 1</span></li>
+                <li class="elementor-icon-list-item"><span class="elementor-icon-list-text">0722111222</span></li>
+                <li class="elementor-icon-list-item"><span class="elementor-icon-list-text">tramses@test.local</span></li>
+              </ul>
+            </div>
+          </div>
+        </div></div></body></html>
+        """
+        rows = parse_ramses_adaposturi_html(html, page_url="file:test.html")
+        self.assertEqual(len(rows), 1)
+        r = rows[0]
+        d = r.to_csv_dict()
+        self.assertEqual(d["email"], "tramses@test.local")
+        self.assertIn("0722111222", d["telefon"])
+        self.assertEqual(d["tip_cont"], "adapost")
+        self.assertEqual(d["tip_colaborator"], "adprv")
+        self.assertIn("Test Ramses Shelter", d["denumire_organizatie"])
+        self.assertIn("asociatiaramses", d["nota_interna"])

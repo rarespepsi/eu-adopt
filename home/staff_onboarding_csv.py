@@ -24,6 +24,7 @@ CSV_HEADER_ROW = [
     "telefon",
     "tip_cont",
     "tip_colaborator",
+    "cod_prospect_vet",
     "prenume",
     "nume",
     "denumire_afisata_contact",
@@ -58,6 +59,12 @@ _HEADER_ALIASES = {
     "account_kind": "tip_cont",
     "tip_colaborator": "tip_colaborator",
     "tip colaborator": "tip_colaborator",
+    "cod_prospect_vet": "cod_prospect_vet",
+    "cod prospect vet": "cod_prospect_vet",
+    "prospect_vet": "cod_prospect_vet",
+    "prospect vet": "cod_prospect_vet",
+    "vet_prospect_kind": "cod_prospect_vet",
+    "vet_kind": "cod_prospect_vet",
     "prenume": "prenume",
     "nume": "nume",
     "denumire_afisata_contact": "denumire_afisata_contact",
@@ -131,18 +138,27 @@ def _normalize_collab_subtype(raw: str) -> str:
     mapping = {
         "cabinet": StaffOnboardingLead.COLLAB_CABINET,
         "cabinet veterinar": StaffOnboardingLead.COLLAB_CABINET,
-        "cv": StaffOnboardingLead.COLLAB_CV,
+        "cv": StaffOnboardingLead.COLLAB_CABINET,
         "vet": StaffOnboardingLead.COLLAB_CABINET,
         "veterinar": StaffOnboardingLead.COLLAB_CABINET,
         "servicii": StaffOnboardingLead.COLLAB_SERVICII,
         "magazin": StaffOnboardingLead.COLLAB_MAGAZIN,
-        "grooming": StaffOnboardingLead.COLLAB_MAGAZIN,
+        "grooming": StaffOnboardingLead.COLLAB_GROOMING,
         "transport": StaffOnboardingLead.COLLAB_TRANSPORT,
         "transportator": StaffOnboardingLead.COLLAB_TRANSPORT,
         "adpub": StaffOnboardingLead.COLLAB_ADPUB,
         "adprv": StaffOnboardingLead.COLLAB_ADPRV,
     }
     return mapping.get(t, "")
+
+
+def _normalize_vet_prospect_kind(raw: str) -> str:
+    t = (raw or "").strip().lower()
+    if t in ("fv", "farmacie", "farmacie veterinara", "farmacie veterinară", "farm"):
+        return StaffOnboardingLead.VET_PROSPECT_FV
+    if t in ("cv", "clinica", "clinică", "clinic", "cabinet clinic"):
+        return StaffOnboardingLead.VET_PROSPECT_CV
+    return ""
 
 
 def _normalize_status(raw: str) -> str:
@@ -174,6 +190,7 @@ def _csv_row_has_identity(canon: dict[str, str]) -> bool:
         "telefon",
         "tip_cont",
         "tip_colaborator",
+        "cod_prospect_vet",
         "prenume",
         "nume",
         "denumire_afisata_contact",
@@ -254,6 +271,14 @@ def row_canon_to_lead_kwargs(canon: dict[str, str]) -> dict[str, Any]:
         elif sub == StaffOnboardingLead.COLLAB_ADPRV:
             is_public_shelter = False
 
+    vet_raw = g("cod_prospect_vet")
+    vet_k = _normalize_vet_prospect_kind(vet_raw)
+    if tip == StaffOnboardingLead.KIND_COLLAB and sub == StaffOnboardingLead.COLLAB_CABINET:
+        if vet_k not in (StaffOnboardingLead.VET_PROSPECT_CV, StaffOnboardingLead.VET_PROSPECT_FV):
+            vet_k = StaffOnboardingLead.VET_PROSPECT_CV
+    else:
+        vet_k = ""
+
     return {
         "email": email,
         "phone": g("telefon")[:40],
@@ -273,6 +298,7 @@ def row_canon_to_lead_kwargs(canon: dict[str, str]) -> dict[str, Any]:
         "is_public_shelter": is_public_shelter,
         "account_kind": tip,
         "collaborator_subtype": sub,
+        "vet_prospect_kind": vet_k,
         "judet": g("judet")[:120],
         "oras": g("localitate")[:120],
         "segments": segments,
@@ -289,6 +315,7 @@ def lead_to_csv_row(lead: StaffOnboardingLead) -> dict[str, str]:
         "telefon": lead.phone or "",
         "tip_cont": lead.account_kind,
         "tip_colaborator": lead.collaborator_subtype or "",
+        "cod_prospect_vet": lead.vet_prospect_kind or "",
         "prenume": lead.first_name or "",
         "nume": lead.last_name or "",
         "denumire_afisata_contact": lead.display_name or "",
