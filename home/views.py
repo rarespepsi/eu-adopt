@@ -85,6 +85,13 @@ from .models import (
 )
 from .staff_onboarding_form import StaffOnboardingLeadForm, SEGMENT_CHOICES
 from .staff_onboarding_csv import export_csv_bytes, import_csv_bytes, is_placeholder_lead_email
+from .admin_analysis_data import (
+    staff_analysis_cats_page_context,
+    staff_analysis_dogs_page_context,
+    staff_analysis_filter_context,
+    staff_analysis_home_alert_rows,
+    staff_analysis_requests_page_context,
+)
 from django.contrib.auth import get_user_model
 from functools import wraps
 from django.contrib import messages
@@ -5109,6 +5116,45 @@ def unified_inbox_mark_read_view(request):
     return redirect(safe or reverse("unified_inbox"))
 
 
+def _staff_analysis_home_kpis() -> dict[str, int]:
+    """Indicatori rând KPI — doar pagina principală Analiza (/admin-analysis/)."""
+    from datetime import timedelta
+
+    User = get_user_model()
+    now = timezone.now()
+    threshold_48h = now - timedelta(hours=48)
+
+    dogs_active = (
+        AnimalListing.objects.filter(is_published=True, species="dog")
+        .exclude(adoption_state=AnimalListing.ADOPTION_STATE_ADOPTED)
+        .count()
+    )
+    dogs_adopted = AnimalListing.objects.filter(
+        species="dog",
+        adoption_state=AnimalListing.ADOPTION_STATE_ADOPTED,
+    ).count()
+    requests_new = AdoptionRequest.objects.filter(status=AdoptionRequest.STATUS_PENDING).count()
+    transport_new = TransportDispatchJob.objects.filter(status=TransportDispatchJob.STATUS_OPEN).count()
+    accounts_new = User.objects.filter(is_active=False, is_staff=False).count()
+    adoption_pending_old = AdoptionRequest.objects.filter(
+        status=AdoptionRequest.STATUS_PENDING,
+        created_at__lt=threshold_48h,
+    ).count()
+    listings_no_photo = AnimalListing.objects.filter(is_published=True).filter(
+        Q(photo_1__isnull=True) | Q(photo_1="")
+    ).count()
+    alerts_active = adoption_pending_old + transport_new + accounts_new + listings_no_photo
+
+    return {
+        "dogs_active": dogs_active,
+        "dogs_adopted": dogs_adopted,
+        "requests_new": requests_new,
+        "transport_new": transport_new,
+        "accounts_new": accounts_new,
+        "alerts_active": alerts_active,
+    }
+
+
 @login_required
 def admin_analysis_home_view(request):
     """Pagina centrală Analiză (doar pentru admin/staff)."""
@@ -5118,12 +5164,20 @@ def admin_analysis_home_view(request):
     view_as_collab_tip = (request.session.get("view_as_collab_tip") or "servicii").strip().lower()
     if view_as_collab_tip not in ("cabinet", "servicii", "magazin", "transport"):
         view_as_collab_tip = "servicii"
+    kpis = _staff_analysis_home_kpis()
     return render(
         request,
         "anunturi/admin_analysis_home.html",
         {
             "view_as_role": view_as_role,
             "view_as_collab_tip": view_as_collab_tip,
+            "kpi_dogs_active": kpis["dogs_active"],
+            "kpi_dogs_adopted": kpis["dogs_adopted"],
+            "kpi_requests_new": kpis["requests_new"],
+            "kpi_transport_new": kpis["transport_new"],
+            "kpi_accounts_new": kpis["accounts_new"],
+            "kpi_alerts_active": kpis["alerts_active"],
+            "alert_rows": staff_analysis_home_alert_rows(),
         },
     )
 
@@ -5153,14 +5207,24 @@ def admin_analysis_set_view_as_view(request):
 def admin_analysis_dogs_view(request):
     if not (request.user.is_superuser or request.user.is_staff):
         return redirect(reverse("home"))
-    return render(request, "anunturi/admin_analysis_dogs.html", {})
+    ctx = staff_analysis_dogs_page_context((request.GET.get("filter") or "").strip())
+    return render(request, "anunturi/admin_analysis_dogs.html", ctx)
+
+
+@login_required
+def admin_analysis_cats_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    ctx = staff_analysis_cats_page_context((request.GET.get("filter") or "").strip())
+    return render(request, "anunturi/admin_analysis_cats.html", ctx)
 
 
 @login_required
 def admin_analysis_requests_view(request):
     if not (request.user.is_superuser or request.user.is_staff):
         return redirect(reverse("home"))
-    return render(request, "anunturi/admin_analysis_requests.html", {})
+    ctx = staff_analysis_requests_page_context((request.GET.get("filter") or "").strip())
+    return render(request, "anunturi/admin_analysis_requests.html", ctx)
 
 
 _ADMIN_USERS_BULK_MAIL_MAX = 200
@@ -5250,18 +5314,17 @@ def admin_analysis_users_bulk_mail_view(request):
 def admin_analysis_users_view(request):
     if not (request.user.is_superuser or request.user.is_staff):
         return redirect(reverse("home"))
-    return render(
-        request,
-        "anunturi/admin_analysis_users.html",
-        {"bulk_mail_cap": _ADMIN_USERS_BULK_MAIL_MAX},
-    )
+    ctx = staff_analysis_filter_context((request.GET.get("filter") or "").strip())
+    ctx["bulk_mail_cap"] = _ADMIN_USERS_BULK_MAIL_MAX
+    return render(request, "anunturi/admin_analysis_users.html", ctx)
 
 
 @login_required
 def admin_analysis_alerts_view(request):
     if not (request.user.is_superuser or request.user.is_staff):
         return redirect(reverse("home"))
-    return render(request, "anunturi/admin_analysis_alerts.html", {})
+    ctx = staff_analysis_filter_context((request.GET.get("filter") or "").strip())
+    return render(request, "anunturi/admin_analysis_alerts.html", ctx)
 
 
 STAFF_ONBOARDING_LEADS_PER_PAGE = 100

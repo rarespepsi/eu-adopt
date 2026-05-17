@@ -930,6 +930,17 @@ class Carte81_100Tests(TestCase):
         ):
             r = c.get(reverse(name))
             self.assertIn(r.status_code, (200, 302), msg=name)
+        r_home = c.get(reverse("admin_analysis_home"))
+        self.assertContains(r_home, "analysis-kpi-num")
+        for caption in (
+            "Câini activi",
+            "Câini adoptați",
+            "Cereri noi",
+            "Transporturi noi",
+            "Conturi noi",
+            "Alerte active",
+        ):
+            self.assertContains(r_home, caption)
 
     def test_109b_add_user_staff_post_creates_lead(self):
         from home.models import StaffOnboardingLead

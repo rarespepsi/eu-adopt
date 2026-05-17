@@ -7,6 +7,7 @@ from .models import (
     SiteCartCheckoutIntent,
     UserAdoption,
     UserPost,
+    ContactMessage,
     AdoptionRequest,
     UserInboxNotification,
     CollabServiceMessage,
@@ -48,6 +49,15 @@ class UserInboxNotificationAdmin(admin.ModelAdmin):
     search_fields = ("title", "body", "user__username", "user__email")
     raw_id_fields = ("user",)
     readonly_fields = ("created_at",)
+
+
+@admin.register(ContactMessage)
+class ContactMessageAdmin(admin.ModelAdmin):
+    list_display = ("id", "topic", "full_name", "email", "subject", "created_at")
+    list_filter = ("topic", "created_at")
+    search_fields = ("full_name", "email", "subject", "message")
+    readonly_fields = ("created_at", "ip_address", "user_agent")
+    raw_id_fields = ("user",)
 
 
 @admin.register(AdoptionRequest)

@@ -44,6 +44,7 @@ _CARTE_GET_CASES = [
     ("admin_analysis_home", {}, ""),
     ("admin_analysis_set_view_as", {}, ""),
     ("admin_analysis_dogs", {}, ""),
+    ("admin_analysis_cats", {}, ""),
     ("admin_analysis_requests", {}, ""),
     ("admin_analysis_users", {}, ""),
     ("admin_analysis_alerts", {}, ""),

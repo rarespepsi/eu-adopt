@@ -1,0 +1,43 @@
+{% if analysis_filter %}
+<style>
+	.analysis-filter-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem 0.55rem;
+		margin-top: 0.15rem;
+	}
+	.analysis-filter-action {
+		font-size: 0.64rem;
+		font-weight: 800;
+		color: #0d47a1;
+		text-decoration: none;
+		border-bottom: 1px solid rgba(13, 71, 161, 0.35);
+	}
+	.analysis-filter-action:hover { color: #1565c0; }
+</style>
+<p class="analysis-filter-meta">
+	Total: <strong>{{ analysis_filter_total }}</strong>
+	{% if analysis_filter_truncated %} — afișate primele {{ analysis_filter_items|length }}{% endif %}
+	· <a href="{{ request.path }}">Înapoi la listă planificată</a>
+</p>
+<ul class="analysis-filter-list">
+	{% for row in analysis_filter_items %}
+	<li>
+		<span class="analysis-filter-primary">{{ row.primary }}</span>
+		<span class="analysis-filter-secondary">{{ row.secondary }}</span>
+		{% if row.action_url or row.action_url_secondary %}
+		<span class="analysis-filter-actions">
+			{% if row.action_url %}
+			<a href="{{ row.action_url }}" class="analysis-filter-action"{% if row.action_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ row.action_label }}</a>
+			{% endif %}
+			{% if row.action_url_secondary %}
+			<a href="{{ row.action_url_secondary }}" class="analysis-filter-action">{{ row.action_label_secondary }}</a>
+			{% endif %}
+		</span>
+		{% endif %}
+	</li>
+	{% empty %}
+	<li class="analysis-filter-empty">Nicio înregistrare pentru acest filtru.</li>
+	{% endfor %}
+</ul>
+{% endif %}

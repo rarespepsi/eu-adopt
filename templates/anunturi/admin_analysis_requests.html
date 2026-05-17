@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Analiza - Requests{% endblock %}
+{% block title %}Analiza - Cereri{% endblock %}
 {% block body_class %}page-admin-analysis{% endblock %}
 
 {% block extra_css %}
@@ -42,8 +42,24 @@
 		color: #1a1a1a;
 		min-height: 2.3rem;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		gap: 0.08rem;
+		text-decoration: none;
+	}
+	a.requests-kpi:hover {
+		filter: brightness(1.03);
+		box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+	}
+	.requests-kpi-num {
+		font-size: 1.05rem;
+		font-weight: 900;
+		line-height: 1.1;
+	}
+	.requests-kpi-label {
+		font-size: 0.68rem;
+		font-weight: 800;
 	}
 	.requests-kpi-1 { background: rgba(255, 224, 130, 0.62); }
 	.requests-kpi-2 { background: rgba(255, 245, 157, 0.62); }
@@ -108,56 +124,145 @@
 		background: rgba(255,255,255,0.62);
 		border: 1px solid rgba(0,0,0,0.12);
 		border-radius: 6px;
-		padding: 0.28rem 0.35rem;
+		padding: 0;
 		font-size: 0.71rem;
 		font-weight: 700;
 		color: #1f2937;
 	}
+	.requests-panel-link {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.35rem;
+		padding: 0.28rem 0.35rem;
+		text-decoration: none;
+		color: inherit;
+		border-radius: 6px;
+	}
+	.requests-panel-link:hover {
+		background: rgba(255,255,255,0.85);
+	}
+	.requests-panel-count {
+		font-size: 0.68rem;
+		font-weight: 900;
+		background: rgba(255,255,255,0.9);
+		border-radius: 999px;
+		padding: 0.03rem 0.35rem;
+		min-width: 1.1rem;
+		text-align: center;
+	}
+	.requests-panel-count.is-hot {
+		background: #ffcdd2;
+		color: #b71c1c;
+	}
+	.requests-panel-hint {
+		font-size: 0.68rem;
+		font-weight: 800;
+		color: #546e7a;
+		padding: 0.28rem 0.35rem;
+	}
+	.analysis-filter-meta {
+		margin: 0;
+		font-size: 0.68rem;
+		font-weight: 700;
+		color: #37474f;
+	}
+	.analysis-filter-meta a { color: #0d47a1; }
+	.analysis-filter-list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		overflow-y: auto;
+		min-height: 0;
+		flex: 1 1 auto;
+	}
+	.analysis-filter-list li {
+		background: rgba(255,255,255,0.62);
+		border: 1px solid rgba(0,0,0,0.12);
+		border-radius: 6px;
+		padding: 0.28rem 0.35rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.12rem;
+	}
+	.analysis-filter-primary { font-size: 0.71rem; font-weight: 800; color: #1f2937; }
+	.analysis-filter-secondary { font-size: 0.65rem; font-weight: 600; color: #546e7a; }
+	.analysis-filter-empty { font-style: italic; color: #546e7a; }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="analysis-shell" aria-label="Analiza Requests">
-	<h1>Analiza / Requests</h1>
-	<div class="analysis-subnav">
-		<a href="{% url 'admin_analysis_home' %}">Inapoi la central</a>
-		<a href="{% url 'admin_analysis_dogs' %}">Dogs</a>
-		<a href="{% url 'admin_analysis_users' %}">Users</a>
-		<a href="{% url 'admin_analysis_alerts' %}">Alerts</a>
-	</div>
+<section class="analysis-shell" aria-label="Analiza Cereri">
+	<h1>Analiza / Cereri</h1>
+	{% include "anunturi/includes/admin_analysis_subnav.html" %}
 	<div class="requests-layout">
 		<div class="requests-row requests-kpis">
-			<div class="requests-kpi requests-kpi-1">Total cereri</div>
-			<div class="requests-kpi requests-kpi-2">Noi</div>
-			<div class="requests-kpi requests-kpi-3">În lucru</div>
-			<div class="requests-kpi requests-kpi-4">Finalizate</div>
-			<div class="requests-kpi requests-kpi-5">Blocate</div>
+			<div class="requests-kpi requests-kpi-1" title="Adopții + cereri transport veterinar">
+				<span class="requests-kpi-num">{{ requests_kpis.total }}</span>
+				<span class="requests-kpi-label">Total cereri</span>
+			</div>
+			<a href="{{ requests_kpi_links.new }}" class="requests-kpi requests-kpi-2" title="Adopții în așteptare + transport deschis">
+				<span class="requests-kpi-num">{{ requests_kpis.new }}</span>
+				<span class="requests-kpi-label">Noi</span>
+			</a>
+			<a href="{{ requests_kpi_links.in_work }}" class="requests-kpi requests-kpi-3" title="Adopții acceptate + transport asignat">
+				<span class="requests-kpi-num">{{ requests_kpis.in_work }}</span>
+				<span class="requests-kpi-label">În lucru</span>
+			</a>
+			<a href="{{ requests_kpi_links.finalized }}" class="requests-kpi requests-kpi-4" title="Adopții finalizate + transport finalizat">
+				<span class="requests-kpi-num">{{ requests_kpis.finalized }}</span>
+				<span class="requests-kpi-label">Finalizate</span>
+			</a>
+			<a href="{{ requests_kpi_links.blocked }}" class="requests-kpi requests-kpi-5" title="Transport expirat/epuizat + adopții expirate">
+				<span class="requests-kpi-num">{{ requests_kpis.blocked }}</span>
+				<span class="requests-kpi-label">Blocate</span>
+			</a>
 		</div>
 		<div class="requests-row requests-distributions">
-			<div class="requests-dist">Pe tip (Adopții / Transport / Medical)</div>
-			<div class="requests-dist">Pe status</div>
-			<div class="requests-dist">Pe lună</div>
-			<div class="requests-dist">Pe ONG</div>
-			<div class="requests-dist">Timp mediu răspuns</div>
+			<div class="requests-dist" title="Total pe tip">{{ requests_dist_lines.0 }}</div>
+			<div class="requests-dist" title="Rezumat status">{{ requests_dist_lines.1 }}</div>
+			<div class="requests-dist" title="Cereri create luna curentă">{{ requests_dist_lines.2 }}</div>
+			<div class="requests-dist" title="Cereri adopție de la conturi ONG">{{ requests_dist_lines.3 }}</div>
+			<div class="requests-dist" title="Medie ore până la acceptare (adopții)">{{ requests_dist_lines.4 }}</div>
 		</div>
 		<div class="requests-row requests-main">
-			<section class="requests-panel" aria-label="Probleme și atenție Requests">
-				<h2>Probleme / Atenție</h2>
+			<section class="requests-panel" aria-label="Probleme și atenție Cereri">
+				<h2>{% if analysis_filter %}{{ analysis_filter_label }}{% else %}Probleme / Atenție{% endif %}</h2>
+				{% if analysis_filter %}
+				{% include "anunturi/includes/admin_analysis_filter_list.html" %}
+				{% else %}
 				<ul class="requests-list">
-					<li>Cereri vechi nepreluate</li>
-					<li>Cereri fără răspuns (Adopții)</li>
-					<li>Transport – cereri fără răspuns</li>
-					<li>Medical – cereri nepreluate</li>
-					<li>Cereri blocate</li>
+					{% for row in requests_attention_rows %}
+					<li>
+						<a href="{{ row.url }}" class="requests-panel-link" title="Vezi lista filtrată">
+							<span>{{ row.label }}</span>
+							<span class="requests-panel-count{% if row.count %} is-hot{% endif %}">{{ row.count }}</span>
+						</a>
+					</li>
+					{% endfor %}
 				</ul>
+				{% endif %}
 			</section>
-			<section class="requests-panel" aria-label="Liste utile Requests">
+			<section class="requests-panel" aria-label="Liste utile Cereri">
 				<h2>Liste utile</h2>
 				<ul class="requests-list">
-					<li>Cereri recente finalizate</li>
-					<li>Timp mediu răspuns (per tip)</li>
-					<li>Adopții noi / în lucru</li>
-					<li>Transport – cele mai vechi deschise</li>
+					{% for row in requests_useful_rows %}
+					<li>
+						{% if row.url %}
+						<a href="{{ row.url }}" class="requests-panel-link" title="Vezi lista filtrată">
+							<span>{{ row.label }}</span>
+							{% if row.count != None %}
+							<span class="requests-panel-count{% if row.count %} is-hot{% endif %}">{{ row.count }}</span>
+							{% endif %}
+						</a>
+						{% else %}
+						<span class="requests-panel-hint">{{ row.label }}: <strong>{{ row.hint }}</strong></span>
+						{% endif %}
+					</li>
+					{% endfor %}
 				</ul>
 			</section>
 		</div>

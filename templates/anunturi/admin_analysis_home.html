@@ -172,6 +172,21 @@
 	a.analysis-card:hover {
 		filter: brightness(0.97);
 	}
+	.analysis-card.analysis-kpi-live {
+		flex-direction: column;
+		gap: 0.12rem;
+		line-height: 1.15;
+	}
+	.analysis-card.analysis-kpi-live .analysis-kpi-num {
+		font-size: 1.15rem;
+		font-weight: 900;
+		letter-spacing: -0.02em;
+	}
+	.analysis-card.analysis-kpi-live .analysis-kpi-caption {
+		font-size: 0.62rem;
+		font-weight: 700;
+		opacity: 0.88;
+	}
 	.analysis-main {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
@@ -239,6 +254,32 @@
 		background: rgba(255, 255, 255, 0.85);
 		border-radius: 999px;
 		padding: 0.03rem 0.35rem;
+		min-width: 1.15rem;
+		text-align: center;
+	}
+	.analysis-count.is-hot {
+		background: #ffcdd2;
+		color: #b71c1c;
+	}
+	.analysis-list li.has-alert-link {
+		padding: 0;
+	}
+	.analysis-alert-link {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		gap: 0.35rem;
+		align-items: start;
+		padding: 0.22rem 0.35rem;
+		text-decoration: none;
+		color: inherit;
+		border-radius: 6px;
+	}
+	.analysis-alert-link:hover {
+		background: rgba(255, 255, 255, 0.72);
+	}
+	.analysis-alert-link:focus-visible {
+		outline: 2px solid #1565c0;
+		outline-offset: 1px;
 	}
 	.analysis-subtitle {
 		font-size: 0.68rem;
@@ -267,7 +308,7 @@
 	}
 	.analysis-quick {
 		display: grid;
-		grid-template-columns: repeat(6, minmax(0, 1fr));
+		grid-template-columns: repeat(7, minmax(0, 1fr));
 		gap: 0.45rem;
 	}
 	.card-kpi-1 { background: rgba(255, 138, 128, 0.62); }
@@ -279,10 +320,11 @@
 	.panel-alerts { background: rgba(239, 83, 80, 0.28); }
 	.panel-activity { background: rgba(66, 165, 245, 0.28); }
 	.card-quick-1 { background: rgba(255, 171, 145, 0.62); }
+	.card-quick-cats { background: rgba(206, 147, 216, 0.62); }
 	.card-quick-2 { background: rgba(255, 224, 130, 0.62); }
 	.card-quick-3 { background: rgba(165, 214, 167, 0.62); }
 	.card-quick-4 { background: rgba(129, 212, 250, 0.62); }
-	.card-quick-5 { background: rgba(206, 147, 216, 0.62); }
+	.card-quick-5 { background: rgba(178, 223, 219, 0.62); }
 	.card-quick-6 { background: rgba(188, 170, 164, 0.62); }
 </style>
 {% endblock %}
@@ -314,27 +356,44 @@
 	</div>
 	<div class="analysis-grid">
 		<div class="analysis-row analysis-kpis">
-			<div class="analysis-card card-kpi-1">KPI: Caini activi</div>
-			<div class="analysis-card card-kpi-2">KPI: Caini adoptati</div>
-			<div class="analysis-card card-kpi-3">KPI: Cereri noi</div>
-			<div class="analysis-card card-kpi-4">KPI: Transporturi noi</div>
-			<div class="analysis-card card-kpi-5">KPI: Conturi noi</div>
-			<div class="analysis-card card-kpi-6">KPI: Alerte active</div>
+			<div class="analysis-card card-kpi-1 analysis-kpi-live" title="Câini publicați pe site, ne-adoptați">
+				<span class="analysis-kpi-num">{{ kpi_dogs_active }}</span>
+				<span class="analysis-kpi-caption">Câini activi</span>
+			</div>
+			<div class="analysis-card card-kpi-2 analysis-kpi-live" title="Câini marcați adoptați în fișă">
+				<span class="analysis-kpi-num">{{ kpi_dogs_adopted }}</span>
+				<span class="analysis-kpi-caption">Câini adoptați</span>
+			</div>
+			<div class="analysis-card card-kpi-3 analysis-kpi-live" title="Cereri adopție în așteptare (proprietar)">
+				<span class="analysis-kpi-num">{{ kpi_requests_new }}</span>
+				<span class="analysis-kpi-caption">Cereri noi</span>
+			</div>
+			<div class="analysis-card card-kpi-4 analysis-kpi-live" title="Oferte transport deschise (dispatch)">
+				<span class="analysis-kpi-num">{{ kpi_transport_new }}</span>
+				<span class="analysis-kpi-caption">Transporturi noi</span>
+			</div>
+			<div class="analysis-card card-kpi-5 analysis-kpi-live" title="Conturi create, neactivate (email)">
+				<span class="analysis-kpi-num">{{ kpi_accounts_new }}</span>
+				<span class="analysis-kpi-caption">Conturi noi</span>
+			</div>
+			<div class="analysis-card card-kpi-6 analysis-kpi-live" title="Sumă: adopții &gt;48h, transport deschis, conturi neactivate, anunțuri fără poză">
+				<span class="analysis-kpi-num">{{ kpi_alerts_active }}</span>
+				<span class="analysis-kpi-caption">Alerte active</span>
+			</div>
 		</div>
 		<div class="analysis-row analysis-main">
 			<div class="analysis-panel panel-alerts">
 				<div class="analysis-panel-title">Alerte</div>
 				<ul class="analysis-list">
-					<li><span class="analysis-tag critical">CRITIC</span><span>Cereri adopție fără răspuns &gt;48h</span><span class="analysis-count">0</span></li>
-					<li><span class="analysis-tag critical">CRITIC</span><span>Cereri transport fără răspuns</span><span class="analysis-count">0</span></li>
-					<li><span class="analysis-tag critical">CRITIC</span><span>Transporturi blocate</span><span class="analysis-count">0</span></li>
-					<li><span class="analysis-tag critical">CRITIC</span><span>Cereri medicale nepreluate</span><span class="analysis-count">0</span></li>
-					<li><span class="analysis-tag medium">MEDIU</span><span>Conturi noi în așteptare verificare/aprobare</span><span class="analysis-count">0</span></li>
-					<li><span class="analysis-tag medium">MEDIU</span><span>Câini publici fără poze complete</span><span class="analysis-count">0</span></li>
-					<li><span class="analysis-tag medium">MEDIU</span><span>Câini activi fără descriere suficientă</span><span class="analysis-count">0</span></li>
-					<li><span class="analysis-tag medium">MEDIU</span><span>Utilizatori raportați / problematici</span><span class="analysis-count">0</span></li>
-					<li><span class="analysis-tag biz">BUSINESS</span><span>Beneficii / PIN-uri nevalidate</span><span class="analysis-count">0</span></li>
-					<li><span class="analysis-tag biz">BUSINESS</span><span>Sponsori / parteneri expirați</span><span class="analysis-count">0</span></li>
+					{% for row in alert_rows %}
+					<li class="has-alert-link">
+						<a href="{{ row.url }}" class="analysis-alert-link" title="{{ row.title }}">
+							<span class="analysis-tag {{ row.tag_class }}">{{ row.tag_label }}</span>
+							<span>{{ row.text }}</span>
+							<span class="analysis-count{% if row.count_hot %} is-hot{% endif %}">{{ row.count }}</span>
+						</a>
+					</li>
+					{% endfor %}
 				</ul>
 			</div>
 			<div class="analysis-panel panel-activity">
@@ -354,14 +413,14 @@
 			</div>
 		</div>
 		<div class="analysis-row analysis-quick">
-			<a href="{% url 'admin_analysis_dogs' %}" class="analysis-card card-quick-1">Dogs</a>
-			<a href="{% url 'admin_analysis_requests' %}" class="analysis-card card-quick-2">Requests</a>
-			<a href="{% url 'admin_analysis_users' %}" class="analysis-card card-quick-3">Users</a>
-			<a href="{% url 'admin_analysis_alerts' %}" class="analysis-card card-quick-4">Alerts</a>
-			<div class="analysis-card card-quick-5">Partners</div>
-			<div class="analysis-card card-quick-6">Performance</div>
+			<a href="{% url 'admin_analysis_dogs' %}" class="analysis-card card-quick-1">Câini</a>
+			<a href="{% url 'admin_analysis_cats' %}" class="analysis-card card-quick-cats">Pisici</a>
+			<a href="{% url 'admin_analysis_requests' %}" class="analysis-card card-quick-2">Cereri</a>
+			<a href="{% url 'admin_analysis_users' %}" class="analysis-card card-quick-3">Utilizatori</a>
+			<a href="{% url 'admin_analysis_alerts' %}" class="analysis-card card-quick-4">Alerte</a>
+			<div class="analysis-card card-quick-5">Parteneri</div>
+			<div class="analysis-card card-quick-6">Performanță</div>
 		</div>
 	</div>
 </section>
 {% endblock %}
-

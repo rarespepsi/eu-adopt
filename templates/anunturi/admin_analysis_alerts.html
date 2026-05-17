@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Analiza - Alerts{% endblock %}
+{% block title %}Analiza - Alerte{% endblock %}
 {% block body_class %}page-admin-analysis{% endblock %}
 
 {% block extra_css %}
@@ -112,18 +112,43 @@
 		font-weight: 700;
 		color: #1f2937;
 	}
+	.analysis-filter-meta {
+		margin: 0;
+		font-size: 0.68rem;
+		font-weight: 700;
+		color: #37474f;
+	}
+	.analysis-filter-meta a { color: #0d47a1; }
+	.analysis-filter-list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		overflow-y: auto;
+		min-height: 0;
+		flex: 1 1 auto;
+	}
+	.analysis-filter-list li {
+		background: rgba(255,255,255,0.62);
+		border: 1px solid rgba(0,0,0,0.12);
+		border-radius: 6px;
+		padding: 0.28rem 0.35rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.12rem;
+	}
+	.analysis-filter-primary { font-size: 0.71rem; font-weight: 800; color: #1f2937; }
+	.analysis-filter-secondary { font-size: 0.65rem; font-weight: 600; color: #546e7a; }
+	.analysis-filter-empty { font-style: italic; color: #546e7a; }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="analysis-shell" aria-label="Analiza Alerts">
-	<h1>Analiza / Alerts</h1>
-	<div class="analysis-subnav">
-		<a href="{% url 'admin_analysis_home' %}">Inapoi la central</a>
-		<a href="{% url 'admin_analysis_dogs' %}">Dogs</a>
-		<a href="{% url 'admin_analysis_requests' %}">Requests</a>
-		<a href="{% url 'admin_analysis_users' %}">Users</a>
-	</div>
+<section class="analysis-shell" aria-label="Analiza Alerte">
+	<h1>Analiza / Alerte</h1>
+	{% include "anunturi/includes/admin_analysis_subnav.html" %}
 	<div class="alerts-layout">
 		<div class="alerts-row alerts-kpis">
 			<div class="alerts-kpi alerts-kpi-1">Total alerte</div>
@@ -140,16 +165,20 @@
 			<div class="alerts-dist">Nerezolvate (vechime)</div>
 		</div>
 		<div class="alerts-row alerts-main">
-			<section class="alerts-panel" aria-label="Probleme și atenție Alerts">
-				<h2>Probleme / Atenție</h2>
+			<section class="alerts-panel" aria-label="Probleme și atenție Alerte">
+				<h2>{% if analysis_filter %}{{ analysis_filter_label }}{% else %}Probleme / Atenție{% endif %}</h2>
+				{% if analysis_filter %}
+				{% include "anunturi/includes/admin_analysis_filter_list.html" %}
+				{% else %}
 				<ul class="alerts-list">
 					<li>Alerte critice nerezolvate</li>
 					<li>Alerte vechi (peste 7 zile)</li>
 					<li>Raportări utilizatori – în așteptare</li>
 					<li>Erori sistem / sincronizare</li>
 				</ul>
+				{% endif %}
 			</section>
-			<section class="alerts-panel" aria-label="Liste utile Alerts">
+			<section class="alerts-panel" aria-label="Liste utile Alerte">
 				<h2>Liste utile</h2>
 				<ul class="alerts-list">
 					<li>Acțiuni rapide: vezi profil</li>

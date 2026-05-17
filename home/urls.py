@@ -35,6 +35,7 @@ urlpatterns = [
     path('admin-analysis/', views.admin_analysis_home_view, name='admin_analysis_home'),
     path('admin-analysis/set-view-as/', views.admin_analysis_set_view_as_view, name='admin_analysis_set_view_as'),
     path('admin-analysis/dogs/', views.admin_analysis_dogs_view, name='admin_analysis_dogs'),
+    path('admin-analysis/cats/', views.admin_analysis_cats_view, name='admin_analysis_cats'),
     path('admin-analysis/requests/', views.admin_analysis_requests_view, name='admin_analysis_requests'),
     path('admin-analysis/users/', views.admin_analysis_users_view, name='admin_analysis_users'),
     path('admin-analysis/users/bulk-mail/', views.admin_analysis_users_bulk_mail_view, name='admin_analysis_users_bulk_mail'),
