@@ -45,9 +45,13 @@
 		color: #1a1a1a;
 		min-height: 2.3rem;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		gap: 0.08rem;
 	}
+	.dogs-kpi-num { font-size: 1.05rem; font-weight: 900; line-height: 1.1; }
+	.dogs-kpi-label { font-size: 0.68rem; font-weight: 800; }
 	.dogs-kpi-1 { background: rgba(255, 171, 145, 0.62); }
 	.dogs-kpi-2 { background: rgba(255, 224, 178, 0.62); }
 	.dogs-kpi-3 { background: rgba(255, 245, 157, 0.62); }
@@ -176,18 +180,16 @@
 	{% include "anunturi/includes/admin_analysis_subnav.html" %}
 	<div class="dogs-layout">
 		<div class="dogs-row dogs-kpis">
-			<div class="dogs-kpi dogs-kpi-1">Total câini</div>
-			<div class="dogs-kpi dogs-kpi-2">Activi</div>
-			<div class="dogs-kpi dogs-kpi-3">Rezervați</div>
-			<div class="dogs-kpi dogs-kpi-4">Adoptați</div>
-			<div class="dogs-kpi dogs-kpi-5">Indisponibili</div>
+			<div class="dogs-kpi dogs-kpi-1"><span class="dogs-kpi-num">{{ dogs_kpis.total }}</span><span class="dogs-kpi-label">Total câini</span></div>
+			<div class="dogs-kpi dogs-kpi-2"><span class="dogs-kpi-num">{{ dogs_kpis.active }}</span><span class="dogs-kpi-label">Activi</span></div>
+			<div class="dogs-kpi dogs-kpi-3"><span class="dogs-kpi-num">{{ dogs_kpis.reserved }}</span><span class="dogs-kpi-label">Rezervați</span></div>
+			<div class="dogs-kpi dogs-kpi-4"><span class="dogs-kpi-num">{{ dogs_kpis.adopted }}</span><span class="dogs-kpi-label">Adoptați</span></div>
+			<div class="dogs-kpi dogs-kpi-5"><span class="dogs-kpi-num">{{ dogs_kpis.unavailable }}</span><span class="dogs-kpi-label">Indisponibili</span></div>
 		</div>
 		<div class="dogs-row dogs-distributions">
-			<div class="dogs-dist">Distribuție pe județe</div>
-			<div class="dogs-dist">Distribuție pe organizații</div>
-			<div class="dogs-dist">Distribuție pe statusuri</div>
-			<div class="dogs-dist">Distribuție pe vârstă</div>
-			<div class="dogs-dist">Distribuție pe talie</div>
+			{% for line in dogs_dist_lines %}
+			<div class="dogs-dist">{{ line }}</div>
+			{% endfor %}
 		</div>
 		<div class="dogs-row dogs-main">
 			<section class="dogs-panel" aria-label="Probleme de date Câini">
@@ -204,21 +206,20 @@
 						</a>
 					</li>
 					{% endfor %}
-					<li><span style="display:block;padding:0.28rem 0.35rem;">Câini fără galerie completă</span></li>
-					<li>Câini fără poveste</li>
-					<li>Câini fără județ/localitate</li>
-					<li>Câini fără date medicale</li>
-					<li>Câini fără status clar</li>
 				</ul>
 				{% endif %}
 			</section>
 			<section class="dogs-panel" aria-label="Liste utile Câini">
 				<h2>Liste utile</h2>
 				<ul class="dogs-list">
-					<li>Câini noi</li>
-					<li>Câini vechi încă activi</li>
-					<li>Cei mai vizualizați</li>
-					<li>Cei mai puși la wishlist</li>
+					{% for row in dogs_useful_rows %}
+					<li>
+						<a href="{{ row.url }}" class="dogs-panel-link" title="Vezi lista">
+							<span>{{ row.label }}</span>
+							<span class="dogs-panel-count{% if row.count %} is-hot{% endif %}">{{ row.count }}</span>
+						</a>
+					</li>
+					{% endfor %}
 				</ul>
 			</section>
 		</div>

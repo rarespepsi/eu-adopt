@@ -399,11 +399,15 @@
 			<div class="analysis-panel panel-activity">
 				<div class="analysis-panel-title">Activitate recenta</div>
 				<ul class="analysis-list">
-					<li><span class="analysis-tag biz">LIVE</span><span>Ultimii câini adăugați</span><span class="analysis-count">-</span></li>
-					<li><span class="analysis-tag biz">LIVE</span><span>Ultimele adopții</span><span class="analysis-count">-</span></li>
-					<li><span class="analysis-tag biz">LIVE</span><span>Ultimele cereri transport</span><span class="analysis-count">-</span></li>
-					<li><span class="analysis-tag biz">LIVE</span><span>Ultimele conturi create</span><span class="analysis-count">-</span></li>
-					<li><span class="analysis-tag medium">PLAN</span><span>Ultimele modificări admin</span><span class="analysis-count">-</span></li>
+					{% for act in recent_activity %}
+					<li>
+						<span class="analysis-tag {{ act.tag_class }}">{{ act.tag }}</span>
+						<span>{{ act.text }}</span>
+						<span class="analysis-count">{{ act.meta }}</span>
+					</li>
+					{% empty %}
+					<li><span class="analysis-tag medium">—</span><span>Nicio activitate recentă</span><span class="analysis-count">0</span></li>
+					{% endfor %}
 				</ul>
 				<div class="analysis-subtitle">Mini monitorizare extra</div>
 				<div class="analysis-mini-grid">
@@ -418,8 +422,8 @@
 			<a href="{% url 'admin_analysis_requests' %}" class="analysis-card card-quick-2">Cereri</a>
 			<a href="{% url 'admin_analysis_users' %}" class="analysis-card card-quick-3">Utilizatori</a>
 			<a href="{% url 'admin_analysis_alerts' %}" class="analysis-card card-quick-4">Alerte</a>
-			<div class="analysis-card card-quick-5">Parteneri</div>
-			<div class="analysis-card card-quick-6">Performanță</div>
+			<a href="{% url 'admin_analysis_partners' %}" class="analysis-card card-quick-5">Parteneri</a>
+			<a href="{% url 'admin_analysis_performance' %}" class="analysis-card card-quick-6">Performanță</a>
 		</div>
 	</div>
 </section>

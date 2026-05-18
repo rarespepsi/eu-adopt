@@ -88,6 +88,31 @@ class AdminAnalysisAlertsTests(TestCase):
         r2 = c.get(reverse("admin_analysis_cats"), {"filter": "cats_no_photo"})
         self.assertContains(r2, "Pisici publice fără poze complete")
 
+    def test_partners_and_performance_pages(self):
+        c = Client()
+        c.login(username=self.staff.username, password="Staff61!")
+        r = c.get(reverse("admin_analysis_partners"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Analiza / Parteneri")
+        self.assertContains(r, "partners-kpi-num")
+        self.assertContains(r, 'href="' + reverse("admin_analysis_partners") + '"')
+        r2 = c.get(reverse("admin_analysis_performance"))
+        self.assertEqual(r2.status_code, 200)
+        self.assertContains(r2, "Analiza / Performanță")
+        self.assertContains(r2, "performance-kpi-num")
+        r3 = c.get(reverse("admin_analysis_home"))
+        self.assertContains(r3, reverse("admin_analysis_partners"))
+        self.assertContains(r3, reverse("admin_analysis_performance"))
+
+    def test_alerts_page_kpis_live(self):
+        c = Client()
+        c.login(username=self.staff.username, password="Staff61!")
+        r = c.get(reverse("admin_analysis_alerts"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "alerts-kpi-num")
+        self.assertContains(r, "Cereri adopție fără răspuns")
+        self.assertContains(r, "alerts-panel-link")
+
     def test_requests_page_kpis_and_panel_links(self):
         c = Client()
         c.login(username=self.staff.username, password="Staff61!")

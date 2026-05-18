@@ -22,6 +22,7 @@ from .models import (
     ContactMessage,
     PublicitateLineCreative,
     PublicitateOrder,
+    StaffOnboardingLead,
     TransportDispatchJob,
     TransportVeterinaryRequest,
 )
@@ -45,6 +46,12 @@ FILTER_EXPIRED_PARTNERS = "expired_partners"
 FILTER_ADOPTION_PENDING = "adoption_pending"
 FILTER_REQUESTS_IN_PROGRESS = "requests_in_progress"
 FILTER_ADOPTION_RECENT_FINALIZED = "adoption_recent_finalized"
+FILTER_PARTNER_COLLAB_LEADS = "collab_leads"
+FILTER_PARTNER_ACTIVE_OFFERS = "active_offers"
+FILTER_PARTNER_PUB_PENDING = "pub_pending"
+FILTER_DOGS_RECENT = "dogs_recent"
+FILTER_CATS_RECENT = "cats_recent"
+FILTER_USERS_RECENT = "users_recent"
 
 def _admin_change_url(model: type[Model], pk: int) -> str:
     meta = model._meta
@@ -88,6 +95,12 @@ FILTER_LABELS = {
     FILTER_ADOPTION_PENDING: "Cereri adopție în așteptare",
     FILTER_REQUESTS_IN_PROGRESS: "Cereri în lucru (adopții acceptate + transport asignat)",
     FILTER_ADOPTION_RECENT_FINALIZED: "Adopții finalizate recent (30 zile)",
+    FILTER_PARTNER_COLLAB_LEADS: "Prospecte colaborator (Add USER)",
+    FILTER_PARTNER_ACTIVE_OFFERS: "Oferte colaborator active",
+    FILTER_PARTNER_PUB_PENDING: "Materiale publicitate neîncărcate",
+    FILTER_DOGS_RECENT: "Câini noi (ultimele 14 zile)",
+    FILTER_CATS_RECENT: "Pisici noi (ultimele 14 zile)",
+    FILTER_USERS_RECENT: "Utilizatori noi (ultimele 30 zile)",
 }
 
 
@@ -101,6 +114,18 @@ def _cats_filter_url(filter_key: str) -> str:
 
 def _dogs_filter_url(filter_key: str) -> str:
     return f"{reverse('admin_analysis_dogs')}?{urlencode({'filter': filter_key})}"
+
+
+def _alerts_filter_url(filter_key: str) -> str:
+    return f"{reverse('admin_analysis_alerts')}?{urlencode({'filter': filter_key})}"
+
+
+def _partners_filter_url(filter_key: str) -> str:
+    return f"{reverse('admin_analysis_partners')}?{urlencode({'filter': filter_key})}"
+
+
+def _users_filter_url(filter_key: str) -> str:
+    return f"{reverse('admin_analysis_users')}?{urlencode({'filter': filter_key})}"
 
 
 def staff_analysis_requests_kpis() -> dict[str, int | float | None]:
@@ -429,7 +454,7 @@ def staff_analysis_home_alert_rows() -> list[dict[str, Any]]:
             "BUSINESS",
             "Sponsori / parteneri expirați",
             count_expired_partners(),
-            _url("admin_analysis_alerts", FILTER_EXPIRED_PARTNERS),
+            _url("admin_analysis_partners", FILTER_EXPIRED_PARTNERS),
             "Oferte colaborator expirate (încă marcate active) + materiale pub neîncărcate",
         ),
     ]
@@ -449,9 +474,194 @@ def staff_analysis_home_alert_rows() -> list[dict[str, Any]]:
     return out
 
 
+def _species_listing_kpis(species: str) -> dict[str, int]:
+    base = AnimalListing.objects.filter(species=species)
+    adopted = AnimalListing.ADOPTION_STATE_ADOPTED
+    in_prog = AnimalListing.ADOPTION_STATE_IN_PROGRESS
+    return {
+        "total": base.count(),
+        "active": base.filter(is_published=True).exclude(adoption_state=adopted).count(),
+        "reserved": base.filter(adoption_state=in_prog).count(),
+        "adopted": base.filter(adoption_state=adopted).count(),
+        "unavailable": base.filter(is_published=False).count(),
+    }
+
+
+def _top_counties_for_species(species: str, limit: int = 3) -> str:
+    from django.db.models import Count
+
+    rows = (
+        AnimalListing.objects.filter(species=species, is_published=True)
+        .exclude(county="")
+        .values("county")
+        .annotate(n=Count("id"))
+        .order_by("-n")[:limit]
+    )
+    if not rows:
+        return "—"
+    return " · ".join(f"{r['county']} ({r['n']})" for r in rows)
+
+
+def staff_analysis_dogs_kpis() -> dict[str, int]:
+    return _species_listing_kpis("dog")
+
+
+def staff_analysis_cats_kpis() -> dict[str, int]:
+    return _species_listing_kpis("cat")
+
+
+def staff_analysis_users_kpis() -> dict[str, int]:
+    User = get_user_model()
+    qs = User.objects.filter(is_staff=False)
+    return {
+        "total": qs.filter(is_active=True).count(),
+        "pf": qs.filter(is_active=True, account_profile__role=AccountProfile.ROLE_PF).count(),
+        "org": qs.filter(is_active=True, account_profile__role=AccountProfile.ROLE_ORG).count(),
+        "collab": qs.filter(is_active=True, account_profile__role=AccountProfile.ROLE_COLLAB).count(),
+        "inactive": qs.filter(is_active=False).count(),
+    }
+
+
+def staff_analysis_alerts_kpis() -> dict[str, int]:
+    rows = staff_analysis_home_alert_rows()
+    critical = sum(r["count"] for r in rows if r["tag_class"] == "critical")
+    medium = sum(r["count"] for r in rows if r["tag_class"] == "medium")
+    biz = sum(r["count"] for r in rows if r["tag_class"] == "biz")
+    now = timezone.now()
+    resolved = AdoptionRequest.objects.filter(
+        status=AdoptionRequest.STATUS_FINALIZED,
+        finalized_at__gte=now - timedelta(days=7),
+    ).count()
+    resolved += TransportDispatchJob.objects.filter(
+        status=TransportDispatchJob.STATUS_COMPLETED,
+        updated_at__gte=now - timedelta(days=7),
+    ).count()
+    return {
+        "total": critical + medium + biz,
+        "critical": critical,
+        "medium": medium,
+        "biz": biz,
+        "resolved": resolved,
+    }
+
+
+def staff_analysis_partners_kpis() -> dict[str, int]:
+    today = timezone.localdate()
+    soon = today + timedelta(days=30)
+    return {
+        "collab_leads": StaffOnboardingLead.objects.filter(
+            account_kind=StaffOnboardingLead.KIND_COLLAB,
+            imported_user__isnull=True,
+        ).count(),
+        "active_offers": CollaboratorServiceOffer.objects.filter(is_active=True).count(),
+        "expired_offers": CollaboratorServiceOffer.objects.filter(
+            is_active=True,
+            valid_until__isnull=False,
+            valid_until__lt=today,
+        ).count(),
+        "expiring_soon": CollaboratorServiceOffer.objects.filter(
+            is_active=True,
+            valid_until__isnull=False,
+            valid_until__gte=today,
+            valid_until__lte=soon,
+        ).count(),
+        "pub_pending": PublicitateLineCreative.objects.filter(
+            status=PublicitateLineCreative.STATUS_PENDING,
+            line__order__status=PublicitateOrder.STATUS_PAID,
+        ).count(),
+        "pub_paid_month": PublicitateOrder.objects.filter(
+            status=PublicitateOrder.STATUS_PAID,
+            paid_at__isnull=False,
+            paid_at__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0),
+        ).count(),
+    }
+
+
+def staff_analysis_performance_kpis() -> dict[str, int | float | None]:
+    req = staff_analysis_requests_kpis()
+    dogs = staff_analysis_dogs_kpis()
+    cats = staff_analysis_cats_kpis()
+    published = dogs["active"] + cats["active"]
+    adoption_total = AdoptionRequest.objects.count()
+    finalized = AdoptionRequest.objects.filter(status=AdoptionRequest.STATUS_FINALIZED).count()
+    conversion: float | None = None
+    if adoption_total:
+        conversion = round(100.0 * finalized / adoption_total, 1)
+    month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    User = get_user_model()
+    return {
+        "published_animals": published,
+        "adoptions_finalized_30d": AdoptionRequest.objects.filter(
+            status=AdoptionRequest.STATUS_FINALIZED,
+            finalized_at__gte=timezone.now() - timedelta(days=30),
+        ).count(),
+        "conversion_pct": conversion,
+        "avg_response_hours": req.get("avg_response_hours"),
+        "new_users_30d": User.objects.filter(is_staff=False, date_joined__gte=timezone.now() - timedelta(days=30)).count(),
+        "requests_this_month": int(req["this_month"]),
+        "transport_completed_30d": TransportDispatchJob.objects.filter(
+            status=TransportDispatchJob.STATUS_COMPLETED,
+            updated_at__gte=timezone.now() - timedelta(days=30),
+        ).count(),
+    }
+
+
+def staff_analysis_home_recent_activity() -> list[dict[str, str]]:
+    """Rânduri panou Activitate recentă — pe centrală."""
+    out: list[dict[str, str]] = []
+    for listing in AnimalListing.objects.filter(species="dog").order_by("-created_at")[:3]:
+        out.append(
+            {
+                "tag": "LIVE",
+                "tag_class": "biz",
+                "text": f"Câine nou: {listing.name or f'#{listing.pk}'}",
+                "meta": listing.created_at.strftime("%d.%m.%Y %H:%M"),
+            }
+        )
+    for ar in AdoptionRequest.objects.select_related("animal").order_by("-created_at")[:3]:
+        pet = ar.animal.name or f"#{ar.animal_id}"
+        out.append(
+            {
+                "tag": "LIVE",
+                "tag_class": "biz",
+                "text": f"Cerere adopție #{ar.pk} — {pet}",
+                "meta": ar.get_status_display(),
+            }
+        )
+    for job in TransportDispatchJob.objects.select_related("tvr").order_by("-created_at")[:2]:
+        out.append(
+            {
+                "tag": "LIVE",
+                "tag_class": "biz",
+                "text": f"Transport dispatch #{job.pk}",
+                "meta": job.get_status_display(),
+            }
+        )
+    User = get_user_model()
+    for u in User.objects.filter(is_staff=False).order_by("-date_joined")[:2]:
+        out.append(
+            {
+                "tag": "LIVE",
+                "tag_class": "biz",
+                "text": f"Cont nou: {u.email or u.username}",
+                "meta": u.date_joined.strftime("%d.%m.%Y %H:%M"),
+            }
+        )
+    return out[:10]
+
+
 def staff_analysis_dogs_page_context(filter_key: str | None) -> dict[str, Any]:
     """Context pentru /admin-analysis/dogs/."""
     ctx = staff_analysis_filter_context(filter_key)
+    kpis = staff_analysis_dogs_kpis()
+    ctx["dogs_kpis"] = kpis
+    ctx["dogs_dist_lines"] = [
+        f"Top județe: {_top_counties_for_species('dog')}",
+        f"Publicați activi: {kpis['active']}",
+        f"În curs adopție: {kpis['reserved']}",
+        f"Adoptați: {kpis['adopted']}",
+        f"Nepublicați: {kpis['unavailable']}",
+    ]
     ctx["dogs_attention_rows"] = [
         {
             "label": "Câini fără poză principală",
@@ -464,12 +674,36 @@ def staff_analysis_dogs_page_context(filter_key: str | None) -> dict[str, Any]:
             "count": count_dogs_no_description(),
         },
     ]
+    ctx["dogs_useful_rows"] = [
+        {
+            "label": "Câini noi (14 zile)",
+            "url": _dogs_filter_url(FILTER_DOGS_RECENT),
+            "count": AnimalListing.objects.filter(
+                _published_dog_q(),
+                created_at__gte=timezone.now() - timedelta(days=14),
+            ).count(),
+        },
+        {
+            "label": "Câini publicați activi",
+            "url": reverse("admin_analysis_dogs"),
+            "count": kpis["active"],
+        },
+    ]
     return ctx
 
 
 def staff_analysis_cats_page_context(filter_key: str | None) -> dict[str, Any]:
     """Context pentru /admin-analysis/cats/."""
     ctx = staff_analysis_filter_context(filter_key)
+    kpis = staff_analysis_cats_kpis()
+    ctx["cats_kpis"] = kpis
+    ctx["cats_dist_lines"] = [
+        f"Top județe: {_top_counties_for_species('cat')}",
+        f"Publicate active: {kpis['active']}",
+        f"În curs adopție: {kpis['reserved']}",
+        f"Adoptate: {kpis['adopted']}",
+        f"Nepublicate: {kpis['unavailable']}",
+    ]
     ctx["cats_attention_rows"] = [
         {
             "label": "Pisici fără poză principală",
@@ -482,7 +716,204 @@ def staff_analysis_cats_page_context(filter_key: str | None) -> dict[str, Any]:
             "count": count_cats_no_description(),
         },
     ]
+    ctx["cats_useful_rows"] = [
+        {
+            "label": "Pisici noi (14 zile)",
+            "url": _cats_filter_url(FILTER_CATS_RECENT),
+            "count": AnimalListing.objects.filter(
+                _published_cat_q(),
+                created_at__gte=timezone.now() - timedelta(days=14),
+            ).count(),
+        },
+        {
+            "label": "Pisici publicate active",
+            "url": reverse("admin_analysis_cats"),
+            "count": kpis["active"],
+        },
+    ]
     return ctx
+
+
+def staff_analysis_users_page_context(filter_key: str | None) -> dict[str, Any]:
+    """Context pentru /admin-analysis/users/."""
+    ctx = staff_analysis_filter_context(filter_key)
+    kpis = staff_analysis_users_kpis()
+    ctx["users_kpis"] = kpis
+    month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    ctx["users_dist_lines"] = [
+        f"PF {kpis['pf']} · ONG {kpis['org']} · Colab {kpis['collab']}",
+        f"Activi total: {kpis['total']}",
+        f"Inactivi: {kpis['inactive']}",
+        f"Noi luna curentă: {get_user_model().objects.filter(is_staff=False, date_joined__gte=month_start).count()}",
+        f"Noi 30 zile: {get_user_model().objects.filter(is_staff=False, date_joined__gte=timezone.now() - timedelta(days=30)).count()}",
+    ]
+    ctx["users_attention_rows"] = [
+        {
+            "label": "Conturi neactivate (email)",
+            "url": _users_filter_url(FILTER_ACCOUNTS_INACTIVE),
+            "count": count_accounts_inactive(),
+        },
+        {
+            "label": "Raportări moderare",
+            "url": _alerts_filter_url(FILTER_MODERATION),
+            "count": count_moderation_reports(),
+        },
+    ]
+    ctx["users_useful_rows"] = [
+        {
+            "label": "Utilizatori noi (30 zile)",
+            "url": _users_filter_url(FILTER_USERS_RECENT),
+            "count": get_user_model()
+            .objects.filter(is_staff=False, date_joined__gte=timezone.now() - timedelta(days=30))
+            .count(),
+        },
+        {
+            "label": "Add USER — prospecte",
+            "url": reverse("admin_analysis_add_user"),
+            "count": StaffOnboardingLead.objects.filter(imported_user__isnull=True).count(),
+        },
+    ]
+    return ctx
+
+
+def staff_analysis_alerts_page_context(filter_key: str | None) -> dict[str, Any]:
+    """Context pentru /admin-analysis/alerts/."""
+    ctx = staff_analysis_filter_context(filter_key)
+    kpis = staff_analysis_alerts_kpis()
+    ctx["alerts_kpis"] = kpis
+    home_rows = staff_analysis_home_alert_rows()
+    ctx["alerts_dist_lines"] = [
+        f"Critice: {kpis['critical']}",
+        f"Medii: {kpis['medium']}",
+        f"Business: {kpis['biz']}",
+        f"Rezolvate 7 zile: {kpis['resolved']}",
+        f"Total deschise: {kpis['total']}",
+    ]
+    ctx["alerts_attention_rows"] = [
+        {"label": r["text"], "url": r["url"], "count": r["count"]} for r in home_rows
+    ]
+    ctx["alerts_useful_rows"] = [
+        {
+            "label": "Moderare (Contact)",
+            "url": _alerts_filter_url(FILTER_MODERATION),
+            "count": count_moderation_reports(),
+        },
+        {
+            "label": "Bonus adopție neexpediat",
+            "url": _alerts_filter_url(FILTER_BONUS_PENDING),
+            "count": count_bonus_pending(),
+        },
+        {
+            "label": "Parteneri expirați",
+            "url": _partners_filter_url(FILTER_EXPIRED_PARTNERS),
+            "count": count_expired_partners(),
+        },
+    ]
+    ctx["alerts_kpi_links"] = {
+        "critical": _alerts_filter_url(FILTER_MODERATION),
+        "medium": _users_filter_url(FILTER_ACCOUNTS_INACTIVE),
+        "biz": _partners_filter_url(FILTER_EXPIRED_PARTNERS),
+    }
+    return ctx
+
+
+def staff_analysis_partners_page_context(filter_key: str | None) -> dict[str, Any]:
+    """Context pentru /admin-analysis/partners/."""
+    ctx = staff_analysis_filter_context(filter_key)
+    kpis = staff_analysis_partners_kpis()
+    ctx["partners_kpis"] = kpis
+    ctx["partners_dist_lines"] = [
+        f"Prospecte colab: {kpis['collab_leads']}",
+        f"Oferte active: {kpis['active_offers']}",
+        f"Expirate (încă active): {kpis['expired_offers']}",
+        f"Expiră în 30 zile: {kpis['expiring_soon']}",
+        f"Pub plătite luna curentă: {kpis['pub_paid_month']}",
+    ]
+    ctx["partners_attention_rows"] = [
+        {
+            "label": "Oferte expirate (marcate active)",
+            "url": _partners_filter_url(FILTER_EXPIRED_PARTNERS),
+            "count": count_expired_partners(),
+        },
+        {
+            "label": "Materiale pub neîncărcate",
+            "url": _partners_filter_url(FILTER_PARTNER_PUB_PENDING),
+            "count": kpis["pub_pending"],
+        },
+        {
+            "label": "Prospecte colaborator (Add USER)",
+            "url": _partners_filter_url(FILTER_PARTNER_COLLAB_LEADS),
+            "count": kpis["collab_leads"],
+        },
+    ]
+    ctx["partners_useful_rows"] = [
+        {
+            "label": "Oferte colaborator active",
+            "url": _partners_filter_url(FILTER_PARTNER_ACTIVE_OFFERS),
+            "count": kpis["active_offers"],
+        },
+        {
+            "label": "Add USER — toate prospectele",
+            "url": reverse("admin_analysis_add_user"),
+            "count": StaffOnboardingLead.objects.filter(imported_user__isnull=True).count(),
+        },
+    ]
+    ctx["partners_kpi_links"] = {
+        "leads": _partners_filter_url(FILTER_PARTNER_COLLAB_LEADS),
+        "offers": _partners_filter_url(FILTER_PARTNER_ACTIVE_OFFERS),
+        "expired": _partners_filter_url(FILTER_EXPIRED_PARTNERS),
+        "pub": _partners_filter_url(FILTER_PARTNER_PUB_PENDING),
+    }
+    return ctx
+
+
+def staff_analysis_performance_page_context() -> dict[str, Any]:
+    """Context pentru /admin-analysis/performance/."""
+    kpis = staff_analysis_performance_kpis()
+    conv = kpis.get("conversion_pct")
+    avg = kpis.get("avg_response_hours")
+    return {
+        "performance_kpis": kpis,
+        "performance_dist_lines": [
+            f"Animale active pub: {kpis['published_animals']}",
+            f"Adopții finalizate 30z: {kpis['adoptions_finalized_30d']}",
+            f"Conversie cereri adopție: {conv}%" if conv is not None else "Conversie: —",
+            f"Timp mediu răspuns: {avg} h" if avg is not None else "Timp mediu răspuns: —",
+            f"Utilizatori noi 30z: {kpis['new_users_30d']}",
+        ],
+        "performance_rows": [
+            {
+                "label": "Cereri adopție + transport",
+                "url": reverse("admin_analysis_requests"),
+                "hint": f"{kpis['requests_this_month']} luna curentă",
+            },
+            {
+                "label": "Câini activi publicați",
+                "url": reverse("admin_analysis_dogs"),
+                "hint": str(staff_analysis_dogs_kpis()["active"]),
+            },
+            {
+                "label": "Pisici active publicate",
+                "url": reverse("admin_analysis_cats"),
+                "hint": str(staff_analysis_cats_kpis()["active"]),
+            },
+            {
+                "label": "Transport finalizat (30 zile)",
+                "url": _requests_filter_url(FILTER_ADOPTION_RECENT_FINALIZED),
+                "hint": str(kpis["transport_completed_30d"]),
+            },
+            {
+                "label": "Parteneri — oferte și pub",
+                "url": reverse("admin_analysis_partners"),
+                "hint": str(staff_analysis_partners_kpis()["active_offers"]),
+            },
+            {
+                "label": "Alerte deschise",
+                "url": reverse("admin_analysis_alerts"),
+                "hint": str(staff_analysis_alerts_kpis()["total"]),
+            },
+        ],
+    }
 
 
 def staff_analysis_filter_context(filter_key: str | None) -> dict[str, Any]:
@@ -796,6 +1227,116 @@ def staff_analysis_filter_context(filter_key: str | None) -> dict[str, Any]:
                 )
             )
 
+    elif filter_key == FILTER_PARTNER_COLLAB_LEADS:
+        qs = (
+            StaffOnboardingLead.objects.filter(
+                account_kind=StaffOnboardingLead.KIND_COLLAB,
+                imported_user__isnull=True,
+            )
+            .order_by("-created_at")[:ANALYSIS_LIST_LIMIT]
+        )
+        for lead in qs:
+            items.append(
+                _filter_item(
+                    lead.email,
+                    f"{lead.get_account_kind_display()} · {lead.judet or '—'} / {lead.oras or '—'}",
+                    action_url=reverse("admin_analysis_add_user")
+                    + f"?account_kind=collaborator&edit={lead.pk}",
+                    action_label="Add USER — modifică",
+                )
+            )
+
+    elif filter_key == FILTER_PARTNER_ACTIVE_OFFERS:
+        for offer in (
+            CollaboratorServiceOffer.objects.filter(is_active=True)
+            .select_related("collaborator")
+            .order_by("-updated_at")[:ANALYSIS_LIST_LIMIT]
+        ):
+            until = f" · până {offer.valid_until:%d.%m.%Y}" if offer.valid_until else ""
+            items.append(
+                _filter_item(
+                    offer.title[:100],
+                    f"{offer.collaborator.email or offer.collaborator.username}{until}",
+                    action_url=_admin_change_url(CollaboratorServiceOffer, offer.pk),
+                    action_label="Admin — ofertă",
+                )
+            )
+
+    elif filter_key == FILTER_PARTNER_PUB_PENDING:
+        for creative in (
+            PublicitateLineCreative.objects.filter(
+                status=PublicitateLineCreative.STATUS_PENDING,
+                line__order__status=PublicitateOrder.STATUS_PAID,
+            )
+            .select_related("line", "line__order")
+            .order_by("-line__order__paid_at")[:ANALYSIS_LIST_LIMIT]
+        ):
+            line = creative.line
+            items.append(
+                _filter_item(
+                    f"Comandă pub #{line.order_id} — {line.section}/{line.slot_code}",
+                    "Materiale creative neîncărcate (comandă plătită)",
+                    action_url=_admin_change_url(PublicitateOrder, line.order_id),
+                    action_label="Admin — comandă pub",
+                )
+            )
+
+    elif filter_key == FILTER_DOGS_RECENT:
+        since = now - timedelta(days=14)
+        qs = (
+            AnimalListing.objects.filter(_published_dog_q(), created_at__gte=since)
+            .select_related("owner")
+            .order_by("-created_at")[:ANALYSIS_LIST_LIMIT]
+        )
+        for listing in qs:
+            items.append(
+                _filter_item(
+                    listing.name or f"Anunț #{listing.pk}",
+                    f"Creat {listing.created_at:%d.%m.%Y} · {listing.owner.email or listing.owner.username}",
+                    action_url=reverse("pets_single", args=[listing.pk]),
+                    action_label="Vezi anunț public",
+                    action_new_tab=True,
+                )
+            )
+
+    elif filter_key == FILTER_CATS_RECENT:
+        since = now - timedelta(days=14)
+        qs = (
+            AnimalListing.objects.filter(_published_cat_q(), created_at__gte=since)
+            .select_related("owner")
+            .order_by("-created_at")[:ANALYSIS_LIST_LIMIT]
+        )
+        for listing in qs:
+            items.append(
+                _filter_item(
+                    listing.name or f"Anunț #{listing.pk}",
+                    f"Creat {listing.created_at:%d.%m.%Y} · {listing.owner.email or listing.owner.username}",
+                    action_url=reverse("pets_single", args=[listing.pk]),
+                    action_label="Vezi anunț public",
+                    action_new_tab=True,
+                )
+            )
+
+    elif filter_key == FILTER_USERS_RECENT:
+        since = now - timedelta(days=30)
+        qs = (
+            User.objects.filter(is_staff=False, date_joined__gte=since)
+            .select_related("account_profile")
+            .order_by("-date_joined")[:ANALYSIS_LIST_LIMIT]
+        )
+        for u in qs:
+            role = ""
+            if hasattr(u, "account_profile") and u.account_profile:
+                role = u.account_profile.get_role_display()
+            items.append(
+                _filter_item(
+                    u.email or u.username,
+                    f"{role} · {u.date_joined:%d.%m.%Y %H:%M}",
+                    action_url=_admin_change_url(User, u.pk),
+                    action_label="Admin — cont utilizator",
+                )
+            )
+
     elif filter_key == FILTER_EXPIRED_PARTNERS:
         today = timezone.localdate()
         for offer in (
@@ -880,6 +1421,27 @@ def staff_analysis_filter_context(filter_key: str | None) -> dict[str, Any]:
         total = count_cats_no_description()
     elif filter_key == FILTER_EXPIRED_PARTNERS:
         total = count_expired_partners()
+    elif filter_key == FILTER_PARTNER_COLLAB_LEADS:
+        total = StaffOnboardingLead.objects.filter(
+            account_kind=StaffOnboardingLead.KIND_COLLAB,
+            imported_user__isnull=True,
+        ).count()
+    elif filter_key == FILTER_PARTNER_ACTIVE_OFFERS:
+        total = CollaboratorServiceOffer.objects.filter(is_active=True).count()
+    elif filter_key == FILTER_PARTNER_PUB_PENDING:
+        total = PublicitateLineCreative.objects.filter(
+            status=PublicitateLineCreative.STATUS_PENDING,
+            line__order__status=PublicitateOrder.STATUS_PAID,
+        ).count()
+    elif filter_key == FILTER_DOGS_RECENT:
+        since = now - timedelta(days=14)
+        total = AnimalListing.objects.filter(_published_dog_q(), created_at__gte=since).count()
+    elif filter_key == FILTER_CATS_RECENT:
+        since = now - timedelta(days=14)
+        total = AnimalListing.objects.filter(_published_cat_q(), created_at__gte=since).count()
+    elif filter_key == FILTER_USERS_RECENT:
+        since = now - timedelta(days=30)
+        total = User.objects.filter(is_staff=False, date_joined__gte=since).count()
 
     return {
         "analysis_filter": filter_key,

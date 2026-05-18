@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Analiza - Parteneri{% endblock %}
+{% block body_class %}page-admin-analysis{% endblock %}
+
+{% block extra_css %}
+<style>
+	body.page-admin-analysis { overflow: hidden !important; height: 100dvh; }
+	body.page-admin-analysis #main_wrap { height: 100dvh !important; overflow: hidden !important; display: flex; flex-direction: column; }
+	body.page-admin-analysis .layout { grid-template-columns: 1fr; height: 100%; min-height: 0; }
+	body.page-admin-analysis .sidebar-left, body.page-admin-analysis .sidebar-right { display: none; }
+	body.page-admin-analysis #main_content { height: calc(100dvh - var(--nav-h, 64px)) !important; min-height: calc(100dvh - var(--nav-h, 64px)) !important; flex: 1 1 auto; overflow: hidden; padding: 0; box-sizing: border-box; }
+	body.page-admin-analysis .main-content { max-width: 100%; padding: 0; height: 100%; overflow: hidden; }
+	.analysis-shell { min-height: 100%; height: 100%; border: 2px solid rgba(21, 101, 192, 0.75); border-radius: 14px; padding: 0.75rem; box-sizing: border-box; background: transparent; }
+	.analysis-shell h1 { margin: 0; font-size: 1rem; font-weight: 800; color: #0d47a1; text-transform: uppercase; }
+	.analysis-subnav { margin-top: 0.45rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+	.analysis-subnav a { text-decoration: none; padding: 0.2rem 0.45rem; border-radius: 999px; border: 1px solid rgba(13, 71, 161, 0.5); color: #0d47a1; font-size: 0.72rem; font-weight: 700; }
+	.partners-layout { margin-top: 0.6rem; height: calc(100% - 2.8rem); display: grid; grid-template-rows: auto auto 1fr; gap: 0.5rem; min-height: 0; }
+	.partners-kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.45rem; }
+	.partners-kpi { border-radius: 10px; padding: 0.4rem 0.45rem; border: 1px solid rgba(0,0,0,0.18); min-height: 2.3rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.08rem; text-decoration: none; color: #1a1a1a; font-weight: 800; text-align: center; }
+	a.partners-kpi:hover { filter: brightness(1.03); box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+	.partners-kpi-num { font-size: 1.05rem; font-weight: 900; }
+	.partners-kpi-label { font-size: 0.68rem; }
+	.partners-kpi-1 { background: rgba(255, 224, 130, 0.62); }
+	.partners-kpi-2 { background: rgba(197, 225, 165, 0.62); }
+	.partners-kpi-3 { background: rgba(255, 171, 145, 0.62); }
+	.partners-kpi-4 { background: rgba(255, 245, 157, 0.62); }
+	.partners-kpi-5 { background: rgba(129, 212, 250, 0.62); }
+	.partners-distributions { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.45rem; }
+	.partners-dist { border-radius: 10px; padding: 0.38rem 0.4rem; border: 1px solid rgba(0,0,0,0.18); font-size: 0.7rem; font-weight: 700; background: rgba(129, 212, 250, 0.45); text-align: center; min-height: 2.2rem; display: flex; align-items: center; justify-content: center; }
+	.partners-main { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; min-height: 0; }
+	.partners-panel { border-radius: 10px; border: 1px solid rgba(0,0,0,0.2); padding: 0.5rem; background: rgba(255,255,255,0.48); display: flex; flex-direction: column; gap: 0.35rem; min-height: 0; overflow: hidden; }
+	.partners-panel h2 { margin: 0; font-size: 0.76rem; font-weight: 900; text-transform: uppercase; color: #0d47a1; }
+	.partners-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.25rem; overflow-y: auto; min-height: 0; flex: 1 1 auto; }
+	.partners-list li { background: rgba(255,255,255,0.62); border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; padding: 0; }
+	.partners-panel-link { display: flex; align-items: center; justify-content: space-between; gap: 0.35rem; padding: 0.28rem 0.35rem; text-decoration: none; color: inherit; font-size: 0.71rem; font-weight: 700; border-radius: 6px; }
+	.partners-panel-link:hover { background: rgba(255,255,255,0.85); }
+	.partners-panel-count { font-size: 0.68rem; font-weight: 900; background: rgba(255,255,255,0.9); border-radius: 999px; padding: 0.03rem 0.35rem; min-width: 1.1rem; text-align: center; }
+	.partners-panel-count.is-hot { background: #ffcdd2; color: #b71c1c; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="analysis-shell" aria-label="Analiza Parteneri">
+	<h1>Analiza / Parteneri</h1>
+	{% include "anunturi/includes/admin_analysis_subnav.html" %}
+	<div class="partners-layout">
+		<div class="partners-row partners-kpis">
+			<a href="{{ partners_kpi_links.leads }}" class="partners-kpi partners-kpi-1"><span class="partners-kpi-num">{{ partners_kpis.collab_leads }}</span><span class="partners-kpi-label">Prospecte colab</span></a>
+			<a href="{{ partners_kpi_links.offers }}" class="partners-kpi partners-kpi-2"><span class="partners-kpi-num">{{ partners_kpis.active_offers }}</span><span class="partners-kpi-label">Oferte active</span></a>
+			<a href="{{ partners_kpi_links.expired }}" class="partners-kpi partners-kpi-3"><span class="partners-kpi-num">{{ partners_kpis.expired_offers }}</span><span class="partners-kpi-label">Oferte expirate</span></a>
+			<div class="partners-kpi partners-kpi-4"><span class="partners-kpi-num">{{ partners_kpis.expiring_soon }}</span><span class="partners-kpi-label">Expiră 30z</span></div>
+			<a href="{{ partners_kpi_links.pub }}" class="partners-kpi partners-kpi-5"><span class="partners-kpi-num">{{ partners_kpis.pub_pending }}</span><span class="partners-kpi-label">Pub pending</span></a>
+		</div>
+		<div class="partners-distributions">
+			{% for line in partners_dist_lines %}
+			<div class="partners-dist">{{ line }}</div>
+			{% endfor %}
+		</div>
+		<div class="partners-main">
+			<section class="partners-panel">
+				<h2>{% if analysis_filter %}{{ analysis_filter_label }}{% else %}Probleme / Atenție{% endif %}</h2>
+				{% if analysis_filter %}
+				{% include "anunturi/includes/admin_analysis_filter_list.html" %}
+				{% else %}
+				<ul class="partners-list">
+					{% for row in partners_attention_rows %}
+					<li><a href="{{ row.url }}" class="partners-panel-link"><span>{{ row.label }}</span><span class="partners-panel-count{% if row.count %} is-hot{% endif %}">{{ row.count }}</span></a></li>
+					{% endfor %}
+				</ul>
+				{% endif %}
+			</section>
+			<section class="partners-panel">
+				<h2>Liste utile</h2>
+				<ul class="partners-list">
+					{% for row in partners_useful_rows %}
+					<li><a href="{{ row.url }}" class="partners-panel-link"><span>{{ row.label }}</span><span class="partners-panel-count{% if row.count %} is-hot{% endif %}">{{ row.count }}</span></a></li>
+					{% endfor %}
+				</ul>
+			</section>
+		</div>
+	</div>
+</section>
+{% endblock %}

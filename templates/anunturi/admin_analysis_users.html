@@ -55,8 +55,16 @@
 		min-height: 2.3rem;
 		display: flex;
 		align-items: center;
+		flex-direction: column;
 		justify-content: center;
+		gap: 0.08rem;
 	}
+	.users-kpi-num { font-size: 1.05rem; font-weight: 900; }
+	.users-kpi-label { font-size: 0.68rem; }
+	.users-panel-link { display:flex;justify-content:space-between;padding:0.28rem 0.35rem;text-decoration:none;color:inherit;border-radius:6px; }
+	.users-panel-count { font-weight:900; border-radius:999px; padding:0.03rem 0.35rem; min-width:1.1rem; text-align:center; }
+	.users-panel-count.is-hot { background:#ffcdd2;color:#b71c1c; }
+	.users-list li { padding:0; }
 	.users-kpi-1 { background: rgba(165, 214, 167, 0.62); }
 	.users-kpi-2 { background: rgba(197, 225, 165, 0.62); }
 	.users-kpi-3 { background: rgba(178, 223, 219, 0.62); }
@@ -275,18 +283,16 @@
 	</dialog>
 	<div class="users-layout">
 		<div class="users-row users-kpis">
-			<div class="users-kpi users-kpi-1">Total useri</div>
-			<div class="users-kpi users-kpi-2">PF</div>
-			<div class="users-kpi users-kpi-3">ONG / SRL</div>
-			<div class="users-kpi users-kpi-4">Colaboratori</div>
-			<div class="users-kpi users-kpi-5">Inactivi</div>
+			<div class="users-kpi users-kpi-1"><span class="users-kpi-num">{{ users_kpis.total }}</span><span class="users-kpi-label">Total useri</span></div>
+			<div class="users-kpi users-kpi-2"><span class="users-kpi-num">{{ users_kpis.pf }}</span><span class="users-kpi-label">PF</span></div>
+			<div class="users-kpi users-kpi-3"><span class="users-kpi-num">{{ users_kpis.org }}</span><span class="users-kpi-label">ONG / SRL</span></div>
+			<div class="users-kpi users-kpi-4"><span class="users-kpi-num">{{ users_kpis.collab }}</span><span class="users-kpi-label">Colaboratori</span></div>
+			<div class="users-kpi users-kpi-5"><span class="users-kpi-num">{{ users_kpis.inactive }}</span><span class="users-kpi-label">Inactivi</span></div>
 		</div>
 		<div class="users-row users-distributions">
-			<div class="users-dist">Pe tip cont</div>
-			<div class="users-dist">Pe județ</div>
-			<div class="users-dist">Pe lună înregistrare</div>
-			<div class="users-dist">Pe status</div>
-			<div class="users-dist">Conturi noi (ultimele 30 zile)</div>
+			{% for line in users_dist_lines %}
+			<div class="users-dist">{{ line }}</div>
+			{% endfor %}
 		</div>
 		<div class="users-row users-main">
 			<section class="users-panel" aria-label="Probleme și atenție Users">
@@ -295,21 +301,18 @@
 				{% include "anunturi/includes/admin_analysis_filter_list.html" %}
 				{% else %}
 				<ul class="users-list">
-					<li>Conturi fără email verificat</li>
-					<li>Conturi fără telefon / localitate</li>
-					<li>ONG/SRL – profile incomplete</li>
-					<li>Colaboratori – profile incomplete</li>
-					<li>Conturi raportate / problemă</li>
+					{% for row in users_attention_rows %}
+					<li><a href="{{ row.url }}" class="users-panel-link"><span>{{ row.label }}</span><span class="users-panel-count{% if row.count %} is-hot{% endif %}">{{ row.count }}</span></a></li>
+					{% endfor %}
 				</ul>
 				{% endif %}
 			</section>
 			<section class="users-panel" aria-label="Liste utile Users">
 				<h2>Liste utile</h2>
 				<ul class="users-list">
-					<li>Useri noi (ultimele 30 zile)</li>
-					<li>Cei mai activi (postări / cereri)</li>
-					<li>PF – cei mai recenți</li>
-					<li>ONG – cele mai active</li>
+					{% for row in users_useful_rows %}
+					<li><a href="{{ row.url }}" class="users-panel-link"><span>{{ row.label }}</span><span class="users-panel-count{% if row.count %} is-hot{% endif %}">{{ row.count }}</span></a></li>
+					{% endfor %}
 				</ul>
 			</section>
 		</div>

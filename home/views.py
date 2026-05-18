@@ -86,11 +86,15 @@ from .models import (
 from .staff_onboarding_form import StaffOnboardingLeadForm, SEGMENT_CHOICES
 from .staff_onboarding_csv import export_csv_bytes, import_csv_bytes, is_placeholder_lead_email
 from .admin_analysis_data import (
+    staff_analysis_alerts_page_context,
     staff_analysis_cats_page_context,
     staff_analysis_dogs_page_context,
-    staff_analysis_filter_context,
     staff_analysis_home_alert_rows,
+    staff_analysis_home_recent_activity,
+    staff_analysis_partners_page_context,
+    staff_analysis_performance_page_context,
     staff_analysis_requests_page_context,
+    staff_analysis_users_page_context,
 )
 from django.contrib.auth import get_user_model
 from functools import wraps
@@ -5178,6 +5182,7 @@ def admin_analysis_home_view(request):
             "kpi_accounts_new": kpis["accounts_new"],
             "kpi_alerts_active": kpis["alerts_active"],
             "alert_rows": staff_analysis_home_alert_rows(),
+            "recent_activity": staff_analysis_home_recent_activity(),
         },
     )
 
@@ -5314,7 +5319,7 @@ def admin_analysis_users_bulk_mail_view(request):
 def admin_analysis_users_view(request):
     if not (request.user.is_superuser or request.user.is_staff):
         return redirect(reverse("home"))
-    ctx = staff_analysis_filter_context((request.GET.get("filter") or "").strip())
+    ctx = staff_analysis_users_page_context((request.GET.get("filter") or "").strip())
     ctx["bulk_mail_cap"] = _ADMIN_USERS_BULK_MAIL_MAX
     return render(request, "anunturi/admin_analysis_users.html", ctx)
 
@@ -5323,8 +5328,24 @@ def admin_analysis_users_view(request):
 def admin_analysis_alerts_view(request):
     if not (request.user.is_superuser or request.user.is_staff):
         return redirect(reverse("home"))
-    ctx = staff_analysis_filter_context((request.GET.get("filter") or "").strip())
+    ctx = staff_analysis_alerts_page_context((request.GET.get("filter") or "").strip())
     return render(request, "anunturi/admin_analysis_alerts.html", ctx)
+
+
+@login_required
+def admin_analysis_partners_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    ctx = staff_analysis_partners_page_context((request.GET.get("filter") or "").strip())
+    return render(request, "anunturi/admin_analysis_partners.html", ctx)
+
+
+@login_required
+def admin_analysis_performance_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    ctx = staff_analysis_performance_page_context()
+    return render(request, "anunturi/admin_analysis_performance.html", ctx)
 
 
 STAFF_ONBOARDING_LEADS_PER_PAGE = 100

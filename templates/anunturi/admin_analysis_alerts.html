@@ -41,9 +41,15 @@
 		color: #1a1a1a;
 		min-height: 2.3rem;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		gap: 0.08rem;
+		text-decoration: none;
 	}
+	a.alerts-kpi:hover { filter: brightness(1.03); box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+	.alerts-kpi-num { font-size: 1.05rem; font-weight: 900; line-height: 1.1; }
+	.alerts-kpi-label { font-size: 0.68rem; font-weight: 800; }
 	.alerts-kpi-1 { background: rgba(255, 171, 145, 0.62); }
 	.alerts-kpi-2 { background: rgba(255, 245, 157, 0.62); }
 	.alerts-kpi-3 { background: rgba(255, 224, 178, 0.62); }
@@ -107,11 +113,32 @@
 		background: rgba(255,255,255,0.62);
 		border: 1px solid rgba(0,0,0,0.12);
 		border-radius: 6px;
-		padding: 0.28rem 0.35rem;
+		padding: 0;
 		font-size: 0.71rem;
 		font-weight: 700;
 		color: #1f2937;
 	}
+	.alerts-panel-link {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.35rem;
+		padding: 0.28rem 0.35rem;
+		text-decoration: none;
+		color: inherit;
+		border-radius: 6px;
+	}
+	.alerts-panel-link:hover { background: rgba(255,255,255,0.85); }
+	.alerts-panel-count {
+		font-size: 0.68rem;
+		font-weight: 900;
+		background: rgba(255,255,255,0.9);
+		border-radius: 999px;
+		padding: 0.03rem 0.35rem;
+		min-width: 1.1rem;
+		text-align: center;
+	}
+	.alerts-panel-count.is-hot { background: #ffcdd2; color: #b71c1c; }
 	.analysis-filter-meta {
 		margin: 0;
 		font-size: 0.68rem;
@@ -151,18 +178,16 @@
 	{% include "anunturi/includes/admin_analysis_subnav.html" %}
 	<div class="alerts-layout">
 		<div class="alerts-row alerts-kpis">
-			<div class="alerts-kpi alerts-kpi-1">Total alerte</div>
-			<div class="alerts-kpi alerts-kpi-2">Critice (roșii)</div>
-			<div class="alerts-kpi alerts-kpi-3">Medii (galbene)</div>
-			<div class="alerts-kpi alerts-kpi-4">Business</div>
-			<div class="alerts-kpi alerts-kpi-5">Rezolvate</div>
+			<div class="alerts-kpi alerts-kpi-1"><span class="alerts-kpi-num">{{ alerts_kpis.total }}</span><span class="alerts-kpi-label">Total alerte</span></div>
+			<a href="{{ alerts_kpi_links.critical }}" class="alerts-kpi alerts-kpi-2"><span class="alerts-kpi-num">{{ alerts_kpis.critical }}</span><span class="alerts-kpi-label">Critice</span></a>
+			<a href="{{ alerts_kpi_links.medium }}" class="alerts-kpi alerts-kpi-3"><span class="alerts-kpi-num">{{ alerts_kpis.medium }}</span><span class="alerts-kpi-label">Medii</span></a>
+			<a href="{{ alerts_kpi_links.biz }}" class="alerts-kpi alerts-kpi-4"><span class="alerts-kpi-num">{{ alerts_kpis.biz }}</span><span class="alerts-kpi-label">Business</span></a>
+			<div class="alerts-kpi alerts-kpi-5"><span class="alerts-kpi-num">{{ alerts_kpis.resolved }}</span><span class="alerts-kpi-label">Rezolvate 7z</span></div>
 		</div>
 		<div class="alerts-row alerts-distributions">
-			<div class="alerts-dist">Pe tip</div>
-			<div class="alerts-dist">Pe prioritate</div>
-			<div class="alerts-dist">Pe lună</div>
-			<div class="alerts-dist">Pe sursă (user / sistem)</div>
-			<div class="alerts-dist">Nerezolvate (vechime)</div>
+			{% for line in alerts_dist_lines %}
+			<div class="alerts-dist">{{ line }}</div>
+			{% endfor %}
 		</div>
 		<div class="alerts-row alerts-main">
 			<section class="alerts-panel" aria-label="Probleme și atenție Alerte">
@@ -171,20 +196,28 @@
 				{% include "anunturi/includes/admin_analysis_filter_list.html" %}
 				{% else %}
 				<ul class="alerts-list">
-					<li>Alerte critice nerezolvate</li>
-					<li>Alerte vechi (peste 7 zile)</li>
-					<li>Raportări utilizatori – în așteptare</li>
-					<li>Erori sistem / sincronizare</li>
+					{% for row in alerts_attention_rows %}
+					<li>
+						<a href="{{ row.url }}" class="alerts-panel-link" title="Vezi lista filtrată">
+							<span>{{ row.label }}</span>
+							<span class="alerts-panel-count{% if row.count %} is-hot{% endif %}">{{ row.count }}</span>
+						</a>
+					</li>
+					{% endfor %}
 				</ul>
 				{% endif %}
 			</section>
 			<section class="alerts-panel" aria-label="Liste utile Alerte">
 				<h2>Liste utile</h2>
 				<ul class="alerts-list">
-					<li>Acțiuni rapide: vezi profil</li>
-					<li>Acțiuni rapide: vezi cerere</li>
-					<li>Marchează rezolvat</li>
-					<li>Alerte rezolvate recent</li>
+					{% for row in alerts_useful_rows %}
+					<li>
+						<a href="{{ row.url }}" class="alerts-panel-link" title="Vezi lista">
+							<span>{{ row.label }}</span>
+							<span class="alerts-panel-count{% if row.count %} is-hot{% endif %}">{{ row.count }}</span>
+						</a>
+					</li>
+					{% endfor %}
 				</ul>
 			</section>
 		</div>

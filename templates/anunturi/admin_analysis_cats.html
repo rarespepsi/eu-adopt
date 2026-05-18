@@ -41,9 +41,13 @@
 		color: #1a1a1a;
 		min-height: 2.3rem;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		gap: 0.08rem;
 	}
+	.cats-kpi-num { font-size: 1.05rem; font-weight: 900; }
+	.cats-kpi-label { font-size: 0.68rem; }
 	.cats-kpi-1 { background: rgba(206, 147, 216, 0.62); }
 	.cats-kpi-2 { background: rgba(225, 190, 231, 0.62); }
 	.cats-kpi-3 { background: rgba(243, 229, 245, 0.62); }
@@ -159,18 +163,16 @@
 	{% include "anunturi/includes/admin_analysis_subnav.html" %}
 	<div class="cats-layout">
 		<div class="cats-row cats-kpis">
-			<div class="cats-kpi cats-kpi-1">Total pisici</div>
-			<div class="cats-kpi cats-kpi-2">Active</div>
-			<div class="cats-kpi cats-kpi-3">Rezervate</div>
-			<div class="cats-kpi cats-kpi-4">Adoptate</div>
-			<div class="cats-kpi cats-kpi-5">Indisponibile</div>
+			<div class="cats-kpi cats-kpi-1"><span class="cats-kpi-num">{{ cats_kpis.total }}</span><span class="cats-kpi-label">Total pisici</span></div>
+			<div class="cats-kpi cats-kpi-2"><span class="cats-kpi-num">{{ cats_kpis.active }}</span><span class="cats-kpi-label">Active</span></div>
+			<div class="cats-kpi cats-kpi-3"><span class="cats-kpi-num">{{ cats_kpis.reserved }}</span><span class="cats-kpi-label">Rezervate</span></div>
+			<div class="cats-kpi cats-kpi-4"><span class="cats-kpi-num">{{ cats_kpis.adopted }}</span><span class="cats-kpi-label">Adoptate</span></div>
+			<div class="cats-kpi cats-kpi-5"><span class="cats-kpi-num">{{ cats_kpis.unavailable }}</span><span class="cats-kpi-label">Indisponibile</span></div>
 		</div>
 		<div class="cats-row cats-distributions">
-			<div class="cats-dist">Distribuție pe județe</div>
-			<div class="cats-dist">Distribuție pe organizații</div>
-			<div class="cats-dist">Distribuție pe statusuri</div>
-			<div class="cats-dist">Distribuție pe vârstă</div>
-			<div class="cats-dist">Distribuție pe talie</div>
+			{% for line in cats_dist_lines %}
+			<div class="cats-dist">{{ line }}</div>
+			{% endfor %}
 		</div>
 		<div class="cats-row cats-main">
 			<section class="cats-panel" aria-label="Probleme de date Pisici">
@@ -187,19 +189,15 @@
 						</a>
 					</li>
 					{% endfor %}
-					<li><span style="display:block;padding:0.28rem 0.35rem;">Pisici fără galerie completă</span></li>
-					<li><span style="display:block;padding:0.28rem 0.35rem;">Pisici fără poveste</span></li>
-					<li><span style="display:block;padding:0.28rem 0.35rem;">Pisici fără județ/localitate</span></li>
 				</ul>
 				{% endif %}
 			</section>
 			<section class="cats-panel" aria-label="Liste utile Pisici">
 				<h2>Liste utile</h2>
 				<ul class="cats-list">
-					<li><span style="display:block;padding:0.28rem 0.35rem;">Pisici noi</span></li>
-					<li><span style="display:block;padding:0.28rem 0.35rem;">Pisici vechi încă active</span></li>
-					<li><span style="display:block;padding:0.28rem 0.35rem;">Cele mai vizualizate</span></li>
-					<li><span style="display:block;padding:0.28rem 0.35rem;">Cele mai pușe la wishlist</span></li>
+					{% for row in cats_useful_rows %}
+					<li><a href="{{ row.url }}" class="cats-panel-link"><span>{{ row.label }}</span><span class="cats-panel-count{% if row.count %} is-hot{% endif %}">{{ row.count }}</span></a></li>
+					{% endfor %}
 				</ul>
 			</section>
 		</div>

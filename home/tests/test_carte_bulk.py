@@ -48,6 +48,8 @@ _CARTE_GET_CASES = [
     ("admin_analysis_requests", {}, ""),
     ("admin_analysis_users", {}, ""),
     ("admin_analysis_alerts", {}, ""),
+    ("admin_analysis_partners", {}, ""),
+    ("admin_analysis_performance", {}, ""),
     ("admin_analysis_add_user", {}, ""),
     ("admin_analysis_add_user_import", {}, ""),
     ("admin_analysis_add_user_export", {}, ""),
