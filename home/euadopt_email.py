@@ -82,11 +82,12 @@ def log_smtp_error(kind: str, exc: Exception, *, to: list[str] | None = None) ->
     """Log structurat pentru erori SMTP (fără parolă)."""
     recipients = ", ".join(to or [])
     logger.error(
-        "SMTP send failed kind=%s host=%s port=%s user=%s ssl=%s to=[%s] error_type=%s error=%s",
+        "SMTP send failed kind=%s host=%s port=%s user=%s tls=%s ssl=%s to=[%s] error_type=%s error=%s",
         kind,
         getattr(settings, "EMAIL_HOST", ""),
         getattr(settings, "EMAIL_PORT", ""),
         getattr(settings, "EMAIL_HOST_USER", ""),
+        getattr(settings, "EMAIL_USE_TLS", False),
         getattr(settings, "EMAIL_USE_SSL", False),
         recipients,
         type(exc).__name__,

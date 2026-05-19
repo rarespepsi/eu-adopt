@@ -42,6 +42,7 @@ class Command(BaseCommand):
 
         self.stdout.write(f"EMAIL_PORT = {settings.EMAIL_PORT}")
 
+        self.stdout.write(f"EMAIL_USE_TLS = {getattr(settings, 'EMAIL_USE_TLS', False)}")
         self.stdout.write(f"EMAIL_USE_SSL = {getattr(settings, 'EMAIL_USE_SSL', False)}")
 
         self.stdout.write(f"EMAIL_HOST_USER = {settings.EMAIL_HOST_USER}")

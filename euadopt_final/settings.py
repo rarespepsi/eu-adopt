@@ -264,11 +264,14 @@ _EMAIL_CONFIGURED = bool(
 if _EMAIL_CONFIGURED:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_HOST = _EMAIL_HOST.strip()
-    EMAIL_PORT = config("EMAIL_PORT", default=465, cast=int)
+    EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=False, cast=bool)
+    EMAIL_USE_SSL = config("EMAIL_USE_SSL", default=not EMAIL_USE_TLS, cast=bool)
+    if EMAIL_USE_TLS and EMAIL_USE_SSL:
+        EMAIL_USE_SSL = False
+    _default_port = 587 if EMAIL_USE_TLS else 465
+    EMAIL_PORT = config("EMAIL_PORT", default=_default_port, cast=int)
     EMAIL_HOST_USER = _EMAIL_USER.strip()
     EMAIL_HOST_PASSWORD = _EMAIL_PASSWORD
-    EMAIL_USE_SSL = config("EMAIL_USE_SSL", default=True, cast=bool)
-    EMAIL_USE_TLS = False
     DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default=_EMAIL_USER.strip())
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
