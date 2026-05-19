@@ -249,17 +249,43 @@ GOOGLE_MAPS_API_KEY = os.environ.get("EUADOPT_GOOGLE_MAPS_API_KEY", "").strip()
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25 MB
 
-# Email – Zoho Mail (SMTP). Parola EXCLUSIV din .env — fără hardcodare în cod sau git.
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = config("EMAIL_HOST")
-EMAIL_PORT = config("EMAIL_PORT", cast=int)
-EMAIL_HOST_USER = config("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
-EMAIL_USE_SSL = config("EMAIL_USE_SSL", cast=bool)
-EMAIL_USE_TLS = False
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
-# Notificări formular Contact (implicit = EMAIL_HOST_USER / DEFAULT_FROM_EMAIL)
-CONTACT_NOTIFY_EMAIL = _os.environ.get("CONTACT_NOTIFY_EMAIL", "").strip() or config("EMAIL_HOST_USER")
+# Email – Zoho Mail (SMTP). Credențiale EXCLUSIV din env (Render / .env local).
+# Dacă lipsesc pe Render, aplicația pornește oricum (console backend) — vezi variabilele în .env.example.
+_EMAIL_HOST = config("EMAIL_HOST", default="")
+_EMAIL_USER = config("EMAIL_HOST_USER", default="")
+_EMAIL_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
+_EMAIL_CONFIGURED = bool(
+    (_EMAIL_HOST or "").strip()
+    and (_EMAIL_USER or "").strip()
+    and (_EMAIL_PASSWORD or "").strip()
+    and (_EMAIL_PASSWORD or "").strip() != "PAROLA_ZOHO_TEMP"
+)
+
+if _EMAIL_CONFIGURED:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = _EMAIL_HOST.strip()
+    EMAIL_PORT = config("EMAIL_PORT", default=465, cast=int)
+    EMAIL_HOST_USER = _EMAIL_USER.strip()
+    EMAIL_HOST_PASSWORD = _EMAIL_PASSWORD
+    EMAIL_USE_SSL = config("EMAIL_USE_SSL", default=True, cast=bool)
+    EMAIL_USE_TLS = False
+    DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default=_EMAIL_USER.strip())
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    EMAIL_HOST = ""
+    EMAIL_PORT = 587
+    EMAIL_HOST_USER = ""
+    EMAIL_HOST_PASSWORD = ""
+    EMAIL_USE_SSL = False
+    EMAIL_USE_TLS = False
+    DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="EU-Adopt Team <contact@eu-adopt.ro>")
+
+# Notificări formular Contact (dacă formularul e reactivat)
+CONTACT_NOTIFY_EMAIL = (
+    _os.environ.get("CONTACT_NOTIFY_EMAIL", "").strip()
+    or (_EMAIL_USER.strip() if _EMAIL_CONFIGURED else "")
+    or (DEFAULT_FROM_EMAIL or "")
+)
 # Opțional: domeniu FQDN pentru antet Message-ID la emailuri (ex. euadopt.ro). Lasă gol → primul ALLOWED_HOSTS valid.
 EMAIL_MESSAGE_ID_DOMAIN = _os.environ.get("EMAIL_MESSAGE_ID_DOMAIN", "").strip() or None
 

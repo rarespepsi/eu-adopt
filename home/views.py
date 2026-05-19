@@ -3468,96 +3468,49 @@ def politica_moderare_view(request):
 
 
 def contact_view(request):
-    """Pagina Contact dedicată."""
-    form_prefill = {
-        "full_name": "",
-        "email": "",
-        "phone": "",
-        "topic": ContactMessage.TOPIC_GENERAL,
-        "subject": "",
-        "message": "",
-        "attachment_name": "",
-        "accept_privacy": False,
-    }
-    form_errors = []
-    form_success = False
-
-    if request.method == "GET" and request.GET.get("sent") == "1":
-        form_success = True
-
-    if request.method == "POST":
-        attachment = request.FILES.get("attachment")
-        form_prefill = {
-            "full_name": (request.POST.get("full_name") or "").strip(),
-            "email": (request.POST.get("email") or "").strip().lower(),
-            "phone": (request.POST.get("phone") or "").strip(),
-            "topic": (request.POST.get("topic") or ContactMessage.TOPIC_GENERAL).strip(),
-            "subject": (request.POST.get("subject") or "").strip(),
-            "message": (request.POST.get("message") or "").strip(),
-            "attachment_name": (attachment.name if attachment else ""),
-            "accept_privacy": request.POST.get("accept_privacy") == "on",
-        }
-        honey = (request.POST.get("website") or "").strip()
-        if honey:
-            return redirect("contact")
-
-        if not form_prefill["full_name"]:
-            form_errors.append("Numele este obligatoriu.")
-        if not form_prefill["email"]:
-            form_errors.append("E-mailul este obligatoriu.")
-        if form_prefill["topic"] not in dict(ContactMessage.TOPIC_CHOICES):
-            form_errors.append("Selectează un tip de solicitare valid.")
-        if not form_prefill["subject"]:
-            form_errors.append("Subiectul este obligatoriu.")
-        if not form_prefill["message"]:
-            form_errors.append("Mesajul este obligatoriu.")
-        if len(form_prefill["message"]) > 3000:
-            form_errors.append("Mesajul este prea lung (maxim 3000 caractere).")
-        if attachment and attachment.size > 8 * 1024 * 1024:
-            form_errors.append("Fișierul atașat depășește limita de 8MB.")
-        if not form_prefill["accept_privacy"]:
-            form_errors.append("Trebuie să accepți politica de confidențialitate pentru a trimite mesajul.")
-
-        if not form_errors:
-            entry = ContactMessage.objects.create(
-                user=request.user if request.user.is_authenticated else None,
-                full_name=form_prefill["full_name"],
-                email=form_prefill["email"],
-                phone=form_prefill["phone"],
-                topic=form_prefill["topic"],
-                subject=form_prefill["subject"],
-                message=form_prefill["message"],
-                attachment=attachment,
-                accepted_privacy=form_prefill["accept_privacy"],
-                ip_address=_client_ip(request),
-                user_agent=(request.META.get("HTTP_USER_AGENT") or "")[:500],
-            )
-            is_ong = False
-            if request.user.is_authenticated:
-                try:
-                    is_ong = request.user.account_profile.role == AccountProfile.ROLE_ORG
-                except AccountProfile.DoesNotExist:
-                    pass
-            try:
-                from .euadopt_email import send_contact_notification_email
-
-                send_contact_notification_email(entry, is_ong=is_ong, fail_silently=True)
-            except Exception:
-                pass
-
-            form_success = True
-            # PRG: după trimitere facem redirect ca mesajul/datele să nu rămână la refresh/reintrare.
-            return redirect(f"{reverse('contact')}?sent=1")
-
+    """Pagina Contact – canale e-mail directe (aliasuri Zoho)."""
+    contact_channels = [
+        {
+            "title": "Suport general",
+            "email": "contact@eu-adopt.ro",
+            "description": "Cont, autentificare, întrebări tehnice, informații generale.",
+            "mailto_subject": "EU-Adopt - Suport general",
+        },
+        {
+            "title": "Adopții",
+            "email": "adopt@eu-adopt.ro",
+            "description": "Cereri adopție, anunțuri animale, ONG și adăposturi.",
+            "mailto_subject": "EU-Adopt - Adopții",
+        },
+        {
+            "title": "Transport veterinar",
+            "email": "transport@eu-adopt.ro",
+            "description": "Colaboratori transport, întrebări despre serviciul de transport.",
+            "mailto_subject": "EU-Adopt - Transport",
+        },
+        {
+            "title": "Donații",
+            "email": "donations@eu-adopt.ro",
+            "description": "Donații, sponsorizări, redirecționare 3,5% și parteneriate caritabile.",
+            "mailto_subject": "EU-Adopt - Donații",
+        },
+        {
+            "title": "Parteneri și publicitate",
+            "email": "parteners@eu-adopt.ro",
+            "description": "Colaboratori, campanii, sloturi publicitare și servicii plătite.",
+            "mailto_subject": "EU-Adopt - Parteneri",
+        },
+        {
+            "title": "Office / administrativ",
+            "email": "office@eu-adopt.ro",
+            "description": "Contracte, facturare, documente legale și corespondență oficială.",
+            "mailto_subject": "EU-Adopt - Office",
+        },
+    ]
     return render(
         request,
         "anunturi/contact.html",
-        {
-            "form_prefill": form_prefill,
-            "form_errors": form_errors,
-            "form_success": form_success,
-            "contact_topic_choices": ContactMessage.TOPIC_CHOICES,
-        },
+        {"contact_channels": contact_channels},
     )
 
 
