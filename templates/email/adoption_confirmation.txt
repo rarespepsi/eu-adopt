@@ -1,0 +1,13 @@
+Bună ziua{% if adopter_name %}, {{ adopter_name }}{% endif %}!
+
+Am înregistrat cererea ta de adopție pentru {{ pet_label }}.
+
+{% if summary_lines %}Rezumat anunț:
+{% for line in summary_lines %}- {{ line }}
+{% endfor %}{% endif %}
+{% if pet_link %}Anunț: {{ pet_link }}
+{% endif %}
+Proprietarul / adăpostul va fi notificat.
+
+—
+{{ site_name }}

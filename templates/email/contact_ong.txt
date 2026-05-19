@@ -1,0 +1,15 @@
+[Contact ONG / Adăpost] Mesaj nou – EU-Adopt
+
+Organizație / nume: {{ full_name }}
+Email: {{ email }}
+Telefon: {{ phone }}
+Subiect formular: {{ topic_label }}
+Titlu: {{ subject }}
+IP: {{ ip_address }}
+{% if has_attachment %}Atașament: da{% endif %}
+
+Mesaj:
+{{ message }}
+
+—
+{{ site_name }}

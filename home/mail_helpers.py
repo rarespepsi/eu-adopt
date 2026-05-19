@@ -1,9 +1,12 @@
 """Helper-e minime pentru emailuri transmise către utilizatori."""
 
+import logging
 from email.utils import make_msgid
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+
+logger = logging.getLogger(__name__)
 
 
 def email_subject_for_user(username: str | None, subject: str) -> str:
@@ -58,4 +61,57 @@ def send_mail_text_and_html(
     )
     if html_body:
         msg.attach_alternative(html_body, "text/html")
-    msg.send(fail_silently=False)
+    try:
+        msg.send(fail_silently=False)
+    except Exception as exc:
+        logger.error(
+            "SMTP send_mail_text_and_html failed kind=%s host=%s port=%s user=%s to=%s: %s",
+            mail_kind or "—",
+            getattr(settings, "EMAIL_HOST", ""),
+            getattr(settings, "EMAIL_PORT", ""),
+            getattr(settings, "EMAIL_HOST_USER", ""),
+            ",".join(to),
+            exc,
+            exc_info=True,
+        )
+        raise
+
+
+def adoption_pet_public_email_lines(pet) -> list[str]:
+    """Rezumat din fișă (date publice) pentru email adoptator."""
+    species_map = {"dog": "Câine", "cat": "Pisică", "other": "Alt"}
+    lines = []
+    pet_label = (pet.name or f"Animal #{pet.pk}").strip()
+    lines.append(f"Nume: {pet_label}")
+    lines.append(f"Specie: {species_map.get(pet.species, pet.species or '—')}")
+    if pet.age_label:
+        lines.append(f"Vârstă: {pet.age_label}")
+    if pet.size:
+        lines.append(f"Talie: {pet.size}")
+    if pet.sex:
+        lines.append(f"Sex: {pet.sex}")
+    loc = ", ".join(x for x in (pet.county, pet.city) if x)
+    if loc:
+        lines.append(f"Zonă: {loc}")
+    if pet.color:
+        lines.append(f"Culoare: {pet.color}")
+    if pet.greutate_aprox:
+        lines.append(f"Greutate (aprox.): {pet.greutate_aprox}")
+    if pet.sterilizat:
+        lines.append(f"Sterilizat: {pet.sterilizat}")
+    if pet.vaccinat:
+        lines.append(f"Vaccinat: {pet.vaccinat}")
+    if pet.cip:
+        lines.append(f"CIP: {pet.cip}")
+    if (pet.cine_sunt or "").strip():
+        cs = (pet.cine_sunt or "").strip().replace("\n", " ")
+        if len(cs) > 400:
+            cs = cs[:397] + "..."
+        lines.append(f"Descriere: {cs}")
+    sp_low = (pet.species or "").strip().lower()
+    if sp_low not in ("dog", "cat") and (pet.detalii_animal or "").strip():
+        da = (pet.detalii_animal or "").strip().replace("\n", " ")
+        if len(da) > 400:
+            da = da[:397] + "..."
+        lines.append(f"Detalii animal: {da}")
+    return lines

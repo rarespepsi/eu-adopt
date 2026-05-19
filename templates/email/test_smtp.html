@@ -1,0 +1,7 @@
+{% extends "email/base.html" %}
+{% block title %}Test SMTP – {{ site_name }}{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;">Test reușit!</p>
+<p style="margin:0;">{{ message }}</p>
+<p style="margin:20px 0 0;font-size:13px;color:#90a4ae;">Configurare: Zoho SMTP (smtppro.zoho.eu, port 465, SSL).</p>
+{% endblock %}

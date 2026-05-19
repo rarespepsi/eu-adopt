@@ -1,0 +1,8 @@
+EU-Adopt – test SMTP
+
+{{ message }}
+
+Configurare: Zoho SMTP (smtppro.zoho.eu, port 465, SSL).
+
+—
+{{ site_name }}

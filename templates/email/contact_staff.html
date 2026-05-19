@@ -1,0 +1,19 @@
+﻿{% extends "email/base.html" %}
+{% block title %}Contact – {{ site_name }}{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;font-weight:600;color:#1565c0;">Mesaj nou din formularul Contact</p>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-size:14px;">
+  <tr><td style="padding:6px 0;color:#78909c;width:120px;">Nume</td><td style="padding:6px 0;"><strong>{{ full_name }}</strong></td></tr>
+  <tr><td style="padding:6px 0;color:#78909c;">Email</td><td style="padding:6px 0;"><a href="mailto:{{ email }}" style="color:#1565c0;">{{ email }}</a></td></tr>
+  <tr><td style="padding:6px 0;color:#78909c;">Telefon</td><td style="padding:6px 0;">{{ phone }}</td></tr>
+  <tr><td style="padding:6px 0;color:#78909c;">Subiect formular</td><td style="padding:6px 0;">{{ topic_label }}</td></tr>
+  <tr><td style="padding:6px 0;color:#78909c;">Titlu</td><td style="padding:6px 0;">{{ subject }}</td></tr>
+  <tr><td style="padding:6px 0;color:#78909c;vertical-align:top;">IP</td><td style="padding:6px 0;">{{ ip_address }}</td></tr>
+</table>
+<div style="background:#f5f9fc;padding:16px;border-radius:8px;margin:20px 0;">
+  <p style="margin:0 0 8px;font-weight:600;">Mesaj</p>
+  <p style="margin:0;white-space:pre-wrap;">{{ message }}</p>
+</div>
+{% if has_attachment %}<p style="margin:0;font-size:13px;color:#546e7a;">Atașament: da (vezi emailul cu fișier).</p>{% endif %}
+{% endblock %}
+

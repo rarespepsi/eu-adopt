@@ -1,0 +1,13 @@
+Bună ziua{% if username %}, {{ username }}{% endif %}!
+
+Cererea ta de transport veterinar a fost înregistrată{% if tvr_id %} (nr. {{ tvr_id }}){% endif %}.
+{% if has_dispatch %}Cererea a fost transmisă operatorilor disponibili.{% endif %}
+
+{% if summary_lines %}Detalii:
+{% for line in summary_lines %}- {{ line }}
+{% endfor %}{% endif %}
+
+Vei fi contactat de un operator autorizat.
+
+—
+{{ site_name }}

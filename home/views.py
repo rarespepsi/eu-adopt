@@ -894,97 +894,20 @@ def _send_adoption_accept_emails(ar: AdoptionRequest):
 
 
 def _adoption_pet_public_email_lines(pet: AnimalListing):
-    """Rezumat din fișă (date publice din anunț) pentru email către adoptator la cerere nouă."""
-    species_map = {"dog": "Câine", "cat": "Pisică", "other": "Alt"}
-    lines = []
-    pet_label = (pet.name or f"Animal #{pet.pk}").strip()
-    lines.append(f"Nume: {pet_label}")
-    lines.append(f"Specie: {species_map.get(pet.species, pet.species or '—')}")
-    if pet.age_label:
-        lines.append(f"Vârstă: {pet.age_label}")
-    if pet.size:
-        lines.append(f"Talie: {pet.size}")
-    if pet.sex:
-        lines.append(f"Sex: {pet.sex}")
-    loc = ", ".join(x for x in (pet.county, pet.city) if x)
-    if loc:
-        lines.append(f"Zonă: {loc}")
-    if pet.color:
-        lines.append(f"Culoare: {pet.color}")
-    if pet.greutate_aprox:
-        lines.append(f"Greutate (aprox.): {pet.greutate_aprox}")
-    if pet.sterilizat:
-        lines.append(f"Sterilizat: {pet.sterilizat}")
-    if pet.vaccinat:
-        lines.append(f"Vaccinat: {pet.vaccinat}")
-    if pet.cip:
-        lines.append(f"CIP: {pet.cip}")
-    if (pet.cine_sunt or "").strip():
-        cs = (pet.cine_sunt or "").strip().replace("\n", " ")
-        if len(cs) > 400:
-            cs = cs[:397] + "..."
-        lines.append(f"Descriere: {cs}")
-    sp_low = (pet.species or "").strip().lower()
-    if sp_low not in ("dog", "cat") and (pet.detalii_animal or "").strip():
-        da = (pet.detalii_animal or "").strip().replace("\n", " ")
-        if len(da) > 400:
-            da = da[:397] + "..."
-        lines.append(f"Detalii animal: {da}")
-    return lines
+    """Rezumat din fișă (date publice) — delegat la mail_helpers."""
+    from .mail_helpers import adoption_pet_public_email_lines
+
+    return adoption_pet_public_email_lines(pet)
 
 
 def _send_adoption_request_adopter_email(ar: AdoptionRequest):
     """Adoptator: confirmare cerere + rezumat animal + link către fișa publică."""
-    pet = ar.animal
-    adopter = ar.adopter
-    if not adopter.email:
-        return
-    pet_label = (pet.name or f"Animal #{pet.pk}").strip()
-    site_base = (getattr(settings, "SITE_BASE_URL", "") or "").rstrip("/")
+    from .euadopt_email import send_adoption_confirmation_email
+
     try:
-        pet_path = reverse("pets_single", args=[pet.pk])
+        send_adoption_confirmation_email(ar, fail_silently=False)
     except Exception:
-        pet_path = f"/pets/{pet.pk}/"
-    pet_link = f"{site_base}{pet_path}" if site_base else pet_path
-
-    summary_lines = _adoption_pet_public_email_lines(pet)
-    summary_txt = "\n".join(summary_lines)
-
-    sub = f"EU-Adopt: cererea ta de adopție pentru {pet_label}"
-    body = (
-        f"Bună ziua,\n\n"
-        f"Am înregistrat cererea ta de adopție pentru „{pet_label}”.\n"
-        f"Proprietarul sau organizația au fost notificați; îți vor răspunde prin EU-Adopt "
-        f"(MyPet / email) când se ia o decizie.\n\n"
-        f"Date din anunț:\n"
-        f"---\n{summary_txt}\n---\n\n"
-        f"Pagina animalului (detalii complete): {pet_link}\n\n"
-        f"Aplicația EU-Adopt\n"
-    )
-    items_html = "".join(f"<li>{escape(line)}</li>" for line in summary_lines)
-    html_body = (
-        f"<p>Bună ziua,</p>"
-        f"<p>Am înregistrat cererea ta de adopție pentru <strong>{escape(pet_label)}</strong>.</p>"
-        f"<p>Proprietarul sau organizația au fost notificați; îți vor răspunde prin EU-Adopt "
-        f"(MyPet / email) când se ia o decizie.</p>"
-        f"<p><strong>Date din anunț:</strong></p>"
-        f"<ul style=\"margin:0 0 1em 1.1em;padding:0;\">{items_html}</ul>"
-        f"<p>Pagina animalului (detalii complete): "
-        f"<a href=\"{escape(pet_link)}\">{escape(pet_link)}</a></p>"
-        f"<p>Aplicația EU-Adopt</p>"
-    )
-    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@euadopt.ro"
-    try:
-        send_mail_text_and_html(
-            email_subject_for_user(adopter.username, sub),
-            body,
-            from_email,
-            [adopter.email],
-            html_body,
-            mail_kind="adoption_request_adopter",
-        )
-    except Exception as exc:
-        logging.getLogger(__name__).exception("adoption_request_email_adopter: %s", exc)
+        logging.getLogger(__name__).exception("adoption_request_email_adopter ar_id=%s", ar.pk)
 
 
 def _send_adoption_request_owner_email(ar: AdoptionRequest):
@@ -2456,21 +2379,10 @@ def forgot_password_view(request):
                     request.build_absolute_uri(reverse("reset_password"))
                     + "?token=" + quote(token)
                 )
-                plain = f"Bună ziua,\n\nLink pentru resetarea parolei:\n{reset_url}\n\nLinkul este valabil 1 oră. Dacă nu ai solicitat resetarea, ignoră acest email."
-                html = (
-                    f'<p>Bună ziua,</p>'
-                    f'<p><a href="{reset_url}" style="color:#1565c0;font-weight:bold;">Resetează parola</a></p>'
-                    f'<p>Linkul este valabil 1 oră. Dacă nu ai solicitat resetarea, ignoră acest email.</p>'
-                )
                 try:
-                    send_mail(
-                        subject=email_subject_for_user(user.username, "Resetare parolă – EU-Adopt"),
-                        message=plain,
-                        from_email=None,
-                        recipient_list=[user.email],
-                        fail_silently=False,
-                        html_message=html,
-                    )
+                    from .euadopt_email import send_password_reset_email
+
+                    send_password_reset_email(user, reset_url, fail_silently=False)
                 except Exception:
                     ctx["error"] = "Nu am putut trimite emailul. Încearcă din nou mai târziu."
                     ctx["submitted_email"] = email
@@ -2973,10 +2885,11 @@ def signup_verificare_sms_view(request):
         )
 
     from django.core.signing import TimestampSigner
-    from django.core.mail import send_mail
     from django.core.cache import cache
     from urllib.parse import quote
     import uuid
+
+    from .euadopt_email import send_account_activation_email
 
     signer = TimestampSigner()
     token = signer.sign(user.pk)
@@ -2990,23 +2903,8 @@ def signup_verificare_sms_view(request):
     staff_inv = (request.session.get(STAFF_INVITE_SESSION_KEY) or "").strip()
     if staff_inv and len(staff_inv) <= 72:
         verify_url += "&" + STAFF_INVITE_GET_PARAM + "=" + quote(staff_inv, safe="")
-    plain_msg = f"Bună ziua,\n\nApasă pe link pentru a-ți activa contul:\n{verify_url}\n\nDacă nu ai creat cont, poți ignora acest email."
-    html_msg = (
-        f'<p>Bună ziua,</p>'
-        f'<p>Apasă pe link pentru a-ți activa contul:<br/>'
-        f'<a href="{verify_url}" style="color:#1565c0;font-weight:bold;">Activează contul</a></p>'
-        f'<p>Dacă linkul nu merge, copiază în browser:</p><p style="word-break:break-all;">{verify_url}</p>'
-        f'<p>Dacă nu ai creat cont, poți ignora acest email.</p>'
-    )
     try:
-        send_mail(
-            subject=email_subject_for_user(user.username, "Verificare email – EU-Adopt"),
-            message=plain_msg,
-            from_email=None,
-            recipient_list=[email],
-            fail_silently=False,
-            html_message=html_msg,
-        )
+        send_account_activation_email(user, verify_url, resend=False, fail_silently=True)
     except Exception:
         pass
 
@@ -3077,8 +2975,10 @@ def signup_retrimite_email_view(request):
     """Retrimite link activare pe email. Max 3 încercări, apoi cooldown 45 min."""
     import time
     from django.core.signing import TimestampSigner
-    from django.core.mail import send_mail
     from urllib.parse import quote
+
+    from .euadopt_email import send_account_activation_email
+
     if request.method != "POST":
         return redirect(reverse("signup_choose_type"))
     user_pk = request.session.get("signup_waiting_user_pk")
@@ -3110,23 +3010,8 @@ def signup_retrimite_email_view(request):
         + quote(token)
         + ("&waiting_id=" + quote(waiting_id) if waiting_id else ""),
     )
-    plain_msg = f"Bună ziua,\n\nApasă pe link pentru a-ți activa contul:\n{verify_url}\n\nDacă nu ai creat cont, poți ignora acest email."
-    html_msg = (
-        f'<p>Bună ziua,</p>'
-        f'<p>Apasă pe link pentru a-ți activa contul:<br/>'
-        f'<a href="{verify_url}" style="color:#1565c0;font-weight:bold;">Activează contul</a></p>'
-        f'<p>Dacă linkul nu merge, copiază în browser:</p><p style="word-break:break-all;">{verify_url}</p>'
-        f'<p>Dacă nu ai creat cont, poți ignora acest email.</p>'
-    )
     try:
-        send_mail(
-            subject=email_subject_for_user(user.username, "Verificare email – EU-Adopt (retrimis)"),
-            message=plain_msg,
-            from_email=None,
-            recipient_list=[user.email],
-            fail_silently=False,
-            html_message=html_msg,
-        )
+        send_account_activation_email(user, verify_url, resend=True, fail_silently=True)
     except Exception:
         pass
     request.session["signup_link_created_at"] = now
@@ -3647,37 +3532,16 @@ def contact_view(request):
                 ip_address=_client_ip(request),
                 user_agent=(request.META.get("HTTP_USER_AGENT") or "")[:500],
             )
-            topic_label = dict(ContactMessage.TOPIC_CHOICES).get(entry.topic, entry.topic)
-            msg_lines = [
-                "Mesaj nou din pagina Contact (EU-ADOPT)",
-                "",
-                f"Nume: {entry.full_name}",
-                f"E-mail: {entry.email}",
-                f"Telefon: {entry.phone or '-'}",
-                f"Tip solicitare: {topic_label}",
-                f"Subiect: {entry.subject}",
-                f"IP: {entry.ip_address or '-'}",
-                f"Atașament: {entry.attachment.name if entry.attachment else '-'}",
-                "",
-                "Mesaj:",
-                entry.message,
-            ]
-            to_email = (getattr(settings, "DEFAULT_FROM_EMAIL", None) or "").strip() or "euadopt@gmail.com"
-            from_email = to_email
+            is_ong = False
+            if request.user.is_authenticated:
+                try:
+                    is_ong = request.user.account_profile.role == AccountProfile.ROLE_ORG
+                except AccountProfile.DoesNotExist:
+                    pass
             try:
-                mail = EmailMessage(
-                    subject=f"[Contact EU-ADOPT] {entry.subject}",
-                    body="\n".join(msg_lines),
-                    from_email=from_email,
-                    to=[to_email],
-                )
-                if entry.attachment:
-                    try:
-                        mail.attach_file(entry.attachment.path)
-                    except Exception:
-                        # Păstrăm trimiterea mesajului chiar dacă atașarea eșuează.
-                        pass
-                mail.send(fail_silently=False)
+                from .euadopt_email import send_contact_notification_email
+
+                send_contact_notification_email(entry, is_ong=is_ong, fail_silently=True)
             except Exception:
                 pass
 

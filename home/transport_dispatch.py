@@ -212,16 +212,10 @@ def _email_user_no_transporters(request, tvr: TransportVeterinaryRequest, job: T
     u = tvr.user
     if not u or not u.email:
         return
-    subj = email_subject_for_user(u.username, "EU-Adopt — Nu există transportatori disponibili în zonă")
-    body = (
-        "Bună ziua,\n\n"
-        "Ne pare rău, momentan nu există transportatori activi care să acopere traseul selectat.\n\n"
-        f"Detalii cerere #{tvr.pk}:\n{_tvr_summary_lines(tvr)}\n"
-        "Poți încerca din nou mai târziu sau contacta suportul.\n\n"
-        "Echipa EU-Adopt"
-    )
     try:
-        send_mail(subj, body, settings.DEFAULT_FROM_EMAIL, [u.email], fail_silently=False)
+        from .euadopt_email import send_transport_form_email
+
+        send_transport_form_email(request, tvr, job=job, fail_silently=False)
     except Exception:
         logger.exception("email no_transporters tvr=%s", tvr.pk)
 
@@ -233,19 +227,18 @@ def _email_user_request_received(request, tvr: TransportVeterinaryRequest, job: 
     cancel_tok = make_token("cancel_user", job.pk, u.pk)
     cancel_path = reverse("transport_dispatch_cancel_user") + f"?t={cancel_tok}"
     cancel_url = _absolute(request, cancel_path)
-    subj = email_subject_for_user(u.username, "EU-Adopt — Cererea ta de transport a fost trimisă transportatorilor")
-    body = (
-        "Bună ziua,\n\n"
-        "Cererea ta a fost transmisă transportatorilor eligibili. Primul care acceptă primește detaliile.\n\n"
-        f"Cerere #{tvr.pk} · Job dispatch #{job.pk}\n{_tvr_summary_lines(tvr)}\n"
-        "Vei primi un email când un transportator acceptă sau dacă nu mai sunt disponibilități.\n\n"
-        f"Anulează cererea (înainte să fie preluată): {cancel_url}\n\n"
-        "Echipa EU-Adopt"
-    )
     try:
-        send_mail(subj, body, settings.DEFAULT_FROM_EMAIL, [u.email], fail_silently=False)
+        from .euadopt_email import send_transport_form_email
+
+        send_transport_form_email(
+            request,
+            tvr,
+            job=job,
+            cancel_url=cancel_url,
+            fail_silently=False,
+        )
     except Exception:
-        logger.exception("email user received tvr=%s", tvr.pk)
+        logger.exception("email user received tvr=%s job=%s", tvr.pk, job.pk)
 
 
 def _email_transporter_new_offer(

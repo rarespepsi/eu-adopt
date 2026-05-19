@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
+from decouple import config
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -248,24 +249,17 @@ GOOGLE_MAPS_API_KEY = os.environ.get("EUADOPT_GOOGLE_MAPS_API_KEY", "").strip()
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25 MB
 
-# Email – implicit Gmail (SMTP). Parola: „Parolă pentru aplicații” Google.
-# Setează EMAIL_HOST_PASSWORD în .env; dacă lipsește → backend consolă (fără inbox real).
-_email_password = _os.environ.get("EMAIL_HOST_PASSWORD", "").strip()
-_email_user = _os.environ.get("EMAIL_HOST_USER", "").strip() or "euadopt@gmail.com"
-EMAIL_BACKEND = (
-    "django.core.mail.backends.smtp.EmailBackend"
-    if _email_password
-    else "django.core.mail.backends.console.EmailBackend"
-)
-EMAIL_HOST = _os.environ.get("EMAIL_HOST", "smtp.gmail.com").strip() or "smtp.gmail.com"
-try:
-    EMAIL_PORT = int((_os.environ.get("EMAIL_PORT", "587") or "587").strip())
-except ValueError:
-    EMAIL_PORT = 587
-EMAIL_USE_TLS = _os.environ.get("EMAIL_USE_TLS", "1").strip().lower() not in ("0", "false", "no")
-EMAIL_HOST_USER = _email_user
-EMAIL_HOST_PASSWORD = _email_password
-DEFAULT_FROM_EMAIL = _os.environ.get("DEFAULT_FROM_EMAIL", "").strip() or _email_user
+# Email – Zoho Mail (SMTP). Parola EXCLUSIV din .env — fără hardcodare în cod sau git.
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = config("EMAIL_HOST")
+EMAIL_PORT = config("EMAIL_PORT", cast=int)
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+EMAIL_USE_SSL = config("EMAIL_USE_SSL", cast=bool)
+EMAIL_USE_TLS = False
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
+# Notificări formular Contact (implicit = EMAIL_HOST_USER / DEFAULT_FROM_EMAIL)
+CONTACT_NOTIFY_EMAIL = _os.environ.get("CONTACT_NOTIFY_EMAIL", "").strip() or config("EMAIL_HOST_USER")
 # Opțional: domeniu FQDN pentru antet Message-ID la emailuri (ex. euadopt.ro). Lasă gol → primul ALLOWED_HOSTS valid.
 EMAIL_MESSAGE_ID_DOMAIN = _os.environ.get("EMAIL_MESSAGE_ID_DOMAIN", "").strip() or None
 

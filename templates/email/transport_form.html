@@ -1,0 +1,23 @@
+{% extends "email/base.html" %}
+{% block title %}Cerere transport – {{ site_name }}{% endblock %}
+{% block content %}
+<p style="margin:0 0 16px;">Bună ziua{% if username %}, <strong>{{ username }}</strong>{% endif %}!</p>
+<p style="margin:0 0 16px;">Cererea ta de transport veterinar a fost înregistrată{% if tvr_id %} (nr. {{ tvr_id }}){% endif %}.</p>
+{% if has_dispatch %}
+<p style="margin:0 0 16px;color:#2e7d32;font-weight:600;">Cererea a fost transmisă operatorilor disponibili.</p>
+{% else %}
+<p style="margin:0 0 16px;color:#e65100;font-weight:600;">Momentan nu există transportatori activi în zona selectată. Poți încerca din nou mai târziu.</p>
+{% endif %}
+{% if summary_lines %}
+<div style="background:#f5f9fc;border-left:4px solid #1565c0;padding:16px 18px;border-radius:0 8px 8px 0;margin:20px 0;">
+  <p style="margin:0 0 10px;font-weight:600;color:#1565c0;">Detalii cerere</p>
+  <ul style="margin:0;padding-left:18px;color:#455a64;">
+    {% for line in summary_lines %}<li style="margin:4px 0;">{{ line }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% if cancel_url %}
+<p style="margin:16px 0;font-size:14px;">Anulare cerere (înainte de preluare): <a href="{{ cancel_url }}" style="color:#1565c0;">link anulare</a></p>
+{% endif %}
+<p style="margin:16px 0 0;font-size:14px;color:#546e7a;">Vei fi contactat de un operator autorizat. Pentru urgențe, urmărește statusul în panoul Transport.</p>
+{% endblock %}

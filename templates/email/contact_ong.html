@@ -1,0 +1,19 @@
+﻿{% extends "email/base.html" %}
+{% block title %}Contact ONG – {{ site_name }}{% endblock %}
+{% block content %}
+<p style="margin:0 0 8px;font-weight:700;color:#0d47a1;font-size:16px;">Contact ONG / Adăpost</p>
+<p style="margin:0 0 16px;font-size:14px;color:#546e7a;">Un reprezentant al unei organizații sau adăpost a trimis un mesaj prin formularul Contact.</p>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-size:14px;">
+  <tr><td style="padding:6px 0;color:#78909c;width:140px;">Organizație / nume</td><td style="padding:6px 0;"><strong>{{ full_name }}</strong></td></tr>
+  <tr><td style="padding:6px 0;color:#78909c;">Email</td><td style="padding:6px 0;"><a href="mailto:{{ email }}" style="color:#1565c0;">{{ email }}</a></td></tr>
+  <tr><td style="padding:6px 0;color:#78909c;">Telefon</td><td style="padding:6px 0;">{{ phone }}</td></tr>
+  <tr><td style="padding:6px 0;color:#78909c;">Subiect formular</td><td style="padding:6px 0;">{{ topic_label }}</td></tr>
+  <tr><td style="padding:6px 0;color:#78909c;">Titlu</td><td style="padding:6px 0;">{{ subject }}</td></tr>
+  <tr><td style="padding:6px 0;color:#78909c;vertical-align:top;">IP</td><td style="padding:6px 0;">{{ ip_address }}</td></tr>
+</table>
+<div style="background:#fff8e1;border-left:4px solid #f9a825;padding:16px 18px;border-radius:0 8px 8px 0;margin:20px 0;">
+  <p style="margin:0 0 8px;font-weight:600;color:#e65100;">Mesaj</p>
+  <p style="margin:0;white-space:pre-wrap;">{{ message }}</p>
+</div>
+{% if has_attachment %}<p style="margin:16px 0 0;font-size:13px;color:#546e7a;">Atașament inclus în email.</p>{% endif %}
+{% endblock %}

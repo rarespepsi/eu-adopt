@@ -1,0 +1,12 @@
+Bună ziua{% if username %}, {{ username }}{% endif %}!
+
+{% if resend %}Ți-am retrimis linkul de activare a contului EU-Adopt.{% else %}Îți mulțumim că te-ai înregistrat pe EU-Adopt.{% endif %}
+
+Activează contul accesând linkul:
+{{ verify_url }}
+
+Dacă nu ai creat cont, poți ignora acest email.
+
+—
+{{ site_name }}
+{% if site_url %}{{ site_url }}{% endif %}
