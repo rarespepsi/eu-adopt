@@ -243,6 +243,11 @@ if DEBUG:
 
 # Google Maps JavaScript API (Places Autocomplete pe /transport/). Setează EUADOPT_GOOGLE_MAPS_API_KEY în .env.
 GOOGLE_MAPS_API_KEY = os.environ.get("EUADOPT_GOOGLE_MAPS_API_KEY", "").strip()
+# Opțional: cheie separată fără restricție „HTTP referrer” — pentru comenzi server (Places searchText).
+GOOGLE_PLACES_SERVER_API_KEY = (
+    os.environ.get("EUADOPT_GOOGLE_PLACES_SERVER_API_KEY", "").strip()
+    or GOOGLE_MAPS_API_KEY
+)
 
 # Upload limits (video demo / fișiere MyPet)
 # Implicit Django poate bloca request-uri > ~2.5MB (DATA_UPLOAD_MAX_MEMORY_SIZE).
