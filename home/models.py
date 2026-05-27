@@ -61,6 +61,76 @@ class UserProfile(models.Model):
         return self.user.get_full_name() or self.user.username
 
 
+class PartnerLocation(models.Model):
+    """
+    Punct de lucru / sediu pentru colaborator sau ONG (magazine, cabinete, grooming).
+    Un cont = un login; N locații operaționale.
+    """
+
+    KIND_MAGAZIN = "magazin"
+    KIND_CABINET = "cabinet"
+    KIND_SERVICII = "servicii"
+    KIND_GROOMING = "grooming"
+    KIND_OTHER = "altele"
+    KIND_CHOICES = [
+        (KIND_MAGAZIN, "Magazin / pet-shop"),
+        (KIND_CABINET, "Cabinet / clinică"),
+        (KIND_SERVICII, "Servicii / grooming / dresaj"),
+        (KIND_GROOMING, "Grooming"),
+        (KIND_OTHER, "Altele"),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="partner_locations",
+    )
+    label = models.CharField(
+        "Denumire punct",
+        max_length=120,
+        blank=True,
+        default="",
+        help_text="Ex.: Magazin Roman, Cabinet Piatra Neamț",
+    )
+    judet = models.CharField("Județ", max_length=120)
+    oras = models.CharField("Oraș / localitate", max_length=120)
+    adresa = models.CharField("Adresă", max_length=255, blank=True, default="")
+    phone = models.CharField("Telefon punct", max_length=40, blank=True, default="")
+    kind = models.CharField(
+        "Tip punct",
+        max_length=20,
+        blank=True,
+        default="",
+        choices=KIND_CHOICES,
+    )
+    is_sediu_social = models.BooleanField(
+        "Sediu social (legal)",
+        default=False,
+        help_text="Adresa din acte; un singur sediu per cont.",
+    )
+    is_primary = models.BooleanField(
+        "Punct principal",
+        default=False,
+        help_text="Primul punct operațional la înregistrare.",
+    )
+    is_active = models.BooleanField("Activ", default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Punct de lucru partener"
+        verbose_name_plural = "Puncte de lucru partener"
+        ordering = ["-is_primary", "-is_sediu_social", "judet", "oras", "pk"]
+        indexes = [
+            models.Index(fields=["user", "is_active"]),
+            models.Index(fields=["judet", "oras"]),
+        ]
+
+    def __str__(self):
+        bits = [self.label or self.oras, self.judet]
+        return " — ".join(x for x in bits if x)
+
+
 class UserLegalConsent(models.Model):
     """Audit trail pentru accepturile legale (T&C, GDPR, marketing)."""
 
@@ -821,6 +891,15 @@ class CollaboratorServiceOffer(models.Model):
         on_delete=models.CASCADE,
         related_name="service_offers",
     )
+    partner_location = models.ForeignKey(
+        PartnerLocation,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="service_offers",
+        verbose_name="Punct de lucru",
+        help_text="Locația la care se aplică oferta (filtru județ Servicii, emailuri).",
+    )
     partner_kind = models.CharField(
         "Canal partener (la creare)",
         max_length=20,
@@ -1081,6 +1160,18 @@ class CollaboratorOfferClaim(models.Model):
     buyer_name_snapshot = models.CharField("Nume (snapshot)", max_length=200, blank=True)
     buyer_phone_snapshot = models.CharField("Telefon (snapshot)", max_length=40, blank=True)
     buyer_locality_snapshot = models.CharField("Localitate (snapshot)", max_length=200, blank=True)
+    partner_location_label_snapshot = models.CharField(
+        "Punct partener (snapshot)", max_length=120, blank=True, default=""
+    )
+    partner_location_judet_snapshot = models.CharField(
+        "Județ punct (snapshot)", max_length=120, blank=True, default=""
+    )
+    partner_location_oras_snapshot = models.CharField(
+        "Oraș punct (snapshot)", max_length=120, blank=True, default=""
+    )
+    partner_location_adresa_snapshot = models.CharField(
+        "Adresă punct (snapshot)", max_length=255, blank=True, default=""
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

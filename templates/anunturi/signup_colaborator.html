@@ -825,6 +825,38 @@
 					<input type="hidden" name="adresa_firma_lng" id="id_adresa_lng_col" value="" />
 					<p class="signup-col-adresa-hint">{% if google_maps_api_key %}Sugestii Google la tastare sau „Alege pe hartă”, în zona județului / localității.{% else %}Poți deschide harta în tab-ul alăturat.{% endif %}</p>
 				</div>
+				<div class="signup-col-field signup-col-field-box signup-col-pl-wrap" id="signup_col_pl_section">
+					<h3 style="margin:0 0 0.5rem;font-size:1rem;">Punct principal de lucru</h3>
+					<p style="font-size:0.85rem;margin:0 0 0.65rem;line-height:1.4;">
+						Un cont, mai multe locații. Sediul de mai sus rămâne sediu social; punctul principal e locația unde lucrezi cel mai des (poate fi aceeași adresă).
+					</p>
+					<label class="check" style="display:block;margin-bottom:0.65rem;">
+						<input type="checkbox" name="pl_same_as_sediu" id="id_pl_same_as_sediu_col" checked />
+						Punct principal la aceeași adresă ca sediul social
+					</label>
+					<div id="signup_col_pl_fields" style="display:none;">
+						<div class="signup-col-field signup-col-field-box">
+							<label for="id_pl_label_col">Denumire punct (opțional)</label>
+							<input type="text" id="id_pl_label_col" name="pl_label" maxlength="120" placeholder="ex. Magazin Roman" value="{% if form_prefill %}{{ form_prefill.pl_label|default:'' }}{% endif %}" />
+						</div>
+						<div class="signup-col-field signup-col-field-box">
+							<label for="id_pl_judet_col">Județ punct *</label>
+							<input type="text" id="id_pl_judet_col" name="pl_judet" autocomplete="off" list="county-list-col" value="{% if form_prefill %}{{ form_prefill.pl_judet|default:'' }}{% endif %}" />
+						</div>
+						<div class="signup-col-field signup-col-field-box">
+							<label for="id_pl_oras_col">Oraș / localitate punct *</label>
+							<input type="text" id="id_pl_oras_col" name="pl_oras" value="{% if form_prefill %}{{ form_prefill.pl_oras|default:'' }}{% endif %}" />
+						</div>
+						<div class="signup-col-field signup-col-field-box">
+							<label for="id_pl_adresa_col">Adresă punct</label>
+							<input type="text" id="id_pl_adresa_col" name="pl_adresa" value="{% if form_prefill %}{{ form_prefill.pl_adresa|default:'' }}{% endif %}" />
+						</div>
+						<div class="signup-col-field signup-col-field-box">
+							<label for="id_pl_phone_col">Telefon punct (opțional)</label>
+							<input type="text" id="id_pl_phone_col" name="pl_phone" value="{% if form_prefill %}{{ form_prefill.pl_phone|default:'' }}{% endif %}" />
+						</div>
+					</div>
+				</div>
 			</div>
 			<div class="signup-col-caseta">
 				<h2>Parolă și contact</h2>
@@ -1080,6 +1112,35 @@
 		countyInput.addEventListener("change", updateCityList);
 		updateCityList();
 	}
+})();
+</script>
+<script>
+(function() {
+	var cb = document.getElementById('id_pl_same_as_sediu_col');
+	var box = document.getElementById('signup_col_pl_fields');
+	var section = document.getElementById('signup_col_pl_section');
+	function syncPl() {
+		if (!cb || !box) return;
+		box.style.display = cb.checked ? 'none' : 'block';
+	}
+	if (cb) {
+		{% if form_prefill and form_prefill.pl_same_as_sediu == False %}
+		cb.checked = false;
+		{% endif %}
+		cb.addEventListener('change', syncPl);
+		syncPl();
+	}
+	function syncTransport() {
+		var tip = document.querySelector('input[name="tip_partener"]:checked');
+		if (!section) return;
+		var isTr = tip && tip.value === 'transport';
+		section.style.display = isTr ? 'none' : '';
+		if (isTr && cb) cb.checked = true;
+	}
+	document.querySelectorAll('input[name="tip_partener"]').forEach(function(r) {
+		r.addEventListener('change', syncTransport);
+	});
+	syncTransport();
 })();
 </script>
 <script>

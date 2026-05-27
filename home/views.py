@@ -82,6 +82,7 @@ from .models import (
     TransportTripRating,
     UserInboxNotification,
     StaffOnboardingLead,
+    PartnerLocation,
 )
 from .staff_onboarding_form import StaffOnboardingLeadForm, SEGMENT_CHOICES
 from .staff_onboarding_csv import export_csv_bytes, import_csv_bytes, is_placeholder_lead_email
@@ -1223,12 +1224,9 @@ def _adopter_has_county_for_transport(user) -> bool:
 
 
 def _offer_collab_county_norm(offer: CollaboratorServiceOffer) -> str:
-    try:
-        pr = offer.collaborator.profile
-        raw = (pr.company_judet or "").strip() or (pr.judet or "").strip()
-        return _norm_county_str(raw)
-    except UserProfile.DoesNotExist:
-        return ""
+    from .partner_locations import offer_county_norm
+
+    return offer_county_norm(offer)
 
 
 def _resolve_adoption_bonus_request(user, session) -> AdoptionRequest | None:
@@ -1457,6 +1455,8 @@ def _process_adoption_finalize_bonus(ar: AdoptionRequest):
                 else:
                     log.error("adoption_bonus_claim code_collision offer=%s ar=%s", off_locked.pk, ar.pk)
                     continue
+                from .partner_locations import claim_location_snapshot, effective_location_for_offer
+
                 CollaboratorOfferClaim.objects.create(
                     offer=off_locked,
                     code=code,
@@ -1465,6 +1465,7 @@ def _process_adoption_finalize_bonus(ar: AdoptionRequest):
                     buyer_name_snapshot=(snap["name"] or "")[:200],
                     buyer_phone_snapshot=(snap["phone"] or "")[:40],
                     buyer_locality_snapshot=(snap["locality"] or "")[:200],
+                    **claim_location_snapshot(effective_location_for_offer(off_locked)),
                 )
                 new_count = claimed + 1
                 if off_locked.quantity_available is not None and new_count >= int(off_locked.quantity_available):
@@ -1480,20 +1481,42 @@ def _process_adoption_finalize_bonus(ar: AdoptionRequest):
         if not code:
             continue
         url = _offer_public_absolute_url(off)
+        from .partner_locations import (
+            location_block_for_offer,
+            location_display_label,
+            effective_location_for_offer,
+        )
+
         kind_label = off.get_partner_kind_display()
-        lines_adopter.append(f"- [{kind_label}] {off.title}\n  Cod: {code}\n  Link: {url}\n")
+        ploc = effective_location_for_offer(off)
+        loc_hint = ""
+        if ploc:
+            loc_hint = (
+                f"  Punct: {location_display_label(ploc)}, {ploc.oras}, {ploc.judet}\n"
+            )
+        lines_adopter.append(
+            f"- [{kind_label}] {off.title}\n  Cod: {code}\n{loc_hint}  Link: {url}\n"
+        )
+        loc_html = ""
+        if ploc:
+            loc_html = (
+                f"<br/>Punct: {escape(location_display_label(ploc))}, "
+                f"{escape(ploc.oras)}, {escape(ploc.judet)}"
+            )
         html_items.append(
             f"<li><strong>{escape(kind_label)}</strong> — {escape(off.title)}<br/>"
-            f"Cod: <strong>{escape(code)}</strong><br/>"
+            f"Cod: <strong>{escape(code)}</strong>{loc_html}<br/>"
             f"<a href=\"{escape(url)}\">{escape(url)}</a></li>"
         )
         collab = off.collaborator
+        partner_loc_txt = location_block_for_offer(off)
         sub_c = f"EU-Adopt: bonus adopție – {off.title} (cod {code})"
         body_c = (
             f"Bună ziua,\n\n"
             f"Un adoptator a finalizat adopția pentru „{pet_label}” și a ales oferta dumneavoastră "
             f"„{off.title}” (canal: {kind_label}).\n\n"
             f"Cod comun de identificare (același pentru dumneavoastră și adoptator): {code}\n\n"
+            f"--- Locație ofertă ---\n{partner_loc_txt}\n---\n\n"
             f"Date adoptator:\n---\n{_adoption_contact_block(adopter)}\n---\n\n"
             f"Link ofertă: {url}\n\n"
             f"EU-Adopt\n"
@@ -1503,6 +1526,8 @@ def _process_adoption_finalize_bonus(ar: AdoptionRequest):
             f"<p>Un adoptator a finalizat adopția pentru <strong>{escape(pet_label)}</strong> și a ales "
             f"oferta <strong>{escape(off.title)}</strong> ({escape(kind_label)}).</p>"
             f"<p>Cod comun: <strong>{escape(code)}</strong></p>"
+            f"<p><strong>Locație ofertă</strong></p>"
+            f"<pre style=\"white-space:pre-wrap;font-family:inherit;\">{escape(partner_loc_txt)}</pre>"
             f"<pre style=\"white-space:pre-wrap;font-family:inherit;\">{escape(_adoption_contact_block(adopter))}</pre>"
             f"<p><a href=\"{escape(url)}\">Deschide oferta</a></p>"
             f"<p>EU-Adopt</p>"
@@ -2834,6 +2859,9 @@ def signup_verificare_sms_view(request):
             email_opt_in=profile.email_opt_in_wishlist,
             source="signup_org_sms",
         )
+        from .partner_locations import create_locations_from_signup
+
+        create_locations_from_signup(user, data, tip_partener="")
     else:
         user = User.objects.create_user(
             username=username,
@@ -2883,6 +2911,10 @@ def signup_verificare_sms_view(request):
             email_opt_in=profile.email_opt_in_wishlist,
             source="signup_collaborator_sms",
         )
+        if tip_col != "transport":
+            from .partner_locations import create_locations_from_signup
+
+            create_locations_from_signup(user, data, tip_partener=tip_col)
 
     from django.core.signing import TimestampSigner
     from django.core.cache import cache
@@ -3275,6 +3307,12 @@ def signup_colaborator_view(request):
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
     adresa_firma = (request.POST.get("adresa_firma") or "").strip()
+    pl_same_as_sediu = request.POST.get("pl_same_as_sediu") == "on"
+    pl_label = (request.POST.get("pl_label") or "").strip()
+    pl_judet = (request.POST.get("pl_judet") or "").strip()
+    pl_oras = (request.POST.get("pl_oras") or "").strip()
+    pl_adresa = (request.POST.get("pl_adresa") or "").strip()
+    pl_phone = (request.POST.get("pl_phone") or "").strip()
     tip_partener = (request.POST.get("tip_partener") or "").strip()
     transport_national = request.POST.get("transport_national") == "on"
     transport_international = request.POST.get("transport_international") == "on"
@@ -3318,6 +3356,11 @@ def signup_colaborator_view(request):
         errors.append("Orașul / localitatea este obligatorie.")
     if not adresa_firma:
         errors.append("Adresa sediului este obligatorie.")
+    if tip_partener != "transport" and not pl_same_as_sediu:
+        if not pl_judet:
+            errors.append("Județul punctului principal este obligatoriu (sau bifează „la fel ca sediul”).")
+        if not pl_oras:
+            errors.append("Orașul punctului principal este obligatoriu (sau bifează „la fel ca sediul”).")
     if len(parola1) < 8:
         errors.append("Parola trebuie să aibă cel puțin 8 caractere.")
     if parola1 != parola2:
@@ -3337,6 +3380,12 @@ def signup_colaborator_view(request):
             "judet": judet,
             "oras": oras,
             "adresa_firma": adresa_firma,
+            "pl_same_as_sediu": pl_same_as_sediu,
+            "pl_label": pl_label,
+            "pl_judet": pl_judet,
+            "pl_oras": pl_oras,
+            "pl_adresa": pl_adresa,
+            "pl_phone": pl_phone,
             "email": email,
             "telefon": telefon,
             "tip_partener": tip_partener if tip_partener in ("cabinet", "cv", "servicii", "magazin", "transport") else "",
@@ -3366,6 +3415,12 @@ def signup_colaborator_view(request):
         "judet": judet,
         "oras": oras,
         "adresa_firma": adresa_firma,
+        "pl_same_as_sediu": pl_same_as_sediu,
+        "pl_label": pl_label,
+        "pl_judet": pl_judet,
+        "pl_oras": pl_oras,
+        "pl_adresa": pl_adresa,
+        "pl_phone": pl_phone,
         "password": parola1,
         "accept_termeni": accept_termeni,
         "accept_gdpr": accept_gdpr,
@@ -3420,7 +3475,7 @@ def _servicii_offers_for_kind(partner_kind: str, max_n: int = 24):
             base = _servicii_saloane_qs_exclude_transportatori(base)
         offers = list(
             _collab_offer_valid_public_qs(base)
-            .select_related("collaborator")
+            .select_related("collaborator", "partner_location")
             .annotate(claims_count=Count("claims", distinct=True))
             .order_by("-created_at")[:max_n]
         )
@@ -4555,6 +4610,19 @@ def account_view(request):
         if ctx["pending_account_deletion"]
         else None
     )
+    from .partner_locations import (
+        active_locations_for_user,
+        backfill_locations_from_profile,
+        user_can_manage_locations,
+    )
+
+    if user_can_manage_locations(user):
+        if not PartnerLocation.objects.filter(user=user).exists():
+            backfill_locations_from_profile(user)
+        locs = list(active_locations_for_user(user))
+        ctx["partner_locations_manage"] = True
+        ctx["partner_locations"] = locs[:4]
+        ctx["partner_locations_count"] = len(locs)
     # Mesaj/sugestii după încercare schimbare username (PF)
     if account_profile and account_profile.role == AccountProfile.ROLE_PF:
         if "username_error" in request.session:
@@ -4568,6 +4636,91 @@ def account_view(request):
     response["Pragma"] = "no-cache"
     response["Expires"] = "0"
     return response
+
+
+@login_required
+def account_work_locations_view(request):
+    """CRUD puncte de lucru (colaborator / ONG)."""
+    from django.contrib import messages
+
+    from .partner_locations import (
+        active_locations_for_user,
+        backfill_locations_from_profile,
+        user_can_manage_locations,
+    )
+
+    user = request.user
+    if not user_can_manage_locations(user):
+        messages.error(
+            request,
+            "Punctele de lucru sunt disponibile doar pentru cont colaborator sau ONG.",
+        )
+        return redirect("account")
+    if not PartnerLocation.objects.filter(user=user).exists():
+        backfill_locations_from_profile(user)
+
+    if request.method == "POST":
+        action = (request.POST.get("action") or "").strip()
+        if action == "add":
+            jud = (request.POST.get("judet") or "").strip()[:120]
+            oras = (request.POST.get("oras") or "").strip()[:120]
+            if not jud or not oras:
+                messages.error(request, "Județul și orașul sunt obligatorii.")
+            else:
+                PartnerLocation.objects.create(
+                    user=user,
+                    label=(request.POST.get("label") or "").strip()[:120],
+                    judet=jud,
+                    oras=oras,
+                    adresa=(request.POST.get("adresa") or "").strip()[:255],
+                    phone=(request.POST.get("phone") or "").strip()[:40],
+                    is_sediu_social=False,
+                    is_primary=False,
+                    is_active=True,
+                )
+                messages.success(request, "Punct de lucru adăugat.")
+        elif action == "set_primary":
+            try:
+                pk = int(request.POST.get("location_id") or "0")
+            except (TypeError, ValueError):
+                pk = 0
+            loc = PartnerLocation.objects.filter(
+                user=user, pk=pk, is_active=True, is_sediu_social=False
+            ).first()
+            if loc:
+                PartnerLocation.objects.filter(user=user, is_primary=True).update(
+                    is_primary=False
+                )
+                loc.is_primary = True
+                loc.save(update_fields=["is_primary", "updated_at"])
+                messages.success(request, f"„{loc.label or loc.oras}” este acum punctul principal.")
+            else:
+                messages.error(request, "Punct invalid.")
+        elif action == "deactivate":
+            try:
+                pk = int(request.POST.get("location_id") or "0")
+            except (TypeError, ValueError):
+                pk = 0
+            loc = PartnerLocation.objects.filter(
+                user=user,
+                pk=pk,
+                is_active=True,
+                is_sediu_social=False,
+                is_primary=False,
+            ).first()
+            if loc:
+                loc.is_active = False
+                loc.save(update_fields=["is_active", "updated_at"])
+                messages.success(request, "Punct dezactivat.")
+            else:
+                messages.error(request, "Nu poți dezactiva sediul social sau punctul principal.")
+        return redirect("account_work_locations")
+
+    return render(
+        request,
+        "anunturi/account_work_locations.html",
+        {"locations": list(active_locations_for_user(user))},
+    )
 
 
 def _unified_inbox_owner_pet_message_rows(user, limit=20):
@@ -7929,6 +8082,8 @@ def _issue_partner_direct_claims_from_checkout(request, intent: SiteCartCheckout
                     failed += 1
                     continue
                 code = _generate_collab_offer_code()
+                from .partner_locations import claim_location_snapshot, effective_location_for_offer
+
                 CollaboratorOfferClaim.objects.create(
                     offer=offer,
                     code=code,
@@ -7937,6 +8092,7 @@ def _issue_partner_direct_claims_from_checkout(request, intent: SiteCartCheckout
                     buyer_name_snapshot=buyer["name"],
                     buyer_phone_snapshot=(buyer["phone"][:40] if buyer["phone"] else ""),
                     buyer_locality_snapshot=(buyer["locality"][:200] if buyer["locality"] else ""),
+                    **claim_location_snapshot(effective_location_for_offer(offer)),
                 )
                 if offer.quantity_available is not None:
                     new_count = claimed + 1
@@ -7973,13 +8129,13 @@ def _issue_partner_direct_claims_from_checkout(request, intent: SiteCartCheckout
         except Exception:
             logging.exception("checkout partner claim inbox failed offer=%s", offer.pk)
 
-        cabinet_txt = _cabinet_block_for_buyer_email(collab)
+        cabinet_txt = _cabinet_block_for_buyer_email(collab, offer=offer)
         buyer_subject = f"EU-Adopt – cod ofertă {code}: {offer.title}"
         buyer_body = (
             f"Bună {buyer['name']},\n\n"
             f"Codul ofertei (îl au și partenerul și tu): {code}\n\n"
             f"Ofertă: {offer.title}\n\n"
-            f"--- Date partener (contact) ---\n{cabinet_txt}\n\n"
+            f"--- Date partener (contact + punct de lucru) ---\n{cabinet_txt}\n\n"
         )
         if offer.description:
             buyer_body += f"--- Descriere ---\n{offer.description}\n\n"
@@ -8004,15 +8160,15 @@ def _issue_partner_direct_claims_from_checkout(request, intent: SiteCartCheckout
             collab_body += f"Localitate: {buyer['locality']}\n"
         collab_body += "\n---\nEU-Adopt\n"
 
-        cabinet_maps_url = _cabinet_maps_url_for_buyer_email(collab)
+        cabinet_maps_url = _cabinet_maps_url_for_buyer_email(collab, offer=offer)
         if cabinet_maps_url:
-            buyer_body += f"Navigare la partener (hartă): {cabinet_maps_url}\n"
+            buyer_body += f"Navigare la punctul de lucru (hartă): {cabinet_maps_url}\n"
         buyer_maps_html = _html_email_maps_cta_button(cabinet_maps_url, "DU-MĂ LA LOCAȚIE")
         buyer_html = (
             f"<p>Bună {escape(buyer['name'])},</p>"
             f"<p>Codul ofertei (îl au și partenerul și tu): <strong>{escape(code)}</strong></p>"
             f"<p>Ofertă: <strong>{escape(offer.title)}</strong></p>"
-            f"<p><strong>Date partener (contact)</strong></p>"
+            f"<p><strong>Date partener (contact + punct de lucru)</strong></p>"
             f"<pre style=\"white-space:pre-wrap;font-family:inherit;\">{escape(cabinet_txt)}</pre>"
         )
         if offer.description:
@@ -10308,10 +10464,19 @@ def _collab_peer_location_card(client_user) -> dict:
     }
 
 
-def _partner_location_card_for_client(collaborator_user) -> dict:
+def _partner_location_card_for_client(collaborator_user, offer=None) -> dict:
     """
     Fișă locație partener (colaborator) pentru clientul PF/ONG care deschide conversația.
     """
+    from .partner_locations import (
+        effective_location_for_offer,
+        google_maps_url,
+        location_display_label,
+        location_lines_for_display,
+        maps_query_for_location,
+        primary_location_for_user,
+    )
+
     prof = getattr(collaborator_user, "profile", None)
     display = ""
     if prof and (prof.company_display_name or "").strip():
@@ -10321,28 +10486,40 @@ def _partner_location_card_for_client(collaborator_user) -> dict:
             f"{collaborator_user.first_name} {collaborator_user.last_name}".strip()
             or collaborator_user.username
         )
+    ploc = None
+    if offer is not None:
+        ploc = effective_location_for_offer(offer)
+    else:
+        ploc = primary_location_for_user(collaborator_user)
     lines: list[str] = []
     lines.append(f"Partener: {display}")
-    if prof and (prof.company_address or "").strip():
+    if ploc:
+        lines.extend(location_lines_for_display(ploc, include_contact=False))
+        if (ploc.phone or "").strip():
+            lines.append(f"Telefon punct: {ploc.phone.strip()}")
+    elif prof and (prof.company_address or "").strip():
         lines.append(f"Adresă: {(prof.company_address or '').strip()}")
-    loc = ""
-    if prof:
-        loc = ", ".join(
+        loc_txt = ", ".join(
             x
             for x in [(prof.company_oras or "").strip(), (prof.company_judet or "").strip()]
             if x
         )
-    if loc:
-        lines.append(f"Localitate: {loc}")
+        if loc_txt:
+            lines.append(f"Localitate: {loc_txt}")
     phone = (prof.phone or "").strip() if prof else ""
     if phone:
-        lines.append(f"Telefon: {phone}")
+        lines.append(f"Telefon contact cont: {phone}")
     em = (collaborator_user.email or "").strip()
     if em:
         lines.append(f"Email: {em}")
-    q = _user_location_maps_query(collaborator_user)
-    maps_url = _google_maps_search_url_from_query(q) if q else ""
-    share_text = q or display
+    if ploc:
+        q = maps_query_for_location(ploc)
+        maps_url = google_maps_url(q) if q else ""
+        share_text = q or location_display_label(ploc)
+    else:
+        q = _user_location_maps_query(collaborator_user)
+        maps_url = _google_maps_search_url_from_query(q) if q else ""
+        share_text = q or display
     return {
         "partner_name": display,
         "lines": lines,
@@ -10351,31 +10528,27 @@ def _partner_location_card_for_client(collaborator_user) -> dict:
     }
 
 
-def _cabinet_block_for_buyer_email(collab_user) -> str:
-    """Text pentru cumpărător: cabinet, telefon, persoană contact, email, adresă firmă dacă există."""
-    prof = getattr(collab_user, "profile", None)
-    contact_person = (collab_user.get_full_name() or "").strip() or collab_user.username
-    lines = []
-    if prof and (prof.company_display_name or "").strip():
-        lines.append(f"Cabinet / partener: {prof.company_display_name.strip()}")
-    else:
-        lines.append(f"Cabinet / partener: {contact_person}")
-    if prof and (prof.phone or "").strip():
-        lines.append(f"Telefon: {prof.phone.strip()}")
-    if collab_user.email:
-        lines.append(f"Email: {collab_user.email}")
-    lines.append(f"Persoană de contact: {contact_person}")
-    if prof:
-        addr = (prof.company_address or "").strip()
-        if addr:
-            lines.append(f"Adresă: {addr}")
-        loc_bits = [x for x in [(prof.company_oras or "").strip(), (prof.company_judet or "").strip()] if x]
-        if loc_bits:
-            lines.append(f"Localitate: {', '.join(loc_bits)}")
-    return "\n".join(lines)
+def _cabinet_block_for_buyer_email(collab_user, offer=None) -> str:
+    """Text pentru cumpărător: partener + punct de lucru (ofertă sau principal)."""
+    if offer is not None:
+        from .partner_locations import location_block_for_offer
+
+        return location_block_for_offer(offer)
+    from .partner_locations import location_block_text, primary_location_for_user
+
+    return location_block_text(primary_location_for_user(collab_user), collab_user)
 
 
-def _cabinet_maps_url_for_buyer_email(collab_user) -> str:
+def _cabinet_maps_url_for_buyer_email(collab_user, offer=None) -> str:
+    if offer is not None:
+        from .partner_locations import maps_url_for_offer
+
+        return maps_url_for_offer(offer)
+    from .partner_locations import google_maps_url, maps_query_for_location, primary_location_for_user
+
+    ploc = primary_location_for_user(collab_user)
+    if ploc:
+        return google_maps_url(maps_query_for_location(ploc))
     return _google_maps_search_url_from_query(_user_location_maps_query(collab_user))
 
 
@@ -10650,9 +10823,24 @@ def collab_offer_add_view(request):
         for e in errs:
             messages.error(request, e)
         return redirect("collab_offer_new")
+    from .partner_locations import active_locations_for_user, primary_location_for_user
+
+    pl = None
+    pl_raw = (request.POST.get("partner_location_id") or "").strip()
+    if pl_raw.isdigit():
+        pl = active_locations_for_user(request.user).filter(pk=int(pl_raw)).first()
+    if not pl:
+        pl = primary_location_for_user(request.user)
+    if not pl:
+        messages.error(
+            request,
+            "Adaugă cel puțin un punct de lucru în cont înainte de a publica oferte.",
+        )
+        return redirect("account_work_locations")
     tf = _collab_offer_target_filters_for_tip(tip, request.POST)
     CollaboratorServiceOffer.objects.create(
         collaborator=request.user,
+        partner_location=pl,
         partner_kind=tip,
         title=title,
         description=description,
@@ -12883,12 +13071,19 @@ def collab_offers_control_view(request):
 def collab_offer_new_view(request):
     if _collaborator_tip_partener(request) == "transport":
         return redirect("transport_operator_panel")
+    from .partner_locations import active_locations_for_user, backfill_locations_from_profile
+
+    user = request.user
+    if not PartnerLocation.objects.filter(user=user).exists():
+        backfill_locations_from_profile(user)
+    partner_locations = list(active_locations_for_user(user))
     M = CollaboratorServiceOffer
     return render(
         request,
         "anunturi/magazinul_meu_oferte_nou.html",
         {
             "collab_tip_partener": _collaborator_tip_partener(request),
+            "partner_locations": partner_locations,
             "tf": {
                 "sp": M.TARGET_SPECIES_ALL,
                 "sz": M.TARGET_SIZE_ALL,
@@ -13176,6 +13371,8 @@ def public_offer_request_view(request, pk: int):
                     )
                     return _redirect_after_public_offer_request(request, pk)
             code = _generate_collab_offer_code()
+            from .partner_locations import claim_location_snapshot, effective_location_for_offer
+
             CollaboratorOfferClaim.objects.create(
                 offer=offer,
                 code=code,
@@ -13184,6 +13381,7 @@ def public_offer_request_view(request, pk: int):
                 buyer_name_snapshot=buyer["name"],
                 buyer_phone_snapshot=(buyer["phone"][:40] if buyer["phone"] else ""),
                 buyer_locality_snapshot=(buyer["locality"][:200] if buyer["locality"] else ""),
+                **claim_location_snapshot(effective_location_for_offer(offer)),
             )
             if offer.quantity_available is not None:
                 new_count = claimed + 1
@@ -13219,13 +13417,13 @@ def public_offer_request_view(request, pk: int):
         metadata={"offer_id": offer.pk, "claim_code": code},
     )
 
-    cabinet_txt = _cabinet_block_for_buyer_email(collab)
+    cabinet_txt = _cabinet_block_for_buyer_email(collab, offer=offer)
     buyer_subject = f"EU-Adopt – cod ofertă {code}: {offer.title}"
     buyer_body = (
         f"Bună {buyer['name']},\n\n"
         f"Codul ofertei (îl au și cabinetul și tu): {code}\n\n"
         f"Ofertă: {offer.title}\n\n"
-        f"--- Date cabinet (contact) ---\n{cabinet_txt}\n\n"
+        f"--- Date partener (contact + punct de lucru) ---\n{cabinet_txt}\n\n"
     )
     if offer.description:
         buyer_body += f"--- Descriere ---\n{offer.description}\n\n"
@@ -13250,15 +13448,15 @@ def public_offer_request_view(request, pk: int):
         collab_body += f"Localitate: {buyer['locality']}\n"
     collab_body += "\n---\nEU-Adopt\n"
 
-    cabinet_maps_url = _cabinet_maps_url_for_buyer_email(collab)
+    cabinet_maps_url = _cabinet_maps_url_for_buyer_email(collab, offer=offer)
     if cabinet_maps_url:
-        buyer_body += f"Navigare la cabinet (hartă): {cabinet_maps_url}\n"
+        buyer_body += f"Navigare la punctul de lucru (hartă): {cabinet_maps_url}\n"
     buyer_maps_html = _html_email_maps_cta_button(cabinet_maps_url, "DU-MĂ LA LOCAȚIE")
     buyer_html = (
         f"<p>Bună {escape(buyer['name'])},</p>"
         f"<p>Codul ofertei (îl au și cabinetul și tu): <strong>{escape(code)}</strong></p>"
         f"<p>Ofertă: <strong>{escape(offer.title)}</strong></p>"
-        f"<p><strong>Date cabinet (contact)</strong></p>"
+        f"<p><strong>Date partener (contact + punct de lucru)</strong></p>"
         f"<pre style=\"white-space:pre-wrap;font-family:inherit;\">{escape(cabinet_txt)}</pre>"
     )
     if offer.description:

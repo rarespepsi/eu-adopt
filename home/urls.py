@@ -21,6 +21,7 @@ urlpatterns = [
     path('signup/organizatie/', views.signup_organizatie_view, name='signup_organizatie'),
     path('signup/colaborator/', views.signup_colaborator_view, name='signup_colaborator'),
     path('cont/', views.account_view, name='account'),
+    path('cont/puncte-de-lucru/', views.account_work_locations_view, name='account_work_locations'),
     path('cont/mesaje/', views.unified_inbox_view, name='unified_inbox'),
     path('cont/mesaje/citit/', views.unified_inbox_mark_read_view, name='unified_inbox_mark_read'),
     path('cont/oferte-adoptie/', views.adoption_bonus_offers_portal_view, name='adoption_bonus_portal'),

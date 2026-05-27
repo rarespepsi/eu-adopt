@@ -33,6 +33,7 @@
 									<span>Titlu produs *</span>
 									<input type="text" name="title" id="id_collab_title" required maxlength="160" placeholder="ex. Hrană uscată premium 2 kg" autocomplete="off" />
 								</label>
+								{% include "anunturi/includes/collab_partner_location_select.html" %}
 								<label class="collab-oferte-nou-field collab-oferte-nou-field--wide">
 									<span>Scurtă descriere produs</span>
 									<textarea name="description" id="id_collab_description" rows="3" maxlength="500" placeholder="Ce vede utilizatorul pe imagine în Servicii (1–2 rânduri)."></textarea>
@@ -106,6 +107,7 @@
 							<span>{% if collab_tip_partener == 'magazin' %}Titlu produs *{% else %}Titlu serviciu *{% endif %}</span>
 							<input type="text" name="title" id="id_collab_title" required maxlength="160" placeholder="{% if collab_tip_partener == 'magazin' %}ex. Hrană uscată premium 2 kg{% elif collab_tip_partener == 'servicii' %}ex. Tuns + spălat talie medie{% else %}ex. Sterilizare cu 25%{% endif %}" autocomplete="off" />
 						</label>
+						{% include "anunturi/includes/collab_partner_location_select.html" %}
 						<label class="collab-oferte-nou-field collab-oferte-nou-field--qty-inline" for="id_collab_quantity_available">
 							<span>Număr oferte valabile *</span>
 							<input type="number" name="quantity_available" id="id_collab_quantity_available" class="collab-offer-quantity-input" required min="1" max="999999" step="1" placeholder="ex. 20" inputmode="numeric" autocomplete="off" />

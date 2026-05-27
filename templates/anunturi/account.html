@@ -911,7 +911,33 @@ body.page-account .account-right-panel {
 			</div>
 			<div class="cont-pf-bottom-row">
 				<div class="cont-pf-card">
-					<!-- Casetă goală, rezervată pentru viitoare informații -->
+					{% if partner_locations_manage %}
+					<h2>Puncte de lucru</h2>
+					<p style="font-size:0.9rem;line-height:1.45;margin:0 0 0.65rem;">
+						Sediu social și puncte operaționale. Ofertele și emailurile către clienți folosesc locația aleasă la publicare.
+					</p>
+					{% if partner_locations %}
+					<ul style="margin:0 0 0.75rem;padding-left:1.1rem;font-size:0.88rem;">
+						{% for loc in partner_locations %}
+						<li>
+							<strong>{{ loc.label|default:loc.oras }}</strong>
+							— {{ loc.oras }}, {{ loc.judet }}
+							{% if loc.is_sediu_social %}<span style="color:#555;"> (sediu)</span>{% elif loc.is_primary %}<span style="color:#555;"> (principal)</span>{% endif %}
+						</li>
+						{% endfor %}
+					</ul>
+					{% if partner_locations_count > 4 %}
+					<p style="font-size:0.85rem;margin:0 0 0.5rem;">Vezi toate cele {{ partner_locations_count }} puncte active în pagina de gestionare.</p>
+					{% endif %}
+					{% else %}
+					<p style="font-size:0.88rem;">Nu ai încă puncte listate. Le poți adăuga acum.</p>
+					{% endif %}
+					<p style="margin:0;">
+						<a href="{% url 'account_work_locations' %}" class="btn-pf btn-pf-secondary" style="display:inline-block;">Vezi / modifică puncte de lucru</a>
+					</p>
+					{% else %}
+					<!-- Rezervat -->
+					{% endif %}
 				</div>
 				<div class="cont-pf-card">
 					<h2>Date la înscriere &amp; contact</h2>

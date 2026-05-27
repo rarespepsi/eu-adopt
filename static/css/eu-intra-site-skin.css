@@ -1,0 +1,308 @@
+/**
+ * Linie vizuală EU-Adopt — bază Intra (pagina de logare).
+ * Activ pe body.euadopt-intra-skin (global din base.html).
+ * Păstrează layout-urile paginilor; unifică fundal, navbar, casete „sticlă”, text.
+ */
+
+:root {
+	--eu-intra-bg: #141a22;
+	--eu-intra-bg-elevated: #1e293b;
+	--eu-intra-text: #e2e8f0;
+	--eu-intra-text-muted: #94a3b8;
+	--eu-intra-text-heading: #f8fafc;
+	--eu-intra-accent: #22d3ee;
+	--eu-intra-accent-dim: rgba(6, 182, 212, 0.35);
+	--eu-intra-glass-bg: linear-gradient(
+		168deg,
+		rgba(24, 32, 46, 0.52) 0%,
+		rgba(18, 24, 36, 0.62) 48%,
+		rgba(14, 20, 32, 0.68) 100%
+	);
+	--eu-intra-glass-border: 1px solid rgba(255, 255, 255, 0.055);
+	--eu-intra-glass-radius: 1rem;
+	--eu-intra-glass-shadow:
+		0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+		0 1px 0 rgba(255, 255, 255, 0.045) inset,
+		0 16px 40px rgba(0, 0, 0, 0.45),
+		0 0 0 1px rgba(6, 182, 212, 0.04);
+}
+
+/* ——— Fundal global ——— */
+body.euadopt-intra-skin {
+	background-color: var(--eu-intra-bg) !important;
+	color: var(--eu-intra-text);
+}
+
+body.euadopt-intra-skin #main_wrap {
+	background-color: var(--eu-intra-bg);
+}
+
+body.euadopt-intra-skin #main_content,
+body.euadopt-intra-skin .wrapper#main_content {
+	background: transparent !important;
+	box-shadow: none !important;
+	color: var(--eu-intra-text);
+}
+
+body.euadopt-intra-skin .layout .sidebar-left,
+body.euadopt-intra-skin .layout .sidebar-right {
+	background: transparent;
+}
+
+/* Navbar — ca login */
+body.euadopt-intra-skin #A0 {
+	background-color: rgba(15, 23, 42, 0.32) !important;
+	backdrop-filter: blur(14px) saturate(1.08);
+	-webkit-backdrop-filter: blur(14px) saturate(1.08);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+}
+
+body.euadopt-intra-skin #djangoMessagesBanner {
+	background: rgba(15, 23, 42, 0.92) !important;
+	border-bottom: 1px solid var(--eu-intra-accent-dim) !important;
+	color: #fde68a !important;
+}
+
+/* Casetă sticlă reutilizabilă */
+body.euadopt-intra-skin .eu-intra-glass,
+body.euadopt-intra-skin .cont-pf-card,
+body.euadopt-intra-skin .cont-meu-card,
+body.euadopt-intra-skin .ilove-main-caseta,
+body.euadopt-intra-skin .ilove-case,
+body.euadopt-intra-skin .cont-pf-edit-box {
+	background: var(--eu-intra-glass-bg) !important;
+	backdrop-filter: blur(22px) saturate(1.05);
+	-webkit-backdrop-filter: blur(22px) saturate(1.05);
+	border: var(--eu-intra-glass-border) !important;
+	border-radius: var(--eu-intra-glass-radius) !important;
+	box-shadow: var(--eu-intra-glass-shadow) !important;
+	color: var(--eu-intra-text);
+}
+
+body.euadopt-intra-skin .cont-pf-card h2,
+body.euadopt-intra-skin .cont-meu-card h2,
+body.euadopt-intra-skin .cont-meu-title,
+body.euadopt-intra-skin .ilove-wire__head h1 {
+	color: var(--eu-intra-text-heading) !important;
+}
+
+body.euadopt-intra-skin .cont-pf-card p,
+body.euadopt-intra-skin .cont-meu-card p,
+body.euadopt-intra-skin .cont-meu-subtitle,
+body.euadopt-intra-skin .ilove-wire__head-lead {
+	color: var(--eu-intra-text-muted) !important;
+}
+
+/* ——— Anulează warm-theme (cont / magazinul meu) ——— */
+body.euadopt-intra-skin.page-account #main_content,
+body.euadopt-intra-skin.page-magazinul-meu #main_content,
+body.euadopt-intra-skin.page-account .magazinul-meu-wrap,
+body.euadopt-intra-skin.page-magazinul-meu .magazinul-meu-wrap {
+	background: transparent !important;
+	box-shadow: none !important;
+}
+
+body.euadopt-intra-skin.page-magazinul-meu .collab-oferte-nou-main,
+body.euadopt-intra-skin.page-magazinul-meu .collab-oferte-head,
+body.euadopt-intra-skin.page-magazinul-meu .collab-species-fieldset {
+	background: var(--eu-intra-glass-bg) !important;
+	border-color: rgba(255, 255, 255, 0.08) !important;
+	color: var(--eu-intra-text) !important;
+}
+
+body.euadopt-intra-skin.page-magazinul-meu .collab-oferte-head-title,
+body.euadopt-intra-skin.page-magazinul-meu .collab-species-legend {
+	color: var(--eu-intra-text-heading) !important;
+}
+
+/* ——— I Love + coș ——— */
+body.euadopt-intra-skin.page-ilove .ilove-case {
+	min-height: clamp(4.5rem, 12vh, 7rem);
+	border-style: solid !important;
+	border-color: rgba(255, 255, 255, 0.08) !important;
+	background: var(--eu-intra-glass-bg) !important;
+}
+
+body.euadopt-intra-skin.page-ilove .ilove-case__ref,
+body.euadopt-intra-skin.page-ilove .ilove-case__mark {
+	color: var(--eu-intra-text-muted) !important;
+}
+
+body.euadopt-intra-skin.page-ilove .ilove-wire__head h1 {
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+body.euadopt-intra-skin.page-ilove .ilove-wire__head-links a {
+	color: var(--eu-intra-accent) !important;
+}
+
+body.euadopt-intra-skin.page-ilove .ilove-split-heading {
+	color: var(--eu-intra-accent) !important;
+}
+
+body.euadopt-intra-skin.page-ilove .ilove-pet-card {
+	background: rgba(15, 23, 42, 0.55) !important;
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+body.euadopt-intra-skin.page-ilove .ilove-pet-card .ilove-pet-name {
+	color: var(--eu-intra-text-heading) !important;
+}
+
+body.euadopt-intra-skin.page-ilove .ilove-pet-card .ilove-pet-age {
+	color: var(--eu-intra-text-muted) !important;
+}
+
+body.euadopt-intra-skin.page-ilove .ilove-cos-history-btn,
+body.euadopt-intra-skin.page-ilove .ilove-cart-pay-btn {
+	border: 1px solid var(--eu-intra-accent-dim);
+	background: rgba(6, 182, 212, 0.15);
+	color: var(--eu-intra-text-heading);
+}
+
+body.euadopt-intra-skin.page-ilove .ilove-empty {
+	background: rgba(15, 23, 42, 0.45) !important;
+	color: var(--eu-intra-text-muted) !important;
+	border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ——— HOME — fundal și casete pe linia Intra (layout A1–A6 păstrat) ——— */
+body.euadopt-intra-skin.page-home-v2,
+body.euadopt-intra-skin.page-home-v2 #main_wrap {
+	background-color: var(--eu-intra-bg) !important;
+}
+
+body.euadopt-intra-skin.page-home-v2 .hero-v2 {
+	background: linear-gradient(180deg, #1e293b 0%, var(--eu-intra-bg) 100%) !important;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+body.euadopt-intra-skin.page-home-v2 #home-col-left,
+body.euadopt-intra-skin.page-home-v2 #home-col-right,
+body.euadopt-intra-skin.page-home-v2 #A5,
+body.euadopt-intra-skin.page-home-v2 #A6 {
+	background: transparent !important;
+}
+
+body.euadopt-intra-skin.page-home-v2 #home-col-left .home-v2-side-inner,
+body.euadopt-intra-skin.page-home-v2 #home-col-right .home-v2-side-inner {
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+	border-radius: 0.65rem !important;
+	background: rgba(15, 23, 42, 0.35) !important;
+}
+
+body.euadopt-intra-skin.page-home-v2 #home-col-left .home-v2-slot-bg1,
+body.euadopt-intra-skin.page-home-v2 #home-col-right .home-v2-slot-bg1,
+body.euadopt-intra-skin.page-home-v2 #home-col-left .home-v2-slot-bg2,
+body.euadopt-intra-skin.page-home-v2 #home-col-right .home-v2-slot-bg2,
+body.euadopt-intra-skin.page-home-v2 #home-col-left .home-v2-slot-bg3,
+body.euadopt-intra-skin.page-home-v2 #home-col-right .home-v2-slot-bg3 {
+	background: var(--eu-intra-glass-bg) !important;
+	border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+body.euadopt-intra-skin.page-home-v2 #home-col-left .home-v2-slot-white,
+body.euadopt-intra-skin.page-home-v2 #home-col-right .home-v2-slot-white,
+body.euadopt-intra-skin.page-home-v2 #home-col-left .home-v2-slot-partener,
+body.euadopt-intra-skin.page-home-v2 #home-col-right .home-v2-slot-partener {
+	background: rgba(15, 23, 42, 0.5) !important;
+}
+
+/* Bandă cursivă / disclaimer jos HOME — galben memorat (nu dark Intra) */
+body.euadopt-intra-skin.page-home-v2 #home-burtiera-galbena.home-v2-burtiera-disclaimer {
+	background: #ffeb3b !important;
+	color: #1a1a1a !important;
+	border-top: 2px solid #f9a825 !important;
+}
+
+body.euadopt-intra-skin.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-text,
+body.euadopt-intra-skin.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-link {
+	color: #1a1a1a !important;
+}
+
+body.euadopt-intra-skin.page-home-v2 #home-burtiera-galbena .home-v2-burtiera-link:hover {
+	color: #000 !important;
+}
+
+body.euadopt-intra-skin.page-home-v2 #A4 {
+	background: rgba(30, 41, 59, 0.9) !important;
+	color: var(--eu-intra-text-muted) !important;
+}
+
+/* ——— Înregistrare — casete pe sticlă ——— */
+body.euadopt-intra-skin .signup-col-caseta,
+body.euadopt-intra-skin .signup-org-caseta,
+body.euadopt-intra-skin .signup-pf-caseta {
+	background: var(--eu-intra-glass-bg) !important;
+	border: var(--eu-intra-glass-border) !important;
+	box-shadow: var(--eu-intra-glass-shadow) !important;
+	color: var(--eu-intra-text);
+}
+
+body.euadopt-intra-skin .signup-col-field-box,
+body.euadopt-intra-skin .signup-org-field-box,
+body.euadopt-intra-skin .signup-pf-field-box {
+	background: rgba(15, 23, 42, 0.45) !important;
+	border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.euadopt-intra-skin .signup-col-caseta h2,
+body.euadopt-intra-skin .signup-org-caseta h2,
+body.euadopt-intra-skin .signup-pf-caseta h2 {
+	color: var(--eu-intra-text-heading) !important;
+}
+
+body.euadopt-intra-skin .signup-col-field label,
+body.euadopt-intra-skin .signup-org-field label,
+body.euadopt-intra-skin .signup-pf-field label {
+	color: var(--eu-intra-text-muted);
+}
+
+/* ——— Linkuri pe fundal închis ——— */
+body.euadopt-intra-skin .main-content a:not(.btn):not(.button):not([class*="btn-"]):not(.dog-card-link) {
+	color: #7dd3fc;
+}
+
+body.euadopt-intra-skin .main-content a:not(.btn):not(.button):not([class*="btn-"]):not(.dog-card-link):hover {
+	color: #bae6fd;
+}
+
+/* Login: păstrează fundal foto dedicat */
+body.euadopt-intra-skin.page-login #main_wrap {
+	background-color: var(--eu-intra-bg);
+}
+
+/* ——— Contact ——— */
+body.euadopt-intra-skin.page-contact .contact-wrap {
+	color: var(--eu-intra-text);
+}
+
+body.euadopt-intra-skin.page-contact .contact-head h1,
+body.euadopt-intra-skin.page-contact .contact-card h2 {
+	color: var(--eu-intra-text-heading) !important;
+}
+
+body.euadopt-intra-skin.page-contact .contact-head p {
+	color: var(--eu-intra-text-muted) !important;
+}
+
+body.euadopt-intra-skin.page-contact .contact-card {
+	background: var(--eu-intra-glass-bg) !important;
+	border: var(--eu-intra-glass-border) !important;
+	box-shadow: var(--eu-intra-glass-shadow) !important;
+	color: var(--eu-intra-text) !important;
+}
+
+body.euadopt-intra-skin.page-contact .contact-card-emails a {
+	color: var(--eu-intra-accent) !important;
+}
+
+/* Coș I Love: păstrează layout wire (fără centrare checkout) */
+body.euadopt-intra-skin.page-ilove.page-ilove--cart:not(.euadopt-checkout-intra-skin) #main_content {
+	display: block !important;
+	align-items: stretch !important;
+	justify-content: flex-start !important;
+	min-height: 0 !important;
+	padding-top: var(--nav-height, 56px) !important;
+}

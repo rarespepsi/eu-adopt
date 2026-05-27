@@ -26,6 +26,7 @@ from .models import (
     TransportDispatchRecipient,
     TransportTripRating,
     StaffOnboardingLead,
+    PartnerLocation,
 )
 
 
@@ -317,6 +318,23 @@ class TransportVeterinaryRequestAdmin(admin.ModelAdmin):
     search_fields = ("judet", "oras", "plecare", "sosire", "user__email", "user__username")
     raw_id_fields = ("user", "related_animal")
     readonly_fields = ("created_at",)
+
+
+@admin.register(PartnerLocation)
+class PartnerLocationAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "user",
+        "label",
+        "judet",
+        "oras",
+        "is_sediu_social",
+        "is_primary",
+        "is_active",
+    )
+    list_filter = ("is_active", "is_sediu_social", "is_primary", "kind")
+    search_fields = ("user__email", "user__username", "label", "judet", "oras", "adresa")
+    raw_id_fields = ("user",)
 
 
 @admin.register(StaffOnboardingLead)

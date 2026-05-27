@@ -1,0 +1,19 @@
+{% if partner_locations %}
+<label class="collab-oferte-nou-field collab-oferte-nou-field--wide">
+	<span>Punct de lucru *</span>
+	<select name="partner_location_id" id="id_partner_location" required>
+		{% for loc in partner_locations %}
+		<option value="{{ loc.pk }}"{% if loc.is_primary %} selected{% endif %}>
+			{{ loc.label|default:loc.oras }} — {{ loc.oras }}, {{ loc.judet }}{% if loc.is_sediu_social %} (sediu){% endif %}
+		</option>
+		{% endfor %}
+	</select>
+	<span style="font-size:0.82rem;display:block;margin-top:0.25rem;">
+		<a href="{% url 'account_work_locations' %}">Gestionează punctele de lucru</a>
+	</span>
+</label>
+{% else %}
+<p class="collab-oferte-nou-hint" style="color:#b71c1c;">
+	Adaugă cel puțin un <a href="{% url 'account_work_locations' %}">punct de lucru</a> în cont înainte de a publica oferte.
+</p>
+{% endif %}

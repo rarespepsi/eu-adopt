@@ -46,11 +46,13 @@
 	<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}?v=20260411c" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/pet-images-common.css' %}?v=3" type="text/css" media="screen" />
 	{% block extra_css_after %}{% endblock %}
-	{# Paletă caldă – după CSS-ul paginilor, ca să fie vizibilă pe Magazinul meu / cont #}
+	{# Paletă caldă – suprascrisă de eu-intra-site-skin pe cont / magazin #}
 	<link rel="stylesheet" href="{% static 'css/warm-theme.css' %}?v=3" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/navbar-envelope-unread.css' %}?v=1" type="text/css" media="screen" />
+	<link rel="stylesheet" href="{% static 'css/checkout-intra-skin.css' %}?v=3" type="text/css" media="screen" />
+	<link rel="stylesheet" href="{% static 'css/eu-intra-site-skin.css' %}?v=2" type="text/css" media="screen" />
 </head>
-<body class="content_left scheme_red {{ body_class|default:'' }} {% block body_class %}{% endblock %}" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}" data-site-cart-toggle-url="{% url 'site_cart_toggle' %}">
+<body class="content_left scheme_red euadopt-intra-skin {{ body_class|default:'' }} {% block body_class %}{% endblock %}" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}" data-site-cart-toggle-url="{% url 'site_cart_toggle' %}">
 	<section id="main_wrap">
 		{% block header %}
 		{% include "components/navbar_a0.html" %}

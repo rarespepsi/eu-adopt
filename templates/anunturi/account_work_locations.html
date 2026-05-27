@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Puncte de lucru | Cont | EU Adopt{% endblock %}
+
+{% block content %}
+<section class="cont-meu" aria-label="Puncte de lucru" style="max-width:920px;margin:1.5rem auto;padding:0 1rem;">
+	<h1 class="cont-meu-title">Puncte de lucru</h1>
+	<p class="cont-meu-subtitle">
+		Sediu social (legal) și puncte operaționale (magazine, cabinete, grooming).
+		Ofertele și emailurile către clienți folosesc punctul ales la publicare.
+	</p>
+	<p><a href="{% url 'account' %}">← Înapoi la cont</a></p>
+
+	{% if messages %}
+	<ul class="signup-errors" role="alert" style="margin:1rem 0;">
+		{% for message in messages %}
+		<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+		{% endfor %}
+	</ul>
+	{% endif %}
+
+	<div class="cont-meu-card" style="margin-bottom:1.25rem;">
+		<h2>Locații active ({{ locations|length }})</h2>
+		{% if locations %}
+		<table style="width:100%;border-collapse:collapse;font-size:0.92rem;">
+			<thead>
+				<tr style="text-align:left;border-bottom:1px solid #ddd;">
+					<th style="padding:0.4rem 0.3rem;">Denumire</th>
+					<th>Localitate</th>
+					<th>Tip</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for loc in locations %}
+				<tr style="border-bottom:1px solid #eee;vertical-align:top;">
+					<td style="padding:0.45rem 0.3rem;">
+						<strong>{{ loc.label|default:loc.oras }}</strong>
+						{% if loc.is_sediu_social %}<br><span style="font-size:0.8rem;color:#555;">Sediu social</span>{% endif %}
+						{% if loc.is_primary and not loc.is_sediu_social %}<br><span style="font-size:0.8rem;color:#555;">Punct principal</span>{% endif %}
+						{% if loc.adresa %}<br><span style="font-size:0.85rem;">{{ loc.adresa }}</span>{% endif %}
+					</td>
+					<td style="padding:0.45rem 0.3rem;">{{ loc.oras }}, {{ loc.judet }}</td>
+					<td style="padding:0.45rem 0.3rem;">{% if loc.phone %}{{ loc.phone }}{% else %}—{% endif %}</td>
+					<td style="padding:0.45rem 0.3rem;white-space:nowrap;">
+						{% if not loc.is_sediu_social %}
+						<form method="post" style="display:inline;">{% csrf_token %}
+							<input type="hidden" name="action" value="set_primary" />
+							<input type="hidden" name="location_id" value="{{ loc.pk }}" />
+							<button type="submit" style="font-size:0.8rem;">Principal</button>
+						</form>
+						{% endif %}
+						{% if not loc.is_sediu_social and not loc.is_primary %}
+						<form method="post" style="display:inline;" onsubmit="return confirm('Dezactivezi acest punct?');">{% csrf_token %}
+							<input type="hidden" name="action" value="deactivate" />
+							<input type="hidden" name="location_id" value="{{ loc.pk }}" />
+							<button type="submit" style="font-size:0.8rem;">Dezactivează</button>
+						</form>
+						{% endif %}
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		{% else %}
+		<p>Nu ai încă puncte de lucru. Adaugă unul mai jos sau completează sediul în date firmă, apoi reîncarcă pagina.</p>
+		{% endif %}
+	</div>
+
+	<div class="cont-meu-card">
+		<h2>Adaugă punct de lucru</h2>
+		<form method="post" class="edit-form-inner" style="display:grid;gap:0.65rem;max-width:520px;">
+			{% csrf_token %}
+			<input type="hidden" name="action" value="add" />
+			<div>
+				<label for="id_pl_label">Denumire (opțional)</label>
+				<input type="text" id="id_pl_label" name="label" maxlength="120" placeholder="ex. Magazin Roman" />
+			</div>
+			<div>
+				<label for="id_pl_judet">Județ *</label>
+				<input type="text" id="id_pl_judet" name="judet" required maxlength="120" list="county-list-pl" />
+				{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-pl" %}
+			</div>
+			<div>
+				<label for="id_pl_oras">Oraș / localitate *</label>
+				<input type="text" id="id_pl_oras" name="oras" required maxlength="120" />
+			</div>
+			<div>
+				<label for="id_pl_adresa">Adresă</label>
+				<input type="text" id="id_pl_adresa" name="adresa" maxlength="255" placeholder="Stradă, număr" />
+			</div>
+			<div>
+				<label for="id_pl_phone">Telefon punct (opțional)</label>
+				<input type="text" id="id_pl_phone" name="phone" maxlength="40" />
+			</div>
+			<button type="submit" class="btn-save" style="justify-self:start;">Adaugă punct</button>
+		</form>
+	</div>
+</section>
+{% endblock %}
