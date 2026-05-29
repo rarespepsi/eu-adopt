@@ -808,6 +808,33 @@
 		wireCountyLocality("id_judet", "city-list-adduser-manual");
 		wireCountyLocality("id_company_judet", "city-list-adduser-co");
 	});
+	function syncTopFiltersByAccountKind() {
+		var kindSel = document.getElementById("f-kind");
+		var collabSel = document.getElementById("f-collab-sub");
+		var vetSel = document.getElementById("f-vet-kind");
+		if (!kindSel || !collabSel || !vetSel) return;
+		var kind = (kindSel.value || "").trim();
+		var collab = (collabSel.value || "").trim().toLowerCase();
+		var collabEnabled = kind === "collaborator";
+		collabSel.disabled = !collabEnabled;
+		if (!collabEnabled) {
+			collabSel.value = "";
+		}
+		var vetEnabled = collabEnabled && collab === "cabinet";
+		vetSel.disabled = !vetEnabled;
+		if (!vetEnabled) {
+			vetSel.value = "";
+		}
+	}
+	var topKind = document.getElementById("f-kind");
+	var topCollab = document.getElementById("f-collab-sub");
+	if (topKind) {
+		topKind.addEventListener("change", syncTopFiltersByAccountKind);
+	}
+	if (topCollab) {
+		topCollab.addEventListener("change", syncTopFiltersByAccountKind);
+	}
+	syncTopFiltersByAccountKind();
 	function syncManualLeadRoleSections() {
 		var sel = document.getElementById("id_account_kind");
 		if (!sel) return;
@@ -929,7 +956,7 @@
 				<select id="f-kind" name="account_kind">
 					<option value="" {% if not filter_account_kind %}selected{% endif %}>— Toate —</option>
 					<option value="pf" {% if filter_account_kind == "pf" %}selected{% endif %}>PF</option>
-					<option value="org" {% if filter_account_kind == "org" %}selected{% endif %}>ONG / adăpost</option>
+					<option value="org" {% if filter_account_kind == "org" %}selected{% endif %}>ONG / ASOCIAȚIE</option>
 					<option value="adapost" {% if filter_account_kind == "adapost" %}selected{% endif %}>Adăpost</option>
 					<option value="collaborator" {% if filter_account_kind == "collaborator" %}selected{% endif %}>Colaborator</option>
 				</select>

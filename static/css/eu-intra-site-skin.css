@@ -18,13 +18,20 @@
 		rgba(18, 24, 36, 0.62) 48%,
 		rgba(14, 20, 32, 0.68) 100%
 	);
-	--eu-intra-glass-border: 1px solid rgba(255, 255, 255, 0.055);
+	--eu-intra-glass-border: 1px solid rgba(255, 255, 255, 0.07);
 	--eu-intra-glass-radius: 1rem;
 	--eu-intra-glass-shadow:
 		0 0 0 1px rgba(0, 0, 0, 0.5) inset,
-		0 1px 0 rgba(255, 255, 255, 0.045) inset,
-		0 16px 40px rgba(0, 0, 0, 0.45),
-		0 0 0 1px rgba(6, 182, 212, 0.04);
+		0 1px 0 rgba(255, 255, 255, 0.06) inset,
+		0 18px 48px rgba(0, 0, 0, 0.5),
+		0 0 0 1px rgba(6, 182, 212, 0.05);
+	--eu-intra-glass-shadow-hover:
+		0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+		0 1px 0 rgba(255, 255, 255, 0.08) inset,
+		0 24px 60px rgba(0, 0, 0, 0.58),
+		0 0 0 1px rgba(34, 211, 238, 0.14);
+	--eu-intra-transition: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+	--eu-intra-focus-ring: 0 0 0 3px rgba(34, 211, 238, 0.45);
 }
 
 /* ——— Fundal global ——— */
@@ -305,4 +312,128 @@ body.euadopt-intra-skin.page-ilove.page-ilove--cart:not(.euadopt-checkout-intra-
 	justify-content: flex-start !important;
 	min-height: 0 !important;
 	padding-top: var(--nav-height, 56px) !important;
+}
+
+/* ===================================================================
+ * POLISH GLOBAL — rafinare pur vizuală (fără modificări de layout).
+ * Redare text, scrollbar, selecție, focus, tranziții fine, hover casete.
+ * =================================================================== */
+
+/* Redare mai clară a textului pe tot site-ul */
+body.euadopt-intra-skin {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+}
+
+/* Titluri puțin mai aerisite și mai „premium” (doar redare, nu dimensiuni de layout) */
+body.euadopt-intra-skin h1,
+body.euadopt-intra-skin h2,
+body.euadopt-intra-skin h3 {
+	letter-spacing: -0.01em;
+}
+
+/* Selecție text pe accentul brandului */
+body.euadopt-intra-skin ::selection {
+	background: rgba(34, 211, 238, 0.28);
+	color: #f8fafc;
+}
+
+/* Scrollbar elegant pe tema închisă */
+body.euadopt-intra-skin * {
+	scrollbar-width: thin;
+	scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+
+body.euadopt-intra-skin ::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+body.euadopt-intra-skin ::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+body.euadopt-intra-skin ::-webkit-scrollbar-thumb {
+	background: rgba(148, 163, 184, 0.32);
+	border-radius: 999px;
+	border: 2px solid transparent;
+	background-clip: padding-box;
+}
+
+body.euadopt-intra-skin ::-webkit-scrollbar-thumb:hover {
+	background: rgba(34, 211, 238, 0.45);
+	background-clip: padding-box;
+}
+
+/* Inel de focus accesibil și consecvent pe elemente interactive */
+body.euadopt-intra-skin a:focus-visible,
+body.euadopt-intra-skin button:focus-visible,
+body.euadopt-intra-skin input:focus-visible,
+body.euadopt-intra-skin select:focus-visible,
+body.euadopt-intra-skin textarea:focus-visible,
+body.euadopt-intra-skin [tabindex]:focus-visible {
+	outline: none;
+	box-shadow: var(--eu-intra-focus-ring);
+	border-radius: 0.4rem;
+}
+
+/* Tranziții fine pe linkuri / butoane — doar culoare/umbră, nu layout */
+body.euadopt-intra-skin a,
+body.euadopt-intra-skin button,
+body.euadopt-intra-skin .btn,
+body.euadopt-intra-skin .button {
+	transition:
+		color var(--eu-intra-transition),
+		background-color var(--eu-intra-transition),
+		border-color var(--eu-intra-transition),
+		box-shadow var(--eu-intra-transition),
+		transform var(--eu-intra-transition);
+}
+
+/* Hover discret pe casetele „sticlă” din zonele non-înghețate (cont, contact, signup) */
+body.euadopt-intra-skin .cont-pf-card,
+body.euadopt-intra-skin .cont-meu-card,
+body.euadopt-intra-skin .cont-pf-edit-box,
+body.euadopt-intra-skin .contact-card,
+body.euadopt-intra-skin .signup-col-caseta,
+body.euadopt-intra-skin .signup-org-caseta,
+body.euadopt-intra-skin .signup-pf-caseta {
+	transition:
+		box-shadow var(--eu-intra-transition),
+		border-color var(--eu-intra-transition),
+		transform var(--eu-intra-transition);
+}
+
+body.euadopt-intra-skin .cont-pf-card:hover,
+body.euadopt-intra-skin .cont-meu-card:hover,
+body.euadopt-intra-skin .contact-card:hover,
+body.euadopt-intra-skin .signup-col-caseta:hover,
+body.euadopt-intra-skin .signup-org-caseta:hover,
+body.euadopt-intra-skin .signup-pf-caseta:hover {
+	box-shadow: var(--eu-intra-glass-shadow-hover) !important;
+	border-color: rgba(34, 211, 238, 0.18) !important;
+}
+
+/* Câmpuri formular: focus pe accent (cont / signup / contact) */
+body.euadopt-intra-skin input:not([type="checkbox"]):not([type="radio"]):focus,
+body.euadopt-intra-skin select:focus,
+body.euadopt-intra-skin textarea:focus {
+	border-color: rgba(34, 211, 238, 0.5) !important;
+}
+
+/* Respectă preferința de mișcare redusă */
+@media (prefers-reduced-motion: reduce) {
+	body.euadopt-intra-skin a,
+	body.euadopt-intra-skin button,
+	body.euadopt-intra-skin .btn,
+	body.euadopt-intra-skin .button,
+	body.euadopt-intra-skin .cont-pf-card,
+	body.euadopt-intra-skin .cont-meu-card,
+	body.euadopt-intra-skin .contact-card,
+	body.euadopt-intra-skin .signup-col-caseta,
+	body.euadopt-intra-skin .signup-org-caseta,
+	body.euadopt-intra-skin .signup-pf-caseta {
+		transition: none;
+	}
 }
