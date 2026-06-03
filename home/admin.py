@@ -26,6 +26,8 @@ from .models import (
     TransportDispatchRecipient,
     TransportTripRating,
     StaffOnboardingLead,
+    StaffOnboardingInviteLog,
+    StaffOnboardingInviteInbound,
     PartnerLocation,
 )
 
@@ -349,12 +351,20 @@ class StaffOnboardingLeadAdmin(admin.ModelAdmin):
         "collaborator_subtype",
         "vet_prospect_kind",
         "status",
+        "invite_mail_status",
         "invite_email_last_sent_at",
+        "invite_replied_at",
         "marketing_emails_requested",
         "created_at",
         "created_by",
     )
-    list_filter = ("account_kind", "status", "marketing_emails_requested", "vet_prospect_kind")
+    list_filter = (
+        "account_kind",
+        "status",
+        "invite_mail_status",
+        "marketing_emails_requested",
+        "vet_prospect_kind",
+    )
     search_fields = ("email", "display_name", "org_display_name", "phone", "judet")
     raw_id_fields = ("created_by", "imported_user")
     readonly_fields = (
@@ -363,4 +373,23 @@ class StaffOnboardingLeadAdmin(admin.ModelAdmin):
         "consent_terms_at",
         "consent_privacy_at",
         "consent_marketing_at",
+        "invite_replied_at",
     )
+
+
+@admin.register(StaffOnboardingInviteLog)
+class StaffOnboardingInviteLogAdmin(admin.ModelAdmin):
+    list_display = ("lead", "sent_at", "to_email", "outcome", "template_key", "dispatch_kind", "message_id", "sent_by")
+    list_filter = ("outcome", "dispatch_kind", "template_key", "sent_at")
+    search_fields = ("to_email", "lead__email", "subject", "message_id")
+    raw_id_fields = ("lead", "sent_by")
+    readonly_fields = ("sent_at",)
+
+
+@admin.register(StaffOnboardingInviteInbound)
+class StaffOnboardingInviteInboundAdmin(admin.ModelAdmin):
+    list_display = ("received_at", "kind", "from_email", "lead", "subject", "source")
+    list_filter = ("kind", "source", "received_at")
+    search_fields = ("from_email", "subject", "snippet", "lead__email")
+    raw_id_fields = ("lead",)
+    readonly_fields = ("received_at",)

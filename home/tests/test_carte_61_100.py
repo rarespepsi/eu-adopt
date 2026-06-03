@@ -1118,10 +1118,11 @@ class Carte81_100Tests(TestCase):
         self.assertEqual(lead.first_name, "A")
         self.assertEqual(lead.judet, "Alba")
 
+    @override_settings(STAFF_INVITE_EMAIL_ENABLED=True)
     def test_109i_staff_invite_email_sends_and_sets_timestamp(self):
         from django.core import mail
 
-        from home.models import StaffOnboardingLead
+        from home.models import StaffOnboardingLead, StaffOnboardingInviteLog
 
         staff = User.objects.create_user(
             username=f"stinv_{uuid.uuid4().hex[:6]}",
@@ -1147,6 +1148,134 @@ class Carte81_100Tests(TestCase):
         self.assertIn("invitee@test.local", mail.outbox[0].to)
         lead.refresh_from_db()
         self.assertIsNotNone(lead.invite_email_last_sent_at)
+        self.assertEqual(lead.invite_mail_status, StaffOnboardingLead.INVITE_SENT)
+        self.assertEqual(
+            StaffOnboardingInviteLog.objects.filter(lead=lead, outcome=StaffOnboardingInviteLog.OUTCOME_SENT).count(),
+            1,
+        )
+
+    def test_109i4_staff_invite_wave_dry_run_respects_daily_cap(self):
+        from home.models import StaffOnboardingLead, StaffOnboardingInviteLog
+
+        staff = User.objects.create_user(
+            username=f"stinvwv_{uuid.uuid4().hex[:6]}",
+            email="stinvwv@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        leads = []
+        for i in range(3):
+            leads.append(
+                StaffOnboardingLead.objects.create(
+                    email=f"wave{i}_{uuid.uuid4().hex[:6]}@test.local",
+                    display_name=f"Wave {i}",
+                    account_kind=StaffOnboardingLead.KIND_ADAPOST,
+                    judet="Iași",
+                    status=StaffOnboardingLead.ST_READY,
+                )
+            )
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        with self.settings(STAFF_LEAD_INVITE_MAX_PER_DAY=2):
+            r = c.post(
+                reverse("admin_analysis_add_user_invite_wave"),
+                {"wave_limit": "10", "preserve_query": "account_kind=adapost"},
+            )
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(
+            StaffOnboardingInviteLog.objects.filter(outcome=StaffOnboardingInviteLog.OUTCOME_DRY_RUN).count(),
+            2,
+        )
+
+    def test_109j_inbound_reply_marks_lead(self):
+        from home.models import StaffOnboardingLead, StaffOnboardingInviteInbound
+        from home.staff_onboarding_invite_inbound import process_inbound_email
+
+        lead = StaffOnboardingLead.objects.create(
+            email="replyme@test.local",
+            display_name="Reply Me",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            judet="Iași",
+            invite_mail_status=StaffOnboardingLead.INVITE_SENT,
+        )
+        result = process_inbound_email(
+            from_email="replyme@test.local",
+            to_addrs=["contact@eu-adopt.ro"],
+            subject="Re: invitatie",
+            body="Multumesc, ma inscriu",
+            headers={},
+            external_id="test-reply-1",
+        )
+        self.assertEqual(result["kind"], StaffOnboardingInviteInbound.KIND_REPLY)
+        self.assertTrue(result["applied"])
+        lead.refresh_from_db()
+        self.assertEqual(lead.invite_mail_status, StaffOnboardingLead.INVITE_REPLIED)
+        self.assertIsNotNone(lead.invite_replied_at)
+
+    def test_109j2_inbound_bounce_marks_lead(self):
+        from home.models import StaffOnboardingLead
+        from home.staff_onboarding_invite_inbound import process_inbound_email
+
+        lead = StaffOnboardingLead.objects.create(
+            email="bad@test.local",
+            display_name="Bad",
+            account_kind=StaffOnboardingLead.KIND_PF,
+            judet="Cluj",
+        )
+        process_inbound_email(
+            from_email="mailer-daemon@zoho.com",
+            to_addrs=[f"invite+{lead.pk}@eu-adopt.ro"],
+            subject="Undelivered Mail Returned to Sender",
+            body="",
+            external_id="test-bounce-1",
+        )
+        lead.refresh_from_db()
+        self.assertEqual(lead.invite_mail_status, StaffOnboardingLead.INVITE_BOUNCED)
+
+    def test_109i5_staff_invite_template_key_adapost(self):
+        from home.models import StaffOnboardingLead
+        from home.staff_onboarding_invite import staff_invite_template_key
+
+        lead = StaffOnboardingLead(
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            collaborator_subtype="",
+        )
+        self.assertEqual(staff_invite_template_key(lead), "adapost")
+
+    def test_109i1_staff_invite_dry_run_no_smtp(self):
+        from django.core import mail
+
+        from home.models import StaffOnboardingLead, StaffOnboardingInviteLog
+
+        staff = User.objects.create_user(
+            username=f"stinvdr_{uuid.uuid4().hex[:6]}",
+            email="stinvdr@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        lead = StaffOnboardingLead.objects.create(
+            email="invitee-dry@test.local",
+            display_name="Inv Dry",
+            account_kind=StaffOnboardingLead.KIND_PF,
+            judet="Cluj",
+        )
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        mail.outbox.clear()
+        r = c.post(
+            reverse("admin_analysis_add_user_invite_send"),
+            {"lead_id": [str(lead.pk)]},
+        )
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(len(mail.outbox), 0)
+        lead.refresh_from_db()
+        self.assertIsNone(lead.invite_email_last_sent_at)
+        self.assertEqual(
+            StaffOnboardingInviteLog.objects.filter(
+                lead=lead, outcome=StaffOnboardingInviteLog.OUTCOME_DRY_RUN
+            ).count(),
+            1,
+        )
 
     def test_109i2_staff_invite_skips_placeholder_email(self):
         from django.core import mail

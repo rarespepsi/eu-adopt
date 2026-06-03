@@ -129,49 +129,39 @@
 		background: rgba(15, 23, 42, 0.55);
 	}
 	.add-user-scroll {
-		flex: 0 1 auto;
+		flex: 1 1 auto;
 		min-height: 0;
-		max-height: calc(100dvh - var(--nav-h, 64px) - 5.5rem);
-		overflow-x: hidden;
-		overflow-y: auto;
+		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-		gap: 0.55rem;
+		gap: 0.4rem;
 	}
 	.add-user-scroll::-webkit-scrollbar { width: 8px; }
 	.add-user-scroll::-webkit-scrollbar-thumb {
 		background: rgba(255, 255, 255, 0.12);
 		border-radius: 999px;
 	}
-	.add-user-top-bar {
+	.add-user-toolbar {
+		flex-shrink: 0;
 		display: flex;
-		flex-wrap: nowrap;
-		align-items: flex-end;
-		gap: 0.45rem;
+		flex-direction: column;
+		gap: 0.35rem;
 		background: rgba(15, 23, 42, 0.45);
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		border-radius: 0.75rem;
-		padding: 0.38rem 0.55rem 0.42rem;
-		overflow-x: auto;
-		-webkit-overflow-scrolling: touch;
-		flex-shrink: 0;
+		padding: 0.4rem 0.5rem;
 		min-width: 0;
 	}
-	/* Export + Import: același rând, centrat vertical cu butoanele din stânga */
-	.add-user-top-bar-tail {
+	.add-user-toolbar-actions {
 		display: flex;
-		flex-wrap: nowrap;
+		flex-wrap: wrap;
 		align-items: center;
-		align-self: flex-end;
-		gap: 0.45rem;
-		flex: 0 0 auto;
-		min-width: 0;
-		border-left: 1px solid rgba(255, 255, 255, 0.1);
-		padding-left: 0.55rem;
-		margin-left: 0.05rem;
-		min-height: 2rem;
+		gap: 0.35rem;
+		padding-top: 0.15rem;
+		border-top: 1px solid rgba(255, 255, 255, 0.06);
 	}
-	.add-user-top-bar-tail > a.add-user-btn {
+	.add-user-toolbar-actions > a.add-user-btn,
+	.add-user-toolbar-actions > button.add-user-btn {
 		flex-shrink: 0;
 	}
 	.add-user-import-form {
@@ -207,14 +197,14 @@
 		opacity: 0 !important;
 	}
 	/* Bară unelte: aceeași înălțime + același chip ca „Aplică filtre” (Export, butoane filtre) */
-	.add-user-top-bar button.add-user-btn {
+	.add-user-toolbar button.add-user-btn {
 		appearance: none;
 		-webkit-appearance: none;
 		font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 		margin: 0;
 	}
-	.add-user-top-bar a.add-user-btn,
-	.add-user-top-bar button.add-user-btn,
+	.add-user-toolbar a.add-user-btn,
+	.add-user-toolbar button.add-user-btn,
 	.add-user-import-form label.add-user-btn,
 	.add-user-filters .add-user-btn {
 		display: inline-flex !important;
@@ -252,24 +242,40 @@
 		color: #f8fafc !important;
 		background: rgba(15, 23, 42, 0.78) !important;
 	}
-	.add-user-top-bar a.add-user-btn:hover,
-	.add-user-top-bar button.add-user-btn:hover,
+	.add-user-toolbar a.add-user-btn:hover,
+	.add-user-toolbar button.add-user-btn:hover,
 	.add-user-filters .add-user-btn:not(.add-user-btn--secondary):hover {
 		filter: brightness(1.06);
 		transform: translateY(-1px);
 	}
 	.add-user-filters {
 		display: flex;
-		flex-wrap: nowrap;
-		gap: 0.4rem;
+		flex-wrap: wrap;
+		gap: 0.35rem 0.4rem;
 		align-items: flex-end;
-		flex: 1 1 auto;
 		min-width: 0;
 		background: none;
 		border: none;
 		padding: 0;
 		margin: 0;
-		overflow: visible;
+	}
+	.add-user-filters-row2 {
+		flex: 1 1 100%;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 0.35rem 0.75rem;
+		min-width: 0;
+	}
+	.add-user-filters-checks {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.15rem;
+		flex: 0 0 auto;
+		min-width: 0;
+		padding-bottom: 0.05rem;
 	}
 	.add-user-filters > div { flex: 0 0 auto; min-width: 0; }
 	.add-user-filters label {
@@ -292,13 +298,30 @@
 		box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.15);
 	}
 	.add-user-filters #f-jud, .add-user-filters #f-oras { max-width: 8.75rem; }
+	.add-user-filter-check {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.28rem;
+		font-size: 0.68rem;
+		line-height: 1.2;
+		color: #94a3b8;
+		white-space: nowrap;
+		cursor: pointer;
+	}
+	.add-user-filter-check input[type="checkbox"] {
+		width: 0.85rem;
+		height: 0.85rem;
+		margin: 0;
+		flex-shrink: 0;
+		accent-color: #06b6d4;
+	}
 	.add-user-filters-actions {
 		display: flex;
-		flex-wrap: nowrap;
+		flex-wrap: wrap;
 		gap: 0.35rem;
 		align-items: center;
 		flex: 0 0 auto;
-		margin-left: 0.1rem;
+		margin-left: auto;
 	}
 	.add-user-btn {
 		text-decoration: none;
@@ -395,21 +418,18 @@
 		display: flex;
 		flex-direction: column;
 		align-items: stretch;
-		align-content: flex-start;
 		width: 100%;
-		min-height: 0;
+		flex: 1 1 auto;
+		min-height: 10rem;
 		box-sizing: border-box;
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		border-radius: 0.75rem;
 		background: rgba(15, 23, 42, 0.35);
 		overflow: hidden;
-		height: fit-content;
-		max-height: none;
 	}
 	.add-user-table-wrap {
-		flex: 0 1 auto;
+		flex: 1 1 auto;
 		min-height: 0;
-		max-height: min(55vh, calc(100dvh - var(--nav-h, 64px) - 12rem));
 		overflow: auto;
 		-webkit-overflow-scrolling: touch;
 		border: 0;
@@ -553,8 +573,96 @@
 		border-color: rgba(6, 182, 212, 0.45);
 		color: #67e8f9;
 	}
+	.add-user-invite-toolbox {
+		flex-shrink: 0;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 0.55rem;
+		background: rgba(15, 23, 42, 0.4);
+		font-size: 0.76rem;
+	}
+	.add-user-invite-toolbox > summary {
+		padding: 0.32rem 0.55rem;
+		cursor: pointer;
+		color: #94a3b8;
+		font-weight: 600;
+		list-style: none;
+		user-select: none;
+	}
+	.add-user-invite-toolbox > summary::-webkit-details-marker { display: none; }
+	.add-user-invite-toolbox > summary::before {
+		content: "▸ ";
+		color: #22d3ee;
+	}
+	.add-user-invite-toolbox[open] > summary::before { content: "▾ "; }
+	.add-user-invite-toolbox-body {
+		padding: 0 0.5rem 0.45rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+	.add-user-invite-banner {
+		margin: 0;
+		padding: 0.35rem 0.5rem;
+		border-radius: 0.4rem;
+		font-size: 0.74rem;
+		line-height: 1.3;
+		border: 1px solid rgba(251, 191, 36, 0.45);
+		background: rgba(251, 191, 36, 0.12);
+		color: #fde68a;
+	}
+	.add-user-invite-stats {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem 0.75rem;
+		margin: 0;
+		padding: 0.35rem 0.5rem;
+		border-radius: 0.4rem;
+		font-size: 0.72rem;
+		background: rgba(15, 23, 42, 0.55);
+		border: 1px solid rgba(255, 255, 255, 0.06);
+		color: #cbd5e1;
+	}
+	.add-user-invite-stats strong { color: #e2e8f0; }
+	.add-user-invite-stats code { font-size: 0.68rem; color: #a5f3fc; word-break: break-all; }
+	.add-user-invite-stats--inbound { border-color: rgba(129, 140, 248, 0.25); }
+	.add-user-invite-wave {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.35rem;
+		margin: 0;
+		padding: 0.35rem 0.5rem;
+		border-radius: 0.4rem;
+		border: 1px solid rgba(6, 182, 212, 0.25);
+		background: rgba(6, 182, 212, 0.06);
+	}
+	.add-user-invite-wave label { font-size: 0.72rem; color: #94a3b8; }
+	.add-user-invite-wave select {
+		font-size: 0.72rem;
+		padding: 0.15rem 0.3rem;
+		border-radius: 0.35rem;
+		background: #1e293b;
+		color: #f1f5f9;
+		border: 1px solid rgba(255,255,255,0.12);
+	}
+	.add-user-invite-wave .add-user-btn {
+		font-size: 0.72rem !important;
+		padding: 0 0.55rem !important;
+		min-height: 1.75rem !important;
+		max-height: 1.75rem !important;
+	}
+	.add-user-invite-banner--live {
+		border-color: rgba(52, 211, 153, 0.45);
+		background: rgba(52, 211, 153, 0.1);
+		color: #a7f3d0;
+	}
+	.add-user-manual-details {
+		flex-shrink: 0;
+	}
+	.add-user-td-invite-status { font-size: 0.78rem; white-space: nowrap; }
+	.add-user-invite-meta { font-size: 0.72rem; color: rgba(255,255,255,0.55); }
 	.add-user-invite-footer {
-		display: flex; flex-wrap: nowrap; align-items: center; flex: 0 0 auto; margin: 0;
+		display: flex; flex-wrap: wrap; align-items: center; flex: 0 0 auto; margin: 0;
 	}
 	.add-user-table-footer .add-user-invite-footer .add-user-btn {
 		display: inline-flex;
@@ -578,10 +686,11 @@
 	.add-user-table-panel {
 		display: flex;
 		flex-direction: column;
-		flex: 0 0 auto;
+		flex: 1 1 auto;
 		width: 100%;
 		min-width: 0;
 		min-height: 0;
+		overflow: hidden;
 	}
 	.add-user-pagination {
 		display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.55rem;
@@ -949,7 +1058,50 @@
 		</div>
 	</div>
 	<div class="add-user-scroll">
-		<div class="add-user-top-bar">
+		<details class="add-user-invite-toolbox">
+			<summary>Invitații email — statistici, val, inbox (click pentru panou)</summary>
+			<div class="add-user-invite-toolbox-body">
+				{% if staff_invite_email_enabled %}
+				<p class="add-user-invite-banner add-user-invite-banner--live" role="status">
+					SMTP <strong>activ</strong> · cooldown {{ staff_invite_cooldown_days }} zile · max. trimiteri/prospect
+				</p>
+				{% else %}
+				<p class="add-user-invite-banner" role="status">
+					<strong>Mod tehnic:</strong> SMTP dezactivat — doar simulări în jurnal.
+				</p>
+				{% endif %}
+				<div class="add-user-invite-stats" role="status" aria-label="Statistici invitații">
+					<span>Azi: <strong>{{ staff_invite_stats.dispatch_today }}</strong>/{{ staff_invite_stats.daily_cap }} ({{ staff_invite_stats.daily_remaining }} rămase)</span>
+					<span>reale: {{ staff_invite_stats.sent_today }} · sim: {{ staff_invite_stats.sim_today }}</span>
+					<span>cont create: <strong>{{ staff_invite_stats.signed_up }}</strong></span>
+					<span>eligibili filtru: <strong>{{ staff_invite_stats.eligible_in_filter }}</strong></span>
+				</div>
+				<div class="add-user-invite-stats add-user-invite-stats--inbound" role="status">
+					<span>7z: răsp. <strong>{{ staff_invite_inbound_stats.replies_7d }}</strong> · bounce {{ staff_invite_inbound_stats.bounces_7d }}</span>
+					{% if staff_invite_imap_configured %}
+					<form method="post" action="{% url 'admin_analysis_add_user_invite_poll_inbox' %}" style="display:inline;margin:0;">
+						{% csrf_token %}
+						<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
+						<button type="submit" class="add-user-btn add-user-btn--secondary">Inbox IMAP</button>
+					</form>
+					{% else %}
+					<span class="add-user-invite-meta">IMAP neconfigurat</span>
+					{% endif %}
+				</div>
+				<form class="add-user-invite-wave" method="post" action="{% url 'admin_analysis_add_user_invite_wave' %}">
+					{% csrf_token %}
+					<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
+					<label for="wave-limit">Val max.</label>
+					<select id="wave-limit" name="wave_limit">
+						<option value="10">10</option>
+						<option value="20" selected>20</option>
+						<option value="30">30</option>
+					</select>
+					<button type="submit" class="add-user-btn">{% if staff_invite_email_enabled %}Pornește val{% else %}Simulare val{% endif %}</button>
+				</form>
+			</div>
+		</details>
+		<div class="add-user-toolbar">
 		<form class="add-user-filters" method="get" action="{% url 'admin_analysis_add_user' %}">
 			<div>
 				<label for="f-kind">Tip cont</label>
@@ -990,22 +1142,34 @@
 				<datalist id="city-list-adduser-filt"></datalist>
 			</div>
 			{% if show_imported_active %}<input type="hidden" name="show_imported" value="1" />{% endif %}
-			<div class="add-user-filters-actions">
-				<button type="submit" class="add-user-btn">Aplică filtre</button>
-				<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user' %}">Resetează</a>
-				<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user' %}?{{ filter_query_toggle_imported }}">{% if show_imported_active %}Doar prospecte active{% else %}Afișează și importați{% endif %}</a>
+			<div class="add-user-filters-row2">
+				<div class="add-user-filters-checks" aria-label="Filtre invitații">
+					<label class="add-user-filter-check">
+						<input type="checkbox" name="invite_eligible" value="1" {% if filter_invite_eligible %}checked{% endif %} />
+						Doar eligibili invitație
+					</label>
+					<label class="add-user-filter-check">
+						<input type="checkbox" name="invite_first_only" value="1" {% if filter_invite_first_only %}checked{% endif %} />
+						Prima invitație (niciodată trimis)
+					</label>
+				</div>
+				<div class="add-user-filters-actions">
+					<button type="submit" class="add-user-btn">Aplică filtre</button>
+					<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user' %}">Resetează</a>
+					<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user' %}?{{ filter_query_toggle_imported }}">{% if show_imported_active %}Fără importați{% else %}+ importați{% endif %}</a>
+				</div>
 			</div>
 		</form>
-			<div class="add-user-top-bar-tail">
-			<button type="button" id="add-user-toggle-manual" class="add-user-btn add-user-btn--secondary" aria-expanded="{% if open_manual_form %}true{% else %}false{% endif %}" aria-controls="manual-lead-add">{% if open_manual_form %}Ascunde formularul{% else %}Formular manual{% endif %}</button>
-			<a class="add-user-btn" href="{% url 'admin_analysis_add_user_export' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Export CSV</a>
+		<div class="add-user-toolbar-actions">
+			<button type="button" id="add-user-toggle-manual" class="add-user-btn add-user-btn--secondary" aria-expanded="{% if open_manual_form %}true{% else %}false{% endif %}" aria-controls="manual-lead-add">{% if open_manual_form %}Ascunde formular{% else %}Formular manual{% endif %}</button>
+			<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user_export' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Export CSV</a>
 			<form class="add-user-import-form" method="post" action="{% url 'admin_analysis_add_user_import' %}" enctype="multipart/form-data">
 				{% csrf_token %}
 				<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
-				<label for="csv-import" class="add-user-btn add-user-btn--secondary" title="Alege un fișier CSV; după Deschidere în Windows se trimite automat.">Import CSV</label>
+				<label for="csv-import" class="add-user-btn add-user-btn--secondary" title="Alege CSV — se importă automat">Import CSV</label>
 				<input id="csv-import" class="add-user-import-file-hidden" type="file" name="csv_file" accept=".csv,text/csv" required tabindex="-1" aria-label="Fișier CSV de importat" />
 			</form>
-			</div>
+		</div>
 		</div>
 
 		<details id="manual-lead-add" class="add-user-manual-details" {% if open_manual_form %}open{% endif %}>
@@ -1197,6 +1361,8 @@
 							<th>Județ</th>
 							<th>Loc.</th>
 							<th>CUI</th>
+							<th>Stare mail</th>
+							<th>Trimise</th>
 							<th>Ultima invitație</th>
 							<th>Acțiuni</th>
 						</tr>
@@ -1208,9 +1374,11 @@
 								{% if lead.imported_user_id %}
 								<span title="Deja importat ca utilizator">import</span>
 								{% elif lead.invite_mail_cooldown %}
-								<span title="Reinvitație după {{ staff_invite_cooldown_days }} zile">aștept.</span>
+								<span title="Cooldown {{ lead.invite_cooldown_days_display }} zile">aștept.</span>
 								{% elif lead.invite_mail_checkbox %}
-								<input type="checkbox" form="invite-send-form" name="lead_id" value="{{ lead.pk }}" title="{% if lead.invite_mail_em_ok %}Include la trimitere invitație email{% else %}Email lipsă sau placeholder — bifarea nu trimite până nu pui un email valid (Modifică).{% endif %}" />
+								<input type="checkbox" form="invite-send-form" name="lead_id" value="{{ lead.pk }}" title="{% if staff_invite_email_enabled %}Include la trimitere invitație{% else %}Simulare în jurnal (fără SMTP){% endif %}" />
+								{% elif lead.invite_block_reason %}
+								<span title="{{ lead.invite_block_reason }}">—</span>
 								{% else %}
 								<span title="Nu se poate selecta">—</span>
 								{% endif %}
@@ -1225,9 +1393,31 @@
 							<td>{{ lead.judet|default:"—" }}</td>
 							<td>{{ lead.oras|default:"—" }}</td>
 							<td>{{ lead.company_cui|default:"—" }}</td>
+							<td class="add-user-td-invite-status">
+								<span title="Șablon: {{ lead.invite_template_key }} · {{ lead.invite_status_label }}{% if lead.invite_block_reason %} — {{ lead.invite_block_reason }}{% endif %}">{{ lead.invite_status_label }}</span>
+								<br><span class="add-user-invite-meta">{{ lead.invite_template_key }}</span>
+								{% if lead.invite_replied_at %}<br><span class="add-user-invite-meta" title="{{ lead.invite_replied_at|date:'d.m.Y H:i' }}">răsp. {{ lead.invite_replied_at|timesince }}</span>{% endif %}
+							</td>
+							<td title="Reale: {{ lead.invite_sent_count }}/{{ lead.invite_max_sends_display }}{% if lead.invite_sim_count %} · simulări: {{ lead.invite_sim_count }}{% endif %}">
+								{{ lead.invite_sent_count }}/{{ lead.invite_max_sends_display }}{% if lead.invite_sim_count %}<span class="add-user-invite-meta"> +{{ lead.invite_sim_count }}s</span>{% endif %}
+							</td>
 							<td>{% if lead.invite_email_last_sent_at %}<span title="{{ lead.invite_email_last_sent_at|date:'d.m.Y H:i' }}">{{ lead.invite_email_last_sent_at|timesince }}</span>{% else %}—{% endif %}</td>
 							<td class="add-user-td-actions">
 								<div class="add-user-tbl-actions">
+									{% if not lead.imported_user_id and lead.invite_status_code != "do_not_contact" and lead.invite_status_code != "signed_up" %}
+									<form method="post" action="{% url 'admin_analysis_add_user_invite_mark_replied' %}" style="display:inline;margin:0;">
+										{% csrf_token %}
+										<input type="hidden" name="lead_id" value="{{ lead.pk }}" />
+										<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
+										<button type="submit" class="add-user-tbl-btn add-user-tbl-btn--secondary" title="Marchează că a răspuns la email">Răspuns</button>
+									</form>
+									<form method="post" action="{% url 'admin_analysis_add_user_invite_do_not_contact' %}" style="display:inline;margin:0;" onsubmit="return confirm('Marchezi „Nu contacta” pentru {{ lead.email }}?');">
+										{% csrf_token %}
+										<input type="hidden" name="lead_id" value="{{ lead.pk }}" />
+										<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
+										<button type="submit" class="add-user-tbl-btn add-user-tbl-btn--danger" title="Nu mai trimite invitații">Nu contacta</button>
+									</form>
+									{% endif %}
 									<a class="add-user-tbl-btn add-user-tbl-btn--secondary" href="{% url 'admin_analysis_add_user' %}?{% if filter_query %}{{ filter_query }}&amp;{% endif %}edit={{ lead.pk }}" onclick="var d=document.getElementById('manual-lead-add');if(d){d.open=true;}">Modifică</a>
 									<form method="post" action="{% url 'admin_analysis_add_user_lead_delete' %}" style="display:inline;margin:0;" onsubmit="return confirm('Ștergi definitiv acest lead ({{ lead.email }})?');">
 										{% csrf_token %}
@@ -1239,7 +1429,7 @@
 							</td>
 						</tr>
 						{% empty %}
-						<tr><td colspan="13">Niciun rând (schimbă filtrele sau importă CSV).</td></tr>
+						<tr><td colspan="15">Niciun rând (schimbă filtrele sau importă CSV).</td></tr>
 						{% endfor %}
 					</tbody>
 				</table>
@@ -1265,7 +1455,7 @@
 			<form id="invite-send-form" class="add-user-invite-footer" method="post" action="{% url 'admin_analysis_add_user_invite_send' %}">
 				{% csrf_token %}
 				<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
-				<button type="submit" class="add-user-btn">Trimite MAIL invitație</button>
+				<button type="submit" class="add-user-btn">{% if staff_invite_email_enabled %}Trimite MAIL invitație{% else %}Simulare invitație (jurnal){% endif %}</button>
 			</form>
 			</div>
 			</div>

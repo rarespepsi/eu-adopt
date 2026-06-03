@@ -63,6 +63,9 @@ class StaffOnboardingLeadForm(forms.ModelForm):
             "segments",
             "marketing_emails_requested",
             "notes",
+            "invite_max_sends",
+            "invite_cooldown_days",
+            "invite_staff_notes",
         ]
         widgets = {
             "judet": forms.TextInput(

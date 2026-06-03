@@ -1866,6 +1866,43 @@ class StaffOnboardingLead(models.Model):
         blank=True,
     )
 
+    INVITE_NEVER = "never"
+    INVITE_SENT = "sent"
+    INVITE_REPLIED = "replied"
+    INVITE_SIGNED_UP = "signed_up"
+    INVITE_BOUNCED = "bounced"
+    INVITE_OPT_OUT = "opt_out"
+    INVITE_DO_NOT_CONTACT = "do_not_contact"
+    INVITE_MAIL_STATUS_CHOICES = [
+        (INVITE_NEVER, "Niciodată trimis"),
+        (INVITE_SENT, "Invitație trimisă"),
+        (INVITE_REPLIED, "A răspuns"),
+        (INVITE_SIGNED_UP, "Cont creat"),
+        (INVITE_BOUNCED, "Email returnat"),
+        (INVITE_OPT_OUT, "Refuz contact"),
+        (INVITE_DO_NOT_CONTACT, "Nu contacta"),
+    ]
+    invite_mail_status = models.CharField(
+        "Stare mail invitație",
+        max_length=20,
+        choices=INVITE_MAIL_STATUS_CHOICES,
+        default=INVITE_NEVER,
+        db_index=True,
+    )
+    invite_replied_at = models.DateTimeField("Răspuns la invitație", null=True, blank=True)
+    invite_max_sends = models.PositiveSmallIntegerField(
+        "Max. trimiteri invitație",
+        default=3,
+        help_text="După acest număr nu se mai trimite (doar trimiteri reale, nu simulări).",
+    )
+    invite_cooldown_days = models.PositiveSmallIntegerField(
+        "Cooldown retrimitere (zile)",
+        null=True,
+        blank=True,
+        help_text="Gol = folosește setarea globală (implicit 14 zile).",
+    )
+    invite_staff_notes = models.TextField("Notițe invitație email", blank=True, default="")
+
     consent_invite_token = models.CharField(max_length=64, blank=True, default="", db_index=True)
     consent_terms_at = models.DateTimeField("Accept termeni (confirmare)", null=True, blank=True)
     consent_privacy_at = models.DateTimeField("Accept GDPR (confirmare)", null=True, blank=True)
@@ -1906,4 +1943,126 @@ class StaffOnboardingLead(models.Model):
 
     def __str__(self):
         return f"{self.email} ({self.get_account_kind_display()})"
+
+
+class StaffOnboardingInviteLog(models.Model):
+    """Istoric trimiteri / simulări invitație email (Add USER)."""
+
+    OUTCOME_SENT = "sent"
+    OUTCOME_ERROR = "error"
+    OUTCOME_DRY_RUN = "dry_run"
+    OUTCOME_CHOICES = [
+        (OUTCOME_SENT, "Trimis"),
+        (OUTCOME_ERROR, "Eroare SMTP"),
+        (OUTCOME_DRY_RUN, "Simulare (mail dezactivat)"),
+    ]
+
+    DISPATCH_MANUAL = "manual"
+    DISPATCH_WAVE = "wave"
+    DISPATCH_KIND_CHOICES = [
+        (DISPATCH_MANUAL, "Bifă manuală"),
+        (DISPATCH_WAVE, "Val (filtru)"),
+    ]
+
+    lead = models.ForeignKey(
+        StaffOnboardingLead,
+        on_delete=models.CASCADE,
+        related_name="invite_logs",
+    )
+    sent_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    sent_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="staff_onboarding_invite_logs",
+    )
+    to_email = models.EmailField()
+    subject = models.CharField(max_length=255, blank=True, default="")
+    outcome = models.CharField(max_length=12, choices=OUTCOME_CHOICES, db_index=True)
+    error_message = models.TextField(blank=True, default="")
+    template_key = models.CharField(
+        "Șablon categorie",
+        max_length=20,
+        blank=True,
+        default="",
+        db_index=True,
+    )
+    dispatch_kind = models.CharField(
+        "Mod trimitere",
+        max_length=10,
+        choices=DISPATCH_KIND_CHOICES,
+        default=DISPATCH_MANUAL,
+        db_index=True,
+    )
+    message_id = models.CharField(
+        "Message-ID SMTP",
+        max_length=255,
+        blank=True,
+        default="",
+        db_index=True,
+    )
+
+    class Meta:
+        verbose_name = "Log invitație lead"
+        verbose_name_plural = "Loguri invitații lead"
+        ordering = ["-sent_at"]
+        indexes = [
+            models.Index(fields=["lead", "-sent_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.lead_id} {self.outcome} {self.sent_at:%Y-%m-%d %H:%M}"
+
+
+class StaffOnboardingInviteInbound(models.Model):
+    """Mesaj primit (răspuns / bounce) legat de invitații Add USER — Faza C."""
+
+    KIND_REPLY = "reply"
+    KIND_BOUNCE = "bounce"
+    KIND_OPT_OUT = "opt_out"
+    KIND_UNKNOWN = "unknown"
+    KIND_CHOICES = [
+        (KIND_REPLY, "Răspuns"),
+        (KIND_BOUNCE, "Returnat / bounce"),
+        (KIND_OPT_OUT, "Nu contacta"),
+        (KIND_UNKNOWN, "Necunoscut"),
+    ]
+
+    SOURCE_IMAP = "imap"
+    SOURCE_WEBHOOK = "webhook"
+    SOURCE_CHOICES = [
+        (SOURCE_IMAP, "IMAP inbox"),
+        (SOURCE_WEBHOOK, "Webhook"),
+    ]
+
+    lead = models.ForeignKey(
+        StaffOnboardingLead,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="invite_inbounds",
+    )
+    received_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    from_email = models.EmailField(blank=True, default="")
+    subject = models.CharField(max_length=255, blank=True, default="")
+    kind = models.CharField(max_length=12, choices=KIND_CHOICES, db_index=True)
+    source = models.CharField(max_length=12, choices=SOURCE_CHOICES, db_index=True)
+    external_id = models.CharField(max_length=120, blank=True, default="", db_index=True)
+    snippet = models.TextField(blank=True, default="")
+
+    class Meta:
+        verbose_name = "Inbound invitație"
+        verbose_name_plural = "Inbound invitații"
+        ordering = ["-received_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["source", "external_id"],
+                condition=~models.Q(external_id=""),
+                name="home_staff_inv_inbound_src_ext_uniq",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.kind} {self.from_email} ({self.received_at:%Y-%m-%d})"
 

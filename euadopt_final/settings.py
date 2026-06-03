@@ -173,6 +173,24 @@ DATABASES = _database_from_env()
 _relax_email = os.environ.get("EUADOPT_RELAX_EMAIL_UNIQUE", "").strip().lower()
 EUADOPT_RELAX_EMAIL_UNIQUE = _relax_email in ("1", "true", "yes", "on")
 
+# Add USER — invitații email prospecte. Implicit DEZACTIVAT (mod tehnic, doar log/simulare).
+_invite_mail_on = os.environ.get("EUADOPT_STAFF_INVITE_EMAIL_ENABLED", "").strip().lower()
+STAFF_INVITE_EMAIL_ENABLED = _invite_mail_on in ("1", "true", "yes", "on")
+STAFF_LEAD_INVITE_COOLDOWN_DAYS = 14
+STAFF_LEAD_INVITE_MAX_BATCH = 100
+STAFF_LEAD_INVITE_MAX_PER_DAY = 30
+STAFF_LEAD_INVITE_WAVE_DEFAULT = 20
+
+# Faza C — răspunsuri / bounce (Reply-To invite+{lead_id}@domeniu)
+STAFF_INVITE_REPLY_LOCAL = os.environ.get("STAFF_INVITE_REPLY_LOCAL", "invite").strip() or "invite"
+STAFF_INVITE_REPLY_TO = os.environ.get("STAFF_INVITE_REPLY_TO", "").strip()
+STAFF_INVITE_IMAP_HOST = os.environ.get("STAFF_INVITE_IMAP_HOST", "").strip()
+STAFF_INVITE_IMAP_PORT = int(os.environ.get("STAFF_INVITE_IMAP_PORT", "993") or "993")
+STAFF_INVITE_IMAP_USER = os.environ.get("STAFF_INVITE_IMAP_USER", "").strip()
+STAFF_INVITE_IMAP_PASSWORD = os.environ.get("STAFF_INVITE_IMAP_PASSWORD", "").strip()
+STAFF_INVITE_IMAP_FOLDER = os.environ.get("STAFF_INVITE_IMAP_FOLDER", "INBOX").strip() or "INBOX"
+STAFF_INVITE_INBOUND_WEBHOOK_SECRET = os.environ.get("STAFF_INVITE_INBOUND_WEBHOOK_SECRET", "").strip()
+
 # Cache pentru waiting_id / one-time login (activare din mail pe alt device)
 CACHES = {
     'default': {

@@ -38,7 +38,7 @@ from django.views.decorators.http import require_POST, require_http_methods
 from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.staticfiles import finders
 from .data import DEMO_DOGS, DEMO_DOG_IMAGE, A2_QUOTE_POOL, HERO_SLIDER_IMAGES
 from .pet_age_bands import (
@@ -82,10 +82,36 @@ from .models import (
     TransportTripRating,
     UserInboxNotification,
     StaffOnboardingLead,
+    StaffOnboardingInviteLog,
     PartnerLocation,
 )
 from .staff_onboarding_form import StaffOnboardingLeadForm, SEGMENT_CHOICES
 from .staff_onboarding_csv import export_csv_bytes, import_csv_bytes, is_placeholder_lead_email
+from .staff_onboarding_invite import (
+    staff_invite_build_result_message,
+    staff_invite_campaign_stats,
+    staff_invite_can_send,
+    staff_invite_count_eligible,
+    staff_invite_cooldown_days,
+    staff_invite_daily_remaining,
+    staff_invite_display_status,
+    staff_invite_email_enabled,
+    staff_invite_filter_eligible_qs,
+    staff_invite_mark_signed_up,
+    staff_invite_max_sends,
+    staff_invite_max_per_day,
+    staff_invite_process_batch,
+    staff_invite_sent_count,
+    staff_invite_simulated_count,
+    staff_invite_template_key,
+    staff_invite_wave_default_size,
+)
+from .staff_onboarding_invite_inbound import (
+    inbound_stats_summary,
+    poll_imap_inbox,
+    process_inbound_email,
+    staff_invite_imap_configured,
+)
 from .admin_analysis_data import (
     staff_analysis_alerts_page_context,
     staff_analysis_cats_page_context,
@@ -2528,10 +2554,7 @@ def _attach_staff_onboarding_lead_from_inv_token(user, token: str) -> None:
     if not is_placeholder_lead_email(lead.email):
         if (user.email or "").strip().lower() != (lead.email or "").strip().lower():
             return
-    StaffOnboardingLead.objects.filter(pk=lead.pk, imported_user__isnull=True).update(
-        imported_user=user,
-        status=StaffOnboardingLead.ST_IMPORTED,
-    )
+    staff_invite_mark_signed_up(lead.pk, user.pk)
 
 
 def signup_choose_type_view(request):
@@ -5378,6 +5401,10 @@ def _staff_onboarding_leads_filtered_qs_from_querydict(qd: QueryDict):
         ).filter(
             Q(vet_prospect_kind=StaffOnboardingLead.VET_PROSPECT_CV) | Q(vet_prospect_kind=""),
         )
+    if (qd.get("invite_eligible") or "").strip().lower() in ("1", "true", "da", "yes"):
+        qs = staff_invite_filter_eligible_qs(qs)
+    if (qd.get("invite_first_only") or "").strip().lower() in ("1", "true", "da", "yes"):
+        qs = qs.filter(invite_mail_status=StaffOnboardingLead.INVITE_NEVER)
     return qs.order_by("-created_at")
 
 
@@ -5398,39 +5425,6 @@ def _staff_onboarding_leads_page(request):
     return Paginator(qs, STAFF_ONBOARDING_LEADS_PER_PAGE).get_page(num if num >= 1 else 1)
 
 
-STAFF_LEAD_INVITE_COOLDOWN_DAYS = 14
-STAFF_LEAD_INVITE_MAX_BATCH = 100
-
-
-def _staff_invite_subject_body(request, lead: StaffOnboardingLead) -> tuple[str, str]:
-    kind_label = lead.get_account_kind_display()
-    if lead.account_kind == StaffOnboardingLead.KIND_PF:
-        signup_path = reverse("signup_pf")
-    elif lead.account_kind in (StaffOnboardingLead.KIND_ORG, StaffOnboardingLead.KIND_ADAPOST):
-        signup_path = reverse("signup_organizatie")
-    else:
-        signup_path = reverse("signup_colaborator")
-    if not (lead.consent_invite_token or "").strip():
-        lead.save()
-    inv_tok = (lead.consent_invite_token or "").strip()
-    signup_url = request.build_absolute_uri(signup_path)
-    if inv_tok:
-        signup_url = f"{signup_url}?{STAFF_INVITE_GET_PARAM}={quote(inv_tok, safe='')}"
-    terms_url = request.build_absolute_uri(reverse("termeni"))
-    privacy_url = request.build_absolute_uri(reverse("politica_confidentialitate"))
-    body = (
-        f"Bună ziua,\n\n"
-        f"Vă scriem din EU-ADOPT în legătură cu înregistrarea ca utilizator ({kind_label}).\n"
-        f"Vă invităm să completați formularul de creare cont aici (link personal — folosiți-l pentru a vă asocia automat cu invitația):\n{signup_url}\n\n"
-        f"Documente legale:\n"
-        f"- Termeni și condiții: {terms_url}\n"
-        f"- Politica de confidențialitate (GDPR): {privacy_url}\n\n"
-        f"Cu stimă,\nEchipa EU-ADOPT\n"
-    )
-    subject = f"EU-ADOPT — invitație completare cont ({kind_label})"
-    return subject, body
-
-
 @login_required
 @csrf_protect
 @require_http_methods(["POST"])
@@ -5443,71 +5437,186 @@ def admin_analysis_add_user_invite_send_view(request):
         )
     )
     raw_ids = request.POST.getlist("lead_id")
-    now = timezone.now()
-    cooldown = timezone.timedelta(days=STAFF_LEAD_INVITE_COOLDOWN_DAYS)
-    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@eu-adopt.ro"
-    log = logging.getLogger(__name__)
-    sent = 0
-    skip_no_email = 0
-    skip_imported = 0
-    skip_cooldown = 0
-    skip_invalid = 0
-    skip_errors = 0
     seen: set[int] = set()
+    leads = []
+    skip_invalid = 0
     for raw in raw_ids:
-        if sent >= STAFF_LEAD_INVITE_MAX_BATCH:
-            break
         if not str(raw).isdigit():
             skip_invalid += 1
             continue
         pk = int(raw)
-        if pk in seen:
+        if pk in seen or pk not in allowed_ids:
+            skip_invalid += 1
             continue
         seen.add(pk)
-        if pk not in allowed_ids:
-            skip_invalid += 1
-            continue
         lead = StaffOnboardingLead.objects.filter(pk=pk).first()
-        if not lead:
+        if lead:
+            leads.append(lead)
+        else:
             skip_invalid += 1
-            continue
-        em = (lead.email or "").strip()
-        if not em or is_placeholder_lead_email(em):
-            skip_no_email += 1
-            continue
-        if lead.imported_user_id:
-            skip_imported += 1
-            continue
-        if lead.invite_email_last_sent_at and (now - lead.invite_email_last_sent_at) < cooldown:
-            skip_cooldown += 1
-            continue
-        subj, body = _staff_invite_subject_body(request, lead)
-        try:
-            send_mail(subj, body, from_email, [em], fail_silently=False)
-        except Exception:
-            log.exception("staff_invite_send lead_id=%s", pk)
-            skip_errors += 1
-            continue
-        lead.invite_email_last_sent_at = now
-        lead.save(update_fields=["invite_email_last_sent_at"])
-        sent += 1
-    parts = [f"Trimise {sent} invitații email."]
-    if skip_no_email:
-        parts.append(f"fără email: {skip_no_email}")
-    if skip_imported:
-        parts.append(f"deja importați: {skip_imported}")
-    if skip_cooldown:
-        parts.append(f"în așteptare (min. {STAFF_LEAD_INVITE_COOLDOWN_DAYS} zile): {skip_cooldown}")
+    stats = staff_invite_process_batch(
+        request,
+        request.user,
+        leads,
+        dispatch_kind=StaffOnboardingInviteLog.DISPATCH_MANUAL,
+    )
     if skip_invalid:
-        parts.append(f"ignorate: {skip_invalid}")
-    if skip_errors:
-        parts.append(f"erori trimitere: {skip_errors}")
-    if sent:
-        messages.success(request, " ".join(parts))
-    elif skip_cooldown and not (skip_no_email or skip_imported or skip_invalid or skip_errors):
-        messages.warning(request, " ".join(parts))
+        stats["invalid"] = skip_invalid
+    msg = staff_invite_build_result_message(stats, wave=False)
+    if skip_invalid:
+        msg += f" ignorate: {skip_invalid}"
+    if stats.get("sent") or stats.get("simulated"):
+        messages.success(request, msg)
     else:
-        messages.warning(request, " ".join(parts) if len(parts) > 1 else "Nu s-a trimis nicio invitație (bifați lead-uri valide cu email).")
+        messages.warning(request, msg)
+    return _redirect_admin_add_user_preserve(request)
+
+
+@login_required
+@csrf_protect
+@require_http_methods(["POST"])
+def admin_analysis_add_user_invite_wave_view(request):
+    """Val invitații: primele N prospecte eligibile din filtrul curent (plafon zilnic + mod tehnic)."""
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    qd = _add_user_filter_querydict(request)
+    qs = _staff_onboarding_leads_filtered_qs_from_querydict(qd)
+    try:
+        wave_limit = int((request.POST.get("wave_limit") or "").strip())
+    except ValueError:
+        wave_limit = staff_invite_wave_default_size()
+    wave_limit = max(1, min(wave_limit, int(getattr(settings, "STAFF_LEAD_INVITE_MAX_BATCH", 100))))
+
+    picked: list[StaffOnboardingLead] = []
+    for lead in qs.order_by("judet", "oras", "pk").iterator():
+        if staff_invite_can_send(lead)[0]:
+            picked.append(lead)
+        if len(picked) >= wave_limit:
+            break
+
+    stats = staff_invite_process_batch(
+        request,
+        request.user,
+        picked,
+        dispatch_kind=StaffOnboardingInviteLog.DISPATCH_WAVE,
+        max_count=wave_limit,
+    )
+    msg = staff_invite_build_result_message(stats, wave=True)
+    if not picked:
+        msg = "Val: 0 prospecte eligibile în filtrul curent."
+    if stats.get("sent") or stats.get("simulated"):
+        messages.success(request, msg)
+    else:
+        messages.warning(request, msg)
+    return _redirect_admin_add_user_preserve(request)
+
+
+@login_required
+@csrf_protect
+@require_http_methods(["POST"])
+def admin_analysis_add_user_invite_mark_replied_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    raw = (request.POST.get("lead_id") or "").strip()
+    if not raw.isdigit():
+        messages.error(request, "ID lead invalid.")
+        return _redirect_admin_add_user_preserve(request)
+    lead = get_object_or_404(
+        _staff_onboarding_leads_filtered_qs_from_querydict(_add_user_filter_querydict(request)),
+        pk=int(raw),
+    )
+    if lead.imported_user_id:
+        messages.info(request, "Lead-ul are deja cont creat.")
+        return _redirect_admin_add_user_preserve(request)
+    now = timezone.now()
+    lead.invite_mail_status = StaffOnboardingLead.INVITE_REPLIED
+    lead.invite_replied_at = now
+    lead.save(update_fields=["invite_mail_status", "invite_replied_at", "updated_at"])
+    messages.success(request, f"Marcat răspuns: {lead.email}")
+    return _redirect_admin_add_user_preserve(request)
+
+
+@login_required
+@csrf_protect
+@require_http_methods(["POST"])
+@login_required
+@csrf_protect
+@require_http_methods(["POST"])
+def admin_analysis_add_user_invite_poll_inbox_view(request):
+    """Staff: citește inbox IMAP și actualizează stări (răspuns / bounce)."""
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    if not staff_invite_imap_configured():
+        messages.error(
+            request,
+            "IMAP neconfigurat. Adaugă STAFF_INVITE_IMAP_* în .env (vezi .env.example).",
+        )
+        return _redirect_admin_add_user_preserve(request)
+    stats = poll_imap_inbox(max_messages=40, mark_seen=True)
+    if stats.get("errors") and stats.get("message"):
+        messages.error(request, f"Inbox: {stats.get('message')}")
+    else:
+        messages.success(
+            request,
+            "Inbox procesat: "
+            f"{stats.get('processed', 0)} mesaje — "
+            f"răspunsuri {stats.get('replies', 0)}, "
+            f"bounce {stats.get('bounces', 0)}, "
+            f"opt-out {stats.get('opt_out', 0)}, "
+            f"fără lead {stats.get('no_lead', 0)}.",
+        )
+    return _redirect_admin_add_user_preserve(request)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def admin_analysis_add_user_invite_inbound_webhook_view(request):
+    """
+    Webhook opțional (Zoho / script extern). Header: X-EUAdopt-Webhook-Secret.
+    JSON: from, to (list|string), subject, body, headers (dict), external_id.
+    """
+    secret = (getattr(settings, "STAFF_INVITE_INBOUND_WEBHOOK_SECRET", None) or "").strip()
+    if not secret or (request.headers.get("X-EUAdopt-Webhook-Secret") or "").strip() != secret:
+        return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
+    try:
+        import json
+
+        payload = json.loads(request.body.decode("utf-8") or "{}")
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return JsonResponse({"ok": False, "error": "invalid json"}, status=400)
+    to_raw = payload.get("to") or []
+    if isinstance(to_raw, str):
+        to_list = [to_raw]
+    else:
+        to_list = list(to_raw)
+    headers = payload.get("headers") or {}
+    if not isinstance(headers, dict):
+        headers = {}
+    result = process_inbound_email(
+        from_email=str(payload.get("from") or ""),
+        to_addrs=[str(x) for x in to_list],
+        subject=str(payload.get("subject") or ""),
+        body=str(payload.get("body") or ""),
+        headers={str(k): str(v) for k, v in headers.items()},
+        external_id=str(payload.get("external_id") or "")[:120],
+    )
+    return JsonResponse({"ok": True, **result})
+
+
+def admin_analysis_add_user_invite_do_not_contact_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    raw = (request.POST.get("lead_id") or "").strip()
+    if not raw.isdigit():
+        messages.error(request, "ID lead invalid.")
+        return _redirect_admin_add_user_preserve(request)
+    lead = get_object_or_404(
+        _staff_onboarding_leads_filtered_qs_from_querydict(_add_user_filter_querydict(request)),
+        pk=int(raw),
+    )
+    lead.invite_mail_status = StaffOnboardingLead.INVITE_DO_NOT_CONTACT
+    lead.save(update_fields=["invite_mail_status", "updated_at"])
+    messages.success(request, f"Nu contacta: {lead.email}")
     return _redirect_admin_add_user_preserve(request)
 
 
@@ -5581,14 +5690,30 @@ def admin_analysis_add_user_view(request):
     page_obj = _staff_onboarding_leads_page(request)
     recent_leads = list(page_obj.object_list)
     now = timezone.now()
-    invite_cd = timezone.timedelta(days=STAFF_LEAD_INVITE_COOLDOWN_DAYS)
+    invite_status_labels = dict(StaffOnboardingLead.INVITE_MAIL_STATUS_CHOICES)
     for L in recent_leads:
         em_raw = (L.email or "").strip()
         em_ok = bool(em_raw) and not is_placeholder_lead_email(em_raw)
         L.invite_mail_em_ok = em_ok
-        L.invite_mail_cooldown = bool(L.invite_email_last_sent_at and (now - L.invite_email_last_sent_at) < invite_cd)
-        # Bifă în tabel pentru toate rândurile care pot fi selectate; trimiterea reală sare peste email gol/placeholder.
-        L.invite_mail_checkbox = (not L.imported_user_id) and (not L.invite_mail_cooldown)
+        can_send, block_reason = staff_invite_can_send(L, now)
+        L.invite_can_send = can_send
+        L.invite_block_reason = block_reason
+        L.invite_mail_cooldown = bool(
+            block_reason and "cooldown" in block_reason
+        )
+        L.invite_mail_checkbox = can_send
+        st = staff_invite_display_status(L)
+        L.invite_status_code = st
+        L.invite_status_label = invite_status_labels.get(st, st)
+        L.invite_sent_count = staff_invite_sent_count(L)
+        L.invite_sim_count = staff_invite_simulated_count(L)
+        L.invite_max_sends_display = staff_invite_max_sends(L)
+        L.invite_cooldown_days_display = staff_invite_cooldown_days(L)
+        L.invite_template_key = staff_invite_template_key(L)
+    filter_qs = _staff_onboarding_leads_filtered_qs_from_querydict(_add_user_filter_querydict(request))
+    invite_stats = staff_invite_campaign_stats(now)
+    invite_stats["eligible_in_filter"] = staff_invite_count_eligible(filter_qs, now)
+    invite_inbound_stats = inbound_stats_summary()
     return render(
         request,
         "anunturi/admin_analysis_add_user.html",
@@ -5607,8 +5732,19 @@ def admin_analysis_add_user_view(request):
             "filter_oras": (request.GET.get("oras") or "").strip(),
             "filter_collab_subtype": (request.GET.get("collab_subtype") or "").strip(),
             "filter_vet_kind": (request.GET.get("vet_kind") or "").strip(),
-            "staff_invite_cooldown_days": STAFF_LEAD_INVITE_COOLDOWN_DAYS,
-            "staff_invite_max_batch": STAFF_LEAD_INVITE_MAX_BATCH,
+            "staff_invite_cooldown_days": int(getattr(settings, "STAFF_LEAD_INVITE_COOLDOWN_DAYS", 14)),
+            "staff_invite_max_batch": int(getattr(settings, "STAFF_LEAD_INVITE_MAX_BATCH", 100)),
+            "staff_invite_email_enabled": staff_invite_email_enabled(),
+            "staff_invite_status_labels": invite_status_labels,
+            "staff_invite_stats": invite_stats,
+            "staff_invite_inbound_stats": invite_inbound_stats,
+            "staff_invite_imap_configured": staff_invite_imap_configured(),
+            "staff_invite_max_per_day": staff_invite_max_per_day(),
+            "staff_invite_wave_default": staff_invite_wave_default_size(),
+            "filter_invite_eligible": (_add_user_filter_querydict(request).get("invite_eligible") or "").strip().lower()
+            in ("1", "true", "da", "yes"),
+            "filter_invite_first_only": (_add_user_filter_querydict(request).get("invite_first_only") or "").strip().lower()
+            in ("1", "true", "da", "yes"),
             "show_imported_active": show_imported_active,
             "filter_query_toggle_imported": filter_query_toggle_imported,
         },
