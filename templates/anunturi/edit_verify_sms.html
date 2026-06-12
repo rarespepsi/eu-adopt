@@ -26,7 +26,12 @@
 {% block content %}
 <div class="edit-sms-box">
 	<h2>Verificare număr nou</h2>
-	<p>Am trimis un cod SMS la numărul pe care l-ai introdus. Introdu codul mai jos (pentru test folosește <strong>111111</strong>).</p>
+	{% if sms_otp_live %}
+	<p>Am trimis un cod SMS la numărul pe care l-ai introdus. Introdu codul de 6 cifre mai jos.</p>
+	{% else %}
+	<p>Am trimis un cod SMS la numărul pe care l-ai introdus. Introdu codul mai jos (pentru test folosește <strong>{{ sms_otp_dev_code }}</strong>).</p>
+	{% endif %}
+	{% if sms_send_error %}<p class="sms-error">{{ sms_send_error }}</p>{% endif %}
 	{% if sms_error %}<p class="sms-error">{{ sms_error }}</p>{% endif %}
 	{% if expires_at %}<p style="font-size:0.85rem;">Cod valabil 5 minute.</p>{% endif %}
 	<form method="post" action="{% url 'edit_verificare_sms' %}">

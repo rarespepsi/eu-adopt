@@ -2366,10 +2366,14 @@ def home_view(request):
 
 
 def logout_view(request):
-    """Delogare și redirect la Home."""
+    """Delogare; redirect la login în PRE-LAUNCH, altfel Home."""
+    from django.conf import settings
     from django.contrib.auth import logout as auth_logout
     from django.shortcuts import redirect
+
     auth_logout(request)
+    if getattr(settings, "PRELAUNCH_MODE", False):
+        return redirect("login")
     return redirect("home")
 
 
@@ -2739,7 +2743,13 @@ def _make_signup_username(data, role):
 
 
 def signup_verificare_sms_view(request):
-    """Pas SMS comun pentru PF, ONG, Colaborator: cod 111111, creare user (inactiv), email cu link, redirect verifică email."""
+    """Pas SMS comun pentru PF, ONG, Colaborator: OTP SMS (SMSAPI) sau cod dev 111111."""
+    from home.sms_otp import (
+        ensure_signup_otp_sent,
+        sms_otp_template_context,
+        verify_sms_code,
+    )
+
     data = _get_signup_pending(request)
     if not data:
         if request.GET.get("preview") == "1":
@@ -2766,16 +2776,23 @@ def signup_verificare_sms_view(request):
         sms_resend_count = request.session.get("signup_sms_resend_count", 0)
         sms_cooldown_until = request.session.get("signup_sms_cooldown_until") or 0
         sms_in_cooldown = sms_cooldown_until > 0 and now < sms_cooldown_until
-        return render(request, "anunturi/signup_pf_sms.html", {
+        sms_send_error = None
+        if not sms_in_cooldown:
+            _, sms_send_error = ensure_signup_otp_sent(request, data)
+        ctx = {
             "email": email, "back_url": back_url, "expires_at": expires_at,
             "sms_resend_count": sms_resend_count, "sms_resend_remaining": max(0, 3 - sms_resend_count),
             "sms_cooldown_until": int(sms_cooldown_until),
             "sms_retrimis": request.GET.get("retrimis"), "sms_cooldown": request.GET.get("cooldown"),
             "sms_in_cooldown": sms_in_cooldown,
-        })
+            "sms_send_error": sms_send_error or request.GET.get("send_error"),
+        }
+        ctx.update(sms_otp_template_context())
+        return render(request, "anunturi/signup_pf_sms.html", ctx)
 
     sms_code = (request.POST.get("sms_code") or "").strip()
-    if sms_code != "111111":
+    sms_ok, sms_err = verify_sms_code(sms_code, request=request, purpose="signup")
+    if not sms_ok:
         import time
         sms_at = request.session.get("signup_sms_at") or time.time()
         expires_at = int(float(sms_at)) + 300
@@ -2788,17 +2805,15 @@ def signup_verificare_sms_view(request):
         if sms_expired:
             sms_error = "Codul a expirat. Poți solicita un cod nou mai jos (max 3 încercări)."
         else:
-            sms_error = "Cod invalid. Folosește 111111 pentru verificare."
-        return render(
-            request,
-            "anunturi/signup_pf_sms.html",
-            {
-                "email": email, "sms_error": sms_error, "back_url": back_url, "expires_at": expires_at,
-                "sms_expired": sms_expired, "sms_resend_count": sms_resend_count, "sms_resend_remaining": max(0, 3 - sms_resend_count),
-                "sms_cooldown_until": int(sms_cooldown_until),
-                "sms_in_cooldown": sms_in_cooldown, "sms_retrimis": None, "sms_cooldown": None,
-            },
-        )
+            sms_error = sms_err
+        ctx = {
+            "email": email, "sms_error": sms_error, "back_url": back_url, "expires_at": expires_at,
+            "sms_expired": sms_expired, "sms_resend_count": sms_resend_count, "sms_resend_remaining": max(0, 3 - sms_resend_count),
+            "sms_cooldown_until": int(sms_cooldown_until),
+            "sms_in_cooldown": sms_in_cooldown, "sms_retrimis": None, "sms_cooldown": None,
+        }
+        ctx.update(sms_otp_template_context())
+        return render(request, "anunturi/signup_pf_sms.html", ctx)
 
     if role == "pf":
         full_phone = f"{data.get('phone_country', '')} {data.get('phone', '')}".strip()
@@ -2977,6 +2992,9 @@ def signup_verificare_sms_view(request):
 def signup_retrimite_sms_view(request):
     """Retrimite cod SMS: resetează timerul 5 min. Max 3 încercări, apoi cooldown 45 min."""
     import time
+    from home.sms_otp import resend_signup_otp
+    from urllib.parse import quote
+
     data = _get_signup_pending(request)
     if not data:
         return redirect(reverse("signup_choose_type"))
@@ -2994,6 +3012,9 @@ def signup_retrimite_sms_view(request):
     request.session["signup_sms_at"] = now
     if request.session["signup_sms_resend_count"] >= 3:
         request.session["signup_sms_cooldown_until"] = now + 45 * 60
+    ok, _err = resend_signup_otp(request, data)
+    if not ok:
+        return redirect(reverse("signup_verificare_sms") + "?send_error=" + quote(_err or "send"))
     return redirect(reverse("signup_verificare_sms") + "?retrimis=1")
 
 
@@ -6714,7 +6735,9 @@ def account_edit_view(request):
 
 @login_required
 def edit_verificare_sms_view(request):
-    """Verificare SMS pentru modificare profil: cod 111111, apoi actualizare date; dacă email schimbat, trimite link."""
+    """Verificare SMS pentru modificare profil; dacă email schimbat, trimite link confirmare."""
+    from home.sms_otp import ensure_edit_otp_sent, sms_otp_template_context, verify_sms_code
+
     data = request.session.get("edit_pending")
     if not data or data.get("user_pk") != request.user.pk:
         return redirect(reverse("account"))
@@ -6724,22 +6747,32 @@ def edit_verificare_sms_view(request):
         if "edit_sms_at" not in request.session:
             request.session["edit_sms_at"] = time.time()
         expires_at = int(request.session["edit_sms_at"]) + 300
-        return render(request, "anunturi/edit_verify_sms.html", {
+        sms_send_error = None
+        _, sms_send_error = ensure_edit_otp_sent(request, data, data["user_pk"])
+        ctx = {
             "email": data.get("email", ""),
             "back_url": reverse("account_edit"),
             "expires_at": expires_at,
-        })
+            "sms_send_error": sms_send_error,
+        }
+        ctx.update(sms_otp_template_context())
+        return render(request, "anunturi/edit_verify_sms.html", ctx)
 
     sms_code = (request.POST.get("sms_code") or "").strip()
-    if sms_code != "111111":
+    sms_ok, sms_err = verify_sms_code(
+        sms_code, request=request, purpose="edit", user_pk=data["user_pk"],
+    )
+    if not sms_ok:
         import time
         expires_at = int(request.session.get("edit_sms_at", time.time())) + 300
-        return render(request, "anunturi/edit_verify_sms.html", {
+        ctx = {
             "email": data.get("email", ""),
-            "sms_error": "Cod invalid. Folosește 111111 pentru verificare.",
+            "sms_error": sms_err,
             "back_url": reverse("account_edit"),
             "expires_at": expires_at,
-        })
+        }
+        ctx.update(sms_otp_template_context())
+        return render(request, "anunturi/edit_verify_sms.html", ctx)
 
     User = get_user_model()
     user = User.objects.get(pk=data["user_pk"])
@@ -13663,3 +13696,44 @@ def public_offer_request_view(request, pk: int):
             f"Ți-am trimis pe email codul ofertei ({code}) și datele cabinetului. Colaboratorul a fost anunțat. Verifică și Spam.",
         )
     return _redirect_after_public_offer_request(request, pk)
+
+
+@csrf_protect
+@require_POST
+def site_guide_ask_view(request):
+    """API JSON: întrebare ghid site (FAQ → Gemini opțional)."""
+    from home.site_guide import (
+        answer_question,
+        bump_rate_limit,
+        check_rate_limit,
+        is_site_guide_enabled,
+        is_site_guide_path,
+    )
+
+    if not is_site_guide_enabled():
+        return JsonResponse({"ok": False, "error": "Ghid dezactivat."}, status=404)
+
+    page_path = (request.POST.get("page_path") or request.path or "").strip()
+    if not is_site_guide_path(page_path):
+        return JsonResponse({"ok": False, "error": "Ghid indisponibil pe această pagină."}, status=403)
+
+    ip = request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0].strip() or request.META.get("REMOTE_ADDR", "")
+    if not check_rate_limit(ip):
+        return JsonResponse(
+            {"ok": False, "error": "Prea multe întrebări într-un interval scurt. Încearcă peste câteva minute."},
+            status=429,
+        )
+
+    faq_id = (request.POST.get("faq_id") or "").strip() or None
+    question = (request.POST.get("question") or "").strip()
+    if faq_id:
+        result = answer_question("", faq_id=faq_id, page_path=page_path)
+    elif question:
+        if len(question) > 500:
+            return JsonResponse({"ok": False, "error": "Întrebarea e prea lungă."}, status=400)
+        result = answer_question(question, page_path=page_path)
+    else:
+        return JsonResponse({"ok": False, "error": "Scrie o întrebare sau alege o temă rapidă."}, status=400)
+
+    bump_rate_limit(ip)
+    return JsonResponse({"ok": True, **result})

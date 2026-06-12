@@ -31,7 +31,10 @@ def _pf_post_data(unique: str):
     }
 
 
-@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+@override_settings(
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    PRELAUNCH_MODE=False,
+)
 class CartePF11to20Tests(TestCase):
     """Înregistrare PF: erori, redirect SMS, cod SMS, email, activare."""
 

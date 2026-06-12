@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from .models import (
     AccountProfile,
     WishlistItem,
@@ -110,6 +112,31 @@ def _get_display_role(request):
     except Exception:
         pass
     return None
+
+
+def prelaunch_mode(request):
+    """True când modul PRE-LAUNCH este activ (EUADOPT_PRELAUNCH_MODE=1)."""
+    return {"prelaunch_mode": bool(getattr(settings, "PRELAUNCH_MODE", False))}
+
+
+def site_guide(request):
+    """Context: widget Ghid EU-Adopt pe paginile principale selectate."""
+    from django.urls import reverse
+
+    from home.site_guide import is_site_guide_enabled, is_site_guide_path
+
+    path = getattr(request, "path", "/") or "/"
+    enabled = is_site_guide_enabled() and is_site_guide_path(path)
+    ask_url = ""
+    if enabled:
+        try:
+            ask_url = reverse("site_guide_ask")
+        except Exception:
+            ask_url = ""
+    return {
+        "show_site_guide": enabled,
+        "site_guide_ask_url": ask_url,
+    }
 
 
 def wishlist_counts(request):

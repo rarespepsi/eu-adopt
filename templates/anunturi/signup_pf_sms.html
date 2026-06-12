@@ -40,8 +40,13 @@
 	<p class="sms-cooldown">Ați depășit cele 3 încercări. Vă rugăm reveniți peste 45 de minute.</p>
 	{% if sms_cooldown_until %}<p class="signup-sms-cooldown-timer" data-until="{{ sms_cooldown_until }}">Timp rămas: <span class="cooldown-clock">--:--</span></p>{% endif %}
 	{% else %}
-	<p>Introdu codul primit prin SMS (pentru test folosește <strong>111111</strong>). Codul este valabil 5 minute.</p>
+	{% if sms_otp_live %}
+	<p>Introdu codul de <strong>6 cifre</strong> primit prin SMS. Codul este valabil 5 minute.</p>
+	{% else %}
+	<p>Introdu codul primit prin SMS (pentru test folosește <strong>{{ sms_otp_dev_code }}</strong>). Codul este valabil 5 minute.</p>
+	{% endif %}
 	{% if expires_at %}{% include 'anunturi/includes/countdown_5min.html' with expires_at=expires_at label="Cod valabil" %}{% endif %}
+	{% if sms_send_error %}<p class="sms-error">{{ sms_send_error }}</p>{% endif %}
 	{% if sms_error %}<p class="sms-error">{{ sms_error }}</p>{% endif %}
 	<div class="signup-sms-form-wrap">
 		<form method="post" action="{% url 'signup_verificare_sms' %}">

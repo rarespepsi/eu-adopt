@@ -19,6 +19,15 @@
 		padding: 0;
 		margin: 0;
 	}
+	body.page-login:has(.login-main--prelaunch) {
+		overflow: hidden !important;
+		height: 100dvh;
+		max-height: 100dvh;
+	}
+	body.page-login:has(.login-main--prelaunch) #main_wrap {
+		overflow: hidden;
+		max-height: 100dvh;
+	}
 	/* Înălțime clară sub A0 fix + centrare verticală în zona vizibilă (tabletă / mobile URL bar).
 	   Selector cu :not(...) ca să bată regula #main_content { padding-top: nav } din navbar-a0-secured. */
 	body.page-login:not(.page-home-v2):not(.page-animale) #main_content {
@@ -38,6 +47,14 @@
 		background: transparent !important;
 		box-shadow: none !important;
 	}
+	body.page-login:has(.login-main--prelaunch) #main_content {
+		overflow: hidden;
+		min-height: 0 !important;
+		max-height: calc(100dvh - var(--nav-height, 56px));
+		height: calc(100dvh - var(--nav-height, 56px));
+		padding-bottom: 0.5rem !important;
+		align-items: center;
+	}
 	body.page-login .login-main {
 		position: relative;
 		z-index: 1;
@@ -48,6 +65,141 @@
 		justify-content: center;
 		margin: 0;
 		padding: 0;
+	}
+	body.page-login .login-main.login-main--prelaunch {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(16rem, 28rem) minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1fr) auto;
+		gap: clamp(0.4rem, 1vw, 0.75rem);
+		align-items: center;
+		max-width: min(96rem, 100%);
+		max-height: 100%;
+		height: 100%;
+		margin: 0 auto;
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+	body.page-login .login-main.login-main--prelaunch .login-card {
+		grid-column: 2;
+		grid-row: 1;
+		align-self: center;
+		justify-self: center;
+	}
+	body.page-login .prelaunch-panel {
+		font-size: clamp(0.82rem, 1.2vw, 0.96rem);
+		line-height: 1.48;
+		color: #e2e8f0;
+		padding: clamp(0.65rem, 1.4vw, 0.95rem) clamp(0.75rem, 1.4vw, 1rem);
+		border-radius: 0.85rem;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		background: rgba(15, 23, 42, 0.42);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+		box-sizing: border-box;
+		max-height: 100%;
+		overflow: hidden;
+	}
+	body.page-login .prelaunch-panel p {
+		margin: 0 0 0.65rem;
+	}
+	body.page-login .prelaunch-panel p:last-child {
+		margin-bottom: 0;
+	}
+	body.page-login .prelaunch-panel__badge {
+		display: inline-block;
+		margin: 0 0 0.65rem;
+		padding: 0.28rem 0.55rem;
+		border-radius: 0.35rem;
+		font-size: clamp(0.72rem, 1.1vw, 0.82rem);
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: #fde68a;
+		background: rgba(251, 191, 36, 0.14);
+		border: 1px solid rgba(251, 191, 36, 0.35);
+	}
+	body.page-login .prelaunch-panel__heading {
+		font-size: clamp(0.92rem, 1.5vw, 1.06rem);
+		font-weight: 600;
+		color: #f1f5f9;
+	}
+	body.page-login .prelaunch-panel__emph {
+		color: #a5f3fc;
+		font-weight: 500;
+	}
+	body.page-login .prelaunch-panel__list {
+		margin: 0 0 0.65rem;
+		padding-left: 1.1rem;
+	}
+	body.page-login .prelaunch-panel__list li {
+		margin-bottom: 0.28rem;
+	}
+	body.page-login .prelaunch-panel__signoff {
+		margin-top: 0.35rem !important;
+		color: #94a3b8;
+	}
+	body.page-login .prelaunch-panel--left {
+		grid-column: 1;
+		grid-row: 1;
+		align-self: center;
+	}
+	body.page-login .prelaunch-panel--right {
+		grid-column: 3;
+		grid-row: 1;
+		align-self: center;
+	}
+	body.page-login .prelaunch-slogan {
+		grid-column: 1 / -1;
+		grid-row: 2;
+		margin: 0;
+		padding: 0.15rem 0.25rem 0;
+		text-align: center;
+		font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+		font-size: clamp(0.78rem, 2.15vw, 1.85rem);
+		font-weight: 800;
+		line-height: 1.15;
+		letter-spacing: -0.01em;
+		color: #ef4444;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: clip;
+		text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+		flex-shrink: 0;
+	}
+	@media (max-width: 1024px) {
+		body.page-login .login-main.login-main--prelaunch {
+			grid-template-columns: 1fr;
+			grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr) auto;
+			max-width: min(96rem, 100%);
+		}
+		body.page-login .login-main.login-main--prelaunch .login-card {
+			grid-column: 1;
+			grid-row: 1;
+			order: 1;
+		}
+		body.page-login .prelaunch-panel--left {
+			grid-column: 1;
+			grid-row: 2;
+			order: 2;
+		}
+		body.page-login .prelaunch-panel--right {
+			grid-column: 1;
+			grid-row: 3;
+			order: 3;
+		}
+		body.page-login .prelaunch-slogan {
+			grid-column: 1;
+			grid-row: 4;
+			order: 4;
+			font-size: clamp(0.68rem, 3.2vw, 1.1rem);
+		}
+	}
+	@media (min-width: 1025px) and (max-width: 1180px) {
+		body.page-login .login-main.login-main--prelaunch {
+			grid-template-columns: minmax(0, 1fr) minmax(14rem, 24rem) minmax(0, 1fr);
+		}
+		body.page-login .prelaunch-panel {
+			font-size: 0.86rem;
+		}
 	}
 	body.page-login .login-card {
 		width: 100%;
@@ -356,7 +508,8 @@
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
-	<main class="login-main" aria-label="Autentificare EU-ADOPT">
+	<main class="login-main{% if prelaunch_mode %} login-main--prelaunch{% endif %}" aria-label="Autentificare EU-ADOPT">
+		{% include "components/prelaunch_login_panels.html" %}
 		<div class="login-card">
 			<h1>Intră în cont</h1>
 			<p>Autentificare simplă pentru a-ți gestiona anunțurile și preferințele.</p>
@@ -390,13 +543,18 @@
 				</div>
 				<div class="login-actions">
 					<button type="submit" class="login-submit">Intră</button>
+					{% if not prelaunch_mode %}
 					<div class="login-links">
 						Nu ai cont?
 						<a href="{% url 'signup_choose_type' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">Creează cont</a>
 					</div>
+					{% endif %}
 				</div>
 			</form>
 		</div>
+		{% if prelaunch_mode %}
+		<p class="prelaunch-slogan" role="doc-subtitle">EU-Adopt — Nu cumpăr!!! Site de adopții gratuit!</p>
+		{% endif %}
 	</main>
 </section>
 {% endblock %}

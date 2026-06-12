@@ -1,33 +1,40 @@
+"""
+Mod PRE-LAUNCH: acces site doar după autentificare.
+
+Activ doar când settings.PRELAUNCH_MODE este True (env EUADOPT_PRELAUNCH_MODE=1).
+Când PRELAUNCH_MODE este False, middleware-ul nu face nimic — vitrina publică normală.
+"""
+from __future__ import annotations
+
+from urllib.parse import quote
+
 from django.conf import settings
 from django.shortcuts import redirect
 
+from euadopt_final.prelaunch_paths import is_prelaunch_public_path
+
 
 class LoginRequiredMiddleware:
-    """
-    Enforce authenticated access site-wide, except explicit public paths.
-    """
-
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.user.is_authenticated:
+        if not getattr(settings, "PRELAUNCH_MODE", False):
+            return self.get_response(request)
+
+        user = getattr(request, "user", None)
+        if user is not None and user.is_authenticated:
             return self.get_response(request)
 
         path = request.path or "/"
-        public_prefixes = (
-            "/login/",
-            "/signup/",
-            "/admin/",
-            "/static/",
-            "/media/",
-            "/favicon.ico",
-            "/robots.txt",
-            "/sitemap.xml",
-        )
-
-        if path.startswith(public_prefixes):
+        if is_prelaunch_public_path(path):
             return self.get_response(request)
 
         login_url = getattr(settings, "LOGIN_URL", "/login/")
-        return redirect(f"{login_url}?next={request.get_full_path()}")
+        if path.rstrip("/") == login_url.rstrip("/"):
+            return self.get_response(request)
+
+        next_target = request.get_full_path()
+        if next_target and next_target != login_url:
+            return redirect(f"{login_url}?next={quote(next_target, safe='/&?=')}")
+        return redirect(login_url)

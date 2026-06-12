@@ -95,6 +95,10 @@ import os as _os
 _site_public = _os.environ.get('SITE_PUBLIC', '').strip().lower()
 MAINTENANCE_MODE = _site_public in ('0', 'false', 'no', 'nu')
 
+# PRE-LAUNCH: site vizibil doar după login (fără înregistrare publică). Dezactivare: EUADOPT_PRELAUNCH_MODE=0
+_prelaunch = _os.environ.get("EUADOPT_PRELAUNCH_MODE", "").strip().lower()
+PRELAUNCH_MODE = _prelaunch in ("1", "true", "yes", "on")
+
 MIDDLEWARE = [
     'euadopt_final.maintenance_middleware.MaintenanceMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -121,6 +125,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'home.context_processors.wishlist_counts',
+                'home.context_processors.prelaunch_mode',
+                'home.context_processors.site_guide',
             ],
         },
     },
@@ -172,6 +178,29 @@ DATABASES = _database_from_env()
 # În producție NU seta; rămâne False → validare „email deja folosit” ca înainte.
 _relax_email = os.environ.get("EUADOPT_RELAX_EMAIL_UNIQUE", "").strip().lower()
 EUADOPT_RELAX_EMAIL_UNIQUE = _relax_email in ("1", "true", "yes", "on")
+
+# SMS OTP (înregistrare + schimbare telefon). 0 = cod fix 111111 fără trimitere SMS.
+_sms_otp_on = os.environ.get("EUADOPT_SMS_OTP_ENABLED", "").strip().lower()
+SMS_OTP_ENABLED = _sms_otp_on in ("1", "true", "yes", "on")
+EUADOPT_SMSAPI_TOKEN = os.environ.get("EUADOPT_SMSAPI_TOKEN", "").strip()
+EUADOPT_SMSAPI_SENDER = os.environ.get("EUADOPT_SMSAPI_SENDER", "EU-Adopt").strip() or "EU-Adopt"
+EUADOPT_SMSAPI_API_URL = os.environ.get("EUADOPT_SMSAPI_API_URL", "https://api.smsapi.ro/").strip()
+SMS_OTP_DEV_CODE = "111111"
+SMS_OTP_TTL_SECONDS = 300
+
+# Ghid site (nor FAQ + Gemini fallback opțional). Implicit activ când DEBUG=1.
+_site_guide_on = os.environ.get("EUADOPT_SITE_GUIDE_ENABLED", "").strip().lower()
+if _site_guide_on in ("0", "false", "no", "off"):
+    SITE_GUIDE_ENABLED = False
+elif _site_guide_on in ("1", "true", "yes", "on"):
+    SITE_GUIDE_ENABLED = True
+else:
+    SITE_GUIDE_ENABLED = bool(DEBUG)
+_site_guide_gemini = os.environ.get("EUADOPT_SITE_GUIDE_GEMINI_ENABLED", "").strip().lower()
+SITE_GUIDE_GEMINI_ENABLED = _site_guide_gemini in ("1", "true", "yes", "on")
+EUADOPT_GEMINI_API_KEY = os.environ.get("EUADOPT_GEMINI_API_KEY", "").strip()
+SITE_GUIDE_GEMINI_MODEL = os.environ.get("EUADOPT_SITE_GUIDE_GEMINI_MODEL", "gemini-2.5-flash").strip()
+SITE_GUIDE_RATE_LIMIT_PER_HOUR = int(os.environ.get("EUADOPT_SITE_GUIDE_RATE_LIMIT", "30") or "30")
 
 # Add USER — invitații email prospecte. Implicit DEZACTIVAT (mod tehnic, doar log/simulare).
 _invite_mail_on = os.environ.get("EUADOPT_STAFF_INVITE_EMAIL_ENABLED", "").strip().lower()
