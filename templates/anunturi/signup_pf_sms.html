@@ -29,6 +29,22 @@
 	.signup-sms-box .sms-success { color: #2e7d32; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600; }
 	.signup-sms-box .sms-cooldown { color: #b71c1c; margin: 0.5rem 0; font-size: 0.95rem; font-weight: 600; background: #ffebee; padding: 0.5rem 0.75rem; border-radius: 6px; }
 	.signup-sms-box .sms-retrimite { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e0e0e0; }
+	.signup-sms-dev-code {
+		margin: 0.65rem 0 0.75rem;
+		padding: 0.55rem 0.65rem;
+		border-radius: 8px;
+		background: #e3f2fd;
+		border: 1px solid #90caf9;
+		font-size: 0.92rem;
+		color: #0d47a1;
+	}
+	.signup-sms-dev-code-hint {
+		display: block;
+		margin-top: 0.25rem;
+		font-size: 0.78rem;
+		font-weight: 400;
+		color: #546e7a;
+	}
 </style>
 {% endblock %}
 
@@ -43,7 +59,11 @@
 	{% if sms_otp_live %}
 	<p>Introdu codul de <strong>6 cifre</strong> primit prin SMS. Codul este valabil 5 minute.</p>
 	{% else %}
-	<p>Introdu codul primit prin SMS (pentru test folosește <strong>{{ sms_otp_dev_code }}</strong>). Codul este valabil 5 minute.</p>
+	<p>Introdu codul de verificare de <strong>6 cifre</strong> mai jos. Codul este valabil 5 minute.</p>
+	<div class="signup-sms-dev-code" role="note">
+		<strong>Cod de verificare:</strong> {{ sms_otp_dev_code }}
+		<span class="signup-sms-dev-code-hint">(În curând codul va fi trimis automat prin SMS.)</span>
+	</div>
 	{% endif %}
 	{% if expires_at %}{% include 'anunturi/includes/countdown_5min.html' with expires_at=expires_at label="Cod valabil" %}{% endif %}
 	{% if sms_send_error %}<p class="sms-error">{{ sms_send_error }}</p>{% endif %}

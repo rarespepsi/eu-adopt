@@ -51,11 +51,13 @@
 	<link rel="stylesheet" href="{% static 'css/navbar-envelope-unread.css' %}?v=1" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/checkout-intra-skin.css' %}?v=3" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/eu-intra-site-skin.css' %}?v=3" type="text/css" media="screen" />
+	{% if population_org_active %}<link rel="stylesheet" href="{% static 'css/population-org.css' %}?v=1" type="text/css" media="screen" />{% endif %}
 </head>
-<body class="content_left scheme_red euadopt-intra-skin {{ body_class|default:'' }} {% block body_class %}{% endblock %}" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}" data-site-cart-toggle-url="{% url 'site_cart_toggle' %}">
+<body class="content_left scheme_red euadopt-intra-skin {{ body_class|default:'' }} {% block body_class %}{% endblock %}{% if population_org_nav_reduced %} population-org-nav{% endif %}" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}" data-site-cart-toggle-url="{% url 'site_cart_toggle' %}">
 	<section id="main_wrap">
 		{% block header %}
 		{% include "components/navbar_a0.html" %}
+		{% include "components/population_org_banner.html" %}
 		{% endblock %}
 
 		{% block main_wrap_after_header %}

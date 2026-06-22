@@ -840,6 +840,7 @@
 		var telefonEl = document.getElementById('id_telefon');
 		var emailEl = document.getElementById('id_email');
 		var denumireEl = document.getElementById('id_denumire');
+		var smsDevCode = '{{ sms_otp_dev_code|escapejs }}';
 		if (!form) return;
 		function hideTipNota() {
 			if (tipNota) tipNota.classList.remove('visible');
@@ -861,7 +862,7 @@
 		// Formularul se trimite la server; validarea (adăpost, email, telefon etc.) se face acolo și toate erorile apar împreună.
 		function onSmsConfirm() {
 			var code = smsCodeInput ? (smsCodeInput.value || '').trim() : '';
-			if (code !== '111111') {
+			if (code !== smsDevCode) {
 				if (smsErr) smsErr.classList.add('visible');
 				return;
 			}
@@ -1111,7 +1112,7 @@
 		<div class="signup-org-sms-actions">
 			<button type="button" class="signup-org-sms-btn" id="signup-org-sms-confirm">Accesează</button>
 		</div>
-		<p class="signup-org-sms-hint">Pentru testare, codul acceptat este <strong>111111</strong>.</p>
+		<p class="signup-org-sms-hint">Cod de verificare: <strong>{{ sms_otp_dev_code }}</strong>.</p>
 	</div>
 </div>
 <div class="signup-org-done-backdrop" id="signup-org-done-backdrop" aria-hidden="true">

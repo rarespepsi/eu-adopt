@@ -109,6 +109,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'euadopt_final.login_required_middleware.LoginRequiredMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'euadopt_final.population_restriction_middleware.PopulationRestrictionMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -126,6 +127,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'home.context_processors.wishlist_counts',
                 'home.context_processors.prelaunch_mode',
+                'home.context_processors.population_org',
+                'home.context_processors.sms_otp',
                 'home.context_processors.site_guide',
             ],
         },
@@ -179,14 +182,25 @@ DATABASES = _database_from_env()
 _relax_email = os.environ.get("EUADOPT_RELAX_EMAIL_UNIQUE", "").strip().lower()
 EUADOPT_RELAX_EMAIL_UNIQUE = _relax_email in ("1", "true", "yes", "on")
 
-# SMS OTP (înregistrare + schimbare telefon). 0 = cod fix 111111 fără trimitere SMS.
+# SMS OTP (înregistrare + schimbare telefon). 0 = cod fix afișat pe ecran, fără trimitere SMS.
 _sms_otp_on = os.environ.get("EUADOPT_SMS_OTP_ENABLED", "").strip().lower()
 SMS_OTP_ENABLED = _sms_otp_on in ("1", "true", "yes", "on")
 EUADOPT_SMSAPI_TOKEN = os.environ.get("EUADOPT_SMSAPI_TOKEN", "").strip()
 EUADOPT_SMSAPI_SENDER = os.environ.get("EUADOPT_SMSAPI_SENDER", "EU-Adopt").strip() or "EU-Adopt"
 EUADOPT_SMSAPI_API_URL = os.environ.get("EUADOPT_SMSAPI_API_URL", "https://api.smsapi.ro/").strip()
-SMS_OTP_DEV_CODE = "111111"
+SMS_OTP_DEV_CODE = (os.environ.get("EUADOPT_SMS_OTP_DEV_CODE", "528419").strip() or "528419")[:10]
 SMS_OTP_TTL_SECONDS = 300
+
+# Populare adăpost / ONG — min/max animale, meniu redus. Vezi docs/POPULARE_ADAPOST_ONG.md
+_population_on = os.environ.get("EUADOPT_POPULATION_ONBOARDING", "").strip().lower()
+if _population_on in ("0", "false", "no", "off"):
+    POPULATION_ONBOARDING_ENABLED = False
+elif _population_on in ("1", "true", "yes", "on"):
+    POPULATION_ONBOARDING_ENABLED = True
+else:
+    POPULATION_ONBOARDING_ENABLED = PRELAUNCH_MODE
+POPULATION_ANIMAL_MIN = int(os.environ.get("EUADOPT_POPULATION_ANIMAL_MIN", "2") or "2")
+POPULATION_ANIMAL_MAX = int(os.environ.get("EUADOPT_POPULATION_ANIMAL_MAX", "5") or "5")
 
 # Ghid site (nor FAQ + Gemini fallback opțional). Implicit activ când DEBUG=1.
 _site_guide_on = os.environ.get("EUADOPT_SITE_GUIDE_ENABLED", "").strip().lower()

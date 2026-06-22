@@ -2397,11 +2397,18 @@ def login_view(request):
                     username = user_by_email.username
             user = authenticate(request, username=username, password=password)
             if user is not None:
-                auth_login(request, user)
-                next_url = request.GET.get("next") or request.POST.get("next") or "/"
-                from django.shortcuts import redirect
-                return redirect(next_url)
-            error = "Email/Utilizator sau parolă incorectă."
+                from home.population_onboarding import user_may_login_during_population
+
+                ok, pop_err = user_may_login_during_population(user)
+                if not ok:
+                    error = pop_err
+                else:
+                    auth_login(request, user)
+                    next_url = request.GET.get("next") or request.POST.get("next") or "/"
+                    from django.shortcuts import redirect
+                    return redirect(next_url)
+            else:
+                error = "Email/Utilizator sau parolă incorectă."
     return render(request, "anunturi/login.html", {
         "error": error,
         "login_value": login_value,
@@ -2743,7 +2750,7 @@ def _make_signup_username(data, role):
 
 
 def signup_verificare_sms_view(request):
-    """Pas SMS comun pentru PF, ONG, Colaborator: OTP SMS (SMSAPI) sau cod dev 111111."""
+    """Pas SMS comun pentru PF, ONG, Colaborator: OTP SMS (SMSAPI) sau cod dev din settings."""
     from home.sms_otp import (
         ensure_signup_otp_sent,
         sms_otp_template_context,
@@ -4393,14 +4400,19 @@ def dog_profile_view(request, pk):
         and viewer_can_adopt
         and listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
     )
-    # Buton „VREAU SĂ ADOPT”: separat de mesaje — vizibil și neautentificaților (login la click), ascuns doar owner / adoptat.
+    # Buton „VREAU SĂ ADOPT”: ascuns în faza populare (fără adopții).
+    from home.population_onboarding import population_access_restricted
+
     show_pet_adopt_corner = bool(
-        listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
+        not population_access_restricted()
+        and listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
         and (
             not request.user.is_authenticated
             or request.user.pk != listing.owner_id
         )
     )
+    if population_access_restricted():
+        can_send_pet_message = False
     ctx = {
         "pet": pet,
         "can_send_pet_message": can_send_pet_message,
@@ -7304,7 +7316,21 @@ def mypet_add_view(request):
     if add_species_q not in ("dog", "cat", "other"):
         add_species_q = "dog"
 
+    if request.method == "GET":
+        from home.population_onboarding import check_org_can_add_animal
+
+        ok_pop, pop_err = check_org_can_add_animal(user)
+        if not ok_pop:
+            messages.error(request, pop_err)
+            return redirect("mypet")
+
     if request.method == "POST":
+        from home.population_onboarding import check_org_can_add_animal
+
+        error = None
+        ok_pop, pop_err = check_org_can_add_animal(user)
+        if not ok_pop:
+            error = pop_err
         name = (request.POST.get("name") or "").strip()
         species_mode = (request.POST.get("species_mode") or "").strip().lower()
         species_custom = (request.POST.get("species_custom") or "").strip()
@@ -7337,31 +7363,30 @@ def mypet_add_view(request):
                 return False
             return name in request.POST
 
-        error = None
-        # Toate câmpurile sunt obligatorii (în afară de bifele de potrivire adoptator)
-        required = [
-            ("name", name, "Te rugăm să completezi numele animalului."),
-            ("species", species, "Te rugăm să alegi specia."),
-            ("age_label", age_label, "Te rugăm să alegi vârsta estimată."),
-            ("size", size, "Te rugăm să alegi talia."),
-            ("color", color, "Te rugăm să alegi culoarea."),
-            ("sterilizat", sterilizat, "Te rugăm să alegi dacă este sterilizat."),
-            ("vaccinat", vaccinat, "Te rugăm să alegi dacă este vaccinat."),
-            ("carnet_sanatate", carnet_sanatate, "Te rugăm să alegi dacă are carnet de sănătate."),
-            ("cip", cip, "Te rugăm să alegi dacă are CIP."),
-            ("sex", sex, "Te rugăm să alegi sexul."),
-            ("greutate_aprox", greutate_aprox, "Te rugăm să completezi greutatea (aprox.)."),
-            ("county", county, "Te rugăm să completezi județul."),
-            ("city", city, "Te rugăm să completezi orașul/localitatea."),
-            ("probleme_medicale", probleme_medicale, "Te rugăm să completezi problemele medicale (scrie „Nu” dacă nu sunt)."),
-            ("cine_sunt", cine_sunt, "Te rugăm să completezi „Cine sunt și de unde sunt”."),
-        ]
-        for _key, val, msg in required:
-            if not val:
-                error = msg
-                break
-        if not error and species_mode == "other" and not species_custom:
-            error = "Te rugăm să completezi specia pentru categoria «Altele» (ex: hamster)."
+        if not error:
+            required = [
+                ("name", name, "Te rugăm să completezi numele animalului."),
+                ("species", species, "Te rugăm să alegi specia."),
+                ("age_label", age_label, "Te rugăm să alegi vârsta estimată."),
+                ("size", size, "Te rugăm să alegi talia."),
+                ("color", color, "Te rugăm să alegi culoarea."),
+                ("sterilizat", sterilizat, "Te rugăm să alegi dacă este sterilizat."),
+                ("vaccinat", vaccinat, "Te rugăm să alegi dacă este vaccinat."),
+                ("carnet_sanatate", carnet_sanatate, "Te rugăm să alegi dacă are carnet de sănătate."),
+                ("cip", cip, "Te rugăm să alegi dacă are CIP."),
+                ("sex", sex, "Te rugăm să alegi sexul."),
+                ("greutate_aprox", greutate_aprox, "Te rugăm să completezi greutatea (aprox.)."),
+                ("county", county, "Te rugăm să completezi județul."),
+                ("city", city, "Te rugăm să completezi orașul/localitatea."),
+                ("probleme_medicale", probleme_medicale, "Te rugăm să completezi problemele medicale (scrie „Nu” dacă nu sunt)."),
+                ("cine_sunt", cine_sunt, "Te rugăm să completezi „Cine sunt și de unde sunt”."),
+            ]
+            for _key, val, msg in required:
+                if not val:
+                    error = msg
+                    break
+            if not error and species_mode == "other" and not species_custom:
+                error = "Te rugăm să completezi specia pentru categoria «Altele» (ex: hamster)."
         if not error:
             try:
                 listing = AnimalListing.objects.create(
@@ -7403,7 +7428,6 @@ def mypet_add_view(request):
                     trait_necesita_experienta=trait("trait_necesita_experienta"),
                     is_published=True,
                 )
-                # După salvarea fișei noi, ducem userul în lista MyPet
                 return redirect("mypet")
             except Exception as exc:
                 error = str(exc)

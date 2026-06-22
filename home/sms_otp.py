@@ -1,7 +1,7 @@
 """
 OTP SMS via SMSAPI (https://www.smsapi.ro).
 
-Când EUADOPT_SMS_OTP_ENABLED=0 (implicit): cod fix 111111, fără trimitere SMS.
+Când EUADOPT_SMS_OTP_ENABLED=0 (implicit): cod fix din SMS_OTP_DEV_CODE, fără trimitere SMS.
 Când activ + token: cod aleator 6 cifre în cache, trimis prin API.
 """
 
@@ -25,7 +25,7 @@ def is_sms_otp_enabled() -> bool:
 
 
 def is_sms_otp_live() -> bool:
-    """SMS real (API + token). Altfel rămâne modul dev cu 111111."""
+    """SMS real (API + token). Altfel rămâne modul dev cu cod fix din settings."""
     if not is_sms_otp_enabled():
         return False
     return bool(getattr(settings, "EUADOPT_SMSAPI_TOKEN", "").strip())
@@ -34,7 +34,7 @@ def is_sms_otp_live() -> bool:
 def sms_otp_template_context() -> dict[str, Any]:
     return {
         "sms_otp_live": is_sms_otp_live(),
-        "sms_otp_dev_code": getattr(settings, "SMS_OTP_DEV_CODE", "111111"),
+        "sms_otp_dev_code": getattr(settings, "SMS_OTP_DEV_CODE", "528419"),
     }
 
 
@@ -70,7 +70,7 @@ def _generate_code() -> str:
 
 
 def _dev_code() -> str:
-    return str(getattr(settings, "SMS_OTP_DEV_CODE", "111111"))
+    return str(getattr(settings, "SMS_OTP_DEV_CODE", "528419"))
 
 
 def verify_sms_code(

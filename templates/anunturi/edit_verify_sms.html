@@ -20,6 +20,7 @@
 	.edit-sms-box .edit-sms-back { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #e0e0e0; }
 	.edit-sms-box .edit-sms-back a { color: #1565c0; font-weight: 600; text-decoration: none; font-size: 0.9rem; }
 	.edit-sms-box .edit-sms-back a:hover { text-decoration: underline; }
+	.edit-sms-dev-code { margin: 0.5rem 0; padding: 0.5rem 0.65rem; border-radius: 8px; background: #e3f2fd; border: 1px solid #90caf9; color: #0d47a1; font-size: 0.9rem; }
 </style>
 {% endblock %}
 
@@ -29,7 +30,8 @@
 	{% if sms_otp_live %}
 	<p>Am trimis un cod SMS la numărul pe care l-ai introdus. Introdu codul de 6 cifre mai jos.</p>
 	{% else %}
-	<p>Am trimis un cod SMS la numărul pe care l-ai introdus. Introdu codul mai jos (pentru test folosește <strong>{{ sms_otp_dev_code }}</strong>).</p>
+	<p>Introdu codul de verificare de <strong>6 cifre</strong> pentru numărul nou.</p>
+	<div class="edit-sms-dev-code" role="note"><strong>Cod de verificare:</strong> {{ sms_otp_dev_code }}</div>
 	{% endif %}
 	{% if sms_send_error %}<p class="sms-error">{{ sms_send_error }}</p>{% endif %}
 	{% if sms_error %}<p class="sms-error">{{ sms_error }}</p>{% endif %}

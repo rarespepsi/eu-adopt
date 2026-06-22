@@ -1,0 +1,13 @@
+{% if population_org_active %}
+<div class="population-org-banner" role="status" aria-live="polite">
+	<div class="population-org-banner__inner">
+		{% if population_onboarding_complete %}
+		<p class="population-org-banner__title">Etapa de populare — animale publicate: <strong>{{ population_animal_count }}</strong> / {{ population_animal_max }}</p>
+		<p class="population-org-banner__text">Ați atins minimul de {{ population_animal_min }} animale. Verificați-le în <a href="{% url 'pets_all' %}">Prietenul tău</a>.{% if population_at_max_animals %} Limita de {{ population_animal_max }} animale pentru această etapă este atinsă.{% elif population_animals_remaining %} Mai puteți adăuga {{ population_animals_remaining }} în <a href="{% url 'mypet' %}">MyPet</a>.{% endif %}</p>
+		{% else %}
+		<p class="population-org-banner__title">Etapa de populare — adăugați animale în MyPet</p>
+		<p class="population-org-banner__text">Publicați minimum <strong>{{ population_animal_min }}</strong> animale (maximum {{ population_animal_max }} în această etapă). Acum aveți <strong>{{ population_animal_count }}</strong>.{% if population_animals_until_min %} Mai lipsesc <strong>{{ population_animals_until_min }}</strong>.{% endif %} <a href="{% url 'mypet_add' %}?species=dog">Adaugă animal</a></p>
+		{% endif %}
+	</div>
+</div>
+{% endif %}

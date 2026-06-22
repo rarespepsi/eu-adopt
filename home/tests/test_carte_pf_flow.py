@@ -5,6 +5,7 @@ Carte B2 puncte 11–20: flux PF (POST erori, SMS 111111, verificare email, poll
 import json
 import uuid
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.signing import TimestampSigner
@@ -86,7 +87,7 @@ class CartePF11to20Tests(TestCase):
     def test_13_correct_sms_redirects_to_check_email(self):
         c = Client()
         _, email = self._session_with_pending_pf(c)
-        r = c.post(reverse("signup_verificare_sms"), {"sms_code": "111111"})
+        r = c.post(reverse("signup_verificare_sms"), {"sms_code": settings.SMS_OTP_DEV_CODE})
         self.assertEqual(r.status_code, 302)
         self.assertIn(reverse("signup_pf_check_email"), r.url or "")
         self.assertIn(email.replace("@", "%40"), r.url or "")
@@ -113,7 +114,7 @@ class CartePF11to20Tests(TestCase):
     def test_16_check_email_screen_after_sms_success(self):
         c = Client()
         _, email = self._session_with_pending_pf(c)
-        r = c.post(reverse("signup_verificare_sms"), {"sms_code": "111111"})
+        r = c.post(reverse("signup_verificare_sms"), {"sms_code": settings.SMS_OTP_DEV_CODE})
         self.assertEqual(r.status_code, 302)
         r2 = c.get(r.url)
         self.assertEqual(r2.status_code, 200)
@@ -123,7 +124,7 @@ class CartePF11to20Tests(TestCase):
     def test_17_retrimite_email_post_redirects(self):
         c = Client()
         _, email = self._session_with_pending_pf(c)
-        c.post(reverse("signup_verificare_sms"), {"sms_code": "111111"})
+        c.post(reverse("signup_verificare_sms"), {"sms_code": settings.SMS_OTP_DEV_CODE})
         r = c.post(reverse("signup_retrimite_email"), {})
         self.assertEqual(r.status_code, 302)
         self.assertIn(reverse("signup_pf_check_email"), r.url or "")

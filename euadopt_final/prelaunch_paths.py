@@ -8,6 +8,14 @@ from __future__ import annotations
 # Prefixe URL (path trebuie să înceapă cu una dintre aceste valori).
 PRELAUNCH_ANONYMOUS_PREFIXES: tuple[str, ...] = (
     "/login/",
+    "/login/forgot-password/",
+    "/login/reset-password/",
+    "/signup/organizatie/",
+    "/signup/verificare-sms/",
+    "/signup/retrimite-sms/",
+    "/signup/persoana-fizica/sms/",
+    "/signup/verificare-email/",
+    "/signup/retrimite-email/",
     "/signup/verify-email/",
     "/signup/complete-login/",
     "/signup/check-activation-status/",

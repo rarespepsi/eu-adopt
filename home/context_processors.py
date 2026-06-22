@@ -119,6 +119,20 @@ def prelaunch_mode(request):
     return {"prelaunch_mode": bool(getattr(settings, "PRELAUNCH_MODE", False))}
 
 
+def population_org(request):
+    """Context populare adăpost/ONG: min/max animale, meniu redus, banner."""
+    from home.population_onboarding import population_context_for_request
+
+    return population_context_for_request(request)
+
+
+def sms_otp(request):
+    """Cod SMS dev (populare) sau flag live — disponibil în toate template-urile."""
+    from home.sms_otp import sms_otp_template_context
+
+    return sms_otp_template_context()
+
+
 def site_guide(request):
     """Context: widget Ghid EU-Adopt pe paginile principale selectate."""
     from django.urls import reverse

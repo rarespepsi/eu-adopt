@@ -18,9 +18,9 @@ class SmsOtpHelperTests(TestCase):
         self.assertEqual(normalize_phone_digits("+40", "0753017411"), "40753017411")
         self.assertEqual(normalize_phone_digits("+40", "753017411"), "40753017411")
 
-    @override_settings(SMS_OTP_ENABLED=False)
-    def test_dev_mode_accepts_111111(self):
-        ok, err = verify_sms_code("111111")
+    @override_settings(SMS_OTP_ENABLED=False, SMS_OTP_DEV_CODE="528419")
+    def test_dev_mode_accepts_dev_code(self):
+        ok, err = verify_sms_code("528419")
         self.assertTrue(ok)
         self.assertEqual(err, "")
 

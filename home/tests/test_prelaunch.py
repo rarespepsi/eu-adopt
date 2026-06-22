@@ -26,7 +26,7 @@ class PrelaunchDisabledTests(TestCase):
         self.assertEqual(r.status_code, 200)
 
 
-@override_settings(PRELAUNCH_MODE=True)
+@override_settings(PRELAUNCH_MODE=True, POPULATION_ONBOARDING_ENABLED=False)
 class PrelaunchEnabledTests(TestCase):
     def setUp(self):
         u = uuid.uuid4().hex[:10]
@@ -71,7 +71,7 @@ class PrelaunchEnabledTests(TestCase):
     def test_login_hides_signup_link(self):
         c = Client()
         r = c.get(reverse("login"))
-        self.assertNotIn("Creează cont".encode("utf-8"), r.content)
+        self.assertNotIn(b'class="login-links"', r.content)
 
     def test_forgot_password_accessible(self):
         c = Client()

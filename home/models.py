@@ -382,12 +382,20 @@ class AnimalListing(models.Model):
             return
 
         role = None
-        try:
-            role = self.owner.account_profile.role
-        except Exception:
-            role = None
+        if self.owner_id:
+            role = (
+                AccountProfile.objects.filter(user_id=self.owner_id)
+                .values_list("role", flat=True)
+                .first()
+            )
 
         if role != AccountProfile.ROLE_PF:
+            if role == AccountProfile.ROLE_ORG:
+                from home.population_onboarding import check_org_can_add_animal
+
+                ok, msg = check_org_can_add_animal(self.owner)
+                if not ok:
+                    raise ValidationError(msg)
             return
 
         now = timezone.now()
