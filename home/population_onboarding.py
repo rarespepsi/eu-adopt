@@ -61,9 +61,33 @@ def population_access_restricted() -> bool:
     return bool(getattr(settings, "PRELAUNCH_MODE", False))
 
 
+def is_population_superuser_only_login() -> bool:
+    """Doar superuser se poate loga (până la deschiderea invitațiilor adăpost/ONG)."""
+    return bool(
+        population_access_restricted()
+        and getattr(settings, "POPULATION_SUPERUSER_ONLY_LOGIN", False)
+    )
+
+
+def population_org_signup_allowed() -> bool:
+    """Înregistrare organizație în prelaunch populare."""
+    if not population_access_restricted():
+        return True
+    if is_population_superuser_only_login():
+        return False
+    return True
+
+
 def user_may_login_during_population(user) -> tuple[bool, str]:
     if not population_access_restricted():
         return True, ""
+    if is_population_superuser_only_login():
+        if getattr(user, "is_superuser", False):
+            return True, ""
+        return (
+            False,
+            "În această etapă accesul este deschis doar pentru contul administrator (superuser).",
+        )
     if is_staff_user(user):
         return True, ""
     if _account_role(user) == AccountProfile.ROLE_ORG:

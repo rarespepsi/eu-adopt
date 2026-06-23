@@ -5,6 +5,8 @@ Variantă strictă: fără înregistrare publică (/signup/ în afară de activa
 """
 from __future__ import annotations
 
+from django.conf import settings
+
 # Prefixe URL (path trebuie să înceapă cu una dintre aceste valori).
 PRELAUNCH_ANONYMOUS_PREFIXES: tuple[str, ...] = (
     "/login/",
@@ -39,4 +41,8 @@ def is_prelaunch_public_path(path: str) -> bool:
         p = "/" + p
     if p in PRELAUNCH_ANONYMOUS_EXACT:
         return True
+    if getattr(settings, "POPULATION_SUPERUSER_ONLY_LOGIN", False) and p.startswith(
+        "/signup/organizatie/"
+    ):
+        return False
     return p.startswith(PRELAUNCH_ANONYMOUS_PREFIXES)

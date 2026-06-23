@@ -13,6 +13,7 @@ User = get_user_model()
     PRELAUNCH_MODE=True,
     POPULATION_ANIMAL_MIN=2,
     POPULATION_ANIMAL_MAX=5,
+    POPULATION_SUPERUSER_ONLY_LOGIN=False,
     SMS_OTP_DEV_CODE="528419",
 )
 class PopulationOnboardingTests(TestCase):
@@ -84,3 +85,46 @@ class PopulationOnboardingTests(TestCase):
         c = Client()
         r = c.get("/signup/organizatie/")
         self.assertEqual(r.status_code, 200)
+
+
+@override_settings(
+    POPULATION_ONBOARDING_ENABLED=True,
+    PRELAUNCH_MODE=True,
+    POPULATION_SUPERUSER_ONLY_LOGIN=True,
+    SMS_OTP_DEV_CODE="528419",
+)
+class PopulationSuperuserOnlyLoginTests(TestCase):
+    def setUp(self):
+        self.superuser = User.objects.create_superuser(
+            username="admin_only", email="admin@eu-adopt.ro", password="Secret12ab"
+        )
+        self.org_user = User.objects.create_user(username="ong_blocked", password="x")
+        AccountProfile.objects.filter(user=self.org_user).update(role=AccountProfile.ROLE_ORG)
+        self.staff_user = User.objects.create_user(username="staff_blocked", password="Secret12ab")
+        self.staff_user.is_staff = True
+        self.staff_user.save(update_fields=["is_staff"])
+
+    def test_superuser_login_allowed(self):
+        c = Client()
+        r = c.post("/login/", {"login": "admin_only", "password": "Secret12ab"})
+        self.assertEqual(r.status_code, 302)
+
+    def test_org_login_blocked(self):
+        self.org_user.set_password("Secret12ab")
+        self.org_user.save()
+        c = Client()
+        r = c.post("/login/", {"login": "ong_blocked", "password": "Secret12ab"})
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"superuser", r.content.lower())
+
+    def test_staff_non_superuser_login_blocked(self):
+        c = Client()
+        r = c.post("/login/", {"login": "staff_blocked", "password": "Secret12ab"})
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"superuser", r.content.lower())
+
+    def test_signup_organizatie_blocked(self):
+        c = Client()
+        r = c.get("/signup/organizatie/")
+        self.assertEqual(r.status_code, 302)
+        self.assertIn("/login", r.url)

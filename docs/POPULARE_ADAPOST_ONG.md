@@ -44,8 +44,11 @@ Aceleași reguli de populare pentru ambele. Diferă doar șablonul email invita�
 
 ### 2.3 Acces permis (populare)
 
-- **Adăposturi** și **ONG-uri** (`ROLE_ORG` — același rol tehnic)
+**Fază inițială** (`EUADOPT_POPULATION_SUPERUSER_ONLY=1`): doar **superuser** (administrator) — login + panou staff; fără login ORG, fără signup organizație.
 
+**După deschidere invitații** (`EUADOPT_POPULATION_SUPERUSER_ONLY=0`):
+
+- **Adăposturi** și **ONG-uri** (`ROLE_ORG` — același rol tehnic)
 - Signup ONG + SMS + activare email  
 - **MyPet** (add/edit animale)  
 - **Prietenul tău** + fișă animal  

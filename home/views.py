@@ -3205,6 +3205,10 @@ def _signup_maps_ctx(request):
 
 def signup_organizatie_view(request):
     """Formular înregistrare – Adăpost / ONG / Firmă. La POST: validează, salvează în sesiune, redirect SMS. La GET: prefill din sesiune dacă user a dat Back din SMS."""
+    from home.population_onboarding import population_org_signup_allowed
+
+    if not population_org_signup_allowed():
+        return redirect(reverse("login"))
     if request.method != "POST":
         _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_ORG)
         _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_ADAPOST)

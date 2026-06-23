@@ -201,6 +201,8 @@ else:
     POPULATION_ONBOARDING_ENABLED = PRELAUNCH_MODE
 POPULATION_ANIMAL_MIN = int(os.environ.get("EUADOPT_POPULATION_ANIMAL_MIN", "2") or "2")
 POPULATION_ANIMAL_MAX = int(os.environ.get("EUADOPT_POPULATION_ANIMAL_MAX", "5") or "5")
+_population_superuser_only = os.environ.get("EUADOPT_POPULATION_SUPERUSER_ONLY", "").strip().lower()
+POPULATION_SUPERUSER_ONLY_LOGIN = _population_superuser_only in ("1", "true", "yes", "on")
 
 # Ghid site (nor FAQ + Gemini fallback opțional). Implicit activ când DEBUG=1.
 _site_guide_on = os.environ.get("EUADOPT_SITE_GUIDE_ENABLED", "").strip().lower()
