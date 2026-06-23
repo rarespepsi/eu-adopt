@@ -321,7 +321,18 @@ def _promo_a2_nav_context(user) -> dict:
 
 
 def _promo_a2_flow_redirect(request, pet: AnimalListing):
-    """După respingere în fluxul promovare A2: cu anunțuri publicate → MyPet, altfel → PT."""
+    """După respingere în fluxul promovare A2: înapoi la PT/MyPet dacă e cazul, altfel fallback."""
+    referer = (request.META.get("HTTP_REFERER") or "").strip()
+    if referer:
+        try:
+            from urllib.parse import urlparse
+
+            ref = urlparse(referer)
+            req = urlparse(request.build_absolute_uri("/"))
+            if ref.netloc == req.netloc and ref.path.startswith(("/pets", "/mypet")):
+                return redirect(referer)
+        except Exception:
+            pass
     if _user_has_published_animals(request.user):
         return redirect("mypet")
     return redirect("pets_all")
@@ -765,8 +776,9 @@ def _adopter_messaging_allowed(pet, user) -> bool:
         return False
     if (pet.adoption_state or "").strip() == AnimalListing.ADOPTION_STATE_ADOPTED:
         return False
-    ap = getattr(user, "account_profile", None)
-    if ap and not ap.can_adopt_animals:
+    from home.population_onboarding import user_may_adopt_animals
+
+    if not user_may_adopt_animals(user):
         return False
     return True
 
@@ -4307,6 +4319,49 @@ def reclama_magazin_foto_transactions_view(request):
     )
 
 
+def _pet_ficha_back_url(request):
+    """
+    URL înapoi la lista de unde s-a deschis fișa (PT cu filtre, MyPet, I Love).
+    Fallback: Prietenul tău (/pets/).
+    """
+    allowed_roots = (
+        reverse("pets_all").rstrip("/"),
+        reverse("mypet").rstrip("/"),
+        reverse("i_love").rstrip("/"),
+    )
+
+    def _safe_list_url(raw: str) -> str:
+        raw = (raw or "").strip()
+        if not raw:
+            return ""
+        parsed = urlparse(raw)
+        if parsed.scheme or parsed.netloc:
+            if not parsed.netloc or parsed.netloc.lower() != request.get_host().lower():
+                return ""
+            path = parsed.path or "/"
+            query = parsed.query
+        else:
+            if not raw.startswith("/") or raw.startswith("//"):
+                return ""
+            parsed = urlparse(raw)
+            path = parsed.path or "/"
+            query = parsed.query
+        norm = path.rstrip("/") or "/"
+        if not any(norm == root for root in allowed_roots):
+            return ""
+        return path + (("?" + query) if query else "")
+
+    back_param = _safe_list_url(request.GET.get("back") or "")
+    if back_param:
+        return back_param
+
+    ref = _safe_list_url(request.META.get("HTTP_REFERER") or "")
+    if ref:
+        return ref
+
+    return reverse("pets_all")
+
+
 def dog_profile_view(request, pk):
     """
     Fișa câinelui (PT) – afișează datele reale din AnimalListing.
@@ -4386,14 +4441,13 @@ def dog_profile_view(request, pk):
         and (listing.species or "").strip().lower() in ("dog", "cat")
     )
 
-    viewer_can_adopt = False
-    if request.user.is_authenticated and request.user.pk != listing.owner_id:
-        ap = getattr(request.user, "account_profile", None)
-        if ap:
-            viewer_can_adopt = bool(ap.can_adopt_animals)
-        else:
-            # Fallback defensiv pentru conturi vechi fără profil rol.
-            viewer_can_adopt = True
+    from home.population_onboarding import population_ui_restricted_for_user, user_may_adopt_animals
+
+    viewer_can_adopt = bool(
+        request.user.is_authenticated
+        and request.user.pk != listing.owner_id
+        and user_may_adopt_animals(request.user)
+    )
 
     after_transport = (request.GET.get("after_transport") == "1")
     has_county = _adopter_has_county_for_transport(request.user) if request.user.is_authenticated else False
@@ -4403,20 +4457,17 @@ def dog_profile_view(request, pk):
         and request.user.pk != listing.owner_id
         and viewer_can_adopt
         and listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
+        and not population_ui_restricted_for_user(request.user)
     )
-    # Buton „VREAU SĂ ADOPT”: ascuns în faza populare (fără adopții).
-    from home.population_onboarding import population_access_restricted
-
+    # Buton „VREAU SĂ ADOPT”: ascuns în faza populare (fără adopții), exceptie superuser.
     show_pet_adopt_corner = bool(
-        not population_access_restricted()
+        not population_ui_restricted_for_user(request.user)
         and listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
         and (
             not request.user.is_authenticated
             or request.user.pk != listing.owner_id
         )
     )
-    if population_access_restricted():
-        can_send_pet_message = False
     ctx = {
         "pet": pet,
         "can_send_pet_message": can_send_pet_message,
@@ -4428,6 +4479,7 @@ def dog_profile_view(request, pk):
         "promote_allowed": promote_allowed,
         "adoption_after_transport": bool(after_transport),
         "adoption_transport_option_available": bool(has_county and not after_transport),
+        "pet_back_url": _pet_ficha_back_url(request),
     }
     return render(request, "anunturi/pets-single.html", ctx)
 
@@ -4449,10 +4501,6 @@ def promo_a2_order_view(request, pk):
 
     species_ok = (pet.species or "").strip().lower() in ("dog", "cat")
     if not species_ok:
-        messages.info(
-            request,
-            "Promovarea A2 este disponibilă doar pentru anunțuri câine sau pisică, publicate.",
-        )
         return _promo_a2_flow_redirect(request, pet)
 
     order_submitted = False
@@ -5376,6 +5424,17 @@ def admin_analysis_performance_view(request):
         return redirect(reverse("home"))
     ctx = staff_analysis_performance_page_context()
     return render(request, "anunturi/admin_analysis_performance.html", ctx)
+
+
+@login_required
+def admin_analysis_presence_view(request):
+    """Analiză / Prezență — trafic site și utilizatori online (staff)."""
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    from home.site_presence import staff_analysis_presence_page_context
+
+    ctx = staff_analysis_presence_page_context()
+    return render(request, "anunturi/admin_analysis_presence.html", ctx)
 
 
 STAFF_ONBOARDING_LEADS_PER_PAGE = 100
@@ -10158,8 +10217,9 @@ def pet_adoption_request_view(request, pk: int):
         return JsonResponse({"ok": False, "error": "Acest animal este deja adoptat."}, status=400)
     if pet.owner_id == request.user.id:
         return JsonResponse({"ok": False, "error": "Nu poți solicita adopția propriului anunț."}, status=400)
-    ap = getattr(request.user, "account_profile", None)
-    if ap and not ap.can_adopt_animals:
+    from home.population_onboarding import user_may_adopt_animals
+
+    if not user_may_adopt_animals(request.user):
         return JsonResponse(
             {"ok": False, "error": "Tipul de cont nu poate solicita adopții."},
             status=403,

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Analiza - Prezență{% endblock %}
+{% block body_class %}page-admin-analysis{% endblock %}
+
+{% block extra_css %}
+<style>
+	body.page-admin-analysis { overflow: hidden !important; height: 100dvh; }
+	body.page-admin-analysis #main_wrap { height: 100dvh !important; overflow: hidden !important; display: flex; flex-direction: column; }
+	body.page-admin-analysis .layout { grid-template-columns: 1fr; height: 100%; min-height: 0; }
+	body.page-admin-analysis .sidebar-left, body.page-admin-analysis .sidebar-right { display: none; }
+	body.page-admin-analysis #main_content { height: calc(100dvh - var(--nav-h, 64px)) !important; min-height: calc(100dvh - var(--nav-h, 64px)) !important; flex: 1 1 auto; overflow: hidden; padding: 0; box-sizing: border-box; }
+	body.page-admin-analysis .main-content { max-width: 100%; padding: 0; height: 100%; overflow: hidden; }
+	.analysis-shell { min-height: 100%; height: 100%; border: 2px solid rgba(21, 101, 192, 0.75); border-radius: 14px; padding: 0.75rem; box-sizing: border-box; background: transparent; display: flex; flex-direction: column; min-height: 0; }
+	.analysis-shell-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.35rem 0.65rem; }
+	.analysis-shell h1 { margin: 0; font-size: 1rem; font-weight: 800; color: #0d47a1; text-transform: uppercase; }
+	.analysis-shell-meta { font-size: 0.65rem; font-weight: 700; color: #455a64; }
+	.analysis-subnav { margin-top: 0.45rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+	.analysis-subnav a { text-decoration: none; padding: 0.2rem 0.45rem; border-radius: 999px; border: 1px solid rgba(13, 71, 161, 0.5); color: #0d47a1; font-size: 0.72rem; font-weight: 700; }
+	.analysis-subnav a.is-active { background: rgba(21, 101, 192, 0.14); font-weight: 900; }
+	.presence-layout { margin-top: 0.55rem; flex: 1 1 auto; min-height: 0; display: grid; grid-template-rows: auto auto 1fr; gap: 0.5rem; overflow: hidden; }
+	.presence-section-title { margin: 0; font-size: 0.72rem; font-weight: 900; text-transform: uppercase; color: #0d47a1; letter-spacing: 0.03em; }
+	.presence-kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.45rem; }
+	.presence-kpi { border-radius: 10px; padding: 0.42rem 0.45rem; border: 1px solid rgba(0,0,0,0.18); min-height: 2.45rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.08rem; color: #1a1a1a; font-weight: 800; text-align: center; }
+	.presence-kpi-num { font-size: 1.12rem; font-weight: 900; line-height: 1.1; }
+	.presence-kpi-label { font-size: 0.64rem; line-height: 1.15; }
+	.presence-kpi-live { background: rgba(129, 212, 250, 0.72); box-shadow: 0 0 0 1px rgba(3, 155, 229, 0.25) inset; }
+	.presence-kpi-1 { background: rgba(197, 225, 165, 0.62); }
+	.presence-kpi-2 { background: rgba(255, 245, 157, 0.62); }
+	.presence-kpi-3 { background: rgba(255, 224, 178, 0.62); }
+	.presence-kpi-4 { background: rgba(206, 147, 216, 0.52); }
+	.presence-kpi-5 { background: rgba(178, 223, 219, 0.62); }
+	.presence-periods { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.45rem; }
+	.presence-period { border-radius: 10px; border: 1px solid rgba(0,0,0,0.18); padding: 0.45rem 0.5rem; background: rgba(255,255,255,0.52); min-height: 4.6rem; display: flex; flex-direction: column; gap: 0.28rem; }
+	.presence-period h3 { margin: 0; font-size: 0.72rem; font-weight: 900; text-transform: uppercase; color: #1565c0; }
+	.presence-period dl { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 0.12rem 0.35rem; font-size: 0.68rem; font-weight: 700; color: #263238; }
+	.presence-period dt { opacity: 0.88; }
+	.presence-period dd { margin: 0; font-weight: 900; color: #0d47a1; text-align: right; }
+	.presence-table-wrap { min-height: 0; overflow: auto; border-radius: 10px; border: 1px solid rgba(0,0,0,0.18); background: rgba(255,255,255,0.48); padding: 0.45rem 0.55rem; }
+	.presence-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; font-weight: 700; }
+	.presence-table th, .presence-table td { padding: 0.28rem 0.35rem; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.08); }
+	.presence-table th { font-size: 0.66rem; text-transform: uppercase; color: #0d47a1; }
+	.presence-table tr.is-today { background: rgba(129, 212, 250, 0.28); font-weight: 900; }
+	.presence-note { margin: 0.35rem 0 0; font-size: 0.64rem; font-weight: 600; color: #546e7a; line-height: 1.35; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="analysis-shell" aria-label="Analiza Prezență">
+	<div class="analysis-shell-head">
+		<h1>Analiza / Prezență</h1>
+		<span class="analysis-shell-meta">Verificat: {{ presence_checked_at|date:"d.m.Y H:i" }} · online = activitate în ultimele {{ presence_online_window }} min</span>
+	</div>
+	{% include "anunturi/includes/admin_analysis_subnav.html" with presence_nav_active=1 %}
+	<div class="presence-layout">
+		<div>
+			<h2 class="presence-section-title">Acum pe site</h2>
+			<div class="presence-kpis" style="margin-top:0.35rem;">
+				<div class="presence-kpi presence-kpi-live" title="Sesiuni distincte active recent">
+					<span class="presence-kpi-num">{{ presence_online_visitors }}</span>
+					<span class="presence-kpi-label">Vizitatori online</span>
+				</div>
+				<div class="presence-kpi presence-kpi-live" title="Conturi autentificate active recent">
+					<span class="presence-kpi-num">{{ presence_online_logged_in }}</span>
+					<span class="presence-kpi-label">Logați online</span>
+				</div>
+				<div class="presence-kpi presence-kpi-1">
+					<span class="presence-kpi-num">{{ presence_today_visitors }}</span>
+					<span class="presence-kpi-label">Unici azi</span>
+				</div>
+				<div class="presence-kpi presence-kpi-2">
+					<span class="presence-kpi-num">{{ presence_today_page_views }}</span>
+					<span class="presence-kpi-label">Pagini azi</span>
+				</div>
+				<div class="presence-kpi presence-kpi-3">
+					<span class="presence-kpi-num">{{ presence_today_logged_in }}</span>
+					<span class="presence-kpi-label">Logați unici azi</span>
+				</div>
+			</div>
+		</div>
+		<div>
+			<h2 class="presence-section-title">Trafic agregat</h2>
+			<div class="presence-periods" style="margin-top:0.35rem;">
+				<section class="presence-period" aria-label="Astăzi">
+					<h3>Astăzi</h3>
+					<dl>
+						<dt>Vizitatori unici</dt><dd>{{ presence_today_visitors }}</dd>
+						<dt>Pagini văzute</dt><dd>{{ presence_today_page_views }}</dd>
+						<dt>Logați unici</dt><dd>{{ presence_today_logged_in }}</dd>
+					</dl>
+				</section>
+				<section class="presence-period" aria-label="Ultimele 7 zile">
+					<h3>7 zile</h3>
+					<dl>
+						<dt>Vizitatori unici</dt><dd>{{ presence_week_visitors }}</dd>
+						<dt>Pagini văzute</dt><dd>{{ presence_week_page_views }}</dd>
+						<dt>Logați unici</dt><dd>{{ presence_week_logged_in }}</dd>
+					</dl>
+				</section>
+				<section class="presence-period" aria-label="Luna curentă">
+					<h3>Luna curentă</h3>
+					<dl>
+						<dt>Vizitatori unici</dt><dd>{{ presence_month_visitors }}</dd>
+						<dt>Pagini văzute</dt><dd>{{ presence_month_page_views }}</dd>
+						<dt>Logați unici</dt><dd>{{ presence_month_logged_in }}</dd>
+					</dl>
+				</section>
+				<section class="presence-period" aria-label="Anul curent">
+					<h3>Anul curent</h3>
+					<dl>
+						<dt>Vizitatori unici</dt><dd>{{ presence_year_visitors }}</dd>
+						<dt>Pagini văzute</dt><dd>{{ presence_year_page_views }}</dd>
+						<dt>Logați unici</dt><dd>{{ presence_year_logged_in }}</dd>
+					</dl>
+				</section>
+			</div>
+		</div>
+		<div class="presence-table-wrap">
+			<h2 class="presence-section-title">Ultimele 7 zile (detaliu)</h2>
+			<table class="presence-table">
+				<thead>
+					<tr>
+						<th>Zi</th>
+						<th>Vizitatori</th>
+						<th>Pagini</th>
+						<th>Logați</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for row in presence_recent_days %}
+					<tr class="{% if row.is_today %}is-today{% endif %}">
+						<td>{{ row.label }}</td>
+						<td>{{ row.visitors }}</td>
+						<td>{{ row.page_views }}</td>
+						<td>{{ row.logged_in }}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			<p class="presence-note">Datele se acumulează de la activarea modulului Prezență. „Vizitatori unici” = sesiuni distincte; „Logați” = conturi autentificate. Nu include fișiere static/media.</p>
+		</div>
+	</div>
+</section>
+{% endblock %}

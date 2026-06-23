@@ -2074,3 +2074,88 @@ class StaffOnboardingInviteInbound(models.Model):
     def __str__(self):
         return f"{self.kind} {self.from_email} ({self.received_at:%Y-%m-%d})"
 
+
+class SitePresenceDaily(models.Model):
+    """Agregat zilnic: vizite site (Analiză / Prezență)."""
+
+    date = models.DateField(unique=True, db_index=True)
+    page_views = models.PositiveIntegerField(default=0)
+    unique_visitors = models.PositiveIntegerField(default=0)
+    unique_logged_in = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "Prezență site — zi"
+        verbose_name_plural = "Prezență site — zile"
+        ordering = ["-date"]
+
+    def __str__(self):
+        return f"{self.date} · {self.unique_visitors} viz · {self.page_views} pv"
+
+
+class SitePresenceDaySession(models.Model):
+    """Vizitator unic (sesiune) per zi — deduplicare."""
+
+    day = models.DateField(db_index=True)
+    session_hash = models.CharField(max_length=64, db_index=True)
+
+    class Meta:
+        verbose_name = "Prezență sesiune zi"
+        verbose_name_plural = "Prezență sesiuni zilnice"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["day", "session_hash"],
+                name="home_site_presence_day_sess_uniq",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["day", "session_hash"]),
+        ]
+
+    def __str__(self):
+        return f"{self.day} · {self.session_hash[:8]}…"
+
+
+class SitePresenceDayUser(models.Model):
+    """Utilizator autentificat activ (unic) per zi."""
+
+    day = models.DateField(db_index=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="presence_days")
+
+    class Meta:
+        verbose_name = "Prezență user zi"
+        verbose_name_plural = "Prezență useri zilnic"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["day", "user"],
+                name="home_site_presence_day_user_uniq",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.day} · user {self.user_id}"
+
+
+class SitePresenceActive(models.Model):
+    """Ultima activitate per sesiune — „online acum” (fereastră glisantă)."""
+
+    session_hash = models.CharField(max_length=64, primary_key=True)
+    last_seen = models.DateTimeField(db_index=True)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="presence_active_sessions",
+    )
+
+    class Meta:
+        verbose_name = "Sesiune activă"
+        verbose_name_plural = "Sesiuni active"
+        indexes = [
+            models.Index(fields=["-last_seen"]),
+            models.Index(fields=["last_seen", "user"]),
+        ]
+
+    def __str__(self):
+        return f"{self.session_hash[:8]}… @ {self.last_seen:%H:%M}"
+

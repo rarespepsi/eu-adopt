@@ -52,6 +52,12 @@ FILTER_PARTNER_PUB_PENDING = "pub_pending"
 FILTER_DOGS_RECENT = "dogs_recent"
 FILTER_CATS_RECENT = "cats_recent"
 FILTER_USERS_RECENT = "users_recent"
+FILTER_USERS_ALL_ACTIVE = "users_all_active"
+FILTER_USERS_PF = "users_pf"
+FILTER_USERS_ORG = "users_org"
+FILTER_USERS_COLLAB = "users_collab"
+FILTER_USERS_STAFF = "users_staff"
+FILTER_USERS_INACTIVE = "users_inactive"
 
 def _admin_change_url(model: type[Model], pk: int) -> str:
     meta = model._meta
@@ -101,6 +107,12 @@ FILTER_LABELS = {
     FILTER_DOGS_RECENT: "Câini noi (ultimele 14 zile)",
     FILTER_CATS_RECENT: "Pisici noi (ultimele 14 zile)",
     FILTER_USERS_RECENT: "Utilizatori noi (ultimele 30 zile)",
+    FILTER_USERS_ALL_ACTIVE: "Toți utilizatorii activi",
+    FILTER_USERS_PF: "Utilizatori PF activi",
+    FILTER_USERS_ORG: "Utilizatori ONG / SRL activi",
+    FILTER_USERS_COLLAB: "Colaboratori activi",
+    FILTER_USERS_STAFF: "Staff / superuser activi",
+    FILTER_USERS_INACTIVE: "Conturi inactive",
 }
 
 
@@ -512,14 +524,42 @@ def staff_analysis_cats_kpis() -> dict[str, int]:
 
 def staff_analysis_users_kpis() -> dict[str, int]:
     User = get_user_model()
-    qs = User.objects.filter(is_staff=False)
+    active = User.objects.filter(is_active=True)
+    non_staff_active = active.filter(is_staff=False)
     return {
-        "total": qs.filter(is_active=True).count(),
-        "pf": qs.filter(is_active=True, account_profile__role=AccountProfile.ROLE_PF).count(),
-        "org": qs.filter(is_active=True, account_profile__role=AccountProfile.ROLE_ORG).count(),
-        "collab": qs.filter(is_active=True, account_profile__role=AccountProfile.ROLE_COLLAB).count(),
-        "inactive": qs.filter(is_active=False).count(),
+        "total": active.count(),
+        "pf": non_staff_active.filter(account_profile__role=AccountProfile.ROLE_PF).count(),
+        "org": non_staff_active.filter(account_profile__role=AccountProfile.ROLE_ORG).count(),
+        "collab": non_staff_active.filter(account_profile__role=AccountProfile.ROLE_COLLAB).count(),
+        "staff": active.filter(is_staff=True).count(),
+        "inactive": User.objects.filter(is_active=False).count(),
     }
+
+
+def _user_filter_role_label(user) -> str:
+    if user.is_superuser:
+        return "Superuser"
+    if user.is_staff:
+        return "Staff"
+    profile = getattr(user, "account_profile", None)
+    if profile:
+        return profile.get_role_display()
+    return "—"
+
+
+def _users_filter_items_for_queryset(qs) -> list[dict[str, str | bool]]:
+    User = get_user_model()
+    items: list[dict[str, str | bool]] = []
+    for u in qs.select_related("account_profile").order_by("-date_joined", "-last_login")[:ANALYSIS_LIST_LIMIT]:
+        items.append(
+            _filter_item(
+                u.email or u.username,
+                f"{_user_filter_role_label(u)} · înreg. {u.date_joined:%d.%m.%Y %H:%M}",
+                action_url=_admin_change_url(User, u.pk),
+                action_label="Admin — cont utilizator",
+            )
+        )
+    return items
 
 
 def staff_analysis_alerts_kpis() -> dict[str, int]:
@@ -741,12 +781,20 @@ def staff_analysis_users_page_context(filter_key: str | None) -> dict[str, Any]:
     ctx["users_kpis"] = kpis
     month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     ctx["users_dist_lines"] = [
-        f"PF {kpis['pf']} · ONG {kpis['org']} · Colab {kpis['collab']}",
-        f"Activi total: {kpis['total']}",
+        f"PF {kpis['pf']} · ONG {kpis['org']} · Colab {kpis['collab']} · Staff {kpis['staff']}",
+        f"Activi total: {kpis['total']} (inclusiv staff)",
         f"Inactivi: {kpis['inactive']}",
-        f"Noi luna curentă: {get_user_model().objects.filter(is_staff=False, date_joined__gte=month_start).count()}",
-        f"Noi 30 zile: {get_user_model().objects.filter(is_staff=False, date_joined__gte=timezone.now() - timedelta(days=30)).count()}",
+        f"Noi luna curentă: {get_user_model().objects.filter(date_joined__gte=month_start).count()}",
+        f"Noi 30 zile: {get_user_model().objects.filter(date_joined__gte=timezone.now() - timedelta(days=30)).count()}",
     ]
+    ctx["users_kpi_links"] = {
+        "total": _users_filter_url(FILTER_USERS_ALL_ACTIVE),
+        "pf": _users_filter_url(FILTER_USERS_PF),
+        "org": _users_filter_url(FILTER_USERS_ORG),
+        "collab": _users_filter_url(FILTER_USERS_COLLAB),
+        "staff": _users_filter_url(FILTER_USERS_STAFF),
+        "inactive": _users_filter_url(FILTER_USERS_INACTIVE),
+    }
     ctx["users_attention_rows"] = [
         {
             "label": "Conturi neactivate (email)",
@@ -764,7 +812,7 @@ def staff_analysis_users_page_context(filter_key: str | None) -> dict[str, Any]:
             "label": "Utilizatori noi (30 zile)",
             "url": _users_filter_url(FILTER_USERS_RECENT),
             "count": get_user_model()
-            .objects.filter(is_staff=False, date_joined__gte=timezone.now() - timedelta(days=30))
+            .objects.filter(date_joined__gte=timezone.now() - timedelta(days=30))
             .count(),
         },
         {
@@ -1319,23 +1367,44 @@ def staff_analysis_filter_context(filter_key: str | None) -> dict[str, Any]:
 
     elif filter_key == FILTER_USERS_RECENT:
         since = now - timedelta(days=30)
-        qs = (
-            User.objects.filter(is_staff=False, date_joined__gte=since)
-            .select_related("account_profile")
-            .order_by("-date_joined")[:ANALYSIS_LIST_LIMIT]
-        )
-        for u in qs:
-            role = ""
-            if hasattr(u, "account_profile") and u.account_profile:
-                role = u.account_profile.get_role_display()
-            items.append(
-                _filter_item(
-                    u.email or u.username,
-                    f"{role} · {u.date_joined:%d.%m.%Y %H:%M}",
-                    action_url=_admin_change_url(User, u.pk),
-                    action_label="Admin — cont utilizator",
-                )
-            )
+        qs = User.objects.filter(date_joined__gte=since).order_by("-date_joined")
+        items = _users_filter_items_for_queryset(qs)
+
+    elif filter_key == FILTER_USERS_ALL_ACTIVE:
+        qs = User.objects.filter(is_active=True).order_by("-date_joined")
+        items = _users_filter_items_for_queryset(qs)
+
+    elif filter_key == FILTER_USERS_PF:
+        qs = User.objects.filter(
+            is_active=True,
+            is_staff=False,
+            account_profile__role=AccountProfile.ROLE_PF,
+        ).order_by("-date_joined")
+        items = _users_filter_items_for_queryset(qs)
+
+    elif filter_key == FILTER_USERS_ORG:
+        qs = User.objects.filter(
+            is_active=True,
+            is_staff=False,
+            account_profile__role=AccountProfile.ROLE_ORG,
+        ).order_by("-date_joined")
+        items = _users_filter_items_for_queryset(qs)
+
+    elif filter_key == FILTER_USERS_COLLAB:
+        qs = User.objects.filter(
+            is_active=True,
+            is_staff=False,
+            account_profile__role=AccountProfile.ROLE_COLLAB,
+        ).order_by("-date_joined")
+        items = _users_filter_items_for_queryset(qs)
+
+    elif filter_key == FILTER_USERS_STAFF:
+        qs = User.objects.filter(is_active=True, is_staff=True).order_by("-date_joined")
+        items = _users_filter_items_for_queryset(qs)
+
+    elif filter_key == FILTER_USERS_INACTIVE:
+        qs = User.objects.filter(is_active=False).order_by("-date_joined")
+        items = _users_filter_items_for_queryset(qs)
 
     elif filter_key == FILTER_EXPIRED_PARTNERS:
         today = timezone.localdate()
@@ -1441,7 +1510,31 @@ def staff_analysis_filter_context(filter_key: str | None) -> dict[str, Any]:
         total = AnimalListing.objects.filter(_published_cat_q(), created_at__gte=since).count()
     elif filter_key == FILTER_USERS_RECENT:
         since = now - timedelta(days=30)
-        total = User.objects.filter(is_staff=False, date_joined__gte=since).count()
+        total = User.objects.filter(date_joined__gte=since).count()
+    elif filter_key == FILTER_USERS_ALL_ACTIVE:
+        total = User.objects.filter(is_active=True).count()
+    elif filter_key == FILTER_USERS_PF:
+        total = User.objects.filter(
+            is_active=True,
+            is_staff=False,
+            account_profile__role=AccountProfile.ROLE_PF,
+        ).count()
+    elif filter_key == FILTER_USERS_ORG:
+        total = User.objects.filter(
+            is_active=True,
+            is_staff=False,
+            account_profile__role=AccountProfile.ROLE_ORG,
+        ).count()
+    elif filter_key == FILTER_USERS_COLLAB:
+        total = User.objects.filter(
+            is_active=True,
+            is_staff=False,
+            account_profile__role=AccountProfile.ROLE_COLLAB,
+        ).count()
+    elif filter_key == FILTER_USERS_STAFF:
+        total = User.objects.filter(is_active=True, is_staff=True).count()
+    elif filter_key == FILTER_USERS_INACTIVE:
+        total = User.objects.filter(is_active=False).count()
 
     return {
         "analysis_filter": filter_key,

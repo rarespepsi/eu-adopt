@@ -54,6 +54,37 @@ def is_staff_user(user) -> bool:
     )
 
 
+def is_superuser_full_access(user) -> bool:
+    """
+    Superuser: excepție permanentă — fără rol din profil în UI, acces vizual și funcțional
+    ca toate tipurile de cont (PF / ONG / colaborator), inclusiv în faza populare.
+    """
+    return bool(
+        user
+        and getattr(user, "is_authenticated", False)
+        and getattr(user, "is_superuser", False)
+    )
+
+
+def population_ui_restricted_for_user(user) -> bool:
+    """Populare ascunde UI adopție/mesaje — superuser exceptat."""
+    if is_superuser_full_access(user):
+        return False
+    return population_access_restricted()
+
+
+def user_may_adopt_animals(user) -> bool:
+    """Poate adopta / mesaje către owner. Superuser exceptat de rolul din profil."""
+    if is_superuser_full_access(user):
+        return True
+    if not user or not getattr(user, "is_authenticated", False):
+        return False
+    ap = getattr(user, "account_profile", None)
+    if ap:
+        return bool(ap.can_adopt_animals)
+    return True
+
+
 def population_access_restricted() -> bool:
     """Populare + prelaunch: login și rute limitate."""
     if not is_population_onboarding_enabled():
@@ -128,7 +159,7 @@ def is_population_blocked_path_for_org(path: str) -> bool:
 
 def population_redirect_for_org_user(user, path: str) -> str | None:
     """URL redirect dacă adăpost/ONG nu poate accesa path-ul în populare."""
-    if not is_org_population_user(user) or is_staff_user(user):
+    if not is_org_population_user(user) or is_staff_user(user) or is_superuser_full_access(user):
         return None
     if not is_population_blocked_path_for_org(path):
         return None

@@ -40,7 +40,7 @@
 	.users-row { min-height: 0; }
 	.users-kpis {
 		display: grid;
-		grid-template-columns: repeat(5, minmax(0, 1fr));
+		grid-template-columns: repeat(6, minmax(0, 1fr));
 		gap: 0.45rem;
 	}
 	.users-kpi {
@@ -58,7 +58,10 @@
 		flex-direction: column;
 		justify-content: center;
 		gap: 0.08rem;
+		text-decoration: none;
+		cursor: pointer;
 	}
+	.users-kpi:hover { filter: brightness(1.04); box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
 	.users-kpi-num { font-size: 1.05rem; font-weight: 900; }
 	.users-kpi-label { font-size: 0.68rem; }
 	.users-panel-link { display:flex;justify-content:space-between;padding:0.28rem 0.35rem;text-decoration:none;color:inherit;border-radius:6px; }
@@ -70,6 +73,7 @@
 	.users-kpi-3 { background: rgba(178, 223, 219, 0.62); }
 	.users-kpi-4 { background: rgba(255, 245, 157, 0.62); }
 	.users-kpi-5 { background: rgba(255, 224, 178, 0.62); }
+	.users-kpi-6 { background: rgba(206, 147, 216, 0.52); }
 	.users-distributions {
 		display: grid;
 		grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -283,11 +287,12 @@
 	</dialog>
 	<div class="users-layout">
 		<div class="users-row users-kpis">
-			<div class="users-kpi users-kpi-1"><span class="users-kpi-num">{{ users_kpis.total }}</span><span class="users-kpi-label">Total useri</span></div>
-			<div class="users-kpi users-kpi-2"><span class="users-kpi-num">{{ users_kpis.pf }}</span><span class="users-kpi-label">PF</span></div>
-			<div class="users-kpi users-kpi-3"><span class="users-kpi-num">{{ users_kpis.org }}</span><span class="users-kpi-label">ONG / SRL</span></div>
-			<div class="users-kpi users-kpi-4"><span class="users-kpi-num">{{ users_kpis.collab }}</span><span class="users-kpi-label">Colaboratori</span></div>
-			<div class="users-kpi users-kpi-5"><span class="users-kpi-num">{{ users_kpis.inactive }}</span><span class="users-kpi-label">Inactivi</span></div>
+			<a href="{{ users_kpi_links.total }}" class="users-kpi users-kpi-1" title="Toți utilizatorii activi (inclusiv staff)"><span class="users-kpi-num">{{ users_kpis.total }}</span><span class="users-kpi-label">Total activi</span></a>
+			<a href="{{ users_kpi_links.pf }}" class="users-kpi users-kpi-2"><span class="users-kpi-num">{{ users_kpis.pf }}</span><span class="users-kpi-label">PF</span></a>
+			<a href="{{ users_kpi_links.org }}" class="users-kpi users-kpi-3"><span class="users-kpi-num">{{ users_kpis.org }}</span><span class="users-kpi-label">ONG / SRL</span></a>
+			<a href="{{ users_kpi_links.collab }}" class="users-kpi users-kpi-4"><span class="users-kpi-num">{{ users_kpis.collab }}</span><span class="users-kpi-label">Colaboratori</span></a>
+			<a href="{{ users_kpi_links.staff }}" class="users-kpi users-kpi-6" title="Staff și superuser"><span class="users-kpi-num">{{ users_kpis.staff }}</span><span class="users-kpi-label">Staff</span></a>
+			<a href="{{ users_kpi_links.inactive }}" class="users-kpi users-kpi-5"><span class="users-kpi-num">{{ users_kpis.inactive }}</span><span class="users-kpi-label">Inactivi</span></a>
 		</div>
 		<div class="users-row users-distributions">
 			{% for line in users_dist_lines %}

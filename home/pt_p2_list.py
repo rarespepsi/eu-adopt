@@ -21,14 +21,14 @@ def _adoption_state_label(state: str) -> str:
 
 def _pt_p2_annotate_ask_plic(p2_list, request):
     """Card PT: plic lângă inimă — doar dacă userul ar putea trimite mesaj din fișă către owner."""
+    from .population_onboarding import user_may_adopt_animals
+
     for row in p2_list:
         row["show_pt_ask_plic"] = False
     user = getattr(request, "user", None)
     if not user or not user.is_authenticated:
         return
-    ap = getattr(user, "account_profile", None)
-    viewer_can_adopt = bool(ap.can_adopt_animals) if ap else True
-    if not viewer_can_adopt:
+    if not user_may_adopt_animals(user):
         return
     uid = int(user.pk)
     for row in p2_list:
@@ -44,6 +44,13 @@ def _pt_p2_annotate_ask_plic(p2_list, request):
         if st == AnimalListing.ADOPTION_STATE_ADOPTED:
             continue
         row["show_pt_ask_plic"] = True
+
+
+def _pt_p2_annotate_show_promo(p2_list):
+    """Megafon Promo A2: doar anunțuri reale din DB, câine/pisică (fără demo / padding)."""
+    for row in p2_list:
+        sp = (row.get("species") or "").strip().lower()
+        row["show_pt_promo"] = sp in ("dog", "cat") and "adoption_state" in row
 
 
 def pt_pets_page_context(request):
@@ -161,6 +168,7 @@ def pt_pets_page_context(request):
                         "adoption_state": listing.adoption_state,
                         "adoption_state_label": _adoption_state_label(listing.adoption_state),
                         "owner_id": listing.owner_id,
+                        "species": (listing.species or "").strip().lower(),
                         "traits": [],
                     }
                 )
@@ -170,6 +178,7 @@ def pt_pets_page_context(request):
                     {
                         "pk": d["id"],
                         "nume": d["nume"],
+                        "species": "dog",
                         "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
                         "traits": (d.get("traits") or [])[:2],
                     }
@@ -185,6 +194,7 @@ def pt_pets_page_context(request):
                     {
                         "pk": d["id"],
                         "nume": d["nume"],
+                        "species": "dog",
                         "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
                         "traits": (d.get("traits") or [])[:2],
                     }
@@ -199,6 +209,7 @@ def pt_pets_page_context(request):
                     {
                         "pk": d["id"],
                         "nume": d["nume"],
+                        "species": "dog",
                         "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
                         "traits": (d.get("traits") or [])[:2],
                     }
@@ -248,6 +259,7 @@ def pt_pets_page_context(request):
                         "adoption_state": listing.adoption_state,
                         "adoption_state_label": _adoption_state_label(listing.adoption_state),
                         "owner_id": listing.owner_id,
+                        "species": (listing.species or "").strip().lower(),
                         "traits": [],
                     }
                 )
@@ -269,6 +281,7 @@ def pt_pets_page_context(request):
                 p2_list.append(d)
 
     _pt_p2_annotate_ask_plic(p2_list, request)
+    _pt_p2_annotate_show_promo(p2_list)
 
     return {
         "p2_list": p2_list,

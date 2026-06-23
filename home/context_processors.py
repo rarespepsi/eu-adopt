@@ -97,9 +97,14 @@ def _get_display_role(request):
     """
     Rol folosit pentru afișare („Vezi ca”): dacă userul e staff și a ales view_as în sesiune,
     returnăm acel rol; altfel rolul real din account_profile.
+    Superuser: fără rol afișat (excepție — acces complet în UI).
     """
+    from home.population_onboarding import is_superuser_full_access
+
     user = getattr(request, "user", None)
     if not user or not user.is_authenticated:
+        return None
+    if is_superuser_full_access(user):
         return None
     if user.is_staff or getattr(user, "is_superuser", False):
         view_as = request.session.get("view_as_role")
@@ -186,11 +191,17 @@ def wishlist_counts(request):
     active_animals = len(DEMO_DOGS)
     adopted_animals = 0
 
+    from home.population_onboarding import is_superuser_full_access
+
     display_role = _get_display_role(request)
+    superuser_full_access = is_superuser_full_access(user)
     # MyPet → PF / ONG. Magazinul meu → colaborator. Staff: după „Vezi ca …”.
     if not user or not user.is_authenticated:
         show_mypet_nav = False
         show_magazinul_meu_nav = False
+    elif superuser_full_access:
+        show_mypet_nav = True
+        show_magazinul_meu_nav = True
     elif user.is_staff or getattr(user, "is_superuser", False):
         try:
             real_role = user.account_profile.role
@@ -271,6 +282,7 @@ def wishlist_counts(request):
         "active_animals": active_animals,
         "adopted_animals": adopted_animals,
         "display_role": display_role,
+        "superuser_full_access": superuser_full_access,
         "show_mypet_nav": show_mypet_nav,
         "show_magazinul_meu_nav": show_magazinul_meu_nav,
         "is_viewing_as_collaborator": is_viewing_as_collaborator,

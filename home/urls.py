@@ -43,6 +43,7 @@ urlpatterns = [
     path('admin-analysis/alerts/', views.admin_analysis_alerts_view, name='admin_analysis_alerts'),
     path('admin-analysis/partners/', views.admin_analysis_partners_view, name='admin_analysis_partners'),
     path('admin-analysis/performance/', views.admin_analysis_performance_view, name='admin_analysis_performance'),
+    path('admin-analysis/prezenta/', views.admin_analysis_presence_view, name='admin_analysis_presence'),
     path('admin-analysis/add-user/', views.admin_analysis_add_user_view, name='admin_analysis_add_user'),
     path('admin-analysis/add-user/lead/delete/', views.admin_analysis_add_user_lead_delete_view, name='admin_analysis_add_user_lead_delete'),
     path('admin-analysis/add-user/invite-send/', views.admin_analysis_add_user_invite_send_view, name='admin_analysis_add_user_invite_send'),

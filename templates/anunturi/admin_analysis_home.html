@@ -68,6 +68,7 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		gap: 0.35rem;
 		min-width: 0;
 	}
 	.analysis-btn-comercial {
@@ -83,6 +84,18 @@
 		flex-shrink: 0;
 	}
 	.analysis-btn-comercial:hover { background: rgba(21, 101, 192, 0.12); }
+	.analysis-btn-prezenta {
+		text-decoration: none;
+		padding: 0.2rem 0.45rem;
+		border-radius: 6px;
+		border: 1px solid rgba(46, 125, 50, 0.55);
+		font-size: 0.7rem;
+		font-weight: 800;
+		color: #2e7d32;
+		background: rgba(129, 199, 132, 0.22);
+		letter-spacing: 0.04em;
+	}
+	.analysis-btn-prezenta:hover { background: rgba(46, 125, 50, 0.16); }
 	.analysis-home-shell h1 {
 		margin: 0;
 		font-size: 1rem;
@@ -336,6 +349,7 @@
 			<h1>Analiza - Pagina principala</h1>
 		</div>
 		<div class="analysis-home-header-center">
+			<a href="{% url 'admin_analysis_presence' %}" class="analysis-btn-prezenta">PREZENȚĂ</a>
 			<a href="{% url 'admin_analysis_add_user' %}" class="analysis-btn-comercial">Add USER</a>
 		</div>
 		<div class="analysis-view-as">
