@@ -148,11 +148,14 @@ OTHER_NAMES = [
     "Chinchilla Alba",
     "Chinchilla Gri",
     "Pixi",
-    "Leo",
+    "Pufi",
     "Tudi",
     "Dolly",
     "Tris",
     "Mimi",
+    "Nori",
+    "Zori",
+    "Bibi",
 ]
 
 OTHER_SPECIES_LABEL = [
@@ -170,6 +173,8 @@ OTHER_SPECIES_LABEL = [
     "rată",
     "veveriță",
     "hamster",
+    "porcupine",
+    "gecko",
 ]
 
 TRAIT_FIELDS = (
