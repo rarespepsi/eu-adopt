@@ -99,6 +99,12 @@ DOG_NAMES = [
     "Sam",
     "Toby",
     "Zeus",
+    "Rex",
+    "Luna",
+    "Max",
+    "Bailey",
+    "Cody",
+    "Ace",
 ]
 
 CAT_NAMES = [
@@ -124,6 +130,12 @@ CAT_NAMES = [
     "Pixel",
     "Ruby",
     "Sassy",
+    "Mitzi",
+    "Oscar",
+    "Nala",
+    "Oreo",
+    "Pumpkin",
+    "Binx",
 ]
 
 OTHER_NAMES = [
