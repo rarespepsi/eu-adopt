@@ -1,5 +1,7 @@
 # Local / secrets – do not commit
-.cursor/
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
 .env
 
 # Python bytecode / caches

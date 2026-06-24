@@ -1,0 +1,144 @@
+---
+description: Procedură obligatorie backup (rotație 3), deploy Hetzner și rollback — orice agent.
+alwaysApply: true
+---
+
+# BACKUP, DEPLOY ȘI ROLLBACK — PROCEDURĂ AGENT
+
+**Referință detaliată:** `docs/BACKUP_ROLLBACK.md` · **Deploy:** `docs/DEPLOY_HETZNER_PRELAUNCH.md`
+
+**Infrastructură memorată:**
+- **GitHub:** `rarespepsi/eu-adopt` · branch `main`
+- **Hetzner:** `178.104.31.52` · app `/opt/eu-adopt` · user serviciu `euadopt` · systemd `euadopt`
+- **Domeniu:** `https://eu-adopt.ro`
+- **DB producție:** PostgreSQL `euadopt` pe Hetzner
+
+---
+
+## 1. Când rulezi backup / deploy
+
+| Situație | Acțiune agent |
+|----------|----------------|
+| Utilizator cere **deploy pe H** / „pune pe server” / „fă push și deploy” | Flux complet mai jos (§3) |
+| După **commit + push** cu modificări pe site | Propune sau execută deploy (cu `1977` + OK dacă nu e deja în mesaj) |
+| Deploy cu **migrări Django noi** | Obligatoriu backup DB înainte (`deploy_update.sh` face asta automat) |
+| Utilizator raportează **defect pe live** | Rollback în cascadă (§4), nu improviza |
+
+**Nu** comite fișiere secrete: `.env`, dump-uri DB, `database/exports/*` cu PII.
+
+---
+
+## 2. Rotație 3 — ce există deja (automat)
+
+### A) Copii „bune” cod pe PC (ultimele 3 ZIP)
+
+- **Script:** `scripts/backup_good_release_rotate.ps1`
+- **Locație:** `%USERPROFILE%\Desktop\EU-Adopt-backups\good-releases\`
+- **Format:** `good_YYYYMMDD_HHMMSS_<sha>.zip` + `.txt` cu commit
+- La al 4-lea backup → **șterge automat** cel mai vechi
+
+### B) Dump PostgreSQL pe Hetzner (ultimele 3)
+
+- **Script:** `deploy/hetzner/backup_db_rotate.sh`
+- **Locație:** `/var/backups/euadopt/euadopt_*.dump`
+- **Cron:** zilnic 03:00 (dacă a fost rulat `install_db_backup_cron.sh`)
+- La al 4-lea dump → **șterge automat** cel mai vechi
+
+---
+
+## 3. Procedură standard DEPLOY (ordine obligatorie)
+
+### Varianta recomandată — din PC (tot într-un pas)
+
+```powershell
+cd "<repo-root>"
+git status   # confirmă ce merge în commit
+# după commit + push pe main:
+.\scripts\deploy_hetzner_from_pc.ps1
+```
+
+Face: (1) ZIP local rotație 3 → (2) SSH backup DB rotație 3 → (3) `git pull` → `migrate` → `collectstatic` → (4) `systemctl restart euadopt`.
+
+Parametri: `-SkipLocalBackup` (fără ZIP PC), `-HetznerHost root@178.104.31.52`.
+
+### Varianta doar pe server (după push deja făcut)
+
+```bash
+ssh root@178.104.31.52 "bash /opt/eu-adopt/deploy/hetzner/deploy_update.sh"
+```
+
+### Verificare după deploy
+
+- `systemctl is-active euadopt` → `active`
+- Site: `https://eu-adopt.ro` (sau curl login)
+- Dacă migrare nouă: confirmă că `migrate` nu a eșuat în output
+
+### Commit înainte de deploy
+
+1. `git status` + `git diff`
+2. Commit doar fișiere relevante (fără exports / backup-uri locale)
+3. `git push origin main`
+4. Apoi deploy (§3)
+
+---
+
+## 4. Rollback — cascadă (începe cu A, apoi B, apoi C)
+
+**Nu** șterge backup-uri ca prim pas. **Nu** `git push --force` pe `main` fără cerere explicită.
+
+### Nivel A — doar cod (pierdere date minimă)
+
+Când: bug vizual/logic, **fără** migrare DB problematică.
+
+```bash
+ssh root@178.104.31.52
+cd /opt/eu-adopt
+sudo -u euadopt git fetch
+sudo -u euadopt git checkout <SHA_BUN>   # ex. din ZIP .txt sau git log
+sudo -u euadopt bash -c 'source venv/bin/activate && python manage.py collectstatic --noinput'
+systemctl restart euadopt
+```
+
+SHA bun: ultimul commit stabil din `git log` sau din `Desktop\EU-Adopt-backups\good-releases\*.txt`.
+
+### Nivel B — cod + bază
+
+Când: defect după **migrate** sau date inconsistente.
+
+1. Oprește app: `systemctl stop euadopt`
+2. Restore dump **de dinainte de deploy-ul prost** (listă: `ls -lt /var/backups/euadopt/`)
+3. Checkout **același SHA** ca la momentul dump-ului
+4. `systemctl start euadopt`
+
+```bash
+systemctl stop euadopt
+sudo -u postgres dropdb euadopt
+sudo -u postgres createdb -O euadopt euadopt
+sudo -u postgres pg_restore -d euadopt /var/backups/euadopt/euadopt_YYYYMMDD_HHMMSS.dump
+cd /opt/eu-adopt && sudo -u euadopt git checkout <SHA_BUN>
+systemctl start euadopt
+```
+
+**Pierderi:** înregistrări DB create după momentul dump-ului ales.
+
+### Nivel C — snapshot VPS Hetzner
+
+Când: server compromis / haos total. Din panoul Hetzner — snapshot. Pierderi: tot de la data snapshot-ului.
+
+---
+
+## 5. Ce NU face agentul fără cerere explicită
+
+- `git push --force` pe `main`
+- Restore DB fără să fi identificat dump-ul corect și SHA-ul potrivit
+- Deploy fără push când utilizatorul a cerut livrare pe live
+- Commit la `.env`, dump-uri, `database/exports/*` cu date personale
+- Modificări site înghețate fără **`1977` + OK explicit** (reguli globale proiect)
+
+---
+
+## 6. Rezumat one-liner pentru agent
+
+**Deploy:** commit → push → `.\scripts\deploy_hetzner_from_pc.ps1` (sau `deploy_update.sh` pe H).  
+**Backup:** 3 ZIP locale + 3 dump-uri H — rotație automată, nu manual.  
+**Rollback:** git checkout (A) → pg_restore + checkout (B) → snapshot Hetzner (C).
