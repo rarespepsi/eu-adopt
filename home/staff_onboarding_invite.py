@@ -670,16 +670,28 @@ def staff_invite_process_one(
     if staff_invite_daily_remaining(now) <= 0:
         return "daily_cap"
     em = (lead.email or "").strip()
+    prev_token = (lead.consent_invite_token or "").strip()
+    rotating = staff_invite_should_rotate_token(lead)
     staff_invite_prepare_token_for_send(lead)
     lead.refresh_from_db(fields=["consent_invite_token", "updated_at"])
     subj, body, template_key = staff_invite_subject_body(request, lead, now)
     mail_enabled = staff_invite_email_enabled()
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@eu-adopt.ro"
     log = logging.getLogger(__name__)
+
+    def _revert_token_if_rotated() -> None:
+        if rotating and prev_token:
+            StaffOnboardingLead.objects.filter(pk=lead.pk).update(
+                consent_invite_token=prev_token,
+                updated_at=timezone.now(),
+            )
+            lead.consent_invite_token = prev_token
+
     if mail_enabled:
         try:
             msg_id = _staff_invite_send_smtp(from_email, em, subj, body, lead)
         except Exception as exc:
+            _revert_token_if_rotated()
             log.exception("staff_invite_send lead_id=%s", lead.pk)
             StaffOnboardingInviteLog.objects.create(
                 lead=lead,
