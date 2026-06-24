@@ -113,6 +113,54 @@ def staff_invite_token_usable(lead: StaffOnboardingLead, now=None) -> bool:
     return not staff_invite_is_link_expired(lead, now)
 
 
+def staff_invite_token_from_request(request) -> str:
+    """Token inv din URL (?inv=) sau sesiune (după prima vizită)."""
+    session_key = "staff_onboarding_invite_token"
+    return (
+        (request.GET.get(STAFF_INVITE_GET_PARAM) or "")
+        or (request.session.get(session_key) or "")
+    ).strip()
+
+
+def staff_invite_lead_from_request(request, now=None):
+    """Lead prospect dacă token-ul din cerere e valid; altfel None."""
+    token = staff_invite_token_from_request(request)
+    if not token or len(token) > 72:
+        return None
+    lead = staff_invite_lead_for_token(token)
+    if not lead or not staff_invite_token_usable(lead, now):
+        return None
+    return lead
+
+
+def staff_invite_allows_org_signup(request, now=None) -> bool:
+    lead = staff_invite_lead_from_request(request, now)
+    if not lead:
+        return False
+    return lead.account_kind in (
+        StaffOnboardingLead.KIND_ORG,
+        StaffOnboardingLead.KIND_ADAPOST,
+    )
+
+
+def staff_invite_allows_signup_path(request, now=None) -> bool:
+    """PRE-LAUNCH: acces anonim la formularul potrivit dacă ?inv= e valid."""
+    token = (request.GET.get(STAFF_INVITE_GET_PARAM) or "").strip()
+    if not token or len(token) > 72:
+        return False
+    lead = staff_invite_lead_for_token(token)
+    if not lead or not staff_invite_token_usable(lead, now):
+        return False
+    path = (request.path or "/").split("?", 1)[0]
+    if lead.account_kind in (StaffOnboardingLead.KIND_ORG, StaffOnboardingLead.KIND_ADAPOST):
+        return path.startswith("/signup/organizatie/")
+    if lead.account_kind == StaffOnboardingLead.KIND_COLLAB:
+        return path.startswith("/signup/colaborator/")
+    if lead.account_kind == StaffOnboardingLead.KIND_PF:
+        return path.startswith("/signup/persoana-fizica/")
+    return False
+
+
 def staff_invite_max_sends(lead: StaffOnboardingLead) -> int:
     n = lead.invite_max_sends
     if n is None or n < 1:

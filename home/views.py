@@ -110,6 +110,7 @@ from .staff_onboarding_invite import (
     staff_invite_count_resend_eligible,
     staff_invite_sent_count,
     staff_invite_simulated_count,
+    staff_invite_allows_org_signup,
     staff_invite_template_key,
     staff_invite_token_usable,
     staff_invite_wave_default_size,
@@ -3253,7 +3254,7 @@ def signup_organizatie_view(request):
     """Formular înregistrare – Adăpost / ONG / Firmă. La POST: validează, salvează în sesiune, redirect SMS. La GET: prefill din sesiune dacă user a dat Back din SMS."""
     from home.population_onboarding import population_org_signup_allowed
 
-    if not population_org_signup_allowed():
+    if not population_org_signup_allowed() and not staff_invite_allows_org_signup(request):
         return redirect(reverse("login"))
     if request.method != "POST":
         inv_redir = _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_ORG)

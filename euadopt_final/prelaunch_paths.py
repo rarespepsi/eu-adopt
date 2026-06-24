@@ -46,3 +46,13 @@ def is_prelaunch_public_path(path: str) -> bool:
     ):
         return False
     return p.startswith(PRELAUNCH_ANONYMOUS_PREFIXES)
+
+
+def is_prelaunch_public_request(request) -> bool:
+    """Ca is_prelaunch_public_path, plus link invitație staff valid (?inv=)."""
+    path = request.path or "/"
+    if is_prelaunch_public_path(path):
+        return True
+    from home.staff_onboarding_invite import staff_invite_allows_signup_path
+
+    return staff_invite_allows_signup_path(request)

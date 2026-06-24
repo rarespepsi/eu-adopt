@@ -11,7 +11,7 @@ from urllib.parse import quote
 from django.conf import settings
 from django.shortcuts import redirect
 
-from euadopt_final.prelaunch_paths import is_prelaunch_public_path
+from euadopt_final.prelaunch_paths import is_prelaunch_public_request
 
 
 class LoginRequiredMiddleware:
@@ -27,7 +27,7 @@ class LoginRequiredMiddleware:
             return self.get_response(request)
 
         path = request.path or "/"
-        if is_prelaunch_public_path(path):
+        if is_prelaunch_public_request(request):
             return self.get_response(request)
 
         login_url = getattr(settings, "LOGIN_URL", "/login/")

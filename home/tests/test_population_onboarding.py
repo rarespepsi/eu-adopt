@@ -128,3 +128,21 @@ class PopulationSuperuserOnlyLoginTests(TestCase):
         r = c.get("/signup/organizatie/")
         self.assertEqual(r.status_code, 302)
         self.assertIn("/login", r.url)
+
+    def test_signup_organizatie_allowed_with_valid_staff_invite(self):
+        from django.utils import timezone
+
+        from home.models import StaffOnboardingLead
+
+        lead = StaffOnboardingLead.objects.create(
+            email="inv_ong@test.local",
+            display_name="Inv ONG",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_ADPUB,
+            invite_email_last_sent_at=timezone.now(),
+            invite_mail_status=StaffOnboardingLead.INVITE_SENT,
+        )
+        lead.refresh_from_db()
+        c = Client()
+        r = c.get(f"/signup/organizatie/?inv={lead.consent_invite_token}")
+        self.assertEqual(r.status_code, 200)
