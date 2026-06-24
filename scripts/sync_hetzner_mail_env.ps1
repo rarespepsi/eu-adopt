@@ -70,4 +70,4 @@ Remove-Item $tmpPy -Force
 
 Write-Host "Repornire serviciu euadopt..."
 ssh -o BatchMode=yes $HetznerHost "systemctl restart euadopt"
-Write-Host "Gata — SMTP invitații activ pe Hetzner."
+Write-Host "Gata - SMTP invitatii activ pe Hetzner."
