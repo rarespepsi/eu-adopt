@@ -75,6 +75,22 @@ certbot --nginx -d eu-adopt.ro -d www.eu-adopt.ro
 
 ## 3. Update după `git push`
 
+**Recomandat (backup DB automat + rotație 3):**
+
+```bash
+bash /opt/eu-adopt/deploy/hetzner/deploy_update.sh
+```
+
+**Din PC (copie bună locală + backup DB + deploy):**
+
+```powershell
+.\scripts\deploy_hetzner_from_pc.ps1
+```
+
+Detalii rollback: `docs/BACKUP_ROLLBACK.md`
+
+**Manual (fără backup DB):**
+
 ```bash
 cd /opt/eu-adopt && sudo -u euadopt bash -c '
   source venv/bin/activate
