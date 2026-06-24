@@ -17,7 +17,6 @@ from django.test import RequestFactory
 
 from home.models import StaffOnboardingLead, StaffOnboardingInviteLog
 from home.staff_onboarding_invite import (
-    staff_invite_prepare_token_for_send,
     staff_invite_process_one,
     staff_invite_subject_body,
 )
@@ -148,19 +147,20 @@ class Command(BaseCommand):
             lead.save()
 
         request = _request_for_base_url(base_url)
-        staff_invite_prepare_token_for_send(lead)
-        lead.refresh_from_db(fields=["consent_invite_token", "updated_at"])
-        subj, body, template_key = staff_invite_subject_body(request, lead)
-
-        self.stdout.write(f"Lead id={lead.pk} created={created} template={template_key}")
-        self.stdout.write(f"Base URL: {base_url}")
-        self.stdout.write(f"Subject: {subj}")
-        self.stdout.write("--- body (first 800 chars) ---")
-        self.stdout.write(body[:800])
-        if len(body) > 800:
-            self.stdout.write("...")
 
         if options["dry_run"]:
+            from home.staff_onboarding_invite import staff_invite_prepare_token_for_send
+
+            staff_invite_prepare_token_for_send(lead)
+            lead.refresh_from_db(fields=["consent_invite_token", "updated_at"])
+            subj, body, template_key = staff_invite_subject_body(request, lead)
+            self.stdout.write(f"Lead id={lead.pk} created={created} template={template_key}")
+            self.stdout.write(f"Base URL: {base_url}")
+            self.stdout.write(f"Subject: {subj}")
+            self.stdout.write("--- body (first 800 chars) ---")
+            self.stdout.write(body[:800])
+            if len(body) > 800:
+                self.stdout.write("...")
             self.stdout.write(self.style.WARNING("Dry-run — nu s-a trimis email."))
             return
 
@@ -180,7 +180,9 @@ class Command(BaseCommand):
                 settings.STAFF_INVITE_EMAIL_ENABLED = prev
 
         if result == "sent":
+            lead.refresh_from_db(fields=["consent_invite_token"])
             self.stdout.write(self.style.SUCCESS(f"TRIMIS către {email}"))
+            self.stdout.write(f"Link inv: {base_url}/signup/organizatie/?inv={lead.consent_invite_token}")
         elif result == "simulated":
             self.stdout.write(
                 self.style.WARNING(
