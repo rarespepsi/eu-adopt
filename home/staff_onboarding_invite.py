@@ -149,7 +149,12 @@ def staff_invite_count_eligible(qs, now=None) -> int:
 
 def staff_invite_template_key(lead: StaffOnboardingLead) -> str:
     if lead.account_kind == StaffOnboardingLead.KIND_ADAPOST:
-        return "adapost"
+        sub = (lead.collaborator_subtype or "").strip()
+        if sub == StaffOnboardingLead.COLLAB_ADPRV:
+            return "adapost_adprv"
+        if sub == StaffOnboardingLead.COLLAB_ADPUB or lead.is_public_shelter:
+            return "adapost_adpub"
+        return "adapost_adprv"
     if lead.account_kind == StaffOnboardingLead.KIND_ORG:
         return "ong"
     if lead.account_kind == StaffOnboardingLead.KIND_COLLAB:
@@ -185,6 +190,196 @@ def _invite_signup_url(request, lead: StaffOnboardingLead) -> str:
     return signup_url
 
 
+def _invite_population_min_max() -> tuple[int, int]:
+    from home.population_onboarding import population_animal_max, population_animal_min
+
+    return population_animal_min(), population_animal_max()
+
+
+def _invite_link_header(org_line: str, signup_url: str) -> str:
+    return (
+        f"Bună ziua{org_line},\n\n"
+        f"Creare cont EU-Adopt (link personal — apăsați aici pentru a începe):\n"
+        f"{signup_url}\n\n"
+    )
+
+
+def _invite_platform_block(loc_line: str) -> str:
+    return (
+        f"Vă contactăm din partea echipei EU-Adopt — singura platformă națională și "
+        f"europeană dedicată adopțiilor responsabile și colaborării dintre adăposturi, "
+        f"asociații, cabinete veterinare, magazine, transportatori și alte servicii "
+        f"pentru animale{loc_line}.\n\n"
+        f"EU-Adopt este un proiect născut din inițiativa unor iubitori de animale. "
+        f"Participarea în etapa de pre-lansare este complet GRATUITĂ — fără costuri "
+        f"de înregistrare, fără taxe de listare și fără comisioane pentru publicarea "
+        f"animalelor în această fază.\n\n"
+        f"Misiunea noastră este să oferim animalelor din grija organizațiilor de protecție "
+        f"o vizibilitate mai mare și șanse reale de adopție, printr-o platformă modernă, "
+        f"ușor de utilizat, cu profiluri actualizate (fotografii, date medicale, descrieri) "
+        f"pentru viitorii adoptatori.\n\n"
+        f"În perioada de pre-lansare (populare, validare și testare) ne propunem să "
+        f"finalizăm această etapă până la începutul lunii septembrie 2026 și să pregătim "
+        f"lansarea publică.\n\n"
+    )
+
+
+def _invite_legal_adpub_block() -> str:
+    return (
+        "────────────────────────────────────────\n"
+        "OBLIGAȚII LEGALE — ADĂPOSTURI PUBLICE\n"
+        "────────────────────────────────────────\n"
+        "Conform normelor în vigoare (OUG nr. 155/2001 și HG nr. 1059/2013), operatorii "
+        "adăposturilor publice au obligația de a promova adopția și revendicarea câinilor, "
+        "de a informa constant populația și de a asigura transparența. În acest scop, "
+        "legislația prevede, între altele: panouri de informare, website sau mijloace "
+        "online de acces public la datele adăpostului, precum și organizarea periodică "
+        "de târguri de adopție.\n\n"
+        "EU-Adopt vă oferă un canal centralizat, modern și gratuit prin care puteți "
+        "îndeplini mai ușor această obligație de promovare online a animalelor din adăpost.\n\n"
+    )
+
+
+def _invite_population_rules_block(*, animals: bool) -> str:
+    mn, mx = _invite_population_min_max()
+    lines = [
+        "────────────────────────────────────────",
+        "REGULI ÎN PERIOADA DE POPULARE",
+        "(până la finalizarea etapei — țintă: septembrie 2026)",
+        "────────────────────────────────────────",
+        "În această etapă de testare și validare, vă rugăm să respectați:",
+        "",
+    ]
+    if animals:
+        lines.extend(
+            [
+                f"  • minimum {mn} și maximum {mx} animale publicate (câini, pisici sau alte specii);",
+                "  • fiecare animal cu fișă cât mai completă: nume, vârstă, talie, sex,",
+                "    date medicale (sterilizat, vaccinat, carnet, CIP unde e cazul);",
+                "  • minimum 3 fotografii clare per animal;",
+                "  • descriere scurtă („Cine sunt”) și trăsături de comportament bifate;",
+                "  • la adăpost public: datele medicale obligatorii completate corect;",
+                "  • verificați în MyPet coloana „Fișă %” — țintă 100% pentru fiecare animal;",
+                "  • animalele rămân vizibile în Prietenul tău după publicare;",
+                "  • fluxul de cereri adopție se activează după lansarea oficială.",
+                "",
+                "După finalizarea perioadei de populare și lansarea publică, veți putea adăuga",
+                "mai multe animale și veți beneficia de funcționalități complete (cereri",
+                "adopție, mesaje, promovare).",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "  • profil de partener completat cu datele de contact actualizate;",
+                "  • o ofertă sau un produs reprezentativ (după tipul de colaborator);",
+                "  • detaliile pot fi extinse după lansarea oficială.",
+            ]
+        )
+    lines.append("")
+    return "\n".join(lines) + "\n\n"
+
+
+def _invite_network_closing_block() -> str:
+    return (
+        "Ne dorim o comunitate activă la nivel național și european. Vă încurajăm "
+        "să recomandați proiectul partenerilor dumneavoastră — cabinete veterinare, "
+        "magazine, transportatori, groomeri, pensiuni — astfel încât animalele din "
+        "grija organizațiilor participante să beneficieze de cât mai multă vizibilitate.\n\n"
+        "În perioada de testare, vă rugăm să ne semnalați orice eroare, blocaj sau "
+        "informație afișată incorect. Observațiile dumneavoastră ne ajută să îmbunătățim "
+        "platforma înainte de lansare.\n\n"
+        "Vă mulțumim pentru activitatea desfășurată în sprijinul animalelor. Sperăm să "
+        "construim împreună mai multe șanse pentru fiecare câine și fiecare pisică să își "
+        "găsească o familie.\n\n"
+    )
+
+
+def _invite_footer_block(terms_url: str, privacy_url: str) -> str:
+    return (
+        f"Documente legale:\n"
+        f"- Termeni și condiții: {terms_url}\n"
+        f"- Politica de confidențialitate (GDPR): {privacy_url}\n\n"
+        f"Dacă nu doriți să fiți contactat, răspundeți la acest email cu „nu contacta”.\n\n"
+        f"Cu respect,\n"
+        f"Echipa EU-Adopt\n"
+        f"www.eu-adopt.ro\n"
+        f"contact@eu-adopt.ro\n"
+    )
+
+
+def _invite_middle_block(template_key: str, org_line: str, loc_line: str) -> str:
+    if template_key == "adapost_adpub":
+        return (
+            f"Ca adăpost public{loc_line}, prin EU-Adopt puteți publica și administra "
+            f"profilurile animalelor disponibile pentru adopție în zona MyPet. Promovarea "
+            f"activă a animalelor din adăpost este una dintre cele mai eficiente modalități "
+            f"de creștere a numărului de adopții și de reducere a timpului petrecut în adăpost.\n\n"
+            + _invite_legal_adpub_block()
+        )
+    if template_key == "adapost_adprv":
+        return (
+            f"Ca adăpost privat{loc_line}, platforma vă oferă un canal structurat de "
+            f"vizibilitate națională pentru animalele aflate în grija dumneavoastră, cu "
+            f"mesaje și fișe centralizate în MyPet. Recomandăm promovarea activă a "
+            f"animalelor disponibile pentru adopție.\n\n"
+        )
+    if template_key == "ong":
+        return (
+            f"Organizația dumneavoastră{org_line}{loc_line} poate publica animale în adopție, "
+            f"gestiona fișele în MyPet și beneficia de o rețea în formare — adăposturi, "
+            f"cabinete, magazine și transportatori — care sporesc vizibilitatea animalelor "
+            f"din programele dumneavoastră.\n\n"
+        )
+    if template_key == "cabinet":
+        return (
+            f"Cabinetul dumneavoastră{loc_line} poate fi listat ca partener colaborator "
+            f"în zona Servicii, cu oferte și vizibilitate către adoptatori și deținători "
+            f"de animale. EU-Adopt leagă ecosistemul adopțiilor de servicii veterinare "
+            f"de încredere.\n\n"
+        )
+    if template_key == "servicii":
+        return (
+            f"Serviciul dumneavoastră{loc_line} (cazare, pensiune etc.) poate fi publicat "
+            f"în zona Servicii, cu oferte vizibile comunității EU-Adopt.\n\n"
+        )
+    if template_key == "grooming":
+        return (
+            f"Activitatea dumneavoastră de grooming / îngrijire{loc_line} poate fi listată "
+            f"în zona Servicii, cu oferte vizibile adoptatorilor.\n\n"
+        )
+    if template_key == "transport":
+        return (
+            f"Ca transportator autorizat{loc_line}, vă puteți înregistra în fluxul dedicat "
+            f"platformei, pentru cereri de transport legate de adopții și relocări de animale.\n\n"
+        )
+    if template_key == "magazin":
+        return (
+            f"Magazinul dumneavoastră{loc_line} poate apărea în catalogul de parteneri "
+            f"(produse și oferte pentru animale), vizibil adoptatorilor și iubitorilor "
+            f"de animale din platformă.\n\n"
+        )
+    return (
+        f"Vă invităm să vă înregistrați pe EU-Adopt{loc_line} și să contribuiți la "
+        f"construirea rețelei naționale și europene dedicate adopțiilor responsabile.\n\n"
+    )
+
+
+def _invite_subject(template_key: str, kind_label: str) -> str:
+    base = "EU-Adopt — invitație de colaborare (participare gratuită)"
+    subjects = {
+        "adapost_adpub": "EU-Adopt — adăpost public: platformă națională, participare gratuită",
+        "adapost_adprv": "EU-Adopt — adăpost privat: platformă națională, participare gratuită",
+        "ong": "EU-Adopt — ONG / asociație: adopții responsabile (gratuit)",
+        "cabinet": "EU-Adopt — cabinet veterinar: colaborare gratuită",
+        "servicii": "EU-Adopt — partener servicii animale (gratuit)",
+        "grooming": "EU-Adopt — grooming / îngrijire: colaborare gratuită",
+        "transport": "EU-Adopt — transportator animale: colaborare gratuită",
+        "magazin": "EU-Adopt — magazin produse animale: colaborare gratuită",
+    }
+    return subjects.get(template_key, f"{base} ({kind_label})")
+
+
 def staff_invite_subject_body(request, lead: StaffOnboardingLead) -> tuple[str, str, str]:
     """Subiect, corp, cheie șablon."""
     template_key = staff_invite_template_key(lead)
@@ -198,71 +393,15 @@ def staff_invite_subject_body(request, lead: StaffOnboardingLead) -> tuple[str, 
     loc_bits = [x for x in (lead.judet, lead.oras) if (x or "").strip()]
     loc_line = f" ({', '.join(loc_bits)})" if loc_bits else ""
 
-    if template_key == "adapost":
-        subject = "EU-ADOPT — invitație adăpost: publicare animale pentru adopție"
-        intro = (
-            f"Bună ziua{org_line},\n\n"
-            f"Vă contactăm din EU-ADOPT{loc_line} în legătură cu listarea animalelor "
-            f"disponibile pentru adopție pe platforma noastră.\n"
-            f"După crearea contului veți putea adăuga fișe în zona MyPet (poze, județ, date medicale).\n"
-        )
-    elif template_key == "ong":
-        subject = "EU-ADOPT — invitație ONG / asociație: adopții și vizibilitate"
-        intro = (
-            f"Bună ziua{org_line},\n\n"
-            f"Vă invităm să vă înregistrați organizația pe EU-ADOPT{loc_line} "
-            f"pentru a publica animale și a primi cereri de adopție structurate.\n"
-        )
-    elif template_key == "cabinet":
-        subject = "EU-ADOPT — invitație cabinet veterinar (colaborator)"
-        intro = (
-            f"Bună ziua,\n\n"
-            f"Vă invităm să vă înregistrați cabinetul veterinar{loc_line} ca partener EU-ADOPT "
-            f"(oferte, vizibilitate în zona Servicii, legătură cu adoptatorii din județ).\n"
-        )
-    elif template_key == "servicii":
-        subject = "EU-ADOPT — invitație partener servicii (cazare, pensiune etc.)"
-        intro = (
-            f"Bună ziua,\n\n"
-            f"Vă invităm să vă înregistrați serviciul{loc_line} pe EU-ADOPT ca partener colaborator "
-            f"(publicare oferte în catalogul Servicii).\n"
-        )
-    elif template_key == "grooming":
-        subject = "EU-ADOPT — invitație salon grooming / îngrijire"
-        intro = (
-            f"Bună ziua,\n\n"
-            f"Vă invităm să vă înregistrați activitatea de grooming{loc_line} pe EU-ADOPT "
-            f"(oferte vizibile adoptatorilor).\n"
-        )
-    elif template_key == "transport":
-        subject = "EU-ADOPT — invitație transportator animale"
-        intro = (
-            f"Bună ziua,\n\n"
-            f"Vă invităm să vă înregistrați ca transportator autorizat{loc_line} pe EU-ADOPT "
-            f"(cereri de transport din fluxul dedicat platformei).\n"
-        )
-    elif template_key == "magazin":
-        subject = "EU-ADOPT — invitație magazin / produse animale"
-        intro = (
-            f"Bună ziua,\n\n"
-            f"Vă invităm să vă înregistrați magazinul{loc_line} ca partener EU-ADOPT "
-            f"(oferte produse în zona Servicii).\n"
-        )
-    else:
-        subject = f"EU-ADOPT — invitație completare cont ({kind_label})"
-        intro = (
-            f"Bună ziua,\n\n"
-            f"Vă scriem din EU-ADOPT în legătură cu înregistrarea ca utilizator ({kind_label}){loc_line}.\n"
-        )
-
+    subject = _invite_subject(template_key, kind_label)
+    animals_population = template_key in ("adapost_adpub", "adapost_adprv", "ong")
     body = (
-        f"{intro}\n"
-        f"Formular creare cont (link personal — asociază automat invitația):\n{signup_url}\n\n"
-        f"Documente legale:\n"
-        f"- Termeni și condiții: {terms_url}\n"
-        f"- Politica de confidențialitate (GDPR): {privacy_url}\n\n"
-        f"Dacă nu doriți să fiți contactat, răspundeți la acest email cu „nu contacta”.\n\n"
-        f"Cu stimă,\nEchipa EU-ADOPT\n"
+        _invite_link_header(org_line, signup_url)
+        + _invite_platform_block(loc_line)
+        + _invite_middle_block(template_key, org_line, loc_line)
+        + _invite_population_rules_block(animals=animals_population)
+        + _invite_network_closing_block()
+        + _invite_footer_block(terms_url, privacy_url)
     )
     return subject, body, template_key
 

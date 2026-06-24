@@ -1236,11 +1236,18 @@ class Carte81_100Tests(TestCase):
         from home.models import StaffOnboardingLead
         from home.staff_onboarding_invite import staff_invite_template_key
 
-        lead = StaffOnboardingLead(
+        lead_pub = StaffOnboardingLead(
             account_kind=StaffOnboardingLead.KIND_ADAPOST,
-            collaborator_subtype="",
+            collaborator_subtype=StaffOnboardingLead.COLLAB_ADPUB,
+            is_public_shelter=True,
         )
-        self.assertEqual(staff_invite_template_key(lead), "adapost")
+        self.assertEqual(staff_invite_template_key(lead_pub), "adapost_adpub")
+        lead_prv = StaffOnboardingLead(
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_ADPRV,
+            is_public_shelter=False,
+        )
+        self.assertEqual(staff_invite_template_key(lead_prv), "adapost_adprv")
 
     def test_109i1_staff_invite_dry_run_no_smtp(self):
         from django.core import mail
