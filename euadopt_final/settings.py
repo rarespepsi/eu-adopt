@@ -238,12 +238,20 @@ STAFF_INVITE_IMAP_PASSWORD = os.environ.get("STAFF_INVITE_IMAP_PASSWORD", "").st
 STAFF_INVITE_IMAP_FOLDER = os.environ.get("STAFF_INVITE_IMAP_FOLDER", "INBOX").strip() or "INBOX"
 STAFF_INVITE_INBOUND_WEBHOOK_SECRET = os.environ.get("STAFF_INVITE_INBOUND_WEBHOOK_SECRET", "").strip()
 
-# Cache pentru waiting_id / one-time login (activare din mail pe alt device)
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+# Cache: OTP SMS, waiting_id etc. Producție = fișier partajat (Gunicorn are mai mulți workers).
+if DEBUG:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
     }
-}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+            "LOCATION": str(BASE_DIR / ".django_cache"),
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

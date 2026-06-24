@@ -134,6 +134,7 @@ def _send_sms(to_digits: str, message: str) -> tuple[bool, str | None]:
             if getattr(result, "error", None):
                 logger.error("SMSAPI error for %s: %s", to_digits[-4:], result.error)
                 return False, "Nu am putut trimite SMS-ul. Încearcă din nou."
+        logger.info("SMS OTP sent to ...%s", to_digits[-4:])
         return True, None
     except SmsApiException as exc:
         logger.exception("SMSAPI exception: %s", exc)

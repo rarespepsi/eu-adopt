@@ -11,6 +11,7 @@ __pycache__/
 # Django generated / local runtime
 staticfiles/
 media/
+.django_cache/
 
 # Local DB (keep out of git to avoid noise)
 db.sqlite3
