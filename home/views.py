@@ -49,6 +49,7 @@ from .pet_age_bands import (
     build_age_band_filter_q,
 )
 from .pt_p2_list import PT_P2_PAGE_SIZE, pt_pets_page_context
+from .pub_slot_defaults import pub_slot_live_creative, pub_slots_ordered
 from .mail_helpers import email_subject_for_user, send_mail_text_and_html
 from .context_processors import get_navbar_unread_counts
 from . import inbox_notifications as _inbox
@@ -2010,7 +2011,12 @@ def _enrich_pub_strip_sequence(section: str, sequence: list[dict]) -> list[dict]
             raw = (n.text if n else "") or ""
             out.append({**cell, "eu_text": (raw.strip()[:2000] or "EU Adopt")})
         else:
-            out.append({**cell, "creative": _pt_pub_slot_parse_note(notes.get(cell["code"]))})
+            out.append(
+                {
+                    **cell,
+                    "creative": pub_slot_live_creative(section, cell["code"], notes.get(cell["code"])),
+                }
+            )
     return out
 
 
@@ -2190,7 +2196,7 @@ def _pt_pub_slot_list_for_template():
     return [
         {
             "code": code,
-            "creative": _pt_pub_slot_parse_note(by_code.get(code)),
+            "creative": pub_slot_live_creative(PT_PUB_NOTE_SECTION, code, by_code.get(code)),
             "is_p52": code == "P5.2",
         }
         for code in PT_PUB_SLOT_CODES
@@ -2209,10 +2215,8 @@ def _home_sidebar_pub_slots_for_template() -> tuple[list[dict | None], list[dict
     except Exception:
         by_code = {}
 
-    def _entry(slot_code: str) -> dict | None:
-        creative = _pt_pub_slot_parse_note(by_code.get(slot_code))
-        if not creative:
-            return None
+    def _entry(slot_code: str) -> dict:
+        creative = pub_slot_live_creative("home", slot_code, by_code.get(slot_code))
         return {
             "name": slot_code,
             "url": (creative.get("link") or "").strip() or "#",
@@ -2220,6 +2224,8 @@ def _home_sidebar_pub_slots_for_template() -> tuple[list[dict | None], list[dict
             "video_url": creative.get("video") or "",
             "price": (creative.get("price") or "").strip(),
             "discount": (creative.get("discount") or "").strip(),
+            "is_default_cover": bool(creative.get("is_default_cover")),
+            "link_external": bool(creative.get("link_external")),
         }
 
     left = [_entry("A5.1"), _entry("A5.2"), _entry("A5.3")]
@@ -3713,6 +3719,9 @@ def servicii_view(request):
             "adoption_bonus_servicii_locked": bonus_bundle.get("adoption_bonus_servicii_locked"),
             "adoption_bonus_ar_pending": bonus_bundle.get("adoption_bonus_ar_pending"),
             "adoption_bonus_show_locked_notice_once": show_locked_notice_once,
+            "servicii_large_pub_slots": pub_slots_ordered(
+                "servicii", ("S2.2", "S2.3", "S6.1", "S6.2")
+            ),
         },
     )
 
@@ -3726,6 +3735,7 @@ def transport_view(request):
         "continue_adoption_url": "",
         "prefill_judet": "",
         "prefill_oras": "",
+        "transport_pub_slots": pub_slots_ordered("transport", ("TDR.1", "TDR.2", "TDR.3")),
     }
     if request.user.is_authenticated:
         ctx["prefill_judet"] = _adopter_profile_county_raw(request.user)
@@ -4090,7 +4100,14 @@ def donatii_generale_view(request):
 
 def shop_view(request):
     """Pagina Shop (placeholder)."""
-    return render(request, "anunturi/shop.html", {})
+    return render(
+        request,
+        "anunturi/shop.html",
+        {
+            "shop_pub_left": pub_slots_ordered("shop", ("SH4.1", "SH4.2", "SH4.3")),
+            "shop_pub_right": pub_slots_ordered("shop", ("SH5.1", "SH5.2", "SH5.3")),
+        },
+    )
 
 
 def shop_comanda_personalizate_view(request):
@@ -9062,7 +9079,12 @@ def i_love_view(request):
     return render(
         request,
         "anunturi/i_love.html",
-        {"pets": pets, "wishlist_ids": set(ids)},
+        {
+            "pets": pets,
+            "wishlist_ids": set(ids),
+            "ilove_pub_left": pub_slots_ordered("i_love", ("IL.L1", "IL.L2")),
+            "ilove_pub_right": pub_slots_ordered("i_love", ("IL.R1", "IL.R2")),
+        },
     )
 
 
@@ -11685,6 +11707,7 @@ def _publicitate_harta_context(request, pub_nav: str) -> dict:
         "pub_sections": sections,
         "pub_nav": pub_nav,
         "pub_selected_section": selected_section,
+        "pub_initial_slot": (request.GET.get("slot") or "").strip(),
         "pub_slot_map": PUBLICITATE_SLOT_MAP,
         "pub_a2_images": [d.get("imagine_fallback") for d in DEMO_DOGS if d.get("imagine_fallback")][:12],
         "pub_a13_images": list(HERO_SLIDER_IMAGES or []),

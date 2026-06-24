@@ -100,9 +100,11 @@
 			<div class="shw-row shw-row-middle">
 				<div class="shw-row-middle-box shw-row-middle-left">
 					<div class="shw-side-inner-grid">
-						<div class="shw-side-inner-box shw-sh4-pub">SH4.1</div>
-						<div class="shw-side-inner-box shw-sh4-pub">SH4.2</div>
-						<div class="shw-side-inner-box shw-sh4-pub">SH4.3</div>
+						{% for slot in shop_pub_left %}
+						<div class="shw-side-inner-box shw-sh4-pub" data-slot="{{ slot.code }}">
+							{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}
+						</div>
+						{% endfor %}
 					</div>
 				</div>
 				<div class="shw-row-middle-center">
@@ -491,9 +493,11 @@
 				</div>
 				<div class="shw-row-middle-box shw-row-middle-right">
 					<div class="shw-side-inner-grid">
-						<div class="shw-side-inner-box">SH5.1</div>
-						<div class="shw-side-inner-box">SH5.2</div>
-						<div class="shw-side-inner-box">SH5.3</div>
+						{% for slot in shop_pub_right %}
+						<div class="shw-side-inner-box" data-slot="{{ slot.code }}">
+							{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}
+						</div>
+						{% endfor %}
 					</div>
 				</div>
 			</div>

@@ -12,14 +12,11 @@
 <main id="ILW" class="ilove-page" aria-label="I Love — inimioare">
 	<div class="ilove-wire">
 		<aside class="ilove-wire__col ilove-wire__col--left" aria-label="Casete stânga">
-			<div class="ilove-case ilove-case--a5">
-				<span class="ilove-case__ref">IL-H.L1</span>
-				<span class="ilove-case__mark">Promo lateral (favoriți)</span>
+			{% for slot in ilove_pub_left %}
+			<div class="ilove-case ilove-case--a5" data-slot="{{ slot.code }}">
+				{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}
 			</div>
-			<div class="ilove-case ilove-case--a5">
-				<span class="ilove-case__ref">IL-H.L2</span>
-				<span class="ilove-case__mark">Spațiu sponsor vertical</span>
-			</div>
+			{% endfor %}
 		</aside>
 
 		<div class="ilove-wire__main">
@@ -89,14 +86,11 @@
 		</div>
 
 		<aside class="ilove-wire__col ilove-wire__col--right" aria-label="Casete dreapta">
-			<div class="ilove-case ilove-case--a6">
-				<span class="ilove-case__ref">IL-H.R1</span>
-				<span class="ilove-case__mark">Anunț portret</span>
+			{% for slot in ilove_pub_right %}
+			<div class="ilove-case ilove-case--a6" data-slot="{{ slot.code }}">
+				{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}
 			</div>
-			<div class="ilove-case ilove-case--a6">
-				<span class="ilove-case__ref">IL-H.R2</span>
-				<span class="ilove-case__mark">Recomandări parteneri</span>
-			</div>
+			{% endfor %}
 		</aside>
 	</div>
 </main>

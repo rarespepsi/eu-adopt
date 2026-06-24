@@ -7,30 +7,7 @@
 {% else %}
 <div class="pt-p43-slot{% if slot_code == 'P5.2' %} pt-p43-slot--p52{% endif %}" data-slot="{{ slot_code }}">
 {% endif %}
-{% if creative %}
-{% if creative.img or creative.video %}
-{% if creative.link %}
-	<a href="{{ creative.link }}" target="_blank" rel="noopener" class="pt-p43-creative-link pt-p43-partner-fill pt-pub-fill-link" aria-label="{{ creative.alt }}">
-{% endif %}
-	<div class="pt-p5-user-card pt-p43-partner-card pt-p43-creative-card">
-		<div class="pt-p5-user-avatar">
-			{% if creative.price or creative.discount %}
-			<span class="pt-pub-mini-badges">{% if creative.price %}<span class="pt-pub-mini-badge pt-pub-mini-badge--price">{{ creative.price }}</span>{% endif %}{% if creative.discount %}<span class="pt-pub-mini-badge pt-pub-mini-badge--discount">{{ creative.discount }}</span>{% endif %}</span>
-			{% endif %}
-			{% if creative.video %}
-			<video src="{{ creative.video }}" autoplay muted loop playsinline controls preload="metadata"></video>
-			{% else %}
-			<img src="{{ creative.img }}" alt="{{ creative.alt }}" loading="lazy" decoding="async" />
-			{% endif %}
-		</div>
-	</div>
-{% if creative.link %}
-	</a>
-{% endif %}
-{% else %}
-	<span class="pt-p43-label">{{ slot_code }}</span>
-{% endif %}
-{% elif slot_code == 'P5.2' %}
+{% if slot_code == 'P5.2' %}
 	<a href="https://www.facebook.com/prietencredincios/" target="_blank" rel="noopener" class="pt-p5-partener-link pt-p43-partner-fill pt-pub-fill-link" aria-label="Asociația Prieten Credincios – Facebook">
 		<div class="pt-p5-user-card pt-p43-partner-card">
 			<div class="pt-p5-user-avatar">
@@ -41,7 +18,17 @@
 			</div>
 		</div>
 	</a>
+{% elif creative %}
+{% if slot_layout == 'p5_desktop' %}
+	<div class="pt-p5-user-card pt-p43-partner-card pt-p43-creative-card">
+		<div class="pt-p5-user-avatar">
+			{% include "anunturi/includes/pub_slot_live_cover.html" with creative=creative layout="sidebar" only %}
+		</div>
+	</div>
+{% elif slot_layout == 'p4_desktop' %}
+	{% include "anunturi/includes/pub_slot_live_cover.html" with creative=creative layout="sidebar" only %}
 {% else %}
-	<span class="pt-p43-label">{{ slot_code }}</span>
+	{% include "anunturi/includes/pub_slot_live_cover.html" with creative=creative layout="strip" only %}
+{% endif %}
 {% endif %}
 </div>

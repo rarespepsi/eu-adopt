@@ -120,17 +120,15 @@
 				{% for partner in left_sidebar_partners %}
 				<div class="home-v2-slot home-v2-slot-white home-v2-slot-img home-v2-slot-partener">
 					{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A5.{{ forloop.counter }}</span>{% endif %}
-					{% if partner %}
-					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener" style="position:relative;display:block;">
+					<a href="{{ partner.url|default:'#' }}" title="Publicitate"{% if partner.link_external %} target="_blank" rel="noopener"{% endif %} style="position:relative;display:block;height:100%;">
 						{% if partner.price or partner.discount %}
 						<span class="home-v2-pub-badges">{% if partner.price %}<span class="home-v2-pub-badge home-v2-pub-badge--price">{{ partner.price }}</span>{% endif %}{% if partner.discount %}<span class="home-v2-pub-badge home-v2-pub-badge--discount">{{ partner.discount }}</span>{% endif %}</span>
 						{% endif %}
 						{% if partner.video_url %}<video src="{{ partner.video_url }}" class="slot-img-fit" autoplay muted loop playsinline controls preload="metadata"></video>
-						{% elif partner.image_url %}<img src="{{ partner.image_url }}" alt="{{ partner.name }}" class="slot-img-fit" />
-						{% elif partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
-						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.name }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+						{% elif partner.image_url %}<img src="{{ partner.image_url }}" alt="Publicitate" class="slot-img-fit" />
+						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="Publicitate" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+						{% if partner.is_default_cover %}<span class="pub-live-cover__tag">Publi.</span>{% endif %}
 					</a>
-					{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
 				</div>
 				{% endfor %}
 			</div>
@@ -314,17 +312,15 @@
 				{% for partner in right_sidebar_partners %}
 				<div class="home-v2-slot home-v2-slot-white home-v2-slot-img home-v2-slot-partener">
 					{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A6.{{ forloop.counter }}</span>{% endif %}
-					{% if partner %}
-					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener" style="position:relative;display:block;">
+					<a href="{{ partner.url|default:'#' }}" title="Publicitate"{% if partner.link_external %} target="_blank" rel="noopener"{% endif %} style="position:relative;display:block;height:100%;">
 						{% if partner.price or partner.discount %}
 						<span class="home-v2-pub-badges">{% if partner.price %}<span class="home-v2-pub-badge home-v2-pub-badge--price">{{ partner.price }}</span>{% endif %}{% if partner.discount %}<span class="home-v2-pub-badge home-v2-pub-badge--discount">{{ partner.discount }}</span>{% endif %}</span>
 						{% endif %}
 						{% if partner.video_url %}<video src="{{ partner.video_url }}" class="slot-img-fit" autoplay muted loop playsinline controls preload="metadata"></video>
-						{% elif partner.image_url %}<img src="{{ partner.image_url }}" alt="{{ partner.name }}" class="slot-img-fit" />
-						{% elif partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
-						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.name }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+						{% elif partner.image_url %}<img src="{{ partner.image_url }}" alt="Publicitate" class="slot-img-fit" />
+						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="Publicitate" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+						{% if partner.is_default_cover %}<span class="pub-live-cover__tag">Publi.</span>{% endif %}
 					</a>
-					{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
 				</div>
 				{% endfor %}
 			</div>

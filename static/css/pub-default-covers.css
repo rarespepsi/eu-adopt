@@ -1,0 +1,188 @@
+/* Cover-uri default sloturi publicitate pe site live — cod slot doar pe /publicitate/ */
+.pub-live-cover-link {
+	display: block;
+	position: relative;
+	width: 100%;
+	height: 100%;
+	min-height: 0;
+	color: inherit;
+	text-decoration: none;
+	cursor: pointer;
+}
+.pub-live-cover {
+	display: block;
+	position: relative;
+	width: 100%;
+	height: 100%;
+	min-height: 0;
+	overflow: hidden;
+	background: #eceff1;
+}
+.pub-live-cover img,
+.pub-live-cover video {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.pub-live-cover__tag {
+	position: absolute;
+	right: 0.28rem;
+	bottom: 0.22rem;
+	z-index: 2;
+	padding: 0.1rem 0.38rem;
+	border-radius: 999px;
+	font-size: 0.58rem;
+	font-weight: 800;
+	line-height: 1.2;
+	letter-spacing: 0.02em;
+	color: #1b5e20;
+	background: rgba(255, 255, 255, 0.88);
+	border: 1px solid rgba(129, 199, 132, 0.65);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+	pointer-events: none;
+	user-select: none;
+}
+.pub-live-cover--strip .pub-live-cover__tag {
+	font-size: 0.48rem;
+	padding: 0.06rem 0.28rem;
+	right: 0.12rem;
+	bottom: 0.1rem;
+}
+.pub-live-cover--sidebar .pub-live-cover__tag {
+	font-size: 0.62rem;
+}
+.pub-live-mini-badges {
+	position: absolute;
+	top: 0.2rem;
+	left: 0.2rem;
+	z-index: 3;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.15rem;
+	pointer-events: none;
+}
+.pub-live-mini-badge {
+	font-size: 0.55rem;
+	font-weight: 800;
+	padding: 0.08rem 0.28rem;
+	border-radius: 999px;
+	border: 1px solid transparent;
+}
+.pub-live-mini-badge--price {
+	background: rgba(200, 230, 201, 0.92);
+	color: #1b5e20;
+	border-color: rgba(76, 175, 80, 0.45);
+}
+.pub-live-mini-badge--discount {
+	background: rgba(255, 205, 210, 0.92);
+	color: #b71c1c;
+	border-color: rgba(229, 57, 53, 0.35);
+}
+
+/* HOME A5/A6 */
+body.page-home-v2 .home-v2-slot-partener .pub-live-cover-link {
+	position: absolute;
+	inset: 0;
+}
+body.page-home-v2 .home-v2-slot-partener .pub-live-cover {
+	height: 100%;
+}
+body.page-home-v2 .home-v2-pub-badges {
+	z-index: 4;
+}
+
+/* PT P4/P5 */
+.pt-p43-partner-fill.pub-live-cover-link,
+.pt-p43-creative-link.pub-live-cover-link {
+	display: flex;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+.pt-p43-creative-card .pub-live-cover,
+.pt-p5-user-avatar .pub-live-cover {
+	height: 100%;
+	min-height: 3.5rem;
+}
+
+/* Benzi PT / Servicii */
+.pt-strip-cell--pub.pub-live-cover-link,
+.sw-strip-cell--pub.pub-live-cover-link {
+	display: flex;
+	align-items: stretch;
+	justify-content: stretch;
+	flex: 0 0 auto;
+	min-width: 0;
+	padding: 0;
+	border: none;
+	background: transparent;
+}
+.pt-strip-cell--pub .pub-live-cover,
+.sw-strip-cell--pub .pub-live-cover {
+	min-height: 100%;
+	min-width: 100%;
+}
+.pt-strip-cell--pub .pub-live-cover--strip,
+.sw-strip-cell--pub .pub-live-cover--strip {
+	min-height: 2.4rem;
+}
+
+/* Servicii S2 / S6 */
+.sw-s4-box-match .pub-live-cover-link,
+.sw-s4-box-ads .pub-live-cover-link,
+.sw-s5-slot .pub-live-cover-link {
+	display: block;
+	width: 100%;
+	height: 100%;
+	min-height: 3rem;
+}
+
+/* Shop */
+.shw-side-inner-box .pub-live-cover-link {
+	display: block;
+	width: 100%;
+	height: 100%;
+	min-height: 4rem;
+}
+
+/* Transport T3 */
+.t3-box .pub-live-cover-link {
+	display: block;
+	width: 100%;
+	height: 100%;
+	min-height: 5rem;
+}
+
+/* I Love laterale */
+body.page-home-v2 .home-v2-slot-partener > a .pub-live-cover__tag {
+	position: absolute;
+	right: 0.35rem;
+	bottom: 0.3rem;
+	z-index: 2;
+}
+
+.pt-strip-cell--pub > .pub-live-cover-link,
+.sw-strip-cell--pub > .pub-live-cover-link {
+	display: block;
+	width: 100%;
+	height: 100%;
+	min-height: 100%;
+}
+
+.sw-s4-box-match,
+.sw-s4-box-ads,
+.sw-s5-slot {
+	padding: 0;
+	overflow: hidden;
+}
+
+.ilove-case {
+	padding: 0;
+	overflow: hidden;
+}
+.ilove-case .pub-live-cover-link {
+	display: block;
+	width: 100%;
+	height: 100%;
+	min-height: clamp(4.5rem, 12vh, 7rem);
+}

@@ -187,6 +187,7 @@
 </section>
 {{ pub_slot_map|json_script:"pub-slot-map-json" }}
 {{ pub_selected_section|json_script:"pub-selected-section-json" }}
+{{ pub_initial_slot|json_script:"pub-initial-slot-json" }}
 {{ pub_a2_images|json_script:"pub-a2-images-json" }}
 {{ pub_a13_images|json_script:"pub-a13-images-json" }}
 {% endblock %}
@@ -2443,34 +2444,55 @@ document.addEventListener("DOMContentLoaded", function () {
 	});
 	if (startDateEl) startDateEl.addEventListener("change", loadAvailability);
 
+	function selectInitialSlotFromUrl() {
+		var initialSlot = "";
+		try {
+			var slotEl = document.getElementById("pub-initial-slot-json");
+			if (slotEl) initialSlot = JSON.parse(slotEl.textContent || '""');
+		} catch (_e) {}
+		initialSlot = (initialSlot || "").trim();
+		if (!initialSlot) return;
+		var slots = slotMap[section] || [];
+		var match = null;
+		for (var i = 0; i < slots.length; i += 1) {
+			if (slots[i].code === initialSlot) {
+				match = slots[i];
+				break;
+			}
+		}
+		if (!match) return;
+		selected = match;
+		showDetails(match);
+		if (grid) {
+			grid.querySelectorAll(".pub-slot").forEach(function (btn) {
+				btn.classList.toggle("is-selected", (btn.textContent || "").trim() === initialSlot);
+			});
+		}
+		document.querySelectorAll("[data-slot]").forEach(function (node) {
+			node.classList.toggle("pub-wire-selected", (node.getAttribute("data-slot") || "").trim() === initialSlot);
+		});
+	}
+
 	if (section === "home") {
 		initHomeWire();
-		showEmpty();
 	} else if (section === "pt") {
 		initPtWire();
-		showEmpty();
 	} else if (section === "servicii") {
 		initServiciiWire();
-		showEmpty();
 	} else if (section === "transport") {
 		initTransportWire();
-		showEmpty();
 	} else if (section === "shop") {
 		initShopWire();
-		showEmpty();
 	} else if (section === "mypet") {
 		initMypetWire();
-		showEmpty();
 	} else if (section === "i_love") {
 		initILoveWire();
-		showEmpty();
 	} else if (section === "cos_pub") {
 		initCosPubWire();
-		showEmpty();
-	} else {
-		renderSlots();
-		showEmpty();
 	}
+	renderSlots();
+	selectInitialSlotFromUrl();
+	if (!selected) showEmpty();
 	renderCart();
 
 	window.addEventListener("storage", function (ev) {

@@ -371,9 +371,11 @@
 			<div id="T3" class="tw-cell" data-slot="T3">
 				<div class="t3-inner" role="region" aria-label="Spații publicitate transport">
 					<h3 class="t3-title">Pentru transport...</h3>
-					<div class="t3-box t3-box-1" data-slot="T3.1"></div>
-					<div class="t3-box t3-box-2" data-slot="T3.2"></div>
-					<div class="t3-box t3-box-3" data-slot="T3.3"></div>
+					{% for slot in transport_pub_slots %}
+					<div class="t3-box t3-box-{{ forloop.counter }}" data-slot="{{ slot.code }}">
+						{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}
+					</div>
+					{% endfor %}
 				</div>
 			</div>
 		</div>

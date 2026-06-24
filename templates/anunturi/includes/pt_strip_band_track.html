@@ -18,33 +18,8 @@
 	</span>
 	{% endif %}
 	{% else %}
-	<span class="pt-strip-item pt-strip-item--{{ strip_variant }} pt-strip-cell--pub{% if cell.creative %}{% if cell.creative.img or cell.creative.video %} pt-strip-cell--has-creative{% endif %}{% endif %}" data-slot="{{ cell.code }}">
-		<span class="pt-strip-cell-label">{{ cell.label }}</span>
-		{% if cell.creative %}
-		{% if cell.creative.img or cell.creative.video %}
-		{% if cell.creative.link %}
-		<a href="{{ cell.creative.link }}" target="_blank" rel="noopener" class="pt-strip-pub-link">
-			{% if cell.creative.price or cell.creative.discount %}
-			<span class="pt-pub-mini-badges">{% if cell.creative.price %}<span class="pt-pub-mini-badge pt-pub-mini-badge--price">{{ cell.creative.price }}</span>{% endif %}{% if cell.creative.discount %}<span class="pt-pub-mini-badge pt-pub-mini-badge--discount">{{ cell.creative.discount }}</span>{% endif %}</span>
-			{% endif %}
-			{% if cell.creative.video %}
-			<video src="{{ cell.creative.video }}" autoplay muted loop playsinline controls preload="metadata"></video>
-			{% else %}
-			<img src="{{ cell.creative.img }}" alt="{{ cell.creative.alt }}" loading="lazy" decoding="async" />
-			{% endif %}
-		</a>
-		{% else %}
-		{% if cell.creative.price or cell.creative.discount %}
-		<span class="pt-pub-mini-badges">{% if cell.creative.price %}<span class="pt-pub-mini-badge pt-pub-mini-badge--price">{{ cell.creative.price }}</span>{% endif %}{% if cell.creative.discount %}<span class="pt-pub-mini-badge pt-pub-mini-badge--discount">{{ cell.creative.discount }}</span>{% endif %}</span>
-		{% endif %}
-		{% if cell.creative.video %}
-		<video src="{{ cell.creative.video }}" autoplay muted loop playsinline controls preload="metadata"></video>
-		{% else %}
-		<img src="{{ cell.creative.img }}" alt="{{ cell.creative.alt }}" loading="lazy" decoding="async" />
-		{% endif %}
-		{% endif %}
-		{% endif %}
-		{% endif %}
+	<span class="pt-strip-item pt-strip-item--{{ strip_variant }} pt-strip-cell--pub pt-strip-cell--has-creative" data-slot="{{ cell.code }}">
+		{% include "anunturi/includes/pub_slot_live_cover.html" with creative=cell.creative layout="strip" only %}
 	</span>
 	{% endif %}
 {% endfor %}
