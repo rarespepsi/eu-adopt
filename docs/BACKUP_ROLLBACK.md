@@ -1,5 +1,7 @@
 # Backup & rollback — EU-Adopt
 
+**Procedură agent (obligatorie, always-on):** `.cursor/rules/BACKUP_DEPLOY_PROCEDURA.mdc`
+
 Două rotații automate câte **3 variante** (la a 4-a se șterge cea mai veche).
 
 ---
