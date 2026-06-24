@@ -6,6 +6,7 @@ Trimiterea SMTP este dezactivată implicit (mod tehnic); activare: EUADOPT_STAFF
 from __future__ import annotations
 
 import logging
+import secrets
 from datetime import timedelta
 from typing import Any
 from urllib.parse import quote
@@ -48,7 +49,68 @@ def staff_invite_email_enabled() -> bool:
 def staff_invite_cooldown_days(lead: StaffOnboardingLead) -> int:
     if lead.invite_cooldown_days is not None and lead.invite_cooldown_days >= 0:
         return int(lead.invite_cooldown_days)
-    return int(getattr(settings, "STAFF_LEAD_INVITE_COOLDOWN_DAYS", 14))
+    return int(getattr(settings, "STAFF_LEAD_INVITE_COOLDOWN_DAYS", 7))
+
+
+def staff_invite_link_valid_days() -> int:
+    return int(getattr(settings, "STAFF_LEAD_INVITE_LINK_VALID_DAYS", 7))
+
+
+def staff_invite_link_expires_at(lead: StaffOnboardingLead):
+    """Data expirării linkului invitație (None dacă nu s-a trimis niciodată real)."""
+    sent_at = lead.invite_email_last_sent_at
+    if not sent_at:
+        return None
+    return sent_at + timedelta(days=staff_invite_link_valid_days())
+
+
+def staff_invite_is_link_expired(lead: StaffOnboardingLead, now=None) -> bool:
+    now = now or timezone.now()
+    expires = staff_invite_link_expires_at(lead)
+    if not expires:
+        return True
+    return now >= expires
+
+
+def staff_invite_should_rotate_token(lead: StaffOnboardingLead) -> bool:
+    """Token nou la orice retrimitere (după prima trimitere reală sau simulare)."""
+    if staff_invite_sent_count(lead) > 0:
+        return True
+    return staff_invite_is_resend_candidate(lead)
+
+
+def staff_invite_rotate_token(lead: StaffOnboardingLead) -> str:
+    lead.consent_invite_token = secrets.token_urlsafe(32)[:64]
+    lead.save(update_fields=["consent_invite_token", "updated_at"])
+    return (lead.consent_invite_token or "").strip()
+
+
+def staff_invite_prepare_token_for_send(lead: StaffOnboardingLead) -> None:
+    """Înainte de generarea emailului: token nou la retrimitere, altfel asigură token existent."""
+    if staff_invite_should_rotate_token(lead):
+        staff_invite_rotate_token(lead)
+    elif not (lead.consent_invite_token or "").strip():
+        lead.save(update_fields=["consent_invite_token", "updated_at"])
+
+
+def staff_invite_lead_for_token(token: str) -> StaffOnboardingLead | None:
+    token = (token or "").strip()
+    if not token or len(token) > 72:
+        return None
+    return StaffOnboardingLead.objects.filter(
+        consent_invite_token=token,
+        imported_user__isnull=True,
+    ).first()
+
+
+def staff_invite_token_usable(lead: StaffOnboardingLead, now=None) -> bool:
+    """Link valid: trimis real, neexpirat, fără cont creat."""
+    now = now or timezone.now()
+    if lead.imported_user_id:
+        return False
+    if not lead.invite_email_last_sent_at:
+        return False
+    return not staff_invite_is_link_expired(lead, now)
 
 
 def staff_invite_max_sends(lead: StaffOnboardingLead) -> int:
@@ -261,11 +323,18 @@ def _invite_population_min_max() -> tuple[int, int]:
     return population_animal_min(), population_animal_max()
 
 
-def _invite_link_header(org_line: str, signup_url: str) -> str:
+def _invite_link_header(org_line: str, signup_url: str, *, link_valid_until=None) -> str:
+    validity_line = ""
+    if link_valid_until:
+        validity_line = (
+            f"Linkul este valabil până la {link_valid_until.strftime('%d.%m.%Y %H:%M')} "
+            f"(ora României). După această dată solicitați o invitație nouă.\n\n"
+        )
     return (
         f"Bună ziua{org_line},\n\n"
         f"Creare cont EU-Adopt (link personal — apăsați aici pentru a începe):\n"
         f"{signup_url}\n\n"
+        f"{validity_line}"
     )
 
 
@@ -445,8 +514,11 @@ def _invite_subject(template_key: str, kind_label: str) -> str:
     return subjects.get(template_key, f"{base} ({kind_label})")
 
 
-def staff_invite_subject_body(request, lead: StaffOnboardingLead) -> tuple[str, str, str]:
+def staff_invite_subject_body(
+    request, lead: StaffOnboardingLead, now=None
+) -> tuple[str, str, str]:
     """Subiect, corp, cheie șablon."""
+    now = now or timezone.now()
     template_key = staff_invite_template_key(lead)
     kind_label = lead.get_account_kind_display()
     org_line = ""
@@ -457,11 +529,12 @@ def staff_invite_subject_body(request, lead: StaffOnboardingLead) -> tuple[str, 
     privacy_url = request.build_absolute_uri(reverse("politica_confidentialitate"))
     loc_bits = [x for x in (lead.judet, lead.oras) if (x or "").strip()]
     loc_line = f" ({', '.join(loc_bits)})" if loc_bits else ""
+    link_valid_until = now + timedelta(days=staff_invite_link_valid_days())
 
     subject = _invite_subject(template_key, kind_label)
     animals_population = template_key in ("adapost_adpub", "adapost_adprv", "ong")
     body = (
-        _invite_link_header(org_line, signup_url)
+        _invite_link_header(org_line, signup_url, link_valid_until=link_valid_until)
         + _invite_platform_block(loc_line)
         + _invite_middle_block(template_key, org_line, loc_line)
         + _invite_population_rules_block(animals=animals_population)
@@ -597,7 +670,9 @@ def staff_invite_process_one(
     if staff_invite_daily_remaining(now) <= 0:
         return "daily_cap"
     em = (lead.email or "").strip()
-    subj, body, template_key = staff_invite_subject_body(request, lead)
+    staff_invite_prepare_token_for_send(lead)
+    lead.refresh_from_db(fields=["consent_invite_token", "updated_at"])
+    subj, body, template_key = staff_invite_subject_body(request, lead, now)
     mail_enabled = staff_invite_email_enabled()
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@eu-adopt.ro"
     log = logging.getLogger(__name__)

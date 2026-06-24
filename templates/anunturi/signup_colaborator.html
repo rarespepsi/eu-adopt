@@ -343,7 +343,8 @@
 		text-transform: none;
 		letter-spacing: 0.02em;
 	}
-	.signup-col-field input {
+	.signup-col-field input,
+	.signup-col-field select {
 		width: 100%;
 		padding: 0.26rem 0.38rem;
 		border-radius: 0.45rem;
@@ -803,13 +804,11 @@
 				</div>
 				<div class="signup-col-field signup-col-field-box">
 					<label for="id_judet_col">Județ *</label>
-					<input type="text" id="id_judet_col" name="judet" required autocomplete="off" list="county-list-col" value="{% if form_prefill %}{{ form_prefill.judet|default:'' }}{% endif %}" />
-					{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-col" %}
+					{% include "anunturi/includes/ro_county_select.html" with select_id="id_judet_col" select_name="judet" current=form_prefill.judet profile_editable=True select_class="signup-col-field-select" %}
 				</div>
 				<div class="signup-col-field signup-col-field-box">
 					<label for="id_oras_col">Oraș / Localitate *</label>
-					<input type="text" id="id_oras_col" name="oras" required autocomplete="off" list="city-list-col" value="{% if form_prefill %}{{ form_prefill.oras|default:'' }}{% endif %}" />
-					<datalist id="city-list-col"></datalist>
+					{% include "anunturi/includes/ro_city_select.html" with select_id="id_oras_col" select_name="oras" current=form_prefill.oras profile_editable=True select_class="signup-col-field-select" %}
 				</div>
 				<div class="signup-col-field signup-col-field-box">
 					<div class="signup-col-adresa-label-row">
@@ -1081,39 +1080,7 @@
 	}
 })();
 </script>
-<script>
-(function() {
-	var localitiesByCounty = {};
-	var countyNames = ["Alba","Arad","Argeș","Bacău","Bihor","Bistrița-Năsăud","Botoșani","Brăila","Brașov","București","Buzău","Călărași","Caraș-Severin","Cluj","Constanța","Covasna","Dâmbovița","Dolj","Galați","Giurgiu","Gorj","Harghita","Hunedoara","Ialomița","Iași","Ilfov","Maramureș","Mehedinți","Mureș","Neamț","Olt","Prahova","Sălaj","Satu Mare","Sibiu","Suceava","Teleorman","Timiș","Tulcea","Vâlcea","Vaslui","Vrancea"];
-	function matchCounty(val) {
-		if (!val) return null;
-		val = String(val).trim();
-		for (var i = 0; i < countyNames.length; i++) if (countyNames[i].toLowerCase() === val.toLowerCase()) return countyNames[i];
-		return null;
-	}
-	function updateCityList() {
-		var countyInput = document.getElementById("id_judet_col");
-		var cityList = document.getElementById("city-list-col");
-		if (!countyInput || !cityList) return;
-		var county = matchCounty(countyInput.value);
-		cityList.innerHTML = "";
-		if (county && localitiesByCounty[county]) {
-			var list = localitiesByCounty[county];
-			for (var i = 0; i < list.length; i++) { var opt = document.createElement("option"); opt.value = list[i]; cityList.appendChild(opt); }
-		}
-	}
-	fetch("{% static 'data/ro_counties_cities.json' %}").then(function(r) { return r.json(); }).then(function(data) {
-		for (var k in data) localitiesByCounty[k] = data[k];
-		updateCityList();
-	}).catch(function() {});
-	var countyInput = document.getElementById("id_judet_col");
-	if (countyInput) {
-		countyInput.addEventListener("input", updateCityList);
-		countyInput.addEventListener("change", updateCityList);
-		updateCityList();
-	}
-})();
-</script>
+{% include "anunturi/includes/ro_county_locality_select_script.html" with judet_select_id="id_judet_col" oras_select_id="id_oras_col" %}
 <script>
 (function() {
 	var cb = document.getElementById('id_pl_same_as_sediu_col');

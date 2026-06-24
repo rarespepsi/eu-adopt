@@ -17,6 +17,7 @@ from django.test import RequestFactory
 
 from home.models import StaffOnboardingLead, StaffOnboardingInviteLog
 from home.staff_onboarding_invite import (
+    staff_invite_prepare_token_for_send,
     staff_invite_process_one,
     staff_invite_subject_body,
 )
@@ -147,6 +148,8 @@ class Command(BaseCommand):
             lead.save()
 
         request = _request_for_base_url(base_url)
+        staff_invite_prepare_token_for_send(lead)
+        lead.refresh_from_db(fields=["consent_invite_token", "updated_at"])
         subj, body, template_key = staff_invite_subject_body(request, lead)
 
         self.stdout.write(f"Lead id={lead.pk} created={created} template={template_key}")

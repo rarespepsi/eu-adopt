@@ -426,7 +426,8 @@
 	.signup-org-bife-actions .signup-org-field label {
 		width: 100%;
 	}
-	.signup-org-field input {
+	.signup-org-field input,
+	.signup-org-field select {
 		width: 100%;
 		padding: 0.26rem 0.38rem;
 		border-radius: 0.45rem;
@@ -893,39 +894,7 @@
 	}
 })();
 </script>
-<script>
-(function() {
-	var localitiesByCounty = {};
-	var countyNames = ["Alba","Arad","Argeș","Bacău","Bihor","Bistrița-Năsăud","Botoșani","Brăila","Brașov","București","Buzău","Călărași","Caraș-Severin","Cluj","Constanța","Covasna","Dâmbovița","Dolj","Galați","Giurgiu","Gorj","Harghita","Hunedoara","Ialomița","Iași","Ilfov","Maramureș","Mehedinți","Mureș","Neamț","Olt","Prahova","Sălaj","Satu Mare","Sibiu","Suceava","Teleorman","Timiș","Tulcea","Vâlcea","Vaslui","Vrancea"];
-	function matchCounty(val) {
-		if (!val) return null;
-		val = String(val).trim();
-		for (var i = 0; i < countyNames.length; i++) if (countyNames[i].toLowerCase() === val.toLowerCase()) return countyNames[i];
-		return null;
-	}
-	function updateCityList() {
-		var countyInput = document.getElementById("id_judet");
-		var cityList = document.getElementById("city-list-org");
-		if (!countyInput || !cityList) return;
-		var county = matchCounty(countyInput.value);
-		cityList.innerHTML = "";
-		if (county && localitiesByCounty[county]) {
-			var list = localitiesByCounty[county];
-			for (var i = 0; i < list.length; i++) { var opt = document.createElement("option"); opt.value = list[i]; cityList.appendChild(opt); }
-		}
-	}
-	fetch("{% static 'data/ro_counties_cities.json' %}").then(function(r) { return r.json(); }).then(function(data) {
-		for (var k in data) localitiesByCounty[k] = data[k];
-		updateCityList();
-	}).catch(function() {});
-	var countyInput = document.getElementById("id_judet");
-	if (countyInput) {
-		countyInput.addEventListener("input", updateCityList);
-		countyInput.addEventListener("change", updateCityList);
-		updateCityList();
-	}
-})();
-</script>
+{% include "anunturi/includes/ro_county_locality_select_script.html" with judet_select_id="id_judet" oras_select_id="id_oras" %}
 {% include "anunturi/includes/signup_adresa_google_maps_script.html" with modal_prefix="signup_org" maps_callback="signupOrgAdresaPlacesReady" judet_input_id="id_judet" oras_input_id="id_oras" addr_input_id="id_adresa_firma_org" lat_hidden_id="id_adresa_lat_org" lng_hidden_id="id_adresa_lng_org" maps_link_id="signup_org_maps_link" %}
 {% endblock %}
 
@@ -1008,15 +977,13 @@
 						</div>
 						<div class="signup-org-field signup-org-field-box">
 							<label for="id_judet">Județ *</label>
-							<input type="text" id="id_judet" name="judet" required autocomplete="off" list="county-list-org" value="{% if form_prefill %}{{ form_prefill.judet|default:'' }}{% endif %}" />
+							{% include "anunturi/includes/ro_county_select.html" with select_id="id_judet" select_name="judet" current=form_prefill.judet profile_editable=True select_class="signup-org-field-select" %}
 							{% if field_errors and field_errors.judet %}<p class="signup-field-err" role="alert">{{ field_errors.judet }}</p>{% endif %}
-							{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-org" %}
 						</div>
 						<div class="signup-org-field signup-org-field-box">
 							<label for="id_oras">Oraș / Localitate *</label>
-							<input type="text" id="id_oras" name="oras" required autocomplete="off" list="city-list-org" value="{% if form_prefill %}{{ form_prefill.oras|default:'' }}{% endif %}" />
+							{% include "anunturi/includes/ro_city_select.html" with select_id="id_oras" select_name="oras" current=form_prefill.oras profile_editable=True select_class="signup-org-field-select" %}
 							{% if field_errors and field_errors.oras %}<p class="signup-field-err" role="alert">{{ field_errors.oras }}</p>{% endif %}
-							<datalist id="city-list-org"></datalist>
 						</div>
 						<div class="signup-org-field signup-org-field-box">
 							<div class="signup-org-adresa-label-row">

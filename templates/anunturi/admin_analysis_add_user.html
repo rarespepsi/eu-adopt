@@ -1376,6 +1376,7 @@
 							<th>Stare mail</th>
 							<th>Trimise</th>
 							<th>Ultima invitație</th>
+							<th>Link expiră</th>
 							<th>Acțiuni</th>
 						</tr>
 					</thead>
@@ -1414,6 +1415,11 @@
 								{{ lead.invite_sent_count }}/{{ lead.invite_max_sends_display }}{% if lead.invite_sim_count %}<span class="add-user-invite-meta"> +{{ lead.invite_sim_count }}s</span>{% endif %}
 							</td>
 							<td>{% if lead.invite_email_last_sent_at %}<span title="{{ lead.invite_email_last_sent_at|date:'d.m.Y H:i' }}">{{ lead.invite_email_last_sent_at|timesince }}</span>{% else %}—{% endif %}</td>
+							<td>
+								{% if lead.invite_link_expires_at %}
+									{% if lead.invite_link_expired %}<span class="add-user-invite-meta" style="color:#fecaca;" title="Expirat {{ lead.invite_link_expires_at|date:'d.m.Y H:i' }}">expirat</span>{% else %}<span title="{{ lead.invite_link_expires_at|date:'d.m.Y H:i' }}">{{ lead.invite_link_expires_at|date:"d.m.Y" }}</span>{% endif %}
+								{% else %}—{% endif %}
+							</td>
 							<td class="add-user-td-actions">
 								<div class="add-user-tbl-actions">
 									{% if not lead.imported_user_id and lead.invite_status_code != "do_not_contact" and lead.invite_status_code != "signed_up" %}

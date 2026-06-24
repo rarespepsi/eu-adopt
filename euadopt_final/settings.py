@@ -223,7 +223,8 @@ SITE_GUIDE_RATE_LIMIT_PER_HOUR = int(os.environ.get("EUADOPT_SITE_GUIDE_RATE_LIM
 # Add USER — invitații email prospecte. Implicit DEZACTIVAT (mod tehnic, doar log/simulare).
 _invite_mail_on = os.environ.get("EUADOPT_STAFF_INVITE_EMAIL_ENABLED", "").strip().lower()
 STAFF_INVITE_EMAIL_ENABLED = _invite_mail_on in ("1", "true", "yes", "on")
-STAFF_LEAD_INVITE_COOLDOWN_DAYS = 14
+STAFF_LEAD_INVITE_COOLDOWN_DAYS = int(os.environ.get("EUADOPT_STAFF_INVITE_COOLDOWN_DAYS", "7") or "7")
+STAFF_LEAD_INVITE_LINK_VALID_DAYS = int(os.environ.get("EUADOPT_STAFF_INVITE_LINK_VALID_DAYS", "7") or "7")
 STAFF_LEAD_INVITE_MAX_BATCH = 100
 STAFF_LEAD_INVITE_MAX_PER_DAY = 30
 STAFF_LEAD_INVITE_WAVE_DEFAULT = 20

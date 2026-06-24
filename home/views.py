@@ -99,6 +99,10 @@ from .staff_onboarding_invite import (
     staff_invite_email_enabled,
     staff_invite_filter_eligible_qs,
     staff_invite_filter_resend_eligible_qs,
+    staff_invite_is_link_expired,
+    staff_invite_lead_for_token,
+    staff_invite_link_expires_at,
+    staff_invite_link_valid_days,
     staff_invite_mark_signed_up,
     staff_invite_max_sends,
     staff_invite_max_per_day,
@@ -107,6 +111,7 @@ from .staff_onboarding_invite import (
     staff_invite_sent_count,
     staff_invite_simulated_count,
     staff_invite_template_key,
+    staff_invite_token_usable,
     staff_invite_wave_default_size,
 )
 from .staff_onboarding_invite_inbound import (
@@ -2543,16 +2548,26 @@ def _staff_collab_subtype_matches_lead_profile(lead_subtype: str, profile_collab
     return False
 
 
-def _capture_staff_invite_token_for_signup(request, expected_lead_kind: str) -> None:
+def _capture_staff_invite_token_for_signup(request, expected_lead_kind: str):
+    """Validează ?inv= și salvează token în sesiune. Returnează redirect la eroare/expirare sau None."""
     raw = (request.GET.get(STAFF_INVITE_GET_PARAM) or "").strip()
     if not raw or len(raw) > 72:
-        return
-    if StaffOnboardingLead.objects.filter(
-        consent_invite_token=raw,
-        imported_user__isnull=True,
-        account_kind=expected_lead_kind,
-    ).exists():
-        request.session[STAFF_INVITE_SESSION_KEY] = raw
+        return None
+    lead = staff_invite_lead_for_token(raw)
+    if not lead:
+        return redirect(reverse("signup_choose_type") + "?link_invalid=1")
+    kind = lead.account_kind
+    if kind == StaffOnboardingLead.KIND_ADAPOST:
+        if expected_lead_kind != StaffOnboardingLead.KIND_ORG:
+            return None
+    elif kind != expected_lead_kind:
+        return None
+    if not staff_invite_token_usable(lead):
+        if lead.invite_email_last_sent_at and staff_invite_is_link_expired(lead):
+            return redirect(reverse("signup_choose_type") + "?link_expirat=1")
+        return redirect(reverse("signup_choose_type") + "?link_invalid=1")
+    request.session[STAFF_INVITE_SESSION_KEY] = raw
+    return None
 
 
 def _user_staff_lead_kind(user):
@@ -2573,11 +2588,8 @@ def _attach_staff_onboarding_lead_from_inv_token(user, token: str) -> None:
     token = (token or "").strip()
     if not token or len(token) > 72:
         return
-    lead = StaffOnboardingLead.objects.filter(
-        consent_invite_token=token,
-        imported_user__isnull=True,
-    ).first()
-    if not lead:
+    lead = staff_invite_lead_for_token(token)
+    if not lead or not staff_invite_token_usable(lead):
         return
     kind = _user_staff_lead_kind(user)
     if not kind:
@@ -2613,7 +2625,9 @@ def signup_choose_type_view(request):
 def signup_pf_view(request):
     """Formular înregistrare – Persoană fizică. La POST: validează, salvează în sesiune, redirect SMS. La GET: prefill din sesiune dacă user a dat Back din SMS."""
     if request.method != "POST":
-        _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_PF)
+        inv_redir = _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_PF)
+        if inv_redir:
+            return inv_redir
         ctx = {}
         if request.GET.get("phone_taken"):
             ctx["signup_errors"] = ["Acest număr de telefon este deja folosit. Te rugăm folosește alt număr."]
@@ -3242,8 +3256,11 @@ def signup_organizatie_view(request):
     if not population_org_signup_allowed():
         return redirect(reverse("login"))
     if request.method != "POST":
-        _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_ORG)
-        _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_ADAPOST)
+        inv_redir = _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_ORG)
+        if not inv_redir:
+            inv_redir = _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_ADAPOST)
+        if inv_redir:
+            return inv_redir
         ctx = _signup_maps_ctx(request)
         field_errors_get = {}
         if request.GET.get("phone_taken"):
@@ -3362,7 +3379,9 @@ def signup_organizatie_view(request):
 def signup_colaborator_view(request):
     """Formular înregistrare – Cabinet / Magazin / Servicii. La POST: validează, salvează în sesiune, redirect SMS. La GET: prefill din sesiune dacă user a dat Back din SMS."""
     if request.method != "POST":
-        _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_COLLAB)
+        inv_redir = _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_COLLAB)
+        if inv_redir:
+            return inv_redir
         ctx = _signup_maps_ctx(request)
         errs = []
         if request.GET.get("phone_taken"):
@@ -5849,6 +5868,10 @@ def admin_analysis_add_user_view(request):
         L.invite_max_sends_display = staff_invite_max_sends(L)
         L.invite_cooldown_days_display = staff_invite_cooldown_days(L)
         L.invite_template_key = staff_invite_template_key(L)
+        L.invite_link_expires_at = staff_invite_link_expires_at(L)
+        L.invite_link_expired = (
+            staff_invite_is_link_expired(L, now) if L.invite_email_last_sent_at else None
+        )
     filter_qs = _staff_onboarding_leads_filtered_qs_from_querydict(_add_user_filter_querydict(request))
     invite_stats = staff_invite_campaign_stats(now)
     invite_stats["eligible_in_filter"] = staff_invite_count_eligible(filter_qs, now)
@@ -5872,7 +5895,8 @@ def admin_analysis_add_user_view(request):
             "filter_oras": (request.GET.get("oras") or "").strip(),
             "filter_collab_subtype": (request.GET.get("collab_subtype") or "").strip(),
             "filter_vet_kind": (request.GET.get("vet_kind") or "").strip(),
-            "staff_invite_cooldown_days": int(getattr(settings, "STAFF_LEAD_INVITE_COOLDOWN_DAYS", 14)),
+            "staff_invite_cooldown_days": int(getattr(settings, "STAFF_LEAD_INVITE_COOLDOWN_DAYS", 7)),
+            "staff_invite_link_valid_days": staff_invite_link_valid_days(),
             "staff_invite_max_batch": int(getattr(settings, "STAFF_LEAD_INVITE_MAX_BATCH", 100)),
             "staff_invite_email_enabled": staff_invite_email_enabled(),
             "staff_invite_status_labels": invite_status_labels,

@@ -1340,6 +1340,8 @@ class Carte81_100Tests(TestCase):
             email=f"inv_att_{uuid.uuid4().hex[:8]}@test.local",
             display_name="Inv Attach",
             account_kind=StaffOnboardingLead.KIND_PF,
+            invite_email_last_sent_at=timezone.now(),
+            invite_mail_status=StaffOnboardingLead.INVITE_SENT,
         )
         lead.refresh_from_db()
         inv = lead.consent_invite_token
@@ -1394,6 +1396,7 @@ class Carte81_100Tests(TestCase):
         lead.refresh_from_db()
         self.assertIsNone(lead.imported_user_id)
 
+    @override_settings(STAFF_INVITE_EMAIL_ENABLED=True)
     def test_109i3_invite_email_includes_invite_token_param(self):
         from django.core import mail
 
@@ -1422,7 +1425,70 @@ class Carte81_100Tests(TestCase):
         msg = mail.outbox[0]
         blob = (msg.body or "") + "".join(a[0] for a in (msg.alternatives or []) if a and a[0])
         self.assertIn("inv=", blob)
+        lead.refresh_from_db()
         self.assertIn(lead.consent_invite_token, blob)
+        self.assertIn("valabil până", blob.lower())
+
+    def test_109o_invite_expired_link_rejects_signup_capture(self):
+        from datetime import timedelta
+        from urllib.parse import urlencode
+
+        from home.models import StaffOnboardingLead
+
+        lead = StaffOnboardingLead.objects.create(
+            email=f"exp_{uuid.uuid4().hex[:8]}@test.local",
+            display_name="Expired",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_ADPRV,
+            invite_email_last_sent_at=timezone.now() - timedelta(days=8),
+            invite_mail_status=StaffOnboardingLead.INVITE_SENT,
+        )
+        lead.refresh_from_db()
+        c = Client()
+        q = urlencode({"inv": lead.consent_invite_token})
+        r = c.get(f"{reverse('signup_organizatie')}?{q}")
+        self.assertRedirects(r, reverse("signup_choose_type") + "?link_expirat=1", fetch_redirect_response=False)
+
+    @override_settings(STAFF_INVITE_EMAIL_ENABLED=True)
+    def test_109p_invite_resend_rotates_token(self):
+        from datetime import timedelta
+        from django.core import mail
+
+        from home.models import StaffOnboardingLead, StaffOnboardingInviteLog
+
+        staff = User.objects.create_user(
+            username=f"strot_{uuid.uuid4().hex[:6]}",
+            email="strot@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        lead = StaffOnboardingLead.objects.create(
+            email=f"rot_{uuid.uuid4().hex[:6]}@test.local",
+            display_name="Rotate",
+            account_kind=StaffOnboardingLead.KIND_PF,
+            invite_email_last_sent_at=timezone.now() - timedelta(days=8),
+            invite_mail_status=StaffOnboardingLead.INVITE_SENT,
+        )
+        lead.refresh_from_db()
+        old_tok = lead.consent_invite_token
+        StaffOnboardingInviteLog.objects.create(
+            lead=lead,
+            sent_by=staff,
+            to_email=lead.email,
+            subject="x",
+            outcome=StaffOnboardingInviteLog.OUTCOME_SENT,
+        )
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        mail.outbox.clear()
+        c.post(
+            reverse("admin_analysis_add_user_invite_send"),
+            {"lead_id": [str(lead.pk)]},
+        )
+        lead.refresh_from_db()
+        self.assertNotEqual(lead.consent_invite_token, old_tok)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(lead.consent_invite_token, mail.outbox[0].body)
 
     def test_109n_add_user_table_hides_imported_without_show_imported(self):
         from home.models import StaffOnboardingLead

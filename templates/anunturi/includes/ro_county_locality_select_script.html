@@ -1,0 +1,47 @@
+{% load static %}
+{% comment %}
+Populează dropdown-ul de oraș/localitate după județul selectat.
+Folosește: {% include "anunturi/includes/ro_county_locality_select_script.html" with judet_select_id="id_judet" oras_select_id="id_oras" %}
+{% endcomment %}
+<script>
+(function() {
+	var localitiesByCounty = {};
+	var orasSelect = document.getElementById("{{ oras_select_id }}");
+	var judetSelect = document.getElementById("{{ judet_select_id }}");
+	function fillOras() {
+		if (!orasSelect || !judetSelect) return;
+		var county = judetSelect.value;
+		var currentOras = (orasSelect.getAttribute("data-current-oras") || "").trim();
+		orasSelect.innerHTML = "";
+		var opt0 = document.createElement("option");
+		opt0.value = "";
+		opt0.textContent = "—— Alege orașul ——";
+		orasSelect.appendChild(opt0);
+		var list = localitiesByCounty[county];
+		if (list && list.length) {
+			for (var i = 0; i < list.length; i++) {
+				var opt = document.createElement("option");
+				opt.value = list[i];
+				opt.textContent = list[i];
+				if (list[i] === currentOras) opt.selected = true;
+				orasSelect.appendChild(opt);
+			}
+		}
+		if (currentOras && (!list || list.indexOf(currentOras) === -1)) {
+			var optCustom = document.createElement("option");
+			optCustom.value = currentOras;
+			optCustom.textContent = currentOras;
+			optCustom.selected = true;
+			orasSelect.appendChild(optCustom);
+		}
+		orasSelect.removeAttribute("data-current-oras");
+	}
+	fetch("{% static 'data/ro_counties_cities.json' %}").then(function(r) { return r.json(); }).then(function(data) {
+		for (var k in data) localitiesByCounty[k] = data[k];
+		fillOras();
+	}).catch(function() { fillOras(); });
+	if (judetSelect) {
+		judetSelect.addEventListener("change", fillOras);
+	}
+})();
+</script>

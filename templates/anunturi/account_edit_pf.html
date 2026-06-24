@@ -90,12 +90,11 @@
 			</div>
 			<div class="signup-field">
 				<label for="id_judet">Județ *</label>
-				<input type="text" id="id_judet" name="judet" required list="county-list-edit" value="{{ form_prefill.judet|default:'' }}" />
-				{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-edit" %}
+				{% include "anunturi/includes/ro_county_select.html" with select_id="id_judet" select_name="judet" current=form_prefill.judet profile_editable=True %}
 			</div>
 			<div class="signup-field">
 				<label for="id_oras">Oraș *</label>
-				<input type="text" id="id_oras" name="oras" required value="{{ form_prefill.oras|default:'' }}" />
+				{% include "anunturi/includes/ro_city_select.html" with select_id="id_oras" select_name="oras" current=form_prefill.oras profile_editable=True %}
 			</div>
 			<div class="signup-field span2">
 				<label class="check"><input type="checkbox" name="accept_termeni" required {% if form_prefill.accept_termeni %}checked{% endif %} /> Accept <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">Termenii și condițiile de utilizare</a> *</label>
@@ -113,4 +112,5 @@
 		</div>
 	</form>
 </div>
+{% include "anunturi/includes/ro_county_locality_select_script.html" with judet_select_id="id_judet" oras_select_id="id_oras" %}
 {% endblock %}

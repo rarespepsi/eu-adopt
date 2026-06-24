@@ -1907,7 +1907,7 @@ class StaffOnboardingLead(models.Model):
         "Cooldown retrimitere (zile)",
         null=True,
         blank=True,
-        help_text="Gol = folosește setarea globală (implicit 14 zile).",
+        help_text="Gol = folosește setarea globală (implicit 7 zile).",
     )
     invite_staff_notes = models.TextField("Notițe invitație email", blank=True, default="")
 
