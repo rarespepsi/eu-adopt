@@ -2399,34 +2399,40 @@ def login_view(request):
     """Pagina de autentificare – acceptă email sau username."""
     from django.contrib.auth import authenticate, login as auth_login
     from django.contrib.auth import get_user_model
+    from home.auth_rate_limit import bump_login_attempt, is_login_rate_limited
+
     error = None
     login_value = ""
     if request.method == "POST":
-        login_value = (request.POST.get("login") or "").strip()
-        password = request.POST.get("password") or ""
-        if not login_value or not password:
-            error = "Completează Email/Utilizator și parola."
+        if is_login_rate_limited(request):
+            error = "Prea multe încercări de autentificare. Încearcă din nou peste câteva minute."
         else:
-            User = get_user_model()
-            username = login_value
-            if "@" in login_value:
-                user_by_email = User.objects.filter(email__iexact=login_value).first()
-                if user_by_email:
-                    username = user_by_email.username
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                from home.population_onboarding import user_may_login_during_population
-
-                ok, pop_err = user_may_login_during_population(user)
-                if not ok:
-                    error = pop_err
-                else:
-                    auth_login(request, user)
-                    next_url = request.GET.get("next") or request.POST.get("next") or "/"
-                    from django.shortcuts import redirect
-                    return redirect(next_url)
+            login_value = (request.POST.get("login") or "").strip()
+            password = request.POST.get("password") or ""
+            if not login_value or not password:
+                error = "Completează Email/Utilizator și parola."
             else:
-                error = "Email/Utilizator sau parolă incorectă."
+                User = get_user_model()
+                username = login_value
+                if "@" in login_value:
+                    user_by_email = User.objects.filter(email__iexact=login_value).first()
+                    if user_by_email:
+                        username = user_by_email.username
+                user = authenticate(request, username=username, password=password)
+                if user is not None:
+                    from home.population_onboarding import user_may_login_during_population
+
+                    ok, pop_err = user_may_login_during_population(user)
+                    if not ok:
+                        error = pop_err
+                    else:
+                        auth_login(request, user)
+                        next_url = request.GET.get("next") or request.POST.get("next") or "/"
+                        from django.shortcuts import redirect
+                        return redirect(next_url)
+                else:
+                    error = "Email/Utilizator sau parolă incorectă."
+            bump_login_attempt(request)
     return render(request, "anunturi/login.html", {
         "error": error,
         "login_value": login_value,
@@ -2446,6 +2452,12 @@ def forgot_password_view(request):
     elif request.GET.get("invalid"):
         ctx["error"] = "Link invalid sau deja folosit. Solicită un link nou mai jos."
     if request.method == "POST":
+        from home.auth_rate_limit import bump_forgot_password_attempt, is_forgot_password_rate_limited
+
+        if is_forgot_password_rate_limited(request):
+            ctx["error"] = "Prea multe solicitări. Încearcă din nou peste o oră."
+            return render(request, "anunturi/forgot_password.html", ctx)
+        bump_forgot_password_attempt(request)
         email = (request.POST.get("email") or "").strip().lower()
         if not email:
             ctx["error"] = "Introdu adresa de email."

@@ -107,6 +107,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'euadopt_final.admin_ip_middleware.AdminIPAllowlistMiddleware',
     'euadopt_final.site_presence_middleware.SitePresenceMiddleware',
     'euadopt_final.login_required_middleware.LoginRequiredMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -393,6 +394,16 @@ if _secure_ssl_enabled:
     # Preload poate fi activat după ce domeniul servește strict HTTPS pe termen lung.
     SECURE_HSTS_PRELOAD = os.environ.get("DJANGO_HSTS_PRELOAD", "1").strip().lower() in ("1", "true", "yes", "on")
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Rate-limit autentificare (per IP, cache Django).
+AUTH_LOGIN_RATE_LIMIT_PER_15MIN = int(os.environ.get("AUTH_LOGIN_RATE_LIMIT_PER_15MIN", "15") or "15")
+AUTH_FORGOT_PASSWORD_RATE_LIMIT_PER_HOUR = int(
+    os.environ.get("AUTH_FORGOT_PASSWORD_RATE_LIMIT_PER_HOUR", "5") or "5"
+)
+
+# /admin/ — dacă e setat, doar aceste IP-uri (virgulă). Gol = fără restricție suplimentară.
+_admin_allow_ip = os.environ.get("EUADOPT_ADMIN_ALLOW_IP", "").strip()
+EUADOPT_ADMIN_ALLOW_IPS = [ip.strip() for ip in _admin_allow_ip.split(",") if ip.strip()]
 
 # Publicitate — materiale post-plată (formular + email cu token)
 PUBLICITATE_CREATIVE_TOKEN_DAYS = int(os.environ.get("PUBLICITATE_CREATIVE_TOKEN_DAYS", "90") or "90")
