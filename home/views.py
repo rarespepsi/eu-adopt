@@ -98,10 +98,12 @@ from .staff_onboarding_invite import (
     staff_invite_display_status,
     staff_invite_email_enabled,
     staff_invite_filter_eligible_qs,
+    staff_invite_filter_resend_eligible_qs,
     staff_invite_mark_signed_up,
     staff_invite_max_sends,
     staff_invite_max_per_day,
     staff_invite_process_batch,
+    staff_invite_count_resend_eligible,
     staff_invite_sent_count,
     staff_invite_simulated_count,
     staff_invite_template_key,
@@ -5530,7 +5532,9 @@ def _staff_onboarding_leads_filtered_qs_from_querydict(qd: QueryDict):
         qs = staff_invite_filter_eligible_qs(qs)
     if (qd.get("invite_first_only") or "").strip().lower() in ("1", "true", "da", "yes"):
         qs = qs.filter(invite_mail_status=StaffOnboardingLead.INVITE_NEVER)
-    return qs.order_by("-created_at")
+    if (qd.get("invite_resend_only") or "").strip().lower() in ("1", "true", "da", "yes"):
+        qs = staff_invite_filter_resend_eligible_qs(qs)
+    return qs.order_by("-created_at").select_related("imported_user")
 
 
 def _staff_onboarding_leads_filtered_qs(request):
@@ -5605,12 +5609,22 @@ def admin_analysis_add_user_invite_wave_view(request):
     if not (request.user.is_superuser or request.user.is_staff):
         return redirect(reverse("home"))
     qd = _add_user_filter_querydict(request)
-    qs = _staff_onboarding_leads_filtered_qs_from_querydict(qd)
     try:
         wave_limit = int((request.POST.get("wave_limit") or "").strip())
     except ValueError:
         wave_limit = staff_invite_wave_default_size()
     wave_limit = max(1, min(wave_limit, int(getattr(settings, "STAFF_LEAD_INVITE_MAX_BATCH", 100))))
+    wave_mode = (request.POST.get("wave_mode") or "first").strip().lower()
+    if wave_mode not in ("first", "resend", "any"):
+        wave_mode = "first"
+
+    qs = _staff_onboarding_leads_filtered_qs_from_querydict(qd)
+    if wave_mode == "first":
+        qs = qs.filter(invite_mail_status=StaffOnboardingLead.INVITE_NEVER)
+    elif wave_mode == "resend":
+        qs = staff_invite_filter_resend_eligible_qs(qs)
+    else:
+        qs = staff_invite_filter_eligible_qs(qs)
 
     picked: list[StaffOnboardingLead] = []
     for lead in qs.order_by("judet", "oras", "pk").iterator():
@@ -5838,6 +5852,7 @@ def admin_analysis_add_user_view(request):
     filter_qs = _staff_onboarding_leads_filtered_qs_from_querydict(_add_user_filter_querydict(request))
     invite_stats = staff_invite_campaign_stats(now)
     invite_stats["eligible_in_filter"] = staff_invite_count_eligible(filter_qs, now)
+    invite_stats["resend_in_filter"] = staff_invite_count_resend_eligible(filter_qs, now)
     invite_inbound_stats = inbound_stats_summary()
     return render(
         request,
@@ -5869,6 +5884,8 @@ def admin_analysis_add_user_view(request):
             "filter_invite_eligible": (_add_user_filter_querydict(request).get("invite_eligible") or "").strip().lower()
             in ("1", "true", "da", "yes"),
             "filter_invite_first_only": (_add_user_filter_querydict(request).get("invite_first_only") or "").strip().lower()
+            in ("1", "true", "da", "yes"),
+            "filter_invite_resend_only": (_add_user_filter_querydict(request).get("invite_resend_only") or "").strip().lower()
             in ("1", "true", "da", "yes"),
             "show_imported_active": show_imported_active,
             "filter_query_toggle_imported": filter_query_toggle_imported,

@@ -816,11 +816,41 @@ def staff_analysis_users_page_context(filter_key: str | None) -> dict[str, Any]:
             .count(),
         },
         {
-            "label": "Add USER — prospecte",
+            "label": "Add USER — prospecte active",
             "url": reverse("admin_analysis_add_user"),
             "count": StaffOnboardingLead.objects.filter(imported_user__isnull=True).count(),
         },
     ]
+    try:
+        from home.staff_onboarding_invite import staff_invite_campaign_stats
+
+        inv = staff_invite_campaign_stats()
+        ctx["users_useful_rows"].extend(
+            [
+                {
+                    "label": "Invitații — cont create (din prospecte)",
+                    "url": reverse("admin_analysis_add_user") + "?show_imported=1",
+                    "count": inv.get("registered_total", 0),
+                },
+                {
+                    "label": "Invitații — răspunsuri primite",
+                    "url": reverse("admin_analysis_add_user"),
+                    "count": inv.get("replied_total", 0),
+                },
+                {
+                    "label": "Invitații — eligibili prima trimitere",
+                    "url": reverse("admin_analysis_add_user") + "?invite_eligible=1&invite_first_only=1",
+                    "count": inv.get("first_eligible", 0),
+                },
+                {
+                    "label": "Invitații — eligibili retrimitere",
+                    "url": reverse("admin_analysis_add_user") + "?invite_resend_only=1",
+                    "count": inv.get("resend_eligible", 0),
+                },
+            ]
+        )
+    except Exception:
+        pass
     return ctx
 
 

@@ -108,6 +108,7 @@ def staff_invite_display_status(lead: StaffOnboardingLead) -> str:
 
 def staff_invite_can_send(lead: StaffOnboardingLead, now=None) -> tuple[bool, str]:
     now = now or timezone.now()
+    staff_invite_sync_lead_with_site_user(lead)
     em = (lead.email or "").strip()
     if not em or is_placeholder_lead_email(em):
         return False, "fără email valid"
@@ -126,6 +127,70 @@ def staff_invite_can_send(lead: StaffOnboardingLead, now=None) -> tuple[bool, st
         if (now - lead.invite_email_last_sent_at) < cd:
             return False, f"cooldown {staff_invite_cooldown_days(lead)} zile"
     return True, ""
+
+
+def staff_invite_sync_lead_with_site_user(lead: StaffOnboardingLead) -> bool:
+    """
+  Legătură automată lead → User dacă emailul e deja înregistrat pe site.
+  Blochează invitațiile ulterioare (stare signed_up).
+    """
+    if lead.imported_user_id:
+        return False
+    em = (lead.email or "").strip()
+    if not em or is_placeholder_lead_email(em):
+        return False
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+    user = User.objects.filter(email__iexact=em).order_by("pk").first()
+    if not user:
+        return False
+    staff_invite_mark_signed_up(lead.pk, user.pk)
+    lead.refresh_from_db(fields=["imported_user_id", "invite_mail_status", "status"])
+    return True
+
+
+def staff_invite_sync_all_registered_leads() -> int:
+    """Sincronizează toate lead-urile cu cont existent (email). Returnează număr actualizat."""
+    updated = 0
+    for lead in StaffOnboardingLead.objects.filter(imported_user__isnull=True).iterator():
+        if staff_invite_sync_lead_with_site_user(lead):
+            updated += 1
+    return updated
+
+
+def staff_invite_is_resend_candidate(lead: StaffOnboardingLead) -> bool:
+    """Deja invitat cel puțin o dată (real sau simulare), nu prima invitație."""
+    if lead.imported_user_id:
+        return False
+    if staff_invite_display_status(lead) == StaffOnboardingLead.INVITE_NEVER:
+        return False
+    if not lead.invite_email_last_sent_at and staff_invite_sent_count(lead) == 0:
+        return staff_invite_simulated_count(lead) > 0
+    return bool(lead.invite_email_last_sent_at or staff_invite_sent_count(lead))
+
+
+def staff_invite_filter_resend_eligible_qs(qs, now=None):
+    now = now or timezone.now()
+    pks: list[int] = []
+    for lead in qs.iterator():
+        if not staff_invite_is_resend_candidate(lead):
+            continue
+        if staff_invite_can_send(lead, now)[0]:
+            pks.append(lead.pk)
+    if not pks:
+        return qs.none()
+    return qs.filter(pk__in=pks)
+
+
+def staff_invite_count_resend_eligible(qs, now=None) -> int:
+    n = 0
+    for lead in qs.iterator():
+        if not staff_invite_is_resend_candidate(lead):
+            continue
+        if staff_invite_can_send(lead, now)[0]:
+            n += 1
+    return n
 
 
 def staff_invite_filter_eligible_qs(qs, now=None):
@@ -424,6 +489,24 @@ def staff_invite_campaign_stats(now=None) -> dict[str, Any]:
     signed_up = StaffOnboardingLead.objects.filter(
         invite_mail_status=StaffOnboardingLead.INVITE_SIGNED_UP,
     ).count()
+    registered_total = StaffOnboardingLead.objects.filter(imported_user__isnull=False).count()
+    replied_total = StaffOnboardingLead.objects.filter(
+        invite_mail_status=StaffOnboardingLead.INVITE_REPLIED,
+    ).count()
+    bounced_total = StaffOnboardingLead.objects.filter(
+        invite_mail_status=StaffOnboardingLead.INVITE_BOUNCED,
+    ).count()
+    blocked_total = StaffOnboardingLead.objects.filter(
+        invite_mail_status__in=(
+            StaffOnboardingLead.INVITE_DO_NOT_CONTACT,
+            StaffOnboardingLead.INVITE_OPT_OUT,
+        ),
+    ).count()
+    pending_leads = StaffOnboardingLead.objects.filter(imported_user__isnull=True)
+    first_eligible = staff_invite_count_eligible(
+        pending_leads.filter(invite_mail_status=StaffOnboardingLead.INVITE_NEVER)
+    )
+    resend_eligible = staff_invite_count_resend_eligible(pending_leads)
     invited_ever = (
         StaffOnboardingLead.objects.filter(
             invite_logs__outcome__in=_DISPATCH_OUTCOMES,
@@ -440,6 +523,12 @@ def staff_invite_campaign_stats(now=None) -> dict[str, Any]:
         "daily_cap": staff_invite_max_per_day(),
         "daily_remaining": staff_invite_daily_remaining(now),
         "signed_up": signed_up,
+        "registered_total": registered_total,
+        "replied_total": replied_total,
+        "bounced_total": bounced_total,
+        "blocked_total": blocked_total,
+        "first_eligible": first_eligible,
+        "resend_eligible": resend_eligible,
         "invited_ever": invited_ever,
     }
 

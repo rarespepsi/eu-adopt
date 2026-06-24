@@ -1249,6 +1249,24 @@ class Carte81_100Tests(TestCase):
         )
         self.assertEqual(staff_invite_template_key(lead_prv), "adapost_adprv")
 
+    def test_109i6_staff_invite_blocks_existing_user_email(self):
+        from home.models import StaffOnboardingLead
+        from home.staff_onboarding_invite import staff_invite_can_send
+
+        em = f"dup_{uuid.uuid4().hex[:8]}@test.local"
+        User.objects.create_user(username=f"u_{uuid.uuid4().hex[:6]}", email=em, password="x")
+        lead = StaffOnboardingLead.objects.create(
+            email=em,
+            display_name="Dup",
+            account_kind=StaffOnboardingLead.KIND_ORG,
+        )
+        ok, reason = staff_invite_can_send(lead)
+        self.assertFalse(ok)
+        self.assertIn("cont", reason.lower())
+        lead.refresh_from_db()
+        self.assertEqual(lead.invite_mail_status, StaffOnboardingLead.INVITE_SIGNED_UP)
+        self.assertIsNotNone(lead.imported_user_id)
+
     def test_109i1_staff_invite_dry_run_no_smtp(self):
         from django.core import mail
 

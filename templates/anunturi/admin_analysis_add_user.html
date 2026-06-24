@@ -1073,8 +1073,10 @@
 				<div class="add-user-invite-stats" role="status" aria-label="Statistici invitații">
 					<span>Azi: <strong>{{ staff_invite_stats.dispatch_today }}</strong>/{{ staff_invite_stats.daily_cap }} ({{ staff_invite_stats.daily_remaining }} rămase)</span>
 					<span>reale: {{ staff_invite_stats.sent_today }} · sim: {{ staff_invite_stats.sim_today }}</span>
-					<span>cont create: <strong>{{ staff_invite_stats.signed_up }}</strong></span>
-					<span>eligibili filtru: <strong>{{ staff_invite_stats.eligible_in_filter }}</strong></span>
+					<span>cont create: <strong>{{ staff_invite_stats.signed_up }}</strong> (legați: {{ staff_invite_stats.registered_total }})</span>
+					<span>răspunsuri: {{ staff_invite_stats.replied_total }} · bounce: {{ staff_invite_stats.bounced_total }} · blocate: {{ staff_invite_stats.blocked_total }}</span>
+					<span>eligibili filtru: <strong>{{ staff_invite_stats.eligible_in_filter }}</strong> · retrimitere: {{ staff_invite_stats.resend_in_filter|default:staff_invite_stats.resend_eligible }}</span>
+					<span>prima inv.: {{ staff_invite_stats.first_eligible }} · retrim. global: {{ staff_invite_stats.resend_eligible }}</span>
 				</div>
 				<div class="add-user-invite-stats add-user-invite-stats--inbound" role="status">
 					<span>7z: răsp. <strong>{{ staff_invite_inbound_stats.replies_7d }}</strong> · bounce {{ staff_invite_inbound_stats.bounces_7d }}</span>
@@ -1096,6 +1098,12 @@
 						<option value="10">10</option>
 						<option value="20" selected>20</option>
 						<option value="30">30</option>
+					</select>
+					<label for="wave-mode">Tip</label>
+					<select id="wave-mode" name="wave_mode">
+						<option value="first" selected>Prima invitație</option>
+						<option value="resend">Retrimitere</option>
+						<option value="any">Orice eligibil</option>
 					</select>
 					<button type="submit" class="add-user-btn">{% if staff_invite_email_enabled %}Pornește val{% else %}Simulare val{% endif %}</button>
 				</form>
@@ -1151,6 +1159,10 @@
 					<label class="add-user-filter-check">
 						<input type="checkbox" name="invite_first_only" value="1" {% if filter_invite_first_only %}checked{% endif %} />
 						Prima invitație (niciodată trimis)
+					</label>
+					<label class="add-user-filter-check">
+						<input type="checkbox" name="invite_resend_only" value="1" {% if filter_invite_resend_only %}checked{% endif %} />
+						Doar retrimitere (deja invitat, eligibil)
 					</label>
 				</div>
 				<div class="add-user-filters-actions">
@@ -1372,7 +1384,7 @@
 						<tr>
 							<td>
 								{% if lead.imported_user_id %}
-								<span title="Deja importat ca utilizator">import</span>
+								<span title="Cont creat: {{ lead.imported_user.username }} ({{ lead.imported_user.email }})">@{{ lead.imported_user.username }}</span>
 								{% elif lead.invite_mail_cooldown %}
 								<span title="Cooldown {{ lead.invite_cooldown_days_display }} zile">aștept.</span>
 								{% elif lead.invite_mail_checkbox %}
