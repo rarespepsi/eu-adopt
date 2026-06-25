@@ -4,7 +4,7 @@
 
 {% block title %}Adaugă un pet | MyPet{% endblock %}
 
-{% block body_class %}page-mypet{% if show_mypet_nav %} page-mypet-magazin{% endif %}{% endblock %}
+{% block body_class %}page-mypet page-mypet-fisa{% if show_mypet_nav %} page-mypet-magazin{% endif %}{% endblock %}
 
 {% block content %}
 <section id="MW" class="mypet-fisa-wrap">
@@ -118,18 +118,22 @@
 							</div>
 
 							<div class="mypet-add-field mypet-add-field-species">
-								<label for="id_species">SPECIE</label>
-								<div id="mypetSpeciesPills" class="mypet-species-pills" role="group" aria-label="Tip animal">
-									<button type="button" class="mypet-species-pill{% if species_mode|default:'dog' == 'dog' %} is-active{% endif %}" data-mode="dog">Câine</button>
-									<button type="button" class="mypet-species-pill{% if species_mode == 'cat' %} is-active{% endif %}" data-mode="cat">Pisică</button>
-									<button type="button" class="mypet-species-pill{% if species_mode == 'other' %} is-active{% endif %}" data-mode="other">Altele</button>
-								</div>
+								<label for="id_species_kind">TIP ANIMAL</label>
+								<select id="id_species_kind" aria-describedby="mypetSpeciesCustomWrap">
+									<option value="dog" {% if species_mode|default:'dog' == 'dog' %}selected{% endif %}>Câine</option>
+									<option value="cat" {% if species_mode == 'cat' %}selected{% endif %}>Pisică</option>
+									<option value="other" {% if species_mode == 'other' %}selected{% endif %}>Altele</option>
+								</select>
+							</div>
+							<div class="mypet-add-field mypet-add-field-species-custom" id="mypetSpeciesCustomWrap"{% if species_mode != 'other' %} style="display:none;"{% endif %}>
+								<label for="id_species">SPECIE (ALTELE)</label>
 								<input
 									type="text"
 									id="id_species"
 									name="species_custom"
-									value="{% if species_mode|default:'dog' == 'dog' %}Câine{% elif species_mode == 'cat' %}Pisică{% else %}{{ species_custom|default:'' }}{% endif %}"
+									value="{% if species_mode == 'other' %}{{ species_custom|default:'' }}{% endif %}"
 									placeholder="ex: iepure, hamster"
+									{% if species_mode != 'other' %}disabled{% endif %}
 								/>
 							</div>
 
@@ -381,27 +385,58 @@
 {% block extra_css_after %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
 <style>
-	body.page-mypet #main_wrap,
-	body.page-mypet #main_content {
-		min-height: 100vh;
+	body.page-mypet-fisa {
+		overflow: hidden !important;
+	}
+	body.page-mypet-fisa #main_wrap {
+		height: 100dvh;
+		max-height: 100dvh;
 		margin: 0;
 		padding: 0;
+		overflow: hidden;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
 	}
-	/* fără sidebar-uri pe fișa PET */
-	body.page-mypet .layout {
-		display: block;
-	}
-	body.page-mypet .sidebar-left,
-	body.page-mypet .sidebar-right {
+	body.page-mypet-fisa .population-org-banner {
 		display: none !important;
 	}
-	body.page-mypet .main-content {
+	body.page-mypet-fisa #main_content {
+		padding-top: var(--nav-height, 64px) !important;
+		flex: 1 1 auto;
+		min-height: 0;
+		height: auto !important;
+		max-height: none !important;
+		margin: 0;
+		overflow: hidden !important;
+		box-sizing: border-box !important;
+	}
+	/* fără sidebar-uri pe fișa PET */
+	body.page-mypet-fisa .layout {
+		display: block;
+		height: 100%;
+		min-height: 0;
+		overflow: hidden;
+	}
+	body.page-mypet-fisa .sidebar-left,
+	body.page-mypet-fisa .sidebar-right {
+		display: none !important;
+	}
+	body.page-mypet-fisa .main-content {
 		width: 100% !important;
 		max-width: 100% !important;
+		height: 100%;
+		min-height: 0;
+		overflow: hidden;
+	}
+	/* Contorul din stânga navbar poate ieși în padding — ascuns doar pe fișă */
+	body.page-mypet-fisa #A0 #main_menu .a0-left {
+		display: none !important;
 	}
 
 	.mypet-fisa-wrap {
-		height: calc(100dvh - var(--nav-h, 64px) - 2px);
+		height: 100%;
+		max-height: 100%;
 		display: flex;
 		align-items: stretch;
 		justify-content: flex-start;
@@ -725,7 +760,7 @@
 		display: grid;
 		grid-template-columns: auto 1fr auto;
 		align-items: center;
-		margin-bottom: 0.24rem;
+		margin-bottom: 0.12rem;
 		grid-row: 1 / 2;
 		grid-column: 2 / 4;
 	}
@@ -871,35 +906,6 @@
 
 	.mypet-add-field textarea {
 		resize: none;
-	}
-
-	.mypet-species-pills {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
-		margin-bottom: 0.45rem;
-	}
-	.mypet-species-pill {
-		flex: 1 1 0;
-		min-width: 4.5rem;
-		padding: 0.42rem 0.55rem;
-		border-radius: 6px;
-		border: 1px solid #c9a227;
-		background: #fffef7;
-		color: #333;
-		font-size: 0.82rem;
-		font-weight: 600;
-		cursor: pointer;
-		text-align: center;
-	}
-	.mypet-species-pill.is-active {
-		background: #0050b5;
-		color: #fff;
-		border-color: #0050b5;
-	}
-	.mypet-fisa-wrap.mypet-fisa-locked .mypet-species-pill {
-		pointer-events: none;
-		opacity: 0.72;
 	}
 
 	.mypet-fisa-textarea {
@@ -1125,8 +1131,9 @@
 	var editModeField = document.getElementById("id_edit_mode");
 	var formActionField = document.getElementById("id_form_action");
 	var speciesModeField = document.getElementById("id_species_mode");
+	var speciesKindSelect = document.getElementById("id_species_kind");
 	var speciesInput = document.getElementById("id_species");
-	var speciesPillsWrap = document.getElementById("mypetSpeciesPills");
+	var speciesCustomWrap = document.getElementById("mypetSpeciesCustomWrap");
 	var primaryActionBtn = document.getElementById("mypetPrimaryActionBtn");
 	var deleteActionBtn = document.getElementById("mypetDeleteActionBtn");
 	var rootWrap = document.querySelector(".mypet-fisa-wrap");
@@ -1148,38 +1155,32 @@
 		}
 		if (rootWrap) rootWrap.classList.toggle("mypet-fisa-locked", !isEditMode);
 		if (primaryActionBtn && !isNewListing) primaryActionBtn.textContent = isEditMode ? "SALVEAZĂ FIȘA" : "MODIFICĂ FIȘA";
+		if (speciesModeField) applySpeciesMode(speciesModeField.value || "dog");
 	}
 	setEditMode(isEditMode);
 
 	function applySpeciesMode(mode) {
-		if (!speciesModeField || !speciesInput) return;
+		if (!speciesModeField) return;
 		var m = (mode || "dog").toLowerCase();
 		if (m !== "dog" && m !== "cat" && m !== "other") m = "dog";
 		speciesModeField.value = m;
-		if (speciesPillsWrap) {
-			var pills = speciesPillsWrap.querySelectorAll(".mypet-species-pill");
-			for (var i = 0; i < pills.length; i++) {
-				pills[i].classList.toggle("is-active", pills[i].getAttribute("data-mode") === m);
+		if (speciesKindSelect && speciesKindSelect.value !== m) speciesKindSelect.value = m;
+		var isOther = m === "other";
+		if (speciesCustomWrap) speciesCustomWrap.style.display = isOther ? "" : "none";
+		if (speciesInput) {
+			if (isOther) {
+				if (speciesInput.value === "Câine" || speciesInput.value === "Pisică") speciesInput.value = "";
+				speciesInput.disabled = !isEditMode;
+			} else {
+				speciesInput.value = "";
+				speciesInput.disabled = true;
 			}
 		}
-		if (m === "dog") {
-			speciesInput.value = "Câine";
-			speciesInput.readOnly = true;
-		} else if (m === "cat") {
-			speciesInput.value = "Pisică";
-			speciesInput.readOnly = true;
-		} else {
-			if (speciesInput.value === "Câine" || speciesInput.value === "Pisică") speciesInput.value = "";
-			speciesInput.readOnly = false;
-			if (!speciesInput.placeholder) speciesInput.placeholder = "ex: hamster";
-		}
-		speciesInput.setAttribute("aria-label", m === "other" ? "Specie (Altele)" : "Specie fixă");
 		if (isNewListing && primaryActionBtn) {
 			if (m === "dog") primaryActionBtn.textContent = "ADAUGĂ UN CÂINE";
 			else if (m === "cat") primaryActionBtn.textContent = "ADAUGĂ O PISICĂ";
 			else primaryActionBtn.textContent = "SALVEAZĂ FIȘA";
 		}
-		var isOther = m === "other";
 		var traitsBox = document.getElementById("mypetTraitsAdoptatorBox");
 		var observBox = document.getElementById("mypetObservatiiOtherBox");
 		if (traitsBox) {
@@ -1210,16 +1211,14 @@
 			}
 		} catch (eLabels) {}
 	}
-	if (speciesPillsWrap) {
-		speciesPillsWrap.addEventListener("click", function(e) {
-			var btn = e.target && e.target.closest(".mypet-species-pill");
-			if (!btn) return;
+	if (speciesKindSelect) {
+		speciesKindSelect.addEventListener("change", function() {
 			if (!isEditMode) return;
-			applySpeciesMode(btn.getAttribute("data-mode"));
+			applySpeciesMode(speciesKindSelect.value);
 			setDirty(true);
 		});
 	}
-	applySpeciesMode((speciesModeField && speciesModeField.value) || "dog");
+	applySpeciesMode((speciesModeField && speciesModeField.value) || (speciesKindSelect && speciesKindSelect.value) || "dog");
 
 	// ====== Unsaved-changes guard (DA=salvează, NU=pleacă fără) ======
 	var dirty = false;

@@ -241,8 +241,8 @@ class SmokeMyPetAddTests(TestCase):
                 r = c.get(reverse("mypet_add"), {"species": species})
                 self.assertEqual(r.status_code, 200)
                 self.assertContains(r, "mypet-add-form", status_code=200)
-                self.assertContains(r, "mypetSpeciesPills", status_code=200)
-                self.assertContains(r, "mypet-species-pill", status_code=200)
+                self.assertContains(r, "id_species_kind", status_code=200)
+                self.assertNotContains(r, "mypetSpeciesPills", status_code=200)
 
 
 class SmokeSeoTests(TestCase):
