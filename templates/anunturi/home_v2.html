@@ -19,8 +19,11 @@
 		align-items: center;
 		justify-content: center;
 		z-index: 9999;
+		padding: 1rem;
+		box-sizing: border-box;
 	}
 	.home-welcome-overlay {
+		position: relative;
 		max-width: 640px;
 		width: 92%;
 		max-height: 80vh;
@@ -61,6 +64,18 @@
 		text-align: center;
 		font-size: 0.75rem;
 		color: #666;
+	}
+	.home-welcome-close-btn {
+		display: block;
+		margin: 0.85rem auto 0;
+		padding: 0.5rem 1.25rem;
+		border: none;
+		border-radius: 999px;
+		background: #e53935;
+		color: #fff;
+		font-size: 0.88rem;
+		font-weight: 800;
+		cursor: pointer;
 	}
 	.home-v2-pub-badges {
 		position: absolute;
@@ -364,6 +379,7 @@
 		</div>
 		<div class="home-welcome-close">
 			(Închide această notă și continuă în EU-Adopt.)
+			<button type="button" class="home-welcome-close-btn" id="home-welcome-close-btn">Închide</button>
 		</div>
 	</div>
 </div>
@@ -468,11 +484,18 @@
 (function() {
 	var backdrop = document.getElementById('home-welcome-backdrop');
 	if (!backdrop) return;
-	// arătăm caseta imediat la încărcare
-	backdrop.style.display = 'flex';
-	backdrop.addEventListener('click', function() {
+	var closeBtn = document.getElementById('home-welcome-close-btn');
+	function closeWelcome() {
 		backdrop.style.display = 'none';
+		backdrop.setAttribute('aria-hidden', 'true');
+		document.body.style.overflow = '';
+	}
+	backdrop.style.display = 'flex';
+	backdrop.setAttribute('aria-hidden', 'false');
+	backdrop.addEventListener('click', function(e) {
+		if (e.target === backdrop) closeWelcome();
 	});
+	if (closeBtn) closeBtn.addEventListener('click', closeWelcome);
 })();
 </script>
 {% endif %}

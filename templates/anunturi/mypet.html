@@ -701,12 +701,21 @@
 	}
 	.mypet-msg-modal {
 		position: fixed;
-		inset: 0;
+		top: var(--nav-height, 64px);
+		left: 0;
+		right: 0;
+		bottom: 0;
 		background: rgba(0, 0, 0, 0.48);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		z-index: 100000;
+		padding: 0.5rem;
+		box-sizing: border-box;
+	}
+	.mypet-msg-modal[hidden] {
+		display: none !important;
+		pointer-events: none !important;
 	}
 	.mypet-msg-panel {
 		width: min(900px, 94vw);
@@ -878,16 +887,21 @@
 	/* Confirmare în pagină (în loc de window.confirm) */
 	.mypet-confirm-modal {
 		position: fixed;
-		inset: 0;
+		top: var(--nav-height, 64px);
+		left: 0;
+		right: 0;
+		bottom: 0;
 		z-index: 1000000;
 		display: none;
 		align-items: center;
 		justify-content: center;
 		padding: 1rem;
 		box-sizing: border-box;
+		pointer-events: none;
 	}
 	.mypet-confirm-modal.is-open {
 		display: flex;
+		pointer-events: auto;
 	}
 	.mypet-confirm-backdrop {
 		position: absolute;
@@ -2026,6 +2040,23 @@ document.addEventListener("DOMContentLoaded", function() {
 			state.senderId = null;
 		}
 		window.__closeMyPetMsgModal = closeModal;
+
+		function resetMyPetOverlays() {
+			closeModal();
+			try {
+				var confirmModal = document.getElementById("mypetConfirmModal");
+				if (confirmModal) {
+					confirmModal.classList.remove("is-open");
+					confirmModal.setAttribute("aria-hidden", "true");
+				}
+			} catch (eReset) {}
+			document.body.style.overflow = "";
+		}
+		window.addEventListener("pageshow", function(e) {
+			if (e.persisted) resetMyPetOverlays();
+		});
+		window.addEventListener("pagehide", resetMyPetOverlays);
+
 		function setScope(scope) {
 			state.scope = (scope === "archived") ? "archived" : "active";
 			tabActive.classList.toggle("is-active", state.scope === "active");
