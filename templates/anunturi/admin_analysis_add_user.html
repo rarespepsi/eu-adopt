@@ -875,6 +875,23 @@
 		font-size: 0.68rem;
 		margin-bottom: 0.12rem;
 	}
+	#manual-lead-form .add-user-form-errors {
+		grid-column: 1 / -1;
+		margin: 0 0 0.35rem;
+		padding: 0.45rem 0.55rem;
+		border-radius: 8px;
+		border: 1px solid #c62828;
+		background: rgba(198, 40, 40, 0.08);
+		color: #b71c1c;
+		font-size: 0.72rem;
+	}
+	#manual-lead-form .add-user-form-errors ul {
+		margin: 0.25rem 0 0 1rem;
+		padding: 0;
+	}
+	#manual-lead-form .add-user-form-errors li {
+		margin: 0.12rem 0;
+	}
 	#manual-lead-form .add-user-submit {
 		margin-top: 0.25rem;
 		padding: 0.42rem 0.75rem;
@@ -1204,6 +1221,13 @@
 	}
 	var manualForm = document.getElementById("manual-lead-form");
 	if (manualForm) {
+		manualForm.addEventListener("submit", function() {
+			var disabled = manualForm.querySelectorAll(":disabled");
+			for (var di = 0; di < disabled.length; di++) {
+				if (disabled[di].type === "hidden") continue;
+				disabled[di].disabled = false;
+			}
+		});
 		var subRadios = manualForm.querySelectorAll("input[name='collaborator_subtype']");
 		for (var sri = 0; sri < subRadios.length; sri++) {
 			subRadios[sri].addEventListener("change", syncManualLeadRoleSections);
@@ -1407,6 +1431,19 @@
 						Editezi lead #{{ editing_lead.pk }} — {{ editing_lead.email }}
 						<a href="{% url 'admin_analysis_add_user' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Renunță</a>
 					</p>
+					{% endif %}
+					{% if form.errors %}
+					<div class="add-user-form-errors" role="alert">
+						<strong>Formularul nu s-a salvat.</strong>
+						<ul>
+							{% for err in form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+							{% for field in form %}
+								{% for err in field.errors %}
+								<li>{{ field.label }}: {{ err }}</li>
+								{% endfor %}
+							{% endfor %}
+						</ul>
+					</div>
 					{% endif %}
 					{{ form.non_field_errors }}
 

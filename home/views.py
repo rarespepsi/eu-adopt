@@ -5807,6 +5807,28 @@ def admin_analysis_add_user_invite_do_not_contact_view(request):
     return _redirect_admin_add_user_preserve(request)
 
 
+def _staff_onboarding_lead_form_error_summary(form, *, max_parts: int = 4) -> str:
+    """Mesaj scurt pentru staff când formularul manual Add USER nu s-a salvat."""
+    parts: list[str] = []
+    for err in form.non_field_errors():
+        parts.append(str(err))
+    if len(parts) >= max_parts:
+        return "Nu s-a salvat: " + "; ".join(parts[:max_parts])
+    for field_name, errs in form.errors.items():
+        if not errs:
+            continue
+        label = field_name
+        field = form.fields.get(field_name)
+        if field and getattr(field, "label", None):
+            label = str(field.label)
+        parts.append(f"{label}: {errs[0]}")
+        if len(parts) >= max_parts:
+            break
+    if not parts:
+        return "Nu s-a salvat — verifică câmpurile marcate cu roșu în formular."
+    return "Nu s-a salvat: " + "; ".join(parts[:max_parts])
+
+
 def _redirect_admin_add_user_preserve(request):
     pq = (request.POST.get("preserve_query") or "").strip()
     base = reverse("admin_analysis_add_user")
@@ -5846,9 +5868,13 @@ def admin_analysis_add_user_view(request):
             lead_obj = get_object_or_404(StaffOnboardingLead, pk=int(lead_id_post))
             form = StaffOnboardingLeadForm(request.POST, instance=lead_obj)
             if form.is_valid():
-                form.save()
-                messages.success(request, f"Lead actualizat: {lead_obj.email}")
+                lead = form.save()
+                messages.success(request, f"Lead actualizat: {lead.email}")
                 return _redirect_admin_add_user_preserve(request)
+            messages.error(
+                request,
+                _staff_onboarding_lead_form_error_summary(form),
+            )
             open_manual_form = True
             editing_lead = lead_obj
         else:
@@ -5860,6 +5886,10 @@ def admin_analysis_add_user_view(request):
                 lead.save()
                 messages.success(request, f"Lead salvat: {lead.email}")
                 return _redirect_admin_add_user_preserve(request)
+            messages.error(
+                request,
+                _staff_onboarding_lead_form_error_summary(form),
+            )
             open_manual_form = True
     else:
         edit_raw = (request.GET.get("edit") or "").strip()

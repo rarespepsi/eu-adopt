@@ -1118,6 +1118,49 @@ class Carte81_100Tests(TestCase):
         self.assertEqual(lead.first_name, "A")
         self.assertEqual(lead.judet, "Alba")
 
+    def test_109h2_staff_edit_adapost_email_without_subtype_in_post(self):
+        from home.models import StaffOnboardingLead
+
+        staff = User.objects.create_user(
+            username=f"sted2_{uuid.uuid4().hex[:6]}",
+            email="sted2@t.local",
+            password="Staff61!",
+            is_staff=True,
+        )
+        lead = StaffOnboardingLead.objects.create(
+            email="nicol@test.local",
+            display_name="Nicol",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_ADPUB,
+            judet="Neamț",
+            oras="Piatra-Neamț",
+            org_display_name="Adăpost Nicol",
+            created_by=staff,
+        )
+        c = Client()
+        c.login(username=staff.username, password="Staff61!")
+        r2 = c.post(
+            reverse("admin_analysis_add_user"),
+            {
+                "lead_id": str(lead.pk),
+                "email": "apartamentnico@gmail.com",
+                "phone": "",
+                "display_name": "Nicol",
+                "username_suggested": "",
+                "account_kind": StaffOnboardingLead.KIND_ADAPOST,
+                "first_name": "",
+                "last_name": "",
+                "judet": "Neamț",
+                "oras": "Piatra-Neamț",
+                "org_display_name": "Adăpost Nicol",
+                "notes": "",
+            },
+        )
+        self.assertEqual(r2.status_code, 302, getattr(r2, "content", b"")[:500])
+        lead.refresh_from_db()
+        self.assertEqual(lead.email, "apartamentnico@gmail.com")
+        self.assertEqual(lead.collaborator_subtype, StaffOnboardingLead.COLLAB_ADPUB)
+
     @override_settings(STAFF_INVITE_EMAIL_ENABLED=True)
     def test_109i_staff_invite_email_sends_and_sets_timestamp(self):
         from django.core import mail

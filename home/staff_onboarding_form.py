@@ -64,9 +64,8 @@ class StaffOnboardingLeadForm(forms.ModelForm):
             "segments",
             "marketing_emails_requested",
             "notes",
-            "invite_max_sends",
-            "invite_cooldown_days",
-            "invite_staff_notes",
+            # invite_max_sends / invite_cooldown_days / invite_staff_notes: doar în tabel/jurnal,
+            # nu în formularul manual — altfel validarea eșuează fără câmp în HTML.
         ]
         widgets = {
             "judet": forms.TextInput(
@@ -165,10 +164,19 @@ class StaffOnboardingLeadForm(forms.ModelForm):
             ):
                 self.initial.setdefault("vet_prospect_kind", StaffOnboardingLead.VET_PROSPECT_CV)
 
+    def _subtype_from_instance(self) -> str:
+        if self.instance and getattr(self.instance, "pk", None):
+            return (self.instance.collaborator_subtype or "").strip()
+        return ""
+
     def clean(self):
         cleaned = super().clean()
         kind = cleaned.get("account_kind")
         sub = (cleaned.get("collaborator_subtype") or "").strip()
+        # Radio-uri dezactivate de JS nu ajung în POST — păstrăm subtipul existent la editare.
+        if not sub:
+            sub = self._subtype_from_instance()
+            cleaned["collaborator_subtype"] = sub
         if kind == StaffOnboardingLead.KIND_COLLAB:
             if not sub:
                 self.add_error("collaborator_subtype", "Alege unul dintre tipurile de colaborator.")
