@@ -101,7 +101,7 @@ class StaffOnboardingLeadForm(forms.ModelForm):
             "is_public_shelter": forms.CheckboxInput(attrs={"class": "manual-checkbox"}),
             "company_cui_has_ro": forms.CheckboxInput(attrs={"class": "manual-checkbox"}),
             "marketing_emails_requested": forms.CheckboxInput(attrs={"class": "manual-checkbox"}),
-            "notes": forms.Textarea(attrs={"rows": 4, "cols": 56, "class": "manual-notes-text"}),
+            "notes": forms.Textarea(attrs={"rows": 2, "cols": 56, "class": "manual-notes-text"}),
         }
         labels = {
             "email": "E-mail",

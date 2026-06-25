@@ -131,10 +131,12 @@
 	.add-user-scroll {
 		flex: 1 1 auto;
 		min-height: 0;
-		overflow: hidden;
+		overflow-x: hidden;
+		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
 		gap: 0.4rem;
+		-webkit-overflow-scrolling: touch;
 	}
 	.add-user-scroll::-webkit-scrollbar { width: 8px; }
 	.add-user-scroll::-webkit-scrollbar-thumb {
@@ -657,7 +659,8 @@
 		color: #a7f3d0;
 	}
 	.add-user-manual-details {
-		flex-shrink: 0;
+		flex-shrink: 1;
+		min-height: 0;
 	}
 	.add-user-td-invite-status { font-size: 0.78rem; white-space: nowrap; }
 	.add-user-invite-meta { font-size: 0.72rem; color: rgba(255,255,255,0.55); }
@@ -723,7 +726,142 @@
 		color: #67e8f9;
 	}
 	.add-user-manual-details { align-self: flex-start; width: 100%; max-width: 100%; }
-	.add-user-manual-details[open] .add-user-form-wrap { margin-top: 0.35rem; }
+	.add-user-manual-details[open] {
+		display: flex;
+		flex-direction: column;
+		flex: 0 1 auto;
+		max-height: min(46dvh, 22.5rem);
+		overflow: hidden;
+	}
+	.add-user-manual-details[open] .add-user-form-wrap {
+		margin-top: 0.25rem;
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow-x: hidden;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		-webkit-overflow-scrolling: touch;
+		padding: 0.4rem 0.55rem;
+	}
+	.add-user-manual-details[open] .add-user-form-wrap::-webkit-scrollbar { width: 6px; }
+	.add-user-manual-details[open] .add-user-form-wrap::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.14);
+		border-radius: 999px;
+	}
+	.add-user-scroll:has(#manual-lead-add[open]) .add-user-table-panel {
+		flex: 1 1 auto;
+		min-height: 6.5rem;
+	}
+	#manual-lead-form {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.22rem 0.55rem;
+		align-items: start;
+	}
+	#manual-lead-form > .add-user-manual-section,
+	#manual-lead-form > .add-user-edit-banner,
+	#manual-lead-form > ul.errorlist,
+	#manual-lead-form > .errorlist,
+	#manual-lead-form > .add-user-submit,
+	#manual-lead-form > p.add-user-manual-hint,
+	#manual-lead-form > p:has(select[name="account_kind"]) {
+		grid-column: 1 / -1;
+		margin: 0;
+	}
+	#manual-lead-form > p { margin: 0; }
+	#manual-lead-form > p.add-user-manual-hint {
+		font-size: 0.66rem;
+		line-height: 1.3;
+		color: #94a3b8;
+		margin: 0 0 0.15rem;
+	}
+	#manual-lead-form label {
+		font-size: 0.68rem;
+		margin-bottom: 0.12rem;
+	}
+	#manual-lead-form input[type="text"],
+	#manual-lead-form input[type="email"],
+	#manual-lead-form select,
+	#manual-lead-form textarea {
+		max-width: none;
+		padding: 0.32rem 0.45rem;
+		font-size: 0.78rem;
+		border-radius: 0.4rem;
+	}
+	#manual-lead-form .helptext {
+		font-size: 0.62rem;
+		margin: 0.06rem 0 0;
+	}
+	#manual-lead-form .add-user-manual-section {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.18rem 0.45rem;
+		margin-bottom: 0.22rem;
+		padding: 0.32rem 0.42rem;
+	}
+	#manual-lead-form .add-user-manual-section h3 {
+		grid-column: 1 / -1;
+		margin: 0 0 0.18rem;
+		font-size: 0.68rem;
+	}
+	#manual-lead-form .add-user-manual-section .add-user-manual-hint,
+	#manual-lead-form .add-user-manual-section > .manual-segments-label,
+	#manual-lead-form .add-user-manual-section > .manual-segments-wrap,
+	#manual-lead-form .add-user-manual-section > ul:not(.errorlist),
+	#manual-lead-form .add-user-manual-section > p:has(input[type="checkbox"]),
+	#manual-lead-form .add-user-manual-section > p:has(textarea) {
+		grid-column: 1 / -1;
+	}
+	#manual-lead-form .add-user-manual-section .add-user-manual-hint {
+		margin: 0 0 0.12rem;
+		font-size: 0.62rem;
+		line-height: 1.28;
+	}
+	#manual-lead-form .add-user-manual-section > p { margin: 0; }
+	#manual-lead-form .manual-notes-text {
+		min-height: 2rem;
+		max-height: 3.5rem;
+		padding: 0.32rem 0.4rem;
+		font-size: 0.74rem;
+	}
+	#manual-lead-form .manual-segments-wrap ul {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.2rem 0.55rem;
+		margin: 0;
+		padding: 0;
+	}
+	#manual-lead-form .manual-segments-wrap li {
+		font-size: 0.72rem;
+		gap: 0.28rem;
+	}
+	#manual-lead-form ul:not(.errorlist) {
+		gap: 0.18rem;
+	}
+	#manual-lead-form ul:not(.errorlist) li {
+		font-size: 0.72rem;
+	}
+	#manual-lead-form .add-user-edit-banner {
+		padding: 0.32rem 0.45rem;
+		font-size: 0.68rem;
+		margin-bottom: 0.12rem;
+	}
+	#manual-lead-form .add-user-submit {
+		margin-top: 0.25rem;
+		padding: 0.42rem 0.75rem;
+		font-size: 0.78rem;
+		max-width: 14rem;
+		justify-self: start;
+	}
+	@media (max-width: 640px) {
+		#manual-lead-form,
+		#manual-lead-form .add-user-manual-section {
+			grid-template-columns: 1fr;
+		}
+		.add-user-manual-details[open] {
+			max-height: min(52dvh, 24rem);
+		}
+	}
 	.add-user-manual-summary--sr {
 		position: absolute;
 		width: 1px;
@@ -1219,8 +1357,8 @@
 						{{ form.account_kind }}
 						{{ form.account_kind.errors }}
 					</p>
-					<p class="add-user-manual-hint" style="margin-top:-0.15rem;margin-bottom:0.45rem;max-width:36rem;">
-						Toate casetele de mai jos rămân vizibile; cele care nu se aplică rolului ales sunt estompate și nu se trimit la salvare. Schimbă „Rol țintă în site” pentru a completa alt set.
+					<p class="add-user-manual-hint">
+						Casetele neaplicabile rolului ales sunt estompate și nu se trimit la salvare.
 					</p>
 					<p>
 						{{ form.display_name.label_tag }}
@@ -1235,7 +1373,7 @@
 
 					<div class="add-user-manual-section add-user-manual-section--residence">
 						<h3>Reședință (județ / localitate)</h3>
-						<p class="add-user-manual-hint">Același tip de câmpuri ca în fișele de înregistrare — vizibil pentru toate categoriile.</p>
+						<p class="add-user-manual-hint">Județ și localitate — ca la înregistrare.</p>
 						<p>
 							{{ form.judet.label_tag }}
 							{{ form.judet }}
@@ -1328,14 +1466,14 @@
 
 					<div class="add-user-manual-section manual-show-vet-cabinet manual-section-inactive manual-collab-box">
 						<h3>Prospect cabinet veterinar</h3>
-						<p class="add-user-manual-hint">Pentru colaborator cu tip <strong>CV</strong> (cabinet): marchează dacă e <strong>clinică</strong> (CV) sau <strong>farmacie veterinară</strong> (FV). Implicit: clinică.</p>
+						<p class="add-user-manual-hint">CV = clinică, FV = farmacie veterinară (implicit clinică).</p>
 						{{ form.vet_prospect_kind.errors }}
 						{{ form.vet_prospect_kind }}
 					</div>
 
 					<div class="add-user-manual-section add-user-manual-section--prefs">
 						<h3>Preferințe email &amp; notă (ca la înregistrare)</h3>
-						<p class="add-user-manual-hint">Segmentele și bifarea de noutăți corespund opțiunilor din formularul public; consimțământul legal se confirmă la link/token.</p>
+						<p class="add-user-manual-hint">Segmente și noutăți — consimțământul legal la link/token.</p>
 						<p class="manual-segments-label">{{ form.segments.label }}</p>
 						<div class="manual-segments-wrap">{{ form.segments }}{{ form.segments.errors }}</div>
 						<p>
