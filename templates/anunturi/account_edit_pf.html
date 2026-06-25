@@ -40,6 +40,36 @@
 	.edit-profil-wrap .signup-field label.check { display: flex; align-items: center; gap: 0.35rem; font-weight: normal; font-size: 0.75rem; }
 	.edit-profil-wrap .signup-field input[type="checkbox"] { width: auto; }
 	@media (max-width: 480px) { .edit-profil-wrap .edit-form-grid { grid-template-columns: 1fr; } }
+	@media (max-width: 767.98px) and (orientation: portrait) {
+		body.page-account-edit {
+			overflow-x: hidden;
+			overflow-y: auto;
+		}
+		body.page-account-edit #main_wrap,
+		body.page-account-edit #main_content,
+		body.page-account-edit .layout,
+		body.page-account-edit .main-content {
+			height: auto !important;
+			max-height: none !important;
+			overflow: visible !important;
+		}
+		body.page-account-edit .main-content {
+			display: block !important;
+			padding: 0.5rem 0.65rem 1rem !important;
+			align-items: stretch !important;
+			justify-content: flex-start !important;
+		}
+		body.page-account-edit #W,
+		body.page-account-edit .edit-profil-wrap {
+			height: auto !important;
+			max-height: none !important;
+			overflow: visible !important;
+		}
+		body.page-account-edit .edit-profil-wrap .edit-form-inner {
+			overflow: visible !important;
+			flex: 0 0 auto !important;
+		}
+	}
 </style>
 {% endblock %}
 

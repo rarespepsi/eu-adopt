@@ -1,0 +1,182 @@
+/**
+ * Mobil portrait: pagini cu viewport blocat (100vh + overflow:hidden) → scroll natural.
+ * Scoped la max-width 767.98px + orientation portrait; desktop și landscape neschimbate.
+ */
+
+@media (max-width: 767.98px) and (orientation: portrait) {
+	/* —— Contact: html blocat la 100% chiar și sub 860px pe unele device-uri —— */
+	html:has(body.page-contact),
+	body.page-contact {
+		height: auto !important;
+		max-height: none !important;
+		overflow-x: hidden !important;
+		overflow-y: auto !important;
+	}
+	body.page-contact #main_wrap,
+	body.page-contact #main_content,
+	body.page-contact .contact-wrap {
+		height: auto !important;
+		max-height: none !important;
+		overflow: visible !important;
+	}
+
+	/* —— Cadru W (signup / verificare SMS / edit profil) —— */
+	body.page-account-edit #W,
+	body.page-login #main_content:has(#W) #W,
+	body.page-login #main_content:has(.signup-sms-box) {
+		height: auto !important;
+		max-height: none !important;
+		overflow: visible !important;
+	}
+	body.page-login #main_content:has(.signup-sms-box),
+	body.page-login #main_wrap:has(.signup-sms-box) {
+		height: auto !important;
+		max-height: none !important;
+		overflow: visible !important;
+	}
+	body.page-login:has(.signup-sms-box) {
+		overflow-x: hidden !important;
+		overflow-y: auto !important;
+	}
+
+	/* —— MyPet: Adopțiile mele —— */
+	body.page-mypet:has(.mypet-adoptiile-page) {
+		overflow-x: hidden;
+		overflow-y: auto;
+	}
+	body.page-mypet:has(.mypet-adoptiile-page) #main_wrap,
+	body.page-mypet:has(.mypet-adoptiile-page) #main_content {
+		height: auto !important;
+		max-height: none !important;
+		overflow: visible !important;
+	}
+	body.page-mypet:has(.mypet-adoptiile-page) .layout {
+		display: flex !important;
+		flex-direction: column !important;
+		grid-template-columns: unset !important;
+		min-height: 0 !important;
+	}
+	body.page-mypet.page-mypet-magazin:has(.mypet-adoptiile-page) .sidebar-left {
+		order: 1;
+		width: 100% !important;
+		max-width: 100% !important;
+		flex: 0 0 auto;
+		overflow: visible;
+	}
+	body.page-mypet.page-mypet-magazin:has(.mypet-adoptiile-page) .sidebar-left .mypet-left-boxes {
+		flex-direction: row !important;
+		flex: 0 0 auto !important;
+		height: auto !important;
+		gap: 0.28rem;
+	}
+	body.page-mypet.page-mypet-magazin:has(.mypet-adoptiile-page) .sidebar-left .mypet-left-box {
+		flex: 1 1 0 !important;
+		min-height: 3.35rem !important;
+		max-height: 3.75rem !important;
+		height: 3.5rem !important;
+	}
+	body.page-mypet:has(.mypet-adoptiile-page) .main-content {
+		order: 2;
+		width: 100% !important;
+	}
+	.mypet-adoptiile-page.mypet-wrap,
+	.mypet-adoptiile-page .mypet-inner {
+		height: auto !important;
+		max-height: none !important;
+		overflow: visible !important;
+		min-height: 0 !important;
+		padding-bottom: 1rem;
+	}
+	.mypet-adoptiile-page .mypet-adoptiile-scroll {
+		flex: 1 1 auto;
+		min-height: 12rem;
+		max-height: none;
+	}
+
+	/* —— Magazinul meu (colaborator): același pattern ca MyPet portrait —— */
+	body.page-magazinul-meu {
+		overflow-x: hidden;
+		overflow-y: auto;
+	}
+	body.page-magazinul-meu #main_wrap,
+	body.page-magazinul-meu #main_content {
+		height: auto !important;
+		max-height: none !important;
+		overflow: visible !important;
+	}
+	body.page-magazinul-meu .layout {
+		display: flex !important;
+		flex-direction: column !important;
+		grid-template-columns: unset !important;
+		min-height: 0 !important;
+		align-items: stretch;
+	}
+	body.page-magazinul-meu .sidebar-left {
+		order: 1;
+		width: 100% !important;
+		max-width: 100% !important;
+		flex: 0 0 auto;
+		padding: 0.28rem 0.45rem 0.15rem;
+		overflow: visible;
+		min-height: 0;
+	}
+	body.page-magazinul-meu .sidebar-left .mypet-left-boxes {
+		flex-direction: row !important;
+		flex: 0 0 auto !important;
+		gap: 0.28rem;
+		min-height: 0 !important;
+		height: auto !important;
+		width: 100%;
+	}
+	body.page-magazinul-meu .sidebar-left .mypet-left-box {
+		flex: 1 1 0 !important;
+		min-height: 3.35rem !important;
+		max-height: 3.75rem !important;
+		height: 3.5rem !important;
+		width: auto !important;
+	}
+	body.page-magazinul-meu .main-content {
+		order: 2;
+		width: 100% !important;
+		flex: 1 1 auto;
+		min-width: 0;
+		overflow: visible !important;
+		height: auto !important;
+	}
+	body.page-magazinul-meu .magazinul-meu-wrap,
+	body.page-magazinul-meu .mylvet-wrap,
+	body.page-magazinul-meu #MGW {
+		height: auto !important;
+		max-height: none !important;
+		overflow: visible !important;
+		min-height: calc(100dvh - var(--nav-height, var(--nav-h, 64px)));
+		padding-bottom: 1rem;
+		box-sizing: border-box;
+	}
+
+	/* —— Staff Analiză: fallback scroll pagină dacă shell-ul e prea înalt —— */
+	body.page-admin-analysis {
+		overflow-x: hidden !important;
+		overflow-y: auto !important;
+		height: auto !important;
+		min-height: 100dvh;
+	}
+	body.page-admin-analysis #main_wrap {
+		height: auto !important;
+		min-height: 100dvh;
+		overflow: visible !important;
+	}
+	body.page-admin-analysis #main_content,
+	body.page-admin-analysis .main-content {
+		height: auto !important;
+		min-height: calc(100dvh - var(--nav-h, 64px)) !important;
+		max-height: none !important;
+		overflow: visible !important;
+	}
+	body.page-admin-analysis .analysis-shell {
+		height: auto !important;
+		min-height: calc(100dvh - var(--nav-h, 64px) - 2rem);
+		max-height: none !important;
+		overflow: visible !important;
+	}
+}

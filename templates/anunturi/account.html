@@ -676,6 +676,65 @@ body.page-account .account-right-panel {
 	.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
 	.cont-username-row.after-username-success .cont-username-edit-wrap { display: none !important; }
 	.cont-username-row.after-username-success .cont-username-view { display: flex !important; }
+
+	/* Mobil portrait: scroll pagină; profil (mijloc) sus, formular firmă + panou dedesubt — desktop neschimbat */
+	@media (max-width: 767.98px) and (orientation: portrait) {
+		body.page-account {
+			overflow-x: hidden;
+			overflow-y: auto;
+		}
+		body.page-account #main_wrap,
+		body.page-account #main_content,
+		body.page-account .layout,
+		body.page-account .main-content,
+		body.page-account .cont-pf-wrap,
+		body.page-account .cont-pf-two-col {
+			height: auto !important;
+			max-height: none !important;
+			min-height: 0 !important;
+			overflow: visible !important;
+		}
+		body.page-account #main_content {
+			padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+		}
+		body.page-account .cont-pf-two-col {
+			flex-direction: column !important;
+			gap: 0.75rem;
+			padding-bottom: 0.75rem;
+		}
+		body.page-account .cont-pf-right { order: 1; }
+		body.page-account .cont-pf-left {
+			order: 2;
+			flex: 0 0 auto !important;
+			width: 100% !important;
+			max-width: 100% !important;
+		}
+		body.page-account .account-right-panel {
+			order: 3;
+			flex: 0 0 auto !important;
+			width: 100% !important;
+			height: auto !important;
+			min-height: 8rem;
+		}
+		body.page-account .cont-pf-right,
+		body.page-account .cont-pf-left,
+		body.page-account .account-right-panel {
+			overflow: visible !important;
+		}
+		body.page-account .cont-pf-edit-box {
+			height: auto !important;
+			max-height: none !important;
+			overflow: visible !important;
+		}
+		body.page-account .cont-pf-edit-box .edit-form-inner {
+			overflow: visible !important;
+			flex: 0 0 auto !important;
+			min-height: 0 !important;
+		}
+		body.page-account .cont-pf-body {
+			grid-auto-rows: auto !important;
+		}
+	}
 </style>
 {% endblock %}
 
