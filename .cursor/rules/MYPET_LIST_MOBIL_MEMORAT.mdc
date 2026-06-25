@@ -1,0 +1,30 @@
+---
+description: MyPet listă (/mypet/) — layout mobil memorat (pub + listă)
+globs: templates/anunturi/mypet.html
+alwaysApply: false
+---
+
+# MYPET LISTĂ — MOBIL MEMORAT
+
+**Fișier:** `templates/anunturi/mypet.html` — **nu** `mypet_add.html` (fișă = `MYPET_FISA_MOBIL_MEMORAT.mdc`).
+
+## Portrait mobil (`max-width: 767.98px` + `orientation: portrait`)
+
+1. **Casete pub MP.L1–L3:** din `sidebar-left` → **sus**, 3 casete **mici pe un rând** (~3.5rem înălțime).
+2. **Layout:** `flex` coloană — pub (order 1), apoi `main-content` full width (order 2).
+3. **Fără** coloana îngustă 118px care comprimă tabelul.
+4. **Toolbar:** butoane + filtre Câini/Pisici/Altele stivuite; `placeFilters()` **nu** mută filtrele cu `left` absolut pe portrait.
+5. **Scroll:** pagină + zonă tabel (`overflow: auto`).
+
+## Landscape mobil + desktop/tabletă (`≥768px` sau landscape)
+
+- **Păstrează** coloana stângă 118px cu cele 3 casete pub verticale (comportament existent).
+- **Nu modifica** fără parolă `1977` + OK.
+
+## Filtru specie
+
+- Implicit **Câini** — pisica apare la **Pisici** (nu ambele simultan).
+
+## Parolă
+
+Orice schimbare → **`1977` + OK explicit**.
