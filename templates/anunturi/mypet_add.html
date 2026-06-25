@@ -836,9 +836,10 @@
 		.mypet-fisa-col-photos {
 			order: 2;
 			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 0.4rem;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 0.28rem;
 			width: 100%;
+			max-width: 100%;
 			height: auto;
 			grid-row: unset;
 			grid-column: unset;
@@ -846,7 +847,8 @@
 		.mypet-fisa-photo-slot {
 			flex: none;
 			min-height: 0;
-			padding: 0.22rem 0.3rem;
+			min-width: 0;
+			padding: 0.14rem 0.18rem;
 		}
 		.mypet-fisa-photo-1,
 		.mypet-fisa-photo-2,
@@ -858,16 +860,32 @@
 			grid-column: 1 / -1;
 		}
 		.mypet-fisa-photo-preview {
-			min-height: 8.5rem;
+			min-height: 4.6rem;
+		}
+		.mypet-fisa-photo-hint {
+			font-size: 0.48rem;
+			padding: 0.1rem 0;
+		}
+		.mypet-fisa-photo-actions {
+			gap: 0.1rem;
+		}
+		.mypet-fisa-photo-btn {
+			font-size: 0.5rem;
+			padding: 0.1rem 0.12rem;
 		}
 		.mypet-fisa-zoom-btn {
-			width: 2.25rem;
-			min-height: 2.25rem;
-			font-size: 1.15rem;
+			width: 1.4rem;
+			min-height: 1.4rem;
+			font-size: 0.82rem;
+		}
+		.mypet-fisa-video-preview {
+			min-height: 3.25rem;
 		}
 		.mypet-fisa-col-main {
 			order: 3;
 			width: 100%;
+			max-width: 100%;
+			min-width: 0;
 			padding: 0;
 			grid-row: unset;
 			grid-column: unset;
@@ -875,20 +893,31 @@
 		.mypet-fisa-main-box {
 			border-radius: 8px;
 			padding: 0.45rem 0.5rem;
+			max-width: 100%;
+			box-sizing: border-box;
 		}
-		.mypet-fisa-main-cols {
-			grid-template-columns: 1fr;
+		body.page-mypet-fisa .mypet-fisa-main-cols {
+			grid-template-columns: 1fr !important;
 			gap: 0.55rem;
-			height: auto;
+			height: auto !important;
 		}
 		.mypet-fisa-main-col {
 			gap: 0.35rem;
+			min-width: 0;
+			width: 100%;
+		}
+		.mypet-add-field {
+			min-width: 0;
+			width: 100%;
 		}
 		.mypet-add-field input,
 		.mypet-add-field select,
 		.mypet-add-field textarea {
 			font-size: 0.85rem;
 			padding: 0.45rem 0.5rem;
+			width: 100%;
+			max-width: 100%;
+			box-sizing: border-box;
 		}
 		.mypet-fisa-col-traits {
 			order: 4;
@@ -964,9 +993,15 @@
 
 	.mypet-fisa-main-cols {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: 1fr;
 		gap: 0.4rem;
-		height: 100%;
+		height: auto;
+	}
+	@media (min-width: 768px) {
+		.mypet-fisa-main-cols {
+			grid-template-columns: 1fr 1fr;
+			height: 100%;
+		}
 	}
 
 	.mypet-fisa-main-col {
