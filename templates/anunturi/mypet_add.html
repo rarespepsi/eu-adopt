@@ -864,8 +864,9 @@
 			max-width: 100%;
 			height: auto;
 			flex: 0 0 auto;
-			margin-bottom: 0.85rem;
-			overflow: hidden;
+			margin-bottom: 1.2rem;
+			padding-bottom: 0.2rem;
+			overflow: visible;
 			grid-row: unset;
 			grid-column: unset;
 		}
@@ -883,6 +884,8 @@
 		}
 		.mypet-fisa-photo-4 {
 			grid-column: 1 / -1;
+			min-height: 0;
+			padding-bottom: 0.22rem;
 		}
 		.mypet-fisa-photo-preview {
 			min-height: 4.6rem;
@@ -921,10 +924,13 @@
 			font-size: 0.82rem;
 		}
 		.mypet-fisa-video-preview {
-			min-height: 6.75rem;
+			min-height: 8.5rem;
+			flex: 0 0 auto;
 		}
 		.mypet-fisa-photo-4 .mypet-fisa-video-box {
-			min-height: 0;
+			min-height: 10rem;
+			flex: none;
+			gap: 0.28rem;
 		}
 		.mypet-fisa-col-main {
 			order: 3;
@@ -932,6 +938,7 @@
 			max-width: 100%;
 			min-width: 0;
 			flex: 0 0 auto;
+			margin-top: 0.45rem;
 			padding: 0;
 			grid-row: unset;
 			grid-column: unset;
@@ -1396,8 +1403,9 @@
 			display: grid !important;
 			flex: 0 0 auto !important;
 			width: 100% !important;
-			margin-bottom: 0.85rem !important;
-			overflow: hidden !important;
+			margin-bottom: 1.2rem !important;
+			padding-bottom: 0.2rem !important;
+			overflow: visible !important;
 			grid-row: unset !important;
 			grid-column: unset !important;
 		}
