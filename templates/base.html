@@ -43,7 +43,7 @@
 		{% endif %}
 	</style>
 	{% block extra_css %}{% endblock %}
-	<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}?v=20260625a" type="text/css" media="screen" />
+	<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}?v=20260625b" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/pet-images-common.css' %}?v=3" type="text/css" media="screen" />
 	{% block extra_css_after %}{% endblock %}
 	{# Paletă caldă – suprascrisă de eu-intra-site-skin pe cont / magazin #}
@@ -125,6 +125,9 @@
 			}
 			var a0 = document.getElementById("A0");
 			if (a0) a0.classList.remove("a0-nav-open");
+			if (typeof window.__a0CloseMobileNav === "function") {
+				try { window.__a0CloseMobileNav(); } catch (eNav) {}
+			}
 			if (typeof window.__closeMyPetMsgModal === "function") {
 				try { window.__closeMyPetMsgModal(); } catch (e) {}
 			}

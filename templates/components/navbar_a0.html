@@ -153,11 +153,56 @@
 	var btn = document.getElementById("a0_mobile_trigger");
 	var menu = document.getElementById("menu_wrap");
 	if (!a0 || !btn || !menu) return;
+	var menuAnchor = { parent: menu.parentNode, next: menu.nextSibling };
+
+	function isMobileNav() {
+		try {
+			return window.matchMedia("(max-width: 70em)").matches;
+		} catch (e) {
+			return false;
+		}
+	}
+
+	function restoreMenuDom() {
+		if (!menuAnchor.parent || menu.parentNode === menuAnchor.parent) {
+			menu.classList.remove("a0-menu-portaled");
+			return;
+		}
+		if (menuAnchor.next && menuAnchor.next.parentNode === menuAnchor.parent) {
+			menuAnchor.parent.insertBefore(menu, menuAnchor.next);
+		} else {
+			menuAnchor.parent.appendChild(menu);
+		}
+		menu.classList.remove("a0-menu-portaled");
+	}
+
+	function syncMobileMenuPortal(open) {
+		if (!isMobileNav()) {
+			document.body.classList.remove("a0-mobile-nav-open");
+			restoreMenuDom();
+			return;
+		}
+		if (open) {
+			if (menu.parentNode !== document.body) {
+				menuAnchor.parent = menu.parentNode;
+				menuAnchor.next = menu.nextSibling;
+				document.body.appendChild(menu);
+			}
+			menu.classList.add("a0-menu-portaled");
+			document.body.classList.add("a0-mobile-nav-open");
+		} else {
+			document.body.classList.remove("a0-mobile-nav-open");
+			restoreMenuDom();
+		}
+	}
+
 	function setOpen(open) {
 		a0.classList.toggle("a0-nav-open", open);
 		btn.setAttribute("aria-expanded", open ? "true" : "false");
 		btn.setAttribute("aria-label", open ? "Închide meniul" : "Deschide meniul");
+		syncMobileMenuPortal(open);
 	}
+
 	btn.addEventListener("click", function () {
 		setOpen(!a0.classList.contains("a0-nav-open"));
 	});
@@ -174,7 +219,9 @@
 	window.addEventListener("resize", function () {
 		try {
 			if (window.matchMedia("(min-width: 70.001em)").matches) setOpen(false);
+			else if (!a0.classList.contains("a0-nav-open")) syncMobileMenuPortal(false);
 		} catch (err) {}
 	});
+	window.__a0CloseMobileNav = function () { setOpen(false); };
 })();
 </script>

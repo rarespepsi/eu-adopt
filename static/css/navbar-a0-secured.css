@@ -1035,6 +1035,12 @@ body.page-animale #A0 {
 
 /* ≤~1120px: hamburger + drawer (Firefox măsoară textul puțin mai lat; evită butoane pierdute în dreapta) */
 @media (max-width: 70em) {
+	/* backdrop-filter pe A0 creează containing block ~64px — drawer tăiat la dunga gri */
+	body.euadopt-intra-skin #A0,
+	#A0 {
+		-webkit-backdrop-filter: none !important;
+		backdrop-filter: none !important;
+	}
 	#A0 .a0-mobile-trigger {
 		display: flex !important;
 		margin-right: auto !important;
@@ -1091,33 +1097,60 @@ body.page-animale #A0 {
 		justify-content: flex-start !important;
 		flex: none !important;
 		min-width: auto !important;
-		z-index: 1999 !important;
+		z-index: 1000003 !important;
 		padding: 16px 0 !important;
 		box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
 	}
-	#A0.a0-nav-open #menu_wrap {
+	/* Portat în body pe mobil — evită clip în navbar (dunga gri) */
+	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled {
+		position: fixed !important;
+		top: var(--nav-height) !important;
+		left: 0 !important;
+		right: 0 !important;
+		bottom: 0 !important;
+		margin: 0 !important;
+		width: 100% !important;
+		max-height: calc(100dvh - var(--nav-height)) !important;
+		overflow-y: auto !important;
+		overflow-x: hidden !important;
+		background: #343434 !important;
+		display: flex !important;
+		flex-direction: column !important;
+		align-items: stretch !important;
+		justify-content: flex-start !important;
+		z-index: 1000003 !important;
+		padding: 16px 0 !important;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+	}
+	#A0.a0-nav-open #menu_wrap,
+	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled {
 		display: flex !important;
 	}
-	#A0 #menu_wrap .menu-main-menu-container {
+	#A0 #menu_wrap .menu-main-menu-container,
+	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled .menu-main-menu-container {
 		width: 100% !important;
 	}
-	#A0 #main_menu ul.menu {
+	#A0 #main_menu ul.menu,
+	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled ul.menu {
 		flex-direction: column !important;
 		align-items: stretch !important;
 		padding: 0 12px !important;
 	}
-	#A0 #main_menu ul.menu li {
+	#A0 #main_menu ul.menu li,
+	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled ul.menu li {
 		margin: 0 !important;
 		border-bottom: 1px solid rgba(255,255,255,0.1) !important;
 	}
-	#A0 #main_menu ul.menu li a {
+	#A0 #main_menu ul.menu li a,
+	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled ul.menu li a {
 		display: block !important;
 		padding: 14px 12px !important;
 		line-height: 1.3 !important;
 		font-size: 15px !important;
 	}
 	/* Drawer mobil: iconul user + username pe acelasi rand, in 2 coloane fixe. */
-	#A0 #main_menu ul.menu li.a0-nav-account-item > a.a0-nav-account-link {
+	#A0 #main_menu ul.menu li.a0-nav-account-item > a.a0-nav-account-link,
+	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled ul.menu li.a0-nav-account-item > a.a0-nav-account-link {
 		display: grid !important;
 		grid-template-columns: 2rem minmax(0, 1fr) !important;
 		align-items: center !important;
@@ -1126,13 +1159,16 @@ body.page-animale #A0 {
 		padding: 12px !important;
 	}
 	#A0 #main_menu ul.menu li.a0-nav-account-item .a0-nav-avatar-wrap,
-	#A0 #main_menu ul.menu li.a0-nav-account-item .a0-nav-avatar-placeholder {
+	#A0 #main_menu ul.menu li.a0-nav-account-item .a0-nav-avatar-placeholder,
+	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled ul.menu li.a0-nav-account-item .a0-nav-avatar-wrap,
+	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled ul.menu li.a0-nav-account-item .a0-nav-avatar-placeholder {
 		width: 2rem !important;
 		height: 2rem !important;
 		min-width: 2rem !important;
 		max-width: 2rem !important;
 	}
-	#A0 #main_menu ul.menu li.a0-nav-account-item .a0-nav-username {
+	#A0 #main_menu ul.menu li.a0-nav-account-item .a0-nav-username,
+	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled ul.menu li.a0-nav-account-item .a0-nav-username {
 		display: block !important;
 		-webkit-line-clamp: 1 !important;
 		max-height: none !important;
@@ -1141,13 +1177,15 @@ body.page-animale #A0 {
 		overflow: hidden !important;
 		text-overflow: ellipsis !important;
 	}
-	#A0 #menu-main-menu > li.a0-nav-ads-float {
+	#A0 #menu-main-menu > li.a0-nav-ads-float,
+	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled #menu-main-menu > li.a0-nav-ads-float {
 		position: static !important;
 		left: auto !important;
 		top: auto !important;
 		margin: 0 !important;
 	}
-	#A0 #menu-main-menu > li.a0-nav-ads-float > a.a0-nav-ads-link {
+	#A0 #menu-main-menu > li.a0-nav-ads-float > a.a0-nav-ads-link,
+	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled #menu-main-menu > li.a0-nav-ads-float > a.a0-nav-ads-link {
 		display: block !important;
 		height: auto !important;
 		line-height: 1.3 !important;
