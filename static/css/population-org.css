@@ -8,6 +8,10 @@
 	font-size: 0.86rem;
 	line-height: 1.4;
 }
+/* Faza intermitentă (2–4 animale): ascuns din flux ~10 min, vizibil ~5 sec */
+.population-org-banner.is-pop-collapsed {
+	display: none !important;
+}
 .population-org-banner__inner {
 	max-width: 72rem;
 	margin: 0 auto;

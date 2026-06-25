@@ -26,6 +26,30 @@ def population_animal_max() -> int:
     return int(getattr(settings, "POPULATION_ANIMAL_MAX", 5))
 
 
+def population_banner_hidden_sec() -> int:
+    return int(getattr(settings, "POPULATION_BANNER_HIDDEN_SEC", 600))
+
+
+def population_banner_visible_sec() -> int:
+    return int(getattr(settings, "POPULATION_BANNER_VISIBLE_SEC", 5))
+
+
+def population_banner_mode(user) -> str:
+    """
+    Banner populare: always (< min), intermittent (min..max-1), hidden (>= max sau non-ORG).
+    """
+    if not is_org_population_user(user):
+        return "hidden"
+    n = org_published_animal_count(user)
+    mn = population_animal_min()
+    mx = population_animal_max()
+    if n >= mx:
+        return "hidden"
+    if n < mn:
+        return "always"
+    return "intermittent"
+
+
 def _account_role(user) -> str | None:
     """Rol din DB (evită cache stale pe user.account_profile după signup)."""
     if not user or not getattr(user, "pk", None):
@@ -204,12 +228,16 @@ def population_context_for_user(user) -> dict[str, Any]:
     n = org_published_animal_count(user) if user and user.is_authenticated else 0
     mn = population_animal_min()
     mx = population_animal_max()
+    banner_mode = population_banner_mode(user)
     return {
         "population_org_active": active,
         "population_org_nav_reduced": active,
         "population_animal_count": n,
         "population_animal_min": mn,
         "population_animal_max": mx,
+        "population_banner_mode": banner_mode,
+        "population_banner_hidden_sec": population_banner_hidden_sec(),
+        "population_banner_visible_sec": population_banner_visible_sec(),
         "population_onboarding_complete": (not active) or n >= mn,
         "population_at_max_animals": active and n >= mx,
         "population_animals_until_min": max(0, mn - n) if active else 0,

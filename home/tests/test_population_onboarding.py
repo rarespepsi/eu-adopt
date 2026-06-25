@@ -28,6 +28,27 @@ class PopulationOnboardingTests(TestCase):
         ctx = population_context_for_user(self.org_user)
         self.assertTrue(ctx["population_org_nav_reduced"])
         self.assertFalse(ctx["population_onboarding_complete"])
+        self.assertEqual(ctx["population_banner_mode"], "always")
+
+    def test_banner_mode_always_below_min(self):
+        from home.population_onboarding import population_banner_mode
+
+        AnimalListing.objects.create(owner=self.org_user, name="P0", is_published=True)
+        self.assertEqual(population_banner_mode(self.org_user), "always")
+
+    def test_banner_mode_intermittent_between_min_and_max(self):
+        from home.population_onboarding import population_banner_mode
+
+        for i in range(2):
+            AnimalListing.objects.create(owner=self.org_user, name=f"I{i}", is_published=True)
+        self.assertEqual(population_banner_mode(self.org_user), "intermittent")
+
+    def test_banner_mode_hidden_at_max(self):
+        from home.population_onboarding import population_banner_mode
+
+        for i in range(5):
+            AnimalListing.objects.create(owner=self.org_user, name=f"H{i}", is_published=True)
+        self.assertEqual(population_banner_mode(self.org_user), "hidden")
 
     def test_max_animals_blocks_add(self):
         from home.population_onboarding import check_org_can_add_animal

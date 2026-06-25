@@ -1,5 +1,15 @@
-{% if population_org_active %}
-<div class="population-org-banner" role="status" aria-live="polite">
+{% load static %}
+{% if population_banner_mode != 'hidden' %}
+<div
+	class="population-org-banner{% if population_banner_mode == 'intermittent' %} is-pop-collapsed{% endif %}"
+	id="population-org-banner"
+	role="status"
+	aria-live="polite"
+	data-banner-mode="{{ population_banner_mode }}"
+	data-user-id="{{ user.pk|default:0 }}"
+	data-hidden-sec="{{ population_banner_hidden_sec|default:600 }}"
+	data-visible-sec="{{ population_banner_visible_sec|default:5 }}"
+>
 	<div class="population-org-banner__inner">
 		{% if population_onboarding_complete %}
 		<p class="population-org-banner__title">Etapa de populare — animale publicate: <strong>{{ population_animal_count }}</strong> / {{ population_animal_max }}</p>
@@ -10,4 +20,7 @@
 		{% endif %}
 	</div>
 </div>
+{% if population_banner_mode == 'intermittent' %}
+<script src="{% static 'js/population-org-banner.js' %}?v=1"></script>
+{% endif %}
 {% endif %}
