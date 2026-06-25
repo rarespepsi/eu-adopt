@@ -821,9 +821,30 @@ body.page-account .account-right-panel {
 			font-size: 0.62rem;
 			padding: 0.18rem 0.32rem;
 		}
+		/* Bife/radio: fără 40ch fix (împinge/tăia bifele pe ecrane înguste) */
+		body.page-account .cont-pf-left .signup-col-tip-option span,
+		body.page-account .cont-pf-left .cont-pf-tip-colaborator-options .signup-col-tip-option span {
+			width: auto !important;
+			min-width: 0 !important;
+			max-width: none !important;
+			white-space: normal !important;
+			overflow: visible !important;
+			text-overflow: unset !important;
+		}
+		body.page-account .cont-pf-card {
+			overflow: visible !important;
+			height: auto !important;
+			min-height: 0 !important;
+		}
+		body.page-account .cont-pf-photo-card .mypet-fisa-photo-preview {
+			min-height: 4rem;
+			max-height: none;
+			height: auto;
+			aspect-ratio: 4 / 3;
+		}
 	}
 
-	/* Mobil landscape (telefon): scroll + grile pe o coloană, casete compacte */
+	/* Mobil landscape (telefon): același scroll + conținut complet vizibil (fără tăiere casete/bife) */
 	@media (orientation: landscape) and (max-height: 34em) {
 		body.page-account {
 			overflow-x: hidden;
@@ -837,36 +858,108 @@ body.page-account .account-right-panel {
 		body.page-account .cont-pf-two-col {
 			height: auto !important;
 			max-height: none !important;
+			min-height: 0 !important;
 			overflow: visible !important;
+		}
+		body.page-account #main_content {
+			padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
 		}
 		body.page-account .cont-pf-two-col {
 			flex-direction: column !important;
 			gap: 0.5rem;
 			padding-bottom: 0.65rem;
+			overflow: visible !important;
 		}
-		body.page-account .cont-pf-right { order: 1; width: 100% !important; padding: 0.3rem 0.45rem !important; }
-		body.page-account .cont-pf-left { order: 2; width: 100% !important; }
-		body.page-account .account-right-panel { order: 3; width: 100% !important; height: auto !important; }
+		body.page-account .cont-pf-right {
+			order: 1;
+			width: 100% !important;
+			max-width: 100% !important;
+			padding: 0.3rem 0.45rem !important;
+			box-sizing: border-box;
+			overflow: visible !important;
+		}
+		body.page-account .cont-pf-left {
+			order: 2;
+			width: 100% !important;
+			max-width: 100% !important;
+			overflow: visible !important;
+		}
+		body.page-account .account-right-panel {
+			order: 3;
+			width: 100% !important;
+			height: auto !important;
+			overflow: visible !important;
+		}
+		body.page-account .cont-pf-wrap {
+			padding: 0.35rem 0.4rem 0.5rem;
+			overflow: visible !important;
+		}
 		body.page-account .cont-pf-header-row {
-			grid-template-columns: minmax(0, 1fr) minmax(0, 0.72fr);
+			grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
 			gap: 0.35rem;
+		}
+		body.page-account .cont-pf-header-card,
+		body.page-account .cont-pf-photo-card {
+			min-width: 0;
+			max-width: 100%;
+			overflow: visible !important;
 		}
 		body.page-account .cont-pf-header-main { margin-left: 0; gap: 0.35rem; }
 		body.page-account .cont-pf-avatar { width: 40px; height: 40px; font-size: 0.75rem; }
 		body.page-account .cont-pf-photo-card .mypet-fisa-photo-preview {
-			min-height: 2.75rem;
-			max-height: 3.25rem;
+			min-height: 3.25rem;
+			max-height: none;
+			height: auto;
+			aspect-ratio: 4 / 3;
 		}
-		body.page-account .cont-pf-body,
+		body.page-account .cont-pf-body {
+			grid-template-columns: 1fr 1fr !important;
+			grid-auto-rows: auto !important;
+			gap: 0.35rem;
+			overflow: visible !important;
+		}
 		body.page-account .cont-pf-bottom-row {
-			grid-template-columns: 1fr !important;
+			grid-template-columns: 1fr 1fr;
+			gap: 0.35rem;
+		}
+		body.page-account .cont-pf-bottom-row .cont-pf-card,
+		body.page-account .cont-pf-card {
+			height: auto !important;
+			overflow: visible !important;
 		}
 		body.page-account .cont-pf-edit-box {
 			height: auto !important;
+			max-height: none !important;
 			overflow: visible !important;
 		}
 		body.page-account .cont-pf-edit-box .edit-form-inner {
 			overflow: visible !important;
+			flex: 0 0 auto !important;
+		}
+		body.page-account .cont-pf-left .cont-pf-edit-box {
+			overflow: visible !important;
+		}
+		body.page-account .cont-pf-edit-box .edit-form-grid {
+			grid-template-columns: 1fr 1fr;
+			gap: 0.3rem 0.45rem;
+		}
+		/* Bife/radio — text flexibil, bifă vizibilă la dreapta */
+		body.page-account .cont-pf-left .signup-col-tip-option span,
+		body.page-account .cont-pf-left .cont-pf-tip-colaborator-options .signup-col-tip-option span {
+			width: auto !important;
+			min-width: 0 !important;
+			max-width: none !important;
+			white-space: normal !important;
+			overflow: visible !important;
+			text-overflow: unset !important;
+		}
+		body.page-account .cont-pf-left .signup-col-tip-option input[type="radio"] {
+			justify-self: end;
+			flex-shrink: 0;
+		}
+		body.page-account .cont-pf-left .signup-field label.check {
+			align-items: flex-start;
+			line-height: 1.3;
 		}
 	}
 </style>
