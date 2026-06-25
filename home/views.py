@@ -7576,7 +7576,7 @@ def mypet_add_view(request):
 
     age_choices = list(AGE_LABELS_ORDERED)
 
-    # GET ?species=dog|cat|other — fără asta, /mypet/add/ pornea mereu pe câine.
+    # GET ?species=dog|cat|other — pre-selectează pe formular; fără parametru = câine + selector pe fișă.
     add_species_q = (request.GET.get("species") or "").strip().lower()
     if add_species_q not in ("dog", "cat", "other"):
         add_species_q = "dog"

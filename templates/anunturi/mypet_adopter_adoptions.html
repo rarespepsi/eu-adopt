@@ -14,7 +14,7 @@
 					<a href="{{ mypet_home_url }}" class="mypet-btn mypet-btn-secondary">My pets</a>
 					<span class="mypet-btn mypet-btn-primary" aria-current="page">Adopțiile mele</span>
 					<a
-						href="{% url 'mypet_add' %}?species=dog"
+						href="{% url 'mypet_add' %}"
 						class="mypet-btn mypet-btn-secondary mypet-btn-add"
 						data-mypet-add-base="{% url 'mypet_add' %}"
 					>Adaugă un pet</a>
@@ -347,10 +347,6 @@ document.addEventListener("DOMContentLoaded", function() {
 				if (base) {
 					addBtn.setAttribute("href", base + "?species=" + encodeURIComponent(species));
 				}
-				if (species === "dog") addBtn.textContent = "Adaugă un câine";
-				else if (species === "cat") addBtn.textContent = "Adaugă o pisică";
-				else if (species === "other") addBtn.textContent = "AdaugăAltceva";
-				else addBtn.textContent = "Adaugă un pet";
 			}
 			cards.forEach(function(card) {
 				var spc = (card.getAttribute("data-species") || "");
