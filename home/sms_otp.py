@@ -51,6 +51,36 @@ def normalize_phone_digits(phone_country: str, phone: str) -> str:
     return f"{country}{local}"
 
 
+def resolve_signup_phone_parts(signup_data: dict) -> tuple[str, str]:
+    """
+    PF: phone_country + phone.
+    ONG / Colaborator / Adăpost: câmp unic ``telefon`` (ex. 07..., +40 ...).
+    """
+    role = (signup_data.get("role") or "pf").strip().lower()
+    if role == "pf":
+        return (
+            (signup_data.get("phone_country") or "+40").strip() or "+40",
+            (signup_data.get("phone") or "").strip(),
+        )
+    telefon = (signup_data.get("telefon") or "").strip()
+    if telefon:
+        parts = telefon.split(None, 1)
+        if len(parts) == 2 and parts[0].startswith("+"):
+            return parts[0], parts[1]
+        if telefon.startswith("0"):
+            return "+40", telefon
+        return "+40", telefon
+    return (
+        (signup_data.get("phone_country") or "+40").strip() or "+40",
+        (signup_data.get("phone") or "").strip(),
+    )
+
+
+def _phone_digits_valid(to_digits: str) -> bool:
+    digits = re.sub(r"\D", "", to_digits or "")
+    return len(digits) >= 10
+
+
 def _session_cache_key(request, suffix: str) -> str:
     if not request.session.session_key:
         request.session.save()
@@ -152,9 +182,13 @@ def _store_and_send(request, purpose: str, phone_country: str, phone: str, *, fo
     if not force_new and cache.get(cache_key):
         return True, None
 
+    to_digits = normalize_phone_digits(phone_country, phone)
+    if not _phone_digits_valid(to_digits):
+        logger.warning("SMS OTP invalid phone digits: ...%s", (to_digits or "")[-4:])
+        return False, "Număr de telefon invalid. Verifică formatul (ex. 07xxxxxxxx) și încearcă din nou."
+
     otp = _generate_code()
     cache.set(cache_key, otp, _otp_ttl())
-    to_digits = normalize_phone_digits(phone_country, phone)
     ok, err = _send_sms(to_digits, _build_message(otp))
     if not ok:
         cache.delete(cache_key)
@@ -162,21 +196,23 @@ def _store_and_send(request, purpose: str, phone_country: str, phone: str, *, fo
 
 
 def ensure_signup_otp_sent(request, signup_data: dict) -> tuple[bool, str | None]:
+    phone_country, phone = resolve_signup_phone_parts(signup_data)
     return _store_and_send(
         request,
         "signup",
-        signup_data.get("phone_country", "+40"),
-        signup_data.get("phone", ""),
+        phone_country,
+        phone,
         force_new=False,
     )
 
 
 def resend_signup_otp(request, signup_data: dict) -> tuple[bool, str | None]:
+    phone_country, phone = resolve_signup_phone_parts(signup_data)
     return _store_and_send(
         request,
         "signup",
-        signup_data.get("phone_country", "+40"),
-        signup_data.get("phone", ""),
+        phone_country,
+        phone,
         force_new=True,
     )
 
