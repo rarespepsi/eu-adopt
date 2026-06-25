@@ -808,30 +808,52 @@
 		.mypet-fisa-header-row {
 			order: 1;
 			display: flex;
-			flex-direction: column;
-			align-items: stretch;
-			gap: 0.4rem;
+			flex-direction: row;
+			flex-wrap: nowrap;
+			align-items: center;
+			justify-content: center;
+			gap: 0.28rem;
 			margin-bottom: 0;
 			width: 100%;
+			max-width: 100%;
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+			scrollbar-width: none;
 			grid-row: unset;
 			grid-column: unset;
+		}
+		.mypet-fisa-header-row::-webkit-scrollbar {
+			display: none;
 		}
 		.mypet-fisa-header-spacer {
 			display: none;
 		}
+		.mypet-fisa-tab {
+			flex: 0 0 auto;
+			padding: 0.38rem 0.55rem;
+			font-size: 0.6rem;
+			letter-spacing: 0.04em;
+			white-space: nowrap;
+		}
 		.mypet-fisa-header-actions {
-			flex-wrap: wrap;
-			justify-content: flex-start;
-			gap: 0.35rem;
-			width: 100%;
+			display: flex;
+			flex-wrap: nowrap;
+			justify-content: center;
+			align-items: center;
+			gap: 0.28rem;
+			width: auto;
+			flex: 0 0 auto;
 		}
 		.mypet-fisa-header-actions .mypet-btn {
-			flex: 1 1 calc(50% - 0.2rem);
-			min-width: 7.5rem;
-			font-size: 0.72rem;
-			padding: 0.5rem 0.55rem;
+			flex: 0 0 auto;
+			min-width: 0;
+			font-size: 0.58rem;
+			padding: 0.38rem 0.5rem;
 			text-align: center;
 			justify-content: center;
+		}
+		.mypet-fisa-header-actions .mypet-fisa-photo-reminder {
+			flex: 1 1 100%;
 		}
 		.mypet-fisa-col-photos {
 			order: 2;
@@ -862,6 +884,23 @@
 		.mypet-fisa-photo-preview {
 			min-height: 4.6rem;
 		}
+		/* La crop: caseta activă pe toată lățimea, înălțime suficientă pentru deget */
+		.mypet-fisa-photo-slot:has(.mypet-fisa-photo-preview.is-cropping) {
+			grid-column: 1 / -1;
+			order: -1;
+		}
+		.mypet-fisa-photo-slot:has(.mypet-fisa-photo-preview.is-cropping) .mypet-fisa-photo-preview {
+			min-height: 12.5rem;
+		}
+		.mypet-fisa-photo-slot:has(.mypet-fisa-photo-preview.is-cropping) .mypet-fisa-photo-btn {
+			font-size: 0.62rem;
+			padding: 0.22rem 0.35rem;
+		}
+		.mypet-fisa-photo-slot:has(.mypet-fisa-photo-preview.is-cropping) .mypet-fisa-zoom-btn {
+			width: 1.85rem;
+			min-height: 1.85rem;
+			font-size: 1rem;
+		}
 		.mypet-fisa-photo-hint {
 			font-size: 0.48rem;
 			padding: 0.1rem 0;
@@ -879,7 +918,10 @@
 			font-size: 0.82rem;
 		}
 		.mypet-fisa-video-preview {
-			min-height: 3.25rem;
+			min-height: 6.75rem;
+		}
+		.mypet-fisa-photo-4 .mypet-fisa-video-box {
+			min-height: 0;
 		}
 		.mypet-fisa-col-main {
 			order: 3;
@@ -1720,8 +1762,15 @@
 			preview.appendChild(img);
 
 			if (typeof Cropper !== "undefined") {
+				var isMobileCrop = false;
+				try { isMobileCrop = window.matchMedia("(max-width: 767.98px)").matches; } catch (eMob) {}
+				if (isMobileCrop) {
+					preview.classList.add("is-cropping");
+					showCropTouchHint(preview);
+				}
 				var w = preview.offsetWidth;
 				var h = preview.offsetHeight;
+				if (isMobileCrop) h = Math.max(h, 200);
 				var ratio = (w && h) ? (w / h) : 1;
 				croppers[n] = new Cropper(img, {
 					aspectRatio: ratio,
@@ -1742,8 +1791,10 @@
 					ready: function() {
 						var cr = croppers[n];
 						if (!cr) return;
-						preview.classList.add("is-cropping");
-						showCropTouchHint(preview);
+						if (!preview.classList.contains("is-cropping")) {
+							preview.classList.add("is-cropping");
+							showCropTouchHint(preview);
+						}
 						var containerData = cr.getContainerData();
 						var imageData = cr.getImageData();
 						if (!containerData || !imageData || !imageData.width) return;
@@ -1755,9 +1806,15 @@
 						var scaleH = ch / ih;
 						var scale = Math.max(scaleW, scaleH, 1);
 						cr.zoom(scale);
-						window.setTimeout(function() {
-							if (croppers[n]) croppers[n].resize();
-						}, 80);
+						function reflowCrop() {
+							if (!croppers[n]) return;
+							croppers[n].resize();
+						}
+						window.requestAnimationFrame(function() {
+							reflowCrop();
+							window.setTimeout(reflowCrop, 120);
+							window.setTimeout(reflowCrop, 280);
+						});
 					}
 				});
 			}
