@@ -5573,9 +5573,14 @@ def _staff_onboarding_leads_filtered_qs_from_querydict(qd: QueryDict):
             )
     if (qd.get("invite_eligible") or "").strip().lower() in ("1", "true", "da", "yes"):
         qs = staff_invite_filter_eligible_qs(qs)
-    if (qd.get("invite_first_only") or "").strip().lower() in ("1", "true", "da", "yes"):
+    first_only = (qd.get("invite_first_only") or "").strip().lower() in ("1", "true", "da", "yes")
+    resend_only = (qd.get("invite_resend_only") or "").strip().lower() in ("1", "true", "da", "yes")
+    if first_only and resend_only:
+        first_only = False
+        resend_only = False
+    if first_only:
         qs = qs.filter(invite_mail_status=StaffOnboardingLead.INVITE_NEVER)
-    if (qd.get("invite_resend_only") or "").strip().lower() in ("1", "true", "da", "yes"):
+    if resend_only:
         qs = staff_invite_filter_resend_eligible_qs(qs)
     return qs.order_by("-created_at").select_related("imported_user")
 
@@ -5901,6 +5906,9 @@ def admin_analysis_add_user_view(request):
     invite_stats["eligible_in_filter"] = staff_invite_count_eligible(filter_qs, now)
     invite_stats["resend_in_filter"] = staff_invite_count_resend_eligible(filter_qs, now)
     invite_inbound_stats = inbound_stats_summary()
+    qd_filters = _add_user_filter_querydict(request)
+    invite_first_on = (qd_filters.get("invite_first_only") or "").strip().lower() in ("1", "true", "da", "yes")
+    invite_resend_on = (qd_filters.get("invite_resend_only") or "").strip().lower() in ("1", "true", "da", "yes")
     return render(
         request,
         "anunturi/admin_analysis_add_user.html",
@@ -5935,6 +5943,8 @@ def admin_analysis_add_user_view(request):
             in ("1", "true", "da", "yes"),
             "filter_invite_resend_only": (_add_user_filter_querydict(request).get("invite_resend_only") or "").strip().lower()
             in ("1", "true", "da", "yes"),
+            "invite_filter_conflict_warn": invite_first_on and invite_resend_on,
+            "filter_leads_total": filter_qs.count(),
             "show_imported_active": show_imported_active,
             "filter_query_toggle_imported": filter_query_toggle_imported,
         },

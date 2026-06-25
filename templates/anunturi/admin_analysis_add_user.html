@@ -726,6 +726,15 @@
 		color: #67e8f9;
 	}
 	.add-user-manual-details { align-self: flex-start; width: 100%; max-width: 100%; }
+	.add-user-filter-hint {
+		margin: 0 0 0.35rem;
+		padding: 0.35rem 0.5rem;
+		font-size: 0.72rem;
+		border-radius: 0.45rem;
+		background: rgba(251, 191, 36, 0.12);
+		border: 1px solid rgba(251, 191, 36, 0.35);
+		color: #fde68a;
+	}
 	.add-user-manual-scroll-hint {
 		margin: 0 0 0.35rem;
 		padding: 0.22rem 0.45rem;
@@ -1036,7 +1045,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/ro-location-normalize.js' %}?v=1"></script>
+<script src="{% static 'js/ro-location-normalize.js' %}?v=2"></script>
 <script>
 (function() {
 	RoLocation.whenReady(function() {
@@ -1047,11 +1056,48 @@
 	var filtForm = document.querySelector(".add-user-filters");
 	if (filtForm) {
 		filtForm.addEventListener("submit", function() {
-			var fj = document.getElementById("f-jud");
-			var fo = document.getElementById("f-oras");
-			RoLocation.normalizeCountyInput(fj);
-			RoLocation.normalizeLocalityInput(fo, fj);
+			try {
+				if (!window.RoLocation) return;
+				var fj = document.getElementById("f-jud");
+				var fo = document.getElementById("f-oras");
+				RoLocation.normalizeCountyInput(fj);
+				RoLocation.normalizeLocalityInput(fo, fj);
+			} catch (e) { /* nu bloca trimiterea filtrelor */ }
 		});
+	}
+	var inviteFirst = document.querySelector("input[name='invite_first_only']");
+	var inviteResend = document.querySelector("input[name='invite_resend_only']");
+	function syncInviteFilterExclusion(changed) {
+		if (!inviteFirst || !inviteResend) return;
+		if (changed === inviteFirst && inviteFirst.checked) inviteResend.checked = false;
+		if (changed === inviteResend && inviteResend.checked) inviteFirst.checked = false;
+	}
+	if (inviteFirst) inviteFirst.addEventListener("change", function() { syncInviteFilterExclusion(inviteFirst); });
+	if (inviteResend) inviteResend.addEventListener("change", function() { syncInviteFilterExclusion(inviteResend); });
+	var COLLAB_OPTS_COLLAB = [
+		["", "— Toate —"],
+		["cabinet", "CV"],
+		["magazin", "Magazin"],
+		["grooming", "Grooming"],
+		["transport", "Transportator"]
+	];
+	var COLLAB_OPTS_ADAPOST = [
+		["", "— Toate —"],
+		["adpub", "ADPUB (public)"],
+		["adprv", "ADPRV (privat)"]
+	];
+	function refillCollabOptions(kind, keepValue) {
+		var collabSel = document.getElementById("f-collab-sub");
+		if (!collabSel) return;
+		var opts = kind === "adapost" ? COLLAB_OPTS_ADAPOST : COLLAB_OPTS_COLLAB;
+		collabSel.innerHTML = "";
+		for (var i = 0; i < opts.length; i++) {
+			var opt = document.createElement("option");
+			opt.value = opts[i][0];
+			opt.textContent = opts[i][1];
+			if (keepValue && keepValue === opts[i][0]) opt.selected = true;
+			collabSel.appendChild(opt);
+		}
 	}
 	function syncTopFiltersByAccountKind() {
 		var kindSel = document.getElementById("f-kind");
@@ -1062,9 +1108,17 @@
 		var collab = (collabSel.value || "").trim().toLowerCase();
 		var collabEnabled = kind === "collaborator";
 		var adapostKind = kind === "adapost";
-		collabSel.disabled = !collabEnabled && !adapostKind;
-		if (!collabEnabled && !adapostKind) {
+		if (collabEnabled || adapostKind) {
+			if (collabSel.dataset.kindLoaded !== kind) {
+				refillCollabOptions(kind, collabSel.value);
+				collabSel.dataset.kindLoaded = kind;
+			}
+			collabSel.disabled = false;
+		} else {
+			collabSel.disabled = true;
 			collabSel.value = "";
+			collabSel.dataset.kindLoaded = "";
+			refillCollabOptions("", "");
 		}
 		var vetEnabled = collabEnabled && collab === "cabinet";
 		vetSel.disabled = !vetEnabled;
@@ -1081,6 +1135,16 @@
 		topCollab.addEventListener("change", syncTopFiltersByAccountKind);
 	}
 	syncTopFiltersByAccountKind();
+	(function initCollabFilterOptions() {
+		var kindSel = document.getElementById("f-kind");
+		var collabSel = document.getElementById("f-collab-sub");
+		if (!kindSel || !collabSel) return;
+		var kind = (kindSel.value || "").trim();
+		if (kind === "adapost" || kind === "collaborator") {
+			refillCollabOptions(kind, collabSel.value);
+			collabSel.dataset.kindLoaded = kind;
+		}
+	})();
 	function syncManualLeadRoleSections() {
 		var sel = document.getElementById("id_account_kind");
 		if (!sel) return;
@@ -1247,6 +1311,11 @@
 			</div>
 		</details>
 		<div class="add-user-toolbar">
+		{% if invite_filter_conflict_warn %}
+		<p class="add-user-filter-hint" role="status">Ai bifat simultan „Prima invitație” și „Doar retrimitere” — filtre contradictorii ignorate. Debifează-le sau apasă <strong>Resetează</strong>.</p>
+		{% elif filter_leads_total == 0 and filter_query %}
+		<p class="add-user-filter-hint" role="status">0 prospecte la filtrele curente. Verifică: Tip cont = <strong>— Toate —</strong> sau <strong>Adăpost</strong>, Colaboratori/CV = <strong>— Toate —</strong>, debifează filtrele invitație, sau apasă <strong>Resetează</strong>.</p>
+		{% endif %}
 		<form class="add-user-filters" method="get" action="{% url 'admin_analysis_add_user' %}">
 			<div>
 				<label for="f-kind">Tip cont</label>
