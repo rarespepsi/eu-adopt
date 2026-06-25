@@ -145,6 +145,45 @@ LEGAL_MARKETING_VERSION = "1.0"
 
 # Validare „Activează contul”: aliniază cu `expires_at` + mesaj „5 minute” pe pagina Verifică email.
 SIGNUP_VERIFY_EMAIL_TOKEN_MAX_AGE = 300
+SIGNUP_ACTIVATION_VERIFY_URL_SESSION_KEY = "signup_activation_verify_url"
+
+
+def _build_signup_activation_verify_url(request, user_pk, *, waiting_id: str = "") -> str:
+    from django.core.signing import TimestampSigner
+    from urllib.parse import quote
+
+    signer = TimestampSigner()
+    token = signer.sign(user_pk)
+    path = reverse("signup_verify_email") + "?token=" + quote(token)
+    wid = (waiting_id or "").strip()
+    if wid:
+        path += "&waiting_id=" + quote(wid)
+    staff_inv = (request.session.get(STAFF_INVITE_SESSION_KEY) or "").strip()
+    if staff_inv and len(staff_inv) <= 72:
+        path += "&" + STAFF_INVITE_GET_PARAM + "=" + quote(staff_inv, safe="")
+    return _absolute_url_using_site_base(request, path)
+
+
+def _signup_activation_mail_inbox_url(recipient_email: str) -> str:
+    """Deschide clientul de email cu căutare spre mesajul de activare (Gmail / Outlook / Yahoo)."""
+    import re
+    from urllib.parse import quote
+
+    from home.euadopt_email import get_from_email
+
+    sender_raw = (get_from_email() or "").strip()
+    m = re.search(r"[\w.+-]+@[\w.-]+\.\w+", sender_raw)
+    from_addr = m.group(0) if m else sender_raw
+    em = (recipient_email or "").strip().lower()
+    domain = em.split("@")[-1] if "@" in em else ""
+    search_gmail = quote(f'from:{from_addr} subject:"Activează contul"')
+    if domain in ("gmail.com", "googlemail.com"):
+        return f"https://mail.google.com/mail/u/?authuser={quote(em)}#search/{search_gmail}"
+    if domain in ("outlook.com", "hotmail.com", "live.com", "msn.com"):
+        return "https://outlook.live.com/mail/0/search?q=" + quote(f"from:{from_addr} Activează")
+    if domain in ("yahoo.com", "yahoo.ro"):
+        return "https://mail.yahoo.com/d/search/keyword=" + quote(f"from:{from_addr} Activează")
+    return f"https://mail.google.com/mail/u/0/#search/{search_gmail}"
 
 
 def _absolute_url_using_site_base(request, path_query: str) -> str:
@@ -3025,25 +3064,17 @@ def signup_verificare_sms_view(request):
 
             create_locations_from_signup(user, data, tip_partener=tip_col)
 
-    from django.core.signing import TimestampSigner
     from django.core.cache import cache
     from urllib.parse import quote
     import uuid
 
     from .euadopt_email import send_account_activation_email
 
-    signer = TimestampSigner()
-    token = signer.sign(user.pk)
     waiting_id = str(uuid.uuid4())
     request.session["signup_waiting_id"] = waiting_id
     cache.set("signup_waiting_" + waiting_id, "pending", timeout=600)
-    verify_url = _absolute_url_using_site_base(
-        request,
-        reverse("signup_verify_email") + "?token=" + quote(token) + "&waiting_id=" + quote(waiting_id),
-    )
-    staff_inv = (request.session.get(STAFF_INVITE_SESSION_KEY) or "").strip()
-    if staff_inv and len(staff_inv) <= 72:
-        verify_url += "&" + STAFF_INVITE_GET_PARAM + "=" + quote(staff_inv, safe="")
+    verify_url = _build_signup_activation_verify_url(request, user.pk, waiting_id=waiting_id)
+    request.session[SIGNUP_ACTIVATION_VERIFY_URL_SESSION_KEY] = verify_url
     try:
         send_account_activation_email(user, verify_url, resend=False, fail_silently=True)
     except Exception:
@@ -3100,7 +3131,8 @@ def signup_pf_sms_view(request):
 def signup_pf_check_email_view(request):
     """Pagina 'Verifică email-ul – am trimis un link la ...'. Dacă există waiting_id, JS face polling ca la activare din alt device să logheze aici."""
     import time
-    email = request.GET.get("email", "")
+
+    email = (request.GET.get("email") or "").strip()
     waiting_id = request.session.get("signup_waiting_id", "")
     created = request.session.get("signup_link_created_at") or time.time()
     expires_at = int(created) + SIGNUP_VERIFY_EMAIL_TOKEN_MAX_AGE
@@ -3108,15 +3140,30 @@ def signup_pf_check_email_view(request):
     email_cooldown_until = request.session.get("signup_email_cooldown_until") or 0
     now_ts = int(time.time())
     email_in_cooldown = email_cooldown_until > 0 and now_ts < email_cooldown_until
+    activation_verify_url = (request.session.get(SIGNUP_ACTIVATION_VERIFY_URL_SESSION_KEY) or "").strip()
+    user_pk = request.session.get("signup_waiting_user_pk")
+    if not activation_verify_url and user_pk:
+        activation_verify_url = _build_signup_activation_verify_url(
+            request, user_pk, waiting_id=waiting_id or ""
+        )
+        request.session[SIGNUP_ACTIVATION_VERIFY_URL_SESSION_KEY] = activation_verify_url
+    mail_inbox_url = _signup_activation_mail_inbox_url(email) if email else ""
     return render(
         request,
         "anunturi/signup_pf_check_email.html",
         {
-            "email": email, "waiting_id": waiting_id, "back_url": reverse("signup_choose_type"), "expires_at": expires_at,
-            "email_resend_count": email_resend_count, "email_resend_remaining": max(0, 3 - email_resend_count),
+            "email": email,
+            "waiting_id": waiting_id,
+            "back_url": reverse("signup_choose_type"),
+            "expires_at": expires_at,
+            "email_resend_count": email_resend_count,
+            "email_resend_remaining": max(0, 3 - email_resend_count),
             "email_cooldown_until": int(email_cooldown_until),
-            "email_retrimis": request.GET.get("retrimis"), "email_cooldown": request.GET.get("cooldown"),
+            "email_retrimis": request.GET.get("retrimis"),
+            "email_cooldown": request.GET.get("cooldown"),
             "email_in_cooldown": email_in_cooldown,
+            "activation_verify_url": activation_verify_url,
+            "mail_inbox_url": mail_inbox_url,
         },
     )
 
@@ -3153,13 +3200,10 @@ def signup_retrimite_email_view(request):
     signer = TimestampSigner()
     token = signer.sign(user.pk)
     waiting_id = request.session.get("signup_waiting_id", "")
-    verify_url = _absolute_url_using_site_base(
-        request,
-        reverse("signup_verify_email")
-        + "?token="
-        + quote(token)
-        + ("&waiting_id=" + quote(waiting_id) if waiting_id else ""),
+    verify_url = _build_signup_activation_verify_url(
+        request, user.pk, waiting_id=waiting_id or ""
     )
+    request.session[SIGNUP_ACTIVATION_VERIFY_URL_SESSION_KEY] = verify_url
     try:
         send_account_activation_email(user, verify_url, resend=True, fail_silently=True)
     except Exception:
@@ -3205,7 +3249,8 @@ def signup_verify_email_view(request):
     auth_login(request, user)
     # Curățare sesiune după activare – un singur set de chei signup_*
     for key in ("signup_waiting_id", "signup_waiting_user_pk", "signup_email_resend_count", "signup_email_cooldown_until",
-                "signup_sms_resend_count", "signup_sms_cooldown_until"):
+                "signup_sms_resend_count", "signup_sms_cooldown_until", SIGNUP_ACTIVATION_VERIFY_URL_SESSION_KEY,
+                "signup_link_created_at"):
         request.session.pop(key, None)
 
     waiting_id = (request.GET.get("waiting_id") or "").strip()
@@ -3249,7 +3294,8 @@ def signup_complete_login_view(request):
         return redirect(reverse("home"))
     cache.delete("signup_onetime_" + token)
     for key in ("signup_waiting_id", "signup_waiting_user_pk", "signup_email_resend_count", "signup_email_cooldown_until",
-                "signup_sms_resend_count", "signup_sms_cooldown_until"):
+                "signup_sms_resend_count", "signup_sms_cooldown_until", SIGNUP_ACTIVATION_VERIFY_URL_SESSION_KEY,
+                "signup_link_created_at"):
         request.session.pop(key, None)
     auth_login(request, user)
     return redirect(reverse("home") + "?welcome=1")

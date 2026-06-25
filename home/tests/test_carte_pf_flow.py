@@ -141,8 +141,14 @@ class CartePF11to20Tests(TestCase):
         self.assertEqual(r.status_code, 302)
         r2 = c.get(r.url)
         self.assertEqual(r2.status_code, 200)
-        self.assertIn("Verifică email", r2.content.decode("utf-8"))
-        self.assertIn(email, r2.content.decode("utf-8"))
+        body = r2.content.decode("utf-8")
+        self.assertIn("Verifică email", body)
+        self.assertIn(email, body)
+        self.assertIn("Activează contul acum", body)
+        self.assertIn("Înapoi la email", body)
+        self.assertIn(reverse("signup_verify_email"), body)
+        self.assertNotIn(".env", body.lower())
+        self.assertNotIn("runserver", body.lower())
 
     def test_17_retrimite_email_post_redirects(self):
         c = Client()

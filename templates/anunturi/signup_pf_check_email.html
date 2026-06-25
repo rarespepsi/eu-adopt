@@ -31,6 +31,42 @@
 	.signup-check-email p { margin: 0.5rem 0; font-size: 1rem; color: #555; line-height: 1.5; }
 	.signup-check-email p a { color: #1565c0; font-weight: 600; text-decoration: none; }
 	.signup-check-email p a:hover { text-decoration: underline; }
+	.signup-check-email .signup-check-actions {
+		margin: 1.25rem 0 0.5rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.65rem;
+		align-items: stretch;
+	}
+	.signup-check-email .signup-check-btn {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		padding: 0.75rem 1rem;
+		border-radius: 8px;
+		font-size: 1rem;
+		font-weight: 600;
+		text-decoration: none;
+		text-align: center;
+		border: none;
+		cursor: pointer;
+	}
+	.signup-check-email .signup-check-btn--primary {
+		background: #1565c0;
+		color: #fff;
+	}
+	.signup-check-email .signup-check-btn--primary:hover { background: #0d47a1; color: #fff; }
+	.signup-check-email .signup-check-btn--secondary {
+		background: #fff;
+		color: #1565c0;
+		border: 2px solid #1565c0;
+	}
+	.signup-check-email .signup-check-btn--secondary:hover { background: #e3f2fd; color: #0d47a1; }
+	.signup-check-email .signup-check-hint {
+		font-size: 0.88rem;
+		color: #666;
+		margin-top: 0.35rem;
+	}
 	.signup-check-email .signup-check-back { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; }
 	.signup-check-email .signup-check-back a { display: inline-block; color: #0d47a1; font-weight: 600; text-decoration: none; font-size: 1rem; padding: 0.35rem 0; }
 	.signup-check-email .signup-check-back a:hover { text-decoration: underline; }
@@ -46,14 +82,29 @@
 	{% if email_cooldown_until %}<p class="signup-check-cooldown-timer" data-until="{{ email_cooldown_until }}">Timp rămas: <span class="cooldown-clock">--:--</span></p>{% endif %}
 	{% else %}
 	<p>Am trimis un link de activare la <strong>{{ email }}</strong>.</p>
-	<p>Deschide emailul (Spam/Promoții dacă nu vezi mesajul), apoi <strong>„Activează contul”</strong> sau copiază linkul întreg în browser.</p>
-	<p>Linkul este valabil <strong>5 minute</strong>. Pentru activare <strong>de pe telefon</strong> în aceeași rețea cu PC-ul, administratorul poate seta în <code>.env</code>: <code>EUADOPT_SITE_BASE_URL_DEV=http://IP-ul-PC-lui:8000</code> și să ruleze serverul cu <code>runserver 0.0.0.0:8000</code>.</p>
+	<p>Deschide emailul (verifică și <strong>Spam / Promoții</strong> dacă nu vezi mesajul).</p>
+	{% if activation_verify_url %}
+	<p class="signup-check-hint">Pe acest telefon poți activa direct, fără să cauți în mail:</p>
+	<div class="signup-check-actions">
+		<a class="signup-check-btn signup-check-btn--primary" href="{{ activation_verify_url }}">Activează contul acum</a>
+		{% if mail_inbox_url %}
+		<a class="signup-check-btn signup-check-btn--secondary" href="{{ mail_inbox_url }}" target="_blank" rel="noopener noreferrer">Înapoi la email</a>
+		{% endif %}
+	</div>
+	<p class="signup-check-hint">Butonul „Înapoi la email” deschide aplicația de mail cu mesajul de activare. Sau apasă <strong>„Activează contul”</strong> din email.</p>
+	{% else %}
+	<p>Apasă în email butonul <strong>„Activează contul”</strong> sau copiază linkul întreg în browser.</p>
+	{% endif %}
+	<p>Linkul este valabil <strong>5 minute</strong>.</p>
+	{% if waiting_id %}
+	<p class="signup-check-hint">Dacă apeși linkul de activare pe acest telefon, te logăm automat aici.</p>
+	{% endif %}
 	{% if expires_at %}{% include 'anunturi/includes/countdown_5min.html' with expires_at=expires_at label="Link valabil" %}{% endif %}
 	<div class="signup-check-retrimite-wrap" id="email-retrimite-wrap" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid #e0e0e0;">
 		<p>Linkul a expirat. Poți solicita un link nou. Mai ai <strong id="email-ramase">{{ email_resend_remaining|default:3 }}</strong> încercări (din 3).</p>
 		<form method="post" action="{% url 'signup_retrimite_email' %}">
 			{% csrf_token %}
-			<button type="submit">Retrimite link</button>
+			<button type="submit" class="signup-check-btn signup-check-btn--secondary">Retrimite link</button>
 		</form>
 	</div>
 	{% endif %}
