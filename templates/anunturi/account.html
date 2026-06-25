@@ -734,6 +734,140 @@ body.page-account .account-right-panel {
 		body.page-account .cont-pf-body {
 			grid-auto-rows: auto !important;
 		}
+		/* Sus: profil + poză — încap pe lățimea ecranului (fără tăiere dreapta) */
+		body.page-account .cont-pf-wrap {
+			padding: 0.45rem 0.4rem 0.65rem;
+			max-width: 100%;
+			box-sizing: border-box;
+		}
+		body.page-account .cont-pf-right {
+			padding: 0.35rem 0.4rem !important;
+			width: 100% !important;
+			max-width: 100% !important;
+			box-sizing: border-box;
+		}
+		body.page-account .cont-pf-header-row {
+			grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+			gap: 0.35rem;
+			margin-top: 0;
+			margin-bottom: 0.45rem;
+		}
+		body.page-account .cont-pf-header-card,
+		body.page-account .cont-pf-photo-card {
+			min-width: 0;
+			max-width: 100%;
+			padding: 0.3rem 0.28rem;
+		}
+		body.page-account .cont-pf-header-main {
+			margin-left: 0;
+			gap: 0.4rem;
+		}
+		body.page-account .cont-pf-avatar {
+			width: 46px;
+			height: 46px;
+			font-size: 0.8rem;
+		}
+		body.page-account .cont-pf-stats {
+			flex-wrap: wrap;
+			gap: 0.2rem 0.45rem;
+			margin: 0 0 0.15rem;
+		}
+		body.page-account .cont-pf-stat {
+			font-size: 0.68rem;
+		}
+		body.page-account .cont-pf-stat strong {
+			font-size: 0.88rem;
+		}
+		body.page-account .cont-pf-header-text h1 {
+			font-size: 0.8rem;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			max-width: 100%;
+		}
+		body.page-account .cont-pf-header-text .cont-pf-email {
+			font-size: 0.62rem;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			max-width: 100%;
+		}
+		body.page-account .cont-pf-photo-card .mypet-fisa-photo-preview {
+			min-height: 3.75rem;
+			max-height: 4.5rem;
+		}
+		body.page-account .cont-pf-photo-card .mypet-fisa-photo-btn {
+			font-size: 0.58rem;
+			padding: 0.12rem 0.25rem;
+		}
+		body.page-account .cont-pf-photo-card .mypet-fisa-zoom-btn {
+			width: 1.35rem;
+			min-width: 1.35rem;
+			font-size: 0.7rem;
+			padding: 0.1rem;
+		}
+		body.page-account .cont-pf-body {
+			grid-template-columns: 1fr !important;
+			gap: 0.4rem;
+		}
+		body.page-account .cont-pf-bottom-row {
+			grid-template-columns: 1fr;
+			gap: 0.4rem;
+		}
+		body.page-account .cont-pf-bottom-row .cont-pf-card {
+			height: auto;
+		}
+		body.page-account .cont-username-view .btn-modificare-user {
+			font-size: 0.62rem;
+			padding: 0.18rem 0.32rem;
+		}
+	}
+
+	/* Mobil landscape (telefon): scroll + grile pe o coloană, casete compacte */
+	@media (orientation: landscape) and (max-height: 34em) {
+		body.page-account {
+			overflow-x: hidden;
+			overflow-y: auto;
+		}
+		body.page-account #main_wrap,
+		body.page-account #main_content,
+		body.page-account .layout,
+		body.page-account .main-content,
+		body.page-account .cont-pf-wrap,
+		body.page-account .cont-pf-two-col {
+			height: auto !important;
+			max-height: none !important;
+			overflow: visible !important;
+		}
+		body.page-account .cont-pf-two-col {
+			flex-direction: column !important;
+			gap: 0.5rem;
+			padding-bottom: 0.65rem;
+		}
+		body.page-account .cont-pf-right { order: 1; width: 100% !important; padding: 0.3rem 0.45rem !important; }
+		body.page-account .cont-pf-left { order: 2; width: 100% !important; }
+		body.page-account .account-right-panel { order: 3; width: 100% !important; height: auto !important; }
+		body.page-account .cont-pf-header-row {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 0.72fr);
+			gap: 0.35rem;
+		}
+		body.page-account .cont-pf-header-main { margin-left: 0; gap: 0.35rem; }
+		body.page-account .cont-pf-avatar { width: 40px; height: 40px; font-size: 0.75rem; }
+		body.page-account .cont-pf-photo-card .mypet-fisa-photo-preview {
+			min-height: 2.75rem;
+			max-height: 3.25rem;
+		}
+		body.page-account .cont-pf-body,
+		body.page-account .cont-pf-bottom-row {
+			grid-template-columns: 1fr !important;
+		}
+		body.page-account .cont-pf-edit-box {
+			height: auto !important;
+			overflow: visible !important;
+		}
+		body.page-account .cont-pf-edit-box .edit-form-inner {
+			overflow: visible !important;
+		}
 	}
 </style>
 {% endblock %}
