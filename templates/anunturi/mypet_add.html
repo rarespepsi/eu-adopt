@@ -765,16 +765,146 @@
 	}
 
 	@media (max-width: 767.98px) {
+		/* Mobil portrait: pagină scrollabilă, secțiuni stivuite — desktop/tabletă neschimbate */
+		body.page-mypet-fisa {
+			overflow-x: hidden !important;
+			overflow-y: auto !important;
+			height: auto !important;
+			min-height: 100dvh;
+		}
+		body.page-mypet-fisa #main_wrap {
+			height: auto;
+			min-height: 100dvh;
+			max-height: none;
+			overflow: visible;
+		}
+		body.page-mypet-fisa #main_content {
+			overflow: visible !important;
+			height: auto !important;
+			min-height: calc(100dvh - var(--nav-height, 64px));
+			max-height: none !important;
+		}
+		body.page-mypet-fisa .layout,
+		body.page-mypet-fisa .main-content {
+			height: auto;
+			min-height: 0;
+			overflow: visible;
+		}
+		.mypet-fisa-wrap {
+			height: auto;
+			max-height: none;
+			min-height: 0;
+			overflow: visible;
+		}
 		.mypet-fisa-inner {
-			grid-template-columns: minmax(5.5rem, 28vw) minmax(0, 1fr) minmax(0, 1fr);
+			display: flex;
+			flex-direction: column;
+			height: auto;
+			min-height: 0;
+			gap: 0.55rem;
+			padding: 0.35rem 0.45rem 1.5rem;
+			box-sizing: border-box;
+		}
+		.mypet-fisa-header-row {
+			order: 1;
+			display: flex;
+			flex-direction: column;
+			align-items: stretch;
+			gap: 0.4rem;
+			margin-bottom: 0;
+			width: 100%;
+			grid-row: unset;
+			grid-column: unset;
+		}
+		.mypet-fisa-header-spacer {
+			display: none;
+		}
+		.mypet-fisa-header-actions {
+			flex-wrap: wrap;
+			justify-content: flex-start;
+			gap: 0.35rem;
+			width: 100%;
+		}
+		.mypet-fisa-header-actions .mypet-btn {
+			flex: 1 1 calc(50% - 0.2rem);
+			min-width: 7.5rem;
+			font-size: 0.72rem;
+			padding: 0.5rem 0.55rem;
+			text-align: center;
+			justify-content: center;
+		}
+		.mypet-fisa-col-photos {
+			order: 2;
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 0.4rem;
+			width: 100%;
+			height: auto;
+			grid-row: unset;
+			grid-column: unset;
+		}
+		.mypet-fisa-photo-slot {
+			flex: none;
+			min-height: 0;
+			padding: 0.22rem 0.3rem;
+		}
+		.mypet-fisa-photo-1,
+		.mypet-fisa-photo-2,
+		.mypet-fisa-photo-3,
+		.mypet-fisa-photo-4 {
+			flex: none;
+		}
+		.mypet-fisa-photo-4 {
+			grid-column: 1 / -1;
 		}
 		.mypet-fisa-photo-preview {
-			min-height: 7.5rem;
+			min-height: 8.5rem;
 		}
 		.mypet-fisa-zoom-btn {
 			width: 2.25rem;
 			min-height: 2.25rem;
 			font-size: 1.15rem;
+		}
+		.mypet-fisa-col-main {
+			order: 3;
+			width: 100%;
+			padding: 0;
+			grid-row: unset;
+			grid-column: unset;
+		}
+		.mypet-fisa-main-box {
+			border-radius: 8px;
+			padding: 0.45rem 0.5rem;
+		}
+		.mypet-fisa-main-cols {
+			grid-template-columns: 1fr;
+			gap: 0.55rem;
+			height: auto;
+		}
+		.mypet-fisa-main-col {
+			gap: 0.35rem;
+		}
+		.mypet-add-field input,
+		.mypet-add-field select,
+		.mypet-add-field textarea {
+			font-size: 0.85rem;
+			padding: 0.45rem 0.5rem;
+		}
+		.mypet-fisa-col-traits {
+			order: 4;
+			width: 100%;
+			padding: 0;
+			grid-row: unset;
+			grid-column: unset;
+		}
+		.mypet-fisa-traits-box {
+			border-radius: 8px;
+			min-height: 0;
+		}
+		.mypet-fisa-traits-list {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 0.15rem 0.35rem;
 		}
 	}
 	.mypet-fisa-photo-2 { background: #b3e5fc; }
