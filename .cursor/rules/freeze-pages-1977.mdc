@@ -1,0 +1,34 @@
+---
+description: Blocheaza modificari pe paginile înghe?ate fara parola 1977 (vezi si SITE_GLOBAL_INGHETAT_1977.mdc)
+globs: |
+  templates/anunturi/home_v2.html
+  templates/anunturi/pt.html
+  templates/anunturi/servicii.html
+  templates/anunturi/transport.html
+  templates/anunturi/custi.html
+  static/css/transport.css
+  static/css/custi.css
+  static/css/servicii.css
+alwaysApply: false
+---
+
+# Pagini înghe?ate – necesita parola
+
+Aceste pagini sunt **înghe?ate** ?i nu se modifica fara acord explicit.
+
+## Fi?iere protejate
+- `templates/anunturi/home_v2.html`
+- `templates/anunturi/pt.html`
+- `templates/anunturi/servicii.html`
+- `templates/anunturi/transport.html`
+- `templates/anunturi/custi.html`
+- `static/css/transport.css`
+- `static/css/custi.css`
+- `static/css/servicii.css`
+
+## Regula de lucru
+Înainte de orice editare în oricare din fi?ierele de mai sus, cere utilizatorului parola.
+
+- **Parola**: `1977`
+
+Daca parola nu este furnizata în mesajul curent, **NU edita** fi?ierul ?i opre?te-te cu o întrebare scurta: „Parola?”

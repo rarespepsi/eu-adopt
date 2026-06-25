@@ -1,0 +1,33 @@
+---
+description: Producție doar Hetzner (H) — fără Render; deploy și date pe un singur mediu.
+alwaysApply: true
+---
+
+# DOAR HETZNER — FĂRĂ RENDER
+
+**Decizie proiect (confirmată de utilizator):** mediul live și singura sursă de adevăr pentru **cod + bază de date** este **Hetzner (H)**. **Render (R) nu se folosește.**
+
+## Ce înseamnă
+
+| Mediu | Rol |
+|-------|-----|
+| **Hetzner** `178.104.31.52` · `https://eu-adopt.ro` | **Producție** — deploy, PostgreSQL, SMTP, invitații staff, prospecte |
+| **PC local** | Dezvoltare și pregătire date; **nu** e producție |
+| **Render** | **Neutilizat** — nu deploy, nu sync, nu cron, nu staging |
+
+## Ce face agentul
+
+- La deploy / „pune pe server” / „live”: **doar H** — `.\scripts\deploy_hetzner_from_pc.ps1` sau `deploy/hetzner/deploy_update.sh` (vezi `BACKUP_DEPLOY_PROCEDURA.mdc`).
+- **Nu propune** și **nu execută** deploy pe Render, sync H→R, update programat pe R, sau „oglindă” pe R.
+- **Nu** tratează Render ca backup activ; backup-urile sunt: ZIP local (rotație 3) + dump PostgreSQL pe H (rotație 3) — `docs/BACKUP_ROLLBACK.md`.
+- Scripturile legacy `scripts/render_*.py` / `render_sync_email_env.py` rămân în repo dar **nu le folosi** decât dacă utilizatorul revine explicit la Render cu **`1977` + OK**.
+
+## Ce NU face agentul fără cerere explicită + `1977` + OK
+
+- Configurare Render, cron pe Render, migrare date către Render
+- Sugestii de „păstrăm și R la zi” — decizia curentă e **doar H**
+- Operații reale (invitații, import prospecte, teste mail) **pe alt host decât H**
+
+## Rezumat
+
+**Producție = Hetzner singur. Render = oprit din flux. Local = pregătire. Deploy: commit → push → deploy H.**

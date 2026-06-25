@@ -1,0 +1,23 @@
+---
+description: HOME este înghețat – NIMIC nu se modifică fără parolă cerută explicit
+alwaysApply: true
+---
+
+# HOME ÎNGHEȚAT – NIMIC FĂRĂ PAROLĂ
+
+**Pagina HOME este securizată.** Nu modifici **NIMIC** la HOME – nici direct, nici indirect. **Nimic** = zero modificări, fără excepții, până când nu ceri parola și user o furnizează.
+
+## Ce înseamnă NIMIC
+
+- **Nu edita:** `templates/anunturi/home_v2.html`, `static/css/home_v2.css`, orice fișier care afectează afișarea sau layout-ul HOME.
+- **Nu adăuga, nu șterge, nu muta** elemente (A1, A2, A3, A5, A6, burtiera, etc.) sau reguli CSS pe `body.page-home-v2`, `#AW`, `.home-v2-*`, `#home-burtiera-galbena`.
+- **Indirect:** nu schimba în `base.html`, `style.css`, navbar etc. dacă scopul sau efectul e schimbarea aspectului/comportamentului paginii HOME.
+
+## Parola – obligatoriu
+
+- **Trebuie să CERI parola** înainte de orice modificare pe HOME. Fără parolă = refuzi și amintești: „HOME e înghețat, am nevoie de parola ta ca să modific.”
+- Doar dacă **utilizatorul cere explicit** o modificare pe HOME **și îți dă parola** (confirmarea), atunci poți modifica.
+
+## Rezumat
+
+**HOME = securizat. NIMIC nu se modifică fără parolă cerută și furnizată.**

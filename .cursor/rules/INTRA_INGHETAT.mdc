@@ -1,0 +1,24 @@
+---
+description: Pagina Intra (login) este înghețată – NIMIC nu se modifică (poziții, layout, elemente) fără parolă
+alwaysApply: true
+---
+
+# PAGINA INTRA (LOGIN) ÎNGHEȚATĂ – NIMIC FĂRĂ PAROLĂ
+
+**Pagina Intra (login)** este securizată. Nu modifici **NIMIC** la Intra – nici direct, nici indirect. **Nimic** = zero modificări la poziții, layout, elemente, fără excepții, până când nu ceri parola și userul o furnizează.
+
+## Ce înseamnă NIMIC
+
+- **Nu edita:** `templates/anunturi/login.html` (inclusiv blocul de stiluri, structura formularului, butoane, linkuri).
+- **Nu adăuga, nu șterge, nu muta** elemente (card login, câmpuri, buton Intră, linkuri „Ți-ai uitat parola” / „Creează cont nou”) sau reguli CSS care schimbă aspectul/comportamentul paginii Intra.
+- **Nu schimba** pozițiile, padding-urile, marginile, dimensiunile elementelor de pe pagina de login.
+- **Indirect:** nu schimba în `base.html`, CSS global sau navbar dacă scopul sau efectul e schimbarea aspectului/comportamentului paginii Intra.
+
+## Parola – obligatoriu
+
+- **Trebuie să CERI parola** înainte de orice modificare pe pagina Intra. Fără parolă = refuzi și amintești: „Pagina Intra e înghețată, am nevoie de parola ta ca să modific.”
+- Doar dacă **utilizatorul cere explicit** o modificare pe Intra **și îți dă parola** (confirmarea), atunci poți modifica.
+
+## Rezumat
+
+**Intra = securizat. Toate pozițiile și conținutul rămân neschimbate. NIMIC nu se modifică fără parolă cerută și furnizată.**

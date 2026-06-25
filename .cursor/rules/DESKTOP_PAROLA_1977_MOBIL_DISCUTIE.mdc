@@ -1,0 +1,20 @@
+---
+description: Discuții layout „doar mobil”; fără parolă 1977 nu se modifică nimic ce afectează desktop pe proiect
+alwaysApply: true
+---
+
+# Desktop blocat fără parolă + discuții „doar mobil”
+
+## Când user spune că vorbim **doar de mobil** (ex. coloane P2, PT, grilă)
+
+- Răspunde și propune **doar** pentru **viewport mobil** (ex. `@media (max-width: 767.98px)` sau echivalent proiect).
+- **Nu** implementa și **nu** propune schimbări care să modifice aspectul sau comportamentul pe **desktop** (lățimi mari, reguli de bază fără media query mobil, structură HTML partajată care schimbă și desktopul) **decât** dacă user cere explicit asta **și** pune parola **`1977`** în același mesaj.
+
+## Desktop pe tot proiectul – fără parolă = fără editare
+
+- Orice modificare în repo care **afectează afișarea sau comportamentul pe desktop** (tipic viewport **≥ 768px**, sau CSS **în afara** unui bloc exclusiv `@media (max-width: …)` pentru ecrane mici, sau schimbări de template care se văd și pe desktop): **obligatoriu parola `1977` în mesajul cu cererea de editare**.
+- **Fără `1977`**: refuză editarea și reamintește scurt că pe desktop / proiect e nevoie de parolă (în linie cu `SITE_GLOBAL_INGHETAT_1977.mdc` și paginile înghețate).
+
+## Rezumat
+
+**Mobil-only** la discuție → nu atinge desktop fără cerere explicită + **`1977`**. **Orice impact desktop** în proiect → **`1977`** obligatoriu.

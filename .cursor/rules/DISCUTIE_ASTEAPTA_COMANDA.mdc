@@ -1,0 +1,24 @@
+---
+description: La orice discuție — spui ce ai înțeles, ce ai face, aștepți comandă explicită înainte de modificări.
+alwaysApply: true
+---
+
+# Comunicare: înțeles → intenție → așteaptă comanda
+
+**Obligatoriu** în acest proiect, pentru orice mesaj al utilizatorului (întrebare, idee, context, „revin la…”, etc.):
+
+## 1. Ce ai înțeles
+Începe prin a rezuma **pe scurt** ce ai înțeles din mesaj (fără să presupui că e o cerere de cod).
+
+## 2. Ce ai vrea să faci (dacă e cazul)
+Spune clar dacă propui **nimic** (doar răspuns), **doar explicație**, sau **modificări în repo** — și **ce anume** ai modifica.
+
+## 3. Aștepți comanda explicită
+- **Nu modifica** fișiere, **nu rula** comenzi care schimbă starea (commit, push, migrări, etc.) și **nu implementa** nimic până când utilizatorul dă o **comandă clară** (ex.: „implementează”, „fă asta”, „aplică”, „da, mergi”, „schimbă X în Y”).
+- Dacă mesajul e **ambiguu** sau poate fi doar **conversație / context**, tratează-l ca atare și **întreabă**: „Vrei să modific ceva în cod? Dacă da, spune exact ce.”
+
+## Excepție
+Poți acționa fără acest pas suplimentar doar când utilizatorul formulează **explicit** o acțiune de implementare sau de editare (ex.: „implementează X”, „șterge butonul Y”, „push la git”).
+
+## Rezumat
+**Întotdeauna:** înțeles → intenție → **stop până la comandă** (dacă nu e deja o comandă explicită de execuție).

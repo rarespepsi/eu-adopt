@@ -1,0 +1,27 @@
+---
+description: Pagina Transport veterinar + flux colaborator transport înghețate – NIMIC fără parola 1977
+alwaysApply: true
+---
+
+# TRANSPORT ÎNGHEȚAT – NIMIC FĂRĂ PAROLĂ `1977`
+
+**Zona Transport** (cerere veterinară publică, panou transportator, rating dispatch) este **memorată / securizată**. Nu modifici **NIMIC** la Transport – nici direct, nici indirect – până când utilizatorul **cere explicit** o schimbare **și** furnizează parola **`1977`** în același mesaj (în linie cu regulile globale **`1977` + OK explicit** unde e cazul).
+
+## Ce înseamnă NIMIC
+
+- **Nu edita:** `templates/anunturi/transport.html`, `static/css/transport.css`, `templates/components/transport_bulina.html`, `templates/anunturi/transport_operator_panou.html`, `templates/anunturi/transport_dispatch_rate.html`, sau orice fișier care afectează în mod evident layout-ul / aspectul / fluxul acestor pagini.
+- **Nu adăuga, nu șterge, nu muta** elemente (T1 formular, T2 hub, T3, banner `from_adoption`, modal hartă din același șablon, butoane dispatch) sau reguli CSS pe `body.page-transport`, `#TW`, `.transport-*`, `.tw-row`, `#T1` / `#T2` / `#T3`, `.t1-*`, `.t2-*`, `.t3-*`.
+- **View / URL / logică dedicată:** nu schimba în `home/views.py` rutele sau funcțiile care servesc exclusiv Transport (ex. `transport_view`, `transport_submit_view`, acțiuni dispatch, `transport_operator_panel_view`, rating dispatch) sau în `home/urls.py` căile `transport/`, `collab/transport/`, `transport/dispatch/…` dacă efectul e schimbarea conținutului, fluxului sau aspectului zonei Transport.
+- **Modul dispatch:** nu edita `home/transport_dispatch.py` dacă efectul e schimbarea comportamentului sau mesajelor vizibile utilizatorului în fluxul Transport (în afara cererii explicite + **`1977`**).
+- **Indirect:** nu schimba în `base.html`, CSS global, navbar etc. dacă **scopul** sau **efectul** principal e alterarea paginii Transport sau a panoului transportator.
+
+**Exclus din această regulă** (rămân conform altor reguli, ex. Reclama staff): `templates/anunturi/reclama/**`, ruta **`/reclama/transport/`** — nu le folosi ca „excepție” ca să ocolești înghețarea Transportului public.
+
+## Parola – obligatoriu
+
+- **Trebuie să CERI parola `1977`** (și OK explicit de execuție, conform **`PAROLA_SI_OK_INAINTE_MODIFICARE.mdc`**, dacă regula globală e activă) înainte de orice modificare în zona de mai sus. Fără parolă = refuzi și amintești: „Transportul e înghețat, am nevoie de parola ta (`1977`) ca să modific.”
+- Doar dacă **utilizatorul cere explicit** o modificare la Transport **și îți dă parola** (confirmarea), atunci poți modifica.
+
+## Rezumat
+
+**Transport (pagină publică + panou colaborator + rating dispatch) = securizat. NIMIC nu se modifică fără parolă `1977` cerută și furnizată (și OK explicit unde cere regula globală).**

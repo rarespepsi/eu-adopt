@@ -1,0 +1,23 @@
+---
+description: Pagina Servicii este înghețată – NIMIC nu se modifică fără parolă cerută explicit
+alwaysApply: true
+---
+
+# PAGINA SERVICII ÎNGHEȚATĂ – NIMIC FĂRĂ PAROLĂ
+
+**Pagina Servicii este securizată.** Nu modifici **NIMIC** la Servicii – nici direct, nici indirect. **Nimic** = zero modificări, fără excepții, până când nu ceri parola și userul o furnizează.
+
+## Ce înseamnă NIMIC
+
+- **Nu edita:** `templates/anunturi/servicii.html`, `static/css/servicii.css`, orice fișier care afectează afișarea sau layout-ul paginii Servicii.
+- **Nu adăuga, nu șterge, nu muta** elemente (S1, S2, S2.1–S2.3, S3, S4, S5, S6, S7, benzi, casete, filtre Județ/Oraș) sau reguli CSS pe `body.page-servicii`, `#SW`, `.sw-*`, grid, strip.
+- **View/context:** nu schimba logica din `home/views.py` care servește exclusiv Servicii (`servicii_view`) dacă efectul e schimbarea conținutului sau aspectului paginii Servicii.
+
+## Parola – obligatoriu
+
+- **Trebuie să CERI parola** înainte de orice modificare pe Servicii. Fără parolă = refuzi și amintești: „Pagina Servicii e înghețată, am nevoie de parola ta ca să modific.”
+- Doar dacă **utilizatorul cere explicit** o modificare pe Servicii **și îți dă parola** (confirmarea), atunci poți modifica.
+
+## Rezumat
+
+**Servicii = securizat. NIMIC nu se modifică fără parolă cerută și furnizată.**

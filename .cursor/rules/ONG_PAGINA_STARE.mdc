@@ -1,0 +1,33 @@
+---
+description: Pagina ONG (signup organizație) – stare memorată; nu se modifică layout-ul bife sau structura fără parolă
+alwaysApply: true
+---
+
+# PAGINA ONG – STARE MEMORATĂ (ÎNGHEȚATĂ)
+
+**Pagina de înregistrare ONG / Adăpost / Firmă** (`templates/anunturi/signup_organizatie.html`) are o structură fixă. Nu modifici layout-ul casetelor, al bife sau al formularului fără cerere explicită și parolă.
+
+## Structura BIFE (cele 3 rânduri) – OBLIGATORIU PĂSTRATĂ
+
+- **Trei rânduri** distincte, una sub alta (nu unul singur, nu suprapuse).
+- Fiecare rând: **text aliniat la stânga**, **bifa (checkbox) aliniată la dreapta** (lângă latura dreaptă a casetei).
+- **CSS obligatoriu** pentru bife:
+  - `.signup-org-bife-actions`: `display: flex`, `flex-direction: column`, `gap: 0.2rem` (trei rânduri).
+  - Fiecare rând: label cu clasa `.signup-org-bifa-row` = **grid**: `display: grid !important`, `grid-template-columns: 1fr auto`, text (span) în stânga, checkbox în dreapta cu `justify-self: end`.
+  - Text: `text-align: left`, `min-width: 0`. Checkbox: lângă latura din dreapta a casetei.
+- **Ordinea în HTML**: rând 1 = Accept termenii și condițiile, rând 2 = Accept GDPR, rând 3 = Notificări email.
+
+## Ce nu modifici fără parolă
+
+- Layout-ul celor 3 bife (grid, flex, aliniere stânga/dreapta).
+- Structura casetei galbene „Tip adăpost” și a celor două casete (Date organizație, Parolă și contact).
+- Poziția butonului „Creează cont” și a linkurilor de sub el.
+- Fișier: `templates/anunturi/signup_organizatie.html` (inclusiv blocul de stiluri pentru `.signup-org-*`, `.signup-org-bife-actions`, `.signup-org-bifa-row`).
+
+## Parolă
+
+- Pentru orice modificare de layout/structură pe pagina ONG, **trebuie cerută parola**; fără parolă = refuz și reamintire: „Pagina ONG e memorată/înghețată, am nevoie de parola ta ca să modific.”
+
+## Rezumat
+
+**ONG = stare memorată. Cele 3 bife = 3 rânduri, text stânga, bife dreapta. Nimic nu se schimbă fără parolă.**

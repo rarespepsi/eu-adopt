@@ -1,0 +1,33 @@
+---
+description: Pagina Colaborator (signup) – stare memorată; nu se modifică layout-ul bife sau structura fără parolă
+alwaysApply: true
+---
+
+# PAGINA COLABORATOR – STARE MEMORATĂ (ÎNGHEȚATĂ)
+
+**Pagina de înregistrare Colaborator** (`templates/anunturi/signup_colaborator.html`) are o structură fixă. Nu modifici layout-ul casetelor, al bife sau al formularului fără cerere explicită și parolă.
+
+## Structura BIFE (cele 3 rânduri) – OBLIGATORIU PĂSTRATĂ
+
+- **Trei rânduri** distincte, una sub alta (nu unul singur, nu suprapuse).
+- Fiecare rând: **text aliniat la stânga**, **bifa (checkbox) aliniată la dreapta** (lângă latura dreaptă a casetei).
+- **CSS obligatoriu** pentru bife:
+  - `.signup-col-bife-actions`: `display: flex`, `flex-direction: column`, `gap: 0.2rem` (trei rânduri).
+  - Fiecare rând: label cu clasa `.signup-col-bifa-row` = **grid**: `grid-template-columns: 1fr auto`, text (span) în stânga, checkbox în dreapta cu `justify-self: end`.
+  - Text: `text-align: left`. Checkbox: lângă latura din dreapta a casetei.
+- **Ordinea în HTML**: rând 1 = Accept termenii și condițiile, rând 2 = Accept GDPR, rând 3 = Notificări email. Pozițiile bifelor 2 și 3 sunt și ele protejate (regula COLAB_BIFE_INGHETAT).
+
+## Ce nu modifici fără parolă
+
+- Layout-ul celor 3 bife (grid, flex, aliniere stânga/dreapta).
+- Structura celor două casete (Tip partener galben, Date partener, Parolă și contact).
+- Poziția butonului „Creează cont” și a linkurilor de sub el.
+- Fișier: `templates/anunturi/signup_colaborator.html` (inclusiv blocul de stiluri pentru `.signup-col-*`, `.signup-col-bife-actions`, `.signup-col-bifa-row`).
+
+## Parolă
+
+- Pentru orice modificare de layout/structură pe pagina Colaborator, **trebuie cerută parola**; fără parolă = refuz și reamintire: „Pagina Colaborator e memorată/înghețată, am nevoie de parola ta ca să modific.”
+
+## Rezumat
+
+**Colaborator = stare memorată. Cele 3 bife = 3 rânduri, text stânga, bife dreapta. Nimic nu se schimbă fără parolă.**

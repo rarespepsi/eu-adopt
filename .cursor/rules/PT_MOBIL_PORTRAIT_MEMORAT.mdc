@@ -1,0 +1,46 @@
+---
+description: PT mobil portrait – layout și comportamente memorate; nu modifica fără parolă 1977
+alwaysApply: true
+---
+
+# PT MOBIL PORTRAIT – STARE MEMORATĂ (ÎNGHEȚATĂ)
+
+**Orientare:** ecran mobil în **portrait** (regulile PT din `@media (max-width: 767.98px)` și override-urile din `pt.html` pentru această zonă).
+
+Utilizatorul a **finalizat** această fațetă; tratează layout-ul și fluxul de mai jos ca **referință de producție**. **Nu modifica** fără cerere explicită și parola **`1977`** (aceeași ca PT global / `PT_INGHETAT`).
+
+## Fișiere sursă (orice atingere = ca la PT înghețat)
+
+- `templates/anunturi/pt.html` (inclusiv stiluri inline PT mobil, `extra_css_after` A0, script placeholder P4, **infinite scroll P2**)
+- `static/css/pt-v2.css` (bloc mobil `@media (max-width: 767.98px)` pentru PW, P1, P4, P2, P3, sentinel P2)
+- `templates/anunturi/includes/pt_p2_card.html`
+- `templates/anunturi/includes/pt_p2_grid_chunk.html`
+- `home/pt_p2_list.py` (`PT_P2_PAGE_SIZE`, `pt_pets_page_context`)
+- În `home/views.py`: ramura `pets_all` / context PT, `pets_p2_more_view`
+- În `home/urls.py`: `pets/p2-more/` (`pets_p2_more`)
+
+## Comportamente memorate (portrait mobil) – păstrează-le
+
+1. **Navbar `#A0`:** fix sus pe PT mobil (`html body.page-pt.page-animale #A0` în `extra_css_after`).
+2. **`#main_content`:** `padding-top` pentru offset navbar.
+3. **P1 – bandă cursivă verde:** `position: fixed` imediat sub navbar, înălțime **72px**, `z-index` sub bara mov; celulă rezervă **72px** în flux.
+4. **Bara mov `#pt_p4_mobile_sticky`:** `position: fixed`, `top: calc(var(--nav-height) + 72px)`; conține **doar** butoane (P4.2) + casete pub (P4.3) — **fără** bandă cursivă duplicată în bară.
+5. **Placeholder `#pt_p4_sticky_placeholder`:** înălțime setată de JS după înălțimea barei mov; `ResizeObserver` pe `.pt-p4-box`; `tightenBelowStickyGap` unde e cazul.
+6. **P2:** scroll în **`.pt-p2-scroll`**; grilă cu celule card; **încărcare progresivă** (loturi **24**, endpoint JSON `/pets/p2-more/`, sentinel `#pt_p2_load_sentinel`, `IntersectionObserver` cu **`root: .pt-p2-scroll`** — același mecanism și pentru scroll intern desktop în P2).
+7. **Benzi cursive:** **P1** sus; **o singură** bandă tip P3 ca footer **sub P2** (`#P3`), fără duplicat suplimentar între P2 și P3.
+8. **Ordine vizuală în flux:** P1 → P4 (placeholder + bară fixă în viewport) → P2 → P3.
+
+## Ce nu face agentul fără cerere explicită + parolă
+
+- Nu schimba **fixed/sticky** vs flux pentru navbar, P1, bara mov, fără acord.
+- Nu reintroduce **banda cursivă în bara mov** sau **dubluri** sub P2 fără brief clar.
+- Nu elimina **infinite scroll** P2 sau nu crește primul lot peste **24** fără acord (constant `PT_P2_PAGE_SIZE`).
+- Nu muta logica listei P2 din **`pt_pets_page_context`** / **`pets_p2_more_view`** într-un mod care schimbă filtrele sau ordinea afișării fără test.
+
+## Parolă
+
+Pentru orice modificare țintită la **PT mobil portrait**, cere și primește **`1977`** în mesaj (conform `SITE_GLOBAL_INGHETAT_1977` și `PT_INGHETAT`).
+
+## Rezumat
+
+**PT mobil portrait = finalizat și memorat. Respectă structura de mai sus; nimic nu se schimbă fără parolă `1977` și cerere explicită.**

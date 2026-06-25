@@ -1,0 +1,24 @@
+---
+description: Pozițiile bifelor 2 și 3 la formularul Colaborator sunt înghețate – nu se modifică fără parolă
+alwaysApply: true
+---
+
+# BIFA 2 ȘI BIFA 3 (COLABORATOR) ÎNGHEȚATE
+
+**Pozițiile bifelor 2 și 3** în formularul de înregistrare Colaborator sunt securizate. Nu modifici **ordinea sau poziția** acestor bife – fără excepții – până când nu ceri parola și userul o furnizează.
+
+## Ce este înghețat
+
+- **Bifa 2:** „Accept prelucrarea datelor conform GDPR *” – rămâne **a doua** în lista de bife (sub bifa 1, deasupra bifăi 3).
+- **Bifa 3:** „Notificări email EU-Adopt (noutăți parteneri)” – rămâne **a treia** în lista de bife.
+- **Nu schimba** ordinea elementelor din `signup-col-bife-actions` pentru aceste două bife în `templates/anunturi/signup_colaborator.html`.
+- **Nu muta** bifa 2 sau bifa 3 deasupra sau dedesubtul celeilalte; nu insera alte bife între ele fără parolă.
+
+## Parola – obligatoriu
+
+- **Trebuie să CERI parola** înainte de orice modificare a poziției/ordinii bifelor 2 și 3 la Colaborator. Fără parolă = refuzi și amintești: „Pozițiile bifelor 2 și 3 la Colaborator sunt înghețate, am nevoie de parola ta ca să le modific.”
+- Doar dacă **utilizatorul cere explicit** o modificare **și îți dă parola** (confirmarea), atunci poți modifica.
+
+## Rezumat
+
+**Bifa 2 și bifa 3 la Colaborator = poziții înghețate. Nu se modifică ordinea/poziția fără parolă cerută și furnizată.**

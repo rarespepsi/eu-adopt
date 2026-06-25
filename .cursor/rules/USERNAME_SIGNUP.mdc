@@ -1,0 +1,11 @@
+# Username la înregistrare (PF, ONG, Colaborator)
+
+**Regulă:** Username-ul nu este email. Se generează astfel:
+
+- **PF:** bază = Prenume + Nume (full), ex. `RaresPopescu`. Câmpuri: `first_name`, `last_name`.
+- **ONG:** bază = Denumire organizație (`denumire`).
+- **Colaborator:** bază = Denumire societate (`denumire_societate`); dacă e goală, fallback la `denumire`.
+- **Normalizare:** doar litere și cifre (fără spații/diacritice) via `_normalize_username_base`.
+- **La duplicate:** se adaugă `_XX` (XX = cod județ 2 litere), ex. `RaresPopescu_NT`. Dacă există și acesta: `RaresPopescu_NT1`, `RaresPopescu_NT2` etc.
+
+Codurile de județ (2 litere) sunt în `home/views.py` în `_JUDET_CODES`; helper-e: `_judet_to_code`, `_make_signup_username`, `_normalize_username_base`.

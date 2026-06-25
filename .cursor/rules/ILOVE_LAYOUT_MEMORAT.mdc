@@ -1,0 +1,58 @@
+---
+description: I Love – dimensiuni și layout memorat; menținere la modificări globale indirecte
+alwaysApply: true
+---
+
+# I LOVE – LAYOUT MEMORAT (REFERINȚĂ)
+
+Pagina **I Love** (`/i-love/`, `body.page-ilove`) are un **layout și dimensiuni de referință** stabilite în `static/css/i-love.css` și `templates/anunturi/i_love.html`. Acestea trebuie **păstrate**; la modificări **indirecte** (ex. `base.html`, `.layout`, `style.css`, `#main_content`, grid global), verifică impactul pe I Love și **restabilește** prin reguli **scoped** sub `body.page-ilove` în `i-love.css`, nu prin schimbări ad-hoc în fișiere globale care strică alte pagini.
+
+## Fișiere sursă de adevăr
+
+- `static/css/i-love.css` — toate dimensiunile și grila I Love
+- `templates/anunturi/i_love.html` — structura `#ILW`, `.ilove-wire`, `.ilove-main-caseta`, sloturi IL.L* / IL.R*
+
+## Dimensiuni și reguli memorate (referință)
+
+**Wire 3 coloane (desktop, lățime > 900px)**
+
+- `.ilove-wire`: `grid-template-columns: minmax(9rem, 10.5rem) minmax(0, 1fr) minmax(9rem, 10.5rem)`; `grid-template-rows: minmax(0, 1fr)`; `height: 100%` în lanțul flex — umple viewport-ul blocat; laterale **fixe** pe înălțimea wire-ului.
+- Lanț flex (desktop): `body` + `#main_wrap` **`height: 100vh`**, `overflow: hidden` (fără scroll pe pagină); `#main_content` → `.layout` → `.ilove-page` → `.ilove-wire` lanț flex cu `min-height: 0` / `overflow: hidden`; **scroll doar** pe `.ilove-main-caseta` (`overflow-y: auto`, `overscroll-behavior: contain`). Laterale `.ilove-wire__col`: `height: 100%`, `overflow: hidden`.
+- `.layout` pe I Love: sidebars globale ascunse; `grid-template-columns: minmax(0, 1fr)`; `#main_content` / `.ilove-page` lățime 100%, fără max-width blocant.
+- `.ilove-wire__main`: `padding-inline: clamp(0.45rem, 1.1vw, 0.85rem)`.
+
+**Casete pub laterale**
+
+- `.ilove-case`: `min-height: clamp(4.5rem, 12vh, 7rem)`; gap coloană `2px`; colțuri spre mijloc `10px` (vezi regulile existente în CSS).
+
+**Caseta mare (animale cu inimioară)**
+
+- `.ilove-main-caseta`: border-radius `16px`, padding `clamp(0.85rem, 2.2vw, 1.35rem)`, chenar și umbră ca în fișier.
+
+**Grilă carduri animale**
+
+- Implicit (desktop): **3 coloane** — `grid-template-columns: repeat(3, minmax(0, 1fr))`, `gap: 1rem`, `align-content: start`.
+- **≤ 900px**: grilă **2 coloane** — `repeat(2, minmax(0, 1fr))`; wire devine 1 coloană; `.ilove-wire__main` `order: -1`; `padding-inline: clamp(0.35rem, 2vw, 0.65rem)`.
+- **≤ 520px**: grilă **1 coloană**.
+
+**Card animal**
+
+- Imagine: `height: 160px`, `width: 100%`, `object-fit: cover`.
+- Card: border-radius `12px`, border/g umbră ca în fișier.
+
+**Mesaj gol**
+
+- `.ilove-empty`: fără border dublu față de caseta mare; fundal discret `rgba(229, 57, 53, 0.06)`, text centrat.
+
+## Ce nu face agentul fără cerere explicită a utilizatorului
+
+- Nu schimba grila 3 / 2 / 1, gap-ul, înălțimea imaginilor 160px, lățimile laterale `9rem–10.5rem`, sau structura casetei mari, „ca să se potrivească” altor pagini.
+- Nu muta regulile I Love în `style.css` global fără motiv; păstrează-le sub `body.page-ilove` în `i-love.css`.
+
+## Cache
+
+- La orice modificare în `i-love.css`, crește `?v=` în `i_love.html` (`extra_css_after`).
+
+## Rezumat
+
+**I Love = layout memorat în `i-love.css` + `i_love.html`. Menține aceste valori; la schimbări globale, compensează doar cu override-uri `body.page-ilove`.**

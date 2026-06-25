@@ -1,0 +1,25 @@
+---
+description: PT (Prietenul tău) este înghețat – NIMIC nu se modifică fără parolă cerută explicit
+alwaysApply: true
+---
+
+# PT (PRIETENUL TĂU) ÎNGHEȚAT – NIMIC FĂRĂ PAROLĂ
+
+**Pagina PT (Prietenul tău) este securizată.** Nu modifici **NIMIC** la PT – nici direct, nici indirect. **Nimic** = zero modificări, fără excepții, până când nu ceri parola și user o furnizează.
+
+**PT mobil portrait (finalizat):** referință scrisă în **`PT_MOBIL_PORTRAIT_MEMORAT.mdc`** (navbar fix, P1 fix, bara mov, P2 + `/pets/p2-more/`, o bandă P3 sub P2). La îndoieli sau restaurare, urmează acel fișier.
+
+## Ce înseamnă NIMIC
+
+- **Nu edita:** `templates/anunturi/pt.html`, `static/css/pt-v2.css`, `templates/anunturi/includes/pt_p2_card.html`, `templates/anunturi/includes/pt_p2_grid_chunk.html`, `home/pt_p2_list.py`, orice fișier care afectează afișarea sau layout-ul paginii PT.
+- **Nu adăuga, nu șterge, nu muta** elemente (P1, P2, P3, P4, P5, benzi, casete, disclaimere) sau reguli CSS pe `body.page-pt`, `#PW`, `.pt-*`, grid P2 4×3, strip P1/P3.
+- **View/context/URL:** nu schimba logica din `home/views.py` care servește exclusiv PT (`home_view` / `pets_all`, `pets_p2_more_view`, `pt_pets_page_context` / listă P2, strip_pets etc.) sau ruta `pets/p2-more` din `home/urls.py` dacă efectul e schimbarea conținutului sau aspectului paginii PT.
+
+## Parola – obligatoriu
+
+- **Trebuie să CERI parola** înainte de orice modificare pe PT. Fără parolă = refuzi și amintești: „PT e înghețat, am nevoie de parola ta ca să modific.”
+- Doar dacă **utilizatorul cere explicit** o modificare pe PT **și îți dă parola** (confirmarea), atunci poți modifica.
+
+## Rezumat
+
+**PT = securizat. NIMIC nu se modifică fără parolă cerută și furnizată.**

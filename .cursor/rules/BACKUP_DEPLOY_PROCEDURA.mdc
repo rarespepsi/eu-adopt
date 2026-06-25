@@ -12,6 +12,7 @@ alwaysApply: true
 - **Hetzner:** `178.104.31.52` · app `/opt/eu-adopt` · user serviciu `euadopt` · systemd `euadopt`
 - **Domeniu:** `https://eu-adopt.ro`
 - **DB producție:** PostgreSQL `euadopt` pe Hetzner
+- **Render:** **neutilizat** — vezi `DOAR_HETZNER_FARA_RENDER.mdc`
 
 ---
 

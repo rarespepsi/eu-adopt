@@ -1,0 +1,24 @@
+---
+description: Blochează pagina Shop pentru modificări fără parolă
+alwaysApply: true
+---
+
+# SHOP ÎNGHEȚAT – NIMIC FĂRĂ PAROLĂ
+
+**Pagina SHOP este securizată.** Nu modifici **NIMIC** la SHOP – nici direct, nici indirect. **Nimic** = zero modificări, fără excepții, până când nu ceri parola și userul o furnizează (parola este `1977`).
+
+## Ce înseamnă NIMIC
+
+- **Nu edita:** `templates/anunturi/shop.html`, `static/css/shop.css`, `templates/anunturi/shop_comanda_personalizate.html`, `templates/anunturi/shop_magazin_foto.html` sau alte fișiere care afectează afișarea sau layout-ul paginii Shop și al subpaginilor ei (magazin foto, comandă produse personalizate etc.).
+- **Nu adăuga, nu șterge, nu muta** elemente (SH1, SH2, SH3, SH4, SH5, taburi, casete produse, benzi, texte promo) sau reguli CSS pe `body.page-shop`, `#SHW`, `.shw-*`, `.shop-*` care schimbă aspectul/comportamentul Shop.
+- **View/context:** nu schimba logica din `home/views.py` și `home/urls.py` legată de `shop_view`, `shop_comanda_personalizate_view`, `shop_magazin_foto_view` dacă efectul este schimbarea conținutului sau a fluxului paginii Shop și al subpaginilor ei.
+
+## Parola – obligatoriu
+
+- **Trebuie să CERI parola** înainte de orice modificare pe SHOP (inclusiv subpagini). Fără parolă = refuzi și amintești: „SHOP e înghețat, am nevoie de parola ta ca să modific.”
+- Doar dacă **utilizatorul cere explicit** o modificare pe SHOP **și îți dă parola** (confirmarea, `1977`), atunci poți modifica.
+
+## Rezumat
+
+**SHOP = securizat. NIMIC nu se modifică fără parolă cerută și furnizată (1977).**
+

@@ -1,0 +1,27 @@
+# Publicitate – e-mail „detalii postare / comandă” după plată
+
+## Scop
+
+După ce o comandă `PublicitateOrder` devine **plătită** și se aplică programarea liniilor (`_apply_publicitate_paid_order`), cumpărătorul primește un e-mail **separat** de cel pentru **materiale creative** (formular cu token).
+
+- **Creative:** `_send_publicitate_creative_email` — link formular, coduri scurt; `PublicitateOrderCreativeAccess.email_sent_at`.
+- **Contract / postare:** `_publicitate_send_contract_posting_email_if_needed` — rezumat complet comandă + linii (perioade, prețuri, cod validare, notă scurtă); idempotent prin `PublicitateOrder.contract_posting_email_sent_at`.
+
+## Când se trimite
+
+- La sfârșitul lui `_apply_publicitate_paid_order`, prin `transaction.on_commit(...)` (după commit DB, nu înainte).
+- La re-confirmare demo pe comandă deja `paid`: `transaction.on_commit` în `publicitate_checkout_demo_confirm_view` (fără a reapelă `_apply`), ca să recupereze trimiterea dacă lipsea.
+
+## Destinatar și conținut
+
+- Destinatar: `order.user.email`. Fără adresă: log warning, **nu** se setează `contract_posting_email_sent_at` (posibil retry manual / viitor job).
+- Antet SMTP: `X-EUAdopt-Mail: publicitate_contract_posting` (vezi `send_mail_text_and_html`).
+
+## Idempotentță
+
+- Dacă `contract_posting_email_sent_at` este setat, nu se retrimite.
+- După `send_mail` reușit: `update(..., contract_posting_email_sent_at=now)` doar dacă câmpul era încă null.
+
+## Modificări
+
+Orice schimbare la momentul trimiterii, conținut sau idempotentță respectă **`SITE_GLOBAL_INGHETAT_1977`** + OK explicit.

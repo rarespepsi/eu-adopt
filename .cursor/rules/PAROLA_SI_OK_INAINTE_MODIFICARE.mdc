@@ -1,0 +1,28 @@
+---
+description: Absolut orice modificare pe site — parola 1977 + OK explicit în același mesaj; fără excepții de zonă; după A/B, aștepți răspunsul.
+alwaysApply: true
+---
+
+# ABSOLUT: ORICE MODIFICARE PE SITE → PAROLĂ `1977` + OK EXPLICIT
+
+**Standard impus de utilizator:** pentru **orice** modificare în acest proiect (template, CSS, JS, Python, migrări, setări, reguli `.cursor`, etc.) — **fără excepții de pagină sau zonă** — în **același mesaj** trebuie să existe **ambele**:
+
+1. **Parola `1977`**.
+2. **OK explicit de execuție** (că vrea aplicarea *acum*). Exemple: „aplică”, „ok, fă modificarea”, „da, implementează”, „1977 — modifică cum ai propus”, „1977, aplică varianta X”.
+
+**Inclusiv** zona care în trecut putea fi tratată altfel (ex. Publicitate): dacă utilizatorul cere acest standard absolut, **cere și acolo** `1977` + OK înainte de editare.
+
+## Ce nu este suficient
+
+- Doar **`1977`** fără semn clar că trebuie **executată** schimbarea.
+- Doar **„ok”** / **„da”** **fără** `1977`.
+- După o **întrebare cu variante** din partea ta: **nu modifica** până nu vine un mesaj cu **răspunsul** + **`1977`** + confirmare de execuție.
+
+## Raport cu alte reguli
+
+- **`SITE_GLOBAL_INGHETAT_1977.mdc`:** aliniat la acest standard (parolă + OK pentru orice modificare).
+- **`DISCUTIE_ASTEAPTA_COMANDA.mdc`:** înțeles → intenție → **apoi** mesaj cu `1977` + OK înainte de orice editare.
+
+## Rezumat
+
+**Absolut orice modificare pe site: întâi mesaj cu `1977` + OK de execuție → abia apoi editezi.**

@@ -1,0 +1,32 @@
+---
+description: Tot site-ul înghețat — orice modificare necesită parola 1977 și OK explicit în același mesaj (vezi PAROLA_SI_OK)
+alwaysApply: true
+---
+
+# SITE ÎNGHEȚAT GLOBAL – PAROLA `1977` **ȘI** OK EXPLICIT
+
+**Regulă principală:** Nu modifici **nimic** în acest proiect (template-uri, CSS, JS, `home/views.py`, `home/urls.py`, `home/models.py`, `base.html`, migrări, setări, fișiere `.cursor/rules`, etc.) **fără**, în **același mesaj** al utilizatorului:
+
+1. Parola **`1977`**, **și**
+2. **OK explicit de execuție** — vezi **`PAROLA_SI_OK_INAINTE_MODIFICARE.mdc`** (ex.: „aplică”, „ok, fă modificarea”, „implementează”).
+
+**Absolut orice modificare pe site** = ambele condiții. **Fără excepții** de zonă (inclusiv Publicitate `/publicitate/`, dacă utilizatorul impune acest standard).
+
+Respectă în continuare regulile specifice existente (HOME, PT, Shop, Servicii, Navbar A0, Intra, ONG, Colaborator, I Love layout, etc.) — sunt **în plus** față de această regulă globală.
+
+## Publicitate (`/publicitate/`)
+
+Lucrul la **`publicitate_harta`** și fișierele asociate (`templates/anunturi/publicitate_harta.html`, view-uri dedicate, URL) respectă **aceeași** cerință: **`1977` + OK explicit** în același mesaj înainte de editare — conform **`PAROLA_SI_OK_INAINTE_MODIFICARE.mdc`**.
+
+**Nu** sunt derogări de la parolă pentru alte rute sau fișiere:
+
+- **`/reclama/`** (staff), `templates/anunturi/reclama/**` — parolă + OK.
+- **`templates/components/navbar_a0.html`**, **`static/css/navbar-a0-secured.css`** — parolă + OK (și regulile NAVBAR).
+- Orice fișier comun (`base.html`, `style.css`, context processors, etc.) — parolă + OK.
+
+Dacă pentru Publicitate trebuie atins un fișier din afara zonei stricte PUB, **tot** `1977` + OK în mesaj.
+
+## Rezumat
+
+- **Orice editare în repo:** **`1977` + OK explicit de execuție** în același mesaj.
+- Detalii și exemple de formulări: **`PAROLA_SI_OK_INAINTE_MODIFICARE.mdc`**.

@@ -1,0 +1,36 @@
+---
+description: Navbar A0 înghețat – nu se modifică fără parolă
+alwaysApply: true
+---
+
+# NAVBAR A0 ÎNGHEȚAT – NIMIC FĂRĂ PAROLĂ
+
+Navbarul principal `A0` (fișierele `navbar_a0.html` și `navbar-a0-secured.css`) este considerat **stare finală memorată**. Nu se modifică **NIMIC** la poziții, layout sau dimensiuni fără parolă clară de la user.
+
+## Stare memorată (layout admin / staff)
+
+Referință scrisă în proiect: **`NAVBAR_SALVARE_PERFECT_REFERINTA.md`** (plic + căutare îngustă, `margin-left` căutare față de plic, staff: **Analiza** + **Reclama**, fără `transform` pe căutare care suprapune plicul). La îndoieli sau restaurare, refă din acel fișier + valorile din CSS.
+
+## Ce înseamnă NIMIC
+
+- **Nu edita structură/layout** în:
+  - `templates/components/navbar_a0.html`
+  - `static/css/navbar-a0-secured.css`
+- **Nu schimba**:
+  - ordinea butoanelor (Acasă, Prietenul tău, Servicii, Transport, Shop, MyPet, I Love, Termeni, Contact; pentru staff: Analiza, Reclama în blocul staff)
+  - poziția și lățimea casetei `avatar+user`
+  - poziția și distanța casetei de căutare față de plic / „Contact” / marginea dreaptă (inclusiv `max-width` căutare, fără ieșire din pagină)
+  - poziția contorului din stânga
+- **Nu adăuga, nu șterge, nu muți** butoane în navbar fără acord explicit.
+
+## Parola – obligatoriu (navbar **parolat** / înghețat)
+
+- Pentru orice modificare de navbar (HTML sau CSS), **trebuie cerută parola** înainte.
+- Fără parolă = refuz și reamintire:  
+  „Navbarul A0 e înghețat, am nevoie de parola ta ca să modific.”
+- Parola folosită: **1977** (aceeași ca pentru HOME/PT/SHOP etc.).
+
+## Rezumat
+
+**Navbar A0 = înghețat și memorat (vezi `NAVBAR_SALVARE_PERFECT_REFERINTA.md`). NIMIC nu se modifică fără parolă cerută și furnizată (1977).**
+
