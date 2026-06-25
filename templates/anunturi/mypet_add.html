@@ -733,8 +733,50 @@
 	.mypet-fisa-photo-slot.has-photo .mypet-fisa-photo-preview .cropper-container {
 		z-index: 2;
 	}
+	/* Mobil: degetul mută poza, nu derulează pagina */
+	.mypet-fisa-photo-preview .cropper-container,
+	.mypet-fisa-photo-preview .cropper-wrap-box,
+	.mypet-fisa-photo-preview .cropper-canvas,
+	.mypet-fisa-photo-preview .cropper-drag-box,
+	.mypet-fisa-photo-preview .cropper-face {
+		touch-action: none !important;
+	}
+	.mypet-fisa-photo-preview.is-cropping {
+		touch-action: none;
+	}
+	.mypet-fisa-crop-touch-hint {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0.2rem;
+		z-index: 4;
+		margin: 0 auto;
+		width: fit-content;
+		max-width: calc(100% - 0.5rem);
+		padding: 0.2rem 0.45rem;
+		border-radius: 6px;
+		background: rgba(0, 0, 0, 0.55);
+		color: #fff;
+		font-size: 0.62rem;
+		font-weight: 600;
+		line-height: 1.2;
+		text-align: center;
+		pointer-events: none;
+	}
 
-	.mypet-fisa-photo-1 { background: #ffe082; }
+	@media (max-width: 767.98px) {
+		.mypet-fisa-inner {
+			grid-template-columns: minmax(5.5rem, 28vw) minmax(0, 1fr) minmax(0, 1fr);
+		}
+		.mypet-fisa-photo-preview {
+			min-height: 7.5rem;
+		}
+		.mypet-fisa-zoom-btn {
+			width: 2.25rem;
+			min-height: 2.25rem;
+			font-size: 1.15rem;
+		}
+	}
 	.mypet-fisa-photo-2 { background: #b3e5fc; }
 	.mypet-fisa-photo-3 { background: #80cbc4; }
 	.mypet-fisa-photo-4 { background: #fff3e0; }
@@ -1387,7 +1429,28 @@
 		updateCityList();
 	}
 
+	function showCropTouchHint(preview) {
+		if (!preview) return;
+		var coarse = false;
+		try { coarse = window.matchMedia("(pointer: coarse)").matches; } catch (eCoarse) {}
+		if (!coarse && !("ontouchstart" in window)) return;
+		var old = preview.querySelector(".mypet-fisa-crop-touch-hint");
+		if (old) old.remove();
+		var hint = document.createElement("span");
+		hint.className = "mypet-fisa-crop-touch-hint";
+		hint.textContent = "Glisează poza · pinch zoom · apoi Salvează";
+		preview.appendChild(hint);
+	}
+	function clearCropTouchHint(preview) {
+		if (!preview) return;
+		preview.classList.remove("is-cropping");
+		var hint = preview.querySelector(".mypet-fisa-crop-touch-hint");
+		if (hint) hint.remove();
+	}
+
 	function destroyCropper(n) {
+		var preview = document.getElementById("preview_photo_" + n);
+		clearCropTouchHint(preview);
 		if (croppers[n]) {
 			croppers[n].destroy();
 			croppers[n] = null;
@@ -1435,6 +1498,7 @@
 			hint.textContent = "Max 2 MB, JPEG";
 			preview.appendChild(hint);
 			destroyCropper(n);
+			clearCropTouchHint(preview);
 			slot.classList.add("saved");
 			var lab = slot.querySelector("label.mypet-fisa-photo-btn");
 			if (lab) { lab.textContent = "Alege poza"; lab.setAttribute("for", "id_photo_" + n); }
@@ -1474,6 +1538,7 @@
 
 		input.addEventListener("change", function() {
 			destroyCropper(n);
+			clearCropTouchHint(preview);
 			savedBlobs[n] = null;
 			preview.innerHTML = "";
 			if (slot) { slot.classList.remove("has-photo"); slot.classList.remove("saved"); }
@@ -1495,18 +1560,25 @@
 				var ratio = (w && h) ? (w / h) : 1;
 				croppers[n] = new Cropper(img, {
 					aspectRatio: ratio,
-					viewMode: 3,
+					viewMode: 1,
 					dragMode: "move",
 					autoCropArea: 1,
 					restore: false,
 					guides: true,
 					center: true,
 					highlight: false,
-					cropBoxMovable: true,
-					cropBoxResizable: true,
+					movable: true,
+					zoomable: true,
+					zoomOnTouch: true,
+					zoomOnWheel: false,
+					toggleDragModeOnDblclick: false,
+					cropBoxMovable: false,
+					cropBoxResizable: false,
 					ready: function() {
 						var cr = croppers[n];
 						if (!cr) return;
+						preview.classList.add("is-cropping");
+						showCropTouchHint(preview);
 						var containerData = cr.getContainerData();
 						var imageData = cr.getImageData();
 						if (!containerData || !imageData || !imageData.width) return;
@@ -1518,6 +1590,9 @@
 						var scaleH = ch / ih;
 						var scale = Math.max(scaleW, scaleH, 1);
 						cr.zoom(scale);
+						window.setTimeout(function() {
+							if (croppers[n]) croppers[n].resize();
+						}, 80);
 					}
 				});
 			}
