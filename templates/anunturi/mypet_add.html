@@ -863,6 +863,9 @@
 			width: 100%;
 			max-width: 100%;
 			height: auto;
+			flex: 0 0 auto;
+			margin-bottom: 0.85rem;
+			overflow: hidden;
 			grid-row: unset;
 			grid-column: unset;
 		}
@@ -928,15 +931,24 @@
 			width: 100%;
 			max-width: 100%;
 			min-width: 0;
+			flex: 0 0 auto;
 			padding: 0;
 			grid-row: unset;
 			grid-column: unset;
+			position: relative;
+			z-index: 2;
 		}
 		.mypet-fisa-main-box {
 			border-radius: 8px;
 			padding: 0.45rem 0.5rem;
 			max-width: 100%;
 			box-sizing: border-box;
+			flex: 0 0 auto;
+			min-height: 0;
+		}
+		body.page-mypet-fisa .mypet-fisa-form {
+			height: auto;
+			min-height: 0;
 		}
 		body.page-mypet-fisa .mypet-fisa-main-cols {
 			grid-template-columns: 1fr !important;
@@ -1362,6 +1374,64 @@
 		background: #9d1c1c;
 		color: #fff;
 		border-color: transparent;
+	}
+
+	/* Mobil: forțează stivuire după regulile desktop (grid-row etc.) */
+	@media (max-width: 767.98px) {
+		body.page-mypet-fisa .mypet-fisa-inner {
+			display: flex !important;
+			flex-direction: column !important;
+			grid-template-columns: unset !important;
+			grid-template-rows: unset !important;
+			height: auto !important;
+		}
+		body.page-mypet-fisa .mypet-fisa-header-row {
+			order: 1 !important;
+			grid-row: unset !important;
+			grid-column: unset !important;
+			width: 100% !important;
+		}
+		body.page-mypet-fisa .mypet-fisa-col-photos {
+			order: 2 !important;
+			display: grid !important;
+			flex: 0 0 auto !important;
+			width: 100% !important;
+			margin-bottom: 0.85rem !important;
+			overflow: hidden !important;
+			grid-row: unset !important;
+			grid-column: unset !important;
+		}
+		body.page-mypet-fisa .mypet-fisa-photo-1,
+		body.page-mypet-fisa .mypet-fisa-photo-2,
+		body.page-mypet-fisa .mypet-fisa-photo-3,
+		body.page-mypet-fisa .mypet-fisa-photo-4 {
+			flex: none !important;
+		}
+		body.page-mypet-fisa .mypet-fisa-photo-4 {
+			grid-column: 1 / -1 !important;
+		}
+		body.page-mypet-fisa .mypet-fisa-col-main {
+			order: 3 !important;
+			flex: 0 0 auto !important;
+			width: 100% !important;
+			grid-row: unset !important;
+			grid-column: unset !important;
+			position: relative !important;
+			z-index: 2 !important;
+		}
+		body.page-mypet-fisa .mypet-fisa-col-traits {
+			order: 4 !important;
+			flex: 0 0 auto !important;
+			width: 100% !important;
+			grid-row: unset !important;
+			grid-column: unset !important;
+		}
+		body.page-mypet-fisa .mypet-fisa-form,
+		body.page-mypet-fisa .mypet-fisa-main-box {
+			height: auto !important;
+			flex: 0 0 auto !important;
+			min-height: 0 !important;
+		}
 	}
 </style>
 {% endblock %}
