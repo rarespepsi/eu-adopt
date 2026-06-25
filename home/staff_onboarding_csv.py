@@ -14,6 +14,7 @@ import uuid
 from typing import Any
 
 from home.models import StaffOnboardingLead
+from home.ro_location import normalize_lead_location_kwargs
 from home.staff_onboarding_form import SEGMENT_CHOICES
 
 SEGMENT_KEYS = frozenset(dict(SEGMENT_CHOICES).keys())
@@ -279,7 +280,7 @@ def row_canon_to_lead_kwargs(canon: dict[str, str]) -> dict[str, Any]:
     else:
         vet_k = ""
 
-    return {
+    payload = {
         "email": email,
         "phone": g("telefon")[:40],
         "display_name": display[:200],
@@ -306,6 +307,7 @@ def row_canon_to_lead_kwargs(canon: dict[str, str]) -> dict[str, Any]:
         "notes": notes,
         "status": _normalize_status(g("stare")),
     }
+    return normalize_lead_location_kwargs(payload)
 
 
 def lead_to_csv_row(lead: StaffOnboardingLead) -> dict[str, str]:

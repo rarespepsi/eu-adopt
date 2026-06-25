@@ -88,6 +88,7 @@ from .models import (
 )
 from .staff_onboarding_form import StaffOnboardingLeadForm, SEGMENT_CHOICES
 from .staff_onboarding_csv import export_csv_bytes, import_csv_bytes, is_placeholder_lead_email
+from .ro_location import lead_matches_location_filter, normalize_location_pair, normalize_mutable_pair
 from .staff_onboarding_invite import (
     staff_invite_build_result_message,
     staff_invite_campaign_stats,
@@ -2652,6 +2653,7 @@ def signup_pf_view(request):
     phone = (request.POST.get("phone") or "").strip()
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
+    judet, oras = normalize_location_pair(judet, oras)
     password1 = request.POST.get("password1") or ""
     password2 = request.POST.get("password2") or ""
     accept_termeni = request.POST.get("accept_termeni") == "on"
@@ -3293,6 +3295,7 @@ def signup_organizatie_view(request):
     telefon = (request.POST.get("telefon") or "").strip()
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
+    judet, oras = normalize_location_pair(judet, oras)
     adresa_firma = (request.POST.get("adresa_firma") or "").strip()
     parola1 = request.POST.get("parola1") or ""
     parola2 = request.POST.get("parola2") or ""
@@ -3413,11 +3416,13 @@ def signup_colaborator_view(request):
     telefon = (request.POST.get("telefon") or "").strip()
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
+    judet, oras = normalize_location_pair(judet, oras)
     adresa_firma = (request.POST.get("adresa_firma") or "").strip()
     pl_same_as_sediu = request.POST.get("pl_same_as_sediu") == "on"
     pl_label = (request.POST.get("pl_label") or "").strip()
     pl_judet = (request.POST.get("pl_judet") or "").strip()
     pl_oras = (request.POST.get("pl_oras") or "").strip()
+    pl_judet, pl_oras = normalize_location_pair(pl_judet, pl_oras)
     pl_adresa = (request.POST.get("pl_adresa") or "").strip()
     pl_phone = (request.POST.get("pl_phone") or "").strip()
     tip_partener = (request.POST.get("tip_partener") or "").strip()
@@ -3800,6 +3805,7 @@ def transport_submit_view(request):
     """Salvează cererea de transport veterinar din formularul paginii /transport/."""
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
+    judet, oras = normalize_location_pair(judet, oras)
     plecare = (request.POST.get("plecare") or "").strip()
     sosire = (request.POST.get("sosire") or "").strip()
     if not judet or not oras or not plecare or not sosire:
@@ -5401,6 +5407,7 @@ def admin_analysis_users_bulk_mail_view(request):
         return redirect(reverse("admin_analysis_users"))
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
+    judet, oras = normalize_location_pair(judet, oras)
     subject = (request.POST.get("subject") or "").strip()
     body = (request.POST.get("body") or "").strip()
     if not subject:
@@ -5514,40 +5521,56 @@ def _staff_onboarding_leads_filtered_qs_from_querydict(qd: QueryDict):
     ):
         qs = qs.filter(account_kind=kind)
     jud = (qd.get("judet") or "").strip()
-    if jud:
-        qs = qs.filter(Q(judet__icontains=jud) | Q(company_judet__icontains=jud))
     loc = (qd.get("oras") or "").strip()
-    if loc:
-        qs = qs.filter(Q(oras__icontains=loc) | Q(company_oras__icontains=loc))
+    if jud or loc:
+        pks: list[int] = []
+        for pk, j, cj, o, co in qs.values_list(
+            "pk", "judet", "company_judet", "oras", "company_oras"
+        ).iterator():
+            if lead_matches_location_filter(
+                judet=j or "",
+                company_judet=cj or "",
+                oras=o or "",
+                company_oras=co or "",
+                filter_judet=jud,
+                filter_oras=loc,
+            ):
+                pks.append(pk)
+        qs = qs.filter(pk__in=pks) if pks else qs.none()
     csub = (qd.get("collab_subtype") or "").strip()
     if csub in ("cabinet", "cv"):
-        qs = qs.filter(
-            account_kind=StaffOnboardingLead.KIND_COLLAB,
-            collaborator_subtype=StaffOnboardingLead.COLLAB_CABINET,
-        )
+        if kind in ("", StaffOnboardingLead.KIND_COLLAB):
+            qs = qs.filter(
+                account_kind=StaffOnboardingLead.KIND_COLLAB,
+                collaborator_subtype=StaffOnboardingLead.COLLAB_CABINET,
+            )
     elif csub in (
         StaffOnboardingLead.COLLAB_SERVICII,
         StaffOnboardingLead.COLLAB_MAGAZIN,
         StaffOnboardingLead.COLLAB_GROOMING,
         StaffOnboardingLead.COLLAB_TRANSPORT,
     ):
-        qs = qs.filter(account_kind=StaffOnboardingLead.KIND_COLLAB, collaborator_subtype=csub)
+        if kind in ("", StaffOnboardingLead.KIND_COLLAB):
+            qs = qs.filter(account_kind=StaffOnboardingLead.KIND_COLLAB, collaborator_subtype=csub)
     elif csub in (StaffOnboardingLead.COLLAB_ADPUB, StaffOnboardingLead.COLLAB_ADPRV):
-        qs = qs.filter(account_kind=StaffOnboardingLead.KIND_ADAPOST, collaborator_subtype=csub)
+        if kind in ("", StaffOnboardingLead.KIND_ADAPOST):
+            qs = qs.filter(account_kind=StaffOnboardingLead.KIND_ADAPOST, collaborator_subtype=csub)
     vk = (qd.get("vet_kind") or "").strip().lower()
     if vk == StaffOnboardingLead.VET_PROSPECT_FV:
-        qs = qs.filter(
-            account_kind=StaffOnboardingLead.KIND_COLLAB,
-            collaborator_subtype=StaffOnboardingLead.COLLAB_CABINET,
-            vet_prospect_kind=StaffOnboardingLead.VET_PROSPECT_FV,
-        )
+        if kind in ("", StaffOnboardingLead.KIND_COLLAB):
+            qs = qs.filter(
+                account_kind=StaffOnboardingLead.KIND_COLLAB,
+                collaborator_subtype=StaffOnboardingLead.COLLAB_CABINET,
+                vet_prospect_kind=StaffOnboardingLead.VET_PROSPECT_FV,
+            )
     elif vk == StaffOnboardingLead.VET_PROSPECT_CV:
-        qs = qs.filter(
-            account_kind=StaffOnboardingLead.KIND_COLLAB,
-            collaborator_subtype=StaffOnboardingLead.COLLAB_CABINET,
-        ).filter(
-            Q(vet_prospect_kind=StaffOnboardingLead.VET_PROSPECT_CV) | Q(vet_prospect_kind=""),
-        )
+        if kind in ("", StaffOnboardingLead.KIND_COLLAB):
+            qs = qs.filter(
+                account_kind=StaffOnboardingLead.KIND_COLLAB,
+                collaborator_subtype=StaffOnboardingLead.COLLAB_CABINET,
+            ).filter(
+                Q(vet_prospect_kind=StaffOnboardingLead.VET_PROSPECT_CV) | Q(vet_prospect_kind=""),
+            )
     if (qd.get("invite_eligible") or "").strip().lower() in ("1", "true", "da", "yes"):
         qs = staff_invite_filter_eligible_qs(qs)
     if (qd.get("invite_first_only") or "").strip().lower() in ("1", "true", "da", "yes"):
@@ -6702,6 +6725,7 @@ def account_edit_view(request):
         company_cui_has_ro = (request.POST.get("company_cui_has_ro") or "") == "da"
         company_judet = (request.POST.get("company_judet") or "").strip()
         company_oras = (request.POST.get("company_oras") or "").strip()
+        company_judet, company_oras = normalize_location_pair(company_judet, company_oras)
         company_address = (request.POST.get("company_address") or "").strip()
         collaborator_type = (request.POST.get("collaborator_type") or "").strip()
         is_public_shelter_val = (request.POST.get("is_public_shelter") or request.POST.get("is_public_shelter_org") or "").strip()
@@ -6769,6 +6793,7 @@ def account_edit_view(request):
     phone = (request.POST.get("phone") or "").strip()
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
+    judet, oras = normalize_location_pair(judet, oras)
     accept_termeni = request.POST.get("accept_termeni") == "on"
     accept_gdpr = request.POST.get("accept_gdpr") == "on"
     email_opt_in_wishlist = request.POST.get("email_opt_in_wishlist") == "on"

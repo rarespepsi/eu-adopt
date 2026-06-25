@@ -1,6 +1,7 @@
 from django import forms
 
 from home.models import StaffOnboardingLead
+from home.ro_location import normalize_mutable_pair
 
 SEGMENT_CHOICES = [
     ("noutati_adoptii", "Noutăți adopții / animale"),
@@ -219,5 +220,8 @@ class StaffOnboardingLeadForm(forms.ModelForm):
                 cleaned["vet_prospect_kind"] = StaffOnboardingLead.VET_PROSPECT_CV
         else:
             cleaned["vet_prospect_kind"] = ""
+
+        normalize_mutable_pair(cleaned, "judet", "oras")
+        normalize_mutable_pair(cleaned, "company_judet", "company_oras")
 
         return cleaned

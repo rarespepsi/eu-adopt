@@ -1036,45 +1036,23 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/ro-location-normalize.js' %}?v=1"></script>
 <script>
 (function() {
-	var localitiesByCounty = {};
-	var countyNames = ["Alba","Arad","Argeș","Bacău","Bihor","Bistrița-Năsăud","Botoșani","Brăila","Brașov","București","Buzău","Călărași","Caraș-Severin","Cluj","Constanța","Covasna","Dâmbovița","Dolj","Galați","Giurgiu","Gorj","Harghita","Hunedoara","Ialomița","Iași","Ilfov","Maramureș","Mehedinți","Mureș","Neamț","Olt","Prahova","Sălaj","Satu Mare","Sibiu","Suceava","Teleorman","Timiș","Tulcea","Vâlcea","Vaslui","Vrancea"];
-	function matchCounty(val) {
-		if (!val) return null;
-		val = String(val).trim();
-		for (var i = 0; i < countyNames.length; i++) if (countyNames[i].toLowerCase() === val.toLowerCase()) return countyNames[i];
-		return null;
-	}
-	function updateCityListFor(countyInputId, cityListId) {
-		var countyInput = document.getElementById(countyInputId);
-		var cityList = document.getElementById(cityListId);
-		if (!countyInput || !cityList) return;
-		var county = matchCounty(countyInput.value);
-		cityList.innerHTML = "";
-		if (county && localitiesByCounty[county]) {
-			var list = localitiesByCounty[county];
-			for (var i = 0; i < list.length; i++) { var opt = document.createElement("option"); opt.value = list[i]; cityList.appendChild(opt); }
-		}
-	}
-	function wireCountyLocality(countyInputId, cityListId) {
-		var countyInput = document.getElementById(countyInputId);
-		if (!countyInput) return;
-		function upd() { updateCityListFor(countyInputId, cityListId); }
-		countyInput.addEventListener("input", upd);
-		countyInput.addEventListener("change", upd);
-		upd();
-	}
-	fetch("{% static 'data/ro_counties_cities.json' %}").then(function(r) { return r.json(); }).then(function(data) {
-		for (var k in data) localitiesByCounty[k] = data[k];
-		wireCountyLocality("f-jud", "city-list-adduser-filt");
-		wireCountyLocality("id_judet", "city-list-adduser-manual");
-		wireCountyLocality("id_company_judet", "city-list-adduser-co");
-	}).catch(function() {
-		wireCountyLocality("f-jud", "city-list-adduser-filt");
-		wireCountyLocality("id_judet", "city-list-adduser-manual");
-		wireCountyLocality("id_company_judet", "city-list-adduser-co");
+	RoLocation.whenReady(function() {
+		RoLocation.wireCountyLocality("f-jud", "city-list-adduser-filt", "f-oras");
+		RoLocation.wireCountyLocality("id_judet", "city-list-adduser-manual", "id_oras");
+		RoLocation.wireCountyLocality("id_company_judet", "city-list-adduser-co", "id_company_oras");
 	});
+	var filtForm = document.querySelector(".add-user-filters");
+	if (filtForm) {
+		filtForm.addEventListener("submit", function() {
+			var fj = document.getElementById("f-jud");
+			var fo = document.getElementById("f-oras");
+			RoLocation.normalizeCountyInput(fj);
+			RoLocation.normalizeLocalityInput(fo, fj);
+		});
+	}
 	function syncTopFiltersByAccountKind() {
 		var kindSel = document.getElementById("f-kind");
 		var collabSel = document.getElementById("f-collab-sub");
@@ -1083,8 +1061,9 @@
 		var kind = (kindSel.value || "").trim();
 		var collab = (collabSel.value || "").trim().toLowerCase();
 		var collabEnabled = kind === "collaborator";
-		collabSel.disabled = !collabEnabled;
-		if (!collabEnabled) {
+		var adapostKind = kind === "adapost";
+		collabSel.disabled = !collabEnabled && !adapostKind;
+		if (!collabEnabled && !adapostKind) {
 			collabSel.value = "";
 		}
 		var vetEnabled = collabEnabled && collab === "cabinet";
