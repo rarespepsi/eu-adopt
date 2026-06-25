@@ -87,6 +87,13 @@ def _session_cache_key(request, suffix: str) -> str:
     return f"{_CACHE_PREFIX}{suffix}:{request.session.session_key}"
 
 
+def clear_signup_otp_cache(request, purpose: str = "signup") -> None:
+    """Șterge OTP din cache (ex. la recompletare formular → SMS nou + timer 5 min)."""
+    if not request.session.session_key:
+        return
+    cache.delete(_session_cache_key(request, purpose))
+
+
 def _edit_cache_key(user_pk: int) -> str:
     return f"{_CACHE_PREFIX}edit:{user_pk}"
 

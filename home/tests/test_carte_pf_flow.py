@@ -71,6 +71,29 @@ class CartePF11to20Tests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertIn(reverse("signup_verificare_sms"), r.url or "")
 
+    def test_12b_signup_sms_timer_resets_on_form_resubmit(self):
+        import re
+        import time
+
+        u = uuid.uuid4().hex[:12]
+        c = Client()
+        data = _pf_post_data(u)
+        c.post(reverse("signup_pf"), data)
+        session = c.session
+        session["signup_sms_at"] = time.time() - 240
+        session["signup_sms_resend_count"] = 2
+        session.save()
+        r = c.post(reverse("signup_pf"), data)
+        self.assertEqual(r.status_code, 302)
+        r2 = c.get(reverse("signup_verificare_sms"))
+        self.assertEqual(r2.status_code, 200)
+        html = r2.content.decode("utf-8")
+        m = re.search(r'data-expires="(\d+)"', html)
+        self.assertIsNotNone(m)
+        expires_at = int(m.group(1))
+        self.assertGreaterEqual(expires_at - int(time.time()), 295)
+        self.assertEqual(c.session.get("signup_sms_resend_count"), 0)
+
     def _session_with_pending_pf(self, c: Client):
         u = uuid.uuid4().hex[:12]
         r = c.post(reverse("signup_pf"), _pf_post_data(u))

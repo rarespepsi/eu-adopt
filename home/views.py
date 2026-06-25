@@ -2709,6 +2709,7 @@ def signup_pf_view(request):
         "accept_gdpr": accept_gdpr,
         "email_opt_in_wishlist": email_opt_in_wishlist,
     }
+    _begin_signup_sms_flow(request)
     return redirect(reverse("signup_verificare_sms"))
 
 
@@ -2725,6 +2726,19 @@ def _get_signup_pending(request):
         request.session.pop("signup_pf_pending", None)
         return data
     return None
+
+
+def _begin_signup_sms_flow(request) -> None:
+    """Resetează timerul 5 min și OTP la fiecare trimitere nouă (formular retrimis sau prima intrare)."""
+    import time
+
+    from home.sms_otp import clear_signup_otp_cache
+
+    request.session["signup_sms_at"] = time.time()
+    request.session["signup_sms_resend_count"] = 0
+    request.session.pop("signup_sms_cooldown_until", None)
+    clear_signup_otp_cache(request, "signup")
+    request.session.modified = True
 
 
 def _redirect_for_role(role, param):
@@ -2822,11 +2836,12 @@ def signup_verificare_sms_view(request):
 
     if request.method != "POST":
         import time
+        now = time.time()
         if "signup_sms_at" not in request.session:
-            request.session["signup_sms_at"] = time.time()
+            request.session["signup_sms_at"] = now
         if "signup_sms_resend_count" not in request.session:
             request.session["signup_sms_resend_count"] = 0
-        expires_at = int(request.session["signup_sms_at"]) + 300
+        expires_at = int(float(request.session["signup_sms_at"])) + 300
         back_url = _redirect_for_role(role, "")
         now = int(time.time())
         sms_resend_count = request.session.get("signup_sms_resend_count", 0)
@@ -3066,6 +3081,9 @@ def signup_retrimite_sms_view(request):
         return redirect(reverse("signup_verificare_sms") + "?cooldown=1")
     request.session["signup_sms_resend_count"] = resend_count + 1
     request.session["signup_sms_at"] = now
+    from home.sms_otp import clear_signup_otp_cache
+
+    clear_signup_otp_cache(request, "signup")
     if request.session["signup_sms_resend_count"] >= 3:
         request.session["signup_sms_cooldown_until"] = now + 45 * 60
     ok, _err = resend_signup_otp(request, data)
@@ -3377,6 +3395,7 @@ def signup_organizatie_view(request):
         "email_opt_in": email_opt_in,
         "is_public_shelter": is_public_shelter,
     }
+    _begin_signup_sms_flow(request)
     return redirect(reverse("signup_verificare_sms"))
 
 
@@ -3544,6 +3563,7 @@ def signup_colaborator_view(request):
         pending["max_caini"] = max_caini
         pending["max_pisici"] = max_pisici
     request.session["signup_pending"] = pending
+    _begin_signup_sms_flow(request)
     return redirect(reverse("signup_verificare_sms"))
 
 
