@@ -13,17 +13,24 @@ alwaysApply: false
 1. **Casete pub MP.L1–L3:** din `sidebar-left` → **sus**, 3 casete **mici pe un rând** (~3.5rem înălțime).
 2. **Layout:** `flex` coloană — pub (order 1), apoi `main-content` full width (order 2).
 3. **Fără** coloana îngustă 118px care comprimă tabelul.
-4. **Toolbar:** butoane + filtre Câini/Pisici/Altele stivuite; `placeFilters()` **nu** mută filtrele cu `left` absolut pe portrait.
+4. **Toolbar:** butoane + filtre stivuite; `placeFilters()` **nu** mută filtrele cu `left` absolut.
 5. **Scroll:** pagină + zonă tabel (`overflow: auto`).
 
-## Landscape mobil + desktop/tabletă (`≥768px` sau landscape)
+## Landscape telefon (`orientation: landscape` + `max-height: 34em`)
 
-- **Păstrează** coloana stângă 118px cu cele 3 casete pub verticale (comportament existent).
+1. **Pub L1–L3:** coloană **stânga** îngustă (~4.65rem), 3 casete **pe verticală**, împart înălțimea ecranului.
+2. **Dreapta:** toolbar pe **un rând** (wrap), apoi **lista** (tabel scrollabil).
+3. **`mypet-wrap`:** `overflow: visible`, fără `height: 100vh` care ascunde rândurile.
+4. **`placeFilters()`:** la fel ca portrait — fără poziționare absolută.
+
+## Desktop / tabletă landscape înaltă
+
+- Layout 118px sidebar + main (comportament desktop).
 - **Nu modifica** fără parolă `1977` + OK.
 
 ## Filtru specie
 
-- Implicit **Câini** — pisica apare la **Pisici** (nu ambele simultan).
+- Implicit **Câini** — pisica la **Pisici**; la **Altele** lista poate fi goală.
 
 ## Parolă
 
