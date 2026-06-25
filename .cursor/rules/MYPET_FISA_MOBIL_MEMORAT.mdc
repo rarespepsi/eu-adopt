@@ -1,0 +1,42 @@
+---
+description: MyPet fișă pet (/mypet/add/) — layout mobil portrait memorat (producție)
+globs: templates/anunturi/mypet_add.html
+alwaysApply: false
+---
+
+# MYPET FIȘĂ — MOBIL PORTRAIT MEMORAT
+
+**Orientare:** `@media (max-width: 767.98px)` — **doar telefon**. Desktop și tabletă (`≥768px`) rămân pe grila 3 coloane; **nu modifica** fără parolă `1977` + OK.
+
+**Fișier sursă:** `templates/anunturi/mypet_add.html` (`body.page-mypet-fisa`).
+
+## Ordine vizuală (flex `order`)
+
+1. Header — FIȘA PET + butoane (ACEEAȘI linie, centrate)
+2. Poze — 3 casete pe un rând + video pe rând întreg dedesubt
+3. Formular — DATE DE BAZĂ (o coloană, lățime 100%)
+4. Trăsături adoptator
+
+## Poze + video
+
+- Grid poze: `repeat(3, minmax(0, 1fr))`; slot activ crop: `grid-column: 1 / -1`, `min-height` preview ~12.5rem
+- Video: `.mypet-fisa-video-box` min-height ~10rem; `.mypet-fisa-video-preview` ~8.5rem
+- Coloană poze: `overflow: visible`, `margin-bottom` ~1.2rem (formularul NU se suprapune cu video)
+- Bloc final CSS (`body.page-mypet-fisa … !important`) — păstrează stivuirea după regulile desktop `grid-row`
+
+## Formular
+
+- `.mypet-fisa-main-cols` = **1 coloană** pe mobil (2 coloane doar `@media min-width: 768px`)
+- Scroll vertical pe pagină (`overflow-y: auto` pe `body.page-mypet-fisa`)
+- `height: auto` pe form / main-box (nu `height: 100%`)
+
+## Crop poză (touch)
+
+- Caseta crop activă = lățime completă pe mobil
+- **Nu** forța `width/height: 100%` pe `.cropper-canvas` / `.cropper-view-box` — strică Cropper.js
+- La încărcare: `fitMypetCropperFill` — `zoomTo(cover)` + `setCropBoxData` pe tot containerul; apoi pan/pinch și +/−
+- `viewMode: 2`, `dragMode: move`, crop box fix (nu se redimensionează)
+
+## Parolă
+
+Orice schimbare la fișa MyPet (layout mobil sau crop) → **`1977` + OK explicit** în mesaj.

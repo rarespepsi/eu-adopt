@@ -593,7 +593,7 @@
 		max-height: 100%;
 		display: block;
 	}
-	/* Cropper umple toată suprafața casetei (stânga–dreapta, sus–jos) */
+	/* Cropper: containerul umple caseta; dimensiunile interne le gestionează Cropper.js */
 	.mypet-fisa-photo-preview .cropper-container {
 		position: absolute !important;
 		top: 0 !important;
@@ -604,35 +604,15 @@
 		height: 100% !important;
 		max-height: none !important;
 	}
-	.mypet-fisa-photo-preview .cropper-wrap-box,
-	.mypet-fisa-photo-preview .cropper-drag-box,
-	.mypet-fisa-photo-preview .cropper-view-box,
-	.mypet-fisa-photo-preview .cropper-canvas {
-		width: 100% !important;
-		height: 100% !important;
+	.mypet-fisa-photo-preview .cropper-view-box {
+		outline: 1px solid rgba(255, 255, 255, 0.85);
+		outline-offset: -1px;
 	}
-	.mypet-fisa-photo-preview .cropper-image {
-		max-width: none !important;
-		max-height: none !important;
-		min-width: 100% !important;
-		min-height: 100% !important;
-		object-fit: cover !important;
-	}
-	/* imaginea din cropper să umple lățimea containerului (fără benzi albe stânga/dreapta) */
-	.mypet-fisa-photo-preview .cropper-view-box,
 	.mypet-fisa-photo-preview .cropper-face {
 		background: transparent !important;
 	}
-	/* Toate zonele goale (stânga, dreapta, jos) – fundal neutru, nicio zonă albă */
-	.mypet-fisa-photo-preview .cropper-container,
-	.mypet-fisa-photo-preview .cropper-wrap-box,
-	.mypet-fisa-photo-preview .cropper-drag-box,
-	.mypet-fisa-photo-preview .cropper-modal,
-	.mypet-fisa-photo-preview .cropper-body,
-	.mypet-fisa-photo-preview .cropper-crop-box,
-	.mypet-fisa-photo-preview .cropper-center {
-		background: transparent !important;
-		background-image: none !important;
+	.mypet-fisa-photo-preview .cropper-modal {
+		opacity: 0.45;
 	}
 	.mypet-fisa-photo-1 .mypet-fisa-photo-preview { background: #ffe082; }
 	.mypet-fisa-photo-2 .mypet-fisa-photo-preview { background: #b3e5fc; }
@@ -1417,11 +1397,21 @@
 		}
 		body.page-mypet-fisa .mypet-fisa-photo-4 {
 			grid-column: 1 / -1 !important;
+			padding-bottom: 0.22rem !important;
+		}
+		body.page-mypet-fisa .mypet-fisa-photo-4 .mypet-fisa-video-box {
+			min-height: 10rem !important;
+			flex: none !important;
+		}
+		body.page-mypet-fisa .mypet-fisa-video-preview {
+			min-height: 8.5rem !important;
+			flex: 0 0 auto !important;
 		}
 		body.page-mypet-fisa .mypet-fisa-col-main {
 			order: 3 !important;
 			flex: 0 0 auto !important;
 			width: 100% !important;
+			margin-top: 0.45rem !important;
 			grid-row: unset !important;
 			grid-column: unset !important;
 			position: relative !important;
@@ -1733,6 +1723,28 @@
 		if (hint) hint.remove();
 	}
 
+	function fitMypetCropperFill(cr) {
+		if (!cr) return;
+		cr.resize();
+		var containerData = cr.getContainerData();
+		var imageData = cr.getImageData();
+		if (!containerData || !imageData) return;
+		var cw = containerData.width;
+		var ch = containerData.height;
+		var natW = imageData.naturalWidth || imageData.width;
+		var natH = imageData.naturalHeight || imageData.height;
+		if (!cw || !ch || !natW || !natH) return;
+		cr.setAspectRatio(cw / ch);
+		var cover = Math.max(cw / natW, ch / natH);
+		cr.zoomTo(cover);
+		cr.setCropBoxData({
+			left: 0,
+			top: 0,
+			width: cw,
+			height: ch
+		});
+	}
+
 	function destroyCropper(n) {
 		var preview = document.getElementById("preview_photo_" + n);
 		clearCropTouchHint(preview);
@@ -1846,55 +1858,44 @@
 					preview.classList.add("is-cropping");
 					showCropTouchHint(preview);
 				}
-				var w = preview.offsetWidth;
-				var h = preview.offsetHeight;
-				if (isMobileCrop) h = Math.max(h, 200);
-				var ratio = (w && h) ? (w / h) : 1;
-				croppers[n] = new Cropper(img, {
-					aspectRatio: ratio,
-					viewMode: 1,
-					dragMode: "move",
-					autoCropArea: 1,
-					restore: false,
-					guides: true,
-					center: true,
-					highlight: false,
-					movable: true,
-					zoomable: true,
-					zoomOnTouch: true,
-					zoomOnWheel: false,
-					toggleDragModeOnDblclick: false,
-					cropBoxMovable: false,
-					cropBoxResizable: false,
-					ready: function() {
-						var cr = croppers[n];
-						if (!cr) return;
-						if (!preview.classList.contains("is-cropping")) {
-							preview.classList.add("is-cropping");
-							showCropTouchHint(preview);
+				function startCropper() {
+					var w = preview.offsetWidth;
+					var h = preview.offsetHeight;
+					if (isMobileCrop) h = Math.max(h, 200);
+					var ratio = (w && h) ? (w / h) : 1;
+					croppers[n] = new Cropper(img, {
+						aspectRatio: ratio,
+						viewMode: 2,
+						dragMode: "move",
+						autoCropArea: 1,
+						restore: false,
+						guides: true,
+						center: true,
+						highlight: false,
+						movable: true,
+						zoomable: true,
+						zoomOnTouch: true,
+						zoomOnWheel: false,
+						toggleDragModeOnDblclick: false,
+						cropBoxMovable: false,
+						cropBoxResizable: false,
+						ready: function() {
+							var cr = croppers[n];
+							if (!cr) return;
+							if (!preview.classList.contains("is-cropping")) {
+								preview.classList.add("is-cropping");
+								showCropTouchHint(preview);
+							}
+							fitMypetCropperFill(cr);
+							window.requestAnimationFrame(function() {
+								fitMypetCropperFill(croppers[n]);
+								window.setTimeout(function() { fitMypetCropperFill(croppers[n]); }, 120);
+								window.setTimeout(function() { fitMypetCropperFill(croppers[n]); }, 300);
+							});
 						}
-						var containerData = cr.getContainerData();
-						var imageData = cr.getImageData();
-						if (!containerData || !imageData || !imageData.width) return;
-						var cw = containerData.width;
-						var ch = containerData.height;
-						var iw = imageData.width;
-						var ih = imageData.height;
-						var scaleW = cw / iw;
-						var scaleH = ch / ih;
-						var scale = Math.max(scaleW, scaleH, 1);
-						cr.zoom(scale);
-						function reflowCrop() {
-							if (!croppers[n]) return;
-							croppers[n].resize();
-						}
-						window.requestAnimationFrame(function() {
-							reflowCrop();
-							window.setTimeout(reflowCrop, 120);
-							window.setTimeout(reflowCrop, 280);
-						});
-					}
-				});
+					});
+				}
+				window.requestAnimationFrame(startCropper);
 			}
 		});
 	}
