@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt141-mob-strip-merge" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt142-orient-land" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -1274,16 +1274,27 @@
 		["main_wrap", "main_content", "PW"].forEach(function(id) {
 			var el = document.getElementById(id);
 			if (!el) return;
-			["height", "max-height", "min-height"].forEach(function(prop) {
+			["height", "max-height", "min-height", "overflow"].forEach(function(prop) {
 				el.style.removeProperty(prop);
 			});
 		});
+		var col3 = document.querySelector("#PW .pt-mob-land-3col");
+		if (col3) {
+			col3.style.removeProperty("padding");
+			col3.style.removeProperty("padding-left");
+			col3.style.removeProperty("padding-right");
+		}
+		var scrollEl = document.querySelector("#P2 .pt-p2-scroll");
+		if (scrollEl) {
+			scrollEl.style.removeProperty("max-height");
+			scrollEl.style.removeProperty("height");
+			scrollEl.style.removeProperty("overflow");
+		}
 		document.querySelectorAll("#PW .pt-mob-land-left, #PW .pt-mob-land-right").forEach(function(rail) {
-			if (ptMobIsLandscape()) {
-				rail.style.removeProperty("display");
-				rail.style.removeProperty("position");
-				rail.style.removeProperty("left");
-			} else {
+			["display", "position", "left", "right", "top", "bottom", "width", "height", "visibility", "pointer-events", "z-index"].forEach(function(prop) {
+				rail.style.removeProperty(prop);
+			});
+			if (!ptMobIsLandscape()) {
 				rail.style.setProperty("display", "none", "important");
 			}
 		});
@@ -1291,8 +1302,9 @@
 	window.euadoptPtMobIsLandscape = ptMobIsLandscape;
 	function ptSyncOrientClass() {
 		var land = mq.matches && ptMobIsLandscape();
-		document.documentElement.classList.toggle("pt-mob-landscape-active", land);
-		document.documentElement.classList.toggle("pt-mob-portrait-active", mq.matches && !land);
+		document.documentElement.classList.remove("pt-mob-landscape-active", "pt-mob-portrait-active");
+		if (!mq.matches) return;
+		document.documentElement.classList.add(land ? "pt-mob-landscape-active" : "pt-mob-portrait-active");
 	}
 	function ptResetMobOrientationScroll() {
 		var mc = document.getElementById("main_content");
@@ -1348,9 +1360,16 @@
 		requestAnimationFrame(function() {
 			ptUpdateVhVar();
 			ptSyncOrientClass();
+			ptClearStuckLayoutStyles();
 			syncPlaceholder();
 			ptSyncPortraitP2Heights();
 			if (window.euadoptPtP2Relayout) window.euadoptPtP2Relayout();
+		});
+	}
+	function ptScheduleOrientRelayout() {
+		ptOnOrientationLayout();
+		[120, 350, 750].forEach(function(ms) {
+			setTimeout(ptOnOrientationLayout, ms);
 		});
 	}
 	function syncPlaceholder() {
@@ -1485,26 +1504,26 @@
 		clearTimeout(window._ptP4BarResizeT);
 		window._ptP4BarResizeT = setTimeout(function() {
 			boot();
-			ptOnOrientationLayout();
+			ptScheduleOrientRelayout();
 		}, 160);
 	});
 	window.addEventListener("orientationchange", function() {
 		clearTimeout(window._ptP4BarResizeT);
-		ptOnOrientationLayout();
+		ptScheduleOrientRelayout();
 		window._ptP4BarResizeT = setTimeout(function() {
 			boot();
-			ptOnOrientationLayout();
+			ptScheduleOrientRelayout();
 		}, 320);
 	});
 	if (window.visualViewport) {
 		window.visualViewport.addEventListener("resize", function() {
 			clearTimeout(window._ptVpResizeT);
-			window._ptVpResizeT = setTimeout(ptOnOrientationLayout, 120);
+			window._ptVpResizeT = setTimeout(ptScheduleOrientRelayout, 120);
 		});
 	}
 	try {
 		var mqLand = window.matchMedia("(max-width: 767.98px) and (orientation: landscape)");
-		var onMq = function() { ptOnOrientationLayout(); };
+		var onMq = function() { ptScheduleOrientRelayout(); };
 		if (mqLand.addEventListener) mqLand.addEventListener("change", onMq);
 		else if (mqLand.addListener) mqLand.addListener(onMq);
 	} catch (eMq) {}

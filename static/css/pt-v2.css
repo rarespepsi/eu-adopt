@@ -2754,22 +2754,84 @@ body.page-pt #main_content {
   html.pt-mob-landscape-active #PW .pt-mob-land-left,
   html.pt-mob-landscape-active #PW .pt-mob-land-right {
     display: flex !important;
+    flex-direction: column !important;
     position: fixed !important;
-    left: auto !important;
+    top: var(--nav-height, var(--nav-h, 64px)) !important;
+    bottom: 0 !important;
     width: var(--pt-land-rail-w, clamp(3.25rem, 14vw, 5.75rem)) !important;
+    min-width: 0 !important;
+    max-width: var(--pt-land-rail-w, clamp(3.25rem, 14vw, 5.75rem)) !important;
     height: auto !important;
     visibility: visible !important;
     pointer-events: auto !important;
     z-index: 2260 !important;
+    margin: 0 !important;
+    padding: 2px !important;
+    overflow: hidden !important;
+    background: #141a22 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-top: none !important;
+    box-sizing: border-box !important;
+    isolation: isolate;
   }
   html.pt-mob-landscape-active #PW .pt-mob-land-left {
     left: 0 !important;
+    right: auto !important;
+    border-left: none !important;
   }
   html.pt-mob-landscape-active #PW .pt-mob-land-right {
     right: 0 !important;
+    left: auto !important;
+    border-right: none !important;
   }
   html.pt-mob-landscape-active #PW .pt-mob-land-3col {
+    display: block !important;
     padding: 0 var(--pt-land-rail-w, clamp(3.25rem, 14vw, 5.75rem)) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    min-height: 0 !important;
+  }
+  html.pt-mob-landscape-active body.page-pt #main_wrap {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+  html.pt-mob-landscape-active body.page-pt #main_content {
+    flex: none !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  html.pt-mob-landscape-active body.page-pt #PW {
+    flex: none !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  html.pt-mob-landscape-active #PW .pt-grid {
+    flex: none !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  html.pt-mob-landscape-active #PW .pt-mob-land-3col {
+    flex: none !important;
+    overflow: visible !important;
+  }
+  html.pt-mob-landscape-active #PW .pt-mob-land-center {
+    flex: none !important;
+    overflow: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  html.pt-mob-landscape-active #PW .pt-mob-land-center .pt-cell-2 {
+    flex: 0 0 auto !important;
+    overflow: visible !important;
+    width: 100% !important;
+    order: 1 !important;
   }
   html.pt-mob-landscape-active #PW .pt-mob-strip-merged {
     display: flex !important;
@@ -2777,6 +2839,7 @@ body.page-pt #main_content {
     flex: 0 0 auto !important;
     width: 100% !important;
     position: relative !important;
+    order: 2 !important;
   }
   html.pt-mob-landscape-active #PW .pt-strip-band--desktop {
     display: none !important;
@@ -2786,19 +2849,37 @@ body.page-pt #main_content {
     display: none !important;
     pointer-events: none !important;
     visibility: hidden !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
   }
   html.pt-mob-landscape-active #PW .pt-cell-4 {
     height: 0 !important;
     max-height: 0 !important;
     overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
-  html.pt-mob-landscape-active body.page-pt #main_content {
-    overflow-y: auto !important;
+  html.pt-mob-landscape-active #PW .pt-p4-sticky-placeholder {
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
   }
   html.pt-mob-landscape-active #PW .pt-mob-land-center .pt-cell-2 .pt-p2-scroll {
     overflow-y: visible !important;
+    overflow-x: hidden !important;
+    max-height: none !important;
+    height: auto !important;
   }
   html.pt-mob-landscape-active #PW .pt-p2-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+  /* Portrait: anulează lanțul flex înălțime fixă din landscape la revenire */
+  html.pt-mob-portrait-active:not(.pt-mob-landscape-active) body.page-pt #main_wrap {
+    height: var(--pt-vh, 100dvh) !important;
+    max-height: var(--pt-vh, 100dvh) !important;
+  }
+  html.pt-mob-portrait-active:not(.pt-mob-landscape-active) #PW .pt-p2-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
