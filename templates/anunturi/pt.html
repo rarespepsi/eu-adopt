@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt134-p4-row-portrait" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt135-p4-land-actions" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -423,13 +423,14 @@
 			<div class="pt-mob-land-3col">
 				<aside class="pt-mob-land-left" aria-label="Acțiuni și reclame stânga">
 					<div class="pt-p4-match-sustine-stack pt-p4-land-rail-ms{% if selected_species == 'other' %} pt-p4-ms-stack--sustine-only{% endif %}">
-						{% if selected_species != 'other' %}
 						<div class="pt-p4-box-match pt-p4-land-rail-box">
-							<div class="pt-p4-actions pt-p4-actions--land-col">
+							<div class="pt-p4-actions">
+								{% if selected_species != 'other' %}
 								<a href="#" class="pt-p4-btn-match" title="Găsește-ți sufletul pereche">Găsește-mi perechea</a>
+								{% endif %}
+								<a href="#" class="pt-p4-btn-filters js-pt-mobile-filters" title="Deschide filtre">Filtre</a>
 							</div>
 						</div>
-						{% endif %}
 						<div class="pt-p4-box-sustine pt-p4-land-rail-sustine" aria-label="Ajută un suflet">
 							<a href="{% url 'donatii_generale' %}?sursa=pt" class="pt-p4-btn-sustine" title="Susține EU-ADOPT">Ajuta un Suflet !</a>
 						</div>
@@ -437,7 +438,7 @@
 					<div class="pt-p4-box pt-p4-box-ads pt-p4-land-rail-ads">
 						<div class="pt-p43-mobil-col pt-p43-mobil-col--stack">
 							{% for slot in pt_pub_slot_list %}
-								{% if slot.code == 'P4.3' or slot.code == 'P5.1' %}
+								{% if slot.code == 'P4.3' %}
 								{% include "anunturi/includes/pt_pub_slot_block.html" with slot_code=slot.code creative=slot.creative slot_layout="mama" only %}
 								{% endif %}
 							{% endfor %}
@@ -466,16 +467,11 @@
 						</div>
 					</div>
 				</div>
-				<aside class="pt-mob-land-right" aria-label="Filtre și reclame dreapta">
-					<div class="pt-p4-box pt-p4-box-match pt-p4-land-rail-box">
-						<div class="pt-p4-actions pt-p4-actions--land-col">
-							<a href="#" class="pt-p4-btn-filters js-pt-mobile-filters" title="Deschide filtre">Filtre</a>
-						</div>
-					</div>
-					<div class="pt-p4-box pt-p4-box-ads pt-p4-land-rail-ads">
+				<aside class="pt-mob-land-right" aria-label="Reclame dreapta">
+					<div class="pt-p4-box pt-p4-box-ads pt-p4-land-rail-ads pt-p4-land-rail-ads--full">
 						<div class="pt-p43-mobil-col pt-p43-mobil-col--stack">
 							{% for slot in pt_pub_slot_list %}
-								{% if slot.code == 'P5.2' or slot.code == 'P5.3' %}
+								{% if slot.code == 'P5.1' or slot.code == 'P5.2' or slot.code == 'P5.3' %}
 								{% include "anunturi/includes/pt_pub_slot_block.html" with slot_code=slot.code creative=slot.creative slot_layout="mama" only %}
 								{% endif %}
 							{% endfor %}

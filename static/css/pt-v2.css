@@ -2442,6 +2442,55 @@ body.page-pt #main_content {
     max-width: 100%;
     overflow: hidden;
   }
+
+  /* Stânga: 3 butoane pe un rând deasupra unei casete Publi. */
+  #PW .pt-mob-land-left .pt-p4-land-rail-ms {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: minmax(2rem, auto);
+    gap: 1px;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    flex-shrink: 0 !important;
+  }
+  #PW .pt-mob-land-left .pt-p4-land-rail-ms:has(.pt-p4-btn-filters):not(:has(.pt-p4-btn-match)) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #PW .pt-mob-land-left .pt-p4-land-rail-ms > .pt-p4-box-match,
+  #PW .pt-mob-land-left .pt-p4-land-rail-ms > .pt-p4-box-sustine,
+  #PW .pt-mob-land-left .pt-p4-land-rail-ms .pt-p4-actions {
+    display: contents;
+  }
+  #PW .pt-mob-land-left .pt-p4-land-rail-ms .pt-p4-btn-match,
+  #PW .pt-mob-land-left .pt-p4-land-rail-ms .pt-p4-btn-filters,
+  #PW .pt-mob-land-left .pt-p4-land-rail-ms .pt-p4-btn-sustine {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100% !important;
+    min-height: 2rem !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0.1rem 0.12rem !important;
+    font-size: clamp(0.4rem, 1.45vw, 0.52rem) !important;
+    line-height: 1.05 !important;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: break-word;
+    border-radius: 0 !important;
+    box-sizing: border-box;
+  }
+  /* Dreapta: doar 3 casete Publi., coloană întreagă */
+  #PW .pt-mob-land-right .pt-p4-land-rail-ads--full {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+  }
+  #PW .pt-mob-land-right .pt-p43-mobil-col--stack .pt-p43-slot {
+    max-height: none !important;
+    flex: 1 1 0;
+    min-height: 0;
+  }
 }
 
 @media (max-width: 767.98px) and (orientation: landscape) and (min-width: 520px) {
