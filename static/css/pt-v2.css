@@ -2155,6 +2155,48 @@ body.page-pt #main_content {
   #PW .pt-mob-land-center .pt-cell-2 .pt-p2-scroll {
     min-height: 0 !important;
   }
+
+  /* P4.2 portret: Găsește + Filtre + Ajuta pe un rând (nu stivă verticală) */
+  #PW .pt-p4-mobile-sticky .pt-p4-match-sustine-stack.pt-p4-box {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: minmax(2.35rem, auto);
+    gap: 2px;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    align-items: stretch;
+  }
+  #PW .pt-p4-mobile-sticky .pt-p4-match-sustine-stack:has(.pt-p4-btn-filters):not(:has(.pt-p4-btn-match)) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #PW .pt-p4-mobile-sticky .pt-p4-match-sustine-stack > .pt-p4-box-match,
+  #PW .pt-p4-mobile-sticky .pt-p4-match-sustine-stack > .pt-p4-box-sustine,
+  #PW .pt-p4-mobile-sticky .pt-p4-match-sustine-stack .pt-p4-actions {
+    display: contents;
+  }
+  #PW .pt-p4-mobile-sticky .pt-p4-match-sustine-stack .pt-p4-btn-match,
+  #PW .pt-p4-mobile-sticky .pt-p4-match-sustine-stack .pt-p4-btn-filters,
+  #PW .pt-p4-mobile-sticky .pt-p4-match-sustine-stack .pt-p4-btn-sustine {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100% !important;
+    min-height: 2.35rem !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0.16rem 0.2rem !important;
+    font-size: clamp(0.48rem, 2.55vw, 0.62rem) !important;
+    line-height: 1.08 !important;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: break-word;
+    border-radius: 0.35rem !important;
+    box-sizing: border-box;
+  }
+  #PW .pt-p4-mobile-sticky > .pt-p4-box-ads {
+    min-height: clamp(2.45rem, 10vw, 3.15rem) !important;
+  }
 }
 
 /* Mobil landscape: fără bară mov portret; P1 ascuns; rail stânga/dreapta fixe în viewport (sub zona navbar măsurată de --nav-height) */
