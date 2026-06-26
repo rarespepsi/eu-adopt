@@ -2148,12 +2148,65 @@ body.page-pt #main_content {
     border-top: none !important;
     box-sizing: border-box !important;
   }
-  /* Fără min-height uriaș pe P2: banda P3 urcă după ultimul rând, nu rămâne „sub” o casetă goală */
-  #PW .pt-mob-land-center .pt-cell-2 {
+  /* Fără min-height uriaș pe P2: banda P3 lipită jos; scroll intern în .pt-p2-scroll */
+  body.page-pt #main_wrap {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  body.page-pt #main_content {
+    flex: 1 1 0 !important;
     min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  #PW {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  #PW .pt-grid {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  #PW .pt-mob-land-3col {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  #PW .pt-mob-land-center {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  #PW .pt-mob-land-center .pt-cell-2 {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
   #PW .pt-mob-land-center .pt-cell-2 .pt-p2-scroll {
+    flex: 1 1 0 !important;
     min-height: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  #PW .pt-cell-3--footer {
+    flex: 0 0 auto !important;
   }
 
   /* P4.2 portret: Găsește + Filtre + Ajuta pe un rând (nu stivă verticală) */
@@ -2572,10 +2625,61 @@ body.page-pt #main_content {
   html.pt-mob-portrait-active #PW .pt-p2-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
+  html.pt-mob-portrait-active body.page-pt #main_wrap {
+    height: var(--pt-vh, 100dvh) !important;
+    max-height: var(--pt-vh, 100dvh) !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  html.pt-mob-portrait-active body.page-pt #main_content {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  html.pt-mob-portrait-active body.page-pt #PW {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  html.pt-mob-portrait-active #PW .pt-grid {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  html.pt-mob-portrait-active #PW .pt-mob-land-3col {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  html.pt-mob-portrait-active #PW .pt-mob-land-center {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  html.pt-mob-portrait-active #PW .pt-mob-land-center .pt-cell-2 {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  html.pt-mob-portrait-active #PW .pt-cell-3--footer {
+    flex: 0 0 auto !important;
+  }
   html.pt-mob-portrait-active #PW .pt-mob-land-center .pt-cell-2 .pt-p2-scroll {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
     overflow-y: auto !important;
-    max-height: none !important;
-    height: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 
   html.pt-mob-landscape-active #PW .pt-mob-land-left,

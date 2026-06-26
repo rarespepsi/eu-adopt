@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt138-orient-v2" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt139-p2-scroll" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -71,12 +71,21 @@
 		min-height: 0 !important;
 		pointer-events: none !important;
 	}
-	/* Înălțime viewport corectă după rotație (Android) */
-	html.pt-mob-portrait-active body.page-pt #main_wrap,
-	html.pt-mob-portrait-active body.page-pt #main_content {
+	/* Înălțime viewport corectă după rotație (Android); portret = înălțime fixă ca P2 să aibă scroll intern */
+	html.pt-mob-portrait-active body.page-pt #main_wrap {
 		min-height: var(--pt-vh, 100dvh) !important;
+		height: var(--pt-vh, 100dvh) !important;
+		max-height: var(--pt-vh, 100dvh) !important;
+		overflow: hidden !important;
+		display: flex !important;
+		flex-direction: column !important;
+	}
+	html.pt-mob-portrait-active body.page-pt #main_content {
+		flex: 1 1 0 !important;
+		min-height: 0 !important;
 		height: auto !important;
-		max-height: none !important;
+		max-height: 100% !important;
+		overflow: hidden !important;
 	}
 	#PW .pt-strip-item--p1 img,
 	#PW .pt-strip-item--p3 img {
@@ -1285,6 +1294,29 @@
 			if (scrollEl) scrollEl.scrollTop = 0;
 		}
 	}
+	function ptSyncPortraitP2Heights() {
+		if (!mq.matches || ptMobIsLandscape()) {
+			var scrollEl0 = document.querySelector("#P2 .pt-p2-scroll");
+			if (scrollEl0) {
+				scrollEl0.style.removeProperty("max-height");
+				scrollEl0.style.removeProperty("height");
+			}
+			return;
+		}
+		var scrollEl = document.querySelector("#P2 .pt-p2-scroll");
+		var p2 = document.getElementById("P2");
+		var p3 = document.getElementById("P3");
+		if (!scrollEl || !p2) return;
+		var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+		if (window.visualViewport && window.visualViewport.height) {
+			vh = Math.round(window.visualViewport.height);
+		}
+		var p3h = p3 ? Math.ceil(p3.getBoundingClientRect().height) : 72;
+		var top = Math.round(p2.getBoundingClientRect().top);
+		var avail = Math.max(140, Math.floor(vh - top - p3h));
+		scrollEl.style.maxHeight = avail + "px";
+		scrollEl.style.height = avail + "px";
+	}
 	function ptOnOrientationLayout() {
 		ptUpdateVhVar();
 		ptSyncOrientClass();
@@ -1292,11 +1324,14 @@
 		ptResetMobOrientationScroll();
 		syncNavHeightToCss();
 		syncPlaceholder();
+		ptSyncPortraitP2Heights();
 		if (window.euadoptPtP2Relayout) window.euadoptPtP2Relayout();
 		requestAnimationFrame(function() {
 			ptUpdateVhVar();
 			ptSyncOrientClass();
 			syncPlaceholder();
+			ptSyncPortraitP2Heights();
+			if (window.euadoptPtP2Relayout) window.euadoptPtP2Relayout();
 		});
 	}
 	function syncPlaceholder() {
@@ -1345,6 +1380,7 @@
 		if (prevH !== h) {
 			p.style.height = h + "px";
 		}
+		ptSyncPortraitP2Heights();
 		requestAnimationFrame(function() {
 			requestAnimationFrame(tightenBelowStickyGap);
 		});
@@ -1392,6 +1428,7 @@
 			});
 		});
 		syncPlaceholder();
+		ptSyncPortraitP2Heights();
 		try {
 			var _pw = document.getElementById("PW");
 			if (_pw) _pw.style.removeProperty("--pt-mob-center-max");
