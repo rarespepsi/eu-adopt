@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt140-p1p3-bottom" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt141-mob-strip-merge" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -421,7 +421,7 @@
 						</div>
 					</div>
 					<div class="pt-p4-sticky-placeholder" id="pt_p4_sticky_placeholder" aria-hidden="true"></div>
-					{# Mobil portret: bară fixă sub navbar (butoane + pub); P1+P3 în footer sub P2. #}
+					{# Mobil: bară fixă sub navbar; o singură bandă cursivă P1+P3 jos (coduri slot păstrate). #}
 					<div class="pt-p4-mobile-sticky pt-p4-portrait-sticky" id="pt_p4_mobile_sticky">
 						<div class="pt-p4-box pt-p4-match-sustine-stack">
 							<div class="pt-p4-box-match" id="P4.2" data-slot="P4.2">
@@ -492,7 +492,7 @@
 							<div id="pt_p2_load_sentinel" class="pt-p2-load-sentinel"{% if not p2_has_more %} hidden{% endif %} aria-hidden="true"></div>
 						</div>
 					</div>
-					<div id="P1" class="pt-cell pt-cell-1 pt-cell-1--mob-footer" data-slot="P1">
+					<div id="P1" class="pt-cell pt-cell-1 pt-strip-band--desktop" data-slot="P1">
 						<div class="pt-strip-wrap pt-strip-p1" aria-label="Bandă publicitate P1">
 							<div class="pt-strip-track pt-strip-track--p1">
 								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
@@ -500,7 +500,17 @@
 							</div>
 						</div>
 					</div>
-					<div id="P3" class="pt-cell pt-cell-3 pt-cell-3--footer" data-slot="P3">
+					<div id="pt_mob_strip_merged" class="pt-cell pt-mob-strip-merged pt-strip-band--mobile" data-slot="P1+P3" aria-label="Bandă publicitate mobilă P1 și P3">
+						<div class="pt-strip-wrap pt-strip-mob-merged">
+							<div class="pt-strip-track pt-strip-track--mob-merged">
+								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
+								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
+								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
+								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
+							</div>
+						</div>
+					</div>
+					<div id="P3" class="pt-cell pt-cell-3 pt-cell-3--footer pt-strip-band--desktop" data-slot="P3">
 						<div class="pt-strip-wrap pt-strip-p3" aria-label="Bandă publicitate P3">
 							<div class="pt-strip-track pt-strip-track--p3">
 								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
@@ -1307,15 +1317,22 @@
 		var p2 = document.getElementById("P2");
 		var p1 = document.getElementById("P1");
 		var p3 = document.getElementById("P3");
+		var mobStrip = document.getElementById("pt_mob_strip_merged");
 		if (!scrollEl || !p2) return;
 		var vh = window.innerHeight || document.documentElement.clientHeight || 0;
 		if (window.visualViewport && window.visualViewport.height) {
 			vh = Math.round(window.visualViewport.height);
 		}
-		var p1h = p1 ? Math.ceil(p1.getBoundingClientRect().height) : 0;
-		var p3h = p3 ? Math.ceil(p3.getBoundingClientRect().height) : 72;
+		var footerH = 0;
+		if (mobStrip && mobStrip.offsetParent !== null) {
+			footerH = Math.ceil(mobStrip.getBoundingClientRect().height);
+		} else {
+			if (p1) footerH += Math.ceil(p1.getBoundingClientRect().height);
+			if (p3) footerH += Math.ceil(p3.getBoundingClientRect().height);
+		}
+		if (footerH <= 0) footerH = 72;
 		var top = Math.round(p2.getBoundingClientRect().top);
-		var avail = Math.max(140, Math.floor(vh - top - p1h - p3h));
+		var avail = Math.max(140, Math.floor(vh - top - footerH));
 		scrollEl.style.maxHeight = avail + "px";
 		scrollEl.style.height = avail + "px";
 	}

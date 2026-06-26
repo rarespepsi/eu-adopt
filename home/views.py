@@ -2138,6 +2138,17 @@ def _strip_cells_donatii_pt_or_servicii(section: str, cells: list[dict]) -> list
     return _strip_cells_apply_sms_strip_href(section, _strip_cells_apply_donatii_eu_href(section, cells))
 
 
+def _pt_strip_mob_merged_cells() -> list[dict]:
+    """PT mobil: o bandă cursivă — P1 apoi P3, fiecare celulă păstrează codul slot (P1.x / P3.x)."""
+    p1 = _strip_cells_donatii_pt_or_servicii(
+        "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P1)
+    )
+    p3 = _strip_cells_donatii_pt_or_servicii(
+        "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P3)
+    )
+    return p1 + p3
+
+
 def _pt_pub_slot_parse_note(note):
     """
     Creative pentru slot PT din ReclamaSlotNote (section='pt', slot_code=P4.3 / P5.1 / …).
@@ -2345,6 +2356,7 @@ def home_view(request):
                 "pt_strip_p3_cells": _strip_cells_donatii_pt_or_servicii(
                     "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P3)
                 ),
+                "pt_strip_mob_merged_cells": _pt_strip_mob_merged_cells(),
             },
         )
 

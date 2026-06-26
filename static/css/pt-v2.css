@@ -137,6 +137,41 @@ body.page-pt #main_content {
   }
 }
 
+/* PT mobil: bandă unică P1+P3 (toate codurile slot în același track) */
+#PW .pt-strip-track--mob-merged {
+  animation: pt-strip-mob-merged 70s linear infinite;
+}
+
+@keyframes pt-strip-mob-merged {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+#PW .pt-strip-wrap.pt-strip-mob-merged {
+  background: #2e7d32;
+  min-height: 54px;
+}
+
+#PW .pt-mob-strip-merged {
+  display: none;
+  background: #2e7d32;
+  border: 2px solid #000;
+  overflow: hidden;
+  padding: 0;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+@media (min-width: 768px) {
+  #PW .pt-strip-band--mobile {
+    display: none !important;
+  }
+}
+
 /* Casete P1 și P3: aceeași lățime fixă */
 #PW .pt-strip-item--p1,
 #PW .pt-strip-item--p3 {
@@ -1748,16 +1783,16 @@ body.page-pt #main_content {
   #PW .pt-p43-desktop-wrap {
     display: none !important;
   }
-  /* P1 primul în grilă pe mobil = doar dacă ar fi în .pt-grid; P1 e în footer centru */
-  #PW .pt-mob-land-center .pt-cell-1,
-  #PW .pt-mob-land-center .pt-cell-1--mob-footer {
+  /* Mobil PT: o singură bandă cursivă (P1+P3); benzi separate doar pe desktop */
+  #PW .pt-strip-band--desktop {
+    display: none !important;
+  }
+  #PW .pt-mob-strip-merged {
+    display: flex !important;
     order: 4 !important;
     flex: 0 0 auto !important;
     flex-shrink: 0 !important;
     position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    right: auto !important;
     width: 100% !important;
     max-width: 100% !important;
     z-index: 8 !important;
@@ -1765,22 +1800,14 @@ body.page-pt #main_content {
     height: var(--pt-p1-strip-h, 72px) !important;
     max-height: var(--pt-p1-strip-h, 72px) !important;
     margin: 0 !important;
-    border-top: none !important;
     box-sizing: border-box !important;
-    display: flex !important;
     align-items: stretch !important;
     justify-content: stretch !important;
   }
-  #PW .pt-mob-land-center .pt-strip-wrap.pt-strip-p1 {
+  #PW .pt-strip-wrap.pt-strip-mob-merged {
     min-height: var(--pt-p1-strip-h, 72px);
     height: var(--pt-p1-strip-h, 72px);
     max-height: var(--pt-p1-strip-h, 72px);
-  }
-  #PW .pt-cell-1 {
-    display: none !important;
-  }
-  #PW .pt-mob-land-center .pt-cell-1 {
-    display: flex !important;
   }
   #PW .pt-p43-mobil-row {
     display: grid !important;
@@ -2215,6 +2242,11 @@ body.page-pt #main_content {
     -webkit-overflow-scrolling: touch !important;
   }
   #PW .pt-cell-3--footer {
+    order: 5 !important;
+    flex: 0 0 auto !important;
+  }
+  #PW .pt-mob-strip-merged {
+    order: 4 !important;
     flex: 0 0 auto !important;
   }
 
@@ -2274,27 +2306,21 @@ body.page-pt #main_content {
   #PW .pt-grid {
     padding-top: 0 !important;
   }
-  /* P1+P3 vizibile jos în coloana centrală (scroll pagină) */
-  #PW .pt-mob-land-center .pt-cell-1,
-  #PW .pt-mob-land-center .pt-cell-1--mob-footer {
+  /* Mobil landscape: bandă unică P1+P3 sub grilă (scroll pagină) */
+  #PW .pt-mob-strip-merged {
     display: flex !important;
     order: 2 !important;
     flex: 0 0 auto !important;
     position: relative !important;
     width: 100% !important;
     min-height: var(--pt-p1-strip-h, 48px) !important;
-    height: auto !important;
-    max-height: none !important;
+    height: var(--pt-p1-strip-h, 48px) !important;
+    max-height: var(--pt-p1-strip-h, 48px) !important;
     visibility: visible !important;
     z-index: 4 !important;
   }
-  #PW .pt-mob-land-center .pt-cell-3--footer {
-    display: flex !important;
-    order: 3 !important;
-    flex: 0 0 auto !important;
-    visibility: visible !important;
-    position: relative !important;
-    z-index: 4 !important;
+  #PW .pt-strip-band--desktop {
+    display: none !important;
   }
   #PW .pt-p4-portrait-sticky,
   #PW #pt_p4_mobile_sticky {
@@ -2635,16 +2661,13 @@ body.page-pt #main_content {
     width: 100% !important;
     max-width: 100% !important;
   }
-  html.pt-mob-portrait-active #PW .pt-mob-land-center .pt-cell-1,
-  html.pt-mob-portrait-active #PW .pt-mob-land-center .pt-cell-1--mob-footer {
+  html.pt-mob-portrait-active #PW .pt-mob-strip-merged {
     display: flex !important;
-    position: relative !important;
-    top: auto !important;
     order: 4 !important;
     flex: 0 0 auto !important;
   }
-  html.pt-mob-portrait-active #PW .pt-cell-3--footer {
-    order: 5 !important;
+  html.pt-mob-portrait-active #PW .pt-strip-band--desktop {
+    display: none !important;
   }
   html.pt-mob-portrait-active #PW .pt-cell-4 {
     height: auto !important;
@@ -2710,6 +2733,15 @@ body.page-pt #main_content {
   html.pt-mob-portrait-active #PW .pt-cell-3--footer {
     flex: 0 0 auto !important;
   }
+  html.pt-mob-portrait-active #PW .pt-mob-strip-merged {
+    display: flex !important;
+    order: 4 !important;
+    flex: 0 0 auto !important;
+    min-height: var(--pt-p1-strip-h, 72px) !important;
+    height: var(--pt-p1-strip-h, 72px) !important;
+    max-height: var(--pt-p1-strip-h, 72px) !important;
+    overflow: hidden !important;
+  }
   html.pt-mob-portrait-active #PW .pt-mob-land-center .pt-cell-2 .pt-p2-scroll {
     flex: 1 1 0 !important;
     min-height: 0 !important;
@@ -2739,14 +2771,15 @@ body.page-pt #main_content {
   html.pt-mob-landscape-active #PW .pt-mob-land-3col {
     padding: 0 var(--pt-land-rail-w, clamp(3.25rem, 14vw, 5.75rem)) !important;
   }
-  html.pt-mob-landscape-active #PW .pt-mob-land-center .pt-cell-1,
-  html.pt-mob-landscape-active #PW .pt-mob-land-center .pt-cell-1--mob-footer,
-  html.pt-mob-landscape-active #PW .pt-mob-land-center .pt-cell-3--footer {
+  html.pt-mob-landscape-active #PW .pt-mob-strip-merged {
     display: flex !important;
     visibility: visible !important;
     flex: 0 0 auto !important;
     width: 100% !important;
     position: relative !important;
+  }
+  html.pt-mob-landscape-active #PW .pt-strip-band--desktop {
+    display: none !important;
   }
   html.pt-mob-landscape-active #PW .pt-p4-portrait-sticky,
   html.pt-mob-landscape-active #PW #pt_p4_mobile_sticky {
