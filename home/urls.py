@@ -135,6 +135,7 @@ urlpatterns = [
     path('shop/magazin-foto/more/', views.shop_magazin_foto_more_view, name='shop_magazin_foto_more'),
     path('shop/magazin-foto/', views.shop_magazin_foto_view, name='shop_magazin_foto'),
 
+    path('img/pet-thumb/<int:size>/<path:relpath>', views.pet_media_thumb_view, name='pet_media_thumb'),
     path('pets/', views.home_view, name='pets_all'),
     path('pets/p2-more/', views.pets_p2_more_view, name='pets_p2_more'),
     path('pets/<int:pk>/', views.dog_profile_view, name='pets_single'),

@@ -1499,7 +1499,7 @@
 											<div class="mypet-fisa-photo-slot mypet-fisa-photo-1">
 												<div class="mypet-fisa-photo-preview" aria-hidden="true">
 													{% if pet.imagine %}
-														<img src="{{ pet.imagine.url }}" alt="Poza 1" class="img-crop js-pet-media-thumb" data-media-type="image" />
+														<img src="{% pet_thumb_url pet.imagine 320 %}" data-modal-src="{% pet_thumb_url pet.imagine 1200 %}" alt="Poza 1" class="img-crop js-pet-media-thumb" data-media-type="image" loading="eager" decoding="async" />
 													{% else %}
 														<img src="{% static pet.imagine_fallback|default:'images/pets/charlie-275x275.jpg' %}" alt="Poza 1" class="img-crop js-pet-media-thumb" data-media-type="image" />
 													{% endif %}
@@ -1508,7 +1508,7 @@
 											<div class="mypet-fisa-photo-slot mypet-fisa-photo-2">
 												<div class="mypet-fisa-photo-preview" aria-hidden="true">
 													{% if pet.imagine_2 %}
-														<img src="{{ pet.imagine_2.url }}" alt="Poza 2" class="img-crop js-pet-media-thumb" data-media-type="image" />
+														<img src="{% pet_thumb_url pet.imagine_2 320 %}" data-modal-src="{% pet_thumb_url pet.imagine_2 1200 %}" alt="Poza 2" class="img-crop js-pet-media-thumb" data-media-type="image" loading="lazy" decoding="async" />
 													{% else %}
 														<img src="{% static pet.imagine_fallback|default:'images/pets/charlie-275x275.jpg' %}" alt="Poza 2" class="img-crop js-pet-media-thumb" data-media-type="image" />
 													{% endif %}
@@ -1517,7 +1517,7 @@
 											<div class="mypet-fisa-photo-slot mypet-fisa-photo-3">
 												<div class="mypet-fisa-photo-preview" aria-hidden="true">
 													{% if pet.imagine_3 %}
-														<img src="{{ pet.imagine_3.url }}" alt="Poza 3" class="img-crop js-pet-media-thumb" data-media-type="image" />
+														<img src="{% pet_thumb_url pet.imagine_3 320 %}" data-modal-src="{% pet_thumb_url pet.imagine_3 1200 %}" alt="Poza 3" class="img-crop js-pet-media-thumb" data-media-type="image" loading="lazy" decoding="async" />
 													{% else %}
 														<img src="{% static pet.imagine_fallback|default:'images/pets/charlie-275x275.jpg' %}" alt="Poza 3" class="img-crop js-pet-media-thumb" data-media-type="image" />
 													{% endif %}
@@ -1934,12 +1934,24 @@
 				if (modalBody) modalBody.innerHTML = "";
 				if (modalFooter) { modalFooter.innerHTML = ""; modalFooter.hidden = true; }
 			}
-			function openImage(src, alt) {
+			function openImage(src, alt, el) {
 				if (!modal || !modalBody) return;
+				var pick = (el && (el.getAttribute("data-modal-src") || el.getAttribute("src"))) || src || "";
 				modalBody.innerHTML = "";
+				modalBody.classList.add("pet-media-modal__body--loading");
 				var img = document.createElement("img");
-				img.src = src;
 				img.alt = alt || "";
+				img.decoding = "async";
+				img.onload = function() {
+					modalBody.classList.remove("pet-media-modal__body--loading");
+				};
+				img.onerror = function() {
+					modalBody.classList.remove("pet-media-modal__body--loading");
+					if (src && pick !== src) {
+						img.src = src;
+					}
+				};
+				img.src = pick;
 				modalBody.appendChild(img);
 				if (modalFooter) { modalFooter.innerHTML = ""; modalFooter.hidden = true; }
 				modal.hidden = false;
@@ -2126,7 +2138,18 @@
 				var img = document.getElementById("petQrImg");
 				if (!img) return;
 				var qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=6&data=" + encodeURIComponent(pageUrl);
-				img.src = qrUrl;
+				var load = function() { img.src = qrUrl; };
+				try {
+					if (window.matchMedia("(max-width: 767.98px)").matches) {
+						if (window.requestIdleCallback) {
+							window.requestIdleCallback(load, { timeout: 4000 });
+						} else {
+							setTimeout(load, 2000);
+						}
+						return;
+					}
+				} catch (e) {}
+				load();
 			})();
 			if (modalShare) {
 				modalShare.addEventListener("click", function(e) {
@@ -2139,7 +2162,7 @@
 				var img = e.target && e.target.closest(".js-pet-media-thumb");
 				if (img && img.tagName === "IMG") {
 					trackPetEvent("media_view");
-					openImage(img.getAttribute("src"), img.getAttribute("alt"));
+					openImage(img.getAttribute("src"), img.getAttribute("alt"), img);
 					return;
 				}
 				var vid = e.target && e.target.closest(".js-pet-video-thumb");

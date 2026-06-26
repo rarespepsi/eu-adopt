@@ -49,6 +49,7 @@ from .pet_age_bands import (
     build_age_band_filter_q,
 )
 from .pt_p2_list import PT_P2_PAGE_SIZE, pt_pets_page_context
+from .pet_media_thumb import pet_media_thumb_view
 from .pub_slot_defaults import pub_slot_live_creative, pub_slots_ordered
 from .mail_helpers import email_subject_for_user, send_mail_text_and_html
 from .context_processors import get_navbar_unread_counts
