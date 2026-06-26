@@ -2443,24 +2443,44 @@ body.page-pt #main_content {
     overflow: hidden;
   }
 
-  /* Stânga: 3 butoane pe un rând deasupra unei casete Publi. */
+  /* Stânga: 3 butoane unul sub altul, apoi P4.3 */
   #PW .pt-mob-land-left .pt-p4-land-rail-ms {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: minmax(2rem, auto);
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch;
     gap: 1px;
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
     flex-shrink: 0 !important;
   }
-  #PW .pt-mob-land-left .pt-p4-land-rail-ms:has(.pt-p4-btn-filters):not(:has(.pt-p4-btn-match)) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  #PW .pt-mob-land-left .pt-p4-land-rail-ms > .pt-p4-box-match {
+    flex: 2 1 0;
+    min-height: 0;
+    display: flex !important;
+    flex-direction: column;
+    padding: 0 !important;
+    margin: 0;
   }
-  #PW .pt-mob-land-left .pt-p4-land-rail-ms > .pt-p4-box-match,
-  #PW .pt-mob-land-left .pt-p4-land-rail-ms > .pt-p4-box-sustine,
+  #PW .pt-mob-land-left .pt-p4-land-rail-ms > .pt-p4-box-sustine {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex !important;
+    flex-direction: column;
+    padding: 0 !important;
+    margin: 0;
+  }
   #PW .pt-mob-land-left .pt-p4-land-rail-ms .pt-p4-actions {
-    display: contents;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto;
+    gap: 1px;
+    width: 100%;
+    min-height: 0;
+    height: 100%;
+  }
+  #PW .pt-mob-land-left .pt-p4-land-rail-ms.pt-p4-ms-stack--sustine-only > .pt-p4-box-match {
+    flex: 1 1 0;
   }
   #PW .pt-mob-land-left .pt-p4-land-rail-ms .pt-p4-btn-match,
   #PW .pt-mob-land-left .pt-p4-land-rail-ms .pt-p4-btn-filters,
@@ -2468,13 +2488,13 @@ body.page-pt #main_content {
     display: flex !important;
     align-items: center;
     justify-content: center;
+    flex: 1 1 0;
     width: 100% !important;
-    min-height: 2rem !important;
-    height: 100% !important;
+    min-height: 1.85rem !important;
     margin: 0 !important;
-    padding: 0.1rem 0.12rem !important;
-    font-size: clamp(0.4rem, 1.45vw, 0.52rem) !important;
-    line-height: 1.05 !important;
+    padding: 0.12rem 0.18rem !important;
+    font-size: clamp(0.48rem, 1.65vw, 0.66rem) !important;
+    line-height: 1.08 !important;
     text-align: center;
     white-space: normal;
     overflow-wrap: break-word;
