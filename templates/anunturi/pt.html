@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt136-p4-land-col" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt137-orient-fix" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -34,16 +34,42 @@
 			-webkit-overflow-scrolling: touch;
 		}
 	}
-	/* Mobil: #PW + grila P2 depășesc înălțimea viewport; #main_content avea overflow:hidden → tăiat la ~2 rânduri (6 carduri), fără scroll. */
-	@media (max-width: 767.98px) {
+	/* Mobil landscape: scroll pe #main_content; portret: scroll doar în .pt-p2-scroll */
+	@media (max-width: 767.98px) and (orientation: landscape) {
 		body.page-pt #main_content {
 			overflow-y: auto !important;
 			overflow-x: hidden !important;
 			-webkit-overflow-scrolling: touch;
 			overscroll-behavior-y: contain;
-			/* P3 la capătul scroll-ului nu rămâne sub bara de jos iOS / Chrome */
 			padding-bottom: max(0.65rem, env(safe-area-inset-bottom, 0px)) !important;
 		}
+	}
+	@media (max-width: 767.98px) and (orientation: portrait) {
+		body.page-pt #main_content {
+			overflow-y: hidden !important;
+			overflow-x: hidden !important;
+			padding-bottom: max(0.65rem, env(safe-area-inset-bottom, 0px)) !important;
+		}
+		body.page-pt #PW .pt-p2-scroll {
+			overflow-y: auto !important;
+			overflow-x: hidden !important;
+			-webkit-overflow-scrolling: touch;
+			overscroll-behavior-y: contain;
+		}
+	}
+	/* JS: clasă pe <html> la rotație — bara mov portret nu blochează tap în landscape */
+	html.pt-mob-landscape-active #PW .pt-p4-portrait-sticky,
+	html.pt-mob-landscape-active #PW #pt_p4_mobile_sticky {
+		display: none !important;
+		visibility: hidden !important;
+		pointer-events: none !important;
+		height: 0 !important;
+		overflow: hidden !important;
+	}
+	html.pt-mob-landscape-active #PW .pt-p4-sticky-placeholder {
+		height: 0 !important;
+		min-height: 0 !important;
+		pointer-events: none !important;
 	}
 	#PW .pt-strip-item--p1 img,
 	#PW .pt-strip-item--p3 img {
@@ -768,6 +794,10 @@
 	}
 	window.addEventListener("resize", onP2IoResize);
 	window.addEventListener("orientationchange", onP2IoResize);
+	window.euadoptPtP2Relayout = function() {
+		p2SetupIo();
+		scheduleP2ScrollProbe();
+	};
 })();
 </script>
 <script>
@@ -1189,14 +1219,53 @@
 		ph = ph || document.getElementById("pt_p4_sticky_placeholder");
 		return ph;
 	}
+	function ptMobIsLandscape() {
+		try {
+			return window.matchMedia("(max-width: 767.98px) and (orientation: landscape)").matches;
+		} catch (e) {
+			return false;
+		}
+	}
+	function ptSyncOrientClass() {
+		var land = mq.matches && ptMobIsLandscape();
+		document.documentElement.classList.toggle("pt-mob-landscape-active", land);
+		document.documentElement.classList.toggle("pt-mob-portrait-active", mq.matches && !land);
+	}
+	function ptResetMobOrientationScroll() {
+		var mc = document.getElementById("main_content");
+		var scrollEl = document.querySelector("#P2 .pt-p2-scroll");
+		if (ptMobIsLandscape()) {
+			if (scrollEl) scrollEl.scrollTop = 0;
+		} else {
+			if (mc) mc.scrollTop = 0;
+			if (scrollEl) scrollEl.scrollTop = 0;
+		}
+	}
+	function ptOnOrientationLayout() {
+		ptSyncOrientClass();
+		ptResetMobOrientationScroll();
+		syncNavHeightToCss();
+		syncPlaceholder();
+		if (window.euadoptPtP2Relayout) window.euadoptPtP2Relayout();
+	}
 	function syncPlaceholder() {
 		var b = getBar();
 		var p = getPh();
 		if (!b || !p) return;
 		if (!mq.matches) {
 			p.style.height = "";
+			b.style.removeProperty("pointer-events");
+			b.style.removeProperty("visibility");
 			return;
 		}
+		if (ptMobIsLandscape()) {
+			p.style.height = "0px";
+			b.style.pointerEvents = "none";
+			b.style.visibility = "hidden";
+			return;
+		}
+		b.style.removeProperty("pointer-events");
+		b.style.removeProperty("visibility");
 		var sum = 0;
 		for (var i = 0; i < b.children.length; i++) {
 			var el = b.children[i];
@@ -1254,6 +1323,7 @@
 		}
 	}
 	function boot() {
+		ptSyncOrientClass();
 		syncNavHeightToCss();
 		try {
 			document.documentElement.style.removeProperty("--pt-p1-strip-h");
@@ -1304,11 +1374,18 @@
 	}
 	window.addEventListener("resize", function() {
 		clearTimeout(window._ptP4BarResizeT);
-		window._ptP4BarResizeT = setTimeout(boot, 160);
+		window._ptP4BarResizeT = setTimeout(function() {
+			boot();
+			ptOnOrientationLayout();
+		}, 160);
 	});
 	window.addEventListener("orientationchange", function() {
 		clearTimeout(window._ptP4BarResizeT);
-		window._ptP4BarResizeT = setTimeout(boot, 280);
+		ptOnOrientationLayout();
+		window._ptP4BarResizeT = setTimeout(function() {
+			boot();
+			ptOnOrientationLayout();
+		}, 280);
 	});
 	window.addEventListener("load", boot);
 	window.addEventListener("load", function() {

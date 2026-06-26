@@ -2215,8 +2215,14 @@ body.page-pt #main_content {
   #PW .pt-cell-1 {
     display: none !important;
   }
-  #PW .pt-p4-portrait-sticky {
+  #PW .pt-p4-portrait-sticky,
+  #PW #pt_p4_mobile_sticky {
     display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
   }
   /* P4: în landscape conținutul vizibil e în rail-uri / modal; fără înălțime fantomă între navbar și cele 3 coloane */
   #PW .pt-cell-4 {
