@@ -94,10 +94,43 @@ body.page-home-v2 .home-v2-pub-badges {
 
 /* PT P4/P5 */
 .pt-p43-partner-fill.pub-live-cover-link,
-.pt-p43-creative-link.pub-live-cover-link {
-	display: flex;
+.pt-p43-creative-link.pub-live-cover-link,
+.pt-pub-fill-link.pub-live-cover-link {
+	display: block;
 	flex: 1 1 auto;
 	min-height: 0;
+	width: 100%;
+	height: 100%;
+}
+/* PT: întreg slotul = zonă de tap (evită click-through la P2/A2 dedesubt) */
+#PW .pt-p43-slot,
+#PW .pt-p43-desktop-slot {
+	position: relative;
+	overflow: hidden;
+}
+#PW .pt-p43-slot > .pub-live-cover-link.pt-pub-fill-link,
+#PW .pt-p43-slot > a.pt-p43-partner-fill,
+#PW .pt-p43-desktop-slot > .pub-live-cover-link.pt-pub-fill-link {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+}
+#PW .pt-p43-creative-card .pt-p5-user-avatar {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	min-height: 0;
+}
+#PW .pt-p43-creative-card .pt-p5-user-avatar > .pub-live-cover-link.pt-pub-fill-link {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+}
+#PW .pt-p43-slot .pub-live-cover,
+#PW .pt-p43-desktop-slot .pub-live-cover,
+#PW .pt-p43-creative-card .pub-live-cover {
+	height: 100%;
+	min-height: 100%;
 }
 .pt-p43-creative-card .pub-live-cover,
 .pt-p5-user-avatar .pub-live-cover {

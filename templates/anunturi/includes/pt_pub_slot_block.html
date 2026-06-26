@@ -22,13 +22,13 @@
 {% if slot_layout == 'p5_desktop' %}
 	<div class="pt-p5-user-card pt-p43-partner-card pt-p43-creative-card">
 		<div class="pt-p5-user-avatar">
-			{% include "anunturi/includes/pub_slot_live_cover.html" with creative=creative layout="sidebar" only %}
+			{% include "anunturi/includes/pub_slot_live_cover.html" with creative=creative layout="sidebar" link_classes="pt-p43-partner-fill pt-pub-fill-link" only %}
 		</div>
 	</div>
 {% elif slot_layout == 'p4_desktop' %}
-	{% include "anunturi/includes/pub_slot_live_cover.html" with creative=creative layout="sidebar" only %}
+	{% include "anunturi/includes/pub_slot_live_cover.html" with creative=creative layout="sidebar" link_classes="pt-p43-partner-fill pt-pub-fill-link" only %}
 {% else %}
-	{% include "anunturi/includes/pub_slot_live_cover.html" with creative=creative layout="strip" only %}
+	{% include "anunturi/includes/pub_slot_live_cover.html" with creative=creative layout="strip" link_classes="pt-p43-partner-fill pt-pub-fill-link" only %}
 {% endif %}
 {% endif %}
 </div>

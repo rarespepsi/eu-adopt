@@ -2374,6 +2374,32 @@ body.page-pt #main_content {
   body.page-pt.pt-mob-filters-above-nav #PW .pt-mobile-filters-backdrop:not([hidden]) {
     z-index: 12001 !important;
   }
+
+  /* Pub rail fixe: captează tap-ul întreg pe casetă (nu trece la P2 din centru) */
+  #PW .pt-mob-land-left,
+  #PW .pt-mob-land-right {
+    pointer-events: auto !important;
+    isolation: isolate;
+  }
+  #PW .pt-p43-mobil-col--stack .pt-p43-slot {
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  #PW .pt-p43-mobil-col--stack .pt-p43-slot > .pub-live-cover-link.pt-pub-fill-link,
+  #PW .pt-p43-mobil-col--stack .pt-p43-slot > a.pt-p43-partner-fill {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+  #PW .pt-mob-land-center {
+    overflow-x: hidden !important;
+    max-width: 100%;
+  }
+  #PW .pt-mob-land-center .pt-p2-grid {
+    max-width: 100%;
+    overflow: hidden;
+  }
 }
 
 @media (max-width: 767.98px) and (orientation: landscape) and (min-width: 520px) {
