@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt137-orient-fix" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt138-orient-v2" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -70,6 +70,13 @@
 		height: 0 !important;
 		min-height: 0 !important;
 		pointer-events: none !important;
+	}
+	/* Înălțime viewport corectă după rotație (Android) */
+	html.pt-mob-portrait-active body.page-pt #main_wrap,
+	html.pt-mob-portrait-active body.page-pt #main_content {
+		min-height: var(--pt-vh, 100dvh) !important;
+		height: auto !important;
+		max-height: none !important;
 	}
 	#PW .pt-strip-item--p1 img,
 	#PW .pt-strip-item--p3 img {
@@ -878,6 +885,7 @@
 		});
 	}
 	function ptMobFiltersLandscape() {
+		if (window.euadoptPtMobIsLandscape) return window.euadoptPtMobIsLandscape();
 		try {
 			return !!(window.matchMedia && window.matchMedia("(max-width: 767.98px) and (orientation: landscape)").matches);
 		} catch (e) {
@@ -1220,12 +1228,48 @@
 		return ph;
 	}
 	function ptMobIsLandscape() {
+		if (!mq.matches) return false;
+		var w = window.innerWidth || document.documentElement.clientWidth || 0;
+		var h = window.innerHeight || document.documentElement.clientHeight || 0;
+		if (window.visualViewport) {
+			w = Math.round(window.visualViewport.width) || w;
+			h = Math.round(window.visualViewport.height) || h;
+		}
+		if (w > 0 && h > 0 && w > h) return true;
 		try {
-			return window.matchMedia("(max-width: 767.98px) and (orientation: landscape)").matches;
+			return window.matchMedia("(orientation: landscape)").matches;
 		} catch (e) {
 			return false;
 		}
 	}
+	function ptUpdateVhVar() {
+		var h = window.innerHeight || document.documentElement.clientHeight || 0;
+		if (window.visualViewport && window.visualViewport.height) {
+			h = Math.round(window.visualViewport.height);
+		}
+		if (h > 0) {
+			document.documentElement.style.setProperty("--pt-vh", h + "px");
+		}
+	}
+	function ptClearStuckLayoutStyles() {
+		["main_wrap", "main_content", "PW"].forEach(function(id) {
+			var el = document.getElementById(id);
+			if (!el) return;
+			["height", "max-height", "min-height"].forEach(function(prop) {
+				el.style.removeProperty(prop);
+			});
+		});
+		document.querySelectorAll("#PW .pt-mob-land-left, #PW .pt-mob-land-right").forEach(function(rail) {
+			if (ptMobIsLandscape()) {
+				rail.style.removeProperty("display");
+				rail.style.removeProperty("position");
+				rail.style.removeProperty("left");
+			} else {
+				rail.style.setProperty("display", "none", "important");
+			}
+		});
+	}
+	window.euadoptPtMobIsLandscape = ptMobIsLandscape;
 	function ptSyncOrientClass() {
 		var land = mq.matches && ptMobIsLandscape();
 		document.documentElement.classList.toggle("pt-mob-landscape-active", land);
@@ -1242,11 +1286,18 @@
 		}
 	}
 	function ptOnOrientationLayout() {
+		ptUpdateVhVar();
 		ptSyncOrientClass();
+		ptClearStuckLayoutStyles();
 		ptResetMobOrientationScroll();
 		syncNavHeightToCss();
 		syncPlaceholder();
 		if (window.euadoptPtP2Relayout) window.euadoptPtP2Relayout();
+		requestAnimationFrame(function() {
+			ptUpdateVhVar();
+			ptSyncOrientClass();
+			syncPlaceholder();
+		});
 	}
 	function syncPlaceholder() {
 		var b = getBar();
@@ -1306,7 +1357,7 @@
 		});
 	}
 	function tightenBelowStickyGap() {
-		if (!mq.matches) return;
+		if (!mq.matches || ptMobIsLandscape()) return;
 		var b = getBar();
 		var p = getPh();
 		var p2 = document.getElementById("P2");
@@ -1323,7 +1374,9 @@
 		}
 	}
 	function boot() {
+		ptUpdateVhVar();
 		ptSyncOrientClass();
+		ptClearStuckLayoutStyles();
 		syncNavHeightToCss();
 		try {
 			document.documentElement.style.removeProperty("--pt-p1-strip-h");
@@ -1385,8 +1438,20 @@
 		window._ptP4BarResizeT = setTimeout(function() {
 			boot();
 			ptOnOrientationLayout();
-		}, 280);
+		}, 320);
 	});
+	if (window.visualViewport) {
+		window.visualViewport.addEventListener("resize", function() {
+			clearTimeout(window._ptVpResizeT);
+			window._ptVpResizeT = setTimeout(ptOnOrientationLayout, 120);
+		});
+	}
+	try {
+		var mqLand = window.matchMedia("(max-width: 767.98px) and (orientation: landscape)");
+		var onMq = function() { ptOnOrientationLayout(); };
+		if (mqLand.addEventListener) mqLand.addEventListener("change", onMq);
+		else if (mqLand.addListener) mqLand.addListener(onMq);
+	} catch (eMq) {}
 	window.addEventListener("load", boot);
 	window.addEventListener("load", function() {
 		setTimeout(function() {

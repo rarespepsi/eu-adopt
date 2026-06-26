@@ -2527,3 +2527,98 @@ body.page-pt #main_content {
     aspect-ratio: 4 / 3 !important;
   }
 }
+
+/* PT mobil: clase JS pe <html> — sursă de adevăr la rotație (media orientation poate rămâne blocat pe Android) */
+@media (max-width: 767.98px) {
+  html.pt-mob-portrait-active #PW .pt-mob-land-left,
+  html.pt-mob-portrait-active #PW .pt-mob-land-right {
+    display: none !important;
+    position: absolute !important;
+    left: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
+  }
+  html.pt-mob-portrait-active #PW .pt-mob-land-3col {
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  html.pt-mob-portrait-active #PW .pt-mob-land-center {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  html.pt-mob-portrait-active #PW .pt-cell-1 {
+    display: flex !important;
+  }
+  html.pt-mob-portrait-active #PW .pt-cell-4 {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  html.pt-mob-portrait-active #PW #pt_p4_mobile_sticky.pt-p4-portrait-sticky {
+    display: flex !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+  html.pt-mob-portrait-active #PW .pt-p2-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  html.pt-mob-portrait-active #PW .pt-mob-land-center .pt-cell-2 .pt-p2-scroll {
+    overflow-y: auto !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  html.pt-mob-landscape-active #PW .pt-mob-land-left,
+  html.pt-mob-landscape-active #PW .pt-mob-land-right {
+    display: flex !important;
+    position: fixed !important;
+    left: auto !important;
+    width: var(--pt-land-rail-w, clamp(3.25rem, 14vw, 5.75rem)) !important;
+    height: auto !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    z-index: 2260 !important;
+  }
+  html.pt-mob-landscape-active #PW .pt-mob-land-left {
+    left: 0 !important;
+  }
+  html.pt-mob-landscape-active #PW .pt-mob-land-right {
+    right: 0 !important;
+  }
+  html.pt-mob-landscape-active #PW .pt-mob-land-3col {
+    padding: 0 var(--pt-land-rail-w, clamp(3.25rem, 14vw, 5.75rem)) !important;
+  }
+  html.pt-mob-landscape-active #PW .pt-cell-1 {
+    display: none !important;
+  }
+  html.pt-mob-landscape-active #PW .pt-p4-portrait-sticky,
+  html.pt-mob-landscape-active #PW #pt_p4_mobile_sticky {
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+  }
+  html.pt-mob-landscape-active #PW .pt-cell-4 {
+    height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+  }
+  html.pt-mob-landscape-active body.page-pt #main_content {
+    overflow-y: auto !important;
+  }
+  html.pt-mob-landscape-active #PW .pt-mob-land-center .pt-cell-2 .pt-p2-scroll {
+    overflow-y: visible !important;
+  }
+  html.pt-mob-landscape-active #PW .pt-p2-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
