@@ -1,4 +1,5 @@
 /* PT layout P1–P5: P1 bandă cursivă sub navbar (desktop + mobil); mobil: bara mov fixă la top = nav + înălțime P1 */
+/* Mobil PT: max-width 767.98px SAU telefon landscape (ex. S22 ~780×360) = max-height 520px. Desktop PT: min-width 768px ȘI min-height 521px. */
 #PW {
   width: 100% !important;
   max-width: 100% !important;
@@ -166,7 +167,7 @@ body.page-pt #main_content {
   justify-content: stretch;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 768px) and (min-height: 521px) {
   #PW .pt-strip-band--mobile {
     display: none !important;
   }
@@ -1633,7 +1634,7 @@ body.page-pt #main_content {
   cursor: default;
 }
 /* ≥768px: 3 rânduri — sus P1; mijloc P4|P2|P5; jos P3 */
-@media (min-width: 768px) {
+@media (min-width: 768px) and (min-height: 521px) {
   #PW .pt-cell-4 {
     grid-row: 2;
     grid-column: 1;
@@ -1767,7 +1768,7 @@ body.page-pt #main_content {
 }
 
 /* Responsive PW: tablet + mobil */
-@media (max-width: 767.98px) {
+@media (max-width: 767.98px), (orientation: landscape) and (max-height: 520px) {
   /* Înălțime fixă P1 = aceeași valoare folosită la top al barei mov fixe (sub P1, nu peste) */
   #PW {
     --pt-p1-strip-h: 72px;
@@ -2295,7 +2296,7 @@ body.page-pt #main_content {
 }
 
 /* Mobil landscape: fără bară mov portret; P1 ascuns; rail stânga/dreapta fixe în viewport (sub zona navbar măsurată de --nav-height) */
-@media (max-width: 767.98px) and (orientation: landscape) {
+@media (max-width: 767.98px) and (orientation: landscape), (orientation: landscape) and (max-height: 520px) {
   /* Fundal aliniat cu login/signup (#141a22), rail-uri sticlă */
   body.page-pt #main_content {
     background-color: #141a22 !important;
@@ -2628,7 +2629,7 @@ body.page-pt #main_content {
   }
 }
 
-@media (max-width: 767.98px) and (orientation: landscape) and (min-width: 520px) {
+@media (max-width: 767.98px) and (orientation: landscape) and (min-width: 520px), (orientation: landscape) and (max-height: 520px) and (min-width: 520px) {
   #PW .pt-p2-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
@@ -2638,7 +2639,7 @@ body.page-pt #main_content {
 }
 
 /* PT mobil: clase JS pe <html> — sursă de adevăr la rotație (media orientation poate rămâne blocat pe Android) */
-@media (max-width: 767.98px) {
+@media (max-width: 767.98px), (orientation: landscape) and (max-height: 520px) {
   html.pt-mob-portrait-active #PW .pt-mob-land-left,
   html.pt-mob-portrait-active #PW .pt-mob-land-right {
     display: none !important;

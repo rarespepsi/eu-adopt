@@ -10,13 +10,13 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt143-orient-final" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt144-land-bp" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
 	body.page-pt #main_content { min-height: 0 !important; display: flex !important; flex-direction: column !important; flex: 1 1 0 !important; overflow: hidden !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
 	/* Desktop/tablet: PW fix în viewport; mobil – flux natural (evită P2 prăbușit la flex 1 1 0) */
-	@media (min-width: 768px) {
+	@media (min-width: 768px) and (min-height: 521px) {
 		body.page-pt #main_content #PW {
 			height: calc(100vh - var(--nav-h, 64px)) !important;
 			max-height: calc(100vh - var(--nav-h, 64px)) !important;
@@ -35,13 +35,28 @@
 		}
 	}
 	/* Mobil landscape: scroll pe #main_content; portret: scroll doar în .pt-p2-scroll */
-	@media (max-width: 767.98px) and (orientation: landscape) {
+	@media (max-width: 767.98px) and (orientation: landscape), (orientation: landscape) and (max-height: 520px) {
 		body.page-pt #main_content {
 			overflow-y: auto !important;
 			overflow-x: hidden !important;
 			-webkit-overflow-scrolling: touch;
 			overscroll-behavior-y: contain;
 			padding-bottom: max(0.65rem, env(safe-area-inset-bottom, 0px)) !important;
+		}
+	}
+	@media (orientation: landscape) and (max-height: 520px) {
+		html body.page-pt.page-animale #A0 {
+			position: fixed !important;
+			top: 0 !important;
+			left: 0 !important;
+			right: 0 !important;
+			z-index: 2600 !important;
+			width: 100% !important;
+		}
+		body.page-pt #main_content {
+			box-sizing: border-box !important;
+			padding: 0 !important;
+			padding-top: var(--nav-height, var(--nav-h, 64px)) !important;
 		}
 	}
 	@media (max-width: 767.98px) and (orientation: portrait) {
@@ -316,6 +331,21 @@
 {# PT portret mobil: A0 fix + #main_content padding-top = --nav-height → banda cursivă lipită de navbar, fără #FCFCFC între ele #}
 {% block extra_css_after %}
 <style>
+	@media (orientation: landscape) and (max-height: 520px) {
+		html body.page-pt.page-animale #A0 {
+			position: fixed !important;
+			top: 0 !important;
+			left: 0 !important;
+			right: 0 !important;
+			z-index: 2600 !important;
+			width: 100% !important;
+		}
+		body.page-pt #main_content {
+			box-sizing: border-box !important;
+			padding: 0 !important;
+			padding-top: var(--nav-height, var(--nav-h, 64px)) !important;
+		}
+	}
 	@media (max-width: 767.98px) and (orientation: portrait) {
 		html body.page-pt.page-animale #A0 {
 			position: fixed !important;
@@ -592,6 +622,10 @@
 
 {% block extra_js %}
 <script>
+window.euadoptPtMqMob = "(max-width: 767.98px), (orientation: landscape) and (max-height: 520px)";
+window.euadoptPtMqMobLand = "(max-width: 767.98px) and (orientation: landscape), (orientation: landscape) and (max-height: 520px)";
+</script>
+<script>
 (function() {
 	/* Un singur setInterval pentru toate pozele rotative — altfel fiecare card + fiecare lot P2 adaugă timer (zeci/sute) și blochează mobilul. */
 	var ROT_TICK_MS = 5000;
@@ -619,7 +653,7 @@
 	}
 	function ptSkipImageRotation() {
 		try {
-			return window.matchMedia("(max-width: 767.98px)").matches;
+			return window.matchMedia(window.euadoptPtMqMob || "(max-width: 767.98px), (orientation: landscape) and (max-height: 520px)").matches;
 		} catch (e) {
 			return false;
 		}
@@ -665,7 +699,7 @@
 	var sentinel = document.getElementById("pt_p2_load_sentinel");
 	var scrollEl = document.querySelector("#P2 .pt-p2-scroll");
 	var mainContent = document.getElementById("main_content");
-	var mqMob = window.matchMedia("(max-width: 767.98px)");
+	var mqMob = window.matchMedia(window.euadoptPtMqMob || "(max-width: 767.98px), (orientation: landscape) and (max-height: 520px)");
 	if (!grid || !sentinel || !scrollEl) return;
 	var baseUrl = grid.getAttribute("data-p2-more-url") || "";
 	if (!baseUrl) return;
@@ -843,7 +877,7 @@
 	var filtersApplied = false;
 	var filtersDraft = null;
 	function isMobileViewport() {
-		return !!(window.matchMedia && window.matchMedia("(max-width: 767.98px)").matches);
+		return !!(window.matchMedia && window.matchMedia(window.euadoptPtMqMob || "(max-width: 767.98px), (orientation: landscape) and (max-height: 520px)").matches);
 	}
 	function getFilterSnapshot() {
 		var snap = {};
@@ -906,7 +940,7 @@
 	function ptMobFiltersLandscape() {
 		if (window.euadoptPtMobIsLandscape) return window.euadoptPtMobIsLandscape();
 		try {
-			return !!(window.matchMedia && window.matchMedia("(max-width: 767.98px) and (orientation: landscape)").matches);
+			return !!(window.matchMedia && window.matchMedia(window.euadoptPtMqMobLand || "(max-width: 767.98px) and (orientation: landscape), (orientation: landscape) and (max-height: 520px)").matches);
 		} catch (e) {
 			return false;
 		}
@@ -1198,7 +1232,7 @@
 </script>
 <script>
 (function() {
-	var mq = window.matchMedia("(max-width: 767.98px)");
+	var mq = window.matchMedia(window.euadoptPtMqMob || "(max-width: 767.98px), (orientation: landscape) and (max-height: 520px)");
 	var bar, ph;
 	var ro = null;
 	var roAttached = false;
@@ -1519,7 +1553,7 @@
 		});
 	}
 	try {
-		var mqLand = window.matchMedia("(max-width: 767.98px) and (orientation: landscape)");
+		var mqLand = window.matchMedia(window.euadoptPtMqMobLand || "(max-width: 767.98px) and (orientation: landscape), (orientation: landscape) and (max-height: 520px)");
 		var onMq = function() { ptScheduleOrientRelayout(); };
 		if (mqLand.addEventListener) mqLand.addEventListener("change", onMq);
 		else if (mqLand.addListener) mqLand.addListener(onMq);
