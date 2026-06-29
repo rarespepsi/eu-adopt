@@ -2297,6 +2297,21 @@ body.page-pt #main_content {
 
 /* PT mobil landscape — layout dedicat (nu moștenește offset/portrait din blocul mobil partajat) */
 @media (orientation: landscape) and (max-height: 520px) {
+  /* Banner populare în flux sub navbar → dublu offset cu padding-top pe #main_content */
+  body.page-pt .population-org-banner {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+  /* Anulează clamp-ul global pe stack rail (tăia „Găsește-mi perechea”) */
+  #PW .pt-p4-land-rail-ms {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
   /* Un singur offset sub navbar: #main_content (extra_css_after), nu și #PW */
   body.page-pt #main_content {
     flex: 1 1 0 !important;
@@ -2460,7 +2475,7 @@ body.page-pt #main_content {
     left: 0 !important;
     border-left: none !important;
     display: grid !important;
-    grid-template-rows: auto minmax(2.25rem, 34%) !important;
+    grid-template-rows: auto 1fr !important;
     align-content: stretch !important;
     overflow: hidden !important;
   }
@@ -2657,9 +2672,11 @@ body.page-pt #main_content {
     position: relative;
     overflow: hidden;
   }
-  #PW .pt-mob-land-left .pt-p43-mobil-col--stack .pt-p43-slot,
-  #PW .pt-mob-land-right .pt-p43-mobil-col--stack .pt-p43-slot {
+  #PW .pt-mob-land-left .pt-p43-mobil-col--stack .pt-p43-slot {
     flex-shrink: 1 !important;
+  }
+  #PW .pt-mob-land-right .pt-p43-mobil-col--stack .pt-p43-slot {
+    flex-shrink: 0 !important;
   }
   #PW .pt-p43-mobil-col--stack .pt-p43-slot > .pub-live-cover-link.pt-pub-fill-link,
   #PW .pt-p43-mobil-col--stack .pt-p43-slot > a.pt-p43-partner-fill {
@@ -2676,7 +2693,7 @@ body.page-pt #main_content {
     overflow: visible !important;
   }
 
-  /* Stânga: 3 butoane sus, P4.3 jos (casetă mai mică) */
+  /* Stânga: 3 butoane sus (înălțime fixă fiecare), P4.3 umple restul */
   #PW .pt-mob-land-left .pt-p4-land-rail-ms {
     display: flex !important;
     flex-direction: column !important;
@@ -2684,11 +2701,11 @@ body.page-pt #main_content {
     gap: 1px;
     grid-row: 1;
     height: auto !important;
-    min-height: 5.6rem !important;
-    max-height: 100% !important;
+    min-height: calc(3 * 1.85rem + 2px) !important;
+    max-height: none !important;
     flex: 0 0 auto !important;
     flex-shrink: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
   #PW .pt-mob-land-left .pt-p4-land-rail-ads {
     grid-row: 2;
@@ -2713,16 +2730,18 @@ body.page-pt #main_content {
     min-height: 0 !important;
   }
   #PW .pt-mob-land-left .pt-p4-land-rail-ms > .pt-p4-box-match {
-    flex: 2 1 0;
+    flex: 0 0 auto !important;
     min-height: 0;
+    height: auto !important;
     display: flex !important;
     flex-direction: column;
     padding: 0 !important;
     margin: 0;
   }
   #PW .pt-mob-land-left .pt-p4-land-rail-ms > .pt-p4-box-sustine {
-    flex: 1 1 0;
+    flex: 0 0 auto !important;
     min-height: 0;
+    height: auto !important;
     display: flex !important;
     flex-direction: column;
     padding: 0 !important;
@@ -2731,11 +2750,11 @@ body.page-pt #main_content {
   #PW .pt-mob-land-left .pt-p4-land-rail-ms .pt-p4-actions {
     display: flex !important;
     flex-direction: column !important;
-    flex: 1 1 auto;
+    flex: 0 0 auto !important;
     gap: 1px;
     width: 100%;
     min-height: 0;
-    height: 100%;
+    height: auto !important;
   }
   #PW .pt-mob-land-left .pt-p4-land-rail-ms.pt-p4-ms-stack--sustine-only > .pt-p4-box-match {
     flex: 1 1 0;
@@ -2744,11 +2763,13 @@ body.page-pt #main_content {
   #PW .pt-mob-land-left .pt-p4-land-rail-ms .pt-p4-btn-filters,
   #PW .pt-mob-land-left .pt-p4-land-rail-ms .pt-p4-btn-sustine {
     display: flex !important;
+    visibility: visible !important;
     align-items: center;
     justify-content: center;
-    flex: 1 1 0;
+    flex: 0 0 1.85rem !important;
     width: 100% !important;
     min-height: 1.85rem !important;
+    height: 1.85rem !important;
     margin: 0 !important;
     padding: 0.12rem 0.18rem !important;
     font-size: clamp(0.48rem, 1.65vw, 0.66rem) !important;
@@ -2783,7 +2804,14 @@ body.page-pt #main_content {
     flex: none !important;
     height: 100% !important;
     min-height: 0 !important;
-    flex-shrink: 1 !important;
+    flex-shrink: 0 !important;
+  }
+  #PW .pt-mob-land-right .pt-p4-land-rail-ads--full .pt-p43-creative-card,
+  #PW .pt-mob-land-right .pt-p4-land-rail-ads--full .pt-p43-creative-card img {
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
   }
 
   #PW #P2.pt-cell-2 {
