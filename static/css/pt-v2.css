@@ -1919,10 +1919,10 @@ body.page-pt #main_content {
     flex-direction: column;
     min-width: 0;
   }
-  /* Rail-uri: ascunse implicit pe mobil; vizibile doar cu html.pt-mob-landscape-active (fără JS inline display) */
-  html:not(.pt-mob-landscape-active) #PW .pt-mob-land-left,
-  html:not(.pt-mob-landscape-active) #PW .pt-mob-land-right {
-    display: none !important;
+  /* Portrait mobil: rail-uri ascunse; landscape = bloc dedicat (fără clasă JS) */
+  #PW .pt-mob-land-left,
+  #PW .pt-mob-land-right {
+    display: none;
   }
   #PW .pt-mob-land-center {
     display: flex;
@@ -2295,31 +2295,54 @@ body.page-pt #main_content {
   }
 }
 
-/* Mobil landscape: fără bară mov portret; P1 ascuns; rail stânga/dreapta fixe în viewport (sub zona navbar măsurată de --nav-height) */
-@media (max-width: 767.98px) and (orientation: landscape), (orientation: landscape) and (max-height: 520px) {
-  /* Fundal aliniat cu login/signup (#141a22), rail-uri sticlă */
+/* PT mobil landscape — singur bloc (ca portrait); CSS pur, fără html.pt-mob-landscape-active */
+@media (orientation: landscape) and (max-height: 520px) {
+  body.page-pt #main_wrap {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
   body.page-pt #main_content {
     background-color: #141a22 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+  body.page-pt #PW {
+    flex: none !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  #PW .pt-grid {
+    flex: none !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding-top: 0 !important;
   }
   #PW {
     --pt-land-rail-w: clamp(3.25rem, 14vw, 5.75rem);
+    --pt-p1-strip-h: 48px;
     background-color: #141a22;
   }
-  #PW .pt-grid {
-    padding-top: 0 !important;
-  }
-  /* Mobil landscape: bandă unică P1+P3 sub grilă (scroll pagină) */
+  /* Bandă P1+P3 fixă jos, între rail-uri (vizibilă fără scroll) */
   #PW .pt-mob-strip-merged {
     display: flex !important;
     order: 2 !important;
     flex: 0 0 auto !important;
-    position: relative !important;
-    width: 100% !important;
+    position: fixed !important;
+    left: var(--pt-land-rail-w) !important;
+    right: var(--pt-land-rail-w) !important;
+    bottom: 0 !important;
+    width: auto !important;
     min-height: var(--pt-p1-strip-h, 48px) !important;
     height: var(--pt-p1-strip-h, 48px) !important;
     max-height: var(--pt-p1-strip-h, 48px) !important;
     visibility: visible !important;
-    z-index: 4 !important;
+    z-index: 2270 !important;
   }
   #PW .pt-strip-band--desktop {
     display: none !important;
@@ -2368,7 +2391,7 @@ body.page-pt #main_content {
     gap: 0 !important;
     position: fixed !important;
     top: var(--nav-height, var(--nav-h, 64px)) !important;
-    bottom: 0 !important;
+    bottom: var(--pt-p1-strip-h, 48px) !important;
     width: var(--pt-land-rail-w) !important;
     min-width: 0 !important;
     max-width: var(--pt-land-rail-w) !important;
@@ -2395,7 +2418,7 @@ body.page-pt #main_content {
     display: block !important;
     width: 100% !important;
     margin-top: 0 !important;
-    padding: 0 var(--pt-land-rail-w) !important;
+    padding: 0 var(--pt-land-rail-w) var(--pt-p1-strip-h, 48px) !important;
     box-sizing: border-box !important;
     min-height: 0 !important;
   }
@@ -2627,18 +2650,19 @@ body.page-pt #main_content {
     flex: 1 1 0;
     min-height: 0;
   }
-}
 
-@media (max-width: 767.98px) and (orientation: landscape) and (min-width: 520px), (orientation: landscape) and (max-height: 520px) and (min-width: 520px) {
   #PW .pt-p2-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
   #PW .pt-p2-grid > .pt-p2-cell.pt-p2-card-cell {
     aspect-ratio: 4 / 3 !important;
   }
+  #PW .pt-mob-land-center .pt-cell-2 {
+    min-height: 0 !important;
+  }
 }
 
-/* PT mobil: clase JS pe <html> — sursă de adevăr la rotație (media orientation poate rămâne blocat pe Android) */
+/* PT mobil portret: clase JS pe <html> — backup când orientation media e blocat pe Android */
 @media (max-width: 767.98px), (orientation: landscape) and (max-height: 520px) {
   html.pt-mob-portrait-active #PW .pt-mob-land-left,
   html.pt-mob-portrait-active #PW .pt-mob-land-right {
@@ -2753,135 +2777,12 @@ body.page-pt #main_content {
     -webkit-overflow-scrolling: touch !important;
   }
 
-  html.pt-mob-landscape-active #PW .pt-mob-land-left,
-  html.pt-mob-landscape-active #PW .pt-mob-land-right {
-    display: flex !important;
-    flex-direction: column !important;
-    position: fixed !important;
-    top: var(--nav-height, var(--nav-h, 64px)) !important;
-    bottom: 0 !important;
-    width: var(--pt-land-rail-w, clamp(3.25rem, 14vw, 5.75rem)) !important;
-    min-width: 0 !important;
-    max-width: var(--pt-land-rail-w, clamp(3.25rem, 14vw, 5.75rem)) !important;
-    height: auto !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-    z-index: 2260 !important;
-    margin: 0 !important;
-    padding: 2px !important;
-    overflow: hidden !important;
-    background: #141a22 !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-top: none !important;
-    box-sizing: border-box !important;
-    isolation: isolate;
-  }
-  html.pt-mob-landscape-active #PW .pt-mob-land-left {
-    left: 0 !important;
-    right: auto !important;
-    border-left: none !important;
-  }
-  html.pt-mob-landscape-active #PW .pt-mob-land-right {
-    right: 0 !important;
-    left: auto !important;
-    border-right: none !important;
-  }
-  html.pt-mob-landscape-active #PW .pt-mob-land-3col {
-    display: block !important;
-    padding: 0 var(--pt-land-rail-w, clamp(3.25rem, 14vw, 5.75rem)) !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    min-height: 0 !important;
-  }
-  html.pt-mob-landscape-active body.page-pt #main_wrap {
-    height: auto !important;
-    max-height: none !important;
-    min-height: 0 !important;
-    overflow: visible !important;
-  }
-  html.pt-mob-landscape-active body.page-pt #main_content {
-    flex: none !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-  }
-  html.pt-mob-landscape-active body.page-pt #PW {
-    flex: none !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-  }
-  html.pt-mob-landscape-active #PW .pt-grid {
-    flex: none !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-  }
-  html.pt-mob-landscape-active #PW .pt-mob-land-3col {
-    flex: none !important;
-    overflow: visible !important;
-  }
-  html.pt-mob-landscape-active #PW .pt-mob-land-center {
-    flex: none !important;
-    overflow: visible !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-  html.pt-mob-landscape-active #PW .pt-mob-land-center .pt-cell-2 {
-    flex: 0 0 auto !important;
-    overflow: visible !important;
-    width: 100% !important;
-    order: 1 !important;
-  }
-  html.pt-mob-landscape-active #PW .pt-mob-strip-merged {
-    display: flex !important;
-    visibility: visible !important;
-    flex: 0 0 auto !important;
-    width: 100% !important;
-    position: relative !important;
-    order: 2 !important;
-  }
-  html.pt-mob-landscape-active #PW .pt-strip-band--desktop {
-    display: none !important;
-  }
-  html.pt-mob-landscape-active #PW .pt-p4-portrait-sticky,
-  html.pt-mob-landscape-active #PW #pt_p4_mobile_sticky {
-    display: none !important;
-    pointer-events: none !important;
-    visibility: hidden !important;
-    height: 0 !important;
-    max-height: 0 !important;
-    overflow: hidden !important;
-  }
-  html.pt-mob-landscape-active #PW .pt-cell-4 {
-    height: 0 !important;
-    max-height: 0 !important;
-    overflow: hidden !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-  html.pt-mob-landscape-active #PW .pt-p4-sticky-placeholder {
-    height: 0 !important;
-    min-height: 0 !important;
-    max-height: 0 !important;
-  }
-  html.pt-mob-landscape-active #PW .pt-mob-land-center .pt-cell-2 .pt-p2-scroll {
-    overflow-y: visible !important;
-    overflow-x: hidden !important;
-    max-height: none !important;
-    height: auto !important;
-  }
-  html.pt-mob-landscape-active #PW .pt-p2-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  }
-  /* Portrait: anulează lanțul flex înălțime fixă din landscape la revenire */
-  html.pt-mob-portrait-active:not(.pt-mob-landscape-active) body.page-pt #main_wrap {
+  /* Portrait: anulează lanțul flex înălțime fixă dacă a rămas de la landscape */
+  html.pt-mob-portrait-active body.page-pt #main_wrap {
     height: var(--pt-vh, 100dvh) !important;
     max-height: var(--pt-vh, 100dvh) !important;
   }
-  html.pt-mob-portrait-active:not(.pt-mob-landscape-active) #PW .pt-p2-grid {
+  html.pt-mob-portrait-active #PW .pt-p2-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
