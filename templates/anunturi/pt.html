@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt145-land-clean" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt146-land-scroll" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -34,7 +34,7 @@
 			-webkit-overflow-scrolling: touch;
 		}
 	}
-	/* Mobil landscape: navbar fix + scroll pagină (detalii în pt-v2.css) */
+	/* Mobil landscape: lanț flex ca portrait; scroll în .pt-p2-scroll */
 	@media (orientation: landscape) and (max-height: 520px) {
 		html body.page-pt.page-animale #A0 {
 			position: fixed !important;
@@ -44,15 +44,26 @@
 			z-index: 2600 !important;
 			width: 100% !important;
 		}
+		body.page-pt #main_wrap {
+			height: var(--pt-vh, 100dvh) !important;
+			max-height: var(--pt-vh, 100dvh) !important;
+			overflow: hidden !important;
+			display: flex !important;
+			flex-direction: column !important;
+		}
 		body.page-pt #main_content {
 			box-sizing: border-box !important;
 			padding: 0 !important;
 			padding-top: var(--nav-height, var(--nav-h, 64px)) !important;
+			overflow: hidden !important;
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+		}
+		body.page-pt #PW .pt-p2-scroll {
 			overflow-y: auto !important;
 			overflow-x: hidden !important;
 			-webkit-overflow-scrolling: touch;
 			overscroll-behavior-y: contain;
-			padding-bottom: max(0.65rem, env(safe-area-inset-bottom, 0px)) !important;
 		}
 	}
 	@media (max-width: 767.98px) and (orientation: portrait) {
@@ -1270,13 +1281,7 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 		}
 	}
 	function ptUpdateVhVar() {
-		var h = window.innerHeight || document.documentElement.clientHeight || 0;
-		/* visualViewport pe Android rămâne blocat după rotație; în portrait folosim innerHeight */
-		if (mq.matches && ptMobIsLandscape() && window.visualViewport && window.visualViewport.height) {
-			h = Math.round(window.visualViewport.height);
-		} else {
-			h = Math.round(h);
-		}
+		var h = Math.round(window.innerHeight || document.documentElement.clientHeight || 0);
 		if (h > 0) {
 			document.documentElement.style.setProperty("--pt-vh", h + "px");
 		}
