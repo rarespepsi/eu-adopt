@@ -2314,6 +2314,7 @@ body.page-pt #main_content {
     min-height: 0 !important;
     overflow: hidden !important;
     background-color: #141a22 !important;
+    padding: 0 !important;
   }
   #PW {
     --pt-land-rail-w: clamp(3.25rem, 14vw, 5.75rem);
@@ -2325,6 +2326,8 @@ body.page-pt #main_content {
     display: flex !important;
     flex-direction: column !important;
     background-color: #141a22;
+    padding-top: var(--nav-height, var(--nav-h, 64px)) !important;
+    box-sizing: border-box !important;
   }
   #PW .pt-grid {
     flex: 1 1 0 !important;
@@ -2431,10 +2434,17 @@ body.page-pt #main_content {
   #PW .pt-mob-land-left {
     left: 0 !important;
     border-left: none !important;
+    display: grid !important;
+    grid-template-rows: minmax(5.6rem, 46%) minmax(2.35rem, 1fr) !important;
+    align-content: stretch !important;
+    overflow: hidden !important;
   }
   #PW .pt-mob-land-right {
     right: 0 !important;
     border-right: none !important;
+    display: grid !important;
+    grid-template-rows: 1fr !important;
+    overflow: hidden !important;
   }
   /* Coloană centrală: flex ca portrait; scroll în .pt-p2-scroll */
   #PW .pt-mob-land-3col {
@@ -2641,21 +2651,25 @@ body.page-pt #main_content {
     overflow: visible !important;
   }
 
-  /* Stânga: 3 butoane unul sub altul, apoi P4.3 */
+  /* Stânga: 3 butoane sus, P4.3 jos (casetă mai mică) */
   #PW .pt-mob-land-left .pt-p4-land-rail-ms {
     display: flex !important;
     flex-direction: column !important;
     align-items: stretch;
     gap: 1px;
+    grid-row: 1;
     height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
+    min-height: 5.6rem !important;
+    max-height: 100% !important;
     flex: 0 0 auto !important;
     flex-shrink: 0 !important;
+    overflow: hidden !important;
   }
   #PW .pt-mob-land-left .pt-p4-land-rail-ads {
+    grid-row: 2;
     flex: 1 1 0 !important;
-    min-height: 2.5rem !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
@@ -2669,8 +2683,9 @@ body.page-pt #main_content {
   }
   #PW .pt-mob-land-left .pt-p4-land-rail-ads .pt-p43-mobil-col--stack .pt-p43-slot {
     flex: 1 1 0 !important;
-    max-height: none !important;
+    max-height: 100% !important;
     aspect-ratio: unset !important;
+    min-height: 0 !important;
   }
   #PW .pt-mob-land-left .pt-p4-land-rail-ms > .pt-p4-box-match {
     flex: 2 1 0;
@@ -2719,10 +2734,12 @@ body.page-pt #main_content {
     border-radius: 0 !important;
     box-sizing: border-box;
   }
-  /* Dreapta: doar 3 casete Publi., coloană întreagă */
+  /* Dreapta: 3 casete Publi. egale pe toată înălțimea */
   #PW .pt-mob-land-right .pt-p4-land-rail-ads--full {
+    grid-row: 1;
     flex: 1 1 0 !important;
     min-height: 0 !important;
+    height: 100% !important;
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
@@ -2731,14 +2748,15 @@ body.page-pt #main_content {
     flex: 1 1 0 !important;
     min-height: 0 !important;
     height: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
+    display: grid !important;
+    grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
     gap: 2px !important;
   }
   #PW .pt-mob-land-right .pt-p43-mobil-col--stack .pt-p43-slot {
     max-height: none !important;
     aspect-ratio: unset !important;
-    flex: 1 1 0 !important;
+    flex: none !important;
+    height: 100% !important;
     min-height: 0 !important;
     flex-shrink: 1 !important;
   }
@@ -2794,6 +2812,27 @@ body.page-pt #main_content {
   }
 }
 
+/* Mobil portret: reset după landscape — fără rail-uri, înălțime completă */
+@media (max-width: 767.98px) and (orientation: portrait) {
+  body.page-pt #main_wrap {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 100dvh !important;
+  }
+  #PW .pt-mob-land-left,
+  #PW .pt-mob-land-right {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+  #PW .pt-mob-land-3col {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+}
+
 /* PT mobil portret: clase JS pe <html> — backup când orientation media e blocat pe Android */
 @media (max-width: 767.98px), (orientation: landscape) and (max-height: 520px) {
   html.pt-mob-portrait-active #PW .pt-mob-land-left,
@@ -2844,8 +2883,9 @@ body.page-pt #main_content {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
   html.pt-mob-portrait-active body.page-pt #main_wrap {
-    height: var(--pt-vh, 100dvh) !important;
-    max-height: var(--pt-vh, 100dvh) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 100dvh !important;
     overflow: hidden !important;
     display: flex !important;
     flex-direction: column !important;
@@ -2873,6 +2913,10 @@ body.page-pt #main_content {
     flex: 1 1 0 !important;
     min-height: 0 !important;
     overflow: hidden !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
   }
   html.pt-mob-portrait-active #PW .pt-mob-land-center {
     flex: 1 1 0 !important;
@@ -2914,12 +2958,6 @@ body.page-pt #main_content {
     height: 100dvh !important;
     max-height: 100dvh !important;
     min-height: 100dvh !important;
-  }
-  html.pt-mob-portrait-active #PW .pt-mob-land-3col {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    padding-top: 0 !important;
-    margin-top: 0 !important;
   }
   html.pt-mob-portrait-active #PW .pt-p2-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;

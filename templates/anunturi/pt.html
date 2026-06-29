@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt149-land-rails" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt150-land-portrait" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -54,9 +54,14 @@
 		body.page-pt #main_content {
 			box-sizing: border-box !important;
 			padding: 0 !important;
-			padding-top: var(--nav-height, var(--nav-h, 64px)) !important;
 			overflow: hidden !important;
 			flex: 1 1 0 !important;
+			min-height: 0 !important;
+		}
+		body.page-pt #PW {
+			padding-top: var(--nav-height, var(--nav-h, 64px)) !important;
+			box-sizing: border-box !important;
+			height: 100% !important;
 			min-height: 0 !important;
 		}
 		body.page-pt #PW .pt-p2-scroll {
@@ -67,10 +72,31 @@
 		}
 	}
 	@media (max-width: 767.98px) and (orientation: portrait) {
+		body.page-pt #main_wrap {
+			height: 100dvh !important;
+			max-height: 100dvh !important;
+			min-height: 100dvh !important;
+			overflow: hidden !important;
+			display: flex !important;
+			flex-direction: column !important;
+		}
 		body.page-pt #main_content {
 			overflow-y: hidden !important;
 			overflow-x: hidden !important;
 			padding-bottom: max(0.65rem, env(safe-area-inset-bottom, 0px)) !important;
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+		}
+		#PW .pt-mob-land-left,
+		#PW .pt-mob-land-right {
+			display: none !important;
+			visibility: hidden !important;
+			pointer-events: none !important;
+		}
+		#PW .pt-mob-land-3col {
+			padding-left: 0 !important;
+			padding-right: 0 !important;
+			padding-top: 0 !important;
 		}
 		body.page-pt #PW .pt-p2-scroll {
 			overflow-y: auto !important;
@@ -1293,16 +1319,24 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 			return false;
 		}
 	}
-	function ptUpdateVhVar() {
+	function ptReadViewportHeight() {
 		var vv = window.visualViewport;
-		var h = Math.round(
-			(vv && vv.height) ? vv.height : (window.innerHeight || document.documentElement.clientHeight || 0)
-		);
+		var ih = window.innerHeight || document.documentElement.clientHeight || 0;
+		var vvh = (vv && vv.height) ? vv.height : ih;
+		return Math.round(Math.max(ih, vvh));
+	}
+	function ptUpdateVhVar() {
+		var h = ptReadViewportHeight();
 		if (ptMobIsLandscape()) {
 			if (h > 0) document.documentElement.style.setProperty("--pt-vh", h + "px");
 		} else {
 			document.documentElement.style.removeProperty("--pt-vh");
 		}
+	}
+	function ptIsPortraitGeometry() {
+		var w = window.innerWidth || document.documentElement.clientWidth || 0;
+		var h = ptReadViewportHeight();
+		return h > w + 40;
 	}
 	function ptClearStuckLayoutStyles() {
 		["main_wrap", "main_content", "PW"].forEach(function(id) {
@@ -1330,6 +1364,17 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 			scrollEl.style.removeProperty("height");
 			scrollEl.style.removeProperty("overflow");
 		}
+		var p2 = document.getElementById("P2");
+		if (p2) {
+			["height", "max-height", "min-height", "margin-top", "padding-top"].forEach(function(prop) {
+				p2.style.removeProperty(prop);
+			});
+		}
+		var land3 = document.querySelector("#PW .pt-mob-land-3col");
+		if (land3) {
+			land3.style.removeProperty("width");
+			land3.style.removeProperty("max-width");
+		}
 	}
 	window.euadoptPtMobIsLandscape = ptMobIsLandscape;
 	function ptSyncOrientClass() {
@@ -1352,21 +1397,21 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 		}
 	}
 	function ptSyncPortraitP2Heights() {
-		if (!mq.matches || ptMobIsLandscape()) {
-			var scrollEl0 = document.querySelector("#P2 .pt-p2-scroll");
+		var scrollEl0 = document.querySelector("#P2 .pt-p2-scroll");
+		if (!mq.matches || ptMobIsLandscape() || !ptIsPortraitGeometry()) {
 			if (scrollEl0) {
 				scrollEl0.style.removeProperty("max-height");
 				scrollEl0.style.removeProperty("height");
 			}
 			return;
 		}
-		var scrollEl = document.querySelector("#P2 .pt-p2-scroll");
+		var scrollEl = scrollEl0;
 		var p2 = document.getElementById("P2");
 		var p1 = document.getElementById("P1");
 		var p3 = document.getElementById("P3");
 		var mobStrip = document.getElementById("pt_mob_strip_merged");
 		if (!scrollEl || !p2) return;
-		var vh = Math.round(window.innerHeight || document.documentElement.clientHeight || 0);
+		var vh = ptReadViewportHeight();
 		var footerH = 0;
 		if (mobStrip && mobStrip.offsetParent !== null) {
 			footerH = Math.ceil(mobStrip.getBoundingClientRect().height);
@@ -1404,7 +1449,7 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 		_ptOrientRelayoutT = [];
 		ptOnOrientationLayout();
 		if (!ptMobIsLandscape()) {
-			[120, 350, 500, 900].forEach(function(ms) {
+			[120, 350, 500, 900, 1200, 1600].forEach(function(ms) {
 				_ptOrientRelayoutT.push(setTimeout(ptOnOrientationLayout, ms));
 			});
 		} else {
