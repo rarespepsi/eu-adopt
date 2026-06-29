@@ -2460,6 +2460,7 @@ body.page-pt #main_content {
     min-height: 0 !important;
     height: 100% !important;
     max-height: 100% !important;
+    display: block !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
@@ -2595,7 +2596,7 @@ body.page-pt #main_content {
   }
   #PW .pt-mob-land-center .pt-p2-grid {
     max-width: 100%;
-    overflow: hidden;
+    overflow: visible !important;
   }
 
   /* Stânga: 3 butoane unul sub altul, apoi P4.3 */
@@ -2669,15 +2670,49 @@ body.page-pt #main_content {
 
   #PW #P2.pt-cell-2 {
     min-height: 0 !important;
+    --p2-row-h: auto;
   }
   #PW #P2 .pt-p2-scroll {
     min-height: 0 !important;
   }
+  /* P2 landscape: aceeași logică ca portrait — rânduri auto, înălțime din aspect-ratio (nu desktop 4×3 fix) */
+  #PW .pt-mob-land-center .pt-p2-grid,
   #PW .pt-p2-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-rows: none !important;
+    grid-auto-rows: auto !important;
+    align-content: start !important;
+    height: auto !important;
+    min-height: 0 !important;
   }
+  #PW .pt-mob-land-center .pt-p2-grid > .pt-p2-cell,
+  #PW .pt-p2-grid > .pt-p2-cell {
+    height: auto !important;
+    align-self: start !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  #PW .pt-mob-land-center .pt-p2-grid > .pt-p2-cell.pt-p2-card-cell,
   #PW .pt-p2-grid > .pt-p2-cell.pt-p2-card-cell {
     aspect-ratio: 4 / 3 !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+  #PW .pt-mob-land-center .pt-p2-card-cell {
+    height: auto !important;
+    min-height: 0 !important;
+    flex: none !important;
+  }
+  #PW .pt-mob-land-center .pt-p2-card-cell .pt-p2-card-photo-wrap {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+  #PW .pt-mob-land-center .pt-p2-card-cell .pt-p2-card-link {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: 100% !important;
   }
   #PW .pt-mob-land-center .pt-cell-2 {
     min-height: 0 !important;
