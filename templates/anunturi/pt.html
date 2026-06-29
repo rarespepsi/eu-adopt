@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt152-land-rails" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt153-nav-offset" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -57,7 +57,7 @@
 		body.page-pt #main_content {
 			box-sizing: border-box !important;
 			padding: 0 !important;
-			padding-top: var(--nav-height, var(--nav-h, 64px)) !important;
+			padding-top: var(--nav-height, 34px) !important;
 			overflow: hidden !important;
 			flex: 1 1 0 !important;
 			min-height: 0 !important;
@@ -369,24 +369,6 @@
 {# PT portret mobil: A0 fix + #main_content padding-top = --nav-height → banda cursivă lipită de navbar, fără #FCFCFC între ele #}
 {% block extra_css_after %}
 <style>
-	@media (orientation: landscape) and (max-height: 520px) {
-		html body.page-pt.page-animale #A0 {
-			position: fixed !important;
-			top: 0 !important;
-			left: 0 !important;
-			right: 0 !important;
-			z-index: 2600 !important;
-			width: 100% !important;
-		}
-		body.page-pt .population-org-banner {
-			display: none !important;
-		}
-		body.page-pt #main_content {
-			box-sizing: border-box !important;
-			padding: 0 !important;
-			padding-top: var(--nav-height, var(--nav-h, 64px)) !important;
-		}
-	}
 	@media (max-width: 767.98px) and (orientation: portrait) {
 		html body.page-pt.page-animale #A0 {
 			position: fixed !important;
@@ -1297,20 +1279,15 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 	function navHeight() {
 		var a0 = document.getElementById("A0");
 		if (!a0) return 64;
-		/* Înălțimea folosită de CSS pe #A0 (inclusiv landscape compact: --nav-height pe element);
-		   #PW moștenește --nav-height de pe html — trebuie același număr ca bara reală, altfel bandă albă sub navbar. */
+		/* Offset = marginea inferioară reală a navbarului (landscape compact #A0 ≈ 34px, nu 64px fallback). */
+		var r = a0.getBoundingClientRect();
+		var bottom = Math.round(r.bottom);
+		if (bottom >= 24 && bottom <= 220) return bottom;
 		try {
 			var px = parseFloat(window.getComputedStyle(a0).height);
-			if (isFinite(px) && px >= 28 && px <= 220) {
-				return Math.round(px);
-			}
+			if (isFinite(px) && px >= 24 && px <= 220) return Math.round(px);
 		} catch (e) {}
-		var r = a0.getBoundingClientRect();
-		var h = Math.round(r.height);
-		if (h < 28 || h > 220) {
-			h = Math.round(r.bottom);
-		}
-		return h;
+		return 64;
 	}
 	function syncNavHeightToCss() {
 		if (!mq.matches) {
@@ -1434,18 +1411,26 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 		if (mq.matches) document.documentElement.classList.add("pt-mob-portrait-active");
 		ptClearStuckLayoutStyles();
 		ptSyncPortraitP2Heights();
-		var mw = document.getElementById("main_wrap");
-		if (mw) {
-			mw.style.removeProperty("height");
-			mw.style.removeProperty("max-height");
-			mw.style.removeProperty("min-height");
+		["main_wrap", "main_content", "PW"].forEach(function(id) {
+			var el = document.getElementById(id);
+			if (!el) return;
+			["height", "max-height", "min-height", "padding-top", "margin-top", "overflow"].forEach(function(prop) {
+				el.style.removeProperty(prop);
+			});
+		});
+		var rails = document.querySelectorAll("#PW .pt-mob-land-left, #PW .pt-mob-land-right");
+		for (var ri = 0; ri < rails.length; ri++) {
+			["top", "bottom", "left", "right", "height", "max-height", "width", "display", "position"].forEach(function(prop) {
+				rails[ri].style.removeProperty(prop);
+			});
 		}
-		var pw = document.getElementById("PW");
-		if (pw) {
-			pw.style.removeProperty("height");
-			pw.style.removeProperty("max-height");
-			pw.style.removeProperty("min-height");
-			pw.style.removeProperty("padding-top");
+		var ph = document.getElementById("pt_p4_sticky_placeholder");
+		if (ph) ph.style.removeProperty("height");
+		var bar = document.getElementById("pt_p4_mobile_sticky");
+		if (bar) {
+			bar.style.removeProperty("visibility");
+			bar.style.removeProperty("pointer-events");
+			bar.style.removeProperty("top");
 		}
 	}
 	function ptOnOrientationLayout() {
@@ -1468,18 +1453,25 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 		var isLand = ptMobIsLandscape();
 		_ptOrientRelayoutT.forEach(function(t) { clearTimeout(t); });
 		_ptOrientRelayoutT = [];
-		ptOnOrientationLayout();
+		if (!isLand) ptHardPortraitReset();
+		else ptOnOrientationLayout();
 		if (!isLand && _ptWasLandscape) {
-			ptHardPortraitReset();
-			_ptOrientRelayoutT.push(setTimeout(function() {
-				if (!ptMobIsLandscape()) ptHardPortraitReset();
-				syncNavHeightToCss();
-				syncPlaceholder();
-				ptSyncPortraitP2Heights();
-				if (window.euadoptPtP2Relayout) window.euadoptPtP2Relayout();
-			}, 180));
+			[120, 350, 650].forEach(function(ms) {
+				_ptOrientRelayoutT.push(setTimeout(function() {
+					if (ptMobIsLandscape()) return;
+					ptHardPortraitReset();
+					syncNavHeightToCss();
+					syncPlaceholder();
+					ptSyncPortraitP2Heights();
+					if (window.euadoptPtP2Relayout) window.euadoptPtP2Relayout();
+				}, ms));
+			});
 		} else if (isLand) {
-			_ptOrientRelayoutT.push(setTimeout(ptOnOrientationLayout, 120));
+			ptOnOrientationLayout();
+			_ptOrientRelayoutT.push(setTimeout(ptOnOrientationLayout, 150));
+		} else if (!isLand) {
+			syncNavHeightToCss();
+			syncPlaceholder();
 		}
 		_ptWasLandscape = isLand;
 	}
@@ -1559,9 +1551,13 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 		}
 	}
 	function boot() {
-		ptUpdateVhVar();
 		ptSyncOrientClass();
-		ptClearStuckLayoutStyles();
+		if (!ptMobIsLandscape()) {
+			ptHardPortraitReset();
+		} else {
+			ptUpdateVhVar();
+			ptClearStuckLayoutStyles();
+		}
 		syncNavHeightToCss();
 		try {
 			document.documentElement.style.removeProperty("--pt-p1-strip-h");

@@ -2296,6 +2296,11 @@ body.page-pt #main_content {
 }
 
 /* PT mobil landscape — layout dedicat (nu moștenește offset/portrait din blocul mobil partajat) */
+@media (orientation: landscape) and (max-height: 34em) {
+  body.page-pt.page-animale {
+    --nav-height: 34px;
+  }
+}
 @media (orientation: landscape) and (max-height: 520px) {
   /* Banner populare în flux sub navbar → dublu offset cu padding-top pe #main_content */
   body.page-pt .population-org-banner {
@@ -2312,12 +2317,13 @@ body.page-pt #main_content {
     max-height: none !important;
     overflow: visible !important;
   }
-  /* Un singur offset sub navbar: #main_content (extra_css_after), nu și #PW */
+  /* Un singur offset sub navbar: padding-top pe #main_content (nu și pe #PW) */
   body.page-pt #main_content {
     flex: 1 1 0 !important;
     min-height: 0 !important;
     overflow: hidden !important;
     background-color: #141a22 !important;
+    padding-top: var(--nav-height, 34px) !important;
   }
   body.page-pt #main_wrap {
     height: var(--pt-vh, 100dvh) !important;
@@ -2417,7 +2423,11 @@ body.page-pt #main_content {
     pointer-events: none !important;
     height: 0 !important;
     max-height: 0 !important;
+    min-height: 0 !important;
     overflow: hidden !important;
+    top: -9999px !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   /* P4: în landscape conținutul vizibil e în rail-uri / modal; fără înălțime fantomă între navbar și cele 3 coloane */
   #PW .pt-cell-4 {
@@ -2453,7 +2463,7 @@ body.page-pt #main_content {
     flex-direction: column !important;
     gap: 2px !important;
     position: fixed !important;
-    top: var(--nav-height, var(--nav-h, 64px)) !important;
+    top: var(--nav-height, 34px) !important;
     bottom: var(--pt-p1-strip-h, 48px) !important;
     width: var(--pt-land-rail-w) !important;
     min-width: 0 !important;
@@ -2952,7 +2962,10 @@ body.page-pt #main_content {
   html.pt-mob-portrait-active body.page-pt #main_content {
     flex: 1 1 0 !important;
     min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
     overflow: hidden !important;
+    padding-top: var(--nav-height, var(--nav-h, 64px)) !important;
   }
   html.pt-mob-portrait-active body.page-pt #PW {
     flex: 1 1 0 !important;
