@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt146-land-scroll" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt147-land-perf" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -736,9 +736,21 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 		}
 	}
 
+	function p2IsLandscape() {
+		try {
+			return window.matchMedia(window.euadoptPtMqMobLand || "(orientation: landscape) and (max-height: 520px)").matches;
+		} catch (e) {
+			return false;
+		}
+	}
+	function p2ScrollMargin() {
+		/* Landscape: grilă scurtă → sentinelul e „aproape” imediat; margine mare = zeci de calupuri fetch */
+		return p2IsLandscape() ? 72 : (mqMob.matches ? 420 : 400);
+	}
+
 	function sentinelNearVisibleEdge() {
 		if (!sentinel || !sentinel.isConnected || !hasMore) return false;
-		var margin = mqMob.matches ? 420 : 400;
+		var margin = p2ScrollMargin();
 		var r = sentinel.getBoundingClientRect();
 		var root = p2PickIoRoot();
 		if (root) {
@@ -751,7 +763,7 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 
 	var io = null;
 	function p2IoRootMargin() {
-		return mqMob.matches ? "420px" : "400px";
+		return p2ScrollMargin() + "px";
 	}
 	function p2SetupIo() {
 		if (io) {
@@ -796,7 +808,8 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 				if (ok && hasMore) {
 					requestAnimationFrame(function() {
 						p2SetupIo();
-						if (!loading && hasMore && sentinelNearVisibleEdge()) loadMore();
+						/* Landscape: nu lanțui calupuri — doar la scroll utilizator */
+						if (!p2IsLandscape() && !loading && hasMore && sentinelNearVisibleEdge()) loadMore();
 					});
 				}
 			});
@@ -832,7 +845,7 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 			_p2MobTicker = null;
 			return;
 		}
-		if (!mqMob.matches) return;
+		if (!mqMob.matches || p2IsLandscape()) return;
 		if (!loading && sentinelNearVisibleEdge()) loadMore();
 	}, 1100);
 
@@ -1370,24 +1383,16 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 			if (window.euadoptPtP2Relayout) window.euadoptPtP2Relayout();
 		});
 	}
-	var _ptOrientWasLand = null;
-	function ptReloadIfOrientFlipped() {
-		if (!mq.matches && !ptMobIsLandscape()) return;
-		var land = ptMobIsLandscape();
-		if (_ptOrientWasLand === null) {
-			_ptOrientWasLand = land;
-			return;
-		}
-		if (_ptOrientWasLand !== land) {
-			window.location.reload();
-		}
-	}
+	var _ptOrientRelayoutT = [];
 	function ptScheduleOrientRelayout() {
-		ptReloadIfOrientFlipped();
+		_ptOrientRelayoutT.forEach(function(t) { clearTimeout(t); });
+		_ptOrientRelayoutT = [];
 		ptOnOrientationLayout();
-		[120, 350, 750].forEach(function(ms) {
-			setTimeout(ptOnOrientationLayout, ms);
-		});
+		if (!ptMobIsLandscape()) {
+			[120, 350].forEach(function(ms) {
+				_ptOrientRelayoutT.push(setTimeout(ptOnOrientationLayout, ms));
+			});
+		}
 	}
 	function syncPlaceholder() {
 		var b = getBar();
@@ -1466,7 +1471,6 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 	}
 	function boot() {
 		ptUpdateVhVar();
-		_ptOrientWasLand = ptMobIsLandscape();
 		ptSyncOrientClass();
 		ptClearStuckLayoutStyles();
 		syncNavHeightToCss();
@@ -1527,11 +1531,10 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 	});
 	window.addEventListener("orientationchange", function() {
 		clearTimeout(window._ptP4BarResizeT);
-		ptScheduleOrientRelayout();
 		window._ptP4BarResizeT = setTimeout(function() {
 			boot();
 			ptScheduleOrientRelayout();
-		}, 320);
+		}, 280);
 	});
 	if (window.visualViewport) {
 		window.visualViewport.addEventListener("resize", function() {
