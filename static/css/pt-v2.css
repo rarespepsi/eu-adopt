@@ -2333,6 +2333,20 @@ body.page-pt #main_content {
     display: flex !important;
     flex-direction: column !important;
     padding-top: 0 !important;
+    gap: 0 !important;
+    row-gap: 0 !important;
+  }
+  /* Fără fantomă P4 între navbar și grilă */
+  #PW .pt-grid > .pt-cell-4 {
+    flex: 0 0 0 !important;
+    order: -1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    min-height: 0 !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
   }
   /* Bandă P1+P3 fixă jos, între rail-uri (vizibilă fără scroll) */
   #PW .pt-mob-strip-merged {
@@ -2394,7 +2408,7 @@ body.page-pt #main_content {
   #PW .pt-mob-land-right {
     display: flex !important;
     flex-direction: column !important;
-    gap: 0 !important;
+    gap: 2px !important;
     position: fixed !important;
     top: var(--nav-height, var(--nav-h, 64px)) !important;
     bottom: var(--pt-p1-strip-h, 48px) !important;
@@ -2405,7 +2419,10 @@ body.page-pt #main_content {
     z-index: 2260 !important;
     margin: 0 !important;
     padding: 2px !important;
-    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     background: #141a22 !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-top: none !important;
@@ -2430,6 +2447,7 @@ body.page-pt #main_content {
     box-sizing: border-box !important;
     min-height: 0 !important;
     overflow: hidden !important;
+    order: 1 !important;
   }
   #PW .pt-mob-land-center {
     display: flex !important;
@@ -2439,7 +2457,21 @@ body.page-pt #main_content {
     max-width: 100% !important;
     min-height: 0 !important;
     min-width: 0 !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
     overflow: hidden !important;
+  }
+  /* P1/P3 desktop în centru — nu ocupă spațiu deasupra P2 */
+  #PW .pt-mob-land-center .pt-cell-1,
+  #PW .pt-mob-land-center .pt-cell-3--footer {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    flex: 0 0 0 !important;
   }
   #PW .pt-mob-land-center .pt-cell-2 {
     flex: 1 1 0 !important;
@@ -2534,6 +2566,13 @@ body.page-pt #main_content {
     max-height: 4.25rem !important;
     min-height: 0 !important;
   }
+  #PW .pt-mob-land-right .pt-p43-mobil-col--stack .pt-p43-slot {
+    aspect-ratio: unset !important;
+    max-height: none !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
   #PW .pt-p43-mobil-col--stack .pt-p43-creative-card img {
     max-height: 100% !important;
     object-fit: contain !important;
@@ -2582,7 +2621,10 @@ body.page-pt #main_content {
   #PW .pt-p43-mobil-col--stack .pt-p43-slot {
     position: relative;
     overflow: hidden;
-    flex-shrink: 0;
+  }
+  #PW .pt-mob-land-left .pt-p43-mobil-col--stack .pt-p43-slot,
+  #PW .pt-mob-land-right .pt-p43-mobil-col--stack .pt-p43-slot {
+    flex-shrink: 1 !important;
   }
   #PW .pt-p43-mobil-col--stack .pt-p43-slot > .pub-live-cover-link.pt-pub-fill-link,
   #PW .pt-p43-mobil-col--stack .pt-p43-slot > a.pt-p43-partner-fill {
@@ -2608,7 +2650,27 @@ body.page-pt #main_content {
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
+    flex: 0 0 auto !important;
     flex-shrink: 0 !important;
+  }
+  #PW .pt-mob-land-left .pt-p4-land-rail-ads {
+    flex: 1 1 0 !important;
+    min-height: 2.5rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+  #PW .pt-mob-land-left .pt-p4-land-rail-ads .pt-p43-mobil-col--stack {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  #PW .pt-mob-land-left .pt-p4-land-rail-ads .pt-p43-mobil-col--stack .pt-p43-slot {
+    flex: 1 1 0 !important;
+    max-height: none !important;
+    aspect-ratio: unset !important;
   }
   #PW .pt-mob-land-left .pt-p4-land-rail-ms > .pt-p4-box-match {
     flex: 2 1 0;
@@ -2659,13 +2721,26 @@ body.page-pt #main_content {
   }
   /* Dreapta: doar 3 casete Publi., coloană întreagă */
   #PW .pt-mob-land-right .pt-p4-land-rail-ads--full {
-    flex: 1 1 auto !important;
+    flex: 1 1 0 !important;
     min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+  #PW .pt-mob-land-right .pt-p4-land-rail-ads--full .pt-p43-mobil-col--stack {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
   }
   #PW .pt-mob-land-right .pt-p43-mobil-col--stack .pt-p43-slot {
     max-height: none !important;
-    flex: 1 1 0;
-    min-height: 0;
+    aspect-ratio: unset !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    flex-shrink: 1 !important;
   }
 
   #PW #P2.pt-cell-2 {
@@ -2836,8 +2911,15 @@ body.page-pt #main_content {
 
   /* Portrait: anulează lanțul flex înălțime fixă dacă a rămas de la landscape */
   html.pt-mob-portrait-active body.page-pt #main_wrap {
-    height: var(--pt-vh, 100dvh) !important;
-    max-height: var(--pt-vh, 100dvh) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 100dvh !important;
+  }
+  html.pt-mob-portrait-active #PW .pt-mob-land-3col {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
   }
   html.pt-mob-portrait-active #PW .pt-p2-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
