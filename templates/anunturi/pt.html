@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt142-orient-land" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt143-orient-final" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -1263,8 +1263,11 @@
 	}
 	function ptUpdateVhVar() {
 		var h = window.innerHeight || document.documentElement.clientHeight || 0;
-		if (window.visualViewport && window.visualViewport.height) {
+		/* visualViewport pe Android rămâne blocat după rotație; în portrait folosim innerHeight */
+		if (mq.matches && ptMobIsLandscape() && window.visualViewport && window.visualViewport.height) {
 			h = Math.round(window.visualViewport.height);
+		} else {
+			h = Math.round(h);
 		}
 		if (h > 0) {
 			document.documentElement.style.setProperty("--pt-vh", h + "px");
@@ -1294,9 +1297,6 @@
 			["display", "position", "left", "right", "top", "bottom", "width", "height", "visibility", "pointer-events", "z-index"].forEach(function(prop) {
 				rail.style.removeProperty(prop);
 			});
-			if (!ptMobIsLandscape()) {
-				rail.style.setProperty("display", "none", "important");
-			}
 		});
 	}
 	window.euadoptPtMobIsLandscape = ptMobIsLandscape;
@@ -1331,10 +1331,7 @@
 		var p3 = document.getElementById("P3");
 		var mobStrip = document.getElementById("pt_mob_strip_merged");
 		if (!scrollEl || !p2) return;
-		var vh = window.innerHeight || document.documentElement.clientHeight || 0;
-		if (window.visualViewport && window.visualViewport.height) {
-			vh = Math.round(window.visualViewport.height);
-		}
+		var vh = Math.round(window.innerHeight || document.documentElement.clientHeight || 0);
 		var footerH = 0;
 		if (mobStrip && mobStrip.offsetParent !== null) {
 			footerH = Math.ceil(mobStrip.getBoundingClientRect().height);

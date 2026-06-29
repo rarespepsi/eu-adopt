@@ -1918,8 +1918,9 @@ body.page-pt #main_content {
     flex-direction: column;
     min-width: 0;
   }
-  #PW .pt-mob-land-left,
-  #PW .pt-mob-land-right {
+  /* Rail-uri: ascunse implicit pe mobil; vizibile doar cu html.pt-mob-landscape-active (fără JS inline display) */
+  html:not(.pt-mob-landscape-active) #PW .pt-mob-land-left,
+  html:not(.pt-mob-landscape-active) #PW .pt-mob-land-right {
     display: none !important;
   }
   #PW .pt-mob-land-center {
