@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt155-strip-full" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt156-portrait-sticky" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -1454,6 +1454,11 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 			bar.style.removeProperty("visibility");
 			bar.style.removeProperty("pointer-events");
 			bar.style.removeProperty("top");
+			bar.style.removeProperty("display");
+			bar.style.removeProperty("height");
+			bar.style.removeProperty("max-height");
+			bar.style.removeProperty("min-height");
+			bar.style.removeProperty("overflow");
 		}
 		var strip = document.getElementById("pt_mob_strip_merged");
 		if (strip) {

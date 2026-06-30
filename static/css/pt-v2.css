@@ -2243,6 +2243,26 @@ body.page-pt #main_content {
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
   }
+  /* Bara mov + publi: vizibile în portrait (nu ascunse de regulile landscape) */
+  #PW #pt_p4_mobile_sticky.pt-p4-portrait-sticky,
+  #PW .pt-p4-mobile-sticky.pt-p4-portrait-sticky {
+    display: flex !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    top: var(--nav-height, var(--nav-h, 64px)) !important;
+  }
+  #PW .pt-p4-sticky-placeholder {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+
   #PW .pt-cell-3--footer {
     order: 5 !important;
     flex: 0 0 auto !important;
@@ -2425,10 +2445,11 @@ body.page-pt #main_content {
     min-width: 100% !important;
     max-width: 100% !important;
   }
+  #PW .pt-strip-band--desktop {
     display: none !important;
   }
-  #PW .pt-p4-portrait-sticky,
-  #PW #pt_p4_mobile_sticky {
+  html:not(.pt-mob-portrait-active) #PW .pt-p4-portrait-sticky,
+  html:not(.pt-mob-portrait-active) #PW #pt_p4_mobile_sticky {
     display: none !important;
     visibility: hidden !important;
     pointer-events: none !important;
