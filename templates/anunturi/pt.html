@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt153-nav-offset" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt154-portrait-vh" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -117,11 +117,11 @@
 			overscroll-behavior-y: contain;
 		}
 	}
-	/* Portret: 100dvh (nu --pt-vh din landscape — altfel rămâne blocat pe înălțimea scurtă) */
+	/* Portret: 100dvh / --pt-portrait-vh (nu --pt-vh din landscape) */
 	html.pt-mob-portrait-active body.page-pt #main_wrap {
-		min-height: 100dvh !important;
-		height: 100dvh !important;
-		max-height: 100dvh !important;
+		min-height: var(--pt-portrait-vh, 100dvh) !important;
+		height: var(--pt-portrait-vh, 100dvh) !important;
+		max-height: var(--pt-portrait-vh, 100dvh) !important;
 		overflow: hidden !important;
 		display: flex !important;
 		flex-direction: column !important;
@@ -130,15 +130,15 @@
 		flex: 1 1 0 !important;
 		min-height: 0 !important;
 		height: auto !important;
-		max-height: 100% !important;
+		max-height: none !important;
 		overflow: hidden !important;
 	}
 	html.pt-mob-portrait-active body.page-pt #PW {
 		padding-top: 0 !important;
-		height: auto !important;
-		max-height: none !important;
 		min-height: 0 !important;
+		max-height: none !important;
 		flex: 1 1 0 !important;
+		height: 100% !important;
 	}
 	#PW .pt-strip-item--p1 img,
 	#PW .pt-strip-item--p3 img {
@@ -1327,6 +1327,28 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 			return false;
 		}
 	}
+	function ptPortraitDimsReady() {
+		var w = Math.round(window.innerWidth || document.documentElement.clientWidth || 0);
+		var h = Math.round(window.innerHeight || document.documentElement.clientHeight || 0);
+		try {
+			if (window.visualViewport && window.visualViewport.height > 0) {
+				h = Math.round(Math.max(h, window.visualViewport.height));
+			}
+		} catch (eVv) {}
+		return h > w && h >= 480;
+	}
+	function ptSyncPortraitViewport() {
+		document.documentElement.style.removeProperty("--pt-vh");
+		var h = Math.round(window.innerHeight || document.documentElement.clientHeight || 0);
+		try {
+			if (window.visualViewport && window.visualViewport.height > 0) {
+				h = Math.round(window.visualViewport.height);
+			}
+		} catch (eVv2) {}
+		if (h > 0) {
+			document.documentElement.style.setProperty("--pt-portrait-vh", h + "px");
+		}
+	}
 	function ptReadViewportHeight() {
 		var vv = window.visualViewport;
 		var ih = window.innerHeight || document.documentElement.clientHeight || 0;
@@ -1411,6 +1433,7 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 		if (mq.matches) document.documentElement.classList.add("pt-mob-portrait-active");
 		ptClearStuckLayoutStyles();
 		ptSyncPortraitP2Heights();
+		ptSyncPortraitViewport();
 		["main_wrap", "main_content", "PW"].forEach(function(id) {
 			var el = document.getElementById(id);
 			if (!el) return;
@@ -1432,6 +1455,18 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 			bar.style.removeProperty("pointer-events");
 			bar.style.removeProperty("top");
 		}
+		var strip = document.getElementById("pt_mob_strip_merged");
+		if (strip) {
+			["position", "left", "right", "bottom", "top", "width", "height", "max-height", "min-height"].forEach(function(prop) {
+				strip.style.removeProperty(prop);
+			});
+		}
+		var land3col = document.querySelector("#PW .pt-mob-land-3col");
+		if (land3col) {
+			land3col.style.removeProperty("padding");
+			land3col.style.removeProperty("padding-left");
+			land3col.style.removeProperty("padding-right");
+		}
 	}
 	function ptOnOrientationLayout() {
 		ptUpdateVhVar();
@@ -1449,29 +1484,35 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 	}
 	var _ptOrientRelayoutT = [];
 	var _ptWasLandscape = false;
+	function ptPortraitRelayoutPass() {
+		if (ptMobIsLandscape()) return;
+		ptHardPortraitReset();
+		syncNavHeightToCss();
+		syncPlaceholder();
+		ptSyncPortraitP2Heights();
+		if (window.euadoptPtP2Relayout) window.euadoptPtP2Relayout();
+	}
+	function ptSchedulePortraitRecovery(attempt) {
+		if (ptMobIsLandscape()) return;
+		ptPortraitRelayoutPass();
+		if (!ptPortraitDimsReady() && attempt < 15) {
+			_ptOrientRelayoutT.push(setTimeout(function() {
+				ptSchedulePortraitRecovery(attempt + 1);
+			}, 100));
+		}
+	}
 	function ptScheduleOrientRelayout() {
 		var isLand = ptMobIsLandscape();
 		_ptOrientRelayoutT.forEach(function(t) { clearTimeout(t); });
 		_ptOrientRelayoutT = [];
-		if (!isLand) ptHardPortraitReset();
-		else ptOnOrientationLayout();
-		if (!isLand && _ptWasLandscape) {
-			[120, 350, 650].forEach(function(ms) {
-				_ptOrientRelayoutT.push(setTimeout(function() {
-					if (ptMobIsLandscape()) return;
-					ptHardPortraitReset();
-					syncNavHeightToCss();
-					syncPlaceholder();
-					ptSyncPortraitP2Heights();
-					if (window.euadoptPtP2Relayout) window.euadoptPtP2Relayout();
-				}, ms));
-			});
-		} else if (isLand) {
+		if (!isLand) {
+			if (_ptWasLandscape) ptSchedulePortraitRecovery(0);
+			else ptPortraitRelayoutPass();
+		} else {
+			document.documentElement.classList.remove("pt-mob-portrait-active");
+			document.documentElement.style.removeProperty("--pt-portrait-vh");
 			ptOnOrientationLayout();
 			_ptOrientRelayoutT.push(setTimeout(ptOnOrientationLayout, 150));
-		} else if (!isLand) {
-			syncNavHeightToCss();
-			syncPlaceholder();
 		}
 		_ptWasLandscape = isLand;
 	}
@@ -1558,6 +1599,7 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 			ptUpdateVhVar();
 			ptClearStuckLayoutStyles();
 		}
+		_ptWasLandscape = ptMobIsLandscape();
 		syncNavHeightToCss();
 		try {
 			document.documentElement.style.removeProperty("--pt-p1-strip-h");
@@ -1615,6 +1657,21 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 		}, 160);
 	});
 	window.addEventListener("orientationchange", function() {
+		document.documentElement.style.removeProperty("--pt-vh");
+		var toPortrait = true;
+		try {
+			if (screen.orientation && screen.orientation.type) {
+				toPortrait = screen.orientation.type.indexOf("portrait") !== -1;
+			}
+		} catch (eOr) {}
+		if (toPortrait) {
+			document.documentElement.classList.remove("pt-mob-landscape-active");
+			if (mq.matches) document.documentElement.classList.add("pt-mob-portrait-active");
+		} else {
+			document.documentElement.classList.remove("pt-mob-portrait-active");
+			document.documentElement.style.removeProperty("--pt-portrait-vh");
+			document.documentElement.classList.add("pt-mob-landscape-active");
+		}
 		clearTimeout(window._ptP4BarResizeT);
 		window._ptP4BarResizeT = setTimeout(function() {
 			boot();
