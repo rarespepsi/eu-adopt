@@ -2402,23 +2402,29 @@ body.page-pt #main_content {
     max-height: 0 !important;
     overflow: hidden !important;
   }
-  /* Bandă P1+P3 fixă jos, între rail-uri (vizibilă fără scroll) */
+  /* Bandă P1+P3 fixă jos, pe toată lățimea ecranului (nu doar între rail-uri) */
   html:not(.pt-mob-portrait-active) #PW .pt-mob-strip-merged {
     display: flex !important;
     order: 2 !important;
     flex: 0 0 auto !important;
     position: fixed !important;
-    left: var(--pt-land-rail-w) !important;
-    right: var(--pt-land-rail-w) !important;
+    left: 0 !important;
+    right: 0 !important;
     bottom: 0 !important;
-    width: auto !important;
+    width: 100% !important;
+    max-width: 100vw !important;
     min-height: var(--pt-p1-strip-h, 48px) !important;
     height: var(--pt-p1-strip-h, 48px) !important;
     max-height: var(--pt-p1-strip-h, 48px) !important;
     visibility: visible !important;
-    z-index: 2270 !important;
+    z-index: 2280 !important;
+    box-sizing: border-box !important;
   }
-  #PW .pt-strip-band--desktop {
+  html:not(.pt-mob-portrait-active) #PW .pt-mob-strip-merged .pt-strip-wrap.pt-strip-mob-merged {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
     display: none !important;
   }
   #PW .pt-p4-portrait-sticky,
