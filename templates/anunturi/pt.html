@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt156-portrait-sticky" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt339-clean" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
@@ -34,50 +34,7 @@
 			-webkit-overflow-scrolling: touch;
 		}
 	}
-	/* Mobil landscape: lanț flex ca portrait; scroll în .pt-p2-scroll */
-	@media (orientation: landscape) and (max-height: 520px) {
-		html body.page-pt.page-animale #A0 {
-			position: fixed !important;
-			top: 0 !important;
-			left: 0 !important;
-			right: 0 !important;
-			z-index: 2600 !important;
-			width: 100% !important;
-		}
-		body.page-pt .population-org-banner {
-			display: none !important;
-		}
-		body.page-pt #main_wrap {
-			height: var(--pt-vh, 100dvh) !important;
-			max-height: var(--pt-vh, 100dvh) !important;
-			overflow: hidden !important;
-			display: flex !important;
-			flex-direction: column !important;
-		}
-		body.page-pt #main_content {
-			box-sizing: border-box !important;
-			padding: 0 !important;
-			padding-top: var(--nav-height, 34px) !important;
-			overflow: hidden !important;
-			flex: 1 1 0 !important;
-			min-height: 0 !important;
-			background-color: #141a22 !important;
-		}
-		body.page-pt #PW {
-			padding-top: 0 !important;
-			margin-top: 0 !important;
-			box-sizing: border-box !important;
-			height: 100% !important;
-			min-height: 0 !important;
-		}
-		body.page-pt #PW .pt-p2-scroll {
-			overflow-y: auto !important;
-			overflow-x: hidden !important;
-			-webkit-overflow-scrolling: touch;
-			overscroll-behavior-y: contain;
-		}
-	}
-	@media (max-width: 767.98px) and (orientation: portrait) {
+	@media (max-width: 767.98px), (max-height: 520px) {
 		body.page-pt #main_wrap {
 			height: 100dvh !important;
 			max-height: 100dvh !important;
@@ -99,13 +56,7 @@
 			max-height: none !important;
 			min-height: 0 !important;
 		}
-		#PW .pt-mob-land-left,
-		#PW .pt-mob-land-right {
-			display: none !important;
-			visibility: hidden !important;
-			pointer-events: none !important;
-		}
-		#PW .pt-mob-land-3col {
+		#PW .pt-mob-main {
 			padding-left: 0 !important;
 			padding-right: 0 !important;
 			padding-top: 0 !important;
@@ -117,7 +68,7 @@
 			overscroll-behavior-y: contain;
 		}
 	}
-	/* Portret: 100dvh / --pt-portrait-vh (nu --pt-vh din landscape) */
+	/* Portret: 100dvh / --pt-portrait-vh */
 	html.pt-mob-portrait-active body.page-pt #main_wrap {
 		min-height: var(--pt-portrait-vh, 100dvh) !important;
 		height: var(--pt-portrait-vh, 100dvh) !important;
@@ -139,6 +90,15 @@
 		max-height: none !important;
 		flex: 1 1 0 !important;
 		height: 100% !important;
+	}
+	html.pt-mob-portrait-active #PW .pt-cell-2 {
+		min-height: 0 !important;
+		grid-row: auto !important;
+		grid-column: auto !important;
+		order: unset !important;
+	}
+	html.pt-mob-portrait-active #PW .pt-cell-2 .pt-p2-scroll {
+		min-height: 0 !important;
 	}
 	#PW .pt-strip-item--p1 img,
 	#PW .pt-strip-item--p3 img {
@@ -369,7 +329,7 @@
 {# PT portret mobil: A0 fix + #main_content padding-top = --nav-height → banda cursivă lipită de navbar, fără #FCFCFC între ele #}
 {% block extra_css_after %}
 <style>
-	@media (max-width: 767.98px) and (orientation: portrait) {
+	@media (max-width: 767.98px), (max-height: 520px) {
 		html body.page-pt.page-animale #A0 {
 			position: fixed !important;
 			top: 0 !important;
@@ -507,32 +467,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="pt-mob-land-3col">
-				<aside class="pt-mob-land-left" aria-label="Acțiuni și reclame stânga">
-					<div class="pt-p4-match-sustine-stack pt-p4-land-rail-ms{% if selected_species == 'other' %} pt-p4-ms-stack--sustine-only{% endif %}">
-						<div class="pt-p4-box-match pt-p4-land-rail-box">
-							<div class="pt-p4-actions">
-								{% if selected_species != 'other' %}
-								<a href="#" class="pt-p4-btn-match" title="Găsește-ți sufletul pereche">Găsește-mi perechea</a>
-								{% endif %}
-								<a href="#" class="pt-p4-btn-filters js-pt-mobile-filters" title="Deschide filtre">Filtre</a>
-							</div>
-						</div>
-						<div class="pt-p4-box-sustine pt-p4-land-rail-sustine" aria-label="Ajută un suflet">
-							<a href="{% url 'donatii_generale' %}?sursa=pt" class="pt-p4-btn-sustine" title="Susține EU-ADOPT">Ajuta un Suflet !</a>
-						</div>
-					</div>
-					<div class="pt-p4-box pt-p4-box-ads pt-p4-land-rail-ads">
-						<div class="pt-p43-mobil-col pt-p43-mobil-col--stack">
-							{% for slot in pt_pub_slot_list %}
-								{% if slot.code == 'P4.3' %}
-								{% include "anunturi/includes/pt_pub_slot_block.html" with slot_code=slot.code creative=slot.creative slot_layout="mama" only %}
-								{% endif %}
-							{% endfor %}
-						</div>
-					</div>
-				</aside>
-				<div class="pt-mob-land-center">
+			<div class="pt-mob-main">
 					<div id="P2" class="pt-cell pt-cell-2" data-slot="P2" aria-label="Listă animale – 4 coloane × 3 rânduri vizibile, scroll vertical">
 						<div class="pt-p2-scroll">
 							<div class="pt-p2-grid" id="pt_p2_grid" role="list" data-p2-more-url="{% url 'pets_p2_more' %}" data-p2-offset="{{ p2_next_offset }}" data-p2-has-more="{% if p2_has_more %}1{% else %}0{% endif %}">
@@ -553,16 +488,6 @@
 							</div>
 						</div>
 					</div>
-					<div id="pt_mob_strip_merged" class="pt-cell pt-mob-strip-merged pt-strip-band--mobile" data-slot="P1+P3" aria-label="Bandă publicitate mobilă P1 și P3">
-						<div class="pt-strip-wrap pt-strip-mob-merged">
-							<div class="pt-strip-track pt-strip-track--mob-merged">
-								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
-								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
-								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
-								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
-							</div>
-						</div>
-					</div>
 					<div id="P3" class="pt-cell pt-cell-3 pt-cell-3--footer pt-strip-band--desktop" data-slot="P3">
 						<div class="pt-strip-wrap pt-strip-p3" aria-label="Bandă publicitate P3">
 							<div class="pt-strip-track pt-strip-track--p3">
@@ -571,18 +496,16 @@
 							</div>
 						</div>
 					</div>
-				</div>
-				<aside class="pt-mob-land-right" aria-label="Reclame dreapta">
-					<div class="pt-p4-box pt-p4-box-ads pt-p4-land-rail-ads pt-p4-land-rail-ads--full">
-						<div class="pt-p43-mobil-col pt-p43-mobil-col--stack">
-							{% for slot in pt_pub_slot_list %}
-								{% if slot.code == 'P5.1' or slot.code == 'P5.2' or slot.code == 'P5.3' %}
-								{% include "anunturi/includes/pt_pub_slot_block.html" with slot_code=slot.code creative=slot.creative slot_layout="mama" only %}
-								{% endif %}
-							{% endfor %}
-						</div>
+			</div>
+			<div id="pt_mob_strip_merged" class="pt-cell pt-mob-strip-merged pt-strip-band--mobile" data-slot="P1+P3" aria-label="Bandă publicitate mobilă P1 și P3">
+				<div class="pt-strip-wrap pt-strip-mob-merged">
+					<div class="pt-strip-track pt-strip-track--mob-merged">
+						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
+						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
+						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
+						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
 					</div>
-				</aside>
+				</div>
 			</div>
 			<div id="P5" class="pt-cell pt-cell-5" data-slot="P5">
 				<div class="pt-p5-grid">
@@ -645,8 +568,24 @@
 
 {% block extra_js %}
 <script>
-window.euadoptPtMqMob = "(max-width: 767.98px), (orientation: landscape) and (max-height: 520px)";
-window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
+window.euadoptPtMqMob = "(max-width: 767.98px), (max-height: 520px)";
+window.euadoptPtReadViewportHeight = function() {
+	var vv = window.visualViewport;
+	var ih = window.innerHeight || document.documentElement.clientHeight || 0;
+	var vvh = (vv && vv.height) ? vv.height : ih;
+	return Math.round(Math.max(ih, vvh));
+};
+window.euadoptPtReadViewportDims = function() {
+	var w = window.innerWidth || document.documentElement.clientWidth || 0;
+	var h = window.innerHeight || document.documentElement.clientHeight || 0;
+	try {
+		if (window.visualViewport && window.visualViewport.width > 0 && window.visualViewport.height > 0) {
+			w = window.visualViewport.width;
+			h = window.visualViewport.height;
+		}
+	} catch (eVv) {}
+	return { w: Math.round(w), h: Math.round(h) };
+};
 </script>
 <script>
 (function() {
@@ -676,7 +615,7 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 	}
 	function ptSkipImageRotation() {
 		try {
-			return window.matchMedia(window.euadoptPtMqMob || "(max-width: 767.98px), (orientation: landscape) and (max-height: 520px)").matches;
+			return window.matchMedia(window.euadoptPtMqMob || "(max-width: 767.98px), (max-height: 520px)").matches;
 		} catch (e) {
 			return false;
 		}
@@ -722,7 +661,7 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 	var sentinel = document.getElementById("pt_p2_load_sentinel");
 	var scrollEl = document.querySelector("#P2 .pt-p2-scroll");
 	var mainContent = document.getElementById("main_content");
-	var mqMob = window.matchMedia(window.euadoptPtMqMob || "(max-width: 767.98px), (orientation: landscape) and (max-height: 520px)");
+	var mqMob = window.matchMedia(window.euadoptPtMqMob || "(max-width: 767.98px), (max-height: 520px)");
 	if (!grid || !sentinel || !scrollEl) return;
 	var baseUrl = grid.getAttribute("data-p2-more-url") || "";
 	if (!baseUrl) return;
@@ -766,16 +705,8 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 		}
 	}
 
-	function p2IsLandscape() {
-		try {
-			return window.matchMedia(window.euadoptPtMqMobLand || "(orientation: landscape) and (max-height: 520px)").matches;
-		} catch (e) {
-			return false;
-		}
-	}
 	function p2ScrollMargin() {
-		/* Landscape: grilă scurtă → sentinelul e „aproape” imediat; margine mare = zeci de calupuri fetch */
-		return p2IsLandscape() ? 72 : (mqMob.matches ? 420 : 400);
+		return mqMob.matches ? 420 : 400;
 	}
 
 	function sentinelNearVisibleEdge() {
@@ -792,6 +723,22 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 	}
 
 	var io = null;
+	var _p2FetchAbort = null;
+	var _p2TapNavUntil = 0;
+	var _p2ScrollProbeT = null;
+	var _p2LastScrollTop = 0;
+	var _p2AutoChainCount = 0;
+	var _P2_MAX_AUTO_CHAIN = 2;
+	var _p2UserScrolledSinceChain = true;
+
+	function p2AbortFetch() {
+		if (_p2FetchAbort) {
+			try { _p2FetchAbort.abort(); } catch (eA) {}
+			_p2FetchAbort = null;
+		}
+		loading = false;
+	}
+
 	function p2IoRootMargin() {
 		return p2ScrollMargin() + "px";
 	}
@@ -804,6 +751,7 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 		var root = p2PickIoRoot();
 		io = new IntersectionObserver(
 			function(entries) {
+				if (Date.now() < _p2TapNavUntil) return;
 				for (var i = 0; i < entries.length; i++) {
 					if (entries[i].isIntersecting) loadMore();
 				}
@@ -815,8 +763,16 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 
 	function loadMore() {
 		if (loading || !hasMore) return;
+		if (Date.now() < _p2TapNavUntil) return;
+		if (!_p2UserScrolledSinceChain && _p2AutoChainCount >= _P2_MAX_AUTO_CHAIN) {
+			return;
+		}
 		loading = true;
-		fetch(buildPageUrl(), { credentials: "same-origin", cache: "no-store", headers: { Accept: "application/json" } })
+		p2AbortFetch();
+		_p2FetchAbort = typeof AbortController !== "undefined" ? new AbortController() : null;
+		var fetchOpts = { credentials: "same-origin", cache: "no-store", headers: { Accept: "application/json" } };
+		if (_p2FetchAbort) fetchOpts.signal = _p2FetchAbort.signal;
+		fetch(buildPageUrl(), fetchOpts)
 			.then(function(r) { return r.json(); })
 			.then(function(data) {
 				if (!data || !data.ok) throw new Error("p2-more");
@@ -832,68 +788,105 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 				if (!hasMore) finish();
 				return true;
 			})
-			.catch(function() { return false; })
-			.finally(function() { loading = false; })
+			.catch(function(err) {
+				if (err && err.name === "AbortError") return false;
+				return false;
+			})
+			.finally(function() { loading = false; _p2FetchAbort = null; })
 			.then(function(ok) {
 				if (ok && hasMore) {
 					requestAnimationFrame(function() {
 						p2SetupIo();
-						/* Landscape: nu lanțui calupuri — doar la scroll utilizator */
-						if (!p2IsLandscape() && !loading && hasMore && sentinelNearVisibleEdge()) loadMore();
+						if (!loading && hasMore && sentinelNearVisibleEdge()) {
+							if (_p2AutoChainCount < _P2_MAX_AUTO_CHAIN) {
+								_p2AutoChainCount++;
+								_p2UserScrolledSinceChain = false;
+								loadMore();
+							}
+						}
 					});
 				}
 			});
 	}
 
 	p2SetupIo();
-	/* Dacă sentinelul e deja în zonă la încărcare, unele browsere nu re-trimit IO imediat */
 	requestAnimationFrame(function() {
 		requestAnimationFrame(scheduleP2ScrollProbe);
 	});
 
-	var _p2ScrollProbeT = null;
-	function scheduleP2ScrollProbe() {
+	function p2UserTapOnCard(ev) {
+		try {
+			if (ev && ev.target && ev.target.closest && ev.target.closest(".pt-p2-card-link, .pt-p2-ask-plic-btn, .pt-p2-promo-btn, .pt-p2-card-bottom-bar__name")) {
+				_p2TapNavUntil = Date.now() + 400;
+				_p2AutoChainCount = 0;
+				_p2UserScrolledSinceChain = true;
+				p2AbortFetch();
+				return true;
+			}
+		} catch (eTap) {}
+		return false;
+	}
+	function scheduleP2ScrollProbe(ev) {
 		if (!hasMore || loading) return;
+		if (Date.now() < _p2TapNavUntil) return;
 		clearTimeout(_p2ScrollProbeT);
 		_p2ScrollProbeT = setTimeout(function() {
 			_p2ScrollProbeT = null;
-			if (loading || !hasMore) return;
+			if (loading || !hasMore || Date.now() < _p2TapNavUntil) return;
 			if (sentinelNearVisibleEdge()) loadMore();
-		}, 80);
+		}, 120);
 	}
-	scrollEl.addEventListener("scroll", scheduleP2ScrollProbe, { passive: true });
-	window.addEventListener("scroll", scheduleP2ScrollProbe, { passive: true });
-	if (mainContent) mainContent.addEventListener("scroll", scheduleP2ScrollProbe, { passive: true });
-	scrollEl.addEventListener("touchend", scheduleP2ScrollProbe, { passive: true });
-	if (mainContent) mainContent.addEventListener("touchend", scheduleP2ScrollProbe, { passive: true });
-	document.addEventListener("touchend", scheduleP2ScrollProbe, { passive: true });
-
-	/* Pe mobil (fără DevTools): backup periodic când IO nu trage la timp */
-	_p2MobTicker = setInterval(function() {
-		if (!hasMore) {
-			clearInterval(_p2MobTicker);
-			_p2MobTicker = null;
-			return;
+	grid.addEventListener("touchstart", p2UserTapOnCard, { passive: true, capture: true });
+	grid.addEventListener("mousedown", p2UserTapOnCard, { capture: true });
+	scrollEl.addEventListener("scroll", function(ev) {
+		var st = scrollEl.scrollTop;
+		if (Math.abs(st - _p2LastScrollTop) > 12) {
+			_p2UserScrolledSinceChain = true;
+			_p2AutoChainCount = 0;
 		}
-		if (!mqMob.matches || p2IsLandscape()) return;
-		if (!loading && sentinelNearVisibleEdge()) loadMore();
-	}, 1100);
+		_p2LastScrollTop = st;
+		scheduleP2ScrollProbe(ev);
+	}, { passive: true });
+	window.addEventListener("pagehide", p2AbortFetch);
 
 	var _p2IoResizeT = null;
 	function onP2IoResize() {
+		clearTimeout(_p2ScrollProbeT);
 		clearTimeout(_p2IoResizeT);
+		_p2AutoChainCount = 0;
+		_p2UserScrolledSinceChain = true;
 		_p2IoResizeT = setTimeout(function() {
 			_p2IoResizeT = null;
 			if (hasMore) p2SetupIo();
-			scheduleP2ScrollProbe();
-		}, 200);
+		}, 350);
 	}
 	window.addEventListener("resize", onP2IoResize);
-	window.addEventListener("orientationchange", onP2IoResize);
-	window.euadoptPtP2Relayout = function() {
-		p2SetupIo();
-		scheduleP2ScrollProbe();
-	};
+	function p2PortraitWake() {
+		_p2TapNavUntil = 0;
+		_p2AutoChainCount = 0;
+		_p2UserScrolledSinceChain = true;
+		p2AbortFetch();
+		clearTimeout(_p2ScrollProbeT);
+		_p2ScrollProbeT = null;
+		hasMore = grid.getAttribute("data-p2-has-more") === "1";
+		if (sentinel) {
+			if (hasMore) sentinel.removeAttribute("hidden");
+			else sentinel.setAttribute("hidden", "");
+		}
+		if (io) {
+			try { io.disconnect(); } catch (eIo) {}
+			io = null;
+		}
+		if (hasMore) {
+			setTimeout(function() {
+				if (hasMore) p2SetupIo();
+			}, 450);
+		}
+	}
+	window.euadoptPtP2PortraitWake = p2PortraitWake;
+	try {
+		if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+	} catch (eSr) {}
 })();
 </script>
 <script>
@@ -913,7 +906,7 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 	var filtersApplied = false;
 	var filtersDraft = null;
 	function isMobileViewport() {
-		return !!(window.matchMedia && window.matchMedia(window.euadoptPtMqMob || "(max-width: 767.98px), (orientation: landscape) and (max-height: 520px)").matches);
+		return !!(window.matchMedia && window.matchMedia(window.euadoptPtMqMob || "(max-width: 767.98px), (max-height: 520px)").matches);
 	}
 	function getFilterSnapshot() {
 		var snap = {};
@@ -973,17 +966,8 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 			}
 		});
 	}
-	function ptMobFiltersLandscape() {
-		if (window.euadoptPtMobIsLandscape) return window.euadoptPtMobIsLandscape();
-		try {
-			return !!(window.matchMedia && window.matchMedia(window.euadoptPtMqMobLand || "(orientation: landscape) and (max-height: 520px)").matches);
-		} catch (e) {
-			return false;
-		}
-	}
 	function syncPtMobFiltersAboveNav() {
-		var open = !!(p4Cell && p4Cell.classList.contains("pt-mobile-filters-open"));
-		document.body.classList.toggle("pt-mob-filters-above-nav", open && ptMobFiltersLandscape());
+		document.body.classList.remove("pt-mob-filters-above-nav");
 	}
 	function closeMobileFilters(restoreDraft) {
 		if (!p4Cell) return;
@@ -995,10 +979,10 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 	}
 	function openMobileFilters() {
 		if (!p4Cell || !isMobileViewport()) return;
-		filtersDraft = getFilterSnapshot();
-		p4Cell.classList.add("pt-mobile-filters-open");
-		if (mobileFiltersBackdrop) mobileFiltersBackdrop.hidden = false;
-		syncPtMobFiltersAboveNav();
+		/* Safe mode PT: fara overlay-uri mobile (evita blocaj touch dupa rotire) */
+		if (filtersForm && filtersForm.action) {
+			window.location.href = filtersForm.action;
+		}
 	}
 	setMobileFiltersBtnState(hasAppliedFiltersInUrl());
 	if (filtersForm) {
@@ -1087,6 +1071,7 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 	syncMatchBtnFromTraits();
 
 	function openModal() {
+		if (isMobileViewport()) return;
 		if (!modal) return;
 		modal.hidden = false;
 		modal.setAttribute("aria-hidden", "false");
@@ -1113,6 +1098,51 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 		modal.setAttribute("aria-hidden", "true");
 		document.body.style.overflow = "";
 	}
+	function closeTransientUiForRotate() {
+		closeMobileFilters(false);
+		closeModal();
+		if (backdrop) backdrop.hidden = true;
+		document.body.classList.remove("pt-mob-filters-above-nav");
+		document.body.style.overflow = "";
+		try {
+			if (p4Cell) p4Cell.classList.remove("pt-mobile-filters-open");
+		} catch (eP4) {}
+		try {
+			var fbd = document.getElementById("ptMobileFiltersBackdrop");
+			if (fbd) {
+				fbd.hidden = true;
+				fbd.setAttribute("hidden", "");
+				fbd.style.setProperty("display", "none", "important");
+				fbd.style.setProperty("pointer-events", "none", "important");
+				fbd.style.setProperty("opacity", "0", "important");
+			}
+		} catch (eFbd) {}
+		try {
+			if (modal) {
+				modal.hidden = true;
+				modal.setAttribute("aria-hidden", "true");
+				modal.style.setProperty("display", "none", "important");
+				modal.style.setProperty("pointer-events", "none", "important");
+			}
+			if (backdrop) {
+				backdrop.hidden = true;
+				backdrop.style.setProperty("display", "none", "important");
+				backdrop.style.setProperty("pointer-events", "none", "important");
+				backdrop.style.setProperty("opacity", "0", "important");
+			}
+		} catch (eModal) {}
+		var pw = document.getElementById("PW");
+		var p2 = document.getElementById("P2");
+		var p2s = document.querySelector("#P2 .pt-p2-scroll");
+		[pw, p2, p2s].forEach(function(el) {
+			if (!el || !el.style) return;
+			el.style.removeProperty("pointer-events");
+		});
+		if (pw && pw.style) pw.style.setProperty("pointer-events", "auto");
+		if (p2 && p2.style) p2.style.setProperty("pointer-events", "auto");
+		if (p2s && p2s.style) p2s.style.setProperty("pointer-events", "auto");
+	}
+	window.euadoptPtCloseTransientUi = closeTransientUiForRotate;
 
 	Array.prototype.forEach.call(matchBtns, function(btn) {
 		btn.addEventListener("click", function(e) {
@@ -1166,9 +1196,6 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 	window.addEventListener("resize", function() {
 		if (!isMobileViewport()) closeMobileFilters(true);
 		else syncPtMobFiltersAboveNav();
-	});
-	window.addEventListener("orientationchange", function() {
-		setTimeout(syncPtMobFiltersAboveNav, 240);
 	});
 
 	if (form) {
@@ -1263,12 +1290,32 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 		}, 220);
 	}
 	window.addEventListener("resize", scheduleInitSexSelect);
-	window.addEventListener("orientationchange", scheduleInitSexSelect);
+
+	window.euadoptPtClearStuckUi = function() {
+		closeMobileFilters(false);
+		closeModal();
+		document.body.classList.remove("pt-mob-filters-above-nav");
+		document.body.style.overflow = "";
+		var bd = document.getElementById("ptMobileFiltersBackdrop");
+		if (bd) {
+			bd.hidden = true;
+			bd.setAttribute("hidden", "");
+		}
+		if (p4Cell) p4Cell.classList.remove("pt-mobile-filters-open");
+		var lr = document.getElementById("login-required-modal-overlay");
+		if (lr) {
+			lr.classList.remove("is-visible");
+			lr.setAttribute("aria-hidden", "true");
+		}
+		if (typeof window.__a0CloseMobileNav === "function") {
+			try { window.__a0CloseMobileNav(); } catch (eNav) {}
+		}
+	};
 })();
 </script>
 <script>
 (function() {
-	var mq = window.matchMedia(window.euadoptPtMqMob || "(max-width: 767.98px), (orientation: landscape) and (max-height: 520px)");
+	var mq = window.matchMedia(window.euadoptPtMqMob || "(max-width: 767.98px), (max-height: 520px)");
 	var bar, ph;
 	var ro = null;
 	var roAttached = false;
@@ -1279,7 +1326,6 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 	function navHeight() {
 		var a0 = document.getElementById("A0");
 		if (!a0) return 64;
-		/* Offset = marginea inferioară reală a navbarului (landscape compact #A0 ≈ 34px, nu 64px fallback). */
 		var r = a0.getBoundingClientRect();
 		var bottom = Math.round(r.bottom);
 		if (bottom >= 24 && bottom <= 220) return bottom;
@@ -1291,18 +1337,12 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 	}
 	function syncNavHeightToCss() {
 		if (!mq.matches) {
-			try {
-				document.documentElement.style.removeProperty("--nav-height");
-			} catch (e) {}
+			try { document.documentElement.style.removeProperty("--nav-height"); } catch (e) {}
 			return;
 		}
-		/* Cu A0 fix + padding-top pe #main_content, înălțimea = floor(bottom) fără -1 (lipire cursivă sub navbar) */
 		var nh = Math.max(24, Math.min(220, navHeight()));
-		try {
-			document.documentElement.style.setProperty("--nav-height", nh + "px");
-		} catch (e) {}
+		try { document.documentElement.style.setProperty("--nav-height", nh + "px"); } catch (e) {}
 	}
-
 	function getBar() {
 		bar = bar || document.getElementById("pt_p4_mobile_sticky");
 		return bar;
@@ -1311,31 +1351,10 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 		ph = ph || document.getElementById("pt_p4_sticky_placeholder");
 		return ph;
 	}
-	function ptMobIsLandscape() {
-		try {
-			var so = screen.orientation;
-			if (so && so.type) {
-				if (so.type.indexOf("portrait") !== -1) return false;
-				if (so.type.indexOf("landscape") !== -1) {
-					return ptReadViewportHeight() <= 520 || (window.innerWidth || 0) > 767.98;
-				}
-			}
-		} catch (eSo) {}
-		try {
-			return window.matchMedia(window.euadoptPtMqMobLand || "(orientation: landscape) and (max-height: 520px)").matches;
-		} catch (e) {
-			return false;
-		}
-	}
 	function ptPortraitDimsReady() {
-		var w = Math.round(window.innerWidth || document.documentElement.clientWidth || 0);
-		var h = Math.round(window.innerHeight || document.documentElement.clientHeight || 0);
-		try {
-			if (window.visualViewport && window.visualViewport.height > 0) {
-				h = Math.round(Math.max(h, window.visualViewport.height));
-			}
-		} catch (eVv) {}
-		return h > w && h >= 480;
+		if (!mq.matches) return false;
+		var d = window.euadoptPtReadViewportDims ? window.euadoptPtReadViewportDims() : { w: window.innerWidth, h: window.innerHeight };
+		return Math.min(d.w, d.h) >= 280 && Math.max(d.w, d.h) >= 400;
 	}
 	function ptSyncPortraitViewport() {
 		document.documentElement.style.removeProperty("--pt-vh");
@@ -1345,92 +1364,85 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 				h = Math.round(window.visualViewport.height);
 			}
 		} catch (eVv2) {}
-		if (h > 0) {
-			document.documentElement.style.setProperty("--pt-portrait-vh", h + "px");
-		}
-	}
-	function ptReadViewportHeight() {
-		var vv = window.visualViewport;
-		var ih = window.innerHeight || document.documentElement.clientHeight || 0;
-		var vvh = (vv && vv.height) ? vv.height : ih;
-		return Math.round(Math.max(ih, vvh));
-	}
-	function ptUpdateVhVar() {
-		var h = ptReadViewportHeight();
-		if (ptMobIsLandscape()) {
-			if (h > 0) document.documentElement.style.setProperty("--pt-vh", h + "px");
-		} else {
-			document.documentElement.style.removeProperty("--pt-vh");
-		}
+		if (h > 0) document.documentElement.style.setProperty("--pt-portrait-vh", h + "px");
 	}
 	function ptClearStuckLayoutStyles() {
 		["main_wrap", "main_content", "PW"].forEach(function(id) {
 			var el = document.getElementById(id);
 			if (!el) return;
-			["height", "max-height", "min-height", "overflow"].forEach(function(prop) {
-				el.style.removeProperty(prop);
-			});
+			["height", "max-height", "min-height", "overflow"].forEach(function(prop) { el.style.removeProperty(prop); });
 		});
-		var col3 = document.querySelector("#PW .pt-mob-land-3col");
-		if (col3) {
-			col3.style.removeProperty("padding");
-			col3.style.removeProperty("padding-left");
-			col3.style.removeProperty("padding-right");
-			col3.style.removeProperty("padding-top");
-			col3.style.removeProperty("margin-top");
-		}
-		var ph = document.getElementById("pt_p4_sticky_placeholder");
-		if (ph) {
-			ph.style.height = ptMobIsLandscape() ? "0px" : "";
-		}
-		var scrollEl = document.querySelector("#P2 .pt-p2-scroll");
-		if (scrollEl) {
-			scrollEl.style.removeProperty("max-height");
-			scrollEl.style.removeProperty("height");
-			scrollEl.style.removeProperty("overflow");
+		var gridEl = document.querySelector("#PW .pt-grid");
+		if (gridEl) {
+			["display", "grid-template-columns", "grid-template-rows", "height", "flex", "min-height", "overflow"].forEach(function(prop) {
+				gridEl.style.removeProperty(prop);
+			});
 		}
 		var p2 = document.getElementById("P2");
 		if (p2) {
-			["height", "max-height", "min-height", "margin-top", "padding-top"].forEach(function(prop) {
+			["min-height", "height", "max-height", "order", "grid-row", "grid-column", "flex", "overflow", "transform"].forEach(function(prop) {
 				p2.style.removeProperty(prop);
 			});
 		}
-		var land3 = document.querySelector("#PW .pt-mob-land-3col");
-		if (land3) {
-			land3.style.removeProperty("width");
-			land3.style.removeProperty("max-width");
+		var mobMain = document.querySelector("#PW .pt-mob-main");
+		if (mobMain) {
+			["padding", "padding-left", "padding-right", "padding-top", "margin-top", "width", "max-width"].forEach(function(prop) {
+				mobMain.style.removeProperty(prop);
+			});
 		}
-	}
-	window.euadoptPtMobIsLandscape = ptMobIsLandscape;
-	function ptSyncOrientClass() {
-		document.documentElement.classList.remove("pt-mob-landscape-active", "pt-mob-portrait-active");
-		if (!mq.matches) return;
-		if (ptMobIsLandscape()) {
-			document.documentElement.classList.add("pt-mob-landscape-active");
-		} else {
-			document.documentElement.classList.add("pt-mob-portrait-active");
-		}
-	}
-	function ptResetMobOrientationScroll() {
-		var mc = document.getElementById("main_content");
+		var phEl = document.getElementById("pt_p4_sticky_placeholder");
+		if (phEl) phEl.style.removeProperty("height");
 		var scrollEl = document.querySelector("#P2 .pt-p2-scroll");
-		if (ptMobIsLandscape()) {
-			if (scrollEl) scrollEl.scrollTop = 0;
-		} else {
-			if (mc) mc.scrollTop = 0;
-			if (scrollEl) scrollEl.scrollTop = 0;
+		if (scrollEl) {
+			["max-height", "height", "min-height", "overflow"].forEach(function(prop) { scrollEl.style.removeProperty(prop); });
 		}
+	}
+	function ptClearStuckPtUi() {
+		if (window.euadoptPtClearStuckUi) window.euadoptPtClearStuckUi();
+		document.body.classList.remove("pt-mob-filters-above-nav");
+		document.body.style.overflow = "";
+	}
+	window.euadoptPtClearStuckPtUi = ptClearStuckPtUi;
+	function ptSyncOrientClass() {
+		document.documentElement.classList.remove("pt-mob-portrait-active");
+		if (!mq.matches) return;
+		document.documentElement.classList.add("pt-mob-portrait-active");
 	}
 	function ptSyncPortraitP2Heights() {
 		var scrollEl = document.querySelector("#P2 .pt-p2-scroll");
 		if (!scrollEl) return;
-		scrollEl.style.removeProperty("max-height");
-		scrollEl.style.removeProperty("height");
+		["max-height", "height", "min-height", "padding-bottom", "padding-top", "overflow", "transform"].forEach(function(prop) {
+			scrollEl.style.removeProperty(prop);
+		});
+	}
+	function ptForceP2ScrollTop0() {
+		var scrollEl = document.querySelector("#P2 .pt-p2-scroll");
+		if (!scrollEl) return;
+		ptSyncPortraitP2Heights();
+		scrollEl.scrollTop = 0;
+		try {
+			scrollEl.style.overflow = "hidden";
+			void scrollEl.offsetHeight;
+			scrollEl.style.removeProperty("overflow");
+		} catch (eOf) {}
+		scrollEl.scrollTop = 0;
+		requestAnimationFrame(function() {
+			scrollEl.scrollTop = 0;
+			requestAnimationFrame(function() { scrollEl.scrollTop = 0; });
+		});
+	}
+	function ptForceBackdropClosed() {
+		var bd = document.getElementById("ptMobileFiltersBackdrop");
+		var p4 = document.getElementById("P4");
+		if (p4) p4.classList.remove("pt-mobile-filters-open");
+		document.body.classList.remove("pt-mob-filters-above-nav");
+		if (bd) { bd.hidden = true; bd.setAttribute("hidden", ""); }
 	}
 	function ptHardPortraitReset() {
+		if (window.euadoptPtCloseTransientUi) window.euadoptPtCloseTransientUi();
+		ptForceBackdropClosed();
 		document.documentElement.style.removeProperty("--pt-vh");
-		document.documentElement.classList.remove("pt-mob-landscape-active");
-		if (mq.matches) document.documentElement.classList.add("pt-mob-portrait-active");
+		ptSyncOrientClass();
 		ptClearStuckLayoutStyles();
 		ptSyncPortraitP2Heights();
 		ptSyncPortraitViewport();
@@ -1441,85 +1453,99 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 				el.style.removeProperty(prop);
 			});
 		});
-		var rails = document.querySelectorAll("#PW .pt-mob-land-left, #PW .pt-mob-land-right");
-		for (var ri = 0; ri < rails.length; ri++) {
-			["top", "bottom", "left", "right", "height", "max-height", "width", "display", "position"].forEach(function(prop) {
-				rails[ri].style.removeProperty(prop);
+		var barEl = document.getElementById("pt_p4_mobile_sticky");
+		if (barEl) {
+			["visibility", "pointer-events", "top", "display", "height", "max-height", "min-height", "overflow", "position"].forEach(function(prop) {
+				barEl.style.removeProperty(prop);
 			});
-		}
-		var ph = document.getElementById("pt_p4_sticky_placeholder");
-		if (ph) ph.style.removeProperty("height");
-		var bar = document.getElementById("pt_p4_mobile_sticky");
-		if (bar) {
-			bar.style.removeProperty("visibility");
-			bar.style.removeProperty("pointer-events");
-			bar.style.removeProperty("top");
-			bar.style.removeProperty("display");
-			bar.style.removeProperty("height");
-			bar.style.removeProperty("max-height");
-			bar.style.removeProperty("min-height");
-			bar.style.removeProperty("overflow");
 		}
 		var strip = document.getElementById("pt_mob_strip_merged");
 		if (strip) {
-			["position", "left", "right", "bottom", "top", "width", "height", "max-height", "min-height"].forEach(function(prop) {
+			["position", "left", "right", "bottom", "top", "width", "height", "max-height", "min-height", "transform"].forEach(function(prop) {
 				strip.style.removeProperty(prop);
 			});
 		}
-		var land3col = document.querySelector("#PW .pt-mob-land-3col");
-		if (land3col) {
-			land3col.style.removeProperty("padding");
-			land3col.style.removeProperty("padding-left");
-			land3col.style.removeProperty("padding-right");
+		ptForceP2ScrollTop0();
+		var cardCells = document.querySelectorAll("#P2 .pt-p2-card-cell");
+		for (var cci = 0; cci < cardCells.length; cci++) {
+			["height", "max-height", "min-height", "aspect-ratio", "grid-row", "grid-column", "transform"].forEach(function(prop) {
+				cardCells[cci].style.removeProperty(prop);
+			});
 		}
-	}
-	function ptOnOrientationLayout() {
-		ptUpdateVhVar();
-		ptSyncOrientClass();
-		if (!ptMobIsLandscape()) {
-			ptHardPortraitReset();
-		} else {
-			ptClearStuckLayoutStyles();
-		}
-		ptResetMobOrientationScroll();
-		syncNavHeightToCss();
-		syncPlaceholder();
-		ptSyncPortraitP2Heights();
-		if (window.euadoptPtP2Relayout) window.euadoptPtP2Relayout();
 	}
 	var _ptOrientRelayoutT = [];
-	var _ptWasLandscape = false;
-	function ptPortraitRelayoutPass() {
-		if (ptMobIsLandscape()) return;
+	var _ptOrientSettleT = null;
+	var _ptOrientStableKey = "";
+	var _ptOrientApplyingUntil = 0;
+	var _ptOrientQueued = false;
+	var _ptOrientWatchdogT = null;
+	function ptClearOrientRecoveryTimers() {
+		for (var i = 0; i < _ptOrientRelayoutT.length; i++) clearTimeout(_ptOrientRelayoutT[i]);
+		_ptOrientRelayoutT = [];
+	}
+	function ptOrientDimsKey() {
+		var d = window.euadoptPtReadViewportDims ? window.euadoptPtReadViewportDims() : { w: window.innerWidth, h: window.innerHeight };
+		return d.w + "x" + d.h;
+	}
+	function ptApplyMobLayout() {
+		var now = Date.now();
+		if (now < _ptOrientApplyingUntil) {
+			_ptOrientQueued = true;
+			ptScheduleMobSettled(110);
+			return;
+		}
+		_ptOrientApplyingUntil = now + 320;
+		_ptOrientQueued = false;
+		ptClearOrientRecoveryTimers();
+		clearTimeout(_ptOrientWatchdogT);
+		ptSyncOrientClass();
+		syncNavHeightToCss();
+		if (window.euadoptPtCloseTransientUi) window.euadoptPtCloseTransientUi();
+		ptForceBackdropClosed();
+		ptHardPortraitReset();
+		syncPlaceholder();
+		if (window.euadoptPtP2PortraitWake) window.euadoptPtP2PortraitWake();
+		_ptOrientWatchdogT = setTimeout(function() {
+			if (!document.documentElement.classList.contains("pt-mob-portrait-active") && mq.matches) {
+				_ptOrientStableKey = "";
+				ptSyncOrientClass();
+				ptScheduleMobSettled(60);
+			}
+		}, 220);
+		setTimeout(function() {
+			_ptOrientApplyingUntil = 0;
+			if (_ptOrientQueued) {
+				_ptOrientQueued = false;
+				_ptOrientStableKey = "";
+				ptScheduleMobSettled(70);
+			}
+		}, 330);
+	}
+	function ptMobSettledTick() {
+		_ptOrientSettleT = null;
+		var key1 = ptOrientDimsKey();
+		requestAnimationFrame(function() {
+			requestAnimationFrame(function() {
+				var key2 = ptOrientDimsKey();
+				if (key2 !== key1) { ptScheduleMobSettled(80); return; }
+				if (key2 === _ptOrientStableKey) return;
+				_ptOrientStableKey = key2;
+				ptApplyMobLayout();
+			});
+		});
+	}
+	function ptScheduleMobSettled(ms) {
+		clearTimeout(_ptOrientSettleT);
+		_ptOrientSettleT = setTimeout(ptMobSettledTick, ms || 120);
+	}
+	function ptSchedulePortraitRecovery(attempt) {
 		ptHardPortraitReset();
 		syncNavHeightToCss();
 		syncPlaceholder();
-		ptSyncPortraitP2Heights();
-		if (window.euadoptPtP2Relayout) window.euadoptPtP2Relayout();
-	}
-	function ptSchedulePortraitRecovery(attempt) {
-		if (ptMobIsLandscape()) return;
-		ptPortraitRelayoutPass();
-		if (!ptPortraitDimsReady() && attempt < 15) {
-			_ptOrientRelayoutT.push(setTimeout(function() {
-				ptSchedulePortraitRecovery(attempt + 1);
-			}, 100));
+		if (window.euadoptPtP2PortraitWake) window.euadoptPtP2PortraitWake();
+		if (!ptPortraitDimsReady() && attempt < 5) {
+			_ptOrientRelayoutT.push(setTimeout(function() { ptSchedulePortraitRecovery(attempt + 1); }, 120));
 		}
-	}
-	function ptScheduleOrientRelayout() {
-		var isLand = ptMobIsLandscape();
-		_ptOrientRelayoutT.forEach(function(t) { clearTimeout(t); });
-		_ptOrientRelayoutT = [];
-		if (!isLand) {
-			if (_ptWasLandscape) ptSchedulePortraitRecovery(0);
-			else ptPortraitRelayoutPass();
-		} else {
-			document.documentElement.classList.remove("pt-mob-portrait-active");
-			document.documentElement.style.removeProperty("--pt-portrait-vh");
-			ptOnOrientationLayout();
-			_ptOrientRelayoutT.push(setTimeout(ptOnOrientationLayout, 150));
-		}
-		_ptWasLandscape = isLand;
 	}
 	function syncPlaceholder() {
 		var b = getBar();
@@ -1529,48 +1555,30 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 			p.style.height = "";
 			b.style.removeProperty("pointer-events");
 			b.style.removeProperty("visibility");
-			return;
-		}
-		if (ptMobIsLandscape()) {
-			p.style.height = "0px";
-			b.style.pointerEvents = "none";
-			b.style.visibility = "hidden";
+			b.style.removeProperty("display");
 			return;
 		}
 		b.style.removeProperty("pointer-events");
 		b.style.removeProperty("visibility");
+		b.style.removeProperty("display");
 		var sum = 0;
 		for (var i = 0; i < b.children.length; i++) {
 			var el = b.children[i];
-			try {
-				if (window.getComputedStyle(el).display === "none") continue;
-			} catch (e) { continue; }
+			try { if (window.getComputedStyle(el).display === "none") continue; } catch (e) { continue; }
 			sum += el.offsetHeight;
 		}
 		var cs = window.getComputedStyle(b);
-		var bt = parseFloat(cs.borderTopWidth) || 0;
-		var bb = parseFloat(cs.borderBottomWidth) || 0;
-		var hSum = Math.round(sum + bt + bb);
+		var hSum = Math.round(sum + (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0));
 		var hOuter = Math.round(b.offsetHeight);
 		var hRect = Math.round(b.getBoundingClientRect().height);
 		var h = hSum;
-		if (hSum > 0 && hOuter > 0) {
-			h = Math.min(hSum, hOuter);
-		}
-		if (h > 0 && hRect > 0) {
-			h = Math.min(h, hRect);
-		}
-		if (h <= 0) {
-			h = hOuter || hRect || hSum;
-		}
+		if (hSum > 0 && hOuter > 0) h = Math.min(hSum, hOuter);
+		if (h > 0 && hRect > 0) h = Math.min(h, hRect);
+		if (h <= 0) h = hOuter || hRect || hSum;
 		var prevH = Math.round(parseFloat(p.style.height) || 0);
-		if (prevH !== h) {
-			p.style.height = h + "px";
-		}
+		if (prevH !== h) p.style.height = h + "px";
 		ptSyncPortraitP2Heights();
-		requestAnimationFrame(function() {
-			requestAnimationFrame(tightenBelowStickyGap);
-		});
+		requestAnimationFrame(function() { requestAnimationFrame(tightenBelowStickyGap); });
 	}
 	function syncPlaceholderCoalesced() {
 		if (roCoalesceRaf != null) cancelAnimationFrame(roCoalesceRaf);
@@ -1580,135 +1588,78 @@ window.euadoptPtMqMobLand = "(orientation: landscape) and (max-height: 520px)";
 		});
 	}
 	function tightenBelowStickyGap() {
-		if (!mq.matches || ptMobIsLandscape()) return;
-		var b = getBar();
-		var p = getPh();
-		var p2 = document.getElementById("P2");
+		if (!mq.matches) return;
+		var b = getBar(), p = getPh(), p2 = document.getElementById("P2");
 		if (!b || !p || !p2) return;
 		if ((window.pageYOffset || document.documentElement.scrollTop || 0) > 6) return;
 		var gap = Math.round(p2.getBoundingClientRect().top - b.getBoundingClientRect().bottom);
 		if (gap < 2 || gap > 480) return;
 		var cur = parseFloat(p.style.height);
 		if (isNaN(cur) || cur <= 0) return;
-		var barH = Math.round(b.getBoundingClientRect().height);
 		var newH = Math.round(cur - gap);
-		if (newH >= Math.max(barH - 12, 40) && newH !== Math.round(cur)) {
-			p.style.height = newH + "px";
-		}
+		var barH = Math.round(b.getBoundingClientRect().height);
+		if (newH >= Math.max(barH - 12, 40) && newH !== Math.round(cur)) p.style.height = newH + "px";
 	}
 	function boot() {
-		ptSyncOrientClass();
-		if (!ptMobIsLandscape()) {
-			ptHardPortraitReset();
-		} else {
-			ptUpdateVhVar();
-			ptClearStuckLayoutStyles();
-		}
-		_ptWasLandscape = ptMobIsLandscape();
 		syncNavHeightToCss();
-		try {
-			document.documentElement.style.removeProperty("--pt-p1-strip-h");
-		} catch (e) {}
+		ptSyncOrientClass();
+		ptHardPortraitReset();
+		syncNavHeightToCss();
+		try { document.documentElement.style.removeProperty("--pt-p1-strip-h"); } catch (e) {}
+		requestAnimationFrame(function() { syncNavHeightToCss(); syncPlaceholder(); });
 		requestAnimationFrame(function() {
-			syncNavHeightToCss();
-			syncPlaceholder();
-		});
-		requestAnimationFrame(function() {
-			requestAnimationFrame(function() {
-				syncNavHeightToCss();
-				syncPlaceholder();
-			});
+			requestAnimationFrame(function() { syncNavHeightToCss(); syncPlaceholder(); });
 		});
 		syncPlaceholder();
 		ptSyncPortraitP2Heights();
-		try {
-			var _pw = document.getElementById("PW");
-			if (_pw) _pw.style.removeProperty("--pt-mob-center-max");
-		} catch (eClr) {}
 		if (window.ResizeObserver && !roAttached) {
 			var b = getBar();
 			if (b) {
 				ro = new ResizeObserver(function() { syncPlaceholderCoalesced(); });
 				ro.observe(b);
 				var kids = b.querySelectorAll(":scope > .pt-p4-box");
-				for (var k = 0; k < kids.length; k++) {
-					ro.observe(kids[k]);
-				}
+				for (var k = 0; k < kids.length; k++) ro.observe(kids[k]);
 				roAttached = true;
 			}
 		}
 		if (window.ResizeObserver && !roNavAttached) {
 			var navEl = document.getElementById("A0");
 			if (navEl) {
-				roNav = new ResizeObserver(function() {
-					syncNavHeightToCss();
-					syncPlaceholderCoalesced();
-				});
+				roNav = new ResizeObserver(function() { syncNavHeightToCss(); syncPlaceholderCoalesced(); });
 				roNav.observe(navEl);
 				roNavAttached = true;
 			}
 		}
 	}
-	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", boot);
-	} else {
-		boot();
+	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+	else boot();
+	function ptOnResizeSignal() {
+		_ptOrientStableKey = "";
+		ptClearOrientRecoveryTimers();
+		ptScheduleMobSettled(100);
 	}
 	window.addEventListener("resize", function() {
 		clearTimeout(window._ptP4BarResizeT);
-		window._ptP4BarResizeT = setTimeout(function() {
-			boot();
-			ptScheduleOrientRelayout();
-		}, 160);
+		window._ptP4BarResizeT = setTimeout(ptOnResizeSignal, 80);
 	});
-	window.addEventListener("orientationchange", function() {
-		document.documentElement.style.removeProperty("--pt-vh");
-		var toPortrait = true;
-		try {
-			if (screen.orientation && screen.orientation.type) {
-				toPortrait = screen.orientation.type.indexOf("portrait") !== -1;
-			}
-		} catch (eOr) {}
-		if (toPortrait) {
-			document.documentElement.classList.remove("pt-mob-landscape-active");
-			if (mq.matches) document.documentElement.classList.add("pt-mob-portrait-active");
-		} else {
-			document.documentElement.classList.remove("pt-mob-portrait-active");
-			document.documentElement.style.removeProperty("--pt-portrait-vh");
-			document.documentElement.classList.add("pt-mob-landscape-active");
-		}
-		clearTimeout(window._ptP4BarResizeT);
-		window._ptP4BarResizeT = setTimeout(function() {
-			boot();
-			ptScheduleOrientRelayout();
-		}, 280);
-	});
-	if (window.visualViewport) {
-		window.visualViewport.addEventListener("resize", function() {
-			clearTimeout(window._ptVpResizeT);
-			window._ptVpResizeT = setTimeout(ptScheduleOrientRelayout, 120);
-		});
-	}
-	try {
-		var mqLand = window.matchMedia(window.euadoptPtMqMobLand || "(orientation: landscape) and (max-height: 520px)");
-		var onMq = function() {
-			if (!mqLand.matches) ptHardPortraitReset();
-			ptScheduleOrientRelayout();
-		};
-		if (mqLand.addEventListener) mqLand.addEventListener("change", onMq);
-		else if (mqLand.addListener) mqLand.addListener(onMq);
-		if (screen.orientation && screen.orientation.addEventListener) {
-			screen.orientation.addEventListener("change", function() {
-				ptScheduleOrientRelayout();
-			});
-		}
-	} catch (eMq) {}
+	if (window.visualViewport) window.visualViewport.addEventListener("resize", ptOnResizeSignal);
 	window.addEventListener("load", boot);
-	window.addEventListener("load", function() {
-		setTimeout(function() {
-			if (mq.matches) syncPlaceholder();
-		}, 200);
+	window.addEventListener("load", function() { setTimeout(function() { if (mq.matches) syncPlaceholder(); }, 200); });
+	window.addEventListener("pageshow", function(ev) {
+		ptClearStuckPtUi();
+		_ptOrientStableKey = "";
+		ptScheduleMobSettled(80);
+		if (ev && ev.persisted) setTimeout(function() { ptSchedulePortraitRecovery(0); }, 150);
 	});
+	window.euadoptPtForcePortraitRecovery = function() {
+		_ptOrientStableKey = "";
+		ptHardPortraitReset();
+		syncNavHeightToCss();
+		syncPlaceholder();
+		ptForceP2ScrollTop0();
+		if (window.euadoptPtP2PortraitWake) window.euadoptPtP2PortraitWake();
+		if (window.euadoptPtP2Relayout) window.euadoptPtP2Relayout();
+	};
 })();
 </script>
 {% endblock %}
