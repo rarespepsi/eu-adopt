@@ -33,7 +33,6 @@
   syncPhoneClass();
 
   var resizeT = null;
-  var scrollFixT = null;
   function onResize() {
     clearTimeout(resizeT);
     resizeT = setTimeout(function () {
@@ -43,16 +42,7 @@
     }, 100);
   }
 
-  function onScrollEnd() {
-    clearTimeout(scrollFixT);
-    scrollFixT = setTimeout(function () {
-      scrollFixT = null;
-      fixHeaderGap();
-    }, 120);
-  }
-
   window.addEventListener("resize", onResize);
-  window.addEventListener("scroll", onScrollEnd, { passive: true });
   window.addEventListener("pageshow", function () {
     syncPhoneClass();
     fixHeaderGap();

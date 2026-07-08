@@ -15,7 +15,7 @@
 
   function isPhone() {
     if (window.euadoptPtIsPhone) return window.euadoptPtIsPhone();
-    return Math.min(window.innerWidth || 0, window.innerHeight || 0) <= 767.98;
+    return (window.innerWidth || document.documentElement.clientWidth || 0) <= 767.98;
   }
 
   function hasAppliedFiltersInUrl() {

@@ -1,14 +1,16 @@
 /* PT mobil funcțional v2 — scroll pagină, fără fixed/lock. Activ: html.pt-phone (min(latură) ≤ 767.98px). */
 html.pt-phone {
   --pt-p1-strip-h: 72px;
-  overscroll-behavior-y: contain;
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
 }
 
 html.pt-phone body.page-pt {
   overflow-x: hidden;
   overflow-y: auto;
   overflow-anchor: none;
-  overscroll-behavior-y: contain;
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
 }
 
 html.pt-phone body.page-pt #main_wrap,
