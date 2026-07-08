@@ -1,4 +1,4 @@
-/* PT layout P1–P5 — desktop în acest fișier; mobil în pt-mobile.css (html.pt-phone). */
+/* PT layout P1–P5 — strat CSS unic pentru toate viewport-urile. */
 #PW {
   width: 100% !important;
   max-width: 100% !important;

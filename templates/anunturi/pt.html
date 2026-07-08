@@ -10,17 +10,9 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<script>
-(function () {
-  var w = window.innerWidth || document.documentElement.clientWidth || 0;
-  var h = window.innerHeight || document.documentElement.clientHeight || 0;
-  if (Math.min(w, h) <= 767.98) document.documentElement.classList.add("pt-phone");
-})();
-</script>
 <link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt340-desktop" type="text/css" media="screen" />
-<link rel="stylesheet" href="{% static 'css/pt-mobile.css' %}?v=pt352-strip-static-no-tap" type="text/css" media="screen" />
 <style>
-	/* Desktop/tablet: lanț flex + viewport fix; mobil — flux natural (pt-mobile.css) */
+	/* PT: strat CSS unic (fără layer mobil dedicat). */
 	@media (min-width: 768px) and (min-height: 521px) {
 		body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
 		body.page-pt #main_content { min-height: 0 !important; display: flex !important; flex-direction: column !important; flex: 1 1 0 !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
@@ -475,8 +467,7 @@
 {% endblock main_wrap_after_header %}
 
 {% block extra_js %}
-<script src="{% static 'js/pt-mobile.js' %}?v=pt351-mobile-safe"></script>
-<script src="{% static 'js/pt-pet-rotation.js' %}?v=pt351-mobile-safe"></script>
-<script src="{% static 'js/pt-p2-more.js' %}?v=pt351-mobile-safe"></script>
-<script src="{% static 'js/pt-desktop-ui.js' %}?v=pt351-mobile-safe"></script>
+<script src="{% static 'js/pt-pet-rotation.js' %}?v=pt353-no-mobile-layer"></script>
+<script src="{% static 'js/pt-p2-more.js' %}?v=pt353-no-mobile-layer"></script>
+<script src="{% static 'js/pt-desktop-ui.js' %}?v=pt353-no-mobile-layer"></script>
 {% endblock %}
