@@ -31,15 +31,25 @@
     }
   }
 
+  function getSpeciesLabel() {
+    var sf = document.getElementById("pt_filter_species_field");
+    var v = (sf && sf.value ? sf.value : "").trim().toLowerCase();
+    if (v === "dog") return "Filtre caini";
+    if (v === "cat") return "Filtre pisici";
+    if (v === "other") return "Filtre altele";
+    return "Filtre";
+  }
+
   function setMobileFiltersBtnState(active) {
     filtersApplied = !!active;
+    var label = getSpeciesLabel();
     Array.prototype.forEach.call(mobileFiltersBtns, function (btn) {
       if (!btn) return;
-      if (filtersApplied) {
-        btn.textContent = "Resetează filtre";
+      if (filtersApplied || label !== "Filtre") {
+        btn.textContent = label;
         btn.classList.add("pt-filters-btn--active");
       } else {
-        btn.textContent = "Filtre";
+        btn.textContent = label;
         btn.classList.remove("pt-filters-btn--active");
       }
     });
@@ -154,6 +164,7 @@
       if (want === "") a.classList.toggle("active", sp === "");
       else a.classList.toggle("active", sp === want);
     });
+    setMobileFiltersBtnState(hasAppliedFiltersInUrl());
   }
 
   (function () {
