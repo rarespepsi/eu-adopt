@@ -10,7 +10,6 @@
   var hasMore = grid.getAttribute("data-p2-has-more") === "1";
   var nextOffset = parseInt(grid.getAttribute("data-p2-offset") || "0", 10) || 0;
   if (!hasMore) return;
-  var mqMob = window.matchMedia("(max-width: 767.98px)");
   var io = null;
   var fetchAbort = null;
   var tapNavUntil = 0;
@@ -19,6 +18,11 @@
   var autoChainCount = 0;
   var maxAutoChain = 2;
   var userScrolledSinceChain = true;
+
+  function isPhone() {
+    if (window.euadoptPtIsPhone) return window.euadoptPtIsPhone();
+    return Math.min(window.innerWidth || 0, window.innerHeight || 0) <= 767.98;
+  }
 
   function buildPageUrl() {
     var u = new URL(baseUrl, window.location.origin);
@@ -38,6 +42,7 @@
   }
 
   function pickIoRoot() {
+    if (isPhone()) return null;
     try {
       var oy = window.getComputedStyle(scrollEl).overflowY;
       if (oy !== "auto" && oy !== "scroll" && oy !== "overlay") return null;
@@ -48,7 +53,14 @@
   }
 
   function scrollMargin() {
-    return mqMob.matches ? 420 : 400;
+    return isPhone() ? 420 : 400;
+  }
+
+  function currentScrollTop() {
+    if (isPhone()) {
+      return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    }
+    return scrollEl.scrollTop;
   }
 
   function sentinelNearVisibleEdge() {
@@ -153,6 +165,16 @@
     }, 120);
   }
 
+  function onScroll() {
+    var st = currentScrollTop();
+    if (Math.abs(st - lastScrollTop) > 12) {
+      userScrolledSinceChain = true;
+      autoChainCount = 0;
+    }
+    lastScrollTop = st;
+    scheduleScrollProbe();
+  }
+
   function onUserTap(ev) {
     try {
       if (ev && ev.target && ev.target.closest && ev.target.closest(".pt-p2-card-link, .pt-p2-ask-plic-btn, .pt-p2-promo-btn, .pt-p2-card-bottom-bar__name")) {
@@ -172,19 +194,8 @@
   });
   grid.addEventListener("touchstart", onUserTap, { passive: true, capture: true });
   grid.addEventListener("mousedown", onUserTap, { capture: true });
-  scrollEl.addEventListener(
-    "scroll",
-    function () {
-      var st = scrollEl.scrollTop;
-      if (Math.abs(st - lastScrollTop) > 12) {
-        userScrolledSinceChain = true;
-        autoChainCount = 0;
-      }
-      lastScrollTop = st;
-      scheduleScrollProbe();
-    },
-    { passive: true }
-  );
+  scrollEl.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("pagehide", abortFetch);
   var ioResizeT = null;
   window.addEventListener("resize", function () {

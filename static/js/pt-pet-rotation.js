@@ -24,11 +24,8 @@
     rotTimer = setInterval(rotTick, ROT_TICK_MS);
   }
   function skipRotation() {
-    try {
-      return window.matchMedia("(max-width: 767.98px)").matches;
-    } catch (e) {
-      return false;
-    }
+    if (window.euadoptPtIsPhone) return window.euadoptPtIsPhone();
+    return Math.min(window.innerWidth || 0, window.innerHeight || 0) <= 767.98;
   }
   function initPetImageRotation(root) {
     if (skipRotation()) return;
