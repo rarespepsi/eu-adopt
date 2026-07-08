@@ -72,16 +72,19 @@ html.pt-phone #PW .pt-cell-1 {
   align-items: stretch;
   justify-content: stretch;
   z-index: 1;
+  pointer-events: none;
 }
 
 html.pt-phone #PW .pt-cell-1 .pt-strip-track {
   pointer-events: none;
+  animation: none !important;
+  transform: none !important;
 }
 
 html.pt-phone #PW .pt-cell-1 .pt-strip-item a,
 html.pt-phone #PW .pt-cell-1 a.pt-strip-cell--donatii-link,
 html.pt-phone #PW .pt-cell-1 a.pt-strip-cell--sms-strip {
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 html.pt-phone #PW .pt-cell-1 .pt-strip-wrap.pt-strip-p1 {
