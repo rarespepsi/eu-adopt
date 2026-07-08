@@ -24,8 +24,12 @@
     rotTimer = setInterval(rotTick, ROT_TICK_MS);
   }
   function skipRotation() {
+    var isTouch =
+      ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
+      "ontouchstart" in window;
+    if (isTouch) return true;
     if (window.euadoptPtIsPhone) return window.euadoptPtIsPhone();
-    return Math.min(window.innerWidth || 0, window.innerHeight || 0) <= 767.98;
+    return (window.innerWidth || document.documentElement.clientWidth || 0) <= 767.98;
   }
   function initPetImageRotation(root) {
     if (skipRotation()) return;
