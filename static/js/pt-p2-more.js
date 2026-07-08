@@ -21,6 +21,14 @@
   var userScrolledSinceChain = true;
   var phoneUserScrolledDown = false;
   var userBusyUntil = 0;
+  var phoneMode = Math.min(window.innerWidth || 0, window.innerHeight || 0) <= 767.98;
+
+  // Stabilizare PT mobil: dezactivăm complet încărcarea automată P2 după scroll.
+  // Păstrăm doar lotul inițial pentru a elimina blocajele la interacțiune.
+  if (phoneMode) {
+    sentinel.setAttribute("hidden", "");
+    return;
+  }
 
   function isPhone() {
     if (window.euadoptPtIsPhone) return window.euadoptPtIsPhone();

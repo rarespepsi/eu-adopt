@@ -24,17 +24,7 @@
 
   function fixHeaderGap() {
     if (!document.documentElement.classList.contains("pt-phone")) return;
-    if (window.__ptUserBusyUntil && Date.now() < window.__ptUserBusyUntil) return;
-    var p1 = document.getElementById("P1");
-    var p4 = document.getElementById("P4");
-    if (!p1 || !p4) return;
-    var st = window.pageYOffset || document.documentElement.scrollTop || 0;
-    if (st > 500) return;
-    var p1Top = p1.getBoundingClientRect().top;
-    var p4Top = p4.getBoundingClientRect().top;
-    if (st < 80 && (p1Top > 100 || p4Top > 220)) {
-      window.scrollTo(0, 0);
-    }
+    return;
   }
 
   window.euadoptPtIsPhone = function () {
