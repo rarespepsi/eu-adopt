@@ -1,5 +1,9 @@
 (function () {
   "use strict";
+  var touchDevice =
+    ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
+    "ontouchstart" in window;
+  if (touchDevice) return;
   var filtersForm = document.getElementById("filtre-animale");
   var mobileFiltersCloseBtn = document.getElementById("ptMobileFiltersClose");
   var mobileFiltersOkBtn = document.getElementById("ptMobileFiltersOk");
