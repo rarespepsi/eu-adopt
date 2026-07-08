@@ -18,13 +18,12 @@
 })();
 </script>
 <link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt340-desktop" type="text/css" media="screen" />
-<link rel="stylesheet" href="{% static 'css/pt-mobile.css' %}?v=pt345-touch-fix" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-mobile.css' %}?v=pt346-scroll-stable" type="text/css" media="screen" />
 <style>
-	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
-	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
-	body.page-pt #main_content { min-height: 0 !important; display: flex !important; flex-direction: column !important; flex: 1 1 0 !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
-	/* Desktop/tablet: PW fix în viewport + overflow ascuns; mobil – flux natural (pt-mobile.css) */
+	/* Desktop/tablet: lanț flex + viewport fix; mobil — flux natural (pt-mobile.css) */
 	@media (min-width: 768px) and (min-height: 521px) {
+		body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
+		body.page-pt #main_content { min-height: 0 !important; display: flex !important; flex-direction: column !important; flex: 1 1 0 !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
 		body.page-pt #main_content { overflow: hidden !important; }
 		body.page-pt #main_content #PW {
 			height: calc(100vh - var(--nav-h, 64px)) !important;
@@ -273,6 +272,14 @@
 <section class="wrapper" id="main_content">
 	<main id="PW">
 		<div class="pt-grid">
+			<div id="P1" class="pt-cell pt-cell-1 pt-strip-band--desktop" data-slot="P1">
+				<div class="pt-strip-wrap pt-strip-p1" aria-label="Bandă publicitate P1">
+					<div class="pt-strip-track pt-strip-track--p1">
+						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
+						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
+					</div>
+				</div>
+			</div>
 			<div id="P4" class="pt-cell pt-cell-4" data-slot="P4">
 				<div class="pt-p4-inner">
 					<div class="pt-p4-box pt-p4-box-filters" id="P4.1" data-slot="P4.1">
@@ -400,22 +407,14 @@
 							<div id="pt_p2_load_sentinel" class="pt-p2-load-sentinel"{% if not p2_has_more %} hidden{% endif %} aria-hidden="true"></div>
 						</div>
 					</div>
-					<div id="P1" class="pt-cell pt-cell-1 pt-strip-band--desktop" data-slot="P1">
-						<div class="pt-strip-wrap pt-strip-p1" aria-label="Bandă publicitate P1">
-							<div class="pt-strip-track pt-strip-track--p1">
-								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
-								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
-							</div>
-						</div>
+			<div id="P3" class="pt-cell pt-cell-3 pt-cell-3--footer pt-strip-band--desktop" data-slot="P3">
+				<div class="pt-strip-wrap pt-strip-p3" aria-label="Bandă publicitate P3">
+					<div class="pt-strip-track pt-strip-track--p3">
+						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
+						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
 					</div>
-					<div id="P3" class="pt-cell pt-cell-3 pt-cell-3--footer pt-strip-band--desktop" data-slot="P3">
-						<div class="pt-strip-wrap pt-strip-p3" aria-label="Bandă publicitate P3">
-							<div class="pt-strip-track pt-strip-track--p3">
-								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
-								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
-							</div>
-						</div>
-					</div>
+				</div>
+			</div>
 			</div>
 			<div id="P5" class="pt-cell pt-cell-5" data-slot="P5">
 				<div class="pt-p5-grid">
@@ -476,8 +475,8 @@
 {% endblock main_wrap_after_header %}
 
 {% block extra_js %}
-<script src="{% static 'js/pt-mobile.js' %}?v=pt345"></script>
-<script src="{% static 'js/pt-pet-rotation.js' %}?v=pt345"></script>
-<script src="{% static 'js/pt-p2-more.js' %}?v=pt345"></script>
-<script src="{% static 'js/pt-desktop-ui.js' %}?v=pt345"></script>
+<script src="{% static 'js/pt-mobile.js' %}?v=pt346"></script>
+<script src="{% static 'js/pt-pet-rotation.js' %}?v=pt346"></script>
+<script src="{% static 'js/pt-p2-more.js' %}?v=pt346"></script>
+<script src="{% static 'js/pt-desktop-ui.js' %}?v=pt346"></script>
 {% endblock %}

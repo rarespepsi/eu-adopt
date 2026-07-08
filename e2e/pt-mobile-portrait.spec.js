@@ -17,7 +17,7 @@ test.describe("PT mobil portrait — butoane și casete", () => {
   });
 
   test("structură vizibilă: P1, 3 butoane, 4 pub, grilă P2", async ({ page }) => {
-    const p1 = page.locator("#PW .pt-mob-main .pt-cell-1");
+    const p1 = page.locator("#PW #P1");
     await expect(p1).toBeVisible();
     const p1Box = await p1.boundingBox();
     expect(p1Box?.height).toBeGreaterThanOrEqual(68);
@@ -118,7 +118,7 @@ test.describe("PT mobil portrait — butoane și casete", () => {
   });
 
   test("bandă P1 cursivă — casete vizibile", async ({ page }) => {
-    const p1Items = page.locator("#PW .pt-mob-main .pt-cell-1 .pt-strip-item");
+    const p1Items = page.locator("#PW #P1 .pt-strip-item");
     await expect(p1Items.first()).toBeVisible();
     expect(await p1Items.count()).toBeGreaterThan(0);
   });

@@ -18,6 +18,9 @@
   var autoChainCount = 0;
   var maxAutoChain = 2;
   var userScrolledSinceChain = true;
+  var ioPausedUntil = 0;
+  var phoneUserScrolledDown = false;
+  var pwRoot = document.getElementById("PW");
 
   function isPhone() {
     if (window.euadoptPtIsPhone) return window.euadoptPtIsPhone();
@@ -53,7 +56,26 @@
   }
 
   function scrollMargin() {
-    return isPhone() ? 420 : 400;
+    return isPhone() ? 48 : 400;
+  }
+
+  function maxAutoChainAllowed() {
+    return isPhone() ? 0 : maxAutoChain;
+  }
+
+  function pauseIo(ms) {
+    ioPausedUntil = Date.now() + ms;
+    if (io) {
+      try {
+        io.disconnect();
+      } catch (eP) {}
+      io = null;
+    }
+    clearTimeout(scrollProbeT);
+    scrollProbeT = null;
+    setTimeout(function () {
+      if (Date.now() >= ioPausedUntil && hasMore) setupIo();
+    }, ms + 30);
   }
 
   function currentScrollTop() {
@@ -65,6 +87,7 @@
 
   function sentinelNearVisibleEdge() {
     if (!sentinel || !sentinel.isConnected || !hasMore) return false;
+    if (isPhone() && !phoneUserScrolledDown) return false;
     var margin = scrollMargin();
     var r = sentinel.getBoundingClientRect();
     var root = pickIoRoot();
@@ -87,6 +110,8 @@
   }
 
   function setupIo() {
+    if (Date.now() < ioPausedUntil) return;
+    if (isPhone() && !phoneUserScrolledDown) return;
     if (io) {
       try {
         io.disconnect();
@@ -96,7 +121,7 @@
     if (!hasMore) return;
     io = new IntersectionObserver(
       function (entries) {
-        if (Date.now() < tapNavUntil) return;
+        if (Date.now() < tapNavUntil || Date.now() < ioPausedUntil) return;
         for (var i = 0; i < entries.length; i++) {
           if (entries[i].isIntersecting) loadMore();
         }
@@ -108,7 +133,9 @@
 
   function loadMore() {
     if (loading || !hasMore || Date.now() < tapNavUntil) return;
-    if (!userScrolledSinceChain && autoChainCount >= maxAutoChain) return;
+    if (isPhone() && !phoneUserScrolledDown) return;
+    var chainMax = maxAutoChainAllowed();
+    if (!userScrolledSinceChain && autoChainCount >= chainMax) return;
     loading = true;
     abortFetch();
     fetchAbort = typeof AbortController !== "undefined" ? new AbortController() : null;
@@ -141,32 +168,41 @@
         fetchAbort = null;
       })
       .then(function (ok) {
-        if (ok && hasMore) {
+        if (ok && hasMore && maxAutoChainAllowed() > 0) {
           requestAnimationFrame(function () {
             setupIo();
             if (!loading && hasMore && sentinelNearVisibleEdge()) {
-              if (autoChainCount < maxAutoChain) {
+              if (autoChainCount < maxAutoChainAllowed()) {
                 autoChainCount++;
                 userScrolledSinceChain = false;
                 loadMore();
               }
             }
           });
+        } else if (ok && hasMore) {
+          requestAnimationFrame(setupIo);
         }
       });
   }
 
   function scheduleScrollProbe() {
     if (!hasMore || loading || Date.now() < tapNavUntil) return;
+    if (isPhone() && !phoneUserScrolledDown) return;
     clearTimeout(scrollProbeT);
     scrollProbeT = setTimeout(function () {
       scrollProbeT = null;
       if (!loading && hasMore && sentinelNearVisibleEdge()) loadMore();
-    }, 120);
+    }, 180);
   }
 
   function onScroll() {
     var st = currentScrollTop();
+    if (isPhone() && st > 180) {
+      if (!phoneUserScrolledDown) {
+        phoneUserScrolledDown = true;
+        setupIo();
+      }
+    }
     if (Math.abs(st - lastScrollTop) > 12) {
       userScrolledSinceChain = true;
       autoChainCount = 0;
@@ -177,36 +213,37 @@
 
   function onUserTap(ev) {
     try {
-      if (ev && ev.target && ev.target.closest && ev.target.closest(".pt-p2-card-link, .pt-p2-ask-plic-btn, .pt-p2-promo-btn, .pt-p2-card-bottom-bar__name")) {
-        tapNavUntil = Date.now() + 400;
-        autoChainCount = 0;
-        userScrolledSinceChain = true;
-        abortFetch();
-        return true;
-      }
+      if (!ev || !ev.target || !ev.target.closest) return false;
+      var t = ev.target.closest(
+        "#PW a, #PW button, #PW .pt-p2-wish-btn, #PW .pt-p2-card-link, #PW .pt-p2-ask-plic-btn, #PW .pt-p2-promo-btn, #PW .pt-p2-card-bottom-bar__name, #PW .pub-live-cover-link"
+      );
+      if (!t || !pwRoot || !pwRoot.contains(t)) return false;
+      tapNavUntil = Date.now() + (isPhone() ? 900 : 400);
+      autoChainCount = 0;
+      userScrolledSinceChain = true;
+      pauseIo(isPhone() ? 900 : 400);
+      abortFetch();
+      return true;
     } catch (eTap) {}
     return false;
   }
 
-  setupIo();
-  function bootScrollProbe() {
-    if (isPhone()) {
-      var run = function () {
-        setTimeout(scheduleScrollProbe, 400);
-      };
-      if (document.readyState === "complete") run();
-      else window.addEventListener("load", run, { once: true });
-    } else {
-      requestAnimationFrame(function () {
-        requestAnimationFrame(scheduleScrollProbe);
-      });
-    }
+  if (isPhone()) {
+    window.addEventListener("scroll", onScroll, { passive: true });
+  } else {
+    scrollEl.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
+    setupIo();
+    requestAnimationFrame(function () {
+      requestAnimationFrame(scheduleScrollProbe);
+    });
   }
-  bootScrollProbe();
-  grid.addEventListener("touchstart", onUserTap, { passive: true, capture: true });
-  grid.addEventListener("mousedown", onUserTap, { capture: true });
-  scrollEl.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("scroll", onScroll, { passive: true });
+
+  if (pwRoot) {
+    pwRoot.addEventListener("touchstart", onUserTap, { passive: true, capture: true });
+    pwRoot.addEventListener("mousedown", onUserTap, { capture: true });
+  }
+
   window.addEventListener("pagehide", abortFetch);
   var ioResizeT = null;
   window.addEventListener("resize", function () {
@@ -219,7 +256,4 @@
       if (hasMore) setupIo();
     }, 350);
   });
-  try {
-    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-  } catch (eSr) {}
 })();

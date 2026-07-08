@@ -6,6 +6,7 @@ html.pt-phone {
 html.pt-phone body.page-pt {
   overflow-x: hidden;
   overflow-y: auto;
+  overflow-anchor: none;
 }
 
 html.pt-phone body.page-pt #main_wrap,
@@ -18,6 +19,7 @@ html.pt-phone body.page-pt #PW {
   min-height: 0 !important;
   overflow: visible !important;
   padding-top: 0 !important;
+  overflow-anchor: none;
 }
 
 html.pt-phone body.page-pt #main_wrap {
@@ -37,18 +39,22 @@ html.pt-phone #PW .pt-grid {
   min-height: 0;
   overflow: visible;
   row-gap: 2px;
+  overflow-anchor: none;
 }
 
 html.pt-phone #PW .pt-mob-main {
-  display: contents;
+  display: block;
+  order: 3;
+  width: 100%;
 }
 
 html.pt-phone #PW .pt-cell-5,
-html.pt-phone #PW .pt-mob-main .pt-cell-3--footer {
+html.pt-phone #PW .pt-mob-main .pt-cell-3--footer,
+html.pt-phone #PW .pt-cell-3--footer {
   display: none !important;
 }
 
-html.pt-phone #PW .pt-mob-main .pt-cell-1 {
+html.pt-phone #PW .pt-cell-1 {
   order: 1;
   display: flex !important;
   width: 100%;
@@ -61,22 +67,20 @@ html.pt-phone #PW .pt-mob-main .pt-cell-1 {
   padding: 0;
   align-items: stretch;
   justify-content: stretch;
-  isolation: isolate;
   z-index: 1;
-  contain: layout paint;
 }
 
-html.pt-phone #PW .pt-mob-main .pt-strip-track {
+html.pt-phone #PW .pt-cell-1 .pt-strip-track {
   pointer-events: none;
 }
 
-html.pt-phone #PW .pt-mob-main .pt-strip-item a,
-html.pt-phone #PW .pt-mob-main a.pt-strip-cell--donatii-link,
-html.pt-phone #PW .pt-mob-main a.pt-strip-cell--sms-strip {
+html.pt-phone #PW .pt-cell-1 .pt-strip-item a,
+html.pt-phone #PW .pt-cell-1 a.pt-strip-cell--donatii-link,
+html.pt-phone #PW .pt-cell-1 a.pt-strip-cell--sms-strip {
   pointer-events: auto;
 }
 
-html.pt-phone #PW .pt-mob-main .pt-strip-wrap.pt-strip-p1 {
+html.pt-phone #PW .pt-cell-1 .pt-strip-wrap.pt-strip-p1 {
   height: var(--pt-p1-strip-h, 72px);
   min-height: var(--pt-p1-strip-h, 72px);
 }
@@ -272,7 +276,7 @@ html.pt-phone #PW .pt-mobile-filters-actions {
 }
 
 html.pt-phone #PW .pt-mob-main .pt-cell-2 {
-  order: 3;
+  order: 0;
   display: block !important;
   width: 100%;
   height: auto !important;
@@ -298,6 +302,7 @@ html.pt-phone #PW .pt-p2-grid {
   margin: 0;
   padding: 0 2px 0.5rem;
   box-sizing: border-box;
+  overflow-anchor: none;
 }
 
 html.pt-phone #PW .pt-p2-grid > .pt-p2-cell.pt-p2-card-cell {
