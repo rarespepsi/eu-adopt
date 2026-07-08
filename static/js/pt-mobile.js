@@ -4,8 +4,7 @@
 
   function isPhoneViewport() {
     var w = window.innerWidth || document.documentElement.clientWidth || 0;
-    var h = window.innerHeight || document.documentElement.clientHeight || 0;
-    return Math.min(w, h) <= PHONE_MAX;
+    return w <= PHONE_MAX;
   }
 
   function recoverUi() {

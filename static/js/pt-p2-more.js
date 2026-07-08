@@ -21,7 +21,7 @@
   var userScrolledSinceChain = true;
   var phoneUserScrolledDown = false;
   var userBusyUntil = 0;
-  var phoneMode = Math.min(window.innerWidth || 0, window.innerHeight || 0) <= 767.98;
+  var phoneMode = (window.innerWidth || document.documentElement.clientWidth || 0) <= 767.98;
 
   // Stabilizare PT mobil: dezactivăm complet încărcarea automată P2 după scroll.
   // Păstrăm doar lotul inițial pentru a elimina blocajele la interacțiune.
@@ -32,7 +32,7 @@
 
   function isPhone() {
     if (window.euadoptPtIsPhone) return window.euadoptPtIsPhone();
-    return Math.min(window.innerWidth || 0, window.innerHeight || 0) <= 767.98;
+    return (window.innerWidth || document.documentElement.clientWidth || 0) <= 767.98;
   }
 
   function markUserBusy(ms) {
