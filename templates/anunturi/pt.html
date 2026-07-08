@@ -258,7 +258,7 @@
 	#PW .pt-pub-mini-badge--price { background: #e8f5e9; color: #1b5e20; }
 	#PW .pt-pub-mini-badge--discount { background: #ffebee; color: #b71c1c; }
 
-	/* PT mobil portrait - punctul 1: doar layout si asezare in pagina (fara logica noua) */
+	/* PT mobil portrait - pas 1 (curat): P1 -> 4 casete pub -> 3 butoane -> P2 pe 2 coloane */
 	@media (max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
 		body.page-pt #main_wrap,
 		body.page-pt #main_content,
@@ -266,7 +266,6 @@
 			display: block !important;
 			height: auto !important;
 			max-height: none !important;
-			min-height: 0 !important;
 			overflow: visible !important;
 			padding: 0 !important;
 		}
@@ -275,48 +274,31 @@
 			flex-direction: column !important;
 			gap: 2px !important;
 			height: auto !important;
-			min-height: 0 !important;
 		}
-		body.page-pt #PW .pt-cell-1 {
-			order: 1;
-			grid-row: auto !important;
-			grid-column: auto !important;
-			min-height: 72px !important;
-			height: 72px !important;
-		}
-		body.page-pt #PW .pt-cell-4 {
-			order: 2;
-			grid-row: auto !important;
-			grid-column: auto !important;
-			width: 100% !important;
-			border: none !important;
-		}
+		body.page-pt #PW .pt-cell-1 { order: 1; min-height: 72px !important; height: 72px !important; }
+		body.page-pt #PW .pt-cell-4 { order: 2; width: 100% !important; border: none !important; }
+		body.page-pt #PW .pt-cell-2 { order: 3; width: 100% !important; overflow: visible !important; }
+		body.page-pt #PW .pt-cell-3,
+		body.page-pt #PW .pt-cell-5,
+		body.page-pt #PW .pt-p4-box-filters { display: none !important; }
+
+		body.page-pt #PW .pt-p4-inner,
 		body.page-pt #PW .pt-p4-mobile-sticky {
+			display: flex !important;
+			flex-direction: column !important;
+			gap: 2px !important;
 			position: relative !important;
 			top: auto !important;
 			left: auto !important;
 			right: auto !important;
 		}
-		body.page-pt #PW .pt-cell-2 {
-			order: 3;
-			grid-row: auto !important;
-			grid-column: auto !important;
-			width: 100% !important;
-			min-height: 0 !important;
-			overflow: visible !important;
-		}
-		body.page-pt #PW .pt-p2-scroll {
-			overflow: visible !important;
-			max-height: none !important;
-		}
-		body.page-pt #PW .pt-p2-grid {
-			grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-			gap: 0.4rem !important;
-		}
-		body.page-pt #PW .pt-cell-3,
-		body.page-pt #PW .pt-cell-5 {
-			display: none !important;
-		}
+		body.page-pt #PW .pt-p4-box-ads { order: 1; }
+		body.page-pt #PW .pt-p4-match-sustine-stack { order: 2; }
+		body.page-pt #PW .pt-p4-actions { display: grid !important; grid-template-columns: 1fr 1fr; gap: 2px !important; }
+		body.page-pt #PW .pt-p4-btn-sustine { width: 100% !important; }
+
+		body.page-pt #PW .pt-p2-scroll { overflow: visible !important; max-height: none !important; }
+		body.page-pt #PW .pt-p2-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 0.4rem !important; }
 	}
 </style>
 {% endblock %}
