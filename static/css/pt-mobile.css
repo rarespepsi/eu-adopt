@@ -61,6 +61,19 @@ html.pt-phone #PW .pt-mob-main .pt-cell-1 {
   padding: 0;
   align-items: stretch;
   justify-content: stretch;
+  isolation: isolate;
+  z-index: 1;
+  contain: layout paint;
+}
+
+html.pt-phone #PW .pt-mob-main .pt-strip-track {
+  pointer-events: none;
+}
+
+html.pt-phone #PW .pt-mob-main .pt-strip-item a,
+html.pt-phone #PW .pt-mob-main a.pt-strip-cell--donatii-link,
+html.pt-phone #PW .pt-mob-main a.pt-strip-cell--sms-strip {
+  pointer-events: auto;
 }
 
 html.pt-phone #PW .pt-mob-main .pt-strip-wrap.pt-strip-p1 {
@@ -75,6 +88,8 @@ html.pt-phone #PW .pt-cell-4 {
   border: none !important;
   overflow: visible;
   font-size: 1rem;
+  position: relative;
+  z-index: 2;
 }
 
 html.pt-phone #PW .pt-p4-inner {
@@ -87,12 +102,14 @@ html.pt-phone #PW .pt-p4-inner {
 }
 
 html.pt-phone #PW #pt_p4_mobile_sticky {
-  display: contents;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
   position: relative !important;
   top: auto !important;
   left: auto !important;
   right: auto !important;
-  width: 100%;
   background: transparent;
   box-shadow: none;
   border: none;
@@ -167,11 +184,30 @@ html.pt-phone #PW .pt-p43-mobil-row .pt-p5-partener-badge {
 }
 
 html.pt-phone #PW .pt-p4-box-match {
-  display: contents;
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  grid-column: 1 / span 2;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
 }
 
 html.pt-phone #PW .pt-p4-box-match .pt-p4-actions {
-  display: contents;
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+}
+
+html.pt-phone #PW .pt-p4-box-match .pt-p4-btn-match,
+html.pt-phone #PW .pt-p4-box-match .pt-p4-btn-filters {
+  flex: 1 1 0;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+  touch-action: manipulation;
 }
 
 html.pt-phone #PW .pt-p4-box-sustine {
@@ -196,6 +232,19 @@ html.pt-phone #PW .pt-p4-btn-sustine {
   text-align: center;
   box-sizing: border-box;
   border-radius: 0.45rem;
+  position: relative;
+  z-index: 1;
+  touch-action: manipulation;
+  pointer-events: auto;
+}
+
+html.pt-phone #PW .pt-p43-mobil-row .pt-p43-slot,
+html.pt-phone #PW .pt-p43-mobil-row a.pt-p43-partner-fill,
+html.pt-phone #PW .pt-p43-mobil-row .pub-live-cover-link {
+  position: relative;
+  z-index: 1;
+  touch-action: manipulation;
+  pointer-events: auto;
 }
 
 html.pt-phone #PW #P4 .pt-p4-box-filters {

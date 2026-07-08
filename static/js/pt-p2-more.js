@@ -189,9 +189,20 @@
   }
 
   setupIo();
-  requestAnimationFrame(function () {
-    requestAnimationFrame(scheduleScrollProbe);
-  });
+  function bootScrollProbe() {
+    if (isPhone()) {
+      var run = function () {
+        setTimeout(scheduleScrollProbe, 400);
+      };
+      if (document.readyState === "complete") run();
+      else window.addEventListener("load", run, { once: true });
+    } else {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(scheduleScrollProbe);
+      });
+    }
+  }
+  bootScrollProbe();
   grid.addEventListener("touchstart", onUserTap, { passive: true, capture: true });
   grid.addEventListener("mousedown", onUserTap, { capture: true });
   scrollEl.addEventListener("scroll", onScroll, { passive: true });
