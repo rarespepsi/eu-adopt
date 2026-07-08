@@ -24,6 +24,7 @@
 
   function fixHeaderGap() {
     if (!document.documentElement.classList.contains("pt-phone")) return;
+    if (window.__ptUserBusyUntil && Date.now() < window.__ptUserBusyUntil) return;
     var p1 = document.getElementById("P1");
     var p4 = document.getElementById("P4");
     if (!p1 || !p4) return;

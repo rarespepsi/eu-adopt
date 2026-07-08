@@ -15,16 +15,40 @@
   var tapNavUntil = 0;
   var scrollProbeT = null;
   var lastScrollTop = 0;
+  var lastScrollAt = 0;
   var autoChainCount = 0;
   var maxAutoChain = 2;
   var userScrolledSinceChain = true;
-  var ioPausedUntil = 0;
   var phoneUserScrolledDown = false;
-  var pwRoot = document.getElementById("PW");
+  var userBusyUntil = 0;
 
   function isPhone() {
     if (window.euadoptPtIsPhone) return window.euadoptPtIsPhone();
     return Math.min(window.innerWidth || 0, window.innerHeight || 0) <= 767.98;
+  }
+
+  function markUserBusy(ms) {
+    var until = Date.now() + ms;
+    if (until > userBusyUntil) userBusyUntil = until;
+    if (until > tapNavUntil) tapNavUntil = until;
+    window.__ptUserBusyUntil = userBusyUntil;
+    abortFetch();
+    clearTimeout(scrollProbeT);
+    scrollProbeT = null;
+    if (io) {
+      try {
+        io.disconnect();
+      } catch (e) {}
+      io = null;
+    }
+  }
+
+  function phoneCanLoad() {
+    if (!phoneUserScrolledDown) return false;
+    if (Date.now() < userBusyUntil) return false;
+    if (Date.now() < tapNavUntil) return false;
+    if (Date.now() - lastScrollAt < 700) return false;
+    return true;
   }
 
   function buildPageUrl() {
@@ -56,26 +80,11 @@
   }
 
   function scrollMargin() {
-    return isPhone() ? 48 : 400;
+    return isPhone() ? 24 : 400;
   }
 
   function maxAutoChainAllowed() {
     return isPhone() ? 0 : maxAutoChain;
-  }
-
-  function pauseIo(ms) {
-    ioPausedUntil = Date.now() + ms;
-    if (io) {
-      try {
-        io.disconnect();
-      } catch (eP) {}
-      io = null;
-    }
-    clearTimeout(scrollProbeT);
-    scrollProbeT = null;
-    setTimeout(function () {
-      if (Date.now() >= ioPausedUntil && hasMore) setupIo();
-    }, ms + 30);
   }
 
   function currentScrollTop() {
@@ -87,7 +96,7 @@
 
   function sentinelNearVisibleEdge() {
     if (!sentinel || !sentinel.isConnected || !hasMore) return false;
-    if (isPhone() && !phoneUserScrolledDown) return false;
+    if (isPhone() && !phoneCanLoad()) return false;
     var margin = scrollMargin();
     var r = sentinel.getBoundingClientRect();
     var root = pickIoRoot();
@@ -110,8 +119,7 @@
   }
 
   function setupIo() {
-    if (Date.now() < ioPausedUntil) return;
-    if (isPhone() && !phoneUserScrolledDown) return;
+    if (isPhone()) return;
     if (io) {
       try {
         io.disconnect();
@@ -121,7 +129,7 @@
     if (!hasMore) return;
     io = new IntersectionObserver(
       function (entries) {
-        if (Date.now() < tapNavUntil || Date.now() < ioPausedUntil) return;
+        if (Date.now() < tapNavUntil) return;
         for (var i = 0; i < entries.length; i++) {
           if (entries[i].isIntersecting) loadMore();
         }
@@ -131,9 +139,17 @@
     io.observe(sentinel);
   }
 
+  function appendChunk(html) {
+    var wrap = document.createElement("div");
+    wrap.innerHTML = html || "";
+    if (window.euadoptInitPetImageRotation) window.euadoptInitPetImageRotation(wrap);
+    while (wrap.firstChild) grid.appendChild(wrap.firstChild);
+    if (window.euadoptWishlistBindRoot) window.euadoptWishlistBindRoot(grid);
+  }
+
   function loadMore() {
     if (loading || !hasMore || Date.now() < tapNavUntil) return;
-    if (isPhone() && !phoneUserScrolledDown) return;
+    if (isPhone() && !phoneCanLoad()) return;
     var chainMax = maxAutoChainAllowed();
     if (!userScrolledSinceChain && autoChainCount >= chainMax) return;
     loading = true;
@@ -147,11 +163,25 @@
       })
       .then(function (data) {
         if (!data || !data.ok) throw new Error("p2-more");
-        var wrap = document.createElement("div");
-        wrap.innerHTML = data.html || "";
-        if (window.euadoptInitPetImageRotation) window.euadoptInitPetImageRotation(wrap);
-        while (wrap.firstChild) grid.appendChild(wrap.firstChild);
-        if (window.euadoptWishlistBindRoot) window.euadoptWishlistBindRoot(grid);
+        if (isPhone() && Date.now() < userBusyUntil) throw new Error("aborted-user");
+        var html = data.html || "";
+        if (isPhone()) {
+          return new Promise(function (resolve) {
+            requestAnimationFrame(function () {
+              if (Date.now() < userBusyUntil) {
+                resolve(false);
+                return;
+              }
+              appendChunk(html);
+              resolve(data);
+            });
+          });
+        }
+        appendChunk(html);
+        return data;
+      })
+      .then(function (data) {
+        if (!data) return false;
         hasMore = !!data.has_more;
         nextOffset = parseInt(data.next_offset, 10) || nextOffset;
         grid.setAttribute("data-p2-offset", String(nextOffset));
@@ -168,41 +198,35 @@
         fetchAbort = null;
       })
       .then(function (ok) {
-        if (ok && hasMore && maxAutoChainAllowed() > 0) {
-          requestAnimationFrame(function () {
-            setupIo();
-            if (!loading && hasMore && sentinelNearVisibleEdge()) {
-              if (autoChainCount < maxAutoChainAllowed()) {
-                autoChainCount++;
-                userScrolledSinceChain = false;
-                loadMore();
-              }
+        if (!ok || !hasMore || isPhone()) return;
+        requestAnimationFrame(function () {
+          setupIo();
+          if (!loading && hasMore && sentinelNearVisibleEdge()) {
+            if (autoChainCount < maxAutoChainAllowed()) {
+              autoChainCount++;
+              userScrolledSinceChain = false;
+              loadMore();
             }
-          });
-        } else if (ok && hasMore) {
-          requestAnimationFrame(setupIo);
-        }
+          }
+        });
       });
   }
 
   function scheduleScrollProbe() {
-    if (!hasMore || loading || Date.now() < tapNavUntil) return;
+    if (!hasMore || loading) return;
     if (isPhone() && !phoneUserScrolledDown) return;
     clearTimeout(scrollProbeT);
+    var wait = isPhone() ? 750 : 180;
     scrollProbeT = setTimeout(function () {
       scrollProbeT = null;
       if (!loading && hasMore && sentinelNearVisibleEdge()) loadMore();
-    }, 180);
+    }, wait);
   }
 
   function onScroll() {
+    lastScrollAt = Date.now();
     var st = currentScrollTop();
-    if (isPhone() && st > 180) {
-      if (!phoneUserScrolledDown) {
-        phoneUserScrolledDown = true;
-        setupIo();
-      }
-    }
+    if (isPhone() && st > 220) phoneUserScrolledDown = true;
     if (Math.abs(st - lastScrollTop) > 12) {
       userScrolledSinceChain = true;
       autoChainCount = 0;
@@ -211,24 +235,21 @@
     scheduleScrollProbe();
   }
 
-  function onUserTap(ev) {
-    try {
-      if (!ev || !ev.target || !ev.target.closest) return false;
-      var t = ev.target.closest(
-        "#PW a, #PW button, #PW .pt-p2-wish-btn, #PW .pt-p2-card-link, #PW .pt-p2-ask-plic-btn, #PW .pt-p2-promo-btn, #PW .pt-p2-card-bottom-bar__name, #PW .pub-live-cover-link"
-      );
-      if (!t || !pwRoot || !pwRoot.contains(t)) return false;
-      tapNavUntil = Date.now() + (isPhone() ? 900 : 400);
-      autoChainCount = 0;
-      userScrolledSinceChain = true;
-      pauseIo(isPhone() ? 900 : 400);
-      abortFetch();
-      return true;
-    } catch (eTap) {}
-    return false;
-  }
-
   if (isPhone()) {
+    document.addEventListener(
+      "touchstart",
+      function () {
+        markUserBusy(2800);
+      },
+      { passive: true }
+    );
+    document.addEventListener(
+      "pointerdown",
+      function () {
+        markUserBusy(2800);
+      },
+      { passive: true }
+    );
     window.addEventListener("scroll", onScroll, { passive: true });
   } else {
     scrollEl.addEventListener("scroll", onScroll, { passive: true });
@@ -237,11 +258,6 @@
     requestAnimationFrame(function () {
       requestAnimationFrame(scheduleScrollProbe);
     });
-  }
-
-  if (pwRoot) {
-    pwRoot.addEventListener("touchstart", onUserTap, { passive: true, capture: true });
-    pwRoot.addEventListener("mousedown", onUserTap, { capture: true });
   }
 
   window.addEventListener("pagehide", abortFetch);
@@ -253,7 +269,7 @@
     userScrolledSinceChain = true;
     ioResizeT = setTimeout(function () {
       ioResizeT = null;
-      if (hasMore) setupIo();
+      if (hasMore && !isPhone()) setupIo();
     }, 350);
   });
 })();
