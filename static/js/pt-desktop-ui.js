@@ -3,7 +3,8 @@
   var touchDevice =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;
-  if (touchDevice) return;
+  var touchPortrait = touchDevice && "matchMedia" in window && window.matchMedia("(orientation: portrait)").matches;
+  if (touchDevice && !touchPortrait) return;
   var filtersForm = document.getElementById("filtre-animale");
   var mobileFiltersCloseBtn = document.getElementById("ptMobileFiltersClose");
   var mobileFiltersOkBtn = document.getElementById("ptMobileFiltersOk");
@@ -18,7 +19,9 @@
   var filtersApplied = false;
 
   function isPhone() {
-    return false;
+    if (!touchDevice) return false;
+    if (!("matchMedia" in window)) return true;
+    return window.matchMedia("(orientation: portrait)").matches;
   }
 
   function hasAppliedFiltersInUrl() {
@@ -199,6 +202,7 @@
 
   Array.prototype.forEach.call(matchBtns, function (btn) {
     btn.addEventListener("click", function (e) {
+      if (!isPhone()) return;
       e.preventDefault();
       if (isActive) {
         try {
