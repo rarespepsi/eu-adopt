@@ -44,7 +44,6 @@ html.pt-phone #PW .pt-mob-main {
 }
 
 html.pt-phone #PW .pt-cell-5,
-html.pt-phone #PW .pt-mob-strip-merged,
 html.pt-phone #PW .pt-mob-main .pt-cell-3--footer {
   display: none !important;
 }
@@ -87,26 +86,32 @@ html.pt-phone #PW .pt-p4-inner {
   box-sizing: border-box;
 }
 
-html.pt-phone #PW .pt-p4-sticky-placeholder {
-  display: none !important;
-}
-
 html.pt-phone #PW #pt_p4_mobile_sticky {
+  display: contents;
   position: relative !important;
   top: auto !important;
   left: auto !important;
   right: auto !important;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
   background: transparent;
   box-shadow: none;
   border: none;
+}
+
+html.pt-phone #PW .pt-p4-match-sustine-stack.pt-p4-box {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  height: auto !important;
+  min-height: 0;
+  padding: 2px !important;
+  margin: 0;
+  border-radius: 0.45rem;
   order: 1;
 }
 
 html.pt-phone #PW #pt_p4_mobile_sticky .pt-p4-box-ads {
+  order: 3;
   display: block !important;
   flex: 0 0 var(--pt-p1-strip-h, 72px);
   width: 100%;
@@ -161,17 +166,6 @@ html.pt-phone #PW .pt-p43-mobil-row .pt-p5-partener-badge {
   padding: 1px 4px;
 }
 
-html.pt-phone #PW .pt-p4-match-sustine-stack.pt-p4-box {
-  display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 2px;
-  height: auto !important;
-  min-height: 0;
-  padding: 2px !important;
-  margin: 0;
-  border-radius: 0.45rem;
-}
-
 html.pt-phone #PW .pt-p4-box-match {
   display: contents;
 }
@@ -213,10 +207,6 @@ html.pt-phone #PW #P4 .pt-p4-box-filters {
 
 html.pt-phone #PW #P4.pt-mobile-filters-open .pt-p4-box-filters {
   display: block;
-}
-
-html.pt-phone #PW .pt-mobile-filters-backdrop {
-  display: none !important;
 }
 
 html.pt-phone #PW .pt-mobile-filters-head {

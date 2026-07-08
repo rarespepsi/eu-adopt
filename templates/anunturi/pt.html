@@ -11,13 +11,14 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt340-desktop" type="text/css" media="screen" />
-<link rel="stylesheet" href="{% static 'css/pt-mobile.css' %}?v=pt342-pub-row" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-mobile.css' %}?v=pt344-filters-order" type="text/css" media="screen" />
 <style>
 	/* PW = limita ecranului: navbar jos + stânga–dreapta–jos fără spațiu gol; fără padding/margin care restrânge */
 	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
-	body.page-pt #main_content { min-height: 0 !important; display: flex !important; flex-direction: column !important; flex: 1 1 0 !important; overflow: hidden !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
-	/* Desktop/tablet: PW fix în viewport; mobil – flux natural (evită P2 prăbușit la flex 1 1 0) */
+	body.page-pt #main_content { min-height: 0 !important; display: flex !important; flex-direction: column !important; flex: 1 1 0 !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
+	/* Desktop/tablet: PW fix în viewport + overflow ascuns; mobil – flux natural (pt-mobile.css) */
 	@media (min-width: 768px) and (min-height: 521px) {
+		body.page-pt #main_content { overflow: hidden !important; }
 		body.page-pt #main_content #PW {
 			height: calc(100vh - var(--nav-h, 64px)) !important;
 			max-height: calc(100vh - var(--nav-h, 64px)) !important;
@@ -347,9 +348,7 @@
 							</form>
 						</div>
 					</div>
-					<div class="pt-p4-sticky-placeholder" id="pt_p4_sticky_placeholder" aria-hidden="true"></div>
-					{# Mobil: bară fixă sub navbar; o singură bandă cursivă P1+P3 jos (coduri slot păstrate). #}
-					<div class="pt-p4-mobile-sticky pt-p4-portrait-sticky" id="pt_p4_mobile_sticky">
+					<div class="pt-p4-mobile-sticky" id="pt_p4_mobile_sticky">
 						<div class="pt-p4-box pt-p4-match-sustine-stack">
 							<div class="pt-p4-box-match" id="P4.2" data-slot="P4.2">
 								<div class="pt-p4-actions">
@@ -411,16 +410,6 @@
 						</div>
 					</div>
 			</div>
-			<div id="pt_mob_strip_merged" class="pt-cell pt-mob-strip-merged pt-strip-band--mobile" data-slot="P1+P3" aria-label="Bandă publicitate mobilă P1 și P3">
-				<div class="pt-strip-wrap pt-strip-mob-merged">
-					<div class="pt-strip-track pt-strip-track--mob-merged">
-						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
-						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
-						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
-						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
-					</div>
-				</div>
-			</div>
 			<div id="P5" class="pt-cell pt-cell-5" data-slot="P5">
 				<div class="pt-p5-grid">
 					{% for slot in pt_pub_slot_list %}
@@ -431,7 +420,6 @@
 				</div>
 			</div>
 		</div>
-		<div id="ptMobileFiltersBackdrop" class="pt-mobile-filters-backdrop" hidden></div>
 	</main>
 </section>
 
@@ -481,8 +469,8 @@
 {% endblock main_wrap_after_header %}
 
 {% block extra_js %}
-<script src="{% static 'js/pt-mobile.js' %}?v=pt341"></script>
-<script src="{% static 'js/pt-pet-rotation.js' %}?v=pt341"></script>
-<script src="{% static 'js/pt-p2-more.js' %}?v=pt341"></script>
-<script src="{% static 'js/pt-desktop-ui.js' %}?v=pt341"></script>
+<script src="{% static 'js/pt-mobile.js' %}?v=pt343"></script>
+<script src="{% static 'js/pt-pet-rotation.js' %}?v=pt343"></script>
+<script src="{% static 'js/pt-p2-more.js' %}?v=pt343"></script>
+<script src="{% static 'js/pt-desktop-ui.js' %}?v=pt343"></script>
 {% endblock %}

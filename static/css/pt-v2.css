@@ -1,4 +1,4 @@
-/* PT layout P1–P5 — desktop în acest fișier; mobil în pt-mobile.css (@media max-width 767.98px). */
+/* PT layout P1–P5 — desktop în acest fișier; mobil în pt-mobile.css (html.pt-phone). */
 #PW {
   width: 100% !important;
   max-width: 100% !important;
@@ -134,41 +134,6 @@ body.page-pt #main_content {
   }
   100% {
     transform: translateX(-50%);
-  }
-}
-
-/* PT mobil: bandă unică P1+P3 (toate codurile slot în același track) */
-#PW .pt-strip-track--mob-merged {
-  animation: pt-strip-mob-merged 70s linear infinite;
-}
-
-@keyframes pt-strip-mob-merged {
-  0% {
-    transform: translateX(-50%);
-  }
-  100% {
-    transform: translateX(0);
-  }
-}
-
-#PW .pt-strip-wrap.pt-strip-mob-merged {
-  background: #2e7d32;
-  min-height: 54px;
-}
-
-#PW .pt-mob-strip-merged {
-  display: none;
-  background: #2e7d32;
-  border: 2px solid #000;
-  overflow: hidden;
-  padding: 0;
-  align-items: stretch;
-  justify-content: stretch;
-}
-
-@media (min-width: 768px) and (min-height: 521px) {
-  #PW .pt-strip-band--mobile {
-    display: none !important;
   }
 }
 
@@ -731,8 +696,7 @@ body.page-pt #main_content {
   animation: ptMatchBlink 0.9s steps(2, end) infinite;
 }
 #PW .pt-mobile-filters-head,
-#PW .pt-mobile-filters-actions,
-#PW .pt-mobile-filters-backdrop {
+#PW .pt-mobile-filters-actions {
   display: none;
 }
 
