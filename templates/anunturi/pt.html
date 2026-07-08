@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt340-desktop" type="text/css" media="screen" />
 <style>
 	/* PT: strat CSS unic (fără layer mobil dedicat). */
-	@media (min-width: 768px) and (min-height: 521px) {
+	@media (min-width: 768px) and (min-height: 521px) and (hover: hover) and (pointer: fine) {
 		body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
 		body.page-pt #main_content { min-height: 0 !important; display: flex !important; flex-direction: column !important; flex: 1 1 0 !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
 		body.page-pt #main_content { overflow: hidden !important; }
@@ -467,7 +467,7 @@
 {% endblock main_wrap_after_header %}
 
 {% block extra_js %}
-<script src="{% static 'js/pt-pet-rotation.js' %}?v=pt353-no-mobile-layer"></script>
-<script src="{% static 'js/pt-p2-more.js' %}?v=pt353-no-mobile-layer"></script>
-<script src="{% static 'js/pt-desktop-ui.js' %}?v=pt353-no-mobile-layer"></script>
+<script src="{% static 'js/pt-pet-rotation.js' %}?v=pt354-touch-safe"></script>
+<script src="{% static 'js/pt-p2-more.js' %}?v=pt354-touch-safe"></script>
+<script src="{% static 'js/pt-desktop-ui.js' %}?v=pt354-touch-safe"></script>
 {% endblock %}
