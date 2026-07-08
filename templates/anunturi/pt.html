@@ -340,11 +340,17 @@
 		body.page-pt #PW .pt-p4-btn-match,
 		body.page-pt #PW .pt-p4-btn-filters,
 		body.page-pt #PW .pt-p4-btn-sustine {
+			display: flex !important;
+			align-items: center !important;
+			justify-content: center !important;
 			width: 100% !important;
 			min-height: 2.35rem !important;
 			flex: none !important;
 			border-radius: 0.35rem !important;
 		}
+		body.page-pt #PW .pt-p4-btn-match { order: 1; }
+		body.page-pt #PW .pt-p4-btn-filters { order: 2; }
+		body.page-pt #PW .pt-p4-btn-sustine { order: 3; }
 
 		body.page-pt #PW .pt-p2-scroll { overflow: visible !important; max-height: none !important; }
 		body.page-pt #PW .pt-p2-grid {
