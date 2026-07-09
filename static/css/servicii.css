@@ -760,16 +760,21 @@
     gap: 2px;
   }
 
-  #SW .sw-s4-box-filters,
-  #SW .sw-s4-box-match {
+  #SW .sw-s4-box-filters {
     display: none !important;
   }
 
+  #SW .sw-s4-box-match,
   #SW .sw-s4-box-ads,
   #SW .sw-s5-slot {
     flex: 1 1 0 !important;
     min-height: 0 !important;
     width: 100% !important;
+  }
+
+  #SW .sw-cell-4,
+  #SW .sw-cell-5 {
+    overflow: hidden !important;
   }
 }
 
