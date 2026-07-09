@@ -580,7 +580,7 @@
 /* ≤768px lățime SAU telefon landscape (înălțime mică), ca să prindem și lățimi >768 în landscape */
 @media (max-width: 767.98px),
   (orientation: landscape) and (max-height: 500px) {
-  #SW .sw-cell-1 .sw-strip-wrap.sw-strip-s1 {
+  #SW .sw-cell-1 .sw-strip-wrap.sw-strip-s1:not(.sw-strip-wrap--mobile-merged) {
     display: none !important;
   }
   #SW .sw-cell-1 .sw-strip-wrap--mobile-merged {
