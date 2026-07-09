@@ -754,7 +754,7 @@
   #SW .sw-s4-inner {
     display: flex !important;
     flex-direction: column !important;
-    gap: 2px !important;
+    gap: 0 !important;
     height: 100%;
     min-height: 0;
   }
@@ -768,24 +768,26 @@
   }
   #SW .sw-s2-filter-row {
     padding: 0 !important;
-    gap: 2px !important;
+    gap: 1px !important;
+    height: 3rem !important;
   }
   #SW .sw-s4-box-filters {
     display: flex !important;
     padding: 0 !important;
     border-radius: 0.45rem !important;
+    height: 3.2rem !important;
   }
   #SW .sw-s2-filter-btn,
   #SW .sw-s2-filter-reset-btn {
-    font-size: 0.64rem;
-    padding: 0.24rem 0.4rem;
+    font-size: 0.6rem;
+    padding: 0.16rem 0.34rem;
   }
   #SW .sw-s2-species-buttons {
     gap: 2px !important;
   }
   #SW .sw-s2-species-btn {
-    font-size: 0.58rem !important;
-    padding: 0.22rem 0.28rem !important;
+    font-size: 0.54rem !important;
+    padding: 0.15rem 0.2rem !important;
   }
 
   /* Cele 4 publi: 2 egale in S4 + 2 egale in S6. */
@@ -799,7 +801,7 @@
   #SW .sw-s5-grid {
     display: grid !important;
     grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 2px;
+    gap: 0;
     height: 100%;
     min-height: 0;
   }
