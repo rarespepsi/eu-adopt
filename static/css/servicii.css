@@ -770,6 +770,8 @@
     gap: 2px;
     height: 100%;
     min-height: 0;
+    padding-top: calc(7.2rem + 4px);
+    box-sizing: border-box;
   }
 
   #SW .sw-s2-filter-row {
