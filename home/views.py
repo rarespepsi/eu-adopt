@@ -4621,15 +4621,16 @@ def dog_profile_view(request, pk):
         and listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
         and not population_ui_restricted_for_user(request.user)
     )
-    # Buton „VREAU SĂ ADOPT”: ascuns în faza populare (fără adopții), exceptie superuser.
-    show_pet_adopt_corner = bool(
-        not population_ui_restricted_for_user(request.user)
-        and listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
-        and (
-            not request.user.is_authenticated
-            or request.user.pk != listing.owner_id
+    # Buton „VREAU SĂ ADOPT”: ascuns în faza populare pentru useri logați (exceptie superuser).
+    # Vizitatori anonimi (link Distribuie): buton vizibil → duce la login, fără cerere efectivă.
+    if not request.user.is_authenticated:
+        show_pet_adopt_corner = listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
+    else:
+        show_pet_adopt_corner = bool(
+            not population_ui_restricted_for_user(request.user)
+            and listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
+            and request.user.pk != listing.owner_id
         )
-    )
     ctx = {
         "pet": pet,
         "can_send_pet_message": can_send_pet_message,

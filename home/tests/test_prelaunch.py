@@ -62,7 +62,8 @@ class PrelaunchEnabledTests(TestCase):
         c = Client()
         r = c.get(reverse("pets_single", args=[listing.pk]))
         self.assertEqual(r.status_code, 200)
-        self.assertIn(b"Rex", r.content)
+        self.assertContains(r, "Rex")
+        self.assertContains(r, "VREAU SĂ ADOPT")
 
     def test_anonymous_pets_p2_more_still_blocked(self):
         c = Client()
