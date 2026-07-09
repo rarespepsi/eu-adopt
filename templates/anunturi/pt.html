@@ -405,6 +405,7 @@
 	@media (orientation: landscape) and (max-height: 34em) and (hover: none) and (pointer: coarse) {
 		body.page-pt {
 			--pt-land-banner: 0px;
+			--pt-land-side-w: clamp(3.35rem, 10vw, 6.25rem);
 			overflow: hidden !important;
 			height: 100dvh !important;
 		}
@@ -531,26 +532,25 @@
 		body.page-pt #PW #P4.pt-mobile-filters-open .pt-p4-box-filters {
 			display: block !important;
 			position: fixed !important;
-			inset: 0 !important;
+			top: calc(var(--nav-height, 64px) + var(--pt-land-banner, 0px) + 72px + 2px) !important;
+			left: calc(var(--pt-land-side-w) + 4px) !important;
+			right: calc(var(--pt-land-side-w) + 4px) !important;
+			bottom: auto !important;
+			width: auto !important;
+			height: auto !important;
+			max-height: min(24rem, calc(100dvh - var(--nav-height, 64px) - var(--pt-land-banner, 0px) - 72px - 10px)) !important;
 			z-index: 1000100 !important;
-			width: 100% !important;
-			max-width: 100% !important;
 			margin: 0 !important;
 			padding: 6px 5px 8px !important;
 			box-sizing: border-box !important;
-			background: #141a22 !important;
-			border: none !important;
-			border-radius: 0 !important;
-			box-shadow: none !important;
+			background: rgba(15, 23, 42, 0.96) !important;
+			border: 1px solid rgba(255, 255, 255, 0.1) !important;
+			border-radius: 0.45rem !important;
+			box-shadow: 0 8px 28px rgba(0, 0, 0, 0.42) !important;
 			backdrop-filter: none !important;
 			-webkit-backdrop-filter: none !important;
 			overflow-y: auto !important;
 			-webkit-overflow-scrolling: touch;
-		}
-		body.page-pt.pt-land-filters-open #PW .pt-cell-2,
-		body.page-pt.pt-land-filters-open #PW .pt-cell-5 {
-			visibility: hidden !important;
-			pointer-events: none !important;
 		}
 		body.page-pt #PW #P4.pt-mobile-filters-open .pt-p4-box-filters .pet-filters-box {
 			width: 100% !important;
@@ -932,7 +932,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt373-filters-portrait-look";
+  var v = "pt374-filters-compact-rotate";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;
@@ -941,6 +941,30 @@
     s.src = "{% static 'js/' %}" + name + "?v=" + v;
     s.defer = true;
     document.body.appendChild(s);
+  }
+  if (touch && "matchMedia" in window) {
+    function ptTouchMode() {
+      if (window.matchMedia("(orientation: portrait)").matches) return "portrait";
+      if (window.matchMedia("(orientation: landscape) and (max-height: 34em)").matches) return "landscape";
+      return "";
+    }
+    var lastPtMode = ptTouchMode();
+    window.addEventListener("orientationchange", function () {
+      setTimeout(function () {
+        var next = ptTouchMode();
+        if (!next || next === lastPtMode) return;
+        lastPtMode = next;
+        var p4 = document.getElementById("P4");
+        var u = new URL(window.location.href);
+        if (p4 && p4.classList.contains("pt-mobile-filters-open")) {
+          u.searchParams.set("pt_filters_open", "1");
+        } else {
+          u.searchParams.delete("pt_filters_open");
+        }
+        var qs = u.searchParams.toString();
+        window.location.replace(u.pathname + (qs ? "?" + qs : ""));
+      }, 180);
+    });
   }
   if (!touch) {
     loadJs("pt-pet-rotation.js");

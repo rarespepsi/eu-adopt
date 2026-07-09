@@ -128,6 +128,7 @@
     if (!p4Cell) return;
     p4Cell.classList.add("pt-mobile-filters-open");
     document.body.classList.add("pt-land-filters-open");
+    syncLandChromeHeights();
     syncSpeciesTabsFromField();
   }
 
