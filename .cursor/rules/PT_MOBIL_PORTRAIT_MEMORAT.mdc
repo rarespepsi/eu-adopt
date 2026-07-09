@@ -1,46 +1,97 @@
 ---
-description: PT mobil portrait – layout și comportamente memorate; nu modifica fără parolă 1977
+description: PT mobil portrait – layout, scroll Pas 1 stabil, JS; nu modifica fără parolă 1977
 alwaysApply: true
 ---
 
-# PT MOBIL PORTRAIT – STARE MEMORATĂ (ÎNGHEȚATĂ)
+# PT MOBIL PORTRAIT – STARE MEMORATĂ (PAS 1 SCROLL OK)
 
-**Orientare:** ecran mobil în **portrait** (regulile PT din `@media (max-width: 767.98px)` și override-urile din `pt.html` pentru această zonă).
+**Confirmat de utilizator:** 9 iulie 2026 — scroll puternic jos/sus, tap pe casete, filtre, match: **merge perfect**.
 
-Utilizatorul a **finalizat** această fațetă; tratează layout-ul și fluxul de mai jos ca **referință de producție**. **Nu modifica** fără cerere explicită și parola **`1977`** (aceeași ca PT global / `PT_INGHETAT`).
+**Commit referință:** `44f2131` (`pt359-portrait-scroll-pas1`) · tag opțional istoric: `pt-mobile-stabil-click-landscape-ok` (landscape vechi).
 
-## Fișiere sursă (orice atingere = ca la PT înghețat)
+**Orientare:** touch + portrait — media query din `pt.html`:
 
-- `templates/anunturi/pt.html` (inclusiv stiluri inline PT mobil, `extra_css_after` A0, script placeholder P4, **infinite scroll P2**)
-- `static/css/pt-v2.css` (bloc mobil `@media (max-width: 767.98px)` pentru PW, P1, P4, P2, P3, sentinel P2)
-- `templates/anunturi/includes/pt_p2_card.html`
-- `templates/anunturi/includes/pt_p2_grid_chunk.html`
-- `home/pt_p2_list.py` (`PT_P2_PAGE_SIZE`, `pt_pets_page_context`)
-- În `home/views.py`: ramura `pets_all` / context PT, `pets_p2_more_view`
-- În `home/urls.py`: `pets/p2-more/` (`pets_p2_more`)
+```css
+@media (max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse)
+```
 
-## Comportamente memorate (portrait mobil) – păstrează-le
+**Nu modifica** fără cerere explicită + parola **`1977`** + OK execuție (conform `SITE_GLOBAL_INGHETAT_1977` / `PT_INGHETAT`).
 
-1. **Navbar `#A0`:** fix sus pe PT mobil (`html body.page-pt.page-animale #A0` în `extra_css_after`).
-2. **`#main_content`:** `padding-top` pentru offset navbar.
-3. **P1 – bandă cursivă verde:** `position: fixed` imediat sub navbar, înălțime **72px**, `z-index` sub bara mov; celulă rezervă **72px** în flux.
-4. **Bara mov `#pt_p4_mobile_sticky`:** `position: fixed`, `top: calc(var(--nav-height) + 72px)`; conține **doar** butoane (P4.2) + casete pub (P4.3) — **fără** bandă cursivă duplicată în bară.
-5. **Placeholder `#pt_p4_sticky_placeholder`:** înălțime setată de JS după înălțimea barei mov; `ResizeObserver` pe `.pt-p4-box`; `tightenBelowStickyGap` unde e cazul.
-6. **P2:** scroll în **`.pt-p2-scroll`**; grilă cu celule card; **încărcare progresivă** (loturi **24**, endpoint JSON `/pets/p2-more/`, sentinel `#pt_p2_load_sentinel`, `IntersectionObserver` cu **`root: .pt-p2-scroll`** — același mecanism și pentru scroll intern desktop în P2).
-7. **Benzi cursive:** **P1** sus; **o singură** bandă tip P3 ca footer **sub P2** (`#P3`), fără duplicat suplimentar între P2 și P3.
-8. **Ordine vizuală în flux:** P1 → P4 (placeholder + bară fixă în viewport) → P2 → P3.
+---
 
-## Ce nu face agentul fără cerere explicită + parolă
+## Fișiere sursă (portrait)
 
-- Nu schimba **fixed/sticky** vs flux pentru navbar, P1, bara mov, fără acord.
-- Nu reintroduce **banda cursivă în bara mov** sau **dubluri** sub P2 fără brief clar.
-- Nu elimina **infinite scroll** P2 sau nu crește primul lot peste **24** fără acord (constant `PT_P2_PAGE_SIZE`).
-- Nu muta logica listei P2 din **`pt_pets_page_context`** / **`pets_p2_more_view`** într-un mod care schimbă filtrele sau ordinea afișării fără test.
+| Fișier | Rol portrait |
+|--------|----------------|
+| `templates/anunturi/pt.html` | CSS portrait inline + încărcare JS condiționată |
+| `static/js/pt-portrait-ui.js` | Filtre + match modal (touch portrait only) |
+| `static/js/pt-desktop-ui.js` | **Nu rulează pe touch** (`if (touchDevice) return`) |
+| `static/js/pt-p2-more.js` | **Nu se încarcă pe touch** |
+| `static/js/pt-pet-rotation.js` | **Nu se încarcă pe touch** |
+| `static/css/pt-v2.css` | Bază desktop; **fără** `@media max-width` mobil |
 
-## Parolă
+**Șterse / nefolosite:** `pt-mobile.css`, `pt-mobile.js`.
 
-Pentru orice modificare țintită la **PT mobil portrait**, cere și primește **`1977`** în mesaj (conform `SITE_GLOBAL_INGHETAT_1977` și `PT_INGHETAT`).
+---
+
+## Layout memorat (flux vertical, fără fixed/sticky)
+
+**Ordine vizuală:** P1 (72px) → 4 casete pub (rând) → 3 butoane → P2 (grilă 2 col) → (P3/P5 ascunse).
+
+1. **P1 bandă verde:** în **flux** (`position: relative`), 72px; animație cursivă **oprită** (`animation: none`, `transform: none` pe track).
+2. **P4:** în flux — **nu** `position: fixed`, **nu** placeholder JS, **nu** bara mov sticky.
+3. **4 casete pub:** `.pt-p43-mobil-row` grid 4 coloane; `.pt-p43-desktop-wrap` ascuns.
+4. **3 butoane:** grid 3 col (`Găsește-mi perechea` | `Filtre` | `Ajută un Suflet`); wrappers `display: contents`.
+5. **Filtre:** `.pt-p4-box-filters` ascuns implicit; vizibil când `#P4.pt-mobile-filters-open` (head + X + OK).
+6. **P2:** grilă **2 coloane**; `.pt-p2-scroll` cu `overflow: visible` — **nu** scroll intern aici.
+7. **P3, P5:** `display: none` pe portrait.
+8. **`.pt-mob-main`:** `order: 3`, `display: block` (obligatoriu — altfel P2 se suprapune).
+
+---
+
+## Scroll — PAS 1 (CRITIC, testat OK)
+
+- **Model:** scroll pe **pagină** (`window` / `document`) — `#main_wrap`, `#main_content`, `#PW` au `height: auto`, `overflow: visible`.
+- **NU** scroll intern în `.pt-p2-scroll` pe portrait.
+- **NU** `pt-p2-more.js` / infinite scroll pe touch portrait (lot inițial 24 din server, fără auto-load).
+
+### Ce NU reintroduce (cauză scroll mort, tap-uri OK)
+
+- **NU** `touchmove` + `preventDefault` pe document (pull-to-refresh) în `pt-portrait-ui.js`.
+- **NU** `overscroll-behavior` / `touch-action: pan-y` pe `html`/`body` portrait.
+- **NU** `body.style.overflow = hidden` la deschidere modal pe mobil.
+- **NU** `scrollIntoView` la deschidere filtre.
+- **NU** `pt-desktop-ui.js` pe touch (resize/MutationObserver sex select etc.).
+
+**Simptom istoric blocaj:** scroll mort în portrait, tap merge; landscape → portrait deblochează = conflict scroll `window` vs hack-uri touch.
+
+**Pas 2 (rezervă, neaplicat):** container unic `overflow-y: auto` cu înălțime `100dvh - navbar` — doar dacă Pas 1 regresează.
+
+---
+
+## JS portrait (`pt-portrait-ui.js`)
+
+- Filtre: toggle `pt-mobile-filters-open`, tabs specii, reset, submit OK.
+- Match: modal fără blocare scroll body; localStorage traits.
+- `pageshow`: curăță `body overflow` dacă rămâne blocat.
+- Modal `[hidden]`: `pointer-events: none` (CSS portrait).
+
+---
+
+## Desktop (neatins de portrait)
+
+Bloc separat în `pt.html`:
+
+```css
+@media (min-width: 768px) and (min-height: 521px) and (hover: hover) and (pointer: fine)
+```
+
+Scroll P2 în `.pt-p2-scroll`, `pt-p2-more.js`, `pt-desktop-ui.js`, `pt-pet-rotation.js`.
+
+**Landscape touch pe telefon** (lățime ≥ 768): folosește layout desktop + scroll intern P2; **fără** `pt-portrait-ui.js`.
+
+---
 
 ## Rezumat
 
-**PT mobil portrait = finalizat și memorat. Respectă structura de mai sus; nimic nu se schimbă fără parolă `1977` și cerere explicită.**
+**PT portrait Pas 1 = flux vertical P1→pub→butoane→P2, scroll pagină, JS minimal portrait, fără hack-uri touchmove/overscroll. Confirmat stabil — nu schimba fără `1977` + OK.**
