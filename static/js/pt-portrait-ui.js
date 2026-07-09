@@ -76,6 +76,11 @@
     p4Cell.classList.add("pt-mobile-filters-open");
   }
 
+  function submitFilters() {
+    if (!filtersForm) return;
+    filtersForm.submit();
+  }
+
   function countCheckedTraitsInForm() {
     if (!form) return 0;
     var n = 0;
@@ -173,21 +178,26 @@
       var sf = document.getElementById("pt_filter_species_field");
       if (sf) sf.value = a.getAttribute("data-pt-species") || "";
       syncSpeciesTabsFromField();
+      submitFilters();
     });
     var resetA = filtersForm ? filtersForm.querySelector("a.p3-reset-link") : null;
     if (resetA) {
       resetA.addEventListener("click", function (e) {
         if (!p4Cell || !p4Cell.classList.contains("pt-mobile-filters-open")) return;
         e.preventDefault();
-        Array.prototype.forEach.call(filterSelects, function (sel) {
-          sel.selectedIndex = 0;
-        });
-        var sf = document.getElementById("pt_filter_species_field");
-        if (sf) sf.value = "";
-        syncSpeciesTabsFromField();
+        window.location.href = resetA.getAttribute("href") || (filtersForm ? filtersForm.action : window.location.pathname);
       });
     }
   })();
+
+  if (filtersForm) {
+    filterSelects.forEach(function (sel) {
+      sel.addEventListener("change", function () {
+        if (!p4Cell || !p4Cell.classList.contains("pt-mobile-filters-open")) return;
+        submitFilters();
+      });
+    });
+  }
 
   Array.prototype.forEach.call(matchBtns, function (btn) {
     btn.addEventListener("click", function (e) {
