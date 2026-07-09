@@ -689,11 +689,11 @@
   }
 }
 
-/* Portrait mobil: stanga = filtre+pub, dreapta = 3 coloane servicii. */
+/* Portrait mobil: sus filtre compacte, apoi 4 publi egale in stanga. */
 @media (max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
   #SW .sw-grid {
     grid-template-columns: minmax(6.2rem, 7.8rem) minmax(0, 1fr);
-    grid-template-rows: minmax(72px, 72px) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(72px, 72px) minmax(6.2rem, 6.2rem) repeat(4, minmax(0, 1fr));
   }
 
   #SW .sw-cell-1 {
@@ -707,23 +707,22 @@
   }
 
   #SW .sw-cell-4 {
-    grid-row: 2;
+    grid-row: 2 / 5;
     grid-column: 1;
-    height: 100%;
     min-height: 0;
-    position: relative;
+    overflow: hidden !important;
   }
 
   #SW .sw-cell-5 {
     display: flex !important;
-    grid-row: 3;
+    grid-row: 5 / 7;
     grid-column: 1;
-    height: 100%;
     min-height: 0;
+    overflow: hidden !important;
   }
 
   #SW .sw-cell-2 {
-    grid-row: 2 / 4;
+    grid-row: 2 / 7;
     grid-column: 2;
   }
 
@@ -735,7 +734,6 @@
     flex-direction: row;
     gap: 2px;
   }
-
   #SW .sw-cell-2 .sw-s2-inner .sw-s2-box {
     display: flex !important;
     flex: 1 1 0;
@@ -743,26 +741,60 @@
     min-height: 0;
     width: auto;
   }
-
   #SW .sw-cell-2 .sw-s2-1-band {
     display: block;
   }
-
   #SW .sw-cell-2 .sw-s2-1-grid {
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: repeat(8, 1fr);
     height: 400%;
   }
 
-  /* Stanga portrait: 4 publi egale (2 in S2 + 2 in S6). */
+  /* Stanga: filtre compacte in partea de sus a lui S4. */
   #SW .sw-s4-inner {
-    display: grid;
-    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 2px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
     height: 100%;
     min-height: 0;
-    padding-top: calc(7.2rem + 4px);
-    box-sizing: border-box;
+  }
+  #SW .sw-s2-filter-row,
+  #SW .sw-s4-box-filters {
+    position: static !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
+  }
+  #SW .sw-s2-filter-row {
+    padding: 0 !important;
+    gap: 2px !important;
+  }
+  #SW .sw-s4-box-filters {
+    display: flex !important;
+    padding: 0 !important;
+    border-radius: 0.45rem !important;
+  }
+  #SW .sw-s2-filter-btn,
+  #SW .sw-s2-filter-reset-btn {
+    font-size: 0.64rem;
+    padding: 0.24rem 0.4rem;
+  }
+  #SW .sw-s2-species-buttons {
+    gap: 2px !important;
+  }
+  #SW .sw-s2-species-btn {
+    font-size: 0.58rem !important;
+    padding: 0.22rem 0.28rem !important;
+  }
+
+  /* Cele 4 publi: 2 egale in S4 + 2 egale in S6. */
+  #SW .sw-s4-box-match,
+  #SW .sw-s4-box-ads {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    display: flex !important;
   }
   #SW .sw-s5-grid {
     display: grid !important;
@@ -770,70 +802,10 @@
     gap: 2px;
     height: 100%;
     min-height: 0;
-    padding-top: calc(7.2rem + 4px);
-    box-sizing: border-box;
-  }
-
-  #SW .sw-s2-filter-row {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    right: 2px;
-    z-index: 20;
-    margin: 0;
-    padding: 0;
-    gap: 2px;
-    pointer-events: auto;
-    background: rgba(20, 26, 34, 0.92);
-    border-radius: 0.45rem;
-  }
-  #SW .sw-s2-filter-btn,
-  #SW .sw-s2-filter-reset-btn {
-    font-size: 0.68rem;
-    padding: 0.3rem 0.45rem;
-  }
-
-  #SW .sw-s4-box-filters {
-    position: absolute !important;
-    top: calc(2px + 7.2rem);
-    left: 2px;
-    right: 2px;
-    z-index: 20;
-    display: flex !important;
-    min-height: 0 !important;
-    padding: 0 !important;
-    background: rgba(20, 26, 34, 0.92) !important;
-    border-radius: 0.45rem !important;
-  }
-  #SW .sw-s2-species-buttons {
-    gap: 2px !important;
-  }
-  #SW .sw-s2-species-btn {
-    font-size: 0.62rem !important;
-    padding: 0.28rem 0.3rem !important;
-  }
-
-  #SW .sw-s4-box-match {
-    display: flex !important;
-    grid-row: 1;
-    flex: 1 1 0 !important;
-    min-height: 0 !important;
-    width: 100% !important;
-  }
-  #SW .sw-s4-box-ads {
-    grid-row: 2;
-    flex: 1 1 0 !important;
-    min-height: 0 !important;
-    width: 100% !important;
   }
   #SW .sw-s5-slot {
     min-height: 0 !important;
     width: 100% !important;
-  }
-
-  #SW .sw-cell-4,
-  #SW .sw-cell-5 {
-    overflow: hidden !important;
   }
 }
 
