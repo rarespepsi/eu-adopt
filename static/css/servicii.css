@@ -693,7 +693,7 @@
 @media (max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
   #SW .sw-grid {
     grid-template-columns: minmax(6.2rem, 7.8rem) minmax(0, 1fr);
-    grid-template-rows: minmax(72px, 72px) auto minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(72px, 72px) minmax(0, 1fr) minmax(0, 1fr);
   }
 
   #SW .sw-cell-1 {
@@ -707,22 +707,23 @@
   }
 
   #SW .sw-cell-4 {
-    grid-row: 2 / 5;
+    grid-row: 2;
     grid-column: 1;
     height: 100%;
     min-height: 0;
+    position: relative;
   }
 
   #SW .sw-cell-5 {
     display: flex !important;
-    grid-row: 3 / 5;
+    grid-row: 3;
     grid-column: 1;
     height: 100%;
     min-height: 0;
   }
 
   #SW .sw-cell-2 {
-    grid-row: 2 / 5;
+    grid-row: 2 / 4;
     grid-column: 2;
   }
 
@@ -753,34 +754,13 @@
     height: 400%;
   }
 
-  /* Stanga portrait: filtre sus; sub ele 4 publi egale (2 in S2 + 2 in S6). */
+  /* Stanga portrait: 4 publi egale (2 in S2 + 2 in S6). */
   #SW .sw-s4-inner {
-    display: grid !important;
-    grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
     gap: 2px;
     height: 100%;
     min-height: 0;
-  }
-  #SW .sw-s2-filter-row {
-    grid-row: 1;
-    min-height: 0;
-    margin: 0;
-  }
-  #SW .sw-s4-box-filters {
-    display: none !important;
-  }
-  #SW .sw-s4-box-match {
-    display: flex !important;
-    grid-row: 2;
-    flex: 1 1 0 !important;
-    min-height: 0 !important;
-    width: 100% !important;
-  }
-  #SW .sw-s4-box-ads {
-    grid-row: 3;
-    flex: 1 1 0 !important;
-    min-height: 0 !important;
-    width: 100% !important;
   }
   #SW .sw-s5-grid {
     display: grid !important;
@@ -788,6 +768,59 @@
     gap: 2px;
     height: 100%;
     min-height: 0;
+  }
+
+  #SW .sw-s2-filter-row {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    z-index: 20;
+    margin: 0;
+    padding: 0;
+    gap: 2px;
+    pointer-events: auto;
+    background: rgba(20, 26, 34, 0.92);
+    border-radius: 0.45rem;
+  }
+  #SW .sw-s2-filter-btn,
+  #SW .sw-s2-filter-reset-btn {
+    font-size: 0.68rem;
+    padding: 0.3rem 0.45rem;
+  }
+
+  #SW .sw-s4-box-filters {
+    position: absolute !important;
+    top: calc(2px + 7.2rem);
+    left: 2px;
+    right: 2px;
+    z-index: 20;
+    display: flex !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    background: rgba(20, 26, 34, 0.92) !important;
+    border-radius: 0.45rem !important;
+  }
+  #SW .sw-s2-species-buttons {
+    gap: 2px !important;
+  }
+  #SW .sw-s2-species-btn {
+    font-size: 0.62rem !important;
+    padding: 0.28rem 0.3rem !important;
+  }
+
+  #SW .sw-s4-box-match {
+    display: flex !important;
+    grid-row: 1;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
+  }
+  #SW .sw-s4-box-ads {
+    grid-row: 2;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
   }
   #SW .sw-s5-slot {
     min-height: 0 !important;
