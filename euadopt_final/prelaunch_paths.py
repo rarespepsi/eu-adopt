@@ -5,7 +5,12 @@ Variantă strictă: fără înregistrare publică (/signup/ în afară de activa
 """
 from __future__ import annotations
 
+import re
+
 from django.conf import settings
+
+# Fișă animal publicată — vizualizare anonimă (link Distribuie / QR), fără listă PT.
+_PRELAUNCH_PET_FICHA_RE = re.compile(r"^/pets/\d+/?$")
 
 # Prefixe URL (path trebuie să înceapă cu una dintre aceste valori).
 PRELAUNCH_ANONYMOUS_PREFIXES: tuple[str, ...] = (
@@ -45,6 +50,8 @@ def is_prelaunch_public_path(path: str) -> bool:
         "/signup/organizatie/"
     ):
         return False
+    if _PRELAUNCH_PET_FICHA_RE.match(p):
+        return True
     return p.startswith(PRELAUNCH_ANONYMOUS_PREFIXES)
 
 

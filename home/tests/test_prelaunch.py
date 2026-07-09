@@ -10,6 +10,8 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
+from home.models import AnimalListing
+
 User = get_user_model()
 
 
@@ -47,6 +49,24 @@ class PrelaunchEnabledTests(TestCase):
     def test_anonymous_pets_redirects_login(self):
         c = Client()
         r = c.get(reverse("pets_all"))
+        self.assertEqual(r.status_code, 302)
+        self.assertIn("/login/", r.url)
+
+    def test_anonymous_pet_ficha_accessible(self):
+        listing = AnimalListing.objects.create(
+            owner=self.user,
+            name="Rex",
+            species="dog",
+            is_published=True,
+        )
+        c = Client()
+        r = c.get(reverse("pets_single", args=[listing.pk]))
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"Rex", r.content)
+
+    def test_anonymous_pets_p2_more_still_blocked(self):
+        c = Client()
+        r = c.get("/pets/p2-more/")
         self.assertEqual(r.status_code, 302)
         self.assertIn("/login/", r.url)
 
