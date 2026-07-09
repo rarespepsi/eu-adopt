@@ -312,6 +312,9 @@
 			display: inline-flex !important;
 			align-items: center;
 			justify-content: center;
+			font-size: 1.15rem;
+			font-weight: 800;
+			line-height: 1;
 		}
 
 		body.page-pt #PW .pt-p4-inner,
@@ -422,7 +425,7 @@
 						<div class="pet-filters-box p3-caseta-independenta">
 							<div class="pt-mobile-filters-head">
 								<strong>Filtre</strong>
-								<button type="button" id="ptMobileFiltersClose" class="pt-mobile-filters-close" aria-label="Închide filtre">×</button>
+								<button type="button" id="ptMobileFiltersClose" class="pt-mobile-filters-close" aria-label="Strânge fereastra de filtre" title="Strânge filtre">↑</button>
 							</div>
 							<p class="p3-title">Caută prietenul tău</p>
 							<ul class="p3-tip-butoane clearfix animal_filter_list" id="pt_animal_filter_tabs">
@@ -613,7 +616,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt363-filters-auto-apply";
+  var v = "pt364-filters-stay-open";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;

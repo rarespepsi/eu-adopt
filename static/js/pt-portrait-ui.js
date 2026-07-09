@@ -78,7 +78,26 @@
 
   function submitFilters() {
     if (!filtersForm) return;
+    var keepOpen = filtersForm.querySelector('input[name="pt_filters_open"]');
+    if (!keepOpen) {
+      keepOpen = document.createElement("input");
+      keepOpen.type = "hidden";
+      keepOpen.name = "pt_filters_open";
+      filtersForm.appendChild(keepOpen);
+    }
+    keepOpen.value = "1";
     filtersForm.submit();
+  }
+
+  function reopenFiltersIfRequested() {
+    try {
+      var url = new URL(window.location.href);
+      if (url.searchParams.get("pt_filters_open") !== "1") return;
+      openMobileFilters();
+      url.searchParams.delete("pt_filters_open");
+      var qs = url.searchParams.toString();
+      window.history.replaceState({}, document.title, url.pathname + (qs ? "?" + qs : ""));
+    } catch (e) {}
   }
 
   function countCheckedTraitsInForm() {
@@ -151,6 +170,7 @@
 
   setMobileFiltersBtnState(hasAppliedFiltersInUrl());
   syncMatchBtnFromTraits();
+  reopenFiltersIfRequested();
 
   function syncSpeciesTabsFromField() {
     var sf = document.getElementById("pt_filter_species_field");
