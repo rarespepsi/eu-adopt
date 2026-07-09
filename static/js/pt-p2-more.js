@@ -25,10 +25,17 @@
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;
   var phoneMode = (window.innerWidth || document.documentElement.clientWidth || 0) <= 767.98;
+  var landscapeTouchPhone = false;
+  try {
+    landscapeTouchPhone =
+      touchDevice &&
+      window.matchMedia("(orientation: landscape) and (max-height: 34em)").matches;
+  } catch (eLand) {
+    landscapeTouchPhone = false;
+  }
 
-  // Stabilizare PT mobil: dezactivăm complet încărcarea automată P2 după scroll.
-  // Păstrăm doar lotul inițial pentru a elimina blocajele la interacțiune.
-  if (phoneMode || touchDevice) {
+  // Portrait touch: lot inițial fără auto-load. Landscape touch: scroll P2 + p2-more activ.
+  if ((phoneMode || touchDevice) && !landscapeTouchPhone) {
     sentinel.setAttribute("hidden", "");
     return;
   }

@@ -389,6 +389,192 @@
 		}
 	}
 
+	/* PT mobil landscape (telefon): bandă merged sus; P4 stânga; P2 scroll centru; P5 dreapta */
+	@media (orientation: landscape) and (max-height: 34em) and (hover: none) and (pointer: coarse) {
+		body.page-pt #main_wrap,
+		body.page-pt #main_content {
+			display: flex !important;
+			flex-direction: column !important;
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			height: calc(100dvh - var(--nav-height, 64px)) !important;
+			max-height: calc(100dvh - var(--nav-height, 64px)) !important;
+			overflow: hidden !important;
+			padding: 0 !important;
+		}
+		body.page-pt #PW {
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			height: 100% !important;
+			max-height: 100% !important;
+			overflow: hidden !important;
+			display: flex !important;
+			flex-direction: column !important;
+		}
+		body.page-pt #PW .pt-grid {
+			display: grid !important;
+			grid-template-columns: minmax(4.25rem, 0.78fr) minmax(0, 1fr) minmax(4.25rem, 0.78fr) !important;
+			grid-template-rows: 72px minmax(0, 1fr) !important;
+			column-gap: 2px !important;
+			row-gap: 2px !important;
+			height: 100% !important;
+			min-height: 0 !important;
+			flex: 1 1 0 !important;
+		}
+		body.page-pt #PW .pt-cell-1 {
+			grid-row: 1 !important;
+			grid-column: 1 / -1 !important;
+			min-height: 72px !important;
+			height: 72px !important;
+			max-height: 72px !important;
+		}
+		body.page-pt #PW .pt-cell-1 .pt-strip-wrap--desktop-p1 { display: none !important; }
+		body.page-pt #PW .pt-cell-1 .pt-strip-wrap--portrait-merged { display: block !important; }
+		body.page-pt #PW .pt-mob-main { display: contents !important; }
+		body.page-pt #PW .pt-cell-3 { display: none !important; }
+		body.page-pt #PW .pt-cell-4 {
+			grid-row: 2 !important;
+			grid-column: 1 !important;
+			min-width: 0 !important;
+			min-height: 0 !important;
+			height: 100% !important;
+			overflow: hidden !important;
+			position: relative !important;
+			z-index: 3;
+			isolation: isolate;
+		}
+		body.page-pt #PW .pt-cell-2 {
+			grid-row: 2 !important;
+			grid-column: 2 !important;
+			min-width: 0 !important;
+			min-height: 0 !important;
+			height: 100% !important;
+			overflow: hidden !important;
+			--p2-row-h: min(24dvh, 96px);
+		}
+		body.page-pt #PW .pt-cell-5 {
+			grid-row: 2 !important;
+			grid-column: 3 !important;
+			display: flex !important;
+			min-width: 0 !important;
+			min-height: 0 !important;
+			height: 100% !important;
+			overflow: hidden !important;
+			position: relative !important;
+			z-index: 3;
+			isolation: isolate;
+		}
+		body.page-pt #PW .pt-p4-inner {
+			display: flex !important;
+			flex-direction: column !important;
+			height: 100% !important;
+			min-height: 0 !important;
+			gap: 2px !important;
+			padding: 2px !important;
+			box-sizing: border-box !important;
+		}
+		body.page-pt #PW .pt-p4-box-filters { display: none !important; }
+		body.page-pt #PW #P4.pt-mobile-filters-open .pt-p4-box-filters {
+			display: block !important;
+			position: absolute !important;
+			inset: 0 !important;
+			z-index: 6 !important;
+			overflow-y: auto !important;
+			-webkit-overflow-scrolling: touch;
+			background: #141a22 !important;
+		}
+		body.page-pt #PW #P4.pt-mobile-filters-open .pt-mobile-filters-head {
+			display: flex !important;
+			align-items: center;
+			justify-content: space-between;
+			gap: 0.5rem;
+		}
+		body.page-pt #PW #P4.pt-mobile-filters-open .pt-mobile-filters-close {
+			display: inline-flex !important;
+			align-items: center;
+			justify-content: center;
+			font-size: 1.15rem;
+			font-weight: 800;
+			line-height: 1;
+		}
+		body.page-pt #PW .pt-p4-mobile-sticky {
+			display: flex !important;
+			flex-direction: column !important;
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			gap: 2px !important;
+			position: relative !important;
+			top: auto !important;
+		}
+		body.page-pt #PW .pt-p4-match-sustine-stack {
+			flex: 0 0 auto !important;
+			display: grid !important;
+			grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+			gap: 2px !important;
+			height: auto !important;
+			min-height: 2.1rem !important;
+			max-height: 2.5rem !important;
+			padding: 0 !important;
+		}
+		body.page-pt #PW .pt-p4-box-match,
+		body.page-pt #PW .pt-p4-box-sustine,
+		body.page-pt #PW .pt-p4-actions { display: contents !important; }
+		body.page-pt #PW .pt-p4-btn-match,
+		body.page-pt #PW .pt-p4-btn-filters,
+		body.page-pt #PW .pt-p4-btn-sustine {
+			display: flex !important;
+			align-items: center !important;
+			justify-content: center !important;
+			width: 100% !important;
+			min-height: 2.1rem !important;
+			font-size: clamp(0.52rem, 1.6vw, 0.68rem) !important;
+			padding: 0.12rem 0.18rem !important;
+			line-height: 1.05 !important;
+			border-radius: 0.35rem !important;
+		}
+		body.page-pt #PW .pt-p4-box-ads {
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			display: flex !important;
+			flex-direction: column !important;
+		}
+		body.page-pt #PW .pt-p43-mobil-row { display: none !important; }
+		body.page-pt #PW .pt-p43-desktop-wrap {
+			display: flex !important;
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			width: 100% !important;
+		}
+		body.page-pt #PW .pt-p43-desktop-wrap > .pt-p43-desktop-slot {
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			width: 100% !important;
+		}
+		body.page-pt #PW .pt-p5-grid {
+			height: 100% !important;
+			min-height: 0 !important;
+		}
+		body.page-pt #PW .pt-p2-scroll {
+			overflow-y: auto !important;
+			overflow-x: hidden !important;
+			-webkit-overflow-scrolling: touch;
+			max-height: 100% !important;
+			height: 100% !important;
+		}
+		body.page-pt #PW .pt-p2-grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+			grid-template-rows: none !important;
+			grid-auto-rows: minmax(64px, var(--p2-row-h, 90px)) !important;
+			gap: 2px !important;
+			padding: 2px !important;
+		}
+		body.page-pt .pt-match-modal[hidden] {
+			display: none !important;
+			visibility: hidden !important;
+			pointer-events: none !important;
+		}
+	}
+
 	/* Touch PT: bandă cursivă P1 + P3 — viteză /2 față de desktop (durată dublă) */
 	@media (hover: none) and (pointer: coarse) {
 		body.page-pt #PW .pt-strip-track--p1 {
@@ -616,7 +802,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt365-filters-no-reset-reopen";
+  var v = "pt366-landscape-layout";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;
@@ -632,6 +818,12 @@
     loadJs("pt-desktop-ui.js");
   } else if ("matchMedia" in window && window.matchMedia("(orientation: portrait)").matches) {
     loadJs("pt-portrait-ui.js");
+  } else if (
+    "matchMedia" in window &&
+    window.matchMedia("(orientation: landscape) and (max-height: 34em)").matches
+  ) {
+    loadJs("pt-p2-more.js");
+    loadJs("pt-landscape-ui.js");
   }
 })();
 </script>
