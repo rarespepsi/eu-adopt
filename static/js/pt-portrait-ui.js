@@ -74,6 +74,7 @@
   function openMobileFilters() {
     if (!p4Cell) return;
     p4Cell.classList.add("pt-mobile-filters-open");
+    syncSpeciesTabsFromField();
   }
 
   function submitFilters() {
@@ -247,10 +248,6 @@
   Array.prototype.forEach.call(mobileFiltersBtns, function (btn) {
     btn.addEventListener("click", function (e) {
       e.preventDefault();
-      if (filtersApplied) {
-        window.location.href = filtersForm ? filtersForm.action || window.location.pathname : window.location.pathname;
-        return;
-      }
       if (p4Cell && p4Cell.classList.contains("pt-mobile-filters-open")) {
         closeMobileFilters();
         return;
