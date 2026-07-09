@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=33-card-foot-slate" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=34-mobile-merged-strip" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Intra / signup (linie profesională) */
 	body.page-servicii {
@@ -1023,6 +1023,14 @@
 					<div class="sw-strip-track sw-strip-track--s1">
 						{% include "anunturi/includes/servicii_strip_band_track.html" with cells=servicii_strip_s1_cells strip_variant="s1" only %}
 						{% include "anunturi/includes/servicii_strip_band_track.html" with cells=servicii_strip_s1_cells strip_variant="s1" only %}
+					</div>
+				</div>
+				<div class="sw-strip-wrap sw-strip-s1 sw-strip-wrap--mobile-merged" aria-label="Bandă publicitate S1 și S7 — mobil">
+					<div class="sw-strip-track sw-strip-track--s1">
+						{% include "anunturi/includes/servicii_strip_band_track.html" with cells=servicii_strip_s1_cells strip_variant="s1" only %}
+						{% include "anunturi/includes/servicii_strip_band_track.html" with cells=servicii_strip_s7_cells strip_variant="s3" only %}
+						{% include "anunturi/includes/servicii_strip_band_track.html" with cells=servicii_strip_s1_cells strip_variant="s1" only %}
+						{% include "anunturi/includes/servicii_strip_band_track.html" with cells=servicii_strip_s7_cells strip_variant="s3" only %}
 					</div>
 				</div>
 			</div>
