@@ -391,15 +391,32 @@
 
 	/* PT mobil landscape (telefon): bandă merged sus; P4 stânga; P2 scroll centru; P5 dreapta */
 	@media (orientation: landscape) and (max-height: 34em) and (hover: none) and (pointer: coarse) {
-		body.page-pt #main_wrap,
+		body.page-pt {
+			--pt-land-banner: 0px;
+			overflow: hidden !important;
+			height: 100dvh !important;
+		}
+		body.page-pt:has(#population-org-banner:not(.is-pop-collapsed)) {
+			--pt-land-banner: 3.35rem;
+		}
+		body.page-pt #main_wrap {
+			display: flex !important;
+			flex-direction: column !important;
+			height: 100dvh !important;
+			max-height: 100dvh !important;
+			min-height: 0 !important;
+			overflow: hidden !important;
+			padding: 0 !important;
+			margin: 0 !important;
+		}
 		body.page-pt #main_content,
 		body.page-pt #main_content.wrapper {
 			display: flex !important;
 			flex-direction: column !important;
 			flex: 1 1 0 !important;
 			min-height: 0 !important;
-			height: calc(100dvh - var(--nav-height, 64px)) !important;
-			max-height: calc(100dvh - var(--nav-height, 64px)) !important;
+			height: auto !important;
+			max-height: none !important;
 			overflow: hidden !important;
 			padding: 0 !important;
 			margin: 0 !important;
@@ -468,8 +485,10 @@
 			min-width: 0 !important;
 			min-height: 0 !important;
 			height: 100% !important;
+			max-height: 100% !important;
 			overflow: hidden !important;
-			--p2-row-h: min(24dvh, 96px);
+			align-self: stretch !important;
+			--p2-row-h: calc((100dvh - var(--nav-height, 64px) - var(--pt-land-banner, 0px) - 72px - 6px) / 3) !important;
 		}
 		body.page-pt #PW .pt-cell-5 {
 			grid-row: 2 !important;
@@ -610,18 +629,22 @@
 			max-width: 100% !important;
 		}
 		body.page-pt #PW .pt-p2-scroll {
+			flex: 1 1 0 !important;
 			overflow-y: auto !important;
 			overflow-x: hidden !important;
 			-webkit-overflow-scrolling: touch;
 			max-height: 100% !important;
 			height: 100% !important;
+			min-height: 0 !important;
 		}
 		body.page-pt #PW .pt-p2-grid {
 			grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
 			grid-template-rows: none !important;
-			grid-auto-rows: minmax(64px, var(--p2-row-h, 90px)) !important;
+			grid-auto-rows: var(--p2-row-h, 90px) !important;
 			gap: 2px !important;
 			padding: 2px !important;
+			align-content: start !important;
+			min-height: min(100%, calc(var(--p2-row-h, 90px) * 3 + 4px)) !important;
 		}
 		body.page-pt .pt-match-modal[hidden] {
 			display: none !important;
@@ -857,7 +880,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt368-landscape-narrow-no-p3gap";
+  var v = "pt369-landscape-p2-fill";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;

@@ -10,6 +10,31 @@
 
   if (!isLandscapeTouch()) return;
 
+  function syncLandChromeHeights() {
+    var nav = document.getElementById("A0");
+    var banner = document.getElementById("population-org-banner");
+    var nh = nav ? Math.round(nav.getBoundingClientRect().height) : 64;
+    document.body.style.setProperty("--nav-height", nh + "px");
+    var bh = 0;
+    if (banner && !banner.classList.contains("is-pop-collapsed")) {
+      var br = banner.getBoundingClientRect();
+      if (br.height > 0) bh = Math.round(br.height);
+    }
+    document.body.style.setProperty("--pt-land-banner", bh + "px");
+  }
+
+  function lockLandPageScroll() {
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+  }
+
+  syncLandChromeHeights();
+  lockLandPageScroll();
+  window.addEventListener("resize", syncLandChromeHeights);
+  window.addEventListener("orientationchange", function () {
+    setTimeout(syncLandChromeHeights, 120);
+  });
+
   var filtersForm = document.getElementById("filtre-animale");
   var mobileFiltersCloseBtn = document.getElementById("ptMobileFiltersClose");
   var mobileFiltersOkBtn = document.getElementById("ptMobileFiltersOk");
@@ -32,7 +57,12 @@
   }
 
   clearStuckUiState();
-  window.addEventListener("pageshow", clearStuckUiState);
+  lockLandPageScroll();
+  window.addEventListener("pageshow", function () {
+    clearStuckUiState();
+    lockLandPageScroll();
+    syncLandChromeHeights();
+  });
 
   function hasAppliedFiltersInUrl() {
     try {
