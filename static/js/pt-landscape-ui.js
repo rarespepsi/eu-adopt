@@ -199,10 +199,18 @@
     setMatchBtnActive(isActive || countCheckedTraitsInForm() > 0);
   }
 
+  function closeModal() {
+    if (!modal) return;
+    modal.hidden = true;
+    modal.setAttribute("aria-hidden", "true");
+    lockLandPageScroll();
+  }
+
   function openModal() {
     if (!modal) return;
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
+    lockLandPageScroll();
     try {
       var raw = window.localStorage.getItem("ptMatchTraits");
       var selected = raw ? JSON.parse(raw) || [] : [];
@@ -214,12 +222,7 @@
     syncMatchBtnFromTraits();
   }
 
-  function closeModal() {
-    if (!modal) return;
-    modal.hidden = true;
-    modal.setAttribute("aria-hidden", "true");
-    clearStuckUiState();
-  }
+  var filtersOverlay = document.querySelector("#PW .pt-p4-box-filters");
 
   setMobileFiltersBtnState(hasAppliedFiltersInUrl());
   syncMatchBtnFromTraits();
@@ -309,16 +312,36 @@
   });
 
   if (mobileFiltersCloseBtn) {
-    mobileFiltersCloseBtn.addEventListener("click", closeMobileFilters);
+    mobileFiltersCloseBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeMobileFilters();
+    });
+  }
+  if (filtersOverlay) {
+    filtersOverlay.addEventListener("click", function (e) {
+      if (!p4Cell || !p4Cell.classList.contains("pt-mobile-filters-open")) return;
+      if (e.target === filtersOverlay) closeMobileFilters();
+    });
   }
   if (mobileFiltersOkBtn) {
     mobileFiltersOkBtn.addEventListener("click", function () {
       if (filtersForm) filtersForm.submit();
     });
   }
-
-  if (backdrop) backdrop.addEventListener("click", closeModal);
-  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  if (closeBtn) {
+    closeBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeModal();
+    });
+  }
+  if (backdrop) {
+    backdrop.addEventListener("click", function (e) {
+      e.preventDefault();
+      closeModal();
+    });
+  }
 
   if (form) {
     form.addEventListener("change", function (ev) {
