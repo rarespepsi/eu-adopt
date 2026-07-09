@@ -386,13 +386,13 @@
 		}
 	}
 
-	/* Touch PT: bandă cursivă P1 + P3 (portrait și landscape) */
+	/* Touch PT: bandă cursivă P1 + P3 — viteză /2 față de desktop (durată dublă) */
 	@media (hover: none) and (pointer: coarse) {
 		body.page-pt #PW .pt-strip-track--p1 {
-			animation: pt-strip-p1 40s linear infinite !important;
+			animation: pt-strip-p1 80s linear infinite !important;
 		}
 		body.page-pt #PW .pt-strip-track--p3 {
-			animation: pt-strip-p3 45s linear infinite !important;
+			animation: pt-strip-p3 90s linear infinite !important;
 		}
 	}
 </style>
@@ -613,7 +613,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt361-strip-portrait-merged";
+  var v = "pt362-strip-slower-touch";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;
