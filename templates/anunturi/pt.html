@@ -524,19 +524,26 @@
 			box-sizing: border-box !important;
 		}
 		body.page-pt #PW .pt-p4-box-filters { display: none !important; }
-		body.page-pt .pt-p4-box-filters.pt-land-filters-overlay--open {
-			display: flex !important;
-			align-items: center !important;
-			justify-content: center !important;
+		body.page-pt.pt-land-filters-open #PW .pt-cell-4 {
+			z-index: 1000100 !important;
+			isolation: auto !important;
+		}
+		body.page-pt #PW #P4.pt-mobile-filters-open .pt-p4-box-filters {
+			display: block !important;
 			position: fixed !important;
 			inset: 0 !important;
 			z-index: 1000100 !important;
+			width: 100% !important;
+			max-width: 100% !important;
 			margin: 0 !important;
-			padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left)) !important;
+			padding: 6px 5px 8px !important;
 			box-sizing: border-box !important;
-			background: rgba(0, 0, 0, 0.6) !important;
-			backdrop-filter: blur(4px);
-			-webkit-backdrop-filter: blur(4px);
+			background: #141a22 !important;
+			border: none !important;
+			border-radius: 0 !important;
+			box-shadow: none !important;
+			backdrop-filter: none !important;
+			-webkit-backdrop-filter: none !important;
 			overflow-y: auto !important;
 			-webkit-overflow-scrolling: touch;
 		}
@@ -545,41 +552,34 @@
 			visibility: hidden !important;
 			pointer-events: none !important;
 		}
-		body.page-pt .pt-p4-box-filters.pt-land-filters-overlay--open .pet-filters-box {
-			position: relative !important;
-			width: min(520px, calc(100vw - 2rem)) !important;
-			max-height: calc(100dvh - 2rem) !important;
-			overflow: auto !important;
+		body.page-pt #PW #P4.pt-mobile-filters-open .pt-p4-box-filters .pet-filters-box {
+			width: 100% !important;
+			max-width: 100% !important;
+			max-height: none !important;
 			margin: 0 !important;
-			padding: 1rem 1.1rem 1.2rem !important;
-			box-sizing: border-box !important;
-			background: linear-gradient(168deg, rgba(24, 32, 46, 0.96) 0%, rgba(14, 20, 32, 0.98) 100%) !important;
-			border-radius: 0.85rem !important;
-			border: 1px solid rgba(255, 255, 255, 0.1) !important;
-			box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5) inset, 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(6, 182, 212, 0.08) !important;
+			padding: 0 !important;
+			background: transparent !important;
+			border: none !important;
+			border-radius: 0 !important;
+			box-shadow: none !important;
+			overflow: visible !important;
 		}
-		body.page-pt .pt-p4-box-filters.pt-land-filters-overlay--open .pt-mobile-filters-head {
+		body.page-pt #PW #P4.pt-mobile-filters-open .pt-mobile-filters-head {
 			display: flex !important;
 			align-items: center;
 			justify-content: space-between;
 			gap: 0.5rem;
 		}
-		body.page-pt .pt-p4-box-filters.pt-land-filters-overlay--open .pt-mobile-filters-close {
+		body.page-pt #PW #P4.pt-mobile-filters-open .pt-mobile-filters-close {
 			display: inline-flex !important;
 			align-items: center;
 			justify-content: center;
-			width: auto !important;
-			min-width: 2rem !important;
-			height: 2rem !important;
-			border: none !important;
-			background: transparent !important;
-			color: #e2e8f0 !important;
-			font-size: 1.15rem !important;
-			font-weight: 800 !important;
-			line-height: 1 !important;
-			padding: 0 0.25rem !important;
-			-webkit-tap-highlight-color: transparent;
-			touch-action: manipulation;
+			font-size: 1.15rem;
+			font-weight: 800;
+			line-height: 1;
+		}
+		body.page-pt #PW #P4.pt-mobile-filters-open .pt-mobile-filters-actions {
+			display: none !important;
 		}
 		body.page-pt #PW .pt-p4-mobile-sticky {
 			display: flex !important;
@@ -932,7 +932,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt372-filters-layer-fix";
+  var v = "pt373-filters-portrait-look";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;
