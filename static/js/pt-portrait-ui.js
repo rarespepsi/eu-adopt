@@ -1,9 +1,15 @@
 (function () {
   "use strict";
-  var touchDevice =
-    ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
-    "ontouchstart" in window;
-  if (touchDevice) return;
+
+  function isPortraitTouch() {
+    if (!("matchMedia" in window)) return false;
+    var touch =
+      window.matchMedia("(hover: none), (pointer: coarse)").matches || "ontouchstart" in window;
+    return touch && window.matchMedia("(orientation: portrait)").matches;
+  }
+
+  if (!isPortraitTouch()) return;
+
   var filtersForm = document.getElementById("filtre-animale");
   var mobileFiltersCloseBtn = document.getElementById("ptMobileFiltersClose");
   var mobileFiltersOkBtn = document.getElementById("ptMobileFiltersOk");
@@ -17,11 +23,16 @@
   var filterSelects = filtersForm ? filtersForm.querySelectorAll("select") : [];
   var filtersApplied = false;
 
-  function isPhone() {
-    if (!touchDevice) return false;
-    if (!("matchMedia" in window)) return true;
-    return window.matchMedia("(orientation: portrait)").matches;
+  function clearStuckUiState() {
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
+    if (modal && modal.hidden) {
+      modal.setAttribute("aria-hidden", "true");
+    }
   }
+
+  clearStuckUiState();
+  window.addEventListener("pageshow", clearStuckUiState);
 
   function hasAppliedFiltersInUrl() {
     try {
@@ -50,13 +61,8 @@
     var label = getSpeciesLabel();
     Array.prototype.forEach.call(mobileFiltersBtns, function (btn) {
       if (!btn) return;
-      if (filtersApplied || label !== "Filtre") {
-        btn.textContent = label;
-        btn.classList.add("pt-filters-btn--active");
-      } else {
-        btn.textContent = label;
-        btn.classList.remove("pt-filters-btn--active");
-      }
+      btn.textContent = label;
+      btn.classList.toggle("pt-filters-btn--active", filtersApplied || label !== "Filtre");
     });
   }
 
@@ -66,14 +72,8 @@
   }
 
   function openMobileFilters() {
-    if (!p4Cell || !isPhone()) return;
+    if (!p4Cell) return;
     p4Cell.classList.add("pt-mobile-filters-open");
-    var box = p4Cell.querySelector(".pt-p4-box-filters");
-    if (box && box.scrollIntoView) {
-      try {
-        box.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      } catch (e) {}
-    }
   }
 
   function countCheckedTraitsInForm() {
@@ -126,7 +126,6 @@
     if (!modal) return;
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
-    if (!isPhone()) document.body.style.overflow = "hidden";
     try {
       var raw = window.localStorage.getItem("ptMatchTraits");
       var selected = raw ? JSON.parse(raw) || [] : [];
@@ -142,20 +141,11 @@
     if (!modal) return;
     modal.hidden = true;
     modal.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
+    clearStuckUiState();
   }
 
   setMobileFiltersBtnState(hasAppliedFiltersInUrl());
   syncMatchBtnFromTraits();
-
-  if (filtersForm) {
-    filterSelects.forEach(function (sel) {
-      sel.addEventListener("change", function () {
-        if (isPhone()) return;
-        filtersForm.submit();
-      });
-    });
-  }
 
   function syncSpeciesTabsFromField() {
     var sf = document.getElementById("pt_filter_species_field");
@@ -178,7 +168,7 @@
     tabList.addEventListener("click", function (e) {
       var a = e.target.closest("a[data-pt-species]");
       if (!a || !tabList.contains(a)) return;
-      if (!isPhone() || !p4Cell || !p4Cell.classList.contains("pt-mobile-filters-open")) return;
+      if (!p4Cell || !p4Cell.classList.contains("pt-mobile-filters-open")) return;
       e.preventDefault();
       var sf = document.getElementById("pt_filter_species_field");
       if (sf) sf.value = a.getAttribute("data-pt-species") || "";
@@ -187,7 +177,7 @@
     var resetA = filtersForm ? filtersForm.querySelector("a.p3-reset-link") : null;
     if (resetA) {
       resetA.addEventListener("click", function (e) {
-        if (!isPhone() || !p4Cell || !p4Cell.classList.contains("pt-mobile-filters-open")) return;
+        if (!p4Cell || !p4Cell.classList.contains("pt-mobile-filters-open")) return;
         e.preventDefault();
         Array.prototype.forEach.call(filterSelects, function (sel) {
           sel.selectedIndex = 0;
@@ -201,7 +191,6 @@
 
   Array.prototype.forEach.call(matchBtns, function (btn) {
     btn.addEventListener("click", function (e) {
-      if (!isPhone()) return;
       e.preventDefault();
       if (isActive) {
         try {
@@ -228,7 +217,6 @@
   Array.prototype.forEach.call(mobileFiltersBtns, function (btn) {
     btn.addEventListener("click", function (e) {
       e.preventDefault();
-      if (!isPhone()) return;
       if (filtersApplied) {
         window.location.href = filtersForm ? filtersForm.action || window.location.pathname : window.location.pathname;
         return;
@@ -242,9 +230,7 @@
   });
 
   if (mobileFiltersCloseBtn) {
-    mobileFiltersCloseBtn.addEventListener("click", function () {
-      closeMobileFilters();
-    });
+    mobileFiltersCloseBtn.addEventListener("click", closeMobileFilters);
   }
   if (mobileFiltersOkBtn) {
     mobileFiltersOkBtn.addEventListener("click", function () {
@@ -254,19 +240,6 @@
 
   if (backdrop) backdrop.addEventListener("click", closeModal);
   if (closeBtn) closeBtn.addEventListener("click", closeModal);
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") {
-      if (p4Cell && p4Cell.classList.contains("pt-mobile-filters-open")) {
-        closeMobileFilters();
-        return;
-      }
-      if (modal && !modal.hidden) closeModal();
-    }
-  });
-
-  window.addEventListener("resize", function () {
-    if (!isPhone()) closeMobileFilters();
-  });
 
   if (form) {
     form.addEventListener("change", function (ev) {
@@ -300,61 +273,29 @@
     } catch (e) {}
   })();
 
-  function normalizeSexOptions(selectEl) {
-    if (!selectEl) return;
-    Array.prototype.forEach.call(selectEl.querySelectorAll("option"), function (opt) {
-      var v = (opt.value || "").toLowerCase();
-      if (v === "m") opt.textContent = "MASCUL";
-      if (v === "f") opt.textContent = "FEMELA";
-    });
-  }
-
-  function shrinkSelectFontToFit(selectEl) {
-    if (!selectEl) return;
-    var base = parseFloat(getComputedStyle(selectEl).fontSize) || 14;
-    var min = 10;
-    selectEl.style.fontSize = base + "px";
-    for (var i = 0; i < 14; i++) {
-      if ((selectEl.scrollWidth || 0) <= (selectEl.clientWidth || 0) + 2) break;
-      base = Math.max(min, base - 0.5);
-      selectEl.style.fontSize = base + "px";
-      if (base <= min) break;
-    }
-  }
-
-  function initSexSelect() {
-    var sel = document.getElementById("id_sex_pt");
-    if (!sel) return;
-    normalizeSexOptions(sel);
-    shrinkSelectFontToFit(sel);
-  }
-
-  function observeSexSelect() {
-    var sel = document.getElementById("id_sex_pt");
-    if (!sel || !window.MutationObserver) return;
-    new MutationObserver(function () {
-      normalizeSexOptions(sel);
-      shrinkSelectFontToFit(sel);
-    }).observe(sel, { childList: true, subtree: true });
-  }
-
-  var sexResizeT = null;
-  function scheduleInitSexSelect() {
-    clearTimeout(sexResizeT);
-    sexResizeT = setTimeout(function () {
-      sexResizeT = null;
-      requestAnimationFrame(initSexSelect);
-    }, 220);
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function () {
-      initSexSelect();
-      observeSexSelect();
-    });
-  } else {
-    initSexSelect();
-    observeSexSelect();
-  }
-  window.addEventListener("resize", scheduleInitSexSelect);
+  /* Blocare pull-to-refresh (Android) — CSS overscroll-behavior nu e suficient peste tot */
+  (function () {
+    var scrollRoot = document.scrollingElement || document.documentElement;
+    var touchStartY = 0;
+    document.addEventListener(
+      "touchstart",
+      function (e) {
+        if (!isPortraitTouch() || e.touches.length !== 1) return;
+        touchStartY = e.touches[0].clientY;
+      },
+      { passive: true }
+    );
+    document.addEventListener(
+      "touchmove",
+      function (e) {
+        if (!isPortraitTouch() || e.touches.length !== 1) return;
+        var y = e.touches[0].clientY;
+        var atTop = (window.scrollY || scrollRoot.scrollTop || 0) <= 0;
+        if (atTop && y > touchStartY + 4) {
+          e.preventDefault();
+        }
+      },
+      { passive: false }
+    );
+  })();
 })();

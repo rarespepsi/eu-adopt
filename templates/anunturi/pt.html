@@ -386,6 +386,11 @@
 			gap: 0.4rem !important;
 			padding: 0 2px 0.5rem !important;
 		}
+		body.page-pt .pt-match-modal[hidden] {
+			display: none !important;
+			visibility: hidden !important;
+			pointer-events: none !important;
+		}
 	}
 </style>
 {% endblock %}
@@ -597,7 +602,25 @@
 {% endblock main_wrap_after_header %}
 
 {% block extra_js %}
-<script src="{% static 'js/pt-pet-rotation.js' %}?v=pt357-portrait-buttons-active"></script>
-<script src="{% static 'js/pt-p2-more.js' %}?v=pt357-portrait-buttons-active"></script>
-<script src="{% static 'js/pt-desktop-ui.js' %}?v=pt357-portrait-buttons-active"></script>
+<script>
+(function () {
+  var v = "pt358-portrait-min-ui";
+  var touch =
+    ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
+    "ontouchstart" in window;
+  function loadJs(name) {
+    var s = document.createElement("script");
+    s.src = "{% static 'js/' %}" + name + "?v=" + v;
+    s.defer = true;
+    document.body.appendChild(s);
+  }
+  if (!touch) {
+    loadJs("pt-pet-rotation.js");
+    loadJs("pt-p2-more.js");
+    loadJs("pt-desktop-ui.js");
+  } else if ("matchMedia" in window && window.matchMedia("(orientation: portrait)").matches) {
+    loadJs("pt-portrait-ui.js");
+  }
+})();
+</script>
 {% endblock %}
