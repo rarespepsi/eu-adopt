@@ -532,13 +532,13 @@
 		body.page-pt #PW #P4.pt-mobile-filters-open .pt-p4-box-filters {
 			display: block !important;
 			position: fixed !important;
-			top: calc(var(--nav-height, 64px) + var(--pt-land-banner, 0px) + 72px + 2px) !important;
-			left: calc(var(--pt-land-side-w) + 4px) !important;
-			right: calc(var(--pt-land-side-w) + 4px) !important;
+			top: calc(var(--nav-height, 64px) + var(--pt-land-banner, 0px) + 8px) !important;
+			left: calc(var(--pt-land-side-w) + 14px) !important;
+			right: calc(var(--pt-land-side-w) + 14px) !important;
 			bottom: auto !important;
 			width: auto !important;
 			height: auto !important;
-			max-height: min(24rem, calc(100dvh - var(--nav-height, 64px) - var(--pt-land-banner, 0px) - 72px - 10px)) !important;
+			max-height: min(20rem, calc(100dvh - var(--nav-height, 64px) - var(--pt-land-banner, 0px) - 16px)) !important;
 			z-index: 1000100 !important;
 			margin: 0 !important;
 			padding: 6px 5px 8px !important;
@@ -932,7 +932,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt374-filters-compact-rotate";
+  var v = "pt375-filters-over-strip-smaller";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;
