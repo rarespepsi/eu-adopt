@@ -2042,6 +2042,24 @@ PUB_STRIP_SEQ_S1 = _build_pub_strip_band_sequence("S1")
 PUB_STRIP_SEQ_S7 = _build_pub_strip_band_sequence("S7")
 
 
+def _pt_strip_item_variant(code: str) -> str:
+    """p1 vs p3 pentru clasă CSS — codul slot (P1.5, P3.2, EUP3.1) rămâne neschimbat."""
+    c = (code or "").strip().upper()
+    if c.startswith("P3.") or c.startswith("EUP3."):
+        return "p3"
+    return "p1"
+
+
+def _pt_strip_portrait_merged_cells(p1_cells, p3_cells) -> list:
+    """Mobil portrait: un singur track vizual P1+P3; fiecare celulă păstrează data-slot original."""
+    out: list[dict] = []
+    for cell in list(p1_cells) + list(p3_cells):
+        row = dict(cell)
+        row["strip_variant"] = _pt_strip_item_variant(row.get("code"))
+        out.append(row)
+    return out
+
+
 def _enrich_pub_strip_sequence(section: str, sequence: list[dict]) -> list[dict]:
     """Îmbogățește secvența benzii cu text EU sau creative JSON din ReclamaSlotNote."""
     codes = [c["code"] for c in sequence]
@@ -2328,6 +2346,12 @@ def home_view(request):
                 wishlist_ids = set(WishlistItem.objects.filter(user=request.user).values_list("animal_id", flat=True))
             except Exception:
                 pass
+        p1_strip_cells = _strip_cells_donatii_pt_or_servicii(
+            "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P1)
+        )
+        p3_strip_cells = _strip_cells_donatii_pt_or_servicii(
+            "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P3)
+        )
         return render(
             request,
             "anunturi/pt.html",
@@ -2339,11 +2363,10 @@ def home_view(request):
                 "pt_p2_page_size": PT_P2_PAGE_SIZE,
                 "wishlist_ids": wishlist_ids,
                 "pt_pub_slot_list": _pt_pub_slot_list_for_template(),
-                "pt_strip_p1_cells": _strip_cells_donatii_pt_or_servicii(
-                    "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P1)
-                ),
-                "pt_strip_p3_cells": _strip_cells_donatii_pt_or_servicii(
-                    "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P3)
+                "pt_strip_p1_cells": p1_strip_cells,
+                "pt_strip_p3_cells": p3_strip_cells,
+                "pt_strip_portrait_merged_cells": _pt_strip_portrait_merged_cells(
+                    p1_strip_cells, p3_strip_cells
                 ),
             },
         )

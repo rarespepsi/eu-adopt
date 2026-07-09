@@ -38,13 +38,15 @@ alwaysApply: true
 
 **Ordine vizuală:** P1 (72px) → 4 casete pub (rând) → 3 butoane → P2 (grilă 2 col) → (P3/P5 ascunse).
 
-1. **P1 bandă verde:** în **flux** (`position: relative`), 72px; animație cursivă **activă** pe touch (`pt-strip-p1` 40s) — portrait și landscape.
+1. **P1 bandă verde:** în **flux** (`position: relative`), 72px; animație cursivă **activă** pe touch (`pt-strip-p1` 40s).
+   - **Portrait mobil:** un singur track vizual = **P1 + P3** (`pt_strip_portrait_merged_cells`); fiecare celulă păstrează `data-slot` original (`P1.*`, `P3.*`, `EUP1.*`, `EUP3.*`). Track desktop-P1 ascuns; `#P3` ascuns.
+   - **Desktop / landscape:** P1 doar `pt_strip_p1_cells`; P3 jos cu `pt_strip_p3_cells` (neschimbat).
 2. **P4:** în flux — **nu** `position: fixed`, **nu** placeholder JS, **nu** bara mov sticky.
 3. **4 casete pub:** `.pt-p43-mobil-row` grid 4 coloane; `.pt-p43-desktop-wrap` ascuns.
 4. **3 butoane:** grid 3 col (`Găsește-mi perechea` | `Filtre` | `Ajută un Suflet`); wrappers `display: contents`.
 5. **Filtre:** `.pt-p4-box-filters` ascuns implicit; vizibil când `#P4.pt-mobile-filters-open` (head + X + OK).
 6. **P2:** grilă **2 coloane**; `.pt-p2-scroll` cu `overflow: visible` — **nu** scroll intern aici.
-7. **P3, P5:** `display: none` pe portrait.
+7. **P3, P5:** `display: none` pe portrait (conținut P3 rulează în track-ul merged din P1, nu în `#P3`).
 8. **`.pt-mob-main`:** `order: 3`, `display: block` (obligatoriu — altfel P2 se suprapune).
 
 ---

@@ -258,6 +258,9 @@
 	#PW .pt-pub-mini-badge--price { background: #e8f5e9; color: #1b5e20; }
 	#PW .pt-pub-mini-badge--discount { background: #ffebee; color: #b71c1c; }
 
+	/* Bandă portrait merged P1+P3: ascunsă implicit (desktop + landscape) */
+	#PW .pt-strip-wrap--portrait-merged { display: none; }
+
 	/* PT mobil portrait: P1 -> 4 casete (rand) -> 3 butoane -> P2 (2 coloane), flux vertical curat */
 	@media (max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
 		body.page-pt #main_wrap,
@@ -286,6 +289,8 @@
 			width: 100% !important;
 		}
 		body.page-pt #PW .pt-cell-1 { order: 1; flex: 0 0 auto; min-height: 72px !important; height: 72px !important; z-index: 1; }
+		body.page-pt #PW .pt-cell-1 .pt-strip-wrap--desktop-p1 { display: none !important; }
+		body.page-pt #PW .pt-cell-1 .pt-strip-wrap--portrait-merged { display: block !important; }
 		body.page-pt #PW .pt-cell-4 { order: 2; flex: 0 0 auto; border: none !important; z-index: 2; }
 		body.page-pt #PW .pt-mob-main { order: 3; flex: 0 0 auto; display: block !important; z-index: 1; }
 		body.page-pt #PW .pt-cell-2 { overflow: visible !important; min-height: 0 !important; }
@@ -398,10 +403,16 @@
 	<main id="PW">
 		<div class="pt-grid">
 			<div id="P1" class="pt-cell pt-cell-1 pt-strip-band--desktop" data-slot="P1">
-				<div class="pt-strip-wrap pt-strip-p1" aria-label="Bandă publicitate P1">
+				<div class="pt-strip-wrap pt-strip-p1 pt-strip-wrap--desktop-p1" aria-label="Bandă publicitate P1">
 					<div class="pt-strip-track pt-strip-track--p1">
 						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
 						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p1_cells strip_variant="p1" only %}
+					</div>
+				</div>
+				<div class="pt-strip-wrap pt-strip-p1 pt-strip-wrap--portrait-merged" aria-label="Bandă publicitate P1 și P3 — mobil portrait">
+					<div class="pt-strip-track pt-strip-track--p1 pt-strip-track--portrait-merged">
+						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_portrait_merged_cells strip_variant="p1" only %}
+						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_portrait_merged_cells strip_variant="p1" only %}
 					</div>
 				</div>
 			</div>
@@ -602,7 +613,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt360-strip-animate-touch";
+  var v = "pt361-strip-portrait-merged";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;
