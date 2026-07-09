@@ -33,7 +33,7 @@ alwaysApply: true
 |------|----------|
 | **P1** | Track `pt-strip-wrap--portrait-merged` (P1+P3); desktop P1/P3 ascunse |
 | **P4** | **3 butoane stivuite** (Găsește → Filtre → Ajută) + **1 pub** (P4.3) dedesubt; **aceeași lățime** coloană |
-| **P2** | Grilă **3 coloane**, scroll în `.pt-p2-scroll`, `pt-p2-more.js` activ |
+| **P2** | Grilă **3 coloane × 2 rânduri** vizibile pe ecran, scroll în `.pt-p2-scroll`, `pt-p2-more.js` activ |
 | **P5** | **3 pub** (P5.1–P5.3) pe înălțime; **lățime = coloana P4** |
 | **P3** | ascuns (conținut în banda merged) |
 

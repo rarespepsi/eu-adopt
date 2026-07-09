@@ -10,6 +10,15 @@
 
   if (!isLandscapeTouch()) return;
 
+  function syncP2RowHeight() {
+    var scroll = document.querySelector("#PW .pt-p2-scroll");
+    if (!scroll) return;
+    var h = scroll.getBoundingClientRect().height;
+    if (h > 0) {
+      document.body.style.setProperty("--p2-row-h", Math.max(64, Math.floor((h - 4) / 2)) + "px");
+    }
+  }
+
   function syncLandChromeHeights() {
     var nav = document.getElementById("A0");
     var banner = document.getElementById("population-org-banner");
@@ -21,6 +30,7 @@
       if (br.height > 0) bh = Math.round(br.height);
     }
     document.body.style.setProperty("--pt-land-banner", bh + "px");
+    syncP2RowHeight();
   }
 
   function lockLandPageScroll() {
@@ -32,8 +42,20 @@
   lockLandPageScroll();
   window.addEventListener("resize", syncLandChromeHeights);
   window.addEventListener("orientationchange", function () {
-    setTimeout(syncLandChromeHeights, 120);
+    setTimeout(function () {
+      syncLandChromeHeights();
+      syncP2RowHeight();
+    }, 120);
   });
+  if (typeof ResizeObserver !== "undefined") {
+    var p2Scroll = document.querySelector("#PW .pt-p2-scroll");
+    if (p2Scroll) {
+      var ro = new ResizeObserver(function () {
+        syncP2RowHeight();
+      });
+      ro.observe(p2Scroll);
+    }
+  }
 
   var filtersForm = document.getElementById("filtre-animale");
   var mobileFiltersCloseBtn = document.getElementById("ptMobileFiltersClose");
