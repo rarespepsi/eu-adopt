@@ -413,7 +413,7 @@
 		}
 		body.page-pt #PW .pt-grid {
 			display: grid !important;
-			grid-template-columns: minmax(4.25rem, 0.78fr) minmax(0, 1fr) minmax(4.25rem, 0.78fr) !important;
+			grid-template-columns: minmax(5rem, 10.5rem) minmax(0, 1fr) minmax(5rem, 10.5rem) !important;
 			grid-template-rows: 72px minmax(0, 1fr) !important;
 			column-gap: 2px !important;
 			row-gap: 2px !important;
@@ -508,17 +508,38 @@
 		}
 		body.page-pt #PW .pt-p4-match-sustine-stack {
 			flex: 0 0 auto !important;
-			display: grid !important;
-			grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+			display: flex !important;
+			flex-direction: column !important;
+			align-items: stretch !important;
 			gap: 2px !important;
 			height: auto !important;
-			min-height: 2.1rem !important;
-			max-height: 2.5rem !important;
+			min-height: 0 !important;
+			max-height: none !important;
 			padding: 0 !important;
+			width: 100% !important;
+			border-radius: 0.45rem 0.45rem 0 0 !important;
+			overflow: hidden !important;
 		}
 		body.page-pt #PW .pt-p4-box-match,
-		body.page-pt #PW .pt-p4-box-sustine,
-		body.page-pt #PW .pt-p4-actions { display: contents !important; }
+		body.page-pt #PW .pt-p4-box-sustine {
+			display: flex !important;
+			flex-direction: column !important;
+			flex: 0 0 auto !important;
+			width: 100% !important;
+			min-width: 0 !important;
+			padding: 0 !important;
+			margin: 0 !important;
+			background: transparent !important;
+			border: none !important;
+			box-shadow: none !important;
+		}
+		body.page-pt #PW .pt-p4-box-match .pt-p4-actions {
+			display: flex !important;
+			flex-direction: column !important;
+			flex: 0 0 auto !important;
+			width: 100% !important;
+			gap: 2px !important;
+		}
 		body.page-pt #PW .pt-p4-btn-match,
 		body.page-pt #PW .pt-p4-btn-filters,
 		body.page-pt #PW .pt-p4-btn-sustine {
@@ -526,17 +547,24 @@
 			align-items: center !important;
 			justify-content: center !important;
 			width: 100% !important;
-			min-height: 2.1rem !important;
-			font-size: clamp(0.52rem, 1.6vw, 0.68rem) !important;
-			padding: 0.12rem 0.18rem !important;
-			line-height: 1.05 !important;
-			border-radius: 0.35rem !important;
+			max-width: 100% !important;
+			min-height: 2.05rem !important;
+			flex: 0 0 auto !important;
+			font-size: clamp(0.54rem, 1.55vw, 0.7rem) !important;
+			padding: 0.14rem 0.22rem !important;
+			line-height: 1.08 !important;
+			border-radius: 0 !important;
+			box-sizing: border-box !important;
 		}
+		body.page-pt #PW .pt-p4-btn-match { order: 1; }
+		body.page-pt #PW .pt-p4-btn-filters { order: 2; }
+		body.page-pt #PW .pt-p4-btn-sustine { order: 3; }
 		body.page-pt #PW .pt-p4-box-ads {
 			flex: 1 1 0 !important;
 			min-height: 0 !important;
 			display: flex !important;
 			flex-direction: column !important;
+			width: 100% !important;
 		}
 		body.page-pt #PW .pt-p43-mobil-row { display: none !important; }
 		body.page-pt #PW .pt-p43-desktop-wrap {
@@ -544,15 +572,23 @@
 			flex: 1 1 0 !important;
 			min-height: 0 !important;
 			width: 100% !important;
+			border-radius: 0 0 0.45rem 0.45rem !important;
+			overflow: hidden !important;
 		}
 		body.page-pt #PW .pt-p43-desktop-wrap > .pt-p43-desktop-slot {
 			flex: 1 1 0 !important;
 			min-height: 0 !important;
 			width: 100% !important;
+			max-width: 100% !important;
 		}
 		body.page-pt #PW .pt-p5-grid {
 			height: 100% !important;
 			min-height: 0 !important;
+			width: 100% !important;
+		}
+		body.page-pt #PW .pt-p5-slot {
+			width: 100% !important;
+			max-width: 100% !important;
 		}
 		body.page-pt #PW .pt-p2-scroll {
 			overflow-y: auto !important;
@@ -802,7 +838,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt366-landscape-layout";
+  var v = "pt367-landscape-stack-vertical";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;

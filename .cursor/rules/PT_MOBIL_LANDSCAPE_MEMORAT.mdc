@@ -1,0 +1,53 @@
+---
+description: PT mobil landscape telefon – layout memorat; nu modifica fără 1977 + OK
+alwaysApply: true
+---
+
+# PT MOBIL LANDSCAPE (TELEFON) – STARE MEMORATĂ
+
+**Commit referință:** `e7ae4b5` · cache JS `pt366-landscape-layout`
+
+**Media query:**
+
+```css
+@media (orientation: landscape) and (max-height: 34em) and (hover: none) and (pointer: coarse)
+```
+
+**Portrait memorat separat:** `PT_MOBIL_PORTRAIT_MEMORAT.mdc` — **nu modifica** portrait când lucrezi la landscape.
+
+---
+
+## Layout memorat
+
+```
+[NAVBAR]
+[P1+P3 bandă merged — 72px, full width]
+[P4 stânga | P2 centru scroll | P5 dreapta 3 pub]
+```
+
+| Zonă | Conținut |
+|------|----------|
+| **P1** | Track `pt-strip-wrap--portrait-merged` (P1+P3); desktop P1/P3 ascunse |
+| **P4** | **3 butoane stivuite** (Găsește → Filtre → Ajută) + **1 pub** (P4.3) dedesubt; **aceeași lățime** coloană |
+| **P2** | Grilă **3 coloane**, scroll în `.pt-p2-scroll`, `pt-p2-more.js` activ |
+| **P5** | **3 pub** (P5.1–P5.3) pe înălțime; **lățime = coloana P4** |
+| **P3** | ascuns (conținut în banda merged) |
+
+---
+
+## JS
+
+| Fișier | Landscape touch |
+|--------|-----------------|
+| `pt-landscape-ui.js` | Filtre + match (ca portrait) |
+| `pt-p2-more.js` | Infinite scroll P2 (root = `.pt-p2-scroll`) |
+| `pt-portrait-ui.js` | **Nu** se încarcă |
+| `pt-desktop-ui.js` | **Nu** se încarcă |
+
+**Încărcare** (`pt.html` `extra_js`): touch + landscape `34em` → `pt-p2-more.js` + `pt-landscape-ui.js`.
+
+---
+
+## Rezumat
+
+**Landscape = desktop-like 3 coloane sub bandă merged, scroll P2, filtre portrait-like pe P4. Nu schimba fără `1977` + OK.**
