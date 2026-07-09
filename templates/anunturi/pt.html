@@ -392,7 +392,8 @@
 	/* PT mobil landscape (telefon): bandă merged sus; P4 stânga; P2 scroll centru; P5 dreapta */
 	@media (orientation: landscape) and (max-height: 34em) and (hover: none) and (pointer: coarse) {
 		body.page-pt #main_wrap,
-		body.page-pt #main_content {
+		body.page-pt #main_content,
+		body.page-pt #main_content.wrapper {
 			display: flex !important;
 			flex-direction: column !important;
 			flex: 1 1 0 !important;
@@ -401,6 +402,7 @@
 			max-height: calc(100dvh - var(--nav-height, 64px)) !important;
 			overflow: hidden !important;
 			padding: 0 !important;
+			margin: 0 !important;
 		}
 		body.page-pt #PW {
 			flex: 1 1 0 !important;
@@ -413,12 +415,15 @@
 		}
 		body.page-pt #PW .pt-grid {
 			display: grid !important;
-			grid-template-columns: minmax(5rem, 10.5rem) minmax(0, 1fr) minmax(5rem, 10.5rem) !important;
+			grid-template-columns: minmax(3.35rem, 6.25rem) minmax(0, 1fr) minmax(3.35rem, 6.25rem) !important;
 			grid-template-rows: 72px minmax(0, 1fr) !important;
+			grid-auto-rows: 0 !important;
+			align-content: stretch !important;
 			column-gap: 2px !important;
 			row-gap: 2px !important;
 			height: 100% !important;
 			min-height: 0 !important;
+			max-height: 100% !important;
 			flex: 1 1 0 !important;
 		}
 		body.page-pt #PW .pt-cell-1 {
@@ -431,7 +436,21 @@
 		body.page-pt #PW .pt-cell-1 .pt-strip-wrap--desktop-p1 { display: none !important; }
 		body.page-pt #PW .pt-cell-1 .pt-strip-wrap--portrait-merged { display: block !important; }
 		body.page-pt #PW .pt-mob-main { display: contents !important; }
-		body.page-pt #PW .pt-cell-3 { display: none !important; }
+		body.page-pt #PW .pt-cell-3,
+		body.page-pt #PW #P3.pt-cell-3--footer {
+			display: none !important;
+			grid-row: unset !important;
+			grid-column: unset !important;
+			height: 0 !important;
+			min-height: 0 !important;
+			max-height: 0 !important;
+			margin: 0 !important;
+			padding: 0 !important;
+			border: none !important;
+			overflow: hidden !important;
+			visibility: hidden !important;
+			pointer-events: none !important;
+		}
 		body.page-pt #PW .pt-cell-4 {
 			grid-row: 2 !important;
 			grid-column: 1 !important;
@@ -550,8 +569,8 @@
 			max-width: 100% !important;
 			min-height: 2.05rem !important;
 			flex: 0 0 auto !important;
-			font-size: clamp(0.54rem, 1.55vw, 0.7rem) !important;
-			padding: 0.14rem 0.22rem !important;
+			font-size: clamp(0.5rem, 1.35vw, 0.62rem) !important;
+			padding: 0.1rem 0.14rem !important;
 			line-height: 1.08 !important;
 			border-radius: 0 !important;
 			box-sizing: border-box !important;
@@ -838,7 +857,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt367-landscape-stack-vertical";
+  var v = "pt368-landscape-narrow-no-p3gap";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;

@@ -5,7 +5,11 @@ alwaysApply: true
 
 # PT MOBIL LANDSCAPE (TELEFON) – STARE MEMORATĂ
 
-**Commit referință:** `e7ae4b5` · cache JS `pt366-landscape-layout`
+**Commit referință:** `pt368-landscape-narrow-no-p3gap` (cache JS)
+
+**Coloane laterale:** `minmax(3.35rem, 6.25rem)` — simetric stânga/dreapta.
+
+**P3 jos:** ascuns complet (`#P3` fără rând grid rezervat); bandă merged doar în P1.
 
 **Media query:**
 
