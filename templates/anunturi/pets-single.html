@@ -2507,6 +2507,20 @@
 			}
 		})();
 		</script>
+		{% if pet_from_home %}
+		<script>
+		(function () {
+			var ptUrl = "{{ pet_back_url|escapejs }}";
+			if (!ptUrl) return;
+			try {
+				history.pushState({ euadoptPetFromHome: true }, "", window.location.href);
+			} catch (ePush) {}
+			window.addEventListener("popstate", function () {
+				window.location.replace(ptUrl);
+			});
+		})();
+		</script>
+		{% endif %}
 		{% endwith %}
 		{% include "components/login_required_modal.html" %}
 	</body>

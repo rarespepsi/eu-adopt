@@ -4446,13 +4446,19 @@ def reclama_magazin_foto_transactions_view(request):
 def _pet_ficha_back_url(request):
     """
     URL înapoi la lista de unde s-a deschis fișa (PT cu filtre, MyPet, I Love).
+    De pe HOME (/) → Prietenul tău (/pets/), nu înapoi la Acasă.
     Fallback: Prietenul tău (/pets/).
     """
+    pets_all_url = reverse("pets_all")
+    home_root = reverse("home").rstrip("/") or "/"
     allowed_roots = (
-        reverse("pets_all").rstrip("/"),
+        pets_all_url.rstrip("/"),
         reverse("mypet").rstrip("/"),
         reverse("i_love").rstrip("/"),
     )
+
+    if (request.GET.get("from") or "").strip().lower() == "home":
+        return pets_all_url
 
     def _safe_list_url(raw: str) -> str:
         raw = (raw or "").strip()
@@ -4483,7 +4489,16 @@ def _pet_ficha_back_url(request):
     if ref:
         return ref
 
-    return reverse("pets_all")
+    referer_raw = (request.META.get("HTTP_REFERER") or "").strip()
+    if referer_raw:
+        try:
+            ref_path = urlparse(referer_raw).path.rstrip("/") or "/"
+            if ref_path == home_root or ref_path == "/":
+                return pets_all_url
+        except Exception:
+            pass
+
+    return pets_all_url
 
 
 def dog_profile_view(request, pk):
@@ -4604,6 +4619,7 @@ def dog_profile_view(request, pk):
         "adoption_after_transport": bool(after_transport),
         "adoption_transport_option_available": bool(has_county and not after_transport),
         "pet_back_url": _pet_ficha_back_url(request),
+        "pet_from_home": (request.GET.get("from") or "").strip().lower() == "home",
     }
     return render(request, "anunturi/pets-single.html", ctx)
 
