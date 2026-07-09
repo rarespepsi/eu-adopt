@@ -269,11 +269,6 @@
 			overflow: visible !important;
 			padding: 0 !important;
 		}
-		body.page-pt #PW .pt-cell-1 .pt-strip-track,
-		body.page-pt #PW .pt-cell-1 .pt-strip-track--p1 {
-			animation: none !important;
-			transform: none !important;
-		}
 		body.page-pt #PW .pt-grid {
 			display: flex !important;
 			flex-direction: column !important;
@@ -383,6 +378,16 @@
 			display: none !important;
 			visibility: hidden !important;
 			pointer-events: none !important;
+		}
+	}
+
+	/* Touch PT: bandă cursivă P1 + P3 (portrait și landscape) */
+	@media (hover: none) and (pointer: coarse) {
+		body.page-pt #PW .pt-strip-track--p1 {
+			animation: pt-strip-p1 40s linear infinite !important;
+		}
+		body.page-pt #PW .pt-strip-track--p3 {
+			animation: pt-strip-p3 45s linear infinite !important;
 		}
 	}
 </style>
@@ -597,7 +602,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt359-portrait-scroll-pas1";
+  var v = "pt360-strip-animate-touch";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;

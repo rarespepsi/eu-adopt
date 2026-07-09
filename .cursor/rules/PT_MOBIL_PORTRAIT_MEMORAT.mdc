@@ -38,7 +38,7 @@ alwaysApply: true
 
 **Ordine vizuală:** P1 (72px) → 4 casete pub (rând) → 3 butoane → P2 (grilă 2 col) → (P3/P5 ascunse).
 
-1. **P1 bandă verde:** în **flux** (`position: relative`), 72px; animație cursivă **oprită** (`animation: none`, `transform: none` pe track).
+1. **P1 bandă verde:** în **flux** (`position: relative`), 72px; animație cursivă **activă** pe touch (`pt-strip-p1` 40s) — portrait și landscape.
 2. **P4:** în flux — **nu** `position: fixed`, **nu** placeholder JS, **nu** bara mov sticky.
 3. **4 casete pub:** `.pt-p43-mobil-row` grid 4 coloane; `.pt-p43-desktop-wrap` ascuns.
 4. **3 butoane:** grid 3 col (`Găsește-mi perechea` | `Filtre` | `Ajută un Suflet`); wrappers `display: contents`.
