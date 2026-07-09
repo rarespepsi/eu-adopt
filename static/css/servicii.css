@@ -682,6 +682,69 @@
   }
 }
 
+/* Touch mobil: banda cursiva la jumatate de viteza (durata dubla). */
+@media (hover: none) and (pointer: coarse) {
+  #SW .sw-strip-track--s1 {
+    animation-duration: 80s;
+  }
+}
+
+/* Portrait mobil: stanga = filtre+pub, dreapta = 3 coloane servicii. */
+@media (max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+  #SW .sw-grid {
+    grid-template-columns: minmax(6.2rem, 7.8rem) minmax(0, 1fr);
+    grid-template-rows: minmax(72px, 72px) minmax(0, 1fr);
+  }
+
+  #SW .sw-cell-1 {
+    grid-row: 1;
+    grid-column: 1 / -1;
+    display: flex !important;
+  }
+
+  #SW .sw-cell-3,
+  #SW .sw-cell-5 {
+    display: none !important;
+  }
+
+  #SW .sw-cell-4 {
+    grid-row: 2;
+    grid-column: 1;
+  }
+
+  #SW .sw-cell-2 {
+    grid-row: 2;
+    grid-column: 2;
+  }
+
+  #SW .sw-s2-mid-tabs {
+    display: none !important;
+  }
+
+  #SW .sw-cell-2 .sw-s2-inner {
+    flex-direction: row;
+    gap: 2px;
+  }
+
+  #SW .sw-cell-2 .sw-s2-inner .sw-s2-box {
+    display: flex !important;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+    width: auto;
+  }
+
+  #SW .sw-cell-2 .sw-s2-1-band {
+    display: block;
+  }
+
+  #SW .sw-cell-2 .sw-s2-1-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: repeat(8, 1fr);
+    height: 400%;
+  }
+}
+
 /* Landscape cu viewport scurt (mobil întors): S1 ascuns; laterale × 2/3 → mijloc 1fr 4fr 1fr */
 @media (orientation: landscape) and (max-height: 500px) {
   #SW .sw-grid {
