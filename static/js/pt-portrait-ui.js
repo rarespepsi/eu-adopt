@@ -272,30 +272,4 @@
       }
     } catch (e) {}
   })();
-
-  /* Blocare pull-to-refresh (Android) — CSS overscroll-behavior nu e suficient peste tot */
-  (function () {
-    var scrollRoot = document.scrollingElement || document.documentElement;
-    var touchStartY = 0;
-    document.addEventListener(
-      "touchstart",
-      function (e) {
-        if (!isPortraitTouch() || e.touches.length !== 1) return;
-        touchStartY = e.touches[0].clientY;
-      },
-      { passive: true }
-    );
-    document.addEventListener(
-      "touchmove",
-      function (e) {
-        if (!isPortraitTouch() || e.touches.length !== 1) return;
-        var y = e.touches[0].clientY;
-        var atTop = (window.scrollY || scrollRoot.scrollTop || 0) <= 0;
-        if (atTop && y > touchStartY + 4) {
-          e.preventDefault();
-        }
-      },
-      { passive: false }
-    );
-  })();
 })();

@@ -260,12 +260,6 @@
 
 	/* PT mobil portrait: P1 -> 4 casete (rand) -> 3 butoane -> P2 (2 coloane), flux vertical curat */
 	@media (max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
-		html,
-		body.page-pt {
-			overscroll-behavior-y: none;
-			overscroll-behavior-x: none;
-			touch-action: pan-y;
-		}
 		body.page-pt #main_wrap,
 		body.page-pt #main_content,
 		body.page-pt #PW {
@@ -274,7 +268,6 @@
 			max-height: none !important;
 			overflow: visible !important;
 			padding: 0 !important;
-			overscroll-behavior-y: none;
 		}
 		body.page-pt #PW .pt-cell-1 .pt-strip-track,
 		body.page-pt #PW .pt-cell-1 .pt-strip-track--p1 {
@@ -604,7 +597,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt358-portrait-min-ui";
+  var v = "pt359-portrait-scroll-pas1";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;
