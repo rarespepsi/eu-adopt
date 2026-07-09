@@ -524,7 +524,7 @@
 			box-sizing: border-box !important;
 		}
 		body.page-pt #PW .pt-p4-box-filters { display: none !important; }
-		body.page-pt #PW #P4.pt-mobile-filters-open .pt-p4-box-filters {
+		body.page-pt .pt-p4-box-filters.pt-land-filters-overlay--open {
 			display: flex !important;
 			align-items: center !important;
 			justify-content: center !important;
@@ -540,7 +540,12 @@
 			overflow-y: auto !important;
 			-webkit-overflow-scrolling: touch;
 		}
-		body.page-pt #PW #P4.pt-mobile-filters-open .pt-p4-box-filters .pet-filters-box {
+		body.page-pt.pt-land-filters-open #PW .pt-cell-2,
+		body.page-pt.pt-land-filters-open #PW .pt-cell-5 {
+			visibility: hidden !important;
+			pointer-events: none !important;
+		}
+		body.page-pt .pt-p4-box-filters.pt-land-filters-overlay--open .pet-filters-box {
 			position: relative !important;
 			width: min(520px, calc(100vw - 2rem)) !important;
 			max-height: calc(100dvh - 2rem) !important;
@@ -553,26 +558,26 @@
 			border: 1px solid rgba(255, 255, 255, 0.1) !important;
 			box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5) inset, 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(6, 182, 212, 0.08) !important;
 		}
-		body.page-pt #PW #P4.pt-mobile-filters-open .pt-mobile-filters-head {
+		body.page-pt .pt-p4-box-filters.pt-land-filters-overlay--open .pt-mobile-filters-head {
 			display: flex !important;
 			align-items: center;
 			justify-content: space-between;
 			gap: 0.5rem;
 		}
-		body.page-pt #PW #P4.pt-mobile-filters-open .pt-mobile-filters-close {
+		body.page-pt .pt-p4-box-filters.pt-land-filters-overlay--open .pt-mobile-filters-close {
 			display: inline-flex !important;
 			align-items: center;
 			justify-content: center;
-			width: 2rem !important;
+			width: auto !important;
+			min-width: 2rem !important;
 			height: 2rem !important;
-			border-radius: 999px !important;
-			border: 1px solid #991b1b !important;
-			background: #dc2626 !important;
-			color: #fff !important;
-			font-size: 1.35rem !important;
+			border: none !important;
+			background: transparent !important;
+			color: #e2e8f0 !important;
+			font-size: 1.15rem !important;
 			font-weight: 800 !important;
 			line-height: 1 !important;
-			padding: 0 !important;
+			padding: 0 0.25rem !important;
 			-webkit-tap-highlight-color: transparent;
 			touch-action: manipulation;
 		}
@@ -736,7 +741,7 @@
 						<div class="pet-filters-box p3-caseta-independenta">
 							<div class="pt-mobile-filters-head">
 								<strong>Filtre</strong>
-								<button type="button" id="ptMobileFiltersClose" class="pt-mobile-filters-close" aria-label="Închide filtre" title="Închide filtre">×</button>
+								<button type="button" id="ptMobileFiltersClose" class="pt-mobile-filters-close" aria-label="Strânge fereastra de filtre" title="Strânge filtre">↑</button>
 							</div>
 							<p class="p3-title">Caută prietenul tău</p>
 							<ul class="p3-tip-butoane clearfix animal_filter_list" id="pt_animal_filter_tabs">
@@ -927,7 +932,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt371-modal-over-nav";
+  var v = "pt372-filters-layer-fix";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;

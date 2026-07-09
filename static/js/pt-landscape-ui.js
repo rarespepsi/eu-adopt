@@ -118,14 +118,38 @@
     });
   }
 
+  var filtersOverlay = document.querySelector("#PW .pt-p4-box-filters");
+  var filtersDock = { parent: null, next: null };
+
+  function mountFiltersOverlay() {
+    if (!filtersOverlay) return;
+    if (filtersOverlay.parentNode === document.body) return;
+    filtersDock.parent = filtersOverlay.parentNode;
+    filtersDock.next = filtersOverlay.nextSibling;
+    document.body.appendChild(filtersOverlay);
+    filtersOverlay.classList.add("pt-land-filters-overlay--open");
+    document.body.classList.add("pt-land-filters-open");
+  }
+
+  function unmountFiltersOverlay() {
+    if (!filtersOverlay) return;
+    filtersOverlay.classList.remove("pt-land-filters-overlay--open");
+    document.body.classList.remove("pt-land-filters-open");
+    if (filtersDock.parent && filtersOverlay.parentNode === document.body) {
+      filtersDock.parent.insertBefore(filtersOverlay, filtersDock.next);
+    }
+  }
+
   function closeMobileFilters() {
     if (!p4Cell) return;
     p4Cell.classList.remove("pt-mobile-filters-open");
+    unmountFiltersOverlay();
   }
 
   function openMobileFilters() {
     if (!p4Cell) return;
     p4Cell.classList.add("pt-mobile-filters-open");
+    mountFiltersOverlay();
     syncSpeciesTabsFromField();
   }
 
@@ -221,8 +245,6 @@
     } catch (e) {}
     syncMatchBtnFromTraits();
   }
-
-  var filtersOverlay = document.querySelector("#PW .pt-p4-box-filters");
 
   setMobileFiltersBtnState(hasAppliedFiltersInUrl());
   syncMatchBtnFromTraits();
