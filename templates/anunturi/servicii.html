@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=58-portrait-geo-picker-fix" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=59-portrait-geo-empty-msg" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Intra / signup (linie profesională) */
 	body.page-servicii {
@@ -1091,6 +1091,10 @@
 								{% endfor %}
 								{% endwith %}
 							</div>
+							<div class="sw-s2-geo-empty" hidden aria-live="polite">
+								<p class="sw-s2-geo-empty__note">Notă</p>
+								<p class="sw-s2-geo-empty__text">Ne cerem scuze — în zona selectată nu sunt colaboratori momentan.</p>
+							</div>
 						</div>
 					</div>
 					<div class="sw-s2-box sw-s2-box-1" id="S4" data-slot="S4" role="tabpanel" aria-labelledby="sw-tab-S4">
@@ -1108,6 +1112,10 @@
 								{% endfor %}
 								{% endwith %}
 							</div>
+							<div class="sw-s2-geo-empty" hidden aria-live="polite">
+								<p class="sw-s2-geo-empty__note">Notă</p>
+								<p class="sw-s2-geo-empty__text">Ne cerem scuze — în zona selectată nu sunt colaboratori momentan.</p>
+							</div>
 						</div>
 					</div>
 					<div class="sw-s2-box sw-s2-box-1" id="S5" data-slot="S5" role="tabpanel" aria-labelledby="sw-tab-S5">
@@ -1124,6 +1132,10 @@
 								<div class="sw-s2-1-cell" data-slot="S5.{{ n|add:forloop.counter }}"><span class="sw-s3-cell-label">S5.{{ n|add:forloop.counter }}</span></div>
 								{% endfor %}
 								{% endwith %}
+							</div>
+							<div class="sw-s2-geo-empty" hidden aria-live="polite">
+								<p class="sw-s2-geo-empty__note">Notă</p>
+								<p class="sw-s2-geo-empty__text">Ne cerem scuze — în zona selectată nu sunt colaboratori momentan.</p>
 							</div>
 						</div>
 					</div>
@@ -1562,6 +1574,23 @@
 			return stripAccents(String(s)).trim().toLowerCase();
 		}
 
+		function updateGeoEmptyStates(geoActive) {
+			var panels = document.querySelectorAll("#SW .sw-s2-box");
+			panels.forEach(function(panel) {
+				var body = panel.querySelector(".sw-s2-1-body");
+				var emptyEl = body && body.querySelector(".sw-s2-geo-empty");
+				if (!body || !emptyEl) return;
+				var cards = panel.querySelectorAll(".sw-s2-1-cell--vet-offer");
+				var visible = 0;
+				cards.forEach(function(card) {
+					if (card.style.display !== "none") visible++;
+				});
+				var showEmpty = geoActive && visible === 0;
+				body.classList.toggle("sw-s2-1-body--geo-empty", showEmpty);
+				emptyEl.hidden = !showEmpty;
+			});
+		}
+
 		function applyFilters(species) {
 			var countyWanted = norm(countyInput ? countyInput.value : "");
 			var cityWanted = norm(cityInput ? cityInput.value : "");
@@ -1583,6 +1612,7 @@
 				var show = bySpecies && byCounty && byCity;
 				card.style.display = show ? "" : "none";
 			});
+			updateGeoEmptyStates(geoActive);
 			try {
 				var swEl = document.getElementById("SW");
 				if (swEl) swEl.dispatchEvent(new CustomEvent("sw-servicii-filters", { bubbles: false }));

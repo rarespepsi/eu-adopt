@@ -399,6 +399,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  position: relative;
 }
 
 #SW .sw-cell-2 .sw-s2-1-body::-webkit-scrollbar {
@@ -476,6 +477,48 @@
   font-size: 10px;
   padding: 0 4px;
   color: #94a3b8;
+}
+
+#SW .sw-cell-2 .sw-s2-geo-empty {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  min-height: 100%;
+  padding: 0.65rem 0.5rem;
+  box-sizing: border-box;
+  text-align: center;
+  background: rgba(229, 57, 53, 0.06);
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 0.45rem;
+}
+
+#SW .sw-cell-2 .sw-s2-1-body--geo-empty .sw-s2-1-grid {
+  display: none !important;
+}
+
+#SW .sw-cell-2 .sw-s2-1-body--geo-empty .sw-s2-geo-empty {
+  display: flex;
+}
+
+#SW .sw-cell-2 .sw-s2-geo-empty__note {
+  margin: 0;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #f87171;
+}
+
+#SW .sw-cell-2 .sw-s2-geo-empty__text {
+  margin: 0;
+  font-size: 0.58rem;
+  line-height: 1.35;
+  font-weight: 600;
+  color: #e2e8f0;
+  max-width: 16rem;
 }
 
 #SW .sw-cell-2 .sw-s2-1-cell img {
