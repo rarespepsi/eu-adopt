@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=60-portrait-geo-typeahead" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=61-reset-blink" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Intra / signup (linie profesională) */
 	body.page-servicii {
@@ -985,7 +985,7 @@
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
-	<main id="SW" class="servicii-wrapper" aria-label="Conținut Servicii">
+	<main id="SW" class="servicii-wrapper" aria-label="Conținut Servicii" data-user-home-county="{{ servicii_user_home_county|default:''|escape }}">
 		{% if adoption_bonus_show_banner %}
 		{% if adoption_bonus_servicii_locked and adoption_bonus_show_locked_notice_once %}
 		<div id="swAdoptBonusBanner" class="sw-adopt-bonus-banner sw-adopt-bonus-banner--locked" aria-hidden="false">
@@ -1110,7 +1110,8 @@
 							</div>
 							<div class="sw-s2-geo-empty" hidden aria-live="polite">
 								<p class="sw-s2-geo-empty__note">Notă</p>
-								<p class="sw-s2-geo-empty__text">Ne cerem scuze — în zona selectată nu sunt colaboratori momentan.</p>
+								<p class="sw-s2-geo-empty__text"></p>
+								<p class="sw-s2-geo-empty__hint" hidden></p>
 							</div>
 						</div>
 					</div>
@@ -1131,7 +1132,8 @@
 							</div>
 							<div class="sw-s2-geo-empty" hidden aria-live="polite">
 								<p class="sw-s2-geo-empty__note">Notă</p>
-								<p class="sw-s2-geo-empty__text">Ne cerem scuze — în zona selectată nu sunt colaboratori momentan.</p>
+								<p class="sw-s2-geo-empty__text"></p>
+								<p class="sw-s2-geo-empty__hint" hidden></p>
 							</div>
 						</div>
 					</div>
@@ -1152,7 +1154,8 @@
 							</div>
 							<div class="sw-s2-geo-empty" hidden aria-live="polite">
 								<p class="sw-s2-geo-empty__note">Notă</p>
-								<p class="sw-s2-geo-empty__text">Ne cerem scuze — în zona selectată nu sunt colaboratori momentan.</p>
+								<p class="sw-s2-geo-empty__text"></p>
+								<p class="sw-s2-geo-empty__hint" hidden></p>
 							</div>
 						</div>
 					</div>

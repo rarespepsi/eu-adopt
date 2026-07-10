@@ -521,6 +521,15 @@
   max-width: 16rem;
 }
 
+#SW .sw-cell-2 .sw-s2-geo-empty__hint {
+  margin: 0;
+  font-size: 0.54rem;
+  line-height: 1.35;
+  font-weight: 600;
+  color: #7dd3fc;
+  max-width: 16rem;
+}
+
 #SW .sw-cell-2 .sw-s2-1-cell img {
   width: 100%;
   height: 100%;

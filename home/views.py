@@ -3787,6 +3787,9 @@ def servicii_view(request):
     county_norm = _norm_county_str(_adopter_profile_county_raw(request.user)) if request.user.is_authenticated else ""
     prefill_county = ""
     prefill_city = ""
+    servicii_user_home_county = ""
+    if request.user.is_authenticated:
+        servicii_user_home_county = _adopter_profile_county_raw(request.user)
     if request.user.is_authenticated and bonus_bundle.get("adoption_bonus_show_banner"):
         # În fluxul venit din adopție, pornim implicit pe zona adoptatorului.
         prefill_county = _adopter_profile_county_raw(request.user)
@@ -3832,6 +3835,7 @@ def servicii_view(request):
             "shop_offer_empty_slots": shop_offer_empty_slots,
             "servicii_prefill_county": prefill_county,
             "servicii_prefill_city": prefill_city,
+            "servicii_user_home_county": servicii_user_home_county,
             "adoption_bonus_request_id": bonus_bundle.get("adoption_bonus_request_id"),
             "adoption_bonus_show_banner": bonus_bundle.get("adoption_bonus_show_banner"),
             "adoption_bonus_has_selection": bonus_bundle.get("adoption_bonus_has_selection"),
