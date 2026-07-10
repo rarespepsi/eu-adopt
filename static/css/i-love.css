@@ -757,10 +757,35 @@ body.page-ilove .ilove-pub-mobil-row {
 	}
 }
 
-/* Mobil landscape: 2 col, scroll liber (fără rând înghețat); pub la final în scroll */
+/* Mobil landscape: 3 col, rânduri nelimitate, scroll liber; titlu lipit de navbar */
 @media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) and (hover: none) and (pointer: coarse) {
+	body.page-ilove #main_content > .layout {
+		padding-top: 0;
+		margin-top: 0;
+	}
+
+	body.page-ilove .layout > .main-content {
+		padding-top: 0;
+	}
+
+	body.page-ilove .ilove-wire__main {
+		padding-top: 0;
+		padding-inline: clamp(0.2rem, 1.2vw, 0.4rem);
+	}
+
+	body.page-ilove .ilove-wire__head {
+		margin-top: 0;
+		margin-bottom: 0.05rem;
+	}
+
+	body.page-ilove .ilove-wire__head h1 {
+		font-size: 0.72rem;
+		line-height: 1;
+	}
+
 	body.page-ilove .ilove-main-caseta {
-		max-height: calc(100dvh - var(--nav-height, 64px) - 1.65rem);
+		max-height: calc(100dvh - var(--nav-height, 64px) - 1.1rem);
+		padding: 0.25rem 0.35rem 0.35rem;
 		overflow-y: auto;
 		overflow-x: hidden;
 		-webkit-overflow-scrolling: touch;
@@ -768,13 +793,35 @@ body.page-ilove .ilove-pub-mobil-row {
 	}
 
 	body.page-ilove .ilove-main-split__pane--pets .ilove-pets-grid {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.28rem;
 		grid-auto-rows: minmax(0, auto);
 	}
 
+	body.page-ilove .ilove-main-split__pane--pets .ilove-pet-card-photo img {
+		height: clamp(44px, 24vh, 64px);
+	}
+
+	body.page-ilove .ilove-pet-card .ilove-pet-meta {
+		padding: 0.2rem 0.3rem;
+	}
+
+	body.page-ilove .ilove-pet-card .ilove-pet-name {
+		font-size: 0.65rem;
+	}
+
+	body.page-ilove .ilove-pet-card .ilove-pet-age {
+		font-size: 0.58rem;
+	}
+
 	body.page-ilove .ilove-pub-mobil-row {
-		margin-top: 0.75rem;
-		padding-bottom: 0.25rem;
+		margin-top: 0.4rem;
+		padding-bottom: 0.2rem;
+	}
+
+	body.page-ilove .ilove-pub-mobil-row .ilove-case {
+		min-height: clamp(1.85rem, 10vh, 2.45rem);
+		max-height: clamp(1.85rem, 10vh, 2.45rem);
 	}
 }
 
