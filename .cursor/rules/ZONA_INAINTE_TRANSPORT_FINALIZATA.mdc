@@ -1,0 +1,64 @@
+---
+description: Zone finalizate înainte de Transport – înghețate; următorul lucru = Transport mobil
+alwaysApply: true
+---
+
+# ZONĂ FINALIZATĂ PÂNĂ LA TRANSPORT – ÎNGHEȚATĂ
+
+**Decizie utilizator:** 10 iulie 2026 — tot ce s-a lucrat **până la pagina Transport** rămâne **înghețat**. **Următorul focus:** **Transport mobil** (portrait, apoi landscape).
+
+**Nu modifica** aceste zone fără cerere explicită + parola **`1977`** + OK execuție (conform regulilor fiecărei pagini + `SITE_GLOBAL_INGHETAT_1977`).
+
+---
+
+## Ordine navbar (înainte de Transport) — FINALIZAT / ÎNGHEȚAT
+
+| Pagină | Reguli |
+|--------|--------|
+| **Acasă (HOME)** | `HOME_INGHETAT.mdc` |
+| **Prietenul tău (PT)** | `PT_INGHETAT.mdc` · portrait `PT_MOBIL_PORTRAIT_MEMORAT.mdc` · landscape `PT_MOBIL_LANDSCAPE_MEMORAT.mdc` |
+| **Servicii** | `SERVICII_INGHETAT.mdc` · `SERVICII_STARE_FINALA_MEMORAT.mdc` · portrait / landscape separate |
+
+**Navbar A0**, **Intra**, **ONG**, **Colaborator**, **Shop** (neatinse în sesiunea curentă) — rămân conform regulilor lor înghețate existente.
+
+---
+
+## Lucrări recente sesiune (tot înghețate)
+
+| Zonă | Stare | Referință |
+|------|--------|-----------|
+| **I Love mobil** | finalizat portrait + landscape + header compact | `ILOVE_LAYOUT_MEMORAT.mdc` · commit-uri `0e759d5`–`7841257` |
+| **Fișă animal – media** | EuMediaModal, galerie, fullscreen, pinch-zoom mobil | `eu-media-modal.css/js` · `pets-single.html` |
+| **Servicii + produse – poze** | EuMediaModal pe grilă, modal ofertă, detaliu | `SERVICII_STARE_FINALA_MEMORAT.mdc` · commit `2e42bd3` / `92db470` |
+
+**Modul partajat** `static/css/eu-media-modal.css`, `static/js/eu-media-modal.js`, `includes/eu_media_modal.html` — **nu modifica** pentru alte pagini fără `1977` + OK; Transport **nu** folosește acest modul (layout propriu T1/T2/T3).
+
+---
+
+## Transport — ZONA ACTIVĂ DE LUCRU
+
+| Fișier | Rol |
+|--------|-----|
+| `templates/anunturi/transport.html` | T1 formular, T2 hub, T3 pub, JS portrait/landscape |
+| `static/css/transport.css` | Layout desktop + mobil |
+| `templates/components/transport_bulina.html` | Bulină donații hub |
+
+**Orice editare Transport** = tot **`1977` + OK`** (`TRANSPORT_INGHETAT.mdc`).
+
+**Mobil portrait (stare la 10 iul 2026 — referință user):**
+
+- Viewport fix `100dvh`, fără scroll pagină.
+- `.tw-portrait-stack`: **T1 + T2** împart ~50–50 deasupra **T3** (pub).
+- T1 restrâns: titlu + buton „Completează cererea”; formular la expand.
+- T2: hub inel (autocar centru + cercuri servicii); buton „FII PARTE DIN DRUM”; etichete cercuri pot apărea **trunchiate** pe ecrane înguste.
+- T3: bandă pub (3 sloturi „Publi.”).
+
+**Mobil landscape:** MQ separat în `transport.css` — T1 \| T2 \| T3 pe rând (ca desktop îngust).
+
+La lucrul la Transport mobil: **nu atinge** HOME / PT / Servicii / I Love / fișă — modificări **doar** în fișierele Transport (și indirecte globale doar cu `1977` + OK dacă e inevitabil).
+
+---
+
+## Rezumat
+
+**Înainte de Transport = înghețat și memorat. Transport mobil = următorul pas. Parolă `1977` + OK pentru orice editare în repo.**
