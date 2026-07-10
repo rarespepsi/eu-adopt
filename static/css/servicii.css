@@ -1056,6 +1056,7 @@
   #SW .sw-grid {
     grid-template-rows: minmax(72px, 72px) repeat(3, minmax(0, 1fr));
     grid-template-columns: 1fr 4fr 1fr;
+    row-gap: 2px;
   }
 
   #SW .sw-cell-4,
@@ -1082,8 +1083,8 @@
   }
 
   #SW .sw-landscape-left-col {
-    display: flex !important;
-    flex-direction: column;
+    display: grid !important;
+    grid-template-rows: minmax(0, 2fr) minmax(0, 1fr);
     gap: 2px;
     grid-column: 1;
     grid-row: 2 / 5;
@@ -1094,70 +1095,108 @@
   }
 
   #SW .sw-landscape-left-col .sw-portrait-filters-freeze {
-    display: flex !important;
-    flex: 1 1 auto;
-    flex-direction: column;
+    display: grid !important;
+    grid-template-rows: repeat(6, minmax(0, 1fr));
+    gap: 1px;
     min-height: 0;
-    gap: 2px;
     padding: 2px;
-    overflow: visible;
+    overflow: hidden;
+    flex: none !important;
     background: linear-gradient(165deg, rgba(88, 28, 135, 0.22) 0%, rgba(15, 23, 42, 0.98) 45%, #0f172a 100%);
     border: 1px solid rgba(255, 255, 255, 0.06);
     box-sizing: border-box;
   }
 
+  #SW .sw-landscape-left-col .sw-s2-filter-row,
+  #SW .sw-landscape-left-col .sw-s4-box-filters,
+  #SW .sw-landscape-left-col .sw-s2-species-buttons {
+    display: contents !important;
+  }
+
+  #SW .sw-landscape-left-col .sw-s2-filter-judet.sw-geo-picker-field,
+  #SW .sw-landscape-left-col .sw-s2-filter-oras.sw-geo-picker-field,
+  #SW .sw-landscape-left-col .sw-s2-filter-reset-wrap,
+  #SW .sw-landscape-left-col .sw-s4-box-filters {
+    min-height: 0;
+    width: 100%;
+  }
+
+  #SW .sw-landscape-left-col .sw-s2-filter-judet.sw-geo-picker-field,
+  #SW .sw-landscape-left-col .sw-s2-filter-oras.sw-geo-picker-field {
+    display: block !important;
+    position: relative;
+  }
+
+  #SW .sw-landscape-left-col #sw-selected-species {
+    display: none !important;
+  }
+
+  #SW .sw-landscape-left-col .sw-s2-filter-btn,
+  #SW .sw-landscape-left-col .sw-s2-filter-reset-btn,
+  #SW .sw-landscape-left-col .sw-s2-species-btn {
+    width: 100% !important;
+    min-height: 0 !important;
+    height: 100%;
+    margin: 0 !important;
+    padding: 0.08rem 0.18rem !important;
+    font-size: 0.42rem !important;
+    line-height: 1.1 !important;
+    border-radius: 0.28rem !important;
+    box-sizing: border-box;
+  }
+
+  #SW .sw-landscape-left-col .sw-s2-species-btn.is-active {
+    transform: none !important;
+  }
+
   #SW .sw-landscape-left-col .sw-s4-box-match {
-    flex: 1 1 0;
     min-height: 0;
     width: 100%;
     margin: 0;
-    border-radius: 0.45rem !important;
+    flex: none !important;
+  }
+
+  /* Pub landscape — același stil stânga + dreapta */
+  #SW .sw-landscape-left-col .sw-s4-box-match,
+  #SW .sw-s4-box-ads#S2.3,
+  #SW .sw-s5-slot {
+    min-height: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    overflow: hidden !important;
+    border-radius: 0.32rem !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(15, 23, 42, 0.45) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-sizing: border-box;
+  }
+
+  #SW .sw-landscape-left-col .sw-s4-box-match::before,
+  #SW .sw-s4-box-ads#S2.3::before,
+  #SW .sw-s5-slot::before {
+    display: none !important;
   }
 
   #SW .sw-s4-box-ads#S2.3 {
     grid-column: 3;
     grid-row: 4;
-    min-height: 0;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  }
-
-  #SW .sw-s4-box-ads#S2.3::before {
-    display: none !important;
   }
 
   #SW .sw-s5-slot:nth-child(1) {
     grid-column: 3;
     grid-row: 2;
-    min-height: 0;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-bottom: none !important;
   }
 
   #SW .sw-s5-slot:nth-child(2) {
     grid-column: 3;
     grid-row: 3;
-    min-height: 0;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-bottom: none !important;
-  }
-
-  #SW .sw-s5-slot::before {
-    display: none !important;
   }
 
   /* Mijloc: 3 coloane × 8 rânduri, înălțime 400% → ~2 rânduri vizibile în .sw-s2-1-body, restul scroll */
