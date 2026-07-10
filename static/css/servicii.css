@@ -694,11 +694,13 @@
   }
 }
 
-/* Portrait mobil: filtre sus (neatins); 4 publi la 56.25% inaltime (2× minus 1/4). */
+/* Portrait mobil: filtre sus; 4 publi patrate (inaltime = latime coloana). */
 @media (max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
   #SW .sw-grid {
-    grid-template-columns: minmax(4.65rem, 5.85rem) minmax(0, 1fr);
-    grid-template-rows: minmax(72px, 72px) minmax(5.5rem, 5.5rem) repeat(4, minmax(0, 0.5625fr));
+    --sw-portrait-left-w: clamp(4.65rem, 18vw, 5.85rem);
+    grid-template-columns: var(--sw-portrait-left-w) minmax(0, 1fr);
+    grid-template-rows: minmax(72px, 72px) minmax(5.5rem, 5.5rem) repeat(4, auto);
+    gap: 2px;
   }
 
   #SW .sw-cell-1 {
@@ -800,8 +802,9 @@
     flex: none !important;
     min-height: 0 !important;
     width: 100% !important;
-    height: 100%;
-    max-height: 100%;
+    height: auto !important;
+    aspect-ratio: 1 / 1;
+    max-height: none !important;
     margin: 0 !important;
     display: flex !important;
     align-items: stretch !important;
