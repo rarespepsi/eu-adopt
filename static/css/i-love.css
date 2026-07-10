@@ -682,31 +682,6 @@ body.page-ilove .ilove-pub-mobil-row {
 		min-height: 0;
 	}
 
-	body.page-ilove .ilove-main-split__pane--pets .ilove-pet-card-photo img {
-		height: clamp(88px, 26vw, 120px);
-	}
-
-	body.page-ilove .ilove-main-caseta {
-		max-height: none;
-		overflow: visible;
-	}
-
-	body.page-ilove .ilove-page,
-	body.page-ilove #main_content,
-	body.page-ilove #main_wrap {
-		height: auto;
-		min-height: 0;
-		overflow: visible;
-	}
-}
-
-/* Mobil portrait: 2 coloane, rânduri nelimitate, scroll pagină */
-@media (max-width: 900px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
-	body.page-ilove .ilove-main-split__pane--pets .ilove-pets-grid {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
-}
-
 /* Mobil landscape: 2 col × ~2 rânduri vizibile; rând 1 sticky; pub la final în scroll */
 @media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) and (hover: none) and (pointer: coarse) {
 	body.page-ilove .ilove-wire__head {
