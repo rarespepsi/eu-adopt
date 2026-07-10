@@ -759,6 +759,10 @@ body.page-ilove .ilove-pub-mobil-row {
 
 /* Mobil landscape: 3 col, rânduri nelimitate, scroll liber; titlu lipit de navbar */
 @media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) and (hover: none) and (pointer: coarse) {
+	body.page-ilove #main_content {
+		padding-top: calc(var(--nav-height, 64px) - 0.5rem) !important;
+	}
+
 	body.page-ilove #main_content > .layout {
 		padding-top: 0;
 		margin-top: 0;
@@ -768,14 +772,25 @@ body.page-ilove .ilove-pub-mobil-row {
 		padding-top: 0;
 	}
 
+	body.page-ilove .ilove-page {
+		margin-top: 0;
+		padding-top: 0;
+	}
+
+	body.page-ilove .ilove-wire {
+		margin-top: 0;
+		padding-top: 0;
+	}
+
 	body.page-ilove .ilove-wire__main {
+		margin-top: -0.12rem;
 		padding-top: 0;
 		padding-inline: clamp(0.2rem, 1.2vw, 0.4rem);
 	}
 
 	body.page-ilove .ilove-wire__head {
 		margin-top: 0;
-		margin-bottom: 0.05rem;
+		margin-bottom: 0;
 	}
 
 	body.page-ilove .ilove-wire__head h1 {
@@ -784,7 +799,7 @@ body.page-ilove .ilove-pub-mobil-row {
 	}
 
 	body.page-ilove .ilove-main-caseta {
-		max-height: calc(100dvh - var(--nav-height, 64px) - 1.1rem);
+		max-height: calc(100dvh - var(--nav-height, 64px) - 0.72rem);
 		padding: 0.25rem 0.35rem 0.35rem;
 		overflow-y: auto;
 		overflow-x: hidden;
