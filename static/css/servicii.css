@@ -694,11 +694,13 @@
   }
 }
 
-/* Portrait mobil: filtre inghetate sus; 4 publi egale in randurile 3-6. */
+/* Portrait mobil: filtre inghetate sus; 4 publi egale — scalate la 75% (minus 1/4). */
 @media (max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
   #SW .sw-grid {
-    grid-template-columns: minmax(6.2rem, 7.8rem) minmax(0, 1fr);
-    grid-template-rows: minmax(72px, 72px) minmax(5.5rem, 5.5rem) repeat(4, minmax(0, 1fr));
+    /* 6.2rem/7.8rem × 0.75 */
+    grid-template-columns: minmax(4.65rem, 5.85rem) minmax(0, 1fr);
+    /* filtre 5.5rem × 0.75; publi 4×0.75fr = 75% din inaltimea anterioara */
+    grid-template-rows: minmax(72px, 72px) minmax(4.125rem, 4.125rem) repeat(4, minmax(0, 0.75fr));
   }
 
   #SW .sw-cell-1 {
@@ -718,16 +720,17 @@
     display: contents !important;
   }
 
-  /* Bloc filtre: inaltime fixa, nu mai concureaza cu publi. */
+  /* Bloc filtre: inaltime fixa 75% (4.125rem). */
   #SW .sw-portrait-filters-freeze {
     grid-row: 2;
     grid-column: 1;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    height: 5.5rem;
-    min-height: 5.5rem;
-    max-height: 5.5rem;
+    gap: 1px;
+    width: 100%;
+    height: 4.125rem;
+    min-height: 4.125rem;
+    max-height: 4.125rem;
     overflow: hidden;
     box-sizing: border-box;
     background: linear-gradient(165deg, rgba(88, 28, 135, 0.22) 0%, rgba(15, 23, 42, 0.98) 45%, #0f172a 100%);
@@ -794,11 +797,15 @@
     min-height: 0 !important;
     width: 100% !important;
     height: 100%;
+    max-height: 100%;
     margin: 0 !important;
     display: flex !important;
     align-items: stretch !important;
     justify-content: stretch !important;
     overflow: hidden !important;
+    align-self: start;
+    justify-self: start;
+    box-sizing: border-box;
   }
 
   #SW .sw-cell-2 {
@@ -830,19 +837,34 @@
     height: 400%;
   }
 
+  #SW .sw-portrait-filters-freeze .sw-s2-filter-judet,
+  #SW .sw-portrait-filters-freeze .sw-s2-filter-oras,
+  #SW .sw-portrait-filters-freeze .sw-s2-filter-reset-wrap {
+    width: 100%;
+    padding: 0 1px !important;
+    box-sizing: border-box;
+  }
+
   #SW .sw-portrait-filters-freeze .sw-s2-filter-btn,
   #SW .sw-portrait-filters-freeze .sw-s2-filter-reset-btn {
-    font-size: 0.58rem;
-    padding: 0.14rem 0.28rem;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 0.435rem;
+    padding: 0.105rem 0.21rem;
+    border-radius: 0.34rem;
   }
 
   #SW .sw-portrait-filters-freeze .sw-s2-species-buttons {
-    gap: 2px !important;
+    gap: 1px !important;
+    width: 100%;
   }
 
   #SW .sw-portrait-filters-freeze .sw-s2-species-btn {
-    font-size: 0.52rem !important;
-    padding: 0.12rem 0.16rem !important;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 0.39rem !important;
+    padding: 0.09rem 0.12rem !important;
+    border-radius: 0.34rem !important;
   }
 }
 
