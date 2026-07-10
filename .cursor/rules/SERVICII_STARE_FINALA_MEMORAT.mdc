@@ -1,0 +1,65 @@
+---
+description: Servicii – stare finală memorată (desktop + mobil); referință completă
+alwaysApply: true
+---
+
+# SERVICII – STARE FINALĂ MEMORATĂ
+
+**Confirmat de utilizator:** 10 iulie 2026 — **pagina Servicii finalizată** (portrait, landscape, desktop, poze oferte).
+
+**Commit referință EuMediaModal:** `2e42bd3` · pinch-zoom mobil în `eu-media-modal.js` (local, după `2e42bd3`).
+
+**Cache CSS:** `servicii.css?v=65-geo-picker-landscape` · `eu-media-modal.css?v=2` · `eu-media-modal.js?v=2`
+
+**Nu modifica** fără cerere explicită + parola **`1977`** + OK execuție (`SERVICII_INGHETAT`, `SITE_GLOBAL_INGHETAT_1977`).
+
+---
+
+## Fișiere sursă
+
+| Fișier | Rol |
+|--------|-----|
+| `templates/anunturi/servicii.html` | Layout `#SW`, filtre, tab-uri S3/S4/S5, modal ofertă `swVetOfferModal`, EuMediaModal include |
+| `static/css/servicii.css` | Desktop + portrait + landscape touch |
+| `templates/anunturi/includes/servicii_offer_card_link.html` | Card ofertă grilă (imagine, coș, inimă bonus) |
+| `templates/anunturi/oferta_partener_detail.html` | Detaliu ofertă/produs (pagină separată) |
+| `static/css/eu-media-modal.css` | Modal poze/video partajat |
+| `static/js/eu-media-modal.js` | Galerie, fullscreen, pinch-zoom mobil |
+| `templates/anunturi/includes/eu_media_modal.html` | Markup modal `#euMediaModal` |
+| `home/views.py` | `servicii_view` (oferte, geo hint, coș I Love) |
+
+---
+
+## Mobil – reguli separate (nu amesteca MQ)
+
+| Orientare | Regulă Cursor |
+|-----------|----------------|
+| **Portrait touch** | `SERVICII_MOBIL_PORTRAIT_MEMORAT.mdc` |
+| **Landscape touch** | `SERVICII_MOBIL_LANDSCAPE_MEMORAT.mdc` |
+
+La restaurare: citește regula orientării respective; **nu modifica portrait când lucrezi la landscape** și invers.
+
+---
+
+## Poze oferte / produse (EuMediaModal)
+
+- **Grilă:** imagini `.js-eu-media-thumb` în `servicii_offer_card_link.html`; galerii per tab: `data-eu-media-gallery="S3"` / `S4` / `S5`.
+- **Click pe imagine:** deschide `EuMediaModal` (nu navighează la detaliu); click pe restul cardului → modal text ofertă `swVetOfferModal`.
+- **Modal ofertă:** `.sw-vet-offer-nota__img.js-eu-media-thumb` cu `data-eu-media-gallery="sw-offer-{{ pk }}"`.
+- **Detaliu:** `oferta_partener_detail.html` — `.oferte-d-img.js-eu-media-thumb`.
+- **Mobil touch:** pinch-zoom (2 degete), pan când e mărit, dublu-tap zoom/reset — în `eu-media-modal.js` (`@media (hover: none) and (pointer: coarse)`).
+- **Desktop:** fullscreen ⛶, prev/next dacă galerie >1; fără pinch.
+- **Esc:** la zoom mobil → reset zoom; apoi închide modal. Modal ofertă text: Esc nu închide dacă `euMediaModal` e deschis.
+
+---
+
+## Desktop (≥768px, hover fine)
+
+- Grid clasic S1–S7, filtre județ/oraș, tab-uri Cabinete / Magazine / Saloane.
+- Grilă oferte în panoul activ; modal ofertă + EuMediaModal ca mai sus.
+
+---
+
+## Rezumat
+
+**Servicii = FINALIZAT. Portrait + landscape + desktop + vizualizare poze memorată. Restaurare din regulile orientării + acest fișier. Nimic fără `1977` + OK.**

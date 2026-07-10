@@ -7,7 +7,13 @@ alwaysApply: true
 
 **Pagina Servicii este securizată.** Nu modifici **NIMIC** la Servicii – nici direct, nici indirect. **Nimic** = zero modificări, fără excepții, până când nu ceri parola și userul o furnizează.
 
-**Servicii mobil portrait (finalizat):** referință scrisă în **`SERVICII_MOBIL_PORTRAIT_MEMORAT.mdc`**. La îndoieli sau restaurare portrait, urmează acel fișier. **Nu modifica portrait** când lucrezi la landscape.
+**Servicii mobil portrait (finalizat):** `SERVICII_MOBIL_PORTRAIT_MEMORAT.mdc`
+
+**Servicii mobil landscape (finalizat):** `SERVICII_MOBIL_LANDSCAPE_MEMORAT.mdc`
+
+**Referință completă (desktop + poze + fișiere):** `SERVICII_STARE_FINALA_MEMORAT.mdc`
+
+La îndoieli sau restaurare, urmează regulile de orientare + starea finală. **Nu modifica portrait** când lucrezi la landscape și invers.
 
 ## Ce înseamnă NIMIC
 

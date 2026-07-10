@@ -5,9 +5,9 @@ alwaysApply: true
 
 # SERVICII MOBIL PORTRAIT – STARE FINALĂ MEMORATĂ
 
-**Confirmat de utilizator:** 10 iulie 2026 — **Servicii portrait mobil finalizat.**
+**Confirmat de utilizator:** 10 iulie 2026 — **Servicii portrait mobil finalizat** (împreună cu pagina Servicii completă).
 
-**Commit referință (stare finală):** `27cc92e` · cache CSS `servicii.css?v=62-geo-empty-hint`
+**Commit referință (stare finală):** `2e42bd3` · cache CSS `servicii.css?v=65-geo-picker-landscape` · EuMediaModal `?v=2`
 
 **Orientare:** touch + portrait:
 
@@ -17,7 +17,7 @@ alwaysApply: true
 
 **Nu modifica** blocul portrait (HTML/CSS/JS sub acest MQ) fără cerere explicită + parola **`1977`** + OK execuție — conform `SITE_GLOBAL_INGHETAT_1977` / `SERVICII_INGHETAT`.
 
-**Landscape touch** = lucru separat (`SERVICII_MOBIL_LANDSCAPE.mdc` când există). La landscape **nu atinge** portrait.
+**Landscape touch** = `SERVICII_MOBIL_LANDSCAPE_MEMORAT.mdc`. La landscape **nu atinge** portrait.
 
 ---
 
@@ -84,6 +84,11 @@ grid-template-rows: minmax(72px, 72px) auto repeat(4, minmax(0, 1fr));
 
 - Regulile de mai sus sunt **doar portrait touch**.
 - Modificări landscape în bloc separat `(orientation: landscape) and (max-height: 500px)` — fără impact portrait.
+
+## Poze oferte (portrait + toate orientările)
+
+- Click imagine card → `EuMediaModal` (pinch-zoom pe touch); galerie tab `data-eu-media-gallery="S3|S4|S5"`.
+- Detalii complete: `SERVICII_STARE_FINALA_MEMORAT.mdc`.
 
 ## Rezumat
 

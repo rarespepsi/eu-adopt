@@ -1,0 +1,67 @@
+---
+description: Servicii mobil landscape – layout final memorat; nu modifica fără parolă 1977 + OK
+alwaysApply: true
+---
+
+# SERVICII MOBIL LANDSCAPE – STARE FINALĂ MEMORATĂ
+
+**Confirmat de utilizator:** 10 iulie 2026 — **Servicii landscape mobil finalizat.**
+
+**Commit referință:** `2e42bd3` (EuMediaModal) · CSS `servicii.css?v=65-geo-picker-landscape`
+
+**Portrait memorat separat:** `SERVICII_MOBIL_PORTRAIT_MEMORAT.mdc` — **nu modifica portrait** când lucrezi la landscape.
+
+**Media query:**
+
+```css
+@media (orientation: landscape) and (max-height: 500px)
+```
+
+**Nu modifica** fără cerere explicită + parola **`1977`** + OK execuție.
+
+---
+
+## Layout memorat
+
+```
+[S1+S7 bandă merged — 72px, full width]
+[Stânga: 6 filtre + 1 pub] | [Centru: tab-uri + grilă 3×8 scroll] | [Dreapta: 3 pub stivuite]
+```
+
+| Zonă | Conținut |
+|------|----------|
+| **Grid** | `grid-template-columns: 1fr 4fr 1fr`; rânduri: bandă 72px + 3× `1fr` |
+| **Stânga** | `.sw-landscape-left-col` — filtre `2fr` + pub S2.2 `1fr` |
+| **Filtre** | Aceleași 6 rânduri ca portrait (Jud, Loc, Reset, Câini, Pisici, Altele) |
+| **Centru** | `.sw-cell-2` — tab-uri Cabinete / Magazine / Saloane |
+| **Grilă** | **3 col × 8 rânduri**, `height: 400%`, scroll în `.sw-s2-1-body` (~2 rânduri vizibile) |
+| **Dreapta** | S2.3 (rând 4) + S5.1 (rând 2) + S5.2 (rând 3) — pub egale, fără chenar dublu |
+
+---
+
+## Geo + filtre (partajat cu portrait)
+
+- **Picker typeahead** `#sw-judet-picker` / `#sw-oras-picker` — fără `datalist` pe touch.
+- **Filtrare exactă** județ/oraș; **Resetează** clipește când geo activ.
+- **JS:** `initSwPortraitGeoPickers()` + `initSwMidSvcTabs()` — include landscape `max-height: 500px`.
+
+---
+
+## Poze oferte
+
+- EuMediaModal pe imagini grilă + modal ofertă — vezi `SERVICII_STARE_FINALA_MEMORAT.mdc`.
+- Pinch-zoom mobil în modulul partajat `eu-media-modal.js`.
+
+---
+
+## Ce NU reintroduce pe landscape
+
+- Layout portrait `display: contents` pe `.sw-landscape-left-col` (rupe coloana stânga).
+- `display: contents` pe `.sw-s2-filter-judet` / `.sw-s2-filter-oras` în blocul filtre.
+- Grilă 2 coloane în centru (portrait folosește alt MQ).
+
+---
+
+## Rezumat
+
+**Servicii landscape = FINALIZAT. 1fr|4fr|1fr, filtre+1 pub stânga, 3 pub dreapta, centru 3×8 scroll, geo ca portrait. Nu schimba fără `1977` + OK.**

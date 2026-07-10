@@ -160,6 +160,7 @@
 	flex: 1 1 auto;
 	position: relative;
 	z-index: 1;
+	overflow: hidden;
 }
 .eu-media-modal__footer[hidden] { display: none !important; }
 .eu-media-modal__footer {
@@ -219,6 +220,46 @@
 }
 .eu-media-modal__vc-btn:active { transform: scale(0.98); }
 .eu-media-modal__vc-btn:focus { outline: 2px solid rgba(255, 255, 255, 0.7); outline-offset: 2px; }
+
+/* Mobil touch: pinch-zoom + tragere (pan) pe poze în modal */
+@media (hover: none) and (pointer: coarse) {
+	.eu-media-modal__body--image-zoom {
+		touch-action: none;
+		-webkit-user-select: none;
+		user-select: none;
+	}
+	.eu-media-modal__zoom-viewport {
+		width: 100%;
+		height: 100%;
+		min-height: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		touch-action: none;
+	}
+	.eu-media-modal__zoom-img {
+		max-width: 100%;
+		max-height: 100%;
+		width: auto;
+		height: auto;
+		display: block;
+		border-radius: 0;
+		background: #000;
+		object-fit: contain;
+		transform-origin: center center;
+		will-change: transform;
+		touch-action: none;
+		-webkit-user-drag: none;
+		user-select: none;
+	}
+	.eu-media-modal__zoom-img.is-zoomed {
+		cursor: grab;
+	}
+	.eu-media-modal__zoom-img.is-zoomed.is-panning {
+		cursor: grabbing;
+	}
+}
 
 .js-eu-media-thumb,
 .js-pet-media-thumb {
