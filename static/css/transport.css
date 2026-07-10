@@ -1510,7 +1510,7 @@
 /* Mobil restrâns: inel concentric pe bulina rotativă — 9 cercuri la aceeași distanță */
 @media (max-width: 767.98px) {
 	#TW #T2:not(.tw-t2--hub-open) .t2-circles {
-		transform: translate(1cm, 3mm);
+		transform: translate(8mm, 3mm);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--1 {
 		transform: translate(-50%, -50%) rotate(0deg) translateY(calc(-247.5% - 38px)) rotate(0deg);
