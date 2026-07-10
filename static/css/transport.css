@@ -1021,10 +1021,10 @@
 		position: relative;
 		top: auto;
 		left: auto;
-		width: min(72%, 216px);
-		height: min(72%, 216px);
-		min-width: 160px;
-		min-height: 160px;
+		width: min(54%, 162px);
+		height: min(54%, 162px);
+		min-width: 120px;
+		min-height: 120px;
 		z-index: 3;
 		pointer-events: auto;
 	}
@@ -1300,10 +1300,10 @@
 		position: relative;
 		top: auto;
 		left: auto;
-		width: min(72%, 244px);
-		height: min(72%, 244px);
-		min-width: 188px;
-		min-height: 188px;
+		width: min(54%, 183px);
+		height: min(54%, 183px);
+		min-width: 141px;
+		min-height: 141px;
 		z-index: 3;
 		pointer-events: auto;
 	}
