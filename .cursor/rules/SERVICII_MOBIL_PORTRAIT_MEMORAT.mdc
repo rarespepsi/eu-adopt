@@ -1,0 +1,90 @@
+---
+description: Servicii mobil portrait – layout final memorat; nu modifica fără parolă 1977 + OK
+alwaysApply: true
+---
+
+# SERVICII MOBIL PORTRAIT – STARE FINALĂ MEMORATĂ
+
+**Confirmat de utilizator:** 10 iulie 2026 — **Servicii portrait mobil finalizat.**
+
+**Commit referință (stare finală):** `27cc92e` · cache CSS `servicii.css?v=62-geo-empty-hint`
+
+**Orientare:** touch + portrait:
+
+```css
+@media (max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse)
+```
+
+**Nu modifica** blocul portrait (HTML/CSS/JS sub acest MQ) fără cerere explicită + parola **`1977`** + OK execuție — conform `SITE_GLOBAL_INGHETAT_1977` / `SERVICII_INGHETAT`.
+
+**Landscape touch** = lucru separat (`SERVICII_MOBIL_LANDSCAPE.mdc` când există). La landscape **nu atinge** portrait.
+
+---
+
+## Fișiere sursă (portrait)
+
+| Fișier | Rol portrait |
+|--------|----------------|
+| `templates/anunturi/servicii.html` | HTML filtre geo picker, mesaje goale, JS filtre/geo/tabs |
+| `static/css/servicii.css` | Bloc `@media` portrait (~linia 750+) |
+| `home/views.py` | `servicii_user_home_county` pentru hint mesaj gol |
+
+---
+
+## Layout memorat
+
+```
+[S1+S7 bandă merged — 72px, full width]
+[Stânga: 6 filtre + 4 pub] | [Dreapta: tab-uri + grilă oferte]
+```
+
+| Zonă | Conținut |
+|------|----------|
+| **S1** | Track `sw-strip-wrap--mobile-merged` (S1+S7); desktop S1/S7 ascunse |
+| **Stânga** | `.sw-portrait-filters-freeze` — coloană `clamp(4.65rem, 18vw, 5.85rem)` |
+| **6 filtre** | Județ, Oraș/Loc, Resetează, Câini, Pisici, Altele — grid 6 rânduri egale |
+| **4 pub** | S2.2, S2.3, S6.1, S6.2 — `repeat(4, minmax(0, 1fr))`, fără gap, umplu înălțimea |
+| **Centru** | Tab-uri **Cabinete \| Magazine \| Saloane**; un panou activ |
+| **Grilă oferte** | **3 col × 4 rânduri** vizibile; 8 rânduri total, `height: 200%`, scroll în `.sw-s2-1-body` |
+| **S3, S5, S7** | ascunse ca zone separate (conținut merged / display contents) |
+
+**Grid portrait:**
+
+```css
+grid-template-columns: var(--sw-portrait-left-w) minmax(0, 1fr);
+grid-template-rows: minmax(72px, 72px) auto repeat(4, minmax(0, 1fr));
+```
+
+---
+
+## Filtre geo (portrait)
+
+- **Picker custom** `#sw-judet-picker` / `#sw-oras-picker` — fără `datalist` pe touch portrait.
+- **Typeahead:** user tastează → listă filtrată live (fără diacritice).
+- **Casete geo:** `.sw-geo-picker-field` = `display: block` (NU `display: contents` pe jud/oras).
+- **Panou listă:** lat `max(100%, calc(100vw - 0.75rem))`, scroll, `z-index: 40`.
+- **Filtrare oferte:** doar la **potrivire exactă** județ/oraș (`matchCounty` / `matchCity`).
+- **Resetează:** clipește (`.is-geo-filter-active`) când filtrul geo e activ.
+- **0 oferte:** mesaj Notă + scuze; hint județ din cont (`data-user-home-county` pe `#SW`).
+
+**JS portrait-only:** `initSwPortraitGeoPickers()` — MQ portrait strict; `initSwMidSvcTabs()` include și landscape.
+
+---
+
+## Ce NU reintroduce pe portrait
+
+- `display: contents` pe `.sw-s2-filter-judet` / `.sw-s2-filter-oras` (rupe grila + lista).
+- `readonly` + `inputmode="none"` pe inputuri geo (blochează typeahead).
+- `</div>` greșite în `.sw-s2-filter-row` (rupe cele 6 butoane).
+- Filtrare oferte la text parțial (dispar casetele în timpul tastării).
+
+---
+
+## Desktop / landscape
+
+- Regulile de mai sus sunt **doar portrait touch**.
+- Modificări landscape în bloc separat `(orientation: landscape) and (max-height: 500px)` — fără impact portrait.
+
+## Rezumat
+
+**Servicii portrait = FINALIZAT. Stânga 6+4 pub, dreapta tab-uri 3×4, geo typeahead, reset blink, mesaj gol cu hint județ user. Nu schimba fără `1977` + OK.**

@@ -1,0 +1,48 @@
+---
+description: Servicii mobil landscape – lucru în curs; nu atinge portrait memorat
+alwaysApply: true
+---
+
+# SERVICII MOBIL LANDSCAPE – LUCRU ÎN CURS
+
+**Portrait memorat separat:** `SERVICII_MOBIL_LANDSCAPE` **nu** modifică `SERVICII_MOBIL_PORTRAIT_MEMORAT.mdc`.
+
+**Media query landscape (viewport scurt, telefon întors):**
+
+```css
+@media (orientation: landscape) and (max-height: 500px)
+```
+
+**Tab-uri S3/S4/S5** (partajat cu lățime ≤768px):
+
+```css
+@media (max-width: 767.98px),
+  (orientation: landscape) and (max-height: 500px)
+```
+
+---
+
+## Stare curentă (înainte de finalizare landscape)
+
+| Element | Stare |
+|---------|--------|
+| **Bandă** | S1+S7 merged (`sw-strip-wrap--mobile-merged`), 72px sus |
+| **Grid** | `1fr 4fr 1fr` — laterale înguste, centru lat |
+| **Laterale** | Layout desktop S4 (stânga) + S5 (dreapta) — **nu** blocul portrait 6+4 |
+| **Centru** | Tab-uri Cabinete / Magazine / Saloane; grilă **3×8**, `height: 400%`, ~2 rânduri vizibile + scroll |
+| **Geo picker** | **Doar portrait** — landscape folosește `datalist` desktop |
+| **Reset blink / mesaj gol** | Funcționează global (JS), nu portrait-only |
+
+---
+
+## Direcție probabilă (de aliniat cu user)
+
+- Laterale landscape: filtre + pub similare PT landscape sau adaptate Servicii.
+- Geo: typeahead + picker ca pe portrait (dacă `datalist` e slab pe touch).
+- Păstrare tab-uri + grilă centru scroll.
+
+**Modificări landscape:** doar în bloc `@media (orientation: landscape) and (max-height: 500px)` (+ JS condiționat) — **fără** regresie portrait.
+
+## Rezumat
+
+**Landscape = în lucru. Portrait = înghețat. Separă MQ-urile.**

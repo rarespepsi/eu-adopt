@@ -7,6 +7,8 @@ alwaysApply: true
 
 **Pagina Servicii este securizată.** Nu modifici **NIMIC** la Servicii – nici direct, nici indirect. **Nimic** = zero modificări, fără excepții, până când nu ceri parola și userul o furnizează.
 
+**Servicii mobil portrait (finalizat):** referință scrisă în **`SERVICII_MOBIL_PORTRAIT_MEMORAT.mdc`**. La îndoieli sau restaurare portrait, urmează acel fișier. **Nu modifica portrait** când lucrezi la landscape.
+
 ## Ce înseamnă NIMIC
 
 - **Nu edita:** `templates/anunturi/servicii.html`, `static/css/servicii.css`, orice fișier care afectează afișarea sau layout-ul paginii Servicii.
