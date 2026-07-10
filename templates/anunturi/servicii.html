@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=57-portrait-geo-picker" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=58-portrait-geo-picker-fix" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Intra / signup (linie profesională) */
 	body.page-servicii {
@@ -1043,7 +1043,6 @@
 							<div class="sw-geo-picker-panel" id="sw-judet-picker" hidden>
 								<ul class="sw-geo-picker-list" role="listbox" aria-label="Județe"></ul>
 							</div>
-						</div>
 							{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-servicii" %}
 						</div>
 						<div class="sw-s2-filter-oras sw-geo-picker-field">
@@ -1051,7 +1050,6 @@
 							<div class="sw-geo-picker-panel" id="sw-oras-picker" hidden>
 								<ul class="sw-geo-picker-list" role="listbox" aria-label="Localități"></ul>
 							</div>
-						</div>
 							<datalist id="city-list-servicii"></datalist>
 						</div>
 						<div class="sw-s2-filter-reset-wrap">
