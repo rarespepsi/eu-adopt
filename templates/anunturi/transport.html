@@ -5,7 +5,7 @@
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=45-circles-plus-8mm" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=46-hub-badge-center" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Servicii / Intra */
 	body.page-transport {
@@ -319,9 +319,9 @@
 					<button type="button" class="t2-portrait-collapse-btn" id="t2PortraitCollapse" aria-expanded="true">
 						Restrânge zona autocar
 					</button>
-					{% include "components/transport_bulina.html" %}
-					<!-- Hub: centrul acestui div = centrul casetei centrale; inelul folosește același punct -->
+					<!-- Hub: centrul = bulina rotativă (mobil) / autocar (desktop); inelul = 9 cercuri -->
 					<div class="t2-hub">
+						{% include "components/transport_bulina.html" %}
 						<a href="{% url 'donatii_generale' %}?sursa=transport_hub" class="t2-center">
 							<img src="{% static 'images/transport/servicii/central.jpeg' %}" alt="" class="t2-center-img" />
 						</a>

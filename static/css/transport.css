@@ -1012,10 +1012,21 @@
 		transform: translateY(clamp(0.2rem, 1.4vh, 0.45rem));
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-center {
+		display: none !important;
+	}
+	#TW #T2:not(.tw-t2--hub-open) .t2-extra-circle {
+		display: flex !important;
 		grid-area: 1 / 1;
 		place-self: center;
 		position: relative;
-		z-index: 2;
+		top: auto;
+		left: auto;
+		width: min(36%, 108px);
+		height: min(36%, 108px);
+		min-width: 80px;
+		min-height: 80px;
+		z-index: 3;
+		pointer-events: auto;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circles {
 		grid-area: 1 / 1;
@@ -1025,10 +1036,6 @@
 		height: 100%;
 		transform: translate(8mm, 0);
 		pointer-events: none;
-	}
-	/* Bulina rotativă separată — ascunsă pe landscape restrâns (colțurile = cele 2 butoane) */
-	#TW #T2:not(.tw-t2--hub-open) .t2-extra-circle {
-		display: none !important;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle-label {
 		display: none !important;
@@ -1283,13 +1290,22 @@
 		-webkit-overflow-scrolling: touch;
 		max-height: 100%;
 	}
+	#TW #T2:not(.tw-t2--hub-open) .t2-center {
+		display: none !important;
+	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-extra-circle {
 		display: flex !important;
-		width: min(20vmin, 88px);
-		height: min(20vmin, 88px);
-		top: 0.12rem;
-		left: 0.12rem;
-		z-index: 55;
+		grid-area: 1 / 1;
+		place-self: center;
+		position: relative;
+		top: auto;
+		left: auto;
+		width: min(36%, 122px);
+		height: min(36%, 122px);
+		min-width: 94px;
+		min-height: 94px;
+		z-index: 3;
+		pointer-events: auto;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-hub {
 		flex: 0 0 auto;
@@ -1305,16 +1321,6 @@
 		justify-self: center;
 		position: relative;
 		box-sizing: border-box;
-	}
-	#TW #T2:not(.tw-t2--hub-open) .t2-center {
-		grid-area: 1 / 1;
-		place-self: center;
-		position: relative;
-		z-index: 2;
-		width: min(36%, 122px);
-		height: min(36%, 122px);
-		min-width: 94px;
-		min-height: 94px;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circles {
 		grid-area: 1 / 1;
