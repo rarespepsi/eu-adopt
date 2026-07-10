@@ -700,7 +700,7 @@
     --sw-portrait-left-w: clamp(4.65rem, 18vw, 5.85rem);
     grid-template-columns: var(--sw-portrait-left-w) minmax(0, 1fr);
     /* rand 3 = spacer flex; randuri 4-7 = 4 publi lipite jos */
-    grid-template-rows: minmax(72px, 72px) minmax(5.5rem, 5.5rem) minmax(0, 1fr) repeat(4, auto);
+    grid-template-rows: minmax(72px, 72px) auto minmax(0, 1fr) repeat(4, auto);
     column-gap: 2px;
     row-gap: 0;
   }
@@ -722,18 +722,20 @@
     display: contents !important;
   }
 
-  /* Bloc filtre: inaltime restaurata — butoanele raman vizibile deasupra publi. */
+  /* Bloc filtre: 6 randuri egale — Jud, Loc, Reset, Câini, Pisici, Altele. */
   #SW .sw-portrait-filters-freeze {
     grid-row: 2;
     grid-column: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(6, minmax(0, 1fr));
+    gap: 1px;
     width: 100%;
-    height: 5.5rem;
-    min-height: 5.5rem;
-    max-height: 5.5rem;
-    overflow: hidden;
+    height: auto;
+    min-height: calc(var(--sw-portrait-left-w) * 1.65);
+    max-height: none;
+    padding: 2px;
+    overflow: visible;
     box-sizing: border-box;
     position: relative;
     z-index: 2;
@@ -741,33 +743,54 @@
     border: 1px solid rgba(255, 255, 255, 0.06);
   }
 
+  #SW .sw-portrait-filters-freeze .sw-s2-filter-row,
+  #SW .sw-portrait-filters-freeze .sw-s4-box-filters,
+  #SW .sw-portrait-filters-freeze .sw-s2-species-buttons,
+  #SW .sw-portrait-filters-freeze .sw-s2-filter-judet,
+  #SW .sw-portrait-filters-freeze .sw-s2-filter-oras,
+  #SW .sw-portrait-filters-freeze .sw-s2-filter-reset-wrap {
+    display: contents !important;
+  }
+
+  #SW .sw-portrait-filters-freeze #sw-selected-species {
+    display: none !important;
+  }
+
+  #SW .sw-portrait-filters-freeze .sw-s2-filter-btn,
+  #SW .sw-portrait-filters-freeze .sw-s2-filter-reset-btn,
+  #SW .sw-portrait-filters-freeze .sw-s2-species-btn {
+    width: 100% !important;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    margin: 0 !important;
+    padding: 0.1rem 0.22rem !important;
+    font-size: 0.48rem !important;
+    line-height: 1.15 !important;
+    border-radius: 0.32rem !important;
+    box-sizing: border-box;
+  }
+
+  #SW .sw-portrait-filters-freeze .sw-s2-species-btn.is-active {
+    transform: none !important;
+  }
+
   #SW .sw-portrait-filters-freeze .sw-s2-filter-row {
-    flex: 0 0 auto;
     position: static !important;
     margin: 0 !important;
     padding: 0 !important;
-    gap: 1px !important;
-    height: auto !important;
-    min-height: 0 !important;
-    width: 100% !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
   #SW .sw-portrait-filters-freeze .sw-s4-box-filters {
-    flex: 1 1 0;
     position: static !important;
     margin: 0 !important;
     padding: 0 !important;
-    height: auto !important;
-    min-height: 0 !important;
-    width: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
     background: transparent !important;
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
   #SW .sw-portrait-filters-freeze .sw-s4-box-filters::before {
