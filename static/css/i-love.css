@@ -673,6 +673,34 @@ body.page-ilove .ilove-pub-mobil-row {
 		display: none !important;
 	}
 
+	/* Bandă titlu compactă — portrait + landscape touch */
+	body.page-ilove .ilove-wire__head {
+		flex-shrink: 0;
+		margin-bottom: 0.15rem;
+	}
+
+	body.page-ilove .ilove-wire__head h1 {
+		margin: 0;
+		font-size: 0.8rem;
+		line-height: 1.1;
+		letter-spacing: 0.07em;
+	}
+
+	body.page-ilove .ilove-wire__head-lead {
+		display: none !important;
+	}
+
+	body.page-ilove .ilove-split-heading {
+		margin: 0 0 0.2rem;
+		font-size: 0.68rem;
+		line-height: 1.1;
+		letter-spacing: 0.06em;
+	}
+
+	body.page-ilove .ilove-main-caseta {
+		padding: 0.4rem 0.45rem 0.5rem;
+	}
+
 	body.page-ilove .ilove-main-split__pane--pets .ilove-pets-grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 0.5rem;
@@ -697,13 +725,8 @@ body.page-ilove .ilove-pub-mobil-row {
 
 /* Mobil portrait: 3 col × 2 rânduri vizibile la start; scroll liber (fără rând înghețat) */
 @media (max-width: 900px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
-	body.page-ilove .ilove-wire__head {
-		flex-shrink: 0;
-		margin-bottom: 0.4rem;
-	}
-
 	body.page-ilove .ilove-main-caseta {
-		max-height: calc(100dvh - var(--nav-height, 64px) - 3.25rem);
+		max-height: calc(100dvh - var(--nav-height, 64px) - 1.85rem);
 		overflow-y: auto;
 		overflow-x: hidden;
 		-webkit-overflow-scrolling: touch;
@@ -731,11 +754,6 @@ body.page-ilove .ilove-pub-mobil-row {
 		font-size: 0.65rem;
 	}
 
-	body.page-ilove .ilove-split-heading {
-		font-size: 0.78rem;
-		margin-bottom: 0.35rem;
-	}
-
 	body.page-ilove .ilove-pub-mobil-row {
 		margin-top: 0.55rem;
 		padding-bottom: 0.35rem;
@@ -744,13 +762,8 @@ body.page-ilove .ilove-pub-mobil-row {
 
 /* Mobil landscape: 2 col × ~2 rânduri vizibile; rând 1 sticky; pub la final în scroll */
 @media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) and (hover: none) and (pointer: coarse) {
-	body.page-ilove .ilove-wire__head {
-		flex-shrink: 0;
-		margin-bottom: 0.35rem;
-	}
-
 	body.page-ilove .ilove-main-caseta {
-		max-height: calc(100dvh - var(--nav-height, 64px) - 2.5rem);
+		max-height: calc(100dvh - var(--nav-height, 64px) - 1.85rem);
 		overflow-y: auto;
 		overflow-x: hidden;
 		-webkit-overflow-scrolling: touch;
