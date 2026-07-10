@@ -1256,7 +1256,7 @@
 		align-items: center;
 		justify-content: center;
 		position: relative;
-		padding: clamp(2.65rem, 7.2vw, 3.05rem) 0.32rem 0.38rem;
+		padding: 0.28rem 0.32rem clamp(2.85rem, 8vw, 3.25rem);
 		box-sizing: border-box;
 	}
 	#TW #T2.tw-t2--hub-open .t2-inner {
@@ -1299,7 +1299,8 @@
 		left: 0.12rem;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-donate-cause-wrap {
-		top: clamp(0.48rem, 2.4vh, 0.68rem) !important;
+		top: auto !important;
+		bottom: clamp(0.38rem, 2.6vh, 0.58rem) !important;
 		right: 0.3rem !important;
 		left: auto !important;
 		max-width: calc(50% - 0.34rem);
@@ -1392,14 +1393,15 @@
 		cursor: pointer;
 		text-align: center;
 	}
-	/* Portrait restrâns: FII PARTE stânga / Donează dreapta, puțin sub marginea de sus */
+	/* Portrait restrâns: FII PARTE stânga / Donează dreapta — JOS, deasupra benzii T3 pub */
 	#TW #T2:not(.tw-t2--hub-open) .t2-portrait-expand-btn {
 		color: #fff;
 		background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
 		border: 1px solid rgba(255, 255, 255, 0.22);
 		box-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
 		position: absolute;
-		top: clamp(0.48rem, 2.4vh, 0.68rem);
+		top: auto;
+		bottom: clamp(0.38rem, 2.6vh, 0.58rem);
 		left: 0.3rem;
 		right: auto;
 		transform: none;
@@ -1407,8 +1409,8 @@
 		min-width: 0;
 		max-width: calc(50% - 0.34rem);
 		margin: 0;
-		padding: 0.4rem 0.58rem;
-		font-size: clamp(0.62rem, 2.85vw, 0.74rem);
+		padding: 0.42rem 0.58rem;
+		font-size: clamp(0.64rem, 2.95vw, 0.76rem);
 		font-weight: 800;
 		z-index: 70;
 		white-space: nowrap;
