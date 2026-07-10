@@ -1256,7 +1256,7 @@
 		align-items: center;
 		justify-content: center;
 		position: relative;
-		padding: 0.28rem 0.32rem clamp(2.85rem, 8vw, 3.25rem);
+		padding: 0.28rem 0.28rem clamp(3.35rem, 10vw, 3.85rem);
 		box-sizing: border-box;
 	}
 	#TW #T2.tw-t2--hub-open .t2-inner {
@@ -1300,17 +1300,27 @@
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-donate-cause-wrap {
 		top: auto !important;
-		bottom: clamp(0.38rem, 2.6vh, 0.58rem) !important;
-		right: 0.3rem !important;
+		bottom: clamp(0.32rem, 2.2vh, 0.52rem) !important;
+		right: 0.22rem !important;
 		left: auto !important;
-		max-width: calc(50% - 0.34rem);
+		max-width: calc(50% - 0.28rem);
 		z-index: 70;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-donate-cause-link {
-		font-size: clamp(0.62rem, 2.85vw, 0.74rem);
-		padding: 0.4rem 0.58rem;
-		box-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 2.85rem;
+		font-size: clamp(0.72rem, 3.35vw, 0.88rem);
+		line-height: 1.22;
+		padding: 0.52rem 0.62rem;
+		box-shadow: 0 3px 16px rgba(0, 0, 0, 0.5);
 		font-weight: 800;
+		text-align: center;
+		letter-spacing: 0.02em;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+		border-radius: 10px;
+		white-space: normal;
 	}
 	#TW #T3.tw-cell {
 		flex: 0 0 auto;
@@ -1397,25 +1407,34 @@
 	#TW #T2:not(.tw-t2--hub-open) .t2-portrait-expand-btn {
 		color: #fff;
 		background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
-		border: 1px solid rgba(255, 255, 255, 0.22);
-		box-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+		border: 1px solid rgba(255, 255, 255, 0.28);
+		box-shadow: 0 3px 16px rgba(0, 0, 0, 0.5);
 		position: absolute;
 		top: auto;
-		bottom: clamp(0.38rem, 2.6vh, 0.58rem);
-		left: 0.3rem;
+		bottom: clamp(0.32rem, 2.2vh, 0.52rem);
+		left: 0.22rem;
 		right: auto;
 		transform: none;
 		width: auto;
 		min-width: 0;
-		max-width: calc(50% - 0.34rem);
+		max-width: calc(50% - 0.28rem);
+		min-height: 2.85rem;
 		margin: 0;
-		padding: 0.42rem 0.58rem;
-		font-size: clamp(0.64rem, 2.95vw, 0.76rem);
+		padding: 0.52rem 0.62rem;
+		font-size: clamp(0.72rem, 3.35vw, 0.88rem);
+		line-height: 1.22;
 		font-weight: 800;
+		letter-spacing: 0.02em;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+		border-radius: 10px;
 		z-index: 70;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
+		white-space: normal;
+		overflow: visible;
+		text-overflow: unset;
+		text-align: center;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 	#TW #T2.tw-t2--hub-open .t2-portrait-expand-btn {
 		color: #fff;
