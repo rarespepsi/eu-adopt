@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=59-portrait-geo-empty-msg" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=60-portrait-geo-typeahead" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Intra / signup (linie profesională) */
 	body.page-servicii {
@@ -1372,6 +1372,24 @@
 		}
 		return null;
 	}
+	function matchCity(val, countyVal) {
+		if (!val) return null;
+		var county = matchCounty(countyVal);
+		if (!county || !localitiesByCounty[county]) return null;
+		var valNorm = stripAccents(String(val)).trim().toLowerCase();
+		var list = localitiesByCounty[county];
+		for (var i = 0; i < list.length; i++) {
+			if (stripAccents(list[i]).trim().toLowerCase() === valNorm) return list[i];
+		}
+		return null;
+	}
+	function normGeoQuery(s) {
+		return stripAccents(String(s || "")).trim().toLowerCase();
+	}
+	function geoItemMatchesQuery(name, query) {
+		if (!query) return true;
+		return normGeoQuery(name).indexOf(query) !== -1;
+	}
 	function updateCityList() {
 		var countyInput = document.getElementById("sw-judet");
 		var cityList = document.getElementById("city-list-servicii");
@@ -1420,16 +1438,21 @@
 		function fillCountyList() {
 			if (!countyListEl) return;
 			countyListEl.innerHTML = "";
+			var query = normGeoQuery(countyInput.value);
+			var shown = 0;
 			for (var i = 0; i < countyNames.length; i++) {
-				(function(name) {
+				var name = countyNames[i];
+				if (!geoItemMatchesQuery(name, query)) continue;
+				shown++;
+				(function(countyName) {
 					var li = document.createElement("li");
 					var btn = document.createElement("button");
 					btn.type = "button";
-					btn.textContent = name;
+					btn.textContent = countyName;
 					btn.addEventListener("click", function(ev) {
 						ev.preventDefault();
 						ev.stopPropagation();
-						countyInput.value = name;
+						countyInput.value = countyName;
 						updateCityList();
 						fillCityList();
 						dispatchGeoInput(countyInput);
@@ -1437,7 +1460,13 @@
 					});
 					li.appendChild(btn);
 					countyListEl.appendChild(li);
-				})(countyNames[i]);
+				})(name);
+			}
+			if (!shown) {
+				var empty = document.createElement("li");
+				empty.className = "sw-geo-picker-empty";
+				empty.textContent = query ? "Nicio potrivire" : "Niciun județ";
+				countyListEl.appendChild(empty);
 			}
 		}
 
@@ -1446,29 +1475,40 @@
 			cityListEl.innerHTML = "";
 			var county = matchCounty(countyInput.value);
 			var list = county && localitiesByCounty[county] ? localitiesByCounty[county] : [];
+			var query = normGeoQuery(cityInput.value);
 			if (!list.length) {
-				var empty = document.createElement("li");
-				empty.className = "sw-geo-picker-empty";
-				empty.textContent = county ? "Nicio localitate" : "Alege județul";
-				cityListEl.appendChild(empty);
+				var emptyCounty = document.createElement("li");
+				emptyCounty.className = "sw-geo-picker-empty";
+				emptyCounty.textContent = county ? "Nicio localitate" : "Alege județul";
+				cityListEl.appendChild(emptyCounty);
 				return;
 			}
+			var shown = 0;
 			for (var j = 0; j < list.length; j++) {
-				(function(name) {
+				var cityName = list[j];
+				if (!geoItemMatchesQuery(cityName, query)) continue;
+				shown++;
+				(function(localityName) {
 					var li = document.createElement("li");
 					var btn = document.createElement("button");
 					btn.type = "button";
-					btn.textContent = name;
+					btn.textContent = localityName;
 					btn.addEventListener("click", function(ev) {
 						ev.preventDefault();
 						ev.stopPropagation();
-						cityInput.value = name;
+						cityInput.value = localityName;
 						dispatchGeoInput(cityInput);
 						closePanels();
 					});
 					li.appendChild(btn);
 					cityListEl.appendChild(li);
-				})(list[j]);
+				})(cityName);
+			}
+			if (!shown) {
+				var empty = document.createElement("li");
+				empty.className = "sw-geo-picker-empty";
+				empty.textContent = "Nicio potrivire";
+				cityListEl.appendChild(empty);
 			}
 		}
 
@@ -1478,19 +1518,27 @@
 			if (on) {
 				countyInput.removeAttribute("list");
 				cityInput.removeAttribute("list");
-				countyInput.setAttribute("readonly", "readonly");
-				cityInput.setAttribute("readonly", "readonly");
-				countyInput.setAttribute("inputmode", "none");
-				cityInput.setAttribute("inputmode", "none");
+				countyInput.removeAttribute("readonly");
+				cityInput.removeAttribute("readonly");
+				countyInput.setAttribute("inputmode", "search");
+				cityInput.setAttribute("inputmode", "search");
+				countyInput.setAttribute("autocomplete", "off");
+				cityInput.setAttribute("autocomplete", "off");
+				countyInput.setAttribute("autocorrect", "off");
+				cityInput.setAttribute("autocorrect", "off");
+				countyInput.setAttribute("spellcheck", "false");
+				cityInput.setAttribute("spellcheck", "false");
 				fillCountyList();
 				fillCityList();
 			} else {
 				countyInput.setAttribute("list", "county-list-servicii");
 				cityInput.setAttribute("list", "city-list-servicii");
-				countyInput.removeAttribute("readonly");
-				cityInput.removeAttribute("readonly");
 				countyInput.removeAttribute("inputmode");
 				cityInput.removeAttribute("inputmode");
+				countyInput.removeAttribute("autocorrect");
+				cityInput.removeAttribute("autocorrect");
+				countyInput.removeAttribute("spellcheck");
+				cityInput.removeAttribute("spellcheck");
 				closePanels();
 			}
 		}
@@ -1509,36 +1557,26 @@
 			cityInput.setAttribute("aria-expanded", "true");
 		}
 
-		function toggleCountyPanel() {
-			if (!countyPanel.hidden) {
-				closePanels();
-				return;
-			}
-			openCountyPanel();
-		}
-
-		function toggleCityPanel() {
-			if (!cityPanel.hidden) {
-				closePanels();
-				return;
-			}
-			openCityPanel();
-		}
-
 		window.swPortraitGeoPickerClose = closePanels;
 
-		countyInput.addEventListener("click", function(ev) {
+		countyInput.addEventListener("focus", function() {
 			if (!mq.matches) return;
-			ev.preventDefault();
-			ev.stopPropagation();
-			toggleCountyPanel();
+			openCountyPanel();
 		});
 
-		cityInput.addEventListener("click", function(ev) {
+		cityInput.addEventListener("focus", function() {
 			if (!mq.matches) return;
-			ev.preventDefault();
-			ev.stopPropagation();
-			toggleCityPanel();
+			openCityPanel();
+		});
+
+		countyInput.addEventListener("input", function() {
+			if (!mq.matches) return;
+			openCountyPanel();
+		});
+
+		cityInput.addEventListener("input", function() {
+			if (!mq.matches) return;
+			openCityPanel();
 		});
 
 		document.addEventListener("click", function(ev) {
@@ -1591,10 +1629,23 @@
 			});
 		}
 
+		function resolvedGeoFilters() {
+			var countyMatched = matchCounty(countyInput ? countyInput.value : "");
+			var cityMatched = matchCity(cityInput ? cityInput.value : "", countyInput ? countyInput.value : "");
+			var countyWanted = countyMatched ? norm(countyMatched) : "";
+			var cityWanted = cityMatched ? norm(cityMatched) : "";
+			return {
+				countyWanted: countyWanted,
+				cityWanted: cityWanted,
+				geoActive: !!(countyWanted || cityWanted)
+			};
+		}
+
 		function applyFilters(species) {
-			var countyWanted = norm(countyInput ? countyInput.value : "");
-			var cityWanted = norm(cityInput ? cityInput.value : "");
-			var geoActive = !!(countyWanted || cityWanted);
+			var geo = resolvedGeoFilters();
+			var countyWanted = geo.countyWanted;
+			var cityWanted = geo.cityWanted;
+			var geoActive = geo.geoActive;
 			gridPlaceholders.forEach(function(cell) {
 				cell.style.display = geoActive ? "none" : "";
 			});
