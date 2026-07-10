@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=56-portrait-svc-tabs-3x4" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=57-portrait-geo-picker" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Intra / signup (linie profesională) */
 	body.page-servicii {
@@ -1038,12 +1038,20 @@
 				<div class="sw-s4-inner">
 					<div class="sw-portrait-filters-freeze">
 					<div class="sw-s2-filter-row">
-						<div class="sw-s2-filter-judet">
-							<input type="text" id="sw-judet" class="sw-s2-filter-btn" list="county-list-servicii" placeholder="Județ" autocomplete="off" aria-label="Județ" value="{{ servicii_prefill_county|default:'' }}" />
+						<div class="sw-s2-filter-judet sw-geo-picker-field">
+							<input type="text" id="sw-judet" class="sw-s2-filter-btn" list="county-list-servicii" placeholder="Județ" autocomplete="off" aria-label="Județ" value="{{ servicii_prefill_county|default:'' }}" aria-haspopup="listbox" aria-expanded="false" aria-controls="sw-judet-picker" />
+							<div class="sw-geo-picker-panel" id="sw-judet-picker" hidden>
+								<ul class="sw-geo-picker-list" role="listbox" aria-label="Județe"></ul>
+							</div>
+						</div>
 							{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-servicii" %}
 						</div>
-						<div class="sw-s2-filter-oras">
-							<input type="text" id="sw-oras" class="sw-s2-filter-btn" list="city-list-servicii" placeholder="Oras/Loc" autocomplete="off" aria-label="Oraș / Localitate" value="{{ servicii_prefill_city|default:'' }}" />
+						<div class="sw-s2-filter-oras sw-geo-picker-field">
+							<input type="text" id="sw-oras" class="sw-s2-filter-btn" list="city-list-servicii" placeholder="Oras/Loc" autocomplete="off" aria-label="Oraș / Localitate" value="{{ servicii_prefill_city|default:'' }}" aria-haspopup="listbox" aria-expanded="false" aria-controls="sw-oras-picker" />
+							<div class="sw-geo-picker-panel" id="sw-oras-picker" hidden>
+								<ul class="sw-geo-picker-list" role="listbox" aria-label="Localități"></ul>
+							</div>
+						</div>
 							<datalist id="city-list-servicii"></datalist>
 						</div>
 						<div class="sw-s2-filter-reset-wrap">
@@ -1368,6 +1376,7 @@
 	fetch("{% static 'data/ro_counties_cities.json' %}").then(function(r) { return r.json(); }).then(function(data) {
 		for (var k in data) localitiesByCounty[k] = data[k];
 		updateCityList();
+		if (typeof window.swPortraitGeoPickerRefresh === "function") window.swPortraitGeoPickerRefresh();
 	}).catch(function() {});
 	var countyInput = document.getElementById("sw-judet");
 	if (countyInput) {
@@ -1375,6 +1384,169 @@
 		countyInput.addEventListener("change", updateCityList);
 		updateCityList();
 	}
+
+	(function initSwPortraitGeoPickers() {
+		var mq = window.matchMedia("(max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse)");
+		var countyInput = document.getElementById("sw-judet");
+		var cityInput = document.getElementById("sw-oras");
+		var countyPanel = document.getElementById("sw-judet-picker");
+		var cityPanel = document.getElementById("sw-oras-picker");
+		if (!countyInput || !cityInput || !countyPanel || !cityPanel) return;
+		var countyListEl = countyPanel.querySelector(".sw-geo-picker-list");
+		var cityListEl = cityPanel.querySelector(".sw-geo-picker-list");
+
+		function closePanels() {
+			countyPanel.hidden = true;
+			cityPanel.hidden = true;
+			countyInput.setAttribute("aria-expanded", "false");
+			cityInput.setAttribute("aria-expanded", "false");
+		}
+
+		function dispatchGeoInput(el) {
+			el.dispatchEvent(new Event("input", { bubbles: true }));
+			el.dispatchEvent(new Event("change", { bubbles: true }));
+		}
+
+		function fillCountyList() {
+			if (!countyListEl) return;
+			countyListEl.innerHTML = "";
+			for (var i = 0; i < countyNames.length; i++) {
+				(function(name) {
+					var li = document.createElement("li");
+					var btn = document.createElement("button");
+					btn.type = "button";
+					btn.textContent = name;
+					btn.addEventListener("click", function(ev) {
+						ev.preventDefault();
+						ev.stopPropagation();
+						countyInput.value = name;
+						updateCityList();
+						fillCityList();
+						dispatchGeoInput(countyInput);
+						closePanels();
+					});
+					li.appendChild(btn);
+					countyListEl.appendChild(li);
+				})(countyNames[i]);
+			}
+		}
+
+		function fillCityList() {
+			if (!cityListEl) return;
+			cityListEl.innerHTML = "";
+			var county = matchCounty(countyInput.value);
+			var list = county && localitiesByCounty[county] ? localitiesByCounty[county] : [];
+			if (!list.length) {
+				var empty = document.createElement("li");
+				empty.className = "sw-geo-picker-empty";
+				empty.textContent = county ? "Nicio localitate" : "Alege județul";
+				cityListEl.appendChild(empty);
+				return;
+			}
+			for (var j = 0; j < list.length; j++) {
+				(function(name) {
+					var li = document.createElement("li");
+					var btn = document.createElement("button");
+					btn.type = "button";
+					btn.textContent = name;
+					btn.addEventListener("click", function(ev) {
+						ev.preventDefault();
+						ev.stopPropagation();
+						cityInput.value = name;
+						dispatchGeoInput(cityInput);
+						closePanels();
+					});
+					li.appendChild(btn);
+					cityListEl.appendChild(li);
+				})(list[j]);
+			}
+		}
+
+		window.swPortraitGeoPickerRefresh = fillCityList;
+
+		function applyPortraitMode(on) {
+			if (on) {
+				countyInput.removeAttribute("list");
+				cityInput.removeAttribute("list");
+				countyInput.setAttribute("readonly", "readonly");
+				cityInput.setAttribute("readonly", "readonly");
+				countyInput.setAttribute("inputmode", "none");
+				cityInput.setAttribute("inputmode", "none");
+				fillCountyList();
+				fillCityList();
+			} else {
+				countyInput.setAttribute("list", "county-list-servicii");
+				cityInput.setAttribute("list", "city-list-servicii");
+				countyInput.removeAttribute("readonly");
+				cityInput.removeAttribute("readonly");
+				countyInput.removeAttribute("inputmode");
+				cityInput.removeAttribute("inputmode");
+				closePanels();
+			}
+		}
+
+		function openCountyPanel() {
+			closePanels();
+			fillCountyList();
+			countyPanel.hidden = false;
+			countyInput.setAttribute("aria-expanded", "true");
+		}
+
+		function openCityPanel() {
+			closePanels();
+			fillCityList();
+			cityPanel.hidden = false;
+			cityInput.setAttribute("aria-expanded", "true");
+		}
+
+		function toggleCountyPanel() {
+			if (!countyPanel.hidden) {
+				closePanels();
+				return;
+			}
+			openCountyPanel();
+		}
+
+		function toggleCityPanel() {
+			if (!cityPanel.hidden) {
+				closePanels();
+				return;
+			}
+			openCityPanel();
+		}
+
+		window.swPortraitGeoPickerClose = closePanels;
+
+		countyInput.addEventListener("click", function(ev) {
+			if (!mq.matches) return;
+			ev.preventDefault();
+			ev.stopPropagation();
+			toggleCountyPanel();
+		});
+
+		cityInput.addEventListener("click", function(ev) {
+			if (!mq.matches) return;
+			ev.preventDefault();
+			ev.stopPropagation();
+			toggleCityPanel();
+		});
+
+		document.addEventListener("click", function(ev) {
+			if (!mq.matches || (countyPanel.hidden && cityPanel.hidden)) return;
+			if (ev.target.closest(".sw-geo-picker-field")) return;
+			closePanels();
+		});
+
+		function onMqChange() {
+			applyPortraitMode(mq.matches);
+		}
+		if (typeof mq.addEventListener === "function") {
+			mq.addEventListener("change", onMqChange);
+		} else if (typeof mq.addListener === "function") {
+			mq.addListener(onMqChange);
+		}
+		applyPortraitMode(mq.matches);
+	})();
 
 	// S2.1 selecție specii (Câini / Pisici / Altele)
 	(function initSpeciesButtons() {
@@ -1453,6 +1625,7 @@
 		btn.addEventListener("click", function() {
 			cityEl.value = "";
 			countyEl.value = "";
+			if (typeof window.swPortraitGeoPickerClose === "function") window.swPortraitGeoPickerClose();
 			countyEl.dispatchEvent(new Event("input", { bubbles: true }));
 			cityEl.dispatchEvent(new Event("input", { bubbles: true }));
 		});

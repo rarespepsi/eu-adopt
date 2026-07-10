@@ -909,6 +909,71 @@
     width: 100%;
     box-sizing: border-box;
   }
+
+  #SW .sw-geo-picker-field {
+    position: relative;
+    width: 100%;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  #SW .sw-geo-picker-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    z-index: 30;
+    margin-top: 1px;
+    max-height: min(10rem, 45vh);
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 0.35rem;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+  }
+
+  #SW .sw-geo-picker-panel[hidden] {
+    display: none !important;
+  }
+
+  #SW .sw-geo-picker-list {
+    list-style: none;
+    margin: 0;
+    padding: 2px 0;
+  }
+
+  #SW .sw-geo-picker-list button {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0.3rem 0.42rem;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: #f1f5f9;
+    font-size: 0.52rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: left;
+    cursor: pointer;
+    box-sizing: border-box;
+  }
+
+  #SW .sw-geo-picker-list button:hover,
+  #SW .sw-geo-picker-list button:focus {
+    background: rgba(6, 182, 212, 0.18);
+    outline: none;
+  }
+
+  #SW .sw-geo-picker-empty {
+    padding: 0.35rem 0.42rem;
+    font-size: 0.5rem;
+    color: #94a3b8;
+    text-align: center;
+  }
 }
 
 /* Landscape cu viewport scurt (mobil întors): S1 ascuns; laterale × 2/3 → mijloc 1fr 4fr 1fr */
