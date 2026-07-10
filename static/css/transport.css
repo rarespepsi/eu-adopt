@@ -1023,7 +1023,7 @@
 		inset: auto;
 		width: 100%;
 		height: 100%;
-		transform: none;
+		transform: translate(5mm, 0);
 		pointer-events: none;
 	}
 	/* Bulina rotativă separată — ascunsă pe landscape restrâns (colțurile = cele 2 butoane) */
@@ -1322,7 +1322,7 @@
 		inset: auto;
 		width: 100%;
 		height: 100%;
-		transform: none;
+		transform: translate(5mm, 0);
 		pointer-events: none;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle {
