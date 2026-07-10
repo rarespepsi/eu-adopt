@@ -5,7 +5,7 @@
 {% block body_class %}page-ilove page-ilove--pets{% endblock %}
 
 {% block extra_css_after %}
-<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=20" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=21" type="text/css" media="screen" />
 {% endblock %}
 
 {% block content %}
@@ -78,6 +78,18 @@
 								<div class="ilove-empty">
 									Nu ai niciun câine salvat încă. Apasă inimioara de pe poze.
 								</div>
+							{% endfor %}
+						</div>
+						<div class="ilove-pub-mobil-row" aria-label="Publicitate mobil">
+							{% for slot in ilove_pub_left %}
+							<div class="ilove-case ilove-case--a5" data-slot="{{ slot.code }}">
+								{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}
+							</div>
+							{% endfor %}
+							{% for slot in ilove_pub_right %}
+							<div class="ilove-case ilove-case--a6" data-slot="{{ slot.code }}">
+								{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}
+							</div>
 							{% endfor %}
 						</div>
 					</section>
