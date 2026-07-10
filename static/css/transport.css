@@ -575,6 +575,11 @@
 /* ========== Mobil – pagină Transport ========== */
 /* Sub ~768px (767.98, ca PT): coloană + scroll pagină; fără reguli dedicate doar pentru landscape */
 @media (max-width: 767.98px) {
+	#TW.transport-wrapper,
+	#TW .tw-row {
+		background-color: #141a22 !important;
+		background-image: none !important;
+	}
 	#TW .tw-portrait-stack {
 		display: contents;
 	}

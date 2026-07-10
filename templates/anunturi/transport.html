@@ -5,7 +5,7 @@
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=53-btn-doresc-transport" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=54-mobil-fundal-solid" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Servicii / Intra */
 	body.page-transport {
@@ -60,17 +60,21 @@
 			height: auto !important;
 			min-height: 100vh !important;
 			min-height: 100dvh !important;
+			background-color: #141a22 !important;
 		}
 		body.page-transport #main_wrap {
 			overflow: visible !important;
 			height: auto !important;
 			max-height: none !important;
 			min-height: 0 !important;
+			background: #141a22 !important;
+			background-image: none !important;
 		}
 		body.page-transport #main_content {
 			overflow: visible !important;
 			flex: 1 1 auto !important;
 			min-height: 0 !important;
+			background: transparent !important;
 		}
 		body.page-transport #main_content #TW {
 			overflow: visible !important;
@@ -78,6 +82,12 @@
 			max-height: none !important;
 			flex: 1 1 auto !important;
 			min-height: 0 !important;
+			background: #141a22 !important;
+			background-image: none !important;
+		}
+		body.page-transport #TW .tw-row {
+			background: #141a22 !important;
+			background-image: none !important;
 		}
 	}
 	/* Mobil portrait: înălțime fixă sub A0; T1+T2 împart 50–50 spațiul de deasupra T3 */
@@ -194,11 +204,12 @@
 			box-sizing: border-box !important;
 		}
 	}
-	/* Landscape: fără bandă #141a22 între navbar și fundalul .tw-row */
+	/* Landscape mobil: fundal uniform #141a22 (ca Intra), fără poze transport */
 	@media (max-width: 767.98px) and (orientation: landscape) {
 		body.page-transport #TW.transport-wrapper {
 			padding-top: 0 !important;
-			background: transparent !important;
+			background: #141a22 !important;
+			background-image: none !important;
 		}
 		body.page-transport #TW .tw-row {
 			min-height: calc(100dvh - var(--nav-height, 52px));
@@ -425,26 +436,34 @@
 	var mqMobil = window.matchMedia('(max-width: 767.98px)');
 	function syncTwFundalMobil() {
 		var tw = document.getElementById('TW');
-		if (!tw || !lastFundalUrl) return;
+		var row = tw && tw.querySelector('.tw-row');
+		if (!tw) return;
 		if (mqMobil.matches) {
-			tw.style.backgroundImage = 'url(' + lastFundalUrl + ')';
-			tw.style.backgroundSize = 'cover';
-			tw.style.backgroundPosition = 'center';
-			tw.style.backgroundRepeat = 'no-repeat';
+			tw.style.backgroundImage = '';
+			tw.style.backgroundSize = '';
+			tw.style.backgroundPosition = '';
+			tw.style.backgroundRepeat = '';
+			if (row) {
+				row.style.backgroundImage = '';
+				row.style.backgroundSize = '';
+				row.style.backgroundPosition = '';
+				row.style.backgroundRepeat = '';
+			}
 		} else {
 			tw.style.backgroundImage = '';
 			tw.style.backgroundSize = '';
 			tw.style.backgroundPosition = '';
 			tw.style.backgroundRepeat = '';
+			if (row && lastFundalUrl) {
+				row.style.backgroundImage = 'url(' + lastFundalUrl + ')';
+				row.style.backgroundSize = 'cover';
+				row.style.backgroundPosition = 'center';
+				row.style.backgroundRepeat = 'no-repeat';
+			}
 		}
 	}
 	function setRandomFundal() {
 		lastFundalUrl = fundalUrls[Math.floor(Math.random() * fundalUrls.length)];
-		var tw = document.getElementById('TW');
-		var row = tw && tw.querySelector('.tw-row');
-		if (row) {
-			row.style.backgroundImage = 'url(' + lastFundalUrl + ')';
-		}
 		syncTwFundalMobil();
 	}
 	if (document.readyState === 'loading') {
