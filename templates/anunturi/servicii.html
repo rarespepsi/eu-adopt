@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=49-portrait-5slots-equal" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=48-portrait-filters-freeze-4pub" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Intra / signup (linie profesională) */
 	body.page-servicii {
@@ -1036,8 +1036,6 @@
 			</div>
 			<div id="S2" class="sw-cell sw-cell-4" data-slot="S2">
 				<div class="sw-s4-inner">
-					<div class="sw-portrait-left-stack">
-					<div class="sw-portrait-left-slot sw-portrait-left-slot--1" data-slot="S2-left-1">
 					<div class="sw-portrait-filters-freeze">
 					<div class="sw-s2-filter-row">
 						<div class="sw-s2-filter-judet">
@@ -1061,15 +1059,8 @@
 						</div>
 					</div>
 					</div>
-					</div>
-					</div>
-					<div class="sw-portrait-left-slot sw-portrait-left-slot--2" data-slot="S2-left-2">
 					<div class="sw-s4-box sw-s4-box-match" id="S2.2" data-slot="S2.2">{% for slot in servicii_large_pub_slots %}{% if slot.code == 'S2.2' %}{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}{% endif %}{% endfor %}</div>
-					</div>
-					<div class="sw-portrait-left-slot sw-portrait-left-slot--3" data-slot="S2-left-3">
 					<div class="sw-s4-box sw-s4-box-ads" id="S2.3" data-slot="S2.3">{% for slot in servicii_large_pub_slots %}{% if slot.code == 'S2.3' %}{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}{% endif %}{% endfor %}</div>
-					</div>
-					</div>
 				</div>
 			</div>
 			<div id="S2-mid" class="sw-cell sw-cell-2" data-slot="S2-mid">
@@ -1134,8 +1125,8 @@
 			</div>
 			<div id="S6" class="sw-cell sw-cell-5" data-slot="S6">
 				<div class="sw-s5-grid">
-					<div class="sw-portrait-left-slot sw-portrait-left-slot--4 sw-s5-slot" id="S6.1" data-slot="S6.1">{% for slot in servicii_large_pub_slots %}{% if slot.code == 'S6.1' %}{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}{% endif %}{% endfor %}</div>
-					<div class="sw-portrait-left-slot sw-portrait-left-slot--5 sw-s5-slot" id="S6.2" data-slot="S6.2">{% for slot in servicii_large_pub_slots %}{% if slot.code == 'S6.2' %}{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}{% endif %}{% endfor %}</div>
+					<div class="sw-s5-slot" id="S6.1" data-slot="S6.1">{% for slot in servicii_large_pub_slots %}{% if slot.code == 'S6.1' %}{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}{% endif %}{% endfor %}</div>
+					<div class="sw-s5-slot" id="S6.2" data-slot="S6.2">{% for slot in servicii_large_pub_slots %}{% if slot.code == 'S6.2' %}{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}{% endif %}{% endfor %}</div>
 				</div>
 			</div>
 			<div id="S7" class="sw-cell sw-cell-3" data-slot="S7">
