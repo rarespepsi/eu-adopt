@@ -6,6 +6,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=65-geo-picker-landscape" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/eu-media-modal.css' %}?v=1" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Intra / signup (linie profesională) */
 	body.page-servicii {
@@ -1101,7 +1102,7 @@
 							<div class="sw-s2-1-grid">
 								{% for offer in vet_offers %}
 								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S3.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}" data-offer-county="{% firstof offer.collaborator.profile.company_judet offer.collaborator.profile.judet '' %}" data-offer-city="{% firstof offer.collaborator.profile.company_oras offer.collaborator.profile.oras '' %}">
-									{% include "anunturi/includes/servicii_offer_card_link.html" with offer=offer %}
+									{% include "anunturi/includes/servicii_offer_card_link.html" with offer=offer media_gallery="S3" %}
 								</div>
 								{% endfor %}
 								{% with n=vet_offers|length %}
@@ -1123,7 +1124,7 @@
 							<div class="sw-s2-1-grid">
 								{% for offer in shop_offers %}
 								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S4.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}" data-offer-county="{% firstof offer.collaborator.profile.company_judet offer.collaborator.profile.judet '' %}" data-offer-city="{% firstof offer.collaborator.profile.company_oras offer.collaborator.profile.oras '' %}">
-									{% include "anunturi/includes/servicii_offer_card_link.html" with offer=offer show_pdf_badge=True %}
+									{% include "anunturi/includes/servicii_offer_card_link.html" with offer=offer show_pdf_badge=True media_gallery="S4" %}
 								</div>
 								{% endfor %}
 								{% with n=shop_offers|length %}
@@ -1145,7 +1146,7 @@
 							<div class="sw-s2-1-grid">
 								{% for offer in groom_offers %}
 								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S5.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}" data-offer-county="{% firstof offer.collaborator.profile.company_judet offer.collaborator.profile.judet '' %}" data-offer-city="{% firstof offer.collaborator.profile.company_oras offer.collaborator.profile.oras '' %}">
-									{% include "anunturi/includes/servicii_offer_card_link.html" with offer=offer %}
+									{% include "anunturi/includes/servicii_offer_card_link.html" with offer=offer media_gallery="S5" %}
 								</div>
 								{% endfor %}
 								{% with n=groom_offers|length %}
@@ -1192,12 +1193,14 @@
 	</div>
 </div>
 
+{% include "anunturi/includes/eu_media_modal.html" %}
+
 {% for offer in vet_offers %}
 <template id="sw-vet-offer-modal-tpl-{{ offer.pk }}">
 	<article class="sw-vet-offer-nota">
 		{% if offer.image %}
 		<div class="sw-vet-offer-nota__img-wrap">
-			<img class="sw-vet-offer-nota__img" src="{{ offer.image.url }}" alt="" loading="lazy" />
+			<img class="sw-vet-offer-nota__img js-eu-media-thumb" src="{{ offer.image.url }}" alt="{{ offer.title|escape }}" loading="lazy" data-eu-media-gallery="sw-offer-{{ offer.pk }}" />
 		</div>
 		{% endif %}
 		<p class="sw-vet-offer-nota__partner"><strong>Partener:</strong> {{ offer.partner_display_name }}</p>
@@ -1247,7 +1250,7 @@
 	<article class="sw-vet-offer-nota">
 		{% if offer.image %}
 		<div class="sw-vet-offer-nota__img-wrap">
-			<img class="sw-vet-offer-nota__img" src="{{ offer.image.url }}" alt="" loading="lazy" />
+			<img class="sw-vet-offer-nota__img js-eu-media-thumb" src="{{ offer.image.url }}" alt="{{ offer.title|escape }}" loading="lazy" data-eu-media-gallery="sw-offer-{{ offer.pk }}" />
 		</div>
 		{% endif %}
 		<p class="sw-vet-offer-nota__partner"><strong>Partener:</strong> {{ offer.partner_display_name }}</p>
@@ -1297,7 +1300,7 @@
 	<article class="sw-vet-offer-nota">
 		{% if offer.image %}
 		<div class="sw-vet-offer-nota__img-wrap">
-			<img class="sw-vet-offer-nota__img" src="{{ offer.image.url }}" alt="" loading="lazy" />
+			<img class="sw-vet-offer-nota__img js-eu-media-thumb" src="{{ offer.image.url }}" alt="{{ offer.title|escape }}" loading="lazy" data-eu-media-gallery="sw-offer-{{ offer.pk }}" />
 		</div>
 		{% endif %}
 		<p class="sw-vet-offer-nota__partner"><strong>Partener:</strong> {{ offer.partner_display_name }}</p>
@@ -1346,6 +1349,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/eu-media-modal.js' %}?v=1"></script>
 <script>
 (function () {
 	/* Înălțime reală A0 → --nav-height pe html; același offset ca padding-top #main_content și ca #SW → fără fâșie #FCFCFC sub navbar (vezi PT). */
@@ -2113,8 +2117,14 @@
 	});
 
 	document.addEventListener("keydown", function (e) {
-		if (e.key === "Escape" && !modal.hasAttribute("hidden")) closeModal();
+		if (e.key !== "Escape" || modal.hasAttribute("hidden")) return;
+		var em = document.getElementById("euMediaModal");
+		if (em && !em.hasAttribute("hidden")) return;
+		closeModal();
 	});
 })();
+</script>
+<script>
+if (window.EuMediaModal) EuMediaModal.init();
 </script>
 {% endblock %}

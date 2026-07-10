@@ -37,7 +37,7 @@
 	<a class="sw-s2-1-vet-offer-link sw-vet-offer-modal-trigger" href="{% url 'public_offer_detail' offer.pk %}" data-modal-tpl="sw-vet-offer-modal-tpl-{{ offer.pk }}" aria-label="{{ offer.title|escape }}">
 		<span class="sw-vet-offer-card-stack">
 			<span class="sw-vet-offer-media">
-				{% if offer.image %}<img src="{{ offer.image.url }}" alt="" loading="lazy" />{% endif %}
+				{% if offer.image %}<img class="js-eu-media-thumb" src="{{ offer.image.url }}" alt="{{ offer.title|escape }}" loading="lazy"{% if media_gallery %} data-eu-media-gallery="{{ media_gallery }}"{% endif %} />{% endif %}
 				{% if show_pdf_badge and offer.product_sheet %}<span class="sw-vet-offer-sheet-badge" aria-hidden="true">PDF</span>{% endif %}
 				{% if offer.price_after_discount_display or offer.price_hint or offer.show_stock_public %}
 				<span class="sw-vet-offer-mid" aria-hidden="true">

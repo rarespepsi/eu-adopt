@@ -26,14 +26,13 @@
 		<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
 		<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}?v=20260411a" type="text/css" media="screen" />
 		<link rel="stylesheet" href="{% static 'css/pet-images-common.css' %}?v=3" type="text/css" media="screen" />
-		<link rel="stylesheet" href="{% static 'includes/js/flexslider.css' %}" type="text/css" media="all" />
-		<link rel="stylesheet" href="{% static 'includes/fancybox/jquery.fancybox.css' %}" type="text/css" media="screen" />
+		<link rel="stylesheet" href="{% static 'css/eu-media-modal.css' %}?v=1" type="text/css" media="screen" />
 		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
 		<style>
 			/* PET SINGLE – fundal ca înscriere PF (signup): #141a22 + casete sticlă */
 			/* Tipografie ca la înscriere PF / ONG / Colaborator (.signup-caseta) */
 			body.page-pet-single #MW,
-			body.page-pet-single .pet-media-modal,
+			body.page-pet-single .eu-media-modal,
 			body.page-pet-single .pet-app-msg-modal,
 			body.page-pet-single .pet-adopt-choice-modal {
 				font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -769,198 +768,6 @@
 				cursor: progress;
 			}
 
-			/* Modal media (poze/video) */
-			.pet-media-modal[hidden] { display: none !important; }
-			.pet-media-modal {
-				position: fixed;
-				inset: 0;
-				z-index: 1000004;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				background: rgba(0, 0, 0, 0.65);
-				padding: 1vh 1vw;
-				box-sizing: border-box;
-			}
-			.pet-media-modal__panel {
-				position: relative;
-				/* "x4" vizual: aproape full-screen, dar cu margini pentru click-out */
-				/* cerință: mai îngust (~ -1/3) și mai înalt */
-				width: min(62vw, 1100px);
-				max-width: 96vw;
-				max-height: 96vh;
-				color-scheme: dark;
-				background: linear-gradient(
-					168deg,
-					rgba(24, 32, 46, 0.92) 0%,
-					rgba(14, 20, 32, 0.96) 100%
-				);
-				border: 1px solid rgba(255, 255, 255, 0.1);
-				border-radius: 0.85rem;
-				overflow: hidden;
-				box-shadow:
-					0 0 0 1px rgba(0, 0, 0, 0.45) inset,
-					0 24px 48px rgba(0, 0, 0, 0.55),
-					0 0 0 1px rgba(6, 182, 212, 0.06);
-				backdrop-filter: blur(20px) saturate(1.05);
-				-webkit-backdrop-filter: blur(20px) saturate(1.05);
-				display: flex;
-				flex-direction: column;
-			}
-			.pet-media-modal__close {
-				position: absolute;
-				top: 8px;
-				right: 8px;
-				z-index: 12;
-				width: 34px;
-				height: 34px;
-				border-radius: 999px;
-				border: 1px solid rgba(255, 255, 255, 0.2);
-				background: rgba(15, 23, 42, 0.75);
-				color: #f1f5f9;
-				font-size: 0.78rem;
-				font-weight: 600;
-				font-family: inherit;
-				letter-spacing: 0.02em;
-				cursor: pointer;
-				line-height: 1;
-			}
-			.pet-media-modal__fs {
-				position: absolute;
-				top: 8px;
-				right: 48px;
-				z-index: 12;
-				width: 34px;
-				height: 34px;
-				border-radius: 999px;
-				border: 1px solid rgba(255, 255, 255, 0.2);
-				background: rgba(15, 23, 42, 0.75);
-				color: #f1f5f9;
-				font-size: 0.95rem;
-				font-weight: 600;
-				font-family: inherit;
-				cursor: pointer;
-				line-height: 1;
-				display: inline-flex;
-				align-items: center;
-				justify-content: center;
-				padding: 0;
-			}
-			.pet-media-modal__fs:active { transform: scale(0.97); }
-			.pet-media-modal.is-css-fs {
-				padding: 0 !important;
-				background: #000 !important;
-				align-items: stretch !important;
-			}
-			.pet-media-modal.is-css-fs .pet-media-modal__panel {
-				width: 100vw !important;
-				max-width: 100vw !important;
-				height: 100dvh !important;
-				max-height: 100dvh !important;
-				border-radius: 0 !important;
-				border: none !important;
-				box-shadow: none !important;
-			}
-			.pet-media-modal.is-css-fs .pet-media-modal__body {
-				min-height: 0;
-			}
-			.pet-media-modal.is-css-fs .pet-media-modal__close,
-			.pet-media-modal.is-css-fs .pet-media-modal__fs,
-			.pet-media-modal.is-css-fs .pet-media-modal__share,
-			.pet-media-modal.is-css-fs .pet-media-modal__nav {
-				z-index: 20;
-			}
-			/* Distribuie în nota poze/video (share-sheet) */
-			.pet-media-modal__share {
-				position: absolute;
-				top: 8px;
-				left: 8px;
-				z-index: 12;
-				height: 34px;
-				padding: 0 10px;
-				border-radius: 999px;
-				border: 1px solid rgba(255, 255, 255, 0.18);
-				background: rgba(15, 23, 42, 0.72);
-				color: #f1f5f9;
-				font-size: 0.78rem;
-				font-weight: 600;
-				font-family: inherit;
-				letter-spacing: 0.02em;
-				cursor: pointer;
-				line-height: 1.25;
-				display: inline-flex;
-				align-items: center;
-				gap: 6px;
-				backdrop-filter: blur(10px);
-				-webkit-backdrop-filter: blur(10px);
-			}
-			.pet-media-modal__share:active { transform: scale(0.99); }
-			.pet-media-modal__nav {
-				position: absolute;
-				top: 50%;
-				transform: translateY(-50%);
-				z-index: 12;
-				width: 42px;
-				height: 42px;
-				border-radius: 999px;
-				border: 1px solid rgba(255, 255, 255, 0.35);
-				background: rgba(15, 23, 42, 0.82);
-				color: #f8fafc;
-				font-size: 1.45rem;
-				font-weight: 600;
-				font-family: inherit;
-				line-height: 1;
-				cursor: pointer;
-				display: inline-flex;
-				align-items: center;
-				justify-content: center;
-				box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-				backdrop-filter: blur(8px);
-				-webkit-backdrop-filter: blur(8px);
-				padding: 0;
-			}
-			.pet-media-modal__nav[hidden] { display: none !important; }
-			.pet-media-modal__nav--prev { left: 10px; }
-			.pet-media-modal__nav--next { right: 10px; }
-			.pet-media-modal__nav:active { transform: translateY(-50%) scale(0.97); }
-			.pet-media-modal__body {
-				padding: 0;
-				box-sizing: border-box;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				min-height: 180px;
-				flex: 1 1 auto;
-				position: relative;
-				z-index: 1;
-			}
-			.pet-media-modal__footer[hidden] { display: none !important; }
-			.pet-media-modal__footer {
-				flex: 0 0 auto;
-				padding: 10px 12px;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				background: rgba(15, 23, 42, 0.65);
-				border-top: 1px solid rgba(255, 255, 255, 0.08);
-				color: #e2e8f0;
-				font-size: 0.78rem;
-				line-height: 1.35;
-				font-weight: 400;
-				font-family: inherit;
-			}
-			.pet-media-modal__body img,
-			.pet-media-modal__body video {
-				width: 100%;
-				height: 100%;
-				max-width: none;
-				max-height: none;
-				display: block;
-				border-radius: 0;
-				background: #000;
-				object-fit: contain;
-			}
-
 			/* Etichetă stare adopție (fixed) — tipografie ca signup */
 			body.page-pet-single .pet-adoption-state-corner {
 				position: fixed;
@@ -1524,113 +1331,6 @@
 				gap: 0.5rem;
 			}
 
-			/* Controale video în modal (semitransparente) */
-			.pet-media-modal__video-controls {
-				display: flex !important;
-				gap: 10px;
-				align-items: center;
-				justify-content: center;
-				padding: 10px 12px;
-				border-radius: 999px;
-				background: rgba(0, 0, 0, 0.62);
-				border: 1px solid rgba(255, 255, 255, 0.38);
-				backdrop-filter: blur(2px);
-				pointer-events: auto;
-			}
-			.pet-media-modal__vc-btn {
-				width: 52px;
-				height: 52px;
-				border-radius: 999px;
-				border: 1px solid rgba(255,255,255,0.78);
-				background: rgba(255,255,255,0.22);
-				color: #fff;
-				font-weight: 600;
-				font-family: inherit;
-				font-size: 20px;
-				line-height: 1;
-				cursor: pointer;
-				display: inline-flex;
-				align-items: center;
-				justify-content: center;
-				user-select: none;
-				text-shadow: 0 2px 8px rgba(0,0,0,0.75);
-			}
-			.pet-media-modal__vc-btn:active { transform: scale(0.98); }
-			.pet-media-modal__vc-btn:focus { outline: 2px solid rgba(255,255,255,0.7); outline-offset: 2px; }
-
-			/* Mobil landscape: X vizibil peste navbar + video */
-			@media (max-width: 767.98px) and (orientation: landscape) {
-				.pet-media-modal {
-					padding: max(0.35rem, env(safe-area-inset-top, 0px)) 0.5rem max(0.35rem, env(safe-area-inset-bottom, 0px));
-					align-items: stretch;
-				}
-				.pet-media-modal__panel {
-					width: min(96vw, 920px);
-					max-width: 96vw;
-					max-height: calc(100dvh - max(0.35rem, env(safe-area-inset-top, 0px)) - max(0.35rem, env(safe-area-inset-bottom, 0px)));
-					margin: 0 auto;
-				}
-				.pet-media-modal__close,
-				.pet-media-modal__share {
-					top: max(6px, env(safe-area-inset-top, 0px));
-					width: 40px;
-					height: 40px;
-					font-size: 0.9rem;
-					background: rgba(15, 23, 42, 0.92);
-					border-color: rgba(255, 255, 255, 0.45);
-					box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
-				}
-				.pet-media-modal__share {
-					left: max(6px, env(safe-area-inset-left, 0px));
-					width: auto;
-					min-width: 40px;
-					padding: 0 10px;
-				}
-				.pet-media-modal__close {
-					right: max(6px, env(safe-area-inset-right, 0px));
-				}
-				.pet-media-modal__fs {
-					top: max(6px, env(safe-area-inset-top, 0px));
-					right: max(52px, calc(env(safe-area-inset-right, 0px) + 46px));
-					width: 40px;
-					height: 40px;
-					font-size: 1rem;
-					background: rgba(15, 23, 42, 0.92);
-					border-color: rgba(255, 255, 255, 0.45);
-					box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
-				}
-				.pet-media-modal.is-css-fs {
-					padding: 0 !important;
-				}
-				.pet-media-modal.is-css-fs .pet-media-modal__panel {
-					width: 100vw !important;
-					max-width: 100vw !important;
-					height: 100dvh !important;
-					max-height: 100dvh !important;
-				}
-				.pet-media-modal__nav {
-					width: 38px;
-					height: 38px;
-					font-size: 1.25rem;
-				}
-				.pet-media-modal__nav--prev {
-					left: max(4px, env(safe-area-inset-left, 0px));
-				}
-				.pet-media-modal__nav--next {
-					right: max(4px, env(safe-area-inset-right, 0px));
-				}
-				.pet-media-modal__body {
-					min-height: 0;
-				}
-				.pet-media-modal__footer {
-					padding: 8px 10px;
-				}
-				.pet-media-modal__vc-btn {
-					width: 44px;
-					height: 44px;
-					font-size: 18px;
-				}
-			}
 		</style>
 	</head>
 	<body class="content_left scheme_red page-pet-single" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
@@ -1892,17 +1592,7 @@
 			</section>
 		</section>
 
-		<div class="pet-media-modal" id="petMediaModal" hidden>
-			<div class="pet-media-modal__panel" role="dialog" aria-modal="true" aria-label="Media">
-				<button type="button" class="pet-media-modal__share" id="petMediaModalShare" aria-label="Distribuie">↗ Distribuie</button>
-				<button type="button" class="pet-media-modal__fs" id="petMediaModalFs" aria-label="Ecran complet" title="Ecran complet">⛶</button>
-				<button type="button" class="pet-media-modal__close" id="petMediaModalClose" aria-label="Închide">X</button>
-				<button type="button" class="pet-media-modal__nav pet-media-modal__nav--prev" id="petMediaModalPrev" aria-label="Poza anterioară" hidden>‹</button>
-				<button type="button" class="pet-media-modal__nav pet-media-modal__nav--next" id="petMediaModalNext" aria-label="Poza următoare" hidden>›</button>
-				<div class="pet-media-modal__body" id="petMediaModalBody"></div>
-				<div class="pet-media-modal__footer" id="petMediaModalFooter" hidden></div>
-			</div>
-		</div>
+		{% include "anunturi/includes/eu_media_modal.html" with show_share=True %}
 
 		<div id="petAppMsgModal" class="pet-app-msg-modal" hidden aria-hidden="true">
 			<div class="pet-app-msg-modal__backdrop" id="petAppMsgBackdrop"></div>
@@ -1953,6 +1643,7 @@
 		{% endif %}
 
 		{% with page_url=request.build_absolute_uri %}
+		<script src="{% static 'js/eu-media-modal.js' %}?v=1"></script>
 		<script>
 		(function() {
 			// Fundal: Transport + voal #141a22 (~78%) pe #main_wrap; casete sticlă echilibrate
@@ -2024,155 +1715,11 @@
 				}
 			})();
 
-			// Modal poze/video (click -> preview mare, close X / click afară / Esc)
-			var modal = document.getElementById("petMediaModal");
-			var modalPanel = modal && modal.querySelector(".pet-media-modal__panel");
-			var modalBody = document.getElementById("petMediaModalBody");
-			var modalClose = document.getElementById("petMediaModalClose");
-			var modalFs = document.getElementById("petMediaModalFs");
-			var modalPrev = document.getElementById("petMediaModalPrev");
-			var modalNext = document.getElementById("petMediaModalNext");
-			var modalFooter = document.getElementById("petMediaModalFooter");
-			var modalShare = document.getElementById("petMediaModalShare");
+			// Modal poze/video — EuMediaModal (static/js/eu-media-modal.js)
 			var petAppMsgModal = document.getElementById("petAppMsgModal");
 			var petAppMsgText = document.getElementById("petAppMsgText");
 			var petAppMsgOk = document.getElementById("petAppMsgOk");
 			var petAppMsgBackdrop = document.getElementById("petAppMsgBackdrop");
-			var galleryItems = [];
-			var galleryIndex = -1;
-			var modalMode = null;
-			var cssFullscreenOn = false;
-
-			function getModalMediaEl() {
-				return modalBody ? modalBody.querySelector("img, video") : null;
-			}
-
-			function nativeFullscreenEl() {
-				return document.fullscreenElement || document.webkitFullscreenElement || null;
-			}
-
-			function fsApiEnabled() {
-				return !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
-			}
-
-			function requestElFullscreen(el) {
-				if (!el) return Promise.reject();
-				if (el.requestFullscreen) return el.requestFullscreen();
-				if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
-				return Promise.reject();
-			}
-
-			function exitNativeFullscreen() {
-				if (document.exitFullscreen) return document.exitFullscreen();
-				if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
-				return Promise.resolve();
-			}
-
-			function syncFsButton() {
-				if (!modalFs) return;
-				var active = cssFullscreenOn || !!nativeFullscreenEl();
-				modalFs.setAttribute("aria-label", active ? "Restrânge" : "Ecran complet");
-				modalFs.title = active ? "Restrânge" : "Ecran complet";
-				modalFs.textContent = active ? "⤡" : "⛶";
-			}
-
-			function setCssFullscreen(on) {
-				cssFullscreenOn = !!on;
-				if (modal) modal.classList.toggle("is-css-fs", cssFullscreenOn);
-				syncFsButton();
-			}
-
-			function exitAllFullscreen() {
-				setCssFullscreen(false);
-				if (nativeFullscreenEl()) {
-					try {
-						exitNativeFullscreen();
-					} catch (e) {}
-				}
-				syncFsButton();
-			}
-
-			function toggleModalFullscreen() {
-				var media = getModalMediaEl();
-				if (cssFullscreenOn || nativeFullscreenEl()) {
-					exitAllFullscreen();
-					return;
-				}
-				if (media && media.tagName === "VIDEO" && typeof media.webkitEnterFullscreen === "function") {
-					try {
-						media.webkitEnterFullscreen();
-						syncFsButton();
-						return;
-					} catch (e) {}
-				}
-				if (modalPanel && fsApiEnabled()) {
-					requestElFullscreen(modalPanel).then(syncFsButton).catch(function() {
-						if (media && fsApiEnabled()) {
-							requestElFullscreen(media).then(syncFsButton).catch(function() {
-								setCssFullscreen(true);
-							});
-							return;
-						}
-						setCssFullscreen(true);
-					});
-					return;
-				}
-				if (media && fsApiEnabled()) {
-					requestElFullscreen(media).then(syncFsButton).catch(function() {
-						setCssFullscreen(true);
-					});
-					return;
-				}
-				setCssFullscreen(true);
-			}
-
-			document.addEventListener("fullscreenchange", function() {
-				if (!nativeFullscreenEl()) syncFsButton();
-			});
-			document.addEventListener("webkitfullscreenchange", function() {
-				if (!nativeFullscreenEl()) syncFsButton();
-			});
-
-			function buildGalleryItems() {
-				return Array.prototype.slice.call(document.querySelectorAll(".js-pet-media-thumb")).map(function(img) {
-					return {
-						type: "image",
-						thumbSrc: img.getAttribute("src") || "",
-						modalSrc: img.getAttribute("data-modal-src") || img.getAttribute("src") || "",
-						alt: img.getAttribute("alt") || ""
-					};
-				});
-			}
-
-			function updateGalleryNav() {
-				var show = modalMode === "image" && galleryItems.length > 1;
-				if (modalPrev) modalPrev.hidden = !show;
-				if (modalNext) modalNext.hidden = !show;
-			}
-
-			function showGalleryImage(index) {
-				if (!modal || !modalBody || !galleryItems.length) return;
-				galleryIndex = (index + galleryItems.length) % galleryItems.length;
-				var item = galleryItems[galleryIndex];
-				modalBody.innerHTML = "";
-				modalBody.classList.add("pet-media-modal__body--loading");
-				var img = document.createElement("img");
-				img.alt = item.alt || "";
-				img.decoding = "async";
-				img.onload = function() {
-					modalBody.classList.remove("pet-media-modal__body--loading");
-				};
-				img.onerror = function() {
-					modalBody.classList.remove("pet-media-modal__body--loading");
-					if (item.thumbSrc && item.modalSrc !== item.thumbSrc) {
-						img.src = item.thumbSrc;
-					}
-				};
-				img.src = item.modalSrc;
-				modalBody.appendChild(img);
-				if (modalFooter) { modalFooter.innerHTML = ""; modalFooter.hidden = true; }
-				updateGalleryNav();
-			}
 
 			function showPetAppMessage(message, onClose) {
 				var msg = (message || "").toString();
@@ -2215,121 +1762,6 @@
 				petAppMsgBackdrop.addEventListener("click", onBackdrop);
 				document.addEventListener("keydown", onKey, true);
 				petAppMsgOk.focus();
-			}
-
-			function closeModal() {
-				if (!modal) return;
-				exitAllFullscreen();
-				modal.hidden = true;
-				modalMode = null;
-				galleryIndex = -1;
-				galleryItems = [];
-				document.body.style.overflow = "";
-				if (modalBody) modalBody.innerHTML = "";
-				if (modalFooter) { modalFooter.innerHTML = ""; modalFooter.hidden = true; }
-				updateGalleryNav();
-			}
-			function openImage(src, alt, el) {
-				if (!modal || !modalBody) return;
-				galleryItems = buildGalleryItems();
-				modalMode = "image";
-				var idx = 0;
-				if (el) {
-					var thumbs = document.querySelectorAll(".js-pet-media-thumb");
-					for (var i = 0; i < thumbs.length; i++) {
-						if (thumbs[i] === el) { idx = i; break; }
-					}
-				}
-				showGalleryImage(idx);
-				modal.hidden = false;
-				syncFsButton();
-				document.body.style.overflow = "hidden";
-			}
-			function openVideo(src) {
-				if (!src) return;
-				if (!modal || !modalBody) return;
-				modalMode = "video";
-				galleryItems = [];
-				galleryIndex = -1;
-				updateGalleryNav();
-				modalBody.innerHTML = "";
-				var v = document.createElement("video");
-				v.src = src;
-				v.controls = false;
-				v.playsInline = true;
-				v.preload = "metadata";
-				v.setAttribute("aria-label", "Video");
-				v.addEventListener("webkitendfullscreen", syncFsButton);
-
-				modalBody.appendChild(v);
-
-				if (modalFooter) {
-					modalFooter.innerHTML = "";
-					var controls = document.createElement("div");
-					controls.className = "pet-media-modal__video-controls";
-
-					var btnBack = document.createElement("button");
-					btnBack.type = "button";
-					btnBack.className = "pet-media-modal__vc-btn";
-					btnBack.title = "Înapoi 5 sec";
-					btnBack.setAttribute("aria-label", "Înapoi 5 secunde");
-					btnBack.textContent = "⏪";
-
-					var btnPlay = document.createElement("button");
-					btnPlay.type = "button";
-					btnPlay.className = "pet-media-modal__vc-btn";
-					btnPlay.title = "Play / Pauză";
-					btnPlay.setAttribute("aria-label", "Play sau pauză");
-					btnPlay.textContent = "⏸";
-
-					var btnFwd = document.createElement("button");
-					btnFwd.type = "button";
-					btnFwd.className = "pet-media-modal__vc-btn";
-					btnFwd.title = "Înainte 5 sec";
-					btnFwd.setAttribute("aria-label", "Înainte 5 secunde");
-					btnFwd.textContent = "⏩";
-
-					function clampTime(t) {
-						if (!isFinite(t)) return 0;
-						var d = v.duration;
-						if (!isFinite(d) || d <= 0) return Math.max(0, t);
-						return Math.min(Math.max(0, t), d);
-					}
-					function togglePlay() {
-						if (v.paused) v.play().catch(function() {});
-						else v.pause();
-					}
-					function syncPlayIcon() {
-						btnPlay.textContent = v.paused ? "▶" : "⏸";
-					}
-
-					btnBack.addEventListener("click", function(e) {
-						e.stopPropagation();
-						v.currentTime = clampTime((v.currentTime || 0) - 5);
-					});
-					btnFwd.addEventListener("click", function(e) {
-						e.stopPropagation();
-						v.currentTime = clampTime((v.currentTime || 0) + 5);
-					});
-					btnPlay.addEventListener("click", function(e) {
-						e.stopPropagation();
-						togglePlay();
-					});
-					v.addEventListener("play", syncPlayIcon);
-					v.addEventListener("pause", syncPlayIcon);
-					v.addEventListener("ended", syncPlayIcon);
-					v.addEventListener("loadedmetadata", syncPlayIcon);
-
-					controls.appendChild(btnBack);
-					controls.appendChild(btnPlay);
-					controls.appendChild(btnFwd);
-					modalFooter.appendChild(controls);
-					modalFooter.hidden = false;
-				}
-				modal.hidden = false;
-				syncFsButton();
-				document.body.style.overflow = "hidden";
-				try { v.play(); } catch (e) {}
 			}
 
 			// Distribuie în notă (share-sheet). Trimite linkul fișei.
@@ -2445,80 +1877,12 @@
 				} catch (e) {}
 				load();
 			})();
-			if (modalShare) {
-				modalShare.addEventListener("click", function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-					shareOrCopyPetLink();
+			if (window.EuMediaModal) {
+				EuMediaModal.init({
+					shareHandler: shareOrCopyPetLink,
+					onMediaView: function() { trackPetEvent("media_view"); }
 				});
 			}
-			if (modalFs) {
-				modalFs.addEventListener("click", function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-					toggleModalFullscreen();
-				});
-			}
-			if (modalPrev) {
-				modalPrev.addEventListener("click", function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-					if (modalMode === "image" && galleryItems.length > 1) {
-						showGalleryImage(galleryIndex - 1);
-					}
-				});
-			}
-			if (modalNext) {
-				modalNext.addEventListener("click", function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-					if (modalMode === "image" && galleryItems.length > 1) {
-						showGalleryImage(galleryIndex + 1);
-					}
-				});
-			}
-			document.addEventListener("click", function(e) {
-				var img = e.target && e.target.closest(".js-pet-media-thumb");
-				if (img && img.tagName === "IMG") {
-					trackPetEvent("media_view");
-					openImage(img.getAttribute("src"), img.getAttribute("alt"), img);
-					return;
-				}
-				var vid = e.target && e.target.closest(".js-pet-video-thumb");
-				if (vid) {
-					var src = vid.getAttribute("data-video-src") || "";
-					if (src) {
-						trackPetEvent("media_view");
-						openVideo(src);
-					}
-					return;
-				}
-				if (modal && !modal.hidden) {
-					if (e.target === modal) closeModal();
-					if (modalClose && (e.target === modalClose)) closeModal();
-				}
-			});
-			document.addEventListener("keydown", function(e) {
-				if (!modal || modal.hidden) return;
-				if (e.key === "Escape") {
-					if (cssFullscreenOn || nativeFullscreenEl()) {
-						e.preventDefault();
-						exitAllFullscreen();
-						return;
-					}
-					closeModal();
-					return;
-				}
-				if (modalMode === "image" && galleryItems.length > 1) {
-					if (e.key === "ArrowLeft") {
-						e.preventDefault();
-						showGalleryImage(galleryIndex - 1);
-					} else if (e.key === "ArrowRight") {
-						e.preventDefault();
-						showGalleryImage(galleryIndex + 1);
-					}
-				}
-			});
 
 			document.querySelectorAll(".js-finalize-form-pet").forEach(function(form) {
 				form.addEventListener("submit", function(e) {

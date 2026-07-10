@@ -11,7 +11,7 @@
 		<article class="oferte-d-card">
 			{% if offer.image %}
 			<div class="oferte-d-img-wrap">
-				<img src="{{ offer.image.url }}" alt="" class="oferte-d-img" />
+				<img src="{{ offer.image.url }}" alt="{{ offer.title|escape }}" class="oferte-d-img js-eu-media-thumb" data-eu-media-gallery="oferte-d-{{ offer.pk }}" />
 				{% if offer.discount_percent %}
 				<span class="oferte-d-pill">−{{ offer.discount_percent }}%</span>
 				{% endif %}
@@ -78,9 +78,12 @@
 		</article>
 	</div>
 </section>
+
+{% include "anunturi/includes/eu_media_modal.html" %}
 {% endblock %}
 
 {% block extra_css_after %}
+<link rel="stylesheet" href="{% static 'css/eu-media-modal.css' %}?v=1" type="text/css" media="screen" />
 <style>
 	.oferte-d-wrap {
 		padding: 0.75rem 1rem 2rem;
@@ -289,4 +292,9 @@
 		background: #1b5e20;
 	}
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/eu-media-modal.js' %}?v=1"></script>
+<script>if (window.EuMediaModal) EuMediaModal.init();</script>
 {% endblock %}

@@ -1,0 +1,19 @@
+{% comment %}
+  Modal partajat poze/video — EuMediaModal (static/js/eu-media-modal.js).
+  show_share: afișează buton Distribuie (ex. fișă animal).
+{% endcomment %}
+<div class="eu-media-modal" id="euMediaModal" hidden data-auto-init="false">
+	<div class="eu-media-modal__panel" role="dialog" aria-modal="true" aria-label="Media">
+		{% if show_share %}
+		<button type="button" class="eu-media-modal__share" id="euMediaModalShare" aria-label="Distribuie">↗ Distribuie</button>
+		{% else %}
+		<button type="button" class="eu-media-modal__share" id="euMediaModalShare" hidden aria-hidden="true" tabindex="-1">↗ Distribuie</button>
+		{% endif %}
+		<button type="button" class="eu-media-modal__fs" id="euMediaModalFs" aria-label="Ecran complet" title="Ecran complet">⛶</button>
+		<button type="button" class="eu-media-modal__close" id="euMediaModalClose" aria-label="Închide">X</button>
+		<button type="button" class="eu-media-modal__nav eu-media-modal__nav--prev" id="euMediaModalPrev" aria-label="Poza anterioară" hidden>‹</button>
+		<button type="button" class="eu-media-modal__nav eu-media-modal__nav--next" id="euMediaModalNext" aria-label="Poza următoare" hidden>›</button>
+		<div class="eu-media-modal__body" id="euMediaModalBody"></div>
+		<div class="eu-media-modal__footer" id="euMediaModalFooter" hidden></div>
+	</div>
+</div>
