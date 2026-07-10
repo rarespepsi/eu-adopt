@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=64-landscape-filters-pub-match" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=65-geo-picker-landscape" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Intra / signup (linie profesională) */
 	body.page-servicii {
@@ -1436,7 +1436,10 @@
 	}
 
 	(function initSwPortraitGeoPickers() {
-		var mq = window.matchMedia("(max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse)");
+		var mq = window.matchMedia(
+			"(max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse), " +
+			"(orientation: landscape) and (max-height: 500px) and (hover: none) and (pointer: coarse)"
+		);
 		var countyInput = document.getElementById("sw-judet");
 		var cityInput = document.getElementById("sw-oras");
 		var countyPanel = document.getElementById("sw-judet-picker");

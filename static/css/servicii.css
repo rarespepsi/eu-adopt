@@ -980,12 +980,17 @@
     width: 100%;
     box-sizing: border-box;
   }
+}
 
+/* Touch mobil portrait + landscape: picker geo Județ / Oraș (aceleași setări) */
+@media (max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse),
+  (orientation: landscape) and (max-height: 500px) and (hover: none) and (pointer: coarse) {
   #SW .sw-geo-picker-field {
     position: relative;
     width: 100%;
     min-height: 0;
     overflow: visible;
+    z-index: 4;
   }
 
   #SW .sw-geo-picker-panel {
@@ -1092,6 +1097,8 @@
     min-width: 0;
     width: 100%;
     box-sizing: border-box;
+    overflow: visible;
+    z-index: 2;
   }
 
   #SW .sw-landscape-left-col .sw-portrait-filters-freeze {
@@ -1100,7 +1107,7 @@
     gap: 1px;
     min-height: 0;
     padding: 2px;
-    overflow: hidden;
+    overflow: visible;
     flex: none !important;
     background: linear-gradient(165deg, rgba(88, 28, 135, 0.22) 0%, rgba(15, 23, 42, 0.98) 45%, #0f172a 100%);
     border: 1px solid rgba(255, 255, 255, 0.06);

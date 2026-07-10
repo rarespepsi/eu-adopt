@@ -67,7 +67,7 @@ grid-template-rows: minmax(72px, 72px) auto repeat(4, minmax(0, 1fr));
 - **Resetează:** clipește (`.is-geo-filter-active`) când filtrul geo e activ.
 - **0 oferte:** mesaj Notă + scuze; hint județ din cont (`data-user-home-county` pe `#SW`).
 
-**JS portrait-only:** `initSwPortraitGeoPickers()` — MQ portrait strict; `initSwMidSvcTabs()` include și landscape.
+**JS portrait + landscape touch:** `initSwPortraitGeoPickers()` — MQ portrait **și** landscape (`max-height: 500px`, touch). `initSwMidSvcTabs()` include același landscape.
 
 ---
 
