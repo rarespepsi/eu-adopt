@@ -1283,9 +1283,13 @@
 		-webkit-overflow-scrolling: touch;
 		max-height: 100%;
 	}
-	/* Bulina rotativă stânga-sus — ascunsă pe portrait restrâns (dezechilibrează centrul vizual) */
 	#TW #T2:not(.tw-t2--hub-open) .t2-extra-circle {
-		display: none !important;
+		display: flex !important;
+		width: min(20vmin, 88px);
+		height: min(20vmin, 88px);
+		top: 0.12rem;
+		left: 0.12rem;
+		z-index: 55;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-hub {
 		flex: 0 0 auto;
@@ -1326,9 +1330,6 @@
 		height: min(11vmin, 54px);
 		margin-left: min(-5.5vmin, -27px);
 		margin-top: min(-5.5vmin, -27px);
-	}
-	#TW #T2:not(.tw-t2--hub-open) .t2-extra-circle {
-		display: none !important;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-donate-cause-wrap {
 		top: auto !important;
