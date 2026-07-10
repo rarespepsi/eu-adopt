@@ -30,8 +30,10 @@ alwaysApply: true
 | **Grid** | `1fr 4fr 1fr` — laterale înguste, centru lat |
 | **Laterale** | Layout desktop S4 (stânga) + S5 (dreapta) — **nu** blocul portrait 6+4 |
 | **Centru** | Tab-uri Cabinete / Magazine / Saloane; grilă **3×8**, `height: 400%`, ~2 rânduri vizibile + scroll |
-| **Geo picker** | **Doar portrait** — landscape folosește `datalist` desktop |
-| **Reset blink / mesaj gol** | Funcționează global (JS), nu portrait-only |
+| **Geo picker** | **La fel ca portrait** — typeahead, listă la tap, fără `datalist` |
+| **Reset blink / mesaj gol** | Funcționează global (JS) |
+
+**Regulă:** filtrele Județ / Oraș / Resetează / specie = **aceleași funcții** portrait și landscape touch.
 
 ---
 
