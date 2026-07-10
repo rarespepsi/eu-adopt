@@ -5,7 +5,7 @@
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=51-ring-8mm-3mm" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=52-btn-formular" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Servicii / Intra */
 	body.page-transport {
@@ -313,8 +313,8 @@
 			</div>
 			<div id="T2" class="tw-cell" data-slot="T2">
 				<div class="t2-inner">
-					<button type="button" class="t2-portrait-expand-btn" id="t2PortraitExpand" aria-expanded="false">
-						FII PARTE DIN DRUM
+					<button type="button" class="t2-portrait-expand-btn" id="t2PortraitExpand" aria-expanded="false" aria-controls="t1Expandable">
+						Completează cererea
 					</button>
 					<button type="button" class="t2-portrait-collapse-btn" id="t2PortraitCollapse" aria-expanded="true">
 						Restrânge zona autocar
@@ -522,10 +522,10 @@
 	});
 	t2Expand.addEventListener("click", function() {
 		if (!mq.matches) return;
-		closeT1Form();
-		t2.classList.add("tw-t2--hub-open");
-		syncT2Aria(true);
-		syncT1Aria(false);
+		closeT2();
+		t1.classList.add("tw-t1--form-open");
+		syncT1Aria(true);
+		syncT2Aria(false);
 		refreshStack();
 	});
 	t2Collapse.addEventListener("click", function() {

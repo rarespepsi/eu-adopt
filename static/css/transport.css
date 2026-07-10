@@ -1442,7 +1442,7 @@
 		cursor: pointer;
 		text-align: center;
 	}
-	/* Portrait restrâns: FII PARTE stânga / Donează dreapta — JOS, deasupra benzii T3 pub */
+	/* Portrait restrâns: formular stânga / Donează dreapta — JOS, deasupra benzii T3 pub */
 	#TW #T2:not(.tw-t2--hub-open) .t2-portrait-expand-btn {
 		color: #fff;
 		background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
