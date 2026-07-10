@@ -101,6 +101,23 @@
 		background: rgba(15, 23, 42, 0.62);
 		filter: brightness(1.05);
 	}
+	@keyframes sw-reset-text-blink {
+		0%, 100% {
+			opacity: 1;
+			color: #f8fafc;
+		}
+		50% {
+			opacity: 0.4;
+			color: #22d3ee;
+		}
+	}
+	#SW .sw-s2-filter-reset-btn.is-geo-filter-active {
+		animation: sw-reset-text-blink 1.15s ease-in-out infinite;
+		border-color: rgba(6, 182, 212, 0.45);
+	}
+	#SW .sw-s2-filter-reset-btn.is-geo-filter-active:hover {
+		animation: sw-reset-text-blink 1.15s ease-in-out infinite;
+	}
 	/* S2.1, S2.2, S2.3 mai mici ca să încapă cele două butoane de filtru */
 	#SW .sw-s4-box-filters,
 	#SW .sw-s4-box-match,
@@ -1641,6 +1658,11 @@
 			};
 		}
 
+		function syncResetBlink(geoActive) {
+			var resetBtn = document.getElementById("sw-geo-reset");
+			if (resetBtn) resetBtn.classList.toggle("is-geo-filter-active", !!geoActive);
+		}
+
 		function applyFilters(species) {
 			var geo = resolvedGeoFilters();
 			var countyWanted = geo.countyWanted;
@@ -1664,6 +1686,7 @@
 				card.style.display = show ? "" : "none";
 			});
 			updateGeoEmptyStates(geoActive);
+			syncResetBlink(geoActive);
 			try {
 				var swEl = document.getElementById("SW");
 				if (swEl) swEl.dispatchEvent(new CustomEvent("sw-servicii-filters", { bubbles: false }));
