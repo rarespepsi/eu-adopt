@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=61-reset-blink" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=63-landscape-pubs-1-3" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Intra / signup (linie profesională) */
 	body.page-servicii {
@@ -1053,6 +1053,7 @@
 			</div>
 			<div id="S2" class="sw-cell sw-cell-4" data-slot="S2">
 				<div class="sw-s4-inner">
+					<div class="sw-landscape-left-col">
 					<div class="sw-portrait-filters-freeze">
 					<div class="sw-s2-filter-row">
 						<div class="sw-s2-filter-judet sw-geo-picker-field">
@@ -1083,6 +1084,7 @@
 					</div>
 					</div>
 					<div class="sw-s4-box sw-s4-box-match" id="S2.2" data-slot="S2.2">{% for slot in servicii_large_pub_slots %}{% if slot.code == 'S2.2' %}{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}{% endif %}{% endfor %}</div>
+					</div>
 					<div class="sw-s4-box sw-s4-box-ads" id="S2.3" data-slot="S2.3">{% for slot in servicii_large_pub_slots %}{% if slot.code == 'S2.3' %}{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}{% endif %}{% endfor %}</div>
 				</div>
 			</div>
@@ -1632,12 +1634,46 @@
 			return stripAccents(String(s)).trim().toLowerCase();
 		}
 
+		function buildGeoEmptyCopy() {
+			var swEl = document.getElementById("SW");
+			var homeCounty = swEl ? String(swEl.getAttribute("data-user-home-county") || "").trim() : "";
+			var selectedCounty = matchCounty(countyInput ? countyInput.value : "");
+			var selectedCity = matchCity(cityInput ? cityInput.value : "", countyInput ? countyInput.value : "");
+			var text = "Ne cerem scuze — în zona selectată nu sunt colaboratori momentan.";
+			var hint = "";
+			if (homeCounty) {
+				if (selectedCounty && normGeoQuery(selectedCounty) === normGeoQuery(homeCounty)) {
+					if (selectedCity) {
+						hint = "Încearcă alt oraș din județul " + homeCounty + " (zona ta din cont) sau apasă Resetează.";
+					}
+				} else {
+					hint = "Te rugăm să cauți pe raza județului " + homeCounty + " — zona ta din cont.";
+				}
+			} else {
+				hint = "Încearcă un alt județ sau localitate.";
+			}
+			return { text: text, hint: hint };
+		}
+
 		function updateGeoEmptyStates(geoActive) {
 			var panels = document.querySelectorAll("#SW .sw-s2-box");
+			var copy = buildGeoEmptyCopy();
 			panels.forEach(function(panel) {
 				var body = panel.querySelector(".sw-s2-1-body");
 				var emptyEl = body && body.querySelector(".sw-s2-geo-empty");
 				if (!body || !emptyEl) return;
+				var textEl = emptyEl.querySelector(".sw-s2-geo-empty__text");
+				var hintEl = emptyEl.querySelector(".sw-s2-geo-empty__hint");
+				if (textEl) textEl.textContent = copy.text;
+				if (hintEl) {
+					if (copy.hint) {
+						hintEl.textContent = copy.hint;
+						hintEl.hidden = false;
+					} else {
+						hintEl.textContent = "";
+						hintEl.hidden = true;
+					}
+				}
 				var cards = panel.querySelectorAll(".sw-s2-1-cell--vet-offer");
 				var visible = 0;
 				cards.forEach(function(card) {
