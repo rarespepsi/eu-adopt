@@ -850,6 +850,34 @@
 				-webkit-backdrop-filter: blur(10px);
 			}
 			.pet-media-modal__share:active { transform: scale(0.99); }
+			.pet-media-modal__nav {
+				position: absolute;
+				top: 50%;
+				transform: translateY(-50%);
+				z-index: 12;
+				width: 42px;
+				height: 42px;
+				border-radius: 999px;
+				border: 1px solid rgba(255, 255, 255, 0.35);
+				background: rgba(15, 23, 42, 0.82);
+				color: #f8fafc;
+				font-size: 1.45rem;
+				font-weight: 600;
+				font-family: inherit;
+				line-height: 1;
+				cursor: pointer;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+				backdrop-filter: blur(8px);
+				-webkit-backdrop-filter: blur(8px);
+				padding: 0;
+			}
+			.pet-media-modal__nav[hidden] { display: none !important; }
+			.pet-media-modal__nav--prev { left: 10px; }
+			.pet-media-modal__nav--next { right: 10px; }
+			.pet-media-modal__nav:active { transform: translateY(-50%) scale(0.97); }
 			.pet-media-modal__body {
 				padding: 0;
 				box-sizing: border-box;
@@ -1516,6 +1544,17 @@
 				.pet-media-modal__close {
 					right: max(6px, env(safe-area-inset-right, 0px));
 				}
+				.pet-media-modal__nav {
+					width: 38px;
+					height: 38px;
+					font-size: 1.25rem;
+				}
+				.pet-media-modal__nav--prev {
+					left: max(4px, env(safe-area-inset-left, 0px));
+				}
+				.pet-media-modal__nav--next {
+					right: max(4px, env(safe-area-inset-right, 0px));
+				}
 				.pet-media-modal__body {
 					min-height: 0;
 				}
@@ -1793,6 +1832,8 @@
 			<div class="pet-media-modal__panel" role="dialog" aria-modal="true" aria-label="Media">
 				<button type="button" class="pet-media-modal__share" id="petMediaModalShare" aria-label="Distribuie">↗ Distribuie</button>
 				<button type="button" class="pet-media-modal__close" id="petMediaModalClose" aria-label="Închide">X</button>
+				<button type="button" class="pet-media-modal__nav pet-media-modal__nav--prev" id="petMediaModalPrev" aria-label="Poza anterioară" hidden>‹</button>
+				<button type="button" class="pet-media-modal__nav pet-media-modal__nav--next" id="petMediaModalNext" aria-label="Poza următoare" hidden>›</button>
 				<div class="pet-media-modal__body" id="petMediaModalBody"></div>
 				<div class="pet-media-modal__footer" id="petMediaModalFooter" hidden></div>
 			</div>
@@ -1922,12 +1963,58 @@
 			var modal = document.getElementById("petMediaModal");
 			var modalBody = document.getElementById("petMediaModalBody");
 			var modalClose = document.getElementById("petMediaModalClose");
+			var modalPrev = document.getElementById("petMediaModalPrev");
+			var modalNext = document.getElementById("petMediaModalNext");
 			var modalFooter = document.getElementById("petMediaModalFooter");
 			var modalShare = document.getElementById("petMediaModalShare");
 			var petAppMsgModal = document.getElementById("petAppMsgModal");
 			var petAppMsgText = document.getElementById("petAppMsgText");
 			var petAppMsgOk = document.getElementById("petAppMsgOk");
 			var petAppMsgBackdrop = document.getElementById("petAppMsgBackdrop");
+			var galleryItems = [];
+			var galleryIndex = -1;
+			var modalMode = null;
+
+			function buildGalleryItems() {
+				return Array.prototype.slice.call(document.querySelectorAll(".js-pet-media-thumb")).map(function(img) {
+					return {
+						type: "image",
+						thumbSrc: img.getAttribute("src") || "",
+						modalSrc: img.getAttribute("data-modal-src") || img.getAttribute("src") || "",
+						alt: img.getAttribute("alt") || ""
+					};
+				});
+			}
+
+			function updateGalleryNav() {
+				var show = modalMode === "image" && galleryItems.length > 1;
+				if (modalPrev) modalPrev.hidden = !show;
+				if (modalNext) modalNext.hidden = !show;
+			}
+
+			function showGalleryImage(index) {
+				if (!modal || !modalBody || !galleryItems.length) return;
+				galleryIndex = (index + galleryItems.length) % galleryItems.length;
+				var item = galleryItems[galleryIndex];
+				modalBody.innerHTML = "";
+				modalBody.classList.add("pet-media-modal__body--loading");
+				var img = document.createElement("img");
+				img.alt = item.alt || "";
+				img.decoding = "async";
+				img.onload = function() {
+					modalBody.classList.remove("pet-media-modal__body--loading");
+				};
+				img.onerror = function() {
+					modalBody.classList.remove("pet-media-modal__body--loading");
+					if (item.thumbSrc && item.modalSrc !== item.thumbSrc) {
+						img.src = item.thumbSrc;
+					}
+				};
+				img.src = item.modalSrc;
+				modalBody.appendChild(img);
+				if (modalFooter) { modalFooter.innerHTML = ""; modalFooter.hidden = true; }
+				updateGalleryNav();
+			}
 
 			function showPetAppMessage(message, onClose) {
 				var msg = (message || "").toString();
@@ -1975,36 +2062,36 @@
 			function closeModal() {
 				if (!modal) return;
 				modal.hidden = true;
+				modalMode = null;
+				galleryIndex = -1;
+				galleryItems = [];
 				document.body.style.overflow = "";
 				if (modalBody) modalBody.innerHTML = "";
 				if (modalFooter) { modalFooter.innerHTML = ""; modalFooter.hidden = true; }
+				updateGalleryNav();
 			}
 			function openImage(src, alt, el) {
 				if (!modal || !modalBody) return;
-				var pick = (el && (el.getAttribute("data-modal-src") || el.getAttribute("src"))) || src || "";
-				modalBody.innerHTML = "";
-				modalBody.classList.add("pet-media-modal__body--loading");
-				var img = document.createElement("img");
-				img.alt = alt || "";
-				img.decoding = "async";
-				img.onload = function() {
-					modalBody.classList.remove("pet-media-modal__body--loading");
-				};
-				img.onerror = function() {
-					modalBody.classList.remove("pet-media-modal__body--loading");
-					if (src && pick !== src) {
-						img.src = src;
+				galleryItems = buildGalleryItems();
+				modalMode = "image";
+				var idx = 0;
+				if (el) {
+					var thumbs = document.querySelectorAll(".js-pet-media-thumb");
+					for (var i = 0; i < thumbs.length; i++) {
+						if (thumbs[i] === el) { idx = i; break; }
 					}
-				};
-				img.src = pick;
-				modalBody.appendChild(img);
-				if (modalFooter) { modalFooter.innerHTML = ""; modalFooter.hidden = true; }
+				}
+				showGalleryImage(idx);
 				modal.hidden = false;
 				document.body.style.overflow = "hidden";
 			}
 			function openVideo(src) {
 				if (!src) return;
 				if (!modal || !modalBody) return;
+				modalMode = "video";
+				galleryItems = [];
+				galleryIndex = -1;
+				updateGalleryNav();
 				modalBody.innerHTML = "";
 				var v = document.createElement("video");
 				v.src = src;
@@ -2203,6 +2290,24 @@
 					shareOrCopyPetLink();
 				});
 			}
+			if (modalPrev) {
+				modalPrev.addEventListener("click", function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+					if (modalMode === "image" && galleryItems.length > 1) {
+						showGalleryImage(galleryIndex - 1);
+					}
+				});
+			}
+			if (modalNext) {
+				modalNext.addEventListener("click", function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+					if (modalMode === "image" && galleryItems.length > 1) {
+						showGalleryImage(galleryIndex + 1);
+					}
+				});
+			}
 			document.addEventListener("click", function(e) {
 				var img = e.target && e.target.closest(".js-pet-media-thumb");
 				if (img && img.tagName === "IMG") {
@@ -2225,7 +2330,20 @@
 				}
 			});
 			document.addEventListener("keydown", function(e) {
-				if (e.key === "Escape") closeModal();
+				if (!modal || modal.hidden) return;
+				if (e.key === "Escape") {
+					closeModal();
+					return;
+				}
+				if (modalMode === "image" && galleryItems.length > 1) {
+					if (e.key === "ArrowLeft") {
+						e.preventDefault();
+						showGalleryImage(galleryIndex - 1);
+					} else if (e.key === "ArrowRight") {
+						e.preventDefault();
+						showGalleryImage(galleryIndex + 1);
+					}
+				}
 			});
 
 			document.querySelectorAll(".js-finalize-form-pet").forEach(function(form) {
