@@ -694,13 +694,13 @@
   }
 }
 
-/* Portrait mobil: filtre sus; 4 publi patrate lipite, coborate jos. */
+/* Portrait mobil: filtre sus; 4 publi egale umplu spatiul pana jos. */
 @media (max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
   #SW .sw-grid {
     --sw-portrait-left-w: clamp(4.65rem, 18vw, 5.85rem);
     grid-template-columns: var(--sw-portrait-left-w) minmax(0, 1fr);
-    /* rand 3 = spacer flex; randuri 4-7 = 4 publi lipite jos */
-    grid-template-rows: minmax(72px, 72px) auto minmax(0, 1fr) repeat(4, auto);
+    /* rand 2 = filtre auto; randuri 3-6 = 4 publi egale pe inaltimea ramasa */
+    grid-template-rows: minmax(72px, 72px) auto repeat(4, minmax(0, 1fr));
     column-gap: 2px;
     row-gap: 0;
   }
@@ -798,25 +798,25 @@
   }
 
   #SW .sw-s4-box-match {
-    grid-row: 4;
+    grid-row: 3;
     grid-column: 1;
     z-index: 1;
   }
 
   #SW .sw-s4-box-ads {
-    grid-row: 5;
+    grid-row: 4;
     grid-column: 1;
     z-index: 1;
   }
 
   #SW .sw-s5-slot:nth-child(1) {
-    grid-row: 6;
+    grid-row: 5;
     grid-column: 1;
     z-index: 1;
   }
 
   #SW .sw-s5-slot:nth-child(2) {
-    grid-row: 7;
+    grid-row: 6;
     grid-column: 1;
     z-index: 1;
   }
@@ -827,8 +827,8 @@
     flex: none !important;
     min-height: 0 !important;
     width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 1 / 1;
+    height: 100% !important;
+    aspect-ratio: auto !important;
     max-height: none !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -836,8 +836,8 @@
     align-items: stretch !important;
     justify-content: stretch !important;
     overflow: hidden !important;
-    align-self: end;
-    justify-self: start;
+    align-self: stretch;
+    justify-self: stretch;
     box-sizing: border-box;
     border-radius: 0 !important;
     box-shadow: none !important;
@@ -855,7 +855,7 @@
   }
 
   #SW .sw-cell-2 {
-    grid-row: 2 / 8;
+    grid-row: 2 / 7;
     grid-column: 2;
   }
 
