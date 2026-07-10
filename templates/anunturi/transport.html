@@ -5,7 +5,7 @@
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=37-landscape-profi" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=38-landscape-corners" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Servicii / Intra */
 	body.page-transport {
@@ -192,6 +192,17 @@
 		body.page-transport #TW.transport-wrapper {
 			padding-top: var(--nav-height) !important;
 			box-sizing: border-box !important;
+		}
+	}
+	/* Landscape: fără bandă #141a22 între navbar și fundalul .tw-row */
+	@media (max-width: 767.98px) and (orientation: landscape) {
+		body.page-transport #TW.transport-wrapper {
+			padding-top: 0 !important;
+			background: transparent !important;
+		}
+		body.page-transport #TW .tw-row {
+			min-height: calc(100dvh - var(--nav-height, 52px));
+			box-sizing: border-box;
 		}
 	}
 </style>

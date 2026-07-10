@@ -979,13 +979,14 @@
 	#TW #T2:not(.tw-t2--hub-open) .t2-inner {
 		flex: 1 1 0;
 		min-height: 0;
-		overflow: visible;
+		overflow: hidden;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		position: relative;
-		padding: 0.15rem 0.28rem;
+		padding: clamp(2.05rem, 5.6vh, 2.6rem) 0.3rem 0.18rem;
+		box-sizing: border-box;
 	}
 	#TW #T2.tw-t2--hub-open .t2-inner {
 		overflow-y: auto;
@@ -997,26 +998,35 @@
 	#TW #T2:not(.tw-t2--hub-open) .t2-hub {
 		flex: 0 0 auto;
 		min-height: 0;
-		margin-top: 0;
-		margin-bottom: 0;
-		width: min(100%, min(40vw, 250px));
-		height: min(100%, min(76dvh, 230px));
-		max-height: min(76dvh, 230px);
+		margin: 0;
+		width: min(100%, min(36vw, 228px));
+		height: min(100%, min(62dvh, 210px));
+		max-height: min(62dvh, 210px);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		align-self: center;
 	}
+	/* Bulina rotativă separată — ascunsă pe landscape restrâns (colțurile = cele 2 butoane) */
 	#TW #T2:not(.tw-t2--hub-open) .t2-extra-circle {
-		width: min(16vmin, 72px);
-		height: min(16vmin, 72px);
-		top: 0.1rem;
-		left: 0.1rem;
+		display: none !important;
+	}
+	#TW #T2:not(.tw-t2--hub-open) .t2-circle-label {
+		display: none !important;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-donate-cause-wrap {
-		top: 0.12rem;
-		right: 0.12rem;
-		max-width: min(52%, 9.5rem);
+		top: 0.16rem !important;
+		right: 0.2rem !important;
+		left: auto !important;
+		max-width: calc(50% - 0.32rem);
+		z-index: 70;
+	}
+	#TW #T2:not(.tw-t2--hub-open) .t2-donate-cause-link {
+		font-size: clamp(0.46rem, 1.85vh, 0.56rem);
+		padding: 0.26rem 0.4rem;
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	#TW #T2 .t2-hub {
 		margin-top: 0;
@@ -1090,17 +1100,20 @@
 		background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
 		border: 1px solid rgba(255, 255, 255, 0.18);
 		position: absolute;
-		top: 0.08rem;
-		left: 50%;
+		top: 0.16rem;
+		left: 0.2rem;
 		right: auto;
-		transform: translateX(-50%);
+		transform: none;
 		width: auto;
-		min-width: 8.2rem;
-		max-width: calc(100% - 0.5rem);
+		min-width: 0;
+		max-width: calc(50% - 0.32rem);
 		margin: 0;
-		padding: 0.3rem 0.48rem;
-		font-size: clamp(0.5rem, 2vh, 0.62rem);
-		z-index: 6;
+		padding: 0.26rem 0.4rem;
+		font-size: clamp(0.46rem, 1.85vh, 0.56rem);
+		z-index: 70;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	#TW #T2.tw-t2--hub-open .t2-portrait-expand-btn {
 		position: static;
