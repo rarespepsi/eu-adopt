@@ -1021,9 +1021,6 @@
 		transform: none;
 		margin-top: 0;
 	}
-	#TW #T2:not(.tw-t2--hub-open) .t2-circles {
-		transform: translate(8mm, calc(3mm + 1cm)) !important;
-	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-center {
 		display: none !important;
 	}
@@ -1051,7 +1048,7 @@
 		inset: 0;
 		width: auto;
 		height: auto;
-		transform: none;
+		transform: translate(8mm, calc(3mm + 1cm)) !important;
 		pointer-events: none;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle-label {
