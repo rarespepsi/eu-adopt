@@ -1018,7 +1018,7 @@
 		justify-self: center;
 		position: relative;
 		box-sizing: border-box;
-		transform: translateY(clamp(0.2rem, 1.4vh, 0.45rem));
+		transform: translateY(1cm);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-center {
 		display: none !important;
