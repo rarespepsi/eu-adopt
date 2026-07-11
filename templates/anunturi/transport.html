@@ -5,7 +5,7 @@
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=60-landscape-hub-1cm" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=61-landscape-hub-pad" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Servicii / Intra */
 	body.page-transport {
@@ -124,8 +124,8 @@
 			flex-direction: column !important;
 		}
 	}
-	/* Mobil landscape: TW ca desktop — T1 | T2 | T3 pe un rând, fără scroll pe pagină */
-	@media (max-width: 767.98px) and (orientation: landscape) {
+	/* Mobil landscape touch: TW ca desktop — T1 | T2 | T3 pe un rând */
+	@media (orientation: landscape) and (max-height: 34em) and (hover: none) and (pointer: coarse) {
 		body.page-transport {
 			overflow: hidden !important;
 			height: 100vh !important;
@@ -205,8 +205,8 @@
 			box-sizing: border-box !important;
 		}
 	}
-	/* Landscape mobil: fundal uniform #141a22 (ca Intra), fără poze transport */
-	@media (max-width: 767.98px) and (orientation: landscape) {
+	/* Landscape touch: fundal uniform #141a22 (ca Intra), fără poze transport */
+	@media (orientation: landscape) and (max-height: 34em) and (hover: none) and (pointer: coarse) {
 		body.page-transport #TW.transport-wrapper {
 			padding-top: 0 !important;
 			background: #141a22 !important;

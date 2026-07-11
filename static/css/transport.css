@@ -751,8 +751,8 @@
 	}
 }
 
-/* Mobil landscape: același principiu ca desktop — formular stânga, hub T2 centru, bandă T3 dreapta */
-@media (max-width: 767.98px) and (orientation: landscape) {
+/* Mobil landscape touch (ca PT): max-height 34em — telefon lat 800+ px intră aici */
+@media (orientation: landscape) and (max-height: 34em) and (hover: none) and (pointer: coarse) {
 	#TW.transport-wrapper {
 		min-height: 0;
 		flex: 1 1 0;
@@ -870,10 +870,10 @@
 		min-height: 80px;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circles {
-		transform: translate(0, 0);
+		transform: translate(8mm, calc(3mm + 1cm)) !important;
 	}
 	#TW #T2 .t2-circles {
-		transform: translate(0, 0);
+		transform: translate(8mm, calc(3mm + 1cm)) !important;
 	}
 	#TW #T2 .t2-circle {
 		width: min(10.5vmin, 54px);
@@ -992,9 +992,9 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-start !important;
 		position: relative;
-		padding: clamp(2.05rem, 5.6vh, 2.6rem) 0.3rem 0.18rem;
+		padding: 1.2cm 0.3rem 0.35rem;
 		box-sizing: border-box;
 	}
 	#TW #T2.tw-t2--hub-open .t2-inner {
@@ -1018,7 +1018,11 @@
 		justify-self: center;
 		position: relative;
 		box-sizing: border-box;
-		transform: translateY(1cm);
+		transform: none;
+		margin-top: 0;
+	}
+	#TW #T2:not(.tw-t2--hub-open) .t2-circles {
+		transform: translate(8mm, calc(3mm + 1cm)) !important;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-center {
 		display: none !important;
@@ -1244,17 +1248,8 @@
 	#TW #T2:not(.tw-t2--hub-open) .t2-donate-cause-wrap {
 		display: none !important;
 	}
-	#TW #T2:not(.tw-t2--hub-open) .t2-inner {
-		justify-content: flex-start;
-		padding-top: clamp(0.28rem, 1.4vh, 0.5rem);
-		padding-bottom: 0.22rem;
-	}
-	#TW #T2:not(.tw-t2--hub-open) .t2-hub {
-		transform: translateY(0);
-		margin-top: clamp(0.1rem, 0.8vh, 0.28rem);
-	}
 	#TW #T3 .t3-inner {
-		padding-top: clamp(0.28rem, 1.4vh, 0.5rem);
+		padding-top: 1.2cm;
 		justify-content: flex-start;
 	}
 }
