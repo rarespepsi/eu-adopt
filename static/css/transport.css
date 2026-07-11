@@ -1384,9 +1384,11 @@
 		padding: 0.52rem 0.62rem;
 		box-shadow: 0 3px 16px rgba(0, 0, 0, 0.5);
 		font-weight: 800;
+		color: #042f2e !important;
+		-webkit-text-fill-color: #042f2e;
 		text-align: center;
 		letter-spacing: 0.02em;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+		text-shadow: 0 1px 0 rgba(255, 255, 255, 0.42);
 		border-radius: 10px;
 		white-space: normal;
 	}
@@ -1473,7 +1475,8 @@
 	}
 	/* Portrait restrâns: formular stânga / Donează dreapta — JOS, deasupra benzii T3 pub */
 	#TW #T2:not(.tw-t2--hub-open) .t2-portrait-expand-btn {
-		color: #fff;
+		color: #042f2e !important;
+		-webkit-text-fill-color: #042f2e;
 		background: linear-gradient(175deg, #5ee9f3 0%, #06b6d4 52%, #0e7490 100%);
 		border: 1px solid rgba(255, 255, 255, 0.28);
 		box-shadow: 0 3px 16px rgba(0, 0, 0, 0.5);
@@ -1493,7 +1496,7 @@
 		line-height: 1.22;
 		font-weight: 800;
 		letter-spacing: 0.02em;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+		text-shadow: 0 1px 0 rgba(255, 255, 255, 0.42);
 		border-radius: 10px;
 		z-index: 70;
 		white-space: normal;
