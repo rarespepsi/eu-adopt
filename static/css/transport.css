@@ -1033,6 +1033,10 @@
 		z-index: 3;
 		pointer-events: auto;
 	}
+	#TW #T2:not(.tw-t2--hub-open) .t2-extra-circle-text {
+		font-size: 6px;
+		letter-spacing: 0.3px;
+	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circles {
 		grid-area: 1 / 1;
 		position: absolute;
@@ -1311,6 +1315,10 @@
 		min-height: 141px;
 		z-index: 3;
 		pointer-events: auto;
+	}
+	#TW #T2:not(.tw-t2--hub-open) .t2-extra-circle-text {
+		font-size: 6.5px;
+		letter-spacing: 0.35px;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-hub {
 		flex: 0 0 auto;
