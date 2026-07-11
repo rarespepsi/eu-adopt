@@ -9,10 +9,17 @@
 		return href.indexOf(FB) !== -1;
 	}
 
-	function navigate(a) {
+	function openInNewTab(a) {
 		var href = (a.getAttribute("href") || "").trim();
 		if (!href) return;
-		window.location.assign(href);
+		var w = window.open(href, "_blank", "noopener,noreferrer");
+		if (!w) {
+			/* Popup blocat: nu navigăm peste EU-Adopt — utilizatorul rămâne pe site. */
+			return;
+		}
+		try {
+			w.opener = null;
+		} catch (e) {}
 	}
 
 	document.addEventListener(
@@ -24,7 +31,7 @@
 			if (!a || !isPubFbLink(a)) return;
 			e.preventDefault();
 			e.stopImmediatePropagation();
-			navigate(a);
+			openInNewTab(a);
 		},
 		true
 	);

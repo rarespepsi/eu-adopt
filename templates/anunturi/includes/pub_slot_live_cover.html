@@ -3,7 +3,7 @@
 {# wrap_link=False: doar conținut (pentru benzi cursivă unde <a> e pe celula întreagă) #}
 {% if creative %}
 {% if wrap_link != False %}
-<a href="{{ creative.link }}" class="pub-live-cover-link{% if creative.video %} pub-live-cover-link--video{% endif %}{% if layout %} pub-live-cover-link--{{ layout }}{% endif %}{% if creative.is_default_cover %} pub-live-default-cover{% endif %}{% if link_classes %} {{ link_classes }}{% endif %}"{% if slot_code %} data-slot="{{ slot_code }}"{% endif %}{% if creative.is_default_cover and creative.link_external %} data-pub-fb="1" target="_self" rel="noopener noreferrer"{% elif creative.link_external %} target="_blank" rel="noopener"{% endif %} aria-label="{{ creative.alt|default:'EU-Adopt pe Facebook' }}">
+<a href="{{ creative.link }}" class="pub-live-cover-link{% if creative.video %} pub-live-cover-link--video{% endif %}{% if layout %} pub-live-cover-link--{{ layout }}{% endif %}{% if creative.is_default_cover %} pub-live-default-cover{% endif %}{% if link_classes %} {{ link_classes }}{% endif %}"{% if slot_code %} data-slot="{{ slot_code }}"{% endif %}{% if creative.is_default_cover and creative.link_external %} data-pub-fb="1" target="_blank" rel="noopener noreferrer"{% elif creative.link_external %} target="_blank" rel="noopener noreferrer"{% endif %} aria-label="{{ creative.alt|default:'EU-Adopt pe Facebook' }}">
 {% endif %}
 {% if creative.video or creative.img %}
 {% include "anunturi/includes/pub_slot_live_cover_body.html" with creative=creative layout=layout only %}
