@@ -18,7 +18,9 @@
 	document.addEventListener(
 		"click",
 		function (e) {
-			var a = e.target.closest('a[data-pub-fb="1"], a.pub-live-default-cover');
+			var a = e.target.closest(
+				'a[data-pub-fb="1"], a.pub-live-default-cover, a.pt-strip-cell--pub, a.sw-strip-cell--pub'
+			);
 			if (!a || !isPubFbLink(a)) return;
 			e.preventDefault();
 			e.stopImmediatePropagation();

@@ -1,25 +1,14 @@
 {% load static %}
 {# creative: dict cu img/video/link/is_default_cover/link_external — afișare live fără cod slot #}
+{# wrap_link=False: doar conținut (pentru benzi cursivă unde <a> e pe celula întreagă) #}
 {% if creative %}
-{% if creative.video %}
-<a href="{{ creative.link }}" class="pub-live-cover-link pub-live-cover-link--video{% if layout %} pub-live-cover-link--{{ layout }}{% endif %}{% if creative.is_default_cover %} pub-live-default-cover{% endif %}{% if link_classes %} {{ link_classes }}{% endif %}"{% if slot_code %} data-slot="{{ slot_code }}"{% endif %}{% if creative.is_default_cover and creative.link_external %} data-pub-fb="1" target="_self" rel="noopener noreferrer"{% elif creative.link_external %} target="_blank" rel="noopener"{% endif %} aria-label="{{ creative.alt|default:'Publicitate' }}">
-	{% if creative.price or creative.discount %}
-	<span class="pub-live-mini-badges">{% if creative.price %}<span class="pub-live-mini-badge pub-live-mini-badge--price">{{ creative.price }}</span>{% endif %}{% if creative.discount %}<span class="pub-live-mini-badge pub-live-mini-badge--discount">{{ creative.discount }}</span>{% endif %}</span>
-	{% endif %}
-	<span class="pub-live-cover{% if layout %} pub-live-cover--{{ layout }}{% endif %}">
-		<video src="{{ creative.video }}" autoplay muted loop playsinline controls preload="metadata"></video>
-		{% if creative.is_default_cover %}<span class="pub-live-cover__tag">Publi.</span>{% endif %}
-	</span>
-</a>
-{% elif creative.img %}
-<a href="{{ creative.link }}" class="pub-live-cover-link{% if layout %} pub-live-cover-link--{{ layout }}{% endif %}{% if creative.is_default_cover %} pub-live-default-cover{% endif %}{% if link_classes %} {{ link_classes }}{% endif %}"{% if slot_code %} data-slot="{{ slot_code }}"{% endif %}{% if creative.is_default_cover and creative.link_external %} data-pub-fb="1" target="_self" rel="noopener noreferrer"{% elif creative.link_external %} target="_blank" rel="noopener"{% endif %} aria-label="{{ creative.alt|default:'Publicitate' }}">
-	{% if creative.price or creative.discount %}
-	<span class="pub-live-mini-badges">{% if creative.price %}<span class="pub-live-mini-badge pub-live-mini-badge--price">{{ creative.price }}</span>{% endif %}{% if creative.discount %}<span class="pub-live-mini-badge pub-live-mini-badge--discount">{{ creative.discount }}</span>{% endif %}</span>
-	{% endif %}
-	<span class="pub-live-cover{% if layout %} pub-live-cover--{{ layout }}{% endif %}">
-		<img src="{{ creative.img }}" alt="{{ creative.alt|default:'Publicitate' }}" loading="lazy" decoding="async" />
-		{% if creative.is_default_cover %}<span class="pub-live-cover__tag">Publi.</span>{% endif %}
-	</span>
+{% if wrap_link != False %}
+<a href="{{ creative.link }}" class="pub-live-cover-link{% if creative.video %} pub-live-cover-link--video{% endif %}{% if layout %} pub-live-cover-link--{{ layout }}{% endif %}{% if creative.is_default_cover %} pub-live-default-cover{% endif %}{% if link_classes %} {{ link_classes }}{% endif %}"{% if slot_code %} data-slot="{{ slot_code }}"{% endif %}{% if creative.is_default_cover and creative.link_external %} data-pub-fb="1" target="_self" rel="noopener noreferrer"{% elif creative.link_external %} target="_blank" rel="noopener"{% endif %} aria-label="{{ creative.alt|default:'EU-Adopt pe Facebook' }}">
+{% endif %}
+{% if creative.video or creative.img %}
+{% include "anunturi/includes/pub_slot_live_cover_body.html" with creative=creative layout=layout only %}
+{% endif %}
+{% if wrap_link != False %}
 </a>
 {% endif %}
 {% endif %}

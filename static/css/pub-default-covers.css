@@ -144,57 +144,64 @@ body.page-home-v2 .home-v2-pub-badges {
 	min-height: 3.5rem;
 }
 
-/* Benzi PT / Servicii */
-.pt-strip-cell--pub.pub-live-cover-link,
-.sw-strip-cell--pub.pub-live-cover-link {
-	display: flex;
-	align-items: stretch;
-	justify-content: stretch;
+/* Benzi cursivă PT / Servicii — celula întreagă = link (a.pt-strip-cell--pub) */
+#PW .pt-strip-wrap,
+#PW .pt-strip-track,
+#SW .sw-strip-wrap,
+#SW .sw-strip-track {
+	pointer-events: auto;
+}
+#PW a.pt-strip-item.pt-strip-cell--pub,
+#SW a.sw-strip-item.sw-strip-cell--pub {
+	display: block;
 	flex: 0 0 auto;
 	min-width: 0;
-	padding: 0;
-	border: none;
-	background: transparent;
+	padding: 0 !important;
+	overflow: hidden;
+	position: relative;
+	pointer-events: auto !important;
+	z-index: 3;
+	text-decoration: none;
+	color: inherit;
+	box-sizing: border-box;
 }
-.pt-strip-cell--pub .pub-live-cover,
-.sw-strip-cell--pub .pub-live-cover {
+#PW a.pt-strip-item.pt-strip-cell--pub .pub-live-cover,
+#SW a.sw-strip-item.sw-strip-cell--pub .pub-live-cover {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
 	min-height: 100%;
 	min-width: 100%;
 }
-.pt-strip-cell--pub .pub-live-cover--strip,
-.sw-strip-cell--pub .pub-live-cover--strip {
+#PW a.pt-strip-item.pt-strip-cell--pub .pub-live-cover--strip,
+#SW a.sw-strip-item.sw-strip-cell--pub .pub-live-cover--strip {
 	min-height: 2.4rem;
 }
 
-/* Servicii S2 / S6 */
+/* Servicii S2 / S6 — casete fixe */
+.sw-s4-box-match,
+.sw-s4-box-ads,
+.sw-s5-slot,
+.shw-side-inner-box,
+.ilove-case {
+	position: relative;
+	padding: 0;
+	overflow: hidden;
+}
 .sw-s4-box-match .pub-live-cover-link,
 .sw-s4-box-ads .pub-live-cover-link,
-.sw-s5-slot .pub-live-cover-link {
-	display: block;
-	width: 100%;
-	height: 100%;
-	min-height: 3rem;
+.sw-s5-slot .pub-live-cover-link,
+.shw-side-inner-box .pub-live-cover-link,
+.ilove-case .pub-live-cover-link {
+	position: absolute;
+	inset: 0;
+	min-height: 0;
 }
 
 /* Shop */
 .shw-side-inner-box .pub-live-cover-link {
-	display: block;
-	width: 100%;
-	height: 100%;
 	min-height: 4rem;
-}
-
-#PW .pt-strip-cell--pub.pt-strip-cell--has-creative,
-#SW .sw-strip-cell--pub.sw-strip-cell--has-creative {
-	position: relative;
-	overflow: hidden;
-	pointer-events: auto;
-}
-#PW .pt-strip-cell--pub > .pub-live-cover-link,
-#SW .sw-strip-cell--pub > .pub-live-cover-link {
-	position: absolute;
-	inset: 0;
-	z-index: 3;
 }
 
 #TW #T3.tw-cell {
@@ -213,44 +220,15 @@ body.page-home-v2 .home-v2-pub-badges {
 	min-height: 0;
 }
 
-/* Transport T3 */
-.t3-box .pub-live-cover-link {
-	display: block;
-	width: 100%;
-	height: 100%;
-	min-height: 5rem;
-}
-
 /* I Love laterale */
-body.page-home-v2 .home-v2-slot-partener > a .pub-live-cover__tag {
+body.page-home-v2 .home-v2-slot-partener > a .pub-live-cover__tag,
+body.page-home-v2 .home-v2-slot-partener > a.pub-live-default-cover .pub-live-cover__tag {
 	position: absolute;
 	right: 0.35rem;
 	bottom: 0.3rem;
 	z-index: 2;
 }
 
-.pt-strip-cell--pub > .pub-live-cover-link,
-.sw-strip-cell--pub > .pub-live-cover-link {
-	display: block;
-	width: 100%;
-	height: 100%;
-	min-height: 100%;
-}
-
-.sw-s4-box-match,
-.sw-s4-box-ads,
-.sw-s5-slot {
-	padding: 0;
-	overflow: hidden;
-}
-
-.ilove-case {
-	padding: 0;
-	overflow: hidden;
-}
 .ilove-case .pub-live-cover-link {
-	display: block;
-	width: 100%;
-	height: 100%;
 	min-height: clamp(4.5rem, 12vh, 7rem);
 }

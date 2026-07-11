@@ -19,9 +19,9 @@
 	</span>
 	{% endif %}
 	{% else %}
-	<span class="pt-strip-item pt-strip-item--{{ item_variant }} pt-strip-cell--pub pt-strip-cell--has-creative" data-slot="{{ cell.code }}">
-		{% include "anunturi/includes/pub_slot_live_cover.html" with creative=cell.creative layout="strip" only %}
-	</span>
+	<a href="{{ cell.creative.link }}" class="pt-strip-item pt-strip-item--{{ item_variant }} pt-strip-cell--pub pt-strip-cell--has-creative pub-live-cover-link pub-live-cover-link--strip{% if cell.creative.is_default_cover %} pub-live-default-cover{% endif %}" data-slot="{{ cell.code }}"{% if cell.creative.is_default_cover and cell.creative.link_external %} data-pub-fb="1" target="_self" rel="noopener noreferrer"{% elif cell.creative.link_external %} target="_blank" rel="noopener"{% endif %} aria-label="{{ cell.creative.alt|default:'EU-Adopt pe Facebook' }}">
+		{% include "anunturi/includes/pub_slot_live_cover.html" with creative=cell.creative layout="strip" wrap_link=False only %}
+	</a>
 	{% endif %}
 	{% endwith %}
 {% endfor %}
