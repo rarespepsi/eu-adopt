@@ -5,7 +5,7 @@
 	{% if creative.video %}
 	<video src="{{ creative.video }}" autoplay muted loop playsinline controls preload="metadata"></video>
 	{% elif creative.img %}
-	<img src="{{ creative.img }}" alt="{{ creative.alt|default:'Publicitate' }}" loading="lazy" decoding="async" />
+	<img src="{{ creative.img }}" alt="{{ creative.alt|default:'Publicitate' }}"{% if layout == "strip" %} loading="eager"{% else %} loading="lazy"{% endif %} decoding="async" />
 	{% endif %}
 	{% if creative.is_default_cover %}<span class="pub-live-cover__tag">Publi.</span>{% endif %}
 </span>
