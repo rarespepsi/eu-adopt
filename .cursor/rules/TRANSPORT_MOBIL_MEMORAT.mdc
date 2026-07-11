@@ -1,0 +1,94 @@
+---
+description: Transport mobil portrait + landscape — stare finală memorată (10–11 iul 2026)
+alwaysApply: false
+---
+
+# TRANSPORT MOBIL – STARE MEMORATĂ
+
+**Confirmat de utilizator:** 10–11 iulie 2026 — layout hub, inel buline, butoane jos, fundal mobil, link bulină = **OK** (continuăm mâine).
+
+**Commit referință live:** `3721574` · cache CSS `transport.css?v=57-portrait-fara-t1-band`
+
+**Nu modifica** fără cerere explicită + parola **`1977`** + OK (`TRANSPORT_INGHETAT.mdc`).
+
+---
+
+## Fișiere
+
+| Fișier | Rol mobil |
+|--------|-----------|
+| `templates/anunturi/transport.html` | T1/T2/T3, JS fundal + portrait expand, cache `?v=` |
+| `static/css/transport.css` | Portrait, landscape, inel, butoane, hub grid |
+| `templates/components/transport_bulina.html` | Bulină rotativă → `/custi/` |
+
+---
+
+## Fundal
+
+| Viewport | Fundal |
+|----------|--------|
+| **Mobil ≤767.98px** | Uniform **`#141a22`** (ca Intra) — **fără** `fundal_1–4.jpg` |
+| **Desktop ≥769px** | Poze random pe `.tw-row` (JS `setRandomFundal`) + baza `#141a22` |
+
+JS: pe mobil `syncTwFundalMobil()` **șterge** `backgroundImage` pe `#TW` și `.tw-row`.
+
+---
+
+## Hub T2 (mobil restrâns, `:not(.tw-t2--hub-open)`)
+
+**Centru:** bulină rotativă (`.t2-extra-circle`) în `.t2-hub` (grid 1×1), **nu** autocar (`.t2-center` **ascuns**).
+
+- Imagine bulină: `central.jpeg`
+- Mărime bulină: **`54%`** din hub (min ~141px portrait / ~120px landscape) — după dublare apoi −1/4
+- Link bulină: **`{% url 'custi' %}?sursa=transport_bulina`** — harta cuștilor / locuri autocar
+- Text SVG: „* Ajută o cauză * Suflet * Caracter * We Come To You *”
+
+**Inel 9 buline** (`.t2-circles`):
+
+- `position: absolute; inset: 0` pe grid hub
+- Offset inel: **`transform: translate(8mm, 3mm)`** (față de centru bulină)
+- Toate 9 cercuri **aceeași rază** (inclusiv `.t2-circle--1` = `-247.5%`, nu `-205%`)
+- Etichete cercuri: **ascunse** pe mobil restrâns
+
+**Desktop:** autocar în `.t2-center` vizibil; bulină colț stânga-sus (reguli bază CSS).
+
+---
+
+## Butoane jos T2 (portrait restrâns)
+
+Poziție: **jos**, deasupra benzii **T3** pub (`bottom` + padding jos pe `.t2-inner`).
+
+| Stânga | Dreapta |
+|--------|---------|
+| **„Doresc transport”** (`.t2-portrait-expand-btn`) | **„Donează pentru o cauză”** |
+
+- **Doresc transport** → deschide **formularul T1** (`tw-t1--form-open`), **nu** hub expand
+- **Donează** → donații (`donatii_generale? sursa=transport`)
+
+**Portrait restrâns:** T1 **ascuns** (`#T1:not(.tw-t1--form-open)` — height 0, fără chenar); formular doar via **Doresc transport**. La `.tw-t1--form-open` → overlay full-screen peste stack.
+
+**Landscape:** T1 rămâne vizibil (titlu + **„Completează cererea”**).
+
+---
+
+## Landscape mobil
+
+- T1 \| T2 \| T3 pe rând
+- Butoane colțuri T2 (același `#t2PortraitExpand` = „Doresc transport”)
+- Bulină centru hub (ca portrait); fundal `#141a22`
+- Inel: același offset `8mm, 3mm`
+
+---
+
+## Ce NU reintroduce
+
+- „FII PARTE DIN DRUM” pe butonul formular (înlocuit cu **Doresc transport**)
+- Poze fundal pe mobil
+- Offset vechi inel `+8mm` fără `+3mm` jos (stare finală = ambele)
+- Bulină → donații (acum → **custi**)
+
+---
+
+## Rezumat
+
+**Transport mobil = fundal #141a22, bulină rotativă centru → /custi/, inel +8mm/+3mm, jos Doresc transport + Donează. Desktop neatins (poze + autocar centru). Continuare mâine cu `1977` + OK.**

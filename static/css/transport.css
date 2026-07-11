@@ -1194,6 +1194,19 @@
 		width: 100%;
 		overflow: hidden;
 	}
+	#TW #T1.tw-cell:not(.tw-t1--form-open) {
+		flex: 0 0 0 !important;
+		min-height: 0 !important;
+		height: 0 !important;
+		max-height: 0 !important;
+		overflow: hidden !important;
+		visibility: hidden !important;
+		pointer-events: none !important;
+		margin: 0 !important;
+		padding: 0 !important;
+		border: none !important;
+		background: transparent !important;
+	}
 	#TW #T1.tw-cell {
 		flex: 0 0 auto;
 		min-height: 0;
@@ -1215,6 +1228,9 @@
 		box-sizing: border-box;
 		background: rgba(20, 26, 34, 0.97);
 		box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
+		visibility: visible !important;
+		pointer-events: auto !important;
+		overflow: hidden;
 	}
 	#TW #T1.tw-t1--form-open ~ #T2.tw-cell {
 		flex: 0 0 0 !important;
