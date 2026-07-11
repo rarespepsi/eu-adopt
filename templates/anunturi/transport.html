@@ -5,7 +5,7 @@
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=58-portrait-btn-text" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=59-landscape-t1-butoane" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Servicii / Intra */
 	body.page-transport {
@@ -147,8 +147,9 @@
 			overflow: hidden !important;
 			display: flex !important;
 			flex-direction: column !important;
-			padding: 0 !important;
+			padding: var(--nav-height, 52px) 0 0 0 !important;
 			margin: 0 !important;
+			box-sizing: border-box !important;
 		}
 		body.page-transport #main_content #TW {
 			flex: 1 1 0 !important;
@@ -227,9 +228,12 @@
 			<div id="T1" class="tw-cell" data-slot="T1">
 				<div class="t1-inner">
 					<h2 class="t1-title">Transport veterinar – România</h2>
-					<button type="button" class="t1-portrait-open-btn" id="t1PortraitOpen" aria-expanded="false" aria-controls="t1Expandable">
-						Completează cererea
-					</button>
+					<div class="t1-landscape-actions" aria-label="Acțiuni transport">
+						<button type="button" class="t1-portrait-open-btn" id="t1PortraitOpen" aria-expanded="false" aria-controls="t1Expandable">
+							Doresc transport
+						</button>
+						<a href="{% url 'donatii_generale' %}?sursa=transport" class="t1-donate-cause-link">Donează pentru o cauză</a>
+					</div>
 					<div id="t1Expandable" class="t1-expandable">
 						<button type="button" class="t1-portrait-close-btn" id="t1PortraitClose" aria-expanded="true" aria-controls="t1Expandable">
 							Restrânge formularul
