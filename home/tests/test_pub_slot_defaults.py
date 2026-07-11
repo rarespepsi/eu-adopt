@@ -12,13 +12,12 @@ class PubSlotDefaultsTests(SimpleTestCase):
         self.assertNotEqual(a, c)
         self.assertTrue(a.startswith("images/pub/covers/cover_"))
 
-    def test_default_creative_links_to_publicitate(self):
+    def test_default_creative_links_to_facebook(self):
         creative = pub_slot_live_creative("servicii", "S2.2", note=None)
         self.assertTrue(creative["is_default_cover"])
-        self.assertIn("/publicitate/", creative["link"])
-        self.assertIn("sect=servicii", creative["link"])
-        self.assertIn("slot=S2.2", creative["link"])
-        self.assertFalse(creative["link_external"])
+        self.assertIn("facebook.com", creative["link"])
+        self.assertIn("61588044314372", creative["link"])
+        self.assertTrue(creative["link_external"])
         self.assertTrue(creative["img"])
 
     def test_harta_url_helper(self):

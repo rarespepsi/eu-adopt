@@ -1,4 +1,4 @@
-"""Cover-uri default și link Publicitate pentru sloturi live (până la material client)."""
+"""Cover-uri default și link placeholder pentru sloturi live (până la material client)."""
 from __future__ import annotations
 
 import hashlib
@@ -10,6 +10,9 @@ from django.urls import reverse
 
 PUB_COVER_COUNT = 30
 PUB_COVER_STATIC_PREFIX = "images/pub/covers/"
+EU_ADOPT_FACEBOOK_URL = (
+    "https://www.facebook.com/people/EU-Adopt-Adoptii-Caini-si-Pisici/61588044314372/"
+)
 
 
 def pub_cover_static_path(slot_code: str) -> str:
@@ -31,6 +34,12 @@ def pub_harta_url(section: str, slot_code: str) -> str:
     return f"{reverse('publicitate_harta')}?{q}"
 
 
+def pub_placeholder_link(section: str, slot_code: str) -> str:
+    """Link temporar pentru casetele Publi. fără material client (închiriere = flux logat /publicitate/)."""
+    del section, slot_code
+    return EU_ADOPT_FACEBOOK_URL
+
+
 def _link_is_external(link: str) -> bool:
     low = (link or "").strip().lower()
     return low.startswith("http://") or low.startswith("https://")
@@ -39,14 +48,14 @@ def _link_is_external(link: str) -> bool:
 def pub_slot_live_creative(section: str, slot_code: str, note=None) -> dict:
     """
     Creative pentru afișare pe site live.
-    Fără material client: cover default + link către /publicitate/?sect=&slot=.
-    Cu material: imagine/video client; link client dacă e setat, altfel Publicitate.
+    Fără material client: cover default + link către pagina Facebook EU-Adopt.
+    Cu material: imagine/video client; link client dacă e setat, altfel Facebook.
     """
     from .views import _pt_pub_slot_parse_note
 
     code = (slot_code or "").strip()
     sect = (section or "home").strip().lower()
-    default_link = pub_harta_url(sect, code)
+    default_link = pub_placeholder_link(sect, code)
     default_img = pub_cover_url(code)
     parsed = _pt_pub_slot_parse_note(note) if note is not None else None
 
@@ -56,7 +65,7 @@ def pub_slot_live_creative(section: str, slot_code: str, note=None) -> dict:
             "img": parsed.get("img") or "",
             "video": parsed.get("video") or "",
             "link": link,
-            "alt": (parsed.get("alt") or "").strip() or "Publicitate",
+            "alt": (parsed.get("alt") or "").strip() or "EU-Adopt pe Facebook",
             "price": (parsed.get("price") or "").strip(),
             "discount": (parsed.get("discount") or "").strip(),
             "is_default_cover": False,
@@ -80,11 +89,11 @@ def pub_slot_live_creative(section: str, slot_code: str, note=None) -> dict:
         "img": default_img,
         "video": "",
         "link": default_link,
-        "alt": "Publicitate",
+        "alt": "EU-Adopt pe Facebook",
         "price": "",
         "discount": "",
         "is_default_cover": True,
-        "link_external": False,
+        "link_external": True,
     }
 
 
