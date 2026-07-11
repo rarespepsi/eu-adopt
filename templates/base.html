@@ -53,7 +53,7 @@
 	<link rel="stylesheet" href="{% static 'css/eu-intra-site-skin.css' %}?v=3" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/mobile-portrait-scroll.css' %}?v=1" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/admin-analysis.css' %}?v=1" type="text/css" media="screen" />
-	<link rel="stylesheet" href="{% static 'css/pub-default-covers.css' %}?v=2" type="text/css" media="screen" />
+	<link rel="stylesheet" href="{% static 'css/pub-default-covers.css' %}?v=3-pub-fb-tap" type="text/css" media="screen" />
 	{% if population_banner_mode != 'hidden' %}<link rel="stylesheet" href="{% static 'css/population-org.css' %}?v=2" type="text/css" media="screen" />{% endif %}
 </head>
 <body class="content_left scheme_red euadopt-intra-skin {{ body_class|default:'' }} {% block body_class %}{% endblock %}{% if population_org_nav_reduced %} population-org-nav{% endif %}" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}" data-site-cart-toggle-url="{% url 'site_cart_toggle' %}">
@@ -138,5 +138,6 @@
 		});
 	})();
 	</script>
+	<script src="{% static 'js/pub-placeholder-links.js' %}?v=1-pub-fb-tap" defer></script>
 </body>
 </html>
