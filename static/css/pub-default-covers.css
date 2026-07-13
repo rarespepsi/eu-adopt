@@ -187,7 +187,8 @@ body.page-home-v2 .home-v2-pub-badges {
 .sw-s4-box-ads,
 .sw-s5-slot,
 .shw-side-inner-box,
-.ilove-case {
+.ilove-case,
+.mypet-left-box {
 	position: relative;
 	padding: 0;
 	overflow: hidden;
@@ -196,7 +197,8 @@ body.page-home-v2 .home-v2-pub-badges {
 .sw-s4-box-ads .pub-live-cover-link,
 .sw-s5-slot .pub-live-cover-link,
 .shw-side-inner-box .pub-live-cover-link,
-.ilove-case .pub-live-cover-link {
+.ilove-case .pub-live-cover-link,
+.mypet-left-box .pub-live-cover-link {
 	position: absolute;
 	inset: 0;
 	min-height: 0;

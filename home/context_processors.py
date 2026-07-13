@@ -15,6 +15,21 @@ from django.utils import timezone
 # Aliniat cu home.views.MESSAGE_ARCHIVE_DAYS (fereastra „mesaje active”).
 _NAVBAR_UNREAD_DAYS = 30
 
+_MYPET_PUB_SLOT_CODES = ("MP.L1", "MP.L2", "MP.L3")
+
+
+def _mypet_pub_slots_for_request(request):
+    """Sloturi live MP.L1–L3 pentru sidebar MyPet (/mypet/, adopțiile mele)."""
+    try:
+        rm = getattr(request, "resolver_match", None)
+        if not rm or rm.url_name not in ("mypet", "mypet_adopter_adoptions"):
+            return []
+        from .pub_slot_defaults import pub_slots_ordered
+
+        return pub_slots_ordered("mypet", _MYPET_PUB_SLOT_CODES)
+    except Exception:
+        return []
+
 
 def get_navbar_unread_counts(user):
     """
@@ -293,5 +308,6 @@ def wishlist_counts(request):
         "inbox_notification_unread_count": inbox_notification_unread_count,
         "nav_magazinul_meu_label": nav_magazinul_meu_label,
         "navbar_messages_url": navbar_messages_url,
+        "mypet_pub_slots": _mypet_pub_slots_for_request(request),
     }
 
