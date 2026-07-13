@@ -1272,31 +1272,31 @@
 	}
 	/* Inel buline landscape: rază +2cm față de versiunea anterioară */
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--1 {
-		transform: translate(-50%, -50%) rotate(0deg) translateY(calc(-205% - 26px - 10mm)) rotate(0deg);
+		transform: translate(-50%, -50%) rotate(0deg) translateY(calc(-205% - 26px - 5mm)) rotate(0deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--2 {
-		transform: translate(-50%, -50%) rotate(40deg) translateY(calc(-205% - 26px - 10mm)) rotate(-40deg);
+		transform: translate(-50%, -50%) rotate(40deg) translateY(calc(-205% - 26px - 5mm)) rotate(-40deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--3 {
-		transform: translate(-50%, -50%) rotate(80deg) translateY(calc(-205% - 26px - 10mm)) rotate(-80deg);
+		transform: translate(-50%, -50%) rotate(80deg) translateY(calc(-205% - 26px - 5mm)) rotate(-80deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--4 {
-		transform: translate(-50%, -50%) rotate(120deg) translateY(calc(-205% - 26px - 10mm)) rotate(-120deg);
+		transform: translate(-50%, -50%) rotate(120deg) translateY(calc(-205% - 26px - 5mm)) rotate(-120deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--5 {
-		transform: translate(-50%, -50%) rotate(160deg) translateY(calc(-205% - 26px - 10mm)) rotate(-160deg);
+		transform: translate(-50%, -50%) rotate(160deg) translateY(calc(-205% - 26px - 5mm)) rotate(-160deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--6 {
-		transform: translate(-50%, -50%) rotate(200deg) translateY(calc(-205% - 26px - 10mm)) rotate(-200deg);
+		transform: translate(-50%, -50%) rotate(200deg) translateY(calc(-205% - 26px - 5mm)) rotate(-200deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--7 {
-		transform: translate(-50%, -50%) rotate(240deg) translateY(calc(-205% - 26px - 10mm)) rotate(-240deg);
+		transform: translate(-50%, -50%) rotate(240deg) translateY(calc(-205% - 26px - 5mm)) rotate(-240deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--8 {
-		transform: translate(-50%, -50%) rotate(280deg) translateY(calc(-205% - 26px - 10mm)) rotate(-280deg);
+		transform: translate(-50%, -50%) rotate(280deg) translateY(calc(-205% - 26px - 5mm)) rotate(-280deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--9 {
-		transform: translate(-50%, -50%) rotate(320deg) translateY(calc(-205% - 26px - 10mm)) rotate(-320deg);
+		transform: translate(-50%, -50%) rotate(320deg) translateY(calc(-205% - 26px - 5mm)) rotate(-320deg);
 	}
 }
 
