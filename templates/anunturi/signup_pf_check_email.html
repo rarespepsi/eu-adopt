@@ -70,19 +70,36 @@
 	.signup-check-email .signup-check-back { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; }
 	.signup-check-email .signup-check-back a { display: inline-block; color: #0d47a1; font-weight: 600; text-decoration: none; font-size: 1rem; padding: 0.35rem 0; }
 	.signup-check-email .signup-check-back a:hover { text-decoration: underline; }
+	.signup-check-email .signup-check-yahoo {
+		margin: 1rem 0 0.5rem;
+		padding: 0.85rem 1rem;
+		background: #fff8e1;
+		border: 1px solid #ffcc80;
+		border-radius: 8px;
+		text-align: left;
+	}
+	.signup-check-email .signup-check-yahoo strong { color: #e65100; }
+	.signup-check-email .signup-check-yahoo p { margin: 0.35rem 0; font-size: 0.92rem; color: #5d4037; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="signup-check-email">
 	<h2>Verifică email-ul</h2>
-	{% if email_retrimis %}<p class="signup-check-success" style="color:#2e7d32;font-weight:600;margin-bottom:0.5rem;">Link retrimis. Ai încă 5 minute.</p>{% endif %}
+	{% if email_retrimis %}<p class="signup-check-success" style="color:#2e7d32;font-weight:600;margin-bottom:0.5rem;">Link retrimis. Ai încă {{ activation_validity_label|default:"24 de ore" }}.</p>{% endif %}
 	{% if email_in_cooldown or email_cooldown %}
 	<p class="signup-check-cooldown" style="color:#b71c1c;font-weight:600;background:#ffebee;padding:0.5rem 0.75rem;border-radius:6px;margin:0.5rem 0;">Ați depășit cele 3 încercări. Vă rugăm reveniți peste 45 de minute.</p>
 	{% if email_cooldown_until %}<p class="signup-check-cooldown-timer" data-until="{{ email_cooldown_until }}">Timp rămas: <span class="cooldown-clock">--:--</span></p>{% endif %}
 	{% else %}
 	<p>Am trimis un link de activare la <strong>{{ email }}</strong>.</p>
+	{% if is_yahoo_mailbox %}
+	<div class="signup-check-yahoo" role="note">
+		<p><strong>Cont Yahoo?</strong> Mesajele pot ajunge cu întârziere (15–30 minute) sau în folderul <strong>Spam</strong>.</p>
+		<p>Verifică Spam și așteaptă puțin înainte să soliciți retrimitere. Linkul rămâne valabil {{ activation_validity_label|default:"24 de ore" }}.</p>
+	</div>
+	{% else %}
 	<p>Deschide emailul (verifică și <strong>Spam / Promoții</strong> dacă nu vezi mesajul).</p>
+	{% endif %}
 	{% if activation_verify_url %}
 	<p class="signup-check-hint">Pe acest telefon poți activa direct, fără să cauți în mail:</p>
 	<div class="signup-check-actions">
@@ -95,7 +112,7 @@
 	{% else %}
 	<p>Apasă în email butonul <strong>„Activează contul”</strong> sau copiază linkul întreg în browser.</p>
 	{% endif %}
-	<p>Linkul este valabil <strong>5 minute</strong>.</p>
+	<p>Linkul este valabil <strong>{{ activation_validity_label|default:"24 de ore" }}</strong>.</p>
 	{% if waiting_id %}
 	<p class="signup-check-hint">Dacă apeși linkul de activare pe acest telefon, te logăm automat aici.</p>
 	{% endif %}

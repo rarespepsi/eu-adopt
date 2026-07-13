@@ -217,6 +217,11 @@ EUADOPT_SMSAPI_API_URL = os.environ.get("EUADOPT_SMSAPI_API_URL", "https://api.s
 SMS_OTP_DEV_CODE = (os.environ.get("EUADOPT_SMS_OTP_DEV_CODE", "528419").strip() or "528419")[:10]
 SMS_OTP_TTL_SECONDS = 300
 
+# Link activare email după signup (TimestampSigner max_age). Pre-lansare: 24h — Yahoo poate livra lent.
+SIGNUP_VERIFY_EMAIL_TOKEN_MAX_AGE = int(
+    os.environ.get("EUADOPT_SIGNUP_VERIFY_EMAIL_MAX_AGE_SECONDS", "86400") or "86400"
+)
+
 # Populare adăpost / ONG — min/max animale, meniu redus. Vezi docs/POPULARE_ADAPOST_ONG.md
 _population_on = os.environ.get("EUADOPT_POPULATION_ONBOARDING", "").strip().lower()
 if _population_on in ("0", "false", "no", "off"):

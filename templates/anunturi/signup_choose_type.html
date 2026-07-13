@@ -406,7 +406,7 @@
 			<p class="intro">Selectați categoria care vă descrie pentru a continua cu înregistrarea.</p>
 			{% if link_expirat %}
 			<div class="signup-choose-alert" role="alert">
-				Linkul de activare a expirat (e valabil 5 minute). Poți porni o nouă înregistrare mai jos.
+				Linkul de activare a expirat (e valabil {{ activation_validity_label|default:"24 de ore" }}). Poți porni o nouă înregistrare mai jos.
 			</div>
 			{% endif %}
 			{% if link_invalid %}

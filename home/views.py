@@ -145,9 +145,34 @@ LEGAL_TERMS_VERSION = "1.0"
 LEGAL_PRIVACY_VERSION = "1.0"
 LEGAL_MARKETING_VERSION = "1.0"
 
-# Validare „Activează contul”: aliniază cu `expires_at` + mesaj „5 minute” pe pagina Verifică email.
-SIGNUP_VERIFY_EMAIL_TOKEN_MAX_AGE = 300
 SIGNUP_ACTIVATION_VERIFY_URL_SESSION_KEY = "signup_activation_verify_url"
+
+
+def _signup_activation_validity_label(max_age: int | None = None) -> str:
+    """Etichetă umană pentru valabilitatea linkului de activare email."""
+    age = max_age if max_age is not None else int(
+        getattr(settings, "SIGNUP_VERIFY_EMAIL_TOKEN_MAX_AGE", 86400) or 86400
+    )
+    if age >= 86400 and age % 86400 == 0:
+        days = age // 86400
+        return "24 de ore" if days == 1 else f"{days} zile"
+    if age >= 3600 and age % 3600 == 0:
+        hours = age // 3600
+        return "1 oră" if hours == 1 else f"{hours} ore"
+    minutes = max(1, age // 60)
+    return "1 minut" if minutes == 1 else f"{minutes} minute"
+
+
+def _is_yahoo_mailbox(email: str) -> bool:
+    em = (email or "").strip().lower()
+    if "@" not in em:
+        return False
+    return em.rsplit("@", 1)[-1] in (
+        "yahoo.com",
+        "yahoo.ro",
+        "ymail.com",
+        "rocketmail.com",
+    )
 
 
 def _build_signup_activation_verify_url(request, user_pk, *, waiting_id: str = "") -> str:
@@ -2739,7 +2764,9 @@ def inscriere_view(request):
 
 def signup_choose_type_view(request):
     """Pagina de alegere tip cont (persoană fizică / firmă / ONG / colaborator)."""
-    ctx = {}
+    ctx = {
+        "activation_validity_label": _signup_activation_validity_label(),
+    }
     if request.GET.get("link_expirat"):
         ctx["link_expirat"] = True
     if request.GET.get("link_invalid"):
@@ -3223,7 +3250,8 @@ def signup_pf_check_email_view(request):
     email = (request.GET.get("email") or "").strip()
     waiting_id = request.session.get("signup_waiting_id", "")
     created = request.session.get("signup_link_created_at") or time.time()
-    expires_at = int(created) + SIGNUP_VERIFY_EMAIL_TOKEN_MAX_AGE
+    activation_max_age = int(getattr(settings, "SIGNUP_VERIFY_EMAIL_TOKEN_MAX_AGE", 86400) or 86400)
+    expires_at = int(created) + activation_max_age
     email_resend_count = request.session.get("signup_email_resend_count", 0)
     email_cooldown_until = request.session.get("signup_email_cooldown_until") or 0
     now_ts = int(time.time())
@@ -3252,6 +3280,8 @@ def signup_pf_check_email_view(request):
             "email_in_cooldown": email_in_cooldown,
             "activation_verify_url": activation_verify_url,
             "mail_inbox_url": mail_inbox_url,
+            "activation_validity_label": _signup_activation_validity_label(activation_max_age),
+            "is_yahoo_mailbox": _is_yahoo_mailbox(email),
         },
     )
 
@@ -3316,7 +3346,10 @@ def signup_verify_email_view(request):
         return redirect(reverse("signup_choose_type") + "?link_invalid=1")
     signer = TimestampSigner()
     try:
-        user_pk = signer.unsign(token, max_age=SIGNUP_VERIFY_EMAIL_TOKEN_MAX_AGE)
+        user_pk = signer.unsign(
+            token,
+            max_age=int(getattr(settings, "SIGNUP_VERIFY_EMAIL_TOKEN_MAX_AGE", 86400) or 86400),
+        )
     except SignatureExpired:
         return redirect(reverse("signup_choose_type") + "?link_expirat=1")
     except Exception:
@@ -3347,8 +3380,9 @@ def signup_verify_email_view(request):
     waiting_id = (request.GET.get("waiting_id") or "").strip()
     if waiting_id:
         one_time_token = str(uuid.uuid4())
-        cache.set("signup_waiting_" + waiting_id, one_time_token, timeout=300)
-        cache.set("signup_onetime_" + one_time_token, user.pk, timeout=300)
+        wait_timeout = int(getattr(settings, "SIGNUP_VERIFY_EMAIL_TOKEN_MAX_AGE", 86400) or 86400)
+        cache.set("signup_waiting_" + waiting_id, one_time_token, timeout=wait_timeout)
+        cache.set("signup_onetime_" + one_time_token, user.pk, timeout=wait_timeout)
 
     return render(request, "anunturi/signup_activated.html")
 
