@@ -1,25 +1,26 @@
 ---
-description: Zone finalizate înainte de Transport – înghețate; următorul lucru = Transport mobil
+description: Zone navbar până la Transport inclus — finalizate, sub blocare globală 1977+OK
 alwaysApply: true
 ---
 
-# ZONĂ FINALIZATĂ PÂNĂ LA TRANSPORT – ÎNGHEȚATĂ
+# ZONE NAVBAR PÂNĂ LA TRANSPORT (INCLUS) – FINALIZATE / ÎNGHEȚATE
 
-**Decizie utilizator:** 10 iulie 2026 — tot ce s-a lucrat **până la pagina Transport** rămâne **înghețat**. **Următorul focus:** **Transport mobil** (portrait, apoi landscape).
+**Decizie utilizator:** 10 iulie 2026 — HOME, PT, Servicii înghețate. **13 iulie 2026 — Transport finalizat** (portrait + landscape + back aux + desktop). **13 iulie 2026 (sesiune navbar)** — drawer hamburger mobil `max-content` (`79c21f2`).
 
-**Nu modifica** aceste zone fără cerere explicită + parola **`1977`** + OK execuție (conform regulilor fiecărei pagini + `SITE_GLOBAL_INGHETAT_1977`).
+**Toate zonele de mai jos** = **`SITE_GLOBAL_INGHETAT_1977.mdc`**: parola **`1977`** + **OK explicit** în același mesaj. **Fără zonă activă** — Transport nu mai e „în lucru”.
 
 ---
 
-## Ordine navbar (înainte de Transport) — FINALIZAT / ÎNGHEȚAT
+## Ordine navbar — FINALIZAT / ÎNGHEȚAT (până la Transport inclus)
 
 | Pagină | Reguli |
 |--------|--------|
 | **Acasă (HOME)** | `HOME_INGHETAT.mdc` |
 | **Prietenul tău (PT)** | `PT_INGHETAT.mdc` · portrait `PT_MOBIL_PORTRAIT_MEMORAT.mdc` · landscape `PT_MOBIL_LANDSCAPE_MEMORAT.mdc` |
 | **Servicii** | `SERVICII_INGHETAT.mdc` · `SERVICII_STARE_FINALA_MEMORAT.mdc` · portrait / landscape separate |
+| **Transport** | `TRANSPORT_INGHETAT.mdc` · **`TRANSPORT_MOBIL_MEMORAT.mdc`** (final 13 iul 2026, commit `8f41119`) |
 
-**Navbar A0**, **Intra**, **ONG**, **Colaborator**, **Shop** (neatinse în sesiunea curentă) — rămân conform regulilor lor înghețate existente.
+**Navbar A0** (desktop + **drawer mobil fit-content**), **Intra**, **ONG**, **Colaborator**, **Shop** — rămân conform regulilor lor înghețate existente.
 
 ---
 
@@ -27,6 +28,7 @@ alwaysApply: true
 
 | Zonă | Stare | Referință |
 |------|--------|-----------|
+| **Navbar mobil hamburger** | drawer lățime `max-content` (cel mai lung text) | `NAVBAR_INGHETAT.mdc` · `NAVBAR_SALVARE_PERFECT_REFERINTA.md` · commit `79c21f2` |
 | **I Love mobil** | finalizat portrait + landscape + header compact | `ILOVE_LAYOUT_MEMORAT.mdc` · commit-uri `0e759d5`–`7841257` |
 | **Fișă animal – media** | EuMediaModal, galerie, fullscreen, pinch-zoom mobil | `eu-media-modal.css/js` · `pets-single.html` |
 | **Servicii + produse – poze** | EuMediaModal pe grilă, modal ofertă, detaliu | `SERVICII_STARE_FINALA_MEMORAT.mdc` · commit `2e42bd3` / `92db470` |
@@ -35,30 +37,24 @@ alwaysApply: true
 
 ---
 
-## Transport — ZONA ACTIVĂ DE LUCRU
+## Transport — FINALIZAT / ÎNGHEȚAT
 
 | Fișier | Rol |
 |--------|-----|
-| `templates/anunturi/transport.html` | T1 formular, T2 hub, T3 pub, JS portrait/landscape |
-| `static/css/transport.css` | Layout desktop + mobil |
-| `templates/components/transport_bulina.html` | Bulină donații hub |
+| `templates/anunturi/transport.html` | T1/T2/T3, JS, cache CSS |
+| `static/css/transport.css` | Desktop + portrait + landscape touch |
+| `templates/components/transport_bulina.html` | Bulină → `/custi/` |
+| `static/js/transport-nav-anchor.js` | Back aux → `/transport/` |
+| `home/transport_nav.py` | Context `sursa=transport*` |
 
-**Orice editare Transport** = tot **`1977` + OK`** (`TRANSPORT_INGHETAT.mdc`).
+**Referință mobil final:** **`TRANSPORT_MOBIL_MEMORAT.mdc`** (commit **`8f41119`**, 13 iul 2026).
 
-**Mobil portrait (stare la 10 iul 2026 — referință user):**
+**Orice editare Transport** = **`1977` + OK`** (`TRANSPORT_INGHETAT.mdc`).
 
-- Viewport fix `100dvh`, fără scroll pagină.
-- `.tw-portrait-stack`: **T1 + T2** împart ~50–50 deasupra **T3** (pub).
-- T1 restrâns: titlu + buton „Completează cererea”; formular la expand.
-- T2: hub inel (autocar centru + cercuri servicii); buton „FII PARTE DIN DRUM”; etichete cercuri pot apărea **trunchiate** pe ecrane înguste.
-- T3: bandă pub (3 sloturi „Publi.”).
-
-**Mobil landscape:** MQ separat în `transport.css` — T1 \| T2 \| T3 pe rând (ca desktop îngust).
-
-La lucrul la Transport mobil: **nu atinge** HOME / PT / Servicii / I Love / fișă — modificări **doar** în fișierele Transport (și indirecte globale doar cu `1977` + OK dacă e inevitabil).
+**Landscape memorat:** inel `translate(7mm,0)` · rază `-205%/-26px/-2mm` · bulină `118px-5mm` + `translate(2mm,-5mm)` · T1 butoane egale stivă.
 
 ---
 
 ## Rezumat
 
-**Înainte de Transport = înghețat și memorat. Transport mobil = următorul pas. Parolă `1977` + OK pentru orice editare în repo.**
+**HOME / PT / Servicii / Transport / Navbar mobil = finalizate, înghețate, sub blocare globală. Orice editare în repo: `1977` + OK explicit.**

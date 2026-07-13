@@ -1,0 +1,90 @@
+---
+description: La pauză sau ~10 min fără mesaje (sesiune telefon) — rezumat, docs/AGENT_HANDOFF_LATEST.md, git opțional; evită dublări cu agentul laptop.
+alwaysApply: true
+---
+
+# REGULĂ PAUZĂ — EU-Adopt (sesiune telefon / handoff către laptop)
+
+**Scop:** userul lucrează în mare parte de pe **laptop**; sesiunile de pe **telefon** lasă handoff clar ca agentul laptop să continue **fără dublări**.
+
+**Declanșare:** userul spune „pauză”, „revin”, „10 minute”, „mă opresc”, „ok pauză” **sau** tace **~10 minute** după ultimul mesaj și a lucrat la proiect.
+
+---
+
+## 1) REZUMAT SCURT (max 8 rânduri)
+
+- Ce s-a făcut în sesiunea asta (task, fișiere, commit-uri)
+- Ce e **LIVE pe Hetzner** vs doar local
+- Ce rămâne de făcut / ce testează userul pe telefon
+
+---
+
+## 2) FIȘIER HANDOFF (obligatoriu)
+
+Actualizează sau creează: **`docs/AGENT_HANDOFF_LATEST.md`**
+
+Conținut fix:
+
+```markdown
+---
+# Handoff agent — ultima pauză
+**Data/ora (RO):** YYYY-MM-DD HH:MM
+**Sursă:** telefon · Remote Control · eu-adopt / main
+**User:** pauză ~10 min
+
+## Ce s-a făcut
+- (bullets)
+
+## Fișiere atinse
+- path/to/file — ce s-a schimbat
+
+## Git
+- Branch: main
+- Commit(uri): SHA + mesaj (sau „nimic de comis”)
+- Push: da/nu
+
+## Deploy Hetzner
+- da/nu · script · SHA live dacă știi
+
+## Pentru agent laptop (caută aici)
+- git log -3 --oneline
+- git diff HEAD~1 --stat (dacă există commit nou)
+- citește docs/AGENT_HANDOFF_LATEST.md
+- test pagini relevante sesiune (ex. https://eu-adopt.ro/ — hamburger mobil; zone înghețate doar la cerere user)
+
+## Următorul pas
+- (1–3 bullets clare)
+---
+```
+
+---
+
+## 3) GIT (dacă există modificări aprobate de user)
+
+- `git status`
+- commit **DOAR** fișiere proiect (fără `.env`, exports, backup-uri)
+- mesaj commit: `handoff: <rezumat scurt>`
+- `git push origin main`
+- Dacă userul a cerut deploy: `.\scripts\deploy_hetzner_from_pc.ps1` (sau spune că trebuie făcut de pe laptop)
+
+---
+
+## 4) MESAJ FINAL CĂTRE USER (scurt)
+
+„Pauză înregistrată. Handoff în `docs/AGENT_HANDOFF_LATEST.md` · commit &lt;SHA sau nimic&gt;. Seara pe laptop spune: «citește handoff-ul și continuăm». ”
+
+---
+
+## 5) REGULI PROIECT (nu ignora)
+
+- Editări site: parolă **`1977`** + **OK explicit** în același mesaj
+- Zone înghețate: HOME, PT, Servicii, **Transport** (final 13 iul 2026), navbar etc. — nu atinge fără `1977`+OK
+- **Tot site-ul** = blocare globală `1977` + OK; Transport **nu** mai e zonă activă de lucru
+- Producție = doar **Hetzner**, nu Render
+
+---
+
+## 6) NU face la pauză
+
+- `push --force`, ștergeri masive, commit `.env`/secrete
+- deploy fără cerere explicită + `1977`+OK dacă e modificare site

@@ -12,7 +12,11 @@ alwaysApply: true
 
 **Absolut orice modificare pe site** = ambele condiții. **Fără excepții** de zonă (inclusiv Publicitate `/publicitate/`, dacă utilizatorul impune acest standard).
 
-Respectă în continuare regulile specifice existente (HOME, PT, Shop, Servicii, Navbar A0, Intra, ONG, Colaborator, I Love layout, etc.) — sunt **în plus** față de această regulă globală.
+Respectă în continuare regulile specifice existente (HOME, PT, Shop, Servicii, **Transport** — finalizat 13 iul 2026, Navbar A0, Intra, ONG, Colaborator, I Love layout, etc.) — sunt **în plus** față de această regulă globală.
+
+## Transport (finalizat — sub aceeași blocare globală)
+
+Pagina **Transport** și fluxul colaborator (`TRANSPORT_INGHETAT.mdc`, `TRANSPORT_MOBIL_MEMORAT.mdc`) sunt **închise** din 13 iulie 2026. Orice editare = **`1977` + OK explicit** ca restul site-ului; fără excepții sau „zonă activă de lucru”.
 
 ## Publicitate (`/publicitate/`)
 

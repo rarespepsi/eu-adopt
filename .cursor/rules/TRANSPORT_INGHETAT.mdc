@@ -5,11 +5,13 @@ alwaysApply: true
 
 # TRANSPORT ÎNGHEȚAT – NIMIC FĂRĂ PAROLĂ `1977`
 
-**Zona Transport** (cerere veterinară publică, panou transportator, rating dispatch) este **memorată / securizată**. Nu modifici **NIMIC** la Transport – nici direct, nici indirect – până când utilizatorul **cere explicit** o schimbare **și** furnizează parola **`1977`** în același mesaj (în linie cu regulile globale **`1977` + OK explicit** unde e cazul).
+**FINALIZAT 13 iulie 2026** (portrait + landscape + back aux + desktop) — confirmat de utilizator. Transport intră în **blocarea generală** a site-ului: **`SITE_GLOBAL_INGHETAT_1977.mdc`** (`1977` + OK explicit în același mesaj) **plus** regulile specifice de mai jos și **`TRANSPORT_MOBIL_MEMORAT.mdc`**.
+
+**Zona Transport** (cerere veterinară publică, panou transportator, rating dispatch) este **memorată / securizată**. Nu modifici **NIMIC** la Transport – nici direct, nici indirect – până când utilizatorul **cere explicit** o schimbare **și** furnizează parola **`1977`** + **OK explicit de execuție** în același mesaj.
 
 ## Ce înseamnă NIMIC
 
-- **Nu edita:** `templates/anunturi/transport.html`, `static/css/transport.css`, `templates/components/transport_bulina.html`, `templates/anunturi/transport_operator_panou.html`, `templates/anunturi/transport_dispatch_rate.html`, sau orice fișier care afectează în mod evident layout-ul / aspectul / fluxul acestor pagini.
+- **Nu edita:** `templates/anunturi/transport.html`, `static/css/transport.css`, `templates/components/transport_bulina.html`, `static/js/transport-nav-anchor.js`, `home/transport_nav.py`, `templates/anunturi/transport_operator_panou.html`, `templates/anunturi/transport_dispatch_rate.html`, sau orice fișier care afectează în mod evident layout-ul / aspectul / fluxul acestor pagini (inclusiv back aux donatii/custi legat de Transport — vezi **`TRANSPORT_MOBIL_MEMORAT.mdc`**, commit `8f41119`).
 - **Nu adăuga, nu șterge, nu muta** elemente (T1 formular, T2 hub, T3, banner `from_adoption`, modal hartă din același șablon, butoane dispatch) sau reguli CSS pe `body.page-transport`, `#TW`, `.transport-*`, `.tw-row`, `#T1` / `#T2` / `#T3`, `.t1-*`, `.t2-*`, `.t3-*`.
 - **View / URL / logică dedicată:** nu schimba în `home/views.py` rutele sau funcțiile care servesc exclusiv Transport (ex. `transport_view`, `transport_submit_view`, acțiuni dispatch, `transport_operator_panel_view`, rating dispatch) sau în `home/urls.py` căile `transport/`, `collab/transport/`, `transport/dispatch/…` dacă efectul e schimbarea conținutului, fluxului sau aspectului zonei Transport.
 - **Modul dispatch:** nu edita `home/transport_dispatch.py` dacă efectul e schimbarea comportamentului sau mesajelor vizibile utilizatorului în fluxul Transport (în afara cererii explicite + **`1977`**).
@@ -24,4 +26,4 @@ alwaysApply: true
 
 ## Rezumat
 
-**Transport (pagină publică + panou colaborator + rating dispatch) = securizat. NIMIC nu se modifică fără parolă `1977` cerută și furnizată (și OK explicit unde cere regula globală).**
+**Transport (pagină publică + mobil portrait/landscape + back aux + panou colaborator + rating dispatch) = securizat și memorat (`TRANSPORT_MOBIL_MEMORAT.mdc`). NIMIC nu se modifică fără parolă `1977` cerută și furnizată (și OK explicit unde cere regula globală).**

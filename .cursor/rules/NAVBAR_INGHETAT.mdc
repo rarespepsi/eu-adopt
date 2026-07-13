@@ -9,7 +9,26 @@ Navbarul principal `A0` (fișierele `navbar_a0.html` și `navbar-a0-secured.css`
 
 ## Stare memorată (layout admin / staff)
 
-Referință scrisă în proiect: **`NAVBAR_SALVARE_PERFECT_REFERINTA.md`** (plic + căutare îngustă, `margin-left` căutare față de plic, staff: **Analiza** + **Reclama**, fără `transform` pe căutare care suprapune plicul). La îndoieli sau restaurare, refă din acel fișier + valorile din CSS.
+Referință scrisă în proiect: **`NAVBAR_SALVARE_PERFECT_REFERINTA.md`** (plic + căutare îngustă, `margin-left` căutare față de plic, staff: **Analiza** + **Reclama**, fără `transform` pe căutare care suprapune plicul; **mobil hamburger** — drawer `max-content`). La îndoieli sau restaurare, refă din acel fișier + valorile din CSS.
+
+## Stare memorată mobil hamburger (≤70em) — FINALIZAT 13 iul 2026
+
+**Confirmat de utilizator:** meniul drawer = **lățime după cel mai lung text**, nu overlay full-width.
+
+**Commit referință:** `79c21f2` · cache `navbar-a0-secured.css?v=20260713-menu-fit-content`
+
+**Media query:** `@media (max-width: 70em)` în `static/css/navbar-a0-secured.css`
+
+| Element | Valoare memorată |
+|---------|------------------|
+| `#menu_wrap` / portaled | `width: max-content`, `left: 0`, `right: auto`, `bottom: auto`, `align-items: flex-start` |
+| `ul.menu`, `li`, linkuri | `width: max-content`, `align-items: flex-start` |
+| Link meniu | `white-space: nowrap` |
+| Rând cont | `grid-template-columns: 2rem max-content` |
+| I Love | `inline-flex`, `flex-wrap: nowrap` |
+| Max fallback | `max-width: calc(100vw - 16px)` |
+
+**Desktop navbar (≥70.001em):** neatins de aceste reguli.
 
 ## Ce înseamnă NIMIC
 

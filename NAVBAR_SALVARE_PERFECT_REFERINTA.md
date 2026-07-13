@@ -40,6 +40,22 @@ Selector: `#A0 #main_menu .a0-search-right` (bloc cu comentariu „Căutarea dup
 - `#A0 #main_menu .a0-search-right` (primul bloc): `margin-left: 4.725rem` în sursă — **suprascris** de override-ul `0.5rem` de mai sus.
 - `min-width: 0`, `flex-shrink: 1` pe `.a0-search-right`.
 
+## Mobil hamburger (≤70em) — drawer fit-content — FINAL 13 iul 2026
+
+**Commit:** `79c21f2` · cache `?v=20260713-menu-fit-content`
+
+**Scop:** drawer-ul nu ocupă tot ecranul — lățime = cel mai lung label din meniu.
+
+Selectori cheie (`@media (max-width: 70em)`):
+
+- `#A0 #menu_wrap`, `body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled`: `width: max-content !important`, `right: auto !important`, `bottom: auto !important`, `align-items: flex-start !important`
+- `ul.menu`, `li`: `width: max-content !important`, `align-items: flex-start !important`
+- `li a`: `white-space: nowrap !important`
+- `.a0-nav-account-link`: `grid-template-columns: 2rem max-content !important`
+- `.a0-nav-ilove-start`: `inline-flex`, `flex-wrap: nowrap`
+
+**Nu reintroduce** drawer full-width (`width: 100%` / `right: 0` / `bottom: 0` pe `#menu_wrap` mobil).
+
 ## Ce nu se schimbă fără parolă
 
-Orice ajustare de poziție, lățime, margini, transform pe navbar A0 — **doar** cu cerere explicită și parola **1977**.
+Orice ajustare de poziție, lățime, margini, transform pe navbar A0 (desktop **și** drawer mobil) — **doar** cu cerere explicită, parola **1977** și OK de execuție.
