@@ -584,6 +584,39 @@
     hyphens: none;
   }
 
+  #SHW .shw-row-middle {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    align-items: stretch !important;
+  }
+
+  #SHW .shw-row-middle-center {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  #SHW .shop-tabs-wrap {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  #SHW .shop-panels {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+  }
+
+  #SHW .shop-panel.active {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+
   #SHW .shw-row-middle-left {
     flex: 0 0 23%;
     min-width: 0;
@@ -614,8 +647,14 @@
   #SHW .shop-grid-dogs,
   #SHW .shop-grid-cats,
   #SHW .shop-grid-accessories {
-    grid-auto-rows: 123px;
-    max-height: calc(4 * 123px);
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    max-height: none !important;
+    grid-auto-rows: minmax(72px, 1fr) !important;
+    align-content: stretch !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
