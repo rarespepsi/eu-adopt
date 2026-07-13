@@ -32,6 +32,10 @@ PRELAUNCH_SOFT_MESSAGES = {
         "Nu puteți adăuga acest articol în coș în pre-lansare. "
         "Shop-ul și ofertele plătite se deschid după lansare."
     ),
+    "adopt": (
+        "Butonul „Vreau să adopt” este inactiv în perioada de populare. "
+        "Adopțiile online se deschid după lansarea oficială."
+    ),
 }
 
 # În pre-lansare rămân permise doar publicitate + promovare A2 (gratuite).

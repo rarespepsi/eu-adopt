@@ -856,6 +856,7 @@
 					0 10px 26px rgba(0, 0, 0, 0.35);
 				color: #fff;
 				display: flex;
+				flex-direction: column;
 				align-items: center;
 				justify-content: center;
 				text-align: center;
@@ -867,7 +868,27 @@
 				line-height: 1.3;
 				text-transform: none;
 				user-select: none;
+				cursor: pointer;
+			}
+			.pet-adopt-corner--inactive {
+				background: rgba(90, 90, 90, 0.82);
+				border-color: rgba(255, 255, 255, 0.14);
+				box-shadow:
+					0 0 0 1px rgba(0, 0, 0, 0.28) inset,
+					0 8px 20px rgba(0, 0, 0, 0.28);
+				color: rgba(255, 255, 255, 0.92);
 				cursor: default;
+				opacity: 0.92;
+			}
+			.pet-adopt-corner__note {
+				display: block;
+				margin-top: 0.35rem;
+				font-size: 0.62rem;
+				font-weight: 500;
+				line-height: 1.25;
+				letter-spacing: 0;
+				opacity: 0.9;
+				text-transform: none;
 			}
 			/* Desktop: colțuri vitrate — se vede fundalul cu becuri/animale prin Adopt + QR */
 			@media (min-width: 821px) {
@@ -1564,7 +1585,7 @@
 											<div class="pet-adopt-qr-inline" id="petAdoptQrInline" aria-label="Adopție și cod QR">
 												{% if show_pet_adopt_corner %}
 												<div
-													class="pet-adopt-corner"
+													class="pet-adopt-corner{% if pet_adopt_inactive_populare %} pet-adopt-corner--inactive{% endif %}"
 													id="petAdoptCorner"
 													role="button"
 													tabindex="0"
@@ -1573,8 +1594,12 @@
 													data-servicii-url="{% url 'servicii' %}"
 													data-login-url="{% url 'login' %}"
 													data-login-next="{{ request.get_full_path|urlencode }}"
+													{% if pet_adopt_inactive_populare %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_inactive_message|escape }}" aria-disabled="true"{% endif %}
 													aria-label="Vreau să adopt"
-												>VREAU SĂ ADOPT</div>
+												>
+													<span class="pet-adopt-corner__label">VREAU SĂ ADOPT</span>
+													{% if pet_adopt_inactive_populare %}<span class="pet-adopt-corner__note">Inactiv în perioada de populare</span>{% endif %}
+												</div>
 												{% endif %}
 												<div class="pet-qr-corner" id="petQrCorner" aria-label="Cod QR fișă">
 													<p class="pet-qr-corner__title">Scanează fișa</p>
@@ -2077,14 +2102,22 @@
 				var serviciiUrl = adoptCorner.getAttribute("data-servicii-url") || "";
 				var loginBase = adoptCorner.getAttribute("data-login-url") || "";
 				var loginNextEnc = adoptCorner.getAttribute("data-login-next") || "";
+				var adoptInactive = adoptCorner.getAttribute("data-adopt-inactive") === "1";
+				var adoptInactiveMsg = adoptCorner.getAttribute("data-adopt-inactive-msg") || "";
 				var isAuth = document.body.getAttribute("data-user-authenticated") === "true";
+				function showAdoptInactiveMessage() {
+					showPetAppMessage(
+						adoptInactiveMsg || "Butonul de adopție este inactiv în perioada de populare."
+					);
+				}
 				function goToServicii() {
 					if (!serviciiUrl) return;
 					window.location.href = serviciiUrl;
 				}
 				async function submitAdoptRequest() {
 					if (!adoptUrl) return;
-					var old = adoptCorner.textContent;
+					var labelEl = adoptCorner.querySelector(".pet-adopt-corner__label");
+					var old = labelEl ? labelEl.textContent : adoptCorner.textContent;
 					adoptCorner.setAttribute("aria-busy", "true");
 					try {
 						var body = new URLSearchParams();
@@ -2131,7 +2164,8 @@
 						showPetAppMessage(err.message || "Eroare la trimitere.");
 					} finally {
 						adoptCorner.removeAttribute("aria-busy");
-						adoptCorner.textContent = old;
+						if (labelEl) labelEl.textContent = old;
+						else adoptCorner.textContent = old;
 					}
 				}
 				function closeAdoptChoiceModal() {
@@ -2182,6 +2216,10 @@
 				});
 				adoptCorner.addEventListener("click", function(e) {
 					e.preventDefault();
+					if (adoptInactive) {
+						showAdoptInactiveMessage();
+						return;
+					}
 					if (!isAuth && loginBase) {
 						var q = loginNextEnc ? "?next=" + loginNextEnc : "";
 						window.location.href = loginBase + q;
@@ -2196,6 +2234,10 @@
 				adoptCorner.addEventListener("keydown", function(e) {
 					if (e.key === "Enter" || e.key === " ") {
 						e.preventDefault();
+						if (adoptInactive) {
+							showAdoptInactiveMessage();
+							return;
+						}
 						if (!isAuth && loginBase) {
 							var q2 = loginNextEnc ? "?next=" + loginNextEnc : "";
 							window.location.href = loginBase + q2;

@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from home.models import SiteCartItem
+from home.models import AnimalListing, SiteCartItem
 
 User = get_user_model()
 
@@ -99,3 +99,32 @@ class PrelaunchSoftLockTests(TestCase):
         self.client.force_login(self.user)
         resp = self.client.get(reverse("shop"))
         self.assertEqual(resp.status_code, 200)
+
+    def test_adoption_request_blocked(self):
+        owner = User.objects.create_user(username=f"own_{uuid.uuid4().hex[:8]}", password="x")
+        pet = AnimalListing.objects.create(
+            owner=owner,
+            name="Rex",
+            species="dog",
+            is_published=True,
+        )
+        self.client.force_login(self.user)
+        resp = self.client.post(reverse("pet_adoption_request", args=[pet.pk]))
+        self.assertEqual(resp.status_code, 403)
+        data = json.loads(resp.content)
+        self.assertFalse(data.get("ok"))
+        self.assertIn("populare", (data.get("error") or "").lower())
+
+    def test_pet_ficha_shows_inactive_adopt_button(self):
+        owner = User.objects.create_user(username=f"own2_{uuid.uuid4().hex[:8]}", password="x")
+        pet = AnimalListing.objects.create(
+            owner=owner,
+            name="Mira",
+            species="dog",
+            is_published=True,
+        )
+        resp = self.client.get(reverse("pets_single", args=[pet.pk]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "VREAU SĂ ADOPT")
+        self.assertContains(resp, "Inactiv în perioada de populare")
+        self.assertContains(resp, "pet-adopt-corner--inactive")

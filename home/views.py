@@ -4735,6 +4735,10 @@ def dog_profile_view(request, pk):
     )
 
     from home.population_onboarding import population_ui_restricted_for_user, user_may_adopt_animals
+    from home.prelaunch_soft_lock import (
+        PRELAUNCH_SOFT_MESSAGES,
+        prelaunch_soft_lock_active_for_user,
+    )
 
     viewer_can_adopt = bool(
         request.user.is_authenticated
@@ -4752,20 +4756,18 @@ def dog_profile_view(request, pk):
         and listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
         and not population_ui_restricted_for_user(request.user)
     )
-    # Buton „VREAU SĂ ADOPT”: ascuns în faza populare pentru useri logați (exceptie superuser).
-    # Vizitatori anonimi (link Distribuie): buton vizibil → duce la login, fără cerere efectivă.
-    if not request.user.is_authenticated:
-        show_pet_adopt_corner = listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
-    else:
-        show_pet_adopt_corner = bool(
-            not population_ui_restricted_for_user(request.user)
-            and listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
-            and request.user.pk != listing.owner_id
-        )
+    # Buton „VREAU SĂ ADOPT”: vizibil (nu proprietar, neadoptat); inactiv în pre-lansare/populare.
+    pet_adopt_inactive_populare = prelaunch_soft_lock_active_for_user(request.user)
+    show_pet_adopt_corner = bool(
+        listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
+        and (not request.user.is_authenticated or request.user.pk != listing.owner_id)
+    )
     ctx = {
         "pet": pet,
         "can_send_pet_message": can_send_pet_message,
         "show_pet_adopt_corner": show_pet_adopt_corner,
+        "pet_adopt_inactive_populare": pet_adopt_inactive_populare,
+        "pet_adopt_inactive_message": PRELAUNCH_SOFT_MESSAGES.get("adopt", ""),
         "pet_owner_id": listing.owner_id,
         "adoption_request_status": adoption_request_status,
         # Hibrid: mesaje înainte de accept — același prag ca can_send_pet_message (șabloane vechi).
@@ -10664,6 +10666,16 @@ def pet_adoption_request_view(request, pk: int):
         return JsonResponse({"ok": False, "error": "Acest animal este deja adoptat."}, status=400)
     if pet.owner_id == request.user.id:
         return JsonResponse({"ok": False, "error": "Nu poți solicita adopția propriului anunț."}, status=400)
+    from home.prelaunch_soft_lock import (
+        PRELAUNCH_SOFT_MESSAGES,
+        prelaunch_soft_lock_active_for_user,
+    )
+
+    if prelaunch_soft_lock_active_for_user(request.user):
+        return JsonResponse(
+            {"ok": False, "error": PRELAUNCH_SOFT_MESSAGES.get("adopt", "")},
+            status=403,
+        )
     from home.population_onboarding import user_may_adopt_animals
 
     if not user_may_adopt_animals(request.user):
