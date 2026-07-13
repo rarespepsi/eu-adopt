@@ -870,10 +870,10 @@
 		min-height: 80px;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circles {
-		transform: translate(0, 0) !important;
+		transform: translate(7mm, 0) !important;
 	}
 	#TW #T2 .t2-circles {
-		transform: translate(0, 0) !important;
+		transform: translate(7mm, 0) !important;
 	}
 	#TW #T2 .t2-circle {
 		width: min(9.5vmin, 48px);
@@ -1064,7 +1064,7 @@
 		inset: 0;
 		width: auto;
 		height: auto;
-		transform: translate(0, 0) !important;
+		transform: translate(7mm, 0) !important;
 		pointer-events: none;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle-label {
@@ -1678,7 +1678,15 @@
 		margin-top: calc(2cm - 3mm) !important;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circles {
-		transform: translate(0, 0) !important;
+		transform: translate(7mm, 0) !important;
+	}
+	#TW #T2:not(.tw-t2--hub-open) .t2-extra-circle {
+		width: calc(118px - 5mm) !important;
+		height: calc(118px - 5mm) !important;
+		min-width: calc(96px - 5mm) !important;
+		min-height: calc(96px - 5mm) !important;
+		max-width: calc(118px - 5mm) !important;
+		max-height: calc(118px - 5mm) !important;
 	}
 }
 
