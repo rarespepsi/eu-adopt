@@ -126,6 +126,28 @@ def _sum_page_views_since(day_start) -> int:
     )
 
 
+def _presence_period_floor(day_start, t0_day):
+    """Nu raportează trafic înainte de T₀ când e configurat."""
+    if t0_day and day_start < t0_day:
+        return t0_day
+    return day_start
+
+
+def reset_site_presence_data() -> dict[str, int]:
+    """Șterge tot istoricul Prezență (sesiuni, zilnice, active). Returnează număr înainte."""
+    before = {
+        "daily": SitePresenceDaily.objects.count(),
+        "day_sessions": SitePresenceDaySession.objects.count(),
+        "day_users": SitePresenceDayUser.objects.count(),
+        "active": SitePresenceActive.objects.count(),
+    }
+    SitePresenceDaySession.objects.all().delete()
+    SitePresenceDayUser.objects.all().delete()
+    SitePresenceDaily.objects.all().delete()
+    SitePresenceActive.objects.all().delete()
+    return before
+
+
 def staff_analysis_presence_page_context() -> dict:
     """KPI-uri pentru /admin-analysis/prezenta/."""
     now = timezone.now()
@@ -133,14 +155,21 @@ def staff_analysis_presence_page_context() -> dict:
     threshold = now - timedelta(minutes=ONLINE_WINDOW_MINUTES)
     _cleanup_stale_active(threshold)
 
+    from home.metrics_t0 import metrics_t0_start
+
+    t0_dt = metrics_t0_start()
+    t0_day = t0_dt.date() if t0_dt else None
+
     daily = SitePresenceDaily.objects.filter(date=today).first()
-    week_start = today - timedelta(days=6)
-    month_start = today.replace(day=1)
-    year_start = today.replace(month=1, day=1)
+    week_start = _presence_period_floor(today - timedelta(days=6), t0_day)
+    month_start = _presence_period_floor(today.replace(day=1), t0_day)
+    year_start = _presence_period_floor(today.replace(month=1, day=1), t0_day)
 
     recent_days = []
     for offset in range(6, -1, -1):
         d = today - timedelta(days=offset)
+        if t0_day and d < t0_day:
+            continue
         row = SitePresenceDaily.objects.filter(date=d).first()
         recent_days.append(
             {
@@ -176,6 +205,10 @@ def staff_analysis_presence_page_context() -> dict:
         "presence_year_page_views": _sum_page_views_since(year_start),
         "presence_year_logged_in": _distinct_logged_since(year_start),
         "presence_recent_days": recent_days,
+        "presence_t0_filtered": bool(t0_day),
+        "presence_t0_traffic_visitors": _distinct_visitors_since(t0_day) if t0_day else 0,
+        "presence_t0_traffic_page_views": _sum_page_views_since(t0_day) if t0_day else 0,
+        "presence_t0_traffic_logged_in": _distinct_logged_since(t0_day) if t0_day else 0,
     }
     from home.metrics_t0 import metrics_t0_staff_context
 

@@ -46,7 +46,7 @@ class SitePresenceTests(TestCase):
         self.assertIn("presence_online_visitors", ctx)
         self.assertIn("presence_week_visitors", ctx)
         self.assertIn("presence_year_visitors", ctx)
-        self.assertEqual(len(ctx["presence_recent_days"]), 7)
+        self.assertGreaterEqual(len(ctx["presence_recent_days"]), 1)
         self.assertEqual(ctx["presence_online_window"], ONLINE_WINDOW_MINUTES)
 
     def test_skips_static_paths(self):
@@ -54,3 +54,13 @@ class SitePresenceTests(TestCase):
         request = self.client.get("/static/css/style.css").wsgi_request
         record_site_presence(request)
         self.assertEqual(SitePresenceDaily.objects.count(), before)
+
+    def test_reset_site_presence_clears_tables(self):
+        request = self.client.get("/login/").wsgi_request
+        record_site_presence(request)
+        self.assertGreater(SitePresenceDaily.objects.count(), 0)
+        from home.site_presence import reset_site_presence_data
+
+        reset_site_presence_data()
+        self.assertEqual(SitePresenceDaily.objects.count(), 0)
+        self.assertEqual(SitePresenceDaySession.objects.count(), 0)

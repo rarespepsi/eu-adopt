@@ -61,13 +61,31 @@
 	{% if metrics_t0_enabled %}
 	<div class="presence-t0" aria-label="Contor T zero campanie">
 		<h2 class="presence-section-title">T₀ campanie — de la {{ metrics_t0_label }}</h2>
-		<p class="presence-note" style="margin-top:0.2rem;">Contorizare de la startul campaniei (Facebook / social). Staff nu intră în statistici.</p>
+		<p class="presence-note" style="margin-top:0.2rem;">Contor campanie + trafic brut de la {{ metrics_t0_label }}. Istoricul vechi a fost resetat. Staff nu intră la logări (login).</p>
 		<div class="presence-t0-kpis">
-			<div class="presence-t0-kpi" title="Conturi create (înregistrare)">
+			<div class="presence-t0-kpi" title="Sesiuni distincte de la T₀">
+				<span class="presence-t0-kpi-num">{{ presence_t0_traffic_visitors }}</span>
+				<span class="presence-t0-kpi-label">Vizitatori (trafic)</span>
+			</div>
+			<div class="presence-t0-kpi" title="Pagini încărcate de la T₀">
+				<span class="presence-t0-kpi-num">{{ presence_t0_traffic_page_views }}</span>
+				<span class="presence-t0-kpi-label">Pagini văzute</span>
+			</div>
+			<div class="presence-t0-kpi" title="Conturi autentificate distincte de la T₀">
+				<span class="presence-t0-kpi-num">{{ presence_t0_traffic_logged_in }}</span>
+				<span class="presence-t0-kpi-label">Logați unici (trafic)</span>
+			</div>
+			<div class="presence-t0-kpi" title="Formular scurt /inscriere/">
+				<span class="presence-t0-kpi-num">{{ metrics_t0_inscriere_leads }}</span>
+				<span class="presence-t0-kpi-label">Lead-uri /inscriere/</span>
+			</div>
+			<div class="presence-t0-kpi" title="Conturi create">
 				<span class="presence-t0-kpi-num">{{ metrics_t0_new_users }}</span>
 				<span class="presence-t0-kpi-label">Înregistrări noi</span>
 			</div>
-			<div class="presence-t0-kpi" title="Conturi activate (email confirmat)">
+		</div>
+		<div class="presence-t0-kpis" style="margin-top:0.35rem;">
+			<div class="presence-t0-kpi" title="Conturi activate">
 				<span class="presence-t0-kpi-num">{{ metrics_t0_new_users_active }}</span>
 				<span class="presence-t0-kpi-label">Conturi activate</span>
 			</div>
@@ -75,20 +93,16 @@
 				<span class="presence-t0-kpi-num">{{ metrics_t0_login_events }}</span>
 				<span class="presence-t0-kpi-label">Logări (evenimente)</span>
 			</div>
-			<div class="presence-t0-kpi" title="Utilizatori distincți care s-au logat">
+			<div class="presence-t0-kpi" title="Utilizatori distincți logați">
 				<span class="presence-t0-kpi-num">{{ metrics_t0_login_unique_users }}</span>
-				<span class="presence-t0-kpi-label">Logați unici</span>
-			</div>
-			<div class="presence-t0-kpi" title="Formular scurt /inscriere/">
-				<span class="presence-t0-kpi-num">{{ metrics_t0_inscriere_leads }}</span>
-				<span class="presence-t0-kpi-label">Lead-uri /inscriere/</span>
+				<span class="presence-t0-kpi-label">Logați unici (login)</span>
 			</div>
 		</div>
 	</div>
 	{% endif %}
 	<div class="presence-layout">
 		<div>
-			<h2 class="presence-section-title">Acum pe site</h2>
+			<h2 class="presence-section-title">{% if presence_t0_filtered %}Trafic live (de la T₀){% else %}Acum pe site{% endif %}</h2>
 			<div class="presence-kpis" style="margin-top:0.35rem;">
 				<div class="presence-kpi presence-kpi-live" title="Sesiuni distincte active recent">
 					<span class="presence-kpi-num">{{ presence_online_visitors }}</span>
@@ -113,7 +127,7 @@
 			</div>
 		</div>
 		<div>
-			<h2 class="presence-section-title">Trafic agregat</h2>
+			<h2 class="presence-section-title">{% if presence_t0_filtered %}Trafic agregat (de la T₀){% else %}Trafic agregat{% endif %}</h2>
 			<div class="presence-periods" style="margin-top:0.35rem;">
 				<section class="presence-period" aria-label="Astăzi">
 					<h3>Astăzi</h3>
@@ -150,7 +164,7 @@
 			</div>
 		</div>
 		<div class="presence-table-wrap">
-			<h2 class="presence-section-title">Ultimele 7 zile (detaliu)</h2>
+			<h2 class="presence-section-title">{% if presence_t0_filtered %}Zile de la T₀{% else %}Ultimele 7 zile (detaliu){% endif %}</h2>
 			<table class="presence-table">
 				<thead>
 					<tr>
@@ -171,7 +185,7 @@
 					{% endfor %}
 				</tbody>
 			</table>
-			<p class="presence-note">Datele se acumulează de la activarea modulului Prezență. „Vizitatori unici” = sesiuni distincte; „Logați” = conturi autentificate. Nu include fișiere static/media.</p>
+			<p class="presence-note">{% if presence_t0_filtered %}Trafic de la {{ metrics_t0_label }} (fără istoric înainte de T₀). „Vizitatori” = sesiuni distincte (include boți/crawlere).{% else %}Datele se acumulează de la activarea modulului Prezență.{% endif %} Nu include fișiere static/media.</p>
 		</div>
 	</div>
 </section>
