@@ -699,6 +699,40 @@
     word-break: normal;
     hyphens: none;
   }
+
+  /* Pub: 3 stânga (SH4) + 3 dreapta (SH5) — nu merge portrait 6-stânga */
+  #SHW .shw-pub-in-left-portrait-only {
+    display: none !important;
+  }
+
+  #SHW .shw-row-middle {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    align-items: stretch !important;
+  }
+
+  #SHW .shw-row-middle-left,
+  #SHW .shw-row-middle-right {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 0 0 14% !important;
+    max-width: 18% !important;
+    min-width: 0 !important;
+    align-self: stretch !important;
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  #SHW .shw-side-inner-grid {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+
+  #SHW .shw-side-inner-box {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+  }
 }
 
 /* Mobil landscape: coloanele laterale (SH4 / SH5) umplu înălțimea rândului mijlociu — fără alte schimbări de layout */
