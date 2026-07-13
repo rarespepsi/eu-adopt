@@ -2502,6 +2502,9 @@ def login_view(request):
                         error = pop_err
                     else:
                         auth_login(request, user)
+                        from home.metrics_t0 import record_site_login_event
+
+                        record_site_login_event(user, "login")
                         next_url = request.GET.get("next") or request.POST.get("next") or "/"
                         from django.shortcuts import redirect
                         return redirect(next_url)
@@ -3332,6 +3335,9 @@ def signup_verify_email_view(request):
         _attach_staff_onboarding_lead_from_inv_token(user, inv)
     request.session.pop(STAFF_INVITE_SESSION_KEY, None)
     auth_login(request, user)
+    from home.metrics_t0 import record_site_login_event
+
+    record_site_login_event(user, "signup_verify_email")
     # Curățare sesiune după activare – un singur set de chei signup_*
     for key in ("signup_waiting_id", "signup_waiting_user_pk", "signup_email_resend_count", "signup_email_cooldown_until",
                 "signup_sms_resend_count", "signup_sms_cooldown_until", SIGNUP_ACTIVATION_VERIFY_URL_SESSION_KEY,
@@ -3383,6 +3389,9 @@ def signup_complete_login_view(request):
                 "signup_link_created_at"):
         request.session.pop(key, None)
     auth_login(request, user)
+    from home.metrics_t0 import record_site_login_event
+
+    record_site_login_event(user, "signup_complete_login")
     return redirect(reverse("home") + "?welcome=1")
 
 
@@ -5579,6 +5588,9 @@ def admin_analysis_home_view(request):
     if view_as_collab_tip not in ("cabinet", "servicii", "magazin", "transport"):
         view_as_collab_tip = "servicii"
     kpis = _staff_analysis_home_kpis()
+    from home.metrics_t0 import metrics_t0_staff_context
+
+    ctx_metrics = metrics_t0_staff_context()
     return render(
         request,
         "anunturi/admin_analysis_home.html",
@@ -5593,6 +5605,7 @@ def admin_analysis_home_view(request):
             "kpi_alerts_active": kpis["alerts_active"],
             "alert_rows": staff_analysis_home_alert_rows(),
             "recent_activity": staff_analysis_home_recent_activity(),
+            **ctx_metrics,
         },
     )
 

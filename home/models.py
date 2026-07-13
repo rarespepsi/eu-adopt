@@ -2159,3 +2159,41 @@ class SitePresenceActive(models.Model):
     def __str__(self):
         return f"{self.session_hash[:8]}… @ {self.last_seen:%H:%M}"
 
+
+class SiteLoginEvent(models.Model):
+    """Eveniment login reușit — pentru contor T₀ (campanii)."""
+
+    SOURCE_LOGIN = "login"
+    SOURCE_SIGNUP_VERIFY = "signup_verify_email"
+    SOURCE_SIGNUP_ONETIME = "signup_complete_login"
+    SOURCE_CHOICES = [
+        (SOURCE_LOGIN, "Login Intra"),
+        (SOURCE_SIGNUP_VERIFY, "Activare email signup"),
+        (SOURCE_SIGNUP_ONETIME, "Login one-time după activare"),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="site_login_events",
+    )
+    logged_in_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    source = models.CharField(
+        max_length=32,
+        choices=SOURCE_CHOICES,
+        default=SOURCE_LOGIN,
+        db_index=True,
+    )
+
+    class Meta:
+        verbose_name = "Eveniment login"
+        verbose_name_plural = "Evenimente login"
+        ordering = ["-logged_in_at"]
+        indexes = [
+            models.Index(fields=["logged_in_at", "user"]),
+            models.Index(fields=["user", "logged_in_at"]),
+        ]
+
+    def __str__(self):
+        return f"login user={self.user_id} @ {self.logged_in_at:%Y-%m-%d %H:%M}"
+

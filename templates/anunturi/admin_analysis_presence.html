@@ -43,6 +43,11 @@
 	.presence-table th { font-size: 0.66rem; text-transform: uppercase; color: #0d47a1; }
 	.presence-table tr.is-today { background: rgba(129, 212, 250, 0.28); font-weight: 900; }
 	.presence-note { margin: 0.35rem 0 0; font-size: 0.64rem; font-weight: 600; color: #546e7a; line-height: 1.35; }
+	.presence-t0 { margin-top: 0.35rem; border-radius: 10px; border: 2px solid rgba(21, 101, 192, 0.45); padding: 0.5rem 0.55rem; background: rgba(227, 242, 253, 0.55); }
+	.presence-t0-kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.4rem; margin-top: 0.35rem; }
+	.presence-t0-kpi { border-radius: 8px; padding: 0.38rem 0.4rem; border: 1px solid rgba(13, 71, 161, 0.22); background: rgba(255,255,255,0.65); text-align: center; }
+	.presence-t0-kpi-num { display: block; font-size: 1.05rem; font-weight: 900; color: #0d47a1; line-height: 1.1; }
+	.presence-t0-kpi-label { display: block; font-size: 0.6rem; font-weight: 700; color: #37474f; line-height: 1.2; margin-top: 0.12rem; }
 </style>
 {% endblock %}
 
@@ -53,6 +58,34 @@
 		<span class="analysis-shell-meta">Verificat: {{ presence_checked_at|date:"d.m.Y H:i" }} · online = activitate în ultimele {{ presence_online_window }} min</span>
 	</div>
 	{% include "anunturi/includes/admin_analysis_subnav.html" with presence_nav_active=1 %}
+	{% if metrics_t0_enabled %}
+	<div class="presence-t0" aria-label="Contor T zero campanie">
+		<h2 class="presence-section-title">T₀ campanie — de la {{ metrics_t0_label }}</h2>
+		<p class="presence-note" style="margin-top:0.2rem;">Contorizare de la startul campaniei (Facebook / social). Staff nu intră în statistici.</p>
+		<div class="presence-t0-kpis">
+			<div class="presence-t0-kpi" title="Conturi create (înregistrare)">
+				<span class="presence-t0-kpi-num">{{ metrics_t0_new_users }}</span>
+				<span class="presence-t0-kpi-label">Înregistrări noi</span>
+			</div>
+			<div class="presence-t0-kpi" title="Conturi activate (email confirmat)">
+				<span class="presence-t0-kpi-num">{{ metrics_t0_new_users_active }}</span>
+				<span class="presence-t0-kpi-label">Conturi activate</span>
+			</div>
+			<div class="presence-t0-kpi" title="Fiecare autentificare reușită">
+				<span class="presence-t0-kpi-num">{{ metrics_t0_login_events }}</span>
+				<span class="presence-t0-kpi-label">Logări (evenimente)</span>
+			</div>
+			<div class="presence-t0-kpi" title="Utilizatori distincți care s-au logat">
+				<span class="presence-t0-kpi-num">{{ metrics_t0_login_unique_users }}</span>
+				<span class="presence-t0-kpi-label">Logați unici</span>
+			</div>
+			<div class="presence-t0-kpi" title="Formular scurt /inscriere/">
+				<span class="presence-t0-kpi-num">{{ metrics_t0_inscriere_leads }}</span>
+				<span class="presence-t0-kpi-label">Lead-uri /inscriere/</span>
+			</div>
+		</div>
+	</div>
+	{% endif %}
 	<div class="presence-layout">
 		<div>
 			<h2 class="presence-section-title">Acum pe site</h2>

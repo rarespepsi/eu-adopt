@@ -153,7 +153,7 @@ def staff_analysis_presence_page_context() -> dict:
             }
         )
 
-    return {
+    ctx = {
         "presence_online_window": ONLINE_WINDOW_MINUTES,
         "presence_online_visitors": SitePresenceActive.objects.filter(
             last_seen__gte=threshold
@@ -177,3 +177,7 @@ def staff_analysis_presence_page_context() -> dict:
         "presence_year_logged_in": _distinct_logged_since(year_start),
         "presence_recent_days": recent_days,
     }
+    from home.metrics_t0 import metrics_t0_staff_context
+
+    ctx.update(metrics_t0_staff_context())
+    return ctx

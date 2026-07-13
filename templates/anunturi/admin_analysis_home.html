@@ -339,6 +339,28 @@
 	.card-quick-4 { background: rgba(129, 212, 250, 0.62); }
 	.card-quick-5 { background: rgba(178, 223, 219, 0.62); }
 	.card-quick-6 { background: rgba(188, 170, 164, 0.62); }
+	.analysis-t0-row {
+		margin-top: 0.45rem;
+		border-radius: 10px;
+		border: 2px solid rgba(21, 101, 192, 0.4);
+		padding: 0.45rem 0.55rem;
+		background: rgba(227, 242, 253, 0.5);
+		display: grid;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+		gap: 0.35rem;
+	}
+	.analysis-t0-cell {
+		text-align: center;
+		font-size: 0.64rem;
+		font-weight: 700;
+		color: #263238;
+	}
+	.analysis-t0-cell strong {
+		display: block;
+		font-size: 1rem;
+		font-weight: 900;
+		color: #0d47a1;
+	}
 </style>
 {% endblock %}
 
@@ -368,6 +390,16 @@
 		</div>
 		{% endif %}
 	</div>
+	{% if metrics_t0_enabled %}
+	<div class="analysis-t0-row" aria-label="T zero campanie">
+		<div class="analysis-t0-cell"><strong>{{ metrics_t0_inscriere_leads }}</strong>Lead /inscriere/</div>
+		<div class="analysis-t0-cell"><strong>{{ metrics_t0_new_users }}</strong>Înregistrări T₀</div>
+		<div class="analysis-t0-cell"><strong>{{ metrics_t0_new_users_active }}</strong>Activate T₀</div>
+		<div class="analysis-t0-cell"><strong>{{ metrics_t0_login_events }}</strong>Logări T₀</div>
+		<div class="analysis-t0-cell"><strong>{{ metrics_t0_login_unique_users }}</strong>Logați unici T₀</div>
+	</div>
+	<p class="analysis-subtitle" style="margin-top:0.25rem;">T₀ = {{ metrics_t0_label }} · detalii în <a href="{% url 'admin_analysis_presence' %}">Prezență</a></p>
+	{% endif %}
 	<div class="analysis-grid">
 		<div class="analysis-row analysis-kpis">
 			<div class="analysis-card card-kpi-1 analysis-kpi-live" title="Câini publicați pe site, ne-adoptați">
