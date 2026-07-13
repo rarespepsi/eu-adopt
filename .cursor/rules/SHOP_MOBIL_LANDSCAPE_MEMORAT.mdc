@@ -1,0 +1,93 @@
+---
+description: Shop mobil landscape touch — stare FINALĂ memorată (13 iul 2026)
+alwaysApply: false
+---
+
+# SHOP MOBIL LANDSCAPE (TOUCH) – STARE FINALĂ MEMORATĂ
+
+**Confirmat de utilizator:** 13 iulie 2026 — **„final si aici… am incheiat si cu shop pe mobil.”**
+
+**Commit referință (stare finală):** `0c35c22` · cache CSS `shop.css?v=30-landscape-4x2-scroll`
+
+**Istoric sesiune landscape:** `83fed64` (SH1 compact) · `e21bbdb` (pub 3+3) · `881354c` (bandă + pub lipite jos) · `0c35c22` (grilă 4×2 + scroll)
+
+**Nu modifica** fără cerere explicită + parola **`1977`** + OK (`SHOP_INGHETAT.mdc`, `SITE_GLOBAL_INGHETAT_1977.mdc`).
+
+**Portrait memorat separat:** `SHOP_MOBIL_PORTRAIT_MEMORAT.mdc` — **nu modifica** portrait când calibrezi landscape.
+
+---
+
+## Media query landscape touch (ca PT / Transport)
+
+```css
+@media (orientation: landscape) and (max-height: 34em) and (hover: none) and (pointer: coarse)
+```
+
+---
+
+## Fișiere
+
+| Fișier | Rol landscape |
+|--------|----------------|
+| `templates/anunturi/shop.html` | Texte SH1 scurte (clasă `.shw-sh1-text--portrait` refolosită), cache `?v=` |
+| `static/css/shop.css` | Bloc landscape touch (după portrait, înainte de `max-width:767 landscape` legacy) |
+
+---
+
+## Layout memorat
+
+```
+[NAVBAR]
+[SH1 — 46px: Shop Poze | Shop EU-ADOPT | Ajută un suflet]
+[SH4 3 pub stânga | SH2 taburi+produse | SH5 3 pub dreapta]
+[SH3 bandă cursivă 40px — lipită jos ecran]
+```
+
+| Zonă | Conținut |
+|------|----------|
+| **#SHW** | `100dvh - nav-height`, padding **0** |
+| **SH1** | **46px**; aceleași 3 texte scurte ca portrait (`.shw-sh1-text--desktop` ascuns) |
+| **Pub** | **3 stânga** (SH4) + **3 dreapta** (SH5); `.shw-pub-in-left-portrait-only` **ascuns** |
+| **Lățime pub** | `flex: 0 0 14%`, `max-width: 18%`; casete egale pe înălțime până la banda de jos |
+| **SH2 produse** | **4 coloane** · **2 rânduri vizibile** · restul **scroll** |
+| **SH3 jos** | **40px** fix, lipit marginea de jos (`flex-shrink: 0`) |
+
+---
+
+## SH1 — valori înghețate
+
+Identic portrait: **Shop Poze** · **Shop EU-ADOPT** · **Ajută un suflet** · `46px` · font lateral `clamp(0.58rem, 2.65vw, 0.72rem)`.
+
+---
+
+## Grilă produse — valori înghețate
+
+Lanț flex: `.shw-row-middle-center` → `.shop-tabs-wrap` → `.shop-panels` → `.shop-panel.active` → `.shop-grid-*`
+
+| Proprietate | Valoare |
+|-------------|---------|
+| Coloane | `repeat(4, minmax(0, 1fr))` |
+| Rânduri vizibile | **2** (`--shop-landscape-visible-rows: 2`) |
+| Înălțime rând | `grid-auto-rows: calc(100% / 2)` |
+| Scroll | `overflow-y: auto`, `overscroll-behavior: contain` |
+
+---
+
+## Ce NU reintroduce
+
+- 6 pub doar stânga (regulă portrait)
+- SH1 100px / text lung pe landscape touch
+- Gol sub grilă sau între pub și banda de jos
+- Grilă 3 coloane sau fără cap 2 rânduri vizibile pe landscape touch
+
+---
+
+## Deploy
+
+Modificări Shop aprobate → **commit + push + deploy Hetzner**.
+
+---
+
+## Rezumat
+
+**Shop landscape touch = FINALIZAT 13 iul 2026. SH1 46px; pub 3+3; 4×2 produse + scroll; bandă 40px jos lipită. Nu schimba fără `1977` + OK.**

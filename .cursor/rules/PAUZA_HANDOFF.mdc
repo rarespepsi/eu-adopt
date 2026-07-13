@@ -78,8 +78,8 @@ Conținut fix:
 ## 5) REGULI PROIECT (nu ignora)
 
 - Editări site: parolă **`1977`** + **OK explicit** în același mesaj
-- Zone înghețate: HOME, PT, Servicii, **Transport** (final 13 iul 2026), navbar etc. — nu atinge fără `1977`+OK
-- **Tot site-ul** = blocare globală `1977` + OK; Transport **nu** mai e zonă activă de lucru
+- Zone înghețate: HOME, PT, Servicii, **Transport**, **Shop mobil** (final 13 iul 2026), navbar etc. — nu atinge fără `1977`+OK
+- **Tot site-ul** = blocare globală `1977` + OK; Transport și Shop mobil **nu** mai sunt zone active de lucru
 - Producție = doar **Hetzner**, nu Render
 
 ---

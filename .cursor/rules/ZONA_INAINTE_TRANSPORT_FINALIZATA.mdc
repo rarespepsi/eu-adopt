@@ -19,8 +19,9 @@ alwaysApply: true
 | **Prietenul tău (PT)** | `PT_INGHETAT.mdc` · portrait `PT_MOBIL_PORTRAIT_MEMORAT.mdc` · landscape `PT_MOBIL_LANDSCAPE_MEMORAT.mdc` |
 | **Servicii** | `SERVICII_INGHETAT.mdc` · `SERVICII_STARE_FINALA_MEMORAT.mdc` · portrait / landscape separate |
 | **Transport** | `TRANSPORT_INGHETAT.mdc` · **`TRANSPORT_MOBIL_MEMORAT.mdc`** (final 13 iul 2026, commit `8f41119`) |
+| **Shop** | `SHOP_INGHETAT.mdc` · **`SHOP_MOBIL_PORTRAIT_MEMORAT.mdc`** (`85a25f4`) · **`SHOP_MOBIL_LANDSCAPE_MEMORAT.mdc`** (`0c35c22`, final mobil 13 iul 2026) |
 
-**Navbar A0** (desktop + **drawer mobil fit-content**), **Intra**, **ONG**, **Colaborator**, **Shop** — rămân conform regulilor lor înghețate existente.
+**Navbar A0** (desktop + **drawer mobil fit-content**), **Intra**, **ONG**, **Colaborator** — rămân conform regulilor lor înghețate existente.
 
 ---
 

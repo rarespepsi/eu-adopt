@@ -13,7 +13,7 @@ alwaysApply: false
 
 **Nu modifica** fără cerere explicită + parola **`1977`** + OK (`SHOP_INGHETAT.mdc`).
 
-**Landscape touch:** lucru separat — vezi `SHOP_MOBIL_LANDSCAPE` (în curs); **nu atinge** portrait când calibrezi landscape.
+**Landscape touch:** **`SHOP_MOBIL_LANDSCAPE_MEMORAT.mdc`** (final 13 iul 2026) — **nu atinge** portrait când calibrezi landscape.
 
 ---
 

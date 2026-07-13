@@ -12,7 +12,11 @@ alwaysApply: true
 
 **Absolut orice modificare pe site** = ambele condiții. **Fără excepții** de zonă (inclusiv Publicitate `/publicitate/`, dacă utilizatorul impune acest standard).
 
-Respectă în continuare regulile specifice existente (HOME, PT, Shop, Servicii, **Transport** — finalizat 13 iul 2026, Navbar A0, Intra, ONG, Colaborator, I Love layout, etc.) — sunt **în plus** față de această regulă globală.
+Respectă în continuare regulile specifice existente (HOME, PT, Shop — **mobil finalizat 13 iul 2026**, Servicii, **Transport** — finalizat 13 iul 2026, Navbar A0, Intra, ONG, Colaborator, I Love layout, etc.) — sunt **în plus** față de această regulă globală.
+
+## Shop mobil (finalizat — sub aceeași blocare globală)
+
+Pagina **Shop** mobil portrait + landscape touch (`SHOP_INGHETAT.mdc`, `SHOP_MOBIL_PORTRAIT_MEMORAT.mdc`, `SHOP_MOBIL_LANDSCAPE_MEMORAT.mdc`) este **închisă** din 13 iulie 2026. Orice editare = **`1977` + OK explicit**; fără zonă activă.
 
 ## Transport (finalizat — sub aceeași blocare globală)
 
