@@ -870,16 +870,16 @@
 		min-height: 80px;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circles {
-		transform: translate(8mm, calc(3mm + 1cm)) !important;
+		transform: translate(0, 1mm) !important;
 	}
 	#TW #T2 .t2-circles {
-		transform: translate(8mm, calc(3mm + 1cm)) !important;
+		transform: translate(0, 1mm) !important;
 	}
 	#TW #T2 .t2-circle {
-		width: min(10.5vmin, 54px);
-		height: min(10.5vmin, 54px);
-		margin-left: min(-5.25vmin, -27px);
-		margin-top: min(-5.25vmin, -27px);
+		width: min(9.5vmin, 48px);
+		height: min(9.5vmin, 48px);
+		margin-left: min(-4.75vmin, -24px);
+		margin-top: min(-4.75vmin, -24px);
 	}
 	#TW #T2 .t2-title {
 		font-size: 0.68rem;
@@ -1008,9 +1008,9 @@
 		flex: 0 0 auto;
 		min-height: 0;
 		margin: 0 auto;
-		width: min(100%, min(36vw, 228px));
-		height: min(100%, min(62dvh, 210px));
-		max-height: min(62dvh, 210px);
+		width: min(100%, min(32vw, 198px));
+		height: min(100%, min(54dvh, 188px));
+		max-height: min(54dvh, 188px);
 		display: grid;
 		grid-template: 1fr / 1fr;
 		place-items: center;
@@ -1031,13 +1031,28 @@
 		position: relative;
 		top: auto;
 		left: auto;
-		width: min(54%, calc(162px - 3mm));
-		height: min(54%, calc(162px - 3mm));
-		min-width: calc(120px - 3mm);
-		min-height: calc(120px - 3mm);
+		width: 118px;
+		height: 118px;
+		min-width: 96px;
+		min-height: 96px;
+		max-width: 118px;
+		max-height: 118px;
+		aspect-ratio: 1 / 1;
+		border-radius: 50%;
+		flex-shrink: 0;
 		z-index: 3;
 		pointer-events: auto;
-		transform: translateY(5mm);
+		transform: none;
+	}
+	#TW #T2:not(.tw-t2--hub-open) .t2-extra-circle-img {
+		width: 58%;
+		height: 58%;
+		aspect-ratio: 1 / 1;
+	}
+	#TW #T2:not(.tw-t2--hub-open) .t2-extra-circle-svg {
+		width: 96%;
+		height: 96%;
+		aspect-ratio: 1 / 1;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-extra-circle-text {
 		font-size: 6px;
@@ -1049,7 +1064,7 @@
 		inset: 0;
 		width: auto;
 		height: auto;
-		transform: translate(8mm, calc(3mm + 1cm)) !important;
+		transform: translate(0, 1mm) !important;
 		pointer-events: none;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle-label {
@@ -1197,11 +1212,14 @@
 	}
 	#TW #T1:not(.tw-t1--form-open) .t1-landscape-actions {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 0.34rem;
+		grid-template-columns: 1fr;
+		grid-template-rows: repeat(2, minmax(2.72rem, 1fr));
+		gap: 0.38rem;
 		width: 100%;
 		margin: 0;
-		flex-shrink: 0;
+		flex: 1 1 0;
+		min-height: 0;
+		max-height: 6rem;
 	}
 	#TW #T1.tw-t1--form-open .t1-landscape-actions {
 		display: none !important;
@@ -1213,12 +1231,14 @@
 		justify-content: center;
 		box-sizing: border-box;
 		width: 100%;
-		min-height: 2.55rem;
+		height: 100%;
+		min-height: 2.72rem;
+		max-height: 2.85rem;
 		margin: 0;
-		padding: 0.48rem 0.38rem;
-		font-size: clamp(0.52rem, 2.1vw, 0.64rem);
+		padding: 0.42rem 0.36rem;
+		font-size: clamp(0.5rem, 2vw, 0.62rem);
 		font-weight: 800;
-		line-height: 1.2;
+		line-height: 1.18;
 		letter-spacing: 0.02em;
 		text-align: center;
 		border-radius: 10px;
@@ -1250,33 +1270,33 @@
 		padding-top: 1.2cm;
 		justify-content: flex-start;
 	}
-	/* Inel buline: rază −5mm față de desktop/mobil */
+	/* Inel buline landscape: rază redusă — toate vizibile sub navbar */
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--1 {
-		transform: translate(-50%, -50%) rotate(0deg) translateY(calc(-247.5% - 38px + 5mm)) rotate(0deg);
+		transform: translate(-50%, -50%) rotate(0deg) translateY(calc(-205% - 26px + 10mm)) rotate(0deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--2 {
-		transform: translate(-50%, -50%) rotate(40deg) translateY(calc(-247.5% - 38px + 5mm)) rotate(-40deg);
+		transform: translate(-50%, -50%) rotate(40deg) translateY(calc(-205% - 26px + 10mm)) rotate(-40deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--3 {
-		transform: translate(-50%, -50%) rotate(80deg) translateY(calc(-247.5% - 38px + 5mm)) rotate(-80deg);
+		transform: translate(-50%, -50%) rotate(80deg) translateY(calc(-205% - 26px + 10mm)) rotate(-80deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--4 {
-		transform: translate(-50%, -50%) rotate(120deg) translateY(calc(-247.5% - 38px + 5mm)) rotate(-120deg);
+		transform: translate(-50%, -50%) rotate(120deg) translateY(calc(-205% - 26px + 10mm)) rotate(-120deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--5 {
-		transform: translate(-50%, -50%) rotate(160deg) translateY(calc(-247.5% - 38px + 5mm)) rotate(-160deg);
+		transform: translate(-50%, -50%) rotate(160deg) translateY(calc(-205% - 26px + 10mm)) rotate(-160deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--6 {
-		transform: translate(-50%, -50%) rotate(200deg) translateY(calc(-247.5% - 38px + 5mm)) rotate(-200deg);
+		transform: translate(-50%, -50%) rotate(200deg) translateY(calc(-205% - 26px + 10mm)) rotate(-200deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--7 {
-		transform: translate(-50%, -50%) rotate(240deg) translateY(calc(-247.5% - 38px + 5mm)) rotate(-240deg);
+		transform: translate(-50%, -50%) rotate(240deg) translateY(calc(-205% - 26px + 10mm)) rotate(-240deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--8 {
-		transform: translate(-50%, -50%) rotate(280deg) translateY(calc(-247.5% - 38px + 5mm)) rotate(-280deg);
+		transform: translate(-50%, -50%) rotate(280deg) translateY(calc(-205% - 26px + 10mm)) rotate(-280deg);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--9 {
-		transform: translate(-50%, -50%) rotate(320deg) translateY(calc(-247.5% - 38px + 5mm)) rotate(-320deg);
+		transform: translate(-50%, -50%) rotate(320deg) translateY(calc(-205% - 26px + 10mm)) rotate(-320deg);
 	}
 }
 
