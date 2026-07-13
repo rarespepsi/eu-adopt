@@ -29,7 +29,16 @@
 		font-weight: 800;
 		color: #1565c0;
 	}
-	.promo-a2-sub {
+	.promo-a2-prelaunch {
+		margin: 0 0 0.45rem;
+		padding: 0.4rem 0.55rem;
+		border-radius: 8px;
+		background: #e8f5e9;
+		border: 1px solid #a5d6a7;
+		color: #1b5e20;
+		font-size: 0.78rem;
+		font-weight: 700;
+	}
 		margin: 0 0 0.8rem;
 		font-size: 0.85rem;
 		color: #455a64;
@@ -164,6 +173,9 @@
 <section class="wrapper" id="main_content">
 	<div class="promo-a2-wrap" aria-label="Notă comandă promovare A2">
 		<h1 class="promo-a2-title">Notă comandă promovare A2</h1>
+		{% if promo_prelaunch_free %}
+		<p class="promo-a2-prelaunch">{{ promo_prelaunch_banner }} · maximum 1 promovare per cont</p>
+		{% endif %}
 		<p class="promo-a2-sub">Pet: <strong>{{ pet.name|default:"—" }}</strong> · specie: <strong>{{ pet.species|default:"—" }}</strong></p>
 
 		{% if order_submitted %}
@@ -185,7 +197,7 @@
 				<div class="promo-a2-fields">
 					<div class="promo-a2-field">
 						<label for="id_price_info">Serviciu inclus</label>
-						<input type="text" id="id_price_info" value="{{ promo_a2_imp }} apariții în grila A2 (Acasă), câte {{ promo_a2_minutes_each }} minute fiecare · {{ unit_price }} lei" readonly />
+						<input type="text" id="id_price_info" value="{{ promo_a2_imp }} apariții în grila A2 (Acasă), câte {{ promo_a2_minutes_each }} minute fiecare · {{ promo_price_label }}" readonly />
 						<p class="promo-a2-field-help">
 							După activarea plății, anunțul intră în programul de rotație pentru grila centrală A2 (12 casete): câte o apariție per casetă, în două valuri consecutive.
 							Dacă platforma e aglomerată, livrarea întregului pachet poate depăși 24 h, fără să pierzi apariții — vei primi pe email raport cu data/ora și numărul casetei pentru fiecare apariție.
@@ -193,7 +205,7 @@
 					</div>
 				</div>
 			</div>
-			<p class="promo-a2-note">Total: <strong>{{ total_price }} lei</strong>. Metoda și plata se stabilesc la finalizarea comenzii din coș.</p>
+			<p class="promo-a2-note">Total: <strong>{{ promo_price_label }}</strong>.{% if promo_prelaunch_free %} Activare gratuită în pre-lansare.{% else %} Metoda și plata se stabilesc la finalizarea comenzii din coș.{% endif %}</p>
 			<div class="promo-a2-actions">
 				<button type="submit" class="promo-a2-btn">Adaugă în coș</button>
 				<a href="{{ promo_flow_exit_url }}" class="promo-a2-btn promo-a2-btn--ghost">{{ promo_flow_exit_label }}</a>

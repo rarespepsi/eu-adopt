@@ -99,6 +99,19 @@ MAINTENANCE_MODE = _site_public in ('0', 'false', 'no', 'nu')
 _prelaunch = _os.environ.get("EUADOPT_PRELAUNCH_MODE", "").strip().lower()
 PRELAUNCH_MODE = _prelaunch in ("1", "true", "yes", "on")
 
+# Publicitate + promovare A2 gratuite în pre-lansare (1 casetă PUB/cont, 1 promovare/cont, 1 ofertă serviciu/cont).
+_pub_free_env = _os.environ.get("EUADOPT_PUBLICITATE_PRELAUNCH_FREE", "").strip().lower()
+if _pub_free_env in ("0", "false", "no", "off"):
+    PUBLICITATE_PRELAUNCH_FREE = False
+elif _pub_free_env in ("1", "true", "yes", "on"):
+    PUBLICITATE_PRELAUNCH_FREE = True
+else:
+    PUBLICITATE_PRELAUNCH_FREE = PRELAUNCH_MODE
+PUBLICITATE_PRELAUNCH_MAX_SLOTS_PER_USER = int(_os.environ.get("EUADOPT_PUB_MAX_SLOTS_PER_USER", "1") or "1")
+PROMO_A2_PRELAUNCH_MAX_PER_USER = int(_os.environ.get("EUADOPT_PROMO_A2_MAX_PER_USER", "1") or "1")
+COLLAB_PRELAUNCH_MAX_OFFERS_PER_USER = int(_os.environ.get("EUADOPT_COLLAB_MAX_OFFERS_PER_USER", "1") or "1")
+PROMO_A2_BASE_PRICE_LEI = 10
+
 MIDDLEWARE = [
     'euadopt_final.maintenance_middleware.MaintenanceMiddleware',
     'django.middleware.security.SecurityMiddleware',

@@ -57,7 +57,7 @@
 			<p class="ilove-cos-checkout-partner-note">Pentru această secțiune, prețul este informativ în site; plata finală se face direct la colaborator.</p>
 			{% endif %}
 			<div class="euadopt-pay-total">
-				Total estimativ: <strong>{{ checkout_total_display }} lei</strong>
+				Total estimativ: <strong>{% if checkout_is_free %}Gratuit (pre-lansare){% else %}{{ checkout_total_display }} lei{% endif %}</strong>
 				{% if checkout_unpriced_count %}
 				<span class="ilove-cos-checkout-total-note">({{ checkout_unpriced_count }} articol(e) fără sumă în titlu — total incomplet)</span>
 				{% endif %}
@@ -134,7 +134,9 @@
 				<span class="ilove-cos-checkout-char-count" data-char-count-for="buyer_note">0 / 600</span>
 			</label>
 
-			{% if has_eu_paid %}
+			{% if checkout_is_free %}
+			<p class="ilove-cos-checkout-free-note">Etapa pre-lansare: activarea este gratuită — nu este nevoie de plată.</p>
+			{% elif has_eu_paid %}
 			<h2 class="ilove-cos-checkout-h2">Mod de plată pentru liniile EU-ADOPT <span class="req">*</span></h2>
 			<div class="ilove-cos-checkout-payments" role="radiogroup" aria-label="Mod de plată">
 				{% for pm in payment_methods %}
@@ -153,7 +155,7 @@
 			{% endif %}
 
 			<div class="euadopt-pay-actions ilove-cos-checkout-actions">
-				<button type="submit" class="euadopt-pay-btn">{% if has_eu_paid %}Trimite comanda și cererile{% else %}Trimite cererile către colaboratori{% endif %}</button>
+				<button type="submit" class="euadopt-pay-btn">{% if checkout_is_free %}Activează gratuit{% elif has_eu_paid %}Trimite comanda și cererile{% else %}Trimite cererile către colaboratori{% endif %}</button>
 				<a class="euadopt-pay-btn euadopt-pay-btn--ghost" href="{% url 'i_love_cos' %}">Înapoi la coș</a>
 			</div>
 		</form>

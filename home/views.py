@@ -437,7 +437,7 @@ def _promo_a2_compute_window(start_date, package: str, quantity: int):
 
 
 # Promo A2 standard (a2_24): 24 apariții × 5 min în grilă HOME (batch 12+12 paralel pe celule).
-PROMO_A2_STD_PRICE_LEI = 10
+PROMO_A2_STD_PRICE_LEI = 10  # referință; folosiți home.prelaunch_free_access.promo_a2_price_lei()
 PROMO_A2_STD_IMPRESSIONS = 24
 PROMO_A2_DWELL_MINUTES = 5
 PROMO_A2_SLOT_CAPACITY = 12
@@ -4735,10 +4735,18 @@ def dog_profile_view(request, pk):
 @login_required
 def promo_a2_order_view(request, pk):
     """
-    Promovare A2: 24 apariții × 5 minute în casetele HOME, 10 lei.
+    Promovare A2: 24 apariții × 5 minute în casetele HOME.
     Nota de comandă încarcă linia în coșul site (/i-love/cos/); plata unificată este la site_cart_checkout.
     Orice utilizator autentificat poate sponsoriza un anunț publicat (câine/pisică).
     """
+    from home.prelaunch_free_access import (
+        PRELAUNCH_FREE_BANNER,
+        promo_a2_price_label,
+        promo_a2_price_lei,
+        promo_a2_user_can_order,
+        publicitate_prelaunch_free_enabled,
+    )
+
     pet = get_object_or_404(AnimalListing, pk=pk)
     if not pet.is_published:
         messages.info(
@@ -4755,12 +4763,17 @@ def promo_a2_order_view(request, pk):
     today = timezone.localdate()
     schedule = "intercalat"
     quantity = 1
-    unit_price = PROMO_A2_STD_PRICE_LEI
-    total_price = PROMO_A2_STD_PRICE_LEI
+    unit_price = promo_a2_price_lei()
+    total_price = promo_a2_price_lei()
     if request.method == "POST":
+        ok_promo, msg_promo = promo_a2_user_can_order(request.user)
+        if not ok_promo:
+            messages.error(request, msg_promo)
+            return redirect("promo_a2_order", pk=pk)
         ref_key = f"promo_a2:{pet.pk}"
+        price_lbl = promo_a2_price_label()
         titlu = (
-            f"Promovare A2 · {(pet.name or 'Anunț').strip()} — {PROMO_A2_STD_PRICE_LEI} lei "
+            f"Promovare A2 · {(pet.name or 'Anunț').strip()} — {price_lbl} "
             f"({PROMO_A2_STD_IMPRESSIONS} apariții × {PROMO_A2_DWELL_MINUTES} min)"
         )
         det_url = reverse("promo_a2_order", args=[pet.pk])
@@ -4771,6 +4784,9 @@ def promo_a2_order_view(request, pk):
                 "Acest anunț este deja în coș pentru promovare A2.",
             )
             return redirect("i_love_cos")
+        if SiteCartItem.objects.filter(user=request.user, kind=SiteCartItem.KIND_PROMO_A2).exclude(ref_key=ref_key).exists():
+            messages.error(request, "În pre-lansare puteți activa o singură promovare A2 per cont.")
+            return redirect("promo_a2_order", pk=pk)
         n_cart = SiteCartItem.objects.filter(user=request.user).count()
         if n_cart >= SITE_CART_MAX_ITEMS:
             messages.warning(
@@ -4787,7 +4803,12 @@ def promo_a2_order_view(request, pk):
         )
         messages.success(
             request,
-            "Am adăugat promovarea A2 în coș. Continuă spre Plată pentru a încasa totalul și a confirma.",
+            "Am adăugat promovarea A2 în coș."
+            + (
+                " Activarea este gratuită în pre-lansare."
+                if publicitate_prelaunch_free_enabled()
+                else " Continuă spre Plată pentru a încasa totalul și a confirma."
+            ),
         )
         return redirect("i_love_cos")
 
@@ -4803,6 +4824,9 @@ def promo_a2_order_view(request, pk):
         "promo_a2_standard": True,
         "promo_a2_imp": PROMO_A2_STD_IMPRESSIONS,
         "promo_a2_minutes_each": PROMO_A2_DWELL_MINUTES,
+        "promo_prelaunch_free": publicitate_prelaunch_free_enabled(),
+        "promo_prelaunch_banner": PRELAUNCH_FREE_BANNER,
+        "promo_price_label": promo_a2_price_label(),
     }
     ctx_order.update(_promo_a2_nav_context(request.user))
     return render(request, "anunturi/promo_a2_order.html", ctx_order)
@@ -8371,7 +8395,7 @@ def _site_cart_checkout_create_publicitate_order(request, checkout_lines: list[d
     raw_lines, pub_ref_keys = _site_cart_publicitate_lines_from_checkout(checkout_lines)
     if not raw_lines:
         return None, []
-    validated, total, _adjustments, err = _publicitate_parse_cart_lines(raw_lines)
+    validated, total, _adjustments, err = _publicitate_parse_cart_lines(raw_lines, user=request.user)
     if err is not None:
         msg = "Liniile de publicitate din coș nu pot fi procesate acum."
         try:
@@ -8422,6 +8446,15 @@ def _site_cart_checkout_create_promo_a2_orders(
         for r in checkout_lines
         if (r.get("kind") or "").strip() == SiteCartItem.KIND_PROMO_A2
     ]
+    if promo_rows:
+        from home.prelaunch_free_access import promo_a2_price_lei, promo_a2_user_can_order
+
+        ok_promo, msg_promo = promo_a2_user_can_order(request.user)
+        if not ok_promo:
+            raise ValueError(msg_promo)
+        promo_unit = promo_a2_price_lei()
+    else:
+        promo_unit = 0
     for row in promo_rows:
         ref_key = (row.get("ref_key") or "").strip()
         if not ref_key.startswith("promo_a2:"):
@@ -8452,8 +8485,8 @@ def _site_cart_checkout_create_promo_a2_orders(
             payer_name_snapshot=payer_name,
             package=PromoA2Order.PACKAGE_A2_24,
             quantity=1,
-            unit_price=PROMO_A2_STD_PRICE_LEI,
-            total_price=PROMO_A2_STD_PRICE_LEI,
+            unit_price=promo_unit,
+            total_price=promo_unit,
             payment_method=pm_snap or "card",
             schedule="intercalat",
             slot_code=chosen_slot,
@@ -9155,6 +9188,7 @@ def site_cart_checkout_view(request):
     eu_paid_lines, partner_direct_lines = _site_cart_split_fulfillment(lines)
     has_eu_paid = bool(eu_paid_lines)
     has_partner_direct = bool(partner_direct_lines)
+    checkout_is_free = total_lei <= 0
 
     allowed_pm = {x["value"] for x in SITE_CART_PAYMENT_METHOD_UI}
     allowed_buyer_types = {x[0] for x in SiteCartCheckoutIntent.BUYER_TYPE_CHOICES}
@@ -9204,10 +9238,12 @@ def site_cart_checkout_view(request):
                 form_errors.append("Pentru persoană juridică, denumirea juridică este obligatorie.")
             if not buyer_company_cui:
                 form_errors.append("Pentru persoană juridică, CUI/CIF este obligatoriu.")
-        if has_eu_paid and payment_method not in allowed_pm:
+        if has_eu_paid and not checkout_is_free and payment_method not in allowed_pm:
             form_errors.append("Alege un mod de plată din listă.")
-        if not has_eu_paid:
+        if not has_eu_paid or checkout_is_free:
             payment_method = SiteCartCheckoutIntent.PAYMENT_BANK_TRANSFER
+            if checkout_is_free and has_eu_paid:
+                payment_method = "prelaunch_free"
 
         if not form_errors:
             pub_order = None
@@ -9295,6 +9331,7 @@ def site_cart_checkout_view(request):
             "partner_direct_lines": partner_direct_lines,
             "has_eu_paid": has_eu_paid,
             "has_partner_direct": has_partner_direct,
+            "checkout_is_free": checkout_is_free,
             "checkout_total_lei": total_lei,
             "checkout_total_display": f"{total_lei:.2f}".replace(".", ","),
             "checkout_unpriced_count": unpriced,
@@ -11347,6 +11384,12 @@ def collab_offer_add_view(request):
     if tip not in ("cabinet", "servicii", "magazin"):
         messages.error(request, "Tip partener necunoscut.")
         return redirect("collab_offers_control")
+    from home.prelaunch_free_access import collab_user_can_create_offer
+
+    ok_offer, msg_offer = collab_user_can_create_offer(request.user)
+    if not ok_offer:
+        messages.error(request, msg_offer)
+        return redirect("collab_offers_control")
     title = (request.POST.get("title") or "").strip()
     description = (request.POST.get("description") or "").strip()[:500]
     external_url_raw = (request.POST.get("external_url") or "").strip()[:500]
@@ -11614,10 +11657,9 @@ PUBLICITATE_SESSION_LAST_PAID = "pub_last_paid_order_id"
 
 
 def _publicitate_catalog_row(section: str, code: str):
-    for row in PUBLICITATE_SLOT_MAP.get(section) or []:
-        if row.get("code") == code:
-            return row
-    return None
+    from home.prelaunch_free_access import publicitate_catalog_row_effective
+
+    return publicitate_catalog_row_effective(section, code, PUBLICITATE_SLOT_MAP)
 
 
 def _buyer_note_to_pt_slot_json(buyer_note: str) -> str:
@@ -12013,12 +12055,20 @@ def _publicitate_harta_context(request, pub_nav: str) -> dict:
             ).exists():
                 my_pub_orders_pending_materials += 1
 
-    return {
+    from home.prelaunch_free_access import (
+        PRELAUNCH_FREE_BANNER,
+        publicitate_effective_slot_map,
+        publicitate_max_slots_per_user,
+        publicitate_prelaunch_free_enabled,
+        publicitate_user_slots_remaining,
+    )
+
+    ctx = {
         "pub_sections": sections,
         "pub_nav": pub_nav,
         "pub_selected_section": selected_section,
         "pub_initial_slot": (request.GET.get("slot") or "").strip(),
-        "pub_slot_map": PUBLICITATE_SLOT_MAP,
+        "pub_slot_map": publicitate_effective_slot_map(PUBLICITATE_SLOT_MAP),
         "pub_a2_images": [d.get("imagine_fallback") for d in DEMO_DOGS if d.get("imagine_fallback")][:12],
         "pub_a13_images": list(HERO_SLIDER_IMAGES or []),
         "reclama_burtiera_display_text": _get_home_burtiera_text(),
@@ -12033,7 +12083,16 @@ def _publicitate_harta_context(request, pub_nav: str) -> dict:
         "pub_my_orders_url": reverse("publicitate_my_orders"),
         "pub_my_orders_total": my_pub_orders_total,
         "pub_my_orders_pending_materials": my_pub_orders_pending_materials,
+        "pub_prelaunch_free": publicitate_prelaunch_free_enabled(),
+        "pub_prelaunch_banner": PRELAUNCH_FREE_BANNER,
+        "pub_max_slots_per_user": publicitate_max_slots_per_user() or None,
+        "pub_slots_remaining": (
+            publicitate_user_slots_remaining(request.user)
+            if getattr(request.user, "is_authenticated", False) and request.user.is_authenticated
+            else None
+        ),
     }
+    return ctx
 
 
 @require_http_methods(["GET"])
@@ -12197,13 +12256,33 @@ def publicitate_my_orders_view(request):
     return render(request, "anunturi/publicitate_my_orders.html", ctx)
 
 
-def _publicitate_parse_cart_lines(lines_in):
+def _publicitate_parse_cart_lines(lines_in, user=None):
     """
     Validează linii coș publicitate (același reguli ca la checkout).
     Returnează (validated, total_lei, adjustments, None) sau (None, None, None, JsonResponse).
     """
+    from home.prelaunch_free_access import (
+        publicitate_max_slots_per_user,
+        publicitate_prelaunch_free_enabled,
+        publicitate_user_can_reserve_slots,
+    )
+
     if not isinstance(lines_in, list) or not lines_in:
         return None, None, None, JsonResponse({"ok": False, "error": "Coșul este gol."}, status=400)
+    if publicitate_prelaunch_free_enabled():
+        cap = publicitate_max_slots_per_user()
+        if cap and len(lines_in) > cap:
+            return None, None, None, JsonResponse(
+                {
+                    "ok": False,
+                    "error": f"În pre-lansare: maximum {cap} casetă publicitară per comandă.",
+                },
+                status=400,
+            )
+        if user is not None:
+            ok_lim, msg_lim = publicitate_user_can_reserve_slots(user, len(lines_in))
+            if not ok_lim:
+                return None, None, None, JsonResponse({"ok": False, "error": msg_lim}, status=400)
     validated = []
     total = Decimal("0.00")
     adjustments = []
@@ -12545,7 +12624,7 @@ def publicitate_checkout_create_view(request):
     except json.JSONDecodeError:
         return JsonResponse({"ok": False, "error": "JSON invalid."}, status=400)
     lines_in = body.get("lines")
-    validated, total, adjustments, err = _publicitate_parse_cart_lines(lines_in)
+    validated, total, adjustments, err = _publicitate_parse_cart_lines(lines_in, user=request.user)
     if err:
         return err
     try:
@@ -12558,9 +12637,33 @@ def publicitate_checkout_create_view(request):
             )
             for row in validated:
                 PublicitateOrderLine.objects.create(order=order, **row)
-    except Exception as exc:
+            if total <= 0:
+                order.status = PublicitateOrder.STATUS_PAID
+                order.payment_ref = f"PRELAUNCH-FREE-{order.pk}"
+                order.paid_at = timezone.now()
+                order.payment_provider = "prelaunch_free"
+                order.save(update_fields=["status", "payment_ref", "paid_at", "payment_provider", "updated_at"])
+                _apply_publicitate_paid_order(order)
+    except Exception:
         logging.getLogger(__name__).exception("publicitate_checkout_create")
         return JsonResponse({"ok": False, "error": "Nu am putut salva comanda."}, status=500)
+
+    if total <= 0:
+        request.session.pop(PUBLICITATE_SESSION_CHECKOUT_ORDER, None)
+        request.session[PUBLICITATE_SESSION_LAST_PAID] = order.pk
+        try:
+            access = _ensure_publicitate_creative_for_order(order)
+            _send_publicitate_creative_email(order, access)
+        except Exception:
+            logging.getLogger(__name__).exception("publicitate_creative_email_prelaunch_free")
+        return JsonResponse(
+            {
+                "ok": True,
+                "redirect": reverse("publicitate_checkout_demo_success"),
+                "order_id": order.pk,
+                "adjustments": adjustments,
+            }
+        )
 
     request.session[PUBLICITATE_SESSION_CHECKOUT_ORDER] = order.pk
     return JsonResponse(
@@ -12584,7 +12687,7 @@ def publicitate_transfer_to_site_cart_view(request):
     except json.JSONDecodeError:
         return JsonResponse({"ok": False, "error": "JSON invalid."}, status=400)
     lines_in = body.get("lines")
-    validated, _total, adjustments, err = _publicitate_parse_cart_lines(lines_in)
+    validated, _total, adjustments, err = _publicitate_parse_cart_lines(lines_in, user=request.user)
     if err:
         return err
     n_existing = SiteCartItem.objects.filter(user=request.user).count()
@@ -12679,6 +12782,38 @@ def publicitate_checkout_demo_view(request):
         request.session.pop(PUBLICITATE_SESSION_CHECKOUT_ORDER, None)
         messages.info(request, "Comanda nu mai este validă.")
         return redirect("publicitate_harta")
+    if order.total_lei <= 0 and order.status == PublicitateOrder.STATUS_PENDING:
+        try:
+            with transaction.atomic():
+                order = PublicitateOrder.objects.select_for_update().get(pk=order.pk)
+                if order.status == PublicitateOrder.STATUS_PENDING:
+                    order.status = PublicitateOrder.STATUS_PAID
+                    order.payment_ref = f"PRELAUNCH-FREE-{order.pk}"
+                    order.paid_at = timezone.now()
+                    order.payment_provider = "prelaunch_free"
+                    order.save(
+                        update_fields=[
+                            "status",
+                            "payment_ref",
+                            "paid_at",
+                            "payment_provider",
+                            "updated_at",
+                        ]
+                    )
+                    _apply_publicitate_paid_order(order)
+            request.session.pop(PUBLICITATE_SESSION_CHECKOUT_ORDER, None)
+            request.session[PUBLICITATE_SESSION_LAST_PAID] = order.pk
+            try:
+                access = _ensure_publicitate_creative_for_order(order)
+                _send_publicitate_creative_email(order, access)
+            except Exception:
+                logging.getLogger(__name__).exception("publicitate_creative_email_prelaunch_free")
+            messages.success(request, "Caseta publicitară a fost activată gratuit (pre-lansare).")
+            return redirect("publicitate_checkout_demo_success")
+        except Exception:
+            logging.getLogger(__name__).exception("publicitate_prelaunch_free_confirm")
+            messages.error(request, "Nu am putut activa comanda gratuită.")
+            return redirect("publicitate_harta")
     return render(
         request,
         "anunturi/publicitate_checkout_demo.html",
