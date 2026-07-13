@@ -57,11 +57,39 @@ def staff_invite_link_valid_days() -> int:
 
 
 def staff_invite_link_expires_at(lead: StaffOnboardingLead):
-    """Data expirării linkului invitație (None dacă nu s-a trimis niciodată real)."""
+    """Data expirării linkului invitație sau a accesului din formular /inscriere/."""
     sent_at = lead.invite_email_last_sent_at
-    if not sent_at:
+    if sent_at:
+        return sent_at + timedelta(days=staff_invite_link_valid_days())
+    landing_ref = staff_invite_landing_gate_reference_at(lead)
+    if landing_ref:
+        return landing_ref + timedelta(days=staff_invite_link_valid_days())
+    return None
+
+
+def staff_invite_landing_gate_reference_at(lead: StaffOnboardingLead):
+    """Moment de referință pentru acces signup fără email SMTP (formular /inscriere/)."""
+    if not staff_invite_lead_has_landing_source(lead):
         return None
-    return sent_at + timedelta(days=staff_invite_link_valid_days())
+    if not lead.consent_privacy_at:
+        return None
+    return lead.consent_privacy_at
+
+
+def staff_invite_lead_has_landing_source(lead: StaffOnboardingLead) -> bool:
+    notes = (lead.invite_staff_notes or "").lower()
+    return "/inscriere/" in notes or "formular inscriere" in notes
+
+
+def staff_invite_landing_gate_active(lead: StaffOnboardingLead, now=None) -> bool:
+    """Token ?inv= deschis de formular scurt — fără a consuma trimitere email Add USER."""
+    now = now or timezone.now()
+    if lead.imported_user_id:
+        return False
+    ref = staff_invite_landing_gate_reference_at(lead)
+    if not ref:
+        return False
+    return (now - ref) < timedelta(days=staff_invite_link_valid_days())
 
 
 def staff_invite_is_link_expired(lead: StaffOnboardingLead, now=None) -> bool:
@@ -104,10 +132,12 @@ def staff_invite_lead_for_token(token: str) -> StaffOnboardingLead | None:
 
 
 def staff_invite_token_usable(lead: StaffOnboardingLead, now=None) -> bool:
-    """Link valid: trimis real, neexpirat, fără cont creat."""
+    """Link valid: email invitație SAU formular /inscriere/, neexpirat, fără cont creat."""
     now = now or timezone.now()
     if lead.imported_user_id:
         return False
+    if staff_invite_landing_gate_active(lead, now):
+        return True
     if not lead.invite_email_last_sent_at:
         return False
     return not staff_invite_is_link_expired(lead, now)
@@ -232,7 +262,8 @@ def staff_invite_can_send(lead: StaffOnboardingLead, now=None) -> tuple[bool, st
     max_n = staff_invite_max_sends(lead)
     if sent_n >= max_n:
         return False, f"max {max_n} trimiteri"
-    if lead.invite_email_last_sent_at:
+    # Cooldown doar după trimiteri SMTP reale — formularul /inscriere/ nu blochează valul Add USER.
+    if sent_n > 0 and lead.invite_email_last_sent_at:
         cd = timezone.timedelta(days=staff_invite_cooldown_days(lead))
         if (now - lead.invite_email_last_sent_at) < cd:
             return False, f"cooldown {staff_invite_cooldown_days(lead)} zile"
@@ -847,3 +878,96 @@ def staff_invite_build_result_message(stats: dict[str, int], *, wave: bool = Fal
     if not parts:
         return f"{prefix}nicio invitație procesată."
     return " ".join(parts)
+
+
+def staff_invite_signup_path_name(lead: StaffOnboardingLead) -> str:
+    kind = (lead.account_kind or "").strip()
+    if kind == StaffOnboardingLead.KIND_PF:
+        return "signup_pf"
+    if kind in (StaffOnboardingLead.KIND_ORG, StaffOnboardingLead.KIND_ADAPOST):
+        return "signup_organizatie"
+    return "signup_colaborator"
+
+
+def staff_invite_signup_redirect_url(request, lead: StaffOnboardingLead) -> str:
+    from django.urls import reverse
+
+    if not (lead.consent_invite_token or "").strip():
+        lead.save(update_fields=["consent_invite_token", "updated_at"])
+    path = reverse(staff_invite_signup_path_name(lead))
+    inv_tok = (lead.consent_invite_token or "").strip()
+    url = request.build_absolute_uri(path)
+    if inv_tok:
+        url = f"{url}?{STAFF_INVITE_GET_PARAM}={quote(inv_tok, safe='')}"
+    return url
+
+
+def staff_invite_mark_landing_access(lead: StaffOnboardingLead) -> None:
+    """
+    Formular scurt /inscriere/: jurnal + consimțământ — fără invite_email_last_sent_at
+    (Add USER poate trimite în continuare email SMTP către același prospect).
+    """
+    StaffOnboardingInviteLog.objects.create(
+        lead=lead,
+        sent_by=None,
+        to_email=(lead.email or "").strip(),
+        subject="(formular /inscriere/ — acces signup)",
+        outcome=StaffOnboardingInviteLog.OUTCOME_DRY_RUN,
+        template_key="facebook_landing",
+        dispatch_kind=StaffOnboardingInviteLog.DISPATCH_MANUAL,
+    )
+
+
+def staff_invite_signup_prefill_for_lead(lead: StaffOnboardingLead) -> dict | None:
+    if lead is None or lead.imported_user_id:
+        return None
+    email = (lead.email or "").strip().lower()
+    phone = (lead.phone or "").strip()
+    contact = (lead.display_name or "").strip()
+    org_name = (lead.org_display_name or "").strip()
+    terms_ok = bool(lead.consent_terms_at)
+    gdpr_ok = bool(lead.consent_privacy_at)
+    kind = (lead.account_kind or "").strip()
+
+    if kind in (StaffOnboardingLead.KIND_ORG, StaffOnboardingLead.KIND_ADAPOST):
+        prefill = {
+            "denumire": org_name or contact,
+            "denumire_societate": org_name or contact,
+            "pers_contact": contact,
+            "email": email,
+            "telefon": phone,
+            "accept_termeni": terms_ok,
+            "accept_gdpr": gdpr_ok,
+        }
+        if kind == StaffOnboardingLead.KIND_ADAPOST:
+            prefill["is_public_shelter"] = lead.is_public_shelter
+        return prefill
+    if kind == StaffOnboardingLead.KIND_COLLAB:
+        return {
+            "denumire": org_name or contact,
+            "pers_contact": contact,
+            "email": email,
+            "telefon": phone,
+            "accept_termeni": terms_ok,
+            "accept_gdpr": gdpr_ok,
+        }
+    if kind == StaffOnboardingLead.KIND_PF:
+        parts = contact.split(None, 1) if contact else []
+        phone_digits = phone
+        phone_country = "+40"
+        if phone.startswith("+40"):
+            phone_country = "+40"
+            phone_digits = phone[3:].lstrip()
+        elif phone.startswith("+"):
+            phone_country = "+40"
+            phone_digits = phone.lstrip("+")
+        return {
+            "first_name": parts[0] if parts else "",
+            "last_name": parts[1] if len(parts) > 1 else "",
+            "email": email,
+            "phone_country": phone_country,
+            "phone": phone_digits,
+            "accept_termeni": terms_ok,
+            "accept_gdpr": gdpr_ok,
+        }
+    return None

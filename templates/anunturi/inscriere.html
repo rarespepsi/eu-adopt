@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Înscriere EU-Adopt{% endblock %}
+{% block body_class %}page-login page-inscriere{% endblock %}
+
+{% block extra_css %}
+<style>
+	body.page-inscriere { background-color: #141a22 !important; }
+	body.page-inscriere #main_wrap {
+		min-height: 100dvh;
+		display: flex;
+		flex-direction: column;
+	}
+	body.page-inscriere #main_content {
+		flex: 1 1 auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: calc(var(--nav-height, 56px) + 0.75rem) clamp(0.65rem, 3vw, 1.25rem) 1rem;
+	}
+	.inscriere-card {
+		width: 100%;
+		max-width: 28rem;
+		background: rgba(30, 41, 59, 0.92);
+		border: 1px solid rgba(148, 163, 184, 0.22);
+		border-radius: 0.85rem;
+		padding: 1.1rem 1rem 1rem;
+		color: #e2e8f0;
+		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+	}
+	.inscriere-card h1 {
+		margin: 0 0 0.35rem;
+		font-size: 1.15rem;
+		font-weight: 700;
+		color: #f8fafc;
+		text-align: center;
+	}
+	.inscriere-card .intro {
+		margin: 0 0 1rem;
+		font-size: 0.82rem;
+		color: #94a3b8;
+		text-align: center;
+		line-height: 1.45;
+	}
+	.inscriere-alert {
+		background: rgba(127, 29, 29, 0.35);
+		border: 1px solid rgba(248, 113, 113, 0.35);
+		color: #fecaca;
+		border-radius: 0.5rem;
+		padding: 0.55rem 0.65rem;
+		margin-bottom: 0.85rem;
+		font-size: 0.82rem;
+	}
+	.inscriere-field { margin-bottom: 0.75rem; }
+	.inscriere-field label {
+		display: block;
+		font-size: 0.78rem;
+		font-weight: 600;
+		margin-bottom: 0.25rem;
+		color: #cbd5e1;
+	}
+	.inscriere-field input,
+	.inscriere-field select {
+		width: 100%;
+		box-sizing: border-box;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(148, 163, 184, 0.35);
+		background: rgba(15, 23, 42, 0.85);
+		color: #f1f5f9;
+		padding: 0.5rem 0.55rem;
+		font-size: 0.9rem;
+	}
+	.inscriere-field .err {
+		color: #fca5a5;
+		font-size: 0.75rem;
+		margin-top: 0.2rem;
+	}
+	.inscriere-bifa {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: 0.5rem;
+		align-items: start;
+		font-size: 0.78rem;
+		color: #cbd5e1;
+		margin-bottom: 0.55rem;
+	}
+	.inscriere-bifa input { margin-top: 0.15rem; }
+	.inscriere-bifa a { color: #93c5fd; }
+	.inscriere-submit {
+		width: 100%;
+		margin-top: 0.65rem;
+		padding: 0.62rem 0.85rem;
+		border: none;
+		border-radius: 0.5rem;
+		background: linear-gradient(180deg, #22c55e, #16a34a);
+		color: #fff;
+		font-weight: 700;
+		font-size: 0.95rem;
+		cursor: pointer;
+	}
+	.inscriere-submit:hover { filter: brightness(1.05); }
+	.inscriere-foot {
+		margin-top: 0.75rem;
+		font-size: 0.72rem;
+		color: #64748b;
+		text-align: center;
+		line-height: 1.4;
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="inscriere-card">
+	<h1>Alătură-te EU-Adopt</h1>
+	<p class="intro">Completează datele de contact. Vei continua la formularul de creare cont (verificare SMS și email).</p>
+
+	{% if form_error_all %}
+	<div class="inscriere-alert">{{ form_error_all }}</div>
+	{% endif %}
+
+	<form method="post" action="{% url 'inscriere' %}" novalidate>
+		{% csrf_token %}
+		<div class="inscriere-field">
+			<label for="id_category">Categoria contului *</label>
+			<select name="category" id="id_category" required>
+				<option value="">— Alege —</option>
+				{% for val, label in category_choices %}
+				<option value="{{ val }}"{% if form_data.category == val %} selected{% endif %}>{{ label }}</option>
+				{% endfor %}
+			</select>
+			{% if form_errors.category %}<div class="err">{{ form_errors.category }}</div>{% endif %}
+		</div>
+		<div class="inscriere-field">
+			<label for="id_email">Email *</label>
+			<input type="email" name="email" id="id_email" value="{{ form_data.email|default:'' }}" required autocomplete="email" />
+			{% if form_errors.email %}<div class="err">{{ form_errors.email }}</div>{% endif %}
+		</div>
+		<div class="inscriere-field">
+			<label for="id_phone">Telefon *</label>
+			<input type="tel" name="phone" id="id_phone" value="{{ form_data.phone|default:'' }}" required autocomplete="tel" />
+			{% if form_errors.phone %}<div class="err">{{ form_errors.phone }}</div>{% endif %}
+		</div>
+		<div class="inscriere-field">
+			<label for="id_contact">Persoană de contact *</label>
+			<input type="text" name="contact" id="id_contact" value="{{ form_data.contact|default:'' }}" autocomplete="name" />
+			{% if form_errors.contact %}<div class="err">{{ form_errors.contact }}</div>{% endif %}
+		</div>
+		<label class="inscriere-bifa">
+			<span>Accept <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">termenii și condițiile</a> *</span>
+			<input type="checkbox" name="accept_termeni"{% if form_data.accept_termeni %} checked{% endif %} />
+		</label>
+		{% if form_errors.accept_termeni %}<div class="err">{{ form_errors.accept_termeni }}</div>{% endif %}
+		<label class="inscriere-bifa">
+			<span>Accept prelucrarea datelor conform <a href="{% url 'politica_confidentialitate' %}" target="_blank" rel="noopener">GDPR</a> *</span>
+			<input type="checkbox" name="accept_gdpr"{% if form_data.accept_gdpr %} checked{% endif %} />
+		</label>
+		{% if form_errors.accept_gdpr %}<div class="err">{{ form_errors.accept_gdpr }}</div>{% endif %}
+		<button type="submit" class="inscriere-submit">Spre formular cont nou</button>
+	</form>
+	<p class="inscriere-foot">Etapa de pre-lansare: participarea este gratuită. După completarea formularului lung urmează verificarea prin SMS și email.</p>
+</div>
+{% endblock %}

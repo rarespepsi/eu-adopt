@@ -16,6 +16,7 @@ _PRELAUNCH_PET_FICHA_RE = re.compile(r"^/pets/\d+/?$")
 PRELAUNCH_ANONYMOUS_PREFIXES: tuple[str, ...] = (
     "/login/",
     "/pub/go/",
+    "/inscriere/",
     "/login/forgot-password/",
     "/login/reset-password/",
     "/signup/organizatie/",

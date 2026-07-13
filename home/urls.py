@@ -20,6 +20,7 @@ urlpatterns = [
     path('signup/verify-email/', views.signup_verify_email_view, name='signup_verify_email'),
     path('signup/organizatie/', views.signup_organizatie_view, name='signup_organizatie'),
     path('signup/colaborator/', views.signup_colaborator_view, name='signup_colaborator'),
+    path('inscriere/', views.inscriere_view, name='inscriere'),
     path('cont/', views.account_view, name='account'),
     path('cont/puncte-de-lucru/', views.account_work_locations_view, name='account_work_locations'),
     path('cont/mesaje/', views.unified_inbox_view, name='unified_inbox'),

@@ -113,6 +113,7 @@ from .staff_onboarding_invite import (
     staff_invite_sent_count,
     staff_invite_simulated_count,
     staff_invite_allows_org_signup,
+    staff_invite_signup_prefill_for_lead,
     staff_invite_template_key,
     staff_invite_token_usable,
     staff_invite_wave_default_size,
@@ -2650,6 +2651,19 @@ def _user_staff_lead_kind(user):
     return None
 
 
+def _signup_prefill_from_invite_session(request) -> dict | None:
+    """Prefill formular înregistrare din lead prospect (?inv= sau sesiune)."""
+    token = (request.session.get(STAFF_INVITE_SESSION_KEY) or "").strip()
+    if not token:
+        token = (request.GET.get(STAFF_INVITE_GET_PARAM) or "").strip()
+    if not token or len(token) > 72:
+        return None
+    lead = staff_invite_lead_for_token(token)
+    if not lead or not staff_invite_token_usable(lead):
+        return None
+    return staff_invite_signup_prefill_for_lead(lead)
+
+
 def _attach_staff_onboarding_lead_from_inv_token(user, token: str) -> None:
     """După activarea contului: leagă lead-ul prospect dacă token-ul din URL e valid."""
     token = (token or "").strip()
@@ -2677,6 +2691,47 @@ def _attach_staff_onboarding_lead_from_inv_token(user, token: str) -> None:
         if (user.email or "").strip().lower() != (lead.email or "").strip().lower():
             return
     staff_invite_mark_signed_up(lead.pk, user.pk)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_protect
+def inscriere_view(request):
+    """Formular scurt (Facebook etc.) → redirect la înregistrare cu ?inv= și prefill."""
+    from home.inscriere_landing import INSCRIERE_CATEGORY_CHOICES, process_inscriere_post
+
+    form_data = {
+        "category": "",
+        "email": "",
+        "phone": "",
+        "contact": "",
+        "accept_termeni": False,
+        "accept_gdpr": False,
+    }
+    form_errors: dict[str, str] = {}
+
+    if request.method == "POST":
+        form_data = {
+            "category": (request.POST.get("category") or "").strip(),
+            "email": (request.POST.get("email") or "").strip().lower(),
+            "phone": (request.POST.get("phone") or "").strip(),
+            "contact": (request.POST.get("contact") or "").strip(),
+            "accept_termeni": request.POST.get("accept_termeni") == "on",
+            "accept_gdpr": request.POST.get("accept_gdpr") == "on",
+        }
+        redirect_url, form_errors = process_inscriere_post(request)
+        if redirect_url:
+            return redirect(redirect_url)
+
+    return render(
+        request,
+        "anunturi/inscriere.html",
+        {
+            "category_choices": INSCRIERE_CATEGORY_CHOICES,
+            "form_data": form_data,
+            "form_errors": form_errors,
+            "form_error_all": form_errors.get("__all__", ""),
+        },
+    )
 
 
 def signup_choose_type_view(request):
@@ -2708,6 +2763,10 @@ def signup_pf_view(request):
             prefill["password1"] = pwd
             prefill["password2"] = pwd
             ctx["form_prefill"] = prefill
+        else:
+            inv_prefill = _signup_prefill_from_invite_session(request)
+            if inv_prefill:
+                ctx["form_prefill"] = inv_prefill
         return render(request, "anunturi/signup_pf.html", ctx)
 
     User = get_user_model()
@@ -3371,6 +3430,16 @@ def signup_organizatie_view(request):
                 data = dict(data)
                 data["cui_cu_ro"] = "nu"
             ctx["form_prefill"] = data
+        else:
+            inv_prefill = _signup_prefill_from_invite_session(request)
+            if inv_prefill:
+                if inv_prefill.get("is_public_shelter") is True:
+                    inv_prefill = dict(inv_prefill)
+                    inv_prefill["is_public_shelter"] = "yes"
+                elif inv_prefill.get("is_public_shelter") is False:
+                    inv_prefill = dict(inv_prefill)
+                    inv_prefill["is_public_shelter"] = "no"
+                ctx["form_prefill"] = inv_prefill
         return _no_cache_response(render(request, "anunturi/signup_organizatie.html", ctx))
 
     User = get_user_model()
@@ -3493,6 +3562,10 @@ def signup_colaborator_view(request):
             ctx["form_prefill"] = data
         elif (request.GET.get("tip") or "").strip().lower() == "transport":
             ctx["form_prefill"] = {"tip_partener": "transport"}
+        else:
+            inv_prefill = _signup_prefill_from_invite_session(request)
+            if inv_prefill:
+                ctx["form_prefill"] = inv_prefill
         return render(request, "anunturi/signup_colaborator.html", ctx)
 
     User = get_user_model()
