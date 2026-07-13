@@ -650,11 +650,18 @@
     flex: 1 1 0 !important;
     min-height: 0 !important;
     height: 100% !important;
-    max-height: none !important;
-    grid-auto-rows: minmax(72px, 1fr) !important;
-    align-content: stretch !important;
+    max-height: 100% !important;
+    --shop-portrait-visible-rows: 4;
+    grid-auto-rows: calc(100% / var(--shop-portrait-visible-rows)) !important;
+    align-content: start !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  #SHW .shop-card {
+    min-height: 0 !important;
+    overflow: hidden;
   }
 }
 
