@@ -534,8 +534,23 @@
   display: none !important;
 }
 
-/* Mobil portrait: o singură coloană stânga cu 6 pub (SH4+SH5); fără coloană dreapta */
+/* Mobil portrait: lipit stânga/dreapta — fără goluri laterale */
 @media (max-width: 767.98px) and (orientation: portrait) {
+  #SHW {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  #SHW .shw-layout {
+    gap: 0 !important;
+  }
+
+  #SHW .shw-sh1 {
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
   #SHW .shw-row-middle-left {
     flex: 0 0 23%;
     min-width: 0;
