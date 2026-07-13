@@ -529,14 +529,34 @@
   }
 }
 
-/* Mobil portrait: 3 coloane produse, 4 rânduri; lățimea unei coloane scoase din grilă (față de 4 col) împărțită egal la stânga+dreapta — caseta mijloc păstrează aceeași lățime/celulă ca la 4 coloane */
+/* Desktop / landscape: SH5 din dreapta — nu în coloana stângă */
+#SHW .shw-pub-in-left-portrait-only {
+  display: none !important;
+}
+
+/* Mobil portrait: o singură coloană stânga cu 6 pub (SH4+SH5); fără coloană dreapta */
 @media (max-width: 767.98px) and (orientation: portrait) {
-  #SHW .shw-row-middle-left,
-  #SHW .shw-row-middle-right {
-    /* 14% + jumătate din (100% - 2×14%) / 4 ≈ 23% — centrul rămâne 3× aceeași celulă ca 4-col */
+  #SHW .shw-row-middle-left {
     flex: 0 0 23%;
     min-width: 0;
     max-width: 25%;
+  }
+
+  #SHW .shw-row-middle-right {
+    display: none !important;
+  }
+
+  #SHW .shw-pub-in-left-portrait-only {
+    display: flex !important;
+  }
+
+  #SHW .shw-side-inner-grid {
+    min-height: 0;
+  }
+
+  #SHW .shw-side-inner-box {
+    flex: 1 1 0;
+    min-height: 0;
   }
 
   #SHW .shop-grid {
