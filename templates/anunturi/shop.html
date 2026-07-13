@@ -5,7 +5,7 @@
 {% block body_class %}page-shop{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/shop.css' %}?v=23-portrait-edge-to-edge" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/shop.css' %}?v=24-portrait-sh1-compact" type="text/css" media="screen" />
 <style>
 	body.page-shop {
 		background-color: #141a22 !important;
@@ -80,8 +80,9 @@
 				<div class="shw-sh1" aria-label="SH1">
 					<div class="shw-sh1-cell shw-sh1-1">
 						<a href="{% url 'shop_magazin_foto' %}" class="shw-sh1-magazin-link" title="Magazin foto ONG">
-							<span class="shw-sh1-magazin-line">Cumpără o poză de la un ONG</span>
-							<span class="shw-sh1-magazin-line">și ajută-i să salveze un suflet!!!</span>
+							<span class="shw-sh1-magazin-line shw-sh1-text--desktop">Cumpără o poză de la un ONG</span>
+							<span class="shw-sh1-magazin-line shw-sh1-text--desktop">și ajută-i să salveze un suflet!!!</span>
+							<span class="shw-sh1-magazin-line shw-sh1-text--portrait">Shop Poze</span>
 						</a>
 					</div>
 					<div class="shw-sh1-cell shw-sh1-2">
@@ -91,8 +92,9 @@
 					</div>
 					<div class="shw-sh1-cell shw-sh1-3">
 						<a href="{% url 'donatii_generale' %}?sursa=shop" class="shw-sh1-donate-link" title="Donații EU-ADOPT">
-							<span class="shw-sh1-donate-line">DONEAZA SI</span>
-							<span class="shw-sh1-donate-line">AJUTA UN SUFLET!</span>
+							<span class="shw-sh1-donate-line shw-sh1-text--desktop">DONEAZA SI</span>
+							<span class="shw-sh1-donate-line shw-sh1-text--desktop">AJUTA UN SUFLET!</span>
+							<span class="shw-sh1-donate-line shw-sh1-text--portrait">Ajută un suflet</span>
 						</a>
 					</div>
 				</div>
