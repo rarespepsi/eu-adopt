@@ -33,6 +33,9 @@ class EuadoptEmailTests(TestCase):
         self.assertEqual(mime, "text/html")
         self.assertIn("EU-Adopt", html)
         self.assertIn("verify/", html)
+        self.assertIn("Bună ziua", html)
+        self.assertIn("Activează contul", html)
+        self.assertNotIn("BunÄƒ", html)
 
     def test_account_activation_helper(self):
         from django.contrib.auth import get_user_model
