@@ -726,6 +726,16 @@
     flex: 1 1 0 !important;
     min-height: 0 !important;
     align-items: stretch !important;
+    height: auto !important;
+    overflow: hidden !important;
+  }
+
+  #SHW .shw-row-middle-box {
+    height: 100% !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-self: stretch !important;
   }
 
   #SHW .shw-row-middle-left,
@@ -741,14 +751,82 @@
   }
 
   #SHW .shw-side-inner-grid {
-    flex: 1 1 auto !important;
+    flex: 1 1 0 !important;
     min-height: 0 !important;
     height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   #SHW .shw-side-inner-box {
     flex: 1 1 0 !important;
     min-height: 0 !important;
+  }
+
+  #SHW .shw-row-middle-center {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    align-self: stretch !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  #SHW .shop-tabs-wrap {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+  }
+
+  #SHW .shop-panels {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+  }
+
+  #SHW .shop-panel.active {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+
+  /* Produse: 4 coloane × 2 rânduri vizibile, restul scroll */
+  #SHW .shop-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  #SHW .shop-grid-dogs,
+  #SHW .shop-grid-cats,
+  #SHW .shop-grid-accessories {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    --shop-landscape-visible-rows: 2;
+    grid-auto-rows: calc(100% / var(--shop-landscape-visible-rows)) !important;
+    align-content: start !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  #SHW .shop-card {
+    min-height: 0 !important;
+    overflow: hidden;
+  }
+
+  /* Bandă cursivă jos — lipită de marginea ecranului */
+  #SHW .shw-row-bottom {
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    margin: 0 !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    height: 40px !important;
+    align-self: stretch !important;
   }
 }
 
