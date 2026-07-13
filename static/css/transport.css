@@ -1042,7 +1042,7 @@
 		flex-shrink: 0;
 		z-index: 3;
 		pointer-events: auto;
-		transform: none;
+		transform: translate(2mm, -5mm);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-extra-circle-img {
 		width: 58%;
@@ -1687,6 +1687,7 @@
 		min-height: calc(96px - 5mm) !important;
 		max-width: calc(118px - 5mm) !important;
 		max-height: calc(118px - 5mm) !important;
+		transform: translate(2mm, -5mm) !important;
 	}
 }
 
