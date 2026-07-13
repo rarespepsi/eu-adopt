@@ -187,18 +187,32 @@ body.page-home-v2 .home-v2-pub-badges {
 .sw-s4-box-ads,
 .sw-s5-slot,
 .shw-side-inner-box,
-.ilove-case,
-.mypet-left-box {
+.ilove-case {
 	position: relative;
 	padding: 0;
 	overflow: hidden;
+}
+/* MyPet: <a> = caseta flex (nu wrapper div + link absolut — tap mobil iOS) */
+body.page-mypet .mypet-left-boxes > a.mypet-left-box.pub-live-cover-link {
+	position: relative;
+	inset: auto;
+	display: block;
+	flex: 1 1 0;
+	min-height: 0;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	overflow: hidden;
+}
+body.page-mypet .mypet-left-boxes > a.mypet-left-box .pub-live-cover {
+	height: 100%;
+	min-height: 100%;
 }
 .sw-s4-box-match .pub-live-cover-link,
 .sw-s4-box-ads .pub-live-cover-link,
 .sw-s5-slot .pub-live-cover-link,
 .shw-side-inner-box .pub-live-cover-link,
-.ilove-case .pub-live-cover-link,
-.mypet-left-box .pub-live-cover-link {
+.ilove-case .pub-live-cover-link {
 	position: absolute;
 	inset: 0;
 	min-height: 0;
@@ -236,4 +250,35 @@ body.page-home-v2 .home-v2-slot-partener > a.pub-live-default-cover .pub-live-co
 
 .ilove-case .pub-live-cover-link {
 	min-height: clamp(4.5rem, 12vh, 7rem);
+}
+
+/* MyPet mobil: pub deasupra conținutului — tap pe întreaga casetă */
+@media (max-width: 767.98px) and (orientation: portrait) {
+	body.page-mypet.page-mypet-magazin:not(.page-mypet-fisa) .sidebar-left {
+		position: relative;
+		z-index: 8;
+		isolation: isolate;
+		pointer-events: auto;
+	}
+	body.page-mypet.page-mypet-magazin:not(.page-mypet-fisa) .layout .main-content {
+		position: relative;
+		z-index: 1;
+	}
+	body.page-mypet.page-mypet-magazin:not(.page-mypet-fisa) .mypet-left-boxes > a.mypet-left-box {
+		pointer-events: auto !important;
+		touch-action: manipulation;
+		-webkit-tap-highlight-color: rgba(24, 119, 242, 0.28);
+	}
+}
+@media (orientation: landscape) and (max-height: 34em) {
+	body.page-mypet.page-mypet-magazin:not(.page-mypet-fisa) .sidebar-left {
+		position: relative;
+		z-index: 8;
+		isolation: isolate;
+		pointer-events: auto;
+	}
+	body.page-mypet.page-mypet-magazin:not(.page-mypet-fisa) .layout .main-content {
+		position: relative;
+		z-index: 1;
+	}
 }

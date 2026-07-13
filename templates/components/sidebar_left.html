@@ -4,9 +4,7 @@
 	{% if request.resolver_match.url_name == "mypet" or request.resolver_match.url_name == "mypet_adopter_adoptions" %}
 	<div class="mypet-left-boxes" aria-label="Panou stânga MyPet — publicitate MP.L1–L3">
 		{% for slot in mypet_pub_slots %}
-		<div class="mypet-left-box mypet-left-box-{{ forloop.counter }}" data-slot="{{ slot.code }}" data-box="L{{ forloop.counter }}">
-			{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" slot_code=slot.code only %}
-		</div>
+		{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" slot_code=slot.code link_classes="mypet-left-box" only %}
 		{% endfor %}
 	</div>
 	{% endif %}
