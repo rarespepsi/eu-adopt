@@ -428,6 +428,12 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/transport-nav-anchor.js' %}?v=1"></script>
+<script>
+(function() {
+	if (window.EUTransportNav) EUTransportNav.setTransportAnchor();
+})();
+</script>
 <script>
 (function() {
 	var fundalUrls = [
@@ -495,6 +501,7 @@
 	var t2Collapse = document.getElementById("t2PortraitCollapse");
 	var stack = document.querySelector(".tw-portrait-stack");
 	if (!t1 || !openBtn || !closeBtn || !t2 || !t2Expand || !t2Collapse) return;
+	var t1FormHistoryPushed = false;
 	function refreshStack() {
 		if (!stack) return;
 		if (!mq.matches || !t2.classList.contains("tw-t2--hub-open")) {
@@ -519,6 +526,18 @@
 	function closeT1Form() {
 		t1.classList.remove("tw-t1--form-open");
 		syncT1Aria(false);
+		t1FormHistoryPushed = false;
+	}
+	function openT1Form() {
+		closeT2();
+		t1.classList.add("tw-t1--form-open");
+		syncT1Aria(true);
+		syncT2Aria(false);
+		refreshStack();
+		if (!t1FormHistoryPushed) {
+			history.pushState({ twT1Form: 1 }, "", location.href);
+			t1FormHistoryPushed = true;
+		}
 	}
 	function onMq() {
 		if (!mq.matches) {
@@ -534,25 +553,26 @@
 	}
 	openBtn.addEventListener("click", function() {
 		if (!mq.matches) return;
-		closeT2();
-		t1.classList.add("tw-t1--form-open");
-		syncT1Aria(true);
-		syncT2Aria(false);
-		refreshStack();
+		openT1Form();
 	});
 	closeBtn.addEventListener("click", function() {
-		closeT1Form();
+		if (t1FormHistoryPushed) {
+			history.back();
+		} else {
+			closeT1Form();
+		}
 	});
 	t2Expand.addEventListener("click", function() {
 		if (!mq.matches) return;
-		closeT2();
-		t1.classList.add("tw-t1--form-open");
-		syncT1Aria(true);
-		syncT2Aria(false);
-		refreshStack();
+		openT1Form();
 	});
 	t2Collapse.addEventListener("click", function() {
 		closeT2();
+	});
+	window.addEventListener("popstate", function() {
+		if (t1.classList.contains("tw-t1--form-open")) {
+			closeT1Form();
+		}
 	});
 	if (typeof mq.addEventListener === "function") {
 		mq.addEventListener("change", onMq);

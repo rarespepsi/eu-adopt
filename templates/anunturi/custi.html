@@ -696,9 +696,15 @@
 				<h1 class="tww-top-title">Autocarul EU-ADOPT – Sponsorizează o cușcă</h1>
 				<p class="tww-top-subtitle">Fiecare loc oferă siguranță și condiții unui suflet în drum spre casă. Alege o cușcă și sprijină să îndeplinim proiectul!</p>
 				<div class="tww-top-actions">
+					{% if custi_from_transport %}
+					<div class="tww-top-actions-left"><a href="{% url 'transport' %}" class="tww-top-btn">Înapoi la Transport</a></div>
+					<div class="tww-top-actions-center"><a href="{% url 'donatii_generale' %}?sursa=custi&amp;intent=medicale_hrana" class="tww-top-btn">Donează pentru servicii medicale și hrană</a></div>
+					<div class="tww-top-actions-right"><a href="{% url 'pets_all' %}" class="tww-top-btn">Înapoi la Prietenii tăi</a></div>
+					{% else %}
 					<div class="tww-top-actions-left"><a href="{% url 'pets_all' %}" class="tww-top-btn">Înapoi la Prietenii tăi</a></div>
 					<div class="tww-top-actions-center"><a href="{% url 'donatii_generale' %}?sursa=custi&amp;intent=medicale_hrana" class="tww-top-btn">Donează pentru servicii medicale și hrană</a></div>
 					<div class="tww-top-actions-right"><a href="{% url 'transport' %}" class="tww-top-btn">Înapoi la Transport</a></div>
+					{% endif %}
 				</div>
 			</div>
 		</div>
@@ -1019,5 +1025,8 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('resize', onResizeAnchoredModal);
 });
 </script>
+{% if custi_from_transport %}
+<script src="{% static 'js/transport-nav-anchor.js' %}?v=1"></script>
+{% endif %}
 {% endblock %}
 

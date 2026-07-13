@@ -4204,7 +4204,12 @@ def transport_dispatch_rate_view(request, job_id: int):
 
 def custi_view(request):
     """Pagina cuștilor / harta cuștilor autocarului."""
-    return render(request, "anunturi/custi.html", {})
+    from home.transport_nav import is_transport_sursa, transport_sursa_context
+
+    sursa = (request.GET.get("sursa") or "").strip()[:96]
+    ctx = {"custi_query_sursa": sursa, "custi_from_transport": is_transport_sursa(sursa)}
+    ctx.update(transport_sursa_context(sursa))
+    return render(request, "anunturi/custi.html", ctx)
 
 
 def donatii_generale_view(request):
@@ -4214,22 +4219,22 @@ def donatii_generale_view(request):
     """
     from home.donatii_constants import EUADOPT_DONATION_ORG, EUADOPT_PARTNER_NGO
 
+    from home.transport_nav import transport_sursa_context
+
     sursa = (request.GET.get("sursa") or "").strip()[:96]
     intent = (request.GET.get("intent") or "").strip()[:96]
     loc = (request.GET.get("loc") or "").strip()[:24]
     suma_raw = (request.GET.get("suma") or "").strip()[:16]
-    return render(
-        request,
-        "anunturi/donatii_generale.html",
-        {
-            "donatii_query_sursa": sursa,
-            "donatii_query_intent": intent,
-            "donatii_query_loc": loc,
-            "donatii_query_suma": suma_raw,
-            "donatii_org": EUADOPT_DONATION_ORG,
-            "donatii_partner": EUADOPT_PARTNER_NGO,
-        },
-    )
+    ctx = {
+        "donatii_query_sursa": sursa,
+        "donatii_query_intent": intent,
+        "donatii_query_loc": loc,
+        "donatii_query_suma": suma_raw,
+        "donatii_org": EUADOPT_DONATION_ORG,
+        "donatii_partner": EUADOPT_PARTNER_NGO,
+    }
+    ctx.update(transport_sursa_context(sursa))
+    return render(request, "anunturi/donatii_generale.html", ctx)
 
 
 def shop_view(request):

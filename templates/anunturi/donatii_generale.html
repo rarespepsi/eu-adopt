@@ -10,6 +10,9 @@
 
 {% block content %}
 <section class="donatii-gen-wrap" aria-label="Donații EU-ADOPT">
+	{% if from_transport %}
+	<p class="donatii-back"><a href="{% url 'transport' %}">← Înapoi la Transport</a></p>
+	{% endif %}
 	{% if donatii_query_sursa or donatii_query_intent or donatii_query_loc or donatii_query_suma %}
 	<section class="donatii-gen-summary" aria-labelledby="donatii-rezumat-t">
 		<h2 id="donatii-rezumat-t">Rezumat solicitare</h2>
@@ -99,12 +102,12 @@
 		<article class="donatii-hub-card">
 			<h2>Formular 230 (3,5%)</h2>
 			<p>PDF cu datele tale și beneficiarul din configurația site-ului. Nu trimite automat la ANAF.</p>
-			<a href="{% url 'donatii_formular_230' %}" class="donatii-gen-btn-primary">Generează formular</a>
+			<a href="{% url 'donatii_formular_230' %}{% if donatii_query_sursa %}?sursa={{ donatii_query_sursa|urlencode }}{% endif %}" class="donatii-gen-btn-primary">Generează formular</a>
 		</article>
 		<article class="donatii-hub-card">
 			<h2>Sponsorizare firmă</h2>
 			<p>Contract-model PDF pentru persoană juridică (date firmă + beneficiar provizoriu).</p>
-			<a href="{% url 'donatii_contract_sponsorizare' %}" class="donatii-gen-btn-primary">Generează contract</a>
+			<a href="{% url 'donatii_contract_sponsorizare' %}{% if donatii_query_sursa %}?sursa={{ donatii_query_sursa|urlencode }}{% endif %}" class="donatii-gen-btn-primary">Generează contract</a>
 		</article>
 	</section>
 
@@ -176,4 +179,7 @@
 	}
 })();
 </script>
+{% if from_transport %}
+<script src="{% static 'js/transport-nav-anchor.js' %}?v=1"></script>
+{% endif %}
 {% endblock %}

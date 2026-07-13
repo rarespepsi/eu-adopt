@@ -10,7 +10,7 @@
 
 {% block content %}
 <section class="donatii-gen-wrap donatii-form-wrap" aria-label="Contract sponsorizare">
-	<p class="donatii-back"><a href="{% url 'donatii_generale' %}">← Înapoi la Donații</a></p>
+	<p class="donatii-back"><a href="{{ donatii_back_href }}">{{ donatii_back_label }}</a></p>
 	<h1>Contract de sponsorizare (firmă) — model PDF</h1>
 	<p class="donatii-gen-lead">
 		Pentru <strong>persoane juridice</strong> (sau completare manuală în numele firmei). Se generează un <strong>PDF informativ</strong>;
@@ -31,8 +31,9 @@
 	</p>
 	{% endif %}
 
-	<form method="post" action="{% url 'donatii_contract_sponsorizare' %}" class="donatii-native-form">
+	<form method="post" action="{% url 'donatii_contract_sponsorizare' %}{% if donatii_query_sursa %}?sursa={{ donatii_query_sursa|urlencode }}{% endif %}" class="donatii-native-form">
 		{% csrf_token %}
+		{% if donatii_query_sursa %}<input type="hidden" name="sursa" value="{{ donatii_query_sursa }}" />{% endif %}
 		{% if form.non_field_errors %}
 		<div class="donatii-form-errors">{{ form.non_field_errors }}</div>
 		{% endif %}
@@ -58,4 +59,10 @@
 		</div>
 	</form>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+{% if from_transport %}
+<script src="{% static 'js/transport-nav-anchor.js' %}?v=1"></script>
+{% endif %}
 {% endblock %}

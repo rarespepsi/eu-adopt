@@ -12,6 +12,12 @@ from home.donatii_constants import EUADOPT_DONATION_ORG
 from home.donatii_forms import ContractSponsorizareForm, Formular230Form
 from home.donatii_pdf import render_contract_sponsorizare_pdf_bytes, render_formular_230_pdf_bytes
 from home.models import AccountProfile, UserProfile
+from home.transport_nav import transport_sursa_context
+
+
+def _donatii_form_sursa(request) -> str:
+    raw = request.GET.get("sursa") or request.POST.get("sursa") or ""
+    return (raw or "").strip()[:96]
 
 
 def _profile_for(user):
@@ -100,11 +106,19 @@ def _missing_pj_for_contract(user) -> list[str]:
 @require_http_methods(["GET", "POST"])
 def donatii_formular_230_view(request):
     """Formular 230 (3,5%) — completare + PDF."""
+    sursa = _donatii_form_sursa(request)
     initial = _initial_formular_230(request.user)
     missing = _missing_pf_for_230(request.user)
     profile_url = reverse("account_edit") if request.user.is_authenticated else (
         reverse("login") + "?" + urlencode({"next": reverse("donatii_formular_230")})
     )
+    base_ctx = {
+        "org": EUADOPT_DONATION_ORG,
+        "profile_missing_fields": missing,
+        "profile_complete_url": profile_url,
+        "donatii_query_sursa": sursa,
+    }
+    base_ctx.update(transport_sursa_context(sursa))
 
     if request.method == "POST":
         form = Formular230Form(request.POST, user=request.user)
@@ -118,13 +132,7 @@ def donatii_formular_230_view(request):
                 return render(
                     request,
                     "donatii/formular_230.html",
-                    {
-                        "form": form,
-                        "org": EUADOPT_DONATION_ORG,
-                        "profile_missing_fields": missing,
-                        "profile_complete_url": profile_url,
-                        "donatii_show_mem_checkbox": "memoreaza_in_profil" in form.fields,
-                    },
+                    {**base_ctx, "form": form, "donatii_show_mem_checkbox": "memoreaza_in_profil" in form.fields},
                 )
             if request.user.is_authenticated and form.cleaned_data.get("memoreaza_in_profil"):
                 prof, _ = UserProfile.objects.get_or_create(user=request.user)
@@ -149,19 +157,14 @@ def donatii_formular_230_view(request):
     return render(
         request,
         "donatii/formular_230.html",
-        {
-            "form": form,
-            "org": EUADOPT_DONATION_ORG,
-            "profile_missing_fields": missing,
-            "profile_complete_url": profile_url,
-            "donatii_show_mem_checkbox": "memoreaza_in_profil" in form.fields,
-        },
+        {**base_ctx, "form": form, "donatii_show_mem_checkbox": "memoreaza_in_profil" in form.fields},
     )
 
 
 @require_http_methods(["GET", "POST"])
 def donatii_contract_sponsorizare_view(request):
     """Contract sponsorizare firmă — completare + PDF."""
+    sursa = _donatii_form_sursa(request)
     initial = _initial_contract(request.user)
     missing = _missing_pj_for_contract(request.user)
     acc = _account_for(request.user)
@@ -169,6 +172,14 @@ def donatii_contract_sponsorizare_view(request):
     profile_url = reverse("account_edit") if request.user.is_authenticated else (
         reverse("login") + "?" + urlencode({"next": reverse("donatii_contract_sponsorizare")})
     )
+    base_ctx = {
+        "org": EUADOPT_DONATION_ORG,
+        "profile_missing_fields": missing,
+        "profile_complete_url": profile_url,
+        "is_pj_hint": is_pj_hint,
+        "donatii_query_sursa": sursa,
+    }
+    base_ctx.update(transport_sursa_context(sursa))
 
     if request.method == "POST":
         form = ContractSponsorizareForm(request.POST, user=request.user)
@@ -182,14 +193,7 @@ def donatii_contract_sponsorizare_view(request):
                 return render(
                     request,
                     "donatii/contract_sponsorizare.html",
-                    {
-                        "form": form,
-                        "org": EUADOPT_DONATION_ORG,
-                        "profile_missing_fields": missing,
-                        "profile_complete_url": profile_url,
-                        "is_pj_hint": is_pj_hint,
-                        "donatii_show_mem_checkbox": "memoreaza_in_profil" in form.fields,
-                    },
+                    {**base_ctx, "form": form, "donatii_show_mem_checkbox": "memoreaza_in_profil" in form.fields},
                 )
             if request.user.is_authenticated and form.cleaned_data.get("memoreaza_in_profil"):
                 prof, _ = UserProfile.objects.get_or_create(user=request.user)
@@ -209,12 +213,5 @@ def donatii_contract_sponsorizare_view(request):
     return render(
         request,
         "donatii/contract_sponsorizare.html",
-        {
-            "form": form,
-            "org": EUADOPT_DONATION_ORG,
-            "profile_missing_fields": missing,
-            "profile_complete_url": profile_url,
-            "is_pj_hint": is_pj_hint,
-            "donatii_show_mem_checkbox": "memoreaza_in_profil" in form.fields,
-        },
+        {**base_ctx, "form": form, "donatii_show_mem_checkbox": "memoreaza_in_profil" in form.fields},
     )
