@@ -15,6 +15,7 @@ _PRELAUNCH_PET_FICHA_RE = re.compile(r"^/pets/\d+/?$")
 # Prefixe URL (path trebuie să înceapă cu una dintre aceste valori).
 PRELAUNCH_ANONYMOUS_PREFIXES: tuple[str, ...] = (
     "/login/",
+    "/pub/go/",
     "/login/forgot-password/",
     "/login/reset-password/",
     "/signup/organizatie/",

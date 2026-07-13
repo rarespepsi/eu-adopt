@@ -1,4 +1,4 @@
-from django.test import SimpleTestCase
+from django.test import Client, SimpleTestCase, override_settings
 
 from home.pub_slot_defaults import pub_cover_static_path, pub_harta_url, pub_slot_live_creative
 
@@ -19,6 +19,17 @@ class PubSlotDefaultsTests(SimpleTestCase):
         self.assertIn("61588044314372", creative["link"])
         self.assertTrue(creative["link_external"])
         self.assertTrue(creative["img"])
+        self.assertIn("/pub/go/", creative["href"])
+        self.assertIn("sect=servicii", creative["href"])
+        self.assertIn("slot=S2.2", creative["href"])
+
+    @override_settings(PRELAUNCH_MODE=False)
+    def test_pub_slot_go_redirects_external(self):
+        creative = pub_slot_live_creative("mypet", "MP.L1", note=None)
+        client = Client()
+        response = client.get(creative["href"])
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("facebook.com", response["Location"])
 
     def test_harta_url_helper(self):
         url = pub_harta_url("shop", "SH4.1")

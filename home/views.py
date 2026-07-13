@@ -50,7 +50,7 @@ from .pet_age_bands import (
 )
 from .pt_p2_list import PT_P2_PAGE_SIZE, pt_pets_page_context
 from .pet_media_thumb import pet_media_thumb_view
-from .pub_slot_defaults import pub_slot_live_creative, pub_slots_ordered
+from .pub_slot_defaults import pub_slot_fetch_notes, pub_slot_live_creative, pub_slot_outbound_url, pub_slots_ordered
 from .mail_helpers import email_subject_for_user, send_mail_text_and_html
 from .context_processors import get_navbar_unread_counts
 from . import inbox_notifications as _inbox
@@ -2286,7 +2286,7 @@ def _home_sidebar_pub_slots_for_template() -> tuple[list[dict | None], list[dict
         creative = pub_slot_live_creative("home", slot_code, by_code.get(slot_code))
         return {
             "name": slot_code,
-            "url": (creative.get("link") or "").strip() or "#",
+            "url": (creative.get("href") or "").strip() or "#",
             "image_url": creative.get("img") or "",
             "video_url": creative.get("video") or "",
             "price": (creative.get("price") or "").strip(),
@@ -11959,6 +11959,21 @@ def _publicitate_harta_context(request, pub_nav: str) -> dict:
         "pub_my_orders_total": my_pub_orders_total,
         "pub_my_orders_pending_materials": my_pub_orders_pending_materials,
     }
+
+
+@require_http_methods(["GET"])
+def pub_slot_go_view(request):
+    """Redirect din casetele Publi. — tap mobil merge în același tab, apoi 302 către destinație."""
+    sect = (request.GET.get("sect") or "").strip().lower()
+    slot = (request.GET.get("slot") or "").strip()
+    if not sect or not slot:
+        return redirect("home")
+    notes = pub_slot_fetch_notes(sect, [slot])
+    creative = pub_slot_live_creative(sect, slot, notes.get(slot))
+    dest = pub_slot_outbound_url(creative.get("link"))
+    if not dest:
+        return redirect("home")
+    return redirect(dest)
 
 
 @login_required

@@ -34,6 +34,24 @@ def pub_harta_url(section: str, slot_code: str) -> str:
     return f"{reverse('publicitate_harta')}?{q}"
 
 
+def pub_slot_go_url(section: str, slot_code: str) -> str:
+    """Link intern pentru tap mobil — redirect server către URL-ul slotului (extern)."""
+    sect = (section or "home").strip().lower()
+    code = (slot_code or "").strip()
+    q = urlencode({"sect": sect, "slot": code})
+    return f"{reverse('pub_slot_go')}?{q}"
+
+
+def _creative_with_href(section: str, slot_code: str, data: dict) -> dict:
+    out = dict(data)
+    link = (out.get("link") or "").strip()
+    if out.get("link_external"):
+        out["href"] = pub_slot_go_url(section, slot_code)
+    else:
+        out["href"] = link or "#"
+    return out
+
+
 def pub_placeholder_link(section: str, slot_code: str) -> str:
     """Link temporar pentru casetele Publi. fără material client (închiriere = flux logat /publicitate/)."""
     del section, slot_code
@@ -43,6 +61,14 @@ def pub_placeholder_link(section: str, slot_code: str) -> str:
 def _link_is_external(link: str) -> bool:
     low = (link or "").strip().lower()
     return low.startswith("http://") or low.startswith("https://")
+
+
+def pub_slot_outbound_url(link: str) -> str | None:
+    """URL destinație validă pentru redirect Publi. (doar http/https)."""
+    u = (link or "").strip()
+    if not _link_is_external(u):
+        return None
+    return u
 
 
 def pub_slot_live_creative(section: str, slot_code: str, note=None) -> dict:
@@ -61,40 +87,52 @@ def pub_slot_live_creative(section: str, slot_code: str, note=None) -> dict:
 
     if parsed and (parsed.get("img") or parsed.get("video")):
         link = (parsed.get("link") or "").strip() or default_link
-        return {
-            "img": parsed.get("img") or "",
-            "video": parsed.get("video") or "",
-            "link": link,
-            "alt": (parsed.get("alt") or "").strip() or "EU-Adopt pe Facebook",
-            "price": (parsed.get("price") or "").strip(),
-            "discount": (parsed.get("discount") or "").strip(),
-            "is_default_cover": False,
-            "link_external": _link_is_external(link),
-        }
+        return _creative_with_href(
+            sect,
+            code,
+            {
+                "img": parsed.get("img") or "",
+                "video": parsed.get("video") or "",
+                "link": link,
+                "alt": (parsed.get("alt") or "").strip() or "EU-Adopt pe Facebook",
+                "price": (parsed.get("price") or "").strip(),
+                "discount": (parsed.get("discount") or "").strip(),
+                "is_default_cover": False,
+                "link_external": _link_is_external(link),
+            },
+        )
 
     if parsed and (parsed.get("link") or "").strip():
         link = (parsed.get("link") or "").strip()
-        return {
+        return _creative_with_href(
+            sect,
+            code,
+            {
+                "img": default_img,
+                "video": "",
+                "link": link,
+                "alt": "Publicitate",
+                "price": (parsed.get("price") or "").strip(),
+                "discount": (parsed.get("discount") or "").strip(),
+                "is_default_cover": True,
+                "link_external": _link_is_external(link),
+            },
+        )
+
+    return _creative_with_href(
+        sect,
+        code,
+        {
             "img": default_img,
             "video": "",
-            "link": link,
-            "alt": "Publicitate",
-            "price": (parsed.get("price") or "").strip(),
-            "discount": (parsed.get("discount") or "").strip(),
+            "link": default_link,
+            "alt": "EU-Adopt pe Facebook",
+            "price": "",
+            "discount": "",
             "is_default_cover": True,
-            "link_external": _link_is_external(link),
-        }
-
-    return {
-        "img": default_img,
-        "video": "",
-        "link": default_link,
-        "alt": "EU-Adopt pe Facebook",
-        "price": "",
-        "discount": "",
-        "is_default_cover": True,
-        "link_external": True,
-    }
+            "link_external": True,
+        },
+    )
 
 
 def pub_slot_fetch_notes(section: str, codes: Iterable[str]) -> dict:

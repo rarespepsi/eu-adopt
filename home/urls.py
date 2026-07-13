@@ -86,6 +86,7 @@ urlpatterns = [
     path('collab/transport/job/<int:job_id>/detail/', views.transport_operator_job_detail_view, name='transport_operator_job_detail'),
     path('collab/transport/pending/accept/', views.transport_op_accept_pending_view, name='transport_op_accept_pending'),
     path('collab/transport/pending/decline/', views.transport_op_decline_pending_view, name='transport_op_decline_pending'),
+    path('pub/go/', views.pub_slot_go_view, name='pub_slot_go'),
     path('publicitate/cos/', views.publicitate_cos_view, name='publicitate_cos'),
     path('publicitate/', views.publicitate_harta_view, name='publicitate_harta'),
     path('publicitate/disponibilitate-slot/', views.publicitate_slot_availability_view, name='publicitate_slot_availability'),

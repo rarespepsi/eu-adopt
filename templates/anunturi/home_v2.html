@@ -135,7 +135,7 @@
 				{% for partner in left_sidebar_partners %}
 				<div class="home-v2-slot home-v2-slot-white home-v2-slot-img home-v2-slot-partener">
 					{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A5.{{ forloop.counter }}</span>{% endif %}
-					<a href="{{ partner.url|default:'#' }}" title="EU-Adopt pe Facebook"{% if partner.is_default_cover and partner.link_external %} data-pub-fb="1" target="_blank" rel="noopener noreferrer"{% elif partner.link_external %} target="_blank" rel="noopener noreferrer"{% endif %} style="position:relative;display:block;height:100%;"{% if partner.is_default_cover %} class="pub-live-default-cover"{% endif %}>
+					<a href="{{ partner.url|default:'#' }}" title="EU-Adopt pe Facebook"{% if partner.is_default_cover and partner.link_external %} data-pub-fb="1"{% elif partner.link_external %}{% endif %} style="position:relative;display:block;height:100%;"{% if partner.is_default_cover %} class="pub-live-default-cover"{% endif %}>
 						{% if partner.price or partner.discount %}
 						<span class="home-v2-pub-badges">{% if partner.price %}<span class="home-v2-pub-badge home-v2-pub-badge--price">{{ partner.price }}</span>{% endif %}{% if partner.discount %}<span class="home-v2-pub-badge home-v2-pub-badge--discount">{{ partner.discount }}</span>{% endif %}</span>
 						{% endif %}
@@ -327,7 +327,7 @@
 				{% for partner in right_sidebar_partners %}
 				<div class="home-v2-slot home-v2-slot-white home-v2-slot-img home-v2-slot-partener">
 					{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A6.{{ forloop.counter }}</span>{% endif %}
-					<a href="{{ partner.url|default:'#' }}" title="EU-Adopt pe Facebook"{% if partner.is_default_cover and partner.link_external %} data-pub-fb="1" target="_blank" rel="noopener noreferrer"{% elif partner.link_external %} target="_blank" rel="noopener noreferrer"{% endif %} style="position:relative;display:block;height:100%;"{% if partner.is_default_cover %} class="pub-live-default-cover"{% endif %}>
+					<a href="{{ partner.url|default:'#' }}" title="EU-Adopt pe Facebook"{% if partner.is_default_cover and partner.link_external %} data-pub-fb="1"{% elif partner.link_external %}{% endif %} style="position:relative;display:block;height:100%;"{% if partner.is_default_cover %} class="pub-live-default-cover"{% endif %}>
 						{% if partner.price or partner.discount %}
 						<span class="home-v2-pub-badges">{% if partner.price %}<span class="home-v2-pub-badge home-v2-pub-badge--price">{{ partner.price }}</span>{% endif %}{% if partner.discount %}<span class="home-v2-pub-badge home-v2-pub-badge--discount">{{ partner.discount }}</span>{% endif %}</span>
 						{% endif %}
