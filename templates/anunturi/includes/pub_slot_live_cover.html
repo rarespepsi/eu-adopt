@@ -1,14 +1,18 @@
 {% load static %}
-{# creative: dict cu img/video/link/href/is_default_cover/link_external — afișare live fără cod slot #}
+{# creative: dict cu img/video/link/href/has_link/is_default_cover — afișare live fără cod slot #}
 {# wrap_link=False: doar conținut (pentru benzi cursivă unde <a> e pe celula întreagă) #}
 {% if creative %}
-{% if wrap_link != False %}
-<a href="{{ creative.href|default:creative.link }}" class="pub-live-cover-link{% if creative.video %} pub-live-cover-link--video{% endif %}{% if layout %} pub-live-cover-link--{{ layout }}{% endif %}{% if creative.is_default_cover %} pub-live-default-cover{% endif %}{% if link_classes %} {{ link_classes }}{% endif %}"{% if slot_code %} data-slot="{{ slot_code }}"{% endif %}{% if creative.is_default_cover and creative.link_external %} data-pub-fb="1"{% endif %} aria-label="{{ creative.alt|default:'EU-Adopt pe Facebook' }}">
+{% if wrap_link != False and creative.has_link %}
+<a href="{{ creative.href }}" class="pub-live-cover-link{% if creative.video %} pub-live-cover-link--video{% endif %}{% if layout %} pub-live-cover-link--{{ layout }}{% endif %}{% if creative.is_default_cover %} pub-live-default-cover{% endif %}{% if link_classes %} {{ link_classes }}{% endif %}"{% if slot_code %} data-slot="{{ slot_code }}"{% endif %} aria-label="{{ creative.alt|default:'Publicitate' }}">
+{% elif wrap_link != False %}
+<div class="pub-live-cover-link pub-live-cover-link--static{% if layout %} pub-live-cover-link--{{ layout }}{% endif %}{% if creative.is_default_cover %} pub-live-default-cover{% endif %}{% if link_classes %} {{ link_classes }}{% endif %}"{% if slot_code %} data-slot="{{ slot_code }}"{% endif %} aria-label="{{ creative.alt|default:'Publicitate' }}">
 {% endif %}
 {% if creative.video or creative.img %}
 {% include "anunturi/includes/pub_slot_live_cover_body.html" with creative=creative layout=layout only %}
 {% endif %}
-{% if wrap_link != False %}
+{% if wrap_link != False and creative.has_link %}
 </a>
+{% elif wrap_link != False %}
+</div>
 {% endif %}
 {% endif %}

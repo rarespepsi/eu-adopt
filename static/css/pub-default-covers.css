@@ -1,6 +1,5 @@
 /* Cover-uri default sloturi publicitate pe site live — cod slot doar pe /publicitate/ */
 .pub-live-cover-link,
-a[data-pub-fb="1"],
 a.pub-live-default-cover {
 	display: block;
 	position: relative;
@@ -14,6 +13,12 @@ a.pub-live-default-cover {
 	z-index: 5;
 	-webkit-tap-highlight-color: rgba(24, 119, 242, 0.28);
 	touch-action: manipulation;
+}
+.pub-live-cover-link--static,
+.pub-live-default-cover.pub-live-cover-link--static {
+	cursor: default;
+	pointer-events: none !important;
+	-webkit-tap-highlight-color: transparent;
 }
 .pub-live-cover {
 	display: block;

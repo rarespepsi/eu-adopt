@@ -2284,9 +2284,11 @@ def _home_sidebar_pub_slots_for_template() -> tuple[list[dict | None], list[dict
 
     def _entry(slot_code: str) -> dict:
         creative = pub_slot_live_creative("home", slot_code, by_code.get(slot_code))
+        has_link = bool(creative.get("has_link"))
         return {
             "name": slot_code,
-            "url": (creative.get("href") or "").strip() or "#",
+            "url": (creative.get("href") or "").strip() if has_link else "",
+            "has_link": has_link,
             "image_url": creative.get("img") or "",
             "video_url": creative.get("video") or "",
             "price": (creative.get("price") or "").strip(),

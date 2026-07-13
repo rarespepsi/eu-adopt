@@ -10,9 +10,6 @@ from django.urls import reverse
 
 PUB_COVER_COUNT = 30
 PUB_COVER_STATIC_PREFIX = "images/pub/covers/"
-EU_ADOPT_FACEBOOK_URL = (
-    "https://www.facebook.com/people/EU-Adopt-Adoptii-Caini-si-Pisici/61588044314372/"
-)
 
 
 def pub_cover_static_path(slot_code: str) -> str:
@@ -42,22 +39,6 @@ def pub_slot_go_url(section: str, slot_code: str) -> str:
     return f"{reverse('pub_slot_go')}?{q}"
 
 
-def _creative_with_href(section: str, slot_code: str, data: dict) -> dict:
-    out = dict(data)
-    link = (out.get("link") or "").strip()
-    if out.get("link_external"):
-        out["href"] = pub_slot_go_url(section, slot_code)
-    else:
-        out["href"] = link or "#"
-    return out
-
-
-def pub_placeholder_link(section: str, slot_code: str) -> str:
-    """Link temporar pentru casetele Publi. fără material client (închiriere = flux logat /publicitate/)."""
-    del section, slot_code
-    return EU_ADOPT_FACEBOOK_URL
-
-
 def _link_is_external(link: str) -> bool:
     low = (link or "").strip().lower()
     return low.startswith("http://") or low.startswith("https://")
@@ -71,22 +52,45 @@ def pub_slot_outbound_url(link: str) -> str | None:
     return u
 
 
+def _creative_with_href(section: str, slot_code: str, data: dict) -> dict:
+    out = dict(data)
+    link = (out.get("link") or "").strip()
+    if link and _link_is_external(link):
+        out["link_external"] = True
+        out["href"] = pub_slot_go_url(section, slot_code)
+        out["has_link"] = True
+    elif link:
+        out["link_external"] = False
+        out["href"] = link
+        out["has_link"] = True
+    else:
+        out["link_external"] = False
+        out["href"] = ""
+        out["has_link"] = False
+    return out
+
+
+def pub_placeholder_link(section: str, slot_code: str) -> str:
+    """Fără link implicit — sloturile goale rămân neclickabile până la material client."""
+    del section, slot_code
+    return ""
+
+
 def pub_slot_live_creative(section: str, slot_code: str, note=None) -> dict:
     """
     Creative pentru afișare pe site live.
-    Fără material client: cover default + link către pagina Facebook EU-Adopt.
-    Cu material: imagine/video client; link client dacă e setat, altfel Facebook.
+    Fără material client: cover default, fără link.
+    Cu material: imagine/video client + link client (dacă e setat).
     """
     from .views import _pt_pub_slot_parse_note
 
     code = (slot_code or "").strip()
     sect = (section or "home").strip().lower()
-    default_link = pub_placeholder_link(sect, code)
     default_img = pub_cover_url(code)
     parsed = _pt_pub_slot_parse_note(note) if note is not None else None
 
     if parsed and (parsed.get("img") or parsed.get("video")):
-        link = (parsed.get("link") or "").strip() or default_link
+        link = (parsed.get("link") or "").strip()
         return _creative_with_href(
             sect,
             code,
@@ -94,11 +98,10 @@ def pub_slot_live_creative(section: str, slot_code: str, note=None) -> dict:
                 "img": parsed.get("img") or "",
                 "video": parsed.get("video") or "",
                 "link": link,
-                "alt": (parsed.get("alt") or "").strip() or "EU-Adopt pe Facebook",
+                "alt": (parsed.get("alt") or "").strip() or "Publicitate",
                 "price": (parsed.get("price") or "").strip(),
                 "discount": (parsed.get("discount") or "").strip(),
                 "is_default_cover": False,
-                "link_external": _link_is_external(link),
             },
         )
 
@@ -115,7 +118,6 @@ def pub_slot_live_creative(section: str, slot_code: str, note=None) -> dict:
                 "price": (parsed.get("price") or "").strip(),
                 "discount": (parsed.get("discount") or "").strip(),
                 "is_default_cover": True,
-                "link_external": _link_is_external(link),
             },
         )
 
@@ -125,12 +127,11 @@ def pub_slot_live_creative(section: str, slot_code: str, note=None) -> dict:
         {
             "img": default_img,
             "video": "",
-            "link": default_link,
-            "alt": "EU-Adopt pe Facebook",
+            "link": "",
+            "alt": "Publicitate",
             "price": "",
             "discount": "",
             "is_default_cover": True,
-            "link_external": True,
         },
     )
 
