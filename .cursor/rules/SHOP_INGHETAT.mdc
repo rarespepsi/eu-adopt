@@ -9,7 +9,7 @@ alwaysApply: true
 
 ## Ce înseamnă NIMIC
 
-- **Nu edita:** `templates/anunturi/shop.html`, `static/css/shop.css`, `templates/anunturi/shop_comanda_personalizate.html`, `templates/anunturi/shop_magazin_foto.html` sau alte fișiere care afectează afișarea sau layout-ul paginii Shop și al subpaginilor ei (magazin foto, comandă produse personalizate etc.).
+- **Nu edita:** `templates/anunturi/shop.html`, `static/css/shop.css`, `templates/anunturi/shop_comanda_personalizate.html`, `templates/anunturi/shop_magazin_foto.html` sau alte fișiere care afectează afișarea sau layout-ul paginii Shop și al subpaginilor ei (magazin foto, comandă produse personalizate etc.). **Portrait final:** `SHOP_MOBIL_PORTRAIT_MEMORAT.mdc` (commit `85a25f4`, 13 iul 2026).
 - **Nu adăuga, nu șterge, nu muta** elemente (SH1, SH2, SH3, SH4, SH5, taburi, casete produse, benzi, texte promo) sau reguli CSS pe `body.page-shop`, `#SHW`, `.shw-*`, `.shop-*` care schimbă aspectul/comportamentul Shop.
 - **View/context:** nu schimba logica din `home/views.py` și `home/urls.py` legată de `shop_view`, `shop_comanda_personalizate_view`, `shop_magazin_foto_view` dacă efectul este schimbarea conținutului sau a fluxului paginii Shop și al subpaginilor ei.
 

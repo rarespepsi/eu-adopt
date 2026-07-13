@@ -1,0 +1,100 @@
+---
+description: Shop mobil portrait — stare FINALĂ memorată (13 iul 2026)
+alwaysApply: false
+---
+
+# SHOP MOBIL PORTRAIT – STARE FINALĂ MEMORATĂ
+
+**Confirmat de utilizator:** 13 iulie 2026 — **„e ok. e forma finala la portrait mobil shop.”**
+
+**Commit referință (stare finală):** `85a25f4` · cache CSS `shop.css?v=26-portrait-3x4-scroll`
+
+**Istoric sesiune:** `7038a11` (6 pub stânga) · `bdda30a` (edge-to-edge) · `25ff6f7` (SH1 compact) · `f676ccf` / `85a25f4` (grilă 3×4 + scroll)
+
+**Nu modifica** fără cerere explicită + parola **`1977`** + OK (`SHOP_INGHETAT.mdc`).
+
+**Landscape touch:** lucru separat — vezi `SHOP_MOBIL_LANDSCAPE` (în curs); **nu atinge** portrait când calibrezi landscape.
+
+---
+
+## Media query portrait
+
+```css
+@media (max-width: 767.98px) and (orientation: portrait)
+```
+
+---
+
+## Fișiere
+
+| Fișier | Rol portrait |
+|--------|----------------|
+| `templates/anunturi/shop.html` | SH1 text scurt portrait, pub SH5 în coloana stângă (`.shw-pub-in-left-portrait-only`), cache `?v=` |
+| `static/css/shop.css` | Reguli portrait în bloc dedicat (EOF înainte de landscape) |
+
+---
+
+## Layout memorat
+
+```
+[NAVBAR]
+[SH1 — 46px, 3 casete: Shop Poze | Shop EU-ADOPT | Ajută un suflet]
+[SH4+SH5 stânga 6 pub | SH2 centru taburi+produse]
+[SH3 bandă jos marquee]
+```
+
+| Zonă | Conținut |
+|------|----------|
+| **SH1** | Înălțime **46px**; text lung desktop ascuns (`.shw-sh1-text--desktop`), portrait: **Shop Poze** · **Shop EU-ADOPT** · **Ajută un suflet** |
+| **Pub stânga** | **6 casete** (SH4.1–3 + SH5.1–3 în `.shw-pub-in-left-portrait-only`); coloana dreaptă SH5 **ascunsă** |
+| **Lățime pub** | `flex: 0 0 23%`, `max-width: 25%` |
+| **SH2 produse** | **3 coloane** · **4 rânduri vizibile** · restul **scroll** în `.shop-grid-*` |
+| **Margini pagină** | **0** lateral — lipit stânga/dreapta (`#SHW` padding 0, `.shw-layout` gap 0) |
+
+---
+
+## SH1 — valori înghețate
+
+| Proprietate | Valoare |
+|-------------|---------|
+| `.shw-row-top` | `height/min/max: 46px` |
+| Text stânga portrait | `Shop Poze` |
+| Text dreapta portrait | `Ajută un suflet` |
+| Mijloc | `Shop EU-ADOPT` (neschimbat) |
+| Font lateral portrait | `clamp(0.58rem, 2.65vw, 0.72rem)` |
+
+---
+
+## Grilă produse — valori înghețate
+
+Lanț flex (umple mijlocul): `.shw-row-middle` → `.shw-row-middle-center` → `.shop-tabs-wrap` → `.shop-panels` → `.shop-panel.active` → `.shop-grid-*`
+
+| Proprietate | Valoare |
+|-------------|---------|
+| Coloane | `repeat(3, minmax(0, 1fr))` |
+| Rânduri vizibile | **4** (`--shop-portrait-visible-rows: 4`) |
+| Înălțime rând | `grid-auto-rows: calc(100% / 4)` |
+| Scroll | `overflow-y: auto` pe grilă |
+| Casete | `.shop-card` `min-height: 0`, `overflow: hidden` |
+
+---
+
+## Ce NU reintroduce
+
+- Coloană pub dreapta separată pe portrait
+- Padding lateral `#SHW` (`0.5rem`)
+- SH1 înălțime 100px sau text lung pe portrait
+- Grilă `1fr` pe toate rândurile fără cap 4 vizibile
+- `max-height: calc(4 * 123px)` fix vechi (înlocuit cu `calc(100%/4)` + flex)
+
+---
+
+## Deploy
+
+Modificări Shop aprobate de user → **commit + push + deploy Hetzner** (`.\scripts\deploy_hetzner_from_pc.ps1`).
+
+---
+
+## Rezumat
+
+**Shop portrait = FINALIZAT 13 iul 2026. SH1 46px scurt; 6 pub stânga; 3×4 produse + scroll; edge-to-edge. Nu schimba fără `1977` + OK.**
