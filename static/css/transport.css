@@ -1019,7 +1019,7 @@
 		position: relative;
 		box-sizing: border-box;
 		transform: none;
-		margin-top: 2cm;
+		margin-top: calc(2cm - 3mm);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-center {
 		display: none !important;
@@ -1031,12 +1031,12 @@
 		position: relative;
 		top: auto;
 		left: auto;
-		width: 118px;
-		height: 118px;
-		min-width: 96px;
-		min-height: 96px;
-		max-width: 118px;
-		max-height: 118px;
+		width: calc(118px - 5mm);
+		height: calc(118px - 5mm);
+		min-width: calc(96px - 5mm);
+		min-height: calc(96px - 5mm);
+		max-width: calc(118px - 5mm);
+		max-height: calc(118px - 5mm);
 		aspect-ratio: 1 / 1;
 		border-radius: 50%;
 		flex-shrink: 0;
@@ -1085,7 +1085,7 @@
 		text-overflow: ellipsis;
 	}
 	#TW #T2 .t2-hub {
-		margin-top: 2cm;
+		margin-top: calc(2cm - 3mm);
 	}
 	#TW .t1-portrait-open-btn {
 		display: block !important;
@@ -1675,7 +1675,7 @@
 /* Landscape touch — prioritate finală (evită suprascrieri portrait/max-width) */
 @media (orientation: landscape) and (max-height: 34em) and (hover: none) and (pointer: coarse) {
 	#TW #T2:not(.tw-t2--hub-open) .t2-hub {
-		margin-top: 2cm !important;
+		margin-top: calc(2cm - 3mm) !important;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circles {
 		transform: translate(0, 0) !important;
