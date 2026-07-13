@@ -5820,6 +5820,63 @@ def admin_analysis_presence_view(request):
 STAFF_ONBOARDING_LEADS_PER_PAGE = 100
 
 
+_ADD_USER_REGION_LABELS: dict[str, str] = {
+    "nv": "Nord-Vest",
+    "c": "Centru",
+    "ne": "Nord-Est",
+    "se": "Sud-Est",
+    "s": "Sud-Muntenia",
+    "bi": "București-Ilfov",
+    "sv": "Sud-Vest Oltenia",
+    "v": "Vest",
+}
+
+# Grupe pentru „acoperire națională” în 2 zile (4 regiuni + 4 regiuni).
+_ADD_USER_REGION_GROUPS: dict[str, tuple[str, ...]] = {
+    "a": ("nv", "c", "ne", "se"),
+    "b": ("v", "sv", "s", "bi"),
+}
+
+_ADD_USER_REGION_COUNTIES: dict[str, tuple[str, ...]] = {
+    # Nord-Vest
+    "nv": ("Bihor", "Bistrița-Năsăud", "Cluj", "Maramureș", "Satu Mare", "Sălaj"),
+    # Centru
+    "c": ("Alba", "Brașov", "Covasna", "Harghita", "Mureș", "Sibiu"),
+    # Nord-Est
+    "ne": ("Bacău", "Botoșani", "Iași", "Neamț", "Suceava", "Vaslui"),
+    # Sud-Est
+    "se": ("Brăila", "Buzău", "Constanța", "Galați", "Tulcea", "Vrancea"),
+    # Sud-Muntenia
+    "s": ("Argeș", "Călărași", "Dâmbovița", "Giurgiu", "Ialomița", "Prahova", "Teleorman"),
+    # București-Ilfov
+    "bi": ("București", "Ilfov"),
+    # Sud-Vest Oltenia
+    "sv": ("Dolj", "Gorj", "Mehedinți", "Olt", "Vâlcea"),
+    # Vest
+    "v": ("Arad", "Caraș-Severin", "Hunedoara", "Timiș"),
+}
+
+
+def _add_user_region_allowed_counties(qd: QueryDict) -> set[str]:
+    """Returnează setul de județe (canonic) permis de filtrele pe regiuni (Add USER)."""
+    from home.ro_location import resolve_county
+
+    reg = (qd.get("region") or "").strip().lower()
+    grp = (qd.get("region_group") or "").strip().lower()
+
+    # Dacă e setată regiunea, are prioritate față de grup (mai specific).
+    if reg in _ADD_USER_REGION_COUNTIES:
+        return {resolve_county(c) for c in _ADD_USER_REGION_COUNTIES[reg]}
+    if grp in _ADD_USER_REGION_GROUPS:
+        keys = _ADD_USER_REGION_GROUPS[grp]
+        out: set[str] = set()
+        for k in keys:
+            for c in _ADD_USER_REGION_COUNTIES.get(k, ()):
+                out.add(resolve_county(c))
+        return out
+    return set()
+
+
 def _add_user_filter_querydict(request) -> QueryDict:
     """GET sau, la POST cu `preserve_query`, aceleași parametri ca lista Add USER."""
     if request.method == "POST":
@@ -5842,6 +5899,20 @@ def _staff_onboarding_leads_filtered_qs_from_querydict(qd: QueryDict):
         StaffOnboardingLead.KIND_ADAPOST,
     ):
         qs = qs.filter(account_kind=kind)
+
+    # Filtru acoperire națională pe regiuni (A/B sau regiune specifică).
+    allowed_counties = _add_user_region_allowed_counties(qd)
+    if allowed_counties:
+        from home.ro_location import resolve_county
+
+        pks: list[int] = []
+        for pk, j, cj in qs.values_list("pk", "judet", "company_judet").iterator():
+            county = (j or "").strip() or (cj or "").strip()
+            if not county:
+                continue
+            if resolve_county(county) in allowed_counties:
+                pks.append(pk)
+        qs = qs.filter(pk__in=pks) if pks else qs.none()
     jud = (qd.get("judet") or "").strip()
     loc = (qd.get("oras") or "").strip()
     if jud or loc:
@@ -6275,6 +6346,9 @@ def admin_analysis_add_user_view(request):
             "open_manual_form": open_manual_form,
             "editing_lead": editing_lead,
             "filter_account_kind": (request.GET.get("account_kind") or "").strip(),
+            "filter_region_group": (request.GET.get("region_group") or "").strip().lower(),
+            "filter_region": (request.GET.get("region") or "").strip().lower(),
+            "region_labels": _ADD_USER_REGION_LABELS,
             "filter_judet": (request.GET.get("judet") or "").strip(),
             "filter_oras": (request.GET.get("oras") or "").strip(),
             "filter_collab_subtype": (request.GET.get("collab_subtype") or "").strip(),

@@ -1370,6 +1370,23 @@
 				</select>
 			</div>
 			<div>
+				<label for="f-reggrp">Grup regiuni</label>
+				<select id="f-reggrp" name="region_group">
+					<option value="" {% if not filter_region_group %}selected{% endif %}>— Toate —</option>
+					<option value="a" {% if filter_region_group == "a" %}selected{% endif %}>A (NV+Centru+NE+SE)</option>
+					<option value="b" {% if filter_region_group == "b" %}selected{% endif %}>B (Vest+SV+Sud+BI)</option>
+				</select>
+			</div>
+			<div>
+				<label for="f-reg">Regiune</label>
+				<select id="f-reg" name="region">
+					<option value="" {% if not filter_region %}selected{% endif %}>— Toate —</option>
+					{% for key,label in region_labels.items %}
+					<option value="{{ key }}" {% if filter_region == key %}selected{% endif %}>{{ label }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div>
 				<label for="f-jud">Județ</label>
 				<input id="f-jud" type="text" name="judet" list="county-list-adduser-filt" value="{{ filter_judet }}" placeholder="Scrie sau alege din listă" autocomplete="off" />
 				{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-adduser-filt" %}
