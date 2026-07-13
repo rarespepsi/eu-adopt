@@ -106,6 +106,13 @@ def _missing_pj_for_contract(user) -> list[str]:
 @require_http_methods(["GET", "POST"])
 def donatii_formular_230_view(request):
     """Formular 230 (3,5%) — completare + PDF."""
+    from home.prelaunch_soft_lock import (
+        prelaunch_soft_lock_active_for_user,
+        prelaunch_soft_lock_redirect,
+    )
+
+    if prelaunch_soft_lock_active_for_user(request.user):
+        return prelaunch_soft_lock_redirect(request, "donatii")
     sursa = _donatii_form_sursa(request)
     initial = _initial_formular_230(request.user)
     missing = _missing_pf_for_230(request.user)
@@ -163,7 +170,14 @@ def donatii_formular_230_view(request):
 
 @require_http_methods(["GET", "POST"])
 def donatii_contract_sponsorizare_view(request):
-    """Contract sponsorizare firmă — completare + PDF."""
+    """Contract sponsorizare — completare + PDF."""
+    from home.prelaunch_soft_lock import (
+        prelaunch_soft_lock_active_for_user,
+        prelaunch_soft_lock_redirect,
+    )
+
+    if prelaunch_soft_lock_active_for_user(request.user):
+        return prelaunch_soft_lock_redirect(request, "donatii")
     sursa = _donatii_form_sursa(request)
     initial = _initial_contract(request.user)
     missing = _missing_pj_for_contract(request.user)

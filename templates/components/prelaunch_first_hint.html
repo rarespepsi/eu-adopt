@@ -1,0 +1,12 @@
+{% if prelaunch_first_hint %}
+<div id="prelaunchFirstHint" class="prelaunch-first-hint" hidden
+	data-hint-key="{{ request.resolver_match.url_name|default:'' }}"
+	data-hint-text="{{ prelaunch_first_hint|escape }}">
+	<span class="prelaunch-first-hint__title">Sfat pre-lansare</span>
+	<span class="prelaunch-first-hint__text"></span>
+	<div class="prelaunch-first-hint__actions">
+		<button type="button" class="prelaunch-first-hint__btn prelaunch-first-hint__btn--ghost" data-prelaunch-hint-close>Închide</button>
+		<button type="button" class="prelaunch-first-hint__btn" data-prelaunch-hint-ok>Am înțeles</button>
+	</div>
+</div>
+{% endif %}

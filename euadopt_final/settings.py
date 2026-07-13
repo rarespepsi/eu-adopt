@@ -111,6 +111,14 @@ PUBLICITATE_PRELAUNCH_MAX_SLOTS_PER_USER = int(_os.environ.get("EUADOPT_PUB_MAX_
 PROMO_A2_PRELAUNCH_MAX_PER_USER = int(_os.environ.get("EUADOPT_PROMO_A2_MAX_PER_USER", "1") or "1")
 COLLAB_PRELAUNCH_MAX_OFFERS_PER_USER = int(_os.environ.get("EUADOPT_COLLAB_MAX_OFFERS_PER_USER", "1") or "1")
 PROMO_A2_BASE_PRICE_LEI = 10
+# Blocare soft Shop / donații / coș comercial în pre-lansare (implicit = PRELAUNCH_MODE). Staff poate testa.
+_mon_soft = _os.environ.get("EUADOPT_PRELAUNCH_MONETIZATION_SOFT_LOCK", "").strip().lower()
+if _mon_soft in ("0", "false", "no", "off"):
+    PRELAUNCH_MONETIZATION_SOFT_LOCK = False
+elif _mon_soft in ("1", "true", "yes", "on"):
+    PRELAUNCH_MONETIZATION_SOFT_LOCK = True
+else:
+    PRELAUNCH_MONETIZATION_SOFT_LOCK = PRELAUNCH_MODE
 
 MIDDLEWARE = [
     'euadopt_final.maintenance_middleware.MaintenanceMiddleware',

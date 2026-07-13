@@ -55,12 +55,14 @@
 	<link rel="stylesheet" href="{% static 'css/admin-analysis.css' %}?v=1" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/pub-default-covers.css' %}?v=8-pub-no-fb-click" type="text/css" media="screen" />
 	{% if population_banner_mode != 'hidden' %}<link rel="stylesheet" href="{% static 'css/population-org.css' %}?v=2" type="text/css" media="screen" />{% endif %}
+	{% if prelaunch_mode %}<link rel="stylesheet" href="{% static 'css/prelaunch-soft-lock.css' %}?v=1" type="text/css" media="screen" />{% endif %}
 </head>
 <body class="content_left scheme_red euadopt-intra-skin {{ body_class|default:'' }} {% block body_class %}{% endblock %}{% if population_org_nav_reduced %} population-org-nav{% endif %}" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}" data-site-cart-toggle-url="{% url 'site_cart_toggle' %}">
 	<section id="main_wrap">
 		{% block header %}
 		{% include "components/navbar_a0.html" %}
 		{% include "components/population_org_banner.html" %}
+		{% if prelaunch_mode %}{% include "components/prelaunch_soft_lock_banner.html" %}{% endif %}
 		{% endblock %}
 
 		{% block main_wrap_after_header %}
@@ -89,8 +91,10 @@
 	</section>
 	{% include "components/login_required_modal.html" %}
 	{% include "components/site_guide_widget.html" %}
+	{% if prelaunch_mode %}{% include "components/prelaunch_first_hint.html" %}{% endif %}
 	<script src="{% static 'js/wishlist.js' %}?v=5"></script>
 	<script src="{% static 'js/site-cart.js' %}?v=5"></script>
+	{% if prelaunch_mode %}<script src="{% static 'js/prelaunch-first-hints.js' %}?v=1"></script>{% endif %}
 	{% block extra_js %}{% endblock %}
 	<script>
 	(function () {

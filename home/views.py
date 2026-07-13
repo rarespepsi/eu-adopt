@@ -4278,6 +4278,13 @@ def transport_dispatch_rate_view(request, job_id: int):
 
 
 def custi_view(request):
+    from home.prelaunch_soft_lock import (
+        prelaunch_soft_lock_active_for_user,
+        prelaunch_soft_lock_redirect,
+    )
+
+    if prelaunch_soft_lock_active_for_user(request.user):
+        return prelaunch_soft_lock_redirect(request, "custi")
     """Pagina cuștilor / harta cuștilor autocarului."""
     from home.transport_nav import is_transport_sursa, transport_sursa_context
 
@@ -4292,6 +4299,13 @@ def donatii_generale_view(request):
     Pagină unică de donații (hub): intrări din HOME, PT, Servicii, Shop, Transport, Cuști.
     Parametri GET opționali: sursa, intent, loc (ex. L12), suma — afișați rezumat pentru continuitate.
     """
+    from home.prelaunch_soft_lock import (
+        prelaunch_soft_lock_active_for_user,
+        prelaunch_soft_lock_redirect,
+    )
+
+    if prelaunch_soft_lock_active_for_user(request.user):
+        return prelaunch_soft_lock_redirect(request, "donatii")
     from home.donatii_constants import EUADOPT_DONATION_ORG, EUADOPT_PARTNER_NGO
 
     from home.transport_nav import transport_sursa_context
@@ -4314,6 +4328,13 @@ def donatii_generale_view(request):
 
 def shop_view(request):
     """Pagina Shop (placeholder)."""
+    from home.prelaunch_soft_lock import (
+        prelaunch_soft_lock_active_for_user,
+        prelaunch_soft_lock_redirect,
+    )
+
+    if prelaunch_soft_lock_active_for_user(request.user):
+        return prelaunch_soft_lock_redirect(request, "shop")
     return render(
         request,
         "anunturi/shop.html",
@@ -4326,6 +4347,13 @@ def shop_view(request):
 
 def shop_comanda_personalizate_view(request):
     """Pagina simplă de comandă produse personalizate (tricouri, șepci, zgărzi gravate etc.)."""
+    from home.prelaunch_soft_lock import (
+        prelaunch_soft_lock_active_for_user,
+        prelaunch_soft_lock_redirect,
+    )
+
+    if prelaunch_soft_lock_active_for_user(request.user):
+        return prelaunch_soft_lock_redirect(request, "shop")
     return render(request, "anunturi/shop_comanda_personalizate.html", {})
 
 
@@ -4410,6 +4438,13 @@ def _shop_magazin_foto_enrich_row_with_collected(row: dict, idx: int, sums: dict
 
 def shop_magazin_foto_view(request):
     """Magazin foto: același lot inițial ca P2 (PT_P2_PAGE_SIZE), restul prin shop_magazin_foto_more."""
+    from home.prelaunch_soft_lock import (
+        prelaunch_soft_lock_active_for_user,
+        prelaunch_soft_lock_redirect,
+    )
+
+    if prelaunch_soft_lock_active_for_user(request.user):
+        return prelaunch_soft_lock_redirect(request, "shop")
     full = _shop_magazin_foto_slots_full()
     collected_sums, collected_counts = _shop_magazin_foto_collected_map()
     foto_slots = []
@@ -4435,6 +4470,18 @@ def shop_magazin_foto_view(request):
 @require_http_methods(["GET"])
 def shop_magazin_foto_more_view(request):
     """JSON: fragment HTML pentru următorul lot magazin foto (aceeași mărime lot ca P2)."""
+    from django.http import JsonResponse
+
+    from home.prelaunch_soft_lock import (
+        prelaunch_soft_lock_active_for_user,
+        PRELAUNCH_SOFT_MESSAGES,
+    )
+
+    if prelaunch_soft_lock_active_for_user(request.user):
+        return JsonResponse(
+            {"ok": False, "error": PRELAUNCH_SOFT_MESSAGES.get("shop", "")},
+            status=403,
+        )
     try:
         offset = int(request.GET.get("offset", "0") or "0")
     except (TypeError, ValueError):
@@ -4834,6 +4881,17 @@ def promo_a2_order_view(request, pk):
 
 @login_required
 def promo_a2_checkout_demo_view(request, pk):
+    from home.prelaunch_soft_lock import (
+        prelaunch_soft_lock_active_for_user,
+        prelaunch_soft_lock_redirect,
+    )
+
+    if prelaunch_soft_lock_active_for_user(request.user):
+        messages.info(
+            request,
+            "Plata demo pentru promovare este închisă în pre-lansare. Folosiți coșul general (activare gratuită).",
+        )
+        return redirect("promo_a2_order", pk=pk)
     pet = get_object_or_404(AnimalListing, pk=pk)
     if not pet.is_published or (pet.species or "").strip().lower() not in ("dog", "cat"):
         messages.info(
@@ -9185,6 +9243,15 @@ def site_cart_checkout_view(request):
     if not items:
         messages.info(request, "Coșul este gol. Adaugă articole înainte de plată.")
         return redirect("i_love_cos")
+    from home.prelaunch_soft_lock import (
+        PRELAUNCH_SOFT_MESSAGES,
+        prelaunch_checkout_lines_soft_blocked,
+        prelaunch_soft_lock_active_for_user,
+    )
+
+    if prelaunch_soft_lock_active_for_user(request.user) and prelaunch_checkout_lines_soft_blocked(lines):
+        messages.info(request, PRELAUNCH_SOFT_MESSAGES.get("checkout", ""))
+        return redirect("i_love_cos")
     eu_paid_lines, partner_direct_lines = _site_cart_split_fulfillment(lines)
     has_eu_paid = bool(eu_paid_lines)
     has_partner_direct = bool(partner_direct_lines)
@@ -9514,6 +9581,17 @@ def site_cart_toggle_view(request):
     }
     if kind not in allowed_kinds:
         return JsonResponse({"ok": False, "error": "invalid_kind"}, status=400)
+    from home.prelaunch_soft_lock import (
+        PRELAUNCH_SOFT_MESSAGES,
+        prelaunch_cart_kind_soft_blocked,
+        prelaunch_soft_lock_active_for_user,
+    )
+
+    if prelaunch_soft_lock_active_for_user(request.user) and prelaunch_cart_kind_soft_blocked(kind):
+        return JsonResponse(
+            {"ok": False, "error": PRELAUNCH_SOFT_MESSAGES.get("cart_add", "")},
+            status=403,
+        )
     if not ref_key or not title:
         return JsonResponse({"ok": False, "error": "missing_fields"}, status=400)
 

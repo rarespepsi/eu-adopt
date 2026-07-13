@@ -136,7 +136,22 @@ def _get_display_role(request):
 
 def prelaunch_mode(request):
     """True când modul PRE-LAUNCH este activ (EUADOPT_PRELAUNCH_MODE=1)."""
-    return {"prelaunch_mode": bool(getattr(settings, "PRELAUNCH_MODE", False))}
+    from home.prelaunch_soft_lock import (
+        PRELAUNCH_SOFT_LOCK_BANNER,
+        prelaunch_first_hint_for_url_name,
+        prelaunch_monetization_soft_lock_enabled,
+        prelaunch_soft_lock_active_for_user,
+    )
+
+    rm = getattr(request, "resolver_match", None)
+    url_name = getattr(rm, "url_name", None) if rm else None
+    return {
+        "prelaunch_mode": bool(getattr(settings, "PRELAUNCH_MODE", False)),
+        "prelaunch_soft_lock": prelaunch_soft_lock_active_for_user(getattr(request, "user", None)),
+        "prelaunch_soft_lock_banner": PRELAUNCH_SOFT_LOCK_BANNER,
+        "prelaunch_first_hint": prelaunch_first_hint_for_url_name(url_name or ""),
+        "prelaunch_monetization_soft_lock": prelaunch_monetization_soft_lock_enabled(),
+    }
 
 
 def population_org(request):
