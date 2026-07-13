@@ -870,10 +870,10 @@
 		min-height: 80px;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circles {
-		transform: translate(0, calc(1mm + 1cm)) !important;
+		transform: translate(0, 0) !important;
 	}
 	#TW #T2 .t2-circles {
-		transform: translate(0, calc(1mm + 1cm)) !important;
+		transform: translate(0, 0) !important;
 	}
 	#TW #T2 .t2-circle {
 		width: min(9.5vmin, 48px);
@@ -1019,7 +1019,7 @@
 		position: relative;
 		box-sizing: border-box;
 		transform: none;
-		margin-top: 0;
+		margin-top: 1cm;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-center {
 		display: none !important;
@@ -1064,7 +1064,7 @@
 		inset: 0;
 		width: auto;
 		height: auto;
-		transform: translate(0, calc(1mm + 1cm)) !important;
+		transform: translate(0, 0) !important;
 		pointer-events: none;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle-label {
@@ -1085,7 +1085,7 @@
 		text-overflow: ellipsis;
 	}
 	#TW #T2 .t2-hub {
-		margin-top: 0;
+		margin-top: 1cm;
 	}
 	#TW .t1-portrait-open-btn {
 		display: block !important;
@@ -1662,13 +1662,23 @@
 	}
 }
 
-/* Mobil restrâns: inel concentric pe bulina rotativă — 9 cercuri la aceeași distanță */
-@media (max-width: 767.98px) {
+/* Mobil portrait: inel concentric pe bulina rotativă */
+@media (max-width: 767.98px) and (orientation: portrait) {
 	#TW #T2:not(.tw-t2--hub-open) .t2-circles {
 		transform: translate(8mm, 3mm);
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circle--1 {
 		transform: translate(-50%, -50%) rotate(0deg) translateY(calc(-247.5% - 38px)) rotate(0deg);
+	}
+}
+
+/* Landscape touch — prioritate finală (evită suprascrieri portrait/max-width) */
+@media (orientation: landscape) and (max-height: 34em) and (hover: none) and (pointer: coarse) {
+	#TW #T2:not(.tw-t2--hub-open) .t2-hub {
+		margin-top: 1cm !important;
+	}
+	#TW #T2:not(.tw-t2--hub-open) .t2-circles {
+		transform: translate(0, 0) !important;
 	}
 }
 
