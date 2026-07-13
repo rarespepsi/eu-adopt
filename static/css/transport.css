@@ -1019,7 +1019,7 @@
 		position: relative;
 		box-sizing: border-box;
 		transform: none;
-		margin-top: 1cm;
+		margin-top: 2cm;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-center {
 		display: none !important;
@@ -1085,7 +1085,7 @@
 		text-overflow: ellipsis;
 	}
 	#TW #T2 .t2-hub {
-		margin-top: 1cm;
+		margin-top: 2cm;
 	}
 	#TW .t1-portrait-open-btn {
 		display: block !important;
@@ -1675,7 +1675,7 @@
 /* Landscape touch — prioritate finală (evită suprascrieri portrait/max-width) */
 @media (orientation: landscape) and (max-height: 34em) and (hover: none) and (pointer: coarse) {
 	#TW #T2:not(.tw-t2--hub-open) .t2-hub {
-		margin-top: 1cm !important;
+		margin-top: 2cm !important;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-circles {
 		transform: translate(0, 0) !important;
