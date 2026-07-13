@@ -25,10 +25,20 @@ from .models import (
     StaffOnboardingLead,
     TransportDispatchJob,
     TransportVeterinaryRequest,
+    UserProfile,
 )
 
 ANALYSIS_DESC_MIN_LEN = 80
 ANALYSIS_LIST_LIMIT = 100
+ADMIN_USER_ACTION_LABEL = "Deschide în Admin"
+
+_COLLAB_TYPE_LABELS = {
+    "cabinet": "Cabinet / clinică",
+    "cv": "Cabinet / clinică",
+    "servicii": "Servicii",
+    "magazin": "Magazin",
+    "transport": "Transport",
+}
 
 # Chei filtru ?filter= pentru paginile Dogs / Requests / Users / Alerts
 FILTER_ADOPTION_PENDING_48H = "adoption_pending_48h"
@@ -547,18 +557,98 @@ def _user_filter_role_label(user) -> str:
     return "—"
 
 
-def _users_filter_items_for_queryset(qs) -> list[dict[str, str | bool]]:
+def _user_analysis_role_badge(user) -> str:
+    if user.is_superuser:
+        return "Superuser"
+    if user.is_staff:
+        return "Staff"
+    profile = getattr(user, "account_profile", None)
+    if not profile:
+        return "—"
+    if profile.role == AccountProfile.ROLE_PF:
+        return "PF"
+    if profile.role == AccountProfile.ROLE_ORG:
+        if profile.is_public_shelter:
+            return "ONG · Adăpost public"
+        return "ONG"
+    if profile.role == AccountProfile.ROLE_COLLAB:
+        return "Colab"
+    return "—"
+
+
+def _user_analysis_display_name(user) -> str:
+    profile = getattr(user, "account_profile", None)
+    prof = getattr(user, "profile", None)
+    role = profile.role if profile else None
+
+    if role in (AccountProfile.ROLE_ORG, AccountProfile.ROLE_COLLAB):
+        org = ""
+        if prof:
+            org = (prof.company_display_name or prof.company_legal_name or "").strip()
+        contact = (user.first_name or "").strip() or (user.get_full_name() or "").strip()
+        if org and contact and org.casefold() not in contact.casefold():
+            return f"{contact} — {org}"
+        if org:
+            return org
+        if contact:
+            return contact
+        return user.username
+
+    name = (user.get_full_name() or "").strip()
+    return name or user.username
+
+
+def _user_analysis_primary_line(user) -> str:
+    badge = _user_analysis_role_badge(user)
+    name = _user_analysis_display_name(user)
+    email = (user.email or "").strip()
+    if email:
+        return f"[{badge}] {name} · {email}"
+    return f"[{badge}] {name} · @{user.username}"
+
+
+def _user_analysis_secondary_line(user) -> str:
+    parts: list[str] = []
+    profile = getattr(user, "account_profile", None)
+    prof = getattr(user, "profile", None)
+
+    if profile:
+        parts.append(_user_filter_role_label(user))
+        if profile.role == AccountProfile.ROLE_COLLAB and prof:
+            tip = (prof.collaborator_type or "").strip().lower()
+            if tip:
+                parts.append(_COLLAB_TYPE_LABELS.get(tip, tip))
+
+    if prof:
+        judet = (prof.company_judet or prof.judet or "").strip()
+        oras = (prof.company_oras or prof.oras or "").strip()
+        loc = ", ".join(x for x in (judet, oras) if x)
+        if loc:
+            parts.append(loc)
+
+    parts.append(f"@{user.username}")
+    parts.append(f"înreg. {user.date_joined:%d.%m.%Y %H:%M}")
+    if user.last_login:
+        parts.append(f"login {user.last_login:%d.%m.%Y %H:%M}")
+    return " · ".join(parts)
+
+
+def _user_filter_item(user) -> dict[str, str | bool]:
     User = get_user_model()
+    return _filter_item(
+        _user_analysis_primary_line(user),
+        _user_analysis_secondary_line(user),
+        action_url=_admin_change_url(User, user.pk),
+        action_label=ADMIN_USER_ACTION_LABEL,
+    )
+
+
+def _users_filter_items_for_queryset(qs) -> list[dict[str, str | bool]]:
     items: list[dict[str, str | bool]] = []
-    for u in qs.select_related("account_profile").order_by("-date_joined", "-last_login")[:ANALYSIS_LIST_LIMIT]:
-        items.append(
-            _filter_item(
-                u.email or u.username,
-                f"{_user_filter_role_label(u)} · înreg. {u.date_joined:%d.%m.%Y %H:%M}",
-                action_url=_admin_change_url(User, u.pk),
-                action_label="Admin — cont utilizator",
-            )
-        )
+    for u in qs.select_related("account_profile", "profile").order_by(
+        "-date_joined", "-last_login"
+    )[:ANALYSIS_LIST_LIMIT]:
+        items.append(_user_filter_item(u))
     return items
 
 
@@ -1174,15 +1264,8 @@ def staff_analysis_filter_context(filter_key: str | None) -> dict[str, Any]:
 
     elif filter_key == FILTER_ACCOUNTS_INACTIVE:
         qs = User.objects.filter(is_active=False, is_staff=False).order_by("-date_joined")[:ANALYSIS_LIST_LIMIT]
-        for u in qs:
-            items.append(
-                _filter_item(
-                    u.email or u.username,
-                    f"Înregistrat {u.date_joined:%d.%m.%Y %H:%M}",
-                    action_url=_admin_change_url(User, u.pk),
-                    action_label="Admin — cont utilizator",
-                )
-            )
+        for u in qs.select_related("account_profile", "profile"):
+            items.append(_user_filter_item(u))
 
     elif filter_key == FILTER_DOGS_NO_PHOTO:
         qs = (
