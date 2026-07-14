@@ -5975,7 +5975,7 @@ def _staff_onboarding_leads_filtered_qs_from_querydict(qd: QueryDict):
         qs = qs.filter(invite_mail_status=StaffOnboardingLead.INVITE_NEVER)
     if resend_only:
         qs = staff_invite_filter_resend_eligible_qs(qs)
-    return qs.order_by("-created_at").select_related("imported_user")
+    return qs.order_by("-created_at").select_related("imported_user", "imported_user__profile")
 
 
 def _staff_onboarding_leads_filtered_qs(request):
@@ -6324,6 +6324,15 @@ def admin_analysis_add_user_view(request):
         L.invite_link_expired = (
             staff_invite_is_link_expired(L, now) if L.invite_email_last_sent_at else None
         )
+        if L.imported_user_id:
+            prof = getattr(L.imported_user, "profile", None)
+            L.account_phone = ((prof.phone if prof else "") or "").strip()
+            L.account_last_login = L.imported_user.last_login
+            L.account_date_joined = L.imported_user.date_joined
+        else:
+            L.account_phone = ""
+            L.account_last_login = None
+            L.account_date_joined = None
     filter_qs = _staff_onboarding_leads_filtered_qs_from_querydict(_add_user_filter_querydict(request))
     invite_stats = staff_invite_campaign_stats(now)
     invite_stats["eligible_in_filter"] = staff_invite_count_eligible(filter_qs, now)
@@ -14519,3 +14528,25 @@ def site_guide_ask_view(request):
 
     bump_rate_limit(ip)
     return JsonResponse({"ok": True, **result})
+
+
+@login_required
+@csrf_protect
+@require_POST
+def user_onboarding_mark_seen_view(request):
+    """Marchează pagina de onboarding ca văzută (user nou)."""
+    from home.user_onboarding import (
+        mark_onboarding_page_seen,
+        onboarding_page_for_url_name,
+        user_onboarding_enabled,
+    )
+
+    if not user_onboarding_enabled():
+        return JsonResponse({"ok": False, "error": "Onboarding dezactivat."}, status=404)
+
+    page_key = (request.POST.get("page_key") or "").strip()
+    if not page_key or not onboarding_page_for_url_name(page_key):
+        return JsonResponse({"ok": False, "error": "Pagină invalidă."}, status=400)
+
+    mark_onboarding_page_seen(request.user, page_key)
+    return JsonResponse({"ok": True})

@@ -2197,3 +2197,28 @@ class SiteLoginEvent(models.Model):
     def __str__(self):
         return f"login user={self.user_id} @ {self.logged_in_at:%Y-%m-%d %H:%M}"
 
+
+class UserPageOnboardingSeen(models.Model):
+    """Prima vizită ghidată pe pagină — marcată o dată per user."""
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="onboarding_pages_seen",
+    )
+    page_key = models.CharField("Pagină", max_length=64, db_index=True)
+    seen_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Onboarding pagină văzut"
+        verbose_name_plural = "Onboarding pagini văzute"
+        constraints = [
+            models.UniqueConstraint(fields=["user", "page_key"], name="uniq_user_onboard_page"),
+        ]
+        indexes = [
+            models.Index(fields=["user", "page_key"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user_id} · {self.page_key}"
+

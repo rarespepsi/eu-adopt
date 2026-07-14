@@ -602,9 +602,17 @@ def _user_analysis_primary_line(user) -> str:
     badge = _user_analysis_role_badge(user)
     name = _user_analysis_display_name(user)
     email = (user.email or "").strip()
+    prof = getattr(user, "profile", None)
+    phone = ((prof.phone if prof else "") or "").strip()
     if email:
-        return f"[{badge}] {name} · {email}"
-    return f"[{badge}] {name} · @{user.username}"
+        line = f"[{badge}] {name} · {email}"
+        if phone:
+            line += f" · {phone}"
+        return line
+    line = f"[{badge}] {name} · @{user.username}"
+    if phone:
+        line += f" · {phone}"
+    return line
 
 
 def _user_analysis_secondary_line(user) -> str:

@@ -663,6 +663,9 @@
 		min-height: 0;
 	}
 	.add-user-td-invite-status { font-size: 0.78rem; white-space: nowrap; }
+	.add-user-td-account-login { font-size: 0.72rem; white-space: nowrap; line-height: 1.25; }
+	.add-user-td-account-login a { color: #7dd3fc; text-decoration: none; font-weight: 700; }
+	.add-user-td-account-login a:hover { text-decoration: underline; }
 	.add-user-invite-meta { font-size: 0.72rem; color: rgba(255,255,255,0.55); }
 	.add-user-invite-footer {
 		display: flex; flex-wrap: wrap; align-items: center; flex: 0 0 auto; margin: 0;
@@ -1627,6 +1630,7 @@
 							<th>Data</th>
 							<th>Email</th>
 							<th>Telefon</th>
+							<th>Login cont</th>
 							<th>Nume</th>
 							<th>Tip</th>
 							<th>Colab.</th>
@@ -1659,7 +1663,31 @@
 							</td>
 							<td>{{ lead.created_at|date:"d.m.Y H:i" }}</td>
 							<td>{{ lead.email }}</td>
-							<td>{{ lead.phone|default:"—" }}</td>
+							<td>
+								{% if lead.imported_user_id and lead.account_phone %}
+									{{ lead.account_phone }}
+									{% if lead.phone and lead.phone != lead.account_phone %}
+									<br><span class="add-user-invite-meta" title="Telefon din prospect">prospect: {{ lead.phone }}</span>
+									{% endif %}
+								{% elif lead.phone %}
+									{{ lead.phone }}
+								{% else %}
+									—
+								{% endif %}
+							</td>
+							<td class="add-user-td-account-login">
+								{% if lead.imported_user_id %}
+									{% if lead.account_last_login %}
+									<span title="Ultima logare @{{ lead.imported_user.username }}">{{ lead.account_last_login|date:"d.m.Y H:i" }}</span>
+									{% else %}
+									<span title="@{{ lead.imported_user.username }}">niciodată</span>
+									{% endif %}
+									<br><span class="add-user-invite-meta" title="Cont creat">înreg. {{ lead.account_date_joined|date:"d.m.Y H:i" }}</span>
+									<br><a href="{% url 'admin:auth_user_change' lead.imported_user_id %}" title="Deschide user în Django Admin">admin</a>
+								{% else %}
+									—
+								{% endif %}
+							</td>
 							<td>{% if lead.org_display_name and lead.org_display_name|lower != lead.display_name|lower %}{{ lead.display_name }} — {{ lead.org_display_name }}{% else %}{{ lead.display_name|default:lead.org_display_name|default:"—" }}{% endif %}</td>
 							<td>{{ lead.get_account_kind_display }}</td>
 							<td>{% if lead.collaborator_subtype %}{{ lead.get_collaborator_subtype_display }}{% else %}—{% endif %}</td>
@@ -1708,7 +1736,7 @@
 							</td>
 						</tr>
 						{% empty %}
-						<tr><td colspan="15">Niciun rând (schimbă filtrele sau importă CSV).</td></tr>
+						<tr><td colspan="16">Niciun rând (schimbă filtrele sau importă CSV).</td></tr>
 						{% endfor %}
 					</tbody>
 				</table>

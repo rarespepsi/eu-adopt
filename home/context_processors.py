@@ -188,6 +188,16 @@ def site_guide(request):
     }
 
 
+def user_onboarding(request):
+    """Context: banner + tur scurt la prima vizită (user nou)."""
+    from home.user_onboarding import onboarding_payload_for_request
+
+    payload = onboarding_payload_for_request(request)
+    return {
+        "user_onboarding_payload": payload,
+    }
+
+
 def wishlist_counts(request):
     """
     Injectează wishlist_count, nav_avatar_url și display_role în toate paginile.

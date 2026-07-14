@@ -80,6 +80,7 @@ urlpatterns = [
     path('politica-moderare-raportare-continut-interzis/', views.politica_moderare_view, name='politica_moderare'),
     path('contact/', views.contact_view, name='contact'),
     path('site-guide/ask/', views.site_guide_ask_view, name='site_guide_ask'),
+    path('onboarding/seen/', views.user_onboarding_mark_seen_view, name='user_onboarding_mark_seen'),
     path('mypet/', views.mypet_view, name='mypet'),
     path('mypet/adoptiile-mele/', views.mypet_adopter_adoptions_view, name='mypet_adopter_adoptions'),
     path('magazinul-meu/', views.magazinul_meu_view, name='magazinul_meu'),

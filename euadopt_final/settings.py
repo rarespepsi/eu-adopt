@@ -156,6 +156,7 @@ TEMPLATES = [
                 'home.context_processors.population_org',
                 'home.context_processors.sms_otp',
                 'home.context_processors.site_guide',
+                'home.context_processors.user_onboarding',
             ],
         },
     },
@@ -243,6 +244,14 @@ elif _site_guide_on in ("1", "true", "yes", "on"):
     SITE_GUIDE_ENABLED = True
 else:
     SITE_GUIDE_ENABLED = bool(DEBUG)
+
+# Ghid prima vizită (banner + tur) — user nou ≤ N zile de la înregistrare.
+_user_onboard_on = os.environ.get("EUADOPT_USER_ONBOARDING_ENABLED", "1").strip().lower()
+USER_ONBOARDING_ENABLED = _user_onboard_on in ("1", "true", "yes", "on")
+try:
+    USER_ONBOARDING_NEW_USER_DAYS = max(1, int(os.environ.get("EUADOPT_USER_ONBOARDING_NEW_USER_DAYS", "30")))
+except ValueError:
+    USER_ONBOARDING_NEW_USER_DAYS = 30
 _site_guide_gemini = os.environ.get("EUADOPT_SITE_GUIDE_GEMINI_ENABLED", "").strip().lower()
 SITE_GUIDE_GEMINI_ENABLED = _site_guide_gemini in ("1", "true", "yes", "on")
 EUADOPT_GEMINI_API_KEY = os.environ.get("EUADOPT_GEMINI_API_KEY", "").strip()

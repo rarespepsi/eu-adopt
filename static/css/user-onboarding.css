@@ -1,0 +1,108 @@
+.eu-user-onboard {
+	position: fixed;
+	inset: 0;
+	z-index: 12060;
+	pointer-events: none;
+}
+.eu-user-onboard.is-active {
+	pointer-events: auto;
+}
+.eu-user-onboard__backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(15, 23, 42, 0.52);
+	opacity: 0;
+	transition: opacity 0.2s ease;
+}
+.eu-user-onboard.is-active .eu-user-onboard__backdrop {
+	opacity: 1;
+}
+.eu-user-onboard__banner {
+	position: fixed;
+	left: 50%;
+	bottom: max(0.85rem, env(safe-area-inset-bottom));
+	transform: translateX(-50%);
+	width: min(28rem, calc(100vw - 1.25rem));
+	box-sizing: border-box;
+	padding: 0.85rem 0.95rem;
+	border-radius: 14px;
+	border: 1px solid rgba(21, 101, 192, 0.45);
+	background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+	box-shadow: 0 10px 32px rgba(0, 0, 0, 0.22);
+	pointer-events: auto;
+	z-index: 12062;
+}
+.eu-user-onboard__banner[hidden],
+.eu-user-onboard__tour[hidden] {
+	display: none !important;
+}
+.eu-user-onboard__title {
+	display: block;
+	font-size: 0.92rem;
+	font-weight: 800;
+	color: #0d47a1;
+	margin: 0 0 0.35rem;
+}
+.eu-user-onboard__text {
+	display: block;
+	font-size: 0.78rem;
+	line-height: 1.45;
+	color: #334155;
+	margin: 0 0 0.55rem;
+}
+.eu-user-onboard__hint {
+	display: block;
+	font-size: 0.68rem;
+	color: #64748b;
+	margin: 0 0 0.55rem;
+}
+.eu-user-onboard__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	justify-content: flex-end;
+}
+.eu-user-onboard__btn {
+	border: 1px solid #1565c0;
+	background: #1565c0;
+	color: #fff;
+	font-size: 0.74rem;
+	font-weight: 800;
+	padding: 0.32rem 0.72rem;
+	border-radius: 8px;
+	cursor: pointer;
+	font-family: inherit;
+}
+.eu-user-onboard__btn--ghost {
+	background: #fff;
+	color: #0d47a1;
+}
+.eu-user-onboard__tour {
+	position: fixed;
+	z-index: 12063;
+	max-width: min(18rem, calc(100vw - 1rem));
+	padding: 0.72rem 0.82rem;
+	border-radius: 12px;
+	border: 1px solid rgba(21, 101, 192, 0.4);
+	background: #fff;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+	pointer-events: auto;
+}
+.eu-user-onboard__tour-step {
+	font-size: 0.68rem;
+	font-weight: 700;
+	color: #64748b;
+	margin: 0 0 0.25rem;
+}
+.eu-user-onboard__tour-text {
+	font-size: 0.78rem;
+	line-height: 1.4;
+	color: #1e293b;
+	margin: 0 0 0.55rem;
+}
+.eu-user-onboard__target-highlight {
+	position: relative !important;
+	z-index: 12061 !important;
+	box-shadow: 0 0 0 3px #1565c0, 0 0 0 9999px rgba(15, 23, 42, 0.52) !important;
+	border-radius: 6px;
+}

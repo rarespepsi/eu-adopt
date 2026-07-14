@@ -1,0 +1,32 @@
+{% load static %}
+{% if user_onboarding_payload %}
+<link rel="stylesheet" href="{% static 'css/user-onboarding.css' %}?v=1" type="text/css" media="screen" />
+<div
+	id="eu-user-onboard"
+	class="eu-user-onboard is-active"
+	data-dismiss-url="{% url 'user_onboarding_mark_seen' %}"
+	aria-live="polite"
+>
+	<div class="eu-user-onboard__backdrop" aria-hidden="true"></div>
+	<div class="eu-user-onboard__banner" role="dialog" aria-labelledby="eu-user-onboard-title">
+		<span class="eu-user-onboard__title" id="eu-user-onboard-title"></span>
+		<span class="eu-user-onboard__text"></span>
+		<span class="eu-user-onboard__hint"></span>
+		<div class="eu-user-onboard__actions">
+			<button type="button" class="eu-user-onboard__btn eu-user-onboard__btn--ghost" data-onboard-skip>Sari peste</button>
+			<button type="button" class="eu-user-onboard__btn" data-onboard-tour>Continuă turul</button>
+		</div>
+	</div>
+	<div class="eu-user-onboard__tour" hidden role="dialog" aria-label="Tur pagină">
+		<p class="eu-user-onboard__tour-step"></p>
+		<p class="eu-user-onboard__tour-text"></p>
+		<div class="eu-user-onboard__actions">
+			<button type="button" class="eu-user-onboard__btn eu-user-onboard__btn--ghost" data-onboard-skip>Închide</button>
+			<button type="button" class="eu-user-onboard__btn" data-onboard-next hidden>Următorul</button>
+			<button type="button" class="eu-user-onboard__btn" data-onboard-done hidden>Am înțeles</button>
+		</div>
+	</div>
+</div>
+{{ user_onboarding_payload|json_script:"eu-user-onboard-data" }}
+<script src="{% static 'js/user-onboarding.js' %}?v=1"></script>
+{% endif %}
