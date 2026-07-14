@@ -4720,7 +4720,6 @@ def dog_profile_view(request, pk):
         "imagine_2": listing.photo_2,
         "imagine_3": listing.photo_3,
         "video": listing.video,
-        "imagine_fallback": DEMO_DOG_IMAGE,
         "judet": listing.county,
         "oras": listing.city,
         "sex": listing.sex,
@@ -4778,10 +4777,8 @@ def dog_profile_view(request, pk):
     )
 
     from home.population_onboarding import population_ui_restricted_for_user, user_may_adopt_animals
-    from home.prelaunch_soft_lock import (
-        PRELAUNCH_SOFT_MESSAGES,
-        prelaunch_soft_lock_active_for_user,
-    )
+    from home.population_simple_adoption import population_adoption_context_for_request
+    from home.prelaunch_soft_lock import PRELAUNCH_SOFT_MESSAGES
 
     viewer_can_adopt = bool(
         request.user.is_authenticated
@@ -4799,17 +4796,18 @@ def dog_profile_view(request, pk):
         and listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
         and not population_ui_restricted_for_user(request.user)
     )
-    # Buton „VREAU SĂ ADOPT”: vizibil (nu proprietar, neadoptat); inactiv în pre-lansare/populare.
-    pet_adopt_inactive_populare = prelaunch_soft_lock_active_for_user(request.user)
+    # Buton „VREAU SĂ ADOPT”: vizibil (nu proprietar, neadoptat).
+    # Populare: formular simplu + email (user logat); după lansare: flux complet.
     show_pet_adopt_corner = bool(
         listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
         and (not request.user.is_authenticated or request.user.pk != listing.owner_id)
     )
+    pop_adopt_ctx = population_adoption_context_for_request(request)
     ctx = {
         "pet": pet,
         "can_send_pet_message": can_send_pet_message,
         "show_pet_adopt_corner": show_pet_adopt_corner,
-        "pet_adopt_inactive_populare": pet_adopt_inactive_populare,
+        **pop_adopt_ctx,
         "pet_adopt_inactive_message": PRELAUNCH_SOFT_MESSAGES.get("adopt", ""),
         "pet_owner_id": listing.owner_id,
         "adoption_request_status": adoption_request_status,
@@ -10779,6 +10777,65 @@ def collab_contact_message_view(request):
         body=text,
         is_read=False,
     )
+    return JsonResponse({"ok": True})
+
+
+@login_required
+@require_POST
+@csrf_protect
+def pet_population_adoption_submit_view(request, pk: int):
+    """
+    Populare / pre-lansare: formular adopție simplu → email proprietar + copie adoptator.
+    Fără AdoptionRequest; fluxul complet revine când soft lock-ul e dezactivat.
+    """
+    from home.population_simple_adoption import (
+        parse_population_adoption_form,
+        population_adoption_recently_sent,
+        population_simple_adoption_active_for_user,
+        send_population_adoption_emails,
+    )
+
+    if not population_simple_adoption_active_for_user(request.user):
+        return JsonResponse(
+            {"ok": False, "error": "Formularul simplu de adopție nu este activ."},
+            status=403,
+        )
+
+    pet = get_object_or_404(AnimalListing, pk=pk, is_published=True)
+    _sync_animal_adoption_state(pet)
+    if pet.adoption_state == AnimalListing.ADOPTION_STATE_ADOPTED:
+        return JsonResponse({"ok": False, "error": "Acest animal este deja adoptat."}, status=400)
+    if pet.owner_id == request.user.id:
+        return JsonResponse({"ok": False, "error": "Nu poți solicita adopția propriului anunț."}, status=400)
+
+    from home.population_onboarding import user_may_adopt_animals
+
+    if not user_may_adopt_animals(request.user):
+        return JsonResponse(
+            {"ok": False, "error": "Tipul de cont nu poate solicita adopții."},
+            status=403,
+        )
+
+    if population_adoption_recently_sent(request.user.pk, pet.pk):
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "Ai trimis deja o cerere pentru acest animal astăzi. Proprietarul te va contacta.",
+            },
+            status=429,
+        )
+
+    form_data, errors = parse_population_adoption_form(request.POST)
+    if errors:
+        return JsonResponse({"ok": False, "error": " ".join(errors)}, status=400)
+
+    ok, err = send_population_adoption_emails(
+        pet=pet,
+        adopter_user=request.user,
+        form=form_data,
+    )
+    if not ok:
+        return JsonResponse({"ok": False, "error": err or "Eroare la trimitere."}, status=500)
     return JsonResponse({"ok": True})
 
 

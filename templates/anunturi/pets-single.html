@@ -15,10 +15,6 @@
 		{% if pet.imagine %}
 		<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ pet.imagine.url }}" />
 		<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ pet.imagine.url }}" />
-		{% else %}
-		{% static pet.imagine_fallback as pet_og_image_url %}
-		<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ pet_og_image_url }}" />
-		<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ pet_og_image_url }}" />
 		{% endif %}
 		<meta property="og:image:alt" content="{{ pet.nume }} – adopție EU-ADOPT" />
 		<meta name="twitter:card" content="summary_large_image" />
@@ -194,6 +190,12 @@
 				width: 100%;
 				height: 100%;
 			}
+			/* Sloturi fără upload user — fundal gol, fără poze demo */
+			.mypet-fisa-photo-1 .mypet-fisa-photo-preview { background: #ffe082; }
+			.mypet-fisa-photo-2 .mypet-fisa-photo-preview { background: #b3e5fc; }
+			.mypet-fisa-photo-3 .mypet-fisa-photo-preview { background: #80cbc4; }
+			.mypet-fisa-photo-slot.has-photo .mypet-fisa-photo-preview { background: #d0d0d0; }
+			.mypet-fisa-photo-slot:not(.has-photo) .mypet-fisa-photo-preview { cursor: default; }
 			.mypet-fisa-col-photos .mypet-fisa-video-btn-overlay {
 				display: flex;
 				align-items: center;
@@ -1282,6 +1284,55 @@
 			.pet-adopt-choice-modal__btn--primary:hover {
 				filter: brightness(1.05);
 			}
+			.pet-pop-adopt-form-panel {
+				max-width: min(520px, calc(100vw - 1.5rem));
+				max-height: min(90vh, 720px);
+				overflow-y: auto;
+			}
+			.pet-pop-adopt-form__grid {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 0.55rem 0.65rem;
+				margin-bottom: 0.65rem;
+			}
+			.pet-pop-adopt-form__field--full { grid-column: 1 / -1; }
+			.pet-pop-adopt-form__field > span:first-child {
+				display: block;
+				font-size: 0.72rem;
+				font-weight: 700;
+				margin-bottom: 0.15rem;
+				color: #333;
+			}
+			.pet-pop-adopt-form__field input[type="text"],
+			.pet-pop-adopt-form__field input[type="email"],
+			.pet-pop-adopt-form__field input[type="tel"],
+			.pet-pop-adopt-form__field select,
+			.pet-pop-adopt-form__field textarea {
+				width: 100%;
+				box-sizing: border-box;
+				padding: 0.35rem 0.45rem;
+				border: 1px solid #ccc;
+				border-radius: 6px;
+				font-size: 0.85rem;
+			}
+			.pet-pop-adopt-form__phone {
+				display: flex;
+				gap: 0.35rem;
+			}
+			.pet-pop-adopt-form__phone select { flex: 0 0 5.5rem; }
+			.pet-pop-adopt-form__phone input { flex: 1; min-width: 0; }
+			.pet-pop-adopt-form__check {
+				display: flex;
+				align-items: flex-start;
+				gap: 0.4rem;
+				font-size: 0.78rem;
+				line-height: 1.35;
+			}
+			.pet-pop-adopt-form__check input { margin-top: 0.15rem; flex-shrink: 0; }
+			.pet-pop-adopt-form__check a { color: #1565c0; }
+			@media (max-width: 480px) {
+				.pet-pop-adopt-form__grid { grid-template-columns: 1fr; }
+			}
 
 			/* Mesaj în-app (înlocuiește alert nativ) */
 			.pet-app-msg-modal {
@@ -1365,30 +1416,24 @@
 								<section id="MW" class="mypet-fisa-wrap">
 									<div class="mypet-fisa-inner">
 										<div class="mypet-fisa-col mypet-fisa-col-photos">
-											<div class="mypet-fisa-photo-slot mypet-fisa-photo-1">
+											<div class="mypet-fisa-photo-slot mypet-fisa-photo-1{% if pet.imagine %} has-photo{% endif %}">
 												<div class="mypet-fisa-photo-preview" aria-hidden="true">
 													{% if pet.imagine %}
 														<img src="{% pet_thumb_url pet.imagine 320 %}" data-modal-src="{% pet_thumb_url pet.imagine 1200 %}" alt="Poza 1" class="img-crop js-pet-media-thumb" data-media-type="image" loading="eager" decoding="async" />
-													{% else %}
-														<img src="{% static pet.imagine_fallback|default:'images/pets/charlie-275x275.jpg' %}" alt="Poza 1" class="img-crop js-pet-media-thumb" data-media-type="image" />
 													{% endif %}
 												</div>
 											</div>
-											<div class="mypet-fisa-photo-slot mypet-fisa-photo-2">
+											<div class="mypet-fisa-photo-slot mypet-fisa-photo-2{% if pet.imagine_2 %} has-photo{% endif %}">
 												<div class="mypet-fisa-photo-preview" aria-hidden="true">
 													{% if pet.imagine_2 %}
 														<img src="{% pet_thumb_url pet.imagine_2 320 %}" data-modal-src="{% pet_thumb_url pet.imagine_2 1200 %}" alt="Poza 2" class="img-crop js-pet-media-thumb" data-media-type="image" loading="lazy" decoding="async" />
-													{% else %}
-														<img src="{% static pet.imagine_fallback|default:'images/pets/charlie-275x275.jpg' %}" alt="Poza 2" class="img-crop js-pet-media-thumb" data-media-type="image" />
 													{% endif %}
 												</div>
 											</div>
-											<div class="mypet-fisa-photo-slot mypet-fisa-photo-3">
+											<div class="mypet-fisa-photo-slot mypet-fisa-photo-3{% if pet.imagine_3 %} has-photo{% endif %}">
 												<div class="mypet-fisa-photo-preview" aria-hidden="true">
 													{% if pet.imagine_3 %}
 														<img src="{% pet_thumb_url pet.imagine_3 320 %}" data-modal-src="{% pet_thumb_url pet.imagine_3 1200 %}" alt="Poza 3" class="img-crop js-pet-media-thumb" data-media-type="image" loading="lazy" decoding="async" />
-													{% else %}
-														<img src="{% static pet.imagine_fallback|default:'images/pets/charlie-275x275.jpg' %}" alt="Poza 3" class="img-crop js-pet-media-thumb" data-media-type="image" />
 													{% endif %}
 												</div>
 											</div>
@@ -1590,6 +1635,7 @@
 													role="button"
 													tabindex="0"
 													data-adopt-url="{% url 'pet_adoption_request' pet.pk %}"
+													{% if pet_adopt_simple_populare %}data-population-form-url="{% url 'pet_population_adoption_submit' pet.pk %}" data-simple-populare="1"{% endif %}
 													data-transport-url="{% url 'transport' %}?from_adoption=1&pet={{ pet.pk }}"
 													data-servicii-url="{% url 'servicii' %}"
 													data-login-url="{% url 'login' %}"
@@ -1630,7 +1676,72 @@
 			</div>
 		</div>
 
-		{% if show_pet_adopt_corner and user.is_authenticated %}
+		{% if show_pet_adopt_corner and user.is_authenticated and pet_adopt_simple_populare %}
+		<div id="petPopAdoptFormModal" class="pet-adopt-choice-modal" hidden aria-hidden="true">
+			<div class="pet-adopt-choice-modal__backdrop" id="petPopAdoptFormBackdrop"></div>
+			<div class="pet-adopt-choice-modal__panel pet-pop-adopt-form-panel" role="dialog" aria-modal="true" aria-labelledby="petPopAdoptFormTitle">
+				<h3 class="pet-adopt-choice-modal__title" id="petPopAdoptFormTitle">Cerere de adopție</h3>
+				<p class="pet-adopt-choice-modal__text">Completează formularul. Datele tale vor fi trimise proprietarului / adăpostului, care te va contacta direct.</p>
+				<form id="petPopAdoptForm" class="pet-pop-adopt-form" novalidate>
+					{% csrf_token %}
+					<div class="pet-pop-adopt-form__grid">
+						<label class="pet-pop-adopt-form__field">
+							<span>Nume *</span>
+							<input type="text" name="last_name" required autocomplete="family-name" value="{{ pet_adopt_form_prefill.last_name|default:'' }}" />
+						</label>
+						<label class="pet-pop-adopt-form__field">
+							<span>Prenume *</span>
+							<input type="text" name="first_name" required autocomplete="given-name" value="{{ pet_adopt_form_prefill.first_name|default:'' }}" />
+						</label>
+						<label class="pet-pop-adopt-form__field pet-pop-adopt-form__field--full">
+							<span>Email *</span>
+							<input type="email" name="email" required autocomplete="email" value="{{ pet_adopt_form_prefill.email|default:'' }}" />
+						</label>
+						<label class="pet-pop-adopt-form__field pet-pop-adopt-form__field--full">
+							<span>Telefon *</span>
+							<span class="pet-pop-adopt-form__phone">
+								<select name="phone_country" aria-label="Prefix telefon">
+									<option value="+40" {% if not pet_adopt_form_prefill.phone_country or pet_adopt_form_prefill.phone_country == '+40' %}selected{% endif %}>RO +40</option>
+									<option value="+39" {% if pet_adopt_form_prefill.phone_country == '+39' %}selected{% endif %}>IT +39</option>
+									<option value="+33" {% if pet_adopt_form_prefill.phone_country == '+33' %}selected{% endif %}>FR +33</option>
+									<option value="+49" {% if pet_adopt_form_prefill.phone_country == '+49' %}selected{% endif %}>DE +49</option>
+									<option value="+44" {% if pet_adopt_form_prefill.phone_country == '+44' %}selected{% endif %}>UK +44</option>
+								</select>
+								<input type="tel" name="phone" required autocomplete="tel" value="{{ pet_adopt_form_prefill.phone|default:'' }}" />
+							</span>
+						</label>
+						<label class="pet-pop-adopt-form__field">
+							<span>Județ *</span>
+							{% include "anunturi/includes/ro_county_select.html" with select_id="petPopAdoptJudet" select_name="judet" current=pet_adopt_form_prefill.judet profile_editable=True %}
+						</label>
+						<label class="pet-pop-adopt-form__field">
+							<span>Oraș *</span>
+							{% include "anunturi/includes/ro_city_select.html" with select_id="petPopAdoptOras" select_name="oras" current=pet_adopt_form_prefill.oras profile_editable=True %}
+						</label>
+						<label class="pet-pop-adopt-form__field pet-pop-adopt-form__field--full">
+							<span>Mesaj (opțional)</span>
+							<textarea name="mesaj" rows="3" maxlength="2000" placeholder="De ce vrei să adopți? Ai curte, alte animale…"></textarea>
+						</label>
+						<label class="pet-pop-adopt-form__check pet-pop-adopt-form__field--full">
+							<input type="checkbox" name="accept_termeni" required />
+							<span>Accept <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">Termenii și condițiile</a> *</span>
+						</label>
+						<label class="pet-pop-adopt-form__check pet-pop-adopt-form__field--full">
+							<input type="checkbox" name="accept_gdpr" required />
+							<span>Accept <a href="{% url 'politica_confidentialitate' %}" target="_blank" rel="noopener">Politica de confidențialitate (GDPR)</a> *</span>
+						</label>
+					</div>
+					<div class="pet-adopt-choice-modal__actions">
+						<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--secondary" id="petPopAdoptFormCancel">Anulează</button>
+						<button type="submit" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--primary" id="petPopAdoptFormSubmit">Trimite cererea</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		{% include "anunturi/includes/ro_county_locality_select_script.html" with judet_select_id="petPopAdoptJudet" oras_select_id="petPopAdoptOras" %}
+		{% endif %}
+
+		{% if show_pet_adopt_corner and user.is_authenticated and not pet_adopt_simple_populare %}
 		<div id="petAdoptChoiceModal" class="pet-adopt-choice-modal" {% if not adoption_after_transport %}hidden{% endif %} aria-hidden="{% if adoption_after_transport %}false{% else %}true{% endif %}">
 			<div class="pet-adopt-choice-modal__backdrop" id="petAdoptChoiceBackdrop"></div>
 			<div class="pet-adopt-choice-modal__panel" role="dialog" aria-modal="true" aria-labelledby="petAdoptChoiceTitle">
@@ -2096,8 +2207,12 @@
 			}
 			var adoptCorner = document.getElementById("petAdoptCorner");
 			var adoptChoiceModal = document.getElementById("petAdoptChoiceModal");
+			var popAdoptFormModal = document.getElementById("petPopAdoptFormModal");
+			var popAdoptForm = document.getElementById("petPopAdoptForm");
 			if (adoptCorner) {
 				var adoptUrl = adoptCorner.getAttribute("data-adopt-url") || "";
+				var popFormUrl = adoptCorner.getAttribute("data-population-form-url") || "";
+				var simplePopulare = adoptCorner.getAttribute("data-simple-populare") === "1";
 				var transportUrl = adoptCorner.getAttribute("data-transport-url") || "";
 				var serviciiUrl = adoptCorner.getAttribute("data-servicii-url") || "";
 				var loginBase = adoptCorner.getAttribute("data-login-url") || "";
@@ -2184,6 +2299,68 @@
 				if (afterTransportMode && adoptChoiceModal) {
 					document.body.style.overflow = "hidden";
 				}
+				function closePopAdoptFormModal() {
+					if (!popAdoptFormModal) return;
+					popAdoptFormModal.hidden = true;
+					popAdoptFormModal.setAttribute("aria-hidden", "true");
+					document.body.style.overflow = "";
+				}
+				function openPopAdoptFormModal() {
+					if (!popAdoptFormModal) return;
+					popAdoptFormModal.hidden = false;
+					popAdoptFormModal.setAttribute("aria-hidden", "false");
+					document.body.style.overflow = "hidden";
+				}
+				async function submitPopAdoptForm(ev) {
+					if (ev) ev.preventDefault();
+					if (!popFormUrl || !popAdoptForm) return;
+					if (!popAdoptForm.reportValidity()) return;
+					var submitBtn = document.getElementById("petPopAdoptFormSubmit");
+					var oldSubmit = submitBtn ? submitBtn.textContent : "Trimite cererea";
+					if (submitBtn) {
+						submitBtn.disabled = true;
+						submitBtn.textContent = "Se trimite...";
+					}
+					try {
+						var body = new URLSearchParams(new FormData(popAdoptForm));
+						var resp = await fetch(popFormUrl, {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+								"X-CSRFToken": getCookie("csrftoken")
+							},
+							credentials: "same-origin",
+							body: body.toString()
+						});
+						var data = {};
+						try { data = await resp.json(); } catch (eJson) {}
+						if (!resp.ok || !data.ok) {
+							throw new Error((data && data.error) || "Nu am putut trimite cererea.");
+						}
+						closePopAdoptFormModal();
+						showPetAppMessage(
+							"Cererea ta a fost trimisă. Proprietarul / adăpostul te va contacta direct pe email sau telefon."
+						);
+					} catch (errPop) {
+						showPetAppMessage(errPop.message || "Eroare la trimitere.");
+					} finally {
+						if (submitBtn) {
+							submitBtn.disabled = false;
+							submitBtn.textContent = oldSubmit;
+						}
+					}
+				}
+				function openAdoptFlow() {
+					if (simplePopulare && popAdoptFormModal) {
+						openPopAdoptFormModal();
+						return;
+					}
+					if (afterTransportMode) {
+						submitAdoptRequest();
+						return;
+					}
+					openAdoptChoiceModal();
+				}
 				var bd = document.getElementById("petAdoptChoiceBackdrop");
 				if (bd) bd.addEventListener("click", closeAdoptChoiceModal);
 				var btnCancel = document.getElementById("petAdoptChoiceCancel");
@@ -2208,10 +2385,19 @@
 					closeAdoptChoiceModal();
 					submitAdoptRequest();
 				});
+				var popBd = document.getElementById("petPopAdoptFormBackdrop");
+				var popCancel = document.getElementById("petPopAdoptFormCancel");
+				if (popBd) popBd.addEventListener("click", closePopAdoptFormModal);
+				if (popCancel) popCancel.addEventListener("click", closePopAdoptFormModal);
+				if (popAdoptForm) popAdoptForm.addEventListener("submit", submitPopAdoptForm);
 				document.addEventListener("keydown", function(ev) {
 					if (ev.key === "Escape" && adoptChoiceModal && !adoptChoiceModal.hidden) {
 						ev.preventDefault();
 						closeAdoptChoiceModal();
+					}
+					if (ev.key === "Escape" && popAdoptFormModal && !popAdoptFormModal.hidden) {
+						ev.preventDefault();
+						closePopAdoptFormModal();
 					}
 				});
 				adoptCorner.addEventListener("click", function(e) {
@@ -2225,11 +2411,7 @@
 						window.location.href = loginBase + q;
 						return;
 					}
-					if (afterTransportMode) {
-						submitAdoptRequest();
-						return;
-					}
-					openAdoptChoiceModal();
+					openAdoptFlow();
 				});
 				adoptCorner.addEventListener("keydown", function(e) {
 					if (e.key === "Enter" || e.key === " ") {
@@ -2243,8 +2425,7 @@
 							window.location.href = loginBase + q2;
 							return;
 						}
-						if (afterTransportMode) submitAdoptRequest();
-						else openAdoptChoiceModal();
+						openAdoptFlow();
 					}
 				});
 			}

@@ -145,6 +145,11 @@ urlpatterns = [
     path('pets/<int:pk>/track/', views.pet_track_event_view, name='pet_track_event'),
     path('pets/<int:pk>/message/', views.pet_send_message_view, name='pet_send_message'),
     path('pets/<int:pk>/adopt/request/', views.pet_adoption_request_view, name='pet_adoption_request'),
+    path(
+        'pets/<int:pk>/adopt/population-form/',
+        views.pet_population_adoption_submit_view,
+        name='pet_population_adoption_submit',
+    ),
     path('adoption/bonus/toggle/', views.adoption_bonus_offer_toggle_view, name='adoption_bonus_offer_toggle'),
     path('adoption/bonus/cart-unlock/', views.adoption_bonus_cart_unlock_view, name='adoption_bonus_cart_unlock'),
     # Preferă query (?t=&d=): tokenul semnat conține ":" — unii clienți de email strică linkurile în path.

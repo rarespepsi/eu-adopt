@@ -115,7 +115,7 @@ class PrelaunchSoftLockTests(TestCase):
         self.assertFalse(data.get("ok"))
         self.assertIn("populare", (data.get("error") or "").lower())
 
-    def test_pet_ficha_shows_inactive_adopt_button(self):
+    def test_pet_ficha_shows_adopt_button_without_inactive_label(self):
         owner = User.objects.create_user(username=f"own2_{uuid.uuid4().hex[:8]}", password="x")
         pet = AnimalListing.objects.create(
             owner=owner,
@@ -126,5 +126,4 @@ class PrelaunchSoftLockTests(TestCase):
         resp = self.client.get(reverse("pets_single", args=[pet.pk]))
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "VREAU SĂ ADOPT")
-        self.assertContains(resp, "Inactiv în perioada de populare")
-        self.assertContains(resp, "pet-adopt-corner--inactive")
+        self.assertNotContains(resp, "Inactiv în perioada de populare")
