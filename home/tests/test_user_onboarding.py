@@ -33,6 +33,36 @@ class UserOnboardingTests(TestCase):
         self.assertTrue(user_has_seen_onboarding_page(u, "home"))
 
     @override_settings(PRELAUNCH_MODE=False, USER_ONBOARDING_ENABLED=True)
+    def test_all_phase_page_keys_registered(self):
+        from home.user_onboarding import ONBOARDING_PAGES
+
+        expected = {
+            "home",
+            "mypet",
+            "publicitate_harta",
+            "pets_all",
+            "servicii",
+            "i_love",
+            "transport",
+            "shop",
+            "publicitate_cos",
+            "collab_offers_control",
+            "pets_single",
+            "i_love_cos",
+        }
+        self.assertEqual(set(ONBOARDING_PAGES.keys()), expected)
+
+    @override_settings(PRELAUNCH_MODE=False, USER_ONBOARDING_ENABLED=True)
+    def test_dismiss_endpoint_phase2(self):
+        u = User.objects.create_user(username="onb3", email="onb3@t.local", password="Secret1!")
+        c = Client()
+        c.force_login(u)
+        for key in ("servicii", "transport", "pets_single"):
+            r = c.post(reverse("user_onboarding_mark_seen"), {"page_key": key})
+            self.assertEqual(r.status_code, 200, msg=key)
+        self.assertEqual(UserPageOnboardingSeen.objects.filter(user=u).count(), 3)
+
+    @override_settings(PRELAUNCH_MODE=False, USER_ONBOARDING_ENABLED=True)
     def test_dismiss_endpoint(self):
         u = User.objects.create_user(username="onb1", email="onb1@t.local", password="Secret1!")
         c = Client()

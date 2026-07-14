@@ -93,6 +93,215 @@ ONBOARDING_PAGES: dict[str, OnboardingPage] = {
             ),
         ),
     ),
+    # —— Faza 2 ——
+    "pets_all": OnboardingPage(
+        page_key="pets_all",
+        banner_title="Prietenul tău — animale spre adopție",
+        banner_text=(
+            "Răsfoiești anunțurile publicate de adăposturi și asociații. "
+            "Filtrezi după preferințe și deschizi fișa animalului pentru detalii."
+        ),
+        steps=(
+            OnboardingStep("#P1", "Banda de sus — mesaje și noutăți de pe platformă."),
+            OnboardingStep(
+                "#P4",
+                "Filtre și acțiuni — Găsește-mi perechea, Filtre (județ, vârstă, talie), Ajută un suflet.",
+            ),
+            OnboardingStep(
+                "#P2",
+                "Grila de animale — click pe card pentru fișă; inimioara salvează în I Love.",
+            ),
+            OnboardingStep(
+                "#menu-main-menu",
+                "Meniul navbar — acces rapid la MyPet, Servicii, Transport etc.",
+            ),
+        ),
+    ),
+    "servicii": OnboardingPage(
+        page_key="servicii",
+        banner_title="Servicii — parteneri EU-Adopt",
+        banner_text=(
+            "Găsești cabinete veterinare, magazine și saloane. "
+            "Filtrezi după județ/oraș și specie, apoi deschizi oferta."
+        ),
+        steps=(
+            OnboardingStep(
+                "#sw-judet",
+                "Filtre geo — Județ și Oraș/Loc; Resetează șterge selecția.",
+            ),
+            OnboardingStep(
+                ".sw-s2-mid-tabs",
+                "Tab-uri: Cabinete, Magazine, Saloane — categorii de oferte.",
+            ),
+            OnboardingStep(
+                ".sw-s2-1-grid",
+                "Grila oferte — click pe imagine sau card pentru detalii și coș I Love.",
+            ),
+            OnboardingStep(
+                "#S1",
+                "Banda S1 — promoții și informații parteneri.",
+            ),
+        ),
+    ),
+    "i_love": OnboardingPage(
+        page_key="i_love",
+        banner_title="I Love — favoritele tale",
+        banner_text=(
+            "Animalele marcate cu inimioară apar aici. "
+            "Poți reveni la fișă, trimite mesaje sau promova un anunț."
+        ),
+        steps=(
+            OnboardingStep(
+                ".ilove-wire__head",
+                "Titlu pagină — lista animalelor salvate cu inimioară.",
+            ),
+            OnboardingStep(
+                ".ilove-pets-grid",
+                "Carduri animale — click pentru fișă; plicul deschide mesajele.",
+            ),
+            OnboardingStep(
+                ".ilove-wire__col--left",
+                "Casete publicitate stânga — promoții parteneri (dacă sunt active).",
+            ),
+        ),
+    ),
+    # —— Faza finală (restul navbar + fluxuri partener) ——
+    "transport": OnboardingPage(
+        page_key="transport",
+        banner_title="Transport — mutare animale",
+        banner_text=(
+            "Cerere de transport pentru adopție sau alte deplasări. "
+            "Completezi locurile, data și detaliile; transportatorii răspund din platformă."
+        ),
+        steps=(
+            OnboardingStep(
+                "#T1",
+                "Formular cerere — plecare, destinație, dată, detalii animal.",
+            ),
+            OnboardingStep(
+                "#T2",
+                "Informații și status — urmărești cererea ta sau ofertele transportatorilor.",
+            ),
+            OnboardingStep(
+                "#T3",
+                "Zone auxiliare — linkuri utile, donații cuști/autocar (când sunt active).",
+            ),
+        ),
+    ),
+    "shop": OnboardingPage(
+        page_key="shop",
+        banner_title="Shop EU-Adopt",
+        banner_text=(
+            "Produse pentru animale: câini, pisici, accesorii. "
+            "Poți accesa și magazinul foto ONG sau donațiile din banda de sus."
+        ),
+        steps=(
+            OnboardingStep(
+                ".shw-sh1",
+                "Banda SH1 — Shop Poze ONG și link donații Ajută un suflet.",
+            ),
+            OnboardingStep(
+                ".shop-tabs",
+                "Tab-uri specie — Câini, Pisici, Accesorii.",
+            ),
+            OnboardingStep(
+                ".shop-grid",
+                "Produse — click pe card pentru detalii și coș (după lansare).",
+            ),
+        ),
+    ),
+    "publicitate_cos": OnboardingPage(
+        page_key="publicitate_cos",
+        banner_title="Coș publicitate",
+        banner_text=(
+            "Verifici sloturile alese, perioadele și treci la plată / activare. "
+            "În pre-lansare poate fi activare gratuită."
+        ),
+        steps=(
+            OnboardingStep(
+                ".pub-top-tabs",
+                "Schimbi secțiunea hărții (HOME, PT, I Love…) pentru alte sloturi.",
+            ),
+            OnboardingStep(
+                ".pub-c3",
+                "Rezumat slot selectat — modifici perioada sau cantitatea.",
+            ),
+            OnboardingStep(
+                ".pub-tab--pub-flow",
+                "Navigare — înapoi la hartă tarife sau comenzile mele.",
+            ),
+        ),
+    ),
+    "collab_offers_control": OnboardingPage(
+        page_key="collab_offers_control",
+        banner_title="Magazinul meu — oferte",
+        banner_text=(
+            "Panoul colaborator: publici și gestionezi oferte/servicii/produse. "
+            "În pre-lansare poți avea limită de 1 ofertă activă per cont."
+        ),
+        steps=(
+            OnboardingStep(
+                ".mylvet-btn-add",
+                "Adaugă ofertă — formular nou (poze, preț, valabilitate).",
+            ),
+            OnboardingStep(
+                "#collabOferteFiltersBar",
+                "Filtre listă — caută după titlu sau starea ofertei.",
+            ),
+            OnboardingStep(
+                ".collab-oferte-table",
+                "Tabel oferte — activează/dezactivează, editează sau șterge.",
+            ),
+            OnboardingStep(
+                "#magazinOpenInboxBtn",
+                "Mesaje — solicitări „Vreau oferta” de la utilizatori.",
+            ),
+        ),
+    ),
+    "pets_single": OnboardingPage(
+        page_key="pets_single",
+        banner_title="Fișa animalului",
+        banner_text=(
+            "Detalii complete: poze, trăsături, mesaje către adăpost. "
+            "Din fișă poți cere adopția (când e activă) sau salva cu inimioara."
+        ),
+        steps=(
+            OnboardingStep(
+                "#petCardTitle",
+                "Titlu fișă — numele animalului și identificare rapidă.",
+            ),
+            OnboardingStep(
+                ".mypet-fisa-col-photos",
+                "Galerie foto/video — click pe imagine pentru mărire (pinch pe mobil).",
+            ),
+            OnboardingStep(
+                "#petAdoptCorner",
+                "Adopție — buton cerere (dacă e activ); altfel vezi starea anunțului.",
+            ),
+            OnboardingStep(
+                "#petCardBackBtn",
+                "Înapoi la listă — revii la Prietenul tău sau pagina anterioară.",
+            ),
+        ),
+    ),
+    "i_love_cos": OnboardingPage(
+        page_key="i_love_cos",
+        banner_title="Coș I Love / general",
+        banner_text=(
+            "Coșul reunește oferte Servicii și publicitate. "
+            "În pre-lansare finalizezi doar articole gratuite (pub / promovare)."
+        ),
+        steps=(
+            OnboardingStep(
+                "#menu-main-menu",
+                "Meniul site — revii la paginile unde ai adăugat produse.",
+            ),
+            OnboardingStep(
+                "#main_content",
+                "Conținut coș — verifici liniile și mergi la plată când e disponibilă.",
+            ),
+        ),
+    ),
 }
 
 

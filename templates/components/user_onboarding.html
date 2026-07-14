@@ -1,6 +1,6 @@
 {% load static %}
 {% if user_onboarding_payload %}
-<link rel="stylesheet" href="{% static 'css/user-onboarding.css' %}?v=1" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/user-onboarding.css' %}?v=2" type="text/css" media="screen" />
 <div
 	id="eu-user-onboard"
 	class="eu-user-onboard is-active"
@@ -28,5 +28,5 @@
 	</div>
 </div>
 {{ user_onboarding_payload|json_script:"eu-user-onboard-data" }}
-<script src="{% static 'js/user-onboarding.js' %}?v=1"></script>
+<script src="{% static 'js/user-onboarding.js' %}?v=2"></script>
 {% endif %}
