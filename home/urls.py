@@ -1,8 +1,11 @@
 from django.urls import path
 
 from . import donatii_views, views
+from .pwa import pwa_manifest_view, pwa_service_worker_view
 
 urlpatterns = [
+    path("manifest.webmanifest", pwa_manifest_view, name="pwa_manifest"),
+    path("sw.js", pwa_service_worker_view, name="pwa_service_worker"),
     path('', views.home_view, name='home'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
