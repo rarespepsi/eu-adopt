@@ -7322,7 +7322,9 @@ def account_edit_view(request):
         "accept_termeni": accept_termeni, "accept_gdpr": accept_gdpr, "email_opt_in_wishlist": email_opt_in_wishlist,
         "phone_changed": phone_changed, "email_changed": email_changed,
     }
-    request.session["edit_pending"] = edit_pending
+    from home.account_edit_pending import sync_edit_pending
+
+    sync_edit_pending(request, edit_pending)
 
     if phone_changed:
         import time
@@ -7351,12 +7353,44 @@ def account_edit_view(request):
         return redirect(reverse("edit_check_email") + f"?email={quote(email)}")
 
 
+def _apply_account_edit_pending_data(request, user, data, new_email, *, source: str) -> None:
+    """Aplică câmpurile profil din pending + noul email (confirmare link)."""
+    user.first_name = data.get("first_name", "")
+    user.last_name = data.get("last_name", "")
+    user.email = new_email
+    user.save(update_fields=["first_name", "last_name", "email"])
+    profile, _ = UserProfile.objects.get_or_create(user=user, defaults={})
+    prev_consents = {
+        UserLegalConsent.CONSENT_TERMS: bool(profile.accept_termeni),
+        UserLegalConsent.CONSENT_PRIVACY: bool(profile.accept_gdpr),
+        UserLegalConsent.CONSENT_MARKETING: bool(profile.email_opt_in_wishlist),
+    }
+    full_phone = f"{data.get('phone_country', '')} {data.get('phone', '')}".strip()
+    profile.phone = full_phone
+    profile.judet = data.get("judet", "")
+    profile.oras = data.get("oras", "")
+    profile.accept_termeni = data.get("accept_termeni", False)
+    profile.accept_gdpr = data.get("accept_gdpr", False)
+    profile.email_opt_in_wishlist = data.get("email_opt_in_wishlist", False)
+    profile.save()
+    _log_legal_consents(
+        request,
+        user,
+        accept_termeni=profile.accept_termeni,
+        accept_gdpr=profile.accept_gdpr,
+        email_opt_in=profile.email_opt_in_wishlist,
+        source=source,
+        previous=prev_consents,
+    )
+
+
 @login_required
 def edit_verificare_sms_view(request):
     """Verificare SMS pentru modificare profil; dacă email schimbat, trimite link confirmare."""
+    from home.account_edit_pending import resolve_edit_pending
     from home.sms_otp import ensure_edit_otp_sent, sms_otp_template_context, verify_sms_code
 
-    data = request.session.get("edit_pending")
+    data = resolve_edit_pending(request, user_pk=request.user.pk)
     if not data or data.get("user_pk") != request.user.pk:
         return redirect(reverse("account"))
 
@@ -7441,10 +7475,11 @@ def edit_verificare_sms_view(request):
             )
         except Exception:
             pass
-        request.session.pop("edit_pending", None)
         request.session.pop("edit_sms_at", None)
         return redirect(reverse("edit_check_email") + f"?email={quote(data['email'])}")
-    request.session.pop("edit_pending", None)
+    from home.account_edit_pending import drop_edit_pending
+
+    drop_edit_pending(request, user.pk)
     request.session.pop("edit_sms_at", None)
     return redirect(reverse("account") + "?updated=1")
 
@@ -7454,13 +7489,52 @@ def edit_check_email_view(request):
     if not request.user.is_authenticated:
         return redirect(reverse("account"))
     email = request.GET.get("email", "")
-    return render(request, "anunturi/edit_check_email.html", {"email": email, "back_url": reverse("account")})
+    from urllib.parse import quote
+
+    status_qs = f"?email={quote(email)}" if email else ""
+    return render(
+        request,
+        "anunturi/edit_check_email.html",
+        {
+            "email": email,
+            "back_url": reverse("account"),
+            "status_url": reverse("edit_verify_email_status") + status_qs,
+            "account_updated_url": reverse("account") + "?updated=1",
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET"])
+def edit_verify_email_status_view(request):
+    """Polling: confirmare email de pe alt dispozitiv → redirect automat pe desktop."""
+    from home.account_edit_pending import (
+        drop_edit_pending,
+        email_change_confirmed,
+        resolve_edit_pending,
+    )
+
+    pending_email = (request.GET.get("email") or "").strip().lower()
+    if not pending_email:
+        pending = resolve_edit_pending(request, user_pk=request.user.pk)
+        if pending:
+            pending_email = (pending.get("email") or "").strip().lower()
+    user = get_user_model().objects.filter(pk=request.user.pk).first()
+    if not user:
+        return JsonResponse({"confirmed": False})
+    confirmed = email_change_confirmed(user, pending_email)
+    redirect_url = reverse("account") + "?updated=1"
+    if confirmed:
+        drop_edit_pending(request, user.pk)
+        request.session.pop("edit_sms_at", None)
+    return JsonResponse({"confirmed": confirmed, "redirect_url": redirect_url})
 
 
 def edit_verify_email_view(request):
     """Link din email: confirmă noul email și actualizează userul (+ restul din edit_pending dacă există)."""
-    from django.core.signing import TimestampSigner
-    from django.core.signing import SignatureExpired
+    from django.core.signing import SignatureExpired, TimestampSigner
+
+    from home.account_edit_pending import drop_edit_pending, resolve_edit_pending
 
     token = (request.GET.get("token") or "").strip()
     if not token:
@@ -7482,39 +7556,19 @@ def edit_verify_email_view(request):
     except User.DoesNotExist:
         return redirect(reverse("account") + "?edit_email_invalid=1")
 
-    data = request.session.get("edit_pending")
+    data = resolve_edit_pending(request, user_pk=int(user_pk))
     if data and str(data.get("user_pk")) == str(user.pk):
-        user.first_name = data.get("first_name", "")
-        user.last_name = data.get("last_name", "")
-        user.email = new_email
-        user.save(update_fields=["first_name", "last_name", "email"])
-        profile, _ = UserProfile.objects.get_or_create(user=user, defaults={})
-        prev_consents = {
-            UserLegalConsent.CONSENT_TERMS: bool(profile.accept_termeni),
-            UserLegalConsent.CONSENT_PRIVACY: bool(profile.accept_gdpr),
-            UserLegalConsent.CONSENT_MARKETING: bool(profile.email_opt_in_wishlist),
-        }
-        full_phone = f"{data.get('phone_country', '')} {data.get('phone', '')}".strip()
-        profile.phone = full_phone
-        profile.judet = data.get("judet", "")
-        profile.oras = data.get("oras", "")
-        profile.accept_termeni = data.get("accept_termeni", False)
-        profile.accept_gdpr = data.get("accept_gdpr", False)
-        profile.email_opt_in_wishlist = data.get("email_opt_in_wishlist", False)
-        profile.save()
-        _log_legal_consents(
+        _apply_account_edit_pending_data(
             request,
             user,
-            accept_termeni=profile.accept_termeni,
-            accept_gdpr=profile.accept_gdpr,
-            email_opt_in=profile.email_opt_in_wishlist,
+            data,
+            new_email,
             source="account_edit_email_verify",
-            previous=prev_consents,
         )
     else:
         user.email = new_email
         user.save(update_fields=["email"])
-    request.session.pop("edit_pending", None)
+    drop_edit_pending(request, int(user_pk))
     return redirect(reverse("account") + "?updated=1")
 
 

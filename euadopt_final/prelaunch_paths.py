@@ -28,6 +28,7 @@ PRELAUNCH_ANONYMOUS_PREFIXES: tuple[str, ...] = (
     "/signup/verify-email/",
     "/signup/complete-login/",
     "/signup/check-activation-status/",
+    "/cont/editeaza/confirmare-email/",
     "/admin/",
     "/static/",
     "/media/",

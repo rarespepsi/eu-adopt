@@ -12,6 +12,7 @@
 	.edit-email-box { max-width: 440px; margin: auto; padding: 1.5rem; background: #e8f5e9; border: 1px solid #4caf50; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); text-align: center; }
 	.edit-email-box h2 { margin: 0 0 0.75rem; font-size: 1.2rem; color: #2e7d32; }
 	.edit-email-box p { margin: 0 0 0.5rem; font-size: 0.95rem; color: #333; }
+	.edit-email-box .edit-email-hint { font-size: 0.88rem; color: #555; margin-top: 0.75rem; }
 	.edit-email-box .edit-email-back { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid rgba(76,175,80,0.4); }
 	.edit-email-box .edit-email-back a { color: #1565c0; font-weight: 600; text-decoration: none; }
 	.edit-email-box .edit-email-back a:hover { text-decoration: underline; }
@@ -23,8 +24,32 @@
 	<h2>Verifică noul email</h2>
 	<p>Am trimis un link de confirmare la <strong>{{ email }}</strong>.</p>
 	<p>Deschide emailul și apasă pe link pentru a confirma noul email. Linkul este valabil 1 oră.</p>
+	<p class="edit-email-hint">Poți confirma de pe telefon — această pagină se actualizează automat și te duce la contul tău când confirmarea reușește.</p>
 	<div class="edit-email-back">
 		<a href="{{ back_url }}">← Înapoi la contul meu</a>
 	</div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+	var statusUrl = "{{ status_url|escapejs }}";
+	if (!statusUrl) return;
+	var pollMs = 3000;
+	function poll() {
+		fetch(statusUrl, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+			.then(function (r) { return r.json(); })
+			.then(function (data) {
+				if (data && data.confirmed && data.redirect_url) {
+					window.location.href = data.redirect_url;
+					return;
+				}
+				setTimeout(poll, pollMs);
+			})
+			.catch(function () { setTimeout(poll, pollMs); });
+	}
+	setTimeout(poll, pollMs);
+})();
+</script>
 {% endblock %}
