@@ -4,7 +4,8 @@
 	var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 	var FIRST_LOGINS = 5;
 	var PULSE_COOKIE = "eu_pwa_login_pulse";
-	var STORAGE_PREFIX = "eu_pwa_prompt_v1:";
+	/* v2 = reset contor pentru toți (după teste) */
+	var STORAGE_PREFIX = "eu_pwa_prompt_v2:";
 
 	function isStandalone() {
 		try {
@@ -73,8 +74,9 @@
 		} catch (e) {}
 	}
 
-	function shouldShowAfterLogin(st) {
+	function shouldShowAfterLogin(st, staffAlways) {
 		if (st.installed) return false;
+		if (staffAlways) return true;
 		if (st.loginCount <= FIRST_LOGINS) return true;
 		if (!st.lastShownAt) return true;
 		return Date.now() - st.lastShownAt >= WEEK_MS;
@@ -206,6 +208,11 @@
 
 	if (!authenticated || !isMobileTouch()) return;
 
+	var staffAlways =
+		document.body &&
+		(document.body.getAttribute("data-user-staff") === "true" ||
+			document.body.getAttribute("data-user-superuser") === "true");
+
 	var pulseCookie = getCookie(PULSE_COOKIE) === "1";
 	var pulseAttr =
 		document.body && document.body.getAttribute("data-eu-pwa-login-pulse") === "1";
@@ -218,7 +225,7 @@
 	st.loginCount += 1;
 	writeState(st);
 
-	if (!shouldShowAfterLogin(st)) return;
+	if (!shouldShowAfterLogin(st, staffAlways)) return;
 
 	markShown(st);
 	showBanner();
