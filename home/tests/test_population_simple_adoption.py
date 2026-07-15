@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from home.models import AnimalListing, UserProfile
+from home.models import AccountProfile, AnimalListing, UserProfile
 from home.population_simple_adoption import (
     _parse_phone_for_form,
     adoption_form_prefill_for_user,
@@ -147,3 +147,65 @@ class PopulationSimpleAdoptionTests(TestCase):
         data, errors = parse_population_adoption_form({})
         self.assertIsNone(data)
         self.assertTrue(errors)
+
+    @patch("home.population_simple_adoption.send_mail_text_and_html")
+    def test_org_public_shelter_may_submit_population_form(self, mock_mail):
+        org_user = User.objects.create_user(
+            username=f"org_{uuid.uuid4().hex[:8]}",
+            password="x",
+            email="org@test.example",
+            first_name="Nicol",
+            last_name="Test",
+        )
+        ap, _ = AccountProfile.objects.get_or_create(
+            user=org_user,
+            defaults={"role": AccountProfile.ROLE_ORG},
+        )
+        ap.role = AccountProfile.ROLE_ORG
+        ap.is_public_shelter = True
+        ap.save(update_fields=["role", "is_public_shelter"])
+        self.assertTrue(ap.can_adopt_animals)
+
+        self.client.force_login(org_user)
+        resp = self.client.post(
+            reverse("pet_population_adoption_submit", args=[self.pet.pk]),
+            {
+                "last_name": "Test",
+                "first_name": "Nicol",
+                "email": "org@test.example",
+                "phone_country": "+40",
+                "phone": "712345678",
+                "judet": "Iași",
+                "oras": "Iași",
+                "accept_termeni": "on",
+                "accept_gdpr": "on",
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertTrue(data.get("ok"))
+        self.assertGreaterEqual(mock_mail.call_count, 2)
+
+    def test_collaborator_blocked_and_no_adopt_button_on_ficha(self):
+        collab = User.objects.create_user(
+            username=f"col_{uuid.uuid4().hex[:8]}",
+            password="x",
+            email="col@test.example",
+        )
+        ap, _ = AccountProfile.objects.get_or_create(
+            user=collab,
+            defaults={"role": AccountProfile.ROLE_COLLAB},
+        )
+        ap.role = AccountProfile.ROLE_COLLAB
+        ap.save(update_fields=["role"])
+        self.assertFalse(ap.can_adopt_animals)
+
+        self.client.force_login(collab)
+        resp = self.client.get(reverse("pets_single", args=[self.pet.pk]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "VREAU SĂ ADOPT")
+
+        resp = self.client.post(reverse("pet_population_adoption_submit", args=[self.pet.pk]))
+        self.assertEqual(resp.status_code, 403)
+        data = json.loads(resp.content)
+        self.assertIn("Tipul de cont", data.get("error", ""))

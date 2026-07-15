@@ -1647,21 +1647,23 @@
 											<div class="pet-adopt-qr-inline" id="petAdoptQrInline" aria-label="Adopție și cod QR">
 												{% if show_pet_adopt_corner %}
 												<div
-													class="pet-adopt-corner{% if pet_adopt_inactive_populare %} pet-adopt-corner--inactive{% endif %}"
+													class="pet-adopt-corner{% if pet_adopt_demo_listing or pet_adopt_inactive_populare %} pet-adopt-corner--inactive{% endif %}"
 													id="petAdoptCorner"
 													role="button"
 													tabindex="0"
+													{% if not pet_adopt_demo_listing %}
 													data-adopt-url="{% url 'pet_adoption_request' pet.pk %}"
 													{% if pet_adopt_simple_populare %}data-population-form-url="{% url 'pet_population_adoption_submit' pet.pk %}" data-simple-populare="1"{% endif %}
 													data-transport-url="{% url 'transport' %}?from_adoption=1&pet={{ pet.pk }}"
+													{% endif %}
 													data-servicii-url="{% url 'servicii' %}"
 													data-login-url="{% url 'login' %}"
 													data-login-next="{{ request.get_full_path|urlencode }}"
-													{% if pet_adopt_inactive_populare %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_inactive_message|escape }}" aria-disabled="true"{% endif %}
-													aria-label="Vreau să adopt"
+													{% if pet_adopt_demo_listing %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_demo_message|escape }}" aria-disabled="true"{% elif pet_adopt_inactive_populare %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_inactive_message|escape }}" aria-disabled="true"{% endif %}
+													aria-label="{% if pet_adopt_demo_listing %}Demonstrativ DEMO{% else %}Vreau să adopt{% endif %}"
 												>
-													<span class="pet-adopt-corner__label">VREAU SĂ ADOPT</span>
-													{% if pet_adopt_inactive_populare %}<span class="pet-adopt-corner__note">Inactiv în perioada de populare</span>{% endif %}
+													<span class="pet-adopt-corner__label">{% if pet_adopt_demo_listing %}DEMO{% else %}VREAU SĂ ADOPT{% endif %}</span>
+													{% if pet_adopt_demo_listing %}<span class="pet-adopt-corner__note">Doar demonstrativ</span>{% elif pet_adopt_inactive_populare %}<span class="pet-adopt-corner__note">Inactiv în perioada de populare</span>{% endif %}
 												</div>
 												{% endif %}
 												<div class="pet-qr-corner" id="petQrCorner" aria-label="Cod QR fișă">
@@ -1693,7 +1695,7 @@
 			</div>
 		</div>
 
-		{% if show_pet_adopt_corner and user.is_authenticated and pet_adopt_simple_populare %}
+		{% if show_pet_adopt_corner and user.is_authenticated and pet_adopt_simple_populare and not pet_adopt_demo_listing %}
 		<div id="petPopAdoptFormModal" class="pet-adopt-choice-modal" hidden aria-hidden="true">
 			<div class="pet-adopt-choice-modal__backdrop" id="petPopAdoptFormBackdrop"></div>
 			<div class="pet-adopt-choice-modal__panel pet-pop-adopt-form-panel" role="dialog" aria-modal="true" aria-labelledby="petPopAdoptFormTitle">
@@ -1758,7 +1760,7 @@
 		{% include "anunturi/includes/ro_county_locality_select_script.html" with judet_select_id="petPopAdoptJudet" oras_select_id="petPopAdoptOras" %}
 		{% endif %}
 
-		{% if show_pet_adopt_corner and user.is_authenticated and not pet_adopt_simple_populare %}
+		{% if show_pet_adopt_corner and user.is_authenticated and not pet_adopt_simple_populare and not pet_adopt_demo_listing %}
 		<div id="petAdoptChoiceModal" class="pet-adopt-choice-modal" {% if not adoption_after_transport %}hidden{% endif %} aria-hidden="{% if adoption_after_transport %}false{% else %}true{% endif %}">
 			<div class="pet-adopt-choice-modal__backdrop" id="petAdoptChoiceBackdrop"></div>
 			<div class="pet-adopt-choice-modal__panel" role="dialog" aria-modal="true" aria-labelledby="petAdoptChoiceTitle">

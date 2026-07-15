@@ -120,6 +120,12 @@ elif _mon_soft in ("1", "true", "yes", "on"):
 else:
     PRELAUNCH_MONETIZATION_SOFT_LOCK = PRELAUNCH_MODE
 
+# Anunțuri animal DEMO (fără adopție): proprietari + prefix [seed] — vezi home/demo_listings.py
+_demo_owners_raw = _os.environ.get("EUADOPT_DEMO_ANIMAL_OWNER_USERNAMES", "rarespepsi").strip()
+EUADOPT_DEMO_ANIMAL_OWNER_USERNAMES = tuple(
+    u.strip() for u in _demo_owners_raw.split(",") if u.strip()
+) if _demo_owners_raw else ("rarespepsi",)
+
 # T₀ campanii (Facebook etc.): contor de la această dată (YYYY-MM-DD, 00:00 RO). Gol = dezactivat.
 METRICS_T0_DATE = _os.environ.get("EUADOPT_METRICS_T0", "2026-07-13").strip()
 

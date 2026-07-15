@@ -4776,9 +4776,12 @@ def dog_profile_view(request, pk):
         and (listing.species or "").strip().lower() in ("dog", "cat")
     )
 
+    from home.demo_listings import DEMO_ADOPTION_INACTIVE_MESSAGE, is_demo_animal_listing
     from home.population_onboarding import population_ui_restricted_for_user, user_may_adopt_animals
     from home.population_simple_adoption import population_adoption_context_for_request
     from home.prelaunch_soft_lock import PRELAUNCH_SOFT_MESSAGES
+
+    pet_adopt_demo_listing = is_demo_animal_listing(listing)
 
     viewer_can_adopt = bool(
         request.user.is_authenticated
@@ -4796,17 +4799,26 @@ def dog_profile_view(request, pk):
         and listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
         and not population_ui_restricted_for_user(request.user)
     )
-    # Buton „VREAU SĂ ADOPT”: vizibil (nu proprietar, neadoptat).
-    # Populare: formular simplu + email (user logat); după lansare: flux complet.
-    show_pet_adopt_corner = bool(
-        listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
-        and (not request.user.is_authenticated or request.user.pk != listing.owner_id)
-    )
+    # Buton adopție: DEMO (inactiv) pe anunțuri demonstrative; altfel VREAU SĂ ADOPT (fără colaboratori).
+    not_owner = not request.user.is_authenticated or request.user.pk != listing.owner_id
+    not_adopted = listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
+    if pet_adopt_demo_listing:
+        show_pet_adopt_corner = bool(not_adopted and not_owner)
+    else:
+        show_pet_adopt_corner = bool(
+            not_adopted
+            and not_owner
+            and (not request.user.is_authenticated or viewer_can_adopt)
+        )
     pop_adopt_ctx = population_adoption_context_for_request(request)
+    if pet_adopt_demo_listing:
+        pop_adopt_ctx["pet_adopt_simple_populare"] = False
     ctx = {
         "pet": pet,
         "can_send_pet_message": can_send_pet_message,
         "show_pet_adopt_corner": show_pet_adopt_corner,
+        "pet_adopt_demo_listing": pet_adopt_demo_listing,
+        "pet_adopt_demo_message": DEMO_ADOPTION_INACTIVE_MESSAGE,
         **pop_adopt_ctx,
         "pet_adopt_inactive_message": PRELAUNCH_SOFT_MESSAGES.get("adopt", ""),
         "pet_owner_id": listing.owner_id,
@@ -10800,7 +10812,11 @@ def pet_population_adoption_submit_view(request, pk: int):
     if pet.owner_id == request.user.id:
         return JsonResponse({"ok": False, "error": "Nu poți solicita adopția propriului anunț."}, status=400)
 
+    from home.demo_listings import DEMO_ADOPTION_INACTIVE_MESSAGE, is_demo_animal_listing
     from home.population_onboarding import user_may_adopt_animals
+
+    if is_demo_animal_listing(pet):
+        return JsonResponse({"ok": False, "error": DEMO_ADOPTION_INACTIVE_MESSAGE}, status=403)
 
     if not user_may_adopt_animals(request.user):
         return JsonResponse(
@@ -10845,6 +10861,12 @@ def pet_adoption_request_view(request, pk: int):
         return JsonResponse({"ok": False, "error": "Acest animal este deja adoptat."}, status=400)
     if pet.owner_id == request.user.id:
         return JsonResponse({"ok": False, "error": "Nu poți solicita adopția propriului anunț."}, status=400)
+
+    from home.demo_listings import DEMO_ADOPTION_INACTIVE_MESSAGE, is_demo_animal_listing
+
+    if is_demo_animal_listing(pet):
+        return JsonResponse({"ok": False, "error": DEMO_ADOPTION_INACTIVE_MESSAGE}, status=403)
+
     from home.prelaunch_soft_lock import (
         PRELAUNCH_SOFT_MESSAGES,
         prelaunch_soft_lock_active_for_user,

@@ -260,12 +260,9 @@ class AccountProfile(models.Model):
 
     @property
     def can_adopt_animals(self) -> bool:
-        if self.role == self.ROLE_PF:
-            return True
-        if self.role == self.ROLE_ORG:
-            # Adăpost public: poate publica spre adopție, nu poate adopta.
-            return not bool(self.is_public_shelter)
-        return False
+        if self.role == self.ROLE_COLLAB:
+            return False
+        return self.role in {self.ROLE_PF, self.ROLE_ORG}
 
     @property
     def can_post_services(self) -> bool:
