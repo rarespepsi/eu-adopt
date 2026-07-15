@@ -4,8 +4,8 @@
 	var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 	var FIRST_LOGINS = 5;
 	var PULSE_COOKIE = "eu_pwa_login_pulse";
-	/* v2 = reset contor pentru toți (după teste) */
-	var STORAGE_PREFIX = "eu_pwa_prompt_v2:";
+	/* v3 = reset după blocare accidentală „installed” la test staff */
+	var STORAGE_PREFIX = "eu_pwa_prompt_v3:";
 
 	function isStandalone() {
 		try {
@@ -75,11 +75,20 @@
 	}
 
 	function shouldShowAfterLogin(st, staffAlways) {
-		if (st.installed) return false;
+		/* Staff/superuser: mereu la login (test), inclusiv dacă e marcat installed */
 		if (staffAlways) return true;
+		if (st.installed) return false;
 		if (st.loginCount <= FIRST_LOGINS) return true;
 		if (!st.lastShownAt) return true;
 		return Date.now() - st.lastShownAt >= WEEK_MS;
+	}
+
+	function isStaffUser() {
+		return !!(
+			document.body &&
+			(document.body.getAttribute("data-user-staff") === "true" ||
+				document.body.getAttribute("data-user-superuser") === "true")
+		);
 	}
 
 	/* SW registration — independent of banner UI */
@@ -90,7 +99,9 @@
 		});
 	}
 
-	if (isStandalone()) {
+	var staffAlwaysEarly = isStaffUser();
+
+	if (isStandalone() && !staffAlwaysEarly) {
 		var stInstalled = readState();
 		if (!stInstalled.installed) {
 			stInstalled.installed = true;
@@ -109,6 +120,7 @@
 	var isIos = /iphone|ipad|ipod/i.test(navigator.userAgent || "");
 	var authenticated =
 		document.body && document.body.getAttribute("data-user-authenticated") === "true";
+	var staffAlways = staffAlwaysEarly || isStaffUser();
 
 	function hideBanner() {
 		banner.hidden = true;
@@ -142,8 +154,11 @@
 
 	function markInstalled() {
 		var st = readState();
-		st.installed = true;
-		writeState(st);
+		/* Staff poate retesta — nu blocăm permanent */
+		if (!staffAlways) {
+			st.installed = true;
+			writeState(st);
+		}
 		hideBanner();
 	}
 
@@ -208,11 +223,6 @@
 
 	if (!authenticated || !isMobileTouch()) return;
 
-	var staffAlways =
-		document.body &&
-		(document.body.getAttribute("data-user-staff") === "true" ||
-			document.body.getAttribute("data-user-superuser") === "true");
-
 	var pulseCookie = getCookie(PULSE_COOKIE) === "1";
 	var pulseAttr =
 		document.body && document.body.getAttribute("data-eu-pwa-login-pulse") === "1";
@@ -220,7 +230,10 @@
 	if (pulseCookie) clearCookie(PULSE_COOKIE);
 
 	var st = readState();
-	if (st.installed) return;
+	if (st.installed && !staffAlways) return;
+	if (staffAlways) {
+		st.installed = false;
+	}
 
 	st.loginCount += 1;
 	writeState(st);
