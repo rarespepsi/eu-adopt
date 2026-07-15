@@ -10,6 +10,7 @@ from django.urls import reverse
 
 from home.models import AnimalListing, UserProfile
 from home.population_simple_adoption import (
+    _parse_phone_for_form,
     adoption_form_prefill_for_user,
     parse_population_adoption_form,
     population_simple_adoption_active_for_user,
@@ -74,6 +75,32 @@ class PopulationSimpleAdoptionTests(TestCase):
         self.assertEqual(pre["last_name"], "Pop")
         self.assertEqual(pre["first_name"], "Ana")
         self.assertEqual(pre["judet"], "Iași")
+        self.assertEqual(pre["phone_country"], "+40")
+        self.assertEqual(pre["phone"], "712345678")
+
+    def test_parse_phone_strips_ro_leading_zero(self):
+        self.assertEqual(_parse_phone_for_form("0740841234"), ("+40", "740841234"))
+        self.assertEqual(_parse_phone_for_form("+40 0740841234"), ("+40", "740841234"))
+        self.assertEqual(_parse_phone_for_form("+40740841234"), ("+40", "740841234"))
+
+    def test_submit_strips_ro_leading_zero_in_phone(self):
+        data, errors = parse_population_adoption_form(
+            {
+                "last_name": "Pop",
+                "first_name": "Ana",
+                "email": "a@test.example",
+                "phone_country": "+40",
+                "phone": "0740841234",
+                "judet": "Iași",
+                "oras": "Iași",
+                "accept_termeni": "on",
+                "accept_gdpr": "on",
+            }
+        )
+        self.assertEqual(errors, [])
+        self.assertIsNotNone(data)
+        self.assertEqual(data.phone, "740841234")
+        self.assertEqual(data.phone_display, "+40 740841234")
 
     def test_ficha_shows_active_button_not_inactive(self):
         self.client.force_login(self.adopter)

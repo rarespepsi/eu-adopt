@@ -7122,17 +7122,9 @@ def account_delete_cancel_view(request):
 
 def _parse_phone_for_edit(phone_str):
     """Din profile.phone (ex: '+40 753017411' sau '0753017411') returnează (phone_country, phone)."""
-    if not phone_str or not isinstance(phone_str, str):
-        return "+40", ""
-    s = phone_str.strip()
-    if not s:
-        return "+40", ""
-    parts = s.split(None, 1)
-    if len(parts) == 2 and parts[0].startswith("+"):
-        return parts[0], parts[1]
-    if s.startswith("0"):
-        return "+40", s
-    return "+40", s
+    from home.population_simple_adoption import _parse_phone_for_form
+
+    return _parse_phone_for_form(phone_str)
 
 
 @login_required

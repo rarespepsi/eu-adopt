@@ -24,6 +24,14 @@ def population_simple_adoption_active_for_user(user) -> bool:
     return prelaunch_soft_lock_active_for_user(user)
 
 
+def _strip_ro_local_leading_zero(country: str, local: str) -> str:
+    """RO +40: în casetă afișăm 740…, nu 0740… (prefixul e deja în select)."""
+    loc = (local or "").strip()
+    if (country or "").strip() == "+40" and loc.startswith("0") and len(loc) > 1:
+        return loc[1:]
+    return loc
+
+
 def _parse_phone_for_form(phone_str: str | None) -> tuple[str, str]:
     if not phone_str or not isinstance(phone_str, str):
         return "+40", ""
@@ -32,9 +40,14 @@ def _parse_phone_for_form(phone_str: str | None) -> tuple[str, str]:
         return "+40", ""
     parts = s.split(None, 1)
     if len(parts) == 2 and parts[0].startswith("+"):
-        return parts[0], parts[1]
+        country, local = parts[0], parts[1].strip()
+        return country, _strip_ro_local_leading_zero(country, local)
+    for prefix in ("+40", "+39", "+33", "+49", "+44"):
+        if s.startswith(prefix):
+            local = s[len(prefix) :].lstrip()
+            return prefix, _strip_ro_local_leading_zero(prefix, local)
     if s.startswith("0"):
-        return "+40", s
+        return "+40", s[1:]
     return "+40", s
 
 
@@ -69,7 +82,7 @@ class PopulationAdoptionFormData:
     @property
     def phone_display(self) -> str:
         pc = (self.phone_country or "+40").strip()
-        ph = (self.phone or "").strip()
+        ph = _strip_ro_local_leading_zero(pc, (self.phone or "").strip())
         if not ph:
             return "—"
         if ph.startswith("+"):
@@ -98,7 +111,10 @@ def parse_population_adoption_form(post) -> tuple[PopulationAdoptionFormData | N
         first_name=(post.get("first_name") or "").strip(),
         email=(post.get("email") or "").strip().lower(),
         phone_country=(post.get("phone_country") or "+40").strip(),
-        phone=(post.get("phone") or "").strip(),
+        phone=_strip_ro_local_leading_zero(
+            (post.get("phone_country") or "+40").strip(),
+            (post.get("phone") or "").strip(),
+        ),
         judet=(post.get("judet") or "").strip(),
         oras=(post.get("oras") or "").strip(),
         mesaj=(post.get("mesaj") or "").strip(),
