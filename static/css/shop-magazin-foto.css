@@ -347,7 +347,7 @@ button.smf-print__link {
   top: 0.32rem;
   left: 0.32rem;
   z-index: 5;
-  display: inline-flex;
+  display: none;
   align-items: center;
   max-width: calc(100% - 0.64rem);
   padding: 0.2rem 0.45rem;
@@ -362,6 +362,15 @@ button.smf-print__link {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.smf-print__photo.is-collected-visible .smf-print__collected-badge {
+  display: inline-flex;
+}
+
+.smf-print__photo {
+  cursor: pointer;
 }
 
 /* Peste img { max-width:100%; height:auto } din style.css */

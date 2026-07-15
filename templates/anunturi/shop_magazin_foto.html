@@ -6,7 +6,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/shop.css' %}?v=21-profi-servicii" type="text/css" media="screen" />
-<link rel="stylesheet" href="{% static 'css/shop-magazin-foto.css' %}?v=32-no-prices" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/shop-magazin-foto.css' %}?v=33-collected-on-click" type="text/css" media="screen" />
 <link rel="stylesheet" href="{% static 'css/checkout-intra-skin.css' %}?v=1" type="text/css" media="screen" />
 {% endblock %}
 
@@ -116,6 +116,25 @@
 	window.euadoptSmfEnsureCards(grid);
 
 	grid.addEventListener("click", function (e) {
+		var photo = e.target && e.target.closest && e.target.closest(".smf-print__photo");
+		if (photo) {
+			var onBadge = e.target.closest && e.target.closest(".smf-print__collected-badge");
+			if (!onBadge) {
+				e.preventDefault();
+				e.stopPropagation();
+				var show = photo.classList.toggle("is-collected-visible");
+				var badge = photo.querySelector(".smf-print__collected-badge");
+				if (badge) badge.hidden = !show;
+				grid.querySelectorAll(".smf-print__photo.is-collected-visible").forEach(function (other) {
+					if (other !== photo) {
+						other.classList.remove("is-collected-visible");
+						var ob = other.querySelector(".smf-print__collected-badge");
+						if (ob) ob.hidden = true;
+					}
+				});
+				return;
+			}
+		}
 		var t = e.target && e.target.closest && e.target.closest("a.smf-print__link");
 		if (t && (t.getAttribute("href") || "") === "#") e.preventDefault();
 		var art = e.target && e.target.closest && e.target.closest("article.smf-print");
