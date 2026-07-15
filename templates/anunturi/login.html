@@ -288,8 +288,14 @@
 		letter-spacing: 0.01em;
 	}
 	body.page-login .login-field input[type="text"],
+	body.page-login .login-field input[type="email"],
 	body.page-login .login-field input[type="password"] {
-		width: 100%;
+		width: 100% !important;
+		min-width: 0 !important;
+		max-width: 100% !important;
+		text-align: left !important;
+		text-indent: 0 !important;
+		direction: ltr !important;
 		padding: 0.78rem 1rem;
 		border-radius: 0.5625rem;
 		border: 1px solid rgba(255, 255, 255, 0.08);
@@ -300,6 +306,15 @@
 		box-sizing: border-box;
 		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 1px 4px rgba(0, 0, 0, 0.18);
 		transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+		-webkit-appearance: none;
+		appearance: none;
+	}
+	@media (max-width: 767.98px) {
+		body.page-login .login-field input[type="text"],
+		body.page-login .login-field input[type="email"],
+		body.page-login .login-field input[type="password"] {
+			font-size: 16px !important;
+		}
 	}
 	body.page-login .login-field input::placeholder {
 		color: #6b7280;
@@ -572,6 +587,31 @@
 {% block extra_js %}
 <script>
 (function() {
+	function syncLoginInputType() {
+		var loginEl = document.getElementById('id_login');
+		if (!loginEl) return;
+		var v = (loginEl.value || '').trim();
+		loginEl.type = v.indexOf('@') >= 0 ? 'email' : 'text';
+	}
+	function scrollLoginFieldToStart(el) {
+		if (!el) return;
+		try {
+			el.scrollLeft = 0;
+			if (typeof el.setSelectionRange === 'function') {
+				el.setSelectionRange(0, 0);
+			}
+		} catch (_e) {}
+	}
+	function initLoginFieldLayout() {
+		var loginEl = document.getElementById('id_login');
+		if (!loginEl) return;
+		syncLoginInputType();
+		scrollLoginFieldToStart(loginEl);
+		loginEl.addEventListener('input', syncLoginInputType);
+		loginEl.addEventListener('focus', function () {
+			scrollLoginFieldToStart(loginEl);
+		});
+	}
 	function prefillLoginDemo() {
 		var loginEl = document.getElementById('id_login');
 		var passEl = document.getElementById('id_password');
@@ -600,6 +640,7 @@
 	}
 	function onReady() {
 		stripLoginSiteNav();
+		initLoginFieldLayout();
 		// Prefill demo doar la cerere explicită: /login/?demo=1
 		try {
 			if (window.location && window.location.search && window.location.search.indexOf('demo=1') !== -1) {
