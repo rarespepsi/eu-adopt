@@ -37,23 +37,31 @@
 		align-items: center;
 		justify-content: center;
 		box-sizing: border-box !important;
-		/* O singură „fereastră” = viewport; padding-top rezervă A0 fix; flex centrează cardul în rest. */
+		/* Fără navbar A0 pe Intra — login full-viewport sub banner pre-lansare (dacă există). */
 		min-height: 100svh;
 		min-height: 100dvh;
-		padding-top: var(--nav-height, 56px) !important;
+		padding-top: clamp(0.75rem, 2.5vw, 1.25rem) !important;
 		padding-left: clamp(1.25rem, 4vw, 2rem) !important;
 		padding-right: clamp(1.25rem, 4vw, 2rem) !important;
 		padding-bottom: clamp(1.25rem, 4vw, 2rem) !important;
 		background: transparent !important;
 		box-shadow: none !important;
 	}
+	body.page-login:has(.prelaunch-soft-lock-banner) #main_content {
+		min-height: calc(100dvh - 2.75rem);
+		max-height: calc(100dvh - 2.75rem);
+	}
 	body.page-login:has(.login-main--prelaunch) #main_content {
 		overflow: hidden;
 		min-height: 0 !important;
-		max-height: calc(100dvh - var(--nav-height, 56px));
-		height: calc(100dvh - var(--nav-height, 56px));
+		max-height: calc(100dvh - 2.75rem);
+		height: calc(100dvh - 2.75rem);
 		padding-bottom: 0.5rem !important;
 		align-items: center;
+	}
+	body.page-login:not(:has(.prelaunch-soft-lock-banner)):has(.login-main--prelaunch) #main_content {
+		max-height: 100dvh;
+		height: 100dvh;
 	}
 	body.page-login .login-main {
 		position: relative;
@@ -494,16 +502,18 @@
 		position: relative;
 		z-index: 1;
 	}
-	body.page-login:not(.page-home-v2):not(.page-animale) #A0,
-	body.page-login #A0 {
-		background-color: rgba(15, 23, 42, 0.32) !important;
-		background-image: none !important;
-		backdrop-filter: blur(14px) saturate(1.08);
-		-webkit-backdrop-filter: blur(14px) saturate(1.08);
-		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-		box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+	/* Siguranță: meniu portat în body (back / cache) — invizibil pe Intra */
+	body.page-login > #menu_wrap,
+	body.page-login > #menu_wrap.a0-menu-portaled {
+		display: none !important;
+		visibility: hidden !important;
+		pointer-events: none !important;
 	}
 </style>
+{% endblock %}
+
+{% block header %}
+{% if prelaunch_mode %}{% include "components/prelaunch_soft_lock_banner.html" %}{% endif %}
 {% endblock %}
 
 {% block main_wrap_after_header %}
@@ -576,7 +586,20 @@
 			passEl.type = cb.checked ? 'text' : 'password';
 		});
 	}
+	function stripLoginSiteNav() {
+		document.body.classList.remove("a0-mobile-nav-open");
+		var a0 = document.getElementById("A0");
+		if (a0) a0.classList.remove("a0-nav-open");
+		if (typeof window.__a0CloseMobileNav === "function") {
+			try { window.__a0CloseMobileNav(); } catch (_eNav) {}
+		}
+		var menu = document.getElementById("menu_wrap");
+		if (menu && menu.parentNode === document.body) {
+			menu.remove();
+		}
+	}
 	function onReady() {
+		stripLoginSiteNav();
 		// Prefill demo doar la cerere explicită: /login/?demo=1
 		try {
 			if (window.location && window.location.search && window.location.search.indexOf('demo=1') !== -1) {
@@ -585,6 +608,9 @@
 		} catch (e) {}
 		initShowPass();
 	}
+	window.addEventListener("pageshow", function (ev) {
+		if (ev.persisted) stripLoginSiteNav();
+	});
 	if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', onReady);
 	} else {

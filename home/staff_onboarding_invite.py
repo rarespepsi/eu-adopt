@@ -174,12 +174,9 @@ def staff_invite_allows_org_signup(request, now=None) -> bool:
 
 
 def staff_invite_allows_signup_path(request, now=None) -> bool:
-    """PRE-LAUNCH: acces anonim la formularul potrivit dacă ?inv= e valid."""
-    token = (request.GET.get(STAFF_INVITE_GET_PARAM) or "").strip()
-    if not token or len(token) > 72:
-        return False
-    lead = staff_invite_lead_for_token(token)
-    if not lead or not staff_invite_token_usable(lead, now):
+    """PRE-LAUNCH: acces anonim la formularul potrivit dacă ?inv= sau sesiune validă."""
+    lead = staff_invite_lead_from_request(request, now)
+    if not lead:
         return False
     path = (request.path or "/").split("?", 1)[0]
     if lead.account_kind in (StaffOnboardingLead.KIND_ORG, StaffOnboardingLead.KIND_ADAPOST):

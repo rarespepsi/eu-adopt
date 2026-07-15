@@ -9,8 +9,9 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 
-from home.models import AnimalListing
+from home.models import AnimalListing, StaffOnboardingLead
 
 User = get_user_model()
 
@@ -88,6 +89,49 @@ class PrelaunchEnabledTests(TestCase):
         r = c.get(reverse("login"))
         self.assertEqual(r.status_code, 200)
         self.assertIn(b"PRE-LAUNCH", r.content)
+
+    def test_login_page_has_no_site_navbar(self):
+        """Intra: fără A0 / hamburger — doar formular login (+ panouri pre-lansare pe desktop)."""
+        c = Client()
+        r = c.get(reverse("login"))
+        self.assertEqual(r.status_code, 200)
+        self.assertNotIn(b'id="A0"', r.content)
+        self.assertNotIn(b"a0-hamburger", r.content)
+        self.assertNotIn(b'id="menu_wrap"', r.content)
+
+    def test_signup_pf_post_with_invite_in_session_allowed(self):
+        """POST formular PF fără ?inv= în URL, dar cu token în sesiune (după GET cu inv)."""
+        lead = StaffOnboardingLead.objects.create(
+            email=f"pf_inv_{uuid.uuid4().hex[:8]}@test.local",
+            display_name="Test PF Inv",
+            account_kind=StaffOnboardingLead.KIND_PF,
+            status=StaffOnboardingLead.ST_READY,
+            invite_mail_status=StaffOnboardingLead.INVITE_SENT,
+            invite_email_last_sent_at=timezone.now(),
+        )
+        token = lead.consent_invite_token
+        c = Client()
+        r_get = c.get(f"{reverse('signup_pf')}?inv={token}")
+        self.assertEqual(r_get.status_code, 200)
+        r_post = c.post(
+            reverse("signup_pf"),
+            {
+                "first_name": "Ana",
+                "last_name": "Test",
+                "email": lead.email,
+                "phone_country": "+40",
+                "phone": "712345678",
+                "judet": "Neamț",
+                "oras": "Piatra-Neamț",
+                "password1": "TestPass123!",
+                "password2": "TestPass123!",
+                "accept_termeni": "on",
+                "accept_gdpr": "on",
+            },
+        )
+        self.assertEqual(r_post.status_code, 302)
+        self.assertIn(reverse("signup_verificare_sms"), r_post.url)
+        self.assertNotIn("/login/", r_post.url)
 
     def test_login_hides_signup_link(self):
         c = Client()
