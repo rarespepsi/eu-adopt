@@ -11,7 +11,7 @@ from typing import Any
 
 from django.conf import settings
 
-from home.models import AccountProfile, AnimalListing
+from home.models import AccountProfile, AnimalListing, StaffOnboardingLead
 
 
 def is_population_onboarding_enabled() -> bool:
@@ -133,6 +133,18 @@ def population_org_signup_allowed() -> bool:
     return True
 
 
+def is_invited_pf_population_user(user) -> bool:
+    """PF invitată staff (lead legat după signup) — excepție login în faza populare."""
+    if not user or not getattr(user, "is_authenticated", False):
+        return False
+    if _account_role(user) != AccountProfile.ROLE_PF:
+        return False
+    return StaffOnboardingLead.objects.filter(
+        imported_user_id=user.pk,
+        account_kind=StaffOnboardingLead.KIND_PF,
+    ).exists()
+
+
 def user_may_login_during_population(user) -> tuple[bool, str]:
     if not population_access_restricted():
         return True, ""
@@ -147,10 +159,12 @@ def user_may_login_during_population(user) -> tuple[bool, str]:
         return True, ""
     if _account_role(user) == AccountProfile.ROLE_ORG:
         return True, ""
+    if is_invited_pf_population_user(user):
+        return True, ""
     return (
         False,
         "În etapa de populare accesul este deschis doar pentru adăposturi și ONG-uri "
-        "invitate (link din email) și pentru echipa EU-Adopt.",
+        "invitate (link din email), persoane fizice invitate și echipa EU-Adopt.",
     )
 
 

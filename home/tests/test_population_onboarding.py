@@ -86,6 +86,32 @@ class PopulationOnboardingTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertIn(b"populare", r.content.lower())
 
+    def test_invited_pf_login_allowed_during_population(self):
+        from django.utils import timezone
+
+        from home.models import StaffOnboardingLead
+
+        pf = User.objects.create_user(
+            username="pf_invited",
+            email="pf_invited@test.local",
+            password="Secret12ab",
+        )
+        pf.is_active = True
+        pf.save(update_fields=["is_active"])
+        AccountProfile.objects.filter(user=pf).update(role=AccountProfile.ROLE_PF)
+        StaffOnboardingLead.objects.create(
+            email=pf.email,
+            display_name="PF Invitat",
+            account_kind=StaffOnboardingLead.KIND_PF,
+            status=StaffOnboardingLead.ST_IMPORTED,
+            invite_mail_status=StaffOnboardingLead.INVITE_SIGNED_UP,
+            invite_email_last_sent_at=timezone.now(),
+            imported_user=pf,
+        )
+        c = Client()
+        r = c.post("/login/", {"login": "pf_invited", "password": "Secret12ab"})
+        self.assertEqual(r.status_code, 302)
+
     def test_org_login_allowed(self):
         self.org_user.set_password("Secret12ab")
         self.org_user.save()
