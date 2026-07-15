@@ -117,16 +117,19 @@
 		banner.hidden = false;
 		banner.style.display = "";
 		banner.removeAttribute("aria-hidden");
+		if (btnInstall) {
+			btnInstall.hidden = false;
+			btnInstall.removeAttribute("hidden");
+		}
 		if (iosHint) {
-			iosHint.hidden = !!deferredPrompt;
-			if (!deferredPrompt) {
+			if (deferredPrompt) {
+				iosHint.hidden = true;
+			} else {
+				iosHint.hidden = false;
 				iosHint.textContent = isIos
 					? "iPhone: Share → Adaugă pe ecranul principal"
 					: "Meniu browser (⋮) → Instalează aplicația / Add to Home screen";
 			}
-		}
-		if (btnInstall) {
-			btnInstall.hidden = !deferredPrompt;
 		}
 	}
 
@@ -140,6 +143,24 @@
 		st.installed = true;
 		writeState(st);
 		hideBanner();
+	}
+
+	function showManualInstallTip() {
+		if (iosHint) {
+			iosHint.hidden = false;
+			iosHint.textContent = isIos
+				? "iPhone: Share → Adaugă pe ecranul principal"
+				: "Meniu browser (⋮) → Instalează aplicația / Add to Home screen";
+			iosHint.style.color = "#fde68a";
+			iosHint.style.fontWeight = "700";
+		}
+		try {
+			window.alert(
+				isIos
+					? "Da — pe iPhone: Share → Adaugă pe ecranul principal."
+					: "Da — deschide meniul browser (⋮) și alege Instalează aplicația / Add to Home screen."
+			);
+		} catch (e) {}
 	}
 
 	window.addEventListener("beforeinstallprompt", function (e) {
@@ -158,19 +179,22 @@
 
 	if (btnInstall) {
 		btnInstall.addEventListener("click", function () {
-			if (!deferredPrompt) return;
-			deferredPrompt.prompt();
-			deferredPrompt.userChoice
-				.then(function (choice) {
-					if (choice && choice.outcome === "accepted") {
-						markInstalled();
-					} else {
-						hideBanner();
-					}
-				})
-				.finally(function () {
-					deferredPrompt = null;
-				});
+			if (deferredPrompt) {
+				deferredPrompt.prompt();
+				deferredPrompt.userChoice
+					.then(function (choice) {
+						if (choice && choice.outcome === "accepted") {
+							markInstalled();
+						} else {
+							hideBanner();
+						}
+					})
+					.finally(function () {
+						deferredPrompt = null;
+					});
+				return;
+			}
+			showManualInstallTip();
 		});
 	}
 
