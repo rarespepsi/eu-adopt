@@ -2119,6 +2119,8 @@ _SERVICII_DONATII_EU_STRIP_SLOTS = frozenset({"EUS1.1", "EUS7.1"})
 # A doua celulă EU din fiecare bandă: mesaj + link către secțiunea SMS pe /donatii/
 _PT_SMS_STRIP_EU_SLOTS = frozenset({"EUP1.2", "EUP3.2"})
 _SERVICII_SMS_STRIP_EU_SLOTS = frozenset({"EUS1.2", "EUS7.2"})
+_PT_PWA_STRIP_EU_SLOTS = frozenset({"EUP1.3", "EUP3.3"})
+_SERVICII_PWA_STRIP_EU_SLOTS = frozenset({"EUS1.3", "EUS7.3"})
 
 
 def _strip_cells_apply_donatii_eu_href(section: str, cells: list[dict]) -> list[dict]:
@@ -2177,9 +2179,39 @@ def _strip_cells_apply_sms_strip_href(section: str, cells: list[dict]) -> list[d
     return out
 
 
+def _strip_cells_apply_pwa_strip_msg(section: str, cells: list[dict]) -> list[dict]:
+    """Celule EU *.3 — anunț App pe Mobil EU-ADOPT (vizibil pe desk în bandă)."""
+    if section == "pt":
+        targets = _PT_PWA_STRIP_EU_SLOTS
+    elif section == "servicii":
+        targets = _SERVICII_PWA_STRIP_EU_SLOTS
+    else:
+        return cells
+    from home.donatii_constants import EUADOPT_PWA_STRIP_LABEL, EUADOPT_PWA_STRIP_MSG
+
+    out = []
+    for c in cells:
+        if c.get("kind") == "eu" and c.get("code") in targets:
+            out.append(
+                {
+                    **c,
+                    "eu_pwa_strip": True,
+                    "eu_pwa_strip_label": EUADOPT_PWA_STRIP_LABEL,
+                    "eu_pwa_strip_msg": EUADOPT_PWA_STRIP_MSG,
+                    "eu_text": EUADOPT_PWA_STRIP_MSG,
+                }
+            )
+        else:
+            out.append(c)
+    return out
+
+
 def _strip_cells_donatii_pt_or_servicii(section: str, cells: list[dict]) -> list[dict]:
-    """Aplică linkuri donații generale + celulă SMS pe benzile cursivă PT / Servicii."""
-    return _strip_cells_apply_sms_strip_href(section, _strip_cells_apply_donatii_eu_href(section, cells))
+    """Aplică donații + SMS + anunț PWA pe benzile cursivă PT / Servicii."""
+    return _strip_cells_apply_pwa_strip_msg(
+        section,
+        _strip_cells_apply_sms_strip_href(section, _strip_cells_apply_donatii_eu_href(section, cells)),
+    )
 
 
 def _pt_pub_slot_parse_note(note):
@@ -2528,11 +2560,12 @@ def login_view(request):
                     else:
                         auth_login(request, user)
                         from home.metrics_t0 import record_site_login_event
+                        from home.pwa import attach_pwa_login_pulse
 
                         record_site_login_event(user, "login")
                         next_url = request.GET.get("next") or request.POST.get("next") or "/"
                         from django.shortcuts import redirect
-                        return redirect(next_url)
+                        return attach_pwa_login_pulse(redirect(next_url))
                 else:
                     error = "Email/Utilizator sau parolă incorectă."
             bump_login_attempt(request)
@@ -3384,7 +3417,9 @@ def signup_verify_email_view(request):
         cache.set("signup_waiting_" + waiting_id, one_time_token, timeout=wait_timeout)
         cache.set("signup_onetime_" + one_time_token, user.pk, timeout=wait_timeout)
 
-    return render(request, "anunturi/signup_activated.html")
+    from home.pwa import attach_pwa_login_pulse
+
+    return attach_pwa_login_pulse(render(request, "anunturi/signup_activated.html"))
 
 
 def signup_check_activation_status_view(request):
@@ -3424,9 +3459,10 @@ def signup_complete_login_view(request):
         request.session.pop(key, None)
     auth_login(request, user)
     from home.metrics_t0 import record_site_login_event
+    from home.pwa import attach_pwa_login_pulse
 
     record_site_login_event(user, "signup_complete_login")
-    return redirect(reverse("home") + "?welcome=1")
+    return attach_pwa_login_pulse(redirect(reverse("home") + "?welcome=1"))
 
 
 def _no_cache_response(response):

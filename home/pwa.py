@@ -3,8 +3,11 @@ from __future__ import annotations
 
 import json
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBase
 from django.templatetags.static import static
+
+PWA_LOGIN_PULSE_COOKIE = "eu_pwa_login_pulse"
+PWA_LOGIN_PULSE_MAX_AGE = 300  # 5 min — prima pagină după login
 
 
 def _static_abs(request, path: str) -> str:
@@ -12,6 +15,18 @@ def _static_abs(request, path: str) -> str:
     if rel.startswith(("http://", "https://")):
         return rel
     return request.build_absolute_uri(rel)
+
+
+def attach_pwa_login_pulse(response: HttpResponseBase) -> HttpResponseBase:
+    """Semnal JS: abia s-a făcut login — evaluează regula 5 + săptămânal pe mobil."""
+    response.set_cookie(
+        PWA_LOGIN_PULSE_COOKIE,
+        "1",
+        max_age=PWA_LOGIN_PULSE_MAX_AGE,
+        samesite="Lax",
+        path="/",
+    )
+    return response
 
 
 def pwa_manifest_view(request):
@@ -57,7 +72,7 @@ def pwa_manifest_view(request):
 
 
 def pwa_service_worker_view(request):
-    body = f"""/* EU-Adopt PWA — service worker minimal (instalare mobil) */
+    body = """/* EU-Adopt PWA — service worker minimal (instalare mobil) */
 self.addEventListener("install", function (event) {{
   self.skipWaiting();
 }});

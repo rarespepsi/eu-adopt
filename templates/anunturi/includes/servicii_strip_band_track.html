@@ -6,6 +6,11 @@
 		<span class="sw-strip-cell-label">{{ cell.eu_sms_strip_label }}</span>
 		<span class="sw-strip-cell-eu-msg">{{ cell.eu_sms_strip_msg }}</span>
 	</a>
+	{% elif cell.eu_pwa_strip %}
+	<span class="sw-strip-item sw-strip-item--{{ strip_variant }} sw-strip-cell--eu sw-strip-cell--pwa-strip" data-slot="{{ cell.code }}">
+		<span class="sw-strip-cell-label">{{ cell.eu_pwa_strip_label }}</span>
+		<span class="sw-strip-cell-eu-msg">{{ cell.eu_pwa_strip_msg }}</span>
+	</span>
 	{% elif cell.eu_donatii_href %}
 	<a href="{{ cell.eu_donatii_href }}" class="sw-strip-item sw-strip-item--{{ strip_variant }} sw-strip-cell--eu sw-strip-cell--donatii-link" data-slot="{{ cell.code }}">
 		<span class="sw-strip-cell-label">{{ cell.label }}</span>

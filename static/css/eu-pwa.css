@@ -3,7 +3,7 @@
 	left: 0.65rem;
 	right: 0.65rem;
 	bottom: calc(0.65rem + env(safe-area-inset-bottom, 0px));
-	z-index: 1000050;
+	z-index: 1000200;
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
@@ -16,6 +16,8 @@
 	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
 	font-size: 0.78rem;
 	line-height: 1.35;
+	pointer-events: auto;
+	isolation: isolate;
 }
 #eu-pwa-install-banner[hidden] { display: none !important; }
 .eu-pwa-install-banner__icon {
@@ -24,8 +26,9 @@
 	border-radius: 0.55rem;
 	flex-shrink: 0;
 	object-fit: cover;
+	pointer-events: none;
 }
-.eu-pwa-install-banner__text { flex: 1 1 8rem; min-width: 0; }
+.eu-pwa-install-banner__text { flex: 1 1 8rem; min-width: 0; pointer-events: none; }
 .eu-pwa-install-banner__text strong {
 	display: block;
 	font-size: 0.82rem;
@@ -36,20 +39,28 @@
 	flex-wrap: wrap;
 	gap: 0.35rem;
 	flex-shrink: 0;
+	pointer-events: auto;
+	position: relative;
+	z-index: 1;
 }
 .eu-pwa-install-banner__actions button {
 	appearance: none;
+	-webkit-appearance: none;
 	border-radius: 0.45rem;
-	padding: 0.38rem 0.65rem;
-	font-size: 0.74rem;
-	font-weight: 600;
+	padding: 0.42rem 0.75rem;
+	font-size: 0.76rem;
+	font-weight: 700;
 	cursor: pointer;
 	border: 1px solid rgba(255, 255, 255, 0.14);
+	pointer-events: auto;
+	touch-action: manipulation;
+	min-height: 2.1rem;
 }
 #eu-pwa-install-btn {
 	background: linear-gradient(175deg, #2dd4e8 0%, #06b6d4 42%, #0e7490 100%);
 	color: #fff;
 }
+#eu-pwa-install-btn[hidden] { display: none !important; }
 #eu-pwa-install-dismiss {
 	background: rgba(15, 23, 42, 0.55);
 	color: #cbd5e1;
@@ -59,6 +70,8 @@
 	font-size: 0.7rem;
 	color: #94a3b8;
 }
+#eu-pwa-ios-hint[hidden] { display: none !important; }
+
 @media (min-width: 901px), (hover: hover) and (pointer: fine) {
 	#eu-pwa-install-banner { display: none !important; }
 }

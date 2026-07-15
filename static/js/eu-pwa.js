@@ -1,8 +1,10 @@
 (function () {
 	"use strict";
 
-	/* Temporar oprit — reactivare după test login PF invitat */
-	var INSTALL_BANNER_ENABLED = false;
+	var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+	var FIRST_LOGINS = 5;
+	var PULSE_COOKIE = "eu_pwa_login_pulse";
+	var STORAGE_PREFIX = "eu_pwa_prompt_v1:";
 
 	function isStandalone() {
 		try {
@@ -19,6 +21,57 @@
 		}
 	}
 
+	function getCookie(name) {
+		var m = document.cookie.match(
+			new RegExp("(?:^|; )" + name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "=([^;]*)")
+		);
+		return m ? decodeURIComponent(m[1]) : "";
+	}
+
+	function clearCookie(name) {
+		document.cookie = name + "=; Max-Age=0; path=/; SameSite=Lax";
+	}
+
+	function storageKey() {
+		var uid = (document.body && document.body.getAttribute("data-user-id")) || "";
+		return STORAGE_PREFIX + (uid || "anon");
+	}
+
+	function readState() {
+		try {
+			var raw = localStorage.getItem(storageKey());
+			if (!raw) return { loginCount: 0, lastShownAt: 0, installed: false };
+			var o = JSON.parse(raw);
+			return {
+				loginCount: Math.max(0, parseInt(o.loginCount, 10) || 0),
+				lastShownAt: parseInt(o.lastShownAt, 10) || 0,
+				installed: !!o.installed,
+			};
+		} catch (e) {
+			return { loginCount: 0, lastShownAt: 0, installed: false };
+		}
+	}
+
+	function writeState(st) {
+		try {
+			localStorage.setItem(
+				storageKey(),
+				JSON.stringify({
+					loginCount: st.loginCount,
+					lastShownAt: st.lastShownAt,
+					installed: !!st.installed,
+				})
+			);
+		} catch (e) {}
+	}
+
+	function shouldShowAfterLogin(st) {
+		if (st.installed) return false;
+		if (st.loginCount <= FIRST_LOGINS) return true;
+		if (!st.lastShownAt) return true;
+		return Date.now() - st.lastShownAt >= WEEK_MS;
+	}
+
 	if (!("serviceWorker" in navigator)) return;
 
 	var swUrl = document.body && document.body.getAttribute("data-pwa-sw-url");
@@ -28,55 +81,116 @@
 		navigator.serviceWorker.register(swUrl, { scope: "/" }).catch(function () {});
 	});
 
-	if (!INSTALL_BANNER_ENABLED) return;
+	if (isStandalone()) {
+		var stInstalled = readState();
+		if (!stInstalled.installed) {
+			stInstalled.installed = true;
+			writeState(stInstalled);
+		}
+		return;
+	}
 
-	if (isStandalone()) return;
-
-	var deferredPrompt = null;
 	var banner = document.getElementById("eu-pwa-install-banner");
 	var btnInstall = document.getElementById("eu-pwa-install-btn");
 	var btnDismiss = document.getElementById("eu-pwa-install-dismiss");
 	var iosHint = document.getElementById("eu-pwa-ios-hint");
+	if (!banner) return;
 
-	function hideBanner() {
-		if (banner) banner.hidden = true;
-		try { sessionStorage.setItem("eu_pwa_install_dismissed", "1"); } catch (e) {}
-	}
-
-	if (banner && sessionStorage.getItem("eu_pwa_install_dismissed") === "1") {
-		banner.hidden = true;
-		return;
-	}
-
+	var deferredPrompt = null;
 	var isIos = /iphone|ipad|ipod/i.test(navigator.userAgent || "");
 	var isSafari = isIos && !window.MSStream && !/crios|fxios|edgios/i.test(navigator.userAgent || "");
+	var authenticated =
+		document.body && document.body.getAttribute("data-user-authenticated") === "true";
+
+	function hideBanner() {
+		banner.hidden = true;
+		banner.setAttribute("aria-hidden", "true");
+	}
+
+	function showBanner() {
+		banner.hidden = false;
+		banner.removeAttribute("aria-hidden");
+		if (isSafari || isIos) {
+			if (iosHint) iosHint.hidden = false;
+			if (btnInstall) {
+				btnInstall.hidden = !deferredPrompt;
+			}
+		} else if (iosHint) {
+			iosHint.hidden = true;
+		}
+		if (btnInstall && !deferredPrompt && !(isSafari || isIos)) {
+			btnInstall.hidden = true;
+		}
+		if (btnInstall && deferredPrompt) {
+			btnInstall.hidden = false;
+			if (iosHint) iosHint.hidden = true;
+		}
+	}
+
+	function markShown(st) {
+		st.lastShownAt = Date.now();
+		writeState(st);
+	}
+
+	function markInstalled() {
+		var st = readState();
+		st.installed = true;
+		writeState(st);
+		hideBanner();
+	}
 
 	window.addEventListener("beforeinstallprompt", function (e) {
 		if (!isMobileTouch()) return;
 		e.preventDefault();
 		deferredPrompt = e;
-		if (banner) banner.hidden = false;
-		if (iosHint) iosHint.hidden = true;
+		if (!banner.hidden) {
+			if (btnInstall) btnInstall.hidden = false;
+			if (iosHint) iosHint.hidden = true;
+		}
+	});
+
+	window.addEventListener("appinstalled", function () {
+		markInstalled();
 	});
 
 	if (btnInstall) {
 		btnInstall.addEventListener("click", function () {
 			if (!deferredPrompt) return;
 			deferredPrompt.prompt();
-			deferredPrompt.userChoice.finally(function () {
-				deferredPrompt = null;
-				hideBanner();
-			});
+			deferredPrompt.userChoice
+				.then(function (choice) {
+					if (choice && choice.outcome === "accepted") {
+						markInstalled();
+					} else {
+						hideBanner();
+					}
+				})
+				.finally(function () {
+					deferredPrompt = null;
+				});
 		});
 	}
 
 	if (btnDismiss) {
-		btnDismiss.addEventListener("click", hideBanner);
+		btnDismiss.addEventListener("click", function () {
+			hideBanner();
+		});
 	}
 
-	if (isSafari && isMobileTouch() && banner && sessionStorage.getItem("eu_pwa_install_dismissed") !== "1") {
-		banner.hidden = false;
-		if (iosHint) iosHint.hidden = false;
-		if (btnInstall) btnInstall.hidden = true;
-	}
+	if (!authenticated || !isMobileTouch()) return;
+
+	var pulse = getCookie(PULSE_COOKIE) === "1";
+	if (!pulse) return;
+	clearCookie(PULSE_COOKIE);
+
+	var st = readState();
+	if (st.installed) return;
+
+	st.loginCount += 1;
+	writeState(st);
+
+	if (!shouldShowAfterLogin(st)) return;
+
+	markShown(st);
+	showBanner();
 })();
