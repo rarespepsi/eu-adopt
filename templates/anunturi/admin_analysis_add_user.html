@@ -737,48 +737,53 @@
 	#addUserManualModal {
 		position: fixed;
 		inset: 0;
-		z-index: 100050;
+		z-index: 1000100;
 		display: flex;
-		align-items: flex-start;
+		align-items: center;
 		justify-content: center;
-		padding: min(0.75rem, 2vh) min(0.85rem, 3vw) min(0.5rem, 1vh);
+		padding: min(0.75rem, 2vh) min(0.85rem, 3vw);
 		box-sizing: border-box;
 		overflow-y: auto;
 		-webkit-overflow-scrolling: touch;
+		pointer-events: none;
 	}
+	#addUserManualModal:not([hidden]) { pointer-events: auto; }
 	#addUserManualModal[hidden] { display: none !important; }
 	body.add-user-manual-modal-open { overflow: hidden !important; }
 	.add-user-manual-modal__backdrop {
 		position: fixed;
 		inset: 0;
-		background: rgba(15, 23, 42, 0.68);
-		backdrop-filter: blur(16px);
-		-webkit-backdrop-filter: blur(16px);
+		background: rgba(15, 23, 42, 0.72);
+		backdrop-filter: blur(18px);
+		-webkit-backdrop-filter: blur(18px);
 		cursor: pointer;
 	}
 	.add-user-manual-modal__panel {
 		position: relative;
 		z-index: 2;
-		width: min(54rem, 96vw);
-		max-height: min(92vh, calc(100dvh - var(--nav-h, 64px) - 1rem));
-		min-height: 0;
+		width: min(50vw, 42rem, 96vw);
+		max-height: min(92vh, calc(100dvh - var(--nav-h, 64px) - 1.5rem));
+		min-height: min(18rem, 60vh);
 		display: flex;
 		flex-direction: column;
-		margin: auto 0;
+		margin: auto;
 		background: linear-gradient(
 			168deg,
-			rgba(24, 32, 46, 0.96) 0%,
-			rgba(18, 24, 36, 0.98) 48%,
-			rgba(14, 20, 32, 0.99) 100%
+			rgba(24, 32, 46, 0.98) 0%,
+			rgba(18, 24, 36, 0.99) 48%,
+			rgba(14, 20, 32, 1) 100%
 		);
-		border: 1px solid rgba(6, 182, 212, 0.28);
-		border-radius: 1rem;
+		backdrop-filter: blur(22px) saturate(1.04);
+		-webkit-backdrop-filter: blur(22px) saturate(1.04);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 1.1875rem;
 		box-shadow:
-			0 0 0 1px rgba(0, 0, 0, 0.45) inset,
-			0 28px 56px rgba(0, 0, 0, 0.55),
+			0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+			0 32px 64px rgba(0, 0, 0, 0.55),
 			0 0 0 1px rgba(6, 182, 212, 0.08);
 		color: #e2e8f0;
 		overflow: hidden;
+		pointer-events: auto;
 	}
 	.add-user-manual-modal__head {
 		flex: 0 0 auto;
@@ -841,7 +846,17 @@
 		gap: 0.45rem;
 		padding: 0.65rem 0.85rem;
 		border-top: 1px solid rgba(255, 255, 255, 0.08);
-		background: rgba(15, 23, 42, 0.55);
+		background: rgba(15, 23, 42, 0.72);
+	}
+	.add-user-manual-modal__foot .add-user-btn,
+	.add-user-manual-modal__foot .add-user-submit {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 2.35rem;
+		margin: 0;
+		cursor: pointer;
+		pointer-events: auto;
 	}
 	.add-user-manual-modal__foot .add-user-submit {
 		width: auto;
@@ -859,6 +874,15 @@
 		border: 0;
 		padding: 0;
 		border-radius: 0;
+	}
+	.add-user-manual-modal__foot a.add-user-btn {
+		text-decoration: none;
+	}
+	@media (max-width: 640px) {
+		.add-user-manual-modal__panel {
+			width: min(96vw, 100%);
+			max-height: min(94vh, calc(100dvh - var(--nav-h, 64px) - 0.75rem));
+		}
 	}
 	#manual-lead-form {
 		display: grid;
@@ -1309,6 +1333,9 @@
 	}
 	window.openAddUserManualModal = openAddUserManualModal;
 	if (manualModal) {
+		if (manualModal.parentNode !== document.body) {
+			document.body.appendChild(manualModal);
+		}
 		if (!manualModal.hidden) document.body.classList.add("add-user-manual-modal-open");
 		manualModal.querySelectorAll("[data-add-user-manual-close]").forEach(function(el) {
 			el.addEventListener("click", function() { closeAddUserManualModal(); });
@@ -1840,10 +1867,9 @@
 			</div>
 		</div>
 		<div class="add-user-manual-modal__foot">
+			<button type="button" class="add-user-btn add-user-btn--secondary" data-add-user-manual-close>Închide</button>
 			{% if editing_lead %}
 			<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Renunță</a>
-			{% else %}
-			<button type="button" class="add-user-btn add-user-btn--secondary" data-add-user-manual-close>Renunță</button>
 			{% endif %}
 			<button type="submit" form="manual-lead-form" class="add-user-submit">{% if editing_lead %}Salvează modificările{% else %}Salvează lead{% endif %}</button>
 		</div>
