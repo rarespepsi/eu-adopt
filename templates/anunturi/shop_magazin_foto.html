@@ -6,7 +6,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/shop.css' %}?v=21-profi-servicii" type="text/css" media="screen" />
-<link rel="stylesheet" href="{% static 'css/shop-magazin-foto.css' %}?v=31-profi-servicii" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/shop-magazin-foto.css' %}?v=32-no-prices" type="text/css" media="screen" />
 <link rel="stylesheet" href="{% static 'css/checkout-intra-skin.css' %}?v=1" type="text/css" media="screen" />
 {% endblock %}
 
@@ -58,28 +58,19 @@
 		return n;
 	}
 
-	function fmtLei(v) {
-		return String(v.toFixed(2)).replace(".", ",");
-	}
-
 	function updateCardMultiplier(article, qty) {
 		if (!article) return;
 		var q = clampQty(qty);
 		var input = article.querySelector("[data-smf-mult-input]");
-		var totalEl = article.querySelector("[data-smf-mult-total]");
 		var cartBtn = article.querySelector("[data-site-cart-toggle]");
 		if (!cartBtn) return;
-		var basePrice = parseFloat(cartBtn.getAttribute("data-base-price") || "0");
-		if (!isFinite(basePrice) || basePrice < 0) basePrice = 0;
 		var baseName = (cartBtn.getAttribute("data-base-name") || "").trim();
-		var total = basePrice * q;
 		if (input) input.value = String(q);
-		if (totalEl) totalEl.textContent = fmtLei(total) + " lei";
 		cartBtn.setAttribute("data-smf-multiplier", String(q));
 		cartBtn.setAttribute("data-force-add", "1");
 		cartBtn.setAttribute(
 			"data-title",
-			"Poză ONG — " + baseName + " (" + q + "x × " + fmtLei(basePrice) + " lei = " + fmtLei(total) + " lei)"
+			q > 1 ? "Poză ONG — " + baseName + " (" + q + "x)" : "Poză ONG — " + baseName
 		);
 		cartBtn.setAttribute("title", "Adaugă sau actualizează în coș cu multiplicatorul selectat");
 	}

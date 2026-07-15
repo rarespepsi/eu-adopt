@@ -4,7 +4,7 @@
 		<a
 			href="#"
 			class="smf-print__link"
-			aria-label="{{ slot.nume }} – {{ slot.pret_lei }} lei"
+			aria-label="{{ slot.nume }}"
 		>
 			<div class="smf-print__photo">
 				<span class="smf-print__collected-badge" aria-label="Sumă colectată pentru această poză">
@@ -19,13 +19,11 @@
 				/>
 			</div>
 		</a>
-		<div class="smf-print__meta" role="group" aria-label="{{ slot.nume }} – preț și coș">
-			<span class="smf-print__price">{{ slot.pret_lei }} lei</span>
+		<div class="smf-print__meta" role="group" aria-label="{{ slot.nume }} — coș">
 			<div class="smf-print__multiplier smf-print__multiplier--bar" aria-label="Multiplicator achiziție poză">
 				<button type="button" class="smf-print__mult-btn" data-smf-mult-dec title="Scade multiplicatorul">−</button>
 				<input type="number" class="smf-print__mult-input" data-smf-mult-input value="1" min="1" max="20" step="1" inputmode="numeric" aria-label="Multiplicator sumă" />
 				<button type="button" class="smf-print__mult-btn" data-smf-mult-inc title="Crește multiplicatorul">+</button>
-				<span class="smf-print__mult-total" data-smf-mult-total aria-live="polite">{{ slot.pret_lei }} lei</span>
 			</div>
 			<span class="smf-print__name" title="{{ slot.achizitii }} achiziții — {{ slot.nume }}">{{ slot.nume }}</span>
 			<button type="button"
@@ -37,7 +35,7 @@
 				data-base-name="{{ slot.nume }}"
 				data-smf-multiplier="1"
 				data-force-add="1"
-				data-title="Poză ONG — {{ slot.nume }} (1x × {{ slot.pret_lei }} lei = {{ slot.pret_lei }} lei)"
+				data-title="Poză ONG — {{ slot.nume }}"
 				data-detail-url="{% url 'shop_magazin_foto' %}"
 				aria-pressed="{% if site_cart_ref_keys and slot.ref_key in site_cart_ref_keys %}true{% else %}false{% endif %}"
 				title="{% if user.is_authenticated %}Adaugă sau scoate din coșul I Love{% else %}Intră sau creează cont pentru a adăuga în coș{% endif %}"

@@ -4,7 +4,7 @@
 {% block title %}Harta cuștilor autocarului | EU Adopt{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/custi.css' %}?v=12" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/custi.css' %}?v=13-no-prices" type="text/css" media="screen" />
 <style>
 	/* Asigurăm fundalul unic cu poza de cuști pe tot TWW */
 	#TWW.custi-page {
@@ -761,7 +761,7 @@
 						<span id="tww-donate-h2-general" class="tww-donate-h2-general is-hidden">Donație pentru servicii medicale și hrană</span>
 						<span id="tww-donate-h2-slot" class="tww-donate-h2-slot">Donație pentru loc <span id="tww-donate-loc"></span></span>
 					</h2>
-					<div class="tww-donate-valori">
+					<div class="tww-donate-valori" hidden aria-hidden="true">
 						<div class="tww-donate-valoare-col"><span class="tww-donate-label">Valoare cușcă</span><span class="tww-donate-cifra"><strong id="tww-donate-5000">5.000</strong> lei</span></div>
 						<div class="tww-donate-valoare-col"><span class="tww-donate-label">Valoare rămasă</span><span class="tww-donate-cifra"><span id="tww-donate-ramasa">5.000</span> lei</span></div>
 					</div>
