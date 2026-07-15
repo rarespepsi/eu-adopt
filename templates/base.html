@@ -17,7 +17,7 @@
 	<link rel="stylesheet" href="{% static 'css/style.css' %}?v=wish-il-heart-svg" type="text/css" media="screen" />
 	<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
 	<link rel="manifest" href="{% url 'pwa_manifest' %}" />
-	<link rel="apple-touch-icon" href="{% static 'images/pwa/apple-touch-icon.png' %}" />
+	<link rel="apple-touch-icon" href="{% static 'images/logo-final-cu-stele.png' %}?v=8-home" />
 	<meta name="theme-color" content="#0e7490" />
 	<meta name="mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-capable" content="yes" />
@@ -59,7 +59,7 @@
 	<link rel="stylesheet" href="{% static 'css/checkout-intra-skin.css' %}?v=3" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/eu-intra-site-skin.css' %}?v=3" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/mobile-portrait-scroll.css' %}?v=1" type="text/css" media="screen" />
-	<link rel="stylesheet" href="{% static 'css/eu-pwa.css' %}?v=6-sigla-rotunda" type="text/css" media="screen" />
+	<link rel="stylesheet" href="{% static 'css/eu-pwa.css' %}?v=8-home-logo" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/admin-analysis.css' %}?v=1" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/pub-default-covers.css' %}?v=8-pub-no-fb-click" type="text/css" media="screen" />
 	{% if population_banner_mode != 'hidden' %}<link rel="stylesheet" href="{% static 'css/population-org.css' %}?v=2" type="text/css" media="screen" />{% endif %}
@@ -102,7 +102,7 @@
 	{% if prelaunch_mode %}{% include "components/prelaunch_first_hint.html" %}{% endif %}
 	{% include "components/user_onboarding.html" %}
 	<div id="eu-pwa-install-banner" hidden role="region" aria-label="App EU-Adopt pe telefon" aria-hidden="true">
-		<img class="eu-pwa-install-banner__icon" src="{% static 'images/eu-adopt-sigla-baza-rotunda.png' %}" width="40" height="40" alt="EU-Adopt" />
+		<img class="eu-pwa-install-banner__icon" src="{% static 'images/logo-final-cu-stele.png' %}?v=8-home" width="44" height="44" alt="EU-Adopt" />
 		<div class="eu-pwa-install-banner__text">
 			<strong>App pe telefon: EU-Adopt?</strong>
 			<span>Vrei icon pe ecranul principal — deschide direct Acasă.</span>
@@ -164,6 +164,6 @@
 	})();
 	</script>
 	<script src="{% static 'js/pub-placeholder-links.js' %}?v=6-pub-fb-native-tap" defer></script>
-	<script src="{% static 'js/eu-pwa.js' %}?v=6-sigla-rotunda" defer></script>
+	<script src="{% static 'js/eu-pwa.js' %}?v=8-home-logo" defer></script>
 </body>
 </html>

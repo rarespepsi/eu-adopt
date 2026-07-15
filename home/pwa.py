@@ -30,21 +30,23 @@ def attach_pwa_login_pulse(response: HttpResponseBase) -> HttpResponseBase:
 
 
 def pwa_manifest_view(request):
+    # Aceeași siglă ca pe HOME (logo-final-cu-stele)
+    icon_src = _static_abs(request, "images/logo-final-cu-stele.png") + "?v=8-home"
     icons = [
         {
-            "src": _static_abs(request, "images/pwa/pwa-icon-192.png"),
+            "src": icon_src,
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any",
         },
         {
-            "src": _static_abs(request, "images/pwa/pwa-icon-512.png"),
+            "src": icon_src,
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any",
         },
         {
-            "src": _static_abs(request, "images/pwa/pwa-icon-512.png"),
+            "src": icon_src,
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable",
