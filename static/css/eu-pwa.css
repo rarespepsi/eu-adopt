@@ -21,12 +21,14 @@
 }
 #eu-pwa-install-banner[hidden] { display: none !important; }
 .eu-pwa-install-banner__icon {
-	width: 2.25rem;
-	height: 2.25rem;
-	border-radius: 0.55rem;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 50%;
 	flex-shrink: 0;
 	object-fit: cover;
 	pointer-events: none;
+	background: #fff;
+	box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 .eu-pwa-install-banner__text { flex: 1 1 8rem; min-width: 0; pointer-events: none; }
 .eu-pwa-install-banner__text strong {
