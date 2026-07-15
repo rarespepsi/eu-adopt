@@ -2563,6 +2563,7 @@ def login_view(request):
                         from home.pwa import attach_pwa_login_pulse
 
                         record_site_login_event(user, "login")
+                        request.session["eu_pwa_login_pulse"] = 1
                         next_url = request.GET.get("next") or request.POST.get("next") or "/"
                         from django.shortcuts import redirect
                         return attach_pwa_login_pulse(redirect(next_url))
@@ -3419,6 +3420,7 @@ def signup_verify_email_view(request):
 
     from home.pwa import attach_pwa_login_pulse
 
+    request.session["eu_pwa_login_pulse"] = 1
     return attach_pwa_login_pulse(render(request, "anunturi/signup_activated.html"))
 
 
@@ -3462,6 +3464,7 @@ def signup_complete_login_view(request):
     from home.pwa import attach_pwa_login_pulse
 
     record_site_login_event(user, "signup_complete_login")
+    request.session["eu_pwa_login_pulse"] = 1
     return attach_pwa_login_pulse(redirect(reverse("home") + "?welcome=1"))
 
 

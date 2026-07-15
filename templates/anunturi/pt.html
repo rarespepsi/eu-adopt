@@ -14,7 +14,7 @@
 <style>
 	/* PT: strat CSS unic (fără layer mobil dedicat). */
 	@media (min-width: 768px) and (min-height: 521px) and (hover: hover) and (pointer: fine) {
-		body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
+	body.page-pt #main_wrap { min-height: 100vh !important; display: flex !important; flex-direction: column !important; padding: 0 !important; margin: 0 !important; }
 		body.page-pt #main_content { min-height: 0 !important; display: flex !important; flex-direction: column !important; flex: 1 1 0 !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
 		body.page-pt #main_content { overflow: hidden !important; }
 		body.page-pt #main_content #PW {
@@ -202,6 +202,24 @@
 		-webkit-line-clamp: 5;
 		-webkit-box-orient: vertical;
 		word-break: break-word;
+	}
+	/* Anunț App mobil — lizibil pe bandă */
+	#PW .pt-strip-cell--pwa-strip {
+		padding: 0.28rem 0.3rem !important;
+		background: linear-gradient(165deg, #e0f7fa 0%, #80deea 55%, #26c6da 100%) !important;
+		color: #004d40 !important;
+	}
+	#PW .pt-strip-cell--pwa-strip .pt-strip-cell-label {
+		font-size: 0.62rem !important;
+		font-weight: 900 !important;
+		letter-spacing: 0.04em;
+		margin-bottom: 0.08rem;
+	}
+	#PW .pt-strip-cell--pwa-strip .pt-strip-cell-eu-msg {
+		font-size: 0.7rem !important;
+		font-weight: 900 !important;
+		line-height: 1.2 !important;
+		-webkit-line-clamp: 3;
 	}
 	#PW .pt-strip-cell--pub {
 		display: flex !important;
@@ -863,13 +881,13 @@
 						</div>
 					</div>
 			<div id="P3" class="pt-cell pt-cell-3 pt-cell-3--footer pt-strip-band--desktop" data-slot="P3">
-				<div class="pt-strip-wrap pt-strip-p3" aria-label="Bandă publicitate P3">
-					<div class="pt-strip-track pt-strip-track--p3">
-						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
-						{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
+						<div class="pt-strip-wrap pt-strip-p3" aria-label="Bandă publicitate P3">
+							<div class="pt-strip-track pt-strip-track--p3">
+								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
+								{% include "anunturi/includes/pt_strip_band_track.html" with cells=pt_strip_p3_cells strip_variant="p3" only %}
+							</div>
+						</div>
 					</div>
-				</div>
-			</div>
 			</div>
 			<div id="P5" class="pt-cell pt-cell-5" data-slot="P5">
 				<div class="pt-p5-grid">
@@ -958,7 +976,7 @@
         var u = new URL(window.location.href);
         if (p4 && p4.classList.contains("pt-mobile-filters-open")) {
           u.searchParams.set("pt_filters_open", "1");
-        } else {
+	} else {
           u.searchParams.delete("pt_filters_open");
         }
         var qs = u.searchParams.toString();

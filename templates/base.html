@@ -59,13 +59,13 @@
 	<link rel="stylesheet" href="{% static 'css/checkout-intra-skin.css' %}?v=3" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/eu-intra-site-skin.css' %}?v=3" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/mobile-portrait-scroll.css' %}?v=1" type="text/css" media="screen" />
-	<link rel="stylesheet" href="{% static 'css/eu-pwa.css' %}?v=3-login-rules" type="text/css" media="screen" />
+	<link rel="stylesheet" href="{% static 'css/eu-pwa.css' %}?v=4-login-visible" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/admin-analysis.css' %}?v=1" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/pub-default-covers.css' %}?v=8-pub-no-fb-click" type="text/css" media="screen" />
 	{% if population_banner_mode != 'hidden' %}<link rel="stylesheet" href="{% static 'css/population-org.css' %}?v=2" type="text/css" media="screen" />{% endif %}
 	{% if prelaunch_mode %}<link rel="stylesheet" href="{% static 'css/prelaunch-soft-lock.css' %}?v=1" type="text/css" media="screen" />{% endif %}
 </head>
-<body class="content_left scheme_red euadopt-intra-skin {{ body_class|default:'' }} {% block body_class %}{% endblock %}{% if population_org_nav_reduced %} population-org-nav{% endif %}" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"{% if user.is_authenticated %} data-user-id="{{ user.pk }}"{% endif %} data-site-cart-toggle-url="{% url 'site_cart_toggle' %}" data-pwa-sw-url="{% url 'pwa_service_worker' %}">
+<body class="content_left scheme_red euadopt-intra-skin {{ body_class|default:'' }} {% block body_class %}{% endblock %}{% if population_org_nav_reduced %} population-org-nav{% endif %}" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"{% if user.is_authenticated %} data-user-id="{{ user.pk }}"{% endif %}{% if eu_pwa_login_pulse %} data-eu-pwa-login-pulse="1"{% endif %} data-site-cart-toggle-url="{% url 'site_cart_toggle' %}" data-pwa-sw-url="{% url 'pwa_service_worker' %}">
 	<section id="main_wrap">
 		{% block header %}
 		{% include "components/navbar_a0.html" %}
@@ -164,6 +164,6 @@
 	})();
 	</script>
 	<script src="{% static 'js/pub-placeholder-links.js' %}?v=6-pub-fb-native-tap" defer></script>
-	<script src="{% static 'js/eu-pwa.js' %}?v=3-login-rules" defer></script>
+	<script src="{% static 'js/eu-pwa.js' %}?v=4-login-visible" defer></script>
 </body>
 </html>

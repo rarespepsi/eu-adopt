@@ -163,6 +163,7 @@ TEMPLATES = [
                 'home.context_processors.sms_otp',
                 'home.context_processors.site_guide',
                 'home.context_processors.user_onboarding',
+                'home.context_processors.eu_pwa_login_pulse',
             ],
         },
     },

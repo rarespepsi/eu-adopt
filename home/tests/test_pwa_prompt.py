@@ -49,7 +49,7 @@ class PwaStripAnnouncementTests(TestCase):
         pwa_cells = [c for c in cells if c.get("code") == "EUP1.3"]
         self.assertEqual(len(pwa_cells), 1)
         self.assertTrue(pwa_cells[0].get("eu_pwa_strip"))
-        self.assertIn("Mobil", pwa_cells[0].get("eu_pwa_strip_msg") or "")
+        self.assertIn("MOBIL", pwa_cells[0].get("eu_pwa_strip_msg") or "")
         self.assertEqual(pwa_cells[0].get("eu_pwa_strip_msg"), EUADOPT_PWA_STRIP_MSG)
 
     def test_servicii_strip_eu_dot3_has_app_message(self):

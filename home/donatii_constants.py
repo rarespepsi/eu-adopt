@@ -20,7 +20,7 @@ EUADOPT_SMS_STRIP_MSG = (
 
 # Benzi cursivă: celula EU *.3 — anunț app mobil (desk + mobil)
 EUADOPT_PWA_STRIP_LABEL = "APP"
-EUADOPT_PWA_STRIP_MSG = "App pe Mobil: EU-ADOPT — icon pe ecranul telefonului."
+EUADOPT_PWA_STRIP_MSG = "App EU-Adopt pe MOBIL"
 
 # Partener cauză animale — pagina Donații (date complete / IBAN partener la activare)
 EUADOPT_PARTNER_NGO = {

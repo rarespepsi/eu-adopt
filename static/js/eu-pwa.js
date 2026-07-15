@@ -14,11 +14,19 @@
 	}
 
 	function isMobileTouch() {
-		try {
-			return window.matchMedia("(max-width: 900px) and (hover: none) and (pointer: coarse)").matches;
-		} catch (e) {
-			return window.innerWidth <= 900;
+		var ua = navigator.userAgent || "";
+		if (/Android|iPhone|iPad|iPod|Mobile|webOS|IEMobile/i.test(ua) && window.innerWidth <= 1100) {
+			return true;
 		}
+		try {
+			if (window.matchMedia("(max-width: 900px) and (hover: none) and (pointer: coarse)").matches) {
+				return true;
+			}
+			if (window.matchMedia("(max-width: 900px) and (pointer: coarse)").matches) {
+				return true;
+			}
+		} catch (e) {}
+		return window.innerWidth <= 900 && ("ontouchstart" in window || navigator.maxTouchPoints > 0);
 	}
 
 	function getCookie(name) {
@@ -72,14 +80,13 @@
 		return Date.now() - st.lastShownAt >= WEEK_MS;
 	}
 
-	if (!("serviceWorker" in navigator)) return;
-
+	/* SW registration — independent of banner UI */
 	var swUrl = document.body && document.body.getAttribute("data-pwa-sw-url");
-	if (!swUrl) return;
-
-	window.addEventListener("load", function () {
-		navigator.serviceWorker.register(swUrl, { scope: "/" }).catch(function () {});
-	});
+	if (swUrl && "serviceWorker" in navigator) {
+		window.addEventListener("load", function () {
+			navigator.serviceWorker.register(swUrl, { scope: "/" }).catch(function () {});
+		});
+	}
 
 	if (isStandalone()) {
 		var stInstalled = readState();
@@ -98,7 +105,6 @@
 
 	var deferredPrompt = null;
 	var isIos = /iphone|ipad|ipod/i.test(navigator.userAgent || "");
-	var isSafari = isIos && !window.MSStream && !/crios|fxios|edgios/i.test(navigator.userAgent || "");
 	var authenticated =
 		document.body && document.body.getAttribute("data-user-authenticated") === "true";
 
@@ -109,21 +115,18 @@
 
 	function showBanner() {
 		banner.hidden = false;
+		banner.style.display = "";
 		banner.removeAttribute("aria-hidden");
-		if (isSafari || isIos) {
-			if (iosHint) iosHint.hidden = false;
-			if (btnInstall) {
-				btnInstall.hidden = !deferredPrompt;
+		if (iosHint) {
+			iosHint.hidden = !!deferredPrompt;
+			if (!deferredPrompt) {
+				iosHint.textContent = isIos
+					? "iPhone: Share → Adaugă pe ecranul principal"
+					: "Meniu browser (⋮) → Instalează aplicația / Add to Home screen";
 			}
-		} else if (iosHint) {
-			iosHint.hidden = true;
 		}
-		if (btnInstall && !deferredPrompt && !(isSafari || isIos)) {
-			btnInstall.hidden = true;
-		}
-		if (btnInstall && deferredPrompt) {
-			btnInstall.hidden = false;
-			if (iosHint) iosHint.hidden = true;
+		if (btnInstall) {
+			btnInstall.hidden = !deferredPrompt;
 		}
 	}
 
@@ -179,9 +182,11 @@
 
 	if (!authenticated || !isMobileTouch()) return;
 
-	var pulse = getCookie(PULSE_COOKIE) === "1";
-	if (!pulse) return;
-	clearCookie(PULSE_COOKIE);
+	var pulseCookie = getCookie(PULSE_COOKIE) === "1";
+	var pulseAttr =
+		document.body && document.body.getAttribute("data-eu-pwa-login-pulse") === "1";
+	if (!pulseCookie && !pulseAttr) return;
+	if (pulseCookie) clearCookie(PULSE_COOKIE);
 
 	var st = readState();
 	if (st.installed) return;

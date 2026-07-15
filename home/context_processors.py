@@ -198,6 +198,12 @@ def user_onboarding(request):
     }
 
 
+def eu_pwa_login_pulse(request):
+    """O dată după login: semnal pentru banner PWA pe mobil (complement cookie)."""
+    pulse = bool(request.session.pop("eu_pwa_login_pulse", None))
+    return {"eu_pwa_login_pulse": pulse}
+
+
 def wishlist_counts(request):
     """
     Injectează wishlist_count, nav_avatar_url și display_role în toate paginile.
