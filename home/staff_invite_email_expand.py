@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 
 from home.models import StaffOnboardingLead
+from home.staff_lead_contact_normalize import normalize_lead_phone, split_phone_field as split_phone_field_norm
 
 EMAIL_SPLIT_RE = re.compile(r"[\s/;,|]+")
 
@@ -29,9 +30,11 @@ def clone_lead_for_email(source: StaffOnboardingLead, email: str) -> StaffOnboar
     existing = StaffOnboardingLead.objects.filter(email__iexact=email).first()
     if existing:
         return existing
+    phones = split_phone_field_norm(source.phone)
+    phone_val = phones[0][:40] if phones else (source.phone or "")[:40]
     return StaffOnboardingLead.objects.create(
         email=email,
-        phone=source.phone,
+        phone=phone_val,
         display_name=source.display_name,
         org_display_name=source.org_display_name,
         username_suggested=source.username_suggested,
@@ -61,6 +64,7 @@ def clone_lead_for_email(source: StaffOnboardingLead, email: str) -> StaffOnboar
 
 def staff_invite_expand_lead_send_targets(lead: StaffOnboardingLead) -> list[StaffOnboardingLead]:
     """Lead cu N emailuri în câmp → N leaduri (primul rămâne pe pk original)."""
+    normalize_lead_phone(lead, save=True)
     emails = split_email_field(lead.email)
     if not emails:
         return [lead]
@@ -72,7 +76,9 @@ def staff_invite_expand_lead_send_targets(lead: StaffOnboardingLead) -> list[Sta
                 lead.refresh_from_db()
             targets.append(lead)
         else:
-            targets.append(clone_lead_for_email(lead, em))
+            clone = clone_lead_for_email(lead, em)
+            normalize_lead_phone(clone, save=True)
+            targets.append(clone)
     return targets
 
 

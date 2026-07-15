@@ -19,6 +19,7 @@ from home.models import (
     StaffOnboardingLead,
 )
 from home.staff_onboarding_invite import staff_invite_campaign_stats
+from home.staff_invite_email_expand import split_email_field
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,10 @@ class InviteDayReport:
     time_start: str = ""
     time_end: str = ""
     error_rows: list[dict[str, str]] = field(default_factory=list)
+    errors_resolved: int = 0
+    errors_unresolved: int = 0
+    error_rows_resolved: list[dict[str, str]] = field(default_factory=list)
+    error_rows_unresolved: list[dict[str, str]] = field(default_factory=list)
     campaign: dict[str, Any] = field(default_factory=dict)
 
     @property
@@ -76,6 +81,47 @@ def day_bounds_ro(for_date: date) -> tuple[datetime, datetime]:
     return start, end
 
 
+def _classify_invite_day_errors(
+    error_logs,
+    sent_logs,
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    """Separă erori rezolvate în aceeași zi (retrimitere / split) de cele rămase."""
+    sent_by_lead: dict[int, list] = {}
+    sent_emails: set[str] = set()
+    for row in sent_logs.order_by("sent_at"):
+        sent_emails.add((row.to_email or "").strip().lower())
+        sent_by_lead.setdefault(row.lead_id, []).append(row)
+
+    resolved: list[dict[str, str]] = []
+    unresolved: list[dict[str, str]] = []
+
+    for row in error_logs.order_by("sent_at"):
+        item = {
+            "time": row.sent_at.astimezone(RO_TZ).strftime("%H:%M"),
+            "lead_id": str(row.lead_id),
+            "email": row.to_email,
+            "message": (row.error_message or "")[:200],
+        }
+        err_at = row.sent_at
+        ok = False
+        for sent in sent_by_lead.get(row.lead_id, []):
+            if sent.sent_at > err_at:
+                ok = True
+                item["resolved_by"] = f"retrimis {sent.sent_at.astimezone(RO_TZ).strftime('%H:%M')} -> {sent.to_email}"
+                break
+        if not ok:
+            for em in split_email_field(row.to_email):
+                if em in sent_emails:
+                    ok = True
+                    item["resolved_by"] = f"split -> {em}"
+                    break
+        if ok:
+            resolved.append(item)
+        else:
+            unresolved.append(item)
+    return resolved, unresolved
+
+
 def build_staff_invite_day_report(for_date: date | None = None, now=None) -> InviteDayReport:
     now = now or timezone.now()
     for_date = for_date or yesterday_ro(now)
@@ -100,9 +146,10 @@ def build_staff_invite_day_report(for_date: date | None = None, now=None) -> Inv
             }
         )
 
-    ok_emails = set(
-        logs.filter(outcome=StaffOnboardingInviteLog.OUTCOME_SENT).values_list("to_email", flat=True)
-    )
+    sent_logs = logs.filter(outcome=StaffOnboardingInviteLog.OUTCOME_SENT)
+    err_logs = logs.filter(outcome=StaffOnboardingInviteLog.OUTCOME_ERROR)
+    resolved_rows, unresolved_rows = _classify_invite_day_errors(err_logs, sent_logs)
+    ok_emails = set(sent_logs.values_list("to_email", flat=True))
 
     leads_day = StaffOnboardingLead.objects.filter(
         invite_email_last_sent_at__gte=start,
@@ -135,6 +182,10 @@ def build_staff_invite_day_report(for_date: date | None = None, now=None) -> Inv
         leads_signed_up=signed_up,
         inbound=inbound,
         error_rows=error_rows,
+        errors_resolved=len(resolved_rows),
+        errors_unresolved=len(unresolved_rows),
+        error_rows_resolved=resolved_rows,
+        error_rows_unresolved=unresolved_rows,
         campaign=staff_invite_campaign_stats(now),
     )
     if first_ts:
@@ -149,7 +200,9 @@ def format_staff_invite_day_report_text(report: InviteDayReport) -> str:
         "",
         f"Total încercări: {report.total_logs}",
         f"Trimise OK (SMTP): {report.sent_ok}",
-        f"Erori SMTP: {report.errors}",
+        f"Erori SMTP (log): {report.errors}",
+        f"  → rezolvate în aceeași zi: {report.errors_resolved}",
+        f"  → nerezolvate: {report.errors_unresolved}",
         f"Simulări: {report.dry_run}",
         f"Val (wave): {report.dispatch_wave} · Manual: {report.dispatch_manual}",
     ]
@@ -165,12 +218,19 @@ def format_staff_invite_day_report_text(report: InviteDayReport) -> str:
     if report.inbound:
         parts = [f"{k}={v}" for k, v in sorted(report.inbound.items())]
         lines.append(f"Inbound (răspuns/bounce): {', '.join(parts)}")
-    if report.error_rows:
+    if report.error_rows_resolved:
         lines.append("")
-        lines.append("Erori:")
-        for err in report.error_rows:
+        lines.append("Erori inițiale (corectate în aceeași zi — email dublu / retrimitere):")
+        for err in report.error_rows_resolved:
             lines.append(f"  [{err['time']}] lead {err['lead_id']} · {err['email']}")
-            if err["message"]:
+            if err.get("resolved_by"):
+                lines.append(f"    ✓ {err['resolved_by']}")
+    if report.error_rows_unresolved:
+        lines.append("")
+        lines.append("Erori nerezolvate:")
+        for err in report.error_rows_unresolved:
+            lines.append(f"  [{err['time']}] lead {err['lead_id']} · {err['email']}")
+            if err.get("message"):
                 lines.append(f"    {err['message']}")
     camp = report.campaign or {}
     lines.extend(
@@ -212,7 +272,15 @@ def send_staff_invite_daily_report(
     subject = (
         f"[EU-Adopt] Invitații {report.date_label} — "
         f"{report.sent_ok} trimise"
-        + (f", {report.errors} erori" if report.errors else "")
+        + (
+            f", {report.errors_unresolved} erori nerezolvate"
+            if report.errors_unresolved
+            else (
+                f" ({report.errors_resolved} erori corectate)"
+                if report.errors_resolved
+                else ""
+            )
+        )
     )
     send_mail_text_and_html(
         subject=subject,
