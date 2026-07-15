@@ -1,6 +1,9 @@
 (function () {
 	"use strict";
 
+	/* Temporar oprit — reactivare după test login PF invitat */
+	var INSTALL_BANNER_ENABLED = false;
+
 	function isStandalone() {
 		try {
 			if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) return true;
@@ -24,6 +27,8 @@
 	window.addEventListener("load", function () {
 		navigator.serviceWorker.register(swUrl, { scope: "/" }).catch(function () {});
 	});
+
+	if (!INSTALL_BANNER_ENABLED) return;
 
 	if (isStandalone()) return;
 
