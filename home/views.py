@@ -6084,12 +6084,16 @@ def admin_analysis_add_user_invite_wave_view(request):
         if len(picked) >= wave_limit:
             break
 
+    from home.staff_invite_email_expand import staff_invite_expand_picked_leads
+
+    expanded = staff_invite_expand_picked_leads(picked)
+
     stats = staff_invite_process_batch(
         request,
         request.user,
-        picked,
+        expanded,
         dispatch_kind=StaffOnboardingInviteLog.DISPATCH_WAVE,
-        max_count=wave_limit,
+        max_count=len(expanded) if expanded else wave_limit,
     )
     msg = staff_invite_build_result_message(stats, wave=True)
     if not picked:
