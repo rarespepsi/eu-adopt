@@ -36,6 +36,7 @@
 				<div class="pub-row"><span>Preț perioadă:</span> <strong id="pubDetailPeriodPrice">-</strong></div>
 				<div class="pub-row"><span>Discount aplicat:</span> <strong id="pubDetailDiscount">-</strong></div>
 				<div class="pub-row"><span>Preț final:</span> <strong id="pubDetailFinalPrice">-</strong></div>
+				<button id="pubAddBtn" type="button" class="pub-add-btn pub-add-btn--top">Adaugă în coș</button>
 				<label for="pubQty">Pachete (săptămâni):</label>
 				<input id="pubQty" type="number" min="1" max="48" value="1" />
 				<div class="pub-qty-presets" aria-label="Preset perioadă">
@@ -60,7 +61,6 @@
 					<textarea id="pubNote" rows="4" placeholder="Burtieră: textul benzii sau link"></textarea>
 					<p id="pubNoteHint" class="pub-note-hint" style="margin:0;font-size:0.72rem;color:#6d4c41;line-height:1.35;">Burtieră: completarea este obligatorie (max. 100 caractere).</p>
 				</div>
-				<button id="pubAddBtn" type="button" class="pub-add-btn">Adaugă în coș</button>
 			</form>
 			<div id="pubWeekModal" class="pub-week-modal" hidden>
 				<div class="pub-week-modal__card">
@@ -72,12 +72,11 @@
 							<button type="button" id="pubWeekCloseBtn" class="pub-cal-nav" title="Închide">×</button>
 						</div>
 					</div>
-					<p style="margin:0 0 0.45rem;font-size:0.72rem;color:#546e7a;">Bifează blocurile de 7 zile dorite, apoi apasă „Acceptă selecția”.</p>
-					<div id="pubWeekMonths" class="pub-week-months"></div>
-					<div class="pub-week-modal__foot">
+					<div class="pub-week-modal__actions">
 						<button type="button" id="pubWeekCancelBtn" class="pub-qty-chip">Anulează</button>
 						<button type="button" id="pubWeekAcceptBtn" class="pub-add-btn">Acceptă selecția</button>
 					</div>
+					<div id="pubWeekMonths" class="pub-week-months"></div>
 				</div>
 			</div>
 		</aside>
@@ -1318,7 +1317,8 @@
 		border: 1px solid #90caf9;
 		border-radius: 6px;
 	}
-	.pub-form { display: grid; gap: 0.3rem; }
+	.pub-form { display: grid; gap: 0.3rem; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+	.pub-add-btn--top { margin: 0.15rem 0 0.25rem; }
 	.pub-row { font-size: 0.8rem; display: flex; justify-content: space-between; gap: 0.5rem; }
 	.pub-form input, .pub-form textarea {
 		width: 100%; box-sizing: border-box; border: 1px solid #bcaaa4; border-radius: 6px; padding: 0.34rem;
@@ -1381,14 +1381,22 @@
 	}
 	.pub-week-modal[hidden] { display: none !important; }
 	.pub-week-modal__card {
-		width: min(980px, 96vw); max-height: 84vh; overflow: auto;
+		width: min(980px, 96vw); max-height: 84vh;
+		display: flex; flex-direction: column; overflow: hidden;
 		background: #fff; border-radius: 12px; border: 1px solid #cfd8dc; padding: 0.6rem;
 	}
 	.pub-week-modal__head {
 		display: grid; grid-template-columns: auto 1fr auto; align-items: center;
 		gap: 0.5rem; margin-bottom: 0.45rem;
 	}
-	.pub-week-months { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 0.5rem; }
+	.pub-week-modal__actions {
+		display: flex; justify-content: flex-end; gap: 0.4rem;
+		margin: 0 0 0.45rem; flex-shrink: 0;
+	}
+	.pub-week-months {
+		display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 0.5rem;
+		flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 0.15rem;
+	}
 	.pub-week-month {
 		border: 1px solid #eceff1; border-radius: 8px; padding: 0.35rem; background: #fafafa;
 	}
@@ -1400,7 +1408,6 @@
 	.pub-week-row.is-selected { border-color: #1565c0; background: #e3f2fd; }
 	.pub-week-row.is-occupied { opacity: 0.55; background: #fbe9e7; }
 	.pub-week-row small { font-size: 0.66rem; color: #546e7a; }
-	.pub-week-modal__foot { margin-top: 0.42rem; display: flex; justify-content: flex-end; gap: 0.4rem; }
 	button.pub-pay-btn.pub-pay-btn--site-cart {
 		display: inline-flex;
 		align-items: center;
