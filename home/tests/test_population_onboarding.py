@@ -78,13 +78,12 @@ class PopulationOnboardingTests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertIn("/mypet/", r.url)
 
-    def test_pf_login_blocked_during_population(self):
+    def test_pf_login_allowed_during_population_varianta_b(self):
         pf = User.objects.create_user(username="pf_login", password="Secret12ab")
         AccountProfile.objects.filter(user=pf).update(role=AccountProfile.ROLE_PF)
         c = Client()
         r = c.post("/login/", {"login": "pf_login", "password": "Secret12ab"})
-        self.assertEqual(r.status_code, 200)
-        self.assertIn(b"populare", r.content.lower())
+        self.assertEqual(r.status_code, 302)
 
     def test_invited_pf_login_allowed_during_population(self):
         from django.utils import timezone

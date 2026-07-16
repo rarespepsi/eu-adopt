@@ -72,17 +72,15 @@ class PrelaunchEnabledTests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertIn("/login/", r.url)
 
-    def test_anonymous_signup_blocked(self):
+    def test_anonymous_signup_choose_type_allowed(self):
         c = Client()
         r = c.get(reverse("signup_choose_type"))
-        self.assertEqual(r.status_code, 302)
-        self.assertIn("/login/", r.url)
+        self.assertEqual(r.status_code, 200)
 
-    def test_anonymous_signup_pf_blocked(self):
+    def test_anonymous_signup_pf_allowed(self):
         c = Client()
         r = c.get(reverse("signup_pf"))
-        self.assertEqual(r.status_code, 302)
-        self.assertIn("/login/", r.url)
+        self.assertEqual(r.status_code, 200)
 
     def test_login_page_accessible(self):
         c = Client()

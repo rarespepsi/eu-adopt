@@ -155,17 +155,12 @@ def user_may_login_during_population(user) -> tuple[bool, str]:
             False,
             "În această etapă accesul este deschis doar pentru contul administrator (superuser).",
         )
-    if is_staff_user(user):
+    # Varianta B: în pre-lansare pot intra toate tipurile de cont autentificate.
+    # Restricțiile financiare/comerciale rămân active prin prelaunch_soft_lock
+    # și cele dedicate ONG/adăpost rămân în middleware-ul de populare.
+    if user and getattr(user, "is_authenticated", False):
         return True, ""
-    if _account_role(user) == AccountProfile.ROLE_ORG:
-        return True, ""
-    if is_invited_pf_population_user(user):
-        return True, ""
-    return (
-        False,
-        "În etapa de populare accesul este deschis doar pentru adăposturi și ONG-uri "
-        "invitate (link din email), persoane fizice invitate și echipa EU-Adopt.",
-    )
+    return False, "Autentificare invalidă."
 
 
 # Rute blocate pentru adăpost/ONG logat în faza populare (adopții, shop, etc.)
