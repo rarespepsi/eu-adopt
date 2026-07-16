@@ -204,5 +204,5 @@ class CartePetsSinglePublishedTests(TestCase):
         )
 
     def test_pets_single_published_200(self):
-        r = Client().get(reverse("pets_single", args=[self.listing.pk]))
+        r = Client().get(reverse("pets_single", args=[self.listing.pk]), follow=True)
         self.assertEqual(r.status_code, 200)

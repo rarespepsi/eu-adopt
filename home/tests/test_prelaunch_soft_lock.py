@@ -123,7 +123,7 @@ class PrelaunchSoftLockTests(TestCase):
             species="dog",
             is_published=True,
         )
-        resp = self.client.get(reverse("pets_single", args=[pet.pk]))
+        resp = self.client.get(reverse("pets_single", args=[pet.pk]), follow=True)
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "VREAU SĂ ADOPT")
         self.assertNotContains(resp, "Inactiv în perioada de populare")

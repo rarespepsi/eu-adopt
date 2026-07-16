@@ -11,6 +11,8 @@ from django.conf import settings
 
 # Fișă animal publicată — vizualizare anonimă (link Distribuie / QR), fără listă PT.
 _PRELAUNCH_PET_FICHA_RE = re.compile(r"^/pets/\d+/?$")
+# URL frumos animal: /caini|pisici|altele/<slug>/
+_PRELAUNCH_PET_SLUG_RE = re.compile(r"^/(caini|pisici|altele)/[a-z0-9\-]+/?$", re.I)
 
 # Prefixe URL (path trebuie să înceapă cu una dintre aceste valori).
 PRELAUNCH_ANONYMOUS_PREFIXES: tuple[str, ...] = (
@@ -32,6 +34,7 @@ PRELAUNCH_ANONYMOUS_PREFIXES: tuple[str, ...] = (
     "/signup/complete-login/",
     "/signup/check-activation-status/",
     "/cont/editeaza/confirmare-email/",
+    "/adaposturi/",
     "/admin/",
     "/static/",
     "/media/",
@@ -57,6 +60,8 @@ def is_prelaunch_public_path(path: str) -> bool:
     ):
         return False
     if _PRELAUNCH_PET_FICHA_RE.match(p):
+        return True
+    if _PRELAUNCH_PET_SLUG_RE.match(p):
         return True
     return p.startswith(PRELAUNCH_ANONYMOUS_PREFIXES)
 

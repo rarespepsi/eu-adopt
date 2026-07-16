@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+{% load static anunturi_extras %}
+{% block title %}{{ org_name }} | Adăposturi EU Adopt{% endblock %}
+{% block body_class %}page-adapost-detail{% endblock %}
+
+{% block extra_css_after %}
+<style>
+	body.page-adapost-detail #main_content { padding-bottom: 2rem; }
+	.adp-det {
+		max-width: 1120px;
+		margin: 0.6rem auto 1.5rem;
+		padding: 0 0.75rem;
+		display: grid;
+		grid-template-columns: minmax(15rem, 19rem) minmax(0, 1fr);
+		gap: 0.9rem;
+		align-items: start;
+	}
+	.adp-det__side {
+		background: #fffef8;
+		border: 1px solid #d7ccc8;
+		border-radius: 14px;
+		padding: 0.85rem;
+		box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+	}
+	.adp-det__logo {
+		width: 100%;
+		aspect-ratio: 1;
+		object-fit: cover;
+		border-radius: 12px;
+		border: 1px solid #e0e0e0;
+		background: #eceff1;
+		margin-bottom: 0.65rem;
+	}
+	.adp-det__logo-ph {
+		width: 100%;
+		aspect-ratio: 1;
+		border-radius: 12px;
+		background: #eceff1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 2.5rem;
+		margin-bottom: 0.65rem;
+		border: 1px solid #e0e0e0;
+	}
+	.adp-det__side h1 {
+		margin: 0 0 0.2rem;
+		font-size: 1.15rem;
+		color: #1b5e20;
+		line-height: 1.2;
+	}
+	.adp-det__badge {
+		display: inline-block;
+		font-size: 0.68rem;
+		font-weight: 800;
+		color: #0d47a1;
+		background: #e3f2fd;
+		border-radius: 999px;
+		padding: 0.12rem 0.45rem;
+		margin-bottom: 0.45rem;
+	}
+	.adp-det__side h2 {
+		margin: 0.7rem 0 0.28rem;
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: #6d4c41;
+	}
+	.adp-det__side p, .adp-det__side address {
+		margin: 0;
+		font-size: 0.82rem;
+		color: #37474f;
+		line-height: 1.4;
+		font-style: normal;
+	}
+	.adp-det__map {
+		margin-top: 0.45rem;
+		border-radius: 10px;
+		overflow: hidden;
+		border: 1px solid #cfd8dc;
+		aspect-ratio: 4/3;
+		background: #eceff1;
+	}
+	.adp-det__map iframe {
+		width: 100%;
+		height: 100%;
+		border: 0;
+		display: block;
+	}
+	.adp-det__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		margin-top: 0.55rem;
+	}
+	.adp-det__actions a, .adp-det__actions button {
+		font-size: 0.75rem;
+		font-weight: 700;
+		border-radius: 8px;
+		padding: 0.35rem 0.55rem;
+		border: 1px solid #90caf9;
+		background: #e3f2fd;
+		color: #0d47a1;
+		text-decoration: none;
+		cursor: pointer;
+		font: inherit;
+	}
+	.adp-det__main h2 {
+		margin: 0 0 0.55rem;
+		font-size: 1.05rem;
+		color: #263238;
+	}
+	.adp-det__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+		gap: 0.65rem;
+	}
+	.adp-pet-card {
+		display: block;
+		text-decoration: none;
+		color: inherit;
+		border-radius: 10px;
+		overflow: hidden;
+		border: 1px solid #cfd8dc;
+		background: #fff;
+		box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+	}
+	.adp-pet-card img {
+		width: 100%;
+		aspect-ratio: 1;
+		object-fit: cover;
+		display: block;
+		background: #eceff1;
+	}
+	.adp-pet-card__meta {
+		padding: 0.4rem 0.45rem 0.5rem;
+	}
+	.adp-pet-card__name {
+		font-weight: 800;
+		font-size: 0.82rem;
+		color: #1b5e20;
+	}
+	.adp-pet-card__sub {
+		font-size: 0.68rem;
+		color: #607d8b;
+	}
+	.adp-det__empty {
+		padding: 1rem;
+		border: 1px dashed #b0bec5;
+		border-radius: 10px;
+		color: #546e7a;
+		background: #fafafa;
+		font-size: 0.9rem;
+		line-height: 1.45;
+	}
+	.adp-det__back {
+		display: inline-block;
+		margin-bottom: 0.45rem;
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: #1565c0;
+		text-decoration: none;
+	}
+	@media (max-width: 820px) {
+		.adp-det {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="adp-det">
+	<aside class="adp-det__side">
+		<a class="adp-det__back" href="{% url 'shelter_directory' %}">← Toate adăposturile</a>
+		{% if org_logo_url %}
+		<img class="adp-det__logo" src="{{ org_logo_url }}" alt="{{ org_name }}" />
+		{% else %}
+		<div class="adp-det__logo-ph" aria-hidden="true">🏠</div>
+		{% endif %}
+		{% if org_is_public_shelter %}<span class="adp-det__badge">Adăpost public</span>{% else %}<span class="adp-det__badge">ONG / Adăpost</span>{% endif %}
+		<h1>{{ org_name }}</h1>
+		{% if org_locality %}<p>{{ org_locality }}</p>{% endif %}
+
+		<h2>Despre noi</h2>
+		<p>{{ org_about }}</p>
+
+		<h2>Contact</h2>
+		<p>
+			<strong>{{ org_contact|default:"—" }}</strong><br />
+			{% if org_phone %}<a href="tel:{{ org_phone }}">{{ org_phone }}</a>{% else %}Telefon indisponibil{% endif %}
+		</p>
+
+		<h2>Adresă</h2>
+		<address>{{ org_address|default:"Adresă indisponibilă în profil." }}</address>
+		{% if org_map_embed_url %}
+		<div class="adp-det__map">
+			<iframe title="Hartă {{ org_name }}" src="{{ org_map_embed_url }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+		</div>
+		{% endif %}
+		<div class="adp-det__actions">
+			{% if org_maps_url %}
+			<a href="{{ org_maps_url }}" target="_blank" rel="noopener noreferrer">Deschide pe hartă</a>
+			{% endif %}
+			<button type="button" id="adpShareLocBtn" data-share-url="{{ org_share_url }}" data-share-title="{{ org_name }}" data-maps-url="{{ org_maps_url }}">Distribuie locația</button>
+		</div>
+	</aside>
+
+	<main class="adp-det__main">
+		<h2>Animalele noastre{% if org_animal_count %} ({{ org_animal_count }}){% endif %}</h2>
+		{% if org_animals %}
+		<div class="adp-det__grid">
+			{% for a in org_animals %}
+			<a class="adp-pet-card" href="{{ a.public_url }}">
+				{% if a.photo_1 %}
+				<img src="{{ a.photo_1.url }}" alt="{{ a.name }}" />
+				{% else %}
+				<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" />
+				{% endif %}
+				<div class="adp-pet-card__meta">
+					<div class="adp-pet-card__name">{{ a.name|default:"Fără nume" }}</div>
+					<div class="adp-pet-card__sub">
+						{% if a.species == 'dog' %}Câine{% elif a.species == 'cat' %}Pisică{% else %}Alt{% endif %}
+						{% if a.city %} · {{ a.city }}{% endif %}
+					</div>
+				</div>
+			</a>
+			{% endfor %}
+		</div>
+		{% else %}
+		<p class="adp-det__empty">
+			<strong>{{ org_name }}</strong> este pe EU-Adopt, dar momentan nu are animale publicate în MyPet.
+			Revino curând sau contactează organizația pentru detalii.
+		</p>
+		{% endif %}
+	</main>
+</div>
+<script>
+(function () {
+	var btn = document.getElementById("adpShareLocBtn");
+	if (!btn) return;
+	btn.addEventListener("click", function () {
+		var title = btn.getAttribute("data-share-title") || "Adăpost EU-Adopt";
+		var pageUrl = btn.getAttribute("data-share-url") || window.location.href;
+		var mapsUrl = btn.getAttribute("data-maps-url") || "";
+		var text = title + (mapsUrl ? ("\n" + mapsUrl) : "") + "\n" + pageUrl;
+		if (navigator.share) {
+			navigator.share({ title: title, text: text, url: pageUrl }).catch(function () {});
+			return;
+		}
+		if (navigator.clipboard && navigator.clipboard.writeText) {
+			navigator.clipboard.writeText(text).then(function () {
+				btn.textContent = "Copiat!";
+				setTimeout(function () { btn.textContent = "Distribuie locația"; }, 1600);
+			}).catch(function () {
+				window.prompt("Copiază linkul:", pageUrl);
+			});
+			return;
+		}
+		window.prompt("Copiază linkul:", pageUrl);
+	});
+})();
+</script>
+{% endblock %}

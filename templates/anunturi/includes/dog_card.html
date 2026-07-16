@@ -1,6 +1,6 @@
-{% load static %}
+{% load static anunturi_extras %}
 {# Full card: photo + name/age/desc/button. Compact (A2 HOME): from=home ca back → PT (/pets/). #}
-{% url 'pets_single' pet.pk as pet_single_url %}
+{% animal_public_href pet as pet_single_url %}
 {% if a2_compact and pet.quote %}
 <a href="{{ pet_single_url }}?from=home&amp;back={% url 'pets_all' %}" class="A2-slot-link dog-card-link dog-card-compact{% if pet.a2_promo %} dog-card--a2-promo{% endif %}" aria-label="Vezi {{ pet.nume }}">
 	<article class="dog-card">

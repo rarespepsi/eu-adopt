@@ -67,6 +67,13 @@
 							{% endif %}
 							<li><a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="a0-nav-home-link current_page"{% else %}class="a0-nav-home-link"{% endif %}>Acasă</a></li>
 							<li><a href="{% url 'pets_all' %}" {% if request.resolver_match.url_name == 'pets_all' %}class="current_page"{% endif %}>Prietenul tău</a></li>
+							<li class="a0-nav-adaposturi">
+								{% if user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}
+								<a href="{% url 'shelter_directory' %}" title="Adăposturi și ONG-uri" {% if request.resolver_match.url_name == 'shelter_directory' or request.resolver_match.url_name == 'shelter_detail' %}class="current_page"{% endif %}>Adăp/ONG</a>
+								{% else %}
+								<a href="{% url 'shelter_directory' %}" {% if request.resolver_match.url_name == 'shelter_directory' or request.resolver_match.url_name == 'shelter_detail' %}class="current_page"{% endif %}>Adăpost/ONG</a>
+								{% endif %}
+							</li>
 							{% if not population_org_nav_reduced %}
 							<li><a href="{% url 'servicii' %}" {% if request.resolver_match.url_name == 'servicii' %}class="current_page"{% endif %}>Servicii</a></li>
 							<li><a href="{% url 'transport' %}" {% if request.resolver_match.url_name == 'transport' %}class="current_page"{% endif %}>Transport</a></li>

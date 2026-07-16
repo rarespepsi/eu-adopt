@@ -130,7 +130,7 @@ class Carte33_40PublicPagesTests(TestCase):
             species="dog",
             is_published=True,
         )
-        r = Client().get(reverse("pets_single", args=[listing.pk]))
+        r = Client().get(reverse("pets_single", args=[listing.pk]), follow=True)
         self.assertEqual(r.status_code, 200)
 
     def test_37_servicii_200(self):

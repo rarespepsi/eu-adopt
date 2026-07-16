@@ -228,6 +228,14 @@ class AccountProfile(models.Model):
     )
     role = models.CharField("Rol cont", max_length=20, choices=ROLE_CHOICES, default=ROLE_PF)
     is_public_shelter = models.BooleanField("Adăpost public", default=False)
+    public_slug = models.SlugField(
+        "Slug public adăpost/ONG",
+        max_length=90,
+        blank=True,
+        default="",
+        db_index=True,
+        help_text="URL: /adaposturi/<slug>/",
+    )
     # Ștergere cont cu grație (14 zile): programare → anulare din Cont sau finalizare soft la expirare.
     pending_deletion_requested_at = models.DateTimeField(
         "Cerere ștergere la",
@@ -295,6 +303,14 @@ class AnimalListing(models.Model):
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="animal_listings")
     name = models.CharField("Nume", max_length=120, blank=True)
+    slug = models.SlugField(
+        "Slug public",
+        max_length=90,
+        blank=True,
+        default="",
+        db_index=True,
+        help_text="URL: /caini|pisici|altele/<slug>/",
+    )
     species = models.CharField("Specie", max_length=20, choices=SPECIES_CHOICES, default="dog")
     size = models.CharField("Talie", max_length=20, blank=True)
     age_label = models.CharField("Vârstă (eticheta)", max_length=20, blank=True)
@@ -404,6 +420,10 @@ class AnimalListing(models.Model):
 
     def save(self, *args, **kwargs):
         # Asigurăm că regula se aplică și dacă cineva salvează din cod/admin fără form validation.
+        if not (self.slug or "").strip():
+            from home.shelter_directory import unique_animal_slug
+
+            self.slug = unique_animal_slug(self)
         self.full_clean()
         return super().save(*args, **kwargs)
 

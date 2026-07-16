@@ -1,8 +1,9 @@
 {% load static %}
 {% load anunturi_extras %}
 {# Acțiuni în bara de jos (în afara linkului pozei): ♥ plic | nume | megafon LED. #}
+{% animal_public_href pet as pet_single_url %}
 <div class="pt-p2-card-photo-wrap">
-	<a href="{% url 'pets_single' pet.pk %}" class="pt-p2-card-link" aria-label="Vezi profil {{ pet.nume }}">
+	<a href="{{ pet_single_url }}" class="pt-p2-card-link" aria-label="Vezi profil {{ pet.nume }}">
 		<div class="pt-p2-card-photo" aria-hidden="true">
 			{% if pet.imagine %}
 			<img

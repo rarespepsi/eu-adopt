@@ -4737,17 +4737,11 @@ def _pet_ficha_back_url(request):
     return pets_all_url
 
 
-def dog_profile_view(request, pk):
+def render_dog_profile(request, listing: AnimalListing):
     """
-    Fișa câinelui (PT) – afișează datele reale din AnimalListing.
-
-    Layoutul din `pets-single.html` folosește un obiect `pet` cu câmpuri istorice
-    (imagine, imagine_2, imagine_3, descriere etc.). Pentru lista MyPet / PT
-    mapăm câmpurile din AnimalListing pe aceste nume, fără să schimbăm șablonul.
+    Fișa animalului (PT) – date reale din AnimalListing.
+    Layoutul din `pets-single.html` folosește un obiect `pet` cu câmpuri istorice.
     """
-    from django.shortcuts import get_object_or_404
-
-    listing = get_object_or_404(AnimalListing, pk=pk, is_published=True)
     _sync_animal_adoption_state(listing)
 
     # Mapare minimă către câmpurile folosite în șablonul existent
@@ -4792,6 +4786,7 @@ def dog_profile_view(request, pk):
         "trait_necesita_experienta": listing.trait_necesita_experienta,
         "adoption_state": listing.adoption_state,
         "adoption_state_label": _adoption_state_label(listing.adoption_state),
+        "slug": getattr(listing, "slug", "") or "",
     }
 
     adoption_request_status = None
@@ -4871,6 +4866,13 @@ def dog_profile_view(request, pk):
         "pet_from_home": (request.GET.get("from") or "").strip().lower() == "home",
     }
     return render(request, "anunturi/pets-single.html", ctx)
+
+
+def dog_profile_view(request, pk):
+    """Compat /pets/<pk>/ → redirect la URL frumos (slug)."""
+    from home.shelter_views import dog_profile_pk_redirect
+
+    return dog_profile_pk_redirect(request, pk)
 
 
 @login_required

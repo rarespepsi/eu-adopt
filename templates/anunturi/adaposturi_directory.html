@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Adăposturi și ONG-uri | EU Adopt{% endblock %}
+{% block body_class %}page-adaposturi-directory{% endblock %}
+
+{% block extra_css_after %}
+<style>
+	body.page-adaposturi-directory #main_content { padding-bottom: 2rem; }
+	.adp-dir {
+		max-width: 1100px;
+		margin: 0.75rem auto 1.5rem;
+		padding: 0 0.85rem;
+	}
+	.adp-dir h1 {
+		margin: 0 0 0.35rem;
+		font-size: clamp(1.25rem, 2.5vw, 1.65rem);
+		color: #1b5e20;
+	}
+	.adp-dir-lead {
+		margin: 0 0 1rem;
+		font-size: 0.92rem;
+		color: #546e7a;
+		line-height: 1.45;
+	}
+	.adp-dir-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+		gap: 0.75rem;
+	}
+	.adp-dir-card {
+		display: flex;
+		flex-direction: column;
+		text-decoration: none;
+		color: inherit;
+		border-radius: 12px;
+		overflow: hidden;
+		border: 1px solid #cfd8dc;
+		background: #fff;
+		box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+		min-height: 11.5rem;
+		transition: transform 0.15s ease, box-shadow 0.15s ease;
+	}
+	.adp-dir-card:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+	}
+	.adp-dir-card__media {
+		flex: 1 1 auto;
+		min-height: 7.5rem;
+		background: #eceff1 center/cover no-repeat;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.adp-dir-card__media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		min-height: 7.5rem;
+	}
+	.adp-dir-card__placeholder {
+		font-size: 2.2rem;
+		opacity: 0.45;
+	}
+	.adp-dir-card__label {
+		background: rgba(33, 33, 33, 0.82);
+		color: #fff;
+		padding: 0.45rem 0.5rem;
+		text-align: center;
+	}
+	.adp-dir-card__name {
+		display: block;
+		font-weight: 800;
+		font-size: 0.82rem;
+		line-height: 1.2;
+	}
+	.adp-dir-card__loc {
+		display: block;
+		font-size: 0.68rem;
+		opacity: 0.9;
+		margin-top: 0.12rem;
+	}
+	.adp-dir-empty {
+		padding: 1.2rem;
+		border: 1px dashed #b0bec5;
+		border-radius: 10px;
+		color: #546e7a;
+		background: #fafafa;
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="adp-dir">
+	<h1>Adăposturi și ONG-uri</h1>
+	<p class="adp-dir-lead">
+		Organizațiile cu animale pe EU-Adopt. Apasă pe card pentru pagina dedicată și lista animalelor din MyPet.
+		{% if shelter_count %} · {{ shelter_count }} entități{% endif %}
+	</p>
+	{% if shelter_rows %}
+	<div class="adp-dir-grid">
+		{% for row in shelter_rows %}
+		<a class="adp-dir-card" href="{{ row.url }}" title="{{ row.name }}">
+			<div class="adp-dir-card__media"{% if row.logo_url %} style="background-image:url('{{ row.logo_url }}')"{% endif %}>
+				{% if row.logo_url %}
+				<img src="{{ row.logo_url }}" alt="" />
+				{% else %}
+				<span class="adp-dir-card__placeholder" aria-hidden="true">🏠</span>
+				{% endif %}
+			</div>
+			<div class="adp-dir-card__label">
+				<span class="adp-dir-card__name">{{ row.name }}</span>
+				{% if row.locality %}<span class="adp-dir-card__loc">{{ row.locality }}</span>{% endif %}
+			</div>
+		</a>
+		{% endfor %}
+	</div>
+	{% else %}
+	<p class="adp-dir-empty">Momentan nu există adăposturi/ONG-uri cu animale publicate. Revino curând.</p>
+	{% endif %}
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import donatii_views, views
+from . import donatii_views, shelter_views, views
 from .pwa import pwa_manifest_view, pwa_service_worker_view
 
 urlpatterns = [
@@ -144,9 +144,14 @@ urlpatterns = [
     path('shop/magazin-foto/', views.shop_magazin_foto_view, name='shop_magazin_foto'),
 
     path('img/pet-thumb/<int:size>/<path:relpath>', views.pet_media_thumb_view, name='pet_media_thumb'),
+    path('adaposturi/', shelter_views.shelter_directory_view, name='shelter_directory'),
+    path('adaposturi/<slug:slug>/', shelter_views.shelter_detail_view, name='shelter_detail'),
+    path('caini/<slug:slug>/', shelter_views.animal_public_by_slug_view, {'species': 'dog'}, name='animal_public_dog'),
+    path('pisici/<slug:slug>/', shelter_views.animal_public_by_slug_view, {'species': 'cat'}, name='animal_public_cat'),
+    path('altele/<slug:slug>/', shelter_views.animal_public_by_slug_view, {'species': 'other'}, name='animal_public_other'),
     path('pets/', views.home_view, name='pets_all'),
     path('pets/p2-more/', views.pets_p2_more_view, name='pets_p2_more'),
-    path('pets/<int:pk>/', views.dog_profile_view, name='pets_single'),
+    path('pets/<int:pk>/', shelter_views.dog_profile_pk_redirect, name='pets_single'),
     path('pets/<int:pk>/track/', views.pet_track_event_view, name='pet_track_event'),
     path('pets/<int:pk>/message/', views.pet_send_message_view, name='pet_send_message'),
     path('pets/<int:pk>/adopt/request/', views.pet_adoption_request_view, name='pet_adoption_request'),
