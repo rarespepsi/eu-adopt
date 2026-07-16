@@ -37,9 +37,9 @@
 				<div class="pub-row"><span>Discount aplicat:</span> <strong id="pubDetailDiscount">-</strong></div>
 				<div class="pub-row"><span>Preț final:</span> <strong id="pubDetailFinalPrice">-</strong></div>
 				<button id="pubAddBtn" type="button" class="pub-add-btn pub-add-btn--top">Adaugă în coș</button>
-				<label for="pubQty">Pachete (săptămâni):</label>
+				<label for="pubQty" id="pubQtyLabel">Pachete (săptămâni):</label>
 				<input id="pubQty" type="number" min="1" max="48" value="1" />
-				<div class="pub-qty-presets" aria-label="Preset perioadă">
+				<div class="pub-qty-presets" id="pubQtyPresets" aria-label="Preset perioadă">
 					<button type="button" class="pub-qty-chip" data-days="1">1</button>
 					<button type="button" class="pub-qty-chip" data-days="2">2</button>
 					<button type="button" class="pub-qty-chip" data-days="4">4</button>
@@ -48,6 +48,7 @@
 					<button type="button" class="pub-qty-chip" data-days="32">32</button>
 					<button type="button" class="pub-qty-chip" data-days="48">48</button>
 				</div>
+				<p id="pubPrelaunchDurationHint" class="pub-prelaunch-duration-hint" hidden>Durată: <strong>7 zile</strong> (1 bloc — pre-lansare)</p>
 				<label for="pubStartDate">Perioada publicitate:</label>
 				<div class="pub-start-row">
 					<input id="pubStartDate" type="hidden" />
@@ -55,7 +56,7 @@
 				</div>
 				<div id="pubWeekSummary" class="pub-week-summary" hidden></div>
 				<button type="button" id="pubWeekModifyBtn" class="pub-qty-chip" hidden>Modifică perioada</button>
-				<div id="pubAvailabilityInfo" class="pub-availability-info" aria-live="polite"></div>
+				<div id="pubAvailabilityInfo" class="pub-availability-info" aria-live="polite" hidden></div>
 				<div id="pubNoteWrap" hidden>
 					<label for="pubNote">Notă / creative:</label>
 					<textarea id="pubNote" rows="4" placeholder="Burtieră: textul benzii sau link"></textarea>
@@ -1336,14 +1337,32 @@
 	}
 	.pub-qty-presets {
 		display: flex;
-		flex-wrap: nowrap;
+		flex-wrap: wrap;
 		gap: 0.28rem;
 		margin: 0.28rem 0 0.35rem;
-		overflow-x: auto;
-		overflow-y: hidden;
-		-webkit-overflow-scrolling: touch;
-		scrollbar-width: thin;
+		overflow: visible;
 		padding-bottom: 0.08rem;
+	}
+	.pub-qty-presets[hidden],
+	.pub-prelaunch-duration-hint[hidden],
+	.pub-availability-info[hidden] {
+		display: none !important;
+	}
+	.pub-prelaunch-duration-hint {
+		margin: 0.1rem 0 0.25rem;
+		padding: 0.28rem 0.4rem;
+		border-radius: 6px;
+		font-size: 0.74rem;
+		font-weight: 600;
+		line-height: 1.3;
+		color: #14532d;
+		background: rgba(34, 197, 94, 0.14);
+		border: 1px solid rgba(34, 197, 94, 0.35);
+	}
+	body.page-publicitate-harta .pub-prelaunch-duration-hint {
+		color: #ecfdf5 !important;
+		background: rgba(22, 101, 52, 0.45) !important;
+		border-color: rgba(134, 239, 172, 0.45) !important;
 	}
 	.pub-qty-chip {
 		flex: 0 0 auto;
@@ -1368,6 +1387,12 @@
 		font-size: 0.74rem;
 		line-height: 1.35;
 		color: #37474f;
+	}
+	.pub-availability-info:empty {
+		display: none !important;
+		margin: 0;
+		padding: 0;
+		border: 0;
 	}
 	.pub-availability-info strong { color: #0d47a1; }
 	.pub-start-row { display: grid; grid-template-columns: 1fr auto; gap: 0.3rem; align-items: center; }
@@ -1748,6 +1773,9 @@ document.addEventListener("DOMContentLoaded", function () {
 	const cartList = document.getElementById("pubCartList");
 	const cartTotal = document.getElementById("pubCartTotal");
 	const qtyEl = document.getElementById("pubQty");
+	const qtyLabelEl = document.getElementById("pubQtyLabel");
+	const qtyPresetsEl = document.getElementById("pubQtyPresets");
+	const prelaunchDurationHintEl = document.getElementById("pubPrelaunchDurationHint");
 	const startDateEl = document.getElementById("pubStartDate");
 	const openWeekPickerEl = document.getElementById("pubOpenWeekPicker");
 	const weekSummaryEl = document.getElementById("pubWeekSummary");
@@ -1810,12 +1838,38 @@ document.addEventListener("DOMContentLoaded", function () {
 	if (qtyEl && pubPrelaunchFree && pubMaxWeeksPerOrder <= 1) {
 		qtyEl.max = "1";
 		qtyEl.value = "1";
-		document.querySelectorAll(".pub-qty-chip[data-days]").forEach(function (chip) {
-			var days = parseInt(chip.getAttribute("data-days") || "1", 10) || 1;
-			chip.hidden = days > pubMaxWeeksPerOrder;
-		});
+		qtyEl.hidden = true;
+		if (qtyLabelEl) qtyLabelEl.hidden = true;
+		if (qtyPresetsEl) qtyPresetsEl.hidden = true;
+		if (prelaunchDurationHintEl) prelaunchDurationHintEl.hidden = false;
 	} else if (qtyEl) {
 		qtyEl.max = String(PUB_MAX_WEEKS);
+		qtyEl.hidden = false;
+		if (qtyLabelEl) qtyLabelEl.hidden = false;
+		if (qtyPresetsEl) qtyPresetsEl.hidden = false;
+		if (prelaunchDurationHintEl) prelaunchDurationHintEl.hidden = true;
+		document.querySelectorAll(".pub-qty-chip[data-days]").forEach(function (chip) {
+			var days = parseInt(chip.getAttribute("data-days") || "1", 10) || 1;
+			chip.hidden = days > PUB_MAX_WEEKS;
+		});
+	}
+
+	function setAvailabilityMessage(html, forceShow) {
+		if (!availabilityEl) return;
+		var text = (html || "").trim();
+		if (!text) {
+			availabilityEl.innerHTML = "";
+			availabilityEl.hidden = true;
+			return;
+		}
+		/* În pre-lansare nu umplem panoul stânga cu nota lungă — calendarul rămâne sursa. */
+		if (pubPrelaunchFree && !forceShow) {
+			availabilityEl.innerHTML = "";
+			availabilityEl.hidden = true;
+			return;
+		}
+		availabilityEl.innerHTML = html;
+		availabilityEl.hidden = false;
 	}
 
 	let availableWeekBlocks = [];
@@ -2030,11 +2084,11 @@ document.addEventListener("DOMContentLoaded", function () {
 		availableWeekBlocks = [];
 		renderWeekSummary();
 		updateDetailPricing();
-		if (availabilityEl) availabilityEl.textContent = "";
+		setAvailabilityMessage("");
 	}
 
 	async function loadAvailability() {
-		if (!selected || !availabilityEl) return;
+		if (!selected) return;
 		var cap = section === "transport" ? 60 : PUB_MAX_WEEKS;
 		var qty = Math.max(1, Math.min(cap, parseInt((qtyEl && qtyEl.value) || "1", 10) || 1));
 		var sd = (startDateEl && startDateEl.value) ? startDateEl.value : todayIso();
@@ -2044,12 +2098,13 @@ document.addEventListener("DOMContentLoaded", function () {
 			qty: String(qty),
 			start_date: sd
 		});
-		availabilityEl.innerHTML = "Verific disponibilitatea…";
+		if (!pubPrelaunchFree) setAvailabilityMessage("Verific disponibilitatea…");
+		else setAvailabilityMessage("");
 		try {
 			var res = await fetch(availabilityUrl + "?" + qs.toString(), { headers: { "X-Requested-With": "XMLHttpRequest" } });
 			var data = await res.json();
 			if (!res.ok || !data.ok) {
-				availabilityEl.innerHTML = "Nu am putut încărca disponibilitatea acum.";
+				setAvailabilityMessage("Nu am putut încărca disponibilitatea acum.", true);
 				return;
 			}
 			var busy = Array.isArray(data.busy) ? data.busy : [];
@@ -2063,16 +2118,18 @@ document.addEventListener("DOMContentLoaded", function () {
 				if (busy.length > 4) busyHtml += " | …";
 			}
 			if (section === "transport") {
-				availabilityEl.innerHTML =
+				setAvailabilityMessage(
 					"<strong>Primul start liber:</strong> " + (data.first_available_start || sd) +
-					"<br><strong>Perioade rezervate:</strong> " + busyHtml;
+					"<br><strong>Perioade rezervate:</strong> " + busyHtml
+				);
 			} else {
-				availabilityEl.innerHTML =
+				setAvailabilityMessage(
 					"<strong>Primul start liber (ritm casetă, 7 zile):</strong> " + (data.first_available_start || sd) +
-					"<br><strong>Perioade rezervate (blocuri):</strong> " + busyHtml;
+					"<br><strong>Perioade rezervate (blocuri):</strong> " + busyHtml
+				);
 			}
 		} catch (e) {
-			availabilityEl.innerHTML = "Nu am putut încărca disponibilitatea acum.";
+			setAvailabilityMessage("Nu am putut încărca disponibilitatea acum.", true);
 		}
 	}
 
