@@ -136,6 +136,15 @@ def _get_display_role(request):
 
 def prelaunch_mode(request):
     """True când modul PRE-LAUNCH este activ (EUADOPT_PRELAUNCH_MODE=1)."""
+    from django.urls import reverse
+
+    from home.prelaunch_free_access import (
+        PUB_PRELAUNCH_NUDGE_INTERVAL,
+        PUB_PRELAUNCH_NUDGE_TEXT,
+        publicitate_prelaunch_free_enabled,
+        publicitate_temp_superuser_only,
+        publicitate_user_needs_pub_nudge,
+    )
     from home.prelaunch_soft_lock import (
         PRELAUNCH_SOFT_LOCK_BANNER,
         prelaunch_first_hint_for_url_name,
@@ -145,12 +154,30 @@ def prelaunch_mode(request):
 
     rm = getattr(request, "resolver_match", None)
     url_name = getattr(rm, "url_name", None) if rm else None
+    user = getattr(request, "user", None)
+    pub_nudge = False
+    pub_nudge_url = ""
+    if (
+        publicitate_prelaunch_free_enabled()
+        and publicitate_user_needs_pub_nudge(user)
+        and not publicitate_temp_superuser_only()
+        and url_name not in ("publicitate_harta", "publicitate_cos", "publicitate_my_orders")
+    ):
+        pub_nudge = True
+        try:
+            pub_nudge_url = reverse("publicitate_cos")
+        except Exception:
+            pub_nudge_url = "/publicitate/cos/"
     return {
         "prelaunch_mode": bool(getattr(settings, "PRELAUNCH_MODE", False)),
-        "prelaunch_soft_lock": prelaunch_soft_lock_active_for_user(getattr(request, "user", None)),
+        "prelaunch_soft_lock": prelaunch_soft_lock_active_for_user(user),
         "prelaunch_soft_lock_banner": PRELAUNCH_SOFT_LOCK_BANNER,
         "prelaunch_first_hint": prelaunch_first_hint_for_url_name(url_name or ""),
         "prelaunch_monetization_soft_lock": prelaunch_monetization_soft_lock_enabled(),
+        "pub_prelaunch_nudge": pub_nudge,
+        "pub_prelaunch_nudge_text": PUB_PRELAUNCH_NUDGE_TEXT,
+        "pub_prelaunch_nudge_url": pub_nudge_url,
+        "pub_prelaunch_nudge_interval": PUB_PRELAUNCH_NUDGE_INTERVAL,
     }
 
 

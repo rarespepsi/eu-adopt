@@ -57,7 +57,7 @@
 	<link rel="stylesheet" href="{% static 'css/warm-theme.css' %}?v=3" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/navbar-envelope-unread.css' %}?v=1" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/checkout-intra-skin.css' %}?v=3" type="text/css" media="screen" />
-	<link rel="stylesheet" href="{% static 'css/eu-intra-site-skin.css' %}?v=3" type="text/css" media="screen" />
+	<link rel="stylesheet" href="{% static 'css/eu-intra-site-skin.css' %}?v=4" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/mobile-portrait-scroll.css' %}?v=1" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/eu-pwa.css' %}?v=9-staff-show" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/admin-analysis.css' %}?v=1" type="text/css" media="screen" />
@@ -100,6 +100,7 @@
 	{% include "components/login_required_modal.html" %}
 	{% include "components/site_guide_widget.html" %}
 	{% if prelaunch_mode %}{% include "components/prelaunch_first_hint.html" %}{% endif %}
+	{% if pub_prelaunch_nudge %}{% include "components/pub_prelaunch_nudge.html" %}{% endif %}
 	{% include "components/user_onboarding.html" %}
 	<div id="eu-pwa-install-banner" hidden role="region" aria-label="App EU-Adopt pe telefon" aria-hidden="true">
 		<img class="eu-pwa-install-banner__icon" src="{% static 'images/logo-final-cu-stele.png' %}?v=8-home" width="44" height="44" alt="EU-Adopt" />
@@ -116,6 +117,7 @@
 	<script src="{% static 'js/wishlist.js' %}?v=5"></script>
 	<script src="{% static 'js/site-cart.js' %}?v=5"></script>
 	{% if prelaunch_mode %}<script src="{% static 'js/prelaunch-first-hints.js' %}?v=1"></script>{% endif %}
+	{% if pub_prelaunch_nudge %}<script src="{% static 'js/pub-prelaunch-nudge.js' %}?v=1"></script>{% endif %}
 	{% block extra_js %}{% endblock %}
 	<script>
 	(function () {

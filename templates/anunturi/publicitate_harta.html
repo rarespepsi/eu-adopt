@@ -20,7 +20,7 @@
 		</a>
 	</div>
 	{% if pub_prelaunch_free %}
-	<p class="pub-prelaunch-banner">{{ pub_prelaunch_banner }} · maximum {{ pub_max_slots_per_user }} casetă publicitară per cont{% if pub_slots_remaining is not None %} · {% if pub_slots_remaining %}mai puteți rezerva {{ pub_slots_remaining }}{% else %}ați folosit caseta gratuită{% endif %}{% endif %}</p>
+	<p class="pub-prelaunch-banner">{{ pub_prelaunch_banner }} · maximum {{ pub_max_slots_per_user }} casetă publicitară per cont · {% if pub_max_weeks_per_order == 1 %}7 zile (1 bloc săptămânal){% else %}{{ pub_max_weeks_per_order }} săptămâni{% endif %} per rezervare{% if pub_slots_remaining is not None %} · {% if pub_slots_remaining %}mai puteți rezerva {{ pub_slots_remaining }}{% else %}ați folosit caseta gratuită{% endif %}{% endif %}</p>
 	{% endif %}
 	<div class="pub-grid">
 		<aside class="pub-c3">
@@ -194,6 +194,7 @@
 {{ pub_a13_images|json_script:"pub-a13-images-json" }}
 {{ pub_prelaunch_free|json_script:"pub-prelaunch-free-json" }}
 {{ pub_max_slots_per_user|json_script:"pub-max-slots-json" }}
+{{ pub_max_weeks_per_order|json_script:"pub-max-weeks-json" }}
 {{ pub_slots_remaining|json_script:"pub-slots-remaining-json" }}
 {% endblock %}
 
@@ -1630,6 +1631,63 @@
 		resize: none !important;
 	}
 	@media (max-width: 980px) {
+		html:has(body.page-publicitate-harta) {
+			height: auto;
+			overflow-x: hidden;
+			overflow-y: auto;
+		}
+		body.page-publicitate-harta {
+			height: auto;
+			max-height: none;
+			overflow-x: hidden !important;
+			overflow-y: auto !important;
+		}
+		body.page-publicitate-harta #main_wrap,
+		body.page-publicitate-harta #main_content,
+		body.page-publicitate-harta #main_content > .layout,
+		body.page-publicitate-harta .layout .main-content {
+			height: auto;
+			max-height: none;
+			overflow: visible !important;
+		}
+		.page-publicitate-harta #PUBW.pub-wrap,
+		.page-publicitate-harta .pub-wrap {
+			overflow: visible;
+			min-height: auto;
+		}
+		.page-publicitate-harta .pub-grid {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+			overflow: visible;
+		}
+		.page-publicitate-harta .pub-c3 { order: 1; }
+		.page-publicitate-harta .pub-c1 { order: 2; }
+		.page-publicitate-harta .pub-c2 { order: 3; }
+		.page-publicitate-harta .pub-c1,
+		.page-publicitate-harta .pub-c2,
+		.page-publicitate-harta .pub-c3 {
+			overflow: visible;
+			flex-shrink: 0;
+		}
+		.pub-top-tabs {
+			flex-wrap: nowrap;
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+			scrollbar-width: thin;
+			padding-bottom: 0.15rem;
+		}
+		.pub-tab { flex-shrink: 0; white-space: nowrap; }
+		.pub-c2-map-half {
+			flex: 0 0 auto;
+			max-height: none;
+			min-height: clamp(12rem, 42vh, 20rem);
+		}
+		.pub-c2-stack { min-height: auto; }
+		.pub-form {
+			max-height: none;
+			overflow-y: visible;
+		}
 		.pub-grid { grid-template-columns: 1fr; }
 		.page-publicitate-harta .pub-grid { gap: 0.5rem; }
 		.page-publicitate-harta .pub-c1,
@@ -1638,7 +1696,6 @@
 			border: 2px solid #d2b27a;
 			border-radius: 10px;
 		}
-		.pub-c2-map-half { flex: 0 0 68.3vh; max-height: 68.3vh; }
 		.pub-slot-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 		.pub-qty-presets { gap: 0.22rem; margin: 0.24rem 0 0.3rem; }
 		.pub-qty-chip { padding: 0.1rem 0.4rem; font-size: 0.66rem; font-weight: 600; }
@@ -1661,10 +1718,15 @@ document.addEventListener("DOMContentLoaded", function () {
 	const staticBase = "{% get_static_prefix %}";
 	var pubPrelaunchFree = false;
 	var pubMaxSlotsPerUser = null;
+	var pubMaxWeeksPerOrder = 48;
 	var pubSlotsRemaining = null;
 	try {
 		pubPrelaunchFree = JSON.parse(document.getElementById("pub-prelaunch-free-json").textContent || "false");
 		pubMaxSlotsPerUser = JSON.parse(document.getElementById("pub-max-slots-json").textContent || "null");
+		var maxWeeksRaw = JSON.parse(document.getElementById("pub-max-weeks-json").textContent || "null");
+		if (maxWeeksRaw !== null && maxWeeksRaw !== undefined) {
+			pubMaxWeeksPerOrder = Math.max(1, parseInt(maxWeeksRaw, 10) || 1);
+		}
 		pubSlotsRemaining = JSON.parse(document.getElementById("pub-slots-remaining-json").textContent || "null");
 	} catch (_preErr) {}
 	function pubMoneyLabel(amount) {
@@ -1737,7 +1799,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	let selected = null;
 	let cart = loadPubCartFromStorage();
-	const PUB_MAX_WEEKS = 48;
+	const PUB_MAX_WEEKS = pubPrelaunchFree ? pubMaxWeeksPerOrder : 48;
+	if (qtyEl && pubPrelaunchFree && pubMaxWeeksPerOrder <= 1) {
+		qtyEl.max = "1";
+		qtyEl.value = "1";
+		document.querySelectorAll(".pub-qty-chip[data-days]").forEach(function (chip) {
+			var days = parseInt(chip.getAttribute("data-days") || "1", 10) || 1;
+			chip.hidden = days > pubMaxWeeksPerOrder;
+		});
+	} else if (qtyEl) {
+		qtyEl.max = String(PUB_MAX_WEEKS);
+	}
+
 	let availableWeekBlocks = [];
 	let selectedWeekStarts = [];
 	let pendingWeekStarts = [];
@@ -2436,7 +2509,7 @@ document.addEventListener("DOMContentLoaded", function () {
 				}
 			}
 			var qtyRaw = parseInt(qtyEl.value || "1", 10);
-			var qty = Number.isFinite(qtyRaw) ? Math.max(1, Math.min(48, qtyRaw)) : 1;
+			var qty = Number.isFinite(qtyRaw) ? Math.max(1, Math.min(PUB_MAX_WEEKS, qtyRaw)) : 1;
 			var startDate = (startDateEl && startDateEl.value) ? String(startDateEl.value) : todayIso();
 			if (section !== "transport") {
 				if (!selectedWeekStarts.length) {
@@ -2472,7 +2545,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	document.querySelectorAll(".pub-qty-chip[data-days]").forEach(function (chip) {
 		chip.addEventListener("click", function () {
 			var days = parseInt(chip.getAttribute("data-days") || "1", 10) || 1;
-			var target = Math.max(1, Math.min(48, days));
+			var target = Math.max(1, Math.min(PUB_MAX_WEEKS, days));
 			if (qtyEl) qtyEl.value = String(target);
 			updateDetailPricing();
 			loadAvailability();

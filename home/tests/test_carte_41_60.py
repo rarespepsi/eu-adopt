@@ -155,7 +155,8 @@ class Carte41_60Tests(TestCase):
         c = Client()
         s = _staff_user()
         c.login(username=s.username, password="StaffCarte41!")
-        r = c.get(reverse("publicitate_harta"))
+        with override_settings(PUBLICITATE_TEMP_SUPERUSER_ONLY=False):
+            r = c.get(reverse("publicitate_harta"))
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "publicitate", status_code=200, html=False)
 
@@ -163,7 +164,8 @@ class Carte41_60Tests(TestCase):
         c = Client()
         user, _ = _collab_user_with_offer()
         c.login(username=user.username, password="CollCarte41!")
-        r = c.get(reverse("publicitate_harta"))
+        with override_settings(PUBLICITATE_TEMP_SUPERUSER_ONLY=False):
+            r = c.get(reverse("publicitate_harta"))
         self.assertEqual(r.status_code, 200)
 
     def test_47_publicitate_cos_anonymous_redirects_login(self):
@@ -174,14 +176,24 @@ class Carte41_60Tests(TestCase):
         c = Client()
         user, _ = _collab_user_with_offer()
         c.login(username=user.username, password="CollCarte41!")
-        r = c.get(reverse("publicitate_cos"))
-        self.assertEqual(r.status_code, 200)
-        self.assertContains(r, "Detalii slot", status_code=200, html=False)
-        self.assertContains(r, "pub-grid", status_code=200, html=False)
-        self.assertContains(r, reverse("publicitate_harta"), status_code=200, html=False)
-        rh = c.get(reverse("publicitate_harta"))
-        self.assertEqual(rh.status_code, 200)
-        self.assertContains(rh, reverse("publicitate_cos"), status_code=200, html=False)
+        with override_settings(PUBLICITATE_TEMP_SUPERUSER_ONLY=False):
+            r = c.get(reverse("publicitate_cos"))
+            self.assertEqual(r.status_code, 200)
+            self.assertContains(r, "Detalii slot", status_code=200, html=False)
+            self.assertContains(r, "pub-grid", status_code=200, html=False)
+            self.assertContains(r, reverse("publicitate_harta"), status_code=200, html=False)
+            rh = c.get(reverse("publicitate_harta"))
+            self.assertEqual(rh.status_code, 200)
+            self.assertContains(rh, reverse("publicitate_cos"), status_code=200, html=False)
+
+    @override_settings(PUBLICITATE_TEMP_SUPERUSER_ONLY=True)
+    def test_47_publicitate_temp_block_collab_redirects_home(self):
+        c = Client()
+        user, _ = _collab_user_with_offer()
+        c.login(username=user.username, password="CollCarte41!")
+        r = c.get(reverse("publicitate_harta"))
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(r.url, reverse("home"))
 
     # --- Legale 48–54 ---
 

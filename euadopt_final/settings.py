@@ -108,6 +108,10 @@ elif _pub_free_env in ("1", "true", "yes", "on"):
 else:
     PUBLICITATE_PRELAUNCH_FREE = PRELAUNCH_MODE
 PUBLICITATE_PRELAUNCH_MAX_SLOTS_PER_USER = int(_os.environ.get("EUADOPT_PUB_MAX_SLOTS_PER_USER", "1") or "1")
+PUBLICITATE_PRELAUNCH_MAX_WEEKS_PER_ORDER = int(_os.environ.get("EUADOPT_PUB_MAX_WEEKS_PER_ORDER", "1") or "1")
+# Publicitate (PUB): temporar doar superuser până la finalizare. Dezactivare: EUADOPT_PUBLICITATE_TEMP_SUPERUSER_ONLY=0
+_pub_superonly = _os.environ.get("EUADOPT_PUBLICITATE_TEMP_SUPERUSER_ONLY", "1").strip().lower()
+PUBLICITATE_TEMP_SUPERUSER_ONLY = _pub_superonly not in ("0", "false", "no", "off")
 PROMO_A2_PRELAUNCH_MAX_PER_USER = int(_os.environ.get("EUADOPT_PROMO_A2_MAX_PER_USER", "1") or "1")
 COLLAB_PRELAUNCH_MAX_OFFERS_PER_USER = int(_os.environ.get("EUADOPT_COLLAB_MAX_OFFERS_PER_USER", "1") or "1")
 PROMO_A2_BASE_PRICE_LEI = 10

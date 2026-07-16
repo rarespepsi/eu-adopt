@@ -11916,16 +11916,26 @@ def collab_offer_delete_view(request, pk: int):
 
 
 def _user_can_use_publicitate(request) -> bool:
+    from home.prelaunch_free_access import publicitate_user_has_access
+
     user = getattr(request, "user", None)
-    if not user or not user.is_authenticated:
-        return False
-    if getattr(user, "is_staff", False) or getattr(user, "is_superuser", False):
-        return True
-    try:
-        ap = getattr(user, "account_profile", None)
-        return bool(ap and ap.role == AccountProfile.ROLE_COLLAB)
-    except Exception:
-        return False
+    return publicitate_user_has_access(user)
+
+
+def _publicitate_denied_response(request):
+    from home.prelaunch_free_access import publicitate_temp_superuser_only
+
+    if publicitate_temp_superuser_only():
+        messages.info(
+            request,
+            "Publicitate (PUB) este temporar indisponibilă — în finalizare. Revine în curând.",
+        )
+    else:
+        messages.info(
+            request,
+            "Pagina Publicitate este pentru conturi colaborator (admin are acces pentru operare rapidă).",
+        )
+    return redirect("home")
 
 
 # Catalog tarife publicitate (sursă unică: coș, validare comandă, viitor gateway plată).
@@ -12447,6 +12457,7 @@ def _publicitate_harta_context(request, pub_nav: str) -> dict:
         PRELAUNCH_FREE_BANNER,
         publicitate_effective_slot_map,
         publicitate_max_slots_per_user,
+        publicitate_max_weeks_per_order,
         publicitate_prelaunch_free_enabled,
         publicitate_user_slots_remaining,
     )
@@ -12474,6 +12485,11 @@ def _publicitate_harta_context(request, pub_nav: str) -> dict:
         "pub_prelaunch_free": publicitate_prelaunch_free_enabled(),
         "pub_prelaunch_banner": PRELAUNCH_FREE_BANNER,
         "pub_max_slots_per_user": publicitate_max_slots_per_user() or None,
+        "pub_max_weeks_per_order": (
+            publicitate_max_weeks_per_order()
+            if publicitate_prelaunch_free_enabled()
+            else None
+        ),
         "pub_slots_remaining": (
             publicitate_user_slots_remaining(request.user)
             if getattr(request.user, "is_authenticated", False) and request.user.is_authenticated
@@ -12501,11 +12517,7 @@ def pub_slot_go_view(request):
 @login_required
 def publicitate_harta_view(request):
     if not _user_can_use_publicitate(request):
-        messages.info(
-            request,
-            "Pagina Publicitate este pentru conturi colaborator (admin are acces pentru operare rapidă).",
-        )
-        return redirect("home")
+        return _publicitate_denied_response(request)
     return render(request, "anunturi/publicitate_harta.html", _publicitate_harta_context(request, "harta"))
 
 
@@ -12513,11 +12525,7 @@ def publicitate_harta_view(request):
 def publicitate_cos_view(request):
     """Aceeași interfață ca harta (Detalii slot | Hartă | Coș), pentru achiziție pe pagina dedicată coșului."""
     if not _user_can_use_publicitate(request):
-        messages.info(
-            request,
-            "Pagina Publicitate este pentru conturi colaborator (admin are acces pentru operare rapidă).",
-        )
-        return redirect("home")
+        return _publicitate_denied_response(request)
     return render(request, "anunturi/publicitate_harta.html", _publicitate_harta_context(request, "cos"))
 
 
@@ -12525,11 +12533,7 @@ def publicitate_cos_view(request):
 def publicitate_my_orders_view(request):
     """Model agendă publicitate: tab-uri + tabel + reactivare pe cod validare."""
     if not _user_can_use_publicitate(request):
-        messages.info(
-            request,
-            "Pagina Publicitate este pentru conturi colaborator (admin are acces pentru operare rapidă).",
-        )
-        return redirect("home")
+        return _publicitate_denied_response(request)
 
     tab = (request.GET.get("tab") or "de_incarcat").strip().lower()
     if tab not in {"de_incarcat", "active", "trecute"}:
@@ -12651,13 +12655,16 @@ def _publicitate_parse_cart_lines(lines_in, user=None):
     """
     from home.prelaunch_free_access import (
         publicitate_max_slots_per_user,
+        publicitate_max_weeks_per_order,
         publicitate_prelaunch_free_enabled,
         publicitate_user_can_reserve_slots,
     )
 
     if not isinstance(lines_in, list) or not lines_in:
         return None, None, None, JsonResponse({"ok": False, "error": "Coșul este gol."}, status=400)
-    if publicitate_prelaunch_free_enabled():
+    prelaunch_free = publicitate_prelaunch_free_enabled()
+    max_weeks = publicitate_max_weeks_per_order() if prelaunch_free else 48
+    if prelaunch_free:
         cap = publicitate_max_slots_per_user()
         if cap and len(lines_in) > cap:
             return None, None, None, JsonResponse(
@@ -12704,8 +12711,19 @@ def _publicitate_parse_cart_lines(lines_in, user=None):
             if qty < 1 or qty > 60:
                 return None, None, None, JsonResponse({"ok": False, "error": "Perioada trebuie să fie 1–60."}, status=400)
         else:
-            if qty < 1 or qty > 48:
-                return None, None, None, JsonResponse({"ok": False, "error": "Numărul de săptămâni trebuie să fie 1–48."}, status=400)
+            if qty < 1 or qty > max_weeks:
+                if prelaunch_free and max_weeks <= 1:
+                    return None, None, None, JsonResponse(
+                        {
+                            "ok": False,
+                            "error": "În pre-lansare puteți rezerva maximum 7 zile (1 bloc săptămânal) per casetă.",
+                        },
+                        status=400,
+                    )
+                return None, None, None, JsonResponse(
+                    {"ok": False, "error": f"Numărul de săptămâni trebuie să fie 1–{max_weeks}."},
+                    status=400,
+                )
         unit_label = (raw.get("unit") or cat.get("unit") or "luna").strip()[:32]
         if is_transport:
             if unit_label != (cat.get("unit") or ""):
@@ -12768,8 +12786,19 @@ def _publicitate_parse_cart_lines(lines_in, user=None):
         else:
             note = note[:8000]
         if not is_transport and selected_weeks:
-            if len(selected_weeks) > 48:
-                return None, None, None, JsonResponse({"ok": False, "error": "Puteți selecta maximum 48 săptămâni."}, status=400)
+            if len(selected_weeks) > max_weeks:
+                if prelaunch_free and max_weeks <= 1:
+                    return None, None, None, JsonResponse(
+                        {
+                            "ok": False,
+                            "error": "În pre-lansare puteți selecta un singur bloc de 7 zile.",
+                        },
+                        status=400,
+                    )
+                return None, None, None, JsonResponse(
+                    {"ok": False, "error": f"Puteți selecta maximum {max_weeks} săptămâni."},
+                    status=400,
+                )
             anchor_wd_existing = _publicitate_slot_anchor_weekday(section, code)
             anchor_wd = anchor_wd_existing if anchor_wd_existing is not None else selected_weeks[0].weekday()
             for wd in selected_weeks:
@@ -12887,6 +12916,10 @@ def _publicitate_parse_cart_lines(lines_in, user=None):
                 }
             )
             total += line_total
+    if prelaunch_free and user is not None:
+        ok_lim, msg_lim = publicitate_user_can_reserve_slots(user, len(validated))
+        if not ok_lim:
+            return None, None, None, JsonResponse({"ok": False, "error": msg_lim}, status=400)
     return validated, total.quantize(Decimal("0.01")), adjustments, None
 
 
@@ -12905,10 +12938,13 @@ def publicitate_slot_availability_view(request):
     except (TypeError, ValueError):
         qty = 1
     is_transport = section == "transport"
+    from home.prelaunch_free_access import publicitate_max_weeks_per_order, publicitate_prelaunch_free_enabled
+
+    max_weeks = publicitate_max_weeks_per_order() if publicitate_prelaunch_free_enabled() else 48
     if is_transport:
         qty = max(1, min(60, qty))
     else:
-        qty = max(1, min(48, qty))
+        qty = max(1, min(max_weeks, qty))
     unit_label = (cat.get("unit") or "luna").strip()[:32]
     if not is_transport:
         unit_label = "saptamana"
@@ -13157,8 +13193,7 @@ def publicitate_transfer_to_site_cart_view(request):
 @login_required
 def publicitate_checkout_demo_view(request):
     if not _user_can_use_publicitate(request):
-        messages.info(request, "Pagina Publicitate este pentru conturi colaborator sau admin.")
-        return redirect("home")
+        return _publicitate_denied_response(request)
     oid = request.session.get(PUBLICITATE_SESSION_CHECKOUT_ORDER)
     if not oid:
         messages.info(request, "Nu există o comandă în așteptare. Adaugă sloturi în coș și încearcă din nou.")
@@ -13223,7 +13258,7 @@ def publicitate_checkout_demo_confirm_view(request):
       _apply_publicitate_paid_order(order) — aceeași funcție ca aici.
     """
     if not _user_can_use_publicitate(request):
-        return redirect("home")
+        return _publicitate_denied_response(request)
     oid = request.session.get(PUBLICITATE_SESSION_CHECKOUT_ORDER)
     if not oid:
         messages.info(request, "Sesiune expirată.")
@@ -13283,7 +13318,7 @@ def publicitate_checkout_demo_confirm_view(request):
 @login_required
 def publicitate_checkout_demo_success_view(request):
     if not _user_can_use_publicitate(request):
-        return redirect("home")
+        return _publicitate_denied_response(request)
     last_id = request.session.get(PUBLICITATE_SESSION_LAST_PAID)
     order = None
     if last_id:
@@ -13613,8 +13648,7 @@ def publicitate_creative_by_token_view(request, token: str):
 @csrf_protect
 def publicitate_creative_by_order_view(request, order_id: int):
     if not _user_can_use_publicitate(request):
-        messages.info(request, "Acces publicitate doar pentru conturi autorizate.")
-        return redirect("home")
+        return _publicitate_denied_response(request)
     order = get_object_or_404(PublicitateOrder, pk=order_id, user=request.user)
     if order.status != PublicitateOrder.STATUS_PAID:
         messages.error(request, "Comanda nu este plătită.")

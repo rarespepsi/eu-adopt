@@ -19,8 +19,12 @@ from home.models import (
 from home.prelaunch_free_access import (
     promo_a2_price_lei,
     publicitate_effective_slot_map,
+    publicitate_max_weeks_per_order,
     publicitate_prelaunch_free_enabled,
+    publicitate_temp_superuser_only,
     publicitate_user_can_reserve_slots,
+    publicitate_user_has_access,
+    publicitate_user_needs_pub_nudge,
 )
 
 User = get_user_model()
@@ -37,8 +41,29 @@ class PrelaunchFreeAccessTests(TestCase):
 
         self.assertTrue(publicitate_prelaunch_free_enabled())
         self.assertEqual(promo_a2_price_lei(), 0)
+        self.assertEqual(publicitate_max_weeks_per_order(), 1)
         eff = publicitate_effective_slot_map(PUBLICITATE_SLOT_MAP)
         self.assertEqual(eff["home"][0]["price"], 0)
+
+    @override_settings(PUBLICITATE_TEMP_SUPERUSER_ONLY=False)
+    def test_pub_nudge_for_user_without_active_slot(self):
+        user = User.objects.create_user(username=f"nudge_{uuid.uuid4().hex[:6]}", password="x")
+        self.assertTrue(publicitate_user_needs_pub_nudge(user))
+
+    @override_settings(PUBLICITATE_TEMP_SUPERUSER_ONLY=True)
+    def test_pub_temp_superuser_only_blocks_collab(self):
+        from home.prelaunch_free_access import publicitate_user_has_access
+
+        collab = User.objects.create_user(username=f"col_{uuid.uuid4().hex[:6]}", password="x")
+        AccountProfile.objects.filter(user=collab).update(role=AccountProfile.ROLE_COLLAB)
+        super_u = User.objects.create_superuser(
+            username=f"su_{uuid.uuid4().hex[:6]}",
+            email=f"su_{uuid.uuid4().hex[:6]}@t.local",
+            password="x",
+        )
+        self.assertFalse(publicitate_user_has_access(collab))
+        self.assertTrue(publicitate_user_has_access(super_u))
+        self.assertFalse(publicitate_user_needs_pub_nudge(collab))
 
     def test_publicitate_user_slot_limit(self):
         user = User.objects.create_user(username=f"pubu_{uuid.uuid4().hex[:6]}", password="x")

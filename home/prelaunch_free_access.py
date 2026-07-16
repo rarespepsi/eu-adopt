@@ -8,6 +8,10 @@ from django.conf import settings
 from django.utils import timezone
 
 PRELAUNCH_FREE_BANNER = "Gratuit — etapă pre-lansare"
+PUB_PRELAUNCH_NUDGE_TEXT = (
+    "INFO: În perioada de populare, casetele de publicitate sunt gratuite."
+)
+PUB_PRELAUNCH_NUDGE_INTERVAL = 3
 
 
 def publicitate_prelaunch_free_enabled() -> bool:
@@ -21,6 +25,35 @@ def publicitate_max_slots_per_user() -> int:
     if not publicitate_prelaunch_free_enabled():
         return 0
     return max(1, int(getattr(settings, "PUBLICITATE_PRELAUNCH_MAX_SLOTS_PER_USER", 1)))
+
+
+def publicitate_max_weeks_per_order() -> int:
+    """Pre-lansare: 1 bloc săptămânal (= 7 zile). În afara pre-lansării: fără limită dedicată (48 în UI)."""
+    if not publicitate_prelaunch_free_enabled():
+        return 48
+    return max(1, int(getattr(settings, "PUBLICITATE_PRELAUNCH_MAX_WEEKS_PER_ORDER", 1)))
+
+
+def publicitate_temp_superuser_only() -> bool:
+    """PUB în lucru: doar superuser poate accesa harta/coșul/comenzile."""
+    return bool(getattr(settings, "PUBLICITATE_TEMP_SUPERUSER_ONLY", False))
+
+
+def publicitate_user_has_access(user) -> bool:
+    """Acces la fluxul Publicitate (hartă, coș, comenzi)."""
+    if not user or not getattr(user, "is_authenticated", False) or not user.is_authenticated:
+        return False
+    if publicitate_temp_superuser_only():
+        return bool(getattr(user, "is_superuser", False))
+    if getattr(user, "is_staff", False) or getattr(user, "is_superuser", False):
+        return True
+    try:
+        from home.models import AccountProfile
+
+        ap = getattr(user, "account_profile", None)
+        return bool(ap and ap.role == AccountProfile.ROLE_COLLAB)
+    except Exception:
+        return False
 
 
 def promo_a2_max_per_user() -> int:
@@ -104,6 +137,18 @@ def publicitate_user_slots_remaining(user) -> int | None:
         return None
     used = _publicitate_user_reserved_line_count(user)
     return max(0, cap - used)
+
+
+def publicitate_user_needs_pub_nudge(user) -> bool:
+    """Utilizator autentificat fără casetă activă — poate primi nudge periodic."""
+    if not publicitate_prelaunch_free_enabled():
+        return False
+    if publicitate_temp_superuser_only():
+        return False
+    if not user or not getattr(user, "is_authenticated", False) or not user.is_authenticated:
+        return False
+    remaining = publicitate_user_slots_remaining(user)
+    return remaining is not None and remaining > 0
 
 
 def publicitate_user_can_reserve_slots(user, additional_lines: int = 1) -> tuple[bool, str]:
