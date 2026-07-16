@@ -14,7 +14,8 @@ from home.models import (
     PromoA2Order,
     PublicitateOrder,
     PublicitateOrderLine,
-    StaffOnboardingLead,
+    SiteCartCheckoutIntent,
+    SiteCartItem,
 )
 from home.prelaunch_free_access import (
     promo_a2_price_lei,
@@ -25,6 +26,7 @@ from home.prelaunch_free_access import (
     publicitate_user_can_reserve_slots,
     publicitate_user_has_access,
     publicitate_user_needs_pub_nudge,
+    site_cart_skip_payment_form_enabled,
 )
 
 User = get_user_model()
@@ -152,3 +154,52 @@ class PrelaunchFreeAccessTests(TestCase):
         r = c.post(reverse("promo_a2_order", args=[pet2.pk]))
         self.assertEqual(r.status_code, 302)
         self.assertIn(reverse("promo_a2_order", args=[pet2.pk]), r.url)
+
+    def test_skip_payment_form_flag_and_period_parse(self):
+        from home.views import _site_cart_publicitate_lines_from_checkout
+
+        self.assertTrue(site_cart_skip_payment_form_enabled())
+        lines, keys = _site_cart_publicitate_lines_from_checkout(
+            [
+                {
+                    "kind": SiteCartItem.KIND_PUBLICITATE,
+                    "ref_key": "pub:0123456789abcdef",
+                    "title": "HOME · A5.1 · perioada 2026-07-16 → 2026-07-22 · 0 lei — Home A5.1",
+                    "detail_url": "/publicitate/?sect=home&sd=2026-07-16",
+                }
+            ]
+        )
+        self.assertEqual(len(lines), 1)
+        self.assertEqual(lines[0]["code"], "A5.1")
+        self.assertEqual(lines[0]["qty"], 1)
+        self.assertEqual(lines[0]["selected_weeks"], ["2026-07-16"])
+        self.assertEqual(keys, ["pub:0123456789abcdef"])
+
+    @override_settings(PUBLICITATE_TEMP_SUPERUSER_ONLY=False)
+    def test_free_acquire_from_cart_skips_payment_form(self):
+        user = User.objects.create_user(
+            username=f"acq_{uuid.uuid4().hex[:6]}",
+            email=f"acq_{uuid.uuid4().hex[:6]}@t.local",
+            password="x",
+        )
+        AccountProfile.objects.filter(user=user).update(role=AccountProfile.ROLE_COLLAB)
+        start = timezone.localdate().isoformat()
+        SiteCartItem.objects.create(
+            user=user,
+            kind=SiteCartItem.KIND_PUBLICITATE,
+            ref_key=f"pub:{uuid.uuid4().hex[:16]}",
+            title=f"MYPET · MP.L1 · perioada {start} → {start} · 0 lei — MyPet L1",
+            detail_url=f"/publicitate/?sect=mypet&sd={start}",
+        )
+        c = Client()
+        c.force_login(user)
+        cos = c.get(reverse("i_love_cos"))
+        self.assertEqual(cos.status_code, 200)
+        self.assertContains(cos, "ACHIZIȚIONEAZĂ")
+        self.assertNotContains(cos, ">PLATESTE<")
+        r = c.post(reverse("site_cart_free_acquire"))
+        self.assertEqual(r.status_code, 302)
+        self.assertIn(reverse("site_cart_checkout_success"), r.url)
+        self.assertEqual(SiteCartItem.objects.filter(user=user).count(), 0)
+        self.assertTrue(PublicitateOrder.objects.filter(user=user, status=PublicitateOrder.STATUS_PAID).exists())
+        self.assertTrue(SiteCartCheckoutIntent.objects.filter(user=user).exists())

@@ -120,6 +120,7 @@ urlpatterns = [
     path('i-love/cos/', views.i_love_cos_view, name='i_love_cos'),
     path('i-love/cos/istoric/', views.i_love_cos_istoric_view, name='i_love_cos_istoric'),
     path('i-love/cos/plata/', views.site_cart_checkout_view, name='site_cart_checkout'),
+    path('i-love/cos/achizitioneaza/', views.site_cart_free_acquire_view, name='site_cart_free_acquire'),
     path('i-love/cos/plata/confirmat/', views.site_cart_checkout_success_view, name='site_cart_checkout_success'),
     path('i-love/', views.i_love_view, name='i_love'),
     path('wishlist/toggle/', views.wishlist_toggle_view, name='wishlist_toggle'),

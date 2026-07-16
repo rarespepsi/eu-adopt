@@ -8629,14 +8629,28 @@ def _site_cart_publicitate_lines_from_checkout(lines: list[dict]) -> tuple[list[
         if len(parts) < 4:
             continue
         code = parts[1]
-        qty_m = re.search(r"cant\.\s*(\d+)\s+([^\s·]+)", parts[2], flags=re.IGNORECASE)
-        if not qty_m:
+        period_part = parts[2]
+        qty = 1
+        unit = "saptamana"
+        selected_weeks: list[str] = []
+        qty_m = re.search(r"cant\.\s*(\d+)\s+([^\s·]+)", period_part, flags=re.IGNORECASE)
+        period_m = re.search(
+            r"perioada\s+(\d{4}-\d{2}-\d{2})\s*[→\-–]\s*(\d{4}-\d{2}-\d{2})",
+            period_part,
+            flags=re.IGNORECASE,
+        )
+        if qty_m:
+            try:
+                qty = int(qty_m.group(1))
+            except (TypeError, ValueError):
+                continue
+            unit = (qty_m.group(2) or "").strip() or "luna"
+        elif period_m:
+            qty = 1
+            unit = "saptamana"
+            selected_weeks = [period_m.group(1)]
+        else:
             continue
-        try:
-            qty = int(qty_m.group(1))
-        except (TypeError, ValueError):
-            continue
-        unit = (qty_m.group(2) or "").strip() or "luna"
         section = ""
         note = ""
         start_date = ""
@@ -8658,17 +8672,22 @@ def _site_cart_publicitate_lines_from_checkout(lines: list[dict]) -> tuple[list[
         cat = _publicitate_catalog_row(section, code)
         if not cat:
             continue
-        out.append(
-            {
-                "section": section,
-                "code": code,
-                "unit": unit,
-                "unit_price": str(cat["price"]),
-                "qty": qty,
-                "note": note,
-                "start_date": start_date,
-            }
-        )
+        if selected_weeks and not start_date:
+            start_date = selected_weeks[0]
+        elif start_date and not selected_weeks and unit.startswith("sapt"):
+            selected_weeks = [start_date]
+        payload = {
+            "section": section,
+            "code": code,
+            "unit": unit,
+            "unit_price": str(cat["price"]),
+            "qty": qty,
+            "note": note,
+            "start_date": start_date,
+        }
+        if selected_weeks:
+            payload["selected_weeks"] = selected_weeks
+        out.append(payload)
         rk = (row.get("ref_key") or "").strip()
         if rk:
             ref_keys.append(rk)
@@ -9398,6 +9417,8 @@ def i_love_cos_view(request):
     """Pagina dedicată coșului (oferte/produse marcate cu 🛒), separată de lista inimioare."""
     if not request.user.is_authenticated:
         return redirect(f"{reverse('login')}?next={reverse('i_love_cos')}")
+    from home.prelaunch_free_access import site_cart_skip_payment_form_enabled
+
     cart_items = _i_love_site_cart_items(request.user)
     total_lei = Decimal("0.00")
     unpriced = 0
@@ -9407,6 +9428,8 @@ def i_love_cos_view(request):
             total_lei += v
         else:
             unpriced += 1
+    cart_is_free = total_lei <= 0 and bool(cart_items)
+    skip_pay_form = cart_is_free and site_cart_skip_payment_form_enabled()
     return render(
         request,
         "anunturi/i_love_cos.html",
@@ -9415,8 +9438,181 @@ def i_love_cos_view(request):
             "cart_total_lei": total_lei,
             "cart_total_lei_display": f"{total_lei:.2f}".replace(".", ","),
             "cart_unpriced_count": unpriced,
+            "cart_is_free": cart_is_free,
+            "cart_skip_payment_form": skip_pay_form,
         },
     )
+
+
+def _site_cart_buyer_type_from_prefill(prefill: dict) -> str:
+    if (prefill.get("buyer_company_legal") or "").strip() or (prefill.get("buyer_company_cui") or "").strip():
+        return SiteCartCheckoutIntent.BUYER_TYPE_PJ
+    return SiteCartCheckoutIntent.BUYER_TYPE_PF
+
+
+def _site_cart_complete_checkout_core(
+    request,
+    *,
+    lines: list[dict],
+    total_lei,
+    unpriced: int,
+    partner_direct_lines: list,
+    prefill: dict,
+    buyer_type: str,
+    payment_method: str,
+    buyer_note: str = "",
+):
+    """
+    Creează intent + comenzi PUB/A2 + curăță coșul. Folosit de formularul de plată
+    și de activarea rapidă gratuită (pre-populare).
+    """
+    pub_order = None
+    promo_order_ids: list[int] = []
+    with transaction.atomic():
+        intent = SiteCartCheckoutIntent.objects.create(
+            user=request.user,
+            buyer_type=buyer_type,
+            payment_method=payment_method,
+            buyer_full_name=(prefill.get("buyer_full_name") or "")[:160],
+            buyer_email=(prefill.get("buyer_email") or "")[:254],
+            buyer_phone=(prefill.get("buyer_phone") or "")[:40],
+            buyer_county=(prefill.get("buyer_county") or "")[:120],
+            buyer_city=(prefill.get("buyer_city") or "")[:120],
+            buyer_address=(prefill.get("buyer_address") or "")[:500],
+            buyer_company_display=(prefill.get("buyer_company_display") or "")[:255],
+            buyer_company_legal=(prefill.get("buyer_company_legal") or "")[:255],
+            buyer_company_cui=(prefill.get("buyer_company_cui") or "")[:40],
+            lines_json=lines,
+            total_lei=total_lei,
+            unpriced_count=unpriced,
+            buyer_note=(buyer_note or "")[:600],
+        )
+        pub_order, pub_ref_keys = _site_cart_checkout_create_publicitate_order(
+            request,
+            lines,
+            payment_ref=f"SITECART-{intent.pk}",
+        )
+        promo_ref_keys, promo_order_ids = _site_cart_checkout_create_promo_a2_orders(
+            request,
+            lines,
+            intent,
+        )
+        _all_ref_keys = list(dict.fromkeys((pub_ref_keys or []) + (promo_ref_keys or [])))
+        if _all_ref_keys:
+            SiteCartItem.objects.filter(
+                user=request.user,
+                ref_key__in=_all_ref_keys,
+            ).delete()
+    _send_site_cart_checkout_staff_email(request, intent)
+    _send_site_cart_checkout_buyer_notification_email(intent)
+    partner_claim_result = _issue_partner_direct_claims_from_checkout(
+        request, intent, partner_direct_lines
+    )
+    request.session["site_cart_checkout_partner_codes"] = partner_claim_result.get("codes", [])[:24]
+    request.session.modified = True
+    return intent, pub_order, promo_order_ids, partner_claim_result
+
+
+def _site_cart_apply_checkout_flash_messages(request, pub_order, promo_order_ids, partner_claim_result):
+    if partner_claim_result.get("issued"):
+        messages.success(
+            request,
+            f"Au fost emise coduri comune pentru {partner_claim_result['issued']} ofertă(e) colaborator.",
+        )
+    if partner_claim_result.get("failed"):
+        messages.warning(
+            request,
+            "Unele coduri pentru colaboratori nu au putut fi emise sau trimise acum. Verifică e-mailurile și disponibilitatea ofertelor.",
+        )
+    if pub_order is not None:
+        request.session[PUBLICITATE_SESSION_LAST_PAID] = pub_order.pk
+        request.session.modified = True
+        messages.success(
+            request,
+            f"Publicitatea a fost înregistrată în Comenzile mele publicitare (comanda #{pub_order.pk}).",
+        )
+    if promo_order_ids:
+        msgs = ", ".join(f"#{pk}" for pk in promo_order_ids[:8])
+        more = f" (+{len(promo_order_ids) - 8} altele)" if len(promo_order_ids) > 8 else ""
+        messages.success(
+            request,
+            f"Promovările A2 au fost activate (comenzile {msgs}{more}).",
+        )
+
+
+@login_required
+@require_POST
+@csrf_protect
+def site_cart_free_acquire_view(request):
+    """
+    Pre-populare: Achiziționează din coș (total 0) fără formularul de plată.
+    Folosește datele din fișa contului. La lansare, endpointul rămâne inactiv
+    (site_cart_skip_payment_form_enabled = False).
+    """
+    from home.prelaunch_free_access import site_cart_skip_payment_form_enabled
+    from home.prelaunch_soft_lock import (
+        PRELAUNCH_SOFT_MESSAGES,
+        prelaunch_checkout_lines_soft_blocked,
+        prelaunch_soft_lock_active_for_user,
+    )
+
+    if not site_cart_skip_payment_form_enabled():
+        return redirect("site_cart_checkout")
+
+    items, lines, total_lei, unpriced = _site_cart_build_checkout_snapshot(request.user)
+    if not items:
+        messages.info(request, "Coșul este gol.")
+        return redirect("i_love_cos")
+    if total_lei > 0:
+        messages.info(request, "Coșul nu este gratuit — completează formularul de plată.")
+        return redirect("site_cart_checkout")
+    if prelaunch_soft_lock_active_for_user(request.user) and prelaunch_checkout_lines_soft_blocked(lines):
+        messages.info(request, PRELAUNCH_SOFT_MESSAGES.get("checkout", ""))
+        return redirect("i_love_cos")
+
+    eu_paid_lines, partner_direct_lines = _site_cart_split_fulfillment(lines)
+    prefill = _site_cart_buyer_prefill(request.user)
+    if not (prefill.get("buyer_full_name") or "").strip():
+        prefill["buyer_full_name"] = (request.user.username or "Utilizator").strip()[:160]
+    if not (prefill.get("buyer_email") or "").strip() or "@" not in (prefill.get("buyer_email") or ""):
+        messages.info(
+            request,
+            "Completează e-mailul în fișa contului, sau folosește formularul de confirmare.",
+        )
+        return redirect("site_cart_checkout")
+
+    buyer_type = _site_cart_buyer_type_from_prefill(prefill)
+    if buyer_type == SiteCartCheckoutIntent.BUYER_TYPE_PJ:
+        if not (prefill.get("buyer_company_legal") or "").strip() or not (prefill.get("buyer_company_cui") or "").strip():
+            buyer_type = SiteCartCheckoutIntent.BUYER_TYPE_PF
+
+    payment_method = "prelaunch_free" if eu_paid_lines else SiteCartCheckoutIntent.PAYMENT_BANK_TRANSFER
+    # CharField choices: prelaunch_free e folosit deja pe fluxul gratuit; fallback pe OP dacă nu e acceptat.
+    if payment_method == "prelaunch_free":
+        allowed = {c[0] for c in SiteCartCheckoutIntent.PAYMENT_CHOICES}
+        if payment_method not in allowed:
+            payment_method = SiteCartCheckoutIntent.PAYMENT_BANK_TRANSFER
+
+    try:
+        intent, pub_order, promo_order_ids, partner_claim_result = _site_cart_complete_checkout_core(
+            request,
+            lines=lines,
+            total_lei=total_lei,
+            unpriced=unpriced,
+            partner_direct_lines=partner_direct_lines,
+            prefill=prefill,
+            buyer_type=buyer_type,
+            payment_method=payment_method,
+            buyer_note="Activare gratuită pre-populare (fără formular plată).",
+        )
+    except Exception:
+        logging.getLogger(__name__).exception("site_cart_free_acquire")
+        messages.error(request, "Nu am putut finaliza achiziția. Încearcă din nou sau folosește formularul.")
+        return redirect("i_love_cos")
+
+    _site_cart_apply_checkout_flash_messages(request, pub_order, promo_order_ids, partner_claim_result)
+    messages.success(request, "Achiziție înregistrată — caseta a fost activată gratuit.")
+    return redirect(f"{reverse('site_cart_checkout_success')}?id={intent.pk}")
 
 
 def _site_cart_intent_line_previews(intent: SiteCartCheckoutIntent, limit: int = 6) -> list[str]:

@@ -175,6 +175,8 @@ body.euadopt-intra-skin.page-ilove.page-ilove--cart .ilove-cart-pay-btn {
 	font-weight: 900;
 	letter-spacing: 0.06em;
 	box-shadow: 0 2px 10px rgba(27, 94, 32, 0.45);
+	cursor: pointer;
+	font-family: inherit;
 }
 
 body.euadopt-intra-skin.page-ilove.page-ilove--cart .ilove-cart-pay-btn:hover {

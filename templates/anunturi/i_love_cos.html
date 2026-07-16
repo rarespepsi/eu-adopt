@@ -5,7 +5,7 @@
 {% block body_class %}page-ilove page-ilove--cart{% endblock %}
 
 {% block extra_css_after %}
-<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=22" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/i-love.css' %}?v=23" type="text/css" media="screen" />
 {% endblock %}
 
 {% block content %}
@@ -64,8 +64,16 @@
 							{% if cart_unpriced_count %}
 							<p class="ilove-cart-summary-note">{{ cart_unpriced_count }} articol(e) fără sumă în titlu — totalul poate fi incomplet.</p>
 							{% endif %}
+							{% if cart_skip_payment_form %}
+							<form method="post" action="{% url 'site_cart_free_acquire' %}" class="ilove-cart-pay-form">
+								{% csrf_token %}
+								<button type="submit" class="ilove-cart-pay-btn">ACHIZIȚIONEAZĂ</button>
+							</form>
+							<p class="ilove-cart-pay-hint">Pre-populare: activare gratuită, fără formular de plată. Comanda apare în Comenzile mele publicitare.</p>
+							{% else %}
 							<a href="{% url 'site_cart_checkout' %}" class="ilove-cart-pay-btn">PLATESTE</a>
 							<p class="ilove-cart-pay-hint">Completezi datele din fișă, alegi modul de plată; echipa primește cererea și te contactează pentru finalizare.</p>
+							{% endif %}
 						</div>
 						{% endif %}
 					</section>

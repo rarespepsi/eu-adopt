@@ -139,6 +139,14 @@ def publicitate_user_slots_remaining(user) -> int | None:
     return max(0, cap - used)
 
 
+def site_cart_skip_payment_form_enabled() -> bool:
+    """
+    Pre-populare: coș total 0 → Achiziționează fără formularul de plată.
+    La lansare: oprește PUBLICITATE_PRELAUNCH_FREE / PRELAUNCH_MODE → revine PLATESTE + formular.
+    """
+    return publicitate_prelaunch_free_enabled()
+
+
 def publicitate_user_needs_pub_nudge(user) -> bool:
     """Utilizator autentificat fără casetă activă — poate primi nudge periodic."""
     if not publicitate_prelaunch_free_enabled():
