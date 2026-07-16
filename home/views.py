@@ -4681,7 +4681,7 @@ def reclama_magazin_foto_transactions_view(request):
 
 def _pet_ficha_back_url(request):
     """
-    URL înapoi la lista de unde s-a deschis fișa (PT cu filtre, MyPet, I Love).
+    URL înapoi la lista de unde s-a deschis fișa (PT cu filtre, MyPet, I Love, Adăpost/ONG).
     De pe HOME (/) → Prietenul tău (/pets/), nu înapoi la Acasă.
     Fallback: Prietenul tău (/pets/).
     """
@@ -4691,10 +4691,19 @@ def _pet_ficha_back_url(request):
         pets_all_url.rstrip("/"),
         reverse("mypet").rstrip("/"),
         reverse("i_love").rstrip("/"),
+        reverse("shelter_directory").rstrip("/"),
     )
 
     if (request.GET.get("from") or "").strip().lower() == "home":
         return pets_all_url
+
+    def _is_allowed_list_path(norm: str) -> bool:
+        if any(norm == root for root in allowed_roots):
+            return True
+        # Pagină dedicată adăpost: /adaposturi/<slug>/
+        if norm.startswith("/adaposturi/") and len(norm) > len("/adaposturi/"):
+            return True
+        return False
 
     def _safe_list_url(raw: str) -> str:
         raw = (raw or "").strip()
@@ -4713,7 +4722,7 @@ def _pet_ficha_back_url(request):
             path = parsed.path or "/"
             query = parsed.query
         norm = path.rstrip("/") or "/"
-        if not any(norm == root for root in allowed_roots):
+        if not _is_allowed_list_path(norm):
             return ""
         return path + (("?" + query) if query else "")
 
@@ -4735,6 +4744,20 @@ def _pet_ficha_back_url(request):
             pass
 
     return pets_all_url
+
+
+def _pet_ficha_back_label(back_url: str) -> str:
+    """Text buton Înapoi pe fișa animalului, după sursa listei."""
+    path = (urlparse(back_url or "").path or "").rstrip("/") or "/"
+    if path.startswith("/adaposturi/") and path != "/adaposturi":
+        return "ÎNAPOI LA ADĂPOST"
+    if path.startswith("/adaposturi"):
+        return "ÎNAPOI LA ADĂPOSTURI"
+    if path.startswith("/i-love"):
+        return "ÎNAPOI LA I LOVE"
+    if path.startswith("/mypet"):
+        return "ÎNAPOI LA MYPET"
+    return "ÎNAPOI LA LISTĂ"
 
 
 def render_dog_profile(request, listing: AnimalListing):
@@ -4847,6 +4870,7 @@ def render_dog_profile(request, listing: AnimalListing):
     pop_adopt_ctx = population_adoption_context_for_request(request)
     if pet_adopt_demo_listing:
         pop_adopt_ctx["pet_adopt_simple_populare"] = False
+    pet_back_url = _pet_ficha_back_url(request)
     ctx = {
         "pet": pet,
         "can_send_pet_message": can_send_pet_message,
@@ -4862,7 +4886,8 @@ def render_dog_profile(request, listing: AnimalListing):
         "promote_allowed": promote_allowed,
         "adoption_after_transport": bool(after_transport),
         "adoption_transport_option_available": bool(has_county and not after_transport),
-        "pet_back_url": _pet_ficha_back_url(request),
+        "pet_back_url": pet_back_url,
+        "pet_back_label": _pet_ficha_back_label(pet_back_url),
         "pet_from_home": (request.GET.get("from") or "").strip().lower() == "home",
     }
     return render(request, "anunturi/pets-single.html", ctx)

@@ -86,6 +86,7 @@ def shelter_detail_view(request, slug: str):
     maps_url = org_maps_url(user)
     embed_url = org_google_embed_url(user)
     share_url = request.build_absolute_uri(org_public_url(user))
+    org_back_path = org_public_url(user)
     return render(
         request,
         "anunturi/adapost_detail.html",
@@ -101,6 +102,7 @@ def shelter_detail_view(request, slug: str):
             "org_maps_url": maps_url,
             "org_map_embed_url": embed_url,
             "org_share_url": share_url,
+            "org_back_path": org_back_path,
             "org_animals": animals,
             "org_animal_count": len(animals),
             "org_is_public_shelter": bool(getattr(user.account_profile, "is_public_shelter", False)),
