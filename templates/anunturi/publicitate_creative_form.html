@@ -51,7 +51,9 @@
 	.pub-cr-meta { font-size: 0.7rem; color: #78909c; margin-bottom: 0.4rem; }
 	.pub-cr-field { margin-bottom: 0.42rem; }
 	.pub-cr-field label { display: block; font-size: 0.72rem; font-weight: 700; color: #37474f; margin-bottom: 0.16rem; }
-	.pub-cr-field input[type="url"], .pub-cr-field input[type="file"] { width: 100%; box-sizing: border-box; font-size: 0.78rem; }
+	.pub-cr-field input[type="url"],
+	.pub-cr-field input[type="text"].pub-cr-link-input,
+	.pub-cr-field input[type="file"] { width: 100%; box-sizing: border-box; font-size: 0.78rem; }
 	.pub-cr-field textarea { width: 100%; min-height: 4.5rem; box-sizing: border-box; font-size: 0.85rem; border-radius: 8px; border: 1px solid #b0bec5; padding: 0.4rem; }
 	.pub-cr-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
 	.pub-cr-media-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
@@ -245,7 +247,7 @@
 		<h1>Materiale publicitate</h1>
 		<p class="pub-cr-lead">
 			Comandă <strong>#{{ pub_order.pk }}</strong> — total <strong>{{ pub_order.total_lei }} lei</strong>.
-			Completați pentru fiecare slot: <strong>imagine sau video</strong> (nu ambele), link țintă (https) și opțional badge-uri <strong>Preț</strong> + <strong>Discount</strong>. După trimitere, conținutul se aplică pe site acolo unde există integrare automată (ex. PT <strong>P4.3 / P5.1–P5.3</strong>, burtieră <strong>HOME</strong>).
+			Completați pentru fiecare slot: <strong>imagine sau video</strong> (nu ambele), link țintă (ex. www… sau https://…) și opțional badge-uri <strong>Preț</strong> + <strong>Discount</strong>. După trimitere, conținutul se aplică pe site acolo unde există integrare automată (ex. PT <strong>P4.3 / P5.1–P5.3</strong>, burtieră <strong>HOME</strong>) și sunteți duși pe pagina casetei.
 			Fereastră verificare recomandată: <strong>{{ pub_review_hours }} h</strong>. Limită fișier: <strong>{{ pub_max_mb }} MB</strong> / upload.
 		</p>
 		<form method="post" enctype="multipart/form-data" class="pub-cr-form">
@@ -263,8 +265,8 @@
 					Pentru două benzi diferite sunt necesare <strong>două poziții</strong> în coș (două linii / două comenzi de același slot).
 				</p>
 				<div class="pub-cr-field">
-					<label for="link_{{ line.pk }}">Link (https) — lăsați gol dacă folosiți mesajul</label>
-					<input type="url" id="link_{{ line.pk }}" name="link_{{ line.pk }}" value="{{ b.external_link }}" maxlength="100" placeholder="https://…" />
+					<label for="link_{{ line.pk }}">Link — lăsați gol dacă folosiți mesajul</label>
+					<input type="text" class="pub-cr-link-input" id="link_{{ line.pk }}" name="link_{{ line.pk }}" value="{{ b.external_link }}" maxlength="100" placeholder="www.exemplu.ro sau https://…" inputmode="url" autocomplete="url" />
 				</div>
 				<div class="pub-cr-field">
 					<label for="notes_{{ line.pk }}">Mesaj bandă — lăsați gol dacă folosiți linkul</label>
@@ -302,7 +304,7 @@
 							</div>
 							<div class="pub-cr-field">
 								<label for="sch_link_{{ line.pk }}_{{ i }}">Link</label>
-								<input type="url" id="sch_link_{{ line.pk }}_{{ i }}" name="sch_link_{{ line.pk }}_{{ i }}" placeholder="https://…" />
+								<input type="text" class="pub-cr-link-input" id="sch_link_{{ line.pk }}_{{ i }}" name="sch_link_{{ line.pk }}_{{ i }}" placeholder="www.exemplu.ro sau https://…" inputmode="url" autocomplete="url" />
 							</div>
 							<div class="pub-cr-field">
 								<label for="sch_day_start_{{ line.pk }}_{{ i }}">Zi start (1-{{ line.quantity }})</label>
@@ -320,8 +322,8 @@
 				<div class="pub-cr-layout-two-cols">
 					<div class="pub-cr-layout-left">
 						<div class="pub-cr-field">
-							<label for="link_{{ line.pk }}">Link (https)</label>
-							<input type="url" id="link_{{ line.pk }}" name="link_{{ line.pk }}" value="{{ b.external_link }}" placeholder="https://…" />
+							<label for="link_{{ line.pk }}">Link</label>
+							<input type="text" class="pub-cr-link-input" id="link_{{ line.pk }}" name="link_{{ line.pk }}" value="{{ b.external_link }}" placeholder="www.exemplu.ro sau https://…" inputmode="url" autocomplete="url" />
 						</div>
 						<div class="pub-cr-field-row">
 							<div class="pub-cr-field">
@@ -413,7 +415,8 @@
 		var ratio = w0 && h0 ? w0 / h0 : 1;
 		state.cropper = new Cropper(imageEl, {
 			aspectRatio: ratio,
-			viewMode: 3,
+			/* viewMode 3 bloca zoom-out; 1 permite mărire + micșorare */
+			viewMode: 1,
 			dragMode: "move",
 			autoCropArea: 1,
 			restore: false,
@@ -422,6 +425,8 @@
 			highlight: false,
 			cropBoxMovable: true,
 			cropBoxResizable: true,
+			zoomOnWheel: true,
+			wheelZoomRatio: 0.12,
 		});
 		setToolsEnabled(lineId, true);
 	}
@@ -544,7 +549,7 @@
 			var lineId = zbtn.getAttribute("data-line-id");
 			var state = getState(lineId);
 			if (!state.cropper) return;
-			var delta = zbtn.getAttribute("data-action") === "in" ? 0.1 : -0.1;
+			var delta = zbtn.getAttribute("data-action") === "in" ? 0.12 : -0.12;
 			state.cropper.zoom(delta);
 			return;
 		}

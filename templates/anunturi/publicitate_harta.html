@@ -1655,6 +1655,49 @@
 	body.page-publicitate-harta .pub-cart-item-text {
 		color: #e2e8f0 !important;
 	}
+	/* Modal săptămâni: card alb — text închis (nu moștenește alb din panoul dark) */
+	body.page-publicitate-harta .pub-week-modal__card,
+	body.page-publicitate-harta .pub-week-modal__card * {
+		color: #1a237e;
+	}
+	body.page-publicitate-harta .pub-week-modal__card {
+		background: #fff !important;
+		border-color: #cfd8dc !important;
+	}
+	body.page-publicitate-harta .pub-week-modal__head strong,
+	body.page-publicitate-harta #pubWeekHeadTitle {
+		color: #0d47a1 !important;
+		font-size: 0.92rem;
+	}
+	body.page-publicitate-harta .pub-week-month {
+		background: #fafafa !important;
+		border-color: #cfd8dc !important;
+	}
+	body.page-publicitate-harta .pub-week-month h4 {
+		color: #0d47a1 !important;
+	}
+	body.page-publicitate-harta .pub-week-row {
+		background: #fff !important;
+		border-color: #90a4ae !important;
+		color: #0d47a1 !important;
+	}
+	body.page-publicitate-harta .pub-week-row strong,
+	body.page-publicitate-harta .pub-week-row span {
+		color: #0d47a1 !important;
+	}
+	body.page-publicitate-harta .pub-week-row small {
+		color: #455a64 !important;
+	}
+	body.page-publicitate-harta .pub-week-row.is-selected {
+		background: #e3f2fd !important;
+		border-color: #1565c0 !important;
+	}
+	body.page-publicitate-harta .pub-week-row.is-occupied {
+		background: #fbe9e7 !important;
+	}
+	body.page-publicitate-harta .pub-week-summary {
+		color: #e2e8f0 !important;
+	}
 	body.page-publicitate-harta #pubNote {
 		height: 6.2rem !important;
 		min-height: 6.2rem !important;
@@ -1733,7 +1776,7 @@
 		.pub-qty-chip { padding: 0.1rem 0.4rem; font-size: 0.66rem; font-weight: 600; }
 	}
 	@media (max-width: 560px) {
-		.pub-qty-presets { gap: 0.18rem; }
+		.pub-qty-presets { gap: 0.18rem; flex-wrap: wrap; }
 		.pub-qty-chip { padding: 0.08rem 0.34rem; font-size: 0.62rem; }
 		.pub-week-months { grid-template-columns: 1fr; }
 	}

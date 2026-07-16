@@ -11819,6 +11819,31 @@ def _normalize_external_url(raw: str) -> str:
     return val
 
 
+def _publicitate_section_live_url(section: str) -> str:
+    """URL-ul paginii unde apare caseta publicitară (după trimiterea materialelor)."""
+    key = (section or "").strip().lower()
+    name_by_section = {
+        "home": "home",
+        "pt": "pets_all",
+        "servicii": "servicii",
+        "transport": "transport",
+        "shop": "shop",
+        "mypet": "mypet",
+        "i_love": "i_love",
+        "cos_pub": "i_love_cos",
+    }
+    route = name_by_section.get(key)
+    if route:
+        try:
+            return reverse(route)
+        except Exception:
+            pass
+    try:
+        return reverse("publicitate_my_orders")
+    except Exception:
+        return "/"
+
+
 def _validate_collab_product_sheet(uploaded_file) -> str:
     """
     Validare simplă pentru fișa tehnică uploadată de colaborator.
@@ -13883,6 +13908,7 @@ def _publicitate_creative_form_response(request, access: PublicitateOrderCreativ
 
     if request.method == "POST":
         applied = 0
+        applied_section = ""
         errors = []
         staff_summaries: list[tuple[str, str]] = []
         try:
@@ -13957,9 +13983,11 @@ def _publicitate_creative_form_response(request, access: PublicitateOrderCreativ
                             notes = prev_note
                     if link:
                         try:
-                            URLValidator()(link)
-                        except DjangoValidationError:
-                            errors.append(f"{line.slot_code}: link invalid (folosiți https://…).")
+                            link = _normalize_external_url(link)
+                        except ValueError:
+                            errors.append(
+                                f"{line.slot_code}: link invalid (ex. www.exemplu.ro sau https://exemplu.ro)."
+                            )
                             continue
                     use_schedule = (
                         not is_burtiera
@@ -13996,8 +14024,8 @@ def _publicitate_creative_form_response(request, access: PublicitateOrderCreativ
                                     continue
                             if slink:
                                 try:
-                                    URLValidator()(slink)
-                                except DjangoValidationError:
+                                    slink = _normalize_external_url(slink)
+                                except ValueError:
                                     errors.append(f"{line.slot_code}: link invalid la materialul programat #{idx}.")
                                     continue
                             try:
@@ -14099,6 +14127,8 @@ def _publicitate_creative_form_response(request, access: PublicitateOrderCreativ
                     bundle.review_until = now + timezone.timedelta(hours=review_h)
                     bundle.save()
                     applied += 1
+                    if not applied_section:
+                        applied_section = line.section
                     staff_summaries.append((f"{line.section.upper()}/{line.slot_code}", buyer))
         except Exception:
             logging.getLogger(__name__).exception("publicitate_creative_submit")
@@ -14110,18 +14140,21 @@ def _publicitate_creative_form_response(request, access: PublicitateOrderCreativ
         if errors:
             for e in errors[:5]:
                 messages.error(request, e)
-        elif applied == 0:
+            return redirect(request.path)
+        if applied == 0:
             messages.warning(
                 request,
                 "Nu s-a trimis nimic: completați cel puțin o linie (poză, link sau detalii) și apăsați din nou „Trimite materialele”.",
             )
-        else:
-            messages.success(
-                request,
-                f"Materiale trimise pentru {applied} slot(uri). S-au aplicat pe site unde există integrare automată. "
-                f"Aveți până la ~{review_h} h pentru verificare internă (contactați suportul dacă e nevoie de corecție).",
-            )
-        return redirect(request.path)
+            return redirect(request.path)
+
+        live_url = _publicitate_section_live_url(applied_section)
+        messages.success(
+            request,
+            f"Materiale trimise pentru {applied} slot(uri). Caseta e pe pagina deschisă acum "
+            f"(integrare automată unde există). Aveți până la ~{review_h} h pentru verificare internă.",
+        )
+        return redirect(live_url)
 
     all_live = (
         all(line.creative_bundle.status == PublicitateLineCreative.STATUS_LIVE for line in lines) if lines else True
