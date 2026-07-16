@@ -1,41 +1,36 @@
 ---
 # Handoff agent — ultima pauză
-**Data/ora (RO):** 2026-07-15 22:33
-**Sursă:** telefon · Remote Control · eu-adopt / main
-**User:** pleacă pe drum; verifică nota PWA în deplasare. A dat `1977` + OK anticipat dacă agentul mai are nevoie.
+**Data/ora (RO):** 2026-07-16 23:45
+**Sursă:** Cursor · eu-adopt / main
+**User:** pleacă; a dat `1977` + OK — layout Adăpost detail + commit/deploy + handoff desk
 
 ## Ce s-a făcut
-- Banner PWA staff/superuser: nu mai bloca pe `installed` / standalone → apare la **fiecare login** — `79f2b4b` (live H)
-- Storage counter PWA → `eu_pwa_prompt_v3` (reset)
-- Logo banner/manifest HOME (`logo-final-cu-stele`) — `753fe27`
-- DeeaAndreea: **nemodificată** (lead 1296 / user 6) — nu atinge fără `1977`+OK
+- Pagina `/adaposturi/<slug>/` (desktop): **full-bleed** — sidebars globale 260px ascunse (ca I Love)
+- Caseta **info lipită stânga**; spațiu rămas → casete câini **mai mari** (grilă **5 col**, 2 rânduri vizibile, poze mai înalte)
+- **Fără scroll pe pagină** pe desktop — overflow doar pe info + pe grila câini
+- Mobil ≤820px: scroll pagină normal (layout stivuit)
 
 ## Fișiere atinse
-- `static/js/eu-pwa.js` — staff bypass installed + standalone early-return
-- `templates/base.html` — cache `eu-pwa.js?v=9-staff-show` (sau similar v9)
+- `templates/anunturi/adapost_detail.html` — CSS layout / scroll / grilă
+- `docs/AGENT_HANDOFF_LATEST.md` — acest handoff
+- Copie desk: `%USERPROFILE%\Desktop\AGENT_HANDOFF_LATEST.md`
 
 ## Git
 - Branch: main
-- Commit(uri): `79f2b4b` Fix staff PWA prompt… · `753fe27` HOME logo PWA · `0211658` staff every login + v2
-- Push: da
+- Commit: (vezi `git log -1` după push)
+- Push: da (dacă deploy a rulat)
 
 ## Deploy Hetzner
-- da · `deploy_hetzner_from_pc.ps1` · SHA live **`79f2b4b`**
+- da · `.\scripts\deploy_hetzner_from_pc.ps1` · doar Hetzner (nu Render)
 
-## Cum testează user pe drum
-1. Chrome **tab** (bara de adrese vizibilă), **nu** App din ecranul principal
-2. Logout → login superuser (Rares)
-3. Nota Da/Nu ar trebui să apară
-
-## Pentru agent laptop (caută aici)
+## Pentru agent laptop
 - `git log -3 --oneline`
 - citește `docs/AGENT_HANDOFF_LATEST.md`
-- Dacă nota tot lipsește: verifică `data-user-staff` / `data-user-superuser` pe body, pulse cookie, dacă e deschis ca `display-mode: standalone`
-- **Nu modifica Deea** fără `1977`+OK
-- Zone înghețate site: fără `1977`+OK
+- Test: `https://eu-adopt.ro/adaposturi/adapost-demo/` (sau Primăria Blaj) — fără scroll document; info stânga; câini mari
+- Zone înghețate (HOME/PT/Servicii/Transport/Shop/navbar): **nu** atinge fără `1977`+OK
+- Lucru activ recent: **Adăpost/ONG** (`/adaposturi/`)
 
 ## Următorul pas
-- Așteaptă rezultat test user pe telefon (drum)
-- Dacă OK → închis PWA staff prompt
-- Dacă încă lipsă → debug live pe H (atribut body + standalone)
+- User verifică live pe desktop layout + scroll
+- Dacă OK → închis task Adăpost layout
 ---
