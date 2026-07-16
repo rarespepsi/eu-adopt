@@ -155,25 +155,100 @@
 		gap: 0.65rem;
 	}
 	.adp-pet-card {
-		display: block;
-		text-decoration: none;
-		color: inherit;
+		display: flex;
+		flex-direction: column;
 		border-radius: 10px;
 		overflow: hidden;
 		border: 1px solid #cfd8dc;
 		background: #fff;
 		box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 	}
-	.adp-pet-card img {
+	.adp-pet-card__photo {
+		display: block;
+		text-decoration: none;
+		color: inherit;
+	}
+	.adp-pet-card__photo img {
 		width: 100%;
 		aspect-ratio: 1;
 		object-fit: cover;
 		display: block;
 		background: #eceff1;
 	}
-	.adp-pet-card__meta { padding: 0.4rem 0.45rem 0.5rem; }
-	.adp-pet-card__name { font-weight: 800; font-size: 0.82rem; color: #1b5e20; }
-	.adp-pet-card__sub { font-size: 0.68rem; color: #607d8b; }
+	.adp-pet-card__bar {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0.28rem 0.35rem 0.35rem;
+		border-top: 1px solid #eceff1;
+		background: #fafafa;
+		min-height: 2rem;
+	}
+	.adp-pet-card__actions {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.2rem;
+		flex-shrink: 0;
+	}
+	.adp-pet-card .wish-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.55rem;
+		height: 1.55rem;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		cursor: pointer;
+		border-radius: 999px;
+		color: #c62828;
+	}
+	.adp-pet-card .wish-btn svg {
+		width: 1.05rem;
+		height: 1.05rem;
+		display: block;
+	}
+	.adp-pet-card .wish-btn.is-active {
+		filter: drop-shadow(0 0 2px rgba(198, 40, 40, 0.45));
+	}
+	.adp-pet-card__plic {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.55rem;
+		height: 1.55rem;
+		border-radius: 999px;
+		color: #1565c0;
+		text-decoration: none;
+		background: rgba(21, 101, 192, 0.08);
+	}
+	.adp-pet-card__plic:hover {
+		background: rgba(21, 101, 192, 0.16);
+	}
+	.adp-pet-card__plic svg {
+		width: 0.85rem;
+		height: 0.7rem;
+		display: block;
+	}
+	.adp-pet-card__name {
+		min-width: 0;
+		font-weight: 800;
+		font-size: 0.78rem;
+		color: #1b5e20;
+		text-decoration: none;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.adp-pet-card__name:hover { text-decoration: underline; }
+	.adp-pet-card__sub {
+		grid-column: 1 / -1;
+		font-size: 0.64rem;
+		color: #607d8b;
+		line-height: 1.2;
+		margin-top: -0.05rem;
+	}
 	.adp-det__empty {
 		padding: 1rem;
 		border: 1px dashed #b0bec5;
@@ -353,20 +428,43 @@
 		{% if org_animals %}
 		<div class="adp-det__grid">
 			{% for a in org_animals %}
-			<a class="adp-pet-card" href="{{ a.public_url }}">
-				{% if a.photo_1 %}
-				<img src="{{ a.photo_1.url }}" alt="{{ a.name }}" />
-				{% else %}
-				<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" />
-				{% endif %}
-				<div class="adp-pet-card__meta">
-					<div class="adp-pet-card__name">{{ a.name|default:"Fără nume" }}</div>
+			<article class="adp-pet-card">
+				<a class="adp-pet-card__photo" href="{{ a.public_url }}" aria-label="Vezi {{ a.name|default:'animal' }}">
+					{% if a.photo_1 %}
+					<img src="{{ a.photo_1.url }}" alt="{{ a.name }}" />
+					{% else %}
+					<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" />
+					{% endif %}
+				</a>
+				<div class="adp-pet-card__bar" role="toolbar" aria-label="Acțiuni {{ a.name|default:'animal' }}">
+					<div class="adp-pet-card__actions">
+						<button
+							type="button"
+							class="wish-btn{% if wishlist_ids and a.pk in wishlist_ids %} is-active{% endif %}"
+							data-animal-id="{{ a.pk }}"
+							aria-pressed="{% if wishlist_ids and a.pk in wishlist_ids %}true{% else %}false{% endif %}"
+							aria-label="I Love: {{ a.name|default:'animal' }}"
+						>
+							{% include "anunturi/includes/ilove_heart_svg.html" %}
+						</button>
+						{% if a.show_ask_plic %}
+						<a
+							href="{{ a.public_url }}#pet-messages-field-wrap"
+							class="adp-pet-card__plic"
+							title="ÎNTREABĂ DESPRE MINE?"
+							aria-label="Întreabă despre mine — deschide fișa la mesaje"
+						>
+							<svg viewBox="0 0 16 12" width="12" height="10" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 1.5C0 .67.67 0 1.5 0h13c.83 0 1.5.67 1.5 1.5v9c0 .83-.67 1.5-1.5 1.5h-13A1.5 1.5 0 0 1 0 10.5v-9Zm1.5-.5-.01 9L8 6.2l6.5 4.08V1H1.5ZM8 5.3 1.64 1h12.72L8 5.28Z"/></svg>
+						</a>
+						{% endif %}
+					</div>
+					<a class="adp-pet-card__name" href="{{ a.public_url }}">{{ a.name|default:"Fără nume" }}</a>
 					<div class="adp-pet-card__sub">
 						{% if a.species == 'dog' %}Câine{% elif a.species == 'cat' %}Pisică{% else %}Alt{% endif %}
 						{% if a.city %} · {{ a.city }}{% endif %}
 					</div>
 				</div>
-			</a>
+			</article>
 			{% endfor %}
 		</div>
 		{% else %}

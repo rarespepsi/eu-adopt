@@ -59,9 +59,30 @@ def shelter_detail_view(request, slug: str):
         raise Http404("Adăpostul / ONG-ul nu a fost găsit.")
     ensure_org_slug(user)
     animals = list(published_animals_for_org(user)[:120])
+
+    from home.models import WishlistItem
+    from home.population_onboarding import user_may_adopt_animals
+
+    wishlist_ids = set()
+    if request.user.is_authenticated:
+        wishlist_ids = set(
+            WishlistItem.objects.filter(user=request.user).values_list("animal_id", flat=True)
+        )
+
+    can_ask = bool(
+        request.user.is_authenticated
+        and user_may_adopt_animals(request.user)
+    )
+    viewer_id = int(request.user.pk) if request.user.is_authenticated else None
+
     for a in animals:
         ensure_animal_slug(a, save=True)
         a.public_url = animal_public_url(a)
+        a.show_ask_plic = False
+        if can_ask and viewer_id is not None and int(a.owner_id) != viewer_id:
+            if (a.adoption_state or "").strip() != AnimalListing.ADOPTION_STATE_ADOPTED:
+                a.show_ask_plic = True
+
     maps_url = org_maps_url(user)
     embed_url = org_google_embed_url(user)
     share_url = request.build_absolute_uri(org_public_url(user))
@@ -83,6 +104,7 @@ def shelter_detail_view(request, slug: str):
             "org_animals": animals,
             "org_animal_count": len(animals),
             "org_is_public_shelter": bool(getattr(user.account_profile, "is_public_shelter", False)),
+            "wishlist_ids": wishlist_ids,
         },
     )
 
