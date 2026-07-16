@@ -9611,7 +9611,13 @@ def site_cart_free_acquire_view(request):
         return redirect("i_love_cos")
 
     _site_cart_apply_checkout_flash_messages(request, pub_order, promo_order_ids, partner_claim_result)
-    messages.success(request, "Achiziție înregistrată — caseta a fost activată gratuit.")
+    if pub_order is not None:
+        messages.success(
+            request,
+            "Caseta e activată — completează acum materialele (imagine / link / text).",
+        )
+        return redirect("publicitate_creative_order", order_id=pub_order.pk)
+    messages.success(request, "Achiziție înregistrată.")
     return redirect(f"{reverse('site_cart_checkout_success')}?id={intent.pk}")
 
 
