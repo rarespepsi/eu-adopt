@@ -1,0 +1,62 @@
+---
+description: Publicitate Materiale (creative form) — stare FINALĂ memorată (17 iul 2026)
+globs: templates/anunturi/publicitate_creative_form.html
+alwaysApply: false
+---
+
+# PUBLICITATE – FORMULAR MATERIALE – STARE FINALĂ MEMORATĂ
+
+**Confirmat de utilizator:** 17 iulie 2026 — **perfect**.
+
+**Commit / live Hetzner referință:** `9fc1df7`
+
+**Nu modifica** fără cerere explicită + parola **`1977`** + OK execuție (`SITE_GLOBAL_INGHETAT_1977`, `PAROLA_SI_OK_INAINTE_MODIFICARE`).
+
+---
+
+## Fișier sursă
+
+| Fișier | Rol |
+|--------|-----|
+| `templates/anunturi/publicitate_creative_form.html` | Layout, CSS inline, crop tools, submit |
+
+URL tipic: `/publicitate/comanda/<id>/materiale/` (sau echivalent creativ).
+
+---
+
+## Layout memorat (slot cu imagine/video — nu Burtieră)
+
+```
+[ Link ]                         [ Previzualizare slot ]
+[ Preț | Discount ]              [ poză / crop box     ]
+[ Trimite materialele ]          [ + ] [ − ] [ Salvează încadrarea ]
+[ Link securizat expiră… ]       [ link ajutor micșorare poză      ]
+```
+
+### Structură HTML/CSS
+
+1. **`.pub-cr-layout-two-cols`** — 2 coloane egale ca înainte:
+   - **Stânga** `.pub-cr-layout-left`: Link + Preț/Discount
+   - **Dreapta** `.pub-cr-layout-right`: doar previzualizare (label + `.pub-cr-preview-box`) — **fără** tool-uri în wrap
+2. **`.pub-cr-actions-bar`** — al treilea rând pe aceeași grilă (`grid-column: 1 / -1`, aceleași 2 coloane):
+   - **Stânga** `.pub-cr-actions-main`: **Trimite materialele** + sub el textul **Link securizat expiră…** (și Contul meu dacă e logat) — doar pe `forloop.last`
+   - **Dreapta** `.pub-cr-preview-tools`: **+** / **−** / **Salvează încadrarea** + link ajutor — **sub coloana pozei**
+
+### Burtieră
+
+Fără previzualizare/crop: Trimite + foot rămân la finalul blocului Burtieră când `forloop.last`.
+
+---
+
+## Ce NU reintroduce
+
+- **Nu** muta `+` / `−` / **Salvează încadrarea** sub Preț/Discount (lângă Trimite în coloana stângă). Rămân **sub poză**.
+- **Nu** lăsa Trimite / foot jos, după formular, separat de rândul de acțiuni.
+- **Nu** redenumi „Salvează încadrarea” în „Modifică materiale” fără cerere explicită.
+- **Nu** reintroduce experimente crop (butoane enorme, `viewMode: 0` care strică zoom, sticky scroll forțat) — baza restaurată era `8e01687` / `443fa86`; layout acțiuni = `9fc1df7`.
+
+---
+
+## Rezumat
+
+**Materiale = FINALIZAT.** Trimite + text expirare sub Preț/Discount; tool-uri crop sub poză; același rând. Nimic fără `1977` + OK.
