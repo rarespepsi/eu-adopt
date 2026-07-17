@@ -105,7 +105,6 @@
 				<div class="mypet-fisa-main-box">
 					<div class="mypet-fisa-main-cols">
 						<div class="mypet-fisa-main-col">
-							<h3 class="mypet-fisa-section-title">Date de bază</h3>
 
 							<div class="mypet-add-field">
 								<label for="id_name">NUME PET *</label>
@@ -229,7 +228,6 @@
 						</div>
 
 						<div class="mypet-fisa-main-col">
-							<h3 class="mypet-fisa-section-title">Date de bază (locație)</h3>
 
 							<div class="mypet-add-field">
 								<label for="id_sex">SEX</label>
@@ -1008,6 +1006,8 @@
 		flex-direction: column;
 		grid-row: 2 / 3;
 		grid-column: 2 / 3;
+		min-height: 0;
+		overflow: hidden;
 	}
 
 	.mypet-fisa-header-row {
@@ -1441,6 +1441,68 @@
 			height: auto !important;
 			flex: 0 0 auto !important;
 			min-height: 0 !important;
+		}
+	}
+
+	/* Desktop: formular compact — încape CIP/RUA fără scroll pagină */
+	@media (min-width: 768px) and (min-height: 521px) {
+		body.page-mypet-fisa .mypet-fisa-header-row {
+			margin-bottom: 0.05rem;
+		}
+		body.page-mypet-fisa .mypet-fisa-tab {
+			padding: 0.28rem 0.72rem;
+			font-size: 0.78rem;
+		}
+		body.page-mypet-fisa .mypet-fisa-col-main {
+			padding: 0.14rem 0.28rem 0.12rem 0.12rem;
+			min-height: 0;
+		}
+		body.page-mypet-fisa .mypet-fisa-form {
+			flex: 1 1 auto;
+			min-height: 0;
+		}
+		body.page-mypet-fisa .mypet-fisa-main-box {
+			padding: 0.1rem 0.18rem;
+			min-height: 0;
+		}
+		body.page-mypet-fisa .mypet-fisa-main-cols {
+			gap: 0.18rem;
+		}
+		body.page-mypet-fisa .mypet-fisa-main-col {
+			gap: 0.03rem;
+		}
+		body.page-mypet-fisa .mypet-add-field {
+			gap: 0.02rem;
+		}
+		body.page-mypet-fisa .mypet-add-field label {
+			font-size: 0.64rem;
+			line-height: 1.08;
+			padding: 0 3px;
+			margin: 0;
+		}
+		body.page-mypet-fisa .mypet-add-field input,
+		body.page-mypet-fisa .mypet-add-field textarea {
+			padding: 0.1rem 0.22rem;
+			font-size: 0.7rem;
+			line-height: 1.1;
+		}
+		body.page-mypet-fisa .mypet-add-field select {
+			padding: 0.1rem 1.35rem 0.1rem 0.22rem;
+			font-size: 0.7rem;
+			line-height: 1.1;
+		}
+		body.page-mypet-fisa .mypet-fisa-field-medical textarea {
+			height: 2.2rem;
+			min-height: 2.2rem;
+			max-height: 2.2rem;
+		}
+		body.page-mypet-fisa .mypet-fisa-field-story {
+			margin-top: 0.04rem;
+		}
+		body.page-mypet-fisa .mypet-fisa-field-story textarea {
+			height: 2.45rem;
+			min-height: 2.45rem;
+			max-height: 2.45rem;
 		}
 	}
 </style>
