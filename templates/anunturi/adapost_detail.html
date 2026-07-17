@@ -99,15 +99,52 @@
 		align-self: center;
 	}
 	.adp-det__back:hover { text-decoration: underline; }
-	/* Slot rezervat (reclamă paleți etc.) — gol, de prelucrat ulterior */
+	/* Banda promo: 3 sloturi (Facebook | mâncare | reclamă internă) */
 	.adp-det__promo-slot {
 		flex: 1 1 auto;
 		min-width: 0;
 		min-height: 100%;
-		border: 1px dashed #b0bec5;
-		border-radius: 8px;
-		background: rgba(255, 255, 255, 0.55);
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.35rem;
 		box-sizing: border-box;
+	}
+	.adp-det__promo-cell {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		min-width: 0;
+		min-height: 100%;
+		padding: 0.2rem 0.35rem;
+		border-radius: 8px;
+		border: 1px solid transparent;
+		box-sizing: border-box;
+		font-size: 0.62rem;
+		font-weight: 800;
+		line-height: 1.15;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		text-decoration: none;
+		color: #fff;
+		cursor: default;
+	}
+	.adp-det__promo-cell--fb {
+		background: linear-gradient(165deg, #1877f2 0%, #0d47a1 100%);
+		border-color: #1565c0;
+	}
+	.adp-det__promo-cell--food {
+		background: linear-gradient(165deg, #ff8f00 0%, #e65100 100%);
+		border-color: #ef6c00;
+		color: #fff8e1;
+	}
+	.adp-det__promo-cell--internal {
+		background: linear-gradient(165deg, #7b1fa2 0%, #4a148c 100%);
+		border-color: #6a1b9a;
+	}
+	.adp-det__promo-cell[href]:hover {
+		filter: brightness(1.06);
+		text-decoration: none;
 	}
 	.adp-det__pet-site {
 		display: inline-flex;
@@ -559,6 +596,15 @@
 			grid-column: 1;
 			grid-row: 1;
 			padding: 0;
+			flex-wrap: wrap;
+		}
+		.adp-det__promo-slot {
+			order: 3;
+			flex: 1 1 100%;
+			min-height: 2rem;
+		}
+		.adp-det__promo-cell {
+			font-size: 0.58rem;
 		}
 		.adp-det__side {
 			grid-column: 1;
@@ -652,6 +698,12 @@
 	body.page-adapost-detail .adp-det__pet-site-badge {
 		color: #fff !important;
 	}
+	body.page-adapost-detail .adp-det__promo-cell {
+		color: #fff !important;
+	}
+	body.page-adapost-detail .adp-det__promo-cell--food {
+		color: #fff8e1 !important;
+	}
 	body.page-adapost-detail .adp-det__map-preview,
 	body.page-adapost-detail .adp-det__map-preview strong,
 	body.page-adapost-detail .adp-det__map-preview span {
@@ -695,6 +747,11 @@
 <div class="adp-det">
 	<div class="adp-det__top">
 		<a class="adp-det__back" href="{% url 'shelter_directory' %}">← Toate adăposturile</a>
+		<div class="adp-det__promo-slot">
+			<span class="adp-det__promo-cell adp-det__promo-cell--fb" title="Slot Facebook adăpost">Facebook</span>
+			<span class="adp-det__promo-cell adp-det__promo-cell--food" title="Slot cumpără mâncare pentru adăpost">Mâncare</span>
+			<span class="adp-det__promo-cell adp-det__promo-cell--internal" title="Slot reclamă internă adăpost">Reclamă internă</span>
+		</div>
 		<div class="adp-det__pet-site" role="status" aria-label="PET în site: {{ org_animal_count|default:0 }}">
 			<span class="adp-det__pet-site-label">PET în site</span>
 			<span class="adp-det__pet-site-badge">{{ org_animal_count|default:0 }}</span>
