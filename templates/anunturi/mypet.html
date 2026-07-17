@@ -58,16 +58,22 @@
 					</div>
 				</div>
 				<div class="mypet-actions-group mypet-actions-group--search" aria-label="Căutare animale">
-					<label class="mypet-search-wrap">
-						<span class="visually-hidden">Caută după nume sau CIP/RUA</span>
-						<input
-							type="search"
-							id="mypetSearchQ"
-							class="mypet-search-input"
-							placeholder="Caută nume sau CIP/RUA"
-							autocomplete="off"
-							enterkeyhint="search" />
-					</label>
+					<div class="mypet-search-row">
+						<label class="mypet-search-wrap">
+							<span class="visually-hidden">Caută după nume sau CIP/RUA</span>
+							<input
+								type="search"
+								id="mypetSearchQ"
+								class="mypet-search-input"
+								list="mypetCipHistoryList"
+								placeholder="Caută nume sau CIP/RUA"
+								autocomplete="off"
+								enterkeyhint="search"
+								inputmode="search" />
+							<datalist id="mypetCipHistoryList"></datalist>
+						</label>
+						<button type="button" class="mypet-btn mypet-btn-secondary mypet-search-enter" id="mypetSearchEnter" aria-label="Caută / Enter">Enter</button>
+					</div>
 				</div>
 				<div class="mypet-actions-group mypet-actions-group--species" aria-label="Filtru specii">
 					<div class="mypet-species-filters">
@@ -1214,13 +1220,20 @@
 		line-height: 1.25;
 	}
 	.mypet-actions-group--search {
-		flex: 1 1 12rem;
-		min-width: min(100%, 11rem);
-		max-width: 16rem;
+		flex: 1 1 14rem;
+		min-width: min(100%, 12rem);
+		max-width: 20rem;
+	}
+	.mypet-search-row {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		width: 100%;
 	}
 	.mypet-search-wrap {
 		display: block;
-		width: 100%;
+		flex: 1 1 auto;
+		min-width: 0;
 		margin: 0;
 	}
 	.mypet-search-input {
@@ -1240,6 +1253,22 @@
 	.mypet-search-input:focus {
 		outline: 2px solid rgba(59, 130, 246, 0.45);
 		outline-offset: 1px;
+	}
+	.mypet-search-enter {
+		display: none;
+		flex: 0 0 auto;
+		padding: 0.34rem 0.7rem;
+		white-space: nowrap;
+	}
+	@media (max-width: 767.98px), (orientation: landscape) and (max-height: 34em) {
+		.mypet-actions-group--search {
+			max-width: none;
+			width: 100%;
+			flex: 1 1 100%;
+		}
+		.mypet-search-enter {
+			display: inline-flex;
+		}
 	}
 	.visually-hidden {
 		position: absolute;
@@ -2093,10 +2122,66 @@ document.addEventListener("DOMContentLoaded", function() {
 		var actionsWrap = document.querySelector(".mypet-actions");
 		var counterBtn = document.querySelector(".mypet-btn-counter");
 		var searchInput = document.getElementById("mypetSearchQ");
+		var searchEnterBtn = document.getElementById("mypetSearchEnter");
+		var cipHistoryList = document.getElementById("mypetCipHistoryList");
+		var CIP_HISTORY_KEY = "mypet_cip_search_history_v1";
+		var lockedExactCip = "";
+		var tableWrap = document.querySelector(".mypet-table-wrap");
 		var arcBtns = Array.prototype.slice.call(document.querySelectorAll(".mypet-btn-arc"));
 		var activeSpecies = "dog";
 		var rawArcInit = "{{ mypet_initial_arc|default:'active'|escapejs }}";
 		var activeArc = rawArcInit === "adopted" ? "adopted" : "active";
+
+		function digitsOnly(s) {
+			return String(s || "").replace(/\D+/g, "");
+		}
+
+		function isCipQuery(q) {
+			var d = digitsOnly(q);
+			return d.length >= 3 && d === String(q || "").replace(/\s+/g, "");
+		}
+
+		function loadCipHistory() {
+			try {
+				var raw = localStorage.getItem(CIP_HISTORY_KEY);
+				var arr = raw ? JSON.parse(raw) : [];
+				if (!Array.isArray(arr)) return [];
+				return arr.map(function(x) { return digitsOnly(x); }).filter(Boolean).slice(0, 10);
+			} catch (eH) {
+				return [];
+			}
+		}
+
+		function saveCipHistory(arr) {
+			try {
+				localStorage.setItem(CIP_HISTORY_KEY, JSON.stringify(arr.slice(0, 10)));
+			} catch (eS) {}
+		}
+
+		function rememberCip(cip) {
+			var d = digitsOnly(cip);
+			if (!d || d.length < 6) return;
+			var hist = loadCipHistory().filter(function(x) { return x !== d; });
+			hist.unshift(d);
+			saveCipHistory(hist);
+			renderCipHistory();
+		}
+
+		function renderCipHistory() {
+			if (!cipHistoryList) return;
+			cipHistoryList.innerHTML = "";
+			loadCipHistory().forEach(function(cip) {
+				var opt = document.createElement("option");
+				opt.value = cip;
+				cipHistoryList.appendChild(opt);
+			});
+		}
+
+		function clearSearchKeepList() {
+			lockedExactCip = "";
+			if (searchInput) searchInput.value = "";
+			applyFilters();
+		}
 
 		function setArcQueryParam(arc) {
 			try {
@@ -2164,7 +2249,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
 		function applyFilters() {
 			var species = activeSpecies;
-			var q = searchInput ? (searchInput.value || "").trim().toLowerCase() : "";
+			var qRaw = searchInput ? (searchInput.value || "").trim() : "";
+			var q = qRaw.toLowerCase();
+			var qDigits = digitsOnly(qRaw);
+			var cipMode = isCipQuery(qRaw);
 			filters.forEach(function(btn) {
 				btn.classList.toggle("is-active", (btn.getAttribute("data-species") || "") === species);
 			});
@@ -2177,19 +2265,83 @@ document.addEventListener("DOMContentLoaded", function() {
 					addBtn.setAttribute("href", base + "?species=" + encodeURIComponent(species));
 				}
 			}
+
+			var scored = [];
 			rows.forEach(function(tr) {
 				var sp = (tr.getAttribute("data-species") || "");
-				var speciesOk = (species === "all") ? true : (sp === species);
+				var speciesOk = cipMode ? true : ((species === "all") ? true : (sp === species));
 				var ar = (tr.getAttribute("data-adoption-arc") || "active");
 				var arcOk = activeArc === "adopted" ? (ar === "adopted") : (ar !== "adopted");
+				var nm = (tr.getAttribute("data-pet-name") || "");
+				var chip = digitsOnly(tr.getAttribute("data-pet-cip-rua") || "");
 				var searchOk = true;
+				var score = 0;
+
 				if (q) {
-					var nm = (tr.getAttribute("data-pet-name") || "");
-					var chip = (tr.getAttribute("data-pet-cip-rua") || "");
-					searchOk = nm.indexOf(q) >= 0 || chip.indexOf(q) >= 0;
+					if (cipMode) {
+						if (!chip) {
+							searchOk = false;
+						} else if (chip === qDigits) {
+							searchOk = true;
+							score = 300;
+						} else if (chip.indexOf(qDigits) === 0) {
+							searchOk = true;
+							score = 200 - Math.min(chip.length, 99);
+						} else if (chip.indexOf(qDigits) >= 0) {
+							searchOk = true;
+							score = 100 - Math.min(chip.indexOf(qDigits), 50);
+						} else {
+							searchOk = false;
+						}
+					} else {
+						var nameHit = nm.indexOf(q) >= 0;
+						var chipHit = chip && chip.indexOf(qDigits || q) >= 0;
+						searchOk = nameHit || chipHit;
+						score = nameHit ? 50 : (chipHit ? 40 : 0);
+					}
 				}
-				tr.style.display = speciesOk && arcOk && searchOk ? "" : "none";
+
+				var show = speciesOk && arcOk && searchOk;
+				tr.style.display = show ? "" : "none";
+				if (show) scored.push({ tr: tr, score: score });
 			});
+
+			if (q && scored.length > 1) {
+				scored.sort(function(a, b) { return b.score - a.score; });
+				var tbody = scored[0].tr.parentNode;
+				if (tbody) {
+					scored.forEach(function(item) {
+						tbody.appendChild(item.tr);
+					});
+				}
+			}
+
+			if (cipMode && qDigits) {
+				var exactRows = scored.filter(function(s) {
+					return digitsOnly(s.tr.getAttribute("data-pet-cip-rua") || "") === qDigits;
+				});
+				if (exactRows.length === 1 && qDigits.length >= 8) {
+					lockedExactCip = qDigits;
+					rememberCip(qDigits);
+					rows.forEach(function(tr) {
+						var chip = digitsOnly(tr.getAttribute("data-pet-cip-rua") || "");
+						var ar = (tr.getAttribute("data-adoption-arc") || "active");
+						var arcOk = activeArc === "adopted" ? (ar === "adopted") : (ar !== "adopted");
+						tr.style.display = (chip === qDigits && arcOk) ? "" : "none";
+					});
+				} else if (!exactRows.length) {
+					lockedExactCip = "";
+				}
+			} else {
+				lockedExactCip = "";
+			}
+		}
+
+		function onSearchCommit() {
+			applyFilters();
+			if (searchInput) {
+				try { searchInput.blur(); } catch (eB) {}
+			}
 		}
 
 		arcBtns.forEach(function(btn) {
@@ -2226,8 +2378,43 @@ document.addEventListener("DOMContentLoaded", function() {
 
 		if (searchInput) {
 			searchInput.addEventListener("input", applyFilters);
-			searchInput.addEventListener("search", applyFilters);
+			searchInput.addEventListener("search", function() {
+				if (!(searchInput.value || "").trim()) {
+					clearSearchKeepList();
+				} else {
+					applyFilters();
+				}
+			});
+			searchInput.addEventListener("keydown", function(e) {
+				if (e.key === "Enter") {
+					e.preventDefault();
+					onSearchCommit();
+				}
+			});
+			searchInput.addEventListener("change", applyFilters);
 		}
+		if (searchEnterBtn) {
+			searchEnterBtn.addEventListener("click", onSearchCommit);
+		}
+
+		if (tableWrap) {
+			tableWrap.addEventListener("click", function(e) {
+				if (!lockedExactCip) return;
+				var t = e.target;
+				if (!t || !t.closest) return;
+				var row = t.closest("tr.mypet-row");
+				if (!row || row.style.display === "none") return;
+				var chip = digitsOnly(row.getAttribute("data-pet-cip-rua") || "");
+				if (chip !== lockedExactCip) return;
+				var act = t.closest(
+					"a.mypet-photo-link, .mypet-td-name a, .mypet-row-adopt-btn, .mypet-adopt-finalize-btn, .mypet-msg-open-btn, .mypet-promoveaza-btn, .mypet-cart-promo-btn, .mypet-cip-rua-input"
+				);
+				if (!act) return;
+				setTimeout(clearSearchKeepList, 0);
+			}, true);
+		}
+
+		renderCipHistory();
 
 		// default: câini
 		activeSpecies = "dog";
