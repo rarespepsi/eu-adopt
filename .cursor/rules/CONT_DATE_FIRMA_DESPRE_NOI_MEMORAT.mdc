@@ -1,0 +1,81 @@
+---
+description: Cont DATE FIRMĂ + Despre noi + promo links — stare memorată (17 iul 2026)
+globs: templates/anunturi/account.html,templates/anunturi/adapost_detail.html,static/css/eu-intra-site-skin.css,home/models.py,home/shelter_directory.py,home/views.py
+alwaysApply: false
+---
+
+# CONT – DATE FIRMĂ / DESPRE NOI / PROMO – STARE MEMORATĂ
+
+**Confirmat / lucrat:** 17 iulie 2026 · live Hetzner **`e92c203`** (și lanțul Cont din aceeași sesiune).
+
+**Nu modifica** fără cerere explicită + parola **`1977`** + OK execuție.
+
+---
+
+## Layout DATE FIRMĂ (coloana stângă Cont)
+
+Ordine în `#firma-form`:
+
+1. **Bloc `.cont-pf-firma-above`** (umple spațiul deasupra Despre noi):
+   - Denumire afișată, Denumire societate, CUI, Județ, Oraș, Adresă
+   - Tip adăpost / Tip colaborator (+ fișă transport dacă e cazul)
+   - Buton **Modificare date firmă** (`margin-top: auto` — lipit deasupra Despre noi)
+2. **Despre noi** — **fix pe loc**, textarea **exact 3 rânduri** (`#id_despre_noi_firma`, ~`3.15rem`, `resize: none`)
+3. **Site** — câmp `link_extern` (etichetă **doar „Site”**, nu „Facebook”)
+
+### Reguli CSS critice (NU reintroduce)
+
+- **Fără** `align-content: space-between` / stretch pe grila de câmpuri → **suprapune** etichete/valori.
+- **Fără** `overflow-y: auto` pe DATE FIRMĂ ca „soluție” (user a refuzat scroll).
+- `.cont-pf-firma-above .edit-form-grid`: `align-content: start`, `flex: 0 0 auto`, stivă normală.
+- Despre noi **nu se mută** în mijlocul coloanei Cont / nu se umflă peste datele de firmă.
+
+Cache skin: `eu-intra-site-skin.css?v=12-firma-fix-layout` (în `base.html`).
+
+---
+
+## Promo (mijloc jos Cont)
+
+Trei câmpuri separate (nu mai e „Despre noi” acolo):
+
+| Câmp | Rol |
+|------|-----|
+| `link_social` | Facebook / Insta / TikTok |
+| `link_mancare` | Link mâncare adăpost |
+| `link_propriu` | Link propriu (gol → default Suflet și Caracter → `/donatii/`) |
+
+Facebook social ≠ câmpul **Site** (`link_extern`).
+
+---
+
+## Model / logică
+
+- `UserProfile.despre_noi` (max 360), `link_extern`, `link_social`, `link_mancare`, `link_propriu`
+- Migrări: `0073`–`0075`
+- `home/shelter_directory.py`: `org_about_text`, `normalize_external_link`, `org_promo_links`
+- Salvare Cont: `form_type=firma` / `despre_link` / `promo_links` în `home/views.py`
+
+---
+
+## Pagină publică adăpost
+
+- `adapost_detail.html`: text Despre noi + link **Site** (`org_external_link`) + bandă 3 promo
+
+---
+
+## Fișiere sursă
+
+| Fișier | Rol |
+|--------|-----|
+| `templates/anunturi/account.html` | Layout Cont + CSS DATE FIRMĂ |
+| `static/css/eu-intra-site-skin.css` | Contrast Cont pe skin Intra |
+| `templates/anunturi/adapost_detail.html` | Afișare publică |
+| `home/models.py` | Câmpuri profil |
+| `home/shelter_directory.py` | Text about + linkuri |
+| `home/views.py` | Salvare Cont |
+
+---
+
+## Rezumat
+
+**DATE FIRMĂ = date + tip + buton deasupra; Despre noi fix 3 rânduri; etichetă Site (nu Facebook). Fără scroll, fără space-between pe grilă. Promo FB separat. Nimic fără `1977` + OK.**
