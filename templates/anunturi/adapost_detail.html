@@ -79,9 +79,9 @@
 		grid-column: 1 / -1;
 		grid-row: 1;
 		display: flex;
-		align-items: center;
+		align-items: stretch;
 		justify-content: space-between;
-		gap: 0.75rem;
+		gap: 0.55rem;
 		min-height: var(--adp-top-h);
 		padding: 0 0.15rem 0 0.55rem;
 		box-sizing: border-box;
@@ -96,13 +96,25 @@
 		text-decoration: none;
 		flex-shrink: 0;
 		line-height: 1.1;
+		align-self: center;
 	}
 	.adp-det__back:hover { text-decoration: underline; }
+	/* Slot rezervat (reclamă paleți etc.) — gol, de prelucrat ulterior */
+	.adp-det__promo-slot {
+		flex: 1 1 auto;
+		min-width: 0;
+		min-height: 100%;
+		border: 1px dashed #b0bec5;
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.55);
+		box-sizing: border-box;
+	}
 	.adp-det__pet-site {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.35rem;
 		flex-shrink: 0;
+		align-self: center;
 		background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%);
 		border: 1px solid #81c784;
 		border-radius: 999px;
