@@ -478,41 +478,105 @@
 	function initCropper(lineId, imageEl) {
 		if (typeof Cropper === "undefined") return;
 		var state = getState(lineId);
+		destroyCropper(lineId);
 		var box = document.querySelector('.pub-cr-preview-box[data-line-id="' + lineId + '"]');
 		if (!box) return;
-		var w0 = box.offsetWidth || 300;
-		var h0 = box.offsetHeight || 300;
-		var ratio = w0 && h0 ? w0 / h0 : 1;
-		state.cropper = new Cropper(imageEl, {
-			aspectRatio: ratio,
-			/* 0 = zoom liber (inclusiv micșorare sub cadru); 1/3 blochează zoom-out */
-			viewMode: 0,
-			dragMode: "move",
-			autoCropArea: 0.92,
-			restore: false,
-			guides: true,
-			center: true,
-			highlight: false,
-			cropBoxMovable: true,
-			cropBoxResizable: true,
-			toggleDragModeOnDblclick: false,
-			zoomOnWheel: true,
-			wheelZoomRatio: 0.1,
-			minCanvasWidth: 20,
-			minCanvasHeight: 20,
-			checkOrientation: true,
-		});
-		setToolsEnabled(lineId, true);
+
+		function start() {
+			var w0 = box.offsetWidth || 300;
+			var h0 = box.offsetHeight || 300;
+			var ratio = w0 && h0 ? w0 / h0 : 1;
+			/* viewMode 0: permite micșorarea sub cadru. Zoom-ul e pe setCanvasData (nu API zoom, blocat pe 0). */
+			state.cropper = new Cropper(imageEl, {
+				aspectRatio: ratio,
+				viewMode: 0,
+				dragMode: "move",
+				autoCropArea: 1,
+				restore: false,
+				guides: true,
+				center: true,
+				highlight: false,
+				background: true,
+				cropBoxMovable: false,
+				cropBoxResizable: false,
+				toggleDragModeOnDblclick: false,
+				zoomOnWheel: false,
+				responsive: true,
+				checkOrientation: true,
+				ready: function () {
+					setToolsEnabled(lineId, true);
+				},
+			});
+		}
+
+		if (imageEl.complete && imageEl.naturalWidth > 0) {
+			start();
+		} else {
+			imageEl.addEventListener("load", function onLoad() {
+				imageEl.removeEventListener("load", onLoad);
+				start();
+			});
+			imageEl.addEventListener("error", function () {
+				setToolsEnabled(lineId, false);
+			});
+		}
+	}
+	function canvasZoom(cropper, factor) {
+		if (!cropper || !factor || factor <= 0) return;
+		try {
+			var data = cropper.getCanvasData();
+			if (!data || !data.width) {
+				cropper.zoom(factor > 1 ? 0.15 : -0.2);
+				return;
+			}
+			var newWidth = Math.max(24, data.width * factor);
+			var newHeight = Math.max(24, data.height * factor);
+			cropper.setCanvasData({
+				left: data.left + (data.width - newWidth) / 2,
+				top: data.top + (data.height - newHeight) / 2,
+				width: newWidth,
+				height: newHeight,
+			});
+		} catch (_e) {
+			try {
+				cropper.zoom(factor > 1 ? 0.15 : -0.2);
+			} catch (_e2) {}
+		}
+	}
+	function fitCanvasInBox(cropper) {
+		if (!cropper) return;
+		try {
+			var container = cropper.getContainerData();
+			var image = cropper.getImageData();
+			if (!container || !image || !image.naturalWidth) {
+				canvasZoom(cropper, 0.7);
+				return;
+			}
+			var fitW = container.width * 0.92;
+			var fitH = container.height * 0.92;
+			var scale = Math.min(fitW / image.naturalWidth, fitH / image.naturalHeight);
+			var newWidth = Math.max(24, image.naturalWidth * scale);
+			var newHeight = Math.max(24, image.naturalHeight * scale);
+			cropper.setCanvasData({
+				left: (container.width - newWidth) / 2,
+				top: (container.height - newHeight) / 2,
+				width: newWidth,
+				height: newHeight,
+			});
+		} catch (_e) {
+			canvasZoom(cropper, 0.65);
+		}
 	}
 	function freezeCrop(lineId) {
 		var state = getState(lineId);
 		if (!state.cropper) return;
 		var box = state.cropper.getCropBoxData();
-		var w = Math.round(box.width) || 800;
-		var h = Math.round(box.height) || 800;
+		var w = Math.max(64, Math.round(box.width) || 800);
+		var h = Math.max(64, Math.round(box.height) || 800);
 		var canvas = state.cropper.getCroppedCanvas({
 			width: w,
 			height: h,
+			fillColor: "#ffffff",
 			imageSmoothingEnabled: true,
 			imageSmoothingQuality: "high",
 		});
@@ -529,7 +593,7 @@
 			img.src = URL.createObjectURL(blob);
 			previewBox.appendChild(img);
 			setToolsEnabled(lineId, false);
-		}, "image/jpeg", 0.9);
+		}, "image/jpeg", 0.92);
 	}
 	function updatePreview(lineId) {
 		var box = document.querySelector('.pub-cr-preview-box[data-line-id="' + lineId + '"]');
@@ -620,36 +684,23 @@
 	document.addEventListener("click", function (e) {
 		var zbtn = e.target && e.target.closest('[data-pub-zoom]');
 		if (zbtn) {
+			e.preventDefault();
 			var lineId = zbtn.getAttribute("data-line-id");
 			var state = getState(lineId);
 			if (!state.cropper) return;
 			var action = zbtn.getAttribute("data-action") || "out";
 			if (action === "fit") {
-				try {
-					var imageData = state.cropper.getImageData();
-					var containerData = state.cropper.getContainerData();
-					if (imageData && imageData.naturalWidth && containerData && containerData.width) {
-						var fitRatio = Math.min(
-							containerData.width / imageData.naturalWidth,
-							containerData.height / imageData.naturalHeight
-						) * 0.88;
-						state.cropper.zoomTo(Math.max(0.05, fitRatio));
-					} else {
-						state.cropper.zoom(-0.35);
-					}
-				} catch (_err) {
-					state.cropper.zoom(-0.35);
-				}
+				fitCanvasInBox(state.cropper);
 			} else if (action === "in") {
-				state.cropper.zoom(0.15);
+				canvasZoom(state.cropper, 1.18);
 			} else {
-				/* Micșorează: pas mai mare, se poate apăsa repetat */
-				state.cropper.zoom(-0.22);
+				canvasZoom(state.cropper, 0.82);
 			}
 			return;
 		}
 		var sbtn = e.target && e.target.closest('[data-pub-save-crop]');
 		if (sbtn) {
+			e.preventDefault();
 			freezeCrop(sbtn.getAttribute("data-line-id"));
 		}
 	});
