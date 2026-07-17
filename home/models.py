@@ -329,6 +329,13 @@ class AnimalListing(models.Model):
     vaccinat = models.CharField("Vaccinat", max_length=10, blank=True)
     carnet_sanatate = models.CharField("Carnet sănătate", max_length=10, blank=True)
     cip = models.CharField("CIP", max_length=10, blank=True)
+    cip_rua = models.CharField(
+        "CIP/RUA",
+        max_length=30,
+        blank=True,
+        default="",
+        help_text="Număr microcip sau RUA (când animalul are CIP).",
+    )
     sex = models.CharField("Sex", max_length=10, blank=True)
     greutate_aprox = models.CharField("Greutate (aprox.)", max_length=30, blank=True)
     probleme_medicale = models.TextField("Probleme medicale", blank=True)

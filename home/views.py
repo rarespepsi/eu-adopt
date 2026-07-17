@@ -4786,6 +4786,7 @@ def render_dog_profile(request, listing: AnimalListing):
         "sterilizat": listing.sterilizat,
         "carnet_sanatate": listing.carnet_sanatate,
         "cip": listing.cip,
+        "cip_rua": listing.cip_rua,
         "vaccin": listing.vaccinat,
         "probleme_medicale": listing.probleme_medicale,
         "greutate_aprox": listing.greutate_aprox,
@@ -8078,6 +8079,7 @@ def mypet_add_view(request):
         vaccinat = (request.POST.get("vaccinat") or "").strip()
         carnet_sanatate = (request.POST.get("carnet_sanatate") or "").strip()
         cip = (request.POST.get("cip") or "").strip()
+        cip_rua = (request.POST.get("cip_rua") or "").strip()
         sex = (request.POST.get("sex") or "").strip()
         greutate_aprox = (request.POST.get("greutate_aprox") or "").strip()
         probleme_medicale = (request.POST.get("probleme_medicale") or "").strip()
@@ -8132,6 +8134,7 @@ def mypet_add_view(request):
                     vaccinat=vaccinat,
                     carnet_sanatate=carnet_sanatate,
                     cip=cip,
+                    cip_rua=cip_rua,
                     sex=sex,
                     greutate_aprox=greutate_aprox,
                     probleme_medicale=probleme_medicale,
@@ -8176,6 +8179,7 @@ def mypet_add_view(request):
             "vaccinat": vaccinat or default_med,
             "carnet_sanatate": carnet_sanatate or default_med,
             "cip": cip or default_med,
+            "cip_rua": cip_rua,
             "sex": sex,
             "greutate_aprox": greutate_aprox,
             "probleme_medicale": probleme_medicale,
@@ -8226,6 +8230,7 @@ def mypet_add_view(request):
         "vaccinat": default_med,
         "carnet_sanatate": default_med,
         "cip": default_med,
+        "cip_rua": "",
         "sex": "",
         "greutate_aprox": "",
         "probleme_medicale": "",
@@ -8305,6 +8310,7 @@ def mypet_edit_view(request, pk):
         vaccinat = (request.POST.get("vaccinat") or "").strip()
         carnet_sanatate = (request.POST.get("carnet_sanatate") or "").strip()
         cip = (request.POST.get("cip") or "").strip()
+        cip_rua = (request.POST.get("cip_rua") or "").strip()
         sex = (request.POST.get("sex") or "").strip()
         greutate_aprox = (request.POST.get("greutate_aprox") or "").strip()
         probleme_medicale = (request.POST.get("probleme_medicale") or "").strip()
@@ -8357,6 +8363,7 @@ def mypet_edit_view(request, pk):
                 listing.vaccinat = vaccinat
                 listing.carnet_sanatate = carnet_sanatate
                 listing.cip = cip
+                listing.cip_rua = cip_rua
                 listing.sex = sex
                 listing.greutate_aprox = greutate_aprox
                 listing.probleme_medicale = probleme_medicale
@@ -8407,6 +8414,7 @@ def mypet_edit_view(request, pk):
             "vaccinat": vaccinat or default_med,
             "carnet_sanatate": carnet_sanatate or default_med,
             "cip": cip or default_med,
+            "cip_rua": cip_rua,
             "sex": sex,
             "greutate_aprox": greutate_aprox,
             "probleme_medicale": probleme_medicale,
@@ -8463,6 +8471,7 @@ def mypet_edit_view(request, pk):
         "vaccinat": listing.vaccinat or default_med,
         "carnet_sanatate": listing.carnet_sanatate or default_med,
         "cip": listing.cip or default_med,
+        "cip_rua": listing.cip_rua or "",
         "sex": listing.sex or "",
         "greutate_aprox": listing.greutate_aprox or "",
         "probleme_medicale": listing.probleme_medicale or "",

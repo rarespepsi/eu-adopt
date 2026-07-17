@@ -57,6 +57,18 @@
 						MyPet {{ mypet_count|default:0 }} / Adoptați {{ adopted_count|default:0 }} / Total {{ total_count|default:0 }}
 					</div>
 				</div>
+				<div class="mypet-actions-group mypet-actions-group--search" aria-label="Căutare animale">
+					<label class="mypet-search-wrap">
+						<span class="visually-hidden">Caută după nume sau CIP/RUA</span>
+						<input
+							type="search"
+							id="mypetSearchQ"
+							class="mypet-search-input"
+							placeholder="Caută nume sau CIP/RUA"
+							autocomplete="off"
+							enterkeyhint="search" />
+					</label>
+				</div>
 				<div class="mypet-actions-group mypet-actions-group--species" aria-label="Filtru specii">
 					<div class="mypet-species-filters">
 						<div class="mypet-btn mypet-btn-secondary mypet-btn-spec is-active" role="button" tabindex="0" data-species="dog" aria-label="Câini">Câini</div>
@@ -120,7 +132,7 @@
 				</thead>
 				<tbody>
 					{% for pet in pets %}
-					<tr class="mypet-row" data-species="{% if pet %}{% if pet.species == 'dog' %}dog{% elif pet.species == 'cat' %}cat{% else %}other{% endif %}{% else %}none{% endif %}" data-adoption-arc="{% if pet %}{% if pet.adoption_state == 'adoptat' %}adopted{% else %}active{% endif %}{% else %}none{% endif %}">
+					<tr class="mypet-row" data-species="{% if pet %}{% if pet.species == 'dog' %}dog{% elif pet.species == 'cat' %}cat{% else %}other{% endif %}{% else %}none{% endif %}" data-adoption-arc="{% if pet %}{% if pet.adoption_state == 'adoptat' %}adopted{% else %}active{% endif %}{% else %}none{% endif %}"{% if pet %} data-pet-name="{{ pet.name|default:''|lower }}" data-pet-cip-rua="{{ pet.cip_rua|default:''|lower }}"{% endif %}>
 						<td class="mypet-td mypet-td-nr">{{ forloop.counter }}</td>
 						<td class="mypet-td mypet-td-photo">
 							{% if pet %}
@@ -1142,6 +1154,45 @@
 		text-align: center;
 		line-height: 1.25;
 	}
+	.mypet-actions-group--search {
+		flex: 1 1 12rem;
+		min-width: min(100%, 11rem);
+		max-width: 16rem;
+	}
+	.mypet-search-wrap {
+		display: block;
+		width: 100%;
+		margin: 0;
+	}
+	.mypet-search-input {
+		width: 100%;
+		box-sizing: border-box;
+		padding: 0.34rem 0.62rem;
+		border-radius: 999px;
+		border: 1px solid var(--mypet-border-inner);
+		background: rgba(15, 23, 42, 0.55);
+		color: var(--mypet-text);
+		font-size: 0.78rem;
+		line-height: 1.25;
+	}
+	.mypet-search-input::placeholder {
+		color: rgba(148, 163, 184, 0.85);
+	}
+	.mypet-search-input:focus {
+		outline: 2px solid rgba(59, 130, 246, 0.45);
+		outline-offset: 1px;
+	}
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
 	.mypet-species-filters {
 		display: flex;
 		flex-wrap: wrap;
@@ -1982,6 +2033,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		var filtersWrap = document.querySelector(".mypet-species-filters");
 		var actionsWrap = document.querySelector(".mypet-actions");
 		var counterBtn = document.querySelector(".mypet-btn-counter");
+		var searchInput = document.getElementById("mypetSearchQ");
 		var arcBtns = Array.prototype.slice.call(document.querySelectorAll(".mypet-btn-arc"));
 		var activeSpecies = "dog";
 		var rawArcInit = "{{ mypet_initial_arc|default:'active'|escapejs }}";
@@ -2053,6 +2105,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 		function applyFilters() {
 			var species = activeSpecies;
+			var q = searchInput ? (searchInput.value || "").trim().toLowerCase() : "";
 			filters.forEach(function(btn) {
 				btn.classList.toggle("is-active", (btn.getAttribute("data-species") || "") === species);
 			});
@@ -2070,7 +2123,13 @@ document.addEventListener("DOMContentLoaded", function() {
 				var speciesOk = (species === "all") ? true : (sp === species);
 				var ar = (tr.getAttribute("data-adoption-arc") || "active");
 				var arcOk = activeArc === "adopted" ? (ar === "adopted") : (ar !== "adopted");
-				tr.style.display = speciesOk && arcOk ? "" : "none";
+				var searchOk = true;
+				if (q) {
+					var nm = (tr.getAttribute("data-pet-name") || "");
+					var chip = (tr.getAttribute("data-pet-cip-rua") || "");
+					searchOk = nm.indexOf(q) >= 0 || chip.indexOf(q) >= 0;
+				}
+				tr.style.display = speciesOk && arcOk && searchOk ? "" : "none";
 			});
 		}
 
@@ -2105,6 +2164,11 @@ document.addEventListener("DOMContentLoaded", function() {
 				}
 			});
 		});
+
+		if (searchInput) {
+			searchInput.addEventListener("input", applyFilters);
+			searchInput.addEventListener("search", applyFilters);
+		}
 
 		// default: câini
 		activeSpecies = "dog";
