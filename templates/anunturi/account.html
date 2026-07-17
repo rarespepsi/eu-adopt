@@ -507,11 +507,12 @@ body.page-account .account-right-panel {
 		margin-bottom: 0.02rem !important;
 		line-height: 1.1;
 	}
-	/* Despre noi + link: o linie fiecare (micșorat ~3/4 față de textarea mare) */
+	/* Despre noi: EXACT 3 rânduri fixe — nu crește, nu ia spațiu de la datele de sus */
 	.cont-pf-left .cont-pf-firma-despre {
 		margin-top: 0.06rem !important;
 		margin-bottom: 0 !important;
 		flex: 0 0 auto !important;
+		align-self: stretch;
 	}
 	.cont-pf-left .cont-pf-firma-despre label,
 	.cont-pf-left .cont-pf-firma-despre + .signup-field label {
@@ -519,6 +520,20 @@ body.page-account .account-right-panel {
 		margin-bottom: 0.02rem !important;
 	}
 	body.page-account .cont-pf-left #id_despre_noi_firma,
+	body.page-account .cont-pf-left #id_despre_noi_pf {
+		display: block !important;
+		box-sizing: border-box !important;
+		height: 3.15rem !important; /* 3 rânduri @ 0.66rem / lh 1.15 + padding */
+		min-height: 3.15rem !important;
+		max-height: 3.15rem !important;
+		padding: 0.12rem 0.25rem !important;
+		font-size: 0.66rem !important;
+		line-height: 1.15 !important;
+		overflow-x: hidden !important;
+		overflow-y: auto !important;
+		resize: none !important;
+		flex: none !important;
+	}
 	body.page-account .cont-pf-left #id_link_extern_firma {
 		height: 1.25rem !important;
 		min-height: 1.25rem !important;
@@ -526,8 +541,6 @@ body.page-account .account-right-panel {
 		padding: 0.06rem 0.25rem !important;
 		font-size: 0.66rem !important;
 		line-height: 1.1 !important;
-		overflow: hidden !important;
-		resize: none !important;
 	}
 	.cont-pf-left .cont-pf-firma-despre + .signup-field {
 		margin-top: 0.04rem;
@@ -1281,10 +1294,10 @@ body.page-account .account-right-panel {
 							id="id_despre_noi_firma"
 							name="despre_noi"
 							class="firma-field"
-							rows="1"
+							rows="3"
 							maxlength="360"
 							readonly
-							placeholder="Scurt (1–2 rânduri)"
+							placeholder="Max. 3 rânduri"
 						>{% if form_prefill_firma %}{{ form_prefill_firma.despre_noi|default:'' }}{% elif user_profile %}{{ user_profile.despre_noi|default:'' }}{% endif %}</textarea>
 					</div>
 					<div class="signup-field span2">
@@ -1360,9 +1373,9 @@ body.page-account .account-right-panel {
 			<form method="post" action="{% url 'account_edit' %}" id="despre-link-form-pf" style="margin-top:0.5rem;">
 				{% csrf_token %}
 				<input type="hidden" name="form_type" value="despre_link" />
-				<div class="signup-field span2">
+				<div class="signup-field span2 cont-pf-firma-despre">
 					<label for="id_despre_noi_pf">Despre noi</label>
-					<textarea id="id_despre_noi_pf" name="despre_noi" class="despre-link-field" rows="3" maxlength="360" readonly placeholder="Max. 3 rânduri">{% if user_profile %}{{ user_profile.despre_noi|default:'' }}{% endif %}</textarea>
+					<textarea id="id_despre_noi_pf" name="despre_noi" class="despre-link-field firma-field" rows="3" maxlength="360" readonly placeholder="Max. 3 rânduri">{% if user_profile %}{{ user_profile.despre_noi|default:'' }}{% endif %}</textarea>
 				</div>
 				<div class="signup-field span2" style="margin-top:0.25rem;">
 					<label for="id_link_extern_pf">Link site / Facebook</label>
