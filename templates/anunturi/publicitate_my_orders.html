@@ -7,6 +7,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/checkout-intra-skin.css' %}?v=2" type="text/css" media="screen" />
 <style>
+	/* Comenzile mele publicitare: caseta ~3/4 ecran (nu cardul mic Intra 28rem) */
 	body.page-publicitate-my-orders #main_wrap {
 		background: linear-gradient(180deg, #d9e3f7 0%, #cad8f2 45%, #c1d1ee 100%) !important;
 	}
@@ -15,9 +16,54 @@
 	body.page-publicitate-my-orders .pubmo-wrap {
 		background: transparent !important;
 	}
-	.pubmo-wrap { width: min(68rem, 100%); margin: 0 auto; padding: 0 0.9rem; box-sizing: border-box; }
-	.pubmo-card { max-width: none; width: 100%; background: rgba(13, 27, 56, 0.78); }
-	.pubmo-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.7rem 0 0.95rem; }
+	body.page-publicitate-my-orders.euadopt-checkout-intra-skin #main_content {
+		align-items: center !important;
+		justify-content: center !important;
+		padding-top: calc(var(--nav-height, 56px) + 0.65rem) !important;
+		padding-bottom: 0.65rem !important;
+		padding-left: clamp(0.55rem, 1.5vw, 1rem) !important;
+		padding-right: clamp(0.55rem, 1.5vw, 1rem) !important;
+	}
+	.pubmo-wrap {
+		width: min(75vw, 100%);
+		max-width: none;
+		height: min(75vh, calc(100dvh - var(--nav-height, 56px) - 1.5rem));
+		margin: 0 auto;
+		padding: 0;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+	body.page-publicitate-my-orders .euadopt-pay-card.pubmo-card {
+		max-width: none !important;
+		width: 100% !important;
+		height: 100%;
+		min-height: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		background: rgba(13, 27, 56, 0.88);
+		padding: clamp(0.85rem, 1.8vw, 1.25rem) clamp(0.9rem, 2vw, 1.35rem);
+		box-sizing: border-box;
+	}
+	body.page-publicitate-my-orders .euadopt-pay-title {
+		margin: 0 0 0.25rem;
+		flex-shrink: 0;
+	}
+	body.page-publicitate-my-orders .euadopt-pay-sub {
+		margin: 0 0 0.45rem;
+		flex-shrink: 0;
+		font-size: 0.86rem;
+	}
+	.pubmo-tabs {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+		margin: 0 0 0.65rem;
+		flex-shrink: 0;
+	}
 	.pubmo-tab {
 		display: inline-flex; align-items: center; justify-content: center;
 		min-height: 2rem; padding: 0.35rem 0.7rem; border-radius: 10px;
@@ -27,9 +73,11 @@
 	}
 	.pubmo-tab.is-active { background: #1d4ed8; border-color: #1d4ed8; color: #fff; }
 	.pubmo-table-wrap {
+		flex: 1 1 auto;
+		min-height: 0;
 		overflow-x: auto;
 		overflow-y: auto;
-		max-height: min(58vh, 34rem);
+		max-height: none;
 		border: 1px solid rgba(148, 163, 184, 0.32);
 		border-radius: 12px;
 		background: rgba(11, 20, 38, 0.62);
@@ -80,13 +128,19 @@
 		border-color: rgba(147, 197, 253, 0.45);
 		color: #dbeafe;
 	}
-	.pubmo-empty { color: #94a3b8; font-size: 0.86rem; margin: 0.3rem 0 0; }
+	.pubmo-empty { color: #94a3b8; font-size: 0.86rem; margin: 0.3rem 0 0; flex-shrink: 0; }
 	.pubmo-reactivate { display: inline-flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; }
 	.pubmo-reactivate input {
 		width: 8.4rem; min-height: 2rem; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.36);
 		padding: 0.25rem 0.45rem; background: rgba(15, 23, 42, 0.6); color: #f8fafc;
 	}
 	.pubmo-note { color: #c2cde2; font-size: 0.74rem; margin-top: 0.15rem; }
+	@media (max-width: 900px) {
+		.pubmo-wrap {
+			width: min(96vw, 100%);
+			height: min(82vh, calc(100dvh - var(--nav-height, 56px) - 1.25rem));
+		}
+	}
 </style>
 {% endblock %}
 
