@@ -17,6 +17,9 @@
 		background-size: cover;
 		background-position: center center;
 		background-attachment: fixed;
+		height: 100vh;
+		max-height: 100vh;
+		overflow: hidden;
 	}
 	/* Pe pagina cont PF: tot cadrul sub navbar folosește direct fundalul body-ului */
 	body.page-account #main_wrap,
@@ -28,24 +31,69 @@
 	body.page-account .sidebar-right {
 		background: transparent !important;
 	}
-	body.page-account .layout { grid-template-columns: 1fr; height: 100%; min-height: 0; }
+	/* Umple tot spațiul sub navbar — fără bandă goală jos */
+	body.page-account #main_wrap {
+		height: calc(100vh - var(--nav-h, 64px));
+		max-height: calc(100vh - var(--nav-h, 64px));
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		box-sizing: border-box;
+	}
+	body.page-account .layout {
+		grid-template-columns: 1fr;
+		flex: 1 1 auto;
+		min-height: 0;
+		height: auto !important;
+		display: flex;
+		flex-direction: column;
+	}
 	body.page-account .sidebar-left { display: none; }
-	body.page-account #main_content { height: calc(100vh - var(--nav-h, 64px)); overflow: hidden; }
-	body.page-account .main-content { max-width: 100%; padding-left: 0; padding-right: 0.75rem; min-height: 0; height: 100%; overflow: hidden; }
+	body.page-account #main_content {
+		flex: 1 1 auto;
+		min-height: 0;
+		height: auto !important;
+		max-height: none;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		padding-top: 0.35rem !important;
+		padding-bottom: 0.35rem !important;
+		box-sizing: border-box;
+	}
+	body.page-account .main-content {
+		max-width: 100%;
+		padding-left: 0;
+		padding-right: 0.75rem;
+		padding-top: 0 !important;
+		padding-bottom: 0 !important;
+		margin: 0 !important;
+		min-height: 0;
+		flex: 1 1 auto;
+		height: auto !important;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+	}
 	body.page-account .cont-pf-two-col {
 		display: flex;
 		flex-direction: row;
+		align-items: stretch;
 		gap: 1rem;
 		width: 100%;
 		margin: 0;
-		height: 100%;
+		flex: 1 1 auto;
 		min-height: 0;
+		height: 100%;
 		overflow: hidden;
 	}
 	/* Trei casete pe orizontală: stânga 320px, mijloc flexibil, dreapta 320px – toate în același viewport */
 	body.page-account .cont-pf-left {
 		flex: 0 0 320px;
 		min-width: 0;
+		min-height: 0;
+		align-self: stretch;
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
@@ -53,6 +101,8 @@
 	body.page-account .cont-pf-right {
 		flex: 1 1 auto;
 		min-width: 0;
+		min-height: 0;
+		align-self: stretch;
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
@@ -66,7 +116,9 @@
 body.page-account .account-right-panel {
 		flex: 0 0 320px;
 		min-width: 0;
-		height: 100%;
+		min-height: 0;
+		align-self: stretch;
+		height: auto !important;
 		border-radius: 12px;
 		border: 2px solid rgba(21, 101, 192, 0.9);
 		background: transparent; /* doar rama albastră, fundalul mare se vede între casete */
@@ -103,9 +155,9 @@ body.page-account .account-right-panel {
 	.account-right-mini-card[data-slot="R3.2"] { background: #6d4c41; }
 	body.page-account .main-content .cont-pf-wrap { margin: 0; max-width: none; flex: 1; min-height: 0; }
 	@media (max-width: 760px) { body.page-account .cont-pf-two-col { flex-direction: column; } body.page-account .cont-pf-left { flex: 0 0 auto; } }
-	/* Caseta modificare profil (stânga) */
+	/* Caseta modificare profil (stânga / dreapta) — contrast pe skin Intra (text deschis pe câmpuri albe) */
 	.cont-pf-edit-box {
-		background: rgba(255, 255, 255, 0.5); /* translucida 50% peste fundal */
+		background: rgba(255, 255, 255, 0.94);
 		border-radius: 12px;
 		box-shadow: 0 2px 12px rgba(0,0,0,0.25);
 		border: 1px solid rgba(232, 232, 232, 0.9);
@@ -116,6 +168,34 @@ body.page-account .account-right-panel {
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
+		color: #1a1a1a;
+	}
+	body.page-account .cont-pf-edit-box,
+	body.page-account .cont-pf-edit-box .edit-intro,
+	body.page-account .cont-pf-edit-box .signup-field label,
+	body.page-account .cont-pf-edit-box .signup-col-tip-option,
+	body.page-account .cont-pf-edit-box .signup-col-tip-option span,
+	body.page-account .cont-pf-edit-box label.check {
+		color: #1a1a1a !important;
+	}
+	body.page-account .cont-pf-edit-box h2 {
+		color: #c62828 !important;
+	}
+	body.page-account .cont-pf-edit-box input:not([type="checkbox"]):not([type="radio"]),
+	body.page-account .cont-pf-edit-box select,
+	body.page-account .cont-pf-edit-box textarea {
+		color: #1a1a1a !important;
+		background: #ffffff !important;
+		caret-color: #1a1a1a;
+		-webkit-text-fill-color: #1a1a1a;
+	}
+	body.page-account .cont-pf-edit-box input:not([type="checkbox"]):not([type="radio"])[readonly],
+	body.page-account .cont-pf-edit-box select:disabled,
+	body.page-account .cont-pf-edit-box textarea[readonly] {
+		color: #1a1a1a !important;
+		background: #f7f7f7 !important;
+		-webkit-text-fill-color: #1a1a1a;
+		opacity: 1;
 	}
 	.cont-pf-edit-box h2 { margin: 0 0 0.25rem; font-size: 0.95rem; font-weight: 700; color: #c62828; text-align: center; }
 	.cont-pf-edit-box .edit-intro { margin: 0 0 0.5rem; font-size: 0.78rem; color: #555; text-align: center; line-height: 1.3; flex-shrink: 0; }
@@ -232,7 +312,7 @@ body.page-account .account-right-panel {
 		margin-bottom: 0.65rem;
 	}
 	.cont-pf-header-card {
-		background: rgba(255, 255, 255, 0.5);
+		background: rgba(255, 255, 255, 0.92);
 		border: 1px solid rgba(232, 232, 232, 0.9);
 		border-radius: 10px;
 		padding: 0.4rem 0.4rem;
@@ -242,7 +322,7 @@ body.page-account .account-right-panel {
 		justify-content: center;
 	}
 	.cont-pf-photo-card {
-		background: rgba(255, 255, 255, 0.5);
+		background: rgba(255, 255, 255, 0.92);
 		border: 1px solid rgba(232, 232, 232, 0.9);
 		border-radius: 10px;
 		padding: 0.4rem 0.35rem 0.35rem;
@@ -294,13 +374,32 @@ body.page-account .account-right-panel {
 		gap: 0.65rem;
 	}
 	.cont-pf-card {
-		background: rgba(255, 255, 255, 0.5); /* translucide 50% peste fundal */
+		background: rgba(255, 255, 255, 0.92);
 		border: 1px solid rgba(232, 232, 232, 0.9);
 		border-radius: 10px;
 		padding: 0.7rem 0.9rem;
 		box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 		transition: box-shadow 0.2s, border-color 0.2s;
 		overflow: hidden;
+		color: #1a1a1a;
+	}
+	body.page-account .cont-pf-card,
+	body.page-account .cont-pf-card p,
+	body.page-account .cont-pf-card strong,
+	body.page-account .cont-pf-despre-block label,
+	body.page-account .despre-link-field {
+		color: #1a1a1a !important;
+		-webkit-text-fill-color: #1a1a1a;
+	}
+	body.page-account .cont-pf-card h2 {
+		color: #c62828 !important;
+		-webkit-text-fill-color: #c62828;
+	}
+	body.page-account .despre-link-field {
+		background: #ffffff !important;
+	}
+	body.page-account .despre-link-field[readonly] {
+		background: #f7fdf9 !important;
 	}
 	.cont-pf-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #e0e0e0; }
 	.cont-pf-card h2 { margin: 0 0 0.45rem; font-size: 0.7rem; color: #c62828; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
