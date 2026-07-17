@@ -159,6 +159,12 @@ body.euadopt-intra-skin.page-account .despre-link-field[readonly] {
 	opacity: 1;
 }
 
+body.euadopt-intra-skin.page-account .cont-pf-left #id_despre_noi_firma {
+	height: 1.85rem !important;
+	min-height: 1.85rem !important;
+	max-height: 1.85rem !important;
+}
+
 /* ——— Anulează warm-theme (cont / magazinul meu) ——— */
 body.euadopt-intra-skin.page-account #main_content,
 body.euadopt-intra-skin.page-magazinul-meu #main_content,

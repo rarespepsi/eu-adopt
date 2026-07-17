@@ -475,12 +475,20 @@ body.page-account .account-right-panel {
 		box-sizing: border-box;
 	}
 
-	/* Caseta DATE FIRMĂ – continut compact, fără scroll în interior */
+	/* Caseta DATE FIRMĂ – scroll dacă nu încape; Despre noi nu mai „înghite” adresa/bifele */
 	.cont-pf-left .cont-pf-edit-box {
 		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
 	}
 	.cont-pf-left .edit-form-inner {
 		font-size: 0.78rem;
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow-x: hidden;
+		overflow-y: auto !important;
+		-webkit-overflow-scrolling: touch;
 	}
 	.cont-pf-left .edit-form-grid {
 		gap: 0.25rem;
@@ -501,31 +509,47 @@ body.page-account .account-right-panel {
 		min-height: 0;
 		line-height: 1.25;
 	}
-	/* Despre noi + link: compact, nu acoperă adresa / bifele */
+	/* Despre noi + link: o linie vizuală, imediat sub Adresă */
 	.cont-pf-left .cont-pf-firma-despre {
-		margin-top: 0.2rem !important;
-		margin-bottom: 0;
-		flex: 0 0 auto;
+		margin-top: 0.15rem !important;
+		margin-bottom: 0 !important;
+		flex: 0 0 auto !important;
 	}
-	.cont-pf-left .cont-pf-firma-despre textarea.firma-field {
-		height: 2.35rem;
-		min-height: 2.35rem;
-		max-height: 2.35rem;
-		padding: 0.15rem 0.3rem;
-		font-size: 0.72rem;
-		line-height: 1.2;
-		overflow-y: auto;
+	.cont-pf-left .cont-pf-firma-despre label,
+	.cont-pf-left .cont-pf-firma-despre + .signup-field label {
+		font-size: 0.65rem !important;
+		margin-bottom: 0.05rem !important;
 	}
-	.cont-pf-left #id_link_extern_firma {
-		padding: 0.15rem 0.3rem;
-		font-size: 0.72rem;
+	body.page-account .cont-pf-left .cont-pf-firma-despre textarea.firma-field,
+	body.page-account .cont-pf-left #id_despre_noi_firma {
+		height: 1.85rem !important;
+		min-height: 1.85rem !important;
+		max-height: 1.85rem !important;
+		padding: 0.12rem 0.3rem !important;
+		font-size: 0.7rem !important;
+		line-height: 1.15 !important;
+		overflow-y: auto !important;
+		resize: none !important;
+	}
+	body.page-account .cont-pf-left #id_link_extern_firma {
+		height: 1.7rem !important;
+		min-height: 1.7rem !important;
+		max-height: 1.7rem !important;
+		padding: 0.12rem 0.3rem !important;
+		font-size: 0.7rem !important;
 	}
 	.cont-pf-left .cont-pf-firma-despre + .signup-field {
+		margin-top: 0.1rem;
 		margin-bottom: 0.08rem;
 	}
 	.cont-pf-left .signup-actions {
-		margin-top: 0.35rem !important;
+		margin-top: 0.3rem !important;
 		flex-shrink: 0;
+		position: sticky;
+		bottom: 0;
+		background: rgba(255, 255, 255, 0.96);
+		padding-top: 0.25rem;
+		z-index: 2;
 	}
 	/* Menține Județ + Oraș pe același rând vizual (fără label pe 2 linii) */
 	.cont-pf-left .signup-field .signup-label-one-line {
@@ -1244,9 +1268,37 @@ body.page-account .account-right-panel {
 						<label for="id_company_address">Adresă firmă</label>
 						<input type="text" id="id_company_address" name="company_address" value="{{ fp_firma.company_address|default:user_profile.company_address|default:'' }}" class="firma-field" readonly />
 					</div>
+					{% if display_role|default:account_profile.role != 'pf' %}
+					<div class="signup-field span2 cont-pf-firma-despre">
+						<label for="id_despre_noi_firma">Despre noi</label>
+						<textarea
+							id="id_despre_noi_firma"
+							name="despre_noi"
+							class="firma-field"
+							rows="1"
+							maxlength="360"
+							readonly
+							placeholder="Scurt (1–2 rânduri)"
+						>{% if form_prefill_firma %}{{ form_prefill_firma.despre_noi|default:'' }}{% elif user_profile %}{{ user_profile.despre_noi|default:'' }}{% endif %}</textarea>
+					</div>
+					<div class="signup-field span2">
+						<label for="id_link_extern_firma">Link site / Facebook</label>
+						<input
+							type="text"
+							inputmode="url"
+							id="id_link_extern_firma"
+							name="link_extern"
+							class="firma-field"
+							maxlength="500"
+							readonly
+							placeholder="https://…"
+							value="{% if form_prefill_firma %}{{ form_prefill_firma.link_extern|default:'' }}{% elif user_profile %}{{ user_profile.link_extern|default:'' }}{% endif %}"
+						/>
+					</div>
+					{% endif %}
 				</div>
 				{% if display_role|default:account_profile.role == 'org' %}
-				<div class="signup-field span2" style="margin-top:0.5rem;">
+				<div class="signup-field span2" style="margin-top:0.35rem;">
 						<label>Tip adăpost *</label>
 						<div class="signup-col-tip-options">
 							<label class="signup-col-tip-option">
@@ -1289,34 +1341,6 @@ body.page-account .account-right-panel {
 				</div>
 				{% endif %}
 				{% endwith %}
-				{% if display_role|default:account_profile.role != 'pf' %}
-				<div class="signup-field span2 cont-pf-firma-despre">
-					<label for="id_despre_noi_firma">Despre noi</label>
-					<textarea
-						id="id_despre_noi_firma"
-						name="despre_noi"
-						class="firma-field"
-						rows="2"
-						maxlength="360"
-						readonly
-						placeholder="Max. 2–3 rânduri"
-					>{% if form_prefill_firma %}{{ form_prefill_firma.despre_noi|default:'' }}{% elif user_profile %}{{ user_profile.despre_noi|default:'' }}{% endif %}</textarea>
-				</div>
-				<div class="signup-field span2">
-					<label for="id_link_extern_firma">Link site / Facebook</label>
-					<input
-						type="text"
-						inputmode="url"
-						id="id_link_extern_firma"
-						name="link_extern"
-						class="firma-field"
-						maxlength="500"
-						readonly
-						placeholder="https://…"
-						value="{% if form_prefill_firma %}{{ form_prefill_firma.link_extern|default:'' }}{% elif user_profile %}{{ user_profile.link_extern|default:'' }}{% endif %}"
-					/>
-				</div>
-				{% endif %}
 				<div class="signup-actions">
 					<button type="button" id="btn-modificare-firma" class="btn-modificare-profil">
 						{% if display_role|default:account_profile.role == 'org' %}Modificare date ONG/SRL{% else %}Modificare date firmă{% endif %}
