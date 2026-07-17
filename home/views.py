@@ -7249,7 +7249,7 @@ def account_edit_view(request):
 
     form_type = (request.POST.get("form_type") or "").strip()
 
-    # Formular „Despre noi + Link” — PF / ONG / Colaborator
+    # Formular „Despre noi + Link” — PF (ONG/colaborator salvează din DATE FIRMĂ)
     if form_type == "despre_link":
         from home.shelter_directory import normalize_external_link
 
@@ -7265,8 +7265,26 @@ def account_edit_view(request):
         request.session["account_updated"] = True
         return redirect(reverse("account") + "?updated=1")
 
+    # Formular „3 sloturi promo” (FB/social, mâncare, link propriu)
+    if form_type == "promo_links":
+        from home.shelter_directory import normalize_external_link
+
+        link_social = normalize_external_link(request.POST.get("link_social") or "")
+        link_mancare = normalize_external_link(request.POST.get("link_mancare") or "")
+        link_propriu = normalize_external_link(request.POST.get("link_propriu") or "")
+        if user_profile is None:
+            user_profile = UserProfile.objects.create(user=user)
+        user_profile.link_social = link_social
+        user_profile.link_mancare = link_mancare
+        user_profile.link_propriu = link_propriu
+        user_profile.save(update_fields=["link_social", "link_mancare", "link_propriu"])
+        request.session["account_updated"] = True
+        return redirect(reverse("account") + "?updated=1")
+
     # Formular „DATE FIRMĂ” – ONG + colaborator
     if form_type == "firma" and account_profile.role in (AccountProfile.ROLE_COLLAB, AccountProfile.ROLE_ORG):
+        from home.shelter_directory import normalize_external_link
+
         company_display_name = (request.POST.get("company_display_name") or "").strip()
         company_legal_name = (request.POST.get("company_legal_name") or "").strip()
         company_cui = (request.POST.get("company_cui") or "").strip()
@@ -7275,6 +7293,10 @@ def account_edit_view(request):
         company_oras = (request.POST.get("company_oras") or "").strip()
         company_judet, company_oras = normalize_location_pair(company_judet, company_oras)
         company_address = (request.POST.get("company_address") or "").strip()
+        despre_noi = (request.POST.get("despre_noi") or "").strip()
+        if len(despre_noi) > 360:
+            despre_noi = despre_noi[:360]
+        link_extern = normalize_external_link(request.POST.get("link_extern") or "")
         collaborator_type = (request.POST.get("collaborator_type") or "").strip()
         is_public_shelter_val = (request.POST.get("is_public_shelter") or request.POST.get("is_public_shelter_org") or "").strip()
 
@@ -7307,6 +7329,8 @@ def account_edit_view(request):
                 "company_judet": company_judet,
                 "company_oras": company_oras,
                 "company_address": company_address,
+                "despre_noi": despre_noi,
+                "link_extern": link_extern,
                 "collaborator_type": collaborator_type if account_profile.role == AccountProfile.ROLE_COLLAB else "",
                 "is_public_shelter": is_public_shelter_val if is_public_shelter_val in ("yes", "no") else "",
             }
@@ -7321,6 +7345,8 @@ def account_edit_view(request):
         user_profile.company_judet = company_judet
         user_profile.company_oras = company_oras
         user_profile.company_address = company_address
+        user_profile.despre_noi = despre_noi
+        user_profile.link_extern = link_extern
         user_profile.collaborator_type = collaborator_type if account_profile.role == AccountProfile.ROLE_COLLAB else ""
         user_profile.save()
         if account_profile.role == AccountProfile.ROLE_ORG:

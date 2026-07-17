@@ -63,21 +63,33 @@ class ShelterDirectoryTests(TestCase):
         self.assertContains(r, "0700111222")
 
     def test_org_about_custom_text(self):
-        from home.shelter_directory import normalize_external_link, org_about_text, org_external_link
+        from home.shelter_directory import normalize_external_link, org_about_text, org_external_link, org_promo_links
 
         self.assertEqual(org_about_text(self.org), "Adăpost Test Brașov")
         prof = self.org.profile
         prof.despre_noi = "Primim câini și pisici din județ. Ne poți vizita în weekend."
         prof.link_extern = "exemplu.ro/adapost"
-        prof.save(update_fields=["despre_noi", "link_extern"])
+        prof.link_social = "facebook.com/adapost"
+        prof.link_mancare = "https://shop.example/mancare"
+        prof.link_propriu = ""
+        prof.save(update_fields=["despre_noi", "link_extern", "link_social", "link_mancare", "link_propriu"])
         self.assertIn("Primim câini", org_about_text(self.org))
         self.assertNotIn("înregistrată pe EU-Adopt", org_about_text(self.org))
         self.assertEqual(normalize_external_link("exemplu.ro/adapost"), "https://exemplu.ro/adapost")
         self.assertEqual(org_external_link(self.org), "https://exemplu.ro/adapost")
+        promo = org_promo_links(self.org)
+        self.assertEqual(promo["social"], "https://facebook.com/adapost")
+        self.assertEqual(promo["mancare"], "https://shop.example/mancare")
+        self.assertTrue(promo["propriu_is_default"])
+        self.assertIn("donatii", promo["propriu"])
+        self.assertIn("Suflet", promo["propriu_label"])
         ensure_org_slug(self.org, save=True)
         r = Client().get(reverse("shelter_detail", kwargs={"slug": self.org.account_profile.public_slug}))
         self.assertContains(r, "Site / pagină")
         self.assertContains(r, "https://exemplu.ro/adapost")
+        self.assertContains(r, "Suflet")
+        self.assertContains(r, promo["social"])
+        self.assertContains(r, promo["mancare"])
 
     def test_pets_pk_redirects_to_slug(self):
         r = Client().get(reverse("pets_single", args=[self.pet.pk]))

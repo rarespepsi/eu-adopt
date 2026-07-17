@@ -43,7 +43,28 @@ class UserProfile(models.Model):
         max_length=500,
         blank=True,
         default="",
-        help_text="URL opțional (site, Facebook, etc.) — valabil pentru toate tipurile de cont.",
+        help_text="URL opțional (site, Facebook, etc.) — Cont DATE FIRMĂ + Despre noi public.",
+    )
+    link_social = models.CharField(
+        "Link social (FB / Insta / TikTok)",
+        max_length=500,
+        blank=True,
+        default="",
+        help_text="Slot 1 pe pagina publică adăpost.",
+    )
+    link_mancare = models.CharField(
+        "Link mâncare adăpost",
+        max_length=500,
+        blank=True,
+        default="",
+        help_text="Slot 2 pe pagina publică adăpost.",
+    )
+    link_propriu = models.CharField(
+        "Link propriu / reclamă",
+        max_length=500,
+        blank=True,
+        default="",
+        help_text="Slot 3 pe pagina publică; gol = Suflet și Caracter.",
     )
     # Opțional: date pentru formulare fiscale (230 / documente donații) — completare explicită de către user.
     donation_cnp = models.CharField("CNP (opțional, documente donații)", max_length=13, blank=True, default="")

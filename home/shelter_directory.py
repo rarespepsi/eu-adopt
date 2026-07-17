@@ -293,6 +293,37 @@ def org_external_link(user: User) -> str:
     return normalize_external_link(raw) if raw else ""
 
 
+def org_promo_links(user: User) -> dict:
+    """
+    Cele 3 sloturi promo pe pagina publică adăpost.
+    Slot 3: dacă lipsește link_propriu → Suflet și Caracter.
+    """
+    from home.donatii_constants import EUADOPT_PARTNER_NGO
+
+    profile = getattr(user, "profile", None)
+    social = normalize_external_link(getattr(profile, "link_social", "") or "") if profile else ""
+    mancare = normalize_external_link(getattr(profile, "link_mancare", "") or "") if profile else ""
+    propriu_raw = (getattr(profile, "link_propriu", None) or "").strip() if profile else ""
+    propriu = normalize_external_link(propriu_raw) if propriu_raw else ""
+    default_own = (EUADOPT_PARTNER_NGO.get("url") or "").strip() or "https://eu-adopt.ro/donatii/"
+    if not propriu:
+        propriu = default_own
+        propriu_is_default = True
+    else:
+        propriu_is_default = False
+    return {
+        "social": social,
+        "mancare": mancare,
+        "propriu": propriu,
+        "propriu_is_default": propriu_is_default,
+        "propriu_label": (
+            (EUADOPT_PARTNER_NGO.get("name") or "Suflet și Caracter")
+            if propriu_is_default
+            else "Link propriu"
+        ),
+    }
+
+
 def directory_org_queryset():
     """ORG cu cel puțin un animal publicat."""
     return (

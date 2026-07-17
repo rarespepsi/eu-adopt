@@ -32,4 +32,6 @@ EUADOPT_PARTNER_NGO = {
         "pe această pagină. IBAN-ul și datele complete pentru donații direct către asociație "
         "vor fi afișate după activarea finală."
     ),
+    # Fallback slot 3 pe pagina adăpost (când ONG nu pune link propriu)
+    "url": "https://eu-adopt.ro/donatii/",
 }

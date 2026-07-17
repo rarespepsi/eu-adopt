@@ -154,9 +154,17 @@
 		background: linear-gradient(165deg, #7b1fa2 0%, #4a148c 100%);
 		border-color: #6a1b9a;
 	}
+	.adp-det__promo-cell[href] {
+		cursor: pointer;
+	}
+	.adp-det__promo-cell--empty {
+		opacity: 0.55;
+		cursor: default;
+	}
 	.adp-det__promo-cell[href]:hover {
 		filter: brightness(1.06);
 		text-decoration: none;
+		color: #fff;
 	}
 	.adp-det__pet-site {
 		display: inline-flex;
@@ -796,9 +804,17 @@
 	<div class="adp-det__top">
 		<a class="adp-det__back" href="{% url 'shelter_directory' %}">← Toate adăposturile</a>
 		<div class="adp-det__promo-slot">
-			<span class="adp-det__promo-cell adp-det__promo-cell--fb" title="Slot Facebook adăpost">Facebook</span>
-			<span class="adp-det__promo-cell adp-det__promo-cell--food" title="Slot cumpără mâncare pentru adăpost">Mâncare</span>
-			<span class="adp-det__promo-cell adp-det__promo-cell--internal" title="Slot reclamă internă adăpost">Reclamă internă</span>
+			{% if org_promo.social %}
+			<a class="adp-det__promo-cell adp-det__promo-cell--fb" href="{{ org_promo.social }}" target="_blank" rel="noopener noreferrer" title="Facebook / social">Social</a>
+			{% else %}
+			<span class="adp-det__promo-cell adp-det__promo-cell--fb adp-det__promo-cell--empty" title="Link social necompletat">Social</span>
+			{% endif %}
+			{% if org_promo.mancare %}
+			<a class="adp-det__promo-cell adp-det__promo-cell--food" href="{{ org_promo.mancare }}" target="_blank" rel="noopener noreferrer" title="Cumpără mâncare pentru adăpost">Mâncare</a>
+			{% else %}
+			<span class="adp-det__promo-cell adp-det__promo-cell--food adp-det__promo-cell--empty" title="Link mâncare necompletat">Mâncare</span>
+			{% endif %}
+			<a class="adp-det__promo-cell adp-det__promo-cell--internal" href="{{ org_promo.propriu }}" target="_blank" rel="noopener noreferrer" title="{{ org_promo.propriu_label }}">{% if org_promo.propriu_is_default %}Suflet &amp; Caracter{% else %}Link propriu{% endif %}</a>
 		</div>
 		<div class="adp-det__pet-site" role="status" aria-label="PET în site: {{ org_animal_count|default:0 }}">
 			<span class="adp-det__pet-site-label">PET în site</span>

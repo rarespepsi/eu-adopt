@@ -488,11 +488,18 @@ body.page-account .account-right-panel {
 	.cont-pf-left .signup-field {
 		margin-bottom: 0.12rem;
 	}
-	.cont-pf-left .signup-field input[type="text"] {
+	.cont-pf-left .signup-field input[type="text"],
+	.cont-pf-left .signup-field textarea {
 		padding: 0.18rem 0.3rem;
 		font-size: 0.78rem;
 		width: 100%;
 		box-sizing: border-box;
+		font-family: inherit;
+	}
+	.cont-pf-left .signup-field textarea {
+		resize: vertical;
+		min-height: 3.4rem;
+		line-height: 1.3;
 	}
 	/* Menține Județ + Oraș pe același rând vizual (fără label pe 2 linii) */
 	.cont-pf-left .signup-field .signup-label-one-line {
@@ -1256,6 +1263,34 @@ body.page-account .account-right-panel {
 				</div>
 				{% endif %}
 				{% endwith %}
+				{% if display_role|default:account_profile.role != 'pf' %}
+				<div class="signup-field span2 cont-pf-firma-despre" style="margin-top:0.45rem;">
+					<label for="id_despre_noi_firma">Despre noi</label>
+					<textarea
+						id="id_despre_noi_firma"
+						name="despre_noi"
+						class="firma-field"
+						rows="3"
+						maxlength="360"
+						readonly
+						placeholder="Scurtă descriere (max. 3 rânduri)"
+					>{% if form_prefill_firma %}{{ form_prefill_firma.despre_noi|default:'' }}{% elif user_profile %}{{ user_profile.despre_noi|default:'' }}{% endif %}</textarea>
+				</div>
+				<div class="signup-field span2">
+					<label for="id_link_extern_firma">Link site / Facebook</label>
+					<input
+						type="text"
+						inputmode="url"
+						id="id_link_extern_firma"
+						name="link_extern"
+						class="firma-field"
+						maxlength="500"
+						readonly
+						placeholder="https://…"
+						value="{% if form_prefill_firma %}{{ form_prefill_firma.link_extern|default:'' }}{% elif user_profile %}{{ user_profile.link_extern|default:'' }}{% endif %}"
+					/>
+				</div>
+				{% endif %}
 				<div class="signup-actions" style="margin-top:0.6rem;">
 					<button type="button" id="btn-modificare-firma" class="btn-modificare-profil">
 						{% if display_role|default:account_profile.role == 'org' %}Modificare date ONG/SRL{% else %}Modificare date firmă{% endif %}
@@ -1265,6 +1300,24 @@ body.page-account .account-right-panel {
 					</button>
 				</div>
 			</form>
+			{% if display_role|default:account_profile.role == 'pf' %}
+			<form method="post" action="{% url 'account_edit' %}" id="despre-link-form-pf" style="margin-top:0.5rem;">
+				{% csrf_token %}
+				<input type="hidden" name="form_type" value="despre_link" />
+				<div class="signup-field span2">
+					<label for="id_despre_noi_pf">Despre noi</label>
+					<textarea id="id_despre_noi_pf" name="despre_noi" class="despre-link-field" rows="3" maxlength="360" readonly placeholder="Max. 3 rânduri">{% if user_profile %}{{ user_profile.despre_noi|default:'' }}{% endif %}</textarea>
+				</div>
+				<div class="signup-field span2" style="margin-top:0.25rem;">
+					<label for="id_link_extern_pf">Link site / Facebook</label>
+					<input type="text" inputmode="url" id="id_link_extern_pf" name="link_extern" class="despre-link-field" maxlength="500" readonly placeholder="https://…" value="{% if user_profile %}{{ user_profile.link_extern|default:'' }}{% endif %}" />
+				</div>
+				<div class="signup-actions" style="margin-top:0.45rem;">
+					<button type="button" id="btn-modificare-despre-pf" class="btn-modificare-profil">Modifică Despre noi</button>
+					<button type="submit" id="btn-save-despre-pf" class="btn-save" style="display:none;" disabled>Salvează</button>
+				</div>
+			</form>
+			{% endif %}
 		</div>
 	</aside>
 	{# Coloana din mijloc: caseta mare Contul meu (nemodificată) #}
@@ -1389,40 +1442,56 @@ body.page-account .account-right-panel {
 			</div>
 			<div class="cont-pf-bottom-row">
 				<div class="cont-pf-card cont-pf-despre-card">
-					<form method="post" action="{% url 'account_edit' %}" id="despre-link-form" class="cont-pf-despre-form">
+					<form method="post" action="{% url 'account_edit' %}" id="promo-links-form" class="cont-pf-despre-form">
 						{% csrf_token %}
-						<input type="hidden" name="form_type" value="despre_link" />
+						<input type="hidden" name="form_type" value="promo_links" />
 						<div class="cont-pf-despre-stack">
 							<div class="cont-pf-despre-block">
-								<label for="id_despre_noi_mid">Despre noi</label>
-								<textarea
-									id="id_despre_noi_mid"
-									name="despre_noi"
-									class="despre-link-field"
-									rows="3"
-									maxlength="360"
-									readonly
-									placeholder="Max. 3 rânduri"
-								>{% if user_profile %}{{ user_profile.despre_noi|default:'' }}{% endif %}</textarea>
-							</div>
-							<div class="cont-pf-despre-block">
-								<label for="id_link_extern_mid">Adaugă link</label>
+								<label for="id_link_social">Facebook / Insta / TikTok</label>
 								<input
 									type="text"
 									inputmode="url"
-									id="id_link_extern_mid"
-									name="link_extern"
+									id="id_link_social"
+									name="link_social"
 									class="despre-link-field"
 									maxlength="500"
 									readonly
 									placeholder="https://…"
-									value="{% if user_profile %}{{ user_profile.link_extern|default:'' }}{% endif %}"
+									value="{% if user_profile %}{{ user_profile.link_social|default:'' }}{% endif %}"
+								/>
+							</div>
+							<div class="cont-pf-despre-block">
+								<label for="id_link_mancare">Link mâncare adăpost</label>
+								<input
+									type="text"
+									inputmode="url"
+									id="id_link_mancare"
+									name="link_mancare"
+									class="despre-link-field"
+									maxlength="500"
+									readonly
+									placeholder="https://…"
+									value="{% if user_profile %}{{ user_profile.link_mancare|default:'' }}{% endif %}"
+								/>
+							</div>
+							<div class="cont-pf-despre-block">
+								<label for="id_link_propriu">Link propriu <span style="font-weight:500;text-transform:none;letter-spacing:0;opacity:.75;">(gol = Suflet și Caracter)</span></label>
+								<input
+									type="text"
+									inputmode="url"
+									id="id_link_propriu"
+									name="link_propriu"
+									class="despre-link-field"
+									maxlength="500"
+									readonly
+									placeholder="https://… sau lasă gol"
+									value="{% if user_profile %}{{ user_profile.link_propriu|default:'' }}{% endif %}"
 								/>
 							</div>
 						</div>
 						<div class="cont-pf-despre-actions">
-							<button type="button" id="btn-modificare-despre" class="btn-pf btn-pf-secondary">Modifică</button>
-							<button type="submit" id="btn-save-despre" class="btn-pf btn-pf-home" style="display:none;" disabled>Salvează</button>
+							<button type="button" id="btn-modificare-promo" class="btn-pf btn-pf-secondary">Modifică</button>
+							<button type="submit" id="btn-save-promo" class="btn-pf btn-pf-home" style="display:none;" disabled>Salvează</button>
 						</div>
 					</form>
 					{% if partner_locations_manage %}
@@ -1653,24 +1722,42 @@ document.addEventListener('DOMContentLoaded', function() {
 		firmaForm.addEventListener('input', enableSaveFirma);
 		firmaForm.addEventListener('change', enableSaveFirma);
 	}
-	/* Despre noi + Link (mijloc jos) */
-	var despreForm = document.getElementById('despre-link-form');
-	var btnModificareDespre = document.getElementById('btn-modificare-despre');
-	var btnSaveDespre = document.getElementById('btn-save-despre');
-	if (despreForm && btnModificareDespre && btnSaveDespre) {
-		btnModificareDespre.addEventListener('click', function() {
-			despreForm.querySelectorAll('.despre-link-field').forEach(function(el) {
+	/* Despre noi + Link (mijloc jos) → acum 3 sloturi promo */
+	var promoForm = document.getElementById('promo-links-form');
+	var btnModificarePromo = document.getElementById('btn-modificare-promo');
+	var btnSavePromo = document.getElementById('btn-save-promo');
+	if (promoForm && btnModificarePromo && btnSavePromo) {
+		btnModificarePromo.addEventListener('click', function() {
+			promoForm.querySelectorAll('.despre-link-field').forEach(function(el) {
 				el.removeAttribute('readonly');
 			});
-			btnModificareDespre.style.display = 'none';
-			btnSaveDespre.style.display = 'inline-flex';
-			btnSaveDespre.disabled = true;
+			btnModificarePromo.style.display = 'none';
+			btnSavePromo.style.display = 'inline-flex';
+			btnSavePromo.disabled = true;
 		});
-		function enableSaveDespre() {
-			btnSaveDespre.disabled = false;
+		function enableSavePromo() {
+			btnSavePromo.disabled = false;
 		}
-		despreForm.addEventListener('input', enableSaveDespre);
-		despreForm.addEventListener('change', enableSaveDespre);
+		promoForm.addEventListener('input', enableSavePromo);
+		promoForm.addEventListener('change', enableSavePromo);
+	}
+	var despreFormPf = document.getElementById('despre-link-form-pf');
+	var btnModificareDesprePf = document.getElementById('btn-modificare-despre-pf');
+	var btnSaveDesprePf = document.getElementById('btn-save-despre-pf');
+	if (despreFormPf && btnModificareDesprePf && btnSaveDesprePf) {
+		btnModificareDesprePf.addEventListener('click', function() {
+			despreFormPf.querySelectorAll('.despre-link-field').forEach(function(el) {
+				el.removeAttribute('readonly');
+			});
+			btnModificareDesprePf.style.display = 'none';
+			btnSaveDesprePf.style.display = 'inline-flex';
+			btnSaveDesprePf.disabled = true;
+		});
+		function enableSaveDesprePf() {
+			btnSaveDesprePf.disabled = false;
+		}
+		despreFormPf.addEventListener('input', enableSaveDesprePf);
+		despreFormPf.addEventListener('change', enableSaveDesprePf);
 	}
 	/* Mesaj „Numele de utilizator a fost actualizat” dispare după 5 secunde */
 	var usernameUpdatedMsg = document.getElementById('cont-username-updated-msg');
@@ -1710,12 +1797,19 @@ document.addEventListener('DOMContentLoaded', function() {
 				btnSaveFirma.style.display = 'none';
 				btnModificareFirma.style.display = 'inline-flex';
 			}
-			if (despreForm && btnModificareDespre && btnSaveDespre) {
-				despreForm.querySelectorAll('.despre-link-field').forEach(function(el) {
+			if (promoForm && btnModificarePromo && btnSavePromo) {
+				promoForm.querySelectorAll('.despre-link-field').forEach(function(el) {
 					el.setAttribute('readonly', 'readonly');
 				});
-				btnSaveDespre.style.display = 'none';
-				btnModificareDespre.style.display = 'inline-flex';
+				btnSavePromo.style.display = 'none';
+				btnModificarePromo.style.display = 'inline-flex';
+			}
+			if (despreFormPf && btnModificareDesprePf && btnSaveDesprePf) {
+				despreFormPf.querySelectorAll('.despre-link-field').forEach(function(el) {
+					el.setAttribute('readonly', 'readonly');
+				});
+				btnSaveDesprePf.style.display = 'none';
+				btnModificareDesprePf.style.display = 'inline-flex';
 			}
 		}, 2000);
 	}

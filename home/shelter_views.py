@@ -24,6 +24,7 @@ from home.shelter_directory import (
     org_logo_url,
     org_maps_url,
     org_phone,
+    org_promo_links,
     org_public_url,
     published_animals_for_org,
 )
@@ -98,6 +99,7 @@ def shelter_detail_view(request, slug: str):
             "org_logo_url": org_logo_url(user),
             "org_about": org_about_text(user),
             "org_external_link": org_external_link(user),
+            "org_promo": org_promo_links(user),
             "org_address": org_address_line(user),
             "org_phone": org_phone(user),
             "org_contact": org_contact_person(user),
