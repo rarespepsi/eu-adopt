@@ -58,13 +58,15 @@
 		--adp-side-w: clamp(12.5rem, 15vw, 15.5rem);
 		--adp-gap: 0.55rem;
 		--adp-bar-h: 2.5rem;
+		--adp-top-h: 2.15rem;
 		width: 100%;
 		max-width: none;
 		margin: 0;
-		padding: 0.25rem 0.5rem 0.25rem 0;
+		padding: 0.2rem 0.5rem 0.25rem 0;
 		display: grid;
 		grid-template-columns: var(--adp-side-w) minmax(0, 1fr);
-		gap: 0.65rem;
+		grid-template-rows: var(--adp-top-h) minmax(0, 1fr);
+		gap: 0.45rem 0.65rem;
 		align-items: stretch;
 		height: 100%;
 		max-height: 100%;
@@ -72,7 +74,66 @@
 		overflow: hidden;
 		box-sizing: border-box;
 	}
+	/* Sub navbar: Înapoi (stânga) + PET în site (dreapta) */
+	.adp-det__top {
+		grid-column: 1 / -1;
+		grid-row: 1;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		min-height: var(--adp-top-h);
+		padding: 0 0.15rem 0 0.55rem;
+		box-sizing: border-box;
+	}
+	.adp-det__back {
+		display: inline-flex;
+		align-items: center;
+		margin: 0;
+		font-size: 0.8rem;
+		font-weight: 800;
+		color: #1565c0;
+		text-decoration: none;
+		flex-shrink: 0;
+		line-height: 1.1;
+	}
+	.adp-det__back:hover { text-decoration: underline; }
+	.adp-det__pet-site {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		flex-shrink: 0;
+		background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%);
+		border: 1px solid #81c784;
+		border-radius: 999px;
+		padding: 0.18rem 0.55rem 0.18rem 0.65rem;
+		box-shadow: 0 1px 3px rgba(46, 125, 50, 0.18);
+		color: #1b5e20;
+		font-weight: 800;
+		line-height: 1;
+	}
+	.adp-det__pet-site-label {
+		font-size: 0.72rem;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+	.adp-det__pet-site-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 1.55rem;
+		height: 1.35rem;
+		padding: 0 0.35rem;
+		border-radius: 999px;
+		background: #2e7d32;
+		color: #fff;
+		font-size: 0.78rem;
+		font-variant-numeric: tabular-nums;
+	}
 	.adp-det__side {
+		grid-column: 1;
+		grid-row: 2;
 		position: relative;
 		top: auto;
 		height: 100%;
@@ -85,7 +146,7 @@
 		border: 1px solid #d7ccc8;
 		border-left: 0;
 		border-radius: 0 14px 14px 0;
-		padding: 0.65rem 0.7rem;
+		padding: 0.55rem 0.55rem 0.65rem;
 		box-shadow: 0 4px 16px rgba(0,0,0,0.06);
 		box-sizing: border-box;
 		display: flex;
@@ -93,27 +154,34 @@
 		gap: 0.15rem;
 	}
 	.adp-det__logo {
-		width: 4.6rem;
-		height: 4.6rem;
+		width: 92%;
+		max-width: 92%;
+		height: auto;
+		aspect-ratio: 1 / 1;
 		object-fit: cover;
-		border-radius: 10px;
+		border-radius: 12px;
 		border: 1px solid #e0e0e0;
 		background: #eceff1;
-		margin: 0.15rem 0 0.25rem;
+		margin: 0.1rem auto 0.35rem;
 		flex-shrink: 0;
+		display: block;
+		align-self: center;
 	}
 	.adp-det__logo-ph {
-		width: 4.6rem;
-		height: 4.6rem;
-		border-radius: 10px;
+		width: 92%;
+		max-width: 92%;
+		aspect-ratio: 1 / 1;
+		border-radius: 12px;
 		background: #eceff1;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 1.6rem;
-		margin: 0.15rem 0 0.25rem;
+		font-size: 2.4rem;
+		margin: 0.1rem auto 0.35rem;
 		border: 1px solid #e0e0e0;
 		flex-shrink: 0;
+		align-self: center;
+		box-sizing: border-box;
 	}
 	.adp-det__side h1 {
 		margin: 0 0 0.12rem;
@@ -204,6 +272,8 @@
 		font: inherit;
 	}
 	.adp-det__main {
+		grid-column: 2;
+		grid-row: 2;
 		min-width: 0;
 		min-height: 0;
 		height: 100%;
@@ -213,12 +283,6 @@
 		flex-direction: column;
 		padding-right: 0.35rem;
 		box-sizing: border-box;
-	}
-	.adp-det__main h2 {
-		margin: 0 0 0.35rem;
-		font-size: 1.08rem;
-		color: #263238;
-		flex-shrink: 0;
 	}
 	.adp-det__pets-scroll {
 		flex: 1 1 auto;
@@ -346,16 +410,6 @@
 		font-size: 0.9rem;
 		line-height: 1.45;
 	}
-	.adp-det__back {
-		display: inline-block;
-		margin-bottom: 0.2rem;
-		font-size: 0.76rem;
-		font-weight: 700;
-		color: #1565c0;
-		text-decoration: none;
-		flex-shrink: 0;
-	}
-
 	/* Modal hartă (notă) */
 	.adp-map-modal {
 		position: fixed;
@@ -483,12 +537,20 @@
 		}
 		.adp-det {
 			grid-template-columns: 1fr;
+			grid-template-rows: auto auto auto;
 			height: auto;
 			max-height: none;
 			overflow: visible;
 			padding: 0.45rem;
 		}
+		.adp-det__top {
+			grid-column: 1;
+			grid-row: 1;
+			padding: 0;
+		}
 		.adp-det__side {
+			grid-column: 1;
+			grid-row: 2;
 			position: relative;
 			top: auto;
 			height: auto;
@@ -498,6 +560,8 @@
 			border-radius: 14px;
 		}
 		.adp-det__main {
+			grid-column: 1;
+			grid-row: 3;
 			height: auto;
 			max-height: none;
 			overflow: visible;
@@ -570,13 +634,16 @@
 	body.page-adapost-detail .adp-det__side a:hover {
 		color: #01579b !important;
 	}
+	body.page-adapost-detail .adp-det__pet-site-label {
+		color: #1b5e20 !important;
+	}
+	body.page-adapost-detail .adp-det__pet-site-badge {
+		color: #fff !important;
+	}
 	body.page-adapost-detail .adp-det__map-preview,
 	body.page-adapost-detail .adp-det__map-preview strong,
 	body.page-adapost-detail .adp-det__map-preview span {
 		color: #0d47a1 !important;
-	}
-	body.page-adapost-detail .adp-det__main h2 {
-		color: #f1f5f9 !important;
 	}
 	body.page-adapost-detail .adp-pet-card {
 		background: #ffffff !important;
@@ -614,8 +681,15 @@
 
 {% block content %}
 <div class="adp-det">
-	<aside class="adp-det__side">
+	<div class="adp-det__top">
 		<a class="adp-det__back" href="{% url 'shelter_directory' %}">← Toate adăposturile</a>
+		<div class="adp-det__pet-site" role="status" aria-label="PET în site: {{ org_animal_count|default:0 }}">
+			<span class="adp-det__pet-site-label">PET în site</span>
+			<span class="adp-det__pet-site-badge">{{ org_animal_count|default:0 }}</span>
+		</div>
+	</div>
+
+	<aside class="adp-det__side">
 		{% if org_logo_url %}
 		<img class="adp-det__logo" src="{{ org_logo_url }}" alt="{{ org_name }}" />
 		{% else %}
@@ -652,7 +726,6 @@
 	</aside>
 
 	<main class="adp-det__main">
-		<h2>Animalele noastre{% if org_animal_count %} ({{ org_animal_count }}){% endif %}</h2>
 		{% if org_animals %}
 		<div class="adp-det__pets-scroll">
 		<div class="adp-det__grid">
