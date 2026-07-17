@@ -1019,6 +1019,20 @@ body.page-account .account-right-panel {
 						<label for="id_company_address">Adresă firmă</label>
 						<input type="text" id="id_company_address" name="company_address" value="{{ fp_firma.company_address|default:user_profile.company_address|default:'' }}" class="firma-field" readonly />
 					</div>
+					{% if display_role|default:account_profile.role == 'org' %}
+					<div class="signup-field span2">
+						<label for="id_despre_noi">Despre noi <span style="font-weight:500;opacity:.75;">(opțional, max. 2–3 rânduri pe pagina adăpost)</span></label>
+						<textarea
+							id="id_despre_noi"
+							name="despre_noi"
+							class="firma-field"
+							rows="3"
+							maxlength="280"
+							readonly
+							placeholder="Lasă gol = apare doar denumirea adăpostului"
+						>{{ fp_firma.despre_noi|default:user_profile.despre_noi|default:'' }}</textarea>
+					</div>
+					{% endif %}
 				</div>
 				{% if display_role|default:account_profile.role == 'org' %}
 				<div class="signup-field span2" style="margin-top:0.5rem;">

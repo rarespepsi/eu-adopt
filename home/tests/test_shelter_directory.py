@@ -57,8 +57,20 @@ class ShelterDirectoryTests(TestCase):
         r = Client().get(reverse("shelter_detail", kwargs={"slug": self.org.account_profile.public_slug}))
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "Despre noi")
+        self.assertContains(r, "Adăpost Test Brașov")
+        self.assertNotContains(r, "înregistrată pe EU-Adopt")
         self.assertContains(r, "Rex")
         self.assertContains(r, "0700111222")
+
+    def test_org_about_custom_text(self):
+        from home.shelter_directory import org_about_text
+
+        self.assertEqual(org_about_text(self.org), "Adăpost Test Brașov")
+        prof = self.org.profile
+        prof.despre_noi = "Primim câini și pisici din județ. Ne poți vizita în weekend."
+        prof.save(update_fields=["despre_noi"])
+        self.assertIn("Primim câini", org_about_text(self.org))
+        self.assertNotIn("înregistrată pe EU-Adopt", org_about_text(self.org))
 
     def test_pets_pk_redirects_to_slug(self):
         r = Client().get(reverse("pets_single", args=[self.pet.pk]))

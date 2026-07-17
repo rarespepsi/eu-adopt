@@ -256,21 +256,18 @@ def org_google_embed_url(user: User) -> str:
 
 
 def org_about_text(user: User) -> str:
-    profile = getattr(user, "profile", None)
-    legal = (profile.company_legal_name or "").strip() if profile else ""
+    """
+    Text „Despre noi” pe pagina publică adăpost.
+    Implicit: doar denumirea afișată. Dacă e completat despre_noi → acel text (scurt).
+    """
     display = org_display_name(user)
-    shelter = False
-    ap = getattr(user, "account_profile", None)
-    if ap:
-        shelter = bool(ap.is_public_shelter)
-    kind = "adăpost public" if shelter else "organizație / adăpost"
-    bits = [f"{display} este o {kind} înregistrată pe EU-Adopt."]
-    if legal and legal.lower() != display.lower():
-        bits.append(f"Denumire legală: {legal}.")
-    loc = org_locality(user)
-    if loc:
-        bits.append(f"Localitate: {loc}.")
-    return " ".join(bits)
+    profile = getattr(user, "profile", None)
+    custom = (getattr(profile, "despre_noi", None) or "").strip() if profile else ""
+    if custom:
+        # Max ~280 în DB; normalizează spații / newlines la spații simple pentru afișare
+        custom = " ".join(custom.split())
+        return custom[:280]
+    return display
 
 
 def directory_org_queryset():

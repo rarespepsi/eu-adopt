@@ -7259,6 +7259,9 @@ def account_edit_view(request):
         company_oras = (request.POST.get("company_oras") or "").strip()
         company_judet, company_oras = normalize_location_pair(company_judet, company_oras)
         company_address = (request.POST.get("company_address") or "").strip()
+        despre_noi = (request.POST.get("despre_noi") or "").strip()
+        if len(despre_noi) > 280:
+            despre_noi = despre_noi[:280]
         collaborator_type = (request.POST.get("collaborator_type") or "").strip()
         is_public_shelter_val = (request.POST.get("is_public_shelter") or request.POST.get("is_public_shelter_org") or "").strip()
 
@@ -7291,6 +7294,7 @@ def account_edit_view(request):
                 "company_judet": company_judet,
                 "company_oras": company_oras,
                 "company_address": company_address,
+                "despre_noi": despre_noi if account_profile.role == AccountProfile.ROLE_ORG else "",
                 "collaborator_type": collaborator_type if account_profile.role == AccountProfile.ROLE_COLLAB else "",
                 "is_public_shelter": is_public_shelter_val if is_public_shelter_val in ("yes", "no") else "",
             }
@@ -7305,6 +7309,8 @@ def account_edit_view(request):
         user_profile.company_judet = company_judet
         user_profile.company_oras = company_oras
         user_profile.company_address = company_address
+        if account_profile.role == AccountProfile.ROLE_ORG:
+            user_profile.despre_noi = despre_noi
         user_profile.collaborator_type = collaborator_type if account_profile.role == AccountProfile.ROLE_COLLAB else ""
         user_profile.save()
         if account_profile.role == AccountProfile.ROLE_ORG:

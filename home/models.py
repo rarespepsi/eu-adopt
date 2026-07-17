@@ -31,6 +31,13 @@ class UserProfile(models.Model):
     company_representative = models.CharField("Reprezentant legal (firmă)", max_length=255, blank=True, default="")
     company_judet = models.CharField("Județ firmă", max_length=120, blank=True)
     company_oras = models.CharField("Oraș firmă", max_length=120, blank=True)
+    despre_noi = models.CharField(
+        "Despre noi (pagină adăpost)",
+        max_length=280,
+        blank=True,
+        default="",
+        help_text="Opțional, max. ~2–3 rânduri pe pagina publică Adăpost/ONG.",
+    )
     # Opțional: date pentru formulare fiscale (230 / documente donații) — completare explicită de către user.
     donation_cnp = models.CharField("CNP (opțional, documente donații)", max_length=13, blank=True, default="")
     donation_address = models.CharField("Adresă completă (donații / documente)", max_length=500, blank=True, default="")
