@@ -188,11 +188,28 @@ def org_phone(user: User) -> str:
 
 
 def org_contact_person(user: User) -> str:
+    """Persoană de contact publică. Adăpost demo (rarespepsi): fără username pe pagină."""
+    uname = (user.username or "").strip()
+    uname_l = uname.lower()
     profile = getattr(user, "profile", None)
+    slug = ""
+    if profile:
+        slug = (getattr(profile, "public_slug", None) or "").strip().lower()
+    is_adapost_demo = uname_l == "rarespepsi" or slug == "adapost-demo"
+
     if profile and (profile.company_representative or "").strip():
-        return profile.company_representative.strip()
+        rep = profile.company_representative.strip()
+        if is_adapost_demo and rep.lower() == uname_l:
+            return ""
+        return rep
     full = (user.get_full_name() or "").strip()
-    return full or user.username
+    if full:
+        if is_adapost_demo and full.lower() == uname_l:
+            return ""
+        return full
+    if is_adapost_demo:
+        return ""
+    return uname
 
 
 def org_logo_url(user: User) -> str:
