@@ -264,10 +264,33 @@ def org_about_text(user: User) -> str:
     profile = getattr(user, "profile", None)
     custom = (getattr(profile, "despre_noi", None) or "").strip() if profile else ""
     if custom:
-        # Max ~280 în DB; normalizează spații / newlines la spații simple pentru afișare
         custom = " ".join(custom.split())
-        return custom[:280]
+        return custom[:360]
     return display
+
+
+def normalize_external_link(raw: str) -> str:
+    """Normalizează URL-ul introdus de user (adaugă https:// dacă lipsește schema)."""
+    s = (raw or "").strip()
+    if not s:
+        return ""
+    if len(s) > 500:
+        s = s[:500]
+    low = s.lower()
+    if not (
+        low.startswith("http://")
+        or low.startswith("https://")
+        or low.startswith("mailto:")
+    ):
+        s = "https://" + s
+    return s
+
+
+def org_external_link(user: User) -> str:
+    """Link site/pagină din profil (gol dacă lipsește)."""
+    profile = getattr(user, "profile", None)
+    raw = (getattr(profile, "link_extern", None) or "").strip() if profile else ""
+    return normalize_external_link(raw) if raw else ""
 
 
 def directory_org_queryset():

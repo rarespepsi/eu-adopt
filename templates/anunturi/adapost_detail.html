@@ -277,11 +277,24 @@
 	}
 	.adp-det__about {
 		display: -webkit-box;
-		-webkit-line-clamp: 3;
-		line-clamp: 3;
+		-webkit-line-clamp: 4;
+		line-clamp: 4;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 		word-break: break-word;
+	}
+	.adp-det__ext-link {
+		margin: 0.25rem 0 0;
+		font-size: 0.78rem;
+	}
+	.adp-det__ext-link a {
+		font-weight: 700;
+		color: #1565c0;
+		word-break: break-all;
+		text-decoration: none;
+	}
+	.adp-det__ext-link a:hover {
+		text-decoration: underline;
 	}
 	/* Hartă strânsă — preview clickabil */
 	.adp-det__map-preview {
@@ -805,6 +818,11 @@
 
 		<h2>Despre noi</h2>
 		<p class="adp-det__about">{{ org_about }}</p>
+		{% if org_external_link %}
+		<p class="adp-det__ext-link">
+			<a href="{{ org_external_link }}" target="_blank" rel="noopener noreferrer">Site / pagină</a>
+		</p>
+		{% endif %}
 
 		<h2>Contact</h2>
 		<p>
