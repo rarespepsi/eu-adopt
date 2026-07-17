@@ -201,12 +201,19 @@
 		border-radius: 8px;
 		background: #fff;
 		color: #263238;
-		font-size: 0.7rem;
+		font-size: 0.68rem;
 		font-weight: 700;
-		height: 1.65rem;
+		height: 1.75rem;
 		min-width: 1.65rem;
-		padding: 0 0.4rem;
+		padding: 0 0.45rem;
 		cursor: pointer;
+		white-space: nowrap;
+	}
+	.pub-cr-preview-btn[data-action="out"],
+	.pub-cr-preview-btn[data-action="fit"] {
+		border-color: #c62828;
+		color: #b71c1c;
+		background: #ffebee;
 	}
 	.pub-cr-preview-btn[disabled] {
 		opacity: 0.45;
@@ -415,8 +422,9 @@
 								<span class="pub-cr-preview-empty">Nu există media încărcată</span>
 							</div>
 							<div class="pub-cr-preview-tools" data-pub-image-tools data-line-id="{{ line.pk }}">
-								<button type="button" class="pub-cr-preview-btn" data-pub-zoom data-line-id="{{ line.pk }}" data-action="in" title="Mărește">+</button>
-								<button type="button" class="pub-cr-preview-btn" data-pub-zoom data-line-id="{{ line.pk }}" data-action="out" title="Micșorează">−</button>
+								<button type="button" class="pub-cr-preview-btn" data-pub-zoom data-line-id="{{ line.pk }}" data-action="in" title="Mărește poza">＋ Mărește</button>
+								<button type="button" class="pub-cr-preview-btn" data-pub-zoom data-line-id="{{ line.pk }}" data-action="out" title="Micșorează poza">− Micșorează</button>
+								<button type="button" class="pub-cr-preview-btn" data-pub-zoom data-line-id="{{ line.pk }}" data-action="fit" title="Micșorează până încape în cadru">Potrivește</button>
 								<button type="button" class="pub-cr-preview-btn" data-pub-save-crop data-line-id="{{ line.pk }}">Salvează încadrarea</button>
 								<a href="https://www.iloveimg.com/resize-image" target="_blank" rel="noopener noreferrer" class="pub-cr-preview-help-link">Micșorează poza dacă e prea mare</a>
 							</div>
@@ -477,18 +485,22 @@
 		var ratio = w0 && h0 ? w0 / h0 : 1;
 		state.cropper = new Cropper(imageEl, {
 			aspectRatio: ratio,
-			/* viewMode 3 bloca zoom-out; 1 permite mărire + micșorare */
-			viewMode: 1,
+			/* 0 = zoom liber (inclusiv micșorare sub cadru); 1/3 blochează zoom-out */
+			viewMode: 0,
 			dragMode: "move",
-			autoCropArea: 1,
+			autoCropArea: 0.92,
 			restore: false,
 			guides: true,
 			center: true,
 			highlight: false,
 			cropBoxMovable: true,
 			cropBoxResizable: true,
+			toggleDragModeOnDblclick: false,
 			zoomOnWheel: true,
-			wheelZoomRatio: 0.12,
+			wheelZoomRatio: 0.1,
+			minCanvasWidth: 20,
+			minCanvasHeight: 20,
+			checkOrientation: true,
 		});
 		setToolsEnabled(lineId, true);
 	}
@@ -611,8 +623,29 @@
 			var lineId = zbtn.getAttribute("data-line-id");
 			var state = getState(lineId);
 			if (!state.cropper) return;
-			var delta = zbtn.getAttribute("data-action") === "in" ? 0.12 : -0.12;
-			state.cropper.zoom(delta);
+			var action = zbtn.getAttribute("data-action") || "out";
+			if (action === "fit") {
+				try {
+					var imageData = state.cropper.getImageData();
+					var containerData = state.cropper.getContainerData();
+					if (imageData && imageData.naturalWidth && containerData && containerData.width) {
+						var fitRatio = Math.min(
+							containerData.width / imageData.naturalWidth,
+							containerData.height / imageData.naturalHeight
+						) * 0.88;
+						state.cropper.zoomTo(Math.max(0.05, fitRatio));
+					} else {
+						state.cropper.zoom(-0.35);
+					}
+				} catch (_err) {
+					state.cropper.zoom(-0.35);
+				}
+			} else if (action === "in") {
+				state.cropper.zoom(0.15);
+			} else {
+				/* Micșorează: pas mai mare, se poate apăsa repetat */
+				state.cropper.zoom(-0.22);
+			}
 			return;
 		}
 		var sbtn = e.target && e.target.closest('[data-pub-save-crop]');
