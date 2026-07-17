@@ -160,8 +160,8 @@
 		display: block;
 	}
 	.pub-cr-preview-tools {
-		display: flex;
-		flex-wrap: wrap;
+		display: grid;
+		grid-template-columns: 1fr auto auto;
 		gap: 0.3rem;
 		align-items: center;
 		margin-top: 0.3rem;
@@ -182,11 +182,15 @@
 		padding: 0 0.45rem;
 		cursor: pointer;
 	}
+	.pub-cr-preview-btn[data-pub-save-crop] {
+		justify-self: center;
+	}
 	.pub-cr-preview-btn[disabled] {
 		opacity: 0.45;
 		cursor: default;
 	}
 	.pub-cr-preview-help-link {
+		grid-column: 1 / -1;
 		font-size: 0.68rem;
 		color: #1565c0;
 		text-decoration: none;
@@ -356,9 +360,9 @@
 								<span class="pub-cr-preview-empty">Nu există media încărcată</span>
 							</div>
 							<div class="pub-cr-preview-tools" data-pub-image-tools data-line-id="{{ line.pk }}">
+								<button type="button" class="pub-cr-preview-btn" data-pub-save-crop data-line-id="{{ line.pk }}">Modifică materiale</button>
 								<button type="button" class="pub-cr-preview-btn" data-pub-zoom data-line-id="{{ line.pk }}" data-action="in" title="Mărește">+</button>
 								<button type="button" class="pub-cr-preview-btn" data-pub-zoom data-line-id="{{ line.pk }}" data-action="out" title="Micșorează">−</button>
-								<button type="button" class="pub-cr-preview-btn" data-pub-save-crop data-line-id="{{ line.pk }}">Salvează încadrarea</button>
 								<a href="https://www.iloveimg.com/resize-image" target="_blank" rel="noopener noreferrer" class="pub-cr-preview-help-link">Micșorează poza dacă e prea mare</a>
 							</div>
 						</div>
