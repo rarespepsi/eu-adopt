@@ -16,6 +16,11 @@
 		max-height: 100vh;
 		overflow: hidden;
 	}
+	body.page-adapost-detail #main_wrap {
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
 	body.page-adapost-detail #main_wrap,
 	body.page-adapost-detail #main_content {
 		padding-bottom: 0;
@@ -25,8 +30,10 @@
 	body.page-adapost-detail #main_content {
 		max-width: none !important;
 		width: 100% !important;
-		height: calc(100vh - var(--nav-height, var(--nav-h, 64px)));
-		max-height: calc(100vh - var(--nav-height, var(--nav-h, 64px)));
+		flex: 1 1 auto;
+		min-height: 0;
+		height: auto;
+		max-height: none;
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
@@ -346,17 +353,24 @@
 		overscroll-behavior: contain;
 		container-type: size;
 		-webkit-overflow-scrolling: touch;
+		display: flex;
+		flex-direction: column;
 	}
 	.adp-det__grid {
 		display: grid;
 		/* 5 coloane pe lățime full → casete câini vizibil mai mari */
 		grid-template-columns: repeat(5, minmax(0, 1fr));
 		gap: var(--adp-gap);
-		align-content: start;
+		flex: 1 1 auto;
+		min-height: 100%;
+		align-content: stretch;
+		grid-auto-rows: calc((100cqh - var(--adp-gap)) / 2);
 	}
 	.adp-pet-card {
 		display: flex;
 		flex-direction: column;
+		height: 100%;
+		min-height: 0;
 		border-radius: 12px;
 		overflow: hidden;
 		border: 1px solid #cfd8dc;
@@ -366,15 +380,16 @@
 	}
 	.adp-pet-card__photo {
 		display: block;
+		flex: 1 1 auto;
+		min-height: 0;
 		text-decoration: none;
 		color: inherit;
-		min-width: 0;
+		overflow: hidden;
 	}
 	.adp-pet-card__photo img {
-		/* 2 rânduri vizibile → poze mai înalte + mai late pe full-bleed */
 		width: 100%;
-		height: calc((100cqh - 2 * var(--adp-bar-h) - 1 * var(--adp-gap)) / 2);
-		min-height: 7.5rem;
+		height: 100%;
+		min-height: 0;
 		aspect-ratio: auto;
 		object-fit: cover;
 		display: block;
@@ -389,6 +404,7 @@
 		border-top: 1px solid #eceff1;
 		background: #fafafa;
 		min-height: var(--adp-bar-h);
+		flex-shrink: 0;
 		box-sizing: border-box;
 	}
 	.adp-pet-card__actions {
@@ -635,9 +651,20 @@
 			height: auto;
 			overflow: visible;
 			container-type: normal;
+			display: block;
 		}
 		.adp-det__grid {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
+			flex: none;
+			min-height: 0;
+			grid-auto-rows: auto;
+			align-content: start;
+		}
+		.adp-pet-card {
+			height: auto;
+		}
+		.adp-pet-card__photo {
+			flex: none;
 		}
 		.adp-pet-card__photo img {
 			height: auto;
