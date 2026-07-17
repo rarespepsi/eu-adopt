@@ -513,33 +513,25 @@ body.page-account .account-right-panel {
 		border-color: #9bd4b4;
 		height: 100%;
 	}
+	/* Despre noi + link: compact, fără flex care umflă rândul 3 și strânge casetele de sus */
 	.cont-pf-despre-card {
-		display: flex;
-		flex-direction: column;
-		min-height: 0;
+		overflow: hidden;
 	}
 	.cont-pf-despre-form {
 		display: flex;
 		flex-direction: column;
-		flex: 1;
-		min-height: 0;
-		gap: 0.35rem;
+		gap: 0.25rem;
+		margin: 0;
 	}
 	.cont-pf-despre-stack {
 		display: flex;
 		flex-direction: column;
-		gap: 0.4rem;
-		flex: 1;
-		min-height: 0;
+		gap: 0.25rem;
 	}
 	.cont-pf-despre-block {
 		display: flex;
 		flex-direction: column;
-		gap: 0.15rem;
-		min-height: 0;
-	}
-	.cont-pf-despre-block:first-child {
-		flex: 1 1 auto;
+		gap: 0.1rem;
 	}
 	.cont-pf-despre-block label {
 		font-size: 0.7rem;
@@ -548,17 +540,20 @@ body.page-account .account-right-panel {
 		letter-spacing: 0.06em;
 		font-weight: 700;
 		margin: 0;
+		line-height: 1.2;
 	}
 	.cont-pf-despre-block textarea.despre-link-field {
 		width: 100%;
 		box-sizing: border-box;
-		min-height: 3.6rem;
-		resize: vertical;
-		padding: 0.35rem 0.45rem;
+		height: 3.55rem; /* ~3 rânduri fixe */
+		min-height: 3.55rem;
+		max-height: 3.55rem;
+		resize: none;
+		padding: 0.25rem 0.4rem;
 		border: 1px solid #9bd4b4;
 		border-radius: 6px;
-		font-size: 0.82rem;
-		line-height: 1.35;
+		font-size: 0.78rem;
+		line-height: 1.25;
 		font-family: inherit;
 		background: #fff;
 		color: #1a1a1a;
@@ -566,10 +561,11 @@ body.page-account .account-right-panel {
 	.cont-pf-despre-block input.despre-link-field {
 		width: 100%;
 		box-sizing: border-box;
-		padding: 0.3rem 0.45rem;
+		padding: 0.22rem 0.4rem;
 		border: 1px solid #9bd4b4;
 		border-radius: 6px;
-		font-size: 0.82rem;
+		font-size: 0.78rem;
+		line-height: 1.25;
 		font-family: inherit;
 		background: #fff;
 		color: #1a1a1a;
@@ -580,16 +576,16 @@ body.page-account .account-right-panel {
 	}
 	.cont-pf-despre-actions {
 		display: flex;
-		gap: 0.4rem;
+		gap: 0.35rem;
 		flex-wrap: wrap;
-		margin-top: 0.15rem;
+		margin-top: 0.1rem;
 	}
 	.cont-pf-despre-actions .btn-pf {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		padding: 0.3rem 0.75rem;
-		font-size: 0.78rem;
+		padding: 0.22rem 0.55rem;
+		font-size: 0.72rem;
 		cursor: pointer;
 		border: none;
 	}
@@ -598,8 +594,9 @@ body.page-account .account-right-panel {
 		cursor: not-allowed;
 	}
 	.cont-pf-despre-puncte {
-		margin: 0.35rem 0 0;
-		font-size: 0.78rem;
+		margin: 0.2rem 0 0;
+		font-size: 0.72rem;
+		line-height: 1.2;
 	}
 	.cont-pf-despre-puncte a {
 		font-weight: 600;
@@ -1306,11 +1303,11 @@ body.page-account .account-right-panel {
 									rows="3"
 									maxlength="360"
 									readonly
-									placeholder="Scurtă descriere (max. 3–4 rânduri). Lasă gol = pe pagina adăpost apare doar denumirea."
+									placeholder="Max. 3 rânduri"
 								>{% if user_profile %}{{ user_profile.despre_noi|default:'' }}{% endif %}</textarea>
 							</div>
 							<div class="cont-pf-despre-block">
-								<label for="id_link_extern_mid">Link (site / pagină)</label>
+								<label for="id_link_extern_mid">Adaugă link</label>
 								<input
 									type="text"
 									inputmode="url"
@@ -1319,7 +1316,7 @@ body.page-account .account-right-panel {
 									class="despre-link-field"
 									maxlength="500"
 									readonly
-									placeholder="https://… (site, Facebook, pagină pe net)"
+									placeholder="https://…"
 									value="{% if user_profile %}{{ user_profile.link_extern|default:'' }}{% endif %}"
 								/>
 							</div>
