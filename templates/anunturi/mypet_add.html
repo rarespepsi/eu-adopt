@@ -1444,65 +1444,100 @@
 		}
 	}
 
-	/* Desktop: formular compact — încape CIP/RUA fără scroll pagină */
+	/* Desktop: casete pe toată înălțimea, lizibile (CIP/RUA încă încape) */
 	@media (min-width: 768px) and (min-height: 521px) {
 		body.page-mypet-fisa .mypet-fisa-header-row {
-			margin-bottom: 0.05rem;
+			margin-bottom: 0.2rem;
 		}
 		body.page-mypet-fisa .mypet-fisa-tab {
-			padding: 0.28rem 0.72rem;
-			font-size: 0.78rem;
+			padding: 0.35rem 0.9rem;
+			font-size: 0.85rem;
 		}
 		body.page-mypet-fisa .mypet-fisa-col-main {
-			padding: 0.14rem 0.28rem 0.12rem 0.12rem;
+			padding: 0.26rem 0.44rem 0.22rem 0.2rem;
 			min-height: 0;
+			display: flex;
+			flex-direction: column;
 		}
 		body.page-mypet-fisa .mypet-fisa-form {
 			flex: 1 1 auto;
 			min-height: 0;
+			height: 100%;
+			display: flex;
+			flex-direction: column;
 		}
 		body.page-mypet-fisa .mypet-fisa-main-box {
-			padding: 0.1rem 0.18rem;
+			flex: 1 1 auto;
 			min-height: 0;
+			height: 100%;
+			padding: 0.35rem 0.55rem;
+			display: flex;
+			flex-direction: column;
 		}
 		body.page-mypet-fisa .mypet-fisa-main-cols {
-			gap: 0.18rem;
+			flex: 1 1 auto;
+			min-height: 0;
+			height: 100%;
+			gap: 0.85rem;
+			align-items: stretch;
 		}
 		body.page-mypet-fisa .mypet-fisa-main-col {
-			gap: 0.03rem;
+			height: 100%;
+			min-height: 0;
+			justify-content: space-between;
+			gap: 0.2rem;
 		}
 		body.page-mypet-fisa .mypet-add-field {
-			gap: 0.02rem;
+			flex: 1 1 0;
+			min-height: 0;
+			gap: 0.12rem;
+			justify-content: center;
 		}
 		body.page-mypet-fisa .mypet-add-field label {
-			font-size: 0.64rem;
-			line-height: 1.08;
-			padding: 0 3px;
+			font-size: 0.74rem;
+			line-height: 1.2;
+			padding: 1px 5px;
 			margin: 0;
 		}
 		body.page-mypet-fisa .mypet-add-field input,
 		body.page-mypet-fisa .mypet-add-field textarea {
-			padding: 0.1rem 0.22rem;
-			font-size: 0.7rem;
-			line-height: 1.1;
+			padding: 0.28rem 0.42rem;
+			font-size: 0.82rem;
+			line-height: 1.25;
 		}
 		body.page-mypet-fisa .mypet-add-field select {
-			padding: 0.1rem 1.35rem 0.1rem 0.22rem;
-			font-size: 0.7rem;
-			line-height: 1.1;
+			padding: 0.28rem 1.5rem 0.28rem 0.42rem;
+			font-size: 0.82rem;
+			line-height: 1.25;
+		}
+		body.page-mypet-fisa .mypet-fisa-field-medical {
+			flex: 1.35 1 0;
+			display: flex;
+			flex-direction: column;
 		}
 		body.page-mypet-fisa .mypet-fisa-field-medical textarea {
-			height: 2.2rem;
-			min-height: 2.2rem;
-			max-height: 2.2rem;
+			height: auto;
+			min-height: 3.2rem;
+			max-height: none;
+			flex: 1 1 auto;
 		}
 		body.page-mypet-fisa .mypet-fisa-field-story {
-			margin-top: 0.04rem;
+			margin-top: 0.1rem;
+			flex: 1.7 1 0;
+			display: flex;
+			flex-direction: column;
 		}
 		body.page-mypet-fisa .mypet-fisa-field-story textarea {
-			height: 2.45rem;
-			min-height: 2.45rem;
-			max-height: 2.45rem;
+			height: auto;
+			min-height: 3.8rem;
+			max-height: none;
+			flex: 1 1 auto;
+		}
+		body.page-mypet-fisa .mypet-fisa-col-traits {
+			min-height: 0;
+		}
+		body.page-mypet-fisa .mypet-fisa-traits-box {
+			height: 100%;
 		}
 	}
 </style>
