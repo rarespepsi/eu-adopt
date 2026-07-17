@@ -175,6 +175,7 @@ urlpatterns = [
     path('mypet/adoption/<int:req_id>/next/', views.mypet_adoption_next_view, name='mypet_adoption_next'),
     path('mypet/adoption/<int:req_id>/finalize/', views.mypet_adoption_finalize_view, name='mypet_adoption_finalize'),
     path('mypet/observatii/<int:pk>/', views.mypet_observatii_update_view, name='mypet_observatii_update'),
+    path('mypet/cip-rua/<int:pk>/', views.mypet_cip_rua_update_view, name='mypet_cip_rua_update'),
     path('mypet/messages/unread-badges/', views.mypet_messages_unread_badges_view, name='mypet_messages_unread_badges'),
     path('mypet/messages/<int:pk>/', views.mypet_messages_list_view, name='mypet_messages_list'),
     path('mypet/messages/<int:pk>/<int:sender_id>/', views.mypet_messages_thread_view, name='mypet_messages_thread'),

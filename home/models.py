@@ -331,10 +331,10 @@ class AnimalListing(models.Model):
     cip = models.CharField("CIP", max_length=10, blank=True)
     cip_rua = models.CharField(
         "CIP/RUA",
-        max_length=30,
+        max_length=24,
         blank=True,
         default="",
-        help_text="Număr microcip sau RUA (când animalul are CIP).",
+        help_text="Număr microcip sau RUA (max. 24 cifre).",
     )
     sex = models.CharField("Sex", max_length=10, blank=True)
     greutate_aprox = models.CharField("Greutate (aprox.)", max_length=30, blank=True)

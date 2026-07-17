@@ -105,7 +105,8 @@
 					<col class="mypet-col-name" />
 					<col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" />
 					<col class="mypet-col-date" /><col class="mypet-col-date" />
-					<col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" />
+					<col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" /><col class="mypet-col-narrow" />
+					<col class="mypet-col-cip-rua" />
 					<col class="mypet-col-mesaje" />
 				</colgroup>
 				<thead>
@@ -126,7 +127,8 @@
 						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="views"><span class="mypet-th-v">Vizualizări</span></th>
 						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="shares"><span class="mypet-th-v">Distribuiri</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">$</span></th>
-						<th class="mypet-th mypet-th-mypet-adopt" colspan="6"><span class="mypet-th-v">Adopție</span></th>
+						<th class="mypet-th mypet-th-mypet-adopt" colspan="5"><span class="mypet-th-v">Adopție</span></th>
+						<th class="mypet-th mypet-th-cip-rua"><span class="mypet-th-v">CIP/RUA</span></th>
 						<th class="mypet-th mypet-th-mesaje"><span class="mypet-th-v">Mesaje</span></th>
 					</tr>
 				</thead>
@@ -196,7 +198,7 @@
 						<td class="mypet-td mypet-td-narrow">
 							<span class="mypet-td-photo-shop-v">Photo Shop</span>
 						</td>
-						<td class="mypet-td mypet-td-mypet-adopt" colspan="6">
+						<td class="mypet-td mypet-td-mypet-adopt" colspan="5">
 							{% if pet %}
 								<div class="mypet-row-adopt-wrap">
 									{% if pet.adoption_manage_req_id %}
@@ -219,6 +221,25 @@
 										<span class="mypet-row-adopt-empty">—</span>
 									{% endif %}
 								</div>
+							{% else %}
+								—
+							{% endif %}
+						</td>
+						<td class="mypet-td mypet-td-cip-rua">
+							{% if pet %}
+								<input
+									type="text"
+									class="mypet-cip-rua-input"
+									value="{{ pet.cip_rua|default:'' }}"
+									maxlength="24"
+									inputmode="numeric"
+									pattern="[0-9]*"
+									autocomplete="off"
+									spellcheck="false"
+									data-pet-id="{{ pet.pk }}"
+									data-save-url="{% url 'mypet_cip_rua_update' pet.pk %}"
+									aria-label="CIP/RUA {{ pet.name|default:'animal' }}"
+									title="Număr microcip sau RUA (max. 24 cifre)" />
 							{% else %}
 								—
 							{% endif %}
@@ -411,6 +432,7 @@
 	.mypet-col-name { width: 9rem; }
 	.mypet-col-narrow { width: 2.3rem; }
 	.mypet-col-date { width: 3.9rem; }
+	.mypet-col-cip-rua { width: 6.75rem; }
 	.mypet-col-mesaje { width: 5.8rem; }
 	.mypet-th {
 		background: var(--mypet-surface-header);
@@ -462,6 +484,7 @@
 	.mypet-th-narrow { min-width: 2.3rem; }
 	.mypet-th-date { min-width: 3.9rem; }
 	.mypet-th-mypet-adopt { min-width: 0; }
+	.mypet-th-cip-rua { min-width: 6.5rem; }
 	.mypet-th-mesaje { min-width: 5.6rem; }
 	.mypet-td {
 		padding: 0.32rem 0.26rem;
@@ -527,6 +550,41 @@
 		vertical-align: middle;
 		padding: 0.2rem 0.25rem;
 		min-width: 0;
+	}
+	.mypet-td-cip-rua {
+		padding: 0.16rem 0.12rem;
+		text-align: center;
+		vertical-align: middle;
+		min-width: 6.5rem;
+		overflow: hidden;
+	}
+	.mypet-cip-rua-input {
+		display: block;
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+		font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+		font-size: 0.56rem;
+		letter-spacing: 0.02em;
+		padding: 0.14rem 0.1rem;
+		border-radius: 4px;
+		border: 1px solid var(--mypet-border-inner);
+		background: rgba(15, 23, 42, 0.42);
+		color: var(--mypet-text);
+		line-height: 1.1;
+	}
+	.mypet-cip-rua-input::placeholder {
+		color: var(--mypet-text-muted);
+	}
+	.mypet-cip-rua-input:focus {
+		outline: 2px solid rgba(59, 130, 246, 0.45);
+		outline-offset: 0;
+	}
+	.mypet-cip-rua-input.is-saving {
+		opacity: 0.65;
+	}
+	.mypet-cip-rua-input.is-error {
+		border-color: #ef4444;
 	}
 	.mypet-row-adopt-wrap {
 		display: flex;
@@ -2177,6 +2235,85 @@ document.addEventListener("DOMContentLoaded", function() {
 		// Re-calculează o dată după layout (evită situații cu dimensiuni încă nefinale).
 		requestAnimationFrame(placeFilters);
 		window.addEventListener("resize", placeFilters);
+	})();
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+	(function initMyPetCipRuaInputs() {
+		function getCookie(name) {
+			var value = "; " + document.cookie;
+			var parts = value.split("; " + name + "=");
+			if (parts.length === 2) return parts.pop().split(";").shift();
+			return "";
+		}
+		var csrftoken = getCookie("csrftoken") || "";
+		var inputs = document.querySelectorAll(".mypet-cip-rua-input");
+		if (!inputs.length) return;
+
+		inputs.forEach(function(inp) {
+			var saveUrl = inp.getAttribute("data-save-url") || "";
+			var lastSaved = (inp.value || "").replace(/\s+/g, "");
+
+			function syncRowFilterAttr() {
+				var tr = inp.closest("tr.mypet-row");
+				if (tr) {
+					tr.setAttribute("data-pet-cip-rua", (inp.value || "").trim().toLowerCase());
+				}
+			}
+
+			function saveCipRua() {
+				if (!saveUrl) return;
+				var val = (inp.value || "").replace(/\s+/g, "");
+				if (val === lastSaved) return;
+				if (val && !/^\d{1,24}$/.test(val)) {
+					inp.classList.add("is-error");
+					return;
+				}
+				inp.classList.remove("is-error");
+				inp.classList.add("is-saving");
+				var body = new URLSearchParams();
+				body.set("cip_rua", val);
+				fetch(saveUrl, {
+					method: "POST",
+					headers: { "X-CSRFToken": csrftoken },
+					credentials: "same-origin",
+					body: body
+				})
+					.then(function(r) {
+						return r.json().then(function(data) {
+							return { ok: r.ok, data: data };
+						});
+					})
+					.then(function(res) {
+						inp.classList.remove("is-saving");
+						if (!res.ok || !res.data || !res.data.ok) {
+							inp.classList.add("is-error");
+							return;
+						}
+						inp.value = res.data.cip_rua || "";
+						lastSaved = inp.value;
+						syncRowFilterAttr();
+					})
+					.catch(function() {
+						inp.classList.remove("is-saving");
+						inp.classList.add("is-error");
+					});
+			}
+
+			inp.addEventListener("input", function() {
+				inp.classList.remove("is-error");
+				var digits = (inp.value || "").replace(/\D+/g, "");
+				if (digits.length > 24) digits = digits.slice(0, 24);
+				if (digits !== inp.value) inp.value = digits;
+			});
+			inp.addEventListener("blur", saveCipRua);
+			inp.addEventListener("keydown", function(e) {
+				if (e.key === "Enter") {
+					e.preventDefault();
+					inp.blur();
+				}
+			});
+		});
 	})();
 });
 </script>

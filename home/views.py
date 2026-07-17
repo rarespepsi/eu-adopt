@@ -279,6 +279,20 @@ def mypet_pf_org_required_json(view_func):
     return _wrapped
 
 
+def _normalize_cip_rua(raw: str) -> tuple[str, str | None]:
+    """Returnează (valoare, mesaj_eroare). Gol = OK. Max 24 cifre."""
+    import re
+
+    cleaned = re.sub(r"\s+", "", (raw or "").strip())
+    if not cleaned:
+        return "", None
+    if not cleaned.isdigit():
+        return "", "CIP/RUA: doar cifre (max. 24)."
+    if len(cleaned) > 24:
+        return "", "CIP/RUA: maxim 24 cifre."
+    return cleaned, None
+
+
 def _client_ip(request) -> str:
     xff = (request.META.get("HTTP_X_FORWARDED_FOR") or "").strip()
     if xff:
@@ -8080,6 +8094,7 @@ def mypet_add_view(request):
         carnet_sanatate = (request.POST.get("carnet_sanatate") or "").strip()
         cip = (request.POST.get("cip") or "").strip()
         cip_rua = (request.POST.get("cip_rua") or "").strip()
+        cip_rua_norm, cip_rua_err = _normalize_cip_rua(cip_rua)
         sex = (request.POST.get("sex") or "").strip()
         greutate_aprox = (request.POST.get("greutate_aprox") or "").strip()
         probleme_medicale = (request.POST.get("probleme_medicale") or "").strip()
@@ -8119,6 +8134,8 @@ def mypet_add_view(request):
                     break
             if not error and species_mode == "other" and not species_custom:
                 error = "Te rugăm să completezi specia pentru categoria «Altele» (ex: hamster)."
+            if not error and cip_rua_err:
+                error = cip_rua_err
         if not error:
             try:
                 listing = AnimalListing.objects.create(
@@ -8134,7 +8151,7 @@ def mypet_add_view(request):
                     vaccinat=vaccinat,
                     carnet_sanatate=carnet_sanatate,
                     cip=cip,
-                    cip_rua=cip_rua,
+                    cip_rua=cip_rua_norm,
                     sex=sex,
                     greutate_aprox=greutate_aprox,
                     probleme_medicale=probleme_medicale,
@@ -8179,7 +8196,7 @@ def mypet_add_view(request):
             "vaccinat": vaccinat or default_med,
             "carnet_sanatate": carnet_sanatate or default_med,
             "cip": cip or default_med,
-            "cip_rua": cip_rua,
+            "cip_rua": cip_rua_norm if cip_rua_err is None else cip_rua,
             "sex": sex,
             "greutate_aprox": greutate_aprox,
             "probleme_medicale": probleme_medicale,
@@ -8311,6 +8328,7 @@ def mypet_edit_view(request, pk):
         carnet_sanatate = (request.POST.get("carnet_sanatate") or "").strip()
         cip = (request.POST.get("cip") or "").strip()
         cip_rua = (request.POST.get("cip_rua") or "").strip()
+        cip_rua_norm, cip_rua_err = _normalize_cip_rua(cip_rua)
         sex = (request.POST.get("sex") or "").strip()
         greutate_aprox = (request.POST.get("greutate_aprox") or "").strip()
         probleme_medicale = (request.POST.get("probleme_medicale") or "").strip()
@@ -8350,6 +8368,8 @@ def mypet_edit_view(request, pk):
                 break
         if not error and species_mode == "other" and not species_custom:
             error = "Te rugăm să completezi specia pentru categoria «Altele» (ex: hamster)."
+        if not error and cip_rua_err:
+            error = cip_rua_err
         if not error:
             try:
                 listing.name = name
@@ -8363,7 +8383,7 @@ def mypet_edit_view(request, pk):
                 listing.vaccinat = vaccinat
                 listing.carnet_sanatate = carnet_sanatate
                 listing.cip = cip
-                listing.cip_rua = cip_rua
+                listing.cip_rua = cip_rua_norm
                 listing.sex = sex
                 listing.greutate_aprox = greutate_aprox
                 listing.probleme_medicale = probleme_medicale
@@ -8414,7 +8434,7 @@ def mypet_edit_view(request, pk):
             "vaccinat": vaccinat or default_med,
             "carnet_sanatate": carnet_sanatate or default_med,
             "cip": cip or default_med,
-            "cip_rua": cip_rua,
+            "cip_rua": cip_rua_norm if cip_rua_err is None else cip_rua,
             "sex": sex,
             "greutate_aprox": greutate_aprox,
             "probleme_medicale": probleme_medicale,
@@ -10179,6 +10199,22 @@ def mypet_observatii_update_view(request, pk: int):
     pet.observatii = text
     pet.save(update_fields=["observatii"])
     return JsonResponse({"ok": True, "observatii": pet.observatii})
+
+
+@login_required
+@mypet_pf_org_required_json
+@require_POST
+@csrf_protect
+def mypet_cip_rua_update_view(request, pk: int):
+    """Autosave CIP/RUA din lista MyPet (max. 24 cifre)."""
+    pet = get_object_or_404(AnimalListing, pk=pk, owner=request.user)
+    raw = (request.POST.get("cip_rua") or "").strip()
+    value, err = _normalize_cip_rua(raw)
+    if err:
+        return JsonResponse({"ok": False, "error": err}, status=400)
+    pet.cip_rua = value
+    pet.save(update_fields=["cip_rua", "updated_at"])
+    return JsonResponse({"ok": True, "cip_rua": pet.cip_rua})
 
 
 @login_required
