@@ -475,7 +475,7 @@ body.page-account .account-right-panel {
 		box-sizing: border-box;
 	}
 
-	/* Caseta DATE FIRMĂ – scroll dacă nu încape; Despre noi nu mai „înghite” adresa/bifele */
+	/* Caseta DATE FIRMĂ – FĂRĂ scroll; Despre noi mic (~1/4); totul vizibil */
 	.cont-pf-left .cont-pf-edit-box {
 		overflow: hidden;
 		display: flex;
@@ -483,73 +483,79 @@ body.page-account .account-right-panel {
 		min-height: 0;
 	}
 	.cont-pf-left .edit-form-inner {
-		font-size: 0.78rem;
+		font-size: 0.72rem;
 		flex: 1 1 auto;
 		min-height: 0;
-		overflow-x: hidden;
-		overflow-y: auto !important;
-		-webkit-overflow-scrolling: touch;
+		overflow: hidden !important;
 	}
 	.cont-pf-left .edit-form-grid {
-		gap: 0.25rem;
+		gap: 0.12rem;
 	}
 	.cont-pf-left .signup-field {
-		margin-bottom: 0.12rem;
+		margin-bottom: 0.05rem;
 	}
 	.cont-pf-left .signup-field input[type="text"],
 	.cont-pf-left .signup-field textarea {
-		padding: 0.18rem 0.3rem;
-		font-size: 0.78rem;
+		padding: 0.1rem 0.28rem;
+		font-size: 0.7rem;
 		width: 100%;
 		box-sizing: border-box;
 		font-family: inherit;
 	}
-	.cont-pf-left .signup-field textarea {
-		resize: none;
-		min-height: 0;
-		line-height: 1.25;
+	.cont-pf-left .signup-field label {
+		font-size: 0.6rem !important;
+		margin-bottom: 0.02rem !important;
+		line-height: 1.1;
 	}
-	/* Despre noi + link: o linie vizuală, imediat sub Adresă */
+	/* Despre noi + link: o linie fiecare (micșorat ~3/4 față de textarea mare) */
 	.cont-pf-left .cont-pf-firma-despre {
-		margin-top: 0.15rem !important;
+		margin-top: 0.06rem !important;
 		margin-bottom: 0 !important;
 		flex: 0 0 auto !important;
 	}
 	.cont-pf-left .cont-pf-firma-despre label,
 	.cont-pf-left .cont-pf-firma-despre + .signup-field label {
-		font-size: 0.65rem !important;
-		margin-bottom: 0.05rem !important;
+		font-size: 0.58rem !important;
+		margin-bottom: 0.02rem !important;
 	}
-	body.page-account .cont-pf-left .cont-pf-firma-despre textarea.firma-field,
-	body.page-account .cont-pf-left #id_despre_noi_firma {
-		height: 1.85rem !important;
-		min-height: 1.85rem !important;
-		max-height: 1.85rem !important;
-		padding: 0.12rem 0.3rem !important;
-		font-size: 0.7rem !important;
-		line-height: 1.15 !important;
-		overflow-y: auto !important;
+	body.page-account .cont-pf-left #id_despre_noi_firma,
+	body.page-account .cont-pf-left #id_link_extern_firma {
+		height: 1.25rem !important;
+		min-height: 1.25rem !important;
+		max-height: 1.25rem !important;
+		padding: 0.06rem 0.25rem !important;
+		font-size: 0.66rem !important;
+		line-height: 1.1 !important;
+		overflow: hidden !important;
 		resize: none !important;
 	}
-	body.page-account .cont-pf-left #id_link_extern_firma {
-		height: 1.7rem !important;
-		min-height: 1.7rem !important;
-		max-height: 1.7rem !important;
-		padding: 0.12rem 0.3rem !important;
-		font-size: 0.7rem !important;
-	}
 	.cont-pf-left .cont-pf-firma-despre + .signup-field {
-		margin-top: 0.1rem;
-		margin-bottom: 0.08rem;
+		margin-top: 0.04rem;
+		margin-bottom: 0.04rem;
 	}
 	.cont-pf-left .signup-actions {
-		margin-top: 0.3rem !important;
+		margin-top: 0.18rem !important;
 		flex-shrink: 0;
-		position: sticky;
-		bottom: 0;
-		background: rgba(255, 255, 255, 0.96);
-		padding-top: 0.25rem;
-		z-index: 2;
+		position: static !important;
+		background: transparent !important;
+		padding-top: 0 !important;
+		z-index: auto;
+	}
+	.cont-pf-left .cont-pf-firma-tip-colab {
+		margin-top: 0.12rem !important;
+	}
+	.cont-pf-left .signup-col-tip-options {
+		gap: 0.02rem !important;
+	}
+	.cont-pf-left .cont-pf-tip-colaborator-options .signup-col-tip-option,
+	.cont-pf-left .signup-col-tip-option {
+		font-size: 0.62rem !important;
+		line-height: 1.05 !important;
+	}
+	.cont-pf-left .btn-modificare-profil,
+	.cont-pf-left .btn-save {
+		padding: 0.25rem !important;
+		font-size: 0.72rem !important;
 	}
 	/* Menține Județ + Oraș pe același rând vizual (fără label pe 2 linii) */
 	.cont-pf-left .signup-field .signup-label-one-line {
