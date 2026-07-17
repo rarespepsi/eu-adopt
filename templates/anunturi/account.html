@@ -1444,7 +1444,7 @@ body.page-account .account-right-panel {
 					>{% if form_prefill_firma %}{{ form_prefill_firma.despre_noi|default:'' }}{% elif user_profile %}{{ user_profile.despre_noi|default:'' }}{% endif %}</textarea>
 				</div>
 				<div class="signup-field span2 cont-pf-firma-link-extern">
-					<label for="id_link_extern_firma">Link site / Facebook</label>
+					<label for="id_link_extern_firma">Site</label>
 					<input
 						type="text"
 						inputmode="url"
@@ -1469,7 +1469,7 @@ body.page-account .account-right-panel {
 					<textarea id="id_despre_noi_pf" name="despre_noi" class="despre-link-field firma-field" rows="3" maxlength="360" readonly placeholder="Max. 3 rânduri">{% if user_profile %}{{ user_profile.despre_noi|default:'' }}{% endif %}</textarea>
 				</div>
 				<div class="signup-field span2" style="margin-top:0.25rem;">
-					<label for="id_link_extern_pf">Link site / Facebook</label>
+					<label for="id_link_extern_pf">Site</label>
 					<input type="text" inputmode="url" id="id_link_extern_pf" name="link_extern" class="despre-link-field" maxlength="500" readonly placeholder="https://…" value="{% if user_profile %}{{ user_profile.link_extern|default:'' }}{% endif %}" />
 				</div>
 				<div class="signup-actions" style="margin-top:0.45rem;">

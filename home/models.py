@@ -39,7 +39,7 @@ class UserProfile(models.Model):
         help_text="Opțional, max. ~3–4 rânduri (Cont + pagina publică adăpost).",
     )
     link_extern = models.CharField(
-        "Link site / pagină",
+        "Site",
         max_length=500,
         blank=True,
         default="",
