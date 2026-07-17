@@ -140,6 +140,31 @@
 	.pub-cr-layout-right .pub-cr-preview-wrap {
 		margin-top: 0;
 	}
+	.pub-cr-actions-under {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		gap: 0.35rem 0.45rem;
+		margin-top: 0.4rem;
+	}
+	.pub-cr-actions-main {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.28rem;
+		min-width: 0;
+	}
+	.pub-cr-actions-main .pub-cr-submit {
+		margin: 0;
+	}
+	.pub-cr-actions-main .pub-cr-foot {
+		margin: 0;
+		max-width: 16rem;
+	}
+	.pub-cr-actions-under .pub-cr-preview-tools {
+		margin-top: 0;
+		align-self: flex-start;
+	}
 	.pub-cr-preview-box {
 		width: min(100%, 14rem);
 		background: #eceff1;
@@ -205,11 +230,13 @@
 	}
 	.pub-cr-submit {
 		display: inline-flex; align-items: center; justify-content: center;
-		padding: 0.55rem 1.25rem; border-radius: 10px; border: none;
-		background: #1565c0; color: #fff; font-weight: 800; font-size: 0.95rem; cursor: pointer;
+		padding: 0.4rem 0.95rem; border-radius: 10px; border: none;
+		background: #1565c0; color: #fff; font-weight: 800; font-size: 0.82rem; cursor: pointer;
+		height: 1.8rem;
+		box-sizing: border-box;
 	}
 	.pub-cr-submit:hover { filter: brightness(1.05); }
-	.pub-cr-foot { margin-top: 0.45rem; font-size: 0.7rem; color: #78909c; }
+	.pub-cr-foot { margin-top: 0.45rem; font-size: 0.7rem; color: #78909c; line-height: 1.35; }
 	.pub-cr-form { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 0.2rem; }
 	.pub-cr-burtiera-hint {
 		font-size: 0.82rem; color: #5d4037; line-height: 1.45; margin: 0 0 0.65rem;
@@ -272,6 +299,15 @@
 					<label for="notes_{{ line.pk }}">Mesaj bandă — lăsați gol dacă folosiți linkul</label>
 					<textarea id="notes_{{ line.pk }}" name="notes_{{ line.pk }}" maxlength="100" placeholder="Textul care apare pe bandă…">{{ b.extra_notes }}</textarea>
 				</div>
+				{% if forloop.last %}
+				<div class="pub-cr-actions-main" style="margin-top:0.45rem;">
+					<button type="submit" class="pub-cr-submit">Trimite materialele</button>
+					<p class="pub-cr-foot">
+						Link securizat expiră la {{ pub_access.expires_at|date:"Y-m-d H:i" }}.
+						{% if user.is_authenticated %}Puteți reveni din <a href="{% url 'account' %}">Contul meu</a>.{% endif %}
+					</p>
+				</div>
+				{% endif %}
 				{% else %}
 				<div class="pub-cr-media-row">
 					<div class="pub-cr-field">
@@ -341,6 +377,23 @@
 								</div>
 							</div>
 						</div>
+						<div class="pub-cr-actions-under">
+							{% if forloop.last %}
+							<div class="pub-cr-actions-main">
+								<button type="submit" class="pub-cr-submit">Trimite materialele</button>
+								<p class="pub-cr-foot">
+									Link securizat expiră la {{ pub_access.expires_at|date:"Y-m-d H:i" }}.
+									{% if user.is_authenticated %}Puteți reveni din <a href="{% url 'account' %}">Contul meu</a>.{% endif %}
+								</p>
+							</div>
+							{% endif %}
+							<div class="pub-cr-preview-tools" data-pub-image-tools data-line-id="{{ line.pk }}">
+								<button type="button" class="pub-cr-preview-btn" data-pub-zoom data-line-id="{{ line.pk }}" data-action="in" title="Mărește">+</button>
+								<button type="button" class="pub-cr-preview-btn" data-pub-zoom data-line-id="{{ line.pk }}" data-action="out" title="Micșorează">−</button>
+								<button type="button" class="pub-cr-preview-btn" data-pub-save-crop data-line-id="{{ line.pk }}">Salvează încadrarea</button>
+								<a href="https://www.iloveimg.com/resize-image" target="_blank" rel="noopener noreferrer" class="pub-cr-preview-help-link">Micșorează poza dacă e prea mare</a>
+							</div>
+						</div>
 					</div>
 					<div class="pub-cr-layout-right">
 						<div class="pub-cr-preview-wrap">
@@ -355,12 +408,6 @@
 							>
 								<span class="pub-cr-preview-empty">Nu există media încărcată</span>
 							</div>
-							<div class="pub-cr-preview-tools" data-pub-image-tools data-line-id="{{ line.pk }}">
-								<button type="button" class="pub-cr-preview-btn" data-pub-zoom data-line-id="{{ line.pk }}" data-action="in" title="Mărește">+</button>
-								<button type="button" class="pub-cr-preview-btn" data-pub-zoom data-line-id="{{ line.pk }}" data-action="out" title="Micșorează">−</button>
-								<button type="button" class="pub-cr-preview-btn" data-pub-save-crop data-line-id="{{ line.pk }}">Salvează încadrarea</button>
-								<a href="https://www.iloveimg.com/resize-image" target="_blank" rel="noopener noreferrer" class="pub-cr-preview-help-link">Micșorează poza dacă e prea mare</a>
-							</div>
 						</div>
 					</div>
 				</div>
@@ -368,12 +415,7 @@
 			</div>
 			{% endwith %}
 			{% endfor %}
-			<button type="submit" class="pub-cr-submit">Trimite materialele</button>
 		</form>
-		<p class="pub-cr-foot">
-			Link securizat expiră la {{ pub_access.expires_at|date:"Y-m-d H:i" }}.
-			{% if user.is_authenticated %}Puteți reveni din <a href="{% url 'account' %}">Contul meu</a>.{% endif %}
-		</p>
 	</div>
 </div>
 {% endblock %}
