@@ -15,8 +15,8 @@
 		height: 100vh;
 		max-height: 100vh;
 		overflow: hidden;
-		/* Același fundal ca zona de conținut — fără bandă neagră (#141a22) sub A0 */
-		background: #f5f7fa !important;
+		/* Fundal Intra — fără fâșie goală: conținutul începe imediat sub A0 */
+		background: #141a22 !important;
 	}
 	body.page-adapost-detail #main_wrap {
 		display: flex;
@@ -29,7 +29,7 @@
 		margin: 0;
 	}
 	body.page-adapost-detail #main_content {
-		/* Offset exact sub navbar; fundal deschis umple padding-ul (nu se mai vede #141a22) */
+		/* Offset exact sub navbar; transparent = același #141a22, fără bandă contrast */
 		padding-top: var(--nav-height, var(--nav-h, 64px)) !important;
 		max-width: none !important;
 		width: 100% !important;
@@ -41,7 +41,7 @@
 		display: flex;
 		flex-direction: column;
 		box-sizing: border-box;
-		background: #f5f7fa !important;
+		background: transparent !important;
 	}
 	body.page-adapost-detail #main_content > .layout {
 		grid-template-columns: minmax(0, 1fr) !important;
@@ -1256,15 +1256,22 @@
 		}
 	}
 
-	/* Contrast forțat: skin Intra pune link/text cyan pe fundal deschis */
+	/* Contrast forțat: casete deschise pe fundal Intra închis */
 	body.page-adapost-detail.euadopt-intra-skin #main_content,
 	body.page-adapost-detail #main_content {
-		color: #1a1a1a !important;
+		color: #e2e8f0 !important;
+	}
+	body.page-adapost-detail .adp-det__back {
+		color: #7dd3fc !important;
 	}
 	body.page-adapost-detail .adp-det__side,
 	body.page-adapost-detail .adp-pet-card,
 	body.page-adapost-detail .adp-map-modal__card {
 		color: #1a1a1a !important;
+		background: #fffef8 !important;
+	}
+	body.page-adapost-detail .adp-pet-card {
+		background: #fff !important;
 	}
 	body.page-adapost-detail .adp-det__side h1 {
 		color: #1b5e20 !important;
