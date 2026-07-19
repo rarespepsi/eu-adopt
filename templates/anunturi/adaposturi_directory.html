@@ -5,19 +5,40 @@
 
 {% block extra_css_after %}
 <style>
+	/* Full-bleed stânga: fără sidebar-uri goale */
+	body.page-adaposturi-directory .layout .sidebar-left,
+	body.page-adaposturi-directory .layout .sidebar-right {
+		display: none !important;
+	}
+	body.page-adaposturi-directory #main_content > .layout {
+		grid-template-columns: minmax(0, 1fr) !important;
+		max-width: none !important;
+		width: 100% !important;
+	}
+	body.page-adaposturi-directory .layout > .main-content {
+		max-width: none !important;
+		width: 100% !important;
+		padding-left: 0.15rem !important;
+		padding-right: 0.75rem !important;
+		margin: 0 !important;
+	}
 	body.page-adaposturi-directory #main_content { padding-bottom: 2rem; }
+	/* Filtru lipit de stânga paginii */
 	.adp-dir {
-		max-width: 1100px;
-		margin: 0.75rem auto 1.5rem;
-		padding: 0 0.85rem;
+		max-width: none;
+		width: 100%;
+		margin: 0.5rem 0 1.5rem;
+		padding: 0 0.5rem 0 0;
+		box-sizing: border-box;
 	}
 	.adp-dir-head {
 		display: flex;
 		align-items: center;
 		justify-content: flex-start;
-		gap: 0.75rem 1rem;
+		gap: 0.65rem 0.85rem;
 		flex-wrap: wrap;
 		margin: 0 0 0.35rem;
+		padding-left: 0;
 	}
 	.adp-dir h1 {
 		margin: 0;
@@ -30,10 +51,11 @@
 	.adp-dir-filter {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.4rem;
+		gap: 0.35rem;
 		flex: 0 0 auto;
 		margin: 0;
 		order: 1;
+		margin-left: 0;
 	}
 	.adp-dir-filter__label {
 		font-size: 0.78rem;
@@ -97,6 +119,10 @@
 	}
 	.adp-dir-card.is-county-hidden {
 		display: none !important;
+	}
+	.adp-dir-card--demo {
+		opacity: 0.92;
+		border-style: dashed;
 	}
 	.adp-dir-card__media {
 		flex: 1 1 auto;
@@ -182,12 +208,13 @@
 	</div>
 	<p class="adp-dir-lead" id="adpDirLead">
 		Organizațiile cu animale pe EU-Adopt. Apasă pe card pentru pagina dedicată și lista animalelor din MyPet.
+		{% if shelter_demo_layout %}<strong> · DEMO layout (30 casete temporare)</strong>{% endif %}
 		<span id="adpDirCount">{% if shelter_count %} · {{ shelter_count }} entități{% endif %}</span>
 	</p>
 	{% if shelter_rows %}
 	<div class="adp-dir-grid" id="adpDirGrid">
 		{% for row in shelter_rows %}
-		<a class="adp-dir-card" href="{{ row.url }}" title="{{ row.name }}" data-county="{{ row.county }}">
+		<a class="adp-dir-card{% if row.is_demo %} adp-dir-card--demo{% endif %}" href="{{ row.url }}" title="{{ row.name }}" data-county="{{ row.county }}"{% if row.is_demo %} onclick="return false;"{% endif %}>
 			<div class="adp-dir-card__media"{% if row.logo_url %} style="background-image:url('{{ row.logo_url }}')"{% endif %}>
 				{% if row.logo_url %}
 				<img src="{{ row.logo_url }}" alt="" />

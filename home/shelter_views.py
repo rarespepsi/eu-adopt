@@ -31,6 +31,29 @@ from home.shelter_directory import (
 )
 from home.ro_location import all_counties
 
+# TEMP: casete demo pentru layout director — scoate la lansare / când user cere
+_SHELTER_DIR_DEMO_COUNT = 30
+
+
+def _shelter_directory_demo_rows(n: int = _SHELTER_DIR_DEMO_COUNT) -> list[dict]:
+    counties = all_counties() or ["Cluj"]
+    rows = []
+    for i in range(1, n + 1):
+        jud = counties[(i - 1) % len(counties)]
+        rows.append(
+            {
+                "name": f"Adăpost Demo {i}",
+                "locality": f"Localitate {i}, {jud}",
+                "county": jud,
+                "logo_url": "",
+                "url": "#",
+                "count": (i % 12) + 1,
+                "is_public_shelter": i % 2 == 0,
+                "is_demo": True,
+            }
+        )
+    return rows
+
 
 def shelter_directory_view(request):
     rows = []
@@ -46,8 +69,11 @@ def shelter_directory_view(request):
                 "url": org_public_url(user),
                 "count": getattr(user, "pub_animal_count", 0) or 0,
                 "is_public_shelter": bool(getattr(user.account_profile, "is_public_shelter", False)),
+                "is_demo": False,
             }
         )
+    # TEMP layout: +30 casete demo (filtre județ vizibile pe grilă)
+    rows.extend(_shelter_directory_demo_rows())
     return render(
         request,
         "anunturi/adaposturi_directory.html",
@@ -55,6 +81,7 @@ def shelter_directory_view(request):
             "shelter_rows": rows,
             "shelter_count": len(rows),
             "shelter_counties": all_counties(),
+            "shelter_demo_layout": True,
         },
     )
 
