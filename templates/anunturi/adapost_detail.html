@@ -273,37 +273,41 @@
 	}
 	.adp-det__addr-head {
 		display: flex;
-		justify-content: flex-end;
+		justify-content: space-between;
 		align-items: center;
-		margin: 0.08rem 0 0.06rem;
-	}
-	.adp-det__contact-row {
-		display: flex;
-		align-items: stretch;
 		gap: 0.35rem;
-		margin-top: 0.2rem;
+		margin: 0.08rem 0 0.1rem;
 		min-width: 0;
 	}
-	.adp-det__contact-row .adp-det__phone {
-		flex: 0 1 auto;
-		margin: 0;
-		align-self: center;
-		white-space: nowrap;
-	}
-	.adp-det__contact-row .adp-det__addr-btn,
-	.adp-det__contact-row .adp-det__addr-link {
+	.adp-det__addr-head .adp-det__phone {
 		flex: 1 1 auto;
+		margin: 0;
 		min-width: 0;
-		width: auto;
+		font-size: 0.82rem;
+		line-height: 1.2;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.adp-det__addr-head .adp-det__badge {
+		flex: 0 0 auto;
+		margin-left: auto;
+	}
+	.adp-det__addr-only {
+		margin-top: 0.12rem;
+		min-width: 0;
+	}
+	.adp-det__addr-only .adp-det__addr-btn,
+	.adp-det__addr-only .adp-det__addr-link {
+		width: 100%;
 		margin: 0;
 		padding: 0.28rem 0.4rem;
 		font-size: 0.72rem;
 		line-height: 1.25;
 	}
-	.adp-det__contact-row .adp-det__map-preview {
-		flex: 1 1 auto;
-		min-width: 0;
+	.adp-det__addr-only .adp-det__map-preview {
 		margin: 0;
+		width: 100%;
 	}
 	.adp-det__side h2 {
 		margin: 0.45rem 0 0.18rem;
@@ -870,15 +874,11 @@
 			font-size: 0.54rem;
 			padding: 0.01rem 0.28rem;
 		}
-		.adp-det__contact-row {
-			gap: 0.28rem;
-			margin-top: 0.12rem;
+		.adp-det__addr-head .adp-det__phone {
+			font-size: 0.76rem;
 		}
-		.adp-det__contact-row .adp-det__phone {
-			font-size: 0.78rem;
-		}
-		.adp-det__contact-row .adp-det__addr-btn,
-		.adp-det__contact-row .adp-det__addr-link {
+		.adp-det__addr-only .adp-det__addr-btn,
+		.adp-det__addr-only .adp-det__addr-link {
 			padding: 0.22rem 0.32rem;
 			font-size: 0.66rem;
 		}
@@ -1032,6 +1032,11 @@
 		<h1>{{ org_name }}</h1>
 		{% if org_locality %}<p>{{ org_locality }}</p>{% endif %}
 		<div class="adp-det__addr-head">
+			{% if org_phone %}
+			<p class="adp-det__phone">
+				<a href="tel:{{ org_phone }}" title="Apelează">{{ org_phone }}</a>
+			</p>
+			{% endif %}
 			{% if org_is_public_shelter %}<span class="adp-det__badge">Adăpost public</span>{% else %}<span class="adp-det__badge">ONG / Adăpost</span>{% endif %}
 		</div>
 
@@ -1044,13 +1049,8 @@
 		</p>
 		{% endif %}
 
-		{% if org_phone or org_address or org_map_embed_url or org_maps_url %}
-		<div class="adp-det__contact-row">
-			{% if org_phone %}
-			<p class="adp-det__phone">
-				<a href="tel:{{ org_phone }}" title="Apelează">{{ org_phone }}</a>
-			</p>
-			{% endif %}
+		{% if org_address or org_map_embed_url or org_maps_url %}
+		<div class="adp-det__addr-only">
 			{% if org_address %}
 				{% if org_map_embed_url or org_maps_url %}
 				<button
@@ -1069,7 +1069,7 @@
 					title="Deschide în Google Maps"
 				>{{ org_address }}</a>
 				{% endif %}
-			{% elif org_map_embed_url or org_maps_url %}
+			{% else %}
 			<button
 				type="button"
 				class="adp-det__map-preview"
