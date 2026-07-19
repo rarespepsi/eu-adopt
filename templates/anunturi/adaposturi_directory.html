@@ -11,10 +11,59 @@
 		margin: 0.75rem auto 1.5rem;
 		padding: 0 0.85rem;
 	}
-	.adp-dir h1 {
+	.adp-dir-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem 1rem;
+		flex-wrap: wrap;
 		margin: 0 0 0.35rem;
+	}
+	.adp-dir h1 {
+		margin: 0;
 		font-size: clamp(1.25rem, 2.5vw, 1.65rem);
 		color: #1b5e20;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.adp-dir-filter {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		flex: 0 0 auto;
+		margin: 0;
+	}
+	.adp-dir-filter__label {
+		font-size: 0.78rem;
+		font-weight: 800;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		color: #94a3b8;
+		white-space: nowrap;
+	}
+	.adp-dir-filter__select {
+		appearance: none;
+		-webkit-appearance: none;
+		min-width: 11rem;
+		max-width: min(16rem, 72vw);
+		padding: 0.42rem 2rem 0.42rem 0.65rem;
+		border-radius: 10px;
+		border: 1px solid rgba(148, 163, 184, 0.45);
+		background-color: rgba(30, 41, 59, 0.92);
+		background-image: linear-gradient(45deg, transparent 50%, #94a3b8 50%), linear-gradient(135deg, #94a3b8 50%, transparent 50%);
+		background-position: calc(100% - 14px) calc(50% - 2px), calc(100% - 9px) calc(50% - 2px);
+		background-size: 5px 5px, 5px 5px;
+		background-repeat: no-repeat;
+		color: #f1f5f9;
+		font-size: 0.88rem;
+		font-weight: 700;
+		line-height: 1.2;
+		cursor: pointer;
+		box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+	}
+	.adp-dir-filter__select:focus {
+		outline: 2px solid rgba(34, 211, 238, 0.55);
+		outline-offset: 1px;
 	}
 	.adp-dir-lead {
 		margin: 0 0 1rem;
@@ -43,6 +92,9 @@
 	.adp-dir-card:hover {
 		transform: translateY(-2px);
 		box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+	}
+	.adp-dir-card.is-county-hidden {
+		display: none !important;
 	}
 	.adp-dir-card__media {
 		flex: 1 1 auto;
@@ -88,12 +140,18 @@
 		color: #546e7a;
 		background: #fafafa;
 	}
+	.adp-dir-empty[hidden] {
+		display: none !important;
+	}
 	body.page-adaposturi-directory .adp-dir h1 {
 		color: #c8e6c9 !important;
 	}
 	body.page-adaposturi-directory .adp-dir-lead,
 	body.page-adaposturi-directory .adp-dir-empty {
 		color: #e2e8f0 !important;
+	}
+	body.page-adaposturi-directory .adp-dir-filter__label {
+		color: #94a3b8 !important;
 	}
 	body.page-adaposturi-directory .main-content .adp-dir-card,
 	body.page-adaposturi-directory .adp-dir-card {
@@ -107,16 +165,27 @@
 {% endblock %}
 
 {% block content %}
-<div class="adp-dir">
-	<h1>Adăposturi și ONG-uri</h1>
-	<p class="adp-dir-lead">
+<div class="adp-dir" id="adpDir" data-total="{{ shelter_count|default:0 }}">
+	<div class="adp-dir-head">
+		<h1>Adăposturi și ONG-uri</h1>
+		<label class="adp-dir-filter" for="adpDirJudet">
+			<span class="adp-dir-filter__label">Județ</span>
+			<select class="adp-dir-filter__select" id="adpDirJudet" name="judet" aria-label="Filtrează după județ">
+				<option value="">Toate județele</option>
+				{% for j in shelter_counties %}
+				<option value="{{ j }}">{{ j }}</option>
+				{% endfor %}
+			</select>
+		</label>
+	</div>
+	<p class="adp-dir-lead" id="adpDirLead">
 		Organizațiile cu animale pe EU-Adopt. Apasă pe card pentru pagina dedicată și lista animalelor din MyPet.
-		{% if shelter_count %} · {{ shelter_count }} entități{% endif %}
+		<span id="adpDirCount">{% if shelter_count %} · {{ shelter_count }} entități{% endif %}</span>
 	</p>
 	{% if shelter_rows %}
-	<div class="adp-dir-grid">
+	<div class="adp-dir-grid" id="adpDirGrid">
 		{% for row in shelter_rows %}
-		<a class="adp-dir-card" href="{{ row.url }}" title="{{ row.name }}">
+		<a class="adp-dir-card" href="{{ row.url }}" title="{{ row.name }}" data-county="{{ row.county }}">
 			<div class="adp-dir-card__media"{% if row.logo_url %} style="background-image:url('{{ row.logo_url }}')"{% endif %}>
 				{% if row.logo_url %}
 				<img src="{{ row.logo_url }}" alt="" />
@@ -131,8 +200,45 @@
 		</a>
 		{% endfor %}
 	</div>
+	<p class="adp-dir-empty" id="adpDirFilterEmpty" hidden>Nu există adăposturi/ONG-uri în județul selectat.</p>
 	{% else %}
 	<p class="adp-dir-empty">Momentan nu există adăposturi/ONG-uri cu animale publicate. Revino curând.</p>
 	{% endif %}
 </div>
+<script>
+(function () {
+	var sel = document.getElementById("adpDirJudet");
+	var grid = document.getElementById("adpDirGrid");
+	var countEl = document.getElementById("adpDirCount");
+	var emptyEl = document.getElementById("adpDirFilterEmpty");
+	var root = document.getElementById("adpDir");
+	if (!sel || !grid || !root) return;
+	var total = parseInt(root.getAttribute("data-total") || "0", 10) || 0;
+
+	function applyFilter() {
+		var jud = (sel.value || "").trim();
+		var cards = grid.querySelectorAll(".adp-dir-card");
+		var visible = 0;
+		for (var i = 0; i < cards.length; i++) {
+			var c = cards[i];
+			var ok = !jud || (c.getAttribute("data-county") || "") === jud;
+			c.classList.toggle("is-county-hidden", !ok);
+			if (ok) visible++;
+		}
+		if (countEl) {
+			if (!jud) {
+				countEl.textContent = total ? (" · " + total + " entități") : "";
+			} else {
+				countEl.textContent = " · " + visible + (visible === 1 ? " entitate" : " entități") + " în " + jud;
+			}
+		}
+		if (emptyEl) {
+			emptyEl.hidden = visible > 0;
+			grid.style.display = visible > 0 ? "" : "none";
+		}
+	}
+
+	sel.addEventListener("change", applyFilter);
+})();
+</script>
 {% endblock %}

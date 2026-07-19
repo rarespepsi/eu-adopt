@@ -17,6 +17,7 @@ from home.shelter_directory import (
     org_about_text,
     org_address_line,
     org_contact_person,
+    org_county,
     org_display_name,
     org_external_link,
     org_google_embed_url,
@@ -28,6 +29,7 @@ from home.shelter_directory import (
     org_public_url,
     published_animals_for_org,
 )
+from home.ro_location import all_counties
 
 
 def shelter_directory_view(request):
@@ -39,6 +41,7 @@ def shelter_directory_view(request):
                 "user": user,
                 "name": org_display_name(user),
                 "locality": org_locality(user),
+                "county": org_county(user),
                 "logo_url": org_logo_url(user),
                 "url": org_public_url(user),
                 "count": getattr(user, "pub_animal_count", 0) or 0,
@@ -51,6 +54,7 @@ def shelter_directory_view(request):
         {
             "shelter_rows": rows,
             "shelter_count": len(rows),
+            "shelter_counties": all_counties(),
         },
     )
 

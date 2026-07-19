@@ -51,6 +51,9 @@ class ShelterDirectoryTests(TestCase):
         r = Client().get(reverse("shelter_directory"))
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "Adăpost Test")
+        self.assertContains(r, 'id="adpDirJudet"')
+        self.assertContains(r, 'data-county="Brașov"')
+        self.assertContains(r, "Toate județele")
 
     def test_detail_sidebar_and_pets(self):
         ensure_org_slug(self.org, save=True)

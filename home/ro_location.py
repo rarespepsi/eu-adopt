@@ -115,6 +115,11 @@ def suggest_counties(raw: str, *, limit: int = 8) -> list[str]:
     return hits[:limit] if hits else []
 
 
+def all_counties() -> list[str]:
+    """Lista canonică a județelor RO (ordine alfabetică din _COUNTIES)."""
+    return list(_COUNTIES)
+
+
 def resolve_locality(raw: str, county: str = "") -> str:
     """Returnează localitatea canonică din JSON (în județ dacă e dat)."""
     text = (raw or "").strip()

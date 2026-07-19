@@ -19,6 +19,7 @@ from home.partner_locations import (
     primary_location_for_user,
     sediu_social_for_user,
 )
+from home.ro_location import resolve_county
 
 SPECIES_URL_PREFIX = {
     "dog": "caini",
@@ -152,6 +153,21 @@ def org_locality(user: User) -> str:
         ]
         if bits:
             return ", ".join(bits)
+    return ""
+
+
+def org_county(user: User) -> str:
+    """Județ canonic pentru filtrarea directorului."""
+    loc = primary_location_for_user(user) or sediu_social_for_user(user)
+    if loc:
+        raw = (loc.judet or "").strip()
+        if raw:
+            return resolve_county(raw)
+    profile = getattr(user, "profile", None)
+    if profile:
+        raw = (profile.company_judet or profile.judet or "").strip()
+        if raw:
+            return resolve_county(raw)
     return ""
 
 
