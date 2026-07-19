@@ -32,21 +32,28 @@
 		box-sizing: border-box;
 	}
 	.adp-dir-head {
+		position: relative;
 		display: flex;
 		align-items: center;
 		justify-content: flex-start;
 		gap: 0.65rem 0.85rem;
-		flex-wrap: wrap;
+		flex-wrap: nowrap;
 		margin: 0 0 0.35rem;
 		padding-left: 0;
+		min-height: 2.4rem;
 	}
 	.adp-dir h1 {
+		position: absolute;
+		left: 0;
+		right: 0;
 		margin: 0;
+		padding: 0 12.5rem; /* spațiu ca să nu se lipească de filtru */
 		font-size: clamp(1.25rem, 2.5vw, 1.65rem);
 		color: #1b5e20;
-		flex: 1 1 auto;
-		min-width: 0;
-		order: 2;
+		text-align: center;
+		line-height: 1.2;
+		pointer-events: none;
+		z-index: 0;
 	}
 	.adp-dir-filter {
 		display: inline-flex;
@@ -54,8 +61,9 @@
 		gap: 0.35rem;
 		flex: 0 0 auto;
 		margin: 0;
-		order: 1;
 		margin-left: 0;
+		position: relative;
+		z-index: 1;
 	}
 	.adp-dir-filter__label {
 		font-size: 0.78rem;
@@ -94,6 +102,7 @@
 		font-size: 0.92rem;
 		color: #546e7a;
 		line-height: 1.45;
+		text-align: center;
 	}
 	.adp-dir-grid {
 		display: grid;
