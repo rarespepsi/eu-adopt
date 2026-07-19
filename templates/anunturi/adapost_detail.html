@@ -223,33 +223,34 @@
 		gap: 0.15rem;
 	}
 	.adp-det__logo {
-		width: 92%;
-		max-width: 92%;
+		width: 100%;
+		max-width: 100%;
 		height: auto;
-		aspect-ratio: 1 / 1;
+		aspect-ratio: 16 / 9;
 		object-fit: cover;
-		border-radius: 12px;
-		border: 1px solid #e0e0e0;
+		border-radius: 10px;
+		border: 1px solid #cfd8dc;
 		background: #eceff1;
-		margin: 0.1rem auto 0.35rem;
+		margin: 0 0 0.35rem;
 		flex-shrink: 0;
 		display: block;
-		align-self: center;
+		align-self: stretch;
+		box-sizing: border-box;
 	}
 	.adp-det__logo-ph {
-		width: 92%;
-		max-width: 92%;
-		aspect-ratio: 1 / 1;
-		border-radius: 12px;
+		width: 100%;
+		max-width: 100%;
+		aspect-ratio: 16 / 9;
+		border-radius: 10px;
 		background: #eceff1;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 2.4rem;
-		margin: 0.1rem auto 0.35rem;
-		border: 1px solid #e0e0e0;
+		font-size: 1.85rem;
+		margin: 0 0 0.35rem;
+		border: 1px solid #cfd8dc;
 		flex-shrink: 0;
-		align-self: center;
+		align-self: stretch;
 		box-sizing: border-box;
 	}
 	.adp-det__side h1 {
@@ -319,31 +320,43 @@
 		display: block;
 		width: 100%;
 		margin: 0.28rem 0 0;
-		padding: 0;
-		border: none;
-		background: none;
+		padding: 0.4rem 0.5rem;
+		border: 1px solid #b0bec5;
+		border-radius: 8px;
+		background: #eceff1;
 		font: inherit;
-		font-size: 0.82rem;
+		font-size: 0.8rem;
 		font-style: normal;
 		line-height: 1.35;
 		text-align: left;
-		color: #1565c0;
+		color: #37474f;
 		font-weight: 700;
 		cursor: pointer;
-		text-decoration: underline;
-		text-underline-offset: 2px;
+		text-decoration: none;
+		box-sizing: border-box;
 	}
-	.adp-det__addr-btn:hover { color: #0d47a1; }
+	.adp-det__addr-btn:hover {
+		background: #e0e0e0;
+		color: #263238;
+	}
 	.adp-det__addr-link {
 		display: block;
 		margin: 0.28rem 0 0;
-		font-size: 0.82rem;
+		padding: 0.4rem 0.5rem;
+		border: 1px solid #b0bec5;
+		border-radius: 8px;
+		background: #eceff1;
+		font-size: 0.8rem;
 		font-style: normal;
 		line-height: 1.35;
 		font-weight: 700;
-		color: #1565c0;
-		text-decoration: underline;
-		text-underline-offset: 2px;
+		color: #37474f;
+		text-decoration: none;
+		box-sizing: border-box;
+	}
+	.adp-det__addr-link:hover {
+		background: #e0e0e0;
+		color: #263238;
 	}
 	/* Hartă strânsă — preview clickabil */
 	.adp-det__map-preview {
@@ -807,13 +820,14 @@
 		}
 		.adp-det__logo,
 		.adp-det__logo-ph {
-			width: min(52%, 7.25rem);
-			max-width: min(52%, 7.25rem);
-			aspect-ratio: 1 / 1;
-			margin: 0.05rem auto 0.3rem;
+			width: 100%;
+			max-width: 100%;
+			aspect-ratio: 16 / 9;
+			margin: 0 0 0.3rem;
+			align-self: stretch;
 		}
 		.adp-det__logo-ph {
-			font-size: 1.55rem;
+			font-size: 1.45rem;
 		}
 		.adp-det__side h1 {
 			font-size: 0.95rem;
@@ -868,10 +882,15 @@
 	body.page-adapost-detail .main-content .adp-det a:not(.btn):not(.button),
 	body.page-adapost-detail .adp-det__back,
 	body.page-adapost-detail .adp-det__side a,
-	body.page-adapost-detail .adp-det__addr-btn,
 	body.page-adapost-detail .adp-det__main a.adp-pet-card__name,
 	body.page-adapost-detail .adp-det__main a.adp-pet-card__plic {
 		color: #0d47a1 !important;
+	}
+	body.page-adapost-detail .adp-det__addr-btn,
+	body.page-adapost-detail .adp-det__addr-link {
+		background: #eceff1 !important;
+		border-color: #b0bec5 !important;
+		color: #37474f !important;
 	}
 	body.page-adapost-detail .adp-det__back:hover,
 	body.page-adapost-detail .adp-det__side a:hover {
