@@ -61,7 +61,12 @@ class ShelterDirectoryTests(TestCase):
         r = Client().get(reverse("shelter_detail", kwargs={"slug": slug}) + "?from_judet=Bra%C8%99ov")
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "judet=Bra")
-        self.assertContains(r, "adp-det__back")
+        self.assertContains(r, "← Înapoi")
+        self.assertNotContains(r, "← Toate adăposturile")
+
+        r2 = Client().get(reverse("shelter_detail", kwargs={"slug": slug}))
+        self.assertEqual(r2.status_code, 200)
+        self.assertContains(r2, "← Toate adăposturile")
 
     def test_detail_sidebar_and_pets(self):
         ensure_org_slug(self.org, save=True)

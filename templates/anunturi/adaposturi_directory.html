@@ -115,30 +115,31 @@
 	}
 	.adp-dir-filter__reset {
 		appearance: none;
-		border: 1px solid rgba(148, 163, 184, 0.4);
-		background: rgba(15, 23, 42, 0.75);
-		color: #e2e8f0;
-		font-size: 0.72rem;
+		border: 0;
+		background: transparent;
+		color: #7dd3fc;
+		font-size: 0.8rem;
 		font-weight: 800;
-		letter-spacing: 0.02em;
-		text-transform: uppercase;
-		padding: 0.4rem 0.55rem;
-		border-radius: 8px;
+		letter-spacing: 0.01em;
+		text-transform: none;
+		padding: 0.35rem 0.25rem;
+		border-radius: 0;
 		cursor: pointer;
 		line-height: 1.1;
 		white-space: nowrap;
+		text-decoration: none;
 	}
 	.adp-dir-filter__reset:hover {
-		border-color: rgba(34, 211, 238, 0.45);
-		color: #fff;
+		text-decoration: underline;
+		color: #bae6fd;
+		border-color: transparent;
 	}
 	.adp-dir-filter__reset.is-judet-active {
 		animation: adp-dir-reset-blink 1.15s ease-in-out infinite;
-		border-color: rgba(34, 211, 238, 0.45);
 	}
 	@keyframes adp-dir-reset-blink {
-		0%, 100% { opacity: 1; color: #f8fafc; }
-		50% { opacity: 0.45; color: #22d3ee; }
+		0%, 100% { opacity: 1; color: #7dd3fc; }
+		50% { opacity: 0.5; color: #22d3ee; }
 	}
 	.adp-dir-filter__reset[hidden] {
 		display: none !important;
@@ -258,7 +259,7 @@
 				<option value="{{ j }}">{{ j }}</option>
 				{% endfor %}
 			</select>
-			<button type="button" class="adp-dir-filter__reset" id="adpDirReset" hidden>Resetează</button>
+			<button type="button" class="adp-dir-filter__reset" id="adpDirReset" hidden aria-label="Arată toate adăposturile">← Toate adăposturile</button>
 		</label>
 		<h1>Adăposturi și ONG-uri</h1>
 	</div>

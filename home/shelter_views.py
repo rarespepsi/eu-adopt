@@ -123,12 +123,14 @@ def shelter_detail_view(request, slug: str):
     share_url = request.build_absolute_uri(org_public_url(user))
     org_back_path = org_public_url(user)
 
-    # Înapoi la director cu județul păstrat (?from_judet=… pe linkul din listă)
+    # Înapoi: din filtru → „Înapoi” la lista județului; altfel → „Toate adăposturile”
     from_judet = resolve_county((request.GET.get("from_judet") or "").strip())
     if from_judet:
         org_directory_back_url = reverse("shelter_directory") + "?" + urlencode({"judet": from_judet})
+        org_directory_back_label = "← Înapoi"
     else:
         org_directory_back_url = reverse("shelter_directory")
+        org_directory_back_label = "← Toate adăposturile"
 
     return render(
         request,
@@ -149,6 +151,7 @@ def shelter_detail_view(request, slug: str):
             "org_share_url": share_url,
             "org_back_path": org_back_path,
             "org_directory_back_url": org_directory_back_url,
+            "org_directory_back_label": org_directory_back_label,
             "org_animals": animals,
             "org_animal_count": len(animals),
             "org_is_public_shelter": bool(getattr(user.account_profile, "is_public_shelter", False)),
