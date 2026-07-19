@@ -146,9 +146,60 @@
 		border-color: #1565c0;
 	}
 	.adp-det__promo-cell--food {
-		background: linear-gradient(165deg, #ff8f00 0%, #e65100 100%);
-		border-color: #ef6c00;
-		color: #fff8e1;
+		position: relative;
+		overflow: hidden;
+		padding: 0;
+		border-color: #222;
+		background: #000;
+		color: #fff;
+		flex-direction: column;
+		gap: 0;
+	}
+	.adp-det__promo-food-bg {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center;
+		display: block;
+		pointer-events: none;
+	}
+	.adp-det__promo-food-txt {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.08rem;
+		width: 100%;
+		height: 100%;
+		padding: 0.3rem 0.25rem;
+		box-sizing: border-box;
+		background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 100%);
+		text-shadow: 0 1px 2px rgba(0,0,0,0.85);
+	}
+	.adp-det__promo-food-txt strong {
+		font-size: 0.72rem;
+		font-weight: 900;
+		letter-spacing: 0.03em;
+		text-transform: none;
+		line-height: 1.05;
+		color: #fff;
+	}
+	.adp-det__promo-food-txt em {
+		font-size: 0.55rem;
+		font-style: normal;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: #ff8a80;
+		line-height: 1.05;
+	}
+	.adp-det__promo-cell--food:hover {
+		filter: brightness(1.08);
+		color: #fff;
 	}
 	.adp-det__promo-cell--internal {
 		background: linear-gradient(165deg, #7b1fa2 0%, #4a148c 100%);
@@ -880,6 +931,15 @@
 			line-height: 1.1;
 			word-break: break-word;
 		}
+		.adp-det__promo-cell--food {
+			padding: 0;
+		}
+		.adp-det__promo-food-txt strong {
+			font-size: 0.56rem;
+		}
+		.adp-det__promo-food-txt em {
+			font-size: 0.42rem;
+		}
 		.adp-det__side {
 			grid-column: 1;
 			grid-row: 2;
@@ -1189,8 +1249,12 @@
 	body.page-adapost-detail .adp-det__promo-cell {
 		color: #fff !important;
 	}
-	body.page-adapost-detail .adp-det__promo-cell--food {
-		color: #fff8e1 !important;
+	body.page-adapost-detail .adp-det__promo-cell--food,
+	body.page-adapost-detail .adp-det__promo-food-txt strong {
+		color: #fff !important;
+	}
+	body.page-adapost-detail .adp-det__promo-food-txt em {
+		color: #ff8a80 !important;
 	}
 	body.page-adapost-detail .adp-det__map-preview,
 	body.page-adapost-detail .adp-det__map-preview strong,
@@ -1244,11 +1308,24 @@
 			{% else %}
 			<span class="adp-det__promo-cell adp-det__promo-cell--fb adp-det__promo-cell--empty" title="Link social necompletat">Social</span>
 			{% endif %}
-			{% if org_promo.mancare %}
-			<a class="adp-det__promo-cell adp-det__promo-cell--food" href="{{ org_promo.mancare }}" target="_blank" rel="noopener noreferrer" title="Cumpără mâncare pentru adăpost">Mâncare</a>
-			{% else %}
-			<span class="adp-det__promo-cell adp-det__promo-cell--food adp-det__promo-cell--empty" title="Link mâncare necompletat">Mâncare</span>
-			{% endif %}
+			<a
+				class="adp-det__promo-cell adp-det__promo-cell--food"
+				href="https://www.paws-hope.com/paws-hope/"
+				target="_blank"
+				rel="noopener noreferrer"
+				title="Paws Hope — mâncare pentru adăposturi"
+			>
+				<img
+					class="adp-det__promo-food-bg"
+					src="{% static 'images/paws-hope-food.png' %}"
+					alt=""
+					decoding="async"
+				/>
+				<span class="adp-det__promo-food-txt">
+					<strong>Paws Hope</strong>
+					<em>Animal Rescue</em>
+				</span>
+			</a>
 			<a class="adp-det__promo-cell adp-det__promo-cell--internal" href="{{ org_promo.propriu }}" target="_blank" rel="noopener noreferrer" title="{{ org_promo.propriu_label }}">{% if org_promo.propriu_is_default %}Suflet &amp; Caracter{% else %}Link propriu{% endif %}</a>
 		</div>
 		<div class="adp-det__pet-site" role="status" aria-label="PET în site: {{ org_animal_count|default:0 }}">
