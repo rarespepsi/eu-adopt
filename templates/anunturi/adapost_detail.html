@@ -231,7 +231,7 @@
 		border-radius: 10px;
 		border: 1px solid #cfd8dc;
 		background: #eceff1;
-		margin: 0 0 0.35rem;
+		margin: 0 0 0.22rem;
 		flex-shrink: 0;
 		display: block;
 		align-self: stretch;
@@ -247,14 +247,14 @@
 		align-items: center;
 		justify-content: center;
 		font-size: 1.85rem;
-		margin: 0 0 0.35rem;
+		margin: 0 0 0.22rem;
 		border: 1px solid #cfd8dc;
 		flex-shrink: 0;
 		align-self: stretch;
 		box-sizing: border-box;
 	}
 	.adp-det__side h1 {
-		margin: 0 0 0.12rem;
+		margin: 0;
 		font-size: 1.02rem;
 		color: #1b5e20;
 		line-height: 1.15;
@@ -271,17 +271,18 @@
 		width: fit-content;
 	}
 	.adp-det__addr-block {
-		margin-top: 0.3rem;
+		margin-top: 0.18rem;
+		margin-bottom: 0.15rem;
 	}
 	.adp-det__addr-head {
 		display: flex;
 		justify-content: flex-end;
 		align-items: center;
-		margin-bottom: 0.22rem;
+		margin-bottom: 0.14rem;
 	}
 	.adp-det__addr-head--solo {
-		margin-top: 0.3rem;
-		margin-bottom: 0;
+		margin-top: 0.18rem;
+		margin-bottom: 0.1rem;
 	}
 	.adp-det__side h2 {
 		margin: 0.45rem 0 0.18rem;
@@ -306,7 +307,7 @@
 		word-break: break-word;
 	}
 	.adp-det__ext-link {
-		margin: 0.25rem 0 0;
+		margin: 0.12rem 0 0;
 		font-size: 0.78rem;
 	}
 	.adp-det__ext-link a {
@@ -319,7 +320,7 @@
 		text-decoration: underline;
 	}
 	.adp-det__phone {
-		margin: 0.2rem 0 0;
+		margin: 0.1rem 0 0;
 		font-size: 0.86rem;
 		line-height: 1.3;
 	}
@@ -828,15 +829,17 @@
 			max-height: none;
 			overflow: visible;
 			margin: 0;
-			padding: 0.45rem 0.45rem 0.55rem;
+			padding: 0.4rem 0.4rem 0.45rem;
 			border-radius: 12px;
+			gap: 0.1rem;
+			justify-content: flex-start;
 		}
 		.adp-det__logo,
 		.adp-det__logo-ph {
 			width: 100%;
 			max-width: 100%;
 			aspect-ratio: 3 / 2;
-			margin: 0 0 0.3rem;
+			margin: 0 0 0.18rem;
 			align-self: stretch;
 		}
 		.adp-det__logo-ph {
@@ -844,6 +847,11 @@
 		}
 		.adp-det__side h1 {
 			font-size: 0.95rem;
+			margin: 0;
+		}
+		.adp-det__addr-block {
+			margin-top: 0.12rem;
+			margin-bottom: 0.1rem;
 		}
 		.adp-det__main {
 			grid-column: 1 / -1;
@@ -992,21 +1000,6 @@
 		<h1>{{ org_name }}</h1>
 		{% if org_locality %}<p>{{ org_locality }}</p>{% endif %}
 
-		{% if org_about and org_about != org_name %}
-		<p class="adp-det__about">{{ org_about }}</p>
-		{% endif %}
-		{% if org_external_link %}
-		<p class="adp-det__ext-link">
-			<a href="{{ org_external_link }}" target="_blank" rel="noopener noreferrer">Site</a>
-		</p>
-		{% endif %}
-
-		{% if org_phone %}
-		<p class="adp-det__phone">
-			<a href="tel:{{ org_phone }}" title="Apelează">{{ org_phone }}</a>
-		</p>
-		{% endif %}
-
 		{% if org_address or org_map_embed_url or org_maps_url %}
 		<div class="adp-det__addr-block">
 			<div class="adp-det__addr-head">
@@ -1047,6 +1040,21 @@
 		<div class="adp-det__addr-head adp-det__addr-head--solo">
 			{% if org_is_public_shelter %}<span class="adp-det__badge">Adăpost public</span>{% else %}<span class="adp-det__badge">ONG / Adăpost</span>{% endif %}
 		</div>
+		{% endif %}
+
+		{% if org_about and org_about != org_name %}
+		<p class="adp-det__about">{{ org_about }}</p>
+		{% endif %}
+		{% if org_external_link %}
+		<p class="adp-det__ext-link">
+			<a href="{{ org_external_link }}" target="_blank" rel="noopener noreferrer">Site</a>
+		</p>
+		{% endif %}
+
+		{% if org_phone %}
+		<p class="adp-det__phone">
+			<a href="tel:{{ org_phone }}" title="Apelează">{{ org_phone }}</a>
+		</p>
 		{% endif %}
 	</aside>
 
