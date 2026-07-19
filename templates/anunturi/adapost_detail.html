@@ -61,19 +61,19 @@
 	}
 	.adp-det {
 		--adp-nav: var(--nav-height, var(--nav-h, 64px));
-		/* Coloană stângă: casetă adăpost + 3 promo sub ea */
+		/* Coloană stângă: casetă adăpost + 3 promo stivuite sub ea */
 		--adp-side-w: clamp(14rem, 18vw, 17rem);
 		--adp-gap: 0.55rem;
 		--adp-bar-h: 2.5rem;
-		--adp-promo-h: 4.2rem;
+		--adp-promo-cell-h: 2.65rem;
 		width: 100%;
 		max-width: none;
 		margin: 0;
 		padding: 0 0.5rem 0 0;
 		display: grid;
 		grid-template-columns: var(--adp-side-w) minmax(0, 1fr);
-		grid-template-rows: auto minmax(0, 1fr);
-		gap: 0.35rem 0.65rem;
+		grid-template-rows: minmax(0, 1fr);
+		gap: 0 0.65rem;
 		align-items: stretch;
 		height: 100%;
 		max-height: 100%;
@@ -81,19 +81,9 @@
 		overflow: hidden;
 		box-sizing: border-box;
 	}
-	/* Rând 1: doar Înapoi + PET (fără bandă goală) */
+	/* Desktop: fără bară Înapoi/PET între navbar și casete */
 	.adp-det__top {
-		grid-column: 1 / -1;
-		grid-row: 1;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.45rem;
-		height: auto;
-		min-height: 2.35rem;
-		max-height: none;
-		padding: 0 0.15rem 0 0.55rem;
-		box-sizing: border-box;
+		display: none;
 	}
 	.adp-det__back {
 		display: inline-flex;
@@ -109,25 +99,26 @@
 		padding: 0.2rem 0.15rem;
 	}
 	.adp-det__back:hover { text-decoration: underline; }
-	/* Coloană stângă: casetă + 3 promo sub ea */
+	/* Coloană stângă: casetă + 3 promo una peste alta */
 	.adp-det__left {
 		grid-column: 1;
-		grid-row: 2;
+		grid-row: 1;
 		display: flex;
 		flex-direction: column;
-		gap: 0.4rem;
+		gap: 0.35rem;
 		min-width: 0;
 		min-height: 0;
 		height: 100%;
 		overflow: hidden;
+		padding-top: 0;
 	}
 	.adp-det__promo-slot {
 		flex: 0 0 auto;
 		width: 100%;
-		height: var(--adp-promo-h);
-		min-height: var(--adp-promo-h);
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
+		height: auto;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
 		gap: 0.28rem;
 		box-sizing: border-box;
 	}
@@ -137,13 +128,14 @@
 		justify-content: center;
 		text-align: center;
 		min-width: 0;
-		height: 100%;
-		min-height: 100%;
-		padding: 0.28rem 0.18rem;
+		flex: 0 0 auto;
+		height: var(--adp-promo-cell-h);
+		min-height: var(--adp-promo-cell-h);
+		padding: 0.3rem 0.4rem;
 		border-radius: 8px;
 		border: 1px solid transparent;
 		box-sizing: border-box;
-		font-size: 0.55rem;
+		font-size: 0.72rem;
 		font-weight: 800;
 		line-height: 1.1;
 		letter-spacing: 0.02em;
@@ -192,7 +184,7 @@
 		text-shadow: 0 1px 2px rgba(0,0,0,0.85);
 	}
 	.adp-det__promo-food-txt strong {
-		font-size: 0.55rem;
+		font-size: 0.72rem;
 		font-weight: 900;
 		letter-spacing: 0.02em;
 		text-transform: none;
@@ -200,7 +192,7 @@
 		color: #fff;
 	}
 	.adp-det__promo-food-txt em {
-		font-size: 0.4rem;
+		font-size: 0.52rem;
 		font-style: normal;
 		font-weight: 700;
 		letter-spacing: 0.03em;
@@ -284,34 +276,34 @@
 		gap: 0.15rem;
 	}
 	.adp-det__logo {
-		width: 100%;
-		max-width: 100%;
+		width: 50%;
+		max-width: 50%;
 		height: auto;
 		aspect-ratio: 3 / 2;
 		object-fit: cover;
 		border-radius: 10px;
 		border: 1px solid #cfd8dc;
 		background: #eceff1;
-		margin: 0 0 0.22rem;
+		margin: 0 auto 0.22rem;
 		flex-shrink: 0;
 		display: block;
-		align-self: stretch;
+		align-self: center;
 		box-sizing: border-box;
 	}
 	.adp-det__logo-ph {
-		width: 100%;
-		max-width: 100%;
+		width: 50%;
+		max-width: 50%;
 		aspect-ratio: 3 / 2;
 		border-radius: 10px;
 		background: #eceff1;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 1.85rem;
-		margin: 0 0 0.22rem;
+		font-size: 1.1rem;
+		margin: 0 auto 0.22rem;
 		border: 1px solid #cfd8dc;
 		flex-shrink: 0;
-		align-self: stretch;
+		align-self: center;
 		box-sizing: border-box;
 	}
 	.adp-det__side h1 {
@@ -511,7 +503,7 @@
 	}
 	.adp-det__main {
 		grid-column: 2;
-		grid-row: 2;
+		grid-row: 1;
 		min-width: 0;
 		min-height: 0;
 		height: 100%;
@@ -821,12 +813,20 @@
 			max-height: none;
 			overflow: visible;
 			padding: 0.45rem;
+			gap: 0.4rem;
 		}
 		.adp-det__top {
+			display: flex;
 			grid-column: 1;
 			grid-row: 1;
+			align-items: center;
+			justify-content: space-between;
+			gap: 0.45rem;
+			height: auto;
+			min-height: 2.35rem;
 			padding: 0;
 			flex-wrap: wrap;
+			box-sizing: border-box;
 		}
 		.adp-det__left {
 			grid-column: 1;
@@ -836,11 +836,25 @@
 			gap: 0.4rem;
 		}
 		.adp-det__promo-slot {
+			flex-direction: row;
 			min-height: 4.3rem;
 			height: 4.3rem;
 		}
 		.adp-det__promo-cell {
+			flex: 1 1 0;
+			height: 100%;
+			min-height: 100%;
 			font-size: 0.68rem;
+		}
+		.adp-det__logo,
+		.adp-det__logo-ph {
+			width: 100%;
+			max-width: 100%;
+			align-self: stretch;
+			margin: 0 0 0.22rem;
+		}
+		.adp-det__logo-ph {
+			font-size: 1.85rem;
 		}
 		.adp-det__side {
 			position: relative;
@@ -1206,7 +1220,7 @@
 	@media (min-width: 821px) and (max-width: 1100px) {
 		.adp-det {
 			--adp-side-w: clamp(13rem, 20vw, 15.5rem);
-			--adp-promo-h: 3.8rem;
+			--adp-promo-cell-h: 2.4rem;
 		}
 		.adp-det__grid {
 			grid-template-columns: repeat(4, minmax(0, 1fr));
