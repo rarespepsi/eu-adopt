@@ -107,12 +107,12 @@ body:not(.page-home-v2):not(.page-animale) #main_content {
 	text-overflow: ellipsis !important;
 }
 
-/* Avatar cerc cât navbarul (fără mod de test) */
+/* Avatar cerc ~3/4 din înălțimea navbar (memorat: micșorat 1/4 față de full nav-height) */
 #A0 #main_menu .a0-nav-avatar-wrap {
-	width: var(--nav-height) !important;
-	height: var(--nav-height) !important;
-	min-width: var(--nav-height) !important;
-	max-width: var(--nav-height) !important;
+	width: calc(var(--nav-height) * 0.75) !important;
+	height: calc(var(--nav-height) * 0.75) !important;
+	min-width: calc(var(--nav-height) * 0.75) !important;
+	max-width: calc(var(--nav-height) * 0.75) !important;
 	border-radius: 50% !important;
 	overflow: hidden !important;
 	clip-path: none !important;
@@ -128,11 +128,11 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 	object-position: center !important;
 }
 #A0 #main_menu .a0-nav-avatar-placeholder {
-	width: var(--nav-height) !important;
-	height: var(--nav-height) !important;
-	min-width: var(--nav-height) !important;
+	width: calc(var(--nav-height) * 0.75) !important;
+	height: calc(var(--nav-height) * 0.75) !important;
+	min-width: calc(var(--nav-height) * 0.75) !important;
 	border-radius: 50% !important;
-	font-size: 18px !important;
+	font-size: 14px !important;
 }
 #A0.wrapper,
 #A0 {
@@ -485,13 +485,13 @@ body[data-user-authenticated="true"] #A0 #main_menu ul li a.a0-nav-account-link 
 #A0 #menu-main-menu > li.a0-nav-mypet-start {
 	margin-left: calc(var(--gap-v2) / 4) !important;
 }
-/* Wrapper rotund – taie imaginea în cerc (overflow + clip-path) */
+/* Wrapper rotund – taie imaginea în cerc (overflow + clip-path); ~3/4 din nav-height */
 #A0 #main_menu .a0-nav-avatar-wrap {
 	display: inline-block !important;
-	width: var(--nav-height) !important;
-	height: var(--nav-height) !important;
-	min-width: var(--nav-height) !important;
-	max-width: var(--nav-height) !important;
+	width: calc(var(--nav-height) * 0.75) !important;
+	height: calc(var(--nav-height) * 0.75) !important;
+	min-width: calc(var(--nav-height) * 0.75) !important;
+	max-width: calc(var(--nav-height) * 0.75) !important;
 	border-radius: 50% !important;
 	overflow: hidden !important;
 	flex-shrink: 0 !important;
@@ -513,14 +513,14 @@ body.page-animale #A0 #main_menu .a0-nav-avatar-wrap .a0-nav-avatar {
 	border: none !important;
 }
 #A0 #main_menu .a0-nav-avatar-placeholder {
-	width: var(--nav-height) !important;
-	height: var(--nav-height) !important;
-	min-width: var(--nav-height) !important;
+	width: calc(var(--nav-height) * 0.75) !important;
+	height: calc(var(--nav-height) * 0.75) !important;
+	min-width: calc(var(--nav-height) * 0.75) !important;
 	border-radius: 50% !important;
 	display: inline-flex !important;
 	align-items: center !important;
 	justify-content: center !important;
-	font-size: 18px !important;
+	font-size: 14px !important;
 }
 
 /* (override) Căutarea după plic – spațiu mic; casetă mai îngustă spre dreapta (stânga fixă), nu iese din pagină */
@@ -1167,7 +1167,7 @@ body.page-animale #A0 {
 	#A0 #main_menu ul.menu li.a0-nav-account-item > a.a0-nav-account-link,
 	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled ul.menu li.a0-nav-account-item > a.a0-nav-account-link {
 		display: grid !important;
-		grid-template-columns: 2rem max-content !important;
+		grid-template-columns: 1.5rem max-content !important;
 		align-items: center !important;
 		column-gap: 0.6rem !important;
 		width: max-content !important;
@@ -1178,10 +1178,10 @@ body.page-animale #A0 {
 	#A0 #main_menu ul.menu li.a0-nav-account-item .a0-nav-avatar-placeholder,
 	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled ul.menu li.a0-nav-account-item .a0-nav-avatar-wrap,
 	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled ul.menu li.a0-nav-account-item .a0-nav-avatar-placeholder {
-		width: 2rem !important;
-		height: 2rem !important;
-		min-width: 2rem !important;
-		max-width: 2rem !important;
+		width: 1.5rem !important;
+		height: 1.5rem !important;
+		min-width: 1.5rem !important;
+		max-width: 1.5rem !important;
 	}
 	#A0 #main_menu ul.menu li.a0-nav-account-item .a0-nav-username,
 	body.a0-mobile-nav-open > #menu_wrap.a0-menu-portaled ul.menu li.a0-nav-account-item .a0-nav-username {
