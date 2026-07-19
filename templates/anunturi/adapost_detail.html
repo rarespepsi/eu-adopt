@@ -517,50 +517,18 @@
 		display: block;
 		background: #eceff1;
 	}
-	.adp-pet-card__media .wish-btn {
-		top: 6px;
-		right: 6px;
-		z-index: 3;
-	}
 	.adp-pet-card__bar {
 		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
+		grid-template-columns: minmax(0, 1fr) auto;
 		align-items: center;
-		gap: 0.2rem;
-		padding: 0.22rem 0.3rem 0.28rem;
+		column-gap: 0.55rem;
+		row-gap: 0.05rem;
+		padding: 0.28rem 0.35rem 0.32rem;
 		border-top: 1px solid #eceff1;
 		background: #fafafa;
 		min-height: var(--adp-bar-h);
 		flex-shrink: 0;
 		box-sizing: border-box;
-	}
-	.adp-pet-card__actions {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.2rem;
-		flex-shrink: 0;
-	}
-	.adp-pet-card__actions:empty {
-		display: none;
-	}
-	.adp-pet-card__plic {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 1.55rem;
-		height: 1.55rem;
-		border-radius: 999px;
-		color: #1565c0;
-		text-decoration: none;
-		background: rgba(21, 101, 192, 0.08);
-	}
-	.adp-pet-card__plic:hover {
-		background: rgba(21, 101, 192, 0.16);
-	}
-	.adp-pet-card__plic svg {
-		width: 0.85rem;
-		height: 0.7rem;
-		display: block;
 	}
 	.adp-pet-card__name {
 		min-width: 0;
@@ -573,6 +541,77 @@
 		text-overflow: ellipsis;
 	}
 	.adp-pet-card__name:hover { text-decoration: underline; }
+	.adp-pet-card__actions {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		flex-shrink: 0;
+		margin-left: 0.15rem;
+	}
+	.adp-pet-card__plic {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 999px;
+		color: #1565c0;
+		text-decoration: none;
+		background: rgba(21, 101, 192, 0.08);
+		flex-shrink: 0;
+	}
+	.adp-pet-card__plic:hover {
+		background: rgba(21, 101, 192, 0.16);
+	}
+	.adp-pet-card__plic svg {
+		width: 0.9rem;
+		height: 0.75rem;
+		display: block;
+	}
+	/* Override global .wish-btn (absolute pe poză) — pe bară, tap sigur */
+	.adp-pet-card__bar .wish-btn {
+		position: static !important;
+		top: auto !important;
+		right: auto !important;
+		left: auto !important;
+		bottom: auto !important;
+		display: inline-flex !important;
+		align-items: center;
+		justify-content: center;
+		width: 2.35rem !important;
+		height: 2.35rem !important;
+		min-width: 2.35rem;
+		min-height: 2.35rem;
+		padding: 0 !important;
+		margin: 0 !important;
+		border: 0 !important;
+		border-radius: 999px;
+		background: rgba(229, 57, 53, 0.08) !important;
+		color: #c62828 !important;
+		cursor: pointer;
+		flex-shrink: 0;
+		z-index: 2;
+		filter: none;
+		-webkit-tap-highlight-color: transparent;
+	}
+	.adp-pet-card__bar .wish-btn svg,
+	.adp-pet-card__bar .wish-btn .il-heart-svg {
+		width: 1.15rem !important;
+		height: 1.15rem !important;
+		filter: none;
+	}
+	.adp-pet-card__bar .wish-btn:hover {
+		color: #b71c1c !important;
+		background: rgba(229, 57, 53, 0.16) !important;
+	}
+	.adp-pet-card__bar .wish-btn.is-active {
+		color: #e53935 !important;
+		background: rgba(229, 57, 53, 0.18) !important;
+	}
+	.adp-pet-card__bar .wish-btn.is-active:hover {
+		color: #c62828 !important;
+		background: rgba(229, 57, 53, 0.24) !important;
+	}
 	.adp-pet-card__sub {
 		grid-column: 1 / -1;
 		font-size: 0.7rem;
@@ -979,10 +1018,10 @@
 	body.page-adapost-detail .adp-pet-card__plic {
 		background: #e3f2fd !important;
 	}
-	body.page-adapost-detail .adp-pet-card__media .wish-btn {
-		color: rgba(255, 255, 255, 0.95) !important;
+	body.page-adapost-detail .adp-pet-card__bar .wish-btn {
+		color: #c62828 !important;
 	}
-	body.page-adapost-detail .adp-pet-card__media .wish-btn.is-active {
+	body.page-adapost-detail .adp-pet-card__bar .wish-btn.is-active {
 		color: #e53935 !important;
 	}
 	body.page-adapost-detail .adp-map-modal__head strong {
@@ -1099,17 +1138,9 @@
 						<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" />
 						{% endif %}
 					</a>
-					<button
-						type="button"
-						class="wish-btn{% if wishlist_ids and a.pk in wishlist_ids %} is-active{% endif %}"
-						data-animal-id="{{ a.pk }}"
-						aria-pressed="{% if wishlist_ids and a.pk in wishlist_ids %}true{% else %}false{% endif %}"
-						aria-label="I Love: {{ a.name|default:'animal' }}"
-					>
-						{% include "anunturi/includes/ilove_heart_svg.html" %}
-					</button>
 				</div>
 				<div class="adp-pet-card__bar" role="toolbar" aria-label="Acțiuni {{ a.name|default:'animal' }}">
+					<a class="adp-pet-card__name" href="{{ a.public_url }}?back={{ org_back_path|urlencode }}">{{ a.name|default:"Fără nume" }}</a>
 					<div class="adp-pet-card__actions">
 						{% if a.show_ask_plic %}
 						<a
@@ -1121,8 +1152,16 @@
 							<svg viewBox="0 0 16 12" width="12" height="10" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 1.5C0 .67.67 0 1.5 0h13c.83 0 1.5.67 1.5 1.5v9c0 .83-.67 1.5-1.5 1.5h-13A1.5 1.5 0 0 1 0 10.5v-9Zm1.5-.5-.01 9L8 6.2l6.5 4.08V1H1.5ZM8 5.3 1.64 1h12.72L8 5.28Z"/></svg>
 						</a>
 						{% endif %}
+						<button
+							type="button"
+							class="wish-btn{% if wishlist_ids and a.pk in wishlist_ids %} is-active{% endif %}"
+							data-animal-id="{{ a.pk }}"
+							aria-pressed="{% if wishlist_ids and a.pk in wishlist_ids %}true{% else %}false{% endif %}"
+							aria-label="I Love: {{ a.name|default:'animal' }}"
+						>
+							{% include "anunturi/includes/ilove_heart_svg.html" %}
+						</button>
 					</div>
-					<a class="adp-pet-card__name" href="{{ a.public_url }}?back={{ org_back_path|urlencode }}">{{ a.name|default:"Fără nume" }}</a>
 					<div class="adp-pet-card__sub">
 						{% if a.species == 'dog' %}Câine{% elif a.species == 'cat' %}Pisică{% else %}Alt{% endif %}
 						{% if a.city %} · {{ a.city }}{% endif %}
