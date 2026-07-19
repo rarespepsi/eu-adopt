@@ -926,6 +926,176 @@
 			grid-row: 3;
 		}
 	}
+	/* Mobil landscape touch: aceleași poziționări ca portrait */
+	@media (orientation: landscape) and (max-height: 500px) and (hover: none) and (pointer: coarse) {
+		body.page-adapost-detail,
+		body.page-adapost-detail #main_wrap {
+			height: auto;
+			max-height: none;
+			overflow: visible;
+		}
+		body.page-adapost-detail #main_content {
+			height: auto;
+			max-height: none;
+			overflow: visible;
+			display: block;
+		}
+		body.page-adapost-detail #main_content > .layout {
+			height: auto;
+			overflow: visible;
+		}
+		body.page-adapost-detail .layout > .main-content {
+			height: auto;
+			overflow: visible;
+			padding: 0.35rem !important;
+		}
+		.adp-det {
+			grid-template-columns: minmax(0, 1.65fr) minmax(4.6rem, 0.55fr);
+			grid-template-rows: auto minmax(0, auto) auto;
+			gap: 0.35rem 0.4rem;
+			padding: 0.3rem;
+			align-items: stretch;
+			height: auto;
+			max-height: none;
+			overflow: visible;
+		}
+		.adp-det__top {
+			display: contents;
+		}
+		.adp-det__back {
+			grid-column: 1;
+			grid-row: 1;
+			align-self: center;
+			padding: 0.1rem 0;
+		}
+		.adp-det__pet-site {
+			grid-column: 2;
+			grid-row: 1;
+			justify-self: stretch;
+			align-self: center;
+			width: 100%;
+			box-sizing: border-box;
+			justify-content: center;
+			padding: 0.15rem 0.2rem;
+		}
+		.adp-det__pet-site-label {
+			font-size: 0.54rem;
+		}
+		.adp-det__pet-site-badge {
+			font-size: 0.66rem;
+			min-width: 1.25rem;
+			padding: 0.1rem 0.24rem;
+		}
+		.adp-det__promo-slot {
+			grid-column: 2;
+			grid-row: 2;
+			order: unset;
+			flex: unset;
+			display: flex;
+			flex-direction: column;
+			gap: 0.22rem;
+			width: 100%;
+			height: 100%;
+			min-height: 0;
+			min-width: 0;
+		}
+		.adp-det__promo-cell {
+			flex: 1 1 0;
+			min-height: 2.2rem;
+			font-size: 0.52rem;
+			padding: 0.22rem 0.16rem;
+			line-height: 1.05;
+			word-break: break-word;
+		}
+		.adp-det__side {
+			grid-column: 1;
+			grid-row: 2;
+			position: relative;
+			z-index: 1;
+			top: auto;
+			height: auto;
+			max-height: none;
+			overflow: visible;
+			margin: 0;
+			padding: 0.35rem 0.4rem 0.4rem;
+			border-radius: 12px;
+			border-left: 1px solid #d7ccc8;
+			gap: 0.1rem;
+			justify-content: flex-start;
+		}
+		.adp-det__logo,
+		.adp-det__logo-ph {
+			width: 100%;
+			max-width: 100%;
+			aspect-ratio: 3 / 2;
+			margin: 0 0 0.14rem;
+			align-self: stretch;
+		}
+		.adp-det__logo-ph {
+			font-size: 1.3rem;
+		}
+		.adp-det__side h1 {
+			font-size: 0.9rem;
+			margin: 0;
+		}
+		.adp-det__badge {
+			font-size: 0.52rem;
+			padding: 0.01rem 0.26rem;
+		}
+		.adp-det__addr-head .adp-det__phone {
+			font-size: 0.72rem;
+		}
+		.adp-det__addr-only .adp-det__addr-btn,
+		.adp-det__addr-only .adp-det__addr-link {
+			padding: 0.2rem 0.3rem;
+			font-size: 0.64rem;
+		}
+		.adp-det__main {
+			grid-column: 1 / -1;
+			grid-row: 3;
+			height: auto;
+			max-height: none;
+			overflow: visible;
+		}
+		.adp-det__pets-scroll {
+			max-height: none;
+			height: auto;
+			overflow: visible;
+			container-type: normal;
+			display: block;
+		}
+		.adp-det__grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			flex: none;
+			min-height: 0;
+			grid-auto-rows: auto;
+			align-content: start;
+		}
+		.adp-pet-card {
+			height: auto;
+		}
+		.adp-pet-card__media {
+			flex: none;
+		}
+		.adp-pet-card__photo {
+			height: auto;
+		}
+		.adp-pet-card__photo img {
+			height: auto;
+			aspect-ratio: 1 / 1;
+			min-height: 0;
+		}
+		.adp-pet-card__bar {
+			column-gap: 0.5rem;
+			padding: 0.24rem 0.3rem 0.28rem;
+		}
+		.adp-pet-card__bar .wish-btn {
+			width: 2.2rem !important;
+			height: 2.2rem !important;
+			min-width: 2.2rem;
+			min-height: 2.2rem;
+		}
+	}
 	@media (min-width: 821px) and (max-width: 1100px) {
 		.adp-det {
 			--adp-side-w: clamp(11.5rem, 18vw, 14rem);
