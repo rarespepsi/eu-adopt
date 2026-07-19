@@ -490,9 +490,15 @@
 		box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 		min-width: 0;
 	}
+	.adp-pet-card__media {
+		position: relative;
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: hidden;
+	}
 	.adp-pet-card__photo {
 		display: block;
-		flex: 1 1 auto;
+		height: 100%;
 		min-height: 0;
 		text-decoration: none;
 		color: inherit;
@@ -506,6 +512,11 @@
 		object-fit: cover;
 		display: block;
 		background: #eceff1;
+	}
+	.adp-pet-card__media .wish-btn {
+		top: 6px;
+		right: 6px;
+		z-index: 3;
 	}
 	.adp-pet-card__bar {
 		display: grid;
@@ -525,26 +536,8 @@
 		gap: 0.2rem;
 		flex-shrink: 0;
 	}
-	.adp-pet-card .wish-btn {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 1.55rem;
-		height: 1.55rem;
-		padding: 0;
-		border: 0;
-		background: transparent;
-		cursor: pointer;
-		border-radius: 999px;
-		color: #c62828;
-	}
-	.adp-pet-card .wish-btn svg {
-		width: 1.05rem;
-		height: 1.05rem;
-		display: block;
-	}
-	.adp-pet-card .wish-btn.is-active {
-		filter: drop-shadow(0 0 2px rgba(198, 40, 40, 0.45));
+	.adp-pet-card__actions:empty {
+		display: none;
 	}
 	.adp-pet-card__plic {
 		display: inline-flex;
@@ -775,8 +768,11 @@
 		.adp-pet-card {
 			height: auto;
 		}
-		.adp-pet-card__photo {
+		.adp-pet-card__media {
 			flex: none;
+		}
+		.adp-pet-card__photo {
+			height: auto;
 		}
 		.adp-pet-card__photo img {
 			height: auto;
@@ -983,8 +979,11 @@
 	body.page-adapost-detail .adp-pet-card__plic {
 		background: #e3f2fd !important;
 	}
-	body.page-adapost-detail .adp-pet-card .wish-btn {
-		color: #c62828 !important;
+	body.page-adapost-detail .adp-pet-card__media .wish-btn {
+		color: rgba(255, 255, 255, 0.95) !important;
+	}
+	body.page-adapost-detail .adp-pet-card__media .wish-btn.is-active {
+		color: #e53935 !important;
 	}
 	body.page-adapost-detail .adp-map-modal__head strong {
 		color: #1b5e20 !important;
@@ -1092,24 +1091,26 @@
 		<div class="adp-det__grid">
 			{% for a in org_animals %}
 			<article class="adp-pet-card">
-				<a class="adp-pet-card__photo" href="{{ a.public_url }}?back={{ org_back_path|urlencode }}" aria-label="Vezi {{ a.name|default:'animal' }}">
-					{% if a.photo_1 %}
-					<img src="{{ a.photo_1.url }}" alt="{{ a.name }}" />
-					{% else %}
-					<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" />
-					{% endif %}
-				</a>
+				<div class="adp-pet-card__media">
+					<a class="adp-pet-card__photo" href="{{ a.public_url }}?back={{ org_back_path|urlencode }}" aria-label="Vezi {{ a.name|default:'animal' }}">
+						{% if a.photo_1 %}
+						<img src="{{ a.photo_1.url }}" alt="{{ a.name }}" />
+						{% else %}
+						<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" />
+						{% endif %}
+					</a>
+					<button
+						type="button"
+						class="wish-btn{% if wishlist_ids and a.pk in wishlist_ids %} is-active{% endif %}"
+						data-animal-id="{{ a.pk }}"
+						aria-pressed="{% if wishlist_ids and a.pk in wishlist_ids %}true{% else %}false{% endif %}"
+						aria-label="I Love: {{ a.name|default:'animal' }}"
+					>
+						{% include "anunturi/includes/ilove_heart_svg.html" %}
+					</button>
+				</div>
 				<div class="adp-pet-card__bar" role="toolbar" aria-label="Acțiuni {{ a.name|default:'animal' }}">
 					<div class="adp-pet-card__actions">
-						<button
-							type="button"
-							class="wish-btn{% if wishlist_ids and a.pk in wishlist_ids %} is-active{% endif %}"
-							data-animal-id="{{ a.pk }}"
-							aria-pressed="{% if wishlist_ids and a.pk in wishlist_ids %}true{% else %}false{% endif %}"
-							aria-label="I Love: {{ a.name|default:'animal' }}"
-						>
-							{% include "anunturi/includes/ilove_heart_svg.html" %}
-						</button>
 						{% if a.show_ask_plic %}
 						<a
 							href="{{ a.public_url }}?back={{ org_back_path|urlencode }}#pet-messages-field-wrap"
