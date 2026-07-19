@@ -226,7 +226,7 @@
 		width: 100%;
 		max-width: 100%;
 		height: auto;
-		aspect-ratio: 16 / 9;
+		aspect-ratio: 3 / 2;
 		object-fit: cover;
 		border-radius: 10px;
 		border: 1px solid #cfd8dc;
@@ -240,7 +240,7 @@
 	.adp-det__logo-ph {
 		width: 100%;
 		max-width: 100%;
-		aspect-ratio: 16 / 9;
+		aspect-ratio: 3 / 2;
 		border-radius: 10px;
 		background: #eceff1;
 		display: flex;
@@ -267,8 +267,21 @@
 		background: #e3f2fd;
 		border-radius: 999px;
 		padding: 0.1rem 0.4rem;
-		margin-bottom: 0.2rem;
+		margin: 0;
 		width: fit-content;
+	}
+	.adp-det__addr-block {
+		margin-top: 0.3rem;
+	}
+	.adp-det__addr-head {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		margin-bottom: 0.22rem;
+	}
+	.adp-det__addr-head--solo {
+		margin-top: 0.3rem;
+		margin-bottom: 0;
 	}
 	.adp-det__side h2 {
 		margin: 0.45rem 0 0.18rem;
@@ -319,7 +332,7 @@
 	.adp-det__addr-btn {
 		display: block;
 		width: 100%;
-		margin: 0.28rem 0 0;
+		margin: 0;
 		padding: 0.4rem 0.5rem;
 		border: 1px solid #b0bec5;
 		border-radius: 8px;
@@ -341,7 +354,7 @@
 	}
 	.adp-det__addr-link {
 		display: block;
-		margin: 0.28rem 0 0;
+		margin: 0;
 		padding: 0.4rem 0.5rem;
 		border: 1px solid #b0bec5;
 		border-radius: 8px;
@@ -822,7 +835,7 @@
 		.adp-det__logo-ph {
 			width: 100%;
 			max-width: 100%;
-			aspect-ratio: 16 / 9;
+			aspect-ratio: 3 / 2;
 			margin: 0 0 0.3rem;
 			align-self: stretch;
 		}
@@ -976,7 +989,6 @@
 		{% else %}
 		<div class="adp-det__logo-ph" aria-hidden="true">🏠</div>
 		{% endif %}
-		{% if org_is_public_shelter %}<span class="adp-det__badge">Adăpost public</span>{% else %}<span class="adp-det__badge">ONG / Adăpost</span>{% endif %}
 		<h1>{{ org_name }}</h1>
 		{% if org_locality %}<p>{{ org_locality }}</p>{% endif %}
 
@@ -995,35 +1007,46 @@
 		</p>
 		{% endif %}
 
-		{% if org_address %}
-			{% if org_map_embed_url or org_maps_url %}
+		{% if org_address or org_map_embed_url or org_maps_url %}
+		<div class="adp-det__addr-block">
+			<div class="adp-det__addr-head">
+				{% if org_is_public_shelter %}<span class="adp-det__badge">Adăpost public</span>{% else %}<span class="adp-det__badge">ONG / Adăpost</span>{% endif %}
+			</div>
+			{% if org_address %}
+				{% if org_map_embed_url or org_maps_url %}
+				<button
+					type="button"
+					class="adp-det__addr-btn"
+					data-adp-open-map
+					aria-haspopup="dialog"
+					title="Deschide harta — Maps sau distribuie adresa"
+				>{{ org_address }}</button>
+				{% else %}
+				<a
+					class="adp-det__addr-link"
+					href="https://www.google.com/maps/search/?api=1&amp;query={{ org_address|urlencode }}"
+					target="_blank"
+					rel="noopener noreferrer"
+					title="Deschide în Google Maps"
+				>{{ org_address }}</a>
+				{% endif %}
+			{% else %}
 			<button
 				type="button"
-				class="adp-det__addr-btn"
+				class="adp-det__map-preview"
 				data-adp-open-map
 				aria-haspopup="dialog"
-				title="Deschide harta — Maps sau distribuie adresa"
-			>{{ org_address }}</button>
-			{% else %}
-			<a
-				class="adp-det__addr-link"
-				href="https://www.google.com/maps/search/?api=1&amp;query={{ org_address|urlencode }}"
-				target="_blank"
-				rel="noopener noreferrer"
-				title="Deschide în Google Maps"
-			>{{ org_address }}</a>
+				title="Deschide harta"
+			>
+				<strong>🗺 Hartă</strong>
+				<span>— apasă pentru detalii</span>
+			</button>
 			{% endif %}
-		{% elif org_map_embed_url or org_maps_url %}
-		<button
-			type="button"
-			class="adp-det__map-preview"
-			data-adp-open-map
-			aria-haspopup="dialog"
-			title="Deschide harta"
-		>
-			<strong>🗺 Hartă</strong>
-			<span>— apasă pentru detalii</span>
-		</button>
+		</div>
+		{% else %}
+		<div class="adp-det__addr-head adp-det__addr-head--solo">
+			{% if org_is_public_shelter %}<span class="adp-det__badge">Adăpost public</span>{% else %}<span class="adp-det__badge">ONG / Adăpost</span>{% endif %}
+		</div>
 		{% endif %}
 	</aside>
 
