@@ -1,35 +1,43 @@
 ---
-# Handoff agent — Publicitate Materiale (formular) finalizat
-**Data/ora (RO):** 2026-07-17 17:53
+# Handoff agent — ultima pauză / salvare
+**Data/ora (RO):** 2026-07-20 01:10
 **Sursă:** Cursor · eu-adopt / main
-**User:** `1977 ok` — memorează layout Materiale (confirmat perfect)
+**User:** `1977 ok` — commit + salvare Desktop; filtru adăposturi confirmat „foarte frumos”
 
 ## Ce s-a făcut
-- Formular Materiale: **Trimite materialele** + text „Link securizat expiră…” sub Preț/Discount
-- **+ / − / Salvează încadrarea** rămân **sub poză**, pe același rând cu Trimite
-- User: **e perfect** → regulă memorată
-- Revenire anterioară greșită (mutarea tool-urilor sub Preț) corectată
+- Director `/adaposturi/`: filtru **Județ** (stânga), titlu + lead centrate
+- Persistare filtru în URL `?judet=…` + clipire select
+- Card → detaliu cu `?from_judet=` → buton **← Înapoi** (înapoi la lista filtrată)
+- Pe lista filtrată: **← Toate adăposturile** resetează filtrul
+- TEMP: ~30 casete demo layout (de scos la lansare / la cerere)
+- Detaliu adăpost desktop: promo stivuite jos, casetă sus, fundal Intra
 
 ## Fișiere atinse
-- `templates/anunturi/publicitate_creative_form.html` — layout `.pub-cr-actions-bar`
-- `.cursor/rules/PUBLICITATE_MATERIALE_FORM_MEMORAT.mdc` — stare finală
-- `docs/AGENT_HANDOFF_LATEST.md` — acest handoff
+- `templates/anunturi/adaposturi_directory.html` — filtru, demo, Înapoi/Toate
+- `templates/anunturi/adapost_detail.html` — label Înapoi / Toate + layout coloană
+- `home/shelter_views.py` — demo rows, `from_judet`, back URL/label
+- `home/shelter_directory.py` — `org_county`
+- `home/ro_location.py` — `all_counties()`
+- `home/tests/test_shelter_directory.py`
 
 ## Git
 - Branch: main
-- Commit layout live: **`9fc1df7`**
-- Commit memorie/handoff: (acest push)
+- Commit(uri) relevante: `c61d23a` (Înapoi/Toate) · `25f804e` (URL+clipire) · `cb072ea` (demo+stânga) · …
+- Push: da
 
 ## Deploy Hetzner
-- da · SHA live layout **`9fc1df7`**
+- da · SHA live **`c61d23a`**
+
+## Salvare Desktop
+- `%USERPROFILE%\Desktop\EU-Adopt-backups\good-releases\` — ZIP rotație 3 (inclusiv `good_*_c61d23a.zip`)
 
 ## Pentru agent laptop
 - `git log -5 --oneline`
-- citește `.cursor/rules/PUBLICITATE_MATERIALE_FORM_MEMORAT.mdc`
-- Test: formular materiale pe eu-adopt.ro — Trimite stânga, tools sub poză
-- Zone înghețate (HOME/PT/Servicii/Transport/Shop/navbar/Cont DATE FIRMĂ): **nu** atinge fără `1977`+OK
+- citește `docs/AGENT_HANDOFF_LATEST.md`
+- Test: https://eu-adopt.ro/adaposturi/ — filtru → adăpost → Înapoi → Toate adăposturile
+- Scoate DEMO 30 casete când user cere
 
 ## Următorul pas
-- Nu muta tool-urile crop de sub poză
-- Orice schimbare Materiale = `1977` + OK
+- La cerere: scoate casetele demo
+- Orice edit site = `1977` + OK
 ---
