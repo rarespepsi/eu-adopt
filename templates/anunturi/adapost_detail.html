@@ -695,6 +695,93 @@
 			min-height: 0;
 		}
 	}
+	/* Mobil portrait touch: card Adăpost/ONG stânga | 3 promo stivuite dreapta */
+	@media (max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+		.adp-det {
+			grid-template-columns: minmax(0, 1.65fr) minmax(4.6rem, 0.55fr);
+			grid-template-rows: auto minmax(0, auto) auto;
+			gap: 0.4rem 0.4rem;
+			padding: 0.35rem;
+			align-items: stretch;
+		}
+		.adp-det__top {
+			display: contents;
+		}
+		.adp-det__back {
+			grid-column: 1;
+			grid-row: 1;
+			align-self: center;
+			padding: 0.15rem 0;
+		}
+		.adp-det__pet-site {
+			grid-column: 2;
+			grid-row: 1;
+			justify-self: stretch;
+			align-self: center;
+			width: 100%;
+			box-sizing: border-box;
+			justify-content: center;
+			padding: 0.2rem 0.25rem;
+		}
+		.adp-det__pet-site-label {
+			font-size: 0.58rem;
+		}
+		.adp-det__pet-site-badge {
+			font-size: 0.7rem;
+			min-width: 1.35rem;
+			padding: 0.12rem 0.28rem;
+		}
+		.adp-det__promo-slot {
+			grid-column: 2;
+			grid-row: 2;
+			order: unset;
+			flex: unset;
+			display: flex;
+			flex-direction: column;
+			gap: 0.28rem;
+			width: 100%;
+			height: 100%;
+			min-height: 0;
+			min-width: 0;
+		}
+		.adp-det__promo-cell {
+			flex: 1 1 0;
+			min-height: 2.6rem;
+			font-size: 0.58rem;
+			padding: 0.28rem 0.2rem;
+			line-height: 1.1;
+			word-break: break-word;
+		}
+		.adp-det__side {
+			grid-column: 1;
+			grid-row: 2;
+			position: relative;
+			z-index: 1;
+			height: auto;
+			max-height: none;
+			overflow: visible;
+			margin: 0;
+			padding: 0.45rem 0.45rem 0.55rem;
+			border-radius: 12px;
+		}
+		.adp-det__logo,
+		.adp-det__logo-ph {
+			width: min(52%, 7.25rem);
+			max-width: min(52%, 7.25rem);
+			aspect-ratio: 1 / 1;
+			margin: 0.05rem auto 0.3rem;
+		}
+		.adp-det__logo-ph {
+			font-size: 1.55rem;
+		}
+		.adp-det__side h1 {
+			font-size: 0.95rem;
+		}
+		.adp-det__main {
+			grid-column: 1 / -1;
+			grid-row: 3;
+		}
+	}
 	@media (min-width: 821px) and (max-width: 1100px) {
 		.adp-det {
 			--adp-side-w: clamp(11.5rem, 18vw, 14rem);
