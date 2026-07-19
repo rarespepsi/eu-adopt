@@ -55,6 +55,14 @@ class ShelterDirectoryTests(TestCase):
         self.assertContains(r, 'data-county="Brașov"')
         self.assertContains(r, "Toate județele")
 
+    def test_detail_back_keeps_judet_filter(self):
+        ensure_org_slug(self.org, save=True)
+        slug = self.org.account_profile.public_slug
+        r = Client().get(reverse("shelter_detail", kwargs={"slug": slug}) + "?from_judet=Bra%C8%99ov")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "judet=Bra")
+        self.assertContains(r, "adp-det__back")
+
     def test_detail_sidebar_and_pets(self):
         ensure_org_slug(self.org, save=True)
         r = Client().get(reverse("shelter_detail", kwargs={"slug": self.org.account_profile.public_slug}))

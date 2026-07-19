@@ -47,7 +47,7 @@
 		left: 0;
 		right: 0;
 		margin: 0;
-		padding: 0 12.5rem; /* spațiu ca să nu se lipească de filtru */
+		padding: 0 16rem; /* spațiu față de filtru + Resetează */
 		font-size: clamp(1.25rem, 2.5vw, 1.65rem);
 		color: #1b5e20;
 		text-align: center;
@@ -92,10 +92,56 @@
 		line-height: 1.2;
 		cursor: pointer;
 		box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+		transition: border-color 0.18s ease, box-shadow 0.18s ease;
 	}
 	.adp-dir-filter__select:focus {
 		outline: 2px solid rgba(34, 211, 238, 0.55);
 		outline-offset: 1px;
+	}
+	.adp-dir-filter__select.is-judet-active {
+		animation: adp-dir-judet-blink 1.15s ease-in-out infinite;
+		border-color: rgba(34, 211, 238, 0.55);
+		box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.25), 0 1px 4px rgba(0,0,0,0.2);
+	}
+	@keyframes adp-dir-judet-blink {
+		0%, 100% {
+			opacity: 1;
+			border-color: rgba(34, 211, 238, 0.65);
+		}
+		50% {
+			opacity: 0.72;
+			border-color: rgba(34, 211, 238, 0.25);
+		}
+	}
+	.adp-dir-filter__reset {
+		appearance: none;
+		border: 1px solid rgba(148, 163, 184, 0.4);
+		background: rgba(15, 23, 42, 0.75);
+		color: #e2e8f0;
+		font-size: 0.72rem;
+		font-weight: 800;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		padding: 0.4rem 0.55rem;
+		border-radius: 8px;
+		cursor: pointer;
+		line-height: 1.1;
+		white-space: nowrap;
+	}
+	.adp-dir-filter__reset:hover {
+		border-color: rgba(34, 211, 238, 0.45);
+		color: #fff;
+	}
+	.adp-dir-filter__reset.is-judet-active {
+		animation: adp-dir-reset-blink 1.15s ease-in-out infinite;
+		border-color: rgba(34, 211, 238, 0.45);
+	}
+	@keyframes adp-dir-reset-blink {
+		0%, 100% { opacity: 1; color: #f8fafc; }
+		50% { opacity: 0.45; color: #22d3ee; }
+	}
+	.adp-dir-filter__reset[hidden] {
+		display: none !important;
 	}
 	.adp-dir-lead {
 		margin: 0 0 1rem;
@@ -212,6 +258,7 @@
 				<option value="{{ j }}">{{ j }}</option>
 				{% endfor %}
 			</select>
+			<button type="button" class="adp-dir-filter__reset" id="adpDirReset" hidden>Resetează</button>
 		</label>
 		<h1>Adăposturi și ONG-uri</h1>
 	</div>
@@ -223,7 +270,7 @@
 	{% if shelter_rows %}
 	<div class="adp-dir-grid" id="adpDirGrid">
 		{% for row in shelter_rows %}
-		<a class="adp-dir-card{% if row.is_demo %} adp-dir-card--demo{% endif %}" href="{{ row.url }}" title="{{ row.name }}" data-county="{{ row.county }}"{% if row.is_demo %} onclick="return false;"{% endif %}>
+		<a class="adp-dir-card{% if row.is_demo %} adp-dir-card--demo{% endif %}" href="{{ row.url }}" title="{{ row.name }}" data-county="{{ row.county }}" data-base-url="{{ row.url }}"{% if row.is_demo %} onclick="return false;"{% endif %}>
 			<div class="adp-dir-card__media"{% if row.logo_url %} style="background-image:url('{{ row.logo_url }}')"{% endif %}>
 				{% if row.logo_url %}
 				<img src="{{ row.logo_url }}" alt="" />
@@ -246,6 +293,7 @@
 <script>
 (function () {
 	var sel = document.getElementById("adpDirJudet");
+	var resetBtn = document.getElementById("adpDirReset");
 	var grid = document.getElementById("adpDirGrid");
 	var countEl = document.getElementById("adpDirCount");
 	var emptyEl = document.getElementById("adpDirFilterEmpty");
@@ -253,7 +301,37 @@
 	if (!sel || !grid || !root) return;
 	var total = parseInt(root.getAttribute("data-total") || "0", 10) || 0;
 
-	function applyFilter() {
+	function readJudetFromUrl() {
+		try {
+			return (new URLSearchParams(window.location.search).get("judet") || "").trim();
+		} catch (e) {
+			return "";
+		}
+	}
+
+	function writeJudetToUrl(jud) {
+		try {
+			var u = new URL(window.location.href);
+			if (jud) u.searchParams.set("judet", jud);
+			else u.searchParams.delete("judet");
+			window.history.replaceState({}, "", u.pathname + u.search + u.hash);
+		} catch (e) {}
+	}
+
+	function withFromJudet(baseUrl, jud) {
+		if (!baseUrl || baseUrl === "#") return baseUrl || "#";
+		try {
+			var u = new URL(baseUrl, window.location.origin);
+			if (jud) u.searchParams.set("from_judet", jud);
+			else u.searchParams.delete("from_judet");
+			return u.pathname + u.search + u.hash;
+		} catch (e) {
+			return baseUrl;
+		}
+	}
+
+	function applyFilter(opts) {
+		opts = opts || {};
 		var jud = (sel.value || "").trim();
 		var cards = grid.querySelectorAll(".adp-dir-card");
 		var visible = 0;
@@ -262,6 +340,10 @@
 			var ok = !jud || (c.getAttribute("data-county") || "") === jud;
 			c.classList.toggle("is-county-hidden", !ok);
 			if (ok) visible++;
+			if (!c.classList.contains("adp-dir-card--demo")) {
+				var base = c.getAttribute("data-base-url") || c.getAttribute("href") || "#";
+				c.setAttribute("href", withFromJudet(base, jud));
+			}
 		}
 		if (countEl) {
 			if (!jud) {
@@ -274,9 +356,37 @@
 			emptyEl.hidden = visible > 0;
 			grid.style.display = visible > 0 ? "" : "none";
 		}
+		sel.classList.toggle("is-judet-active", !!jud);
+		if (resetBtn) {
+			resetBtn.hidden = !jud;
+			resetBtn.classList.toggle("is-judet-active", !!jud);
+		}
+		if (!opts.skipUrl) writeJudetToUrl(jud);
 	}
 
-	sel.addEventListener("change", applyFilter);
+	var initial = readJudetFromUrl();
+	if (initial) {
+		var found = false;
+		for (var oi = 0; oi < sel.options.length; oi++) {
+			if (sel.options[oi].value === initial) {
+				found = true;
+				break;
+			}
+		}
+		if (found) sel.value = initial;
+	}
+
+	sel.addEventListener("change", function () {
+		applyFilter();
+	});
+	if (resetBtn) {
+		resetBtn.addEventListener("click", function () {
+			sel.value = "";
+			applyFilter();
+		});
+	}
+	applyFilter({ skipUrl: !!initial });
+	if (initial) writeJudetToUrl(initial);
 })();
 </script>
 {% endblock %}

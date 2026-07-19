@@ -1369,7 +1369,7 @@
 {% block content %}
 <div class="adp-det">
 	<div class="adp-det__top">
-		<a class="adp-det__back" href="{% url 'shelter_directory' %}">← Toate adăposturile</a>
+		<a class="adp-det__back" href="{{ org_directory_back_url|default:'/adaposturi/' }}">← Toate adăposturile</a>
 		<div class="adp-det__pet-site" role="status" aria-label="PET în site: {{ org_animal_count|default:0 }}">
 			<span class="adp-det__pet-site-label">PET în site</span>
 			<span class="adp-det__pet-site-badge">{{ org_animal_count|default:0 }}</span>

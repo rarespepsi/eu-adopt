@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from urllib.parse import urlencode
+
 from django.contrib.auth.models import User
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from home.models import AnimalListing
+from home.ro_location import all_counties, resolve_county
 from home.shelter_directory import (
     animal_public_url,
     directory_org_queryset,
@@ -29,7 +32,6 @@ from home.shelter_directory import (
     org_public_url,
     published_animals_for_org,
 )
-from home.ro_location import all_counties
 
 # TEMP: casete demo pentru layout director — scoate la lansare / când user cere
 _SHELTER_DIR_DEMO_COUNT = 30
@@ -120,6 +122,14 @@ def shelter_detail_view(request, slug: str):
     embed_url = org_google_embed_url(user)
     share_url = request.build_absolute_uri(org_public_url(user))
     org_back_path = org_public_url(user)
+
+    # Înapoi la director cu județul păstrat (?from_judet=… pe linkul din listă)
+    from_judet = resolve_county((request.GET.get("from_judet") or "").strip())
+    if from_judet:
+        org_directory_back_url = reverse("shelter_directory") + "?" + urlencode({"judet": from_judet})
+    else:
+        org_directory_back_url = reverse("shelter_directory")
+
     return render(
         request,
         "anunturi/adapost_detail.html",
@@ -138,6 +148,7 @@ def shelter_detail_view(request, slug: str):
             "org_map_embed_url": embed_url,
             "org_share_url": share_url,
             "org_back_path": org_back_path,
+            "org_directory_back_url": org_directory_back_url,
             "org_animals": animals,
             "org_animal_count": len(animals),
             "org_is_public_shelter": bool(getattr(user.account_profile, "is_public_shelter", False)),
