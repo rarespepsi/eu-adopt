@@ -72,8 +72,8 @@
 		padding: 0 0.5rem 0 0;
 		display: grid;
 		grid-template-columns: var(--adp-side-w) minmax(0, 1fr);
-		grid-template-rows: minmax(0, 1fr);
-		gap: 0 0.65rem;
+		grid-template-rows: auto minmax(0, 1fr);
+		gap: 0.15rem 0.65rem;
 		align-items: stretch;
 		height: 100%;
 		max-height: 100%;
@@ -81,9 +81,19 @@
 		overflow: hidden;
 		box-sizing: border-box;
 	}
-	/* Desktop: fără bară Înapoi/PET între navbar și casete */
+	/* Înapoi + contor PET — bară compactă, fără bandă goală */
 	.adp-det__top {
-		display: none;
+		grid-column: 1 / -1;
+		grid-row: 1;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.45rem;
+		height: auto;
+		min-height: 0;
+		max-height: none;
+		padding: 0.1rem 0.15rem 0.1rem 0.55rem;
+		box-sizing: border-box;
 	}
 	.adp-det__back {
 		display: inline-flex;
@@ -102,7 +112,7 @@
 	/* Coloană stângă: casetă + 3 promo una peste alta */
 	.adp-det__left {
 		grid-column: 1;
-		grid-row: 1;
+		grid-row: 2;
 		display: flex;
 		flex-direction: column;
 		gap: 0.35rem;
@@ -257,9 +267,10 @@
 	.adp-det__side {
 		position: relative;
 		top: auto;
-		flex: 1 1 auto;
+		/* Nu umple toată coloana — înălțime după conținut, max ~jumătate din stânga */
+		flex: 0 1 auto;
 		height: auto;
-		max-height: none;
+		max-height: 48%;
 		min-height: 0;
 		overflow-x: hidden;
 		overflow-y: auto;
@@ -268,42 +279,43 @@
 		border: 1px solid #d7ccc8;
 		border-left: 0;
 		border-radius: 0 14px 14px 0;
-		padding: 0.55rem 0.55rem 0.65rem;
+		padding: 0.4rem 0.5rem 0.45rem;
 		box-shadow: 0 4px 16px rgba(0,0,0,0.06);
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
-		gap: 0.15rem;
+		gap: 0.12rem;
 	}
+	/* Poza: lățime full, înălțime ~1/2 față de 3/2 */
 	.adp-det__logo {
-		width: 50%;
-		max-width: 50%;
+		width: 100%;
+		max-width: 100%;
 		height: auto;
-		aspect-ratio: 3 / 2;
+		aspect-ratio: 3 / 1;
 		object-fit: cover;
 		border-radius: 10px;
 		border: 1px solid #cfd8dc;
 		background: #eceff1;
-		margin: 0 auto 0.22rem;
+		margin: 0 0 0.18rem;
 		flex-shrink: 0;
 		display: block;
-		align-self: center;
+		align-self: stretch;
 		box-sizing: border-box;
 	}
 	.adp-det__logo-ph {
-		width: 50%;
-		max-width: 50%;
-		aspect-ratio: 3 / 2;
+		width: 100%;
+		max-width: 100%;
+		aspect-ratio: 3 / 1;
 		border-radius: 10px;
 		background: #eceff1;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 1.1rem;
-		margin: 0 auto 0.22rem;
+		font-size: 1.35rem;
+		margin: 0 0 0.18rem;
 		border: 1px solid #cfd8dc;
 		flex-shrink: 0;
-		align-self: center;
+		align-self: stretch;
 		box-sizing: border-box;
 	}
 	.adp-det__side h1 {
@@ -503,7 +515,7 @@
 	}
 	.adp-det__main {
 		grid-column: 2;
-		grid-row: 1;
+		grid-row: 2;
 		min-width: 0;
 		min-height: 0;
 		height: 100%;
@@ -850,6 +862,7 @@
 		.adp-det__logo-ph {
 			width: 100%;
 			max-width: 100%;
+			aspect-ratio: 3 / 2;
 			align-self: stretch;
 			margin: 0 0 0.22rem;
 		}
