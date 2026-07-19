@@ -15,6 +15,8 @@
 		height: 100vh;
 		max-height: 100vh;
 		overflow: hidden;
+		/* Același fundal ca zona de conținut — fără bandă neagră (#141a22) sub A0 */
+		background: #f5f7fa !important;
 	}
 	body.page-adapost-detail #main_wrap {
 		display: flex;
@@ -24,10 +26,11 @@
 	body.page-adapost-detail #main_wrap,
 	body.page-adapost-detail #main_content {
 		padding-bottom: 0;
-		padding-top: 0;
 		margin: 0;
 	}
 	body.page-adapost-detail #main_content {
+		/* Offset exact sub navbar; fundal deschis umple padding-ul (nu se mai vede #141a22) */
+		padding-top: var(--nav-height, var(--nav-h, 64px)) !important;
 		max-width: none !important;
 		width: 100% !important;
 		flex: 1 1 auto;
@@ -38,6 +41,7 @@
 		display: flex;
 		flex-direction: column;
 		box-sizing: border-box;
+		background: #f5f7fa !important;
 	}
 	body.page-adapost-detail #main_content > .layout {
 		grid-template-columns: minmax(0, 1fr) !important;
@@ -81,7 +85,7 @@
 		overflow: hidden;
 		box-sizing: border-box;
 	}
-	/* Înapoi + contor PET — bară compactă, fără bandă goală */
+	/* Înapoi + contor PET — bară compactă, lipită de conținut (fără bandă goală) */
 	.adp-det__top {
 		grid-column: 1 / -1;
 		grid-row: 1;
@@ -92,8 +96,10 @@
 		height: auto;
 		min-height: 0;
 		max-height: none;
-		padding: 0.1rem 0.15rem 0.1rem 0.55rem;
+		padding: 0.05rem 0.15rem 0.05rem 0.55rem;
+		margin: 0;
 		box-sizing: border-box;
+		background: transparent;
 	}
 	.adp-det__back {
 		display: inline-flex;
