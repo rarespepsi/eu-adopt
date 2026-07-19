@@ -14,7 +14,7 @@
 	.adp-dir-head {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
+		justify-content: flex-start;
 		gap: 0.75rem 1rem;
 		flex-wrap: wrap;
 		margin: 0 0 0.35rem;
@@ -25,6 +25,7 @@
 		color: #1b5e20;
 		flex: 1 1 auto;
 		min-width: 0;
+		order: 2;
 	}
 	.adp-dir-filter {
 		display: inline-flex;
@@ -32,6 +33,7 @@
 		gap: 0.4rem;
 		flex: 0 0 auto;
 		margin: 0;
+		order: 1;
 	}
 	.adp-dir-filter__label {
 		font-size: 0.78rem;
@@ -167,7 +169,6 @@
 {% block content %}
 <div class="adp-dir" id="adpDir" data-total="{{ shelter_count|default:0 }}">
 	<div class="adp-dir-head">
-		<h1>Adăposturi și ONG-uri</h1>
 		<label class="adp-dir-filter" for="adpDirJudet">
 			<span class="adp-dir-filter__label">Județ</span>
 			<select class="adp-dir-filter__select" id="adpDirJudet" name="judet" aria-label="Filtrează după județ">
@@ -177,6 +178,7 @@
 				{% endfor %}
 			</select>
 		</label>
+		<h1>Adăposturi și ONG-uri</h1>
 	</div>
 	<p class="adp-dir-lead" id="adpDirLead">
 		Organizațiile cu animale pe EU-Adopt. Apasă pe card pentru pagina dedicată și lista animalelor din MyPet.
