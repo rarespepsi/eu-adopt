@@ -69,7 +69,7 @@
 		--adp-side-w: clamp(14rem, 18vw, 17rem);
 		--adp-gap: 0.55rem;
 		--adp-bar-h: 2.5rem;
-		--adp-promo-cell-h: 2.65rem;
+		--adp-promo-cell-h: 5.3rem;
 		width: 100%;
 		max-width: none;
 		margin: 0;
@@ -115,12 +115,13 @@
 		padding: 0.2rem 0.15rem;
 	}
 	.adp-det__back:hover { text-decoration: underline; }
-	/* Coloană stângă: casetă + 3 promo una peste alta */
+	/* Coloană stângă: casetă adăpost sus (umple golul) + 3 promo lipite jos */
 	.adp-det__left {
 		grid-column: 1;
 		grid-row: 2;
 		display: flex;
 		flex-direction: column;
+		justify-content: flex-start;
 		gap: 0.35rem;
 		min-width: 0;
 		min-height: 0;
@@ -130,6 +131,7 @@
 	}
 	.adp-det__promo-slot {
 		flex: 0 0 auto;
+		margin-top: auto;
 		width: 100%;
 		height: auto;
 		min-height: 0;
@@ -273,10 +275,10 @@
 	.adp-det__side {
 		position: relative;
 		top: auto;
-		/* Nu umple toată coloana — înălțime după conținut, max ~jumătate din stânga */
-		flex: 0 1 auto;
+		/* Umple spațiul gol deasupra celor 3 promo lipite jos */
+		flex: 1 1 auto;
 		height: auto;
-		max-height: 48%;
+		max-height: none;
 		min-height: 0;
 		overflow-x: hidden;
 		overflow-y: auto;
@@ -855,6 +857,7 @@
 		}
 		.adp-det__promo-slot {
 			flex-direction: row;
+			margin-top: 0;
 			min-height: 4.3rem;
 			height: 4.3rem;
 		}
@@ -965,6 +968,7 @@
 			grid-row: 2;
 			order: unset;
 			flex: unset;
+			margin-top: 0;
 			display: flex;
 			flex-direction: column;
 			gap: 0.28rem;
@@ -1170,6 +1174,7 @@
 			grid-row: 2;
 			order: unset;
 			flex: unset;
+			margin-top: 0;
 			display: flex;
 			flex-direction: row;
 			align-items: stretch;
@@ -1239,7 +1244,7 @@
 	@media (min-width: 821px) and (max-width: 1100px) {
 		.adp-det {
 			--adp-side-w: clamp(13rem, 20vw, 15.5rem);
-			--adp-promo-cell-h: 2.4rem;
+			--adp-promo-cell-h: 4.8rem;
 		}
 		.adp-det__grid {
 			grid-template-columns: repeat(4, minmax(0, 1fr));
