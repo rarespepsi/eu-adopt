@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt381-tablet-portrait-p5-visible" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt382-tablet-4x4-side-w" type="text/css" media="screen" />
 <style>
 	/* PT: strat CSS unic (fără layer mobil dedicat). */
 	@media (min-width: 768px) and (min-height: 521px) and (hover: hover) and (pointer: fine) {
@@ -727,7 +727,7 @@
 	@media (min-width: 768px) and (max-width: 64em) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
 		body.page-pt {
 			--pt-tab-port-banner: 0px;
-			--pt-tab-port-side-w: clamp(4rem, 14vw, 6.5rem);
+			--pt-tab-port-side-w: clamp(5rem, 17.5vw, 8.125rem);
 			overflow: hidden !important;
 			height: 100dvh !important;
 		}
@@ -835,7 +835,7 @@
 			overflow: hidden !important;
 			align-self: stretch !important;
 			--p2-row-h: calc(
-				(100dvh - var(--nav-h, 64px) - var(--pt-tab-port-banner, 0px) - 72px - 54px - 8px) / 3
+				(100dvh - var(--nav-h, 64px) - var(--pt-tab-port-banner, 0px) - 72px - 54px - 10px) / 4
 			);
 		}
 		body.page-pt #PW .pt-mob-main .pt-cell-3--footer,
@@ -949,6 +949,20 @@
 			overflow-y: auto !important;
 			overflow-x: hidden !important;
 			-webkit-overflow-scrolling: touch;
+		}
+		body.page-pt #PW .pt-p2-grid {
+			grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+			grid-template-rows: repeat(4, minmax(0, var(--p2-row-h, 100px))) !important;
+			grid-auto-rows: minmax(0, var(--p2-row-h, 100px)) !important;
+			gap: 2px !important;
+			padding: 2px !important;
+			align-content: start !important;
+		}
+		body.page-pt #PW .pt-p2-grid .pt-p2-cell,
+		body.page-pt #PW .pt-p2-grid .pt-p2-card-cell {
+			height: var(--p2-row-h, 100px) !important;
+			min-height: var(--p2-row-h, 100px) !important;
+			max-height: var(--p2-row-h, 100px) !important;
 		}
 		body.page-pt #PW #P4.pt-mobile-filters-open .pt-p4-box-filters {
 			display: block !important;
@@ -1192,10 +1206,18 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt375-filters-over-strip-smaller";
+  var v = "pt382-tablet-4x4-side-w";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;
+  function isPtTabletPortrait() {
+    return (
+      "matchMedia" in window &&
+      window.matchMedia(
+        "(min-width: 768px) and (max-width: 64em) and (orientation: portrait) and (hover: none) and (pointer: coarse)"
+      ).matches
+    );
+  }
   function loadJs(name) {
     var s = document.createElement("script");
     s.src = "{% static 'js/' %}" + name + "?v=" + v;
@@ -1231,6 +1253,9 @@
     loadJs("pt-p2-more.js");
     loadJs("pt-desktop-ui.js");
   } else if ("matchMedia" in window && window.matchMedia("(orientation: portrait)").matches) {
+    if (isPtTabletPortrait()) {
+      loadJs("pt-p2-more.js");
+    }
     loadJs("pt-portrait-ui.js");
   } else if (
     "matchMedia" in window &&
