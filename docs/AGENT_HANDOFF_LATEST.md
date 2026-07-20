@@ -1,29 +1,35 @@
 ---
 # Handoff agent — ultima pauză
-**Data/ora (RO):** 2026-07-20 15:45
+**Data/ora (RO):** 2026-07-20 15:55
 **Sursă:** laptop · eu-adopt / main
-**User:** PT tablet portrait final — salvare commit + fișier desk
+**User:** PT tablet portrait OK + filtre OK — memorează
 
 ## Ce s-a făcut
-- PT tablet portrait touch: înălțime viewport, coloană stânga 6 părți (2 butoane + 4 pub), P5 vizibil, lățime stânga +25%, grilă câini 4×4 + scroll + pt-p2-more.js
-- Documentație: `docs/PT_TABLET_PORTRAIT_FINAL_20260720.md` + copie Desktop
+- PT tablet portrait: layout 4×4, coloană stânga (+25%), pub P5 jos 50%
+- Fix filtre tablet: portal panou pe `body`, `pt-tab-port-filters-open`, backdrop, bloc tap P2
+- Documentație + regulă Cursor `PT_TABLET_PORTRAIT_MEMORAT.mdc`
 
-## Fișiere atinse (PT tablet — deja pe main)
-- `templates/anunturi/pt.html` — CSS tablet portrait + JS `isPtTabletPortrait()` / p2-more
+## Fișiere atinse
+- `templates/anunturi/pt.html` — MQ tablet + filtre CSS
+- `static/js/pt-portrait-ui.js` — portal filtre doar tablet
+- `docs/PT_TABLET_PORTRAIT_FINAL_20260720.md` — referință completă
+- `.cursor/rules/PT_TABLET_PORTRAIT_MEMORAT.mdc` — înghețat/memorat
+- Desktop: `PT_TABLET_PORTRAIT_FINAL_20260720.md`
 
 ## Git
 - Branch: main
-- Commit(uri) PT tablet: `abfaeb0` … `3793a9a` (HEAD PT layout)
-- Push: da (3793a9a pe origin/main)
+- Commit(uri): `7e3532f` filtre · `3793a9a` layout · docs commit urmează la memorează
+- Push: da (cod filtre)
 
 ## Deploy Hetzner
-- da · live la `3793a9a`
+- da · `7e3532f` live
 
 ## Pentru agent laptop (caută aici)
-- `git log -5 --oneline`
-- citește `docs/PT_TABLET_PORTRAIT_FINAL_20260720.md`
-- Desktop: `PT_TABLET_PORTRAIT_FINAL_20260720.md`
+- `git log -3 --oneline`
+- citește `docs/PT_TABLET_PORTRAIT_FINAL_20260720.md` + `PT_TABLET_PORTRAIT_MEMORAT.mdc`
+- Test: https://eu-adopt.ro/pets/ tablet portrait — Filtre + 4×4
 
 ## Următorul pas
-- Modificări PT tablet doar cu `1977` + OK; telefon portrait / desktop neatins
+- Nimic PT tablet până la cerere user + `1977` + OK
+- Alte zone navbar/HOME etc. înghețate global
 ---

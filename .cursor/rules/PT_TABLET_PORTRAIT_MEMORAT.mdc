@@ -1,0 +1,71 @@
+# PT TABLET PORTRAIT TOUCH – STARE FINALĂ MEMORATĂ
+
+**Confirmat de utilizator:** 20 iulie 2026 — layout 4×4 + coloană stânga + **filtre funcționale** (portal body, backdrop).
+
+**Commit referință (layout + filtre):** `7e3532f` · cache `pt384-tablet-filters-portal`
+
+**Portrait telefon:** `PT_MOBIL_PORTRAIT_MEMORAT.mdc` (≤767.98px) — **nu modifica** când lucrezi la tablet.
+
+**Media query (doar tablet portrait touch):**
+
+```css
+@media (min-width: 768px) and (max-width: 64em) and (orientation: portrait) and (hover: none) and (pointer: coarse)
+```
+
+**Nu modifica** blocul tablet din `pt.html` / logica tablet din `pt-portrait-ui.js` fără cerere explicită + parola **`1977`** + OK execuție (`PT_INGHETAT`, `SITE_GLOBAL_INGHETAT_1977`).
+
+---
+
+## Fișiere sursă
+
+| Fișier | Rol tablet portrait |
+|-----|---|
+| `templates/anunturi/pt.html` | CSS inline bloc ~726+; `extra_js` încărcare `pt-p2-more.js` + `pt-portrait-ui.js` |
+| `static/js/pt-portrait-ui.js` | Filtre/match portrait; **doar tablet:** portal panou filtre → `body`, clasă `pt-tab-port-filters-open` |
+| `static/css/pt-v2.css` | Bază desktop; tablet = doar `?v=` în `pt.html` |
+
+**Doc detaliat:** `docs/PT_TABLET_PORTRAIT_FINAL_20260720.md`
+
+---
+
+## Layout memorat
+
+```
+[P1 bandă 72px full width]
+[Stânga: P4 sus 50% | P5 jos 50%] | [P2: grilă 4×4 scroll]
+[P3 footer bandă jos]
+```
+
+| Zonă | Conținut |
+|---|----|
+| `--pt-tab-port-side-w` | `clamp(5rem, 17.5vw, 8.125rem)` |
+| **P4** (50%, `align-self: start`) | Butoane 2/6 + pub P4.3 1/6; `pointer-events: none` pe celulă, `auto` pe `.pt-p4-mobile-sticky` |
+| **P5** (50%, `align-self: end`, z-index 3) | 3 pub egale în `.pt-p5-grid` |
+| **P2** | 4 col × 4 rânduri vizibile; `--p2-row-h` = viewport ÷ 4; scroll `.pt-p2-scroll`; `pt-p2-more.js` |
+
+Lanț înălțime: `100dvh` pe `#main_wrap` → `#PW` → `.pt-grid`.
+
+---
+
+## Filtre tablet (CRITIC — nu regresa)
+
+1. Deschidere: `#P4.pt-mobile-filters-open` + **`body.pt-tab-port-filters-open`** (doar tablet MQ).
+2. **Portal:** `.pt-p4-box-filters` mutat temporar sub `document.body` (Safari: `pointer-events: none` pe `#P4` făcea tap-through la grilă).
+3. **CSS tablet:** backdrop `body::before`; P2 / linkuri card **`pointer-events: none`** cât filtrele sunt deschise; panou `fixed`, fundal opac ~0.96, z-index > backdrop.
+4. **JS:** `syncTabPortFiltersChrome()` la open/close; click în afara panoului → închide; telefon portrait **nu** face portal (MQ separat).
+5. Submit filtru: ca telefon — `pt_filters_open=1`, panou rămâne deschis după reload.
+
+---
+
+## Ce NU reintroduce pe tablet portrait
+
+- `display: contents` pe `.pt-p4-inner` / `.pt-p4-mobile-sticky` (ascundea P5).
+- P4 full-height cu fundal opac peste P5.
+- Panou filtre doar cu `pointer-events: auto` fără portal + fără bloc P2 (tap merge la fișe animale).
+- Modificări în blocul MQ telefon ≤767.98px pentru „fix” tablet.
+
+---
+
+## Rezumat
+
+**PT tablet portrait = FINAL (layout + filtre). Restaurare: `pt.html` MQ tablet + `pt-portrait-ui.js` portal + doc. Nimic fără `1977` + OK.**
