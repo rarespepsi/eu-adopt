@@ -1,43 +1,29 @@
 ---
-# Handoff agent — ultima pauză / salvare
-**Data/ora (RO):** 2026-07-20 01:10
-**Sursă:** Cursor · eu-adopt / main
-**User:** `1977 ok` — commit + salvare Desktop; filtru adăposturi confirmat „foarte frumos”
+# Handoff agent — ultima pauză
+**Data/ora (RO):** 2026-07-20 15:45
+**Sursă:** laptop · eu-adopt / main
+**User:** PT tablet portrait final — salvare commit + fișier desk
 
 ## Ce s-a făcut
-- Director `/adaposturi/`: filtru **Județ** (stânga), titlu + lead centrate
-- Persistare filtru în URL `?judet=…` + clipire select
-- Card → detaliu cu `?from_judet=` → buton **← Înapoi** (înapoi la lista filtrată)
-- Pe lista filtrată: **← Toate adăposturile** resetează filtrul
-- TEMP: ~30 casete demo layout (de scos la lansare / la cerere)
-- Detaliu adăpost desktop: promo stivuite jos, casetă sus, fundal Intra
+- PT tablet portrait touch: înălțime viewport, coloană stânga 6 părți (2 butoane + 4 pub), P5 vizibil, lățime stânga +25%, grilă câini 4×4 + scroll + pt-p2-more.js
+- Documentație: `docs/PT_TABLET_PORTRAIT_FINAL_20260720.md` + copie Desktop
 
-## Fișiere atinse
-- `templates/anunturi/adaposturi_directory.html` — filtru, demo, Înapoi/Toate
-- `templates/anunturi/adapost_detail.html` — label Înapoi / Toate + layout coloană
-- `home/shelter_views.py` — demo rows, `from_judet`, back URL/label
-- `home/shelter_directory.py` — `org_county`
-- `home/ro_location.py` — `all_counties()`
-- `home/tests/test_shelter_directory.py`
+## Fișiere atinse (PT tablet — deja pe main)
+- `templates/anunturi/pt.html` — CSS tablet portrait + JS `isPtTabletPortrait()` / p2-more
 
 ## Git
 - Branch: main
-- Commit(uri) relevante: `c61d23a` (Înapoi/Toate) · `25f804e` (URL+clipire) · `cb072ea` (demo+stânga) · …
-- Push: da
+- Commit(uri) PT tablet: `abfaeb0` … `3793a9a` (HEAD PT layout)
+- Push: da (3793a9a pe origin/main)
 
 ## Deploy Hetzner
-- da · SHA live **`c61d23a`**
+- da · live la `3793a9a`
 
-## Salvare Desktop
-- `%USERPROFILE%\Desktop\EU-Adopt-backups\good-releases\` — ZIP rotație 3 (inclusiv `good_*_c61d23a.zip`)
-
-## Pentru agent laptop
+## Pentru agent laptop (caută aici)
 - `git log -5 --oneline`
-- citește `docs/AGENT_HANDOFF_LATEST.md`
-- Test: https://eu-adopt.ro/adaposturi/ — filtru → adăpost → Înapoi → Toate adăposturile
-- Scoate DEMO 30 casete când user cere
+- citește `docs/PT_TABLET_PORTRAIT_FINAL_20260720.md`
+- Desktop: `PT_TABLET_PORTRAIT_FINAL_20260720.md`
 
 ## Următorul pas
-- La cerere: scoate casetele demo
-- Orice edit site = `1977` + OK
+- Modificări PT tablet doar cu `1977` + OK; telefon portrait / desktop neatins
 ---
