@@ -1903,3 +1903,89 @@ body.page-home-v2 .home-a1-site-note-cta-text {
     max-width: 42rem;
     margin-inline: auto;
 }
+
+/* ========== HOME tablet portrait: 6 pub stânga stivuite | câini pe rest ==========
+   Nu atinge telefon (≤37.5em), landscape sau desktop hover. */
+@media (min-width: 37.501em) and (max-width: 64em) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+    body.page-home-v2 .home-v2-mobile-ads {
+        display: none !important;
+    }
+
+    body.page-home-v2 #home-cols-wrap,
+    body.page-home-v2 .home-v2-three-cols {
+        display: grid !important;
+        grid-template-columns: minmax(5.25rem, 7.25rem) minmax(0, 1fr) !important;
+        grid-template-rows: repeat(6, minmax(0, 1fr)) !important;
+        gap: 2px !important;
+        align-items: stretch !important;
+        min-height: 0 !important;
+        height: 100% !important;
+        flex: 1 1 auto !important;
+    }
+
+    /* Coloanele laterale se „desfac” ca cele 6 sloturi să intre pe col. 1 */
+    body.page-home-v2 #home-col-left,
+    body.page-home-v2 #home-col-right,
+    body.page-home-v2 #home-col-left .home-v2-side-inner,
+    body.page-home-v2 #home-col-right .home-v2-side-inner {
+        display: contents !important;
+    }
+
+    body.page-home-v2 #home-col-left .home-v2-slot,
+    body.page-home-v2 #home-col-right .home-v2-slot {
+        grid-column: 1 !important;
+        min-height: 0 !important;
+        height: auto !important;
+        align-self: stretch !important;
+    }
+
+    body.page-home-v2 .home-v2-center {
+        grid-column: 2 !important;
+        grid-row: 1 / span 6 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        height: 100% !important;
+        overflow: hidden !important;
+    }
+
+    body.page-home-v2 #A1 {
+        flex: 0 0 auto !important;
+    }
+
+    body.page-home-v2 #A2 {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    body.page-home-v2 #A2 .A2-casete-wrap {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        height: 100% !important;
+        max-height: none !important;
+        aspect-ratio: auto !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
+        grid-auto-rows: minmax(0, 1fr) !important;
+        gap: 2px !important;
+        overflow: hidden !important;
+    }
+
+    body.page-home-v2 #A2 .A2-casete-wrap > .dog-card-link {
+        aspect-ratio: auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    body.page-home-v2 #A3 {
+        flex: 0 0 auto !important;
+        display: block !important;
+    }
+}
