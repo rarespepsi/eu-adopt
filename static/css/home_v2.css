@@ -1924,7 +1924,8 @@ body.page-home-v2 .home-a1-site-note-cta-text {
         display: grid !important;
         grid-template-columns: minmax(6.5625rem, 9.0625rem) minmax(0, 1fr) !important;
         grid-template-rows: auto repeat(5, minmax(0, 1fr)) auto !important;
-        gap: 2px !important;
+        column-gap: 2px !important;
+        row-gap: 0 !important;
         align-items: stretch !important;
         min-height: 0 !important;
         height: 100% !important;
@@ -2006,10 +2007,30 @@ body.page-home-v2 .home-a1-site-note-cta-text {
     body.page-home-v2 #A3 {
         grid-column: 2 !important;
         grid-row: 7 !important;
-        align-self: end !important;
+        align-self: stretch !important;
         min-width: 0 !important;
         margin: 0 !important;
-        display: block !important;
+        display: flex !important;
+    }
+
+    body.page-home-v2 #A3 .mission-bar-v2 {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 0.5rem !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    body.page-home-v2 #A3 .mission-bar-v2 .mission-bar-v2-item {
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+
+    body.page-home-v2 #A3 .mission-bar-v2 .mission-bar-v2-link {
+        white-space: nowrap !important;
+        margin-left: auto !important;
     }
 
     body.page-home-v2 #home-burtiera-galbena.home-v2-burtiera-disclaimer {
