@@ -428,6 +428,39 @@ def _promo_a2_flow_redirect(request, pet: AnimalListing):
     return redirect("pets_all")
 
 
+def _promo_a2_nav_context_for_request(request, user) -> dict:
+    """
+    Ieșire din formularul de promovare în funcție de traseul de intrare:
+    - din fișa publică (/pets/...) -> înapoi la PT
+    - din MyPet -> înapoi la MyPet
+    - fallback: regulile existente bazate pe cont
+    """
+    referer = (request.META.get("HTTP_REFERER") or "").strip()
+    if referer:
+        try:
+            from urllib.parse import urlparse
+
+            ref = urlparse(referer)
+            req = urlparse(request.build_absolute_uri("/"))
+            if ref.netloc == req.netloc:
+                ref_path = (ref.path or "").rstrip("/")
+                if ref_path.startswith("/pets"):
+                    return {
+                        "promo_flow_exit_url": reverse("pets_all"),
+                        "promo_flow_exit_label": "Înapoi la Prietenul tău",
+                        "promo_flow_done_label": "Mergi la Prietenul tău",
+                    }
+                if ref_path.startswith("/mypet"):
+                    return {
+                        "promo_flow_exit_url": reverse("mypet"),
+                        "promo_flow_exit_label": "Înapoi la MyPet",
+                        "promo_flow_done_label": "Mergi la MyPet",
+                    }
+        except Exception:
+            pass
+    return _promo_a2_nav_context(user)
+
+
 HOME_BURTIERA_DEFAULT_TEXT = (
     "#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției "
     "animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană."
@@ -5011,7 +5044,7 @@ def promo_a2_order_view(request, pk):
         "promo_prelaunch_banner": PRELAUNCH_FREE_BANNER,
         "promo_price_label": promo_a2_price_label(),
     }
-    ctx_order.update(_promo_a2_nav_context(request.user))
+    ctx_order.update(_promo_a2_nav_context_for_request(request, request.user))
     return render(request, "anunturi/promo_a2_order.html", ctx_order)
 
 
