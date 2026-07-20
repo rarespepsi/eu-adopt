@@ -22,10 +22,54 @@
   var matchBtns = document.querySelectorAll("#PW .pt-p4-btn-match");
   var filterSelects = filtersForm ? filtersForm.querySelectorAll("select") : [];
   var filtersApplied = false;
+  var filtersBoxEl = document.querySelector("#P4 .pt-p4-box-filters");
+  var filtersBoxHome = filtersBoxEl ? filtersBoxEl.parentNode : null;
+  var filtersBoxAnchor = null;
+
+  var PT_TAB_PORT_MQ =
+    "(min-width: 768px) and (max-width: 64em) and (orientation: portrait) and (hover: none) and (pointer: coarse)";
+
+  function isPtTabletPortrait() {
+    return "matchMedia" in window && window.matchMedia(PT_TAB_PORT_MQ).matches;
+  }
+
+  function portalFiltersBoxToBody() {
+    if (!isPtTabletPortrait() || !filtersBoxEl || !filtersBoxHome) return;
+    if (filtersBoxEl.parentNode === document.body) return;
+    if (!filtersBoxAnchor) {
+      filtersBoxAnchor = document.createComment("pt-tab-port-filters-anchor");
+      filtersBoxHome.insertBefore(filtersBoxAnchor, filtersBoxEl);
+    }
+    document.body.appendChild(filtersBoxEl);
+  }
+
+  function restoreFiltersBoxHome() {
+    if (!filtersBoxEl || !filtersBoxHome || !filtersBoxAnchor) return;
+    if (filtersBoxEl.parentNode !== document.body) return;
+    filtersBoxHome.insertBefore(filtersBoxEl, filtersBoxAnchor);
+  }
+
+  function syncTabPortFiltersChrome() {
+    if (!isPtTabletPortrait()) {
+      document.body.classList.remove("pt-tab-port-filters-open");
+      restoreFiltersBoxHome();
+      return;
+    }
+    var open = p4Cell && p4Cell.classList.contains("pt-mobile-filters-open");
+    if (open) {
+      document.body.classList.add("pt-tab-port-filters-open");
+      portalFiltersBoxToBody();
+    } else {
+      document.body.classList.remove("pt-tab-port-filters-open");
+      restoreFiltersBoxHome();
+    }
+  }
 
   function clearStuckUiState() {
     document.body.style.overflow = "";
     document.documentElement.style.overflow = "";
+    document.body.classList.remove("pt-tab-port-filters-open");
+    restoreFiltersBoxHome();
     if (modal && modal.hidden) {
       modal.setAttribute("aria-hidden", "true");
     }
@@ -69,12 +113,14 @@
   function closeMobileFilters() {
     if (!p4Cell) return;
     p4Cell.classList.remove("pt-mobile-filters-open");
+    syncTabPortFiltersChrome();
   }
 
   function openMobileFilters() {
     if (!p4Cell) return;
     p4Cell.classList.add("pt-mobile-filters-open");
     syncSpeciesTabsFromField();
+    syncTabPortFiltersChrome();
   }
 
   function submitFilters() {
@@ -172,6 +218,21 @@
   setMobileFiltersBtnState(hasAppliedFiltersInUrl());
   syncMatchBtnFromTraits();
   reopenFiltersIfRequested();
+
+  document.addEventListener(
+    "click",
+    function (e) {
+      if (!document.body.classList.contains("pt-tab-port-filters-open")) return;
+      if (filtersBoxEl && filtersBoxEl.contains(e.target)) return;
+      var t = e.target;
+      if (t && t.closest) {
+        if (t.closest(".js-pt-mobile-filters")) return;
+        if (t.closest("#P4 .pt-p4-mobile-sticky")) return;
+      }
+      closeMobileFilters();
+    },
+    true
+  );
 
   function syncSpeciesTabsFromField() {
     var sf = document.getElementById("pt_filter_species_field");

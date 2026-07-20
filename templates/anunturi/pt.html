@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt383-tablet-filters-pointer" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt384-tablet-filters-portal" type="text/css" media="screen" />
 <style>
 	/* PT: strat CSS unic (fără layer mobil dedicat). */
 	@media (min-width: 768px) and (min-height: 521px) and (hover: hover) and (pointer: fine) {
@@ -964,10 +964,31 @@
 			min-height: var(--p2-row-h, 100px) !important;
 			max-height: var(--p2-row-h, 100px) !important;
 		}
+		body.page-pt.pt-tab-port-filters-open #PW .pt-cell-2,
+		body.page-pt.pt-tab-port-filters-open #PW .pt-p2-scroll,
+		body.page-pt.pt-tab-port-filters-open #PW .pt-p2-grid,
+		body.page-pt.pt-tab-port-filters-open #PW .pt-p2-grid a,
+		body.page-pt.pt-tab-port-filters-open #PW .pt-p2-card-cell a {
+			pointer-events: none !important;
+		}
+		body.page-pt.pt-tab-port-filters-open::before {
+			content: "";
+			position: fixed;
+			inset: 0;
+			z-index: 1000098;
+			background: rgba(0, 0, 0, 0.42);
+			pointer-events: auto;
+			touch-action: manipulation;
+		}
 		body.page-pt #PW #P4.pt-mobile-filters-open.pt-cell-4 {
 			z-index: 1000100 !important;
 			isolation: auto !important;
+			pointer-events: auto !important;
 		}
+		body.page-pt #PW #P4.pt-mobile-filters-open .pt-p4-inner {
+			pointer-events: auto !important;
+		}
+		body.page-pt.pt-tab-port-filters-open > .pt-p4-box-filters,
 		body.page-pt #PW #P4.pt-mobile-filters-open .pt-p4-box-filters {
 			display: block !important;
 			position: fixed !important;
@@ -1257,7 +1278,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt383-tablet-filters-pointer";
+  var v = "pt384-tablet-filters-portal";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;
