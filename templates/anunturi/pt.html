@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt377-tablet-portrait-pub-stack" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt378-tablet-portrait-pub-compact" type="text/css" media="screen" />
 <style>
 	/* PT: strat CSS unic (fără layer mobil dedicat). */
 	@media (min-width: 768px) and (min-height: 521px) and (hover: hover) and (pointer: fine) {
@@ -768,7 +768,7 @@
 		body.page-pt #PW .pt-grid {
 			display: grid !important;
 			grid-template-columns: var(--pt-tab-port-side-w) minmax(0, 1fr) !important;
-			grid-template-rows: 72px auto minmax(0, 1fr) minmax(54px, 54px) !important;
+			grid-template-rows: 72px minmax(0, 1fr) minmax(54px, 54px) !important;
 			column-gap: 2px !important;
 			row-gap: 2px !important;
 			height: 100% !important;
@@ -792,24 +792,26 @@
 			min-width: 0 !important;
 			min-height: 0 !important;
 			height: auto !important;
-			max-height: none !important;
+			max-height: min(7.35rem, 32%) !important;
 			overflow: hidden !important;
-			align-self: stretch !important;
+			align-self: start !important;
+			justify-self: stretch !important;
 			z-index: 2;
 		}
 		body.page-pt #PW .pt-cell-5 {
-			grid-row: 3 !important;
+			grid-row: 2 !important;
 			grid-column: 1 !important;
 			display: flex !important;
 			min-width: 0 !important;
 			min-height: 0 !important;
-			height: 100% !important;
-			max-height: 100% !important;
+			height: auto !important;
+			max-height: min(8.65rem, 38%) !important;
 			overflow: hidden !important;
-			align-self: stretch !important;
+			align-self: end !important;
+			justify-self: stretch !important;
 		}
 		body.page-pt #PW .pt-cell-2 {
-			grid-row: 2 / 4 !important;
+			grid-row: 2 !important;
 			grid-column: 2 !important;
 			min-width: 0 !important;
 			min-height: 0 !important;
@@ -823,7 +825,7 @@
 		}
 		body.page-pt #PW .pt-mob-main .pt-cell-3--footer,
 		body.page-pt #PW #P3.pt-cell-3--footer {
-			grid-row: 4 !important;
+			grid-row: 3 !important;
 			grid-column: 1 / -1 !important;
 			margin-top: 0 !important;
 		}
@@ -831,9 +833,10 @@
 			display: flex !important;
 			flex-direction: column !important;
 			height: auto !important;
+			max-height: 100% !important;
 			min-height: 0 !important;
-			gap: 2px !important;
-			padding: 2px !important;
+			gap: 1px !important;
+			padding: 1px !important;
 			box-sizing: border-box !important;
 		}
 		body.page-pt #PW .pt-p4-box-filters {
@@ -850,7 +853,7 @@
 			flex: 0 0 auto !important;
 			display: flex !important;
 			flex-direction: column !important;
-			gap: 2px !important;
+			gap: 1px !important;
 		}
 		body.page-pt #PW .pt-p4-box-match,
 		body.page-pt #PW .pt-p4-box-sustine {
@@ -866,7 +869,7 @@
 		body.page-pt #PW .pt-p4-box-match .pt-p4-actions {
 			display: flex !important;
 			flex-direction: column !important;
-			gap: 2px !important;
+			gap: 1px !important;
 		}
 		body.page-pt #PW .pt-p4-btn-match,
 		body.page-pt #PW .pt-p4-btn-filters,
@@ -875,17 +878,19 @@
 			align-items: center !important;
 			justify-content: center !important;
 			width: 100% !important;
-			min-height: 2.05rem !important;
+			min-height: 1.65rem !important;
+			max-height: 1.75rem !important;
 			flex: 0 0 auto !important;
-			font-size: clamp(0.5rem, 1.35vw, 0.62rem) !important;
-			padding: 0.1rem 0.14rem !important;
-			line-height: 1.08 !important;
+			font-size: clamp(0.46rem, 1.2vw, 0.58rem) !important;
+			padding: 0.05rem 0.1rem !important;
+			line-height: 1.05 !important;
 			box-sizing: border-box !important;
 		}
 		body.page-pt #PW .pt-p4-box-ads {
 			flex: 0 0 auto !important;
 			min-height: 0 !important;
-			max-height: clamp(3.1rem, 8.5vh, 4rem) !important;
+			height: clamp(2rem, 5.2vh, 2.45rem) !important;
+			max-height: clamp(2rem, 5.2vh, 2.45rem) !important;
 			display: flex !important;
 			flex-direction: column !important;
 			width: 100% !important;
@@ -902,21 +907,24 @@
 			overflow: hidden !important;
 		}
 		body.page-pt #PW .pt-p5-grid {
-			flex: 1 1 0 !important;
+			flex: 0 0 auto !important;
 			min-height: 0 !important;
-			height: 100% !important;
+			height: auto !important;
+			max-height: 100% !important;
 			width: 100% !important;
 			display: flex !important;
 			flex-direction: column !important;
-			gap: 2px !important;
-			padding: 2px !important;
+			gap: 1px !important;
+			padding: 1px !important;
 			box-sizing: border-box !important;
 		}
 		body.page-pt #PW .pt-p5-slot {
-			flex: 1 1 0 !important;
-			min-height: 0 !important;
+			flex: 0 0 auto !important;
+			height: clamp(2rem, 5.2vh, 2.45rem) !important;
+			max-height: clamp(2rem, 5.2vh, 2.45rem) !important;
+			min-height: clamp(1.85rem, 4.8vh, 2.25rem) !important;
 			width: 100% !important;
-			max-height: none !important;
+			overflow: hidden !important;
 		}
 		body.page-pt #PW .pt-p2-scroll {
 			flex: 1 1 0 !important;
