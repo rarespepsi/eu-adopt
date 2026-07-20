@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt380-tablet-portrait-left-6fix" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt381-tablet-portrait-p5-visible" type="text/css" media="screen" />
 <style>
 	/* PT: strat CSS unic (fără layer mobil dedicat). */
 	@media (min-width: 768px) and (min-height: 521px) and (hover: hover) and (pointer: fine) {
@@ -791,15 +791,17 @@
 			grid-column: 1 !important;
 			min-width: 0 !important;
 			min-height: 0 !important;
-			height: 100% !important;
-			max-height: 100% !important;
+			height: 50% !important;
+			max-height: 50% !important;
 			overflow: hidden !important;
-			align-self: stretch !important;
+			align-self: start !important;
 			justify-self: stretch !important;
 			position: relative !important;
 			display: block !important;
 			padding: 0 !important;
 			box-sizing: border-box !important;
+			background: transparent !important;
+			border: none !important;
 			z-index: 2;
 			pointer-events: none !important;
 		}
@@ -808,17 +810,20 @@
 			grid-column: 1 !important;
 			min-width: 0 !important;
 			min-height: 0 !important;
-			height: 100% !important;
-			max-height: 100% !important;
+			height: 50% !important;
+			max-height: 50% !important;
 			overflow: hidden !important;
-			align-self: stretch !important;
+			align-self: end !important;
 			justify-self: stretch !important;
 			position: relative !important;
-			display: block !important;
-			padding: 0 !important;
+			display: flex !important;
+			flex-direction: column !important;
+			padding: 1px !important;
 			box-sizing: border-box !important;
+			background: transparent !important;
+			border: none !important;
 			pointer-events: none !important;
-			z-index: 1;
+			z-index: 3;
 		}
 		body.page-pt #PW .pt-cell-2 {
 			grid-row: 2 !important;
@@ -840,19 +845,20 @@
 			margin-top: 0 !important;
 		}
 		body.page-pt #PW .pt-p4-inner {
-			position: absolute !important;
-			inset: 0 !important;
+			position: relative !important;
+			height: 100% !important;
+			min-height: 0 !important;
 			pointer-events: none !important;
 		}
 		body.page-pt #PW .pt-p4-box-filters {
 			display: none !important;
 		}
 		body.page-pt #PW .pt-p4-mobile-sticky {
-			position: absolute !important;
-			top: 0 !important;
-			left: 0 !important;
-			right: 0 !important;
-			height: 50% !important;
+			position: relative !important;
+			top: auto !important;
+			left: auto !important;
+			right: auto !important;
+			height: 100% !important;
 			display: flex !important;
 			flex-direction: column !important;
 			gap: 1px !important;
@@ -910,17 +916,19 @@
 			overflow: hidden !important;
 		}
 		body.page-pt #PW .pt-p5-grid {
-			position: absolute !important;
-			top: 50% !important;
-			left: 0 !important;
-			right: 0 !important;
-			bottom: 0 !important;
+			position: relative !important;
+			top: auto !important;
+			left: auto !important;
+			right: auto !important;
+			bottom: auto !important;
+			flex: 1 1 0 !important;
 			min-height: 0 !important;
+			height: 100% !important;
 			width: 100% !important;
 			display: grid !important;
 			grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
 			gap: 1px !important;
-			padding: 1px !important;
+			padding: 0 !important;
 			box-sizing: border-box !important;
 			pointer-events: auto !important;
 		}
@@ -929,6 +937,9 @@
 			height: 100% !important;
 			width: 100% !important;
 			overflow: hidden !important;
+			display: flex !important;
+			align-items: stretch !important;
+			justify-content: stretch !important;
 		}
 		body.page-pt #PW .pt-p2-scroll {
 			flex: 1 1 0 !important;
