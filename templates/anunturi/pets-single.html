@@ -1545,7 +1545,7 @@
 												</div>
 												<div class="mypet-fisa-header-slot mypet-fisa-header-slot--right">
 													{% if promote_allowed %}
-													<a href="{% url 'promo_a2_order' pet.pk %}" class="mypet-fisa-tab is-action" id="petCardPromoteBtn" role="button" tabindex="0" aria-label="Promovează-mă">PROMOVEAZĂ-MĂ</a>
+													<a href="{% url 'promo_a2_order' pet.pk %}?back={{ pet_back_url|urlencode }}" class="mypet-fisa-tab is-action" id="petCardPromoteBtn" role="button" tabindex="0" aria-label="Promovează-mă">PROMOVEAZĂ-MĂ</a>
 													{% endif %}
 												</div>
 											</div>

@@ -435,6 +435,28 @@ def _promo_a2_nav_context_for_request(request, user) -> dict:
     - din MyPet -> înapoi la MyPet
     - fallback: regulile existente bazate pe cont
     """
+    back_raw = (request.GET.get("back") or "").strip()
+    if back_raw.startswith("/"):
+        try:
+            back_parsed = urlparse(back_raw)
+            back_path = (back_parsed.path or "").rstrip("/")
+            back_query = back_parsed.query
+            back_url = back_path + (("?" + back_query) if back_query else "")
+            if back_path.startswith("/pets"):
+                return {
+                    "promo_flow_exit_url": back_url or reverse("pets_all"),
+                    "promo_flow_exit_label": "Înapoi la Prietenul tău",
+                    "promo_flow_done_label": "Mergi la Prietenul tău",
+                }
+            if back_path.startswith("/mypet"):
+                return {
+                    "promo_flow_exit_url": back_url or reverse("mypet"),
+                    "promo_flow_exit_label": "Înapoi la MyPet",
+                    "promo_flow_done_label": "Mergi la MyPet",
+                }
+        except Exception:
+            pass
+
     referer = (request.META.get("HTTP_REFERER") or "").strip()
     if referer:
         try:
