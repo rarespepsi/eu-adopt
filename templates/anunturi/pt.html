@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt376-tablet-portrait-vh" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt377-tablet-portrait-pub-stack" type="text/css" media="screen" />
 <style>
 	/* PT: strat CSS unic (fără layer mobil dedicat). */
 	@media (min-width: 768px) and (min-height: 521px) and (hover: hover) and (pointer: fine) {
@@ -723,10 +723,11 @@
 		}
 	}
 
-	/* PT tablet portrait touch: umple înălțimea ecranului (grila ≥768 rămâne — lățime neschimbată) */
+	/* PT tablet portrait touch: înălțime viewport; pub P5 sub P4.3 stânga; P2 lat pe 2 coloane */
 	@media (min-width: 768px) and (max-width: 64em) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
 		body.page-pt {
 			--pt-tab-port-banner: 0px;
+			--pt-tab-port-side-w: clamp(4rem, 14vw, 6.5rem);
 			overflow: hidden !important;
 			height: 100dvh !important;
 		}
@@ -765,17 +766,157 @@
 			flex-direction: column !important;
 		}
 		body.page-pt #PW .pt-grid {
+			display: grid !important;
+			grid-template-columns: var(--pt-tab-port-side-w) minmax(0, 1fr) !important;
+			grid-template-rows: 72px auto minmax(0, 1fr) minmax(54px, 54px) !important;
+			column-gap: 2px !important;
+			row-gap: 2px !important;
 			height: 100% !important;
 			min-height: 0 !important;
 			max-height: 100% !important;
 			flex: 1 1 0 !important;
 		}
-		body.page-pt #PW .pt-cell-2 {
+		body.page-pt #PW .pt-mob-main {
+			display: contents !important;
+		}
+		body.page-pt #PW .pt-cell-1 {
+			grid-row: 1 !important;
+			grid-column: 1 / -1 !important;
+			min-height: 72px !important;
+			height: 72px !important;
+			max-height: 72px !important;
+		}
+		body.page-pt #PW .pt-cell-4 {
+			grid-row: 2 !important;
+			grid-column: 1 !important;
+			min-width: 0 !important;
 			min-height: 0 !important;
+			height: auto !important;
+			max-height: none !important;
 			overflow: hidden !important;
+			align-self: stretch !important;
+			z-index: 2;
+		}
+		body.page-pt #PW .pt-cell-5 {
+			grid-row: 3 !important;
+			grid-column: 1 !important;
+			display: flex !important;
+			min-width: 0 !important;
+			min-height: 0 !important;
+			height: 100% !important;
+			max-height: 100% !important;
+			overflow: hidden !important;
+			align-self: stretch !important;
+		}
+		body.page-pt #PW .pt-cell-2 {
+			grid-row: 2 / 4 !important;
+			grid-column: 2 !important;
+			min-width: 0 !important;
+			min-height: 0 !important;
+			height: 100% !important;
+			max-height: 100% !important;
+			overflow: hidden !important;
+			align-self: stretch !important;
 			--p2-row-h: calc(
-				(100dvh - var(--nav-h, 64px) - var(--pt-tab-port-banner, 0px) - 72px - 54px) / 3
+				(100dvh - var(--nav-h, 64px) - var(--pt-tab-port-banner, 0px) - 72px - 54px - 8px) / 3
 			);
+		}
+		body.page-pt #PW .pt-mob-main .pt-cell-3--footer,
+		body.page-pt #PW #P3.pt-cell-3--footer {
+			grid-row: 4 !important;
+			grid-column: 1 / -1 !important;
+			margin-top: 0 !important;
+		}
+		body.page-pt #PW .pt-p4-inner {
+			display: flex !important;
+			flex-direction: column !important;
+			height: auto !important;
+			min-height: 0 !important;
+			gap: 2px !important;
+			padding: 2px !important;
+			box-sizing: border-box !important;
+		}
+		body.page-pt #PW .pt-p4-box-filters {
+			display: none !important;
+		}
+		body.page-pt #PW .pt-p4-mobile-sticky {
+			display: flex !important;
+			flex-direction: column !important;
+			flex: 0 0 auto !important;
+			min-height: 0 !important;
+			gap: 2px !important;
+		}
+		body.page-pt #PW .pt-p4-match-sustine-stack {
+			flex: 0 0 auto !important;
+			display: flex !important;
+			flex-direction: column !important;
+			gap: 2px !important;
+		}
+		body.page-pt #PW .pt-p4-box-match,
+		body.page-pt #PW .pt-p4-box-sustine {
+			display: flex !important;
+			flex-direction: column !important;
+			flex: 0 0 auto !important;
+			width: 100% !important;
+			padding: 0 !important;
+			margin: 0 !important;
+			background: transparent !important;
+			border: none !important;
+		}
+		body.page-pt #PW .pt-p4-box-match .pt-p4-actions {
+			display: flex !important;
+			flex-direction: column !important;
+			gap: 2px !important;
+		}
+		body.page-pt #PW .pt-p4-btn-match,
+		body.page-pt #PW .pt-p4-btn-filters,
+		body.page-pt #PW .pt-p4-btn-sustine {
+			display: flex !important;
+			align-items: center !important;
+			justify-content: center !important;
+			width: 100% !important;
+			min-height: 2.05rem !important;
+			flex: 0 0 auto !important;
+			font-size: clamp(0.5rem, 1.35vw, 0.62rem) !important;
+			padding: 0.1rem 0.14rem !important;
+			line-height: 1.08 !important;
+			box-sizing: border-box !important;
+		}
+		body.page-pt #PW .pt-p4-box-ads {
+			flex: 0 0 auto !important;
+			min-height: 0 !important;
+			max-height: clamp(3.1rem, 8.5vh, 4rem) !important;
+			display: flex !important;
+			flex-direction: column !important;
+			width: 100% !important;
+			overflow: hidden !important;
+		}
+		body.page-pt #PW .pt-p43-mobil-row {
+			display: none !important;
+		}
+		body.page-pt #PW .pt-p43-desktop-wrap {
+			display: flex !important;
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			width: 100% !important;
+			overflow: hidden !important;
+		}
+		body.page-pt #PW .pt-p5-grid {
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			height: 100% !important;
+			width: 100% !important;
+			display: flex !important;
+			flex-direction: column !important;
+			gap: 2px !important;
+			padding: 2px !important;
+			box-sizing: border-box !important;
+		}
+		body.page-pt #PW .pt-p5-slot {
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			width: 100% !important;
+			max-height: none !important;
 		}
 		body.page-pt #PW .pt-p2-scroll {
 			flex: 1 1 0 !important;
@@ -784,6 +925,19 @@
 			max-height: 100% !important;
 			overflow-y: auto !important;
 			overflow-x: hidden !important;
+			-webkit-overflow-scrolling: touch;
+		}
+		body.page-pt #PW #P4.pt-mobile-filters-open .pt-p4-box-filters {
+			display: block !important;
+			position: fixed !important;
+			top: calc(var(--nav-h, 64px) + var(--pt-tab-port-banner, 0px) + 8px) !important;
+			left: calc(var(--pt-tab-port-side-w) + 14px) !important;
+			right: 14px !important;
+			bottom: auto !important;
+			width: auto !important;
+			max-height: min(22rem, calc(100dvh - var(--nav-h, 64px) - var(--pt-tab-port-banner, 0px) - 16px)) !important;
+			z-index: 1000100 !important;
+			overflow-y: auto !important;
 			-webkit-overflow-scrolling: touch;
 		}
 	}
