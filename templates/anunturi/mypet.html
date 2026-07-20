@@ -268,7 +268,7 @@
 								</button>
 								{% if display_role != "collaborator" and pet.species == "dog" or display_role != "collaborator" and pet.species == "cat" %}
 								<span class="mypet-mesaje-promo-wrap">
-									<a href="{% url 'promo_a2_order' pet.pk %}" class="mypet-promoveaza-btn" title="Promovare A2">Promovează</a>
+									<a href="{% url 'promo_a2_order' pet.pk %}?exit=mypet" class="mypet-promoveaza-btn" title="Promovare A2">Promovează</a>
 									{% if pet.is_published %}
 									<button
 										type="button"
@@ -277,7 +277,7 @@
 										data-kind="promo_a2"
 										data-ref-key="promo_a2:{{ pet.pk }}"
 										data-title="Promovare A2 · {{ pet.name|default:'Anunț' }} — de la 10 lei — configurează pe MyPet"
-										data-detail-url="{% url 'promo_a2_order' pet.pk %}"
+										data-detail-url="{% url 'promo_a2_order' pet.pk %}?exit=mypet"
 										aria-pressed="false"
 										title="Adaugă promovarea în coșul site (navbar)"
 									>🛒</button>

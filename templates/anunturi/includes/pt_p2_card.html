@@ -40,7 +40,7 @@
 		<div class="pt-p2-card-bottom-bar__side pt-p2-card-bottom-bar__side--right">
 			{% if user.is_authenticated and display_role != "collaborator" and pet.show_pt_promo %}
 			<a
-				href="{% url 'promo_a2_order' pet.pk %}"
+				href="{% url 'promo_a2_order' pet.pk %}?exit=pt"
 				class="pt-p2-promo-btn"
 				title="Promovare în zona A2 (Acasă)"
 				aria-label="Promovare în zona A2 (Acasă)"

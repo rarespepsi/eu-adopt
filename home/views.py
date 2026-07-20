@@ -430,57 +430,69 @@ def _promo_a2_flow_redirect(request, pet: AnimalListing):
 
 def _promo_a2_nav_context_for_request(request, user) -> dict:
     """
-    Ieșire din formularul de promovare în funcție de traseul de intrare:
-    - din fișa publică (/pets/...) -> înapoi la PT
-    - din MyPet -> înapoi la MyPet
-    - fallback: regulile existente bazate pe cont
+    Ieșire din Notă comandă promovare A2:
+    - exit=pt (fișă publică / PT) → Prietenul tău
+    - exit=mypet → MyPet
+    - fallback: PT (nu după profil user cu animale postate)
     """
-    back_raw = (request.GET.get("back") or "").strip()
-    if back_raw.startswith("/"):
-        try:
-            back_parsed = urlparse(back_raw)
-            back_path = (back_parsed.path or "").rstrip("/")
-            back_query = back_parsed.query
-            back_url = back_path + (("?" + back_query) if back_query else "")
-            if back_path.startswith("/pets"):
-                return {
-                    "promo_flow_exit_url": back_url or reverse("pets_all"),
-                    "promo_flow_exit_label": "Înapoi la Prietenul tău",
-                    "promo_flow_done_label": "Mergi la Prietenul tău",
-                }
-            if back_path.startswith("/mypet"):
-                return {
-                    "promo_flow_exit_url": back_url or reverse("mypet"),
-                    "promo_flow_exit_label": "Înapoi la MyPet",
-                    "promo_flow_done_label": "Mergi la MyPet",
-                }
-        except Exception:
-            pass
+
+    def _pt_exit(url=None):
+        return {
+            "promo_flow_exit_url": url or reverse("pets_all"),
+            "promo_flow_exit_label": "Înapoi la Prietenul tău",
+            "promo_flow_done_label": "Mergi la Prietenul tău",
+        }
+
+    def _mypet_exit(url=None):
+        return {
+            "promo_flow_exit_url": url or reverse("mypet"),
+            "promo_flow_exit_label": "Înapoi la MyPet",
+            "promo_flow_done_label": "Mergi la MyPet",
+        }
+
+    def _safe_relative_back(raw: str) -> str:
+        raw = (raw or "").strip()
+        if not raw.startswith("/") or raw.startswith("//"):
+            return ""
+        parsed = urlparse(raw)
+        path = parsed.path or ""
+        if not path.startswith("/"):
+            return ""
+        return path + (("?" + parsed.query) if parsed.query else "")
+
+    exit_mode = (request.GET.get("exit") or "").strip().lower()
+    back_raw = _safe_relative_back(request.GET.get("back") or "")
+
+    if exit_mode == "mypet":
+        return _mypet_exit(back_raw if back_raw.startswith("/mypet") else None)
+
+    if exit_mode in ("pt", "pets", "pets_all"):
+        if back_raw and not back_raw.startswith("/mypet"):
+            return _pt_exit(back_raw)
+        return _pt_exit()
+
+    if back_raw:
+        back_path = (urlparse(back_raw).path or "").rstrip("/") or "/"
+        if back_path.startswith("/mypet"):
+            return _mypet_exit(back_raw)
+        if back_path.startswith(("/pets", "/caini", "/pisici", "/i-love", "/adaposturi")):
+            return _pt_exit(back_raw)
 
     referer = (request.META.get("HTTP_REFERER") or "").strip()
     if referer:
         try:
-            from urllib.parse import urlparse
-
             ref = urlparse(referer)
             req = urlparse(request.build_absolute_uri("/"))
             if ref.netloc == req.netloc:
-                ref_path = (ref.path or "").rstrip("/")
-                if ref_path.startswith("/pets"):
-                    return {
-                        "promo_flow_exit_url": reverse("pets_all"),
-                        "promo_flow_exit_label": "Înapoi la Prietenul tău",
-                        "promo_flow_done_label": "Mergi la Prietenul tău",
-                    }
+                ref_path = (ref.path or "").rstrip("/") or "/"
                 if ref_path.startswith("/mypet"):
-                    return {
-                        "promo_flow_exit_url": reverse("mypet"),
-                        "promo_flow_exit_label": "Înapoi la MyPet",
-                        "promo_flow_done_label": "Mergi la MyPet",
-                    }
+                    return _mypet_exit()
+                if ref_path.startswith(("/pets", "/caini", "/pisici")):
+                    return _pt_exit()
         except Exception:
             pass
-    return _promo_a2_nav_context(user)
+
+    return _pt_exit()
 
 
 HOME_BURTIERA_DEFAULT_TEXT = (
