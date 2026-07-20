@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt340-desktop" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt376-tablet-portrait-vh" type="text/css" media="screen" />
 <style>
 	/* PT: strat CSS unic (fără layer mobil dedicat). */
 	@media (min-width: 768px) and (min-height: 521px) and (hover: hover) and (pointer: fine) {
@@ -720,6 +720,71 @@
 			display: none !important;
 			visibility: hidden !important;
 			pointer-events: none !important;
+		}
+	}
+
+	/* PT tablet portrait touch: umple înălțimea ecranului (grila ≥768 rămâne — lățime neschimbată) */
+	@media (min-width: 768px) and (max-width: 64em) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+		body.page-pt {
+			--pt-tab-port-banner: 0px;
+			overflow: hidden !important;
+			height: 100dvh !important;
+		}
+		body.page-pt:has(#population-org-banner:not(.is-pop-collapsed)) {
+			--pt-tab-port-banner: 3.35rem;
+		}
+		body.page-pt #main_wrap {
+			display: flex !important;
+			flex-direction: column !important;
+			height: 100dvh !important;
+			max-height: 100dvh !important;
+			min-height: 0 !important;
+			overflow: hidden !important;
+			padding: 0 !important;
+			margin: 0 !important;
+		}
+		body.page-pt #main_content,
+		body.page-pt #main_content.wrapper {
+			display: flex !important;
+			flex-direction: column !important;
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			overflow: hidden !important;
+			padding: 0 !important;
+			margin: 0 !important;
+			width: 100% !important;
+			max-width: 100% !important;
+		}
+		body.page-pt #main_content #PW {
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			height: 100% !important;
+			max-height: 100% !important;
+			overflow: hidden !important;
+			display: flex !important;
+			flex-direction: column !important;
+		}
+		body.page-pt #PW .pt-grid {
+			height: 100% !important;
+			min-height: 0 !important;
+			max-height: 100% !important;
+			flex: 1 1 0 !important;
+		}
+		body.page-pt #PW .pt-cell-2 {
+			min-height: 0 !important;
+			overflow: hidden !important;
+			--p2-row-h: calc(
+				(100dvh - var(--nav-h, 64px) - var(--pt-tab-port-banner, 0px) - 72px - 54px) / 3
+			);
+		}
+		body.page-pt #PW .pt-p2-scroll {
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			height: 100% !important;
+			max-height: 100% !important;
+			overflow-y: auto !important;
+			overflow-x: hidden !important;
+			-webkit-overflow-scrolling: touch;
 		}
 	}
 
