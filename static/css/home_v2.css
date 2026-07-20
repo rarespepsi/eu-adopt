@@ -1904,18 +1904,19 @@ body.page-home-v2 .home-a1-site-note-cta-text {
     margin-inline: auto;
 }
 
-/* ========== HOME tablet portrait: 6 pub stânga stivuite | câini pe rest ==========
+/* ========== HOME tablet portrait: A1 full-width | sub el 6 pub + câini ==========
    Nu atinge telefon (≤37.5em), landscape sau desktop hover. */
 @media (min-width: 37.501em) and (max-width: 64em) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
     body.page-home-v2 .home-v2-mobile-ads {
         display: none !important;
     }
 
+    /* Pub late cu +1/4 față de 5.25–7.25rem */
     body.page-home-v2 #home-cols-wrap,
     body.page-home-v2 .home-v2-three-cols {
         display: grid !important;
-        grid-template-columns: minmax(5.25rem, 7.25rem) minmax(0, 1fr) !important;
-        grid-template-rows: repeat(6, minmax(0, 1fr)) !important;
+        grid-template-columns: minmax(6.5625rem, 9.0625rem) minmax(0, 1fr) !important;
+        grid-template-rows: auto repeat(6, minmax(0, 1fr)) !important;
         gap: 2px !important;
         align-items: stretch !important;
         min-height: 0 !important;
@@ -1923,14 +1924,29 @@ body.page-home-v2 .home-a1-site-note-cta-text {
         flex: 1 1 auto !important;
     }
 
-    /* Coloanele laterale se „desfac” ca cele 6 sloturi să intre pe col. 1 */
     body.page-home-v2 #home-col-left,
     body.page-home-v2 #home-col-right,
     body.page-home-v2 #home-col-left .home-v2-side-inner,
-    body.page-home-v2 #home-col-right .home-v2-side-inner {
+    body.page-home-v2 #home-col-right .home-v2-side-inner,
+    body.page-home-v2 .home-v2-center {
         display: contents !important;
     }
 
+    /* A1 (sigle + Susține) pe toată lățimea, până la stânga ecranului */
+    body.page-home-v2 #A1 {
+        grid-column: 1 / -1 !important;
+        grid-row: 1 !important;
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+
+    body.page-home-v2 .hero-v2-cta-sustine {
+        max-width: calc(100% - 1.25rem) !important;
+        padding: 0.55rem 1.45rem !important;
+        font-size: clamp(1.28rem, 1.6vw + 0.95rem, 1.65rem) !important;
+    }
+
+    /* 6 pub sub A1, stânga, una sub alta */
     body.page-home-v2 #home-col-left .home-v2-slot,
     body.page-home-v2 #home-col-right .home-v2-slot {
         grid-column: 1 !important;
@@ -1938,24 +1954,17 @@ body.page-home-v2 .home-a1-site-note-cta-text {
         height: auto !important;
         align-self: stretch !important;
     }
-
-    body.page-home-v2 .home-v2-center {
-        grid-column: 2 !important;
-        grid-row: 1 / span 6 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        min-width: 0 !important;
-        min-height: 0 !important;
-        height: 100% !important;
-        overflow: hidden !important;
-    }
-
-    body.page-home-v2 #A1 {
-        flex: 0 0 auto !important;
-    }
+    body.page-home-v2 #home-col-left .home-v2-slot:nth-child(1) { grid-row: 2 !important; }
+    body.page-home-v2 #home-col-left .home-v2-slot:nth-child(2) { grid-row: 3 !important; }
+    body.page-home-v2 #home-col-left .home-v2-slot:nth-child(3) { grid-row: 4 !important; }
+    body.page-home-v2 #home-col-right .home-v2-slot:nth-child(1) { grid-row: 5 !important; }
+    body.page-home-v2 #home-col-right .home-v2-slot:nth-child(2) { grid-row: 6 !important; }
+    body.page-home-v2 #home-col-right .home-v2-slot:nth-child(3) { grid-row: 7 !important; }
 
     body.page-home-v2 #A2 {
-        flex: 1 1 auto !important;
+        grid-column: 2 !important;
+        grid-row: 2 / span 5 !important;
+        min-width: 0 !important;
         min-height: 0 !important;
         display: flex !important;
         flex-direction: column !important;
@@ -1985,7 +1994,13 @@ body.page-home-v2 .home-a1-site-note-cta-text {
     }
 
     body.page-home-v2 #A3 {
-        flex: 0 0 auto !important;
+        grid-column: 2 !important;
+        grid-row: 7 !important;
+        min-width: 0 !important;
         display: block !important;
+    }
+
+    body.page-home-v2 .home-a1-site-note-backdrop {
+        position: fixed !important;
     }
 }
