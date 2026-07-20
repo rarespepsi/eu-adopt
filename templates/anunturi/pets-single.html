@@ -1148,6 +1148,74 @@
 				}
 			}
 
+			/* Tabletă portrait: fișa mai jos și elemente mai lizibile */
+			@media (min-width: 768px) and (max-width: 1200px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+				body.page-pet-single #main_content {
+					height: auto !important;
+					min-height: calc(100dvh - var(--nav-height, 64px)) !important;
+					overflow-y: auto !important;
+					overflow-x: hidden !important;
+				}
+				.mypet-fisa-wrap {
+					height: auto !important;
+					min-height: calc(100dvh - var(--nav-height, 64px)) !important;
+					overflow: visible !important;
+					padding-top: 0.7rem !important;
+					padding-bottom: calc(220px + env(safe-area-inset-bottom, 0px)) !important;
+				}
+				.mypet-fisa-inner {
+					grid-template-columns: minmax(0, 0.9fr) minmax(0, 2.2fr) minmax(0, 1.15fr) !important;
+					grid-template-rows: auto 1fr !important;
+					gap: 0.28rem !important;
+				}
+				.mypet-fisa-col-main {
+					padding: 0.28rem 0.36rem 0.32rem !important;
+				}
+				.mypet-fisa-col-traits {
+					padding: 0.28rem 0.36rem 0.32rem 0 !important;
+				}
+				.mypet-fisa-section-title {
+					font-size: 0.82rem !important;
+					line-height: 1.25 !important;
+					margin-bottom: 0.2rem !important;
+				}
+				.mypet-add-field label {
+					font-size: 0.76rem !important;
+					line-height: 1.2 !important;
+					margin-bottom: 0.08rem !important;
+				}
+				.mypet-add-field input,
+				.mypet-add-field textarea,
+				.mypet-add-field select {
+					font-size: 0.86rem !important;
+					line-height: 1.28 !important;
+					padding: 0.4rem 0.52rem !important;
+				}
+				.mypet-add-field select {
+					padding-right: 1.35rem !important;
+				}
+				.mypet-fisa-textarea {
+					height: 2.4rem !important;
+				}
+				.mypet-fisa-field-medical textarea {
+					height: 3rem !important;
+					min-height: 3rem !important;
+					max-height: 3rem !important;
+				}
+				.mypet-fisa-field-story textarea {
+					height: 3.45rem !important;
+					min-height: 3.45rem !important;
+					max-height: 3.45rem !important;
+				}
+				.mypet-fisa-traits-list {
+					font-size: 0.78rem !important;
+					gap: 0.14rem !important;
+				}
+				.mypet-fisa-traits-list label {
+					padding: 0.16rem 0.26rem !important;
+				}
+			}
+
 			/* Rând Adopt+QR: pe desktop copiii rămân fixed (ies din flux); wrapperul se prăbușește */
 			.pet-adopt-qr-inline {
 				display: flex;
