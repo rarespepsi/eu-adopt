@@ -1042,7 +1042,7 @@
 		}
 	}
 
-	/* Tabletă portrait touch: 6 părți stânga (3+1+1+1), câini 4×4, fără dunga la grilă */
+	/* Tabletă portrait touch: 4 casete stânga = 4 rânduri câini (1fr×4), grilă 4×4, fără dunga */
 	@media (min-width: 768px) and (max-width: 64em) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
 		body.page-adapost-detail,
 		body.page-adapost-detail #main_wrap {
@@ -1067,7 +1067,7 @@
 			padding: 0 0.35rem !important;
 			box-sizing: border-box !important;
 			grid-template-columns: var(--adp-side-w) minmax(0, 1fr) !important;
-			grid-template-rows: auto 3fr 1fr 1fr 1fr !important;
+			grid-template-rows: auto 1fr 1fr 1fr 1fr !important;
 			gap: 0 !important;
 			column-gap: 0 !important;
 			row-gap: 0 !important;
@@ -1081,7 +1081,7 @@
 			display: grid !important;
 			grid-column: 1 !important;
 			grid-row: 2 / 6 !important;
-			grid-template-rows: 3fr 1fr 1fr 1fr !important;
+			grid-template-rows: 1fr 1fr 1fr 1fr !important;
 			grid-template-rows: subgrid !important;
 			grid-template-columns: minmax(0, 1fr) !important;
 			align-content: stretch !important;
@@ -1103,7 +1103,7 @@
 			min-width: 0 !important;
 			min-height: 0 !important;
 			max-height: none !important;
-			height: auto !important;
+			height: 100% !important;
 			margin: 0 !important;
 			overflow-x: hidden !important;
 			overflow-y: auto !important;
@@ -1115,16 +1115,9 @@
 			box-shadow: none !important;
 		}
 		body.page-adapost-detail .adp-det__promo-slot {
-			display: grid !important;
-			grid-column: 1 !important;
-			grid-row: 2 / 5 !important;
-			grid-template-rows: 1fr 1fr 1fr !important;
+			display: contents !important;
 			margin: 0 !important;
 			padding: 0 !important;
-			gap: 0 !important;
-			width: 100% !important;
-			min-width: 0 !important;
-			align-content: stretch !important;
 		}
 		body.page-adapost-detail .adp-det__promo-cell {
 			grid-column: 1 !important;
@@ -1143,13 +1136,13 @@
 			box-sizing: border-box !important;
 		}
 		body.page-adapost-detail .adp-det__promo-slot .adp-det__promo-cell:nth-child(1) {
-			grid-row: 1 !important;
-		}
-		body.page-adapost-detail .adp-det__promo-slot .adp-det__promo-cell:nth-child(2) {
 			grid-row: 2 !important;
 		}
-		body.page-adapost-detail .adp-det__promo-slot .adp-det__promo-cell:nth-child(3) {
+		body.page-adapost-detail .adp-det__promo-slot .adp-det__promo-cell:nth-child(2) {
 			grid-row: 3 !important;
+		}
+		body.page-adapost-detail .adp-det__promo-slot .adp-det__promo-cell:nth-child(3) {
+			grid-row: 4 !important;
 		}
 		body.page-adapost-detail .adp-det__main {
 			grid-column: 2 !important;
@@ -1166,9 +1159,10 @@
 		.adp-det__logo,
 		.adp-det__logo-ph {
 			aspect-ratio: 3 / 2 !important;
-			max-height: min(3.25rem, 42%) !important;
+			max-height: min(2.35rem, 38%) !important;
 			width: 100% !important;
-			margin-bottom: 0.12rem !important;
+			margin-bottom: 0.08rem !important;
+			flex-shrink: 0 !important;
 		}
 		.adp-det__logo-ph {
 			font-size: 1.2rem !important;
@@ -1190,12 +1184,12 @@
 			padding: 0.01rem 0.26rem !important;
 		}
 		.adp-det__about {
-			font-size: 0.66rem !important;
-			line-height: 1.22 !important;
-			margin: 0.08rem 0 0 !important;
+			font-size: 0.62rem !important;
+			line-height: 1.2 !important;
+			margin: 0.04rem 0 0 !important;
 			display: -webkit-box;
 			-webkit-box-orient: vertical;
-			-webkit-line-clamp: 3;
+			-webkit-line-clamp: 2;
 			overflow: hidden;
 		}
 		.adp-det__addr-only .adp-det__addr-btn,
