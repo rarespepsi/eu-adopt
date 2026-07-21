@@ -1043,7 +1043,11 @@
 	}
 
 	/* Mobil landscape touch (max-height 599 = nu tabletă): lățime /4 — adăpost + 3 promo alăturate */
-	@media (max-width: 767.98px) and (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 599px) {
+	@media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 599px) {
+		body.page-adapost-detail #main_wrap {
+			padding-top: 0 !important;
+			min-height: 0 !important;
+		}
 		body.page-adapost-detail,
 		body.page-adapost-detail #main_wrap {
 			height: 100dvh !important;
@@ -1054,19 +1058,27 @@
 			overflow: hidden !important;
 			display: flex !important;
 			flex-direction: column !important;
-			height: auto !important;
-			max-height: none !important;
+			flex: 1 1 auto !important;
+			min-height: 0 !important;
+			margin: 0 !important;
+			padding-top: var(--nav-height, var(--nav-h, 52px)) !important;
+			padding-bottom: 0 !important;
+			height: calc(100dvh - var(--nav-height, var(--nav-h, 52px))) !important;
+			max-height: calc(100dvh - var(--nav-height, var(--nav-h, 52px))) !important;
+			box-sizing: border-box !important;
 		}
 		body.page-adapost-detail #main_content > .layout {
 			height: 100% !important;
 			min-height: 0 !important;
+			margin-top: 0 !important;
+			padding-top: 0 !important;
 			overflow: hidden !important;
 		}
 		body.page-adapost-detail .layout > .main-content {
 			height: 100% !important;
 			min-height: 0 !important;
 			overflow: hidden !important;
-			padding: 0.22rem 0.28rem !important;
+			padding: 0 0.28rem 0.1rem !important;
 		}
 		body.page-adapost-detail .adp-det {
 			--adp-gap: 0.26rem;
@@ -1086,7 +1098,10 @@
 			justify-content: space-between !important;
 			flex-wrap: nowrap !important;
 			min-height: 0 !important;
-			padding: 0.06rem 0.1rem !important;
+			max-height: none !important;
+			height: auto !important;
+			margin: 0 !important;
+			padding: 0.02rem 0.1rem 0.04rem !important;
 			gap: 0.35rem !important;
 		}
 		body.page-adapost-detail .adp-det__back {
