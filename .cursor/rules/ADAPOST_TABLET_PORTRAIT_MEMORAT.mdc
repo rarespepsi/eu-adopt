@@ -8,14 +8,17 @@ alwaysApply: false
 
 **Confirmat utilizator:** 21 iulie 2026 — portrait OK; landscape: 4 casete stânga = 4 rânduri câini (`1977` + OK).
 
-**Media query tabletă (portrait + landscape):**
+**Media query — doar tabletă touch (fără telefon):**
 
 ```css
-@media (min-width: 768px) and (max-width: 64em) and (hover: none) and (pointer: coarse) and (orientation: portrait),
-(min-width: 768px) and (max-width: 64em) and (hover: none) and (pointer: coarse) and (orientation: landscape)
+/* Portrait */
+@media (min-width: 768px) and (max-width: 64em) and (hover: none) and (pointer: coarse) and (orientation: portrait)
+
+/* Landscape tabletă: fără max-width 64em; min-height 600px exclude telefon landscape */
+@media (min-width: 768px) and (hover: none) and (pointer: coarse) and (orientation: landscape) and (min-height: 600px) and (max-height: 920px)
 ```
 
-**Telefon landscape** (`max-height: 500px`, touch): același model 4×1fr stânga + câini dreapta 4×4, `gap: 0`.
+**Nu** există bloc dedicat telefon landscape — mobil ≤767.98px rămâne separat.
 
 **Gap fundal:** bloc suplimentar portrait 768–64em fără `pointer:coarse` → `gap: 0` (fundal `#141a22` = dunga).
 
