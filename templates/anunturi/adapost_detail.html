@@ -1056,8 +1056,8 @@
 			max-height: 100%;
 			min-height: 0;
 			padding: 0 0.35rem 0 0.35rem !important;
-			grid-template-columns: minmax(0, 1fr) minmax(0, 4fr) !important;
-			column-gap: 2px !important;
+			grid-template-columns: var(--adp-side-w) minmax(0, 1fr) !important;
+			column-gap: 0 !important;
 			row-gap: 0.12rem !important;
 		}
 		.adp-det__left {
@@ -1066,10 +1066,9 @@
 			height: 100% !important;
 			min-height: 0 !important;
 			width: 100% !important;
-			max-width: var(--adp-side-w) !important;
-			justify-self: end !important;
-			margin-left: auto !important;
-			margin-right: 0 !important;
+			max-width: 100% !important;
+			justify-self: stretch !important;
+			margin: 0 !important;
 			gap: 0.22rem !important;
 			align-content: stretch !important;
 		}
@@ -1163,6 +1162,8 @@
 			grid-auto-rows: calc((100cqh - var(--adp-gap) * 3) / 4) !important;
 			min-height: 100% !important;
 			align-content: start !important;
+			margin-left: 0 !important;
+			padding-left: 0 !important;
 		}
 		.adp-pet-card {
 			height: 100% !important;
