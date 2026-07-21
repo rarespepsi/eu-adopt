@@ -1,0 +1,72 @@
+---
+description: Carduri animale — localitate + M/F + vârstă (un rând sub nume)
+globs: templates/anunturi/includes/pet_card_meta_footer.html, home/pet_card_display.py, static/css/pet-card-meta.css
+alwaysApply: false
+---
+
+# CARDURI ANIMALE — META SUB NUME (FINAL)
+
+**Confirmat utilizator:** 21 iulie 2026 — un singur rând: **localitate · M/F · vârstă** (ex. `Cluj · M · 2 ani`).
+
+**Git referință:** `6a219b0` (rând unic) · `2f45224` (meta inițial) · live Hetzner după deploy.
+
+**Nu modifica** fără **`1977` + OK explicit** (`SITE_GLOBAL_INGHETAT_1977`).
+
+---
+
+## Format afișare (obligatoriu)
+
+- **Sub nume** (sau sub bara PT), **un rând**:
+  - oraș din fișă (`city`); dacă lipsește → județ (`county`)
+  - separator ` · `
+  - **M** sau **F** din `sex` (`m` / `f` în DB)
+  - separator ` · `
+  - **vârstă** = `age_label` din fișă (`<1 an`, `1 an`, `2 ani`, …, `10+ ani`)
+- Dacă lipsește o parte, se omit segmentele goale (fără ` · ` orphan).
+- Text mic, `ellipsis` dacă nu încape (`white-space: nowrap` pe `.eu-pet-card-meta--row`).
+
+---
+
+## Fișiere sursă
+
+| Fișier | Rol |
+|--------|-----|
+| `home/pet_card_display.py` | `pet_card_sex_letter`, `pet_card_meta_context` |
+| `home/templatetags/anunturi_extras.py` | `{% pet_card_meta_footer pet %}` |
+| `templates/anunturi/includes/pet_card_meta_footer.html` | Markup rând unic |
+| `static/css/pet-card-meta.css` | Stiluri PT / adăpost / I Love / HOME full |
+| `templates/base.html` | `pet-card-meta.css?v=2` |
+
+---
+
+## Unde se include tag-ul
+
+| Pagină | Template |
+|--------|----------|
+| Prietenul tău P2 | `includes/pt_p2_card.html` (stack sub `.pt-p2-card-bottom-bar`) |
+| Adăpost detail | `adapost_detail.html` (în `.adp-pet-card__bar`) |
+| I Love | `i_love.html` (`.ilove-pet-meta`, după nume) |
+| HOME A2 full | `includes/dog_card.html` (non-compact; **nu** A2 compact cu citat) |
+
+---
+
+## Date context (PT / API listă)
+
+`home/pt_p2_list.py` — `_pt_p2_pet_dict_from_listing`: `sex`, `oras` (= city), `varsta` (= age_label).
+
+`home/views.py` — I Love + HOME A2: aceleași câmpuri pe dict.
+
+Adăpost: `AnimalListing` direct → tag citește `city`, `county`, `sex`, `age_label`.
+
+---
+
+## PT — CSS
+
+- `static/css/pt-v2.css` — `.pt-p2-card-bottom-stack` absolut jos; cache `pt385-pet-card-meta` în `pt.html`.
+- **Nu** reveni la două rânduri separate loc / M·vârstă.
+
+---
+
+## Rezumat
+
+**Un rând: localitate · M/F · vârstă. Sursă MyPet. Partajat prin `pet_card_meta_footer`. Nimic fără `1977` + OK.**

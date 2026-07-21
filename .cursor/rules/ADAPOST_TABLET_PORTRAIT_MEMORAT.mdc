@@ -1,38 +1,47 @@
 ---
-description: Fișă adăpost/ONG — tabletă portrait touch (4 casete stânga = 4 rânduri câini)
+description: Fișă adăpost/ONG — tabletă + mobil landscape (adapost_detail.html)
 globs: templates/anunturi/adapost_detail.html
 alwaysApply: false
 ---
 
-# ADĂPOST DETAIL — TABLETĂ PORTRAIT + LANDSCAPE TOUCH (FINAL)
+# ADĂPOST DETAIL — TABLETĂ + MOBIL LANDSCAPE (FINAL 21 iul 2026)
 
-**Confirmat utilizator:** 21 iulie 2026 — portrait OK; landscape: 4 casete stânga = 4 rânduri câini (`1977` + OK).
+**Confirmat utilizator:** portrait tabletă OK; tablet landscape 4×3 câini; mobil landscape 4 casete pe lățime + scroll pagină; padding navbar sync (`1977` + OK).
 
-**Media query — doar tabletă touch (fără telefon):**
-
-```css
-/* Portrait */
-@media (min-width: 768px) and (max-width: 64em) and (hover: none) and (pointer: coarse) and (orientation: portrait)
-
-/* Landscape tabletă: fără max-width 64em; min-height 600px exclude telefon landscape */
-@media (min-width: 768px) and (hover: none) and (pointer: coarse) and (orientation: landscape) and (min-height: 600px) and (max-height: 920px)
-```
-
-**Nu** există bloc dedicat telefon landscape — mobil ≤767.98px rămâne separat.
-
-**Gap fundal:** bloc suplimentar portrait 768–64em fără `pointer:coarse` → `gap: 0` (fundal `#141a22` = dunga).
-
-**Mobil ≤767.98px:** portrait = layout separat; **landscape touch** (`max-height: 599px`) = **4 coloane egale pe lățime** (adăpost + 3 promo alăturate), câini dedesubt.
+**Docs:** `docs/ADAPOST_TABLET_PORTRAIT_FINAL_20260721.md` · `docs/ADAPOST_MOBIL_LANDSCAPE_FINAL_20260721.md`
 
 ---
 
-## Layout memorat
+## Tabletă touch (fără telefon landscape)
 
-- **Stânga:** 4 rânduri **egale** (`1fr × 4`): casetă adăpost + 3 promo (subgrid pe `.adp-det__left`, promo-slot `display: contents` sau grid intern 1fr×3).
-- **Dreapta:** grilă câini **4×4** vizibile (portrait), scroll.
-- **Landscape tabletă:** grilă **4×3** vizibile pe primul ecran, rest scroll; stânga rămâne 4 casete egale.
-- **Fără dunga** verticală între coloane: `column-gap: 0`, subgrid, `821–1100px` nu mărește `--adp-side-w` pe portrait touch.
-- **Card câini:** `{% pet_card_meta_footer %}` — localitate · M · vârstă (vezi `PET_CARD_META_MEMORAT.mdc`).
+**Portrait:**
+
+```css
+@media (min-width: 768px) and (max-width: 64em) and (hover: none) and (pointer: coarse) and (orientation: portrait)
+```
+
+**Landscape tabletă** (iPad Pro lat etc.):
+
+```css
+@media (min-width: 768px) and (hover: none) and (pointer: coarse) and (orientation: landscape) and (min-height: 600px) and (max-height: 920px)
+```
+
+- Stânga: **4× `1fr`** adăpost + 3 promo (subgrid, `gap: 0`).
+- Dreapta portrait: câini **4×4** vizibile; landscape tabletă: **4×3** vizibile, scroll.
+
+---
+
+## Mobil landscape touch (telefon)
+
+```css
+@media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 599px)
+```
+
+- **4 coloane egale:** adăpost + 3 promo **alăturate** (nu stivuite).
+- **Scroll pagină** (nu viewport blocat); Înapoi/PET + casete **nu fixe**, trec sub navbar.
+- **`padding-top` #main_content** = înălțime reală `#A0` (JS `adpSyncNavPadding` + CSS `--nav-height: 34px` fallback).
+
+**Mobil portrait** ≤767.98px: layout separat (2 col adăpost | promo stivuite).
 
 ---
 
@@ -40,16 +49,12 @@ alwaysApply: false
 
 | Fișier | Rol |
 |--------|-----|
-| `templates/anunturi/adapost_detail.html` | Tot CSS tablet portrait inline în `extra_css_after` |
+| `templates/anunturi/adapost_detail.html` | CSS `extra_css_after` + script sync navbar |
 
----
-
-## Commit-uri sesiune (21 iul 2026)
-
-`47e4f79` subgrid/gap · `ec31aa4` 4 rânduri egale stânga · meta carduri în `2f45224` / `6a219b0`.
+**Commit referință live:** `3f3fa91` (21 iul 2026).
 
 ---
 
 ## Rezumat
 
-**Tablet portrait adăpost = 4+3 promo egale pe înălțime cu 4 rânduri câini, gap 0, fără dunga. Nimic fără `1977` + OK.**
+**Tabletă = 4 casete stânga aliniate la rânduri câini. Mobil landscape = 4 casete pe lățime + scroll ca portrait. Nimic fără `1977` + OK.**
