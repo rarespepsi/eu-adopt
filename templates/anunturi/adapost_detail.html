@@ -1052,37 +1052,37 @@
 		.adp-det {
 			--adp-side-w: clamp(9.25rem, 24vw, 12rem);
 			--adp-gap: 0.32rem;
-			/* înălțime stack promo (≈2/3 față de zona promo din layout anterior tablet) */
-			--adp-tab-promo-stack-h: min(6.85rem, 16dvh);
 			height: 100%;
 			max-height: 100%;
 			min-height: 0;
 			padding: 0 0.35rem 0 0;
 			gap: 0.12rem 0.45rem;
 		}
+		/* Coloană stânga: 6 părți egale — 3 adăpost + 1+1+1 promo */
 		.adp-det__left {
-			display: flex !important;
-			flex-direction: column !important;
+			display: grid !important;
+			grid-template-rows: 3fr 1fr 1fr 1fr !important;
 			height: 100% !important;
 			min-height: 0 !important;
-			gap: 0.28rem !important;
+			gap: 0.22rem !important;
+			align-content: stretch !important;
 		}
 		.adp-det__side {
-			flex: 1 1 0 !important;
+			grid-row: 1 !important;
 			min-height: 0 !important;
 			max-height: none !important;
 			height: auto !important;
 			overflow-x: hidden !important;
 			overflow-y: auto !important;
-			padding: 0.36rem 0.42rem 0.38rem !important;
-			gap: 0.1rem !important;
+			padding: 0.32rem 0.38rem 0.34rem !important;
+			gap: 0.08rem !important;
 		}
 		.adp-det__logo,
 		.adp-det__logo-ph {
 			aspect-ratio: 3 / 2 !important;
-			max-height: min(4.15rem, 38%) !important;
+			max-height: min(3.25rem, 42%) !important;
 			width: 100% !important;
-			margin-bottom: 0.16rem !important;
+			margin-bottom: 0.12rem !important;
 		}
 		.adp-det__logo-ph {
 			font-size: 1.2rem !important;
@@ -1119,23 +1119,17 @@
 			padding: 0.18rem 0.28rem !important;
 		}
 		.adp-det__promo-slot {
-			flex: 0 0 var(--adp-tab-promo-stack-h) !important;
+			display: contents !important;
 			margin-top: 0 !important;
-			min-height: var(--adp-tab-promo-stack-h) !important;
-			max-height: var(--adp-tab-promo-stack-h) !important;
-			height: var(--adp-tab-promo-stack-h) !important;
-			display: flex !important;
-			flex-direction: column !important;
-			gap: 0.18rem !important;
-			overflow: hidden !important;
 		}
 		.adp-det__promo-cell {
-			flex: 1 1 0 !important;
-			height: auto !important;
 			min-height: 0 !important;
+			height: 100% !important;
 			max-height: none !important;
-			font-size: 0.56rem !important;
-			padding: 0.14rem 0.2rem !important;
+			flex: unset !important;
+			font-size: 0.58rem !important;
+			padding: 0.16rem 0.22rem !important;
+			overflow: hidden !important;
 		}
 		.adp-det__main {
 			min-height: 0 !important;
