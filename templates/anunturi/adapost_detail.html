@@ -1044,6 +1044,11 @@
 
 	/* Mobil landscape touch (max-height 599 = nu tabletă): lățime /4 — scroll pagină ca portrait */
 	@media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 599px) {
+		/* body { --nav-height: clamp(48px,10vw,64px) } vs A0 compact 34px → bandă goală */
+		body.page-adapost-detail {
+			--nav-height: 34px !important;
+			--nav-h: 34px !important;
+		}
 		html:has(body.page-adapost-detail),
 		body.page-adapost-detail {
 			height: auto !important;
@@ -1064,7 +1069,7 @@
 			flex: none !important;
 			min-height: 0 !important;
 			margin: 0 !important;
-			padding-top: var(--nav-height, var(--nav-h, 34px)) !important;
+			padding-top: 34px !important;
 			padding-bottom: 0 !important;
 			height: auto !important;
 			max-height: none !important;
@@ -1874,6 +1879,34 @@
 			}
 			window.prompt("Copiază linkul:", mapsUrl || pageUrl);
 		});
+	}
+})();
+
+(function () {
+	var mq = window.matchMedia("(orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 599px)");
+	function adpSyncNavPadding() {
+		if (!document.body.classList.contains("page-adapost-detail")) return;
+		if (!mq.matches) return;
+		var a0 = document.getElementById("A0");
+		if (!a0) return;
+		var h = Math.round(a0.getBoundingClientRect().height);
+		if (h < 24 || h > 120) return;
+		document.body.style.setProperty("--nav-height", h + "px");
+		document.body.style.setProperty("--nav-h", h + "px");
+		var mc = document.getElementById("main_content");
+		if (mc) mc.style.paddingTop = h + "px";
+	}
+	adpSyncNavPadding();
+	window.addEventListener("resize", adpSyncNavPadding);
+	window.addEventListener("orientationchange", adpSyncNavPadding);
+	if (typeof mq.addEventListener === "function") {
+		mq.addEventListener("change", adpSyncNavPadding);
+	} else if (typeof mq.addListener === "function") {
+		mq.addListener(adpSyncNavPadding);
+	}
+	var a0 = document.getElementById("A0");
+	if (a0 && typeof ResizeObserver !== "undefined") {
+		new ResizeObserver(adpSyncNavPadding).observe(a0);
 	}
 })();
 </script>
