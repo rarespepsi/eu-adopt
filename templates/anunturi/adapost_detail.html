@@ -1055,20 +1055,31 @@
 			height: 100%;
 			max-height: 100%;
 			min-height: 0;
-			padding: 0 0.35rem 0 0;
-			gap: 0.12rem 0.45rem;
+			padding: 0 0.35rem 0 0.35rem !important;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 4fr) !important;
+			column-gap: 2px !important;
+			row-gap: 0.12rem !important;
 		}
-		/* Coloană stânga: 6 părți egale — 3 adăpost + 1+1+1 promo */
 		.adp-det__left {
 			display: grid !important;
 			grid-template-rows: 3fr 1fr 1fr 1fr !important;
 			height: 100% !important;
 			min-height: 0 !important;
+			width: 100% !important;
+			max-width: var(--adp-side-w) !important;
+			justify-self: end !important;
+			margin-left: auto !important;
+			margin-right: 0 !important;
 			gap: 0.22rem !important;
 			align-content: stretch !important;
 		}
 		.adp-det__side {
 			grid-row: 1 !important;
+			width: 100% !important;
+			max-width: 100% !important;
+			justify-self: stretch !important;
+			border-radius: 0 12px 12px 0 !important;
+			border-left: none !important;
 			min-height: 0 !important;
 			max-height: none !important;
 			height: auto !important;
@@ -1127,13 +1138,19 @@
 			height: 100% !important;
 			max-height: none !important;
 			flex: unset !important;
+			width: 100% !important;
+			max-width: 100% !important;
 			font-size: 0.58rem !important;
 			padding: 0.16rem 0.22rem !important;
 			overflow: hidden !important;
+			border-radius: 0 10px 10px 0 !important;
 		}
 		.adp-det__main {
 			min-height: 0 !important;
 			height: 100% !important;
+			padding-left: 0 !important;
+			padding-right: 0 !important;
+			margin-left: 0 !important;
 		}
 		.adp-det__pets-scroll {
 			flex: 1 1 auto !important;
