@@ -1052,6 +1052,8 @@
 		.adp-det {
 			--adp-side-w: clamp(9.25rem, 24vw, 12rem);
 			--adp-gap: 0.32rem;
+			/* înălțime stack promo (≈2/3 față de zona promo din layout anterior tablet) */
+			--adp-tab-promo-stack-h: min(6.85rem, 16dvh);
 			height: 100%;
 			max-height: 100%;
 			min-height: 0;
@@ -1059,23 +1061,28 @@
 			gap: 0.12rem 0.45rem;
 		}
 		.adp-det__left {
-			gap: 0.28rem;
-			min-height: 0;
+			display: flex !important;
+			flex-direction: column !important;
+			height: 100% !important;
+			min-height: 0 !important;
+			gap: 0.28rem !important;
 		}
 		.adp-det__side {
 			flex: 1 1 0 !important;
-			max-height: min(13.25rem, 32dvh) !important;
 			min-height: 0 !important;
+			max-height: none !important;
+			height: auto !important;
 			overflow-x: hidden !important;
 			overflow-y: auto !important;
-			padding: 0.34rem 0.4rem 0.36rem !important;
+			padding: 0.36rem 0.42rem 0.38rem !important;
 			gap: 0.1rem !important;
 		}
 		.adp-det__logo,
 		.adp-det__logo-ph {
 			aspect-ratio: 3 / 2 !important;
-			max-height: 3.35rem !important;
-			margin-bottom: 0.14rem !important;
+			max-height: min(4.15rem, 38%) !important;
+			width: 100% !important;
+			margin-bottom: 0.16rem !important;
 		}
 		.adp-det__logo-ph {
 			font-size: 1.2rem !important;
@@ -1112,14 +1119,15 @@
 			padding: 0.18rem 0.28rem !important;
 		}
 		.adp-det__promo-slot {
-			flex: 0 0 auto !important;
+			flex: 0 0 var(--adp-tab-promo-stack-h) !important;
 			margin-top: 0 !important;
-			min-height: 0 !important;
-			max-height: min(6.85rem, 16dvh) !important;
-			height: min(6.85rem, 16dvh) !important;
+			min-height: var(--adp-tab-promo-stack-h) !important;
+			max-height: var(--adp-tab-promo-stack-h) !important;
+			height: var(--adp-tab-promo-stack-h) !important;
 			display: flex !important;
 			flex-direction: column !important;
 			gap: 0.18rem !important;
+			overflow: hidden !important;
 		}
 		.adp-det__promo-cell {
 			flex: 1 1 0 !important;
