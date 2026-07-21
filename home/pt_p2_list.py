@@ -19,6 +19,38 @@ def _adoption_state_label(state: str) -> str:
     return mapping.get((state or "").strip(), "Liber")
 
 
+def _pt_p2_pet_dict_from_listing(listing: AnimalListing) -> dict:
+    return {
+        "pk": listing.pk,
+        "nume": listing.name or "—",
+        "imagine": listing.photo_1,
+        "imagine_2": listing.photo_2,
+        "imagine_3": listing.photo_3,
+        "imagine_fallback": DEMO_DOG_IMAGE,
+        "adoption_state": listing.adoption_state,
+        "adoption_state_label": _adoption_state_label(listing.adoption_state),
+        "owner_id": listing.owner_id,
+        "species": (listing.species or "").strip().lower(),
+        "traits": [],
+        "sex": (listing.sex or "").strip(),
+        "oras": (listing.city or "").strip(),
+        "varsta": (listing.age_label or "").strip(),
+    }
+
+
+def _pt_p2_pet_dict_from_demo(d: dict) -> dict:
+    return {
+        "pk": d["id"],
+        "nume": d["nume"],
+        "species": "dog",
+        "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
+        "traits": (d.get("traits") or [])[:2],
+        "sex": (d.get("sex") or "").strip(),
+        "oras": (d.get("oras") or "").strip(),
+        "varsta": (d.get("varsta") or "").strip(),
+    }
+
+
 def _pt_p2_annotate_ask_plic(p2_list, request):
     """Card PT: plic lângă inimă — doar dacă userul ar putea trimite mesaj din fișă către owner."""
     from .population_onboarding import user_may_adopt_animals
@@ -157,32 +189,10 @@ def pt_pets_page_context(request):
         db_pets = list(qs_base.order_by("-created_at")[:200])
         if db_pets:
             for listing in db_pets:
-                p2_list.append(
-                    {
-                        "pk": listing.pk,
-                        "nume": listing.name or "—",
-                        "imagine": listing.photo_1,
-                        "imagine_2": listing.photo_2,
-                        "imagine_3": listing.photo_3,
-                        "imagine_fallback": DEMO_DOG_IMAGE,
-                        "adoption_state": listing.adoption_state,
-                        "adoption_state_label": _adoption_state_label(listing.adoption_state),
-                        "owner_id": listing.owner_id,
-                        "species": (listing.species or "").strip().lower(),
-                        "traits": [],
-                    }
-                )
+                p2_list.append(_pt_p2_pet_dict_from_listing(listing))
         else:
             for d in DEMO_DOGS:
-                p2_list.append(
-                    {
-                        "pk": d["id"],
-                        "nume": d["nume"],
-                        "species": "dog",
-                        "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
-                        "traits": (d.get("traits") or [])[:2],
-                    }
-                )
+                p2_list.append(_pt_p2_pet_dict_from_demo(d))
 
         n = len(p2_list)
         need = (4 - n % 4) % 4
@@ -190,30 +200,14 @@ def pt_pets_page_context(request):
             for i, d in enumerate(cycle(DEMO_DOGS)):
                 if i >= need:
                     break
-                p2_list.append(
-                    {
-                        "pk": d["id"],
-                        "nume": d["nume"],
-                        "species": "dog",
-                        "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
-                        "traits": (d.get("traits") or [])[:2],
-                    }
-                )
+                p2_list.append(_pt_p2_pet_dict_from_demo(d))
 
         if p2_list and len(p2_list) <= 12:
             extra = 24
             for i, d in enumerate(cycle(DEMO_DOGS)):
                 if i >= extra:
                     break
-                p2_list.append(
-                    {
-                        "pk": d["id"],
-                        "nume": d["nume"],
-                        "species": "dog",
-                        "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
-                        "traits": (d.get("traits") or [])[:2],
-                    }
-                )
+                p2_list.append(_pt_p2_pet_dict_from_demo(d))
     else:
         qs = qs_base
         if selected_judet:
@@ -248,21 +242,7 @@ def pt_pets_page_context(request):
                 ordered = db_candidates
 
             for listing in ordered:
-                p2_list.append(
-                    {
-                        "pk": listing.pk,
-                        "nume": listing.name or "—",
-                        "imagine": listing.photo_1,
-                        "imagine_2": listing.photo_2,
-                        "imagine_3": listing.photo_3,
-                        "imagine_fallback": DEMO_DOG_IMAGE,
-                        "adoption_state": listing.adoption_state,
-                        "adoption_state_label": _adoption_state_label(listing.adoption_state),
-                        "owner_id": listing.owner_id,
-                        "species": (listing.species or "").strip().lower(),
-                        "traits": [],
-                    }
-                )
+                p2_list.append(_pt_p2_pet_dict_from_listing(listing))
 
         n = len(p2_list)
         need = (4 - n % 4) % 4

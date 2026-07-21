@@ -25,6 +25,7 @@
 			{% endif %}
 		</div>
 	</a>
+	<div class="pt-p2-card-bottom-stack">
 	<div class="pt-p2-card-bottom-bar" role="toolbar" aria-label="Acțiuni card animal">
 		<div class="pt-p2-card-bottom-bar__side pt-p2-card-bottom-bar__side--left">
 			<button type="button" class="wish-btn pt-p2-wish-btn {% if wishlist_ids and pet.pk in wishlist_ids %}is-active{% endif %}" data-animal-id="{{ pet.pk }}" aria-pressed="{% if wishlist_ids and pet.pk in wishlist_ids %}true{% else %}false{% endif %}" aria-label="I Love: {{ pet.nume }}">
@@ -58,5 +59,7 @@
 				<span class="pt-p2-adoption-led {% if pet.adoption_state == 'adoptat' %}pt-p2-adoption-led--red{% elif pet.adoption_state == 'in_curs_adoptie' or pet.adoption_state == 'spre_adoptie' %}pt-p2-adoption-led--yellow{% else %}pt-p2-adoption-led--green{% endif %}" aria-hidden="true"></span>
 			</span>
 		</div>
+	</div>
+	{% pet_card_meta_footer pet %}
 	</div>
 </div>

@@ -1,0 +1,10 @@
+{% if show_loc %}
+<div class="eu-pet-card-meta eu-pet-card-meta--loc">{{ loc }}</div>
+{% endif %}
+{% if show_sf %}
+<div class="eu-pet-card-meta eu-pet-card-meta--sf">
+	{% if sex_letter %}<span class="eu-pet-card-meta__sex">{{ sex_letter }}</span>{% endif %}
+	{% if sex_letter and age_text %}<span class="eu-pet-card-meta__sep" aria-hidden="true"> · </span>{% endif %}
+	{% if age_text %}<span class="eu-pet-card-meta__age">{{ age_text }}</span>{% endif %}
+</div>
+{% endif %}

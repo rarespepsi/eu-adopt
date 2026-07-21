@@ -1169,12 +1169,21 @@ body.page-pt #main_content {
   line-height: normal;
 }
 
-/* Bară jos: ♥ plic | nume | megafon LED */
-#PW .pt-p2-card-cell .pt-p2-card-bottom-bar {
+/* Bară jos: ♥ plic | nume | megafon LED + localitate / M·vârstă */
+#PW .pt-p2-card-cell .pt-p2-card-bottom-stack {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
+  z-index: 30;
+  pointer-events: auto;
+  max-width: 100%;
+}
+#PW .pt-p2-card-cell .pt-p2-card-bottom-bar {
+  position: static;
+  bottom: auto;
+  left: auto;
+  right: auto;
   z-index: 30;
   pointer-events: auto;
   display: flex;

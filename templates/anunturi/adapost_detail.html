@@ -1724,10 +1724,7 @@
 							{% include "anunturi/includes/ilove_heart_svg.html" %}
 						</button>
 					</div>
-					<div class="adp-pet-card__sub">
-						{% if a.species == 'dog' %}Câine{% elif a.species == 'cat' %}Pisică{% else %}Alt{% endif %}
-						{% if a.city %} · {{ a.city }}{% endif %}
-					</div>
+					{% pet_card_meta_footer a %}
 				</div>
 			</article>
 			{% endfor %}

@@ -54,7 +54,7 @@
 		</figure>
 		<div class="dog-card-body">
 			<h3 class="dog-card-name">{{ pet.nume }}</h3>
-			<span class="dog-card-age">{{ pet.varsta }}</span>
+			{% pet_card_meta_footer pet %}
 			<p class="dog-card-desc">{{ pet.descriere }}</p>
 			<span class="dog-card-btn">Vezi profil</span>
 		</div>

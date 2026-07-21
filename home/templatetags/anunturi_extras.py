@@ -1,5 +1,6 @@
 from django import template
 
+from home.pet_card_display import pet_card_meta_context
 from home.pet_media_thumb import pet_thumb_url_for
 from home.pet_traits import trait_label
 
@@ -16,6 +17,12 @@ def animal_trait_label(species, field_name):
 def pet_thumb_url(image_field, size=400):
     """URL thumbnail JPEG (max latura = size px) pentru poze din MEDIA animals/."""
     return pet_thumb_url_for(image_field, size)
+
+
+@register.inclusion_tag("anunturi/includes/pet_card_meta_footer.html")
+def pet_card_meta_footer(pet):
+    """Localitate + M/F + vârstă (rânduri sub nume pe card)."""
+    return pet_card_meta_context(pet)
 
 
 @register.simple_tag
