@@ -18,7 +18,7 @@
 
 | Stânga | Dreapta |
 |--------|---------|
-| 4 casete **aceeași înălțime** (1/4 fiecare): adăpost + 3 promo | Grilă **4 coloane × 4 rânduri** vizibile, scroll |
+| 4 casete **aceeași înălțime** (1/4 fiecare): adăpost + 3 promo | Portrait: **4 col × 4 rânduri** vizibile · Landscape: **3 col × 3 rânduri** vizibile, scroll |
 | Lățime `--adp-side-w: clamp(9.25rem, 24vw, 12rem)` | Lipit de stânga, **fără bandă întunecată** (`gap: 0`) |
 
 ---

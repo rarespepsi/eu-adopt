@@ -29,7 +29,8 @@ alwaysApply: false
 ## Layout memorat
 
 - **Stânga:** 4 rânduri **egale** (`1fr × 4`): casetă adăpost + 3 promo (subgrid pe `.adp-det__left`, promo-slot `display: contents` sau grid intern 1fr×3).
-- **Dreapta:** grilă câini **4×4** vizibile, scroll.
+- **Dreapta:** grilă câini **4×4** vizibile (portrait), scroll.
+- **Landscape tabletă:** grilă **3×3** vizibile pe primul ecran, rest scroll; stânga rămâne 4 casete egale.
 - **Fără dunga** verticală între coloane: `column-gap: 0`, subgrid, `821–1100px` nu mărește `--adp-side-w` pe portrait touch.
 - **Card câini:** `{% pet_card_meta_footer %}` — localitate · M · vârstă (vezi `PET_CARD_META_MEMORAT.mdc`).
 

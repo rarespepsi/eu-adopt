@@ -1245,6 +1245,14 @@
 		}
 	}
 
+	/* Tabletă landscape touch: câini 3 col × 3 rânduri vizibile pe ecran, restul scroll */
+	@media (min-width: 768px) and (hover: none) and (pointer: coarse) and (orientation: landscape) and (min-height: 600px) and (max-height: 920px) {
+		body.page-adapost-detail .adp-det__grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+			grid-auto-rows: calc((100cqh - var(--adp-gap) * 2) / 3) !important;
+		}
+	}
+
 	/* Tabletă portrait 768–64em + landscape touch (min-height 600): fără column-gap (#141a22 = dunga) */
 	@media (min-width: 768px) and (max-width: 64em) and (orientation: portrait),
 	(min-width: 768px) and (orientation: landscape) and (hover: none) and (pointer: coarse) and (min-height: 600px) and (max-height: 920px) {
