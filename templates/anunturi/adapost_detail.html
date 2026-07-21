@@ -1042,8 +1042,9 @@
 		}
 	}
 
-	/* Tabletă portrait touch: 4 casete stânga = 4 rânduri câini (1fr×4), grilă 4×4, fără dunga */
-	@media (min-width: 768px) and (max-width: 64em) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+	/* Tabletă portrait + landscape touch: 4 casete stânga = 4 rânduri câini (1fr×4), grilă 4×4, fără dunga */
+	@media (min-width: 768px) and (max-width: 64em) and (hover: none) and (pointer: coarse) and (orientation: portrait),
+	(min-width: 768px) and (max-width: 64em) and (hover: none) and (pointer: coarse) and (orientation: landscape) {
 		body.page-adapost-detail,
 		body.page-adapost-detail #main_wrap {
 			height: 100dvh !important;
@@ -1244,8 +1245,9 @@
 		}
 	}
 
-	/* Portrait tabletă 768–64em: fără column-gap (fundal #141a22 = „dunga”) — inclus iPad fără pointer:coarse */
-	@media (min-width: 768px) and (max-width: 64em) and (orientation: portrait) {
+	/* Tabletă 768–64em portrait/landscape: fără column-gap (fundal #141a22 = „dunga”) */
+	@media (min-width: 768px) and (max-width: 64em) and (orientation: portrait),
+	(min-width: 768px) and (max-width: 64em) and (orientation: landscape) {
 		body.page-adapost-detail .adp-det {
 			gap: 0 !important;
 			column-gap: 0 !important;
@@ -1260,204 +1262,200 @@
 		}
 	}
 
-	/* Mobil landscape touch: casetă adăpost compactă stânga | 3 promo unul lângă altul dreapta */
+	/* Telefon landscape touch (≤500px înălțime): 4 casete stânga stivuite = 4 rânduri câini, fără dunga */
 	@media (orientation: landscape) and (max-height: 500px) and (hover: none) and (pointer: coarse) {
 		body.page-adapost-detail,
 		body.page-adapost-detail #main_wrap {
-			height: auto;
-			max-height: none;
-			overflow: visible;
+			height: 100dvh !important;
+			max-height: 100dvh !important;
+			overflow: hidden !important;
 		}
 		body.page-adapost-detail #main_content {
-			height: auto;
-			max-height: none;
-			overflow: visible;
-			display: block;
+			overflow: hidden !important;
+			display: flex !important;
+			flex-direction: column !important;
 		}
 		body.page-adapost-detail #main_content > .layout {
-			height: auto;
-			overflow: visible;
+			height: 100% !important;
+			min-height: 0 !important;
+			overflow: hidden !important;
 		}
 		body.page-adapost-detail .layout > .main-content {
-			height: auto;
-			overflow: visible;
-			padding: 0.3rem !important;
+			padding: 0 !important;
+			overflow: hidden !important;
+			height: 100% !important;
+			min-height: 0 !important;
 		}
-		.adp-det {
-			grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-			grid-template-rows: auto auto auto;
-			gap: 0.3rem 0.35rem;
-			padding: 0.25rem;
-			align-items: start;
-			height: auto;
-			max-height: none;
-			overflow: visible;
+		body.page-adapost-detail .adp-det {
+			--adp-side-w: clamp(6.75rem, 26vw, 9.25rem);
+			--adp-gap: 0.28rem;
+			height: 100% !important;
+			max-height: 100% !important;
+			min-height: 0 !important;
+			padding: 0 0.28rem !important;
+			box-sizing: border-box !important;
+			grid-template-columns: var(--adp-side-w) minmax(0, 1fr) !important;
+			grid-template-rows: auto 1fr 1fr 1fr 1fr !important;
+			gap: 0 !important;
+			column-gap: 0 !important;
+			row-gap: 0 !important;
+			align-items: stretch !important;
 		}
-		.adp-det__top {
-			display: contents;
+		body.page-adapost-detail .adp-det__top {
+			grid-column: 1 / -1 !important;
+			grid-row: 1 !important;
+			display: flex !important;
+			align-items: center !important;
+			justify-content: space-between !important;
+			gap: 0.35rem !important;
+			padding: 0.12rem 0.28rem !important;
+			min-height: 0 !important;
 		}
-		.adp-det__left {
-			display: contents;
+		body.page-adapost-detail .adp-det__left {
+			display: grid !important;
+			grid-column: 1 !important;
+			grid-row: 2 / 6 !important;
+			grid-template-rows: 1fr 1fr 1fr 1fr !important;
+			grid-template-rows: subgrid !important;
+			grid-template-columns: minmax(0, 1fr) !important;
+			gap: 0 !important;
+			width: 100% !important;
+			min-width: 0 !important;
+			margin: 0 !important;
+			padding: 0 !important;
+			overflow: hidden !important;
 		}
-		.adp-det__back {
-			grid-column: 1;
-			grid-row: 1;
-			align-self: center;
-			padding: 0.08rem 0;
+		body.page-adapost-detail .adp-det__side {
+			grid-column: 1 !important;
+			grid-row: 1 !important;
+			width: 100% !important;
+			min-height: 0 !important;
+			height: 100% !important;
+			margin: 0 !important;
+			overflow-x: hidden !important;
+			overflow-y: auto !important;
+			padding: 0.22rem 0.28rem 0.24rem !important;
+			gap: 0.05rem !important;
+			border-radius: 0 !important;
+			border-left: none !important;
+			border-right: none !important;
+			box-shadow: none !important;
+			align-self: stretch !important;
+			justify-self: stretch !important;
 		}
-		.adp-det__pet-site {
-			grid-column: 2;
-			grid-row: 1;
-			justify-self: stretch;
-			align-self: center;
-			width: 100%;
-			box-sizing: border-box;
-			justify-content: center;
-			padding: 0.12rem 0.2rem;
+		body.page-adapost-detail .adp-det__promo-slot {
+			display: contents !important;
 		}
-		.adp-det__pet-site-label {
-			font-size: 0.52rem;
+		body.page-adapost-detail .adp-det__promo-cell {
+			grid-column: 1 !important;
+			min-height: 0 !important;
+			height: 100% !important;
+			width: 100% !important;
+			margin: 0 !important;
+			font-size: 0.48rem !important;
+			padding: 0.12rem 0.14rem !important;
+			border-radius: 0 !important;
+			box-sizing: border-box !important;
+			align-self: stretch !important;
+			justify-self: stretch !important;
 		}
-		.adp-det__pet-site-badge {
-			font-size: 0.64rem;
-			min-width: 1.2rem;
-			padding: 0.08rem 0.22rem;
+		body.page-adapost-detail .adp-det__promo-slot .adp-det__promo-cell:nth-child(1) {
+			grid-row: 2 !important;
 		}
-		.adp-det__side {
-			grid-column: 1;
-			grid-row: 2;
-			position: relative;
-			z-index: 1;
-			top: auto;
-			flex: none;
-			height: auto;
-			max-height: none;
-			overflow: visible;
-			margin: 0;
-			padding: 0.28rem 0.35rem 0.32rem;
-			border-radius: 10px;
-			border-left: 1px solid #d7ccc8;
-			gap: 0.06rem;
-			justify-content: flex-start;
-			align-self: start;
+		body.page-adapost-detail .adp-det__promo-slot .adp-det__promo-cell:nth-child(2) {
+			grid-row: 3 !important;
+		}
+		body.page-adapost-detail .adp-det__promo-slot .adp-det__promo-cell:nth-child(3) {
+			grid-row: 4 !important;
+		}
+		body.page-adapost-detail .adp-det__main {
+			grid-column: 2 !important;
+			grid-row: 2 / 6 !important;
+			min-height: 0 !important;
+			height: 100% !important;
+			margin: 0 !important;
+			padding: 0 !important;
+			overflow: hidden !important;
+		}
+		body.page-adapost-detail .adp-det__back {
+			font-size: 0.72rem !important;
+			padding: 0.1rem 0 !important;
+		}
+		body.page-adapost-detail .adp-det__pet-site {
+			padding: 0.1rem 0.18rem !important;
+		}
+		body.page-adapost-detail .adp-det__pet-site-label {
+			font-size: 0.48rem !important;
+		}
+		body.page-adapost-detail .adp-det__pet-site-badge {
+			font-size: 0.58rem !important;
+			min-width: 1.1rem !important;
 		}
 		.adp-det__logo,
 		.adp-det__logo-ph {
-			width: 100%;
-			max-width: 100%;
-			aspect-ratio: 3 / 2;
-			max-height: 3.6rem;
-			margin: 0 0 0.1rem;
-			align-self: stretch;
-			object-fit: cover;
+			aspect-ratio: 3 / 2 !important;
+			max-height: min(2rem, 36%) !important;
+			width: 100% !important;
+			margin-bottom: 0.06rem !important;
 		}
 		.adp-det__logo-ph {
-			font-size: 1.1rem;
-			min-height: 2.8rem;
-			max-height: 3.6rem;
+			font-size: 0.95rem !important;
 		}
 		.adp-det__side h1 {
-			font-size: 0.82rem;
-			margin: 0;
-			line-height: 1.15;
+			font-size: 0.72rem !important;
+			line-height: 1.12 !important;
 		}
-		.adp-det__side p {
-			font-size: 0.68rem;
-			line-height: 1.2;
+		.adp-det__side p,
+		.adp-det__addr-head .adp-det__phone {
+			font-size: 0.58rem !important;
 		}
 		.adp-det__about {
+			font-size: 0.54rem !important;
 			-webkit-line-clamp: 2;
 			line-clamp: 2;
-			font-size: 0.68rem;
 		}
 		.adp-det__badge {
-			font-size: 0.48rem;
-			padding: 0.01rem 0.22rem;
-		}
-		.adp-det__addr-head {
-			margin: 0.04rem 0 0.06rem;
-		}
-		.adp-det__addr-head .adp-det__phone {
-			font-size: 0.68rem;
-		}
-		.adp-det__addr-only {
-			margin-top: 0.08rem;
-		}
-		.adp-det__addr-only .adp-det__addr-btn,
-		.adp-det__addr-only .adp-det__addr-link {
-			padding: 0.16rem 0.28rem;
-			font-size: 0.6rem;
-		}
-		.adp-det__promo-slot {
-			grid-column: 2;
-			grid-row: 2;
-			order: unset;
-			flex: unset;
-			margin-top: 0;
-			display: flex;
-			flex-direction: row;
-			align-items: stretch;
-			gap: 0.28rem;
-			width: 100%;
-			height: auto;
-			min-height: 3.4rem;
-			align-self: stretch;
-			min-width: 0;
-		}
-		.adp-det__promo-cell {
-			flex: 1 1 0;
-			min-width: 0;
-			min-height: 3.4rem;
-			height: auto;
-			font-size: 0.5rem;
-			padding: 0.2rem 0.15rem;
-			line-height: 1.05;
-			word-break: break-word;
-		}
-		.adp-det__main {
-			grid-column: 1 / -1;
-			grid-row: 3;
-			height: auto;
-			max-height: none;
-			overflow: visible;
+			font-size: 0.44rem !important;
 		}
 		.adp-det__pets-scroll {
-			max-height: none;
-			height: auto;
-			overflow: visible;
-			container-type: normal;
-			display: block;
+			flex: 1 1 auto !important;
+			min-height: 0 !important;
+			overflow-y: auto !important;
+			container-type: size !important;
 		}
 		.adp-det__grid {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-			flex: none;
-			min-height: 0;
-			grid-auto-rows: auto;
-			align-content: start;
+			grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+			grid-auto-rows: calc((100cqh - var(--adp-gap) * 3) / 4) !important;
+			min-height: 100% !important;
+			align-content: start !important;
+			margin-left: 0 !important;
+			padding-left: 0 !important;
 		}
 		.adp-pet-card {
-			height: auto;
+			height: 100% !important;
+			min-height: 0 !important;
 		}
 		.adp-pet-card__media {
-			flex: none;
+			flex: 1 1 auto !important;
+			min-height: 0 !important;
 		}
-		.adp-pet-card__photo {
-			height: auto;
-		}
+		.adp-pet-card__photo,
 		.adp-pet-card__photo img {
-			height: auto;
-			aspect-ratio: 1 / 1;
-			min-height: 0;
+			height: 100% !important;
+			object-fit: cover !important;
 		}
 		.adp-pet-card__bar {
-			column-gap: 0.5rem;
-			padding: 0.24rem 0.3rem 0.28rem;
+			flex-shrink: 0 !important;
+			padding: 0.14rem 0.18rem 0.16rem !important;
+		}
+		.adp-pet-card__name {
+			font-size: 0.54rem !important;
 		}
 		.adp-pet-card__bar .wish-btn {
-			width: 2.2rem !important;
-			height: 2.2rem !important;
-			min-width: 2.2rem;
-			min-height: 2.2rem;
+			width: 1.45rem !important;
+			height: 1.45rem !important;
+			min-width: 1.45rem !important;
+			min-height: 1.45rem !important;
 		}
 	}
 	@media (min-width: 821px) and (max-width: 1100px) and (not ((orientation: portrait) and (hover: none) and (pointer: coarse))) {

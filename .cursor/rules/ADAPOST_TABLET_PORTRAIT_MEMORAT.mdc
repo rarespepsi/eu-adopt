@@ -1,0 +1,51 @@
+---
+description: Fișă adăpost/ONG — tabletă portrait touch (4 casete stânga = 4 rânduri câini)
+globs: templates/anunturi/adapost_detail.html
+alwaysApply: false
+---
+
+# ADĂPOST DETAIL — TABLETĂ PORTRAIT + LANDSCAPE TOUCH (FINAL)
+
+**Confirmat utilizator:** 21 iulie 2026 — portrait OK; landscape: 4 casete stânga = 4 rânduri câini (`1977` + OK).
+
+**Media query tabletă (portrait + landscape):**
+
+```css
+@media (min-width: 768px) and (max-width: 64em) and (hover: none) and (pointer: coarse) and (orientation: portrait),
+(min-width: 768px) and (max-width: 64em) and (hover: none) and (pointer: coarse) and (orientation: landscape)
+```
+
+**Telefon landscape** (`max-height: 500px`, touch): același model 4×1fr stânga + câini dreapta 4×4, `gap: 0`.
+
+**Gap fundal:** bloc suplimentar portrait 768–64em fără `pointer:coarse` → `gap: 0` (fundal `#141a22` = dunga).
+
+**Mobil ≤767.98px:** layout separat (nu amesteca cu tabletă).
+
+---
+
+## Layout memorat
+
+- **Stânga:** 4 rânduri **egale** (`1fr × 4`): casetă adăpost + 3 promo (subgrid pe `.adp-det__left`, promo-slot `display: contents` sau grid intern 1fr×3).
+- **Dreapta:** grilă câini **4×4** vizibile, scroll.
+- **Fără dunga** verticală între coloane: `column-gap: 0`, subgrid, `821–1100px` nu mărește `--adp-side-w` pe portrait touch.
+- **Card câini:** `{% pet_card_meta_footer %}` — localitate · M · vârstă (vezi `PET_CARD_META_MEMORAT.mdc`).
+
+---
+
+## Fișier
+
+| Fișier | Rol |
+|--------|-----|
+| `templates/anunturi/adapost_detail.html` | Tot CSS tablet portrait inline în `extra_css_after` |
+
+---
+
+## Commit-uri sesiune (21 iul 2026)
+
+`47e4f79` subgrid/gap · `ec31aa4` 4 rânduri egale stânga · meta carduri în `2f45224` / `6a219b0`.
+
+---
+
+## Rezumat
+
+**Tablet portrait adăpost = 4+3 promo egale pe înălțime cu 4 rânduri câini, gap 0, fără dunga. Nimic fără `1977` + OK.**
