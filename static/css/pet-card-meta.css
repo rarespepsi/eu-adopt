@@ -5,15 +5,24 @@
 	font-weight: 600;
 	letter-spacing: 0.01em;
 }
-.eu-pet-card-meta--loc {
+.eu-pet-card-meta--row {
+	display: block;
+	min-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	color: #64748b;
 }
-.eu-pet-card-meta--sf {
-	color: #475569;
+.eu-pet-card-meta__loc {
+	color: inherit;
 }
 .eu-pet-card-meta__sex {
 	font-weight: 800;
 	text-transform: uppercase;
+	color: #475569;
+}
+.eu-pet-card-meta__age {
+	color: #475569;
 }
 .eu-pet-card-meta__sep {
 	font-weight: 500;
@@ -21,55 +30,32 @@
 }
 
 /* PT P2 — sub bara cu nume */
-#PW .pt-p2-card-bottom-stack .eu-pet-card-meta {
-	padding: 0 4px 1px;
+#PW .pt-p2-card-bottom-stack .eu-pet-card-meta--row {
+	padding: 0 4px 4px;
 	text-align: center;
 	background: rgba(15, 23, 42, 0.92);
-}
-#PW .pt-p2-card-bottom-stack .eu-pet-card-meta--loc {
 	color: #94a3b8;
-	font-weight: 600;
 }
-#PW .pt-p2-card-bottom-stack .eu-pet-card-meta--sf {
+#PW .pt-p2-card-bottom-stack .eu-pet-card-meta__sex,
+#PW .pt-p2-card-bottom-stack .eu-pet-card-meta__age {
 	color: #cbd5e1;
-	padding-bottom: 3px;
-}
-#PW .pt-p2-card-bottom-stack .eu-pet-card-meta--sf:last-child {
-	padding-bottom: 4px;
 }
 
 /* Adăpost detail */
-.adp-pet-card__bar .eu-pet-card-meta {
+.adp-pet-card__bar .eu-pet-card-meta--row {
 	grid-column: 1 / -1;
 	margin: 0;
-}
-.adp-pet-card__bar .eu-pet-card-meta--loc {
-	color: #607d8b;
 	font-size: 0.62rem;
-}
-.adp-pet-card__bar .eu-pet-card-meta--sf {
-	color: #546e7a;
-	font-size: 0.6rem;
-	margin-top: -0.02rem;
 }
 
 /* I Love */
-.ilove-pet-meta .eu-pet-card-meta--loc,
-.ilove-pet-meta .eu-pet-card-meta--sf {
+.ilove-pet-meta .eu-pet-card-meta--row {
 	text-align: left;
-}
-.ilove-pet-meta .eu-pet-card-meta--loc {
 	margin-top: 0.08rem;
-}
-.ilove-pet-meta .eu-pet-card-meta--sf {
-	margin-top: 0.04rem;
 }
 
 /* HOME dog-card (full, non-compact) */
-.dog-card-body .eu-pet-card-meta--loc {
+.dog-card-body .eu-pet-card-meta--row {
 	margin-top: 0.12rem;
-}
-.dog-card-body .eu-pet-card-meta--sf {
-	margin-top: 0.06rem;
 	margin-bottom: 0.2rem;
 }
