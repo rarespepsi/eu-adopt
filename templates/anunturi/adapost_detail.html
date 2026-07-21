@@ -804,7 +804,7 @@
 		color: #fff;
 	}
 
-	@media (max-width: 820px) {
+	@media (max-width: 767.98px) {
 		body.page-adapost-detail,
 		body.page-adapost-detail #main_wrap {
 			height: auto;
@@ -1042,50 +1042,126 @@
 		}
 	}
 
-	/* Tabletă portrait touch: casetă adăpost mică stânga, 3 promo dedesubt mai înalte, câini 4×4 */
+	/* Tabletă portrait touch: 6 părți stânga (3+1+1+1), câini 4×4, fără dunga la grilă */
 	@media (min-width: 768px) and (max-width: 64em) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
 		body.page-adapost-detail,
 		body.page-adapost-detail #main_wrap {
 			height: 100dvh !important;
 			max-height: 100dvh !important;
 		}
-		.adp-det {
+		body.page-adapost-detail #main_content {
+			overflow: hidden !important;
+			display: flex !important;
+			flex-direction: column !important;
+		}
+		body.page-adapost-detail .layout > .main-content {
+			padding: 0 !important;
+			overflow: hidden !important;
+		}
+		body.page-adapost-detail .adp-det {
 			--adp-side-w: clamp(9.25rem, 24vw, 12rem);
 			--adp-gap: 0.32rem;
-			height: 100%;
-			max-height: 100%;
-			min-height: 0;
-			padding: 0 0.35rem 0 0.35rem !important;
-			grid-template-columns: var(--adp-side-w) minmax(0, 1fr) !important;
-			column-gap: 0 !important;
-			row-gap: 0.12rem !important;
-		}
-		.adp-det__left {
-			display: grid !important;
-			grid-template-rows: 3fr 1fr 1fr 1fr !important;
 			height: 100% !important;
+			max-height: 100% !important;
 			min-height: 0 !important;
-			width: 100% !important;
-			max-width: 100% !important;
-			justify-self: stretch !important;
-			margin: 0 !important;
-			gap: 0.22rem !important;
-			align-content: stretch !important;
+			padding: 0 0.35rem !important;
+			box-sizing: border-box !important;
+			grid-template-columns: var(--adp-side-w) minmax(0, 1fr) !important;
+			grid-template-rows: auto 3fr 1fr 1fr 1fr !important;
+			gap: 0 !important;
+			column-gap: 0 !important;
+			row-gap: 0 !important;
 		}
-		.adp-det__side {
+		body.page-adapost-detail .adp-det__top {
+			grid-column: 1 / -1 !important;
 			grid-row: 1 !important;
+			padding-left: 0.35rem !important;
+		}
+		body.page-adapost-detail .adp-det__left {
+			display: grid !important;
+			grid-column: 1 !important;
+			grid-row: 2 / 6 !important;
+			grid-template-rows: 3fr 1fr 1fr 1fr !important;
+			grid-template-rows: subgrid !important;
+			grid-template-columns: minmax(0, 1fr) !important;
+			align-content: stretch !important;
+			gap: 0 !important;
 			width: 100% !important;
 			max-width: 100% !important;
+			min-width: 0 !important;
+			margin: 0 !important;
+			padding: 0 !important;
+			overflow: hidden !important;
+		}
+		body.page-adapost-detail .adp-det__side {
+			grid-column: 1 !important;
+			grid-row: 1 !important;
 			justify-self: stretch !important;
-			border-radius: 0 12px 12px 0 !important;
-			border-left: none !important;
+			align-self: stretch !important;
+			width: 100% !important;
+			max-width: 100% !important;
+			min-width: 0 !important;
 			min-height: 0 !important;
 			max-height: none !important;
 			height: auto !important;
+			margin: 0 !important;
 			overflow-x: hidden !important;
 			overflow-y: auto !important;
 			padding: 0.32rem 0.38rem 0.34rem !important;
 			gap: 0.08rem !important;
+			border-radius: 0 !important;
+			border-left: none !important;
+			border-right: none !important;
+			box-shadow: none !important;
+		}
+		body.page-adapost-detail .adp-det__promo-slot {
+			display: grid !important;
+			grid-column: 1 !important;
+			grid-row: 2 / 5 !important;
+			grid-template-rows: 1fr 1fr 1fr !important;
+			margin: 0 !important;
+			padding: 0 !important;
+			gap: 0 !important;
+			width: 100% !important;
+			min-width: 0 !important;
+			align-content: stretch !important;
+		}
+		body.page-adapost-detail .adp-det__promo-cell {
+			grid-column: 1 !important;
+			justify-self: stretch !important;
+			align-self: stretch !important;
+			min-height: 0 !important;
+			height: 100% !important;
+			width: 100% !important;
+			max-width: 100% !important;
+			margin: 0 !important;
+			flex: unset !important;
+			font-size: 0.58rem !important;
+			padding: 0.16rem 0.22rem !important;
+			overflow: hidden !important;
+			border-radius: 0 !important;
+			box-sizing: border-box !important;
+		}
+		body.page-adapost-detail .adp-det__promo-slot .adp-det__promo-cell:nth-child(1) {
+			grid-row: 1 !important;
+		}
+		body.page-adapost-detail .adp-det__promo-slot .adp-det__promo-cell:nth-child(2) {
+			grid-row: 2 !important;
+		}
+		body.page-adapost-detail .adp-det__promo-slot .adp-det__promo-cell:nth-child(3) {
+			grid-row: 3 !important;
+		}
+		body.page-adapost-detail .adp-det__main {
+			grid-column: 2 !important;
+			grid-row: 2 / 6 !important;
+			min-height: 0 !important;
+			height: 100% !important;
+			margin: 0 !important;
+			padding: 0 !important;
+			min-width: 0 !important;
+			width: 100% !important;
+			max-width: 100% !important;
+			justify-self: stretch !important;
 		}
 		.adp-det__logo,
 		.adp-det__logo-ph {
@@ -1127,29 +1203,6 @@
 		.adp-det__map-preview {
 			font-size: 0.6rem !important;
 			padding: 0.18rem 0.28rem !important;
-		}
-		.adp-det__promo-slot {
-			display: contents !important;
-			margin-top: 0 !important;
-		}
-		.adp-det__promo-cell {
-			min-height: 0 !important;
-			height: 100% !important;
-			max-height: none !important;
-			flex: unset !important;
-			width: 100% !important;
-			max-width: 100% !important;
-			font-size: 0.58rem !important;
-			padding: 0.16rem 0.22rem !important;
-			overflow: hidden !important;
-			border-radius: 0 10px 10px 0 !important;
-		}
-		.adp-det__main {
-			min-height: 0 !important;
-			height: 100% !important;
-			padding-left: 0 !important;
-			padding-right: 0 !important;
-			margin-left: 0 !important;
 		}
 		.adp-det__pets-scroll {
 			flex: 1 1 auto !important;
@@ -1194,6 +1247,22 @@
 			height: 1.65rem !important;
 			min-width: 1.65rem !important;
 			min-height: 1.65rem !important;
+		}
+	}
+
+	/* Portrait tabletă 768–64em: fără column-gap (fundal #141a22 = „dunga”) — inclus iPad fără pointer:coarse */
+	@media (min-width: 768px) and (max-width: 64em) and (orientation: portrait) {
+		body.page-adapost-detail .adp-det {
+			gap: 0 !important;
+			column-gap: 0 !important;
+			row-gap: 0 !important;
+		}
+		body.page-adapost-detail .adp-det__main {
+			padding-left: 0 !important;
+		}
+		body.page-adapost-detail .adp-det__grid {
+			margin-left: 0 !important;
+			padding-left: 0 !important;
 		}
 	}
 
@@ -1397,7 +1466,7 @@
 			min-height: 2.2rem;
 		}
 	}
-	@media (min-width: 821px) and (max-width: 1100px) {
+	@media (min-width: 821px) and (max-width: 1100px) and (not ((orientation: portrait) and (hover: none) and (pointer: coarse))) {
 		.adp-det {
 			--adp-side-w: clamp(13rem, 20vw, 15.5rem);
 			--adp-promo-cell-h: 4.8rem;
