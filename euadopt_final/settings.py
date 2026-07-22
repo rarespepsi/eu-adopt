@@ -255,14 +255,14 @@ POPULATION_ANIMAL_MAX = int(os.environ.get("EUADOPT_POPULATION_ANIMAL_MAX", "5")
 _population_superuser_only = os.environ.get("EUADOPT_POPULATION_SUPERUSER_ONLY", "").strip().lower()
 POPULATION_SUPERUSER_ONLY_LOGIN = _population_superuser_only in ("1", "true", "yes", "on")
 
-# Ghid site (nor FAQ + Gemini fallback opțional). Implicit activ când DEBUG=1.
+# Ghid site (FAQ + Gemini fallback opțional). Implicit activ și în producție.
 _site_guide_on = os.environ.get("EUADOPT_SITE_GUIDE_ENABLED", "").strip().lower()
 if _site_guide_on in ("0", "false", "no", "off"):
     SITE_GUIDE_ENABLED = False
 elif _site_guide_on in ("1", "true", "yes", "on"):
     SITE_GUIDE_ENABLED = True
 else:
-    SITE_GUIDE_ENABLED = bool(DEBUG)
+    SITE_GUIDE_ENABLED = True
 
 # Ghid prima vizită (banner + tur) — user nou ≤ N zile de la înregistrare.
 _user_onboard_on = os.environ.get("EUADOPT_USER_ONBOARDING_ENABLED", "1").strip().lower()

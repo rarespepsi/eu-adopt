@@ -59,8 +59,9 @@ class SiteGuideLogicTests(TestCase):
         self.assertTrue(is_site_guide_path("/pets/"))
         self.assertTrue(is_site_guide_path("/pets/12/"))
         self.assertTrue(is_site_guide_path("/mypet/"))
-        self.assertFalse(is_site_guide_path("/login/"))
-        self.assertFalse(is_site_guide_path("/shop/comanda-personalizate/"))
+        self.assertTrue(is_site_guide_path("/login/"))
+        self.assertTrue(is_site_guide_path("/shop/comanda-personalizate/"))
+        self.assertFalse(is_site_guide_path("/admin/"))
 
 
 @override_settings(SITE_GUIDE_ENABLED=True, SITE_GUIDE_GEMINI_ENABLED=False, PRELAUNCH_MODE=False)
@@ -87,7 +88,7 @@ class SiteGuideApiTests(TestCase):
         c = Client()
         r = c.post(
             reverse("site_guide_ask"),
-            {"question": "cum adopt", "page_path": "/login/"},
+            {"question": "cum adopt", "page_path": "/admin/"},
         )
         self.assertEqual(r.status_code, 403)
 

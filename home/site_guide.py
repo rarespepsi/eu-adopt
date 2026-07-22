@@ -50,9 +50,12 @@ def is_site_guide_enabled() -> bool:
 
 def is_site_guide_path(path: str) -> bool:
     p = (path or "/").split("?", 1)[0].rstrip("/") or "/"
-    if p in ("/", "/servicii", "/shop", "/transport", "/i-love", "/mypet"):
-        return True
-    if p == "/pets" or p.startswith("/pets/"):
+    # Vizibil pe tot site-ul (inclusiv pagini de login/signup), în afara adminului.
+    if p.startswith("/admin"):
+        return False
+    if p.startswith("/__debug__"):
+        return False
+    if p.startswith("/"):
         return True
     return False
 

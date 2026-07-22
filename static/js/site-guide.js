@@ -34,6 +34,8 @@
 	var input = root.querySelector(".eu-site-guide__input");
 	var sendBtn = root.querySelector(".eu-site-guide__send");
 	var busy = false;
+	var storageKey = "eu_site_guide_state_v1";
+	var dragState = null;
 
 	function appendMsg(html, role) {
 		if (!log) return;
@@ -42,12 +44,14 @@
 		el.innerHTML = html;
 		log.appendChild(el);
 		log.scrollTop = log.scrollHeight;
+		saveState();
 	}
 
 	function setOpen(open) {
 		root.classList.toggle("is-open", !!open);
 		if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
 		if (open && input) window.setTimeout(function () { input.focus(); }, 80);
+		saveState();
 	}
 
 	function hideIfModal() {
@@ -92,8 +96,97 @@
 			});
 	}
 
+	function saveState() {
+		try {
+			var msgs = [];
+			if (log) {
+				var nodes = log.querySelectorAll(".eu-site-guide__msg");
+				for (var i = 0; i < nodes.length; i++) {
+					var n = nodes[i];
+					msgs.push({
+						role: n.classList.contains("eu-site-guide__msg--user") ? "user" : "bot",
+						html: n.innerHTML,
+					});
+				}
+			}
+			var state = {
+				open: root.classList.contains("is-open"),
+				msgs: msgs,
+				left: root.style.left || "",
+				top: root.style.top || "",
+				right: root.style.right || "",
+				bottom: root.style.bottom || "",
+			};
+			sessionStorage.setItem(storageKey, JSON.stringify(state));
+		} catch (_e) {}
+	}
+
+	function restoreState() {
+		try {
+			var raw = sessionStorage.getItem(storageKey);
+			if (!raw) return;
+			var state = JSON.parse(raw);
+			if (!state || typeof state !== "object") return;
+			if (log && Array.isArray(state.msgs)) {
+				log.innerHTML = "";
+				for (var i = 0; i < state.msgs.length; i++) {
+					var m = state.msgs[i] || {};
+					appendMsg(String(m.html || ""), m.role === "user" ? "user" : "bot");
+				}
+			}
+			if (state.left) root.style.left = state.left;
+			if (state.top) root.style.top = state.top;
+			if (state.right || state.right === "") root.style.right = state.right;
+			if (state.bottom || state.bottom === "") root.style.bottom = state.bottom;
+			setOpen(!!state.open);
+		} catch (_e) {}
+	}
+
+	function clamp(val, min, max) {
+		return Math.max(min, Math.min(max, val));
+	}
+
+	function bindDrag() {
+		if (!toggle) return;
+		toggle.addEventListener("pointerdown", function (ev) {
+			if (ev.button !== 0) return;
+			dragState = {
+				startX: ev.clientX,
+				startY: ev.clientY,
+				origLeft: root.getBoundingClientRect().left,
+				origTop: root.getBoundingClientRect().top,
+				moved: false,
+			};
+			toggle.setPointerCapture(ev.pointerId);
+		});
+		toggle.addEventListener("pointermove", function (ev) {
+			if (!dragState) return;
+			var dx = ev.clientX - dragState.startX;
+			var dy = ev.clientY - dragState.startY;
+			if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragState.moved = true;
+			if (!dragState.moved) return;
+			var rect = root.getBoundingClientRect();
+			var nextLeft = clamp(dragState.origLeft + dx, 4, window.innerWidth - rect.width - 4);
+			var nextTop = clamp(dragState.origTop + dy, 4, window.innerHeight - rect.height - 4);
+			root.style.left = nextLeft + "px";
+			root.style.top = nextTop + "px";
+			root.style.right = "auto";
+			root.style.bottom = "auto";
+		});
+		function endDrag(ev) {
+			if (!dragState) return;
+			var moved = dragState.moved;
+			dragState = null;
+			try { toggle.releasePointerCapture(ev.pointerId); } catch (_e) {}
+			if (moved) saveState();
+		}
+		toggle.addEventListener("pointerup", endDrag);
+		toggle.addEventListener("pointercancel", endDrag);
+	}
+
 	if (toggle) {
 		toggle.addEventListener("click", function () {
+			if (dragState && dragState.moved) return;
 			setOpen(!root.classList.contains("is-open"));
 		});
 	}
@@ -122,5 +215,8 @@
 	}
 
 	hideIfModal();
+	restoreState();
+	bindDrag();
 	document.body.addEventListener("click", hideIfModal, true);
+	window.addEventListener("beforeunload", saveState);
 })();
