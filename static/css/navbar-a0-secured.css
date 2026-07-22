@@ -1302,3 +1302,32 @@ body.page-animale #A0 {
 	text-shadow: 0 0 1px rgba(0, 0, 0, 0.35);
 	font-weight: 800 !important;
 }
+
+/* Hub EU (.com / .eu / .org): selector limbi în meniu */
+#A0.a0-eu-site #menu-main-menu > li.a0-eu-lang-item {
+	display: inline-flex !important;
+	align-items: center !important;
+	flex-wrap: wrap !important;
+	gap: 0.25rem !important;
+	max-width: 100%;
+}
+#A0.a0-eu-site .a0-eu-lang-form {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	margin: 0;
+}
+#A0.a0-eu-site .a0-eu-lang-label {
+	font-size: 0.72rem;
+	color: rgba(255, 255, 255, 0.75);
+	white-space: nowrap;
+}
+#A0.a0-eu-site .a0-eu-lang-select {
+	max-width: min(11rem, 42vw);
+	font-size: 0.78rem;
+	padding: 0.15rem 0.35rem;
+	border-radius: 4px;
+	border: 1px solid rgba(255, 255, 255, 0.35);
+	background: rgba(15, 23, 42, 0.85);
+	color: #f8fafc;
+}

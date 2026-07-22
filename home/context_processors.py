@@ -231,6 +231,13 @@ def eu_pwa_login_pulse(request):
     return {"eu_pwa_login_pulse": pulse}
 
 
+def eu_site(request):
+    """Hub EU (.com / .eu / .org): limbă, meniu scurt, etichete traduse."""
+    from home.eu_site import eu_site_context_for_request
+
+    return eu_site_context_for_request(request)
+
+
 def wishlist_counts(request):
     """
     Injectează wishlist_count, nav_avatar_url și display_role în toate paginile.

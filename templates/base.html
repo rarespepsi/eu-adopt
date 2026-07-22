@@ -1,7 +1,7 @@
 {% load static %}
 {% load anunturi_extras %}
 <!DOCTYPE html>
-<html lang="ro">
+<html lang="{% if eu_site_active %}{{ eu_site_lang|default:'en' }}{% else %}ro{% endif %}">
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
@@ -50,7 +50,7 @@
 		{% endif %}
 	</style>
 	{% block extra_css %}{% endblock %}
-	<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}?v=20260719-avatar-75" type="text/css" media="screen" />
+	<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}?v=20260722-eu-hub-lang" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/pet-images-common.css' %}?v=3" type="text/css" media="screen" />
 	<link rel="stylesheet" href="{% static 'css/pet-card-meta.css' %}?v=2" type="text/css" media="screen" />
 	{% block extra_css_after %}{% endblock %}
@@ -66,7 +66,7 @@
 	{% if population_banner_mode != 'hidden' %}<link rel="stylesheet" href="{% static 'css/population-org.css' %}?v=2" type="text/css" media="screen" />{% endif %}
 	{% if prelaunch_mode %}<link rel="stylesheet" href="{% static 'css/prelaunch-soft-lock.css' %}?v=1" type="text/css" media="screen" />{% endif %}
 </head>
-<body class="content_left scheme_red euadopt-intra-skin {{ body_class|default:'' }} {% block body_class %}{% endblock %}{% if population_org_nav_reduced %} population-org-nav{% endif %}" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"{% if user.is_authenticated %} data-user-id="{{ user.pk }}"{% if user.is_staff %} data-user-staff="true"{% endif %}{% if user.is_superuser %} data-user-superuser="true"{% endif %}{% endif %}{% if eu_pwa_login_pulse %} data-eu-pwa-login-pulse="1"{% endif %} data-site-cart-toggle-url="{% url 'site_cart_toggle' %}" data-pwa-sw-url="{% url 'pwa_service_worker' %}">
+<body class="content_left scheme_red euadopt-intra-skin {{ body_class|default:'' }} {% block body_class %}{% endblock %}{% if population_org_nav_reduced %} population-org-nav{% endif %}{% if eu_site_active %} eu-site-active{% endif %}{% if eu_site_hub %} eu-site-hub{% endif %}" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"{% if user.is_authenticated %} data-user-id="{{ user.pk }}"{% if user.is_staff %} data-user-staff="true"{% endif %}{% if user.is_superuser %} data-user-superuser="true"{% endif %}{% endif %}{% if eu_pwa_login_pulse %} data-eu-pwa-login-pulse="1"{% endif %} data-site-cart-toggle-url="{% url 'site_cart_toggle' %}" data-pwa-sw-url="{% url 'pwa_service_worker' %}">
 	<section id="main_wrap">
 		{% block header %}
 		{% include "components/navbar_a0.html" %}

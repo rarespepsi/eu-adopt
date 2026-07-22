@@ -37,15 +37,18 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "").strip() or _SECRET_FALLBACK
 _debug_env = os.environ.get("DJANGO_DEBUG", "").strip().lower()
 DEBUG = _debug_env in ("1", "true", "yes", "on")
 
-ALLOWED_HOSTS = [
-    "eu-adopt.ro",
-    "www.eu-adopt.ro",
+from home.euadopt_domains import (
+    allowed_hosts_from_registry,
+    csrf_trusted_origins_from_registry,
+)
+
+ALLOWED_HOSTS = allowed_hosts_from_registry(
     ".onrender.com",
     "127.0.0.1",
     "192.168.10.85",
     "192.168.1.15",
     "localhost",
-]
+)
 # Dev: IP telefon / alt LAN fără edit manual (ex. DJANGO_ALLOWED_HOSTS=192.168.1.100,192.168.0.5)
 _extra_allowed = os.environ.get("DJANGO_ALLOWED_HOSTS", "").strip()
 if _extra_allowed:
@@ -55,9 +58,7 @@ if DEBUG and "*" not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append("*")
 
 # POST-uri AJAX (ex. coș site-cart) verifică Origin/Referer; listă explicită pentru www/apex și dev local.
-CSRF_TRUSTED_ORIGINS = [
-    "https://www.eu-adopt.ro",
-    "https://eu-adopt.ro",
+CSRF_TRUSTED_ORIGINS = csrf_trusted_origins_from_registry() + [
     "https://*.onrender.com",
 ]
 if DEBUG:
@@ -99,6 +100,10 @@ MAINTENANCE_MODE = _site_public in ('0', 'false', 'no', 'nu')
 _prelaunch = _os.environ.get("EUADOPT_PRELAUNCH_MODE", "").strip().lower()
 PRELAUNCH_MODE = _prelaunch in ("1", "true", "yes", "on")
 
+# Hub EU: meniu/limbi/rute pe domenii non-.ro. Faza infra = 0 (doar ALLOWED_HOSTS + redirect cratimă).
+_eu_skin = _os.environ.get("EUADOPT_EU_PRODUCT_SKIN", "0").strip().lower()
+EUADOPT_EU_PRODUCT_SKIN = _eu_skin in ("1", "true", "yes", "on")
+
 # Publicitate + promovare A2 gratuite în pre-lansare (1 casetă PUB/cont, 1 promovare/cont, 1 ofertă serviciu/cont).
 _pub_free_env = _os.environ.get("EUADOPT_PUBLICITATE_PRELAUNCH_FREE", "").strip().lower()
 if _pub_free_env in ("0", "false", "no", "off"):
@@ -138,6 +143,8 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'euadopt_final.eu_site_middleware.EuSiteMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -168,6 +175,7 @@ TEMPLATES = [
                 'home.context_processors.site_guide',
                 'home.context_processors.user_onboarding',
                 'home.context_processors.eu_pwa_login_pulse',
+                'home.context_processors.eu_site',
             ],
         },
     },
@@ -332,13 +340,26 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+from home.eu_site import EU_SITE_LANGUAGE_CHOICES  # noqa: E402
+
+# .ro rămâne română; hub EU activează limba în EuSiteMiddleware.
+LANGUAGE_CODE = "ro"
+
+LANGUAGES = EU_SITE_LANGUAGE_CHOICES
+
+LOCALE_PATHS = [BASE_DIR / "locale"]
 
 TIME_ZONE = 'Europe/Bucharest'
 
 USE_I18N = True
 
+USE_L10N = True
+
 USE_TZ = True
+
+LANGUAGE_COOKIE_NAME = "euadopt_lang"
+LANGUAGE_COOKIE_AGE = 60 * 60 * 24 * 365
+LANGUAGE_COOKIE_SAMESITE = "Lax"
 
 
 # Static files (CSS, JavaScript, Images)

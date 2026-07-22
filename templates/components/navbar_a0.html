@@ -1,39 +1,39 @@
 {% load static %}
 <!-- A0 - Navbar principal (Acasă / Animale / etc) - același pe toate paginile -->
-<header id="A0" data-slot="A0">
+<header id="A0" data-slot="A0"{% if eu_site_active %} class="a0-eu-site"{% endif %}>
 	<div class="container">
 		<div id="main_menu" class="clearfix">
 			<div class="clearfix a0-bar-inner">
 				<div class="a0-left">
 					<div class="animal-counter-navbar a0-counters-left">
-						<div class="counter-item a0-counter-chip" role="group" aria-label="În Site: {{ active_animals|default:0 }} animale">
+						<div class="counter-item a0-counter-chip" role="group" aria-label="{% if eu_site_active %}{{ eu_nav_text.on_site }}: {{ active_animals|default:0 }}{% else %}În Site: {{ active_animals|default:0 }} animale{% endif %}">
 							<span class="a0-counter-chip-body">
 								<svg class="a0-counter-chip-ico" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24">
 									<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5"/>
 								</svg>
-								<span class="a0-counter-chip-label">În Site</span>
+								<span class="a0-counter-chip-label">{% if eu_site_active %}{{ eu_nav_text.on_site }}{% else %}În Site{% endif %}</span>
 								<span class="a0-counter-chip-badge">{{ active_animals|default:0 }}</span>
 							</span>
 						</div>
-						<div class="counter-item a0-counter-chip" role="group" aria-label="Adoptați: {{ adopted_animals|default:0 }}">
+						<div class="counter-item a0-counter-chip" role="group" aria-label="{% if eu_site_active %}{{ eu_nav_text.adopted }}: {{ adopted_animals|default:0 }}{% else %}Adoptați: {{ adopted_animals|default:0 }}{% endif %}">
 							<span class="a0-counter-chip-body">
 								<svg class="a0-counter-chip-ico a0-counter-chip-ico--solid" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
 									<path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2ZM7.99 9a1 1 0 0 1 1-1H9a1 1 0 0 1 0 2h-.01a1 1 0 0 1-1-1ZM14 9a1 1 0 0 1 1-1h.01a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1Zm-5.506 7.216A5.5 5.5 0 0 1 6.6 13h10.81a5.5 5.5 0 0 1-8.916 3.216Z" clip-rule="evenodd"/>
 								</svg>
-								<span class="a0-counter-chip-label">Adoptați</span>
+								<span class="a0-counter-chip-label">{% if eu_site_active %}{{ eu_nav_text.adopted }}{% else %}Adoptați{% endif %}</span>
 								<span class="a0-counter-chip-badge">{{ adopted_animals|default:0 }}</span>
 							</span>
 						</div>
 					</div>
 				</div>
-				<button type="button" class="a0-mobile-trigger" id="a0_mobile_trigger" aria-expanded="false" aria-controls="menu_wrap" aria-label="Deschide sau închide meniul">
+				<button type="button" class="a0-mobile-trigger" id="a0_mobile_trigger" aria-expanded="false" aria-controls="menu_wrap" aria-label="{% if eu_site_active %}{{ eu_nav_text.open_menu }}{% else %}Deschide sau închide meniul{% endif %}">
 					<span class="a0-hamburger" aria-hidden="true"></span>
 				</button>
 				<div class="a0-mobile-shortcuts" aria-label="I Love, animale în grijă, adoptați">
 					{% if user.is_authenticated and not population_org_nav_reduced %}
-					<a href="{% url 'i_love' %}" class="a0-ms a0-ms-love{% if wishlist_count|default:0 %} a0-nav-has-items{% endif %}" data-a0-wishlist-nav="1" title="I Love — inimioare">❤️<span class="a0-ms-val" data-wishlist-count>{{ wishlist_count|default:0 }}</span></a><span class="a0-ms-sep" aria-hidden="true">·</span><a href="{% url 'i_love_cos' %}" class="a0-ms a0-ms-love{% if site_cart_count|default:0 %} a0-nav-has-items{% endif %}" data-a0-site-cart-nav="1" title="Coș cumpărături">🛒<span class="a0-ms-val" data-site-cart-count>{{ site_cart_count|default:0 }}</span></a>
+					<a href="{% url 'i_love' %}" class="a0-ms a0-ms-love{% if wishlist_count|default:0 %} a0-nav-has-items{% endif %}" data-a0-wishlist-nav="1" title="I Love — inimioare">❤️<span class="a0-ms-val" data-wishlist-count>{{ wishlist_count|default:0 }}</span></a>{% if not eu_site_active %}<span class="a0-ms-sep" aria-hidden="true">·</span><a href="{% url 'i_love_cos' %}" class="a0-ms a0-ms-love{% if site_cart_count|default:0 %} a0-nav-has-items{% endif %}" data-a0-site-cart-nav="1" title="Coș cumpărături">🛒<span class="a0-ms-val" data-site-cart-count>{{ site_cart_count|default:0 }}</span></a>{% endif %}
 					{% elif not user.is_authenticated %}
-					<a href="{% url 'login' %}" class="a0-ms a0-ms-love" title="I Love – intră în cont">❤️<span class="a0-ms-val">0</span><span class="a0-ms-sep" aria-hidden="true">·</span>🛒<span class="a0-ms-val">0</span></a>
+					<a href="{% url 'login' %}" class="a0-ms a0-ms-love" title="I Love – intră în cont">❤️<span class="a0-ms-val">0</span>{% if not eu_site_active %}<span class="a0-ms-sep" aria-hidden="true">·</span>🛒<span class="a0-ms-val">0</span>{% endif %}</a>
 					{% endif %}
 					<span class="a0-ms a0-ms-animals" title="În Site / Adoptați">
 						<span class="a0-ms-chip" aria-hidden="true">
@@ -60,28 +60,26 @@
 				<nav id="menu_wrap" class="a0-right">
 					<div class="menu-main-menu-container">
 						<ul id="menu-main-menu" class="menu">
+							{% if not eu_site_active %}
 							{% if user.is_authenticated and show_magazinul_meu_nav or user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}
 								<li class="a0-nav-ads-float">
 									<a href="{% url 'publicitate_harta' %}" class="a0-nav-ads-link" title="Comenzi publicitate">PUB</a>
 								</li>
 							{% endif %}
-							<li><a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="a0-nav-home-link current_page"{% else %}class="a0-nav-home-link"{% endif %}>Acasă</a></li>
-							<li><a href="{% url 'pets_all' %}" {% if request.resolver_match.url_name == 'pets_all' %}class="current_page"{% endif %}>Prietenul tău</a></li>
+							{% endif %}
+							<li><a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="a0-nav-home-link current_page"{% else %}class="a0-nav-home-link"{% endif %}>{% if eu_site_active %}{{ eu_nav_text.home }}{% else %}Acasă{% endif %}</a></li>
+							<li><a href="{% url 'pets_all' %}" {% if request.resolver_match.url_name == 'pets_all' %}class="current_page"{% endif %}>{% if eu_site_active %}{{ eu_nav_text.pets }}{% else %}Prietenul tău{% endif %}</a></li>
 							<li class="a0-nav-adaposturi">
-								{% if user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}
-								<a href="{% url 'shelter_directory' %}" title="Adăposturi și ONG-uri" {% if request.resolver_match.url_name == 'shelter_directory' or request.resolver_match.url_name == 'shelter_detail' %}class="current_page"{% endif %}>Adăp/ONG</a>
-								{% else %}
-								<a href="{% url 'shelter_directory' %}" {% if request.resolver_match.url_name == 'shelter_directory' or request.resolver_match.url_name == 'shelter_detail' %}class="current_page"{% endif %}>Adăpost/ONG</a>
-								{% endif %}
+								<a href="{% url 'shelter_directory' %}" {% if request.resolver_match.url_name == 'shelter_directory' or request.resolver_match.url_name == 'shelter_detail' %}class="current_page"{% endif %}>{% if eu_site_active %}{{ eu_nav_text.shelters }}{% elif user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}Adăp/ONG{% else %}Adăpost/ONG{% endif %}</a>
 							</li>
-							{% if not population_org_nav_reduced %}
+							{% if not eu_site_active and not population_org_nav_reduced %}
 							<li><a href="{% url 'servicii' %}" {% if request.resolver_match.url_name == 'servicii' %}class="current_page"{% endif %}>Servicii</a></li>
 							<li><a href="{% url 'transport' %}" {% if request.resolver_match.url_name == 'transport' %}class="current_page"{% endif %}>Transport</a></li>
 							<li><a href="{% url 'shop' %}" {% if request.resolver_match.url_name == 'shop' %}class="current_page"{% endif %}>Shop</a></li>
 							{% endif %}
 							{% if user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}
 								<li><a href="{% url 'admin_analysis_home' %}">Analiza</a></li>
-								<li><a href="{% url 'reclama_staff' %}">Reclama</a></li>
+								{% if not eu_site_active %}<li><a href="{% url 'reclama_staff' %}">Reclama</a></li>{% endif %}
 							{% endif %}
 							{% if user.is_authenticated %}
 								<li class="a0-nav-account-item"><a href="{% url 'account' %}" class="a0-nav-account-link">
@@ -96,33 +94,49 @@
 							{% endif %}
 							{% if not user.is_authenticated %}
 							<li class="a0-nav-mypet-start">
-								<a href="{% url 'login' %}">MyPet</a>
+								<a href="{% url 'login' %}">{% if eu_site_active %}{{ eu_nav_text.mypet }}{% else %}MyPet{% endif %}</a>
 							</li>
 							{% elif show_mypet_nav %}
 							<li class="a0-nav-mypet-start">
-								<a href="{% url 'mypet' %}">MyPet</a>
+								<a href="{% url 'mypet' %}">{% if eu_site_active %}{{ eu_nav_text.mypet }}{% else %}MyPet{% endif %}</a>
 							</li>
-							{% elif show_magazinul_meu_nav %}
+							{% elif show_magazinul_meu_nav and not eu_site_active %}
 							<li class="a0-nav-mypet-start">
 								<a href="{% url 'collab_offers_control' %}">{{ nav_magazinul_meu_label|default:"Magazinul meu" }}</a>
 							</li>
 							{% endif %}
 							<li class="a0-nav-ilove-start{% if population_org_nav_reduced %} a0-nav-ilove-start--hidden{% endif %}">
 								{% if user.is_authenticated and not population_org_nav_reduced %}
-									<a href="{% url 'i_love' %}" class="{% if wishlist_count|default:0 %}a0-nav-has-items{% endif %}" data-a0-wishlist-nav="1">❤️ I Love (<span data-wishlist-count>{{ wishlist_count|default:0 }}</span>)</a>
+									<a href="{% url 'i_love' %}" class="{% if wishlist_count|default:0 %}a0-nav-has-items{% endif %}" data-a0-wishlist-nav="1">❤️ {% if eu_site_active %}{{ eu_nav_text.ilove }}{% else %}I Love{% endif %} (<span data-wishlist-count>{{ wishlist_count|default:0 }}</span>)</a>
+									{% if not eu_site_active %}
 									<span class="a0-nav-ilove-sep" aria-hidden="true"> · </span>
 									<a href="{% url 'i_love_cos' %}" class="{% if site_cart_count|default:0 %}a0-nav-has-items{% endif %}" data-a0-site-cart-nav="1">Coș (<span data-site-cart-count>{{ site_cart_count|default:0 }}</span>)</a>
+									{% endif %}
 								{% else %}
-									<a href="{% url 'login' %}">❤️ I Love</a>
+									<a href="{% url 'login' %}">❤️ {% if eu_site_active %}{{ eu_nav_text.ilove }}{% else %}I Love{% endif %}</a>
 								{% endif %}
 							</li>
 							{% if user.is_authenticated %}
-								<li><a href="{% url 'logout' %}">Logout</a></li>
+								<li><a href="{% url 'logout' %}">{% if eu_site_active %}{{ eu_nav_text.logout }}{% else %}Logout{% endif %}</a></li>
 							{% else %}
-								<li><a href="{% url 'login' %}" class="a0-login-cta">Intră / Fă cont</a></li>
+								<li><a href="{% url 'login' %}" class="a0-login-cta">{% if eu_site_active %}{{ eu_nav_text.login_cta }}{% else %}Intră / Fă cont{% endif %}</a></li>
 							{% endif %}
-							<li><a href="{% url 'termeni' %}" {% if request.resolver_match.url_name == 'termeni' %}class="current_page"{% endif %}>Termeni și condiții</a></li>
-							<li><a href="{% url 'contact' %}" {% if request.resolver_match.url_name == 'contact' %}class="current_page"{% endif %}>Contact</a></li>
+							{% if eu_site_hub %}
+							<li class="a0-eu-lang-item">
+								<form class="a0-eu-lang-form" action="{% url 'set_language' %}" method="post">
+									{% csrf_token %}
+									<input type="hidden" name="next" value="{{ request.get_full_path }}" />
+									<label class="a0-eu-lang-label" for="a0_eu_lang_select">{{ eu_nav_text.lang_label }}</label>
+									<select id="a0_eu_lang_select" class="a0-eu-lang-select" name="language" onchange="this.form.submit()">
+										{% for code, label in eu_site_languages %}
+										<option value="{{ code }}"{% if code == eu_site_lang %} selected{% endif %}>{{ label }}</option>
+										{% endfor %}
+									</select>
+								</form>
+							</li>
+							{% endif %}
+							<li><a href="{% url 'termeni' %}" {% if request.resolver_match.url_name == 'termeni' %}class="current_page"{% endif %}>{% if eu_site_active %}{{ eu_nav_text.terms }}{% else %}Termeni și condiții{% endif %}</a></li>
+							<li><a href="{% url 'contact' %}" {% if request.resolver_match.url_name == 'contact' %}class="current_page"{% endif %}>{% if eu_site_active %}{{ eu_nav_text.contact }}{% else %}Contact{% endif %}</a></li>
 						</ul>
 					</div>
 				</nav>
@@ -140,7 +154,7 @@
 					<div class="a0-search-form-inline">
 						<form method="get" id="searchform" action="{% url 'home' %}">
 							<div class="a0-search-input-wrap">
-								<input type="search" class="search_input" id="s" name="s" placeholder="Căutare..." aria-label="Căutare" autocomplete="off" />
+								<input type="search" class="search_input" id="s" name="s" placeholder="{% if eu_site_active %}{{ eu_nav_text.search_ph }}{% else %}Căutare...{% endif %}" aria-label="{% if eu_site_active %}{{ eu_nav_text.search_ph }}{% else %}Căutare{% endif %}" autocomplete="off" />
 								<button type="submit" class="a0-search-submit" title="Caută (Enter)" aria-label="Caută"><span class="a0-search-enter-icon" aria-hidden="true"></span></button>
 								<ul id="a0_search_history" class="a0-search-history" role="listbox" aria-label="Ultimele căutări"></ul>
 							</div>
@@ -206,7 +220,7 @@
 	function setOpen(open) {
 		a0.classList.toggle("a0-nav-open", open);
 		btn.setAttribute("aria-expanded", open ? "true" : "false");
-		btn.setAttribute("aria-label", open ? "Închide meniul" : "Deschide meniul");
+		btn.setAttribute("aria-label", open ? "{% if eu_site_active %}{{ eu_nav_text.close_menu|escapejs }}{% else %}Închide meniul{% endif %}" : "{% if eu_site_active %}{{ eu_nav_text.open_menu|escapejs }}{% else %}Deschide meniul{% endif %}");
 		syncMobileMenuPortal(open);
 	}
 
