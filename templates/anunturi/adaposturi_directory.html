@@ -183,17 +183,22 @@
 	.adp-dir-card__media {
 		flex: 1 1 auto;
 		min-height: 7.5rem;
-		background: #eceff1 center/cover no-repeat;
+		aspect-ratio: 4 / 3;
+		background: #eceff1 center/contain no-repeat;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		overflow: hidden;
+		padding: 0.35rem;
+		box-sizing: border-box;
 	}
 	.adp-dir-card__media img {
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
+		object-fit: contain;
+		object-position: center;
 		display: block;
-		min-height: 7.5rem;
+		min-height: 0;
 	}
 	.adp-dir-card__placeholder {
 		font-size: 2.2rem;

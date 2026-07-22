@@ -141,7 +141,7 @@ _FAQ_CONTEXT_BOOST: dict[str, tuple[str, ...]] = {
     "transport_ce": ("transport", "curier", "deplasare"),
     "pt_match": ("pereche", "potrivire", "gaseste-mi", "găsește-mi", "match"),
     "pt_specie_altele": (
-        "hamster", "iepure", "iepuri", "altele", "porcusor", "cobai", "gasesc", "găsesc", "caut",
+        "hamster", "iepure", "iepuri", "altele", "porcusor", "cobai",
     ),
     "pt_cautare": (
         "prietenul", "animale", "caini", "câini", "pisici", "grila", "card", "filtrez", "filtru",
@@ -149,21 +149,38 @@ _FAQ_CONTEXT_BOOST: dict[str, tuple[str, ...]] = {
     "pt_unde": ("lista animale",),
     "shop_ce": ("shop", "magazin", "produs"),
     "ilove_ce": ("i love", "ilove", "favorite", "inimioara", "inimioară"),
-    "mypet_ce": ("mypet", "my pet", "adapost", "adăpost"),
+    "mypet_ce": ("mypet", "my pet"),
+    "adapost_cautare": (
+        "adapost", "adăpost", "adaposturi", "asociatie", "asociație", "ong", "shelter",
+    ),
+    "adapost_pagina": ("pagina adapost", "pagina adăpostului"),
 }
+
+
+_SHELTER_FIND_RE = re.compile(
+    r"\b(adapost|adaposturi|asociatie|asociatia|ong|shelter)\b",
+    re.I,
+)
 
 
 def _intent_boost(question_norm: str, entry_id: str) -> int:
     """Prioritizează răspunsul PT / Altele la întrebări de tip „cum găsesc hamster”."""
     boost = 0
-    if entry_id == "pt_specie_altele" and _OTHER_SPECIES_RE.search(question_norm):
+    shelter_q = bool(_SHELTER_FIND_RE.search(question_norm))
+    if entry_id == "adapost_cautare" and shelter_q:
+        boost += 12
+        if _FIND_ANIMAL_RE.search(question_norm):
+            boost += 8
+    if entry_id == "pt_specie_altele" and _OTHER_SPECIES_RE.search(question_norm) and not shelter_q:
         boost += 10
         if _FIND_ANIMAL_RE.search(question_norm):
             boost += 8
-    if entry_id == "pt_cautare" and _FIND_ANIMAL_RE.search(question_norm):
+    if entry_id == "pt_cautare" and _FIND_ANIMAL_RE.search(question_norm) and not shelter_q:
         boost += 4
     if entry_id == "pt_unde" and _OTHER_SPECIES_RE.search(question_norm):
         boost -= 6
+    if entry_id == "mypet_ce" and shelter_q:
+        boost -= 8
     return boost
 
 

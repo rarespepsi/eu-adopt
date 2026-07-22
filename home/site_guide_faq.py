@@ -379,14 +379,47 @@ SITE_GUIDE_FAQ: tuple[SiteGuideFaqEntry, ...] = (
         ),
     ),
     SiteGuideFaqEntry(
+        id="adapost_cautare",
+        title="Cum găsesc un adăpost sau ONG?",
+        keywords=(
+            "gasesc adapost",
+            "găsesc adăpost",
+            "caut adapost",
+            "caut adăpost",
+            "gasesc ong",
+            "găsesc ong",
+            "lista adaposturi",
+            "lista adăposturi",
+            "adaposturi",
+            "asociatii",
+            "asociații",
+            "unde e adapostul",
+            "unde e adăpostul",
+        ),
+        answer=(
+            "Deschide **/adaposturi/** — directorul cu **adăposturi și ONG-uri** de pe EU-Adopt.\n\n"
+            "• Filtrează după **județ** din meniul de sus.\n"
+            "• Apasă pe **caseta** organizației → pagina ei cu animalele din MyPet.\n"
+            "• Dacă știi numele (ex. Nicol), derulează lista sau filtrează județul și caută caseta.\n\n"
+            "Animalele din toată țara: **Prietenul tău** + filtre (nu e același lucru cu lista de adăposturi)."
+        ),
+    ),
+    SiteGuideFaqEntry(
         id="adapost_pagina",
         title="Pagina unui adăpost",
-        keywords=("adapost", "adăpost", "adaposturi", "asociatie", "asociație", "shelter", "lista caini adapost"),
+        keywords=(
+            "pagina adapost",
+            "pagina adăpost",
+            "pagina adăpostului",
+            "animalele adapostului",
+            "lista caini adapost",
+            "shelter page",
+        ),
         answer=(
-            "Unele adăposturi au pagină publică (ex. **/adaposturi/nume-adapost/**):\n"
-            "• Prezentare adăpost, animalele lui în grilă.\n"
+            "Fiecare adăpost din **/adaposturi/** are pagină publică (ex. **/adaposturi/nume-adapost/**):\n"
+            "• Prezentare, logo, contact, animalele lui în grilă.\n"
             "• Click pe animal → aceeași **fișă** ca din Prietenul tău.\n"
-            "• Pentru toate animalele din țară, folosește tot **Prietenul tău** + filtre."
+            "• Pentru toate animalele din țară, folosește **Prietenul tău** + filtre."
         ),
     ),
     SiteGuideFaqEntry(

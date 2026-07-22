@@ -49,6 +49,15 @@ class SiteGuideLogicTests(TestCase):
         self.assertIn("Altele", r["answer"])
         self.assertIn("Prietenul", r["answer"])
 
+    def test_faq_match_gasesc_adapost_not_altele(self):
+        from home.site_guide import answer_question
+
+        r = answer_question("cum gasesc adapost nicol")
+        self.assertEqual(r["source"], "faq")
+        self.assertEqual(r["faq_id"], "adapost_cautare")
+        self.assertIn("/adaposturi/", r["answer"])
+        self.assertNotIn("hamster", r["answer"].lower())
+
     def test_refuse_nutrition(self):
         from home.site_guide import answer_question
 
