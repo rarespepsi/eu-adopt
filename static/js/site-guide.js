@@ -36,6 +36,14 @@
 	var busy = false;
 	var storageKey = "eu_site_guide_state_v1";
 	var dragState = null;
+	var restoring = false;
+
+	function resetDefaultPosition() {
+		root.style.left = "";
+		root.style.top = "";
+		root.style.right = "";
+		root.style.bottom = "";
+	}
 
 	function appendMsg(html, role) {
 		if (!log) return;
@@ -97,6 +105,7 @@
 	}
 
 	function saveState() {
+		if (restoring) return;
 		try {
 			var msgs = [];
 			if (log) {
@@ -112,21 +121,19 @@
 			var state = {
 				open: root.classList.contains("is-open"),
 				msgs: msgs,
-				left: root.style.left || "",
-				top: root.style.top || "",
-				right: root.style.right || "",
-				bottom: root.style.bottom || "",
 			};
 			sessionStorage.setItem(storageKey, JSON.stringify(state));
 		} catch (_e) {}
 	}
 
 	function restoreState() {
+		resetDefaultPosition();
 		try {
 			var raw = sessionStorage.getItem(storageKey);
 			if (!raw) return;
 			var state = JSON.parse(raw);
 			if (!state || typeof state !== "object") return;
+			restoring = true;
 			if (log && Array.isArray(state.msgs)) {
 				log.innerHTML = "";
 				for (var i = 0; i < state.msgs.length; i++) {
@@ -134,12 +141,11 @@
 					appendMsg(String(m.html || ""), m.role === "user" ? "user" : "bot");
 				}
 			}
-			if (state.left) root.style.left = state.left;
-			if (state.top) root.style.top = state.top;
-			if (state.right || state.right === "") root.style.right = state.right;
-			if (state.bottom || state.bottom === "") root.style.bottom = state.bottom;
 			setOpen(!!state.open);
-		} catch (_e) {}
+		} catch (_e) {
+		} finally {
+			restoring = false;
+		}
 	}
 
 	function clamp(val, min, max) {
@@ -175,10 +181,8 @@
 		});
 		function endDrag(ev) {
 			if (!dragState) return;
-			var moved = dragState.moved;
 			dragState = null;
 			try { toggle.releasePointerCapture(ev.pointerId); } catch (_e) {}
-			if (moved) saveState();
 		}
 		toggle.addEventListener("pointerup", endDrag);
 		toggle.addEventListener("pointercancel", endDrag);
@@ -219,4 +223,8 @@
 	bindDrag();
 	document.body.addEventListener("click", hideIfModal, true);
 	window.addEventListener("beforeunload", saveState);
+	window.addEventListener("pageshow", function (e) {
+		resetDefaultPosition();
+		if (e.persisted) restoreState();
+	});
 })();
