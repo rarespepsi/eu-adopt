@@ -163,8 +163,39 @@
 		cursor: default;
 	}
 	.adp-det__promo-cell--fb {
+		position: relative;
+		overflow: hidden;
+		padding: 0;
 		background: linear-gradient(165deg, #1877f2 0%, #0d47a1 100%);
 		border-color: #1565c0;
+	}
+	.adp-det__promo-fb-bg {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		object-position: center;
+		display: block;
+		pointer-events: none;
+		background: #fff;
+		padding: 0.2rem;
+		box-sizing: border-box;
+	}
+	.adp-det__promo-fb-txt {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+		padding: 0.3rem;
+		box-sizing: border-box;
+		text-shadow: 0 1px 2px rgba(0,0,0,0.55);
+	}
+	.adp-det__promo-cell--fb.has-photo .adp-det__promo-fb-txt {
+		background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(13,71,161,0.55) 100%);
 	}
 	.adp-det__promo-cell--food {
 		position: relative;
@@ -1699,9 +1730,14 @@
 
 		<div class="adp-det__promo-slot">
 			{% if org_promo.social %}
-			<a class="adp-det__promo-cell adp-det__promo-cell--fb" href="{{ org_promo.social }}" target="_blank" rel="noopener noreferrer" title="Facebook / social">Social</a>
+			<a class="adp-det__promo-cell adp-det__promo-cell--fb{% if org_logo_url %} has-photo{% endif %}" href="{{ org_promo.social }}" target="_blank" rel="noopener noreferrer" title="Facebook / social">
+				{% if org_logo_url %}
+				<img class="adp-det__promo-fb-bg" src="{{ org_logo_url }}" alt="" decoding="async" />
+				{% endif %}
+				<span class="adp-det__promo-fb-txt">Social</span>
+			</a>
 			{% else %}
-			<span class="adp-det__promo-cell adp-det__promo-cell--fb adp-det__promo-cell--empty" title="Link social necompletat">Social</span>
+			<span class="adp-det__promo-cell adp-det__promo-cell--fb adp-det__promo-cell--empty" title="Link social necompletat"><span class="adp-det__promo-fb-txt">Social</span></span>
 			{% endif %}
 			<a
 				class="adp-det__promo-cell adp-det__promo-cell--food"
