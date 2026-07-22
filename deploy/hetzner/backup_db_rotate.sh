@@ -5,7 +5,11 @@
 
 set -euo pipefail
 
-KEEP="${EUADOPT_DB_BACKUP_KEEP:-3}"
+KEEP_RAW="${EUADOPT_DB_BACKUP_KEEP:-3}"
+KEEP="${KEEP_RAW//$'\r'/}"
+if [[ ! "${KEEP}" =~ ^[0-9]+$ ]]; then
+  KEEP=3
+fi
 BACKUP_DIR="${EUADOPT_DB_BACKUP_DIR:-/var/backups/euadopt}"
 DB_NAME="${EUADOPT_DB_NAME:-euadopt}"
 STAMP="$(date +%Y%m%d_%H%M%S)"

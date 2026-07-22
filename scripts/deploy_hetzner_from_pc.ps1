@@ -20,11 +20,7 @@ if (-not $SkipLocalBackup) {
 }
 
 Write-Host "=== 2/2 Hetzner: backup DB + deploy ==="
-$remoteCmd = @"
-set -e
-export EUADOPT_DB_BACKUP_KEEP=$DbKeep
-bash /opt/eu-adopt/deploy/hetzner/deploy_update.sh
-"@
+$remoteCmd = "EUADOPT_DB_BACKUP_KEEP=$DbKeep bash /opt/eu-adopt/deploy/hetzner/deploy_update.sh"
 
 ssh -o BatchMode=yes $HetznerHost $remoteCmd
 if ($LASTEXITCODE -ne 0) { throw "Deploy SSH a eșuat (exit $LASTEXITCODE)." }
