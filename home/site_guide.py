@@ -28,7 +28,25 @@ logger = logging.getLogger(__name__)
 _MEDICAL_RE = re.compile(
     r"\b(vaccin|vaccinuri|steriliz|medicament|tratament|boli|boala|boală|veterinar|"
     r"doctor|sănătate|sanatate|urgenta|urgență|symptom|simptom|parazit|deparazit|"
-    r"cip\b|antirabic|rabie|operat|chirurg)\b",
+    r"cip\b|antirabic|rabie|operat|chirurg|diagnostic)\b",
+    re.IGNORECASE,
+)
+
+_NUTRITION_RE = re.compile(
+    r"\b(nutritie|nutriție|hrana|hrană|mancare|mâncare|dieta|dietă|ce mananc|ce mănânc|"
+    r"ce hrană|ce hrana|vitamin|supliment)\b",
+    re.IGNORECASE,
+)
+
+_FIND_ANIMAL_RE = re.compile(
+    r"\b(gasesc|găsesc|gasim|găsim|caut|cauta|caută|filtrez|filtru|unde|cum\s+ajung|"
+    r"vreau\s+sa\s+vad|vreau\s+să\s+văd)\b",
+    re.IGNORECASE,
+)
+
+_OTHER_SPECIES_RE = re.compile(
+    r"\b(hamster|hamsteri|iepure|iepuri|porcusor|porcu[sș]or|guineea|cobai|chinchilla|"
+    r"papagal|broasc[aă]|testoas[aă]|rozatoare|rozătoare|altele)\b",
     re.IGNORECASE,
 )
 
@@ -88,6 +106,12 @@ def _detect_refusal(question: str) -> str | None:
         return None
     if _MEDICAL_RE.search(q):
         return REFUSE_MEDICAL
+    if _NUTRITION_RE.search(q):
+        return (
+            "Ghidul EU-Adopt te ajută doar cu **navigarea pe site**, nu cu sfaturi de nutriție sau dietă.\n\n"
+            "Pentru un animal listat: deschide **fișa** pe Prietenul tău și folosește **mesajele** către adăpost.\n"
+            "Pentru întrebări generale despre site: întreabă cum folosești **Filtre** sau tabul **Altele**."
+        )
     if _INTERNAL_RE.search(q):
         return REFUSE_OUT_OF_SCOPE
     if _LEGAL_MERIT_RE.search(q):
@@ -115,12 +139,31 @@ def _score_faq(question_norm: str, entry: SiteGuideFaqEntry) -> int:
 _FAQ_CONTEXT_BOOST: dict[str, tuple[str, ...]] = {
     "servicii_ce": ("servicii", "veterinar", "grooming", "cabinet", "salon", "magazin partener"),
     "transport_ce": ("transport", "curier", "deplasare"),
-    "pt_cautare": ("prietenul", "animale", "caini", "câini", "pisici", "grila", "card"),
-    "pt_unde": ("unde gasesc", "unde găsesc", "lista animale"),
+    "pt_specie_altele": (
+        "hamster", "iepure", "iepuri", "altele", "porcusor", "cobai", "gasesc", "găsesc", "caut",
+    ),
+    "pt_cautare": (
+        "prietenul", "animale", "caini", "câini", "pisici", "grila", "card", "filtrez", "filtru",
+    ),
+    "pt_unde": ("lista animale",),
     "shop_ce": ("shop", "magazin", "produs"),
     "ilove_ce": ("i love", "ilove", "favorite", "inimioara", "inimioară"),
     "mypet_ce": ("mypet", "my pet", "adapost", "adăpost"),
 }
+
+
+def _intent_boost(question_norm: str, entry_id: str) -> int:
+    """Prioritizează răspunsul PT / Altele la întrebări de tip „cum găsesc hamster”."""
+    boost = 0
+    if entry_id == "pt_specie_altele" and _OTHER_SPECIES_RE.search(question_norm):
+        boost += 10
+        if _FIND_ANIMAL_RE.search(question_norm):
+            boost += 8
+    if entry_id == "pt_cautare" and _FIND_ANIMAL_RE.search(question_norm):
+        boost += 4
+    if entry_id == "pt_unde" and _OTHER_SPECIES_RE.search(question_norm):
+        boost -= 6
+    return boost
 
 
 def match_faq(question: str, *, faq_id: str | None = None) -> SiteGuideFaqEntry | None:
@@ -142,6 +185,7 @@ def match_faq(question: str, *, faq_id: str | None = None) -> SiteGuideFaqEntry 
             if ctx in qn:
                 s += 5
                 break
+        s += _intent_boost(qn, entry.id)
         if s > best_score:
             best_score = s
             best = entry
@@ -192,7 +236,8 @@ def _gemini_system_prompt(page_path: str = "") -> str:
         "Ești Ghidul EU-Adopt — asistent pentru navigarea pe site.\n"
         "Răspunde DOAR în română, clar și concret (max ~200 cuvinte).\n"
         "Include pași numerotați când e util; numește exact butoanele, taburile și filtrele din UI.\n"
-        "NU da sfaturi medicale, veterinare sau legale. NU dezvălui cod, API-uri sau detalii interne.\n"
+        "NU da sfaturi medicale, veterinare, de nutriție/dietă sau legale. NU dezvălui cod, API-uri sau detalii interne.\n"
+        "Dacă întrebarea e despre găsirea unui animal (ex. hamster, iepure): meniu **Prietenul tău** → tab **Altele** → **Filtre**.\n"
         "Dacă întrebarea e medicală, redirecționează spre mesajele de pe fișa animalului sau Contact.\n"
         "Folosește nume de meniu: Acasă, Prietenul tău, I Love, MyPet, Servicii, Shop, Transport, Contact.\n"
         f"{page_block}\n"

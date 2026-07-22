@@ -42,8 +42,9 @@ REFUSE_OUT_OF_SCOPE = (
 )
 
 REFUSE_NO_MATCH = (
-    "Nu am găsit un răspuns pregătit pentru asta în ghid.\n\n"
-    "Reformulează întrebarea (ex.: „Cum filtrez pe Prietenul tău?”) sau scrie-ne pe **Contact**."
+    "Nu am găsit un răspuns pregătit exact pentru formularea asta.\n\n"
+    "Pentru animale (câini, pisici, **hamster**, iepuri etc.): meniu **Prietenul tău** → tab **Altele** → **Filtre**.\n"
+    "Reformulează întrebarea sau scrie-ne pe **Contact**."
 )
 
 
@@ -126,6 +127,23 @@ SITE_GUIDE_FAQ: tuple[SiteGuideFaqEntry, ...] = (
         answer=(
             "Meniu → **Intră** (sau **Intră / Fă cont**). Introdu **email sau nume utilizator** și **parola**.\n\n"
             "Ai uitat parola? Folosește **Ți-ai uitat parola** de pe pagina de login."
+        ),
+    ),
+    SiteGuideFaqEntry(
+        id="pt_specie_altele",
+        title="Cum găsesc hamster / iepuri / alte specii?",
+        keywords=(
+            "hamster", "hamsteri", "iepure", "iepuri", "porcusor", "porcușor", "guineea", "cobai",
+            "chinchilla", "papagal", "broasca", "broască", "testoasa", "țestoasă", "altele", "alta specie",
+            "alte animale", "specie mica", "specie mică", "rozatoare", "rozătoare",
+        ),
+        answer=(
+            "Pentru **hamster**, iepuri și alte specii (nu câini/pisici):\n\n"
+            "1. Din meniu deschide **Prietenul tău** (/pets/).\n"
+            "2. Apasă tabul **Altele** (lângă Câini / Pisici) — lista arată doar animale din categoria Altele.\n"
+            "3. Opțional: **Filtre** (mobil) sau panoul **P4** (desktop) — **Județ**, **Vârstă**, **Sex**, apoi **OK** sau aplică.\n"
+            "4. Derulează grila **P2**; click pe card → **fișa** animalului.\n\n"
+            "Dacă nu apare niciun rezultat, înseamnă că momentan nu avem anunț public pentru acea specie — revino mai târziu sau folosește **Contact**."
         ),
     ),
     SiteGuideFaqEntry(
