@@ -50,38 +50,49 @@ REFUSE_NO_MATCH = (
 
 # Context pentru Gemini (și referință FAQ) — doar UI public, fără detalii tehnice.
 SITE_GUIDE_KNOWLEDGE = """
+MENIU PRINCIPAL (navbar):
+- Acasă, Prietenul tău, Servicii, Transport, Shop, MyPet (după rol), I Love, Termeni, Contact, Intră / cont.
+- Icon plic = mesaje (inbox unificat la Cont → Mesaje).
+- Contor ❤️ = câte animale ai la I Love; 🛒 = coș (oferte/produse adăugate din site).
+- Avatar + nume = Cont (profil, editare, deconectare).
+
+ACASĂ (/):
+- Pagină principală: promovări, acces rapid. Lista completă animale = Prietenul tău.
+
 PRIETENUL TĂU (/pets/):
-- Meniu → Prietenul tău. Grila P2 cu carduri; scroll încarcă mai multe animale (câte 24).
-- Filtre în zona P4 (desktop) sau butonul **Filtre** (mobil).
-- Taburi specie: Toate | Câini | Pisici | Altele.
-- Dropdown-uri: **Județ** (toate județele RO), **Talie** (Mică / Medie / Mare), **Vârstă** (<1 an … 10+ ani), **Sex** (Mascul / Femelă).
-- Link **Resetează filtre**. Pe mobil: deschizi Filtre → alegi → **OK**.
-- Pe card: inimioară (I Love), eventual plic întrebare; click card → fișă animal.
-- Stări pe card/fișă: Liber, Spre adopție, În curs de adopție, Adoptat.
+- Grila P2: carduri animal; scroll încarcă loturi (ex. 24).
+- Butoane mobil: Găsește-mi perechea | Filtre | Ajută un Suflet (după layout).
+- Găsește-mi perechea: alegi trăsături/comportament → site propune potriviri în grilă.
+- Filtre P4 (desktop) sau panou Filtre (mobil): Județ, Talie, Vârstă, Sex; taburi specie Toate/Câini/Pisici/Altele.
+- Resetează filtre. Mobil: Filtre rămân deschise la selecție; închizi cu ↑ sau după OK (după versiune).
+- Card: inimioară (I Love), click pe imagine/card → fișă.
 
-ADOPȚIE (fișă animal):
-- Cont Persoană fizică. Buton cerere adopție pe fișă.
-- Owner vede în MyPet → Mesaje; Accept / Respinge / Finalizează.
-- Mesaje libere după accept. Date contact după accept.
+FIȘĂ ANIMAL (/caini/<slug>/, /pisici/<slug>/, /altele/<slug>/ sau /pets/<id>/):
+- Poze (galerie, mărire pe mobil/desktop), descriere, date, stare adopție.
+- Cerere adopție (PF autentificat). Mesaje conform regulilor de pe fișă.
+- Inimioară, eventual link transport din adopție.
 
-I LOVE (/i-love/): inimioară pe card/fișă; listă animale salvate.
+ADOPȚIE:
+- PF: cerere pe fișă → MyPet mesaje la adăpost → Accept/Respinge → mesaje după accept → Finalizează adopție.
 
-MYPET (/mypet/): adăpost/ONG — animale publicate, mesaje, cereri adopție.
+I LOVE (/i-love/): favorite salvate. Coș I Love (/i-love/cos/ sau similar): oferte/produse adăugate la coș din Servicii/Shop.
 
-SERVICII (/servicii/):
-- Rând filtre S2: **Județ**, **Oraș/Loc**, buton **Resetează**.
-- Butoane specie: CÂINI | PISICI | ALTELE (filtrează ofertele).
-- Taburi: **Veterinare** (cabinete), **Magazine**, **Saloane** (grooming).
-- Click pe card partener → detaliu ofertă.
+MYPET (/mypet/): adăpost/ONG — animale, mesaje, cereri, publicare.
 
-SHOP (/shop/): magazin site; subsecțiuni în meniu (ex. magazin foto, comenzi personalizate).
+SERVICII (/servicii/): Județ, Oraș/Loc, Resetează; Câini/Pisici/Altele; taburi Veterinare/Magazine/Saloane; card → detaliu; coș pe ofertă unde există.
 
-TRANSPORT (/transport/):
-- Formular cerere transport (loc plecare/destinație, date, detalii).
-- Poate fi deschis și din fluxul de adopție când e disponibil linkul.
+SHOP (/shop/): produse, taburi; subpagini magazin foto / comenzi personalizate când sunt în meniu.
 
-CONT / LOGIN: Intră / Fă cont; signup PF/ONG/Colaborator; SMS + email activare.
-Mesaje: icon plic în navbar → inbox unificat.
+TRANSPORT (/transport/): formular cerere; T1/T2/T3 pe pagină; legătură din adopție dacă apare.
+
+CONT (/cont/): profil, Editează, Mesaje, puncte de lucru (colaborator), ștergere cont.
+Înregistrare: Intră → Creează cont → PF / ONG / Colaborator → SMS → email activare.
+
+CONTACT (/contact/): formular echipă EU-Adopt (nu înlocuiește mesajele pe fișă animal).
+
+ADĂPOSTURI: pagini publice adăpost (ex. /adaposturi/<slug>/) cu animalele adăpostului.
+
+Nu da sfaturi medicale, nutriție sau legale. Răspunde doar despre navigare și funcții site.
 """
 
 
@@ -307,6 +318,85 @@ SITE_GUIDE_FAQ: tuple[SiteGuideFaqEntry, ...] = (
         answer=(
             "Pagina **Contact** din meniu — formular pentru întrebări tehnice sau despre platformă.\n"
             "Pentru un **animal anume**, folosește mesajele de pe fișa lui."
+        ),
+    ),
+    SiteGuideFaqEntry(
+        id="pt_match",
+        title="Ce face „Găsește-mi perechea”?",
+        keywords=(
+            "pereche", "potrivire", "match", "gaseste-mi", "găsește-mi", "compatibil",
+            "caracter", "comportament", "traits", "trăsături",
+        ),
+        answer=(
+            "Pe **Prietenul tău**, butonul **Găsește-mi perechea** deschide un ghid scurt:\n\n"
+            "1. Alegi trăsături / preferințe (comportament, stil de viață — opțiunile din modal).\n"
+            "2. Confirmi — site-ul filtrează sau evidențiază animale **potrivite** în grila P2.\n"
+            "3. Poți combina cu **Filtre** (județ, talie, vârstă, specie Câini/Pisici/Altele).\n"
+            "4. Click pe un card → **fișă** → cerere adopție dacă e disponibil.\n\n"
+            "Nu garantează adopția; te ajută să găsești mai repede animale aliniate preferințelor tale."
+        ),
+    ),
+    SiteGuideFaqEntry(
+        id="fisa_animal",
+        title="Ce pot face pe fișa unui animal?",
+        keywords=(
+            "fisa", "fișă", "pagina animal", "poze", "galerie", "detalii", "slug",
+            "caini", "pisici", "altele", "fullscreen", "imagine",
+        ),
+        answer=(
+            "Pe **fișa** animalului (din Prietenul tău → click card):\n\n"
+            "• Vezi **poze** (galerie; pe mobil poți mări/pinch-zoom unde e activ).\n"
+            "• Citești descrierea, vârstă, locație, **starea** adopției.\n"
+            "• **Inimioară** → salvezi la **I Love** (cont autentificat).\n"
+            "• **Cerere adopție** — dacă ești PF și animalul e disponibil.\n"
+            "• **Mesaje** — după regulile afișate (uneori după accept cerere).\n"
+            "• Link **Transport** — dacă apare în fluxul de adopție.\n\n"
+            "URL-uri tip: /caini/…, /pisici/…, /altele/… (specie + nume slug)."
+        ),
+    ),
+    SiteGuideFaqEntry(
+        id="ilove_cos",
+        title="I Love și coșul din navbar",
+        keywords=("cos", "coș", "cos cumparaturi", "checkout", "oferta cos", "site cart", "i love cos"),
+        answer=(
+            "**I Love** (meniu sau ❤️ în navbar): animale favorite — apeși inimioara pe card/fișă.\n\n"
+            "**Coș** (🛒 în navbar): oferte sau produse adăugate din **Servicii** / **Shop** (buton coș pe card unde există).\n"
+            "Deschizi coșul din navbar → verifici lista → finalizezi conform pașilor afișați (checkout).\n\n"
+            "Contorul de lângă iconițe arată câte elemente ai salvate."
+        ),
+    ),
+    SiteGuideFaqEntry(
+        id="navbar_ce",
+        title="Ce înseamnă iconițele din navbar?",
+        keywords=("navbar", "meniu", "plic", "mesaje navbar", "avatar", "contor", "hamburger"),
+        answer=(
+            "• **Hamburger** (mobil): deschide meniul cu toate paginile.\n"
+            "• **Plic**: mesaje — duce la inbox (Cont → Mesaje).\n"
+            "• **❤️ + număr**: câte animale la **I Love**.\n"
+            "• **🛒 + număr**: câte articole în **coș**.\n"
+            "• **Avatar / nume**: **Cont** — profil, editare, deconectare.\n"
+            "• **Intră**: login sau înregistrare dacă nu ești autentificat."
+        ),
+    ),
+    SiteGuideFaqEntry(
+        id="adapost_pagina",
+        title="Pagina unui adăpost",
+        keywords=("adapost", "adăpost", "adaposturi", "asociatie", "asociație", "shelter", "lista caini adapost"),
+        answer=(
+            "Unele adăposturi au pagină publică (ex. **/adaposturi/nume-adapost/**):\n"
+            "• Prezentare adăpost, animalele lui în grilă.\n"
+            "• Click pe animal → aceeași **fișă** ca din Prietenul tău.\n"
+            "• Pentru toate animalele din țară, folosește tot **Prietenul tău** + filtre."
+        ),
+    ),
+    SiteGuideFaqEntry(
+        id="inscriere_scurt",
+        title="Link scurt de înscriere (Facebook etc.)",
+        keywords=("inscriere", "facebook", "fb", "invitatie", "invitație", "prefill"),
+        answer=(
+            "Pagina **/inscriere/** — formular scurt care te duce apoi la înregistrarea completă "
+            "(ONG / colaborator / PF) cu date **precompletate** unde e cazul.\n"
+            "Util pentru linkuri din social media către EU-Adopt."
         ),
     ),
     SiteGuideFaqEntry(

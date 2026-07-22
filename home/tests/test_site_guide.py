@@ -32,6 +32,14 @@ class SiteGuideLogicTests(TestCase):
         self.assertEqual(r["faq_id"], "servicii_ce")
         self.assertIn("Oraș", r["answer"])
 
+    def test_faq_match_pereche(self):
+        from home.site_guide import answer_question
+
+        r = answer_question("cum functioneaza gaseste-mi perechea")
+        self.assertEqual(r["source"], "faq")
+        self.assertEqual(r["faq_id"], "pt_match")
+        self.assertIn("pereche", r["answer"].lower())
+
     def test_faq_match_hamster_altele(self):
         from home.site_guide import answer_question
 

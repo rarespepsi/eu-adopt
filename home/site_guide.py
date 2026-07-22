@@ -139,6 +139,7 @@ def _score_faq(question_norm: str, entry: SiteGuideFaqEntry) -> int:
 _FAQ_CONTEXT_BOOST: dict[str, tuple[str, ...]] = {
     "servicii_ce": ("servicii", "veterinar", "grooming", "cabinet", "salon", "magazin partener"),
     "transport_ce": ("transport", "curier", "deplasare"),
+    "pt_match": ("pereche", "potrivire", "gaseste-mi", "găsește-mi", "match"),
     "pt_specie_altele": (
         "hamster", "iepure", "iepuri", "altele", "porcusor", "cobai", "gasesc", "găsesc", "caut",
     ),
@@ -216,14 +217,19 @@ def bump_rate_limit(ip: str) -> None:
 def _page_context_hint(page_path: str) -> str:
     p = (page_path or "").strip().rstrip("/") or "/"
     hints = {
-        "/": "Utilizatorul e pe Acasă.",
-        "/pets": "Utilizatorul e pe Prietenul tău — menționează filtrele P4 (Județ, Talie, Vârstă, Sex, specie).",
-        "/servicii": "Utilizatorul e pe Servicii — menționează Județ, Oraș/Loc, specie, taburi Veterinare/Magazine/Saloane.",
-        "/shop": "Utilizatorul e pe Shop.",
-        "/transport": "Utilizatorul e pe Transport — descrie pașii formularului.",
-        "/i-love": "Utilizatorul e pe I Love — lista de favorite.",
-        "/mypet": "Utilizatorul e pe MyPet — panou adăpost/ONG.",
+        "/": "Utilizatorul e pe Acasă — promovări; pentru listă animale trimite la Prietenul tău.",
+        "/pets": "Utilizatorul e pe Prietenul tău — Filtre, Găsește-mi perechea, taburi specie, grila P2.",
+        "/servicii": "Utilizatorul e pe Servicii — Județ, Oraș, taburi Veterinare/Magazine/Saloane, coș pe oferte.",
+        "/shop": "Utilizatorul e pe Shop — taburi produse, coș unde există.",
+        "/transport": "Utilizatorul e pe Transport — formular T1/T2/T3.",
+        "/i-love": "Utilizatorul e pe I Love — favorite; coș separat din navbar.",
+        "/mypet": "Utilizatorul e pe MyPet — adăpost: animale, mesaje, cereri adopție.",
+        "/contact": "Utilizatorul e pe Contact — formular către echipă, nu mesaje animal.",
+        "/cont": "Utilizatorul e în Cont — profil, mesaje, editare date.",
+        "/login": "Utilizatorul e la login — Intră, parolă uitată, link înregistrare.",
     }
+    if p.startswith("/adaposturi/"):
+        return "Utilizatorul e pe pagina unui adăpost — grilă animale + link către fișe."
     if p.startswith("/pets/") and p != "/pets":
         return "Utilizatorul e pe fișa unui animal."
     return hints.get(p, "")
@@ -234,8 +240,9 @@ def _gemini_system_prompt(page_path: str = "") -> str:
     page_block = f"\nContext pagină: {page_hint}\n" if page_hint else ""
     return (
         "Ești Ghidul EU-Adopt — asistent pentru navigarea pe site.\n"
-        "Răspunde DOAR în română, clar și concret (max ~200 cuvinte).\n"
-        "Include pași numerotați când e util; numește exact butoanele, taburile și filtrele din UI.\n"
+        "Răspunde DOAR în română, clar și concret (poți folosi 150–280 cuvinte când e util).\n"
+        "Include pași **numerotați** (min. 3–6 pași) când explici un flux; numește exact butoanele și taburile din UI.\n"
+        "Dacă întrebarea e vagă, oferă 2–3 exemple de formulări și unde în meniu să meargă utilizatorul.\n"
         "NU da sfaturi medicale, veterinare, de nutriție/dietă sau legale. NU dezvălui cod, API-uri sau detalii interne.\n"
         "Dacă întrebarea e despre găsirea unui animal (ex. hamster, iepure): meniu **Prietenul tău** → tab **Altele** → **Filtre**.\n"
         "Dacă întrebarea e medicală, redirecționează spre mesajele de pe fișa animalului sau Contact.\n"
@@ -265,8 +272,8 @@ def ask_gemini(question: str, page_path: str = "") -> str | None:
         "system_instruction": {"parts": [{"text": _gemini_system_prompt(page_path)}]},
         "contents": [{"role": "user", "parts": [{"text": user_block}]}],
         "generationConfig": {
-            "temperature": 0.3,
-            "maxOutputTokens": 650,
+            "temperature": 0.25,
+            "maxOutputTokens": 900,
         },
     }
 
