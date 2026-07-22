@@ -341,15 +341,19 @@ def org_promo_links(user: User) -> dict:
 
 
 def directory_org_queryset():
-    """ORG cu cel puțin un animal publicat."""
+    """Toate ONG/adăposturile active (apar și fără animale publicate)."""
     return (
         User.objects.filter(
             is_active=True,
             account_profile__role=AccountProfile.ROLE_ORG,
-            animal_listings__is_published=True,
         )
-        .annotate(pub_animal_count=Count("animal_listings", filter=Q(animal_listings__is_published=True), distinct=True))
-        .filter(pub_animal_count__gt=0)
+        .annotate(
+            pub_animal_count=Count(
+                "animal_listings",
+                filter=Q(animal_listings__is_published=True),
+                distinct=True,
+            )
+        )
         .select_related("account_profile", "profile")
         .prefetch_related(
             Prefetch(

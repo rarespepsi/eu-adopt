@@ -55,6 +55,17 @@ class ShelterDirectoryTests(TestCase):
         self.assertContains(r, 'data-county="Brașov"')
         self.assertContains(r, "Toate județele")
 
+    def test_directory_lists_org_without_animals(self):
+        self.pet.is_published = False
+        self.pet.save(update_fields=["is_published"])
+        ensure_org_slug(self.org, save=True)
+        r = Client().get(reverse("shelter_directory"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Adăpost Test")
+        from home.shelter_directory import directory_org_queryset
+
+        self.assertIn(self.org, list(directory_org_queryset()))
+
     def test_detail_back_keeps_judet_filter(self):
         ensure_org_slug(self.org, save=True)
         slug = self.org.account_profile.public_slug
