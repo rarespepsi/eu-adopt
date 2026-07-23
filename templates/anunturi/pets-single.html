@@ -1537,15 +1537,15 @@
 										<div class="mypet-fisa-header-row">
 											<div class="mypet-fisa-tab-group">
 												<div class="mypet-fisa-header-slot mypet-fisa-header-slot--left">
-													<a href="{{ pet_back_url }}" class="mypet-fisa-tab is-action" id="petCardBackBtn" aria-label="{{ pet_back_label|default:'Înapoi la listă' }}">{{ pet_back_label|default:"ÎNAPOI LA LISTĂ" }}</a>
-													<div class="mypet-fisa-tab is-action" id="petCardCopyBtn" role="button" tabindex="0" aria-label="Distribuie (copiază linkul fișei)">DISTRIBUIE</div>
+													<a href="{{ pet_back_url }}" class="mypet-fisa-tab is-action" id="petCardBackBtn" aria-label="{% if eu_site_active %}{{ eu_ui.pet_back }}{% else %}{{ pet_back_label|default:'Înapoi la listă' }}{% endif %}">{% if eu_site_active %}{{ eu_ui.pet_back }}{% else %}{{ pet_back_label|default:"ÎNAPOI LA LISTĂ" }}{% endif %}</a>
+													<div class="mypet-fisa-tab is-action" id="petCardCopyBtn" role="button" tabindex="0" aria-label="{% if eu_site_active %}{{ eu_ui.pet_share_aria }}{% else %}Distribuie (copiază linkul fișei){% endif %}">{% if eu_site_active %}{{ eu_ui.pet_share }}{% else %}DISTRIBUIE{% endif %}</div>
 												</div>
 												<div class="mypet-fisa-header-slot mypet-fisa-header-slot--center">
-													<div class="mypet-fisa-tab mypet-fisa-tab--title" id="petCardTitle">FIȘA PET {{ pet.nume|default:"" }}</div>
+													<div class="mypet-fisa-tab mypet-fisa-tab--title" id="petCardTitle">{% if eu_site_active %}{{ eu_ui.pet_title_prefix }}{% else %}FIȘA PET{% endif %} {{ pet.nume|default:"" }}</div>
 												</div>
 												<div class="mypet-fisa-header-slot mypet-fisa-header-slot--right">
 													{% if promote_allowed %}
-													<a href="{% url 'promo_a2_order' pet.pk %}?exit=pt&amp;back={{ pet_back_url|urlencode }}" class="mypet-fisa-tab is-action" id="petCardPromoteBtn" role="button" tabindex="0" aria-label="Promovează-mă">PROMOVEAZĂ-MĂ</a>
+													<a href="{% url 'promo_a2_order' pet.pk %}?exit=pt&amp;back={{ pet_back_url|urlencode }}" class="mypet-fisa-tab is-action" id="petCardPromoteBtn" role="button" tabindex="0" aria-label="{% if eu_site_active %}{{ eu_ui.pet_promote_aria }}{% else %}Promovează-mă{% endif %}">{% if eu_site_active %}{{ eu_ui.pet_promote }}{% else %}PROMOVEAZĂ-MĂ{% endif %}</a>
 													{% endif %}
 												</div>
 											</div>
@@ -1668,7 +1668,7 @@
 														<div class="mypet-add-field mypet-fisa-field-story" id="pet-messages-field-wrap">
 															<label for="id_messages">MESAJE</label>
 															{% if can_send_pet_message %}
-																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" placeholder="Scrie mesajul tău către ONG / owner..."></textarea>
+																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" placeholder="{% if eu_site_active %}{{ eu_ui.pet_msg_ph }}{% else %}Scrie mesajul tău către ONG / owner...{% endif %}"></textarea>
 																<div style="margin-top:.35rem;display:flex;justify-content:flex-end;">
 																	<button type="button" id="petSendMessageBtn" class="pet-msg-send-btn" data-send-url="{% url 'pet_send_message' pet.pk %}">Send</button>
 																</div>
@@ -1715,7 +1715,7 @@
 											</div>
 											{% endif %}
 											<div class="pet-adoption-state-corner" aria-label="Stare adopție">{{ pet.adoption_state_label|default:"Liber" }}</div>
-											<div class="pet-adopt-qr-inline" id="petAdoptQrInline" aria-label="Adopție și cod QR">
+											<div class="pet-adopt-qr-inline" id="petAdoptQrInline" aria-label="{% if eu_site_active %}{{ eu_ui.pet_adopt_qr_aria }}{% else %}Adopție și cod QR{% endif %}">
 												{% if show_pet_adopt_corner %}
 												<div
 													class="pet-adopt-corner{% if pet_adopt_demo_listing or pet_adopt_inactive_populare %} pet-adopt-corner--inactive{% endif %}"
@@ -1770,7 +1770,7 @@
 		<div id="petPopAdoptFormModal" class="pet-adopt-choice-modal" hidden aria-hidden="true">
 			<div class="pet-adopt-choice-modal__backdrop" id="petPopAdoptFormBackdrop"></div>
 			<div class="pet-adopt-choice-modal__panel pet-pop-adopt-form-panel" role="dialog" aria-modal="true" aria-labelledby="petPopAdoptFormTitle">
-				<h3 class="pet-adopt-choice-modal__title" id="petPopAdoptFormTitle">Cerere de adopție</h3>
+				<h3 class="pet-adopt-choice-modal__title" id="petPopAdoptFormTitle">{% if eu_site_active %}{{ eu_ui.pet_adopt_title }}{% else %}Cerere de adopție{% endif %}</h3>
 				<p class="pet-adopt-choice-modal__text">Completează formularul. Datele tale vor fi trimise proprietarului / adăpostului, care te va contacta direct.</p>
 				<form id="petPopAdoptForm" class="pet-pop-adopt-form" novalidate>
 					{% csrf_token %}
@@ -1809,8 +1809,8 @@
 							{% include "anunturi/includes/ro_city_select.html" with select_id="petPopAdoptOras" select_name="oras" current=pet_adopt_form_prefill.oras profile_editable=True %}
 						</label>
 						<label class="pet-pop-adopt-form__field pet-pop-adopt-form__field--full">
-							<span>Mesaj (opțional)</span>
-							<textarea name="mesaj" rows="1" maxlength="2000" placeholder="De ce vrei să adopți? Ai curte, alte animale…"></textarea>
+							<span>{% if eu_site_active %}{{ eu_ui.pet_adopt_msg }}{% else %}Mesaj (opțional){% endif %}</span>
+							<textarea name="mesaj" rows="1" maxlength="2000" placeholder="{% if eu_site_active %}{{ eu_ui.pet_adopt_msg_ph }}{% else %}De ce vrei să adopți? Ai curte, alte animale…{% endif %}"></textarea>
 						</label>
 						<label class="pet-pop-adopt-form__check pet-pop-adopt-form__field--full">
 							<input type="checkbox" name="accept_termeni" required />
@@ -1822,8 +1822,8 @@
 						</label>
 					</div>
 					<div class="pet-adopt-choice-modal__actions">
-						<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--secondary" id="petPopAdoptFormCancel">Anulează</button>
-						<button type="submit" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--primary" id="petPopAdoptFormSubmit">Trimite cererea</button>
+						<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--secondary" id="petPopAdoptFormCancel">{% if eu_site_active %}{{ eu_ui.pet_adopt_cancel }}{% else %}Anulează{% endif %}</button>
+						<button type="submit" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--primary" id="petPopAdoptFormSubmit">{% if eu_site_active %}{{ eu_ui.pet_adopt_send }}{% else %}Trimite cererea{% endif %}</button>
 					</div>
 				</form>
 			</div>
@@ -1836,14 +1836,14 @@
 			<div class="pet-adopt-choice-modal__backdrop" id="petAdoptChoiceBackdrop"></div>
 			<div class="pet-adopt-choice-modal__panel" role="dialog" aria-modal="true" aria-labelledby="petAdoptChoiceTitle">
 				{% if adoption_after_transport %}
-				<h3 class="pet-adopt-choice-modal__title" id="petAdoptChoiceTitle">Finalizează cererea de adopție</h3>
+				<h3 class="pet-adopt-choice-modal__title" id="petAdoptChoiceTitle">{% if eu_site_active %}{{ eu_ui.pet_adopt_finish }}{% else %}Finalizează cererea de adopție{% endif %}</h3>
 				<p class="pet-adopt-choice-modal__text">Ai completat pasul cu transportul veterinar. Poți trimite acum cererea către organizație.</p>
 				<div class="pet-adopt-choice-modal__actions">
-					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--secondary" id="petAdoptChoiceCancelAfter">Închide</button>
-					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--primary" id="petAdoptChoiceSubmitAfter">Trimite cererea de adopție</button>
+					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--secondary" id="petAdoptChoiceCancelAfter">{% if eu_site_active %}{{ eu_ui.pet_adopt_close }}{% else %}Închide{% endif %}</button>
+					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--primary" id="petAdoptChoiceSubmitAfter">{% if eu_site_active %}{{ eu_ui.pet_adopt_send_full }}{% else %}Trimite cererea de adopție{% endif %}</button>
 				</div>
 				{% else %}
-				<h3 class="pet-adopt-choice-modal__title" id="petAdoptChoiceTitle">Cum preiei animalul?</h3>
+				<h3 class="pet-adopt-choice-modal__title" id="petAdoptChoiceTitle">{% if eu_site_active %}{{ eu_ui.pet_adopt_how }}{% else %}Cum preiei animalul?{% endif %}</h3>
 				<p class="pet-adopt-choice-modal__text">Alege o opțiune înainte de a trimite cererea de adopție.</p>
 				<div class="pet-adopt-choice-modal__options">
 					<label class="pet-adopt-choice-modal__opt">
@@ -1860,8 +1860,8 @@
 					{% endif %}
 				</div>
 				<div class="pet-adopt-choice-modal__actions">
-					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--secondary" id="petAdoptChoiceCancel">Anulează</button>
-					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--primary" id="petAdoptChoiceContinue">Continuă</button>
+					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--secondary" id="petAdoptChoiceCancel">{% if eu_site_active %}{{ eu_ui.pet_adopt_cancel }}{% else %}Anulează{% endif %}</button>
+					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--primary" id="petAdoptChoiceContinue">{% if eu_site_active %}{{ eu_ui.pet_adopt_continue }}{% else %}Continuă{% endif %}</button>
 				</div>
 				{% endif %}
 			</div>
@@ -1992,6 +1992,10 @@
 
 			// Distribuie în notă (share-sheet). Trimite linkul fișei.
 			const pageUrl = "{{ page_url|escapejs }}";
+			{% if eu_site_active %}
+			var petLinkCopiedMsg = "{{ eu_ui.pet_link_copied|escapejs }}";
+			var petLinkCopyFailMsg = "{{ eu_ui.pet_link_copy_fail|escapejs }}";
+			{% endif %}
 			const petId = {{ pet.pk|default:"0" }};
 			function getCsrfToken() {
 				try {
@@ -2076,14 +2080,18 @@
 				}
 				var mobile = isLikelyMobileUi();
 				if (await copyPetLinkToClipboard()) {
-					showPetAppMessage(mobile
+					showPetAppMessage(typeof petLinkCopiedMsg !== "undefined"
+						? petLinkCopiedMsg
+						: (mobile
 						? "Linkul fișei a fost copiat. Deschide aplicația unde vrei să îl trimiți (WhatsApp, Mesaje etc.) și lipește acolo (ține apăsat în câmp → Lipire)."
-						: "Linkul fișei a fost copiat. Poți să îl lipești cu Ctrl+V în mesaj, e-mail sau unde vrei să trimiți fișa.");
+						: "Linkul fișei a fost copiat. Poți să îl lipești cu Ctrl+V în mesaj, e-mail sau unde vrei să trimiți fișa."));
 					return;
 				}
-				showPetAppMessage(mobile
+				showPetAppMessage(typeof petLinkCopyFailMsg !== "undefined"
+					? petLinkCopyFailMsg
+					: (mobile
 					? "Nu am putut copia automat linkul pe acest browser. Folosește codul QR din colț sau meniul browserului (Distribuie / Copiază link), dacă îl vezi."
-					: "Nu am putut copia automat linkul. Copiază-l din bara de adrese sau folosește codul QR din colț.");
+					: "Nu am putut copia automat linkul. Copiază-l din bara de adrese sau folosește codul QR din colț."));
 			}
 			// QR în colț (encodează linkul fișei ca imagine)
 			(function initQrCorner() {

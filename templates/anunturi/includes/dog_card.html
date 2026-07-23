@@ -4,7 +4,7 @@
 {% if a2_compact and pet.quote %}
 <a href="{{ pet_single_url }}?from=home&amp;back={% url 'pets_all' %}" class="A2-slot-link dog-card-link dog-card-compact{% if pet.a2_promo %} dog-card--a2-promo{% endif %}" aria-label="Vezi {{ pet.nume }}">
 	<article class="dog-card">
-		{% if pet.a2_promo %}<span class="a2-promo-pill" aria-hidden="true">Promovare</span>{% endif %}
+		{% if pet.a2_promo %}<span class="a2-promo-pill" aria-hidden="true">{% if eu_site_active %}{{ eu_ui.home_promo_pill }}{% else %}Promovare{% endif %}</span>{% endif %}
 		<figure class="dog-card-photo" aria-hidden="true">
 			<button type="button" class="wish-btn {% if wishlist_ids and pet.pk in wishlist_ids %}is-active{% endif %}" data-animal-id="{{ pet.pk }}" aria-pressed="{% if wishlist_ids and pet.pk in wishlist_ids %}true{% else %}false{% endif %}">
 				{% include "anunturi/includes/ilove_heart_svg.html" %}

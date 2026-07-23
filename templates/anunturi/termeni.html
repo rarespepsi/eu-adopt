@@ -8,6 +8,7 @@
 	<header class="termeni-head">
 		<h1>{% if eu_site_active %}{{ eu_ui.terms_heading }}{% else %}Documente legale – EU-ADOPT{% endif %}</h1>
 		<p>{% if eu_site_active %}{{ eu_ui.terms_intro }}{% else %}Alege documentul pe care dorești să îl citești.{% endif %}</p>
+		{% if eu_site_active %}<p class="termeni-en-note" style="margin-top:0.5rem;font-size:0.9rem;color:#555;">{{ eu_ui.terms_en_note }}</p>{% endif %}
 	</header>
 	<nav class="termeni-cats" aria-label="{% if eu_site_active %}Legal categories{% else %}Categorii legale{% endif %}">
 		<a class="termeni-cat" href="{% url 'termeni_read' %}">

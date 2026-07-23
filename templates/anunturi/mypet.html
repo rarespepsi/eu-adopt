@@ -32,7 +32,7 @@
 							data-arc="adopted"
 						>Adoptate</button>
 					</div>
-					<a href="{% url 'mypet_adopter_adoptions' %}" class="mypet-btn mypet-btn-secondary">Adopțiile mele</a>
+					<a href="{% url 'mypet_adopter_adoptions' %}" class="mypet-btn mypet-btn-secondary">{% if eu_site_active %}{{ eu_ui.mypet_my_adoptions }}{% else %}Adopțiile mele{% endif %}</a>
 					{% if not user_has_owned_pets %}
 						<button
 							type="button"
@@ -40,16 +40,16 @@
 							id="adopterInboxBtn"
 							data-list-url="{% url 'adopter_messages_list' %}"
 							data-unread="{{ adopter_pet_message_unread|default:0 }}"
-							title="{% if adopter_pet_message_unread %}Mesaje noi: {{ adopter_pet_message_unread }}{% else %}Mesaje{% endif %}"
-							aria-label="{% if adopter_pet_message_unread %}Mesaje noi: {{ adopter_pet_message_unread }}{% else %}Mesaje{% endif %}"
-						>Mesaje{% if adopter_pet_message_unread %}<span class="mypet-adopter-inbox-count">{{ adopter_pet_message_unread }}</span>{% endif %}</button>
+							title="{% if eu_site_active %}{% if adopter_pet_message_unread %}New messages: {{ adopter_pet_message_unread }}{% else %}{{ eu_ui.mypet_messages }}{% endif %}{% else %}{% if adopter_pet_message_unread %}Mesaje noi: {{ adopter_pet_message_unread }}{% else %}Mesaje{% endif %}{% endif %}"
+							aria-label="{% if eu_site_active %}{% if adopter_pet_message_unread %}New messages: {{ adopter_pet_message_unread }}{% else %}{{ eu_ui.mypet_messages }}{% endif %}{% else %}{% if adopter_pet_message_unread %}Mesaje noi: {{ adopter_pet_message_unread }}{% else %}Mesaje{% endif %}{% endif %}"
+						>{% if eu_site_active %}{{ eu_ui.mypet_messages }}{% else %}Mesaje{% endif %}{% if adopter_pet_message_unread %}<span class="mypet-adopter-inbox-count">{{ adopter_pet_message_unread }}</span>{% endif %}</button>
 					{% endif %}
 					{% if not population_at_max_animals %}
 					<a
 						href="{% url 'mypet_add' %}"
 						class="mypet-btn mypet-btn-secondary mypet-btn-add"
 						data-mypet-add-base="{% url 'mypet_add' %}"
-					>Adaugă un pet</a>
+					>{% if eu_site_active %}{{ eu_ui.mypet_add }}{% else %}Adaugă un pet{% endif %}</a>
 					{% else %}
 					<span class="mypet-btn mypet-btn-secondary mypet-btn-add is-disabled" title="Limită populare: {{ population_animal_max }} animale">Adaugă un pet</span>
 					{% endif %}
@@ -66,7 +66,7 @@
 								id="mypetSearchQ"
 								class="mypet-search-input"
 								list="mypetCipHistoryList"
-								placeholder="Caută nume sau CIP/RUA"
+								placeholder="{% if eu_site_active %}{{ eu_ui.mypet_search_ph }}{% else %}Caută nume sau CIP/RUA{% endif %}"
 								autocomplete="off"
 								enterkeyhint="search"
 								inputmode="search" />
@@ -77,7 +77,7 @@
 				</div>
 				<div class="mypet-actions-group mypet-actions-group--species" aria-label="Filtru specii">
 					<div class="mypet-species-filters">
-						<div class="mypet-btn mypet-btn-secondary mypet-btn-spec is-active" role="button" tabindex="0" data-species="dog" aria-label="Câini">Câini</div>
+						<div class="mypet-btn mypet-btn-secondary mypet-btn-spec is-active" role="button" tabindex="0" data-species="dog" aria-label="{% if eu_site_active %}{{ eu_ui.mypet_dogs }}{% else %}Câini{% endif %}">{% if eu_site_active %}{{ eu_ui.mypet_dogs }}{% else %}Câini{% endif %}</div>
 						<div class="mypet-btn mypet-btn-secondary mypet-btn-spec" role="button" tabindex="0" data-species="cat" aria-label="Pisici">Pisici</div>
 						<div class="mypet-btn mypet-btn-secondary mypet-btn-spec" role="button" tabindex="0" data-species="other" aria-label="Altele">Altele</div>
 					</div>
@@ -119,22 +119,22 @@
 				<thead>
 					<tr>
 						<th class="mypet-th mypet-th-nr"><span class="mypet-th-v">Nr</span></th>
-						<th class="mypet-th mypet-th-photo"><span class="mypet-th-v">Poză</span></th>
+						<th class="mypet-th mypet-th-photo"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_photo }}{% else %}Poză{% endif %}</span></th>
 						<th class="mypet-th mypet-th-name"><span class="mypet-th-v">Nume</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Sex</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Vârstă</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_age }}{% else %}Vârstă{% endif %}</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Talie</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Sterilizat</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">I love</span></th>
-						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">În curs</span></th>
+						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_in_progress }}{% else %}În curs{% endif %}</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Adoptat</span></th>
 						<th class="mypet-th mypet-th-date"><span class="mypet-th-v">Data in</span></th>
 						<th class="mypet-th mypet-th-date"><span class="mypet-th-v">Data out</span></th>
-						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="fisa"><span class="mypet-th-v">Fișă %</span></th>
-						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="views"><span class="mypet-th-v">Vizualizări</span></th>
+						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="fisa"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_sheet }}{% else %}Fișă %{% endif %}</span></th>
+						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="views"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_views }}{% else %}Vizualizări{% endif %}</span></th>
 						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="shares"><span class="mypet-th-v">Distribuiri</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">$</span></th>
-						<th class="mypet-th mypet-th-mypet-adopt" colspan="5"><span class="mypet-th-v">Adopție</span></th>
+						<th class="mypet-th mypet-th-mypet-adopt" colspan="5"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_adoption }}{% else %}Adopție{% endif %}</span></th>
 						<th class="mypet-th mypet-th-cip-rua"><span class="mypet-th-v">CIP/RUA</span></th>
 						<th class="mypet-th mypet-th-mesaje"><span class="mypet-th-v">Mesaje</span></th>
 					</tr>
@@ -268,7 +268,7 @@
 								</button>
 								{% if display_role != "collaborator" and pet.species == "dog" or display_role != "collaborator" and pet.species == "cat" %}
 								<span class="mypet-mesaje-promo-wrap">
-									<a href="{% url 'promo_a2_order' pet.pk %}?exit=mypet" class="mypet-promoveaza-btn" title="Promovare A2">Promovează</a>
+									<a href="{% url 'promo_a2_order' pet.pk %}?exit=mypet" class="mypet-promoveaza-btn" title="Promovare A2">{% if eu_site_active %}{{ eu_ui.mypet_promote }}{% else %}Promovează{% endif %}</a>
 									{% if pet.is_published %}
 									<button
 										type="button"
@@ -299,19 +299,19 @@
 <div class="mypet-msg-modal" id="mypetMsgModal" hidden>
 	<div class="mypet-msg-panel" role="dialog" aria-modal="true" aria-label="Mesaje pet">
 		<div class="mypet-msg-head">
-			<strong id="mypetMsgTitle">Mesaje</strong>
+			<strong id="mypetMsgTitle">{% if eu_site_active %}{{ eu_ui.mypet_messages }}{% else %}Mesaje{% endif %}</strong>
 			<button type="button" id="mypetMsgClose" class="mypet-msg-close" onclick="if(window.__closeMyPetMsgModal){window.__closeMyPetMsgModal();}">X</button>
 		</div>
 		<div class="mypet-msg-tabs">
 			<button type="button" class="mypet-msg-tab is-active" id="mypetMsgTabActive" data-scope="active">Active</button>
-			<button type="button" class="mypet-msg-tab" id="mypetMsgTabArchived" data-scope="archived">Arhivă</button>
+			<button type="button" class="mypet-msg-tab" id="mypetMsgTabArchived" data-scope="archived">{% if eu_site_active %}{{ eu_ui.mypet_archive }}{% else %}Arhivă{% endif %}</button>
 		</div>
 		<div class="mypet-msg-body">
 			<div class="mypet-msg-threads" id="mypetMsgThreads"></div>
 			<div class="mypet-msg-thread" id="mypetMsgThread"></div>
 		</div>
 		<div class="mypet-msg-reply">
-			<textarea id="mypetMsgReplyTa" placeholder="Răspunde aici..."></textarea>
+			<textarea id="mypetMsgReplyTa" placeholder="{% if eu_site_active %}{{ eu_ui.mypet_reply_ph }}{% else %}Răspunde aici...{% endif %}"></textarea>
 			<button type="button" id="mypetMsgReplyBtn">Send</button>
 		</div>
 	</div>
@@ -322,7 +322,7 @@
 	<div class="mypet-confirm-panel" role="alertdialog" aria-modal="true" aria-labelledby="mypetConfirmText">
 		<p class="mypet-confirm-text" id="mypetConfirmText"></p>
 		<div class="mypet-confirm-actions">
-			<button type="button" class="mypet-confirm-btn mypet-confirm-btn-cancel" id="mypetConfirmCancel">Anulează</button>
+			<button type="button" class="mypet-confirm-btn mypet-confirm-btn-cancel" id="mypetConfirmCancel">{% if eu_site_active %}{{ eu_ui.mypet_cancel }}{% else %}Anulează{% endif %}</button>
 			<button type="button" class="mypet-confirm-btn mypet-confirm-btn-ok" id="mypetConfirmOk">Confirm</button>
 		</div>
 	</div>

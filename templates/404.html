@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Pagină negăsită | EU-Adopt{% endblock %}
+{% block title %}{% if eu_site_active %}{{ eu_ui.err404_title }}{% else %}Pagină negăsită | EU-Adopt{% endif %}{% endblock %}
 {% block content %}
 <div style="max-width: 36rem; margin: 2rem auto; padding: 1rem;">
-	<h1 style="font-size: 1.35rem; margin-bottom: 0.75rem;">Pagina nu există</h1>
-	<p style="color: #444; line-height: 1.5;">Adresa nu a fost găsită sau a fost mutată.</p>
-	<p><a href="{% url 'home' %}">Înapoi la pagina principală</a></p>
+	<h1 style="font-size: 1.35rem; margin-bottom: 0.75rem;">{% if eu_site_active %}{{ eu_ui.err404_h1 }}{% else %}Pagina nu există{% endif %}</h1>
+	<p style="color: #444; line-height: 1.5;">{% if eu_site_active %}{{ eu_ui.err404_body }}{% else %}Adresa nu a fost găsită sau a fost mutată.{% endif %}</p>
+	<p><a href="{% url 'home' %}">{% if eu_site_active %}{{ eu_ui.err404_home }}{% else %}Înapoi la pagina principală{% endif %}</a></p>
 </div>
 {% endblock %}

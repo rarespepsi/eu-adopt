@@ -135,6 +135,20 @@ class EuSiteMiddlewareTests(TestCase):
         self.assertNotContains(r, "Intră în cont")
 
     @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
+    def test_home_english_chrome_on_com(self):
+        User = get_user_model()
+        staff = User.objects.create_user(username="eu_en_staff", password="x", is_staff=True)
+        c = Client(HTTP_HOST="euadopt.com")
+        c.force_login(staff)
+        r = c.get("/")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Support EU-Adopt")
+        self.assertContains(r, "Come meet us!")
+        self.assertContains(r, "Quick guide")
+        self.assertNotContains(r, "Susține EU-Adopt")
+        self.assertNotContains(r, "Hai la noi!")
+
+    @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
     def test_adaposturi_redirects_on_eu(self):
         c = Client(HTTP_HOST="euadopt.com")
         r = c.get("/adaposturi/")

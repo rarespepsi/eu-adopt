@@ -240,9 +240,9 @@
 						</button>
 					{% if from_adoption_pet_pk and continue_adoption_url %}
 					<div class="transport-from-adoption-banner" role="status">
-						<strong>Pașii adopției</strong>
-						Completează detaliile de transport de mai jos. După aceea, apasă „Continuă cererea de adopție” pentru a reveni la fișă și a trimite cererea către organizație.
-						<a href="{{ continue_adoption_url }}">Continuă cererea de adopție</a>
+						<strong>{% if eu_site_active %}{{ eu_ui.transport_adopt_h }}{% else %}Pașii adopției{% endif %}</strong>
+						{% if eu_site_active %}{{ eu_ui.transport_adopt_p }}{% else %}Completează detaliile de transport de mai jos. După aceea, apasă „Continuă cererea de adopție” pentru a reveni la fișă și a trimite cererea către organizație.{% endif %}
+						<a href="{{ continue_adoption_url }}">{% if eu_site_active %}{{ eu_ui.transport_adopt_a }}{% else %}Continuă cererea de adopție{% endif %}</a>
 					</div>
 					{% endif %}
 					<p class="t1-intro">{% if eu_site_active %}{{ eu_ui.transport_t1_intro }}{% else %}Cererea este transmisă colaboratorilor, primul care acceptă primește datele.{% endif %}</p>
@@ -255,73 +255,73 @@
 						<input type="hidden" name="related_pet_id" value="{{ from_adoption_pet_pk }}" />
 						{% endif %}
 						<div class="t1-field t1-caseta t1-row-inline">
-							<label class="t1-label" for="tw-judet">JUDET</label>
-							<input type="text" class="t1-input" id="tw-judet" name="judet" list="county-list-tw" placeholder="Alege sau scrie județul" autocomplete="off" value="{{ prefill_judet|default:'' }}" />
+							<label class="t1-label" for="tw-judet">{% if eu_site_active %}{{ eu_ui.transport_county }}{% else %}JUDET{% endif %}</label>
+							<input type="text" class="t1-input" id="tw-judet" name="judet" list="county-list-tw" placeholder="{% if eu_site_active %}{{ eu_ui.transport_ph_county }}{% else %}Alege sau scrie județul{% endif %}" autocomplete="off" value="{{ prefill_judet|default:'' }}" />
 							{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-tw" %}
 						</div>
 						<div class="t1-field t1-caseta t1-row-inline">
-							<label class="t1-label" for="tw-oras">ORAȘ / LOCALITATE</label>
-							<input type="text" class="t1-input" id="tw-oras" name="oras" list="city-list-tw" placeholder="Alege mai întâi județul" autocomplete="off" value="{{ prefill_oras|default:'' }}" />
+							<label class="t1-label" for="tw-oras">{% if eu_site_active %}{{ eu_ui.transport_city }}{% else %}ORAȘ / LOCALITATE{% endif %}</label>
+							<input type="text" class="t1-input" id="tw-oras" name="oras" list="city-list-tw" placeholder="{% if eu_site_active %}{{ eu_ui.transport_ph_city }}{% else %}Alege mai întâi județul{% endif %}" autocomplete="off" value="{{ prefill_oras|default:'' }}" />
 							<datalist id="city-list-tw"></datalist>
 						</div>
 						<div class="t1-field t1-caseta">
 							<div class="t1-label-row">
-								<label class="t1-label" for="plecare_input">PUNCT PLECARE</label>
+								<label class="t1-label" for="plecare_input">{% if eu_site_active %}{{ eu_ui.transport_from }}{% else %}PUNCT PLECARE{% endif %}</label>
 								{% if google_maps_api_key %}
-								<button type="button" class="t1-map-pick-btn" id="plecare_map_pick" title="Deschide harta aici și alege locația">Alege pe hartă</button>
+								<button type="button" class="t1-map-pick-btn" id="plecare_map_pick" title="{% if eu_site_active %}{{ eu_ui.transport_map_pick_title }}{% else %}Deschide harta aici și alege locația{% endif %}">{% if eu_site_active %}{{ eu_ui.transport_map_pick }}{% else %}Alege pe hartă{% endif %}</button>
 								{% else %}
 								<a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer" class="t1-link t1-maps-link" id="plecare_maps_link" title="Deschide în Google Maps">🗺️ Google Maps</a>
 								{% endif %}
 							</div>
-							<input type="text" class="t1-input" name="plecare" id="plecare_input" placeholder="Localitate, adresă sau punct de plecare" autocomplete="off" />
+							<input type="text" class="t1-input" name="plecare" id="plecare_input" placeholder="{% if eu_site_active %}{{ eu_ui.transport_ph_from }}{% else %}Localitate, adresă sau punct de plecare{% endif %}" autocomplete="off" />
 							<input type="hidden" name="plecare_lat" id="plecare_lat" value="" />
 							<input type="hidden" name="plecare_lng" id="plecare_lng" value="" />
-							<p class="t1-hint">{% if google_maps_api_key %}Sugestii la tastare sau „Alege pe hartă” (aceeași pagină), în zona județului / localității.{% else %}Poți deschide harta în tab-ul alăturat.{% endif %}</p>
+							<p class="t1-hint">{% if eu_site_active %}{% if google_maps_api_key %}Typeahead or “Pick on map” (same page), in the county / locality area.{% else %}You can open the map in the adjacent tab.{% endif %}{% else %}{% if google_maps_api_key %}Sugestii la tastare sau „Alege pe hartă” (aceeași pagină), în zona județului / localității.{% else %}Poți deschide harta în tab-ul alăturat.{% endif %}{% endif %}</p>
 						</div>
 						<div class="t1-field t1-caseta">
 							<div class="t1-label-row">
-								<label class="t1-label" for="sosire_input">PUNCT SOSIRE</label>
+								<label class="t1-label" for="sosire_input">{% if eu_site_active %}{{ eu_ui.transport_to }}{% else %}PUNCT SOSIRE{% endif %}</label>
 								{% if google_maps_api_key %}
-								<button type="button" class="t1-map-pick-btn" id="sosire_map_pick" title="Deschide harta aici și alege locația">Alege pe hartă</button>
+								<button type="button" class="t1-map-pick-btn" id="sosire_map_pick" title="{% if eu_site_active %}{{ eu_ui.transport_map_pick_title }}{% else %}Deschide harta aici și alege locația{% endif %}">{% if eu_site_active %}{{ eu_ui.transport_map_pick }}{% else %}Alege pe hartă{% endif %}</button>
 								{% else %}
 								<a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer" class="t1-link t1-maps-link" id="sosire_maps_link" title="Deschide în Google Maps">🗺️ Google Maps</a>
 								{% endif %}
 							</div>
-							<input type="text" class="t1-input" name="sosire" id="sosire_input" placeholder="Localitate, adresă sau punct de sosire" autocomplete="off" />
+							<input type="text" class="t1-input" name="sosire" id="sosire_input" placeholder="{% if eu_site_active %}{{ eu_ui.transport_ph_to }}{% else %}Localitate, adresă sau punct de sosire{% endif %}" autocomplete="off" />
 							<input type="hidden" name="sosire_lat" id="sosire_lat" value="" />
 							<input type="hidden" name="sosire_lng" id="sosire_lng" value="" />
-							<p class="t1-hint">{% if google_maps_api_key %}Sugestii la tastare sau „Alege pe hartă” (aceeași pagină), în zona județului / localității.{% else %}Poți deschide harta în tab-ul alăturat.{% endif %}</p>
+							<p class="t1-hint">{% if eu_site_active %}{% if google_maps_api_key %}Typeahead or “Pick on map” (same page), in the county / locality area.{% else %}You can open the map in the adjacent tab.{% endif %}{% else %}{% if google_maps_api_key %}Sugestii la tastare sau „Alege pe hartă” (aceeași pagină), în zona județului / localității.{% else %}Poți deschide harta în tab-ul alăturat.{% endif %}{% endif %}</p>
 						</div>
 						<div class="t1-field t1-caseta t1-row-inline t1-data-ora">
-							<label class="t1-label">DATA ȘI ORA</label>
+							<label class="t1-label">{% if eu_site_active %}{{ eu_ui.transport_datetime }}{% else %}DATA ȘI ORA{% endif %}</label>
 							<div class="t1-date-ora-wrap">
 								<div class="t1-input-wrap">
 									<input type="date" class="t1-input t1-input-date" id="tw-data" name="data" title="Selectează data" autocomplete="off" />
-									<button type="button" class="t1-cal-btn" id="tw-cal-btn" aria-label="Deschide calendarul">📅</button>
+									<button type="button" class="t1-cal-btn" id="tw-cal-btn" aria-label="{% if eu_site_active %}{{ eu_ui.transport_cal }}{% else %}Deschide calendarul{% endif %}">📅</button>
 								</div>
 								<input type="time" class="t1-input t1-input-time" name="ora" value="12:00" />
 							</div>
 						</div>
 						<div class="t1-field t1-caseta t1-row-inline">
-							<label class="t1-label">NR. CÂINI</label>
+							<label class="t1-label">{% if eu_site_active %}{{ eu_ui.transport_dogs_n }}{% else %}NR. CÂINI{% endif %}</label>
 							<input type="number" class="t1-input t1-input-num" name="nr_caini" value="1" min="1" />
 						</div>
 						<div class="t1-field t1-caseta t1-row-inline">
-							<label class="t1-label" for="tw-route-scope">TRASEU</label>
+							<label class="t1-label" for="tw-route-scope">{% if eu_site_active %}{{ eu_ui.transport_route }}{% else %}TRASEU{% endif %}</label>
 							<select class="t1-input" id="tw-route-scope" name="route_scope" aria-label="Tip traseu">
-								<option value="national" selected>Național</option>
-								<option value="international">Internațional</option>
+								<option value="national" selected>{% if eu_site_active %}{{ eu_ui.transport_route_nat }}{% else %}Național{% endif %}</option>
+								<option value="international">{% if eu_site_active %}{{ eu_ui.transport_route_int }}{% else %}Internațional{% endif %}</option>
 							</select>
 						</div>
 						<div class="t1-field t1-caseta t1-row-inline">
-							<label class="t1-label" for="tw-urgency">URGENȚĂ</label>
+							<label class="t1-label" for="tw-urgency">{% if eu_site_active %}{{ eu_ui.transport_urgency }}{% else %}URGENȚĂ{% endif %}</label>
 							<select class="t1-input" id="tw-urgency" name="urgency_window" aria-label="Fereastră timp">
-								<option value="flex" selected>Fără limită strictă</option>
-								<option value="today">Transport azi</option>
-								<option value="h24">24 ore</option>
+								<option value="flex" selected>{% if eu_site_active %}{{ eu_ui.transport_urg_flex }}{% else %}Fără limită strictă{% endif %}</option>
+								<option value="today">{% if eu_site_active %}{{ eu_ui.transport_urg_today }}{% else %}Transport azi{% endif %}</option>
+								<option value="h24">{% if eu_site_active %}{{ eu_ui.transport_urg_24 }}{% else %}24 ore{% endif %}</option>
 							</select>
 						</div>
-						<button type="submit" class="t1-submit">TRIMITE CEREREA</button>
+						<button type="submit" class="t1-submit">{% if eu_site_active %}{{ eu_ui.transport_submit }}{% else %}TRIMITE CEREREA{% endif %}</button>
 					</form>
 					</div>
 				</div>
@@ -329,10 +329,10 @@
 			<div id="T2" class="tw-cell" data-slot="T2">
 				<div class="t2-inner">
 					<button type="button" class="t2-portrait-expand-btn" id="t2PortraitExpand" aria-expanded="false" aria-controls="t1Expandable">
-						Doresc transport
+						{% if eu_site_active %}{{ eu_ui.transport_expand_hub }}{% else %}Doresc transport{% endif %}
 					</button>
 					<button type="button" class="t2-portrait-collapse-btn" id="t2PortraitCollapse" aria-expanded="true">
-						Restrânge zona autocar
+						{% if eu_site_active %}{{ eu_ui.transport_collapse_hub }}{% else %}Restrânge zona autocar{% endif %}
 					</button>
 					<!-- Hub: centrul = bulina rotativă (mobil) / autocar (desktop); inelul = 9 cercuri -->
 					<div class="t2-hub">
@@ -343,60 +343,60 @@
 						<div class="t2-circles">
 						<div class="t2-circle t2-circle--1">
 							<img src="{% static 'images/transport/servicii/servicii_1.jpeg' %}" alt="" />
-							<span class="t2-circle-label">Transport internațional</span>
-							<span class="t2-circle-tooltip">Transport sigur al animalelor în țară și peste graniță, cu vehicul dedicat.</span>
+							<span class="t2-circle-label">{% if eu_site_active %}{{ eu_ui.transport_t2_1 }}{% else %}Transport internațional{% endif %}</span>
+							<span class="t2-circle-tooltip">{% if eu_site_active %}{{ eu_ui.transport_t2_1_tip }}{% else %}Transport sigur al animalelor în țară și peste graniță, cu vehicul dedicat.{% endif %}</span>
 						</div>
 						<div class="t2-circle t2-circle--2">
 							<img src="{% static 'images/transport/servicii/servicii_2.jpeg' %}" alt="" />
-							<span class="t2-circle-label">Facilități la interior</span>
-							<span class="t2-circle-tooltip">60 de locuri special amenajate pentru transport în siguranță.</span>
+							<span class="t2-circle-label">{% if eu_site_active %}{{ eu_ui.transport_t2_2 }}{% else %}Facilități la interior{% endif %}</span>
+							<span class="t2-circle-tooltip">{% if eu_site_active %}{{ eu_ui.transport_t2_2_tip }}{% else %}60 de locuri special amenajate pentru transport în siguranță.{% endif %}</span>
 						</div>
 						<div class="t2-circle t2-circle--3">
 							<img src="{% static 'images/transport/servicii/servicii_3.jpeg' %}" alt="" />
-							<span class="t2-circle-label">Ventilație / căldură</span>
-							<span class="t2-circle-tooltip">Aer condiționat și încălzire pentru temperatură constantă în drum.</span>
+							<span class="t2-circle-label">{% if eu_site_active %}{{ eu_ui.transport_t2_3 }}{% else %}Ventilație / căldură{% endif %}</span>
+							<span class="t2-circle-tooltip">{% if eu_site_active %}{{ eu_ui.transport_t2_3_tip }}{% else %}Aer condiționat și încălzire pentru temperatură constantă în drum.{% endif %}</span>
 						</div>
 						<div class="t2-circle t2-circle--4">
 							<img src="{% static 'images/transport/servicii/servicii_4.jpeg' %}" alt="" />
-							<span class="t2-circle-label">Localizare GPS</span>
-							<span class="t2-circle-tooltip">Urmărire în timp real a traseului și a locației vehiculului.</span>
+							<span class="t2-circle-label">{% if eu_site_active %}{{ eu_ui.transport_t2_4 }}{% else %}Localizare GPS{% endif %}</span>
+							<span class="t2-circle-tooltip">{% if eu_site_active %}{{ eu_ui.transport_t2_4_tip }}{% else %}Urmărire în timp real a traseului și a locației vehiculului.{% endif %}</span>
 						</div>
 						<div class="t2-circle t2-circle--5">
 							<img src="{% static 'images/transport/servicii/servicii_5.jpeg' %}" alt="" />
-							<span class="t2-circle-label">VET · Asistență VET</span>
-							<span class="t2-circle-tooltip">Veterinar la bord sau asistență veterinară la cerere în timpul transportului.</span>
+							<span class="t2-circle-label">{% if eu_site_active %}{{ eu_ui.transport_t2_5 }}{% else %}VET · Asistență VET{% endif %}</span>
+							<span class="t2-circle-tooltip">{% if eu_site_active %}{{ eu_ui.transport_t2_5_tip }}{% else %}Veterinar la bord sau asistență veterinară la cerere în timpul transportului.{% endif %}</span>
 						</div>
 						<div class="t2-circle t2-circle--6">
 							<img src="{% static 'images/transport/servicii/servicii_6.jpeg' %}" alt="" />
-							<span class="t2-circle-label">Popas hrană</span>
-							<span class="t2-circle-tooltip">Opriri regulate pentru apă, mâncare și odihnă pe traseu.</span>
+							<span class="t2-circle-label">{% if eu_site_active %}{{ eu_ui.transport_t2_6 }}{% else %}Popas hrană{% endif %}</span>
+							<span class="t2-circle-tooltip">{% if eu_site_active %}{{ eu_ui.transport_t2_6_tip }}{% else %}Opriri regulate pentru apă, mâncare și odihnă pe traseu.{% endif %}</span>
 						</div>
 						<div class="t2-circle t2-circle--7">
 							<img src="{% static 'images/transport/servicii/servicii_3.jpeg' %}" alt="" />
-							<span class="t2-circle-label">Confort individual</span>
-							<span class="t2-circle-tooltip">Fiecare animal are cușcă proprie pentru siguranță și liniște.</span>
+							<span class="t2-circle-label">{% if eu_site_active %}{{ eu_ui.transport_t2_7 }}{% else %}Confort individual{% endif %}</span>
+							<span class="t2-circle-tooltip">{% if eu_site_active %}{{ eu_ui.transport_t2_7_tip }}{% else %}Fiecare animal are cușcă proprie pentru siguranță și liniște.{% endif %}</span>
 						</div>
 						<div class="t2-circle t2-circle--8">
 							<img src="{% static 'images/transport/servicii/servicii_8.jpeg' %}" alt="" />
-							<span class="t2-circle-label">Medical VET</span>
-							<span class="t2-circle-tooltip">Echipament și tratament medical veterinar disponibil în timpul călătoriei.</span>
+							<span class="t2-circle-label">{% if eu_site_active %}{{ eu_ui.transport_t2_8 }}{% else %}Medical VET{% endif %}</span>
+							<span class="t2-circle-tooltip">{% if eu_site_active %}{{ eu_ui.transport_t2_8_tip }}{% else %}Echipament și tratament medical veterinar disponibil în timpul călătoriei.{% endif %}</span>
 						</div>
 						<div class="t2-circle t2-circle--9">
 							<img src="{% static 'images/transport/servicii/servicii_9.jpeg' %}" alt="" />
-							<span class="t2-circle-label">Toaletare VET</span>
-							<span class="t2-circle-tooltip">Toaletare și îngrijire veterinară la cerere în pauzele de drum.</span>
+							<span class="t2-circle-label">{% if eu_site_active %}{{ eu_ui.transport_t2_9 }}{% else %}Toaletare VET{% endif %}</span>
+							<span class="t2-circle-tooltip">{% if eu_site_active %}{{ eu_ui.transport_t2_9_tip }}{% else %}Toaletare și îngrijire veterinară la cerere în pauzele de drum.{% endif %}</span>
 						</div>
 						</div>
 					</div>
 					<div class="t2-donate-cause-wrap">
-						<a href="{% url 'donatii_generale' %}?sursa=transport" class="t2-donate-cause-link">Donează pentru o cauză</a>
+						<a href="{% url 'donatii_generale' %}?sursa=transport" class="t2-donate-cause-link">{% if eu_site_active %}{{ eu_ui.transport_donate }}{% else %}Donează pentru o cauză{% endif %}</a>
 					</div>
 				</div>
 			</div>
 			</div>
 			<div id="T3" class="tw-cell" data-slot="T3">
-				<div class="t3-inner" role="region" aria-label="Spații publicitate transport">
-					<h3 class="t3-title">Pentru transport...</h3>
+				<div class="t3-inner" role="region" aria-label="{% if eu_site_active %}{{ eu_ui.transport_t3_aria }}{% else %}Spații publicitate transport{% endif %}">
+					<h3 class="t3-title">{% if eu_site_active %}{{ eu_ui.transport_t3_title }}{% else %}Pentru transport...{% endif %}</h3>
 					{% for slot in transport_pub_slots %}
 					<div class="t3-box t3-box-{{ forloop.counter }}" data-slot="{{ slot.code }}">
 						{% include "anunturi/includes/pub_slot_live_cover.html" with creative=slot.creative layout="sidebar" only %}
@@ -411,16 +411,16 @@
 <div id="transportMapModal" class="transport-map-modal" hidden aria-hidden="true">
 	<div class="transport-map-modal__backdrop" id="transportMapModalBackdrop" tabindex="-1"></div>
 	<div class="transport-map-modal__panel" role="dialog" aria-modal="true" aria-labelledby="transportMapModalTitle">
-		<h3 class="transport-map-modal__title" id="transportMapModalTitle">Alege locația pe hartă</h3>
-		<p class="transport-map-modal__hint" id="transportMapModalHint">Caută mai jos sau apasă pe hartă pentru pin. Poți muta pinul.</p>
+		<h3 class="transport-map-modal__title" id="transportMapModalTitle">{% if eu_site_active %}{{ eu_ui.transport_map_title }}{% else %}Alege locația pe hartă{% endif %}</h3>
+		<p class="transport-map-modal__hint" id="transportMapModalHint">{% if eu_site_active %}{{ eu_ui.transport_map_hint }}{% else %}Caută mai jos sau apasă pe hartă pentru pin. Poți muta pinul.{% endif %}</p>
 		<div class="transport-map-modal__search-wrap">
-			<label class="transport-map-modal__search-label" for="transportMapSearch">Caută adresă</label>
-			<input type="text" id="transportMapSearch" class="transport-map-modal__search" placeholder="Caută adresă, stradă, localitate…" autocomplete="off" />
+			<label class="transport-map-modal__search-label" for="transportMapSearch">{% if eu_site_active %}{{ eu_ui.transport_map_search }}{% else %}Caută adresă{% endif %}</label>
+			<input type="text" id="transportMapSearch" class="transport-map-modal__search" placeholder="{% if eu_site_active %}{{ eu_ui.transport_map_search_ph }}{% else %}Caută adresă, stradă, localitate…{% endif %}" autocomplete="off" />
 		</div>
 		<div id="transportMapCanvas" class="transport-map-modal__canvas"></div>
 		<div class="transport-map-modal__actions">
-			<button type="button" class="transport-map-modal__btn transport-map-modal__btn--cancel" id="transportMapModalCancel">Anulează</button>
-			<button type="button" class="transport-map-modal__btn transport-map-modal__btn--ok" id="transportMapModalConfirm">Folosește această locație</button>
+			<button type="button" class="transport-map-modal__btn transport-map-modal__btn--cancel" id="transportMapModalCancel">{% if eu_site_active %}{{ eu_ui.transport_map_cancel }}{% else %}Anulează{% endif %}</button>
+			<button type="button" class="transport-map-modal__btn transport-map-modal__btn--ok" id="transportMapModalConfirm">{% if eu_site_active %}{{ eu_ui.transport_map_ok }}{% else %}Folosește această locație{% endif %}</button>
 		</div>
 	</div>
 </div>

@@ -36,47 +36,47 @@
 
 	<div class="contact-grid contact-grid-top" role="list">
 		<article class="contact-card contact-card-legal" role="listitem">
-			<h2>Date operator platformă</h2>
-			<p><strong>Denumire legală:</strong> EU-ADOPT (operator platformă)</p>
-			<p><strong>CUI/CIF:</strong> în curs de completare</p>
-			<p><strong>Sediu:</strong> în curs de completare</p>
-			<p><strong>Telefon:</strong> în curs de completare</p>
-			<p><strong>E-mail general:</strong> <a href="mailto:contact@eu-adopt.ro">contact@eu-adopt.ro</a></p>
+			<h2>{% if eu_site_active %}{{ eu_ui.contact_legal_h }}{% else %}Date operator platformă{% endif %}</h2>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_name }}{% else %}Denumire legală:{% endif %}</strong> EU-ADOPT (operator platformă)</p>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_cui }}{% else %}CUI/CIF:{% endif %}</strong> {% if eu_site_active %}{{ eu_ui.in_progress }}{% else %}în curs de completare{% endif %}</p>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_hq }}{% else %}Sediu:{% endif %}</strong> {% if eu_site_active %}{{ eu_ui.in_progress }}{% else %}în curs de completare{% endif %}</p>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_phone }}{% else %}Telefon:{% endif %}</strong> {% if eu_site_active %}{{ eu_ui.in_progress }}{% else %}în curs de completare{% endif %}</p>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_email }}{% else %}E-mail general:{% endif %}</strong> <a href="mailto:contact@eu-adopt.ro">contact@eu-adopt.ro</a></p>
 		</article>
 
 		<article class="contact-card" role="listitem">
-			<h2>1) Suport general</h2>
-			<p>Cont, autentificare, utilizare pagini și probleme tehnice.</p>
+			<h2>{% if eu_site_active %}{{ eu_ui.contact_card1_h }}{% else %}1) Suport general{% endif %}</h2>
+			<p>{% if eu_site_active %}{{ eu_ui.contact_card1_p }}{% else %}Cont, autentificare, utilizare pagini și probleme tehnice.{% endif %}</p>
 			<ul>
-				<li><strong>E-mail:</strong> <a href="mailto:contact@eu-adopt.ro?subject={{ 'EU-Adopt - Suport general'|urlencode }}">contact@eu-adopt.ro</a></li>
-				<li><strong>Timp răspuns:</strong> 1–3 zile lucrătoare</li>
+				<li><strong>{% if eu_site_active %}{{ eu_ui.email }}{% else %}E-mail:{% endif %}</strong> <a href="mailto:contact@eu-adopt.ro?subject={{ 'EU-Adopt - Suport general'|urlencode }}">contact@eu-adopt.ro</a></li>
+				<li><strong>{% if eu_site_active %}{{ eu_ui.response_time }}{% else %}Timp răspuns:{% endif %}</strong> {% if eu_site_active %}{{ eu_ui.working_days }}{% else %}1–3 zile lucrătoare{% endif %}</li>
 			</ul>
 		</article>
 
 		<article class="contact-card" role="listitem">
-			<h2>2) Date personale (GDPR)</h2>
-			<p>Acces, rectificare, ștergere, restricționare, portabilitate, opoziție.</p>
+			<h2>{% if eu_site_active %}{{ eu_ui.contact_card2_h }}{% else %}2) Date personale (GDPR){% endif %}</h2>
+			<p>{% if eu_site_active %}{{ eu_ui.contact_card2_p }}{% else %}Acces, rectificare, ștergere, restricționare, portabilitate, opoziție.{% endif %}</p>
 			<ul>
-				<li><strong>E-mail:</strong> <a href="mailto:contact@eu-adopt.ro?subject={{ 'EU-Adopt - GDPR'|urlencode }}">contact@eu-adopt.ro</a></li>
-				<li><strong>Politică:</strong> <a href="{% url 'politica_confidentialitate' %}">Confidențialitate</a></li>
+				<li><strong>{% if eu_site_active %}{{ eu_ui.email }}{% else %}E-mail:{% endif %}</strong> <a href="mailto:contact@eu-adopt.ro?subject={{ 'EU-Adopt - GDPR'|urlencode }}">contact@eu-adopt.ro</a></li>
+				<li><strong>{% if eu_site_active %}{{ eu_ui.policy }}{% else %}Politică:{% endif %}</strong> <a href="{% url 'politica_confidentialitate' %}">{% if eu_site_active %}{{ eu_ui.contact_card2_pol }}{% else %}Confidențialitate{% endif %}</a></li>
 			</ul>
 		</article>
 
 		<article class="contact-card" role="listitem">
-			<h2>3) Publicitate și servicii plătite</h2>
-			<p>Promovare, campanii, sloturi și apariții publicitare.</p>
+			<h2>{% if eu_site_active %}{{ eu_ui.contact_card3_h }}{% else %}3) Publicitate și servicii plătite{% endif %}</h2>
+			<p>{% if eu_site_active %}{{ eu_ui.contact_card3_p }}{% else %}Promovare, campanii, sloturi și apariții publicitare.{% endif %}</p>
 			<ul>
-				<li><strong>E-mail:</strong> <a href="mailto:parteners@eu-adopt.ro?subject={{ 'EU-Adopt - Parteneri / publicitate'|urlencode }}">parteners@eu-adopt.ro</a></li>
-				<li><strong>Politică:</strong> <a href="{% url 'politica_servicii_platite' %}">Servicii plătite</a></li>
+				<li><strong>{% if eu_site_active %}{{ eu_ui.email }}{% else %}E-mail:{% endif %}</strong> <a href="mailto:parteners@eu-adopt.ro?subject={{ 'EU-Adopt - Parteneri / publicitate'|urlencode }}">parteners@eu-adopt.ro</a></li>
+				<li><strong>{% if eu_site_active %}{{ eu_ui.policy }}{% else %}Politică:{% endif %}</strong> <a href="{% url 'politica_servicii_platite' %}">{% if eu_site_active %}{{ eu_ui.contact_card3_pol }}{% else %}Servicii plătite{% endif %}</a></li>
 			</ul>
 		</article>
 
 		<article class="contact-card" role="listitem">
-			<h2>4) Moderare și raportări</h2>
-			<p>Conținut suspect, conturi abuzive, fraudă sau încălcări ale regulilor.</p>
+			<h2>{% if eu_site_active %}{{ eu_ui.contact_card4_h }}{% else %}4) Moderare și raportări{% endif %}</h2>
+			<p>{% if eu_site_active %}{{ eu_ui.contact_card4_p }}{% else %}Conținut suspect, conturi abuzive, fraudă sau încălcări ale regulilor.{% endif %}</p>
 			<ul>
-				<li><strong>E-mail:</strong> <a href="mailto:contact@eu-adopt.ro?subject={{ 'EU-Adopt - Moderare'|urlencode }}">contact@eu-adopt.ro</a></li>
-				<li><strong>Politică:</strong> <a href="{% url 'politica_moderare' %}">Moderare</a></li>
+				<li><strong>{% if eu_site_active %}{{ eu_ui.email }}{% else %}E-mail:{% endif %}</strong> <a href="mailto:contact@eu-adopt.ro?subject={{ 'EU-Adopt - Moderare'|urlencode }}">contact@eu-adopt.ro</a></li>
+				<li><strong>{% if eu_site_active %}{{ eu_ui.policy }}{% else %}Politică:{% endif %}</strong> <a href="{% url 'politica_moderare' %}">{% if eu_site_active %}{{ eu_ui.contact_card4_pol }}{% else %}Moderare{% endif %}</a></li>
 			</ul>
 		</article>
 	</div>

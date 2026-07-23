@@ -10,6 +10,17 @@ from .pet_age_bands import AGE_LABELS_ORDERED, BAND_CHOICES_UI, BAND_FILTER_GET_
 
 
 def _adoption_state_label(state: str) -> str:
+    from django.utils.translation import get_language
+
+    lang = (get_language() or "").strip().lower()
+    if lang.startswith("en"):
+        mapping = {
+            AnimalListing.ADOPTION_STATE_FREE: "Available",
+            AnimalListing.ADOPTION_STATE_OPEN: "For adoption",
+            AnimalListing.ADOPTION_STATE_IN_PROGRESS: "Adoption in progress",
+            AnimalListing.ADOPTION_STATE_ADOPTED: "Adopted",
+        }
+        return mapping.get((state or "").strip(), "Available")
     mapping = {
         AnimalListing.ADOPTION_STATE_FREE: "Liber",
         AnimalListing.ADOPTION_STATE_OPEN: "Spre adopție",

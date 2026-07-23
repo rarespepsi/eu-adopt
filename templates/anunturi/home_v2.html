@@ -167,98 +167,98 @@
 						</div>
 					</div>
 					<div class="hero-v2-cta-duo">
-						<a href="{% url 'donatii_generale' %}?sursa=home_sustine" class="hero-v2-cta-sustine" title="Susține EU-Adopt">Susține EU-Adopt</a>
-						<a href="{% url 'pets_all' %}" class="hero-v2-cta-animale" title="Vezi prietenii tăi">Hai la noi!</a>
+						<a href="{% url 'donatii_generale' %}?sursa=home_sustine" class="hero-v2-cta-sustine" title="{% if eu_site_active %}{{ eu_ui.home_cta_support }}{% else %}Susține EU-Adopt{% endif %}">{% if eu_site_active %}{{ eu_ui.home_cta_support }}{% else %}Susține EU-Adopt{% endif %}</a>
+						<a href="{% url 'pets_all' %}" class="hero-v2-cta-animale" title="{% if eu_site_active %}{{ eu_ui.home_cta_pets_title }}{% else %}Vezi prietenii tăi{% endif %}">{% if eu_site_active %}{{ eu_ui.home_cta_pets }}{% else %}Hai la noi!{% endif %}</a>
 					</div>
 				</header>
 			</div>
 			<div id="home-a1-site-note-backdrop" class="home-a1-site-note-backdrop" hidden aria-hidden="true">
 				<div class="home-a1-site-note-panel" role="dialog" aria-modal="true" aria-labelledby="home-a1-site-note-title" id="home-a1-site-note" tabindex="-1">
-					<button type="button" class="home-a1-site-note-close" aria-label="Închide nota">&times;</button>
-					<h2 id="home-a1-site-note-title" class="home-a1-site-note-title">Ghid scurt – paginile EU-Adopt</h2>
+					<button type="button" class="home-a1-site-note-close" aria-label="{% if eu_site_active %}{{ eu_ui.home_note_close }}{% else %}Închide nota{% endif %}">&times;</button>
+					<h2 id="home-a1-site-note-title" class="home-a1-site-note-title">{% if eu_site_active %}{{ eu_ui.home_note_title }}{% else %}Ghid scurt – paginile EU-Adopt{% endif %}</h2>
 					<p class="home-a1-site-note-rule" role="note">
-						<strong>Regulă importantă:</strong> în acest site <strong>nu se cumpără și nu se vând animale</strong>. Adopția se face prin cerere și acord cu deținătorul sau ONG-ul, nu prin tranzacții comerciale pe platformă.
+						{% if eu_site_active %}{{ eu_ui.home_note_rule }}{% else %}<strong>Regulă importantă:</strong> în acest site <strong>nu se cumpără și nu se vând animale</strong>. Adopția se face prin cerere și acord cu deținătorul sau ONG-ul, nu prin tranzacții comerciale pe platformă.{% endif %}
 					</p>
 					<div class="home-a1-site-note-body">
 						<section class="home-a1-site-note-sec">
-							<h3 class="home-a1-site-note-h3"><a href="{% url 'home' %}">Acasă</a></h3>
-							<p>Prezentare generală, grid cu anunțuri în adopție și acces rapid la restul secțiunilor.</p>
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'home' %}">{% if eu_site_active %}{{ eu_ui.home_note_home_h }}{% else %}Acasă{% endif %}</a></h3>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_home_p }}{% else %}Prezentare generală, grid cu anunțuri în adopție și acces rapid la restul secțiunilor.{% endif %}</p>
 						</section>
 						<section class="home-a1-site-note-sec">
-							<h3 class="home-a1-site-note-h3"><a href="{% url 'pets_all' %}">Prietenul tău</a></h3>
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'pets_all' %}">{% if eu_site_active %}{{ eu_ui.home_note_pt_h }}{% else %}Prietenul tău{% endif %}</a></h3>
 							{% if user.is_authenticated %}
-							<p>Listă cu animale disponibile; filtre; deschiderea unei fișe pentru detalii, mesaje și cerere de adopție. Inimioara salvează animalul în <a href="{% url 'i_love' %}">I Love</a>.</p>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_pt_p_auth }}{% else %}Listă cu animale disponibile; filtre; deschiderea unei fișe pentru detalii, mesaje și cerere de adopție. Inimioara salvează animalul în <a href="{% url 'i_love' %}">I Love</a>.{% endif %}</p>
 							{% else %}
-							<p>Listă cu animale disponibile; filtre; deschiderea unei fișe pentru detalii, mesaje și cerere de adopție. După ce intri în cont, poți folosi inimioara ca să salvezi animale în pagina I Love.</p>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_pt_p_guest }}{% else %}Listă cu animale disponibile; filtre; deschiderea unei fișe pentru detalii, mesaje și cerere de adopție. După ce intri în cont, poți folosi inimioara ca să salvezi animale în pagina I Love.{% endif %}</p>
 							{% endif %}
 						</section>
 						<section class="home-a1-site-note-sec">
-							<h3 class="home-a1-site-note-h3">Fișă animal (subpagină)</h3>
-							<p>Informații despre animal, mesaje către deținător, flux de adopție. Opțiunea de promovare în grid (A2) este doar vizibilitate plătită pentru anunț – nu înseamnă cumpărarea animalului.</p>
+							<h3 class="home-a1-site-note-h3">{% if eu_site_active %}{{ eu_ui.home_note_ficha_h }}{% else %}Fișă animal (subpagină){% endif %}</h3>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_ficha_p }}{% else %}Informații despre animal, mesaje către deținător, flux de adopție. Opțiunea de promovare în grid (A2) este doar vizibilitate plătită pentru anunț – nu înseamnă cumpărarea animalului.{% endif %}</p>
 						</section>
 						<section class="home-a1-site-note-sec">
-							<h3 class="home-a1-site-note-h3"><a href="{% url 'servicii' %}">Servicii</a></h3>
-							<p>Servicii oferite de parteneri (ex. clinică, dresaj) legate de îngrijirea animalelor, nu comerț cu animale.</p>
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'servicii' %}">{% if eu_site_active %}{{ eu_ui.home_note_svc_h }}{% else %}Servicii{% endif %}</a></h3>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_svc_p }}{% else %}Servicii oferite de parteneri (ex. clinică, dresaj) legate de îngrijirea animalelor, nu comerț cu animale.{% endif %}</p>
 						</section>
 						<section class="home-a1-site-note-sec">
-							<h3 class="home-a1-site-note-h3"><a href="{% url 'transport' %}">Transport</a></h3>
-							<p>Sprijin logistic pentru adopții și donații (ex. cuști). Totul rămâne în afara oricărei vânzări de animal.</p>
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'transport' %}">{% if eu_site_active %}{{ eu_ui.home_note_tr_h }}{% else %}Transport{% endif %}</a></h3>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_tr_p }}{% else %}Sprijin logistic pentru adopții și donații (ex. cuști). Totul rămâne în afara oricărei vânzări de animal.{% endif %}</p>
 						</section>
 						<section class="home-a1-site-note-sec">
-							<h3 class="home-a1-site-note-h3"><a href="{% url 'custi' %}">Cuști</a></h3>
-							<p>Informații și implicare pentru donarea de cuști folosite la transport – fără legătură cu vânzarea animalelor.</p>
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'custi' %}">{% if eu_site_active %}{{ eu_ui.home_note_crates_h }}{% else %}Cuști{% endif %}</a></h3>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_crates_p }}{% else %}Informații și implicare pentru donarea de cuști folosite la transport – fără legătură cu vânzarea animalelor.{% endif %}</p>
 						</section>
 						<section class="home-a1-site-note-sec">
-							<h3 class="home-a1-site-note-h3"><a href="{% url 'shop' %}">Shop</a></h3>
-							<p>Produse și materiale; veniturile sprijină cauza. Aici nu există „preț pentru animal”.</p>
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'shop' %}">{% if eu_site_active %}{{ eu_ui.home_note_shop_h }}{% else %}Shop{% endif %}</a></h3>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_shop_p }}{% else %}Produse și materiale; veniturile sprijină cauza. Aici nu există „preț pentru animal”.{% endif %}</p>
 						</section>
 						<section class="home-a1-site-note-sec">
-							<h3 class="home-a1-site-note-h3"><a href="{% url 'shop_comanda_personalizate' %}">Shop → Comandă personalizate</a></h3>
-							<p>Comenzi cu design personalizat (ex. tricouri); banii merg spre proiect, nu spre cumpărarea unui animal.</p>
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'shop_comanda_personalizate' %}">{% if eu_site_active %}{{ eu_ui.home_note_shop_pers_h }}{% else %}Shop → Comandă personalizate{% endif %}</a></h3>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_shop_pers_p }}{% else %}Comenzi cu design personalizat (ex. tricouri); banii merg spre proiect, nu spre cumpărarea unui animal.{% endif %}</p>
 						</section>
 						<section class="home-a1-site-note-sec">
-							<h3 class="home-a1-site-note-h3"><a href="{% url 'shop_magazin_foto' %}">Shop → Magazin foto („cumpără o poză”)</a></h3>
-							<p>Achiziționezi o fotografie/licență de sprijin; suma este orientată către ONG-uri – este sprijin financiar, nu cumpărare animal.</p>
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'shop_magazin_foto' %}">{% if eu_site_active %}{{ eu_ui.home_note_shop_photo_h }}{% else %}Shop → Magazin foto („cumpără o poză”){% endif %}</a></h3>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_shop_photo_p }}{% else %}Achiziționezi o fotografie/licență de sprijin; suma este orientată către ONG-uri – este sprijin financiar, nu cumpărare animal.{% endif %}</p>
 						</section>
 						{% if home_site_note_show_mypet %}
 						<section class="home-a1-site-note-sec">
-							<h3 class="home-a1-site-note-h3"><a href="{% url 'mypet' %}">MyPet</a></h3>
-							<p>Panoul tău dacă ai cont: anunțuri proprii, mesaje, adopții în derulare. Promovarea unui anunț = vizibilitate, nu vânzare.</p>
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'mypet' %}">{% if eu_site_active %}{{ eu_ui.home_note_mypet_h }}{% else %}MyPet{% endif %}</a></h3>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_mypet_p }}{% else %}Panoul tău dacă ai cont: anunțuri proprii, mesaje, adopții în derulare. Promovarea unui anunț = vizibilitate, nu vânzare.{% endif %}</p>
 						</section>
 						{% endif %}
 						{% if home_site_note_show_ilove %}
 						<section class="home-a1-site-note-sec">
-							<h3 class="home-a1-site-note-h3"><a href="{% url 'i_love' %}">I Love</a></h3>
-							<p>Lista animalelor pe care le-ai marcat cu inimioara, pentru revenire ușoară la ele.</p>
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'i_love' %}">{% if eu_site_active %}{{ eu_ui.home_note_ilove_h }}{% else %}I Love{% endif %}</a></h3>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_ilove_p }}{% else %}Lista animalelor pe care le-ai marcat cu inimioara, pentru revenire ușoară la ele.{% endif %}</p>
 						</section>
 						{% endif %}
 						{% if home_site_note_show_publicitate %}
 						<section class="home-a1-site-note-sec">
-							<h3 class="home-a1-site-note-h3"><a href="{% url 'publicitate_harta' %}">Publicitate</a></h3>
-							<p>Rezervare spații publicitare (ex. pe materiale PDF) pentru brandul tău sau organizația ta – nu pentru comercializarea animalelor.</p>
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'publicitate_harta' %}">{% if eu_site_active %}{{ eu_ui.home_note_pub_h }}{% else %}Publicitate{% endif %}</a></h3>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_pub_p }}{% else %}Rezervare spații publicitare (ex. pe materiale PDF) pentru brandul tău sau organizația ta – nu pentru comercializarea animalelor.{% endif %}</p>
 						</section>
 						{% endif %}
 						{% if home_site_note_show_magazinul_meu %}
 						<section class="home-a1-site-note-sec">
-							<h3 class="home-a1-site-note-h3"><a href="{% url 'magazinul_meu' %}">Magazinul meu</a></h3>
-							<p>Zonă pentru parteneri colaboratori: oferte și setări legate de contul de partener.</p>
+							<h3 class="home-a1-site-note-h3"><a href="{% url 'magazinul_meu' %}">{% if eu_site_active %}{{ eu_ui.home_note_mag_h }}{% else %}Magazinul meu{% endif %}</a></h3>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_mag_p }}{% else %}Zonă pentru parteneri colaboratori: oferte și setări legate de contul de partener.{% endif %}</p>
 						</section>
 						{% endif %}
 						<section class="home-a1-site-note-sec">
-							<h3 class="home-a1-site-note-h3">Cont, înregistrare, legale</h3>
+							<h3 class="home-a1-site-note-h3">{% if eu_site_active %}{{ eu_ui.home_note_account_h }}{% else %}Cont, înregistrare, legale{% endif %}</h3>
 							{% if user.is_authenticated %}
-							<p><a href="{% url 'account' %}">Contul meu</a>, <a href="{% url 'signup_choose_type' %}">înregistrare</a>, <a href="{% url 'contact' %}">Contact</a>, <a href="{% url 'termeni' %}">Termeni</a> și politicile din subsol – pentru drepturi, confidențialitate și reguli de utilizare.</p>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_account_p_auth }}{% else %}<a href="{% url 'account' %}">Contul meu</a>, <a href="{% url 'signup_choose_type' %}">înregistrare</a>, <a href="{% url 'contact' %}">Contact</a>, <a href="{% url 'termeni' %}">Termeni</a> și politicile din subsol – pentru drepturi, confidențialitate și reguli de utilizare.{% endif %}</p>
 							{% else %}
-							<p><a href="{% url 'login' %}">Intră în cont</a>, <a href="{% url 'signup_choose_type' %}">înregistrare</a>, <a href="{% url 'contact' %}">Contact</a>, <a href="{% url 'termeni' %}">Termeni</a> și politicile din subsol – pentru drepturi, confidențialitate și reguli de utilizare.</p>
+							<p>{% if eu_site_active %}{{ eu_ui.home_note_account_p_guest }}{% else %}<a href="{% url 'login' %}">Intră în cont</a>, <a href="{% url 'signup_choose_type' %}">înregistrare</a>, <a href="{% url 'contact' %}">Contact</a>, <a href="{% url 'termeni' %}">Termeni</a> și politicile din subsol – pentru drepturi, confidențialitate și reguli de utilizare.{% endif %}</p>
 							{% endif %}
 						</section>
 					</div>
-					<div class="home-a1-site-note-cta" role="region" aria-label="Implicare">
-						<p class="home-a1-site-note-cta-title">Ajută și tu!</p>
+					<div class="home-a1-site-note-cta" role="region" aria-label="{% if eu_site_active %}{{ eu_ui.home_note_cta_aria }}{% else %}Implicare{% endif %}">
+						<p class="home-a1-site-note-cta-title">{% if eu_site_active %}{{ eu_ui.home_note_cta_title }}{% else %}Ajută și tu!{% endif %}</p>
 						{% if user.is_authenticated %}
-						<p class="home-a1-site-note-cta-text">Distribuie EU-Adopt, sprijină un transport sau o cușcă, cumpără o poză din magazinul foto sau promovează un anunț pentru vizibilitate – mereu fără cumpărare sau vânzare de animale pe site.</p>
+						<p class="home-a1-site-note-cta-text">{% if eu_site_active %}{{ eu_ui.home_note_share }}{% else %}Distribuie EU-Adopt, sprijină un transport sau o cușcă, cumpără o poză din magazinul foto sau promovează un anunț pentru vizibilitate – mereu fără cumpărare sau vânzare de animale pe site.{% endif %}</p>
 						{% else %}
-						<p class="home-a1-site-note-cta-text">Distribuie EU-Adopt, sprijină un transport sau o cușcă sau cumpără o poză din magazinul foto – mereu fără cumpărare sau vânzare de animale pe site.</p>
+						<p class="home-a1-site-note-cta-text">{% if eu_site_active %}{{ eu_ui.home_note_share_guest }}{% else %}Distribuie EU-Adopt, sprijină un transport sau o cușcă sau cumpără o poză din magazinul foto – mereu fără cumpărare sau vânzare de animale pe site.{% endif %}</p>
 						{% endif %}
 					</div>
 				</div>
@@ -274,7 +274,7 @@
 			</div>
 			<div id="A2">
 				{% if a2_quote_pool %}{{ a2_quote_pool|json_script:"a2QuotePool" }}{% endif %}
-				<div class="A2-casete-wrap" role="list" aria-label="12 câini disponibili pentru adopție">
+				<div class="A2-casete-wrap" role="list" aria-label="{% if eu_site_active %}{{ eu_ui.home_a2_aria }}{% else %}12 câini disponibili pentru adopție{% endif %}">
 					{% for pet in a2_pets %}
 					{% include "anunturi/includes/dog_card.html" with pet=pet a2_compact=a2_compact|default:False %}
 					{% endfor %}

@@ -40,7 +40,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.staticfiles import finders
-from .data import DEMO_DOGS, DEMO_DOG_IMAGE, A2_QUOTE_POOL, HERO_SLIDER_IMAGES
+from .data import DEMO_DOGS, DEMO_DOG_IMAGE, A2_QUOTE_POOL, A2_QUOTE_POOL_EN, HERO_SLIDER_IMAGES
 from .pet_age_bands import (
     AGE_LABELS_ORDERED,
     BAND_CHOICES_UI,
@@ -946,7 +946,26 @@ def _adopter_messaging_allowed(pet, user) -> bool:
     return True
 
 
-def _adoption_state_label(state: str) -> str:
+def _a2_quote_pool_for_request(request) -> list:
+    try:
+        from home.eu_site import is_eu_site_host
+
+        if is_eu_site_host(request.get_host()):
+            return A2_QUOTE_POOL_EN
+    except Exception:
+        pass
+    return A2_QUOTE_POOL
+
+
+def _adoption_state_label(state: str, *, english: bool = False) -> str:
+    if english:
+        mapping = {
+            AnimalListing.ADOPTION_STATE_FREE: "Available",
+            AnimalListing.ADOPTION_STATE_OPEN: "For adoption",
+            AnimalListing.ADOPTION_STATE_IN_PROGRESS: "Adoption in progress",
+            AnimalListing.ADOPTION_STATE_ADOPTED: "Adopted",
+        }
+        return mapping.get((state or "").strip(), "Available")
     mapping = {
         AnimalListing.ADOPTION_STATE_FREE: "Liber",
         AnimalListing.ADOPTION_STATE_OPEN: "Spre adopție",
@@ -2590,7 +2609,7 @@ def home_view(request):
             "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
         }
         if is_home:
-            pet["quote"] = random.choice(A2_QUOTE_POOL)
+            pet["quote"] = random.choice(_a2_quote_pool_for_request(request))
         a2_pets.append(pet)
 
     _pub_mkt = pub_market_for_request(request)
@@ -2610,9 +2629,10 @@ def home_view(request):
     left_sidebar_partners, right_sidebar_partners = _home_sidebar_pub_slots_for_template(
         market=_pub_mkt, lang=_pub_lang
     )
+    _quote_pool = _a2_quote_pool_for_request(request)
     return render(request, "anunturi/home_v2.html", {
         "a2_pets": a2_pets,
-        "a2_quote_pool": A2_QUOTE_POOL,
+        "a2_quote_pool": _quote_pool,
         "a2_compact": is_home,
         "left_sidebar_partners": left_sidebar_partners,
         "right_sidebar_partners": right_sidebar_partners,
@@ -4233,16 +4253,20 @@ def _safe_local_redirect_path(path_val: str) -> str | None:
 @csrf_protect
 def transport_submit_view(request):
     """Salvează cererea de transport veterinar din formularul paginii /transport/."""
+    from home.eu_site import is_eu_site_host
+
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
     judet, oras = normalize_location_pair(judet, oras)
     plecare = (request.POST.get("plecare") or "").strip()
     sosire = (request.POST.get("sosire") or "").strip()
     if not judet or not oras or not plecare or not sosire:
-        messages.error(
-            request,
-            "Completează județul, localitatea și punctele de plecare / sosire.",
+        msg = (
+            "Please fill in county, locality and pick-up / drop-off points."
+            if is_eu_site_host(request.get_host())
+            else "Completează județul, localitatea și punctele de plecare / sosire."
         )
+        messages.error(request, msg)
         return redirect("transport")
 
     try:
@@ -4288,7 +4312,14 @@ def transport_submit_view(request):
         from .transport_dispatch import create_dispatch_for_tvr
 
         create_dispatch_for_tvr(request, tvr)
-    messages.success(request, "Cererea de transport a fost înregistrată.")
+    messages.success(
+        request,
+        (
+            "Your transport request has been registered."
+            if is_eu_site_host(request.get_host())
+            else "Cererea de transport a fost înregistrată."
+        ),
+    )
 
     next_path = _safe_local_redirect_path(request.POST.get("next") or "")
     if next_path:
@@ -4998,7 +5029,10 @@ def render_dog_profile(request, listing: AnimalListing):
         "trait_tolereaza_singur": listing.trait_tolereaza_singur,
         "trait_necesita_experienta": listing.trait_necesita_experienta,
         "adoption_state": listing.adoption_state,
-        "adoption_state_label": _adoption_state_label(listing.adoption_state),
+        "adoption_state_label": _adoption_state_label(
+            listing.adoption_state,
+            english=bool(getattr(request, "eu_site_active", False)),
+        ),
         "slug": getattr(listing, "slug", "") or "",
     }
 
