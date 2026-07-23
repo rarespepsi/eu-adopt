@@ -41,40 +41,43 @@ EU_SITE_LANGUAGE_CODES = frozenset(code for code, _ in EU_SITE_LANGUAGE_CHOICES)
 
 EU_SITE_DEFAULT_LANGUAGE = "en"
 
-# Steag emoji înaintea numelui în selector (navbar)
-EU_SITE_LANGUAGE_FLAGS: dict[str, str] = {
-    "en": "🇬🇧",
-    "bg": "🇧🇬",
-    "hr": "🇭🇷",
-    "cs": "🇨🇿",
-    "da": "🇩🇰",
-    "nl": "🇳🇱",
-    "et": "🇪🇪",
-    "fi": "🇫🇮",
-    "fr": "🇫🇷",
-    "de": "🇩🇪",
-    "el": "🇬🇷",
-    "hu": "🇭🇺",
-    "ga": "🇮🇪",
-    "it": "🇮🇹",
-    "lv": "🇱🇻",
-    "lt": "🇱🇹",
-    "mt": "🇲🇹",
-    "pl": "🇵🇱",
-    "pt": "🇵🇹",
-    "ro": "🇷🇴",
-    "sk": "🇸🇰",
-    "sl": "🇸🇮",
-    "es": "🇪🇸",
-    "sv": "🇸🇪",
+# Cod țară ISO pentru steag PNG (flagcdn) — nu emoji (pe Windows apar ca inițiale).
+EU_SITE_FLAG_ISO: dict[str, str] = {
+    "en": "gb",
+    "bg": "bg",
+    "hr": "hr",
+    "cs": "cz",
+    "da": "dk",
+    "nl": "nl",
+    "et": "ee",
+    "fi": "fi",
+    "fr": "fr",
+    "de": "de",
+    "el": "gr",
+    "hu": "hu",
+    "ga": "ie",
+    "it": "it",
+    "lv": "lv",
+    "lt": "lt",
+    "mt": "mt",
+    "pl": "pl",
+    "pt": "pt",
+    "ro": "ro",
+    "sk": "sk",
+    "sl": "si",
+    "es": "es",
+    "sv": "se",
 }
 
 
-def eu_language_choices_with_flags() -> tuple[tuple[str, str], ...]:
-    return tuple(
-        (code, f"{EU_SITE_LANGUAGE_FLAGS.get(code, '🌐')} {name}")
-        for code, name in EU_SITE_LANGUAGE_CHOICES
-    )
+def eu_flag_iso_for_lang(lang: str | None) -> str:
+    code = (lang or EU_SITE_DEFAULT_LANGUAGE).split("-")[0].lower()
+    return EU_SITE_FLAG_ISO.get(code, "eu")
+
+
+def eu_flag_img_url(lang: str | None) -> str:
+    iso = eu_flag_iso_for_lang(lang)
+    return f"https://flagcdn.com/20x15/{iso}.png"
 
 
 # Host-uri hub EU — doar .com (override: EUADOPT_EU_HUB_HOSTS=...).
@@ -264,6 +267,7 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
             "eu_site_active": False,
             "eu_site_lang": "",
             "eu_site_languages": [],
+            "eu_site_flag_url": "",
             "eu_nav_text": {},
         }
     host = request.get_host()
@@ -275,6 +279,7 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
             "eu_site_active": False,
             "eu_site_lang": "",
             "eu_site_languages": [],
+            "eu_site_flag_url": "",
             "eu_nav_text": {},
         }
     lang = get_language() or EU_SITE_DEFAULT_LANGUAGE
@@ -305,6 +310,7 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
         "eu_site_hub": hub,
         "eu_site_active": eu,
         "eu_site_lang": lang,
-        "eu_site_languages": eu_language_choices_with_flags(),
+        "eu_site_languages": EU_SITE_LANGUAGE_CHOICES,
+        "eu_site_flag_url": eu_flag_img_url(lang),
         "eu_nav_text": eu_nav_text,
     }

@@ -1303,7 +1303,7 @@ body.page-animale #A0 {
 	font-weight: 800 !important;
 }
 
-/* Hub EU: selector limbi compact (steag + nume, fără etichetă „Limbă”) */
+/* Hub EU: steag PNG + select compact (doar numele limbii) */
 #A0.a0-eu-site #menu-main-menu > li.a0-eu-lang-item {
 	display: inline-flex !important;
 	align-items: center !important;
@@ -1314,15 +1314,24 @@ body.page-animale #A0 {
 #A0.a0-eu-site .a0-eu-lang-form {
 	display: inline-flex;
 	align-items: center;
+	gap: 0.28rem;
 	margin: 0;
 }
 #A0.a0-eu-site .a0-eu-lang-label {
 	display: none !important;
 }
+#A0.a0-eu-site .a0-eu-lang-flag {
+	width: 20px;
+	height: 15px;
+	object-fit: cover;
+	border-radius: 2px;
+	flex-shrink: 0;
+	box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
 #A0.a0-eu-site .a0-eu-lang-select {
-	max-width: 7.5rem;
+	max-width: 7.25rem;
 	width: auto;
-	min-width: 5.5rem;
+	min-width: 5.25rem;
 	font-size: 0.68rem;
 	line-height: 1.2;
 	padding: 0.12rem 0.2rem;
