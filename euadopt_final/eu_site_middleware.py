@@ -1,13 +1,13 @@
 """
-Domenii EU-Adopt: redirect 301 cu cratimă; skin EU opțional (EUADOPT_EU_PRODUCT_SKIN).
+Domenii EU-Adopt: redirect 301; skin EU; limba după LocaleMiddleware.
 """
 from __future__ import annotations
 
-from django.conf import settings
 from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import redirect
 from django.urls import Resolver404, resolve
 from django.utils import translation
+from django.views.i18n import set_language as django_set_language
 
 from home.eu_site import (
     EU_SITE_BLOCKED_URL_NAMES,
@@ -22,6 +22,8 @@ from home.eu_site import (
 
 
 class EuSiteMiddleware:
+    """Redirect 301 + flag-uri eu_site_* (înainte de Locale)."""
+
     def __init__(self, get_response):
         self.get_response = get_response
 
@@ -38,17 +40,8 @@ class EuSiteMiddleware:
         if eu_product_skin_enabled():
             request.eu_site_hub = is_eu_hub_host(host)
             request.eu_site_active = is_eu_site_host(host)
-
-            if request.eu_site_active:
-                lang = pick_language_for_hub(request)
-                if lang in EU_SITE_LANGUAGE_CODES:
-                    if hasattr(request, "session") and request.session is not None:
-                        request.session["django_language"] = lang
-                    translation.activate(lang)
-                    request.LANGUAGE_CODE = lang
-
-                if self._should_block(request):
-                    return redirect("home")
+            if request.eu_site_active and self._should_block(request):
+                return redirect("home")
 
         response = self.get_response(request)
         if getattr(request, "eu_site_active", False) and hasattr(request, "LANGUAGE_CODE"):
@@ -81,3 +74,29 @@ class EuSiteMiddleware:
         if url_name and url_name.startswith("reclama_"):
             return True
         return False
+
+
+class EuSiteLocaleFixMiddleware:
+    """
+    După LocaleMiddleware: aplică limba hub/țară (altfel LANGUAGE_CODE=ro câștigă).
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if eu_product_skin_enabled() and is_eu_site_host(request.get_host()):
+            lang = pick_language_for_hub(request)
+            if lang in EU_SITE_LANGUAGE_CODES:
+                translation.activate(lang)
+                request.LANGUAGE_CODE = lang
+                if hasattr(request, "session") and request.session is not None:
+                    request.session["django_language"] = lang
+        return self.get_response(request)
+
+
+def eu_set_language(request):
+    """set_language + marchează alegerea manuală (pentru .de/.fr/.es)."""
+    if request.method == "POST" and hasattr(request, "session"):
+        request.session["eu_lang_manual"] = "1"
+    return django_set_language(request)

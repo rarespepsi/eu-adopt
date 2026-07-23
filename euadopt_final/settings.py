@@ -149,6 +149,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'euadopt_final.eu_site_middleware.EuSiteMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'euadopt_final.eu_site_middleware.EuSiteLocaleFixMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

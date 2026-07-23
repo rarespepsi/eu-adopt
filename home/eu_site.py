@@ -159,23 +159,26 @@ EU_SITE_BLOCKED_PATH_PREFIXES = (
 
 def pick_language_for_hub(request) -> str:
     """
-    Limbă pe hub/țară:
-    - sesiune / cookie (schimbare manuală) au prioritate
-    - apoi limba forțată pe .de/.fr/.es
-    - apoi Accept-Language
-    - default EN pe hub
+    Hub (.com): sesiune / cookie / Accept-Language / EN.
+    Țară (.de/.fr/.es): limba TLD, exceptând schimbare manuală (eu_lang_manual).
     """
+    forced = forced_locale_for_host(request.get_host())
     session = getattr(request, "session", None)
+    sess_lang = ""
     if session is not None:
         sess_lang = (session.get("django_language") or "").strip().lower()
-        if sess_lang in EU_SITE_LANGUAGE_CODES:
-            return sess_lang
     cookie_lang = (request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME) or "").strip().lower()
+
+    if forced:
+        manual = bool(session and session.get("eu_lang_manual"))
+        if manual and sess_lang in EU_SITE_LANGUAGE_CODES:
+            return sess_lang
+        return forced
+
+    if sess_lang in EU_SITE_LANGUAGE_CODES:
+        return sess_lang
     if cookie_lang in EU_SITE_LANGUAGE_CODES:
         return cookie_lang
-    forced = forced_locale_for_host(request.get_host())
-    if forced:
-        return forced
     accept = (request.META.get("HTTP_ACCEPT_LANGUAGE") or "").split(",")[0].strip().lower()
     if accept:
         primary = accept.split("-")[0]

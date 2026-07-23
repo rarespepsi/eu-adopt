@@ -121,7 +121,7 @@
 							{% else %}
 								<li><a href="{% url 'login' %}" class="a0-login-cta">{% if eu_site_active %}{{ eu_nav_text.login_cta }}{% else %}Intră / Fă cont{% endif %}</a></li>
 							{% endif %}
-							{% if eu_site_hub %}
+							{% if eu_site_active %}
 							<li class="a0-eu-lang-item">
 								<form class="a0-eu-lang-form" action="{% url 'set_language' %}" method="post">
 									{% csrf_token %}

@@ -34,8 +34,18 @@ class EuSiteHostTests(SimpleTestCase):
         self.assertFalse(path_blocked_on_eu_hub("/pets/"))
 
     def test_nav_labels_all_languages(self):
+        from home.eu_nav_labels import assert_all_languages_complete, eu_nav_label
+
+        assert_all_languages_complete()
         for code in EU_SITE_LANGUAGE_CODES:
             self.assertTrue(eu_nav_label(code, "home"))
+            self.assertTrue(eu_nav_label(code, "open_menu"))
+            self.assertTrue(eu_nav_label(code, "eu_blocked"))
+
+    def test_language_choices_count_24(self):
+        from home.eu_site import EU_SITE_LANGUAGE_CHOICES
+
+        self.assertEqual(len(EU_SITE_LANGUAGE_CHOICES), 24)
 
     def test_seo_canonical_points_to_ro(self):
         rf = RequestFactory()
@@ -97,7 +107,18 @@ class EuSiteMiddlewareTests(TestCase):
         r = c.get("/contact/")
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "a0-eu-lang-select")
+        self.assertContains(r, 'value="de"')
+        self.assertContains(r, 'value="es"')
+        self.assertContains(r, 'value="pl"')
         self.assertNotContains(r, ">Shop</a>")
+
+    @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
+    def test_language_switcher_on_es_host(self):
+        c = Client(HTTP_HOST="euadopt.es")
+        r = c.get("/contact/")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "a0-eu-lang-select")
+        self.assertContains(r, 'value="es" selected')
 
     def test_pick_language_default_en(self):
         rf = RequestFactory()
