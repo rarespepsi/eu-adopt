@@ -140,6 +140,55 @@ def _eu_occupied_ranges(section: str, slot: str) -> list[tuple[date, date]]:
     return ranges
 
 
+def _eu_wire_previews(section: str) -> dict[str, dict]:
+    """
+    Preview pe tabloul wire pentru TOATE casetele EU din secțiune.
+    Superuser vede pe hartă ce e deja postat (nu doar caseta selectată).
+    """
+    from home.views import _pt_pub_slot_parse_note
+
+    today = timezone.localdate()
+    out: dict[str, dict] = {}
+    for note in ReclamaSlotNote.objects.filter(section=section, market=PUB_MARKET_EU):
+        code = (note.slot_code or "").strip()
+        if not code:
+            continue
+        parsed = _pt_pub_slot_parse_note(note) or {}
+        img = (parsed.get("img") or "").strip()
+        video = (parsed.get("video") or "").strip()
+        plain = (note.text or "").strip()
+        start_s = ""
+        end_s = ""
+        assets = parsed.get("assets") or []
+        if isinstance(assets, list) and assets:
+            a0 = assets[0] if isinstance(assets[0], dict) else {}
+            start_s = str(a0.get("start") or "").strip()
+            end_s = str(a0.get("end") or "").strip()
+            if not img:
+                img = str(a0.get("img") or "").strip()
+            if not video:
+                video = str(a0.get("video") or "").strip()
+        # Ocupat: are media / text, sau interval care acoperă azi / viitor
+        occupied = bool(img or video or plain)
+        s_d = _parse_iso_date(start_s)
+        e_d = _parse_iso_date(end_s)
+        if s_d and e_d and e_d < today:
+            # perioadă trecută fără material rămâne neocupată vizual
+            if not (img or video or plain):
+                occupied = False
+        if not occupied:
+            continue
+        out[code] = {
+            "image_url": img,
+            "video_url": video,
+            "start": start_s,
+            "end": end_s,
+            "occupied": True,
+            "burtiera": bool(section == "home" and code == "Burtieră" and plain and not img and not video),
+        }
+    return out
+
+
 def _eu_calendar_months(section: str, slot: str) -> list[dict]:
     """Calendar tip Reclama: până la 24 luni, zile liber/ocupat pe slot."""
     if not slot:
@@ -447,4 +496,5 @@ def publicitate_eu_direct_view(request):
         and not creative.get("is_default_cover", True)
         and (creative.get("img") or creative.get("video"))
     )
+    ctx["eu_wire_previews"] = _eu_wire_previews(section)
     return render(request, "anunturi/publicitate_harta.html", ctx)

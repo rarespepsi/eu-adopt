@@ -28,6 +28,72 @@
   var isBurtiera = section === "home" && slot === "Burtieră";
   var submitting = false;
 
+  function paintSlotPreview(slotCode, url, isVideo) {
+    if (!slotCode || !url) return;
+    var node = document.querySelector('[data-slot="' + String(slotCode).replace(/"/g, "") + '"]');
+    if (!node) return;
+    node.classList.add("is-eu-occupied");
+    var preview = node.querySelector(".reclama-slot-preview");
+    if (!preview) {
+      preview = document.createElement("div");
+      preview.className = "reclama-slot-preview";
+      node.appendChild(preview);
+    }
+    preview.classList.add("has-eu-live-preview");
+    preview.innerHTML = "";
+    if (isVideo) {
+      var v = document.createElement("video");
+      v.src = url;
+      v.muted = true;
+      v.autoplay = true;
+      v.loop = true;
+      v.playsInline = true;
+      preview.appendChild(v);
+    } else {
+      var img = document.createElement("img");
+      img.className = "eu-wire-prev";
+      img.alt = "";
+      img.src = url;
+      preview.appendChild(img);
+    }
+  }
+
+  function paintAllEuWirePreviews() {
+    var el = document.getElementById("eu-wire-previews-json");
+    if (!el) return;
+    var data = {};
+    try {
+      data = JSON.parse(el.textContent || "{}") || {};
+    } catch (_e) {
+      data = {};
+    }
+    Object.keys(data).forEach(function (code) {
+      var info = data[code] || {};
+      var node = document.querySelector('[data-slot="' + String(code).replace(/"/g, "") + '"]');
+      if (!node) return;
+      node.classList.add("is-eu-occupied");
+      if (info.burtiera) {
+        node.classList.add("is-eu-burtiera");
+        var prev = node.querySelector(".reclama-slot-preview");
+        if (prev) prev.classList.add("has-eu-live-preview");
+        return;
+      }
+      var video = (info.video_url || "").trim();
+      var img = (info.image_url || "").trim();
+      if (video) paintSlotPreview(code, video, true);
+      else if (img) paintSlotPreview(code, img, false);
+      var tip = "Ocupat pe EU";
+      if (info.start && info.end) tip += " · " + info.start + " → " + info.end;
+      var prevTitle = node.getAttribute("title") || "";
+      if (prevTitle.indexOf("Ocupat pe EU") < 0) {
+        node.setAttribute("title", tip + (prevTitle ? " · " + prevTitle : ""));
+      }
+    });
+  }
+
+  // Toate casetele ocupate din secțiune — vizibile pe tablou imediat
+  paintAllEuWirePreviews();
+
   function revokeUrl() {
     if (objectUrl) {
       try {
@@ -200,32 +266,7 @@
   }
 
   function paintWirePreview(url, isVideo) {
-    if (!slot || !url) return;
-    var node = document.querySelector('[data-slot="' + slot.replace(/"/g, "") + '"]');
-    if (!node) return;
-    var preview = node.querySelector(".reclama-slot-preview");
-    if (!preview) {
-      preview = document.createElement("div");
-      preview.className = "reclama-slot-preview";
-      node.appendChild(preview);
-    }
-    preview.classList.add("has-eu-live-preview");
-    preview.innerHTML = "";
-    if (isVideo) {
-      var v = document.createElement("video");
-      v.src = url;
-      v.muted = true;
-      v.autoplay = true;
-      v.loop = true;
-      v.playsInline = true;
-      preview.appendChild(v);
-    } else {
-      var img = document.createElement("img");
-      img.className = "eu-wire-prev";
-      img.alt = "";
-      img.src = url;
-      preview.appendChild(img);
-    }
+    paintSlotPreview(slot, url, isVideo);
   }
 
   function getCroppedBlob(cb) {

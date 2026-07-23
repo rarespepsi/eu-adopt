@@ -329,6 +329,7 @@
 {{ pub_max_slots_per_user|json_script:"pub-max-slots-json" }}
 {{ pub_max_weeks_per_order|json_script:"pub-max-weeks-json" }}
 {{ pub_slots_remaining|json_script:"pub-slots-remaining-json" }}
+{% if pub_eu_direct_mode %}{{ eu_wire_previews|json_script:"eu-wire-previews-json" }}{% endif %}
 {% endblock %}
 
 {% block extra_css_after %}
@@ -578,6 +579,37 @@
 	body.page-pub-eu-direct .reclama-home-wire-cols {
 		/* pe HOME: lateral | centru | lateral — păstrăm același raport vizual */
 		grid-template-columns: minmax(0, var(--side-col-width)) minmax(0, 1fr) minmax(0, var(--side-col-width)) !important;
+	}
+	/* Casete EU ocupate pe tablou (persistente, toate sloturile din secțiune) */
+	body.page-pub-eu-direct [data-slot].is-eu-occupied .reclama-slot-preview.has-eu-live-preview::after {
+		display: none !important;
+		content: none !important;
+	}
+	body.page-pub-eu-direct [data-slot].is-eu-occupied {
+		outline: 2px solid #c62828;
+		outline-offset: -2px;
+		box-shadow: 0 0 0 1px rgba(198, 40, 40, 0.35);
+	}
+	body.page-pub-eu-direct [data-slot].is-eu-occupied > .reclama-slot-name::after,
+	body.page-pub-eu-direct [data-slot].is-eu-occupied .reclama-slot-name::after {
+		content: " · ocupat";
+		color: #ffcdd2;
+		font-weight: 700;
+		font-size: 0.72em;
+	}
+	body.page-pub-eu-direct [data-slot].is-eu-occupied.is-eu-burtiera .reclama-slot-preview::before {
+		content: "Text EU";
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(183, 28, 28, 0.12);
+		color: #b71c1c;
+		font-weight: 700;
+		font-size: 0.75rem;
+		z-index: 1;
+		pointer-events: none;
 	}
 	/* Preview media: cover ca pe site */
 	body.page-pub-eu-direct [data-slot] .reclama-slot-preview.has-eu-live-preview {
@@ -3298,7 +3330,7 @@ document.addEventListener("DOMContentLoaded", function () {
 {% if pub_eu_direct_mode %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" crossorigin="anonymous" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" crossorigin="anonymous"></script>
-<script src="{% static 'js/pub-eu-direct.js' %}?v=4-eu-wire-fill"></script>
+<script src="{% static 'js/pub-eu-direct.js' %}?v=5-eu-wire-occupied"></script>
 {% endif %}
 <style>
 	body.page-publicitate-harta .reclama-home-wire [data-slot].pub-wire-selected,

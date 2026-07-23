@@ -136,6 +136,12 @@ class PubMarketNotesTests(TestCase):
         self.assertEqual(r.status_code, 302)
         note = ReclamaSlotNote.objects.get(section="home", slot_code="A5.1", market=PUB_MARKET_EU)
         self.assertIn("Adopt", note.text)
+        r3 = c.get(reverse("publicitate_eu_direct") + "?sect=home")
+        self.assertEqual(r3.status_code, 200)
+        self.assertContains(r3, "eu-wire-previews-json")
+        self.assertIn("A5.1", r3.context["eu_wire_previews"])
+        self.assertTrue(r3.context["eu_wire_previews"]["A5.1"].get("occupied"))
+        self.assertTrue((r3.context["eu_wire_previews"]["A5.1"].get("image_url") or "").startswith("/media/"))
 
     def test_harta_redirects_superuser_to_eu_direct(self):
         User = get_user_model()
