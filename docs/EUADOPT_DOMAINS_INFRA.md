@@ -1,54 +1,33 @@
-# EU-Adopt — activare domenii (faza infra)
+# EU-Adopt — domenii (arhitectură stabilită iul 2026)
 
-## Lista domeniilor (cumpărate, iul 2026)
+## Ierarhie
 
 | Host | Rol |
 |------|-----|
-| eu-adopt.ro, www.eu-adopt.ro | **RO principal** — fără redirect, nemodificat |
-| euadopt.com, www.euadopt.com | **Activ** — același site ca .ro |
-| euadopt.eu, www.euadopt.eu | **Activ** |
-| euadopt.org, www.euadopt.org | **Activ** |
-| euadopt.de, www.euadopt.de | **Activ** |
-| euadopt.fr, www.euadopt.fr | **Activ** |
-| euadopt.es, www.euadopt.es | **Activ** |
-| eu-adopt.com, www.eu-adopt.com | **301** → euadopt.com / www |
-| eu-adopt.eu, www.eu-adopt.eu | **301** → euadopt.eu / www |
+| **eu-adopt.ro** (+ www) | Site principal RO — public |
+| **euadopt.com** (+ www) | Hub EU — EN + **toate limbile UE** (selector) |
+| **euadopt.de / .fr / .es** (+ www) | Același catalog; limba DE/FR/ES (schimbare manuală posibilă) |
+| **euadopt.eu**, **euadopt.org**, **eu-adopt.com**, **eu-adopt.eu** (+ www) | **301** → `euadopt.com` / `www.euadopt.com` |
 
-**Nu sunt în cont:** euadopt.it, eu-adopt.org, euadopt.ro — nu configurate.
+O singură aplicație Django, o DB, un admin. Animalele = din RO.
 
-Afișare live din cod:
+## Flag-uri env (Hetzner)
 
-```bash
-python manage.py euadopt_domains_list
-```
+| Env | Rol |
+|-----|-----|
+| `EUADOPT_EU_PRODUCT_SKIN=1` | Activează limbi + meniu EU pe hosturi non-.ro |
+| `EUADOPT_NON_RO_STAFF_ONLY=1` | Public = Coming soon pe `.com`/`.de`/`.fr`/`.es`; doar staff/superuser |
 
-Sursă: `home/euadopt_domains.py` → `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`.
+La lansare publică EU: `EUADOPT_NON_RO_STAFF_ONLY=0`.
 
-## Faza curentă (infra)
+## SEO
 
-- `EUADOPT_EU_PRODUCT_SKIN=0` (implicit) — **nu** schimbă meniuri/limbi/rute pe non-.ro
-- Redirect 301 cu cratimă (păstrează cale + query) în Django + nginx
-- **eu-adopt.ro** rămâne site-ul românesc complet
+- **canonical** → `https://eu-adopt.ro{path}` (anti-duplicate)
+- **hreflang**: ro / en / de / fr / es + x-default → `.com`
 
-Skin EU (meniu scurt, limbi): `EUADOPT_EU_PRODUCT_SKIN=1` — etapa următoare.
+## Cod
 
-## DNS (Hostico → Hetzner)
-
-Pentru fiecare host din tabel: **A** (și **AAAA** dacă folosești) → `178.104.31.52`.
-
-## Hetzner
-
-1. `git pull` + deploy obișnuit
-2. `bash /opt/eu-adopt/deploy/hetzner/setup_euadopt_ssl_all_domains.sh`
-3. Dupa certbot: ajusteaza caile certificatelor in `deploy/hetzner/nginx-euadopt-hyphen-redirect-443.conf` (certbot poate folosi un singur `-d` principal), apoi `include` fisierul in sites-enabled sau copiaza blocurile `return 301` pe :443
-4. Verifică redirect HTTPS: eu-adopt.com → euadopt.com (nu toate spre .com)
-
-## Verificări
-
-```bash
-curl -I https://eu-adopt.ro/
-curl -I https://euadopt.fr/pets/
-curl -I https://eu-adopt.com/contact/?x=1   # → euadopt.com, păstrează ?x=1
-```
-
-Autentificare: același user pe orice domeniu activ (sesiune per domeniu, același DB).
+- Registru: `home/euadopt_domains.py`
+- Limbă / SEO helpers: `home/eu_site.py`
+- Middleware redirect: `euadopt_final/eu_site_middleware.py`
+- Gate staff: `euadopt_final/eu_non_ro_staff_gate_middleware.py`

@@ -29,18 +29,19 @@ class DomainEntry:
 EUADOPT_DOMAIN_REGISTRY: tuple[DomainEntry, ...] = (
     DomainEntry("eu-adopt.ro", DomainRole.RO_PRIMARY, "România — principal, nemodificat"),
     DomainEntry("www.eu-adopt.ro", DomainRole.RO_PRIMARY, "România — principal"),
-    DomainEntry("euadopt.com", DomainRole.ACTIVE, "Hub / internațional — fără cratimă"),
+    DomainEntry("euadopt.com", DomainRole.ACTIVE, "Hub EU — EN + toate limbile UE"),
     DomainEntry("www.euadopt.com", DomainRole.ACTIVE, ""),
-    DomainEntry("euadopt.eu", DomainRole.ACTIVE, ""),
-    DomainEntry("www.euadopt.eu", DomainRole.ACTIVE, ""),
-    DomainEntry("euadopt.org", DomainRole.ACTIVE, ""),
-    DomainEntry("www.euadopt.org", DomainRole.ACTIVE, ""),
-    DomainEntry("euadopt.de", DomainRole.ACTIVE, "Germania — faza infra = același site"),
+    DomainEntry("euadopt.de", DomainRole.ACTIVE, "DE — același catalog RO, limba germană"),
     DomainEntry("www.euadopt.de", DomainRole.ACTIVE, ""),
-    DomainEntry("euadopt.fr", DomainRole.ACTIVE, "Franța"),
+    DomainEntry("euadopt.fr", DomainRole.ACTIVE, "FR"),
     DomainEntry("www.euadopt.fr", DomainRole.ACTIVE, ""),
-    DomainEntry("euadopt.es", DomainRole.ACTIVE, "Spania"),
+    DomainEntry("euadopt.es", DomainRole.ACTIVE, "ES"),
     DomainEntry("www.euadopt.es", DomainRole.ACTIVE, ""),
+    # Hub aliasuri → .com (un singur hop)
+    DomainEntry("euadopt.eu", DomainRole.REDIRECT_301, "Alias hub → .com", redirect_to="euadopt.com"),
+    DomainEntry("www.euadopt.eu", DomainRole.REDIRECT_301, "", redirect_to="www.euadopt.com"),
+    DomainEntry("euadopt.org", DomainRole.REDIRECT_301, "Alias hub → .com", redirect_to="euadopt.com"),
+    DomainEntry("www.euadopt.org", DomainRole.REDIRECT_301, "", redirect_to="www.euadopt.com"),
     DomainEntry(
         "eu-adopt.com",
         DomainRole.REDIRECT_301,
@@ -56,14 +57,14 @@ EUADOPT_DOMAIN_REGISTRY: tuple[DomainEntry, ...] = (
     DomainEntry(
         "eu-adopt.eu",
         DomainRole.REDIRECT_301,
-        "",
-        redirect_to="euadopt.eu",
+        "Cratimă → hub .com (direct)",
+        redirect_to="euadopt.com",
     ),
     DomainEntry(
         "www.eu-adopt.eu",
         DomainRole.REDIRECT_301,
         "",
-        redirect_to="www.euadopt.eu",
+        redirect_to="www.euadopt.com",
     ),
 )
 

@@ -41,14 +41,11 @@ EU_SITE_LANGUAGE_CODES = frozenset(code for code, _ in EU_SITE_LANGUAGE_CHOICES)
 
 EU_SITE_DEFAULT_LANGUAGE = "en"
 
-# Host-uri implicite hub — principal fără cratimă (override: EUADOPT_EU_HUB_HOSTS=...).
+# Host-uri hub EU — doar .com (override: EUADOPT_EU_HUB_HOSTS=...).
+# .eu / .org fac 301 → .com (vezi euadopt_domains).
 _DEFAULT_EU_HUB_HOSTS = (
     "euadopt.com",
     "www.euadopt.com",
-    "euadopt.eu",
-    "www.euadopt.eu",
-    "euadopt.org",
-    "www.euadopt.org",
 )
 
 # Domenii cu cratimă → redirect 301 (registru home.euadopt_domains; excepție: eu-adopt.ro).
@@ -161,9 +158,13 @@ EU_SITE_BLOCKED_PATH_PREFIXES = (
 
 
 def pick_language_for_hub(request) -> str:
-    forced = forced_locale_for_host(request.get_host())
-    if forced:
-        return forced
+    """
+    Limbă pe hub/țară:
+    - sesiune / cookie (schimbare manuală) au prioritate
+    - apoi limba forțată pe .de/.fr/.es
+    - apoi Accept-Language
+    - default EN pe hub
+    """
     session = getattr(request, "session", None)
     if session is not None:
         sess_lang = (session.get("django_language") or "").strip().lower()
@@ -172,12 +173,41 @@ def pick_language_for_hub(request) -> str:
     cookie_lang = (request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME) or "").strip().lower()
     if cookie_lang in EU_SITE_LANGUAGE_CODES:
         return cookie_lang
+    forced = forced_locale_for_host(request.get_host())
+    if forced:
+        return forced
     accept = (request.META.get("HTTP_ACCEPT_LANGUAGE") or "").split(",")[0].strip().lower()
     if accept:
         primary = accept.split("-")[0]
         if primary in EU_SITE_LANGUAGE_CODES:
             return primary
     return EU_SITE_DEFAULT_LANGUAGE
+
+
+RO_CANONICAL_HOST = "eu-adopt.ro"
+HREFLANG_HOSTS: tuple[tuple[str, str], ...] = (
+    ("ro", "eu-adopt.ro"),
+    ("en", "euadopt.com"),
+    ("de", "euadopt.de"),
+    ("fr", "euadopt.fr"),
+    ("es", "euadopt.es"),
+)
+
+
+def seo_canonical_url(request) -> str:
+    """
+    Canonical anti-duplicate: URL echivalent pe eu-adopt.ro
+    (aceeași bază / aceleași animale), indiferent de hostul vizitat.
+    """
+    path = request.path or "/"
+    return f"https://{RO_CANONICAL_HOST}{path}"
+
+
+def seo_hreflang_alternates(request) -> list[dict[str, str]]:
+    path = request.path or "/"
+    out = [{"hreflang": code, "href": f"https://{host}{path}"} for code, host in HREFLANG_HOSTS]
+    out.append({"hreflang": "x-default", "href": f"https://euadopt.com{path}"})
+    return out
 
 
 def path_blocked_on_eu_hub(path: str) -> bool:

@@ -100,9 +100,13 @@ MAINTENANCE_MODE = _site_public in ('0', 'false', 'no', 'nu')
 _prelaunch = _os.environ.get("EUADOPT_PRELAUNCH_MODE", "").strip().lower()
 PRELAUNCH_MODE = _prelaunch in ("1", "true", "yes", "on")
 
-# Hub EU: meniu/limbi/rute pe domenii non-.ro. Faza infra = 0 (doar ALLOWED_HOSTS + redirect cratimă).
+# Hub EU: meniu/limbi/rute pe domenii non-.ro. Faza infra = 0; după activare limbi = 1.
 _eu_skin = _os.environ.get("EUADOPT_EU_PRODUCT_SKIN", "0").strip().lower()
 EUADOPT_EU_PRODUCT_SKIN = _eu_skin in ("1", "true", "yes", "on")
+
+# Extensii non-.ro: doar staff/superuser (Coming soon pentru public). 0 = deschis public.
+_eu_staff_only = _os.environ.get("EUADOPT_NON_RO_STAFF_ONLY", "1").strip().lower()
+EUADOPT_NON_RO_STAFF_ONLY = _eu_staff_only not in ("0", "false", "no", "off")
 
 # Publicitate + promovare A2 gratuite în pre-lansare (1 casetă PUB/cont, 1 promovare/cont, 1 ofertă serviciu/cont).
 _pub_free_env = _os.environ.get("EUADOPT_PUBLICITATE_PRELAUNCH_FREE", "").strip().lower()
@@ -148,6 +152,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'euadopt_final.eu_non_ro_staff_gate_middleware.EuNonRoStaffGateMiddleware',
     'euadopt_final.admin_ip_middleware.AdminIPAllowlistMiddleware',
     'euadopt_final.site_presence_middleware.SitePresenceMiddleware',
     'euadopt_final.login_required_middleware.LoginRequiredMiddleware',
@@ -176,6 +181,7 @@ TEMPLATES = [
                 'home.context_processors.user_onboarding',
                 'home.context_processors.eu_pwa_login_pulse',
                 'home.context_processors.eu_site',
+                'home.context_processors.eu_seo',
             ],
         },
     },

@@ -232,10 +232,26 @@ def eu_pwa_login_pulse(request):
 
 
 def eu_site(request):
-    """Hub EU (.com / .eu / .org): limbă, meniu scurt, etichete traduse."""
+    """Hub EU (.com / .de / .fr / .es): limbă, meniu scurt, etichete traduse."""
     from home.eu_site import eu_site_context_for_request
 
     return eu_site_context_for_request(request)
+
+
+def eu_seo(request):
+    """Canonical (.ro) + hreflang pentru hosturi multi-limbă."""
+    from home.eu_site import seo_canonical_url, seo_hreflang_alternates
+
+    try:
+        return {
+            "seo_canonical_url": seo_canonical_url(request),
+            "seo_hreflang_alternates": seo_hreflang_alternates(request),
+        }
+    except Exception:
+        return {
+            "seo_canonical_url": "",
+            "seo_hreflang_alternates": [],
+        }
 
 
 def wishlist_counts(request):

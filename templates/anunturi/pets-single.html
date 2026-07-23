@@ -6,7 +6,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<title>{{ pet.nume }} – Adopție | EU-ADOPT</title>
 		<meta name="description" content="{% if pet.cine_sunt %}{{ pet.cine_sunt|striptags|truncatechars:155 }}{% elif pet.descriere %}{{ pet.descriere|striptags|truncatechars:155 }}{% else %}Fișă {{ pet.nume }} – adopție prin EU-ADOPT. Detalii, locație și mesaj către proprietar pe platformă.{% endif %}" />
-		<link rel="canonical" href="{{ request.build_absolute_uri }}" />
+		<link rel="canonical" href="{{ seo_canonical_url|default:request.build_absolute_uri }}" />
 		<meta property="og:locale" content="ro_RO" />
 		<meta property="og:site_name" content="EU-ADOPT" />
 		<meta property="og:type" content="article" />
