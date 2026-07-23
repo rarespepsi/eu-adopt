@@ -2327,13 +2327,16 @@ def _pt_pub_slot_parse_note(note):
     video = (data.get("video") or "").strip()
     link = (data.get("link") or "").strip()
     alt = (data.get("alt") or "").strip()
+    caption = (data.get("caption") or data.get("band") or "").strip()[:200]
     price = (data.get("price") or "").strip()[:24]
     discount = (data.get("discount") or "").strip()[:8]
     if link:
         try:
             URLValidator()(link)
         except DjangoValidationError:
-            link = ""
+            # Păstrează căi interne relative (/pets/12/)
+            if not (link.startswith("/") and ".." not in link and "\x00" not in link):
+                link = ""
     def _resolve_media_href(raw_value: str) -> str:
         if not raw_value:
             return ""
@@ -2379,6 +2382,7 @@ def _pt_pub_slot_parse_note(note):
         video = (selected_asset.get("video") or "").strip()
         link = (selected_asset.get("link") or link).strip()
         alt = (selected_asset.get("alt") or alt).strip()
+        caption = (selected_asset.get("caption") or selected_asset.get("band") or caption).strip()[:200]
         price = (selected_asset.get("price") or price).strip()[:24]
         discount = (selected_asset.get("discount") or discount).strip()[:8]
 
@@ -2391,8 +2395,10 @@ def _pt_pub_slot_parse_note(note):
         "img": img_href,
         "video": video_href,
         "alt": alt or "Reclamă",
+        "caption": caption,
         "price": price,
         "discount": discount,
+        "assets": assets,
     }
     alt_i18n = data.get("alt_i18n")
     if isinstance(alt_i18n, dict):

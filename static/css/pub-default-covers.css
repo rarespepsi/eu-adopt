@@ -39,6 +39,91 @@ a.pub-live-default-cover {
 	-webkit-user-drag: none;
 	user-select: none;
 }
+/* Video cu controale: click pe player rămâne pe site */
+.pub-live-cover-link--video-player {
+	cursor: default;
+	pointer-events: auto !important;
+}
+.pub-live-cover-link--video-player .pub-live-cover video {
+	pointer-events: auto;
+}
+.pub-live-video-link-btn {
+	position: absolute;
+	right: 0.28rem;
+	bottom: 0.28rem;
+	z-index: 6;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.55rem;
+	height: 1.55rem;
+	border-radius: 999px;
+	background: rgba(15, 23, 42, 0.78);
+	color: #fff;
+	text-decoration: none;
+	font-size: 0.85rem;
+	font-weight: 700;
+	line-height: 1;
+	border: 1px solid rgba(255, 255, 255, 0.35);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+	pointer-events: auto !important;
+}
+.pub-live-video-link-btn:hover,
+.pub-live-video-link-btn:focus-visible {
+	background: rgba(21, 101, 192, 0.92);
+	outline: none;
+}
+.pub-live-cover--strip .pub-live-video-link-btn {
+	width: 1.25rem;
+	height: 1.25rem;
+	font-size: 0.7rem;
+	right: 0.12rem;
+	bottom: 0.1rem;
+}
+/* Bandă cursivă text pe poză */
+.pub-live-caption-band {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 3;
+	height: 1.15rem;
+	overflow: hidden;
+	pointer-events: none;
+	background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.72) 40%, rgba(15, 23, 42, 0.88) 100%);
+}
+.pub-live-caption-track {
+	display: inline-block;
+	white-space: nowrap;
+	padding: 0.15rem 0.4rem;
+	font-family: "Segoe Script", "Brush Script MT", "Apple Chancery", cursive;
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	color: #fff;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+	animation: pub-live-caption-marquee 14s linear infinite;
+}
+.pub-live-cover--strip .pub-live-caption-band {
+	height: 0.95rem;
+}
+.pub-live-cover--strip .pub-live-caption-track {
+	font-size: 0.58rem;
+	animation-duration: 18s;
+}
+@keyframes pub-live-caption-marquee {
+	0% { transform: translateX(0); }
+	100% { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+	.pub-live-caption-track {
+		animation: none;
+		transform: none;
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+}
 .pub-live-cover__tag {
 	position: absolute;
 	right: 0.28rem;
@@ -94,10 +179,43 @@ a.pub-live-default-cover {
 	border-color: rgba(229, 57, 53, 0.35);
 }
 
+/* Strip / slot: video player umple celula ca link-ul */
+#PW .pt-strip-item.pt-strip-cell--pub .pub-live-cover-link--video-player,
+#SW .sw-strip-item.sw-strip-cell--pub .pub-live-cover-link--video-player {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
 /* HOME A5/A6 */
 body.page-home-v2 .home-v2-slot-partener .pub-live-cover-link {
 	position: absolute;
 	inset: 0;
+}
+body.page-home-v2 .home-v2-slot-partener .pub-live-cover-link--video-player,
+#PW .pt-p43-slot > .pub-live-cover-link--video-player,
+#PW .pt-p43-desktop-slot > .pub-live-cover-link--video-player,
+.sw-s4-box-match .pub-live-cover-link--video-player,
+.sw-s4-box-ads .pub-live-cover-link--video-player,
+.sw-s5-slot .pub-live-cover-link--video-player,
+.shw-side-inner-box .pub-live-cover-link--video-player,
+.ilove-case .pub-live-cover-link--video-player,
+#TW #T3 .t3-box .pub-live-cover-link--video-player {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	min-height: 0;
+}
+body.page-mypet .mypet-left-boxes > .mypet-left-box.pub-live-cover-link--video-player {
+	position: relative;
+	inset: auto;
+	display: block;
+	flex: 1 1 0;
+	min-height: 0;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	overflow: hidden;
 }
 body.page-home-v2 .home-v2-slot-partener .pub-live-cover {
 	height: 100%;

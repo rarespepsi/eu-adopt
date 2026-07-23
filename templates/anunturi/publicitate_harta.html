@@ -95,14 +95,17 @@
 				<label class="pub-eu-field">Imagine
 					<input type="file" name="image" id="pubEuImage" accept="image/*"{% if not eu_slot %} disabled{% endif %} />
 				</label>
-				<label class="pub-eu-field">Video
-					<input type="file" name="video" id="pubEuVideo" accept="video/*"{% if not eu_slot %} disabled{% endif %} />
+				<label class="pub-eu-field">Text pe bandă (cursivă pe poză)
+					<input type="text" name="caption" id="pubEuCaption" maxlength="200" value="{{ eu_form_caption }}" placeholder="Text scurt pe banda de jos a pozei"{% if not eu_slot %} disabled{% endif %} />
 				</label>
-				<label class="pub-eu-field">Link
+				<label class="pub-eu-field">Link (poză sau video → tab nou)
 					<input type="url" name="link" id="pubEuLink" placeholder="https://… sau /pets/12/" value="{{ eu_form_link }}"{% if not eu_slot %} disabled{% endif %} />
 				</label>
-				<label class="pub-eu-field">Alt
-					<input type="text" name="alt" id="pubEuAlt" maxlength="200" value="{{ eu_form_alt }}" placeholder="Descriere"{% if not eu_slot %} disabled{% endif %} />
+				<label class="pub-eu-field">Alt (descriere imagine)
+					<input type="text" name="alt" id="pubEuAlt" maxlength="200" value="{{ eu_form_alt }}" placeholder="Descriere accesibilitate"{% if not eu_slot %} disabled{% endif %} />
+				</label>
+				<label class="pub-eu-field">Video
+					<input type="file" name="video" id="pubEuVideo" accept="video/*"{% if not eu_slot %} disabled{% endif %} />
 				</label>
 				{% endif %}
 				<div class="pub-eu-actions">

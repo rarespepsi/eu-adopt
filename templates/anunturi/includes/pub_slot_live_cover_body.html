@@ -6,6 +6,11 @@
 	<video src="{{ creative.video }}" autoplay muted loop playsinline controls preload="metadata"></video>
 	{% elif creative.img %}
 	<img src="{{ creative.img }}" alt="{{ creative.alt|default:'Publicitate' }}"{% if layout == "strip" %} loading="eager"{% else %} loading="lazy"{% endif %} decoding="async" />
+	{% if creative.caption %}
+	<span class="pub-live-caption-band" aria-hidden="true">
+		<span class="pub-live-caption-track">{{ creative.caption }} · {{ creative.caption }} · {{ creative.caption }} · {{ creative.caption }}</span>
+	</span>
+	{% endif %}
 	{% endif %}
 	{% if creative.is_default_cover %}<span class="pub-live-cover__tag">Publi.</span>{% endif %}
 </span>

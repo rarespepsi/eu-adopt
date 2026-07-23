@@ -253,14 +253,17 @@ def _build_eu_note_json(
     start: date | None,
     end: date | None,
     plain_text: str = "",
+    caption: str = "",
 ) -> str:
     if plain_text.strip() and not img_url and not video_url:
         return plain_text.strip()[:8000]
+    cap = (caption or "").strip()[:200]
     payload: dict = {
         "img": img_url or "",
         "video": video_url or "",
         "link": (link or "").strip(),
         "alt": (alt or "").strip() or "EU-Adopt",
+        "caption": cap,
     }
     if start and end:
         payload["assets"] = [
@@ -269,6 +272,7 @@ def _build_eu_note_json(
                 "video": video_url or "",
                 "link": (link or "").strip(),
                 "alt": (alt or "").strip() or "EU-Adopt",
+                "caption": cap,
                 "start": start.isoformat(),
                 "end": end.isoformat(),
             }
@@ -320,6 +324,7 @@ def publicitate_eu_direct_view(request):
             end = _parse_iso_date(request.POST.get("end_date") or "")
             link = (request.POST.get("link") or "").strip()
             alt = (request.POST.get("alt") or "").strip()
+            caption = (request.POST.get("caption") or "").strip()[:200]
             is_burtiera = section == "home" and slot == "Burtieră"
             if is_burtiera:
                 messages.info(request, "Burtieră: folosiți Șterge pentru a elimina textul.")
@@ -331,6 +336,7 @@ def publicitate_eu_direct_view(request):
                 alt=alt,
                 start=start,
                 end=end,
+                caption=caption,
             )
             existing.text = note_text
             existing.updated_by = request.user
@@ -347,6 +353,7 @@ def publicitate_eu_direct_view(request):
         link = (request.POST.get("link") or "").strip()
         alt = (request.POST.get("alt") or "").strip()
         plain = (request.POST.get("plain_text") or "").strip()
+        caption = (request.POST.get("caption") or "").strip()[:200]
         keep_media = (request.POST.get("keep_media") or "") == "1"
 
         existing = (
@@ -415,6 +422,7 @@ def publicitate_eu_direct_view(request):
                 start=start,
                 end=end,
                 plain_text="",
+                caption=caption,
             )
 
         ReclamaSlotNote.objects.update_or_create(
@@ -442,6 +450,7 @@ def publicitate_eu_direct_view(request):
     form_link = ""
     form_alt = ""
     form_plain = ""
+    form_caption = ""
     if selected:
         notes = pub_slot_fetch_notes(section, [selected], market=PUB_MARKET_EU)
         current = notes.get(selected)
@@ -455,6 +464,7 @@ def publicitate_eu_direct_view(request):
                 parsed = _pt_pub_slot_parse_note(current) or {}
                 form_link = (parsed.get("link") or "").strip()
                 form_alt = (parsed.get("alt") or "").strip()
+                form_caption = (parsed.get("caption") or "").strip()
                 assets = parsed.get("assets") or []
                 if isinstance(assets, list) and assets:
                     a0 = assets[0] if isinstance(assets[0], dict) else {}
@@ -464,6 +474,8 @@ def publicitate_eu_direct_view(request):
                         form_link = (a0.get("link") or "").strip()
                     if not form_alt:
                         form_alt = (a0.get("alt") or "").strip()
+                    if not form_caption:
+                        form_caption = (a0.get("caption") or a0.get("band") or "").strip()
                 if section == "home" and selected == "Burtieră":
                     form_plain = (getattr(current, "text", None) or "")[:8000]
             except Exception:
@@ -490,6 +502,7 @@ def publicitate_eu_direct_view(request):
     ctx["eu_form_link"] = form_link
     ctx["eu_form_alt"] = form_alt
     ctx["eu_form_plain"] = form_plain
+    ctx["eu_form_caption"] = form_caption
     ctx["eu_calendar_months"] = _eu_calendar_months(section, selected)
     ctx["eu_has_media"] = bool(
         isinstance(creative, dict)

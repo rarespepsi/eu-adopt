@@ -23,8 +23,12 @@
 	</span>
 	{% endif %}
 	{% else %}
-	{% if cell.creative.has_link %}
-	<a href="{{ cell.creative.href }}" class="sw-strip-item sw-strip-item--{{ strip_variant }} sw-strip-cell--pub sw-strip-cell--has-creative pub-live-cover-link pub-live-cover-link--strip{% if cell.creative.is_default_cover %} pub-live-default-cover{% endif %}" data-slot="{{ cell.code }}" aria-label="{{ cell.creative.alt|default:'Publicitate' }}">
+	{% if cell.creative.video %}
+	<span class="sw-strip-item sw-strip-item--{{ strip_variant }} sw-strip-cell--pub sw-strip-cell--has-creative{% if cell.creative.is_default_cover %} pub-live-default-cover{% endif %}" data-slot="{{ cell.code }}">
+		{% include "anunturi/includes/pub_slot_live_cover.html" with creative=cell.creative layout="strip" only %}
+	</span>
+	{% elif cell.creative.has_link %}
+	<a href="{{ cell.creative.href }}" target="_blank" rel="noopener noreferrer" class="sw-strip-item sw-strip-item--{{ strip_variant }} sw-strip-cell--pub sw-strip-cell--has-creative pub-live-cover-link pub-live-cover-link--strip{% if cell.creative.is_default_cover %} pub-live-default-cover{% endif %}" data-slot="{{ cell.code }}" aria-label="{{ cell.creative.alt|default:'Publicitate' }}">
 		{% include "anunturi/includes/pub_slot_live_cover.html" with creative=cell.creative layout="strip" wrap_link=False only %}
 	</a>
 	{% else %}
