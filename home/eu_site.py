@@ -153,6 +153,8 @@ def is_eu_site_host(host: str | None) -> bool:
 
 
 # Rute RO-only: redirect Acasă pe hub EU (staff Django admin rămâne pe /admin/).
+# Transport e PERMIS pe EU (flux normal + sponsorizare autocar).
+# Adăpost/ONG e BLOCAT pe EU (doar pe .ro).
 EU_SITE_BLOCKED_URL_NAMES = frozenset(
     {
         "servicii",
@@ -160,17 +162,8 @@ EU_SITE_BLOCKED_URL_NAMES = frozenset(
         "shop_comanda_personalizate",
         "shop_magazin_foto",
         "shop_magazin_foto_more",
-        "transport",
-        "transport_submit",
-        "transport_dispatch_accept",
-        "transport_dispatch_decline",
-        "transport_dispatch_cancel_user",
-        "transport_op_release_job",
-        "transport_dispatch_rate",
-        "transport_operator_panel",
-        "transport_operator_job_detail",
-        "transport_op_accept_pending",
-        "transport_op_decline_pending",
+        "shelter_directory",
+        "shelter_detail",
         "signup_colaborator",
         "inscriere",
         "publicitate_harta",
@@ -186,7 +179,7 @@ EU_SITE_BLOCKED_URL_NAMES = frozenset(
 EU_SITE_BLOCKED_PATH_PREFIXES = (
     "/shop/",
     "/servicii/",
-    "/transport/",
+    "/adaposturi/",
     "/collab/",
     "/publicitate/",
     "/reclama/",
@@ -290,7 +283,7 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
     nav_keys = (
         "home",
         "pets",
-        "shelters",
+        "transport",
         "mypet",
         "ilove",
         "login_cta",
@@ -303,6 +296,7 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
         "lang_label",
         "open_menu",
         "close_menu",
+        "eu_blocked",
     )
     eu_nav_text = {k: eu_nav_label(lang, k) for k in nav_keys}
 

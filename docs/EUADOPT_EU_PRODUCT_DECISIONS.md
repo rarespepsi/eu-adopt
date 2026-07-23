@@ -53,13 +53,15 @@ O app, o DB. Animale din RO. Coming soon public pe non-`.ro` până la **lansare
 
 ## Ordine implementare (agreată)
 
-1. Meniu EU (+Transport, −Adăpost/ONG)
-2. (memorare — acest fișier)
+1. ~~Meniu EU (+Transport, −Adăpost/ONG)~~ — făcut
+2. ~~Memorare~~ — `docs/EUADOPT_EU_PRODUCT_DECISIONS.md`
 3. Reclama filtru RO/EU + oglindă pe domenii EU
 4. Click pe domeniul curent + text = limba activă
 5. Traduceri UI pe paginile EU
 6. Sloturi/pagini publi EU — listă finală
 7. Scoate Coming soon — **după** lansare full `.ro`
+
+**Savepoint pre-produs:** `525d77a` (docs) · cod flags `ed19a1b`
 
 ---
 

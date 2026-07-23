@@ -69,12 +69,18 @@
 							{% endif %}
 							<li><a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="a0-nav-home-link current_page"{% else %}class="a0-nav-home-link"{% endif %}>{% if eu_site_active %}{{ eu_nav_text.home }}{% else %}Acasă{% endif %}</a></li>
 							<li><a href="{% url 'pets_all' %}" {% if request.resolver_match.url_name == 'pets_all' %}class="current_page"{% endif %}>{% if eu_site_active %}{{ eu_nav_text.pets }}{% else %}Prietenul tău{% endif %}</a></li>
+							{% if not eu_site_active %}
 							<li class="a0-nav-adaposturi">
-								<a href="{% url 'shelter_directory' %}" {% if request.resolver_match.url_name == 'shelter_directory' or request.resolver_match.url_name == 'shelter_detail' %}class="current_page"{% endif %}>{% if eu_site_active %}{{ eu_nav_text.shelters }}{% elif user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}Adăp/ONG{% else %}Adăpost/ONG{% endif %}</a>
+								<a href="{% url 'shelter_directory' %}" {% if request.resolver_match.url_name == 'shelter_directory' or request.resolver_match.url_name == 'shelter_detail' %}class="current_page"{% endif %}>{% if user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}Adăp/ONG{% else %}Adăpost/ONG{% endif %}</a>
 							</li>
+							{% endif %}
 							{% if not eu_site_active and not population_org_nav_reduced %}
 							<li><a href="{% url 'servicii' %}" {% if request.resolver_match.url_name == 'servicii' %}class="current_page"{% endif %}>Servicii</a></li>
-							<li><a href="{% url 'transport' %}" {% if request.resolver_match.url_name == 'transport' %}class="current_page"{% endif %}>Transport</a></li>
+							{% endif %}
+							{% if eu_site_active or not population_org_nav_reduced %}
+							<li><a href="{% url 'transport' %}" {% if request.resolver_match.url_name == 'transport' %}class="current_page"{% endif %}>{% if eu_site_active %}{{ eu_nav_text.transport }}{% else %}Transport{% endif %}</a></li>
+							{% endif %}
+							{% if not eu_site_active and not population_org_nav_reduced %}
 							<li><a href="{% url 'shop' %}" {% if request.resolver_match.url_name == 'shop' %}class="current_page"{% endif %}>Shop</a></li>
 							{% endif %}
 							{% if user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}

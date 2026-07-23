@@ -31,7 +31,10 @@ class EuSiteHostTests(SimpleTestCase):
     def test_blocked_paths(self):
         self.assertTrue(path_blocked_on_eu_hub("/shop/"))
         self.assertTrue(path_blocked_on_eu_hub("/servicii/"))
+        self.assertTrue(path_blocked_on_eu_hub("/adaposturi/"))
         self.assertFalse(path_blocked_on_eu_hub("/pets/"))
+        self.assertFalse(path_blocked_on_eu_hub("/transport/"))
+        self.assertFalse(path_blocked_on_eu_hub("/transport"))
 
     def test_nav_labels_all_languages(self):
         from home.eu_nav_labels import assert_all_languages_complete, eu_nav_label
@@ -114,6 +117,25 @@ class EuSiteMiddlewareTests(TestCase):
         self.assertContains(r, ">Español<")
         self.assertNotContains(r, "🇬🇧")
         self.assertNotContains(r, ">Shop</a>")
+        self.assertNotContains(r, "shelter_directory")
+        self.assertNotContains(r, "Adăpost/ONG")
+        self.assertContains(r, 'href="/transport/"')
+        self.assertContains(r, ">Transport<")
+
+    @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
+    def test_adaposturi_redirects_on_eu(self):
+        c = Client(HTTP_HOST="euadopt.com")
+        r = c.get("/adaposturi/")
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(r["Location"], reverse("home"))
+
+    @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
+    def test_transport_allowed_on_eu(self):
+        c = Client(HTTP_HOST="euadopt.com")
+        r = c.get("/transport/")
+        self.assertIn(r.status_code, (200, 302))
+        if r.status_code == 302:
+            self.assertNotEqual(r["Location"], reverse("home"))
 
     @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
     def test_language_switcher_on_es_host(self):

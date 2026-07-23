@@ -10,6 +10,7 @@ from home.eu_site import EU_SITE_DEFAULT_LANGUAGE, EU_SITE_LANGUAGE_CODES
 _KEYS = (
     "home",
     "pets",
+    "transport",
     "shelters",
     "mypet",
     "ilove",
@@ -29,6 +30,7 @@ _KEYS = (
 _EN: dict[str, str] = {
     "home": "Home",
     "pets": "Find a friend",
+    "transport": "Transport",
     "shelters": "Shelters / NGOs",
     "mypet": "MyPet",
     "ilove": "I Love",
@@ -57,6 +59,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "de": _pack(
         home="Start",
         pets="Finde einen Freund",
+        transport="Transport",
         shelters="Tierheime / NGOs",
         login_cta="Anmelden / Registrieren",
         logout="Abmelden",
@@ -73,6 +76,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "fr": _pack(
         home="Accueil",
         pets="Trouver un ami",
+        transport="Transport",
         shelters="Refuges / ONG",
         login_cta="Connexion / Inscription",
         logout="Déconnexion",
@@ -89,6 +93,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "es": _pack(
         home="Inicio",
         pets="Encuentra un amigo",
+        transport="Transporte",
         shelters="Refugios / ONG",
         login_cta="Entrar / Registrarse",
         logout="Salir",
@@ -105,6 +110,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "it": _pack(
         home="Home",
         pets="Trova un amico",
+        transport="Trasporto",
         shelters="Rifugi / ONG",
         login_cta="Accedi / Registrati",
         logout="Esci",
@@ -121,6 +127,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "pt": _pack(
         home="Início",
         pets="Encontre um amigo",
+        transport="Transporte",
         shelters="Abrigos / ONG",
         login_cta="Entrar / Registar",
         logout="Sair",
@@ -137,6 +144,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "nl": _pack(
         home="Home",
         pets="Vind een vriend",
+        transport="Transport",
         shelters="Asielen / NGO's",
         login_cta="Inloggen / Registreren",
         logout="Uitloggen",
@@ -153,6 +161,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "pl": _pack(
         home="Strona główna",
         pets="Znajdź przyjaciela",
+        transport="Transport",
         shelters="Schroniska / NGO",
         login_cta="Zaloguj / Rejestracja",
         logout="Wyloguj",
@@ -169,6 +178,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "ro": _pack(
         home="Acasă",
         pets="Prietenul tău",
+        transport="Transport",
         shelters="Adăpost / ONG",
         login_cta="Intră / Fă cont",
         logout="Logout",
@@ -185,6 +195,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "cs": _pack(
         home="Domů",
         pets="Najdi přítele",
+        transport="Doprava",
         shelters="Útulky / NGO",
         login_cta="Přihlásit / Registrace",
         logout="Odhlásit",
@@ -201,6 +212,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "sk": _pack(
         home="Domov",
         pets="Nájdi priateľa",
+        transport="Doprava",
         shelters="Útulky / NGO",
         login_cta="Prihlásiť / Registrácia",
         logout="Odhlásiť",
@@ -217,6 +229,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "hu": _pack(
         home="Kezdőlap",
         pets="Barát keresése",
+        transport="Szállítás",
         shelters="Menhelyek / NGO",
         login_cta="Belépés / Regisztráció",
         logout="Kilépés",
@@ -233,6 +246,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "bg": _pack(
         home="Начало",
         pets="Намери приятел",
+        transport="Транспорт",
         shelters="Приюти / НПО",
         login_cta="Вход / Регистрация",
         logout="Изход",
@@ -249,6 +263,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "hr": _pack(
         home="Početna",
         pets="Pronađi prijatelja",
+        transport="Transport",
         shelters="Skloništa / NGO",
         login_cta="Prijava / Registracija",
         logout="Odjava",
@@ -265,6 +280,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "sl": _pack(
         home="Domov",
         pets="Najdi prijatelja",
+        transport="Prevoz",
         shelters="Zavetišča / NGO",
         login_cta="Prijava / Registracija",
         logout="Odjava",
@@ -281,6 +297,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "et": _pack(
         home="Avaleht",
         pets="Leia sõber",
+        transport="Transport",
         shelters="Varjupaigad / MTÜ",
         login_cta="Logi sisse / Registreeru",
         logout="Logi välja",
@@ -297,6 +314,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "lv": _pack(
         home="Sākums",
         pets="Atrodi draugu",
+        transport="Transports",
         shelters="Patversmes / NVO",
         login_cta="Pieteikties / Reģistrēties",
         logout="Iziet",
@@ -313,6 +331,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "lt": _pack(
         home="Pradžia",
         pets="Rask draugą",
+        transport="Transportas",
         shelters="Prieglaudos / NVO",
         login_cta="Prisijungti / Registruotis",
         logout="Atsijungti",
@@ -329,6 +348,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "fi": _pack(
         home="Etusivu",
         pets="Löydä ystävä",
+        transport="Kuljetus",
         shelters="Turvakodit / NGO",
         login_cta="Kirjaudu / Rekisteröidy",
         logout="Kirjaudu ulos",
@@ -345,6 +365,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "sv": _pack(
         home="Hem",
         pets="Hitta en vän",
+        transport="Transport",
         shelters="Hem / NGO",
         login_cta="Logga in / Registrera",
         logout="Logga ut",
@@ -361,6 +382,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "da": _pack(
         home="Hjem",
         pets="Find en ven",
+        transport="Transport",
         shelters="Internater / NGO",
         login_cta="Log ind / Tilmeld",
         logout="Log ud",
@@ -377,6 +399,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "el": _pack(
         home="Αρχική",
         pets="Βρες φίλο",
+        transport="Μεταφορά",
         shelters="Καταφύγια / ΜΚΟ",
         login_cta="Σύνδεση / Εγγραφή",
         logout="Έξοδος",
@@ -393,6 +416,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "ga": _pack(
         home="Baile",
         pets="Aimsigh cara",
+        transport="Iompar",
         shelters="Dídean / NGO",
         login_cta="Logáil isteach / Cláraigh",
         logout="Logáil amach",
@@ -409,6 +433,7 @@ _LABELS: dict[str, dict[str, str]] = {
     "mt": _pack(
         home="Dar",
         pets="Sib ħabib",
+        transport="Trasport",
         shelters="Kennels / NGO",
         login_cta="Idħol / Irreġistra",
         logout="Oħroġ",
