@@ -272,6 +272,11 @@
 <div class="pub-cr-wrap">
 	<div class="pub-cr-card">
 		<h1>Materiale publicitate</h1>
+		{% if pub_superuser_eu_client %}
+		<p class="pub-eu-super-banner" style="margin:0 0 0.75rem;padding:0.55rem 0.7rem;border-radius:8px;background:#eff6ff;border:1px solid #93c5fd;color:#1e3a8a;font-weight:600;">
+			Superuser = client EU: materialele se aplică pe <strong>euadopt.com / .de / .fr / .es</strong>, nu pe .ro.
+		</p>
+		{% endif %}
 		<p class="pub-cr-lead">
 			Comandă <strong>#{{ pub_order.pk }}</strong> — total <strong>{{ pub_order.total_lei }} lei</strong>.
 			Completați pentru fiecare slot: <strong>imagine sau video</strong> (nu ambele), link țintă (ex. www… sau https://…) și opțional badge-uri <strong>Preț</strong> + <strong>Discount</strong>. După trimitere, conținutul se aplică pe site acolo unde există integrare automată (ex. PT <strong>P4.3 / P5.1–P5.3</strong>, burtieră <strong>HOME</strong>) și sunteți duși pe pagina casetei.

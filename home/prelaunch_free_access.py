@@ -160,6 +160,9 @@ def publicitate_user_needs_pub_nudge(user) -> bool:
 
 
 def publicitate_user_can_reserve_slots(user, additional_lines: int = 1) -> tuple[bool, str]:
+    # Superuser = client EU: fără plafon pre-lansare
+    if user and getattr(user, "is_superuser", False):
+        return True, ""
     cap = publicitate_max_slots_per_user()
     if cap <= 0:
         return True, ""

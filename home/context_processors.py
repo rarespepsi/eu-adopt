@@ -374,6 +374,14 @@ def wishlist_counts(request):
         else:
             nav_magazinul_meu_label = "MyListServicii"
 
+    show_pub_nav = False
+    try:
+        from home.prelaunch_free_access import publicitate_user_has_access
+
+        show_pub_nav = publicitate_user_has_access(user)
+    except Exception:
+        show_pub_nav = False
+
     return {
         "wishlist_count": wishlist_count,
         "site_cart_count": site_cart_count,
@@ -387,6 +395,7 @@ def wishlist_counts(request):
         "superuser_full_access": superuser_full_access,
         "show_mypet_nav": show_mypet_nav,
         "show_magazinul_meu_nav": show_magazinul_meu_nav,
+        "show_pub_nav": show_pub_nav,
         "is_viewing_as_collaborator": is_viewing_as_collaborator,
         "message_unread_count": message_unread_count,
         "pet_message_unread_count": pet_message_unread_count,

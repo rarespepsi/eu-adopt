@@ -36,7 +36,8 @@ O app, o DB. Animale din RO. Coming soon public pe non-`.ro` până la **lansare
 1. Superuser intră în **Reclama pe `.ro`**.
 2. Filtru: **Publi RO** | **Publi EU** (`?market=ro|eu`).
 3. Postezi pe piața EU → `ReclamaSlotNote.market=eu` → apare pe `.com` și se **oglindă** pe `.de`/`.fr`/`.es` (**fără** `.ro`).
-4. Pe `.ro` rămâne reclama **plătită** (scrie mereu `market=ro`).
+   - **Superuser pe PUB** (eu-adopt.ro → buton PUB): tu ești „clientul EU” — rezervare + upload materiale → aplicare automată pe `market=eu` (doar superuser; staff/colaborator rămân pe RO când PUB e deschis pentru ei).
+4. Pe `.ro` rămâne reclama **plătită** (scrie `market=ro`, exceptând comenzile superuser).
 5. **Click** pe EU: link către `eu-adopt.ro/...` e localizat la path pe domeniul curent.
 6. **Text** casetă: câmp opțional `alt_i18n` / `i18n` în JSON → limba activă.
 7. Sloturi EU: Admin → Notițe Reclama (`market=eu`) sau Burtieră în Reclama cu Publi EU; UI upload dedicat sloturi = următorul rafinament.

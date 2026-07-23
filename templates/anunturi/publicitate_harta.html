@@ -19,6 +19,9 @@
 			Comenzile mele publicitare{% if pub_my_orders_pending_materials %} <span class="pub-my-orders-badge">{{ pub_my_orders_pending_materials }}</span>{% elif pub_my_orders_total %} <span class="pub-my-orders-badge pub-my-orders-badge--muted">{{ pub_my_orders_total }}</span>{% endif %}
 		</a>
 	</div>
+	{% if pub_superuser_eu_client %}
+	<p class="pub-eu-super-banner">Mod superuser: tu ești clientul EU — ce rezervi și încarci aici apare pe <strong>euadopt.com / .de / .fr / .es</strong>, nu pe .ro.</p>
+	{% endif %}
 	{% if pub_prelaunch_free %}
 	<p class="pub-prelaunch-banner">{{ pub_prelaunch_banner }} · maximum {{ pub_max_slots_per_user }} casetă publicitară per cont · {% if pub_max_weeks_per_order == 1 %}7 zile (1 bloc săptămânal){% else %}{{ pub_max_weeks_per_order }} săptămâni{% endif %} per rezervare{% if pub_slots_remaining is not None %} · {% if pub_slots_remaining %}mai puteți rezerva {{ pub_slots_remaining }}{% else %}ați folosit caseta gratuită{% endif %}{% endif %}</p>
 	{% endif %}
@@ -216,6 +219,18 @@
 		background: rgba(22, 101, 52, 0.55) !important;
 		border-color: rgba(134, 239, 172, 0.55) !important;
 		color: #ecfdf5 !important;
+		text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+	}
+	body.page-publicitate-harta .pub-eu-super-banner {
+		margin: 0.35rem 0 0.45rem;
+		padding: 0.5rem 0.7rem;
+		border-radius: 8px;
+		background: rgba(37, 99, 235, 0.55) !important;
+		border: 1px solid rgba(147, 197, 253, 0.65) !important;
+		color: #eff6ff !important;
+		font-size: 0.88rem;
+		font-weight: 600;
+		line-height: 1.35;
 		text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
 	}
 	/*

@@ -12596,9 +12596,21 @@ def _buyer_note_to_pt_slot_json(buyer_note: str) -> str:
     )
 
 
+def _publicitate_order_target_market(order: PublicitateOrder) -> str:
+    """
+    Superuser = „clientul site-ului EU”: materialele din PUB merg pe market=eu
+    (.com + oglindă .de/.fr/.es). Orice alt user → market=ro.
+    """
+    user = getattr(order, "user", None)
+    if user is not None and getattr(user, "is_superuser", False):
+        return PUB_MARKET_EU
+    return PUB_MARKET_RO
+
+
 def _apply_publicitate_line_to_site(line: PublicitateOrderLine, order: PublicitateOrder):
     """După plată demo: aplică pe site unde există integrare (PT + benzi PT/Servicii + burtieră HOME)."""
     note = (line.buyer_note or "").strip()
+    market = _publicitate_order_target_market(order)
     if line.section == PT_PUB_NOTE_SECTION and (
         line.slot_code in PT_PUB_SLOT_CODES or line.slot_code in PT_STRIP_RENT_SLOT_CODES
     ):
@@ -12606,7 +12618,7 @@ def _apply_publicitate_line_to_site(line: PublicitateOrderLine, order: Publicita
         ReclamaSlotNote.objects.update_or_create(
             section=PT_PUB_NOTE_SECTION,
             slot_code=line.slot_code,
-            market=PUB_MARKET_RO,
+            market=market,
             defaults={"text": body, "updated_by": order.user},
         )
         return
@@ -12615,7 +12627,7 @@ def _apply_publicitate_line_to_site(line: PublicitateOrderLine, order: Publicita
         ReclamaSlotNote.objects.update_or_create(
             section=SERVICII_PUB_NOTE_SECTION,
             slot_code=line.slot_code,
-            market=PUB_MARKET_RO,
+            market=market,
             defaults={"text": body, "updated_by": order.user},
         )
         return
@@ -12624,7 +12636,7 @@ def _apply_publicitate_line_to_site(line: PublicitateOrderLine, order: Publicita
         ReclamaSlotNote.objects.update_or_create(
             section="home",
             slot_code=line.slot_code,
-            market=PUB_MARKET_RO,
+            market=market,
             defaults={"text": body, "updated_by": order.user},
         )
         return
@@ -12632,7 +12644,7 @@ def _apply_publicitate_line_to_site(line: PublicitateOrderLine, order: Publicita
         ReclamaSlotNote.objects.update_or_create(
             section="home",
             slot_code="Burtieră",
-            market=PUB_MARKET_RO,
+            market=market,
             defaults={"text": note[:8000], "updated_by": order.user},
         )
         return
@@ -12642,7 +12654,7 @@ def _apply_publicitate_line_to_site(line: PublicitateOrderLine, order: Publicita
         ReclamaSlotNote.objects.update_or_create(
             section=line.section,
             slot_code=line.slot_code,
-            market=PUB_MARKET_RO,
+            market=market,
             defaults={"text": body, "updated_by": order.user},
         )
 
@@ -12997,6 +13009,11 @@ def _publicitate_harta_context(request, pub_nav: str) -> dict:
             publicitate_user_slots_remaining(request.user)
             if getattr(request.user, "is_authenticated", False) and request.user.is_authenticated
             else None
+        ),
+        "pub_superuser_eu_client": bool(
+            getattr(request.user, "is_authenticated", False)
+            and request.user.is_authenticated
+            and getattr(request.user, "is_superuser", False)
         ),
     }
     return ctx
@@ -14436,11 +14453,18 @@ def _publicitate_creative_form_response(request, access: PublicitateOrderCreativ
             return redirect(request.path)
 
         live_url = _publicitate_section_live_url(applied_section)
-        messages.success(
-            request,
-            f"Materiale trimise pentru {applied} slot(uri). Caseta e pe pagina deschisă acum "
-            f"(integrare automată unde există). Aveți până la ~{review_h} h pentru verificare internă.",
-        )
+        if _publicitate_order_target_market(order) == PUB_MARKET_EU:
+            messages.success(
+                request,
+                f"Materiale trimise pentru {applied} slot(uri) pe Publi EU "
+                f"(.com / .de / .fr / .es — nu pe .ro). Verificare ~{review_h} h.",
+            )
+        else:
+            messages.success(
+                request,
+                f"Materiale trimise pentru {applied} slot(uri). Caseta e pe pagina deschisă acum "
+                f"(integrare automată unde există). Aveți până la ~{review_h} h pentru verificare internă.",
+            )
         return redirect(live_url)
 
     all_live = (
@@ -14456,6 +14480,9 @@ def _publicitate_creative_form_response(request, access: PublicitateOrderCreativ
             "pub_max_mb": max_b // (1024 * 1024),
             "pub_review_hours": review_h,
             "pub_all_live": all_live,
+            "pub_superuser_eu_client": bool(
+                getattr(order.user, "is_superuser", False)
+            ),
         },
     )
 

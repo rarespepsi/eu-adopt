@@ -61,7 +61,7 @@
 					<div class="menu-main-menu-container">
 						<ul id="menu-main-menu" class="menu">
 							{% if not eu_site_active %}
-							{% if user.is_authenticated and show_magazinul_meu_nav or user.is_authenticated and user.is_staff or user.is_authenticated and user.is_superuser %}
+							{% if show_pub_nav %}
 								<li class="a0-nav-ads-float">
 									<a href="{% url 'publicitate_harta' %}" class="a0-nav-ads-link" title="Comenzi publicitate">PUB</a>
 								</li>
