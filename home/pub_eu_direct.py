@@ -325,12 +325,12 @@ def publicitate_eu_direct_view(request):
             messages.error(request, "Alegeți fie imagine, fie video — nu ambele.")
             return redirect(f"{reverse('publicitate_eu_direct')}?sect={section}&slot={slot}")
         try:
-            max_mb = 8
+            max_mb = 80
             from django.conf import settings as dj_settings
 
-            max_mb = max(1, int(getattr(dj_settings, "PUBLICITATE_CREATIVE_MAX_UPLOAD_MB", 8)))
+            max_mb = max(1, int(getattr(dj_settings, "PUBLICITATE_CREATIVE_MAX_UPLOAD_MB", 80)))
         except Exception:
-            max_mb = 8
+            max_mb = 80
         max_b = max_mb * 1024 * 1024
         if up_img:
             if up_img.size > max_b:

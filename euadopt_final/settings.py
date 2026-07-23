@@ -407,10 +407,10 @@ GOOGLE_PLACES_SERVER_API_KEY = (
     or GOOGLE_MAPS_API_KEY
 )
 
-# Upload limits (video demo / fișiere MyPet)
-# Implicit Django poate bloca request-uri > ~2.5MB (DATA_UPLOAD_MAX_MEMORY_SIZE).
-DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25 MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25 MB
+# Upload limits (video pub EU / MyPet) — trebuie ≥ nginx client_max_body_size
+# Implicit Django blochează request-uri > ~2.5MB (DATA_UPLOAD_MAX_MEMORY_SIZE).
+DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 100 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024  # 100 MB
 
 # Email – Zoho Mail (SMTP). Credențiale EXCLUSIV din env (Render / .env local).
 # Dacă lipsesc pe Render, aplicația pornește oricum (console backend) — vezi variabilele în .env.example.
@@ -501,7 +501,7 @@ EUADOPT_ADMIN_ALLOW_IPS = [ip.strip() for ip in _admin_allow_ip.split(",") if ip
 # Publicitate — materiale post-plată (formular + email cu token)
 PUBLICITATE_CREATIVE_TOKEN_DAYS = int(os.environ.get("PUBLICITATE_CREATIVE_TOKEN_DAYS", "90") or "90")
 PUBLICITATE_CREATIVE_REVIEW_HOURS = int(os.environ.get("PUBLICITATE_CREATIVE_REVIEW_HOURS", "12") or "12")
-PUBLICITATE_CREATIVE_MAX_UPLOAD_MB = int(os.environ.get("PUBLICITATE_CREATIVE_MAX_UPLOAD_MB", "4") or "4")
+PUBLICITATE_CREATIVE_MAX_UPLOAD_MB = int(os.environ.get("PUBLICITATE_CREATIVE_MAX_UPLOAD_MB", "80") or "80")
 # Listă separată prin virgulă pentru notificări „materiale publicitate”. Gol = ADMINS, apoi DEFAULT_FROM_EMAIL (în views).
 PUBLICITATE_CREATIVE_STAFF_EMAILS = os.environ.get("PUBLICITATE_CREATIVE_STAFF_EMAILS", "").strip()
 # Notificări cereri plată coș site (navbar). Gol = aceeași cascadă ca materiale publicitate în views.
