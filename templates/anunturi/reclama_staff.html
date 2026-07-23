@@ -9,16 +9,23 @@
 	<div class="reclama-staff-wrapper">
 		<div class="reclama-staff-wrapper-inner">
 			<nav class="reclama-staff-nav-col" aria-label="Navigare Reclama (hărți sloturi; nu paginile publice)">
-				<a href="{% url 'reclama_staff' %}" class="reclama-nav-btn{% if reclama_section == 'home' %} reclama-nav-btn--current{% endif %}">Acasă</a>
-				<a href="{% url 'reclama_pub_a2' %}" class="reclama-nav-btn{% if reclama_section == 'pub_a2' %} reclama-nav-btn--current{% endif %}">Pub A2</a>
-				<a href="{% url 'reclama_pt' %}" class="reclama-nav-btn{% if reclama_section == 'pt' %} reclama-nav-btn--current{% endif %}">Prietenul tău</a>
-				<a href="{% url 'reclama_servicii' %}" class="reclama-nav-btn{% if reclama_section == 'servicii' %} reclama-nav-btn--current{% endif %}">Servicii</a>
-				<a href="{% url 'reclama_transport' %}" class="reclama-nav-btn{% if reclama_section == 'transport' %} reclama-nav-btn--current{% endif %}">Transport</a>
-				<a href="{% url 'reclama_shop' %}" class="reclama-nav-btn{% if reclama_section == 'shop' %} reclama-nav-btn--current{% endif %}">Shop</a>
-				<a href="{% url 'reclama_mypet' %}" class="reclama-nav-btn{% if reclama_section == 'mypet' %} reclama-nav-btn--current{% endif %}">MyPet</a>
-				<a href="{% url 'reclama_i_love' %}" class="reclama-nav-btn{% if reclama_section == 'i_love' %} reclama-nav-btn--current{% endif %}">❤️ I Love ({{ wishlist_count|default:0 }})</a>
-				<a href="{% url 'reclama_magazin_foto' %}" class="reclama-nav-btn{% if reclama_section == 'magazin_foto' %} reclama-nav-btn--current{% endif %}">Magazin Foto</a>
-				<a href="{% url 'reclama_cos_pub' %}" class="reclama-nav-btn{% if reclama_section == 'cos_pub' %} reclama-nav-btn--current{% endif %}">Coș pub.</a>
+				<div class="reclama-market-toggle" role="group" aria-label="Piață publicitate">
+					<a href="?market=ro{% if reclama_selected_slot %}&amp;slot={{ reclama_selected_slot|urlencode }}{% endif %}" class="reclama-nav-btn reclama-market-btn{% if reclama_market != 'eu' %} reclama-nav-btn--current{% endif %}">Publi RO</a>
+					<a href="?market=eu{% if reclama_selected_slot %}&amp;slot={{ reclama_selected_slot|urlencode }}{% endif %}" class="reclama-nav-btn reclama-market-btn{% if reclama_market == 'eu' %} reclama-nav-btn--current{% endif %}">Publi EU</a>
+				</div>
+				{% if reclama_market == 'eu' %}
+				<p class="reclama-market-hint">Publi EU: creatives pe <strong>.com</strong> (oglindă .de/.fr/.es). Fără .ro. Comenzile plătite RO nu apar aici. Sloturi: Admin → Notițe Reclama (market=eu) sau Burtieră mai jos.</p>
+				{% endif %}
+				<a href="{% url 'reclama_staff' %}?market={{ reclama_market|default:'ro' }}" class="reclama-nav-btn{% if reclama_section == 'home' %} reclama-nav-btn--current{% endif %}">Acasă</a>
+				<a href="{% url 'reclama_pub_a2' %}?market=ro" class="reclama-nav-btn{% if reclama_section == 'pub_a2' %} reclama-nav-btn--current{% endif %}">Pub A2</a>
+				<a href="{% url 'reclama_pt' %}?market={{ reclama_market|default:'ro' }}" class="reclama-nav-btn{% if reclama_section == 'pt' %} reclama-nav-btn--current{% endif %}">Prietenul tău</a>
+				<a href="{% url 'reclama_servicii' %}?market={{ reclama_market|default:'ro' }}" class="reclama-nav-btn{% if reclama_section == 'servicii' %} reclama-nav-btn--current{% endif %}">Servicii</a>
+				<a href="{% url 'reclama_transport' %}?market={{ reclama_market|default:'ro' }}" class="reclama-nav-btn{% if reclama_section == 'transport' %} reclama-nav-btn--current{% endif %}">Transport</a>
+				<a href="{% url 'reclama_shop' %}?market={{ reclama_market|default:'ro' }}" class="reclama-nav-btn{% if reclama_section == 'shop' %} reclama-nav-btn--current{% endif %}">Shop</a>
+				<a href="{% url 'reclama_mypet' %}?market={{ reclama_market|default:'ro' }}" class="reclama-nav-btn{% if reclama_section == 'mypet' %} reclama-nav-btn--current{% endif %}">MyPet</a>
+				<a href="{% url 'reclama_i_love' %}?market={{ reclama_market|default:'ro' }}" class="reclama-nav-btn{% if reclama_section == 'i_love' %} reclama-nav-btn--current{% endif %}">❤️ I Love ({{ wishlist_count|default:0 }})</a>
+				<a href="{% url 'reclama_magazin_foto' %}?market=ro" class="reclama-nav-btn{% if reclama_section == 'magazin_foto' %} reclama-nav-btn--current{% endif %}">Magazin Foto</a>
+				<a href="{% url 'reclama_cos_pub' %}?market=ro" class="reclama-nav-btn{% if reclama_section == 'cos_pub' %} reclama-nav-btn--current{% endif %}">Coș pub.</a>
 			</nav>
 			<div class="reclama-staff-main-col">
 				<div class="reclama-staff-split">
@@ -162,6 +169,7 @@
 									<form method="post" class="reclama-c3-note-form">
 										{% csrf_token %}
 										<input type="hidden" name="action" value="save_burtiera_note" />
+										<input type="hidden" name="market" value="{{ reclama_market|default:'ro' }}" />
 										<input type="hidden" name="slot" value="Burtieră" />
 										<textarea id="id_burtiera_note" name="burtiera_note" rows="8" readonly>{{ reclama_burtiera_note_text|default:'' }}</textarea>
 										<div class="reclama-c3-speed-row">

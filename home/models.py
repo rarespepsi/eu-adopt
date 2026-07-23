@@ -1391,8 +1391,23 @@ class PromoA2SlotPlan(models.Model):
 class ReclamaSlotNote(models.Model):
     """Notiță editabilă pentru sloturile din pagina Reclama (ex. Burtieră HOME)."""
 
+    MARKET_RO = "ro"
+    MARKET_EU = "eu"
+    MARKET_CHOICES = [
+        (MARKET_RO, "Publi RO (.ro)"),
+        (MARKET_EU, "Publi EU (.com + oglindă TLD)"),
+    ]
+
     section = models.CharField("Secțiune", max_length=30, db_index=True)
     slot_code = models.CharField("Slot", max_length=30, db_index=True)
+    market = models.CharField(
+        "Piață",
+        max_length=8,
+        choices=MARKET_CHOICES,
+        default=MARKET_RO,
+        db_index=True,
+        help_text="RO = clienți .ro; EU = creatives staff pe .com/.de/.fr/.es (fără .ro).",
+    )
     text = models.TextField("Text notiță", blank=True, default="")
     updated_by = models.ForeignKey(
         User,
@@ -1407,11 +1422,16 @@ class ReclamaSlotNote(models.Model):
     class Meta:
         verbose_name = "Notiță slot Reclama"
         verbose_name_plural = "Notițe sloturi Reclama"
-        unique_together = [("section", "slot_code")]
-        ordering = ["section", "slot_code"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["section", "slot_code", "market"],
+                name="home_reclamaslotnote_section_slot_market_uniq",
+            ),
+        ]
+        ordering = ["market", "section", "slot_code"]
 
     def __str__(self):
-        return f"{self.section}:{self.slot_code}"
+        return f"{self.market}:{self.section}:{self.slot_code}"
 
 
 class PublicitateOrder(models.Model):

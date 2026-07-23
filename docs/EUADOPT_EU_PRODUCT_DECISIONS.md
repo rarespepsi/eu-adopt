@@ -34,12 +34,15 @@ O app, o DB. Animale din RO. Coming soon public pe non-`.ro` până la **lansare
 ## Publicitate / Reclama
 
 1. Superuser intră în **Reclama pe `.ro`**.
-2. Filtru: **Publi RO** | **Publi EU**.
-3. Postezi pe piața EU (hub conceptual `.com`) → apare pe `.com` și se **oglindă automat** pe celelalte terminații EU (**fără** `.ro`).
-4. Pe `.ro` rămâne reclama **plătită** de useri RO.
-5. **Click** pe o casetă EU → rămâne pe **domeniul unde s-a dat click** (ex. `.de` → pagină pe `.de`).
-6. **Text** pe casetă = **limba activă** a vizitei (`.com` start EN; dacă user alege PL → text PL; pe `.de` default DE etc.).
-7. Lista exactă de pagini/sloturi publi pe EU = **la final** (după meniu + motor RO/EU).
+2. Filtru: **Publi RO** | **Publi EU** (`?market=ro|eu`).
+3. Postezi pe piața EU → `ReclamaSlotNote.market=eu` → apare pe `.com` și se **oglindă** pe `.de`/`.fr`/`.es` (**fără** `.ro`).
+4. Pe `.ro` rămâne reclama **plătită** (scrie mereu `market=ro`).
+5. **Click** pe EU: link către `eu-adopt.ro/...` e localizat la path pe domeniul curent.
+6. **Text** casetă: câmp opțional `alt_i18n` / `i18n` în JSON → limba activă.
+7. Sloturi EU: Admin → Notițe Reclama (`market=eu`) sau Burtieră în Reclama cu Publi EU; UI upload dedicat sloturi = următorul rafinament.
+8. Lista exactă de pagini/sloturi publi pe EU = **la final**.
+
+**Cod:** `home/pub_markets.py`, `home/pub_slot_defaults.py`, migrare `0076_reclamaslotnote_market`.
 
 ---
 

@@ -50,6 +50,7 @@ from .pet_age_bands import (
 )
 from .pt_p2_list import PT_P2_PAGE_SIZE, pt_pets_page_context
 from .pet_media_thumb import pet_media_thumb_view
+from .pub_markets import PUB_MARKET_EU, PUB_MARKET_RO, normalize_pub_market, pub_market_for_request
 from .pub_slot_defaults import pub_slot_fetch_notes, pub_slot_live_creative, pub_slot_outbound_url, pub_slots_ordered
 from .mail_helpers import email_subject_for_user, send_mail_text_and_html
 from .context_processors import get_navbar_unread_counts
@@ -502,15 +503,16 @@ HOME_BURTIERA_DEFAULT_TEXT = (
 HOME_BURTIERA_DEFAULT_SPEED_SECONDS = 28
 
 
-def _get_home_burtiera_text() -> str:
-    note = ReclamaSlotNote.objects.filter(section="home", slot_code="Burtieră").first()
+def _get_home_burtiera_text(market: str = PUB_MARKET_RO) -> str:
+    mkt = normalize_pub_market(market)
+    note = ReclamaSlotNote.objects.filter(section="home", slot_code="Burtieră", market=mkt).first()
     txt = (note.text if note else "") or ""
     txt = txt.strip()
     return txt or HOME_BURTIERA_DEFAULT_TEXT
 
 
-def _get_home_burtiera_link() -> str:
-    txt = _get_home_burtiera_text().strip()
+def _get_home_burtiera_link(market: str = PUB_MARKET_RO) -> str:
+    txt = _get_home_burtiera_text(market=market).strip()
     if not txt:
         return ""
     try:
@@ -520,8 +522,9 @@ def _get_home_burtiera_link() -> str:
         return ""
 
 
-def _get_home_burtiera_speed_seconds() -> int:
-    note = ReclamaSlotNote.objects.filter(section="home", slot_code="BurtierăSpeed").first()
+def _get_home_burtiera_speed_seconds(market: str = PUB_MARKET_RO) -> int:
+    mkt = normalize_pub_market(market)
+    note = ReclamaSlotNote.objects.filter(section="home", slot_code="BurtierăSpeed", market=mkt).first()
     raw = ((note.text if note else "") or "").strip()
     try:
         sec = int(raw)
@@ -2169,17 +2172,17 @@ def _pt_strip_portrait_merged_cells(p1_cells, p3_cells) -> list:
     return out
 
 
-def _enrich_pub_strip_sequence(section: str, sequence: list[dict]) -> list[dict]:
+def _enrich_pub_strip_sequence(
+    section: str,
+    sequence: list[dict],
+    *,
+    market: str = PUB_MARKET_RO,
+    lang: str | None = None,
+) -> list[dict]:
     """Îmbogățește secvența benzii cu text EU sau creative JSON din ReclamaSlotNote."""
     codes = [c["code"] for c in sequence]
-    notes = {}
-    try:
-        notes = {
-            n.slot_code: n
-            for n in ReclamaSlotNote.objects.filter(section=section, slot_code__in=codes)
-        }
-    except Exception:
-        notes = {}
+    mkt = normalize_pub_market(market)
+    notes = pub_slot_fetch_notes(section, codes, market=mkt)
     out = []
     for cell in sequence:
         if cell["kind"] == "eu":
@@ -2190,7 +2193,9 @@ def _enrich_pub_strip_sequence(section: str, sequence: list[dict]) -> list[dict]
             out.append(
                 {
                     **cell,
-                    "creative": pub_slot_live_creative(section, cell["code"], notes.get(cell["code"])),
+                    "creative": pub_slot_live_creative(
+                        section, cell["code"], notes.get(cell["code"]), market=mkt, lang=lang
+                    ),
                 }
             )
     return out
@@ -2380,7 +2385,7 @@ def _pt_pub_slot_parse_note(note):
     video_href = _resolve_media_href(video)
     if not img_href and not video_href:
         return None
-    return {
+    out = {
         "link": link,
         "img": img_href,
         "video": video_href,
@@ -2388,43 +2393,48 @@ def _pt_pub_slot_parse_note(note):
         "price": price,
         "discount": discount,
     }
+    alt_i18n = data.get("alt_i18n")
+    if isinstance(alt_i18n, dict):
+        out["alt_i18n"] = {
+            str(k).split("-")[0].lower(): str(v).strip()
+            for k, v in alt_i18n.items()
+            if str(v).strip()
+        }
+    i18n = data.get("i18n")
+    if isinstance(i18n, dict):
+        out["i18n"] = i18n
+    return out
 
 
-def _pt_pub_slot_list_for_template():
-    try:
-        notes = list(
-            ReclamaSlotNote.objects.filter(
-                section=PT_PUB_NOTE_SECTION,
-                slot_code__in=PT_PUB_SLOT_CODES,
-            )
-        )
-    except Exception:
-        notes = []
-    by_code = {n.slot_code: n for n in notes}
+def _pt_pub_slot_list_for_template(market: str = PUB_MARKET_RO, lang: str | None = None):
+    mkt = normalize_pub_market(market)
+    by_code = pub_slot_fetch_notes(PT_PUB_NOTE_SECTION, PT_PUB_SLOT_CODES, market=mkt)
     return [
         {
             "code": code,
-            "creative": pub_slot_live_creative(PT_PUB_NOTE_SECTION, code, by_code.get(code)),
+            "creative": pub_slot_live_creative(
+                PT_PUB_NOTE_SECTION, code, by_code.get(code), market=mkt, lang=lang
+            ),
             "is_p52": code == "P5.2",
         }
         for code in PT_PUB_SLOT_CODES
     ]
 
 
-def _home_sidebar_pub_slots_for_template() -> tuple[list[dict | None], list[dict | None]]:
+def _home_sidebar_pub_slots_for_template(
+    market: str = PUB_MARKET_RO, lang: str | None = None
+) -> tuple[list[dict | None], list[dict | None]]:
     """
     HOME A5/A6: mapare note publicitate active pe sloturile laterale.
     Returnează două liste de lungime 3 (stânga A5, dreapta A6) cu dict sau None.
     """
-    by_code: dict[str, ReclamaSlotNote] = {}
-    try:
-        notes = ReclamaSlotNote.objects.filter(section="home", slot_code__in=HOME_SIDEBAR_SLOT_CODES)
-        by_code = {n.slot_code: n for n in notes}
-    except Exception:
-        by_code = {}
+    mkt = normalize_pub_market(market)
+    by_code = pub_slot_fetch_notes("home", HOME_SIDEBAR_SLOT_CODES, market=mkt)
 
     def _entry(slot_code: str) -> dict:
-        creative = pub_slot_live_creative("home", slot_code, by_code.get(slot_code))
+        creative = pub_slot_live_creative(
+            "home", slot_code, by_code.get(slot_code), market=mkt, lang=lang
+        )
         has_link = bool(creative.get("has_link"))
         return {
             "name": slot_code,
@@ -2489,11 +2499,13 @@ def home_view(request):
                 wishlist_ids = set(WishlistItem.objects.filter(user=request.user).values_list("animal_id", flat=True))
             except Exception:
                 pass
+        _pub_mkt = pub_market_for_request(request)
+        _pub_lang = getattr(request, "LANGUAGE_CODE", None)
         p1_strip_cells = _strip_cells_donatii_pt_or_servicii(
-            "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P1)
+            "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P1, market=_pub_mkt, lang=_pub_lang)
         )
         p3_strip_cells = _strip_cells_donatii_pt_or_servicii(
-            "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P3)
+            "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P3, market=_pub_mkt, lang=_pub_lang)
         )
         return render(
             request,
@@ -2505,7 +2517,7 @@ def home_view(request):
                 "p2_next_offset": p2_next_offset,
                 "pt_p2_page_size": PT_P2_PAGE_SIZE,
                 "wishlist_ids": wishlist_ids,
-                "pt_pub_slot_list": _pt_pub_slot_list_for_template(),
+                "pt_pub_slot_list": _pt_pub_slot_list_for_template(market=_pub_mkt, lang=_pub_lang),
                 "pt_strip_p1_cells": p1_strip_cells,
                 "pt_strip_p3_cells": p3_strip_cells,
                 "pt_strip_portrait_merged_cells": _pt_strip_portrait_merged_cells(
@@ -2568,7 +2580,9 @@ def home_view(request):
             pet["quote"] = random.choice(A2_QUOTE_POOL)
         a2_pets.append(pet)
 
-    if is_home and a2_pets and len(a2_pets) == 12:
+    _pub_mkt = pub_market_for_request(request)
+    _pub_lang = getattr(request, "LANGUAGE_CODE", None)
+    if is_home and a2_pets and len(a2_pets) == 12 and _pub_mkt == PUB_MARKET_RO:
         _promo_a2_apply_overlay_to_home_a2(a2_pets, now_promo, with_quotes=True)
 
     hero_slider_images = HERO_SLIDER_IMAGES[:5]
@@ -2580,7 +2594,9 @@ def home_view(request):
             wishlist_ids = set(WishlistItem.objects.filter(user=request.user).values_list("animal_id", flat=True))
         except Exception:
             pass
-    left_sidebar_partners, right_sidebar_partners = _home_sidebar_pub_slots_for_template()
+    left_sidebar_partners, right_sidebar_partners = _home_sidebar_pub_slots_for_template(
+        market=_pub_mkt, lang=_pub_lang
+    )
     return render(request, "anunturi/home_v2.html", {
         "a2_pets": a2_pets,
         "a2_quote_pool": A2_QUOTE_POOL,
@@ -2592,9 +2608,9 @@ def home_view(request):
         "active_animals": len(DEMO_DOGS),
         "show_welcome_demo": show_welcome_demo,
         "wishlist_ids": wishlist_ids,
-        "home_burtiera_text": _get_home_burtiera_text(),
-        "home_burtiera_link": _get_home_burtiera_link(),
-        "home_burtiera_speed_seconds": _get_home_burtiera_speed_seconds(),
+        "home_burtiera_text": _get_home_burtiera_text(market=_pub_mkt),
+        "home_burtiera_link": _get_home_burtiera_link(market=_pub_mkt),
+        "home_burtiera_speed_seconds": _get_home_burtiera_speed_seconds(market=_pub_mkt),
         "home_site_note_show_mypet": _user_can_use_mypet(request),
         "home_site_note_show_ilove": bool(request.user.is_authenticated),
         "home_site_note_show_publicitate": _user_can_use_publicitate(request),
@@ -4066,10 +4082,22 @@ def servicii_view(request):
         "anunturi/servicii.html",
         {
             "servicii_strip_s1_cells": _strip_cells_donatii_pt_or_servicii(
-                "servicii", _enrich_pub_strip_sequence("servicii", PUB_STRIP_SEQ_S1)
+                "servicii",
+                _enrich_pub_strip_sequence(
+                    "servicii",
+                    PUB_STRIP_SEQ_S1,
+                    market=pub_market_for_request(request),
+                    lang=getattr(request, "LANGUAGE_CODE", None),
+                ),
             ),
             "servicii_strip_s7_cells": _strip_cells_donatii_pt_or_servicii(
-                "servicii", _enrich_pub_strip_sequence("servicii", PUB_STRIP_SEQ_S7)
+                "servicii",
+                _enrich_pub_strip_sequence(
+                    "servicii",
+                    PUB_STRIP_SEQ_S7,
+                    market=pub_market_for_request(request),
+                    lang=getattr(request, "LANGUAGE_CODE", None),
+                ),
             ),
             "vet_offers": vet_offers,
             "vet_offer_empty_slots": vet_offer_empty_slots,
@@ -4097,7 +4125,10 @@ def servicii_view(request):
             "adoption_bonus_ar_pending": bonus_bundle.get("adoption_bonus_ar_pending"),
             "adoption_bonus_show_locked_notice_once": show_locked_notice_once,
             "servicii_large_pub_slots": pub_slots_ordered(
-                "servicii", ("S2.2", "S2.3", "S6.1", "S6.2")
+                "servicii",
+                ("S2.2", "S2.3", "S6.1", "S6.2"),
+                market=pub_market_for_request(request),
+                lang=getattr(request, "LANGUAGE_CODE", None),
             ),
         },
     )
@@ -4112,7 +4143,12 @@ def transport_view(request):
         "continue_adoption_url": "",
         "prefill_judet": "",
         "prefill_oras": "",
-        "transport_pub_slots": pub_slots_ordered("transport", ("TDR.1", "TDR.2", "TDR.3")),
+        "transport_pub_slots": pub_slots_ordered(
+            "transport",
+            ("TDR.1", "TDR.2", "TDR.3"),
+            market=pub_market_for_request(request),
+            lang=getattr(request, "LANGUAGE_CODE", None),
+        ),
     }
     if request.user.is_authenticated:
         ctx["prefill_judet"] = _adopter_profile_county_raw(request.user)
@@ -4508,8 +4544,18 @@ def shop_view(request):
         request,
         "anunturi/shop.html",
         {
-            "shop_pub_left": pub_slots_ordered("shop", ("SH4.1", "SH4.2", "SH4.3")),
-            "shop_pub_right": pub_slots_ordered("shop", ("SH5.1", "SH5.2", "SH5.3")),
+            "shop_pub_left": pub_slots_ordered(
+                "shop",
+                ("SH4.1", "SH4.2", "SH4.3"),
+                market=pub_market_for_request(request),
+                lang=getattr(request, "LANGUAGE_CODE", None),
+            ),
+            "shop_pub_right": pub_slots_ordered(
+                "shop",
+                ("SH5.1", "SH5.2", "SH5.3"),
+                market=pub_market_for_request(request),
+                lang=getattr(request, "LANGUAGE_CODE", None),
+            ),
         },
     )
 
@@ -6671,6 +6717,10 @@ def reclama_staff_view(request, reclama_section="home"):
     section = (reclama_section or "home").strip().lower()
     if section not in RECLAMA_WIRE_TEMPLATES:
         return redirect(reverse("reclama_staff"))
+    reclama_market = normalize_pub_market(request.GET.get("market") or request.POST.get("market"))
+    # Pub A2 / comenzi plătite = doar piața RO
+    if reclama_market == PUB_MARKET_EU and section in ("pub_a2", "cos_pub", "magazin_foto"):
+        reclama_market = PUB_MARKET_RO
 
     if request.method == "POST" and section == "home":
         action = (request.POST.get("action") or "").strip().lower()
@@ -6686,6 +6736,7 @@ def reclama_staff_view(request, reclama_section="home"):
             note, _created = ReclamaSlotNote.objects.get_or_create(
                 section="home",
                 slot_code="Burtieră",
+                market=reclama_market,
                 defaults={"text": text, "updated_by": request.user},
             )
             if not _created:
@@ -6695,6 +6746,7 @@ def reclama_staff_view(request, reclama_section="home"):
             speed_note, speed_created = ReclamaSlotNote.objects.get_or_create(
                 section="home",
                 slot_code="BurtierăSpeed",
+                market=reclama_market,
                 defaults={"text": str(speed_val), "updated_by": request.user},
             )
             if not speed_created:
@@ -6702,7 +6754,7 @@ def reclama_staff_view(request, reclama_section="home"):
                 speed_note.updated_by = request.user
                 speed_note.save(update_fields=["text", "updated_by", "updated_at"])
             messages.success(request, "Textul pentru burtieră a fost salvat.")
-            return redirect(f"{reverse('reclama_staff')}?slot=Burtieră")
+            return redirect(f"{reverse('reclama_staff')}?slot=Burtieră&market={reclama_market}")
     meta = RECLAMA_META.get(section, ("Reclama", "Caseta 2"))
     wire_template = RECLAMA_WIRE_TEMPLATES[section]
     now = timezone.now()
@@ -6811,6 +6863,14 @@ def reclama_staff_view(request, reclama_section="home"):
     if selected_slot in {"A1", "A3"}:
         selected_slot = ""
 
+    # Pe Publi EU nu amestecăm rezervările plătite RO
+    if reclama_market == PUB_MARKET_EU:
+        active_orders = []
+        expiring_soon = 0
+        paid_today = 0
+        puba2_slot_previews = {}
+        puba2_capacity = {}
+
     history_rows = []
     history_total_orders = 0
     history_total_revenue = 0
@@ -6819,7 +6879,7 @@ def reclama_staff_view(request, reclama_section="home"):
     if selected_slot:
         if selected_slot == "Burtieră":
             # În editorul C3 afișăm textul curent efectiv din burtieră (fie notă salvată, fie default).
-            burtiera_note_text = _get_home_burtiera_text()
+            burtiera_note_text = _get_home_burtiera_text(market=reclama_market)
         else:
             current_year = timezone.localdate().year
             if section == "pub_a2":
@@ -6931,7 +6991,7 @@ def reclama_staff_view(request, reclama_section="home"):
                         "cells": cells,
                     }
                 )
-    home_left, home_right = _home_sidebar_pub_slots_for_template()
+    home_left, home_right = _home_sidebar_pub_slots_for_template(market=reclama_market)
     home_slot_previews: dict[str, dict[str, str]] = {}
     for row in (home_left + home_right):
         if not row:
@@ -6948,7 +7008,7 @@ def reclama_staff_view(request, reclama_section="home"):
     preview_section = section_for_catalog
     generic_slot_previews: dict[str, dict[str, str]] = {}
     try:
-        notes_qs = ReclamaSlotNote.objects.filter(section=preview_section)
+        notes_qs = ReclamaSlotNote.objects.filter(section=preview_section, market=reclama_market)
         for note in notes_qs:
             slot_name = (note.slot_code or "").strip()
             if not slot_name:
@@ -6970,7 +7030,7 @@ def reclama_staff_view(request, reclama_section="home"):
     generic_slot_previews.update(puba2_slot_previews)
     generic_slot_previews.update(home_slot_previews)
     c1_rows: list[dict] = []
-    if selected_slot:
+    if selected_slot and reclama_market != PUB_MARKET_EU:
         if section == "pub_a2":
             p_rows = (
                 PromoA2Order.objects.filter(status=PromoA2Order.STATUS_PAID, slot_code=selected_slot)
@@ -7051,20 +7111,30 @@ def reclama_staff_view(request, reclama_section="home"):
         "reclama_slot_history_total_revenue": history_total_revenue,
         "reclama_calendar_months": calendar_months,
         "reclama_burtiera_note_text": burtiera_note_text,
-        "reclama_burtiera_display_text": _get_home_burtiera_text(),
-        "reclama_burtiera_speed_seconds": _get_home_burtiera_speed_seconds(),
+        "reclama_burtiera_display_text": _get_home_burtiera_text(market=reclama_market),
+        "reclama_burtiera_speed_seconds": _get_home_burtiera_speed_seconds(market=reclama_market),
         "reclama_slot_previews": generic_slot_previews,
         "reclama_puba2_capacity": puba2_capacity,
+        "reclama_market": reclama_market,
+        "reclama_market_is_eu": reclama_market == PUB_MARKET_EU,
         "pub_site_contact_email": (
             (getattr(settings, "DEFAULT_FROM_EMAIL", None) or "").strip() or "euadopt@gmail.com"
         ),
     }
     if section == "pt":
-        ctx["pub_strip_p1_cells"] = _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P1)
-        ctx["pub_strip_p3_cells"] = _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P3)
+        ctx["pub_strip_p1_cells"] = _enrich_pub_strip_sequence(
+            "pt", PUB_STRIP_SEQ_P1, market=reclama_market
+        )
+        ctx["pub_strip_p3_cells"] = _enrich_pub_strip_sequence(
+            "pt", PUB_STRIP_SEQ_P3, market=reclama_market
+        )
     elif section == "servicii":
-        ctx["pub_strip_s1_cells"] = _enrich_pub_strip_sequence("servicii", PUB_STRIP_SEQ_S1)
-        ctx["pub_strip_s7_cells"] = _enrich_pub_strip_sequence("servicii", PUB_STRIP_SEQ_S7)
+        ctx["pub_strip_s1_cells"] = _enrich_pub_strip_sequence(
+            "servicii", PUB_STRIP_SEQ_S1, market=reclama_market
+        )
+        ctx["pub_strip_s7_cells"] = _enrich_pub_strip_sequence(
+            "servicii", PUB_STRIP_SEQ_S7, market=reclama_market
+        )
     elif section == "magazin_foto":
         foto = _shop_magazin_foto_slots_full()[:30]
         for i, row in enumerate(foto):
@@ -10104,8 +10174,18 @@ def i_love_view(request):
         {
             "pets": pets,
             "wishlist_ids": set(ids),
-            "ilove_pub_left": pub_slots_ordered("i_love", ("IL.L1", "IL.L2")),
-            "ilove_pub_right": pub_slots_ordered("i_love", ("IL.R1", "IL.R2")),
+            "ilove_pub_left": pub_slots_ordered(
+                "i_love",
+                ("IL.L1", "IL.L2"),
+                market=pub_market_for_request(request),
+                lang=getattr(request, "LANGUAGE_CODE", None),
+            ),
+            "ilove_pub_right": pub_slots_ordered(
+                "i_love",
+                ("IL.R1", "IL.R2"),
+                market=pub_market_for_request(request),
+                lang=getattr(request, "LANGUAGE_CODE", None),
+            ),
         },
     )
 
@@ -12526,6 +12606,7 @@ def _apply_publicitate_line_to_site(line: PublicitateOrderLine, order: Publicita
         ReclamaSlotNote.objects.update_or_create(
             section=PT_PUB_NOTE_SECTION,
             slot_code=line.slot_code,
+            market=PUB_MARKET_RO,
             defaults={"text": body, "updated_by": order.user},
         )
         return
@@ -12534,6 +12615,7 @@ def _apply_publicitate_line_to_site(line: PublicitateOrderLine, order: Publicita
         ReclamaSlotNote.objects.update_or_create(
             section=SERVICII_PUB_NOTE_SECTION,
             slot_code=line.slot_code,
+            market=PUB_MARKET_RO,
             defaults={"text": body, "updated_by": order.user},
         )
         return
@@ -12542,6 +12624,7 @@ def _apply_publicitate_line_to_site(line: PublicitateOrderLine, order: Publicita
         ReclamaSlotNote.objects.update_or_create(
             section="home",
             slot_code=line.slot_code,
+            market=PUB_MARKET_RO,
             defaults={"text": body, "updated_by": order.user},
         )
         return
@@ -12549,6 +12632,7 @@ def _apply_publicitate_line_to_site(line: PublicitateOrderLine, order: Publicita
         ReclamaSlotNote.objects.update_or_create(
             section="home",
             slot_code="Burtieră",
+            market=PUB_MARKET_RO,
             defaults={"text": note[:8000], "updated_by": order.user},
         )
         return
@@ -12558,6 +12642,7 @@ def _apply_publicitate_line_to_site(line: PublicitateOrderLine, order: Publicita
         ReclamaSlotNote.objects.update_or_create(
             section=line.section,
             slot_code=line.slot_code,
+            market=PUB_MARKET_RO,
             defaults={"text": body, "updated_by": order.user},
         )
 
@@ -12924,9 +13009,20 @@ def pub_slot_go_view(request):
     slot = (request.GET.get("slot") or "").strip()
     if not sect or not slot:
         return redirect("home")
-    notes = pub_slot_fetch_notes(sect, [slot])
-    creative = pub_slot_live_creative(sect, slot, notes.get(slot))
-    dest = pub_slot_outbound_url(creative.get("link"))
+    mkt = normalize_pub_market(request.GET.get("m") or pub_market_for_request(request))
+    notes = pub_slot_fetch_notes(sect, [slot], market=mkt)
+    creative = pub_slot_live_creative(
+        sect,
+        slot,
+        notes.get(slot),
+        market=mkt,
+        lang=getattr(request, "LANGUAGE_CODE", None),
+    )
+    # Link relativ (după localize EU) — rămâne pe hostul curent
+    link = (creative.get("link") or "").strip()
+    if link.startswith("/"):
+        return redirect(link)
+    dest = pub_slot_outbound_url(link)
     if not dest:
         return redirect("home")
     return redirect(dest)

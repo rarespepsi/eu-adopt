@@ -8,6 +8,12 @@ from urllib.parse import urlencode
 from django.templatetags.static import static
 from django.urls import reverse
 
+from home.pub_markets import (
+    PUB_MARKET_RO,
+    localize_pub_link_for_market,
+    normalize_pub_market,
+)
+
 PUB_COVER_COUNT = 30
 PUB_COVER_STATIC_PREFIX = "images/pub/covers/"
 
@@ -31,11 +37,11 @@ def pub_harta_url(section: str, slot_code: str) -> str:
     return f"{reverse('publicitate_harta')}?{q}"
 
 
-def pub_slot_go_url(section: str, slot_code: str) -> str:
+def pub_slot_go_url(section: str, slot_code: str, market: str = PUB_MARKET_RO) -> str:
     """Link intern pentru tap mobil — redirect server către URL-ul slotului (extern)."""
     sect = (section or "home").strip().lower()
     code = (slot_code or "").strip()
-    q = urlencode({"sect": sect, "slot": code})
+    q = urlencode({"sect": sect, "slot": code, "m": normalize_pub_market(market)})
     return f"{reverse('pub_slot_go')}?{q}"
 
 
@@ -52,12 +58,34 @@ def pub_slot_outbound_url(link: str) -> str | None:
     return u
 
 
-def _creative_with_href(section: str, slot_code: str, data: dict) -> dict:
+def _pick_localized_alt(parsed: dict, lang: str | None) -> str:
+    """alt_i18n / i18n[lang].alt / alt — limba activă a vizitei."""
+    code = (lang or "").split("-")[0].lower() if lang else ""
+    alt_map = parsed.get("alt_i18n")
+    if isinstance(alt_map, dict) and code:
+        v = (alt_map.get(code) or alt_map.get("en") or "").strip()
+        if v:
+            return v
+    i18n = parsed.get("i18n")
+    if isinstance(i18n, dict) and code:
+        pack = i18n.get(code) or i18n.get("en")
+        if isinstance(pack, dict):
+            v = (pack.get("alt") or "").strip()
+            if v:
+                return v
+        elif isinstance(pack, str) and pack.strip():
+            return pack.strip()
+    return (parsed.get("alt") or "").strip() or "Publicitate"
+
+
+def _creative_with_href(section: str, slot_code: str, data: dict, market: str = PUB_MARKET_RO) -> dict:
     out = dict(data)
-    link = (out.get("link") or "").strip()
+    mkt = normalize_pub_market(market)
+    link = localize_pub_link_for_market((out.get("link") or "").strip(), mkt)
+    out["link"] = link
     if link and _link_is_external(link):
         out["link_external"] = True
-        out["href"] = pub_slot_go_url(section, slot_code)
+        out["href"] = pub_slot_go_url(section, slot_code, mkt)
         out["has_link"] = True
     elif link:
         out["link_external"] = False
@@ -76,7 +104,14 @@ def pub_placeholder_link(section: str, slot_code: str) -> str:
     return ""
 
 
-def pub_slot_live_creative(section: str, slot_code: str, note=None) -> dict:
+def pub_slot_live_creative(
+    section: str,
+    slot_code: str,
+    note=None,
+    *,
+    market: str = PUB_MARKET_RO,
+    lang: str | None = None,
+) -> dict:
     """
     Creative pentru afișare pe site live.
     Fără material client: cover default, fără link.
@@ -86,6 +121,7 @@ def pub_slot_live_creative(section: str, slot_code: str, note=None) -> dict:
 
     code = (slot_code or "").strip()
     sect = (section or "home").strip().lower()
+    mkt = normalize_pub_market(market)
     default_img = pub_cover_url(code)
     parsed = _pt_pub_slot_parse_note(note) if note is not None else None
 
@@ -98,11 +134,12 @@ def pub_slot_live_creative(section: str, slot_code: str, note=None) -> dict:
                 "img": parsed.get("img") or "",
                 "video": parsed.get("video") or "",
                 "link": link,
-                "alt": (parsed.get("alt") or "").strip() or "Publicitate",
+                "alt": _pick_localized_alt(parsed, lang),
                 "price": (parsed.get("price") or "").strip(),
                 "discount": (parsed.get("discount") or "").strip(),
                 "is_default_cover": False,
             },
+            market=mkt,
         )
 
     if parsed and (parsed.get("link") or "").strip():
@@ -114,11 +151,12 @@ def pub_slot_live_creative(section: str, slot_code: str, note=None) -> dict:
                 "img": default_img,
                 "video": "",
                 "link": link,
-                "alt": "Publicitate",
+                "alt": _pick_localized_alt(parsed, lang) if parsed.get("alt") or parsed.get("alt_i18n") else "Publicitate",
                 "price": (parsed.get("price") or "").strip(),
                 "discount": (parsed.get("discount") or "").strip(),
                 "is_default_cover": True,
             },
+            market=mkt,
         )
 
     return _creative_with_href(
@@ -133,32 +171,53 @@ def pub_slot_live_creative(section: str, slot_code: str, note=None) -> dict:
             "discount": "",
             "is_default_cover": True,
         },
+        market=mkt,
     )
 
 
-def pub_slot_fetch_notes(section: str, codes: Iterable[str]) -> dict:
+def pub_slot_fetch_notes(
+    section: str,
+    codes: Iterable[str],
+    *,
+    market: str = PUB_MARKET_RO,
+) -> dict:
     from home.models import ReclamaSlotNote
 
     code_list = [c for c in codes if (c or "").strip()]
     if not code_list:
         return {}
+    mkt = normalize_pub_market(market)
     try:
         return {
             n.slot_code: n
-            for n in ReclamaSlotNote.objects.filter(section=section, slot_code__in=code_list)
+            for n in ReclamaSlotNote.objects.filter(
+                section=section, slot_code__in=code_list, market=mkt
+            )
         }
     except Exception:
         return {}
 
 
-def pub_slots_creatives(section: str, codes: Iterable[str]) -> dict[str, dict]:
-    notes = pub_slot_fetch_notes(section, codes)
+def pub_slots_creatives(
+    section: str,
+    codes: Iterable[str],
+    *,
+    market: str = PUB_MARKET_RO,
+    lang: str | None = None,
+) -> dict[str, dict]:
+    notes = pub_slot_fetch_notes(section, codes, market=market)
     return {
-        code: pub_slot_live_creative(section, code, notes.get(code))
+        code: pub_slot_live_creative(section, code, notes.get(code), market=market, lang=lang)
         for code in codes
     }
 
 
-def pub_slots_ordered(section: str, codes: Iterable[str]) -> list[dict]:
-    creatives = pub_slots_creatives(section, codes)
+def pub_slots_ordered(
+    section: str,
+    codes: Iterable[str],
+    *,
+    market: str = PUB_MARKET_RO,
+    lang: str | None = None,
+) -> list[dict]:
+    creatives = pub_slots_creatives(section, codes, market=market, lang=lang)
     return [{"code": code, "creative": creatives[code]} for code in codes]

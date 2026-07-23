@@ -177,8 +177,8 @@ class SiteCartCheckoutIntentAdmin(admin.ModelAdmin):
 
 @admin.register(ReclamaSlotNote)
 class ReclamaSlotNoteAdmin(admin.ModelAdmin):
-    list_display = ("section", "slot_code", "updated_by", "updated_at")
-    list_filter = ("section",)
+    list_display = ("market", "section", "slot_code", "updated_by", "updated_at")
+    list_filter = ("market", "section")
     search_fields = ("section", "slot_code", "text")
     raw_id_fields = ("updated_by",)
 

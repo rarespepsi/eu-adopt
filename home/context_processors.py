@@ -24,9 +24,15 @@ def _mypet_pub_slots_for_request(request):
         rm = getattr(request, "resolver_match", None)
         if not rm or rm.url_name not in ("mypet", "mypet_adopter_adoptions"):
             return []
+        from .pub_markets import pub_market_for_request
         from .pub_slot_defaults import pub_slots_ordered
 
-        return pub_slots_ordered("mypet", _MYPET_PUB_SLOT_CODES)
+        return pub_slots_ordered(
+            "mypet",
+            _MYPET_PUB_SLOT_CODES,
+            market=pub_market_for_request(request),
+            lang=getattr(request, "LANGUAGE_CODE", None),
+        )
     except Exception:
         return []
 
