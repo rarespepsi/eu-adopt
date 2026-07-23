@@ -52,6 +52,7 @@ from .pt_p2_list import PT_P2_PAGE_SIZE, pt_pets_page_context
 from .pet_media_thumb import pet_media_thumb_view
 from .pub_markets import PUB_MARKET_EU, PUB_MARKET_RO, normalize_pub_market, pub_market_for_request
 from .pub_slot_defaults import pub_slot_fetch_notes, pub_slot_live_creative, pub_slot_outbound_url, pub_slots_ordered
+from .pub_eu_direct import publicitate_eu_direct_view  # noqa: F401 — URL name
 from .mail_helpers import email_subject_for_user, send_mail_text_and_html
 from .context_processors import get_navbar_unread_counts
 from . import inbox_notifications as _inbox
@@ -13049,6 +13050,9 @@ def pub_slot_go_view(request):
 def publicitate_harta_view(request):
     if not _user_can_use_publicitate(request):
         return _publicitate_denied_response(request)
+    # Superuser: flux direct EU (fără tarife / coș)
+    if getattr(request.user, "is_superuser", False):
+        return redirect("publicitate_eu_direct")
     return render(request, "anunturi/publicitate_harta.html", _publicitate_harta_context(request, "harta"))
 
 
@@ -13057,6 +13061,8 @@ def publicitate_cos_view(request):
     """Aceeași interfață ca harta (Detalii slot | Hartă | Coș), pentru achiziție pe pagina dedicată coșului."""
     if not _user_can_use_publicitate(request):
         return _publicitate_denied_response(request)
+    if getattr(request.user, "is_superuser", False):
+        return redirect("publicitate_eu_direct")
     return render(request, "anunturi/publicitate_harta.html", _publicitate_harta_context(request, "cos"))
 
 

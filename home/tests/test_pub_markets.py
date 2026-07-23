@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
-from django.test import Client, SimpleTestCase, TestCase, override_settings
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client, RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
 from home.models import ReclamaSlotNote
@@ -96,10 +97,49 @@ class PubMarketNotesTests(TestCase):
             ).exists()
         )
 
+    def test_eu_direct_publish_superuser_only(self):
+        User = get_user_model()
+        su = User.objects.create_superuser("eu_direct_su", "d@b.c", "x")
+        normal = User.objects.create_user("eu_direct_u", "n@b.c", "x")
+        c = Client(HTTP_HOST="eu-adopt.ro")
+        c.force_login(normal)
+        r = c.get(reverse("publicitate_eu_direct"))
+        self.assertEqual(r.status_code, 302)
+        c.force_login(su)
+        r = c.get(reverse("publicitate_eu_direct"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "PUB EU")
+        tiny = SimpleUploadedFile(
+            "eu.png", b"\x89PNG\r\n\x1a\n" + b"0" * 40, content_type="image/png"
+        )
+        r = c.post(
+            reverse("publicitate_eu_direct"),
+            {
+                "sect": "home",
+                "slot": "A5.1",
+                "action": "publish",
+                "start_date": "2026-07-23",
+                "end_date": "2027-07-23",
+                "link": "https://euadopt.com/pets/",
+                "alt": "Adopt",
+                "keep_media": "0",
+                "image": tiny,
+            },
+        )
+        self.assertEqual(r.status_code, 302)
+        note = ReclamaSlotNote.objects.get(section="home", slot_code="A5.1", market=PUB_MARKET_EU)
+        self.assertIn("Adopt", note.text)
+
+    def test_harta_redirects_superuser_to_eu_direct(self):
+        User = get_user_model()
+        su = User.objects.create_superuser("eu_redir_su", "r@b.c", "x")
+        c = Client(HTTP_HOST="eu-adopt.ro")
+        c.force_login(su)
+        r = c.get(reverse("publicitate_harta"))
+        self.assertEqual(r.status_code, 302)
+        self.assertIn("/publicitate/eu/", r["Location"])
+
     def test_eu_host_uses_eu_market(self):
-        rf = Client(HTTP_HOST="euadopt.com")
-        # RequestFactory via client get — use middleware path
-        from django.test import RequestFactory
         from home.eu_site import eu_product_skin_enabled
 
         self.assertTrue(eu_product_skin_enabled())

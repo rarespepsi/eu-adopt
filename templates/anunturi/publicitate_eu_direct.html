@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}PUB EU direct | EU Adopt{% endblock %}
+{% block body_class %}page-pub-eu-direct{% endblock %}
+
+{% block content %}
+<section class="peu-wrap" aria-label="Publicitate EU direct">
+	<header class="peu-head">
+		<h1>PUB EU — încărcare directă</h1>
+		<p>Superuser: alegi caseta, setezi perioada, încarci, publici. Fără tarife, fără coș. Apare pe <strong>.com / .de / .fr / .es</strong> (nu pe .ro).</p>
+	</header>
+
+	<nav class="peu-sects" aria-label="Secțiuni">
+		{% for code, label in eu_sections %}
+		<a href="?sect={{ code }}" class="peu-sect{% if code == eu_section %} is-on{% endif %}">{{ label }}</a>
+		{% endfor %}
+	</nav>
+
+	<div class="peu-grid">
+		<aside class="peu-slots" aria-label="Casete">
+			{% for row in eu_slots %}
+			<a href="?sect={{ eu_section }}&amp;slot={{ row.code|urlencode }}" class="peu-slot{% if row.code == eu_slot %} is-on{% endif %}">
+				<strong>{{ row.code }}</strong>
+				<span>{{ row.title }}</span>
+			</a>
+			{% empty %}
+			<p class="peu-empty">Nicio casetă în această secțiune.</p>
+			{% endfor %}
+		</aside>
+
+		<div class="peu-main">
+			{% if eu_slot %}
+			<form method="post" enctype="multipart/form-data" class="peu-form">
+				{% csrf_token %}
+				<input type="hidden" name="sect" value="{{ eu_section }}" />
+				<input type="hidden" name="slot" value="{{ eu_slot }}" />
+				<input type="hidden" name="keep_media" value="1" />
+
+				<h2>{{ eu_section|upper }} · {{ eu_slot }}</h2>
+
+				{% if eu_creative and not eu_creative.is_default_cover %}
+				<div class="peu-preview">
+					{% if eu_creative.img %}<img src="{{ eu_creative.img }}" alt="" />{% endif %}
+					{% if eu_creative.video %}<video src="{{ eu_creative.video }}" controls></video>{% endif %}
+					<p>Live acum pe EU{% if eu_creative.link %} · link: {{ eu_creative.link }}{% endif %}</p>
+				</div>
+				{% elif eu_note %}
+				<div class="peu-preview"><p>Notă EU activă (text).</p><pre class="peu-pre">{{ eu_note.text|truncatechars:200 }}</pre></div>
+				{% endif %}
+
+				<div class="peu-row">
+					<label>De la <input type="date" name="start_date" value="{{ eu_today }}" /></label>
+					<label>Până la <input type="date" name="end_date" value="{{ eu_default_end }}" /></label>
+				</div>
+
+				{% if eu_section == 'home' and eu_slot == 'Burtieră' %}
+				<label class="peu-field">Text burtieră
+					<textarea name="plain_text" rows="3" maxlength="8000" placeholder="Text pe bandă…">{% if eu_note %}{{ eu_note.text }}{% endif %}</textarea>
+				</label>
+				<label class="peu-field">sau Link (dacă e doar URL)
+					<input type="url" name="link" placeholder="https://…" value="" />
+				</label>
+				{% else %}
+				<label class="peu-field">Imagine
+					<input type="file" name="image" accept="image/*" />
+				</label>
+				<label class="peu-field">sau Video
+					<input type="file" name="video" accept="video/*" />
+				</label>
+				<label class="peu-field">Link la click
+					<input type="url" name="link" placeholder="https://… sau /pets/12/" value="{% if eu_creative %}{{ eu_creative.link }}{% endif %}" />
+				</label>
+				<label class="peu-field">Text / alt (EN sau scurt)
+					<input type="text" name="alt" maxlength="200" value="{% if eu_creative %}{{ eu_creative.alt }}{% endif %}" placeholder="Descriere scurtă" />
+				</label>
+				{% endif %}
+
+				<div class="peu-actions">
+					<button type="submit" name="action" value="publish" class="peu-btn peu-btn--go">Publică pe EU</button>
+					<button type="submit" name="action" value="clear" class="peu-btn peu-btn--clear" onclick="return confirm('Ștergi materialul EU de pe această casetă?');">Șterge de pe EU</button>
+				</div>
+			</form>
+			{% else %}
+			<p class="peu-empty">Alege o casetă din stânga.</p>
+			{% endif %}
+		</div>
+	</div>
+</section>
+
+<style>
+	body.page-pub-eu-direct #main_content { max-width: 1100px; margin: 0 auto; }
+	.peu-wrap { padding: 0.75rem 1rem 1.5rem; }
+	.peu-head h1 { margin: 0 0 0.35rem; font-size: 1.35rem; }
+	.peu-head p { margin: 0 0 0.85rem; color: #334155; font-size: 0.92rem; }
+	.peu-sects { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.85rem; }
+	.peu-sect { padding: 0.35rem 0.7rem; border-radius: 999px; background: #e2e8f0; color: #0f172a; text-decoration: none; font-size: 0.85rem; font-weight: 600; }
+	.peu-sect.is-on { background: #1d4ed8; color: #fff; }
+	.peu-grid { display: grid; grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr); gap: 0.85rem; align-items: start; }
+	@media (max-width: 720px) { .peu-grid { grid-template-columns: 1fr; } }
+	.peu-slots { display: flex; flex-direction: column; gap: 0.35rem; max-height: 70vh; overflow: auto; }
+	.peu-slot { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.45rem 0.55rem; border: 1px solid #cbd5e1; border-radius: 8px; text-decoration: none; color: inherit; background: #fff; }
+	.peu-slot.is-on { border-color: #2563eb; background: #eff6ff; }
+	.peu-slot strong { font-size: 0.9rem; }
+	.peu-slot span { font-size: 0.75rem; color: #64748b; }
+	.peu-form { background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 1rem; }
+	.peu-form h2 { margin: 0 0 0.75rem; font-size: 1.1rem; }
+	.peu-row { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.75rem; }
+	.peu-field { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.65rem; font-size: 0.88rem; font-weight: 600; }
+	.peu-field input, .peu-field textarea { font-weight: 400; padding: 0.4rem 0.5rem; border: 1px solid #94a3b8; border-radius: 6px; }
+	.peu-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.85rem; }
+	.peu-btn { border: 0; border-radius: 8px; padding: 0.55rem 1rem; font-weight: 700; cursor: pointer; }
+	.peu-btn--go { background: #16a34a; color: #fff; }
+	.peu-btn--clear { background: #fee2e2; color: #991b1b; }
+	.peu-preview { margin-bottom: 0.85rem; padding: 0.55rem; background: #f8fafc; border-radius: 8px; }
+	.peu-preview img, .peu-preview video { max-width: 100%; max-height: 160px; display: block; margin-bottom: 0.35rem; border-radius: 6px; }
+	.peu-pre { white-space: pre-wrap; font-size: 0.8rem; margin: 0; }
+	.peu-empty { color: #64748b; }
+</style>
+{% endblock %}

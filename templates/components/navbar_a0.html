@@ -63,7 +63,7 @@
 							{% if not eu_site_active %}
 							{% if show_pub_nav %}
 								<li class="a0-nav-ads-float">
-									<a href="{% url 'publicitate_harta' %}" class="a0-nav-ads-link" title="Comenzi publicitate">PUB</a>
+									<a href="{% if user.is_superuser %}{% url 'publicitate_eu_direct' %}{% else %}{% url 'publicitate_harta' %}{% endif %}" class="a0-nav-ads-link" title="{% if user.is_superuser %}PUB EU direct{% else %}Comenzi publicitate{% endif %}">PUB</a>
 								</li>
 							{% endif %}
 							{% endif %}
