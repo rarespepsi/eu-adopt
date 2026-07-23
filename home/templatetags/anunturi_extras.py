@@ -48,7 +48,7 @@ def animal_public_href(pet_or_listing):
         from django.urls import reverse
 
         return reverse("pets_single", args=[pk])
-        return animal_public_url(listing)
+    return animal_public_url(listing)
 
 
 @register.simple_tag(takes_context=True)
