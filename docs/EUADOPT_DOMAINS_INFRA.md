@@ -31,3 +31,7 @@ La lansare publică EU: `EUADOPT_NON_RO_STAFF_ONLY=0`.
 - Limbă / SEO helpers: `home/eu_site.py`
 - Middleware redirect: `euadopt_final/eu_site_middleware.py`
 - Gate staff: `euadopt_final/eu_non_ro_staff_gate_middleware.py`
+
+## Decizii produs (meniu, publi, limbi)
+
+→ **`docs/EUADOPT_EU_PRODUCT_DECISIONS.md`** · regulă Cursor `EU_SITE_PRODUCT_MEMORAT.mdc`

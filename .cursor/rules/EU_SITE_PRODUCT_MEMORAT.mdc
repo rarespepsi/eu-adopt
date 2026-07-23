@@ -1,0 +1,16 @@
+# EU SITE (NON-.RO) — DECIZII PRODUCȚIE MEMORATE
+
+**Nu modifica** meniul EU, publi RO/EU sau gate Coming soon **împotriva** acestui fișier fără cerere explicită + **`1977`** + OK.
+
+**Sursă de adevăr:** `docs/EUADOPT_EU_PRODUCT_DECISIONS.md`
+
+## Pe scurt
+
+- **`.ro`:** site complet; publi = clienți RO; **înghețat** (reguli globale).
+- **EU:** meniu slim — Home, PT, **Transport**, MyPet, I Love, login, limbi, Terms, Contact. **Fără** Servicii, Shop, Adăpost/ONG.
+- **Reclama:** pe `.ro` filtru Publi RO | Publi EU; EU = ce pune superuser, oglindă pe toate TLD EU; click pe domeniul curent; text = limba activă.
+- **Coming soon** pe EU până la lansarea full `.ro`.
+
+## Ordine lucru
+
+Vezi doc: meniu → Reclama RO/EU → traduceri UI → sloturi → scoate gate.

@@ -1,46 +1,40 @@
 ---
-# Handoff agent — ultima pauză
-**Data/ora (RO):** 2026-07-21 ~15:45
+# Handoff agent — savepoint EU produs
+**Data/ora (RO):** 2026-07-23 ~14:25
 **Sursă:** laptop · eu-adopt / main
-**User:** 1977 ok — salvează tot local + H, ne auzim mâine
+**User:** 1977 ok — memorează + salvează, apoi implementare pași EU
 
-## Ce s-a făcut (sesiune fișă adăpost `/adaposturi/<slug>/`)
+## Ce s-a făcut (înainte de pașii de produs)
 
-- **Tabletă portrait touch:** 4 casete stânga = 4 rânduri câini, `gap: 0` (final anterior, neschimbat).
-- **Tabletă landscape touch** (`min-height: 600px`, fără plafon 64em lățime): aceleași 4 casete stânga; grilă câini **4 col × 3 rânduri** vizibile, rest scroll.
-- **Telefon landscape touch** (`max-height: 599px`, fără `max-width: 767` — include iPhone lat): **4 casete alăturate** (lățime /4), scroll **pagină** (ca portrait) — bandă + butoane urcă sub navbar; **padding-top = înălțime A0** (CSS 34px + JS sync).
-- **Carduri câini site:** meta un rând loc · M/F · vârstă (`pet_card_meta_footer`, live din commit-uri anterioare).
+- Decizii produs EU memorate: `docs/EUADOPT_EU_PRODUCT_DECISIONS.md` + `.cursor/rules/EU_SITE_PRODUCT_MEMORAT.mdc`
+- Steag PNG (nu emoji/inițiale): commit **`ed19a1b`** (deja pe main + live)
+- Savepoint: commit memorare (acest handoff) **înainte** de meniu EU / Reclama RO-EU
 
-## Fișiere atinse (sesiune)
+## Fișiere atinse (memorare)
 
-- `templates/anunturi/adapost_detail.html` — CSS inline + JS `adpSyncNavPadding` mobil landscape
-- `.cursor/rules/ADAPOST_TABLET_PORTRAIT_MEMORAT.mdc` — tablet + notă mobil landscape
-- `docs/ADAPOST_TABLET_PORTRAIT_FINAL_20260721.md` · `docs/ADAPOST_MOBIL_LANDSCAPE_FINAL_20260721.md`
+- `docs/EUADOPT_EU_PRODUCT_DECISIONS.md`
+- `.cursor/rules/EU_SITE_PRODUCT_MEMORAT.mdc`
+- `docs/AGENT_HANDOFF_LATEST.md`
+- `docs/EUADOPT_DOMAINS_INFRA.md` (link la decizii)
 
 ## Git
 
-- Branch: `main`
-- Commit live referință: **`3f3fa91`** (`fix(adapost): mobil landscape — padding-top = inaltime A0`)
-- Lanț adapost 21 iul: `c3affdd` … `3f3fa91`
-- Push: da (după handoff commit docs)
-- **Necomis în repo:** modificări publicitate / PT rules / alte fișiere — lăsate intenționat afara handoff-ului
+- Branch: main
+- Savepoint produs: SHA după commit `docs: memorize EU product decisions…`
+- Rollback cod pre-meniu: **`ed19a1b`** (flags) sau savepoint docs
 
 ## Deploy Hetzner
 
-- da · `deploy_update.sh` / PC script
-- SHA live țintă: **`3f3fa91`** (+ handoff commit dacă nou)
+- Flaguri live deja: `ed19a1b`
+- După Pas 1 meniu: deploy separat
 
-## Pentru agent mâine (caută aici)
+## Pentru agent laptop
 
-- `git log -5 --oneline`
-- `docs/AGENT_HANDOFF_LATEST.md`
-- `docs/ADAPOST_TABLET_PORTRAIT_FINAL_20260721.md` · `docs/ADAPOST_MOBIL_LANDSCAPE_FINAL_20260721.md`
-- Test: https://eu-adopt.ro/adaposturi/adapost-demo/ — tablet landscape + telefon landscape
-- Orice editare site: **`1977` + OK explicit**
+- Citește `docs/EUADOPT_EU_PRODUCT_DECISIONS.md`
+- Ordine: (1) meniu +Transport −Adăpost (2) Reclama RO/EU (3) click+limbă text (4) i18n UI (5) sloturi (6) scoate coming soon după .ro full
+- `.ro` = nu atinge layout fără nevoie; blocat
 
 ## Următorul pas
 
-- User verifică mâine landscape mobil/tabletă; ajustări fine dacă mai e bandă sub navbar sau scroll.
-- Opțional: commit separat fișiere publicitate dacă user vrea.
-
+- Pas 1: navbar EU — Transport vizibil, Adăpost/ONG ascuns (+ block URL shelter pe EU)
 ---

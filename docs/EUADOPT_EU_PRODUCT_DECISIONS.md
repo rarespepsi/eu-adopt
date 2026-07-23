@@ -1,0 +1,70 @@
+# EU-Adopt — decizii produs (site-uri fără `.ro`)
+
+**Memorat:** 2026-07-23 · **Savepoint git înainte de implementare meniu/publi EU:** vezi commit `docs: memorize EU product decisions` / SHA pe `main` după push.
+
+**`.ro` (eu-adopt.ro):** înghețat total ca layout/produs RO — nu se modifică fără `1977` + OK. Publicitate pe `.ro` = clienți RO (plătit), neschimbat ca principiu.
+
+---
+
+## Domenii
+
+| Host | Rol |
+|------|-----|
+| `eu-adopt.ro` | Site RO complet |
+| `euadopt.com` | Hub EU — limba start **EN**; selector toate limbile UE |
+| `euadopt.de` / `.fr` / `.es` | Același catalog; default DE/FR/ES |
+| `.eu` / `.org` / cratimă | 301 → `.com` |
+
+O app, o DB. Animale din RO. Coming soon public pe non-`.ro` până la **lansarea full `.ro`** (`EUADOPT_NON_RO_STAFF_ONLY=1`).
+
+---
+
+## Meniu EU (țintă)
+
+**Vizibile:** Home · Find a friend (PT) · **Transport** (flux normal + sponsorizare autocar) · MyPet · I Love · Intră · limbi · Terms · Contact  
+
+**Ascunse pe EU:** Servicii · Shop · **Adăpost/ONG** · Coș / Magazinul meu / Reclama în meniul public  
+
+**De ce fără Adăpost/ONG pe EU:** detalii adăpost pe domenii externe = risc (expunere). Doar pe `.ro`.
+
+**Home pe EU:** același ca pe RO (layout).
+
+---
+
+## Publicitate / Reclama
+
+1. Superuser intră în **Reclama pe `.ro`**.
+2. Filtru: **Publi RO** | **Publi EU**.
+3. Postezi pe piața EU (hub conceptual `.com`) → apare pe `.com` și se **oglindă automat** pe celelalte terminații EU (**fără** `.ro`).
+4. Pe `.ro` rămâne reclama **plătită** de useri RO.
+5. **Click** pe o casetă EU → rămâne pe **domeniul unde s-a dat click** (ex. `.de` → pagină pe `.de`).
+6. **Text** pe casetă = **limba activă** a vizitei (`.com` start EN; dacă user alege PL → text PL; pe `.de` default DE etc.).
+7. Lista exactă de pagini/sloturi publi pe EU = **la final** (după meniu + motor RO/EU).
+
+---
+
+## Traduceri UI
+
+- Navbar: deja dicționar 24 limbi (`home/eu_nav_labels.py`).
+- Corp pagini (PT, Transport, etc.): etapizat — EN întâi, apoi restul.
+- Descrieri animale: **mai târziu** (cerere explicită).
+
+---
+
+## Ordine implementare (agreată)
+
+1. Meniu EU (+Transport, −Adăpost/ONG)
+2. (memorare — acest fișier)
+3. Reclama filtru RO/EU + oglindă pe domenii EU
+4. Click pe domeniul curent + text = limba activă
+5. Traduceri UI pe paginile EU
+6. Sloturi/pagini publi EU — listă finală
+7. Scoate Coming soon — **după** lansare full `.ro`
+
+---
+
+## Rollback
+
+- Git: `git log` / checkout SHA savepoint de dinaintea pașilor de produs.
+- ZIP local: `Desktop\EU-Adopt-backups\good-releases\`
+- Procedură: `BACKUP_DEPLOY_PROCEDURA.mdc` / `docs/BACKUP_ROLLBACK.md`
