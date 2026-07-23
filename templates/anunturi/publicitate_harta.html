@@ -44,12 +44,30 @@
 					<input type="date" name="end_date" id="pubEuEndDate" value="{{ eu_default_end }}"{% if eu_slot %} required{% endif %} />
 				</label>
 				{% if eu_slot %}
-				<div class="pub-eu-months" id="pubEuMonths" aria-label="Disponibilitate pe luni">
-					{% for m in eu_months %}
-					<button type="button" class="pub-eu-month{% if m.occupied %} is-busy{% else %} is-free{% endif %}{% if m.selected %} is-picked{% endif %}" data-start="{{ m.start }}" data-end="{{ m.end }}" title="{% if m.occupied %}Ocupat{% else %}Liber{% endif %} · {{ m.label }}">{{ m.label }}</button>
-					{% endfor %}
+				<div class="pub-eu-cal-wrap" id="pubEuMonths" aria-label="Calendar disponibilitate slot">
+					<div class="pub-eu-cal-grid">
+						{% for m in eu_calendar_months %}
+						<div class="pub-eu-cal-month">
+							<div class="pub-eu-cal-month-title">{{ m.label }}</div>
+							<div class="pub-eu-cal-weekdays">
+								<span>L</span><span>Ma</span><span>Mi</span><span>J</span><span>V</span><span>S</span><span>D</span>
+							</div>
+							<div class="pub-eu-cal-days">
+								{% for c in m.cells %}
+								{% if c.day %}
+								<button type="button" class="pub-eu-cal-day is-{{ c.status }}" data-iso="{{ c.iso }}" title="{{ c.iso }} · {% if c.status == 'busy' %}Ocupat{% else %}Liber{% endif %}">{{ c.day }}</button>
+								{% else %}
+								<span class="pub-eu-cal-day is-empty"></span>
+								{% endif %}
+								{% endfor %}
+							</div>
+						</div>
+						{% empty %}
+						<p class="pub-eu-months-legend">Nicio lună de afișat.</p>
+						{% endfor %}
+					</div>
+					<p class="pub-eu-months-legend"><span class="is-free">Liber</span> · <span class="is-busy">Ocupat</span> · click zi = perioadă</p>
 				</div>
-				<p class="pub-eu-months-legend"><span class="is-free">Liber</span> · <span class="is-busy">Ocupat</span></p>
 				{% endif %}
 			</aside>
 			<aside class="pub-eu-box pub-eu-box--media" aria-label="Materiale">
@@ -609,41 +627,102 @@
 	.pub-eu-btn--clear { background: #ffebee; color: #b71c1c; border: 1px solid #ef9a9a; }
 	.pub-eu-btn--media-clear { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
 	.pub-eu-btn--zoom { background: #e8f5e9; color: #1b5e20; border: 1px solid #81c784; min-width: 2rem; }
-	.pub-eu-months {
-		display: grid;
-		grid-template-columns: repeat(5, minmax(0, 1fr));
-		gap: 0.22rem;
+	/* Calendar tip Reclama: 2 coloane × 4 rânduri vizibile, scroll, max 24 luni */
+	.pub-eu-cal-wrap {
 		margin-top: 0.35rem;
-		max-height: 42vh;
-		overflow: auto;
+		min-height: 0;
+		flex: 1 1 auto;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
 	}
-	.pub-eu-month {
+	.pub-eu-cal-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-auto-rows: max-content;
+		gap: 0.28rem;
+		max-height: min(52vh, 28rem);
+		overflow-y: auto;
+		overflow-x: hidden;
+		padding-right: 0.1rem;
+	}
+	.pub-eu-cal-month {
 		border: 1px solid #a5d6a7;
-		border-radius: 5px;
-		padding: 0.22rem 0.1rem;
-		font-size: 0.62rem;
-		font-weight: 700;
-		line-height: 1.15;
-		cursor: pointer;
-		background: #e8f5e9;
+		border-radius: 8px;
+		background: #f1f8e9;
+		padding: 0.22rem;
+		min-width: 0;
+	}
+	.pub-eu-cal-month-title {
+		font-size: 0.58rem;
+		font-weight: 800;
 		color: #1b5e20;
+		margin-bottom: 0.12rem;
+		text-align: center;
 	}
-	.pub-eu-month.is-busy {
-		background: #ffebee;
-		border-color: #ef9a9a;
-		color: #b71c1c;
+	.pub-eu-cal-weekdays,
+	.pub-eu-cal-days {
+		display: grid;
+		grid-template-columns: repeat(7, minmax(0, 1fr));
+		gap: 1px;
 	}
-	.pub-eu-month.is-picked {
+	.pub-eu-cal-weekdays span {
+		font-size: 0.48rem;
+		color: #546e7a;
+		text-align: center;
+		font-weight: 700;
+	}
+	.pub-eu-cal-day {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 0.92rem;
+		border: 0;
+		border-radius: 3px;
+		font-size: 0.5rem;
+		font-weight: 700;
+		padding: 0;
+		cursor: pointer;
+		line-height: 1;
+	}
+	.pub-eu-cal-day.is-free {
+		background: #2e7d32;
+		color: #fff;
+	}
+	.pub-eu-cal-day.is-busy {
+		background: #c62828;
+		color: #fff;
+	}
+	.pub-eu-cal-day.is-empty {
+		background: transparent;
+		cursor: default;
+		pointer-events: none;
+	}
+	.pub-eu-cal-day.is-picked {
 		outline: 2px solid #1565c0;
-		outline-offset: 1px;
+		outline-offset: 0;
+		box-shadow: inset 0 0 0 1px #fff;
 	}
 	.pub-eu-months-legend {
-		margin: 0.25rem 0 0;
-		font-size: 0.68rem;
+		margin: 0;
+		font-size: 0.62rem;
 		color: #37474f;
+		flex-shrink: 0;
 	}
 	.pub-eu-months-legend .is-free { color: #1b5e20; font-weight: 700; }
 	.pub-eu-months-legend .is-busy { color: #b71c1c; font-weight: 700; }
+	body.page-pub-eu-direct .pub-eu-cal-month {
+		background: #f1f8e9 !important;
+		border-color: #a5d6a7 !important;
+	}
+	body.page-pub-eu-direct .pub-eu-cal-day.is-free {
+		background: #2e7d32 !important;
+		color: #fff !important;
+	}
+	body.page-pub-eu-direct .pub-eu-cal-day.is-busy {
+		background: #c62828 !important;
+		color: #fff !important;
+	}
 	.pub-eu-crop-box {
 		position: relative;
 		width: 100%;
@@ -673,13 +752,13 @@
 		gap: 0.3rem;
 		margin: 0.25rem 0;
 	}
-	body.page-pub-eu-direct .pub-eu-month.is-free {
-		background: #e8f5e9 !important;
-		color: #1b5e20 !important;
+	body.page-pub-eu-direct .pub-eu-cal-day.is-free {
+		background: #2e7d32 !important;
+		color: #fff !important;
 	}
-	body.page-pub-eu-direct .pub-eu-month.is-busy {
-		background: #ffebee !important;
-		color: #b71c1c !important;
+	body.page-pub-eu-direct .pub-eu-cal-day.is-busy {
+		background: #c62828 !important;
+		color: #fff !important;
 	}
 	body.page-pub-eu-direct [data-slot] .reclama-slot-preview.has-eu-live-preview {
 		background-size: cover !important;
@@ -3136,7 +3215,7 @@ document.addEventListener("DOMContentLoaded", function () {
 {% if pub_eu_direct_mode %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" crossorigin="anonymous" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" crossorigin="anonymous"></script>
-<script src="{% static 'js/pub-eu-direct.js' %}?v=1-eu-months-crop"></script>
+<script src="{% static 'js/pub-eu-direct.js' %}?v=2-eu-cal-days"></script>
 {% endif %}
 <style>
 	body.page-publicitate-harta .reclama-home-wire [data-slot].pub-wire-selected,

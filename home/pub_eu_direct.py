@@ -34,20 +34,20 @@ PUB_EU_DIRECT_SECTIONS: tuple[tuple[str, str], ...] = (
 )
 
 _PT_MAIN_SLOTS = frozenset({"P4.3", "P5.1", "P5.2", "P5.3"})
-_EU_MONTH_COUNT = 34
+_EU_CALENDAR_MONTHS = 24  # max 2 ani
 _RO_MONTH_LABELS = (
-    "Ian",
-    "Feb",
-    "Mar",
-    "Apr",
+    "Ianuarie",
+    "Februarie",
+    "Martie",
+    "Aprilie",
     "Mai",
-    "Iun",
-    "Iul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
+    "Iunie",
+    "Iulie",
+    "August",
+    "Septembrie",
+    "Octombrie",
+    "Noiembrie",
+    "Decembrie",
 )
 
 
@@ -140,45 +140,46 @@ def _eu_occupied_ranges(section: str, slot: str) -> list[tuple[date, date]]:
     return ranges
 
 
-def _eu_months_grid(
-    section: str,
-    slot: str,
-    *,
-    selected_start: date | None = None,
-    selected_end: date | None = None,
-) -> list[dict]:
-    """34 luni de la luna curentă: liber / ocupat + evidențiere selecție."""
+def _eu_calendar_months(section: str, slot: str) -> list[dict]:
+    """Calendar tip Reclama: până la 24 luni, zile liber/ocupat pe slot."""
     if not slot:
         return []
     today = timezone.localdate()
-    cursor = _month_start(today)
     occupied = _eu_occupied_ranges(section, slot)
-    sel_s = selected_start
-    sel_e = selected_end
-    if sel_s and sel_e and sel_e < sel_s:
-        sel_s, sel_e = sel_e, sel_s
     out: list[dict] = []
-    for _i in range(_EU_MONTH_COUNT):
-        ms = cursor
-        me = _month_end(cursor)
-        is_occ = any(_ranges_overlap(ms, me, r0, r1) for r0, r1 in occupied)
-        in_sel = bool(sel_s and sel_e and _ranges_overlap(ms, me, sel_s, sel_e))
+    for offset in range(_EU_CALENDAR_MONTHS):
+        month_idx = (today.month - 1) + offset
+        year = today.year + (month_idx // 12)
+        month = (month_idx % 12) + 1
+        _wd, days_in_month = calendar.monthrange(year, month)
+        first_weekday = date(year, month, 1).weekday()  # luni=0
+        cells: list[dict] = []
+        for _ in range(first_weekday):
+            cells.append({"day": None, "status": "empty", "iso": ""})
+        for day in range(1, days_in_month + 1):
+            day_date = date(year, month, day)
+            status = "free"
+            for r0, r1 in occupied:
+                if r0 <= day_date <= r1:
+                    status = "busy"
+                    break
+            cells.append(
+                {
+                    "day": day,
+                    "status": status,
+                    "iso": day_date.isoformat(),
+                }
+            )
+        while len(cells) % 7 != 0:
+            cells.append({"day": None, "status": "empty", "iso": ""})
         out.append(
             {
-                "key": f"{ms.year}-{ms.month:02d}",
-                "year": ms.year,
-                "month": ms.month,
-                "label": f"{_RO_MONTH_LABELS[ms.month - 1]} {str(ms.year)[2:]}",
-                "start": ms.isoformat(),
-                "end": me.isoformat(),
-                "occupied": is_occ,
-                "selected": in_sel,
+                "year": year,
+                "month": month,
+                "label": f"{_RO_MONTH_LABELS[month - 1]} {year}",
+                "cells": cells,
             }
         )
-        if cursor.month == 12:
-            cursor = date(cursor.year + 1, 1, 1)
-        else:
-            cursor = date(cursor.year, cursor.month + 1, 1)
     return out
 
 
@@ -421,8 +422,6 @@ def publicitate_eu_direct_view(request):
 
     today = timezone.localdate()
     default_end = today + timedelta(days=365)
-    start_d = _parse_iso_date(form_start) or today
-    end_d = _parse_iso_date(form_end) or default_end
     ctx = _publicitate_harta_context(request, "harta")
     eu_codes = {s for s, _ in PUB_EU_DIRECT_SECTIONS}
     ctx["pub_sections"] = [
@@ -442,12 +441,7 @@ def publicitate_eu_direct_view(request):
     ctx["eu_form_link"] = form_link
     ctx["eu_form_alt"] = form_alt
     ctx["eu_form_plain"] = form_plain
-    ctx["eu_months"] = _eu_months_grid(
-        section,
-        selected,
-        selected_start=start_d if selected else None,
-        selected_end=end_d if selected else None,
-    )
+    ctx["eu_calendar_months"] = _eu_calendar_months(section, selected)
     ctx["eu_has_media"] = bool(
         isinstance(creative, dict)
         and not creative.get("is_default_cover", True)

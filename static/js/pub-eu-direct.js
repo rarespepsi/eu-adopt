@@ -142,11 +142,36 @@
     if (!monthsRoot || !startEl || !endEl) return;
     var s = startEl.value;
     var e = endEl.value;
-    monthsRoot.querySelectorAll(".pub-eu-month").forEach(function (btn) {
-      var ms = btn.getAttribute("data-start") || "";
-      var me = btn.getAttribute("data-end") || "";
-      var picked = !!(s && e && ms && me && ms <= e && s <= me);
+    monthsRoot.querySelectorAll(".pub-eu-cal-day[data-iso]").forEach(function (btn) {
+      var iso = btn.getAttribute("data-iso") || "";
+      var picked = !!(s && e && iso && iso >= s && iso <= e);
       btn.classList.toggle("is-picked", picked);
+    });
+  }
+
+  var pickAnchor = null;
+  if (monthsRoot) {
+    monthsRoot.addEventListener("click", function (ev) {
+      var btn = ev.target && ev.target.closest(".pub-eu-cal-day[data-iso]");
+      if (!btn || !startEl || !endEl) return;
+      var iso = btn.getAttribute("data-iso") || "";
+      if (!iso) return;
+      if (!pickAnchor || ev.shiftKey) {
+        pickAnchor = iso;
+        startEl.value = iso;
+        endEl.value = iso;
+      } else {
+        if (iso < pickAnchor) {
+          startEl.value = iso;
+          endEl.value = pickAnchor;
+        } else {
+          startEl.value = pickAnchor;
+          endEl.value = iso;
+        }
+        pickAnchor = null;
+      }
+      syncMonthPicks();
+      refreshButtons();
     });
   }
 
@@ -213,31 +238,6 @@
     } catch (_e) {
       return false;
     }
-  }
-
-  if (monthsRoot) {
-    monthsRoot.addEventListener("click", function (ev) {
-      var btn = ev.target && ev.target.closest(".pub-eu-month");
-      if (!btn || !startEl || !endEl) return;
-      var ms = btn.getAttribute("data-start") || "";
-      var me = btn.getAttribute("data-end") || "";
-      if (!ms || !me) return;
-      // Click: dacă nu e în selecție → setează luna; Shift/extindere: de la start existent
-      if (!startEl.value || !endEl.value || ev.shiftKey) {
-        if (!startEl.value || (!ev.shiftKey && startEl.value === endEl.value)) {
-          startEl.value = ms;
-          endEl.value = me;
-        } else {
-          if (ms < startEl.value) startEl.value = ms;
-          if (me > endEl.value) endEl.value = me;
-        }
-      } else {
-        startEl.value = ms;
-        endEl.value = me;
-      }
-      syncMonthPicks();
-      refreshButtons();
-    });
   }
 
   if (startEl) startEl.addEventListener("change", function () {

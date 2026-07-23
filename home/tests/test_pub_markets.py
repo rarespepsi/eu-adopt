@@ -112,6 +112,10 @@ class PubMarketNotesTests(TestCase):
         self.assertContains(r, "pub-eu-quad")
         self.assertContains(r, "pub-home-wire-clip")
         self.assertContains(r, "Postează")
+        r2 = c.get(reverse("publicitate_eu_direct") + "?sect=home&slot=A5.1")
+        self.assertEqual(r2.status_code, 200)
+        self.assertContains(r2, "pub-eu-cal-day")
+        self.assertContains(r2, "pub-eu-cal-month")
         tiny = SimpleUploadedFile(
             "eu.png", b"\x89PNG\r\n\x1a\n" + b"0" * 40, content_type="image/png"
         )
