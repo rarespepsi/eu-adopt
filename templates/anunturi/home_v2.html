@@ -135,19 +135,7 @@
 				{% for partner in left_sidebar_partners %}
 				<div class="home-v2-slot home-v2-slot-white home-v2-slot-img home-v2-slot-partener">
 					{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A5.{{ forloop.counter }}</span>{% endif %}
-					{% if partner.has_link %}
-					<a href="{{ partner.url }}" title="Publicitate" style="position:relative;display:block;height:100%;"{% if partner.is_default_cover %} class="pub-live-default-cover pub-live-cover-link"{% else %} class="pub-live-cover-link"{% endif %}>
-					{% else %}
-					<div style="position:relative;display:block;height:100%;" class="pub-live-default-cover pub-live-cover-link pub-live-cover-link--static">
-					{% endif %}
-						{% if partner.price or partner.discount %}
-						<span class="home-v2-pub-badges">{% if partner.price %}<span class="home-v2-pub-badge home-v2-pub-badge--price">{{ partner.price }}</span>{% endif %}{% if partner.discount %}<span class="home-v2-pub-badge home-v2-pub-badge--discount">{{ partner.discount }}</span>{% endif %}</span>
-						{% endif %}
-						{% if partner.video_url %}<video src="{{ partner.video_url }}" class="slot-img-fit" autoplay muted loop playsinline controls preload="metadata"></video>
-						{% elif partner.image_url %}<img src="{{ partner.image_url }}" alt="Publicitate" class="slot-img-fit" />
-						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="Publicitate" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
-						{% if partner.is_default_cover %}<span class="pub-live-cover__tag">Publi.</span>{% endif %}
-					{% if partner.has_link %}</a>{% else %}</div>{% endif %}
+					{% include "anunturi/includes/home_pub_partner_slot.html" with partner=partner %}
 				</div>
 				{% endfor %}
 			</div>
@@ -279,15 +267,7 @@
 				{% for partner in left_sidebar_partners|slice:":3" %}
 				<div class="home-v2-mobile-ad-slot">
 					{% if partner %}
-					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener" style="position:relative;display:block;">
-						{% if partner.price or partner.discount %}
-						<span class="home-v2-pub-badges">{% if partner.price %}<span class="home-v2-pub-badge home-v2-pub-badge--price">{{ partner.price }}</span>{% endif %}{% if partner.discount %}<span class="home-v2-pub-badge home-v2-pub-badge--discount">{{ partner.discount }}</span>{% endif %}</span>
-						{% endif %}
-						{% if partner.video_url %}<video src="{{ partner.video_url }}" class="slot-img-fit" autoplay muted loop playsinline controls preload="metadata"></video>
-						{% elif partner.image_url %}<img src="{{ partner.image_url }}" alt="{{ partner.name }}" class="slot-img-fit" />
-						{% elif partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
-						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.name }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
-					</a>
+					{% include "anunturi/includes/home_pub_partner_slot.html" with partner=partner %}
 					{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
 				</div>
 				{% endfor %}
@@ -304,15 +284,7 @@
 				{% for partner in right_sidebar_partners|slice:":3" %}
 				<div class="home-v2-mobile-ad-slot">
 					{% if partner %}
-					<a href="{{ partner.url|default:'#' }}" title="{{ partner.name }}" target="_blank" rel="noopener" style="position:relative;display:block;">
-						{% if partner.price or partner.discount %}
-						<span class="home-v2-pub-badges">{% if partner.price %}<span class="home-v2-pub-badge home-v2-pub-badge--price">{{ partner.price }}</span>{% endif %}{% if partner.discount %}<span class="home-v2-pub-badge home-v2-pub-badge--discount">{{ partner.discount }}</span>{% endif %}</span>
-						{% endif %}
-						{% if partner.video_url %}<video src="{{ partner.video_url }}" class="slot-img-fit" autoplay muted loop playsinline controls preload="metadata"></video>
-						{% elif partner.image_url %}<img src="{{ partner.image_url }}" alt="{{ partner.name }}" class="slot-img-fit" />
-						{% elif partner.logo %}<img src="{{ partner.logo.url }}" alt="{{ partner.name }}" class="slot-img-fit" />
-						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.name }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
-					</a>
+					{% include "anunturi/includes/home_pub_partner_slot.html" with partner=partner %}
 					{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
 				</div>
 				{% endfor %}
@@ -331,19 +303,7 @@
 				{% for partner in right_sidebar_partners %}
 				<div class="home-v2-slot home-v2-slot-white home-v2-slot-img home-v2-slot-partener">
 					{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A6.{{ forloop.counter }}</span>{% endif %}
-					{% if partner.has_link %}
-					<a href="{{ partner.url }}" title="Publicitate" style="position:relative;display:block;height:100%;"{% if partner.is_default_cover %} class="pub-live-default-cover pub-live-cover-link"{% else %} class="pub-live-cover-link"{% endif %}>
-					{% else %}
-					<div style="position:relative;display:block;height:100%;" class="pub-live-default-cover pub-live-cover-link pub-live-cover-link--static">
-					{% endif %}
-						{% if partner.price or partner.discount %}
-						<span class="home-v2-pub-badges">{% if partner.price %}<span class="home-v2-pub-badge home-v2-pub-badge--price">{{ partner.price }}</span>{% endif %}{% if partner.discount %}<span class="home-v2-pub-badge home-v2-pub-badge--discount">{{ partner.discount }}</span>{% endif %}</span>
-						{% endif %}
-						{% if partner.video_url %}<video src="{{ partner.video_url }}" class="slot-img-fit" autoplay muted loop playsinline controls preload="metadata"></video>
-						{% elif partner.image_url %}<img src="{{ partner.image_url }}" alt="Publicitate" class="slot-img-fit" />
-						{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="Publicitate" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
-						{% if partner.is_default_cover %}<span class="pub-live-cover__tag">Publi.</span>{% endif %}
-					{% if partner.has_link %}</a>{% else %}</div>{% endif %}
+					{% include "anunturi/includes/home_pub_partner_slot.html" with partner=partner %}
 				</div>
 				{% endfor %}
 			</div>

@@ -1,0 +1,38 @@
+{# partner: dict din _home_sidebar_pub_slots_for_template #}
+{% load static %}
+{% if partner.video_url %}
+<div class="pub-live-cover-link pub-live-cover-link--video-player{% if partner.is_default_cover %} pub-live-default-cover{% endif %}" style="position:relative;display:block;height:100%;" aria-label="{{ partner.alt|default:'Publicitate' }}">
+	{% if partner.price or partner.discount %}
+	<span class="home-v2-pub-badges">{% if partner.price %}<span class="home-v2-pub-badge home-v2-pub-badge--price">{{ partner.price }}</span>{% endif %}{% if partner.discount %}<span class="home-v2-pub-badge home-v2-pub-badge--discount">{{ partner.discount }}</span>{% endif %}</span>
+	{% endif %}
+	<video src="{{ partner.video_url }}" class="slot-img-fit" autoplay muted loop playsinline controls preload="metadata"></video>
+	{% if partner.has_link and partner.url %}
+	<a class="pub-live-video-link-btn" href="{{ partner.url }}" target="_blank" rel="noopener noreferrer" title="Deschide link" aria-label="Deschide link publicitate"><span aria-hidden="true">↗</span></a>
+	{% endif %}
+	{% if partner.is_default_cover %}<span class="pub-live-cover__tag">Publi.</span>{% endif %}
+</div>
+{% elif partner.has_link and partner.url %}
+<a href="{{ partner.url }}" target="_blank" rel="noopener noreferrer" title="{{ partner.alt|default:'Publicitate' }}" style="position:relative;display:block;height:100%;"{% if partner.is_default_cover %} class="pub-live-default-cover pub-live-cover-link"{% else %} class="pub-live-cover-link"{% endif %} aria-label="{{ partner.alt|default:'Publicitate' }}">
+	{% if partner.price or partner.discount %}
+	<span class="home-v2-pub-badges">{% if partner.price %}<span class="home-v2-pub-badge home-v2-pub-badge--price">{{ partner.price }}</span>{% endif %}{% if partner.discount %}<span class="home-v2-pub-badge home-v2-pub-badge--discount">{{ partner.discount }}</span>{% endif %}</span>
+	{% endif %}
+	{% if partner.image_url %}<img src="{{ partner.image_url }}" alt="{{ partner.alt|default:'Publicitate' }}" class="slot-img-fit" />
+	{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.alt|default:'Publicitate' }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+	{% if partner.caption %}
+	<span class="pub-live-caption-band" aria-hidden="true"><span class="pub-live-caption-track">{{ partner.caption }} · {{ partner.caption }} · {{ partner.caption }} · {{ partner.caption }}</span></span>
+	{% endif %}
+	{% if partner.is_default_cover %}<span class="pub-live-cover__tag">Publi.</span>{% endif %}
+</a>
+{% else %}
+<div style="position:relative;display:block;height:100%;" class="pub-live-default-cover pub-live-cover-link pub-live-cover-link--static" aria-label="{{ partner.alt|default:'Publicitate' }}">
+	{% if partner.price or partner.discount %}
+	<span class="home-v2-pub-badges">{% if partner.price %}<span class="home-v2-pub-badge home-v2-pub-badge--price">{{ partner.price }}</span>{% endif %}{% if partner.discount %}<span class="home-v2-pub-badge home-v2-pub-badge--discount">{{ partner.discount }}</span>{% endif %}</span>
+	{% endif %}
+	{% if partner.image_url %}<img src="{{ partner.image_url }}" alt="{{ partner.alt|default:'Publicitate' }}" class="slot-img-fit" />
+	{% else %}<img src="{% static 'images/parteneri/placeholder.jpg' %}" alt="{{ partner.alt|default:'Publicitate' }}" class="slot-img-fit" onerror="this.src='{% static 'images/transport/transport_01.jpeg' %}';" />{% endif %}
+	{% if partner.caption %}
+	<span class="pub-live-caption-band" aria-hidden="true"><span class="pub-live-caption-track">{{ partner.caption }} · {{ partner.caption }} · {{ partner.caption }} · {{ partner.caption }}</span></span>
+	{% endif %}
+	{% if partner.is_default_cover %}<span class="pub-live-cover__tag">Publi.</span>{% endif %}
+</div>
+{% endif %}

@@ -323,8 +323,8 @@ def publicitate_eu_direct_view(request):
             start = _parse_iso_date(request.POST.get("start_date") or "")
             end = _parse_iso_date(request.POST.get("end_date") or "")
             link = (request.POST.get("link") or "").strip()
-            alt = (request.POST.get("alt") or "").strip()
             caption = (request.POST.get("caption") or "").strip()[:200]
+            alt = caption
             is_burtiera = section == "home" and slot == "Burtieră"
             if is_burtiera:
                 messages.info(request, "Burtieră: folosiți Șterge pentru a elimina textul.")
@@ -351,9 +351,11 @@ def publicitate_eu_direct_view(request):
             return redirect(f"{reverse('publicitate_eu_direct')}?sect={section}&slot={slot}")
 
         link = (request.POST.get("link") or "").strip()
-        alt = (request.POST.get("alt") or "").strip()
+        alt = ""
         plain = (request.POST.get("plain_text") or "").strip()
         caption = (request.POST.get("caption") or "").strip()[:200]
+        if caption:
+            alt = caption
         keep_media = (request.POST.get("keep_media") or "") == "1"
 
         existing = (

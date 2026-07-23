@@ -127,6 +127,11 @@ def pub_slot_live_creative(
 
     if parsed and (parsed.get("img") or parsed.get("video")):
         link = (parsed.get("link") or "").strip()
+        caption = (parsed.get("caption") or "").strip()[:200]
+        alt = _pick_localized_alt(parsed, lang)
+        if not alt or alt in ("Publicitate", "Reclamă", "EU-Adopt"):
+            if caption:
+                alt = caption
         return _creative_with_href(
             sect,
             code,
@@ -134,8 +139,8 @@ def pub_slot_live_creative(
                 "img": parsed.get("img") or "",
                 "video": parsed.get("video") or "",
                 "link": link,
-                "alt": _pick_localized_alt(parsed, lang),
-                "caption": (parsed.get("caption") or "").strip()[:200],
+                "alt": alt,
+                "caption": caption,
                 "price": (parsed.get("price") or "").strip(),
                 "discount": (parsed.get("discount") or "").strip(),
                 "is_default_cover": False,
