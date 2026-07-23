@@ -60,15 +60,20 @@
   }
 
   function slotAspectRatio() {
-    if (!slot) return 4 / 3;
+    if (!slot) return 3 / 4;
     var node = document.querySelector('[data-slot="' + slot.replace(/"/g, "") + '"]');
-    if (!node) return 4 / 3;
+    if (!node) return 3 / 4;
+    // Măsoară zona utilă (preview plin), ca pe HOME — nu chenarul cu etichetă
     var preview = node.querySelector(".reclama-slot-preview") || node;
     var r = preview.getBoundingClientRect();
-    if (r.width > 8 && r.height > 8) return r.width / r.height;
+    if (r.width > 12 && r.height > 12) {
+      return Math.max(0.35, Math.min(2.5, r.width / r.height));
+    }
     var r2 = node.getBoundingClientRect();
-    if (r2.width > 8 && r2.height > 8) return r2.width / r2.height;
-    return 4 / 3;
+    if (r2.width > 12 && r2.height > 12) {
+      return Math.max(0.35, Math.min(2.5, r2.width / r2.height));
+    }
+    return 3 / 4;
   }
 
   function applyCropBoxAspect() {

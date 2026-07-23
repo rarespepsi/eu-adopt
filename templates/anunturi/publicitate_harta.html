@@ -569,42 +569,19 @@
 		--side-col-width: clamp(5rem, 25cqi, 15rem);
 		--side-col-width-tablet: clamp(4rem, 18cqi, 10rem);
 	}
-	/* Casete A5/A6 pe EU: umplu celula ca pe HOME (nu pătrat forțat) */
-	body.page-pub-eu-direct .reclama-home-wire-side .reclama-slot-preview {
-		flex: 1 1 auto !important;
-		width: 100% !important;
-		height: auto !important;
-		aspect-ratio: auto !important;
-		max-height: none !important;
-		min-height: 0 !important;
+	/* Casete A5/A6 pe EU: umplu celula ca pe HOME (nu pătrat forțat) — detalii după regula aspect-ratio:1 */
+	body.page-pub-eu-direct .pub-home-wire-clip {
+		/* lățimi laterale ca pe HOME real */
+		--side-col-width: clamp(5rem, 25vw, 15rem) !important;
+		--side-col-width-tablet: clamp(4rem, 18vw, 10rem) !important;
 	}
-	body.page-pub-eu-direct .reclama-home-wire-side .reclama-home-wire-slot {
-		display: grid !important;
-		grid-template-rows: auto minmax(0, 1fr);
-		min-height: 0 !important;
-	}
-	body.page-pub-eu-direct .reclama-home-wire-side .reclama-slot-name {
-		font-size: 0.55rem;
-		line-height: 1.1;
-		padding: 0.05rem 0.15rem;
-		flex: 0 0 auto;
-	}
-	body.page-pub-eu-direct .reclama-home-wire-side .reclama-slot-preview.has-eu-live-preview {
-		grid-row: 1 / -1;
-		grid-column: 1;
-	}
-	body.page-pub-eu-direct .reclama-home-wire-side .reclama-home-wire-slot:has(.has-eu-live-preview) .reclama-slot-name {
-		position: absolute;
-		z-index: 2;
-		background: rgba(0, 0, 0, 0.45);
-		color: #fff;
-		border-radius: 0 0 4px 0;
-	}
-	body.page-pub-eu-direct .reclama-home-wire-side .reclama-home-wire-slot {
-		position: relative;
+	body.page-pub-eu-direct .reclama-home-wire-cols {
+		/* pe HOME: lateral | centru | lateral — păstrăm același raport vizual */
+		grid-template-columns: minmax(0, var(--side-col-width)) minmax(0, 1fr) minmax(0, var(--side-col-width)) !important;
 	}
 	/* Preview media: cover ca pe site */
 	body.page-pub-eu-direct [data-slot] .reclama-slot-preview.has-eu-live-preview {
+		background: transparent !important;
 		background-size: cover !important;
 		background-position: center !important;
 		background-repeat: no-repeat !important;
@@ -615,11 +592,16 @@
 		height: 100%;
 		object-fit: cover;
 		display: block;
+		position: absolute;
+		inset: 0;
 	}
-	/* Crop box: raport din caseta reală (setat de JS), fallback peisaj ~4/3 */
+	body.page-pub-eu-direct [data-slot] .reclama-slot-preview.has-eu-live-preview {
+		position: relative;
+	}
+	/* Crop box: raport din caseta măsurată pe wire (nu 1:1) */
 	body.page-pub-eu-direct .pub-eu-crop-box {
-		aspect-ratio: var(--eu-crop-ar, 4 / 3);
-		max-height: 180px;
+		aspect-ratio: var(--eu-crop-ar, 3 / 4) !important;
+		max-height: 220px;
 		width: 100%;
 	}
 	/* PT / alte wire-uri: preview umple slotul, fără pătrat */
@@ -627,9 +609,10 @@
 	body.page-pub-eu-direct .reclama-tw-wire [data-slot] .reclama-slot-preview,
 	body.page-pub-eu-direct .reclama-mp-wire [data-slot] .reclama-slot-preview,
 	body.page-pub-eu-direct .reclama-il-wire [data-slot] .reclama-slot-preview {
-		aspect-ratio: auto !important;
+		aspect-ratio: unset !important;
 		flex: 1 1 auto !important;
 		width: 100% !important;
+		height: 100% !important;
 		min-height: 0 !important;
 	}
 	.pub-eu-slot-tag {
@@ -1110,6 +1093,40 @@
 		width: 100%;
 		aspect-ratio: 1;
 		max-height: 100%;
+	}
+	/* EU PUB: anulează pătratul — pe HOME A5/A6 umplu toată celula (fără zonă hașurată goală) */
+	body.page-pub-eu-direct .reclama-home-wire-side .reclama-slot-preview {
+		flex: 1 1 auto !important;
+		align-self: stretch !important;
+		width: 100% !important;
+		height: 100% !important;
+		min-height: 0 !important;
+		max-height: none !important;
+		aspect-ratio: unset !important;
+	}
+	body.page-pub-eu-direct .reclama-home-wire-side .reclama-home-wire-slot {
+		display: flex !important;
+		flex-direction: column !important;
+		position: relative !important;
+		min-height: 0 !important;
+		justify-content: stretch !important;
+	}
+	body.page-pub-eu-direct .reclama-home-wire-side .reclama-slot-name {
+		position: absolute !important;
+		top: 0;
+		left: 0;
+		z-index: 3;
+		margin: 0 !important;
+		padding: 0.08rem 0.25rem !important;
+		font-size: 0.55rem !important;
+		background: rgba(15, 23, 42, 0.55);
+		color: #fff !important;
+		border-radius: 0 0 4px 0;
+		pointer-events: none;
+	}
+	body.page-pub-eu-direct .reclama-home-wire-cols > .reclama-home-wire-side .reclama-slot-preview::after {
+		display: none !important;
+		content: none !important;
 	}
 	body.page-publicitate-harta .reclama-home-wire-slot {
 		flex: 1 1 0;
@@ -3281,7 +3298,7 @@ document.addEventListener("DOMContentLoaded", function () {
 {% if pub_eu_direct_mode %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" crossorigin="anonymous" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" crossorigin="anonymous"></script>
-<script src="{% static 'js/pub-eu-direct.js' %}?v=3-eu-wire-ar"></script>
+<script src="{% static 'js/pub-eu-direct.js' %}?v=4-eu-wire-fill"></script>
 {% endif %}
 <style>
 	body.page-publicitate-harta .reclama-home-wire [data-slot].pub-wire-selected,
