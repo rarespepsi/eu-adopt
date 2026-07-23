@@ -323,6 +323,9 @@ def publicitate_eu_direct_view(request):
             start = _parse_iso_date(request.POST.get("start_date") or "")
             end = _parse_iso_date(request.POST.get("end_date") or "")
             link = (request.POST.get("link") or "").strip()
+            from home.pub_slot_defaults import normalize_pub_outbound_link
+
+            link = normalize_pub_outbound_link(link)
             caption = (request.POST.get("caption") or "").strip()[:200]
             alt = caption
             is_burtiera = section == "home" and slot == "Burtieră"
@@ -351,6 +354,9 @@ def publicitate_eu_direct_view(request):
             return redirect(f"{reverse('publicitate_eu_direct')}?sect={section}&slot={slot}")
 
         link = (request.POST.get("link") or "").strip()
+        from home.pub_slot_defaults import normalize_pub_outbound_link
+
+        link = normalize_pub_outbound_link(link)
         alt = ""
         plain = (request.POST.get("plain_text") or "").strip()
         caption = (request.POST.get("caption") or "").strip()[:200]

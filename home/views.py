@@ -2325,7 +2325,9 @@ def _pt_pub_slot_parse_note(note):
         return None
     img = (data.get("img") or "").strip()
     video = (data.get("video") or "").strip()
-    link = (data.get("link") or "").strip()
+    from home.pub_slot_defaults import normalize_pub_outbound_link
+
+    link = normalize_pub_outbound_link((data.get("link") or "").strip())
     alt = (data.get("alt") or "").strip()
     caption = (data.get("caption") or data.get("band") or "").strip()[:200]
     price = (data.get("price") or "").strip()[:24]
@@ -2381,6 +2383,8 @@ def _pt_pub_slot_parse_note(note):
         img = (selected_asset.get("img") or "").strip()
         video = (selected_asset.get("video") or "").strip()
         link = (selected_asset.get("link") or link).strip()
+        if link:
+            link = normalize_pub_outbound_link(link)
         alt = (selected_asset.get("alt") or alt).strip()
         caption = (selected_asset.get("caption") or selected_asset.get("band") or caption).strip()[:200]
         price = (selected_asset.get("price") or price).strip()[:24]

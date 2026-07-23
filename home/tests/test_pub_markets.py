@@ -143,6 +143,33 @@ class PubMarketNotesTests(TestCase):
         self.assertTrue(r3.context["eu_wire_previews"]["A5.1"].get("occupied"))
         self.assertTrue((r3.context["eu_wire_previews"]["A5.1"].get("image_url") or "").startswith("/media/"))
 
+    def test_normalize_pub_link_http_and_www(self):
+        from home.pub_slot_defaults import normalize_pub_outbound_link, pub_slot_live_creative
+        from home.models import ReclamaSlotNote
+
+        self.assertEqual(
+            normalize_pub_outbound_link("www.facebook.com/page"),
+            "https://www.facebook.com/page",
+        )
+        self.assertEqual(
+            normalize_pub_outbound_link("http://example.com/a"),
+            "http://example.com/a",
+        )
+        self.assertEqual(
+            normalize_pub_outbound_link("https://example.com/a"),
+            "https://example.com/a",
+        )
+        self.assertEqual(normalize_pub_outbound_link("/pets/12/"), "/pets/12/")
+        note = ReclamaSlotNote.objects.create(
+            section="home",
+            slot_code="A5.2",
+            market=PUB_MARKET_EU,
+            text='{"img":"/media/x.jpg","video":"","link":"www.example.com/ad","alt":"t","caption":"t"}',
+        )
+        creative = pub_slot_live_creative("home", "A5.2", note, market=PUB_MARKET_EU)
+        self.assertTrue(creative.get("has_link"))
+        self.assertEqual(creative.get("link"), "https://www.example.com/ad")
+
     def test_harta_redirects_superuser_to_eu_direct(self):
         User = get_user_model()
         su = User.objects.create_superuser("eu_redir_su", "r@b.c", "x")

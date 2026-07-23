@@ -76,7 +76,7 @@
 					<textarea name="plain_text" id="pubEuPlain" rows="3" maxlength="8000" placeholder="Text pe bandă…">{{ eu_form_plain }}</textarea>
 				</label>
 				<label class="pub-eu-field">Link
-					<input type="url" name="link" id="pubEuLink" placeholder="https://…" value="{{ eu_form_link }}" />
+					<input type="text" name="link" id="pubEuLink" inputmode="url" autocomplete="url" placeholder="https://… sau www.…" value="{{ eu_form_link }}" />
 				</label>
 				{% else %}
 				<div class="pub-eu-crop-box" id="pubEuCropBox">
@@ -99,7 +99,7 @@
 					<input type="text" name="caption" id="pubEuCaption" maxlength="200" value="{{ eu_form_caption }}" placeholder="Text pe bandă — folosit și ca descriere imagine"{% if not eu_slot %} disabled{% endif %} />
 				</label>
 				<label class="pub-eu-field">Link (poză sau video → tab nou)
-					<input type="url" name="link" id="pubEuLink" placeholder="https://… sau /pets/12/" value="{{ eu_form_link }}"{% if not eu_slot %} disabled{% endif %} />
+					<input type="text" name="link" id="pubEuLink" inputmode="url" autocomplete="url" placeholder="https://… · http://… · www.… · /pets/12/" value="{{ eu_form_link }}"{% if not eu_slot %} disabled{% endif %} />
 				</label>
 				<label class="pub-eu-field">Video
 					<input type="file" name="video" id="pubEuVideo" accept="video/*"{% if not eu_slot %} disabled{% endif %} />

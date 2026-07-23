@@ -50,9 +50,35 @@ def _link_is_external(link: str) -> bool:
     return low.startswith("http://") or low.startswith("https://")
 
 
+def normalize_pub_outbound_link(raw: str) -> str:
+    """
+    Acceptă http://, https://, www.… și căi interne /…
+    www.facebook.com → https://www.facebook.com
+    """
+    u = (raw or "").strip()
+    if not u:
+        return ""
+    # Cale internă site
+    if u.startswith("/") and not u.startswith("//"):
+        if ".." in u or "\x00" in u:
+            return ""
+        return u
+    low = u.lower()
+    if low.startswith("http://") or low.startswith("https://"):
+        return u
+    if low.startswith("//"):
+        return "https:" + u
+    if low.startswith("www."):
+        return "https://" + u
+    # host fără schemă (ex. facebook.com/page) — doar dacă arată a domeniu
+    if "." in u and " " not in u and not u.startswith("."):
+        return "https://" + u
+    return u
+
+
 def pub_slot_outbound_url(link: str) -> str | None:
     """URL destinație validă pentru redirect Publi. (doar http/https)."""
-    u = (link or "").strip()
+    u = normalize_pub_outbound_link(link)
     if not _link_is_external(u):
         return None
     return u
@@ -81,7 +107,9 @@ def _pick_localized_alt(parsed: dict, lang: str | None) -> str:
 def _creative_with_href(section: str, slot_code: str, data: dict, market: str = PUB_MARKET_RO) -> dict:
     out = dict(data)
     mkt = normalize_pub_market(market)
-    link = localize_pub_link_for_market((out.get("link") or "").strip(), mkt)
+    link = localize_pub_link_for_market(
+        normalize_pub_outbound_link((out.get("link") or "").strip()), mkt
+    )
     out["link"] = link
     if link and _link_is_external(link):
         out["link_external"] = True
