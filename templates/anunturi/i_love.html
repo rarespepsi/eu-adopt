@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static anunturi_extras %}
 
-{% block title %}I Love – EU-ADOPT{% endblock %}
+{% block title %}{% if eu_site_active %}{{ eu_ui.ilove_title }}{% else %}I Love – EU-ADOPT{% endif %}{% endblock %}
 {% block body_class %}page-ilove page-ilove--pets{% endblock %}
 
 {% block extra_css_after %}
@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-<main id="ILW" class="ilove-page" aria-label="I Love — inimioare">
+<main id="ILW" class="ilove-page" aria-label="{% if eu_site_active %}{{ eu_ui.ilove_aria }}{% else %}I Love — inimioare{% endif %}">
 	<div class="ilove-wire">
 		<aside class="ilove-wire__col ilove-wire__col--left" aria-label="Casete stânga">
 			{% for slot in ilove_pub_left %}
@@ -21,29 +21,29 @@
 
 		<div class="ilove-wire__main">
 			<header class="ilove-wire__head">
-				<h1>❤️ I Love</h1>
-				<p class="ilove-wire__head-lead">Animalele tale cu inimioară.</p>
+				<h1>❤️ {% if eu_site_active %}{{ eu_ui.ilove_heading }}{% else %}I Love{% endif %}</h1>
+				<p class="ilove-wire__head-lead">{% if eu_site_active %}{{ eu_ui.ilove_lead }}{% else %}Animalele tale cu inimioară.{% endif %}</p>
 			</header>
 
-			<div class="ilove-main-caseta" aria-label="I Love — animale cu inimioară">
+			<div class="ilove-main-caseta" aria-label="{% if eu_site_active %}{{ eu_ui.ilove_aria }}{% else %}I Love — animale cu inimioară{% endif %}">
 				<div class="ilove-main-split">
-					<section class="ilove-main-split__pane ilove-main-split__pane--pets" aria-label="Animale cu inimioara">
-						<h2 class="ilove-split-heading">Cu inimioară</h2>
+					<section class="ilove-main-split__pane ilove-main-split__pane--pets" aria-label="{% if eu_site_active %}{{ eu_ui.ilove_hearted }}{% else %}Animale cu inimioara{% endif %}">
+						<h2 class="ilove-split-heading">{% if eu_site_active %}{{ eu_ui.ilove_hearted }}{% else %}Cu inimioară{% endif %}</h2>
 						<div class="ilove-pets-grid">
 							{% for pet in pets %}
 								<article class="ilove-pet-card">
 									{% if pet.listing_available %}
 									<a href="{% url 'pets_single' pet.pk %}" class="ilove-pet-card-hit">
 									{% else %}
-									<div class="ilove-pet-card-hit ilove-pet-card-hit--muted" title="Anunț indisponibil sau retras">
+									<div class="ilove-pet-card-hit ilove-pet-card-hit--muted" title="{% if eu_site_active %}{{ eu_ui.ilove_unavailable }}{% else %}Anunț indisponibil sau retras{% endif %}">
 									{% endif %}
 										<div class="ilove-pet-card-photo">
 											<button
 												type="button"
 												class="ilove-pet-msg-btn{% if pet.ilove_msg_unread %} is-unread{% else %} is-read{% endif %}"
 												data-ilove-msg-url="{% if pet.ilove_msg_demo %}{% url 'mypet' %}?open_messages=1{% else %}{% url 'mypet' %}?open_messages=1&amp;{% if pet.ilove_msg_owner_inbox %}open_pet_messages{% else %}open_adopter_animal{% endif %}={{ pet.pk }}{% endif %}"
-												title="{% if pet.ilove_msg_unread %}Mesaje noi: {{ pet.ilove_msg_unread }}{% else %}Mesaje{% endif %}"
-												aria-label="{% if pet.ilove_msg_unread %}Mesaje noi: {{ pet.ilove_msg_unread }}{% else %}Mesaje{% endif %}"
+												title="{% if pet.ilove_msg_unread %}{% if eu_site_active %}New messages: {{ pet.ilove_msg_unread }}{% else %}Mesaje noi: {{ pet.ilove_msg_unread }}{% endif %}{% else %}{% if eu_site_active %}{{ eu_ui.ilove_messages }}{% else %}Mesaje{% endif %}{% endif %}"
+												aria-label="{% if pet.ilove_msg_unread %}{% if eu_site_active %}New messages: {{ pet.ilove_msg_unread }}{% else %}Mesaje noi: {{ pet.ilove_msg_unread }}{% endif %}{% else %}{% if eu_site_active %}{{ eu_ui.ilove_messages }}{% else %}Mesaje{% endif %}{% endif %}"
 											>
 												<span class="ilove-pet-msg-icon" aria-hidden="true">✉</span>
 												{% if pet.ilove_msg_unread %}<span class="ilove-pet-msg-count">{{ pet.ilove_msg_unread }}</span>{% endif %}
@@ -53,8 +53,8 @@
 												class="wish-btn {% if wishlist_ids and pet.pk in wishlist_ids %}is-active{% endif %}"
 												data-animal-id="{{ pet.pk }}"
 												aria-pressed="{% if wishlist_ids and pet.pk in wishlist_ids %}true{% else %}false{% endif %}"
-												aria-label="{% if wishlist_ids and pet.pk in wishlist_ids %}Scoate din I Love{% else %}Adaugă la I Love{% endif %}"
-												title="Scoate din I Love"
+												aria-label="{% if wishlist_ids and pet.pk in wishlist_ids %}{% if eu_site_active %}{{ eu_ui.ilove_remove }}{% else %}Scoate din I Love{% endif %}{% else %}{% if eu_site_active %}{{ eu_ui.ilove_add }}{% else %}Adaugă la I Love{% endif %}{% endif %}"
+												title="{% if eu_site_active %}{{ eu_ui.ilove_remove }}{% else %}Scoate din I Love{% endif %}"
 											>
 												{% include "anunturi/includes/ilove_heart_svg.html" %}
 											</button>
@@ -76,7 +76,7 @@
 								</article>
 							{% empty %}
 								<div class="ilove-empty">
-									Nu ai niciun câine salvat încă. Apasă inimioara de pe poze.
+									{% if eu_site_active %}{{ eu_ui.ilove_empty }}{% else %}Nu ai niciun câine salvat încă. Apasă inimioara de pe poze.{% endif %}
 								</div>
 							{% endfor %}
 						</div>

@@ -191,10 +191,15 @@ EU_SITE_BLOCKED_PATH_PREFIXES = (
 
 def pick_language_for_hub(request) -> str:
     """
-    Hub (.com): sesiune / cookie / Accept-Language / EN.
+    Hub (.com): limba forțată EN (UI complet englez).
     Țară (.de/.fr/.es): limba TLD, exceptând schimbare manuală (eu_lang_manual).
     """
-    forced = forced_locale_for_host(request.get_host())
+    host = request.get_host()
+    # .com hub — engleză totală (cerere produs)
+    if is_eu_hub_host(host):
+        return EU_SITE_DEFAULT_LANGUAGE
+
+    forced = forced_locale_for_host(host)
     session = getattr(request, "session", None)
     sess_lang = ""
     if session is not None:
@@ -262,6 +267,8 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
             "eu_site_languages": [],
             "eu_site_flag_url": "",
             "eu_nav_text": {},
+            "eu_ui": {},
+            "eu_force_english": False,
         }
     host = request.get_host()
     hub = is_eu_hub_host(host)
@@ -274,11 +281,17 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
             "eu_site_languages": [],
             "eu_site_flag_url": "",
             "eu_nav_text": {},
+            "eu_ui": {},
+            "eu_force_english": False,
         }
     lang = get_language() or EU_SITE_DEFAULT_LANGUAGE
     if lang not in EU_SITE_LANGUAGE_CODES:
         lang = EU_SITE_DEFAULT_LANGUAGE
+    # .com: UI forțat EN
+    if hub:
+        lang = EU_SITE_DEFAULT_LANGUAGE
     from home.eu_nav_labels import eu_nav_label
+    from home.eu_ui_labels import eu_ui_pack
 
     nav_keys = (
         "home",
@@ -298,13 +311,17 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
         "close_menu",
         "eu_blocked",
     )
-    eu_nav_text = {k: eu_nav_label(lang, k) for k in nav_keys}
+    # Pe hub .com navbar tot în EN
+    nav_lang = EU_SITE_DEFAULT_LANGUAGE if hub else lang
+    eu_nav_text = {k: eu_nav_label(nav_lang, k) for k in nav_keys}
 
     return {
         "eu_site_hub": hub,
         "eu_site_active": eu,
-        "eu_site_lang": lang,
+        "eu_site_lang": nav_lang,
         "eu_site_languages": EU_SITE_LANGUAGE_CHOICES,
-        "eu_site_flag_url": eu_flag_img_url(lang),
+        "eu_site_flag_url": eu_flag_img_url(nav_lang),
         "eu_nav_text": eu_nav_text,
+        "eu_ui": eu_ui_pack() if eu else {},
+        "eu_force_english": hub,
     }

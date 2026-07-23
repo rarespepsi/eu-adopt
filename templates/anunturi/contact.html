@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}Contact | EU-ADOPT{% endblock %}
+{% block title %}{% if eu_site_active %}{{ eu_ui.contact_title }}{% else %}Contact | EU-ADOPT{% endif %}{% endblock %}
 {% block body_class %}page-contact{% endblock %}
 
 {% block content %}
-<section class="contact-wrap" aria-label="Pagina Contact">
+<section class="contact-wrap" aria-label="{% if eu_site_active %}{{ eu_ui.contact_aria }}{% else %}Pagina Contact{% endif %}">
 	<header class="contact-head">
-		<h1>Contact EU-ADOPT</h1>
+		<h1>{% if eu_site_active %}{{ eu_ui.contact_heading }}{% else %}Contact EU-ADOPT{% endif %}</h1>
 		<p>
-			Alege canalul potrivit și trimite-ne un e-mail. Răspundem în general în 1–3 zile lucrătoare.
+			{% if eu_site_active %}{{ eu_ui.contact_intro }}{% else %}Alege canalul potrivit și trimite-ne un e-mail. Răspundem în general în 1–3 zile lucrătoare.{% endif %}
 		</p>
 	</header>
 
 	<article class="contact-card contact-card-emails" aria-labelledby="contact-emails-heading">
-		<h2 id="contact-emails-heading">Adrese e-mail EU-Adopt</h2>
-		<p class="contact-emails-lead">Apasă <strong>Trimite e-mail</strong> — se deschide clientul tău de poștă cu adresa destinatar deja completată.</p>
+		<h2 id="contact-emails-heading">{% if eu_site_active %}{{ eu_ui.contact_emails_h }}{% else %}Adrese e-mail EU-Adopt{% endif %}</h2>
+		<p class="contact-emails-lead">{% if eu_site_active %}{{ eu_ui.contact_emails_lead }}{% else %}Apasă <strong>Trimite e-mail</strong> — se deschide clientul tău de poștă cu adresa destinatar deja completată.{% endif %}</p>
 		<ul class="contact-email-list">
 			{% for ch in contact_channels %}
 			<li class="contact-email-row">
@@ -26,12 +26,12 @@
 					<a class="contact-email-row__link" href="mailto:{{ ch.email }}?subject={{ ch.mailto_subject|urlencode }}">{{ ch.email }}</a>
 				</div>
 				<div class="contact-email-row__action">
-					<a class="contact-email-btn" href="mailto:{{ ch.email }}?subject={{ ch.mailto_subject|urlencode }}">Trimite e-mail</a>
+					<a class="contact-email-btn" href="mailto:{{ ch.email }}?subject={{ ch.mailto_subject|urlencode }}">{% if eu_site_active %}{{ eu_ui.contact_send_email }}{% else %}Trimite e-mail{% endif %}</a>
 				</div>
 			</li>
 			{% endfor %}
 		</ul>
-		<p class="contact-emails-note">Toate mesajele sunt gestionate de echipa EU-Adopt. Pentru urgențe medicale la animale, contactează imediat un medic veterinar.</p>
+		<p class="contact-emails-note">{% if eu_site_active %}{{ eu_ui.contact_emails_note }}{% else %}Toate mesajele sunt gestionate de echipa EU-Adopt. Pentru urgențe medicale la animale, contactează imediat un medic veterinar.{% endif %}</p>
 	</article>
 
 	<div class="contact-grid contact-grid-top" role="list">

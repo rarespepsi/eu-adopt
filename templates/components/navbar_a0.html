@@ -48,7 +48,7 @@
 					</span>
 					{% if user.is_authenticated and navbar_messages_url and not population_org_nav_reduced %}
 					<div class="a0-nav-envelope-item a0-nav-envelope-item--shortcuts">
-						<a href="{{ navbar_messages_url }}" class="a0-nav-envelope-link" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}" aria-label="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}">
+						<a href="{{ navbar_messages_url }}" class="a0-nav-envelope-link" title="{% if message_unread_count|default:0 > 0 %}{% if eu_site_active %}New messages: {{ message_unread_count }}{% else %}Mesaje noi: {{ message_unread_count }}{% endif %}{% else %}{% if eu_site_active %}No new messages{% else %}Nu ai mesaje noi{% endif %}{% endif %}" aria-label="{% if message_unread_count|default:0 > 0 %}{% if eu_site_active %}New messages: {{ message_unread_count }}{% else %}Mesaje noi: {{ message_unread_count }}{% endif %}{% else %}{% if eu_site_active %}No new messages{% else %}Nu ai mesaje noi{% endif %}{% endif %}">
 							<span class="a0-nav-envelope-icon {% if message_unread_count|default:0 > 0 %}is-hot{% endif %}" aria-hidden="true">✉</span>
 							{% if message_unread_count|default:0 > 0 %}
 							<span class="a0-nav-envelope-count">{{ message_unread_count }}</span>
@@ -131,7 +131,7 @@
 							{% else %}
 								<li><a href="{% url 'login' %}" class="a0-login-cta">{% if eu_site_active %}{{ eu_nav_text.login_cta }}{% else %}Intră / Fă cont{% endif %}</a></li>
 							{% endif %}
-							{% if eu_site_active %}
+							{% if eu_site_active and not eu_force_english %}
 							<li class="a0-eu-lang-item">
 								<form class="a0-eu-lang-form" action="{% url 'set_language' %}" method="post">
 									{% csrf_token %}
@@ -144,6 +144,11 @@
 									</select>
 								</form>
 							</li>
+							{% elif eu_force_english %}
+							<li class="a0-eu-lang-item a0-eu-lang-item--forced" title="English">
+								<img class="a0-eu-lang-flag" src="{{ eu_site_flag_url }}" width="20" height="15" alt="English" decoding="async" />
+								<span class="a0-eu-lang-forced-label">EN</span>
+							</li>
 							{% endif %}
 							<li><a href="{% url 'termeni' %}" {% if request.resolver_match.url_name == 'termeni' %}class="current_page"{% endif %}>{% if eu_site_active %}{{ eu_nav_text.terms }}{% else %}Termeni și condiții{% endif %}</a></li>
 							<li><a href="{% url 'contact' %}" {% if request.resolver_match.url_name == 'contact' %}class="current_page"{% endif %}>{% if eu_site_active %}{{ eu_nav_text.contact }}{% else %}Contact{% endif %}</a></li>
@@ -152,7 +157,7 @@
 				</nav>
 				{% if user.is_authenticated and navbar_messages_url and not population_org_nav_reduced %}
 					<div class="a0-nav-envelope-item a0-nav-envelope-item--bar">
-						<a href="{{ navbar_messages_url }}" class="a0-nav-envelope-link" title="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}" aria-label="{% if message_unread_count|default:0 > 0 %}Mesaje noi: {{ message_unread_count }}{% else %}Nu ai mesaje noi{% endif %}">
+						<a href="{{ navbar_messages_url }}" class="a0-nav-envelope-link" title="{% if message_unread_count|default:0 > 0 %}{% if eu_site_active %}New messages: {{ message_unread_count }}{% else %}Mesaje noi: {{ message_unread_count }}{% endif %}{% else %}{% if eu_site_active %}No new messages{% else %}Nu ai mesaje noi{% endif %}{% endif %}" aria-label="{% if message_unread_count|default:0 > 0 %}{% if eu_site_active %}New messages: {{ message_unread_count }}{% else %}Mesaje noi: {{ message_unread_count }}{% endif %}{% else %}{% if eu_site_active %}No new messages{% else %}Nu ai mesaje noi{% endif %}{% endif %}">
 							<span class="a0-nav-envelope-icon {% if message_unread_count|default:0 > 0 %}is-hot{% endif %}" aria-hidden="true">✉</span>
 							{% if message_unread_count|default:0 > 0 %}
 								<span class="a0-nav-envelope-count">{{ message_unread_count }}</span>

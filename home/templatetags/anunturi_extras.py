@@ -48,4 +48,24 @@ def animal_public_href(pet_or_listing):
         from django.urls import reverse
 
         return reverse("pets_single", args=[pk])
-    return animal_public_url(listing)
+        return animal_public_url(listing)
+
+
+@register.simple_tag(takes_context=True)
+def eu_t(context, key, ro_fallback=""):
+    """
+    Text UI: pe site EU → engleză din eu_ui / eu_ui_labels;
+    pe .ro → ro_fallback (sau cheia).
+    """
+    request = context.get("request")
+    eu_active = bool(context.get("eu_site_active"))
+    if request is not None and getattr(request, "eu_site_active", False):
+        eu_active = True
+    if eu_active:
+        pack = context.get("eu_ui") or {}
+        if key in pack and pack[key]:
+            return pack[key]
+        from home.eu_ui_labels import eu_ui_label
+
+        return eu_ui_label(key) or ro_fallback or key
+    return ro_fallback or key

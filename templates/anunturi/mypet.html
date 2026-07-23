@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}MyPet | EU Adopt{% endblock %}
+{% block title %}{% if eu_site_active %}{{ eu_ui.mypet_title }}{% else %}MyPet | EU Adopt{% endif %}{% endblock %}
 
 {% block body_class %}page-mypet{% if show_mypet_nav %} page-mypet-magazin{% endif %}{% endblock %}
 

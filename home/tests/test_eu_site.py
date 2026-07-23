@@ -105,22 +105,34 @@ class EuSiteMiddlewareTests(TestCase):
         self.assertNotEqual(r.status_code, 301)
 
     @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
-    def test_language_switcher_present(self):
+    def test_language_forced_en_on_com_hub(self):
         c = Client(HTTP_HOST="euadopt.com")
         r = c.get("/contact/")
         self.assertEqual(r.status_code, 200)
-        self.assertContains(r, "a0-eu-lang-select")
+        self.assertNotContains(r, "a0-eu-lang-select")
+        self.assertContains(r, "a0-eu-lang-item--forced")
+        self.assertContains(r, "a0-eu-lang-forced-label")
+        self.assertContains(r, ">EN<")
         self.assertContains(r, "a0-eu-lang-flag")
         self.assertContains(r, "flagcdn.com")
-        self.assertContains(r, 'value="de"')
-        self.assertContains(r, 'value="es"')
-        self.assertContains(r, ">Español<")
         self.assertNotContains(r, "🇬🇧")
         self.assertNotContains(r, ">Shop</a>")
         self.assertNotContains(r, "shelter_directory")
         self.assertNotContains(r, "Adăpost/ONG")
         self.assertContains(r, 'href="/transport/"')
         self.assertContains(r, ">Transport<")
+        self.assertContains(r, "Contact EU-ADOPT")
+        self.assertContains(r, "Send email")
+        self.assertContains(r, "General support")
+
+    @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
+    def test_login_english_on_com(self):
+        c = Client(HTTP_HOST="euadopt.com")
+        r = c.get("/login/")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Sign in")
+        self.assertContains(r, "Forgot your password?")
+        self.assertNotContains(r, "Intră în cont")
 
     @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
     def test_adaposturi_redirects_on_eu(self):
@@ -158,6 +170,17 @@ class EuSiteMiddlewareTests(TestCase):
         req.session = {}
         req.COOKIES = {}
         self.assertEqual(pick_language_for_hub(req), "de")
+
+    @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
+    def test_eu_ui_pack_on_com(self):
+        from home.eu_site import eu_site_context_for_request
+
+        rf = RequestFactory()
+        req = rf.get("/", HTTP_HOST="euadopt.com")
+        ctx = eu_site_context_for_request(req)
+        self.assertTrue(ctx["eu_force_english"])
+        self.assertTrue(ctx["eu_ui"].get("login_heading"))
+        self.assertEqual(ctx["eu_site_lang"], "en")
 
 
 @override_settings(EUADOPT_NON_RO_STAFF_ONLY=True, PRELAUNCH_MODE=False)

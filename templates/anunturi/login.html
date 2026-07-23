@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Intră în cont – EU-ADOPT{% endblock %}
+{% block title %}{% if eu_site_active %}{{ eu_ui.login_title }}{% else %}Intră în cont – EU-ADOPT{% endif %}{% endblock %}
 {% block body_class %}page-login{% endblock %}
 
 {% block extra_css %}
@@ -533,45 +533,45 @@
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
-	<main class="login-main{% if prelaunch_mode %} login-main--prelaunch{% endif %}" aria-label="Autentificare EU-ADOPT">
+	<main class="login-main{% if prelaunch_mode %} login-main--prelaunch{% endif %}" aria-label="{% if eu_site_active %}{{ eu_ui.login_aria }}{% else %}Autentificare EU-ADOPT{% endif %}">
 		{% include "components/prelaunch_login_panels.html" %}
 		<div class="login-card">
-			<h1>Intră în cont</h1>
-			<p>Autentificare simplă pentru a-ți gestiona anunțurile și preferințele.</p>
+			<h1>{% if eu_site_active %}{{ eu_ui.login_heading }}{% else %}Intră în cont{% endif %}</h1>
+			<p>{% if eu_site_active %}{{ eu_ui.login_sub }}{% else %}Autentificare simplă pentru a-ți gestiona anunțurile și preferințele.{% endif %}</p>
 			<form method="post" action="{% url 'login' %}">
 				{% csrf_token %}
 				<input type="hidden" name="next" value="{{ request.GET.next|default:'' }}" />
 				{% if password_reset_success %}
 					<div class="login-error-box login-error-box--success" role="status">
-						<strong>Parola a fost resetată.</strong> Autentifică-te cu parola nouă.
+						<strong>{% if eu_site_active %}{{ eu_ui.login_reset_ok }}{% else %}Parola a fost resetată.{% endif %}</strong> {% if eu_site_active %}{{ eu_ui.login_reset_ok_hint }}{% else %}Autentifică-te cu parola nouă.{% endif %}
 					</div>
 				{% endif %}
 				{% if error %}
 					<div class="login-error-box" role="alert">
-						<strong>Autentificare eșuată.</strong> {{ error }}
+						<strong>{% if eu_site_active %}{{ eu_ui.login_failed }}{% else %}Autentificare eșuată.{% endif %}</strong> {{ error }}
 					</div>
 				{% endif %}
 				<div class="login-field">
-					<label for="id_login">Email / Utilizator</label>
-					<input type="text" id="id_login" name="login" value="{{ login_value|default:'' }}" placeholder="email sau nume utilizator" autocomplete="username" required />
+					<label for="id_login">{% if eu_site_active %}{{ eu_ui.login_user }}{% else %}Email / Utilizator{% endif %}</label>
+					<input type="text" id="id_login" name="login" value="{{ login_value|default:'' }}" placeholder="{% if eu_site_active %}{{ eu_ui.login_user_ph }}{% else %}email sau nume utilizator{% endif %}" autocomplete="username" required />
 				</div>
 				<div class="login-field">
-					<label for="id_password">Parolă</label>
+					<label for="id_password">{% if eu_site_active %}{{ eu_ui.login_password }}{% else %}Parolă{% endif %}</label>
 					<input type="password" id="id_password" name="password" autocomplete="current-password" required />
 					<div class="login-pass-tools">
 						<label class="login-pass-toggle">
 							<input type="checkbox" id="login_show_pass" />
-							<span>Arată parola</span>
+							<span>{% if eu_site_active %}{{ eu_ui.login_show_pass }}{% else %}Arată parola{% endif %}</span>
 						</label>
-						<a href="{% url 'forgot_password' %}" class="login-forgot-link">Ți-ai uitat parola?</a>
+						<a href="{% url 'forgot_password' %}" class="login-forgot-link">{% if eu_site_active %}{{ eu_ui.login_forgot }}{% else %}Ți-ai uitat parola?{% endif %}</a>
 					</div>
 				</div>
 				<div class="login-actions">
-					<button type="submit" class="login-submit">Intră</button>
+					<button type="submit" class="login-submit">{% if eu_site_active %}{{ eu_ui.login_submit }}{% else %}Intră{% endif %}</button>
 					{% if not prelaunch_mode %}
 					<div class="login-links">
-						Nu ai cont?
-						<a href="{% url 'signup_choose_type' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">Creează cont</a>
+						{% if eu_site_active %}{{ eu_ui.login_no_account }}{% else %}Nu ai cont?{% endif %}
+						<a href="{% url 'signup_choose_type' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">{% if eu_site_active %}{{ eu_ui.login_create }}{% else %}Creează cont{% endif %}</a>
 					</div>
 					{% endif %}
 				</div>

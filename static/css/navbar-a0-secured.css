@@ -1347,3 +1347,16 @@ body.page-animale #A0 {
 		font-size: 0.75rem;
 	}
 }
+
+/* .com hub: limba forțată EN — fără select, doar badge */
+#A0.a0-eu-site #menu-main-menu > li.a0-eu-lang-item--forced {
+	gap: 0.28rem;
+	padding-inline: 0.15rem;
+}
+#A0.a0-eu-site .a0-eu-lang-forced-label {
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	color: #f8fafc;
+	line-height: 1;
+}

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Transport | EU Adopt{% endblock %}
+{% block title %}{% if eu_site_active %}{{ eu_ui.transport_title }}{% else %}Transport | EU Adopt{% endif %}{% endblock %}
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
@@ -222,21 +222,21 @@
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
-	<main id="TW" class="transport-wrapper" aria-label="Conținut Transport">
+	<main id="TW" class="transport-wrapper" aria-label="{% if eu_site_active %}{{ eu_ui.transport_aria }}{% else %}Conținut Transport{% endif %}">
 		<div class="tw-row">
 			<div class="tw-portrait-stack">
 			<div id="T1" class="tw-cell" data-slot="T1">
 				<div class="t1-inner">
-					<h2 class="t1-title">Transport veterinar – România</h2>
-					<div class="t1-landscape-actions" aria-label="Acțiuni transport">
+					<h2 class="t1-title">{% if eu_site_active %}{{ eu_ui.transport_t1_title }}{% else %}Transport veterinar – România{% endif %}</h2>
+					<div class="t1-landscape-actions" aria-label="{% if eu_site_active %}{{ eu_ui.transport_actions_aria }}{% else %}Acțiuni transport{% endif %}">
 						<button type="button" class="t1-portrait-open-btn" id="t1PortraitOpen" aria-expanded="false" aria-controls="t1Expandable">
-							Doresc transport
+							{% if eu_site_active %}{{ eu_ui.transport_want }}{% else %}Doresc transport{% endif %}
 						</button>
-						<a href="{% url 'donatii_generale' %}?sursa=transport" class="t1-donate-cause-link">Donează pentru o cauză</a>
+						<a href="{% url 'donatii_generale' %}?sursa=transport" class="t1-donate-cause-link">{% if eu_site_active %}{{ eu_ui.transport_donate }}{% else %}Donează pentru o cauză{% endif %}</a>
 					</div>
 					<div id="t1Expandable" class="t1-expandable">
 						<button type="button" class="t1-portrait-close-btn" id="t1PortraitClose" aria-expanded="true" aria-controls="t1Expandable">
-							Restrânge formularul
+							{% if eu_site_active %}{{ eu_ui.transport_collapse }}{% else %}Restrânge formularul{% endif %}
 						</button>
 					{% if from_adoption_pet_pk and continue_adoption_url %}
 					<div class="transport-from-adoption-banner" role="status">
@@ -245,7 +245,7 @@
 						<a href="{{ continue_adoption_url }}">Continuă cererea de adopție</a>
 					</div>
 					{% endif %}
-					<p class="t1-intro">Cererea este transmisă colaboratorilor, primul care acceptă primește datele.</p>
+					<p class="t1-intro">{% if eu_site_active %}{{ eu_ui.transport_t1_intro }}{% else %}Cererea este transmisă colaboratorilor, primul care acceptă primește datele.{% endif %}</p>
 					<form class="t1-form" method="post" action="{% url 'transport_submit' %}">
 						{% csrf_token %}
 						{% if continue_adoption_url %}

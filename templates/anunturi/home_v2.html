@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}EU Adopt – Acasă{% endblock %}
-{% block meta_description %}EU-ADOPT Acasă – adopție câini și pisici în România, anunțuri și acces la servicii pentru animale.{% endblock %}
-{% block og_title %}EU Adopt – Acasă{% endblock %}
-{% block og_description %}EU-ADOPT – platformă de adopție și servicii pentru animale în România. Descoperă animale spre adopție și parteneri.{% endblock %}
+{% block title %}{% if eu_site_active %}{{ eu_ui.home_title }}{% else %}EU Adopt – Acasă{% endif %}{% endblock %}
+{% block meta_description %}{% if eu_site_active %}{{ eu_ui.home_meta }}{% else %}EU-ADOPT Acasă – adopție câini și pisici în România, anunțuri și acces la servicii pentru animale.{% endif %}{% endblock %}
+{% block og_title %}{% if eu_site_active %}{{ eu_ui.home_title }}{% else %}EU Adopt – Acasă{% endif %}{% endblock %}
+{% block og_description %}{% if eu_site_active %}{{ eu_ui.home_meta }}{% else %}EU-ADOPT – platformă de adopție și servicii pentru animale în România. Descoperă animale spre adopție și parteneri.{% endif %}{% endblock %}
 
 {% block body_class %}page-home-v2{% endblock %}
 
@@ -291,10 +291,10 @@
 			</div>
 			<div id="A3">
 				{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A3</span>{% endif %}
-				<div class="mission-bar-v2" aria-label="Info adopții">
-					<span class="mission-bar-v2-item">În grija noastră: <strong>{{ adopted_animals|default:0 }}</strong> adoptați</span>
-					<span class="mission-bar-v2-item">🐾 <span class="mission-bar-v2-count">{{ active_animals|default:0 }}</span> animale caută casă chiar acum</span>
-					<a href="{% url 'donatii_generale' %}?sursa=home_bara" class="mission-bar-v2-link" title="Susține proiectul — donații">❤️ Fii parte din drum →</a>
+				<div class="mission-bar-v2" aria-label="{% if eu_site_active %}Adoption info{% else %}Info adopții{% endif %}">
+					<span class="mission-bar-v2-item">{% if eu_site_active %}In our care: <strong>{{ adopted_animals|default:0 }}</strong> adopted{% else %}În grija noastră: <strong>{{ adopted_animals|default:0 }}</strong> adoptați{% endif %}</span>
+					<span class="mission-bar-v2-item">🐾 <span class="mission-bar-v2-count">{{ active_animals|default:0 }}</span> {% if eu_site_active %}pets looking for a home right now{% else %}animale caută casă chiar acum{% endif %}</span>
+					<a href="{% url 'donatii_generale' %}?sursa=home_bara" class="mission-bar-v2-link" title="{% if eu_site_active %}{{ eu_ui.home_mission_cta_title }}{% else %}Susține proiectul — donații{% endif %}">{% if eu_site_active %}❤️ {{ eu_ui.home_mission_cta }}{% else %}❤️ Fii parte din drum →{% endif %}</a>
 				</div>
 			</div>
 		</div>
@@ -310,15 +310,15 @@
 		</div>
 		</div>
 	</div>
-	<div id="home-burtiera-galbena" class="home-v2-burtiera-disclaimer" aria-label="Disclaimer EU Adopt">
+	<div id="home-burtiera-galbena" class="home-v2-burtiera-disclaimer" aria-label="{% if eu_site_active %}{{ eu_ui.home_burtiera_aria }}{% else %}Disclaimer EU Adopt{% endif %}">
 		<div class="home-v2-burtiera-marquee-wrap" aria-hidden="true">
 			<div class="home-v2-burtiera-marquee-track" style="animation-duration: {{ home_burtiera_speed_seconds|default:28 }}s;">
 				{% if home_burtiera_link %}
-				<a class="home-v2-burtiera-text home-v2-burtiera-link" href="{{ home_burtiera_link }}" target="_blank" rel="noopener">{{ home_burtiera_text|default:"#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană." }}</a>
-				<a class="home-v2-burtiera-text home-v2-burtiera-link" href="{{ home_burtiera_link }}" target="_blank" rel="noopener">{{ home_burtiera_text|default:"#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană." }}</a>
+				<a class="home-v2-burtiera-text home-v2-burtiera-link" href="{{ home_burtiera_link }}" target="_blank" rel="noopener">{% if home_burtiera_text %}{{ home_burtiera_text }}{% elif eu_site_active %}{{ eu_ui.home_burtiera_default }}{% else %}#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană.{% endif %}</a>
+				<a class="home-v2-burtiera-text home-v2-burtiera-link" href="{{ home_burtiera_link }}" target="_blank" rel="noopener">{% if home_burtiera_text %}{{ home_burtiera_text }}{% elif eu_site_active %}{{ eu_ui.home_burtiera_default }}{% else %}#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană.{% endif %}</a>
 				{% else %}
-				<span class="home-v2-burtiera-text">{{ home_burtiera_text|default:"#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană." }}</span>
-				<span class="home-v2-burtiera-text">{{ home_burtiera_text|default:"#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană." }}</span>
+				<span class="home-v2-burtiera-text">{% if home_burtiera_text %}{{ home_burtiera_text }}{% elif eu_site_active %}{{ eu_ui.home_burtiera_default }}{% else %}#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană.{% endif %}</span>
+				<span class="home-v2-burtiera-text">{% if home_burtiera_text %}{{ home_burtiera_text }}{% elif eu_site_active %}{{ eu_ui.home_burtiera_default }}{% else %}#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană.{% endif %}</span>
 				{% endif %}
 			</div>
 		</div>
@@ -327,8 +327,19 @@
 {% if show_welcome_demo %}
 <div class="home-welcome-overlay-backdrop" id="home-welcome-backdrop" aria-hidden="true">
 	<div class="home-welcome-overlay">
-		<h2 class="home-welcome-title">Bine ai venit în EU-Adopt</h2>
+		<h2 class="home-welcome-title">{% if eu_site_active %}{{ eu_ui.home_welcome_title }}{% else %}Bine ai venit în EU-Adopt{% endif %}</h2>
 		<div class="home-welcome-text">
+			{% if eu_site_active %}
+			<p>{{ eu_ui.home_welcome_p1 }}</p>
+			<p>{{ eu_ui.home_welcome_p2 }}</p>
+			<ul>
+				<li>{{ eu_ui.home_welcome_li1 }}</li>
+				<li>{{ eu_ui.home_welcome_li2 }}</li>
+				<li>{{ eu_ui.home_welcome_li3 }}</li>
+				<li>{{ eu_ui.home_welcome_li4 }}</li>
+			</ul>
+			<p>{{ eu_ui.home_welcome_p3 }}</p>
+			{% else %}
 			<p>
 				Aici nu se vând și nu se cumpără animale. Aici încercăm, împreună, să le găsim o casă
 				și un om care să le iubească.
@@ -344,10 +355,11 @@
 			<p>
 				Fiecare vizită și fiecare distribuire poate schimba povestea unui animal. Îți mulțumim că ești aici.
 			</p>
+			{% endif %}
 		</div>
 		<div class="home-welcome-close">
-			(Închide această notă și continuă în EU-Adopt.)
-			<button type="button" class="home-welcome-close-btn" id="home-welcome-close-btn">Închide</button>
+			{% if eu_site_active %}{{ eu_ui.home_welcome_close_hint }}{% else %}(Închide această notă și continuă în EU-Adopt.){% endif %}
+			<button type="button" class="home-welcome-close-btn" id="home-welcome-close-btn">{% if eu_site_active %}{{ eu_ui.home_welcome_close_btn }}{% else %}Închide{% endif %}</button>
 		</div>
 	</div>
 </div>

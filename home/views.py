@@ -3999,44 +3999,87 @@ def politica_moderare_view(request):
 
 def contact_view(request):
     """Pagina Contact – canale e-mail directe (aliasuri Zoho)."""
-    contact_channels = [
-        {
-            "title": "Suport general",
-            "email": "contact@eu-adopt.ro",
-            "description": "Cont, autentificare, întrebări tehnice, informații generale.",
-            "mailto_subject": "EU-Adopt - Suport general",
-        },
-        {
-            "title": "Adopții",
-            "email": "adopt@eu-adopt.ro",
-            "description": "Cereri adopție, anunțuri animale, ONG și adăposturi.",
-            "mailto_subject": "EU-Adopt - Adopții",
-        },
-        {
-            "title": "Transport veterinar",
-            "email": "transport@eu-adopt.ro",
-            "description": "Colaboratori transport, întrebări despre serviciul de transport.",
-            "mailto_subject": "EU-Adopt - Transport",
-        },
-        {
-            "title": "Donații",
-            "email": "donations@eu-adopt.ro",
-            "description": "Donații, sponsorizări, redirecționare 3,5% și parteneriate caritabile.",
-            "mailto_subject": "EU-Adopt - Donații",
-        },
-        {
-            "title": "Parteneri și publicitate",
-            "email": "parteners@eu-adopt.ro",
-            "description": "Colaboratori, campanii, sloturi publicitare și servicii plătite.",
-            "mailto_subject": "EU-Adopt - Parteneri",
-        },
-        {
-            "title": "Office / administrativ",
-            "email": "office@eu-adopt.ro",
-            "description": "Contracte, facturare, documente legale și corespondență oficială.",
-            "mailto_subject": "EU-Adopt - Office",
-        },
-    ]
+    from home.eu_site import is_eu_site_host
+
+    eu = is_eu_site_host(request.get_host())
+    if eu:
+        contact_channels = [
+            {
+                "title": "General support",
+                "email": "contact@eu-adopt.ro",
+                "description": "Account, sign-in, technical questions, general information.",
+                "mailto_subject": "EU-Adopt - General support",
+            },
+            {
+                "title": "Adoptions",
+                "email": "adopt@eu-adopt.ro",
+                "description": "Adoption requests, animal listings, NGOs and shelters.",
+                "mailto_subject": "EU-Adopt - Adoptions",
+            },
+            {
+                "title": "Vet transport",
+                "email": "transport@eu-adopt.ro",
+                "description": "Transport partners, questions about the transport service.",
+                "mailto_subject": "EU-Adopt - Transport",
+            },
+            {
+                "title": "Donations",
+                "email": "donations@eu-adopt.ro",
+                "description": "Donations, sponsorships, and charitable partnerships.",
+                "mailto_subject": "EU-Adopt - Donations",
+            },
+            {
+                "title": "Partners and advertising",
+                "email": "parteners@eu-adopt.ro",
+                "description": "Collaborators, campaigns, ad slots and paid services.",
+                "mailto_subject": "EU-Adopt - Partners",
+            },
+            {
+                "title": "Office / admin",
+                "email": "office@eu-adopt.ro",
+                "description": "Contracts, invoicing, legal documents and official correspondence.",
+                "mailto_subject": "EU-Adopt - Office",
+            },
+        ]
+    else:
+        contact_channels = [
+            {
+                "title": "Suport general",
+                "email": "contact@eu-adopt.ro",
+                "description": "Cont, autentificare, întrebări tehnice, informații generale.",
+                "mailto_subject": "EU-Adopt - Suport general",
+            },
+            {
+                "title": "Adopții",
+                "email": "adopt@eu-adopt.ro",
+                "description": "Cereri adopție, anunțuri animale, ONG și adăposturi.",
+                "mailto_subject": "EU-Adopt - Adopții",
+            },
+            {
+                "title": "Transport veterinar",
+                "email": "transport@eu-adopt.ro",
+                "description": "Colaboratori transport, întrebări despre serviciul de transport.",
+                "mailto_subject": "EU-Adopt - Transport",
+            },
+            {
+                "title": "Donații",
+                "email": "donations@eu-adopt.ro",
+                "description": "Donații, sponsorizări, redirecționare 3,5% și parteneriate caritabile.",
+                "mailto_subject": "EU-Adopt - Donații",
+            },
+            {
+                "title": "Parteneri și publicitate",
+                "email": "parteners@eu-adopt.ro",
+                "description": "Colaboratori, campanii, sloturi publicitare și servicii plătite.",
+                "mailto_subject": "EU-Adopt - Parteneri",
+            },
+            {
+                "title": "Office / administrativ",
+                "email": "office@eu-adopt.ro",
+                "description": "Contracte, facturare, documente legale și corespondență oficială.",
+                "mailto_subject": "EU-Adopt - Office",
+            },
+        ]
     return render(
         request,
         "anunturi/contact.html",

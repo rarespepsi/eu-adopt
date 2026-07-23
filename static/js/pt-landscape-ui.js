@@ -100,21 +100,38 @@
   }
 
   function getSpeciesLabel() {
+    var root = document.getElementById("PW");
+    var eu = root && root.getAttribute("data-pt-eu") === "1";
     var sf = document.getElementById("pt_filter_species_field");
     var v = (sf && sf.value ? sf.value : "").trim().toLowerCase();
+    if (eu) {
+      if (v === "dog") return root.getAttribute("data-pt-lbl-filters-dog") || "Dog filters";
+      if (v === "cat") return root.getAttribute("data-pt-lbl-filters-cat") || "Cat filters";
+      if (v === "other") return root.getAttribute("data-pt-lbl-filters-other") || "Other filters";
+      return root.getAttribute("data-pt-lbl-filters") || "Filters";
+    }
     if (v === "dog") return "Filtre caini";
     if (v === "cat") return "Filtre pisici";
     if (v === "other") return "Filtre altele";
     return "Filtre";
   }
 
+  function filtersBaseLabel() {
+    var root = document.getElementById("PW");
+    if (root && root.getAttribute("data-pt-eu") === "1") {
+      return root.getAttribute("data-pt-lbl-filters") || "Filters";
+    }
+    return "Filtre";
+  }
+
   function setMobileFiltersBtnState(active) {
     filtersApplied = !!active;
     var label = getSpeciesLabel();
+    var base = filtersBaseLabel();
     Array.prototype.forEach.call(mobileFiltersBtns, function (btn) {
       if (!btn) return;
       btn.textContent = label;
-      btn.classList.toggle("pt-filters-btn--active", filtersApplied || label !== "Filtre");
+      btn.classList.toggle("pt-filters-btn--active", filtersApplied || label !== base);
     });
   }
 
