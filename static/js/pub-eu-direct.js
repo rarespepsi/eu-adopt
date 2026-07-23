@@ -59,11 +59,30 @@
     cropBox.appendChild(span);
   }
 
+  function slotAspectRatio() {
+    if (!slot) return 4 / 3;
+    var node = document.querySelector('[data-slot="' + slot.replace(/"/g, "") + '"]');
+    if (!node) return 4 / 3;
+    var preview = node.querySelector(".reclama-slot-preview") || node;
+    var r = preview.getBoundingClientRect();
+    if (r.width > 8 && r.height > 8) return r.width / r.height;
+    var r2 = node.getBoundingClientRect();
+    if (r2.width > 8 && r2.height > 8) return r2.width / r2.height;
+    return 4 / 3;
+  }
+
+  function applyCropBoxAspect() {
+    var ar = slotAspectRatio();
+    if (cropBox) cropBox.style.setProperty("--eu-crop-ar", String(ar));
+    return ar;
+  }
+
   function initCropperOn(img) {
     if (typeof Cropper === "undefined" || !img) return;
     destroyCropper();
+    var ar = applyCropBoxAspect();
     cropper = new Cropper(img, {
-      aspectRatio: 1,
+      aspectRatio: ar,
       viewMode: 1,
       dragMode: "move",
       autoCropArea: 1,
@@ -319,6 +338,7 @@
   }
 
   // Init cropper pe imaginea existentă de pe server
+  applyCropBoxAspect();
   var existingImg = document.getElementById("pubEuCropImg");
   if (existingImg && typeof Cropper !== "undefined") {
     initCropperOn(existingImg);

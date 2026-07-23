@@ -558,13 +558,79 @@
 		min-height: 0;
 	}
 	.page-publicitate-harta .pub-grid--eu-direct .pub-home-wire-clip {
-		transform: scale(0.5);
-		transform-origin: top left;
-		width: 200%;
-		height: 200%;
-		max-height: none;
+		/* Fără scale distorsionat: umple caseta 3 păstrând raportul coloanelor ca pe HOME */
+		transform: none;
+		width: 100%;
+		height: 100%;
+		max-height: 100%;
+		flex: 1 1 auto;
+		min-height: 0;
+		/* Aceleași lățimi laterale ca pe site (home_v2) */
+		--side-col-width: clamp(5rem, 25cqi, 15rem);
+		--side-col-width-tablet: clamp(4rem, 18cqi, 10rem);
+	}
+	/* Casete A5/A6 pe EU: umplu celula ca pe HOME (nu pătrat forțat) */
+	body.page-pub-eu-direct .reclama-home-wire-side .reclama-slot-preview {
+		flex: 1 1 auto !important;
+		width: 100% !important;
+		height: auto !important;
+		aspect-ratio: auto !important;
+		max-height: none !important;
+		min-height: 0 !important;
+	}
+	body.page-pub-eu-direct .reclama-home-wire-side .reclama-home-wire-slot {
+		display: grid !important;
+		grid-template-rows: auto minmax(0, 1fr);
+		min-height: 0 !important;
+	}
+	body.page-pub-eu-direct .reclama-home-wire-side .reclama-slot-name {
+		font-size: 0.55rem;
+		line-height: 1.1;
+		padding: 0.05rem 0.15rem;
 		flex: 0 0 auto;
-		box-sizing: border-box;
+	}
+	body.page-pub-eu-direct .reclama-home-wire-side .reclama-slot-preview.has-eu-live-preview {
+		grid-row: 1 / -1;
+		grid-column: 1;
+	}
+	body.page-pub-eu-direct .reclama-home-wire-side .reclama-home-wire-slot:has(.has-eu-live-preview) .reclama-slot-name {
+		position: absolute;
+		z-index: 2;
+		background: rgba(0, 0, 0, 0.45);
+		color: #fff;
+		border-radius: 0 0 4px 0;
+	}
+	body.page-pub-eu-direct .reclama-home-wire-side .reclama-home-wire-slot {
+		position: relative;
+	}
+	/* Preview media: cover ca pe site */
+	body.page-pub-eu-direct [data-slot] .reclama-slot-preview.has-eu-live-preview {
+		background-size: cover !important;
+		background-position: center !important;
+		background-repeat: no-repeat !important;
+	}
+	body.page-pub-eu-direct [data-slot] .reclama-slot-preview.has-eu-live-preview video,
+	body.page-pub-eu-direct [data-slot] .reclama-slot-preview.has-eu-live-preview img.eu-wire-prev {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+	/* Crop box: raport din caseta reală (setat de JS), fallback peisaj ~4/3 */
+	body.page-pub-eu-direct .pub-eu-crop-box {
+		aspect-ratio: var(--eu-crop-ar, 4 / 3);
+		max-height: 180px;
+		width: 100%;
+	}
+	/* PT / alte wire-uri: preview umple slotul, fără pătrat */
+	body.page-pub-eu-direct .reclama-pt-wire__slot .reclama-slot-preview,
+	body.page-pub-eu-direct .reclama-tw-wire [data-slot] .reclama-slot-preview,
+	body.page-pub-eu-direct .reclama-mp-wire [data-slot] .reclama-slot-preview,
+	body.page-pub-eu-direct .reclama-il-wire [data-slot] .reclama-slot-preview {
+		aspect-ratio: auto !important;
+		flex: 1 1 auto !important;
+		width: 100% !important;
+		min-height: 0 !important;
 	}
 	.pub-eu-slot-tag {
 		margin: 0 0 0.25rem;
@@ -726,8 +792,8 @@
 	.pub-eu-crop-box {
 		position: relative;
 		width: 100%;
-		aspect-ratio: 1 / 1;
-		max-height: 160px;
+		aspect-ratio: var(--eu-crop-ar, 4 / 3);
+		max-height: 180px;
 		background: #e8f5e9;
 		border: 1px solid #81c784;
 		border-radius: 8px;
@@ -3215,7 +3281,7 @@ document.addEventListener("DOMContentLoaded", function () {
 {% if pub_eu_direct_mode %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" crossorigin="anonymous" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" crossorigin="anonymous"></script>
-<script src="{% static 'js/pub-eu-direct.js' %}?v=2-eu-cal-days"></script>
+<script src="{% static 'js/pub-eu-direct.js' %}?v=3-eu-wire-ar"></script>
 {% endif %}
 <style>
 	body.page-publicitate-harta .reclama-home-wire [data-slot].pub-wire-selected,
