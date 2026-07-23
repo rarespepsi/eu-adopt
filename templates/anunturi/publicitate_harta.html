@@ -30,52 +30,68 @@
 	<div class="pub-grid{% if pub_eu_direct_mode %} pub-grid--eu-direct{% endif %}">
 		{% if pub_eu_direct_mode %}
 		{# 2/4 stânga: două casete una lângă alta (perioadă | materiale) · 2/4 dreapta: tablou wire #}
-		<form method="post" enctype="multipart/form-data" class="pub-eu-quad" id="pubEuUploadForm" action="{% if eu_slot %}{% url 'publicitate_eu_direct' %}?sect={{ pub_selected_section }}&amp;slot={{ eu_slot|urlencode }}{% else %}{% url 'publicitate_eu_direct' %}?sect={{ pub_selected_section }}{% endif %}">
+		<form method="post" enctype="multipart/form-data" class="pub-eu-quad" id="pubEuUploadForm" action="{% if eu_slot %}{% url 'publicitate_eu_direct' %}?sect={{ pub_selected_section }}&amp;slot={{ eu_slot|urlencode }}{% else %}{% url 'publicitate_eu_direct' %}?sect={{ pub_selected_section }}{% endif %}" data-eu-slot="{{ eu_slot }}" data-eu-section="{{ pub_selected_section }}" data-eu-has-media="{% if eu_has_media %}1{% else %}0{% endif %}">
 			{% csrf_token %}
 			<input type="hidden" name="sect" value="{{ pub_selected_section }}" />
 			<input type="hidden" name="slot" value="{{ eu_slot }}" />
-			<input type="hidden" name="keep_media" value="1" />
+			<input type="hidden" name="keep_media" id="pubEuKeepMedia" value="1" />
 			<aside class="pub-eu-box pub-eu-box--period" aria-label="Perioadă">
 				{% if eu_slot %}<p class="pub-eu-slot-tag">{{ pub_selected_section|upper }} · {{ eu_slot }}</p>{% endif %}
 				<label class="pub-eu-field">De la
-					<input type="date" name="start_date" value="{{ eu_today }}"{% if eu_slot %} required{% endif %} />
+					<input type="date" name="start_date" id="pubEuStartDate" value="{{ eu_today }}"{% if eu_slot %} required{% endif %} />
 				</label>
 				<label class="pub-eu-field">Până la
-					<input type="date" name="end_date" value="{{ eu_default_end }}"{% if eu_slot %} required{% endif %} />
+					<input type="date" name="end_date" id="pubEuEndDate" value="{{ eu_default_end }}"{% if eu_slot %} required{% endif %} />
 				</label>
+				{% if eu_slot %}
+				<div class="pub-eu-months" id="pubEuMonths" aria-label="Disponibilitate pe luni">
+					{% for m in eu_months %}
+					<button type="button" class="pub-eu-month{% if m.occupied %} is-busy{% else %} is-free{% endif %}{% if m.selected %} is-picked{% endif %}" data-start="{{ m.start }}" data-end="{{ m.end }}" title="{% if m.occupied %}Ocupat{% else %}Liber{% endif %} · {{ m.label }}">{{ m.label }}</button>
+					{% endfor %}
+				</div>
+				<p class="pub-eu-months-legend"><span class="is-free">Liber</span> · <span class="is-busy">Ocupat</span></p>
+				{% endif %}
 			</aside>
 			<aside class="pub-eu-box pub-eu-box--media" aria-label="Materiale">
-				{% if eu_creative and not eu_creative.is_default_cover %}
-				<div class="pub-eu-preview">
-					{% if eu_creative.img %}<img src="{{ eu_creative.img }}" alt="" />{% endif %}
-					{% if eu_creative.video %}<video src="{{ eu_creative.video }}" controls></video>{% endif %}
-				</div>
-				{% endif %}
 				{% if pub_selected_section == 'home' and eu_slot == 'Burtieră' %}
 				<label class="pub-eu-field">Text burtieră
-					<textarea name="plain_text" rows="3" maxlength="8000" placeholder="Text pe bandă…">{{ eu_form_plain }}</textarea>
+					<textarea name="plain_text" id="pubEuPlain" rows="3" maxlength="8000" placeholder="Text pe bandă…">{{ eu_form_plain }}</textarea>
 				</label>
 				<label class="pub-eu-field">Link
-					<input type="url" name="link" placeholder="https://…" value="{{ eu_form_link }}" />
+					<input type="url" name="link" id="pubEuLink" placeholder="https://…" value="{{ eu_form_link }}" />
 				</label>
 				{% else %}
+				<div class="pub-eu-crop-box" id="pubEuCropBox">
+					{% if eu_creative and not eu_creative.is_default_cover and eu_creative.img %}
+					<img id="pubEuCropImg" src="{{ eu_creative.img }}" alt="" />
+					{% elif eu_creative and not eu_creative.is_default_cover and eu_creative.video %}
+					<video id="pubEuCropVideo" src="{{ eu_creative.video }}" controls muted playsinline></video>
+					{% else %}
+					<span class="pub-eu-crop-empty" id="pubEuCropEmpty">Imagine / video</span>
+					{% endif %}
+				</div>
+				<div class="pub-eu-crop-tools" id="pubEuCropTools" hidden>
+					<button type="button" class="pub-eu-btn pub-eu-btn--zoom" id="pubEuZoomOut" title="Micșorează">−</button>
+					<button type="button" class="pub-eu-btn pub-eu-btn--zoom" id="pubEuZoomIn" title="Mărește">+</button>
+				</div>
 				<label class="pub-eu-field">Imagine
-					<input type="file" name="image" accept="image/*"{% if not eu_slot %} disabled{% endif %} />
+					<input type="file" name="image" id="pubEuImage" accept="image/*"{% if not eu_slot %} disabled{% endif %} />
 				</label>
 				<label class="pub-eu-field">Video
-					<input type="file" name="video" accept="video/*"{% if not eu_slot %} disabled{% endif %} />
+					<input type="file" name="video" id="pubEuVideo" accept="video/*"{% if not eu_slot %} disabled{% endif %} />
 				</label>
 				<label class="pub-eu-field">Link
-					<input type="url" name="link" placeholder="https://… sau /pets/12/" value="{{ eu_form_link }}"{% if not eu_slot %} disabled{% endif %} />
+					<input type="url" name="link" id="pubEuLink" placeholder="https://… sau /pets/12/" value="{{ eu_form_link }}"{% if not eu_slot %} disabled{% endif %} />
 				</label>
 				<label class="pub-eu-field">Alt
-					<input type="text" name="alt" maxlength="200" value="{{ eu_form_alt }}" placeholder="Descriere"{% if not eu_slot %} disabled{% endif %} />
+					<input type="text" name="alt" id="pubEuAlt" maxlength="200" value="{{ eu_form_alt }}" placeholder="Descriere"{% if not eu_slot %} disabled{% endif %} />
 				</label>
 				{% endif %}
 				<div class="pub-eu-actions">
-					<button type="submit" name="action" value="publish" class="pub-eu-btn pub-eu-btn--go"{% if not eu_slot %} disabled{% endif %}>Postează</button>
-					<button type="submit" name="action" value="publish" class="pub-eu-btn pub-eu-btn--mod"{% if not eu_slot %} disabled{% endif %}>Modifică</button>
-					<button type="submit" name="action" value="clear" class="pub-eu-btn pub-eu-btn--clear"{% if not eu_slot %} disabled{% endif %} onclick="return confirm('Ștergi materialul EU de pe această casetă?');">Șterge</button>
+					<button type="submit" name="action" value="publish" class="pub-eu-btn pub-eu-btn--go" id="pubEuBtnPost" disabled>Postează</button>
+					<button type="submit" name="action" value="publish" class="pub-eu-btn pub-eu-btn--mod" id="pubEuBtnMod" disabled>Modifică</button>
+					<button type="button" class="pub-eu-btn pub-eu-btn--media-clear" id="pubEuBtnClearMedia"{% if not eu_slot %} disabled{% endif %}>Șterge media</button>
+					<button type="submit" name="action" value="clear" class="pub-eu-btn pub-eu-btn--clear" id="pubEuBtnClear"{% if not eu_slot %} disabled{% endif %} onclick="return confirm('Ștergi tot pe EU de pe această casetă?');">Șterge</button>
 				</div>
 			</aside>
 		</form>
@@ -591,17 +607,91 @@
 	.pub-eu-btn--go { background: #1b5e20; color: #fff; }
 	.pub-eu-btn--mod { background: #2e7d32; color: #fff; }
 	.pub-eu-btn--clear { background: #ffebee; color: #b71c1c; border: 1px solid #ef9a9a; }
-	.pub-eu-preview {
-		padding: 0.35rem;
-		background: #e8f5e9;
-		border-radius: 8px;
+	.pub-eu-btn--media-clear { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+	.pub-eu-btn--zoom { background: #e8f5e9; color: #1b5e20; border: 1px solid #81c784; min-width: 2rem; }
+	.pub-eu-months {
+		display: grid;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+		gap: 0.22rem;
+		margin-top: 0.35rem;
+		max-height: 42vh;
+		overflow: auto;
 	}
-	.pub-eu-preview img,
-	.pub-eu-preview video {
+	.pub-eu-month {
+		border: 1px solid #a5d6a7;
+		border-radius: 5px;
+		padding: 0.22rem 0.1rem;
+		font-size: 0.62rem;
+		font-weight: 700;
+		line-height: 1.15;
+		cursor: pointer;
+		background: #e8f5e9;
+		color: #1b5e20;
+	}
+	.pub-eu-month.is-busy {
+		background: #ffebee;
+		border-color: #ef9a9a;
+		color: #b71c1c;
+	}
+	.pub-eu-month.is-picked {
+		outline: 2px solid #1565c0;
+		outline-offset: 1px;
+	}
+	.pub-eu-months-legend {
+		margin: 0.25rem 0 0;
+		font-size: 0.68rem;
+		color: #37474f;
+	}
+	.pub-eu-months-legend .is-free { color: #1b5e20; font-weight: 700; }
+	.pub-eu-months-legend .is-busy { color: #b71c1c; font-weight: 700; }
+	.pub-eu-crop-box {
+		position: relative;
+		width: 100%;
+		aspect-ratio: 1 / 1;
+		max-height: 160px;
+		background: #e8f5e9;
+		border: 1px solid #81c784;
+		border-radius: 8px;
+		overflow: hidden;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.pub-eu-crop-box img,
+	.pub-eu-crop-box video {
 		max-width: 100%;
-		max-height: 88px;
+		max-height: 100%;
 		display: block;
-		border-radius: 6px;
+	}
+	.pub-eu-crop-empty {
+		font-size: 0.75rem;
+		color: #558b2f;
+		font-weight: 600;
+	}
+	.pub-eu-crop-tools {
+		display: flex;
+		gap: 0.3rem;
+		margin: 0.25rem 0;
+	}
+	body.page-pub-eu-direct .pub-eu-month.is-free {
+		background: #e8f5e9 !important;
+		color: #1b5e20 !important;
+	}
+	body.page-pub-eu-direct .pub-eu-month.is-busy {
+		background: #ffebee !important;
+		color: #b71c1c !important;
+	}
+	body.page-pub-eu-direct [data-slot] .reclama-slot-preview.has-eu-live-preview {
+		background-size: cover !important;
+		background-position: center !important;
+		background-repeat: no-repeat !important;
+	}
+	body.page-pub-eu-direct [data-slot] .reclama-slot-preview.has-eu-live-preview video,
+	body.page-pub-eu-direct [data-slot] .reclama-slot-preview.has-eu-live-preview img.eu-wire-prev {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
 	}
 	/* Taburi EU: verde site, text vizibil */
 	body.page-pub-eu-direct .pub-tab {
@@ -3043,6 +3133,11 @@ document.addEventListener("DOMContentLoaded", function () {
 	});
 });
 </script>
+{% if pub_eu_direct_mode %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" crossorigin="anonymous"></script>
+<script src="{% static 'js/pub-eu-direct.js' %}?v=1-eu-months-crop"></script>
+{% endif %}
 <style>
 	body.page-publicitate-harta .reclama-home-wire [data-slot].pub-wire-selected,
 	body.page-publicitate-harta .reclama-pt-wire [data-slot].pub-wire-selected,

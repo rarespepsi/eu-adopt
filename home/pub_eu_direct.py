@@ -4,6 +4,7 @@ Fără tarife, fără coș.
 """
 from __future__ import annotations
 
+import calendar
 import json
 import logging
 from datetime import date, timedelta
@@ -17,7 +18,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
-from home.models import ReclamaSlotNote
+from home.models import PublicitateOrder, PublicitateOrderLine, ReclamaSlotNote
 from home.pub_markets import PUB_MARKET_EU
 from home.pub_slot_defaults import pub_slot_fetch_notes, pub_slot_live_creative
 
@@ -33,6 +34,21 @@ PUB_EU_DIRECT_SECTIONS: tuple[tuple[str, str], ...] = (
 )
 
 _PT_MAIN_SLOTS = frozenset({"P4.3", "P5.1", "P5.2", "P5.3"})
+_EU_MONTH_COUNT = 34
+_RO_MONTH_LABELS = (
+    "Ian",
+    "Feb",
+    "Mar",
+    "Apr",
+    "Mai",
+    "Iun",
+    "Iul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+)
 
 
 def _eu_direct_slot_rows(section: str) -> list[dict]:
@@ -52,6 +68,118 @@ def _parse_iso_date(raw: str) -> date | None:
         return date.fromisoformat(s)
     except ValueError:
         return None
+
+
+def _month_start(d: date) -> date:
+    return date(d.year, d.month, 1)
+
+
+def _month_end(d: date) -> date:
+    last = calendar.monthrange(d.year, d.month)[1]
+    return date(d.year, d.month, last)
+
+
+def _ranges_overlap(a0: date, a1: date, b0: date, b1: date) -> bool:
+    return a0 <= b1 and b0 <= a1
+
+
+def _eu_occupied_ranges(section: str, slot: str) -> list[tuple[date, date]]:
+    """Intervale ocupate: notă EU (assets) + comenzi plătite pe același slot."""
+    ranges: list[tuple[date, date]] = []
+    note = (
+        ReclamaSlotNote.objects.filter(
+            section=section, slot_code=slot, market=PUB_MARKET_EU
+        ).first()
+    )
+    if note:
+        try:
+            from home.views import _pt_pub_slot_parse_note
+
+            parsed = _pt_pub_slot_parse_note(note) or {}
+            assets = parsed.get("assets") or []
+            found = False
+            if isinstance(assets, list):
+                for a in assets:
+                    if not isinstance(a, dict):
+                        continue
+                    s = _parse_iso_date(str(a.get("start") or ""))
+                    e = _parse_iso_date(str(a.get("end") or ""))
+                    if s and e:
+                        ranges.append((s, e))
+                        found = True
+            if not found and (
+                parsed.get("img") or parsed.get("video") or (note.text or "").strip()
+            ):
+                t = timezone.localdate()
+                ranges.append((_month_start(t), _month_end(t)))
+        except Exception:
+            pass
+
+    now = timezone.now()
+    busy_qs = (
+        PublicitateOrderLine.objects.filter(
+            order__status=PublicitateOrder.STATUS_PAID,
+            section=section,
+            slot_code=slot,
+            starts_at__isnull=False,
+            ends_at__isnull=False,
+            ends_at__gt=now,
+        )
+        .order_by("starts_at")
+        .values("starts_at", "ends_at")[:80]
+    )
+    for row in busy_qs:
+        st = row.get("starts_at")
+        en = row.get("ends_at")
+        if not st or not en:
+            continue
+        try:
+            ranges.append((timezone.localtime(st).date(), timezone.localtime(en).date()))
+        except Exception:
+            continue
+    return ranges
+
+
+def _eu_months_grid(
+    section: str,
+    slot: str,
+    *,
+    selected_start: date | None = None,
+    selected_end: date | None = None,
+) -> list[dict]:
+    """34 luni de la luna curentă: liber / ocupat + evidențiere selecție."""
+    if not slot:
+        return []
+    today = timezone.localdate()
+    cursor = _month_start(today)
+    occupied = _eu_occupied_ranges(section, slot)
+    sel_s = selected_start
+    sel_e = selected_end
+    if sel_s and sel_e and sel_e < sel_s:
+        sel_s, sel_e = sel_e, sel_s
+    out: list[dict] = []
+    for _i in range(_EU_MONTH_COUNT):
+        ms = cursor
+        me = _month_end(cursor)
+        is_occ = any(_ranges_overlap(ms, me, r0, r1) for r0, r1 in occupied)
+        in_sel = bool(sel_s and sel_e and _ranges_overlap(ms, me, sel_s, sel_e))
+        out.append(
+            {
+                "key": f"{ms.year}-{ms.month:02d}",
+                "year": ms.year,
+                "month": ms.month,
+                "label": f"{_RO_MONTH_LABELS[ms.month - 1]} {str(ms.year)[2:]}",
+                "start": ms.isoformat(),
+                "end": me.isoformat(),
+                "occupied": is_occ,
+                "selected": in_sel,
+            }
+        )
+        if cursor.month == 12:
+            cursor = date(cursor.year + 1, 1, 1)
+        else:
+            cursor = date(cursor.year, cursor.month + 1, 1)
+    return out
 
 
 def _save_eu_upload(uploaded, prefix: str) -> str:
@@ -77,7 +205,6 @@ def _build_eu_note_json(
     plain_text: str = "",
 ) -> str:
     if plain_text.strip() and not img_url and not video_url:
-        # Burtieră tip text
         return plain_text.strip()[:8000]
     payload: dict = {
         "img": img_url or "",
@@ -117,7 +244,6 @@ def publicitate_eu_direct_view(request):
     selected = (request.GET.get("slot") or request.POST.get("slot") or "").strip()
     if selected and selected not in slot_codes:
         selected = ""
-    # Nu auto-selectăm prima casetă: userul apasă pe hartă
 
     if request.method == "POST":
         action = (request.POST.get("action") or "publish").strip().lower()
@@ -131,6 +257,35 @@ def publicitate_eu_direct_view(request):
                 section=section, slot_code=slot, market=PUB_MARKET_EU
             ).delete()
             messages.success(request, f"Șters pe EU: {section}/{slot}.")
+            return redirect(f"{reverse('publicitate_eu_direct')}?sect={section}&slot={slot}")
+
+        if action == "clear_media":
+            existing = ReclamaSlotNote.objects.filter(
+                section=section, slot_code=slot, market=PUB_MARKET_EU
+            ).first()
+            if not existing:
+                messages.info(request, "Nu există media pe această casetă.")
+                return redirect(f"{reverse('publicitate_eu_direct')}?sect={section}&slot={slot}")
+            start = _parse_iso_date(request.POST.get("start_date") or "")
+            end = _parse_iso_date(request.POST.get("end_date") or "")
+            link = (request.POST.get("link") or "").strip()
+            alt = (request.POST.get("alt") or "").strip()
+            is_burtiera = section == "home" and slot == "Burtieră"
+            if is_burtiera:
+                messages.info(request, "Burtieră: folosiți Șterge pentru a elimina textul.")
+                return redirect(f"{reverse('publicitate_eu_direct')}?sect={section}&slot={slot}")
+            note_text = _build_eu_note_json(
+                img_url="",
+                video_url="",
+                link=link,
+                alt=alt,
+                start=start,
+                end=end,
+            )
+            existing.text = note_text
+            existing.updated_by = request.user
+            existing.save()
+            messages.success(request, f"Media ștearsă pe EU: {section}/{slot}.")
             return redirect(f"{reverse('publicitate_eu_direct')}?sect={section}&slot={slot}")
 
         start = _parse_iso_date(request.POST.get("start_date") or "")
@@ -212,7 +367,7 @@ def publicitate_eu_direct_view(request):
                 plain_text="",
             )
 
-        note, _created = ReclamaSlotNote.objects.update_or_create(
+        ReclamaSlotNote.objects.update_or_create(
             section=section,
             slot_code=slot,
             market=PUB_MARKET_EU,
@@ -266,8 +421,9 @@ def publicitate_eu_direct_view(request):
 
     today = timezone.localdate()
     default_end = today + timedelta(days=365)
+    start_d = _parse_iso_date(form_start) or today
+    end_d = _parse_iso_date(form_end) or default_end
     ctx = _publicitate_harta_context(request, "harta")
-    # Doar paginile EU (fără Servicii / Shop / cos_pub)
     eu_codes = {s for s, _ in PUB_EU_DIRECT_SECTIONS}
     ctx["pub_sections"] = [
         {"code": code, "label": label} for code, label in PUB_EU_DIRECT_SECTIONS
@@ -286,4 +442,15 @@ def publicitate_eu_direct_view(request):
     ctx["eu_form_link"] = form_link
     ctx["eu_form_alt"] = form_alt
     ctx["eu_form_plain"] = form_plain
+    ctx["eu_months"] = _eu_months_grid(
+        section,
+        selected,
+        selected_start=start_d if selected else None,
+        selected_end=end_d if selected else None,
+    )
+    ctx["eu_has_media"] = bool(
+        isinstance(creative, dict)
+        and not creative.get("is_default_cover", True)
+        and (creative.get("img") or creative.get("video"))
+    )
     return render(request, "anunturi/publicitate_harta.html", ctx)
