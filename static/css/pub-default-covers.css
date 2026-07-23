@@ -112,36 +112,57 @@ body.page-home-v2 #home-col-right .home-v2-slot-img a.pub-live-video-link-btn {
 	top: 0.1rem;
 	bottom: auto;
 }
-/* Bandă cursivă text pe poză */
+/* Bandă cursivă text pe poză — vizibilă, text mai mare */
 .pub-live-caption-band {
 	position: absolute;
 	left: 0;
 	right: 0;
 	bottom: 0;
-	z-index: 3;
-	height: 1.15rem;
+	z-index: 4;
+	height: clamp(2.1rem, 22%, 2.85rem);
+	min-height: 2.1rem;
 	overflow: hidden;
 	pointer-events: none;
-	background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.72) 40%, rgba(15, 23, 42, 0.88) 100%);
+	display: flex;
+	align-items: center;
+	background: linear-gradient(
+		180deg,
+		rgba(15, 23, 42, 0) 0%,
+		rgba(15, 23, 42, 0.55) 28%,
+		rgba(15, 23, 42, 0.88) 100%
+	);
 }
 .pub-live-caption-track {
 	display: inline-block;
 	white-space: nowrap;
-	padding: 0.15rem 0.4rem;
+	padding: 0.35rem 0.55rem;
 	font-family: "Segoe Script", "Brush Script MT", "Apple Chancery", cursive;
-	font-size: 0.72rem;
-	font-weight: 600;
-	letter-spacing: 0.02em;
+	font-size: clamp(1rem, 2.4vw, 1.35rem);
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	line-height: 1.15;
 	color: #fff;
-	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
-	animation: pub-live-caption-marquee 14s linear infinite;
+	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+	animation: pub-live-caption-marquee 16s linear infinite;
 }
 .pub-live-cover--strip .pub-live-caption-band {
-	height: 0.95rem;
+	height: 1.45rem;
+	min-height: 1.45rem;
 }
 .pub-live-cover--strip .pub-live-caption-track {
-	font-size: 0.58rem;
+	font-size: 0.78rem;
+	padding: 0.15rem 0.35rem;
 	animation-duration: 18s;
+}
+body.page-home-v2 .home-v2-slot-partener .pub-live-caption-band,
+body.page-home-v2 .home-v2-mobile-ad-slot .pub-live-caption-band {
+	height: clamp(2.25rem, 24%, 3rem) !important;
+	min-height: 2.25rem !important;
+}
+body.page-home-v2 .home-v2-slot-partener .pub-live-caption-track,
+body.page-home-v2 .home-v2-mobile-ad-slot .pub-live-caption-track {
+	font-size: clamp(1.05rem, 1.6vw, 1.4rem) !important;
+	font-weight: 700 !important;
 }
 @keyframes pub-live-caption-marquee {
 	0% { transform: translateX(0); }
