@@ -126,8 +126,7 @@
 								<form class="a0-eu-lang-form" action="{% url 'set_language' %}" method="post">
 									{% csrf_token %}
 									<input type="hidden" name="next" value="{{ request.get_full_path }}" />
-									<label class="a0-eu-lang-label" for="a0_eu_lang_select">{{ eu_nav_text.lang_label }}</label>
-									<select id="a0_eu_lang_select" class="a0-eu-lang-select" name="language" onchange="this.form.submit()">
+									<select id="a0_eu_lang_select" class="a0-eu-lang-select" name="language" onchange="this.form.submit()" aria-label="{{ eu_nav_text.lang_label|default:'Language' }}">
 										{% for code, label in eu_site_languages %}
 										<option value="{{ code }}"{% if code == eu_site_lang %} selected{% endif %}>{{ label }}</option>
 										{% endfor %}

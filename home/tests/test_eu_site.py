@@ -110,6 +110,8 @@ class EuSiteMiddlewareTests(TestCase):
         self.assertContains(r, 'value="de"')
         self.assertContains(r, 'value="es"')
         self.assertContains(r, 'value="pl"')
+        self.assertContains(r, "🇬🇧")
+        self.assertNotContains(r, 'a0-eu-lang-label')
         self.assertNotContains(r, ">Shop</a>")
 
     @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)

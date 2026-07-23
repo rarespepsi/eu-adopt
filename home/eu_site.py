@@ -41,6 +41,42 @@ EU_SITE_LANGUAGE_CODES = frozenset(code for code, _ in EU_SITE_LANGUAGE_CHOICES)
 
 EU_SITE_DEFAULT_LANGUAGE = "en"
 
+# Steag emoji înaintea numelui în selector (navbar)
+EU_SITE_LANGUAGE_FLAGS: dict[str, str] = {
+    "en": "🇬🇧",
+    "bg": "🇧🇬",
+    "hr": "🇭🇷",
+    "cs": "🇨🇿",
+    "da": "🇩🇰",
+    "nl": "🇳🇱",
+    "et": "🇪🇪",
+    "fi": "🇫🇮",
+    "fr": "🇫🇷",
+    "de": "🇩🇪",
+    "el": "🇬🇷",
+    "hu": "🇭🇺",
+    "ga": "🇮🇪",
+    "it": "🇮🇹",
+    "lv": "🇱🇻",
+    "lt": "🇱🇹",
+    "mt": "🇲🇹",
+    "pl": "🇵🇱",
+    "pt": "🇵🇹",
+    "ro": "🇷🇴",
+    "sk": "🇸🇰",
+    "sl": "🇸🇮",
+    "es": "🇪🇸",
+    "sv": "🇸🇪",
+}
+
+
+def eu_language_choices_with_flags() -> tuple[tuple[str, str], ...]:
+    return tuple(
+        (code, f"{EU_SITE_LANGUAGE_FLAGS.get(code, '🌐')} {name}")
+        for code, name in EU_SITE_LANGUAGE_CHOICES
+    )
+
+
 # Host-uri hub EU — doar .com (override: EUADOPT_EU_HUB_HOSTS=...).
 # .eu / .org fac 301 → .com (vezi euadopt_domains).
 _DEFAULT_EU_HUB_HOSTS = (
@@ -269,6 +305,6 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
         "eu_site_hub": hub,
         "eu_site_active": eu,
         "eu_site_lang": lang,
-        "eu_site_languages": EU_SITE_LANGUAGE_CHOICES,
+        "eu_site_languages": eu_language_choices_with_flags(),
         "eu_nav_text": eu_nav_text,
     }

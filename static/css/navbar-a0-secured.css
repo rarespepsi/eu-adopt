@@ -1303,31 +1303,38 @@ body.page-animale #A0 {
 	font-weight: 800 !important;
 }
 
-/* Hub EU (.com / .eu / .org): selector limbi în meniu */
+/* Hub EU: selector limbi compact (steag + nume, fără etichetă „Limbă”) */
 #A0.a0-eu-site #menu-main-menu > li.a0-eu-lang-item {
 	display: inline-flex !important;
 	align-items: center !important;
-	flex-wrap: wrap !important;
-	gap: 0.25rem !important;
+	flex-wrap: nowrap !important;
+	gap: 0 !important;
 	max-width: 100%;
 }
 #A0.a0-eu-site .a0-eu-lang-form {
 	display: inline-flex;
 	align-items: center;
-	gap: 0.35rem;
 	margin: 0;
 }
 #A0.a0-eu-site .a0-eu-lang-label {
-	font-size: 0.72rem;
-	color: rgba(255, 255, 255, 0.75);
-	white-space: nowrap;
+	display: none !important;
 }
 #A0.a0-eu-site .a0-eu-lang-select {
-	max-width: min(11rem, 42vw);
-	font-size: 0.78rem;
-	padding: 0.15rem 0.35rem;
+	max-width: 7.5rem;
+	width: auto;
+	min-width: 5.5rem;
+	font-size: 0.68rem;
+	line-height: 1.2;
+	padding: 0.12rem 0.2rem;
 	border-radius: 4px;
 	border: 1px solid rgba(255, 255, 255, 0.35);
 	background: rgba(15, 23, 42, 0.85);
 	color: #f8fafc;
+	cursor: pointer;
+}
+@media (max-width: 70em) {
+	#A0.a0-eu-site .a0-eu-lang-select {
+		max-width: 9rem;
+		font-size: 0.75rem;
+	}
 }
