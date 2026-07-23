@@ -1,15 +1,16 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}{% if pub_nav == 'cos' %}Coș publicitate — achiziție spații{% else %}Publicitate{% endif %} | EU Adopt{% endblock %}
-{% block body_class %}page-publicitate-harta{% endblock %}
+{% block title %}{% if pub_eu_direct_mode %}PUB EU — hartă și încărcare{% elif pub_nav == 'cos' %}Coș publicitate — achiziție spații{% else %}Publicitate{% endif %} | EU Adopt{% endblock %}
+{% block body_class %}page-publicitate-harta{% if pub_eu_direct_mode %} page-pub-eu-direct{% endif %}{% endblock %}
 
 {% block content %}
-<section id="PUBW" class="pub-wrap" aria-label="{% if pub_nav == 'cos' %}Publicitate — coș și comandă{% else %}Harta comenzi publicitate{% endif %}">
+<section id="PUBW" class="pub-wrap{% if pub_eu_direct_mode %} pub-wrap--eu-direct{% endif %}" aria-label="{% if pub_eu_direct_mode %}PUB EU — hartă casete și încărcare{% elif pub_nav == 'cos' %}Publicitate — coș și comandă{% else %}Harta comenzi publicitate{% endif %}">
 	<form id="pubCsrfHolder" class="pub-csrf-holder" style="display:none" aria-hidden="true">{% csrf_token %}</form>
 	<div class="pub-top-tabs">
 		{% for s in pub_sections %}
-			<a href="{% if pub_nav == 'cos' %}{% url 'publicitate_cos' %}?sect={{ s.code }}{% else %}{% url 'publicitate_harta' %}?sect={{ s.code }}{% endif %}" class="pub-tab{% if pub_selected_section == s.code %} is-active{% endif %}"{% if s.code == 'i_love' %} title="Hartă tarife pentru casetele publicitare pe pagina I Love din site — nu este pagina cu inimioare (/i-love/)"{% elif s.code == 'cos_pub' %} title="Hartă CC1–CC4 pentru fluxul Coș publicitate — separată de Spații I Love (IL.*)"{% endif %}>{{ s.label }}</a>
+			<a href="{% if pub_eu_direct_mode %}{% url 'publicitate_eu_direct' %}?sect={{ s.code }}{% elif pub_nav == 'cos' %}{% url 'publicitate_cos' %}?sect={{ s.code }}{% else %}{% url 'publicitate_harta' %}?sect={{ s.code }}{% endif %}" class="pub-tab{% if pub_selected_section == s.code %} is-active{% endif %}"{% if s.code == 'i_love' %} title="Hartă casete publicitare pe pagina I Love{% if not pub_eu_direct_mode %} — tarife{% endif %}"{% elif s.code == 'cos_pub' %} title="Hartă CC1–CC4 pentru fluxul Coș publicitate — separată de Spații I Love (IL.*)"{% endif %}>{{ s.label }}</a>
 		{% endfor %}
+		{% if not pub_eu_direct_mode %}
 		{% if pub_nav == 'harta' %}
 		<a href="{% url 'publicitate_cos' %}?sect={{ pub_selected_section }}" class="pub-tab pub-tab--pub-flow" title="Deschide fluxul coș și comandă">Coș publicitate</a>
 		{% elif pub_nav == 'cos' %}
@@ -18,15 +19,94 @@
 		<a href="{{ pub_my_orders_url }}" class="pub-tab pub-tab--my-orders" title="Vezi comenzile publicitare plătite și formularul de materiale">
 			Comenzile mele publicitare{% if pub_my_orders_pending_materials %} <span class="pub-my-orders-badge">{{ pub_my_orders_pending_materials }}</span>{% elif pub_my_orders_total %} <span class="pub-my-orders-badge pub-my-orders-badge--muted">{{ pub_my_orders_total }}</span>{% endif %}
 		</a>
+		{% endif %}
 	</div>
-	{% if pub_superuser_eu_client %}
+	{% if pub_eu_direct_mode %}
+	<p class="pub-eu-super-banner">PUB EU (superuser): apasă caseta pe hartă → perioadă + foto/video → <strong>Postează</strong>. Live pe <strong>euadopt.com / .de / .fr / .es</strong> (nu pe .ro). Fără tarife, fără coș.</p>
+	{% elif pub_superuser_eu_client %}
 	<p class="pub-eu-super-banner">Mod superuser: tu ești clientul EU — ce rezervi și încarci aici apare pe <strong>euadopt.com / .de / .fr / .es</strong>, nu pe .ro.</p>
 	{% endif %}
-	{% if pub_prelaunch_free %}
+	{% if pub_prelaunch_free and not pub_eu_direct_mode %}
 	<p class="pub-prelaunch-banner">{{ pub_prelaunch_banner }} · maximum {{ pub_max_slots_per_user }} casetă publicitară per cont · {% if pub_max_weeks_per_order == 1 %}7 zile (1 bloc săptămânal){% else %}{{ pub_max_weeks_per_order }} săptămâni{% endif %} per rezervare{% if pub_slots_remaining is not None %} · {% if pub_slots_remaining %}mai puteți rezerva {{ pub_slots_remaining }}{% else %}ați folosit caseta gratuită{% endif %}{% endif %}</p>
 	{% endif %}
-	<div class="pub-grid">
+	<div class="pub-grid{% if pub_eu_direct_mode %} pub-grid--eu-direct{% endif %}">
 		<aside class="pub-c3">
+			{% if pub_eu_direct_mode %}
+			<h3>Încărcare EU{% if eu_slot %} · {{ eu_slot }}{% endif %}</h3>
+			<div id="pubDetailsEmpty" class="pub-empty"{% if eu_slot %} hidden{% endif %}>Selectează un slot din hartă.</div>
+			{% if eu_slot %}
+			<form method="post" enctype="multipart/form-data" class="pub-eu-upload-form" id="pubEuUploadForm" action="{% url 'publicitate_eu_direct' %}?sect={{ pub_selected_section }}&amp;slot={{ eu_slot|urlencode }}">
+				{% csrf_token %}
+				<input type="hidden" name="sect" value="{{ pub_selected_section }}" />
+				<input type="hidden" name="slot" value="{{ eu_slot }}" />
+				<input type="hidden" name="keep_media" value="1" />
+				{% if eu_creative and not eu_creative.is_default_cover %}
+				<div class="pub-eu-preview">
+					{% if eu_creative.img %}<img src="{{ eu_creative.img }}" alt="" />{% endif %}
+					{% if eu_creative.video %}<video src="{{ eu_creative.video }}" controls></video>{% endif %}
+					<p>Live pe EU{% if eu_creative.link %} · {{ eu_creative.link }}{% endif %}</p>
+				</div>
+				{% elif eu_note %}
+				<div class="pub-eu-preview"><p>Notă EU activă.</p></div>
+				{% endif %}
+				<label class="pub-eu-field">De la <input type="date" name="start_date" value="{{ eu_today }}" required /></label>
+				<label class="pub-eu-field">Până la <input type="date" name="end_date" value="{{ eu_default_end }}" required /></label>
+				{% if pub_selected_section == 'home' and eu_slot == 'Burtieră' %}
+				<label class="pub-eu-field">Text burtieră
+					<textarea name="plain_text" rows="3" maxlength="8000" placeholder="Text pe bandă…">{{ eu_form_plain }}</textarea>
+				</label>
+				<label class="pub-eu-field">sau Link
+					<input type="url" name="link" placeholder="https://…" value="{{ eu_form_link }}" />
+				</label>
+				{% else %}
+				<label class="pub-eu-field">Imagine
+					<input type="file" name="image" accept="image/*" />
+				</label>
+				<label class="pub-eu-field">sau Video
+					<input type="file" name="video" accept="video/*" />
+				</label>
+				<label class="pub-eu-field">Link la click
+					<input type="url" name="link" placeholder="https://… sau /pets/12/" value="{{ eu_form_link }}" />
+				</label>
+				<label class="pub-eu-field">Text / alt
+					<input type="text" name="alt" maxlength="200" value="{{ eu_form_alt }}" placeholder="Descriere scurtă" />
+				</label>
+				{% endif %}
+				<div class="pub-eu-actions">
+					<button type="submit" name="action" value="publish" class="pub-eu-btn pub-eu-btn--go">Postează</button>
+					<button type="submit" name="action" value="publish" class="pub-eu-btn pub-eu-btn--mod">Modifică</button>
+					<button type="submit" name="action" value="clear" class="pub-eu-btn pub-eu-btn--clear" onclick="return confirm('Ștergi materialul EU de pe această casetă?');">Șterge</button>
+				</div>
+			</form>
+			{% endif %}
+			{# Stub-uri pentru JS-ul hărții (wire click → redirect; evită erori null) #}
+			<div id="pubDetailsInfo" class="pub-details-info" hidden></div>
+			<form id="pubDetailsForm" class="pub-form" hidden aria-hidden="true">
+				<span id="pubDetailCode"></span><span id="pubDetailTitle"></span><span id="pubDetailTypes"></span>
+				<span id="pubDetailUnit"></span><span id="pubDetailPrice"></span><span id="pubDetailPeriodPrice"></span>
+				<span id="pubDetailDiscount"></span><span id="pubDetailFinalPrice"></span>
+				<button id="pubAddBtn" type="button" hidden></button>
+				<input id="pubQty" type="hidden" value="1" />
+				<label id="pubQtyLabel" hidden></label>
+				<div id="pubQtyPresets" hidden></div>
+				<p id="pubPrelaunchDurationHint" hidden></p>
+				<input id="pubStartDate" type="hidden" />
+				<button type="button" id="pubOpenWeekPicker" hidden></button>
+				<div id="pubWeekSummary" hidden></div>
+				<button type="button" id="pubWeekModifyBtn" hidden></button>
+				<div id="pubAvailabilityInfo" hidden></div>
+				<div id="pubNoteWrap" hidden><textarea id="pubNote"></textarea><p id="pubNoteHint"></p></div>
+			</form>
+			<div id="pubWeekModal" hidden>
+				<button type="button" id="pubWeekPrev"></button>
+				<strong id="pubWeekHeadTitle"></strong>
+				<button type="button" id="pubWeekNext"></button>
+				<button type="button" id="pubWeekCloseBtn"></button>
+				<button type="button" id="pubWeekCancelBtn"></button>
+				<button type="button" id="pubWeekAcceptBtn"></button>
+				<div id="pubWeekMonths"></div>
+			</div>
+			{% else %}
 			<h3>Detalii slot</h3>
 			<div id="pubDetailsEmpty" class="pub-empty">Selectează un slot din hartă.</div>
 			<div id="pubDetailsInfo" class="pub-details-info" hidden></div>
@@ -83,6 +163,7 @@
 					<div id="pubWeekMonths" class="pub-week-months"></div>
 				</div>
 			</div>
+			{% endif %}
 		</aside>
 		<main class="pub-c2">
 			<h3 class="pub-c2-heading">Hartă · {{ pub_selected_section|upper }}</h3>
@@ -95,7 +176,7 @@
 				</div>
 				<div class="pub-c2-below-map">
 					<p class="pub-map-hint">
-						<strong>Schema HOME</strong> — pozițiile corespund paginii principale. Apasă pe <strong>A5</strong>, <strong>A6</strong> sau <strong>Burtieră</strong> pentru detalii și coș.
+						<strong>Schema HOME</strong> — pozițiile corespund paginii principale. Apasă pe <strong>A5</strong>, <strong>A6</strong> sau <strong>Burtieră</strong> pentru {% if pub_eu_direct_mode %}perioadă + încărcare / Postează{% else %}detalii și coș{% endif %}.
 						Caseta <strong>A3</strong> este <strong>închiriabilă la cerere</strong> (nu se comandă direct din această pagină). Grila <strong>A2</strong> este pentru promovarea anunțurilor de adopție (flux separat).
 					</p>
 				</div>
@@ -183,12 +264,21 @@
 				{% endif %}
 			</div>
 		</main>
+		{% if not pub_eu_direct_mode %}
 		<aside class="pub-c1">
 			<h3>Coș publicitate</h3>
 			<div id="pubCartList" class="pub-cart-list"></div>
 			<div class="pub-cart-total">Total: <strong id="pubCartTotal">0 lei</strong></div>
 			<button type="button" class="pub-pay-btn pub-pay-btn--site-cart" id="pubTransferSiteCartBtn" data-transfer-url="{% url 'publicitate_transfer_site_cart' %}" data-fallback-url="{% url 'i_love_cos' %}">Coș General</button>
 		</aside>
+		{% else %}
+		{# Stub-uri minime ca JS-ul hărții să nu cadă pe null #}
+		<aside class="pub-c1" hidden aria-hidden="true">
+			<div id="pubCartList"></div>
+			<strong id="pubCartTotal"></strong>
+			<button type="button" id="pubTransferSiteCartBtn" hidden></button>
+		</aside>
+		{% endif %}
 	</div>
 </section>
 {{ pub_slot_map|json_script:"pub-slot-map-json" }}
@@ -373,6 +463,69 @@
 				minmax(9.5rem, 12.5rem);
 		}
 	}
+	/* PUB EU direct: 2 coloane (formular | hartă), fără coș */
+	.page-publicitate-harta .pub-grid.pub-grid--eu-direct,
+	.page-publicitate-harta.page-pub-eu-direct .pub-grid--eu-direct {
+		grid-template-columns: minmax(15rem, 22rem) minmax(0, 1fr) !important;
+	}
+	.page-publicitate-harta .pub-grid--eu-direct .pub-c1[hidden] {
+		display: none !important;
+	}
+	.pub-eu-upload-form {
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+		overflow: auto;
+		max-height: 100%;
+		font-size: 0.82rem;
+	}
+	.pub-eu-field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		font-weight: 600;
+		color: #5c3c00;
+	}
+	.pub-eu-field input,
+	.pub-eu-field textarea {
+		font-weight: 400;
+		padding: 0.35rem 0.45rem;
+		border: 1px solid #c9a66b;
+		border-radius: 6px;
+		background: #fff;
+	}
+	.pub-eu-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		margin-top: 0.35rem;
+	}
+	.pub-eu-btn {
+		border: 0;
+		border-radius: 8px;
+		padding: 0.45rem 0.75rem;
+		font-weight: 700;
+		cursor: pointer;
+		font-size: 0.8rem;
+	}
+	.pub-eu-btn--go { background: #2e7d32; color: #fff; }
+	.pub-eu-btn--mod { background: #1565c0; color: #fff; }
+	.pub-eu-btn--clear { background: #ffebee; color: #b71c1c; }
+	.pub-eu-preview {
+		padding: 0.4rem;
+		background: #f5f0e6;
+		border-radius: 8px;
+		margin-bottom: 0.25rem;
+	}
+	.pub-eu-preview img,
+	.pub-eu-preview video {
+		max-width: 100%;
+		max-height: 120px;
+		display: block;
+		border-radius: 6px;
+		margin-bottom: 0.25rem;
+	}
+	.pub-eu-preview p { margin: 0; font-size: 0.72rem; color: #5c3c00; }
 	.page-publicitate-harta .pub-grid > * {
 		min-width: 0;
 	}
@@ -1806,6 +1959,8 @@ document.addEventListener("DOMContentLoaded", function () {
 	const a2Images = JSON.parse(document.getElementById("pub-a2-images-json").textContent || "[]");
 	const a13Images = JSON.parse(document.getElementById("pub-a13-images-json").textContent || "[]");
 	const staticBase = "{% get_static_prefix %}";
+	var EU_DIRECT = {% if pub_eu_direct_mode %}true{% else %}false{% endif %};
+	var euDirectBase = "{% url 'publicitate_eu_direct' %}";
 	var pubPrelaunchFree = false;
 	var pubMaxSlotsPerUser = null;
 	var pubMaxWeeksPerOrder = 48;
@@ -2089,9 +2244,32 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
 	function showDetails(slot) {
+		if (EU_DIRECT) {
+			var code = (slot && slot.code) || "";
+			if (!code) return;
+			var qs = new URLSearchParams(window.location.search);
+			var curSlot = (qs.get("slot") || "").trim();
+			var curSect = (qs.get("sect") || section || "home").trim().toLowerCase();
+			if (curSlot === code && curSect === String(section || "").toLowerCase()) {
+				document.querySelectorAll("[data-slot]").forEach(function (node) {
+					node.classList.toggle(
+						"pub-wire-selected",
+						(node.getAttribute("data-slot") || "").trim() === code
+					);
+				});
+				return;
+			}
+			window.location.href =
+				euDirectBase +
+				"?sect=" +
+				encodeURIComponent(section) +
+				"&slot=" +
+				encodeURIComponent(code);
+			return;
+		}
 		hideInfo();
-		empty.hidden = true;
-		form.hidden = false;
+		if (empty) empty.hidden = true;
+		if (form) form.hidden = false;
 		if (addBtn) addBtn.disabled = false;
 		document.getElementById("pubDetailCode").textContent = slot.code;
 		document.getElementById("pubDetailTitle").textContent = slot.title;
@@ -2730,8 +2908,8 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 	renderSlots();
 	selectInitialSlotFromUrl();
-	if (!selected) showEmpty();
-	renderCart();
+	if (!selected && !EU_DIRECT) showEmpty();
+	if (!EU_DIRECT) renderCart();
 
 	window.addEventListener("storage", function (ev) {
 		if (ev.key === PUB_CART_STORAGE_KEY) {

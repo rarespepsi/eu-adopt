@@ -117,8 +117,7 @@ def publicitate_eu_direct_view(request):
     selected = (request.GET.get("slot") or request.POST.get("slot") or "").strip()
     if selected and selected not in slot_codes:
         selected = ""
-    if not selected and slots:
-        selected = (slots[0].get("code") or "").strip()
+    # Nu auto-selectăm prima casetă: userul apasă pe hartă
 
     if request.method == "POST":
         action = (request.POST.get("action") or "publish").strip().lower()
@@ -228,9 +227,16 @@ def publicitate_eu_direct_view(request):
         )
         return redirect(f"{reverse('publicitate_eu_direct')}?sect={section}&slot={slot}")
 
-    # GET — preview curent
+    # GET — aceeași hartă (wire) ca PUB, fără coș/tarife; panou stânga = upload EU
+    from home.views import _publicitate_harta_context
+
     current = None
     creative = None
+    form_start = ""
+    form_end = ""
+    form_link = ""
+    form_alt = ""
+    form_plain = ""
     if selected:
         notes = pub_slot_fetch_notes(section, [selected], market=PUB_MARKET_EU)
         current = notes.get(selected)
@@ -238,22 +244,46 @@ def publicitate_eu_direct_view(request):
             creative = pub_slot_live_creative(
                 section, selected, current, market=PUB_MARKET_EU, lang="en"
             )
+            try:
+                from home.views import _pt_pub_slot_parse_note
+
+                parsed = _pt_pub_slot_parse_note(current) or {}
+                form_link = (parsed.get("link") or "").strip()
+                form_alt = (parsed.get("alt") or "").strip()
+                assets = parsed.get("assets") or []
+                if isinstance(assets, list) and assets:
+                    a0 = assets[0] if isinstance(assets[0], dict) else {}
+                    form_start = (a0.get("start") or "").strip()
+                    form_end = (a0.get("end") or "").strip()
+                    if not form_link:
+                        form_link = (a0.get("link") or "").strip()
+                    if not form_alt:
+                        form_alt = (a0.get("alt") or "").strip()
+                if section == "home" and selected == "Burtieră":
+                    form_plain = (getattr(current, "text", None) or "")[:8000]
+            except Exception:
+                pass
 
     today = timezone.localdate()
-    from datetime import timedelta
-
     default_end = today + timedelta(days=365)
-    return render(
-        request,
-        "anunturi/publicitate_eu_direct.html",
-        {
-            "eu_sections": PUB_EU_DIRECT_SECTIONS,
-            "eu_section": section,
-            "eu_slots": slots,
-            "eu_slot": selected,
-            "eu_note": current,
-            "eu_creative": creative,
-            "eu_today": today.isoformat(),
-            "eu_default_end": default_end.isoformat(),
-        },
-    )
+    ctx = _publicitate_harta_context(request, "harta")
+    # Doar paginile EU (fără Servicii / Shop / cos_pub)
+    eu_codes = {s for s, _ in PUB_EU_DIRECT_SECTIONS}
+    ctx["pub_sections"] = [
+        {"code": code, "label": label} for code, label in PUB_EU_DIRECT_SECTIONS
+    ]
+    if section not in eu_codes:
+        section = "home"
+    ctx["pub_selected_section"] = section
+    ctx["pub_initial_slot"] = selected or ""
+    ctx["pub_eu_direct_mode"] = True
+    ctx["pub_nav"] = "eu_direct"
+    ctx["eu_slot"] = selected
+    ctx["eu_note"] = current
+    ctx["eu_creative"] = creative
+    ctx["eu_today"] = form_start or today.isoformat()
+    ctx["eu_default_end"] = form_end or default_end.isoformat()
+    ctx["eu_form_link"] = form_link
+    ctx["eu_form_alt"] = form_alt
+    ctx["eu_form_plain"] = form_plain
+    return render(request, "anunturi/publicitate_harta.html", ctx)
