@@ -109,7 +109,7 @@ class PubMarketNotesTests(TestCase):
         r = c.get(reverse("publicitate_eu_direct"))
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "PUB EU")
-        self.assertContains(r, "Hartă")
+        self.assertContains(r, "pub-eu-quad")
         self.assertContains(r, "pub-home-wire-clip")
         self.assertContains(r, "Postează")
         tiny = SimpleUploadedFile(

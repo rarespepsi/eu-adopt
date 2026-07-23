@@ -21,92 +21,93 @@
 		</a>
 		{% endif %}
 	</div>
-	{% if pub_eu_direct_mode %}
-	<p class="pub-eu-super-banner">PUB EU (superuser): apasă caseta pe hartă → perioadă + foto/video → <strong>Postează</strong>. Live pe <strong>euadopt.com / .de / .fr / .es</strong> (nu pe .ro). Fără tarife, fără coș.</p>
-	{% elif pub_superuser_eu_client %}
+	{% if pub_superuser_eu_client and not pub_eu_direct_mode %}
 	<p class="pub-eu-super-banner">Mod superuser: tu ești clientul EU — ce rezervi și încarci aici apare pe <strong>euadopt.com / .de / .fr / .es</strong>, nu pe .ro.</p>
 	{% endif %}
 	{% if pub_prelaunch_free and not pub_eu_direct_mode %}
 	<p class="pub-prelaunch-banner">{{ pub_prelaunch_banner }} · maximum {{ pub_max_slots_per_user }} casetă publicitară per cont · {% if pub_max_weeks_per_order == 1 %}7 zile (1 bloc săptămânal){% else %}{{ pub_max_weeks_per_order }} săptămâni{% endif %} per rezervare{% if pub_slots_remaining is not None %} · {% if pub_slots_remaining %}mai puteți rezerva {{ pub_slots_remaining }}{% else %}ați folosit caseta gratuită{% endif %}{% endif %}</p>
 	{% endif %}
 	<div class="pub-grid{% if pub_eu_direct_mode %} pub-grid--eu-direct{% endif %}">
-		<aside class="pub-c3">
-			{% if pub_eu_direct_mode %}
-			<h3>Încărcare EU{% if eu_slot %} · {{ eu_slot }}{% endif %}</h3>
-			<div id="pubDetailsEmpty" class="pub-empty"{% if eu_slot %} hidden{% endif %}>Selectează un slot din hartă.</div>
-			{% if eu_slot %}
-			<form method="post" enctype="multipart/form-data" class="pub-eu-upload-form" id="pubEuUploadForm" action="{% url 'publicitate_eu_direct' %}?sect={{ pub_selected_section }}&amp;slot={{ eu_slot|urlencode }}">
-				{% csrf_token %}
-				<input type="hidden" name="sect" value="{{ pub_selected_section }}" />
-				<input type="hidden" name="slot" value="{{ eu_slot }}" />
-				<input type="hidden" name="keep_media" value="1" />
+		{% if pub_eu_direct_mode %}
+		{# 2/4 stânga: două casete una lângă alta (perioadă | materiale) · 2/4 dreapta: tablou wire #}
+		<form method="post" enctype="multipart/form-data" class="pub-eu-quad" id="pubEuUploadForm" action="{% if eu_slot %}{% url 'publicitate_eu_direct' %}?sect={{ pub_selected_section }}&amp;slot={{ eu_slot|urlencode }}{% else %}{% url 'publicitate_eu_direct' %}?sect={{ pub_selected_section }}{% endif %}">
+			{% csrf_token %}
+			<input type="hidden" name="sect" value="{{ pub_selected_section }}" />
+			<input type="hidden" name="slot" value="{{ eu_slot }}" />
+			<input type="hidden" name="keep_media" value="1" />
+			<aside class="pub-eu-box pub-eu-box--period" aria-label="Perioadă">
+				{% if eu_slot %}<p class="pub-eu-slot-tag">{{ pub_selected_section|upper }} · {{ eu_slot }}</p>{% endif %}
+				<label class="pub-eu-field">De la
+					<input type="date" name="start_date" value="{{ eu_today }}"{% if eu_slot %} required{% endif %} />
+				</label>
+				<label class="pub-eu-field">Până la
+					<input type="date" name="end_date" value="{{ eu_default_end }}"{% if eu_slot %} required{% endif %} />
+				</label>
+			</aside>
+			<aside class="pub-eu-box pub-eu-box--media" aria-label="Materiale">
 				{% if eu_creative and not eu_creative.is_default_cover %}
 				<div class="pub-eu-preview">
 					{% if eu_creative.img %}<img src="{{ eu_creative.img }}" alt="" />{% endif %}
 					{% if eu_creative.video %}<video src="{{ eu_creative.video }}" controls></video>{% endif %}
-					<p>Live pe EU{% if eu_creative.link %} · {{ eu_creative.link }}{% endif %}</p>
 				</div>
-				{% elif eu_note %}
-				<div class="pub-eu-preview"><p>Notă EU activă.</p></div>
 				{% endif %}
-				<label class="pub-eu-field">De la <input type="date" name="start_date" value="{{ eu_today }}" required /></label>
-				<label class="pub-eu-field">Până la <input type="date" name="end_date" value="{{ eu_default_end }}" required /></label>
 				{% if pub_selected_section == 'home' and eu_slot == 'Burtieră' %}
 				<label class="pub-eu-field">Text burtieră
 					<textarea name="plain_text" rows="3" maxlength="8000" placeholder="Text pe bandă…">{{ eu_form_plain }}</textarea>
 				</label>
-				<label class="pub-eu-field">sau Link
+				<label class="pub-eu-field">Link
 					<input type="url" name="link" placeholder="https://…" value="{{ eu_form_link }}" />
 				</label>
 				{% else %}
 				<label class="pub-eu-field">Imagine
-					<input type="file" name="image" accept="image/*" />
+					<input type="file" name="image" accept="image/*"{% if not eu_slot %} disabled{% endif %} />
 				</label>
-				<label class="pub-eu-field">sau Video
-					<input type="file" name="video" accept="video/*" />
+				<label class="pub-eu-field">Video
+					<input type="file" name="video" accept="video/*"{% if not eu_slot %} disabled{% endif %} />
 				</label>
-				<label class="pub-eu-field">Link la click
-					<input type="url" name="link" placeholder="https://… sau /pets/12/" value="{{ eu_form_link }}" />
+				<label class="pub-eu-field">Link
+					<input type="url" name="link" placeholder="https://… sau /pets/12/" value="{{ eu_form_link }}"{% if not eu_slot %} disabled{% endif %} />
 				</label>
-				<label class="pub-eu-field">Text / alt
-					<input type="text" name="alt" maxlength="200" value="{{ eu_form_alt }}" placeholder="Descriere scurtă" />
+				<label class="pub-eu-field">Alt
+					<input type="text" name="alt" maxlength="200" value="{{ eu_form_alt }}" placeholder="Descriere"{% if not eu_slot %} disabled{% endif %} />
 				</label>
 				{% endif %}
 				<div class="pub-eu-actions">
-					<button type="submit" name="action" value="publish" class="pub-eu-btn pub-eu-btn--go">Postează</button>
-					<button type="submit" name="action" value="publish" class="pub-eu-btn pub-eu-btn--mod">Modifică</button>
-					<button type="submit" name="action" value="clear" class="pub-eu-btn pub-eu-btn--clear" onclick="return confirm('Ștergi materialul EU de pe această casetă?');">Șterge</button>
+					<button type="submit" name="action" value="publish" class="pub-eu-btn pub-eu-btn--go"{% if not eu_slot %} disabled{% endif %}>Postează</button>
+					<button type="submit" name="action" value="publish" class="pub-eu-btn pub-eu-btn--mod"{% if not eu_slot %} disabled{% endif %}>Modifică</button>
+					<button type="submit" name="action" value="clear" class="pub-eu-btn pub-eu-btn--clear"{% if not eu_slot %} disabled{% endif %} onclick="return confirm('Ștergi materialul EU de pe această casetă?');">Șterge</button>
 				</div>
-			</form>
-			{% endif %}
-			{# Stub-uri pentru JS-ul hărții (wire click → redirect; evită erori null) #}
-			<div id="pubDetailsInfo" class="pub-details-info" hidden></div>
-			<form id="pubDetailsForm" class="pub-form" hidden aria-hidden="true">
-				<span id="pubDetailCode"></span><span id="pubDetailTitle"></span><span id="pubDetailTypes"></span>
-				<span id="pubDetailUnit"></span><span id="pubDetailPrice"></span><span id="pubDetailPeriodPrice"></span>
-				<span id="pubDetailDiscount"></span><span id="pubDetailFinalPrice"></span>
-				<button id="pubAddBtn" type="button" hidden></button>
-				<input id="pubQty" type="hidden" value="1" />
-				<label id="pubQtyLabel" hidden></label>
-				<div id="pubQtyPresets" hidden></div>
-				<p id="pubPrelaunchDurationHint" hidden></p>
-				<input id="pubStartDate" type="hidden" />
-				<button type="button" id="pubOpenWeekPicker" hidden></button>
-				<div id="pubWeekSummary" hidden></div>
-				<button type="button" id="pubWeekModifyBtn" hidden></button>
-				<div id="pubAvailabilityInfo" hidden></div>
-				<div id="pubNoteWrap" hidden><textarea id="pubNote"></textarea><p id="pubNoteHint"></p></div>
-			</form>
-			<div id="pubWeekModal" hidden>
-				<button type="button" id="pubWeekPrev"></button>
-				<strong id="pubWeekHeadTitle"></strong>
-				<button type="button" id="pubWeekNext"></button>
-				<button type="button" id="pubWeekCloseBtn"></button>
-				<button type="button" id="pubWeekCancelBtn"></button>
-				<button type="button" id="pubWeekAcceptBtn"></button>
-				<div id="pubWeekMonths"></div>
-			</div>
-			{% else %}
+			</aside>
+		</form>
+		<div id="pubDetailsEmpty" class="pub-empty" hidden aria-hidden="true"></div>
+		<div id="pubDetailsInfo" class="pub-details-info" hidden></div>
+		<form id="pubDetailsForm" class="pub-form" hidden aria-hidden="true">
+			<span id="pubDetailCode"></span><span id="pubDetailTitle"></span><span id="pubDetailTypes"></span>
+			<span id="pubDetailUnit"></span><span id="pubDetailPrice"></span><span id="pubDetailPeriodPrice"></span>
+			<span id="pubDetailDiscount"></span><span id="pubDetailFinalPrice"></span>
+			<button id="pubAddBtn" type="button" hidden></button>
+			<input id="pubQty" type="hidden" value="1" />
+			<label id="pubQtyLabel" hidden></label>
+			<div id="pubQtyPresets" hidden></div>
+			<p id="pubPrelaunchDurationHint" hidden></p>
+			<input id="pubStartDate" type="hidden" />
+			<button type="button" id="pubOpenWeekPicker" hidden></button>
+			<div id="pubWeekSummary" hidden></div>
+			<button type="button" id="pubWeekModifyBtn" hidden></button>
+			<div id="pubAvailabilityInfo" hidden></div>
+			<div id="pubNoteWrap" hidden><textarea id="pubNote"></textarea><p id="pubNoteHint"></p></div>
+		</form>
+		<div id="pubWeekModal" hidden>
+			<button type="button" id="pubWeekPrev"></button>
+			<strong id="pubWeekHeadTitle"></strong>
+			<button type="button" id="pubWeekNext"></button>
+			<button type="button" id="pubWeekCloseBtn"></button>
+			<button type="button" id="pubWeekCancelBtn"></button>
+			<button type="button" id="pubWeekAcceptBtn"></button>
+			<div id="pubWeekMonths"></div>
+		</div>
+		{% else %}
+		<aside class="pub-c3">
 			<h3>Detalii slot</h3>
 			<div id="pubDetailsEmpty" class="pub-empty">Selectează un slot din hartă.</div>
 			<div id="pubDetailsInfo" class="pub-details-info" hidden></div>
@@ -163,10 +164,12 @@
 					<div id="pubWeekMonths" class="pub-week-months"></div>
 				</div>
 			</div>
-			{% endif %}
 		</aside>
-		<main class="pub-c2">
+		{% endif %}
+		<main class="pub-c2{% if pub_eu_direct_mode %} pub-c2--eu-wire{% endif %}">
+			{% if not pub_eu_direct_mode %}
 			<h3 class="pub-c2-heading">Hartă · {{ pub_selected_section|upper }}</h3>
+			{% endif %}
 			<div class="pub-c2-stack">
 				{% if pub_selected_section == 'home' %}
 				<div class="pub-c2-map-half" aria-label="Schemă HOME">
@@ -174,12 +177,14 @@
 						{% include "anunturi/reclama/wires/home.html" with pub_interactive_wire=True %}
 					</div>
 				</div>
+				{% if not pub_eu_direct_mode %}
 				<div class="pub-c2-below-map">
 					<p class="pub-map-hint">
-						<strong>Schema HOME</strong> — pozițiile corespund paginii principale. Apasă pe <strong>A5</strong>, <strong>A6</strong> sau <strong>Burtieră</strong> pentru {% if pub_eu_direct_mode %}perioadă + încărcare / Postează{% else %}detalii și coș{% endif %}.
+						<strong>Schema HOME</strong> — pozițiile corespund paginii principale. Apasă pe <strong>A5</strong>, <strong>A6</strong> sau <strong>Burtieră</strong> pentru detalii și coș.
 						Caseta <strong>A3</strong> este <strong>închiriabilă la cerere</strong> (nu se comandă direct din această pagină). Grila <strong>A2</strong> este pentru promovarea anunțurilor de adopție (flux separat).
 					</p>
 				</div>
+				{% endif %}
 				{% elif pub_selected_section == 'pt' %}
 				<div class="pub-c2-map-half" aria-label="Schemă PT">
 					<div class="pub-home-wire-clip pub-home-wire-clip--pt">
@@ -463,69 +468,188 @@
 				minmax(9.5rem, 12.5rem);
 		}
 	}
-	/* PUB EU direct: 2 coloane (formular | hartă), fără coș */
+	/* PUB EU: ecran în 4 — 1/4 perioadă | 1/4 materiale | 2/4 tablou wire (una lângă alta) */
 	.page-publicitate-harta .pub-grid.pub-grid--eu-direct,
 	.page-publicitate-harta.page-pub-eu-direct .pub-grid--eu-direct {
-		grid-template-columns: minmax(15rem, 22rem) minmax(0, 1fr) !important;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr) !important;
+		gap: 0.45rem !important;
+		align-items: stretch;
+		overflow: hidden;
 	}
 	.page-publicitate-harta .pub-grid--eu-direct .pub-c1[hidden] {
 		display: none !important;
 	}
-	.pub-eu-upload-form {
+	.page-publicitate-harta .pub-grid--eu-direct > #pubDetailsEmpty,
+	.page-publicitate-harta .pub-grid--eu-direct > #pubDetailsInfo,
+	.page-publicitate-harta .pub-grid--eu-direct > #pubDetailsForm,
+	.page-publicitate-harta .pub-grid--eu-direct > #pubWeekModal {
+		display: none !important;
+	}
+	.pub-eu-quad {
+		display: contents;
+	}
+	.pub-eu-box {
+		min-width: 0;
+		min-height: 0;
+		overflow: auto;
 		display: flex;
 		flex-direction: column;
-		gap: 0.45rem;
-		overflow: auto;
-		max-height: 100%;
-		font-size: 0.82rem;
+		gap: 0.4rem;
+		padding: 0.55rem;
+		border-radius: 10px;
+		box-sizing: border-box;
+		background: #fffef7;
+		border: 2px solid #d2b27a;
+	}
+	.pub-eu-box--period { grid-column: 1; grid-row: 1; }
+	.pub-eu-box--media { grid-column: 2; grid-row: 1; }
+	.page-publicitate-harta .pub-grid--eu-direct > .pub-c2--eu-wire {
+		grid-column: 3;
+		grid-row: 1;
+		min-width: 0;
+		overflow: hidden !important;
+	}
+	.page-publicitate-harta .pub-grid--eu-direct .pub-c2-below-map {
+		display: none !important;
+	}
+	.page-publicitate-harta .pub-grid--eu-direct .pub-c2-stack {
+		overflow: hidden;
+		height: 100%;
+		min-height: 0;
+	}
+	.page-publicitate-harta .pub-grid--eu-direct .pub-c2-map-half {
+		flex: 1 1 auto;
+		max-height: none;
+		overflow: hidden;
+		min-height: 0;
+	}
+	.page-publicitate-harta .pub-grid--eu-direct .pub-home-wire-clip {
+		transform: scale(0.5);
+		transform-origin: top left;
+		width: 200%;
+		height: 200%;
+		max-height: none;
+		flex: 0 0 auto;
+		box-sizing: border-box;
+	}
+	.pub-eu-slot-tag {
+		margin: 0 0 0.25rem;
+		font-size: 0.78rem;
+		font-weight: 800;
+		color: #1b5e20;
 	}
 	.pub-eu-field {
 		display: flex;
 		flex-direction: column;
 		gap: 0.2rem;
-		font-weight: 600;
-		color: #5c3c00;
+		font-weight: 700;
+		font-size: 0.8rem;
+		color: #1b5e20;
 	}
 	.pub-eu-field input,
 	.pub-eu-field textarea {
-		font-weight: 400;
-		padding: 0.35rem 0.45rem;
-		border: 1px solid #c9a66b;
+		font-weight: 500;
+		padding: 0.4rem 0.5rem;
+		border: 1px solid #81c784;
 		border-radius: 6px;
 		background: #fff;
+		color: #0f172a;
+		font-size: 0.9rem;
+		min-height: 2.1rem;
+		color-scheme: light;
+	}
+	.pub-eu-field input[type="date"] {
+		min-height: 2.35rem;
+		font-size: 1rem;
+		letter-spacing: 0.02em;
+	}
+	.pub-eu-field input[type="date"]::-webkit-calendar-picker-indicator {
+		opacity: 1;
+		cursor: pointer;
+		width: 1.15rem;
+		height: 1.15rem;
 	}
 	.pub-eu-actions {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.35rem;
-		margin-top: 0.35rem;
+		margin-top: auto;
+		padding-top: 0.35rem;
 	}
 	.pub-eu-btn {
 		border: 0;
 		border-radius: 8px;
 		padding: 0.45rem 0.75rem;
-		font-weight: 700;
+		font-weight: 800;
 		cursor: pointer;
 		font-size: 0.8rem;
 	}
-	.pub-eu-btn--go { background: #2e7d32; color: #fff; }
-	.pub-eu-btn--mod { background: #1565c0; color: #fff; }
-	.pub-eu-btn--clear { background: #ffebee; color: #b71c1c; }
+	.pub-eu-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+	.pub-eu-btn--go { background: #1b5e20; color: #fff; }
+	.pub-eu-btn--mod { background: #2e7d32; color: #fff; }
+	.pub-eu-btn--clear { background: #ffebee; color: #b71c1c; border: 1px solid #ef9a9a; }
 	.pub-eu-preview {
-		padding: 0.4rem;
-		background: #f5f0e6;
+		padding: 0.35rem;
+		background: #e8f5e9;
 		border-radius: 8px;
-		margin-bottom: 0.25rem;
 	}
 	.pub-eu-preview img,
 	.pub-eu-preview video {
 		max-width: 100%;
-		max-height: 120px;
+		max-height: 88px;
 		display: block;
 		border-radius: 6px;
-		margin-bottom: 0.25rem;
 	}
-	.pub-eu-preview p { margin: 0; font-size: 0.72rem; color: #5c3c00; }
+	/* Taburi EU: verde site, text vizibil */
+	body.page-pub-eu-direct .pub-tab {
+		background: #e8f5e9 !important;
+		border: 1px solid #81c784 !important;
+		color: #1b5e20 !important;
+	}
+	body.page-pub-eu-direct .pub-tab.is-active {
+		background: #1b5e20 !important;
+		border-color: #1b5e20 !important;
+		color: #fff !important;
+	}
+	body.page-pub-eu-direct .pub-eu-box {
+		background: #fffef7 !important;
+		border: 2px solid #a5d6a7 !important;
+		box-shadow: none !important;
+		backdrop-filter: none !important;
+	}
+	body.page-pub-eu-direct .pub-c2--eu-wire {
+		background: #fffef7 !important;
+		border: 2px solid #a5d6a7 !important;
+		box-shadow: none !important;
+		backdrop-filter: none !important;
+	}
+	body.page-pub-eu-direct .pub-eu-field,
+	body.page-pub-eu-direct .pub-eu-slot-tag {
+		color: #1b5e20 !important;
+	}
+	body.page-pub-eu-direct .pub-eu-field input,
+	body.page-pub-eu-direct .pub-eu-field textarea {
+		background: #fff !important;
+		color: #0f172a !important;
+		border-color: #81c784 !important;
+	}
+	@media (max-width: 980px) {
+		.page-publicitate-harta .pub-grid.pub-grid--eu-direct {
+			display: grid !important;
+			grid-template-columns: 1fr 1fr !important;
+			flex-direction: unset !important;
+		}
+		.pub-eu-box--period { grid-column: 1; grid-row: 1; }
+		.pub-eu-box--media { grid-column: 2; grid-row: 1; }
+		.page-publicitate-harta .pub-grid--eu-direct > .pub-c2--eu-wire {
+			grid-column: 1 / -1;
+			grid-row: 2;
+			min-height: 16rem;
+		}
+	}
 	.page-publicitate-harta .pub-grid > * {
 		min-width: 0;
 	}
