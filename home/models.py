@@ -1675,6 +1675,14 @@ class TransportVeterinaryRequest(models.Model):
     )
     judet = models.CharField("Județ", max_length=120)
     oras = models.CharField("Oraș / localitate", max_length=120)
+    country = models.CharField(
+        "Țară",
+        max_length=2,
+        blank=True,
+        default="RO",
+        db_index=True,
+        help_text="ISO 3166-1 alpha-2 (ex. RO, DE).",
+    )
     plecare = models.CharField("Punct plecare", max_length=500)
     sosire = models.CharField("Punct sosire", max_length=500)
     plecare_lat = models.CharField("Plecare lat", max_length=32, blank=True, default="")

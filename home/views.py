@@ -4250,6 +4250,19 @@ def servicii_view(request):
 
 def transport_view(request):
     """Pagina Transport – wrapper TW, layout ca PW/SW."""
+    from home.eu_countries import country_choices, default_country_hint_for_host, normalize_country_code
+    from home.eu_site import is_eu_site_host
+
+    prefill_country = "RO"
+    if is_eu_site_host(request.get_host()):
+        hint = default_country_hint_for_host(request.get_host())
+        prefill_country = hint or "RO"
+        if request.user.is_authenticated:
+            prof = getattr(request.user, "profile", None)
+            pc = normalize_country_code(getattr(prof, "country", None) if prof else None)
+            if pc:
+                prefill_country = pc
+
     ctx = {
         "google_maps_api_key": getattr(settings, "GOOGLE_MAPS_API_KEY", "") or "",
         "maps_page_origin": request.build_absolute_uri("/").rstrip("/"),
@@ -4257,6 +4270,10 @@ def transport_view(request):
         "continue_adoption_url": "",
         "prefill_judet": "",
         "prefill_oras": "",
+        "prefill_country": prefill_country,
+        "transport_country_choices": country_choices(
+            english=bool(getattr(request, "eu_site_active", False))
+        ),
         "transport_pub_slots": pub_slots_ordered(
             "transport",
             ("TDR.1", "TDR.2", "TDR.3"),
@@ -4291,10 +4308,12 @@ def _safe_local_redirect_path(path_val: str) -> str | None:
 @csrf_protect
 def transport_submit_view(request):
     """Salvează cererea de transport veterinar din formularul paginii /transport/."""
+    from home.eu_countries import normalize_country_code
     from home.eu_site import is_eu_site_host
 
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
+    country = normalize_country_code(request.POST.get("country")) or "RO"
     judet, oras = normalize_location_pair(judet, oras)
     plecare = (request.POST.get("plecare") or "").strip()
     sosire = (request.POST.get("sosire") or "").strip()
@@ -4331,6 +4350,7 @@ def transport_submit_view(request):
 
     tvr = TransportVeterinaryRequest.objects.create(
         user=request.user if request.user.is_authenticated else None,
+        country=country,
         judet=judet[:120],
         oras=oras[:120],
         plecare=plecare[:500],

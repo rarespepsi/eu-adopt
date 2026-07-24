@@ -375,9 +375,9 @@
 	align-self: center;
 }
 #TW #T1 .t1-title {
-	margin: 0 0 0.26rem;
+	margin: 0 0 0.12rem;
 	padding: 0.2rem 0.22rem;
-	min-height: 3.2rem;
+	min-height: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -392,8 +392,8 @@
 	text-align: center;
 }
 #TW #T1 .t1-intro {
-	margin: 0 0 0.3rem;
-	padding: 0.22rem 0.22rem;
+	margin: 0 0 0.28rem;
+	padding: 0.18rem 0.22rem;
 	font-size: 0.6rem;
 	line-height: 1.25;
 	color: #cbd5e1;
@@ -720,7 +720,7 @@
 		width: 100%;
 		max-width: 4rem;
 	}
-	#TW #T1 .t1-title { font-size: 0.95rem; min-height: 2.5rem; }
+	#TW #T1 .t1-title { font-size: 0.95rem; min-height: 0; }
 	#TW #T1 .t1-intro { font-size: 0.55rem; }
 	#TW #T1 .t1-label, #TW #T1 .t1-select, #TW #T1 .t1-input { font-size: 0.65rem; }
 	#TW #T1 .t1-link { font-size: 0.65rem; }
@@ -984,6 +984,9 @@
 		text-align: center;
 		justify-content: center;
 		margin: 0;
+	}
+	#TW #T1:not(.tw-t1--form-open) .t1-intro {
+		display: none;
 	}
 	#TW #T2:not(.tw-t2--hub-open) .t2-inner {
 		flex: 1 1 0;
@@ -1531,6 +1534,9 @@
 		line-height: 1.28;
 		padding: 0.4rem 0.55rem;
 		letter-spacing: 0.01em;
+	}
+	#TW #T1:not(.tw-t1--form-open) .t1-intro {
+		display: none;
 	}
 	#TW .t1-portrait-open-btn {
 		display: block !important;
