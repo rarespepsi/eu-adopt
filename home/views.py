@@ -13380,7 +13380,7 @@ def publicitate_harta_view(request):
 
 def publicitate_campanii_ro_view(request):
     """Hartă națională Campanii.ro — județe (sterilizări / info). Public."""
-    from home.campanii_ro import campanii_judete
+    from home.campanii_ro import campanii_judete, campanii_url_by_code
 
     return render(
         request,
@@ -13391,6 +13391,7 @@ def publicitate_campanii_ro_view(request):
                 key=lambda x: (x["section"], x["code"]),
             ),
             "campanii_judete": campanii_judete(),
+            "campanii_url_by_code": campanii_url_by_code(),
         },
     )
 

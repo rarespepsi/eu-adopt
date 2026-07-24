@@ -7,6 +7,52 @@ from dataclasses import dataclass
 from home.ro_location import all_counties, fold_key
 
 
+# Cod auto (AB, CJ, …) — aliniat cu id-urile SVG `ro-ab`, `ro-cj`, …
+_COUNTY_CODES: dict[str, str] = {
+    "Alba": "AB",
+    "Arad": "AR",
+    "Argeș": "AG",
+    "Bacău": "BC",
+    "Bihor": "BH",
+    "Bistrița-Năsăud": "BN",
+    "Botoșani": "BT",
+    "Brăila": "BR",
+    "Brașov": "BV",
+    "București": "B",
+    "Buzău": "BZ",
+    "Călărași": "CL",
+    "Caraș-Severin": "CS",
+    "Cluj": "CJ",
+    "Constanța": "CT",
+    "Covasna": "CV",
+    "Dâmbovița": "DB",
+    "Dolj": "DJ",
+    "Galați": "GL",
+    "Giurgiu": "GR",
+    "Gorj": "GJ",
+    "Harghita": "HR",
+    "Hunedoara": "HD",
+    "Ialomița": "IL",
+    "Iași": "IS",
+    "Ilfov": "IF",
+    "Maramureș": "MM",
+    "Mehedinți": "MH",
+    "Mureș": "MS",
+    "Neamț": "NT",
+    "Olt": "OT",
+    "Prahova": "PH",
+    "Sălaj": "SJ",
+    "Satu Mare": "SM",
+    "Sibiu": "SB",
+    "Suceava": "SV",
+    "Teleorman": "TR",
+    "Timiș": "TM",
+    "Tulcea": "TL",
+    "Vâlcea": "VL",
+    "Vaslui": "VS",
+    "Vrancea": "VN",
+}
+
 # Reședințe / localități principale (afișare pe hartă + pe pagina județului)
 _COUNTY_MAIN_CITIES: dict[str, tuple[str, ...]] = {
     "Alba": ("Alba Iulia", "Sebeș", "Aiud"),
@@ -58,6 +104,7 @@ _COUNTY_MAIN_CITIES: dict[str, tuple[str, ...]] = {
 class CampaniiJudet:
     name: str
     slug: str
+    code: str
     main_cities: tuple[str, ...]
 
 
@@ -69,7 +116,10 @@ def campanii_judete() -> list[CampaniiJudet]:
     out: list[CampaniiJudet] = []
     for name in all_counties():
         cities = _COUNTY_MAIN_CITIES.get(name) or (name,)
-        out.append(CampaniiJudet(name=name, slug=county_slug(name), main_cities=cities))
+        code = _COUNTY_CODES.get(name) or ""
+        out.append(
+            CampaniiJudet(name=name, slug=county_slug(name), code=code, main_cities=cities)
+        )
     return out
 
 
@@ -79,3 +129,14 @@ def campanii_judet_by_slug(slug: str) -> CampaniiJudet | None:
         if fold_key(j.slug.replace("-", " ")) == key or fold_key(j.name) == key:
             return j
     return None
+
+
+def campanii_url_by_code() -> dict[str, str]:
+    """{ 'AB': '/publicitate/campanii/alba/', ... } — pentru click pe SVG."""
+    from django.urls import reverse
+
+    return {
+        j.code: reverse("publicitate_campanii_judet", kwargs={"judet_slug": j.slug})
+        for j in campanii_judete()
+        if j.code
+    }
