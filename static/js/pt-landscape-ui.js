@@ -89,7 +89,7 @@
   function hasAppliedFiltersInUrl() {
     try {
       var url = new URL(window.location.href);
-      return ["species", "judet", "marime", "varsta", "varsta_band", "sex", "traits"].some(function (k) {
+      return ["species", "country", "judet", "marime", "varsta", "varsta_band", "sex", "traits"].some(function (k) {
         return url.searchParams.getAll(k).some(function (v) {
           return !!(v || "").trim();
         });

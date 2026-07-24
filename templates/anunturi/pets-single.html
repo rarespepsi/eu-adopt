@@ -1646,6 +1646,11 @@
 														</div>
 
 														<div class="mypet-add-field">
+															<label for="id_country">{% if eu_site_active %}{{ eu_ui.pet_lbl_country }}{% else %}ȚARĂ{% endif %}</label>
+															<input type="text" id="id_country" value="{{ pet.country_label|default:pet.country|default:'RO' }}" disabled />
+														</div>
+
+														<div class="mypet-add-field">
 															<label for="id_county">{% if eu_site_active %}{{ eu_ui.pet_lbl_county }}{% else %}JUDEȚ{% endif %}</label>
 															<input type="text" id="id_county" value="{{ pet.judet|default:'' }}" autocomplete="off" class="mypet-fisa-input-with-arrow" disabled />
 														</div>

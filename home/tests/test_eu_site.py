@@ -252,3 +252,13 @@ class PetFieldValueEnTests(SimpleTestCase):
         self.assertEqual(pet_field_value_en("10+ ani"), "10+ years")
         self.assertEqual(pet_field_value_en("<1 an"), "<1 year")
         self.assertEqual(pet_field_value_en("Cluj-Napoca"), "Cluj-Napoca")
+
+
+class EuCountriesTests(SimpleTestCase):
+    def test_normalize_and_labels(self):
+        from home.eu_countries import country_label, normalize_country_code
+
+        self.assertEqual(normalize_country_code("de"), "DE")
+        self.assertEqual(normalize_country_code("xx"), "")
+        self.assertEqual(country_label("RO", english=True), "Romania")
+        self.assertEqual(country_label("RO", english=False), "România")

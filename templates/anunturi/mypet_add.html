@@ -248,7 +248,18 @@
 							</div>
 
 							<div class="mypet-add-field">
-								<label for="id_county">JUDEȚ</label>
+								<label for="id_country">{% if eu_site_active %}{{ eu_ui.pet_lbl_country }}{% else %}ȚARĂ{% endif %}</label>
+								<select id="id_country" name="country">
+									{% for code, label in country_choices %}
+									<option value="{{ code }}"{% if code == country %} selected{% endif %}>{{ label }}</option>
+									{% empty %}
+									<option value="RO" selected>România</option>
+									{% endfor %}
+								</select>
+							</div>
+
+							<div class="mypet-add-field">
+								<label for="id_county" id="id_county_label">{% if eu_site_active %}{% if country and country != 'RO' %}{{ eu_ui.pet_lbl_region }}{% else %}{{ eu_ui.pet_lbl_county }}{% endif %}{% else %}JUDEȚ{% endif %}</label>
 								<input
 									type="text"
 									id="id_county"

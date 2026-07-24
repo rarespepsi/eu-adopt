@@ -5024,6 +5024,11 @@ def render_dog_profile(request, listing: AnimalListing):
     Layoutul din `pets-single.html` folosește un obiect `pet` cu câmpuri istorice.
     """
     _sync_animal_adoption_state(listing)
+    from home.eu_countries import country_label as eu_country_label
+
+    eu_en = bool(getattr(request, "eu_site_active", False))
+    ccode = (listing.country or "RO").strip().upper() or "RO"
+    clabel = eu_country_label(ccode, english=eu_en) or ("Romania" if eu_en else "România")
 
     # Mapare minimă către câmpurile folosite în șablonul existent
     pet = {
@@ -5036,6 +5041,8 @@ def render_dog_profile(request, listing: AnimalListing):
         "video": listing.video,
         "judet": listing.county,
         "oras": listing.city,
+        "country": ccode,
+        "country_label": clabel,
         "sex": listing.sex,
         "species": listing.species,
         "size": listing.size,
@@ -8428,8 +8435,13 @@ def mypet_add_view(request):
     user = request.user
     profile = getattr(user, "profile", None)
     account_profile = getattr(user, "account_profile", None)
+    from home.eu_countries import country_choices, normalize_country_code
+
     default_city = getattr(profile, "oras", "") if profile else ""
     default_county = getattr(profile, "judet", "") if profile else ""
+    default_country = normalize_country_code(getattr(profile, "country", None) if profile else None) or "RO"
+    english_ui = bool(getattr(request, "eu_site_active", False))
+    country_choice_list = country_choices(english=english_ui)
     is_public_shelter = bool(
         account_profile
         and account_profile.role == AccountProfile.ROLE_ORG
@@ -8471,6 +8483,7 @@ def mypet_add_view(request):
         age_label = (request.POST.get("age_label") or "").strip()
         city = (request.POST.get("city") or "").strip()
         county = (request.POST.get("county") or "").strip()
+        country = normalize_country_code(request.POST.get("country")) or default_country
         color = (request.POST.get("color") or "").strip()
         sterilizat = (request.POST.get("sterilizat") or "").strip()
         vaccinat = (request.POST.get("vaccinat") or "").strip()
@@ -8529,6 +8542,7 @@ def mypet_add_view(request):
                     age_label=age_label,
                     city=city,
                     county=county,
+                    country=country,
                     color=color,
                     sterilizat=sterilizat,
                     vaccinat=vaccinat,
@@ -8574,6 +8588,8 @@ def mypet_add_view(request):
             "age_label": age_label,
             "city": city or default_city,
             "county": county or default_county,
+            "country": country if request.method == "POST" else default_country,
+            "country_choices": country_choice_list,
             "color": color,
             "sterilizat": sterilizat or default_med,
             "vaccinat": vaccinat or default_med,
@@ -8625,6 +8641,8 @@ def mypet_add_view(request):
         "age_label": "",
         "city": default_city,
         "county": default_county,
+        "country": default_country,
+        "country_choices": country_choice_list,
         "color": "",
         "sterilizat": default_med,
         "vaccinat": default_med,
@@ -8672,8 +8690,17 @@ def mypet_edit_view(request, pk):
 
     profile = getattr(user, "profile", None)
     account_profile = getattr(user, "account_profile", None)
+    from home.eu_countries import country_choices, normalize_country_code
+
     default_city = getattr(profile, "oras", "") if profile else ""
     default_county = getattr(profile, "judet", "") if profile else ""
+    default_country = (
+        normalize_country_code(getattr(listing, "country", None))
+        or normalize_country_code(getattr(profile, "country", None) if profile else None)
+        or "RO"
+    )
+    english_ui = bool(getattr(request, "eu_site_active", False))
+    country_choice_list = country_choices(english=english_ui)
     is_public_shelter = bool(
         account_profile
         and account_profile.role == AccountProfile.ROLE_ORG
@@ -8705,6 +8732,7 @@ def mypet_edit_view(request, pk):
         age_label = (request.POST.get("age_label") or "").strip()
         city = (request.POST.get("city") or "").strip()
         county = (request.POST.get("county") or "").strip()
+        country = normalize_country_code(request.POST.get("country")) or default_country
         color = (request.POST.get("color") or "").strip()
         sterilizat = (request.POST.get("sterilizat") or "").strip()
         vaccinat = (request.POST.get("vaccinat") or "").strip()
@@ -8761,6 +8789,7 @@ def mypet_edit_view(request, pk):
                 listing.age_label = age_label
                 listing.city = city
                 listing.county = county
+                listing.country = country
                 listing.color = color
                 listing.sterilizat = sterilizat
                 listing.vaccinat = vaccinat
@@ -8812,6 +8841,8 @@ def mypet_edit_view(request, pk):
             "age_label": age_label,
             "city": city or default_city,
             "county": county or default_county,
+            "country": country if request.method == "POST" else default_country,
+            "country_choices": country_choice_list,
             "color": color,
             "sterilizat": sterilizat or default_med,
             "vaccinat": vaccinat or default_med,
@@ -8869,6 +8900,8 @@ def mypet_edit_view(request, pk):
         "age_label": listing.age_label or "",
         "city": listing.city or default_city,
         "county": listing.county or default_county,
+        "country": default_country,
+        "country_choices": country_choice_list,
         "color": listing.color or "",
         "sterilizat": listing.sterilizat or default_med,
         "vaccinat": listing.vaccinat or default_med,

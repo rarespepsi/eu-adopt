@@ -101,7 +101,29 @@ def pt_pets_page_context(request):
     Construiește p2_list + câmpurile de filtru pentru șablonul PT.
     Returnează dict cu cheia p2_list (listă dict-uri pet) și restul pentru template.
     """
+    from django.db.models import Q
+
+    from home.eu_countries import (
+        country_choices,
+        default_country_hint_for_host,
+        normalize_country_code,
+    )
+    from home.eu_site import is_eu_site_host
+
+    host = request.get_host()
+    eu_site = is_eu_site_host(host)
+    english_ui = bool(getattr(request, "eu_site_active", False)) or eu_site
+
+    if "country" in request.GET:
+        selected_country = normalize_country_code(request.GET.get("country"))
+    else:
+        selected_country = default_country_hint_for_host(host)
+
     selected_judet = (request.GET.get("judet") or "").strip()
+    # Județul RO se aplică doar când țara e RO (sau piața .ro).
+    if selected_country and selected_country != "RO":
+        selected_judet = ""
+
     selected_marime = (request.GET.get("marime") or "").strip()
     selected_varsta = (request.GET.get("varsta") or "").strip()
     selected_varsta_band = (request.GET.get("varsta_band") or "").strip().lower()
@@ -136,6 +158,7 @@ def pt_pets_page_context(request):
 
     filter_active = any(
         [
+            selected_country if eu_site else False,
             selected_judet,
             selected_marime,
             selected_varsta,
@@ -192,8 +215,13 @@ def pt_pets_page_context(request):
     marime_choices = ["mica", "medie", "mare"]
     varsta_choices = list(AGE_LABELS_ORDERED)
     sex_choices = ["m", "f"]
+    show_county_filter = (not eu_site) or (selected_country == "RO")
 
     qs_base = AnimalListing.objects.filter(is_published=True)
+    if not eu_site:
+        qs_base = qs_base.filter(Q(country="") | Q(country__iexact="RO"))
+    elif selected_country:
+        qs_base = qs_base.filter(country__iexact=selected_country)
 
     p2_list = []
     if not filter_active:
@@ -221,7 +249,7 @@ def pt_pets_page_context(request):
                 p2_list.append(_pt_p2_pet_dict_from_demo(d))
     else:
         qs = qs_base
-        if selected_judet:
+        if selected_judet and show_county_filter:
             qs = qs.filter(county__iexact=selected_judet)
         if selected_marime:
             qs = qs.filter(size__iexact=selected_marime)
@@ -276,12 +304,16 @@ def pt_pets_page_context(request):
 
     return {
         "p2_list": p2_list,
+        "selected_country": selected_country,
         "selected_judet": selected_judet,
         "selected_marime": selected_marime,
         "selected_varsta": selected_varsta,
         "selected_varsta_band": selected_varsta_band,
         "selected_sex": selected_sex,
         "selected_species": selected_species,
+        "country_choices": country_choices(english=english_ui),
+        "show_pt_country_filter": eu_site,
+        "show_county_filter": show_county_filter,
         "judet_choices": judet_choices,
         "marime_choices": marime_choices,
         "varsta_choices": varsta_choices,

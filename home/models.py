@@ -19,6 +19,14 @@ class UserProfile(models.Model):
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     phone = models.CharField("Telefon", max_length=20, blank=True)
+    country = models.CharField(
+        "Țară",
+        max_length=2,
+        blank=True,
+        default="RO",
+        db_index=True,
+        help_text="ISO 3166-1 alpha-2. Implicit România.",
+    )
     judet = models.CharField("Județ", max_length=120, blank=True)
     oras = models.CharField("Oraș / Localitate", max_length=120, blank=True)
     # Date firmă / colaborator (ONG / SRL / Colaborator servicii-produse)
@@ -351,6 +359,14 @@ class AnimalListing(models.Model):
     age_label = models.CharField("Vârstă (eticheta)", max_length=20, blank=True)
     city = models.CharField("Oraș / Localitate", max_length=120, blank=True)
     county = models.CharField("Județ", max_length=120, blank=True)
+    country = models.CharField(
+        "Țară",
+        max_length=2,
+        blank=True,
+        default="RO",
+        db_index=True,
+        help_text="ISO 3166-1 alpha-2 (ex. RO, DE). Implicit România.",
+    )
 
     # Poze (cale în DB, fișierul în MEDIA; la lansare putem folosi Cloudinary)
     photo_1 = models.ImageField("Poza 1", upload_to="animals/", blank=True, null=True)

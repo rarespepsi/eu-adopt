@@ -1092,22 +1092,22 @@
 							<p class="p3-title">{% if eu_site_active %}{{ eu_ui.pt_search_title }}{% else %}Caută prietenul tău{% endif %}</p>
 							<ul class="p3-tip-butoane clearfix animal_filter_list" id="pt_animal_filter_tabs">
 								<li>
-									<a href="{% url 'pets_all' %}{% if selected_judet or selected_marime or selected_varsta or selected_sex %}?{% endif %}{% if selected_judet %}judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}{% if selected_judet %}&{% endif %}marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}{% if selected_judet or selected_marime %}&{% endif %}varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}{% if selected_judet or selected_marime or selected_varsta %}&{% endif %}sex={{ selected_sex|urlencode }}{% endif %}" class="{% if not selected_species %}active{% endif %}" data-pt-species="">
+									<a href="{% url 'pets_all' %}?{% if selected_country %}country={{ selected_country|urlencode }}&{% endif %}{% if selected_judet %}judet={{ selected_judet|urlencode }}&{% endif %}{% if selected_marime %}marime={{ selected_marime|urlencode }}&{% endif %}{% if selected_varsta %}varsta={{ selected_varsta|urlencode }}&{% endif %}{% if selected_sex %}sex={{ selected_sex|urlencode }}{% endif %}" class="{% if not selected_species %}active{% endif %}" data-pt-species="">
 										<span class="p3-btn-label">{% if eu_site_active %}{{ eu_ui.pt_all }}{% else %}Toate{% endif %}</span><span class="p3-btn-count">—</span>
 									</a>
 								</li>
 								<li>
-									<a href="{% url 'pets_all' %}?species=dog{% if selected_judet %}&judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}&marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}&varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}&sex={{ selected_sex|urlencode }}{% endif %}" class="{% if selected_species == 'dog' %}active{% endif %}" data-pt-species="dog">
+									<a href="{% url 'pets_all' %}?species=dog{% if selected_country %}&country={{ selected_country|urlencode }}{% endif %}{% if selected_judet %}&judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}&marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}&varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}&sex={{ selected_sex|urlencode }}{% endif %}" class="{% if selected_species == 'dog' %}active{% endif %}" data-pt-species="dog">
 										<span class="p3-btn-label">{% if eu_site_active %}{{ eu_ui.pt_dogs }}{% else %}Câini{% endif %}</span><span class="p3-btn-count">—</span>
 									</a>
 								</li>
 								<li>
-									<a href="{% url 'pets_all' %}?species=cat{% if selected_judet %}&judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}&marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}&varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}&sex={{ selected_sex|urlencode }}{% endif %}" class="{% if selected_species == 'cat' %}active{% endif %}" data-pt-species="cat">
+									<a href="{% url 'pets_all' %}?species=cat{% if selected_country %}&country={{ selected_country|urlencode }}{% endif %}{% if selected_judet %}&judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}&marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}&varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}&sex={{ selected_sex|urlencode }}{% endif %}" class="{% if selected_species == 'cat' %}active{% endif %}" data-pt-species="cat">
 										<span class="p3-btn-label">{% if eu_site_active %}{{ eu_ui.pt_cats }}{% else %}Pisici{% endif %}</span><span class="p3-btn-count">—</span>
 									</a>
 								</li>
 								<li>
-									<a href="{% url 'pets_all' %}?species=other{% if selected_judet %}&judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}&marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}&varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}&sex={{ selected_sex|urlencode }}{% endif %}" class="{% if selected_species == 'other' %}active{% endif %}" data-pt-species="other">
+									<a href="{% url 'pets_all' %}?species=other{% if selected_country %}&country={{ selected_country|urlencode }}{% endif %}{% if selected_judet %}&judet={{ selected_judet|urlencode }}{% endif %}{% if selected_marime %}&marime={{ selected_marime|urlencode }}{% endif %}{% if selected_varsta %}&varsta={{ selected_varsta|urlencode }}{% endif %}{% if selected_sex %}&sex={{ selected_sex|urlencode }}{% endif %}" class="{% if selected_species == 'other' %}active{% endif %}" data-pt-species="other">
 										<span class="p3-btn-label">{% if eu_site_active %}{{ eu_ui.pt_other }}{% else %}Altele{% endif %}</span><span class="p3-btn-count">—</span>
 									</a>
 								</li>
@@ -1115,8 +1115,20 @@
 							<form method="get" action="{% url 'pets_all' %}" id="filtre-animale" class="pt-p4-filtre-form">
 								<input type="hidden" name="species" id="pt_filter_species_field" value="{{ selected_species|default:'' }}" autocomplete="off" />
 								<div class="p3-filters-grid">
+									{% if show_pt_country_filter %}
 									<div class="p3-filter-cell">
-										<label for="id_judet_pt">{% if eu_site_active %}{{ eu_ui.pt_county }}{% else %}Județ{% endif %}</label>
+										<label for="id_country_pt">{% if eu_site_active %}{{ eu_ui.pt_country }}{% else %}Țară{% endif %}</label>
+										<select name="country" id="id_country_pt">
+											<option value="" {% if not selected_country %}selected{% endif %}>{% if eu_site_active %}{{ eu_ui.pt_all_opt }}{% else %}— Toate —{% endif %}</option>
+											{% for code, label in country_choices %}
+											<option value="{{ code }}"{% if code == selected_country %} selected{% endif %}>{{ label }}</option>
+											{% endfor %}
+										</select>
+									</div>
+									{% endif %}
+									{% if show_county_filter %}
+									<div class="p3-filter-cell" id="pt_county_filter_cell">
+										<label for="id_judet_pt">{% if eu_site_active %}{% if selected_country and selected_country != 'RO' %}{{ eu_ui.pt_region }}{% else %}{{ eu_ui.pt_county }}{% endif %}{% else %}Județ{% endif %}</label>
 										<select name="judet" id="id_judet_pt">
 											<option value="" {% if not selected_judet %}selected{% endif %}>{% if eu_site_active %}{{ eu_ui.pt_all_opt }}{% else %}— Toate —{% endif %}</option>
 											{% for value in judet_choices %}
@@ -1124,6 +1136,7 @@
 											{% endfor %}
 										</select>
 									</div>
+									{% endif %}
 									<div class="p3-filter-cell">
 										<label for="id_marime_pt">{% if eu_site_active %}{{ eu_ui.pt_size }}{% else %}Talie{% endif %}</label>
 										<select name="marime" id="id_marime_pt">
@@ -1239,6 +1252,7 @@
 
 			<form id="ptMatchMiniForm" method="post">
 				<input type="hidden" name="species" value="{{ selected_species|default:'' }}" />
+				<input type="hidden" name="country" value="{{ selected_country|default:'' }}" />
 				<input type="hidden" name="judet" value="{{ selected_judet|default:'' }}" />
 				<input type="hidden" name="marime" value="{{ selected_marime|default:'' }}" />
 				<input type="hidden" name="varsta" value="{{ selected_varsta|default:'' }}" />
@@ -1278,7 +1292,7 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt385-eu-force-en-labels";
+  var v = "pt386-country-filter";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;
@@ -1312,7 +1326,7 @@
         var u = new URL(window.location.href);
         if (p4 && p4.classList.contains("pt-mobile-filters-open")) {
           u.searchParams.set("pt_filters_open", "1");
-	} else {
+			} else {
           u.searchParams.delete("pt_filters_open");
         }
         var qs = u.searchParams.toString();
