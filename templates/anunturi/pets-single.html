@@ -4,19 +4,19 @@
 <html lang="ro">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<title>{{ pet.nume }} – Adopție | EU-ADOPT</title>
-		<meta name="description" content="{% if pet.cine_sunt %}{{ pet.cine_sunt|striptags|truncatechars:155 }}{% elif pet.descriere %}{{ pet.descriere|striptags|truncatechars:155 }}{% else %}Fișă {{ pet.nume }} – adopție prin EU-ADOPT. Detalii, locație și mesaj către proprietar pe platformă.{% endif %}" />
+		<title>{% if eu_site_active %}{{ pet.nume }} – Adoption | EU-ADOPT{% else %}{{ pet.nume }} – Adopție | EU-ADOPT{% endif %}</title>
+		<meta name="description" content="{% if pet.cine_sunt %}{{ pet.cine_sunt|striptags|truncatechars:155 }}{% elif pet.descriere %}{{ pet.descriere|striptags|truncatechars:155 }}{% else %}{% if eu_site_active %}Profile {{ pet.nume }} – adoption via EU-ADOPT. Details, location and message to the owner on the platform.{% else %}Fișă {{ pet.nume }} – adopție prin EU-ADOPT. Detalii, locație și mesaj către proprietar pe platformă.{% endif %}{% endif %}" />
 		<link rel="canonical" href="{{ seo_canonical_url|default:request.build_absolute_uri }}" />
 		<meta property="og:locale" content="ro_RO" />
 		<meta property="og:site_name" content="EU-ADOPT" />
 		<meta property="og:type" content="article" />
-		<meta property="og:title" content="{{ pet.nume }} – Adopție | EU-ADOPT" />
-		<meta property="og:description" content="{% if pet.cine_sunt %}{{ pet.cine_sunt|striptags|truncatechars:200 }}{% elif pet.descriere %}{{ pet.descriere|striptags|truncatechars:200 }}{% else %}Adopție prin EU-ADOPT – {{ pet.nume }}.{% endif %}" />
+		<meta property="og:title" content="{% if eu_site_active %}{{ pet.nume }} – Adoption | EU-ADOPT{% else %}{{ pet.nume }} – Adopție | EU-ADOPT{% endif %}" />
+		<meta property="og:description" content="{% if pet.cine_sunt %}{{ pet.cine_sunt|striptags|truncatechars:200 }}{% elif pet.descriere %}{{ pet.descriere|striptags|truncatechars:200 }}{% else %}{% if eu_site_active %}Adoption via EU-ADOPT – {{ pet.nume }}.{% else %}Adopție prin EU-ADOPT – {{ pet.nume }}.{% endif %}{% endif %}" />
 		{% if pet.imagine %}
 		<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ pet.imagine.url }}" />
 		<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ pet.imagine.url }}" />
 		{% endif %}
-		<meta property="og:image:alt" content="{{ pet.nume }} – adopție EU-ADOPT" />
+		<meta property="og:image:alt" content="{% if eu_site_active %}{{ pet.nume }} – adoption EU-ADOPT{% else %}{{ pet.nume }} – adopție EU-ADOPT{% endif %}" />
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
 		<link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="screen" />
@@ -1557,70 +1557,70 @@
 													<div class="mypet-fisa-main-col">
 
 														<div class="mypet-add-field">
-															<label for="id_name">NUME PET *</label>
+															<label for="id_name">{% if eu_site_active %}{{ eu_ui.pet_lbl_name }}{% else %}NUME PET *{% endif %}</label>
 															<input type="text" id="id_name" value="{{ pet.nume|default:'' }}" maxlength="120" disabled />
 														</div>
 
 														<div class="mypet-add-field">
-															<label for="id_species">SPECIE</label>
+															<label for="id_species">{% if eu_site_active %}{{ eu_ui.pet_lbl_species }}{% else %}SPECIE{% endif %}</label>
 															<select id="id_species" disabled>
-																<option value="dog" {% if pet.species == "dog" %}selected{% endif %}>Câine</option>
-																<option value="cat" {% if pet.species == "cat" %}selected{% endif %}>Pisică</option>
-																<option value="other" {% if pet.species == "other" %}selected{% endif %}>Alt animal</option>
+																<option value="dog" {% if pet.species == "dog" %}selected{% endif %}>{% if eu_site_active %}{{ eu_ui.pet_species_dog }}{% else %}Câine{% endif %}</option>
+																<option value="cat" {% if pet.species == "cat" %}selected{% endif %}>{% if eu_site_active %}{{ eu_ui.pet_species_cat }}{% else %}Pisică{% endif %}</option>
+																<option value="other" {% if pet.species == "other" %}selected{% endif %}>{% if eu_site_active %}{{ eu_ui.pet_species_other }}{% else %}Alt animal{% endif %}</option>
 															</select>
 														</div>
 
 														<div class="mypet-add-field">
-															<label for="id_age_label">VÂRSTĂ APROXIMATIVĂ *</label>
+															<label for="id_age_label">{% if eu_site_active %}{{ eu_ui.pet_lbl_age }}{% else %}VÂRSTĂ APROXIMATIVĂ *{% endif %}</label>
 															<select id="id_age_label" disabled>
-																<option value="">{{ pet.age_label|default:"Alege" }}</option>
+																<option value="">{% if eu_site_active %}{{ pet.age_label|default:eu_ui.pet_choose }}{% else %}{{ pet.age_label|default:"Alege" }}{% endif %}</option>
 															</select>
 														</div>
 
 														<div class="mypet-add-field">
-															<label for="id_size">TALIE *</label>
+															<label for="id_size">{% if eu_site_active %}{{ eu_ui.pet_lbl_size }}{% else %}TALIE *{% endif %}</label>
 															<select id="id_size" disabled>
-																<option value="">{{ pet.size|default:"Alege" }}</option>
+																<option value="">{% if eu_site_active %}{{ pet.size|default:eu_ui.pet_choose }}{% else %}{{ pet.size|default:"Alege" }}{% endif %}</option>
 															</select>
 														</div>
 
 														<div class="mypet-add-field">
-															<label for="id_color">CULOARE</label>
+															<label for="id_color">{% if eu_site_active %}{{ eu_ui.pet_lbl_color }}{% else %}CULOARE{% endif %}</label>
 															<select id="id_color" disabled>
-																<option value="">{{ pet.color|default:"Alege" }}</option>
+																<option value="">{% if eu_site_active %}{{ pet.color|default:eu_ui.pet_choose }}{% else %}{{ pet.color|default:"Alege" }}{% endif %}</option>
 															</select>
 														</div>
 
 														<div class="mypet-add-field">
-															<label for="id_sterilizat">STERILIZAT</label>
+															<label for="id_sterilizat">{% if eu_site_active %}{{ eu_ui.pet_lbl_sterilized }}{% else %}STERILIZAT{% endif %}</label>
 															<select id="id_sterilizat" disabled>
-																<option value="">{{ pet.sterilizat|default:"Alege" }}</option>
+																<option value="">{% if eu_site_active %}{{ pet.sterilizat|default:eu_ui.pet_choose }}{% else %}{{ pet.sterilizat|default:"Alege" }}{% endif %}</option>
 															</select>
 														</div>
 
 														<div class="mypet-add-field">
-															<label for="id_vaccinat">VACCINAT</label>
+															<label for="id_vaccinat">{% if eu_site_active %}{{ eu_ui.pet_lbl_vaccinated }}{% else %}VACCINAT{% endif %}</label>
 															<select id="id_vaccinat" disabled>
-																<option value="">{{ pet.vaccin|default:"Alege" }}</option>
+																<option value="">{% if eu_site_active %}{{ pet.vaccin|default:eu_ui.pet_choose }}{% else %}{{ pet.vaccin|default:"Alege" }}{% endif %}</option>
 															</select>
 														</div>
 
 														<div class="mypet-add-field">
-															<label for="id_carnet">CARNET DE SĂNĂTATE</label>
+															<label for="id_carnet">{% if eu_site_active %}{{ eu_ui.pet_lbl_health_book }}{% else %}CARNET DE SĂNĂTATE{% endif %}</label>
 															<select id="id_carnet" disabled>
-																<option value="">{{ pet.carnet_sanatate|default:"Alege" }}</option>
+																<option value="">{% if eu_site_active %}{{ pet.carnet_sanatate|default:eu_ui.pet_choose }}{% else %}{{ pet.carnet_sanatate|default:"Alege" }}{% endif %}</option>
 															</select>
 														</div>
 
 														<div class="mypet-add-field">
-															<label for="id_cip">CIP</label>
+															<label for="id_cip">{% if eu_site_active %}{{ eu_ui.pet_lbl_chip }}{% else %}CIP{% endif %}</label>
 															<select id="id_cip" disabled>
-																<option value="">{{ pet.cip|default:"Alege" }}</option>
+																<option value="">{% if eu_site_active %}{{ pet.cip|default:eu_ui.pet_choose }}{% else %}{{ pet.cip|default:"Alege" }}{% endif %}</option>
 															</select>
 														</div>
 
 														<div class="mypet-add-field">
-															<label for="id_cip_rua">CIP/RUA</label>
+															<label for="id_cip_rua">{% if eu_site_active %}{{ eu_ui.pet_lbl_chip_rua }}{% else %}CIP/RUA{% endif %}</label>
 															<input type="text" id="id_cip_rua" value="{{ pet.cip_rua|default:'' }}" maxlength="24" disabled />
 														</div>
 													</div>
@@ -1628,54 +1628,54 @@
 													<div class="mypet-fisa-main-col">
 
 														<div class="mypet-add-field">
-															<label for="id_sex">SEX</label>
+															<label for="id_sex">{% if eu_site_active %}{{ eu_ui.pet_lbl_sex }}{% else %}SEX{% endif %}</label>
 															<select id="id_sex" disabled>
 																{% if pet.sex == "m" %}
-																	<option value="m" selected>MASCUL</option>
+																	<option value="m" selected>{% if eu_site_active %}{{ eu_ui.pet_sex_m }}{% else %}MASCUL{% endif %}</option>
 																{% elif pet.sex == "f" %}
-																	<option value="f" selected>FEMELA</option>
+																	<option value="f" selected>{% if eu_site_active %}{{ eu_ui.pet_sex_f }}{% else %}FEMELA{% endif %}</option>
 																{% else %}
-																	<option value="">{{ pet.sex|default:"Alege" }}</option>
+																	<option value="">{% if eu_site_active %}{{ pet.sex|default:eu_ui.pet_choose }}{% else %}{{ pet.sex|default:"Alege" }}{% endif %}</option>
 																{% endif %}
 															</select>
 														</div>
 
 														<div class="mypet-add-field">
-															<label for="id_weight">GREUTATE (APROX.)</label>
+															<label for="id_weight">{% if eu_site_active %}{{ eu_ui.pet_lbl_weight }}{% else %}GREUTATE (APROX.){% endif %}</label>
 															<input type="text" id="id_weight" value="{{ pet.greutate_aprox|default:'' }}" disabled />
 														</div>
 
 														<div class="mypet-add-field">
-															<label for="id_county">JUDEȚ</label>
+															<label for="id_county">{% if eu_site_active %}{{ eu_ui.pet_lbl_county }}{% else %}JUDEȚ{% endif %}</label>
 															<input type="text" id="id_county" value="{{ pet.judet|default:'' }}" autocomplete="off" class="mypet-fisa-input-with-arrow" disabled />
 														</div>
 
 														<div class="mypet-add-field">
-															<label for="id_city">ORAȘ / LOCALITATE</label>
+															<label for="id_city">{% if eu_site_active %}{{ eu_ui.pet_lbl_city }}{% else %}ORAȘ / LOCALITATE{% endif %}</label>
 															<input type="text" id="id_city" value="{{ pet.oras|default:'' }}" autocomplete="off" class="mypet-fisa-input-with-arrow" disabled />
 														</div>
 
 														<div class="mypet-add-field mypet-fisa-field-medical">
-															<label for="id_medical">PROBLEME MEDICALE</label>
+															<label for="id_medical">{% if eu_site_active %}{{ eu_ui.pet_lbl_medical }}{% else %}PROBLEME MEDICALE{% endif %}</label>
 															<textarea id="id_medical" rows="2" class="mypet-fisa-textarea" disabled>{{ pet.probleme_medicale|default:'' }}</textarea>
 														</div>
 
 														<div class="mypet-add-field mypet-fisa-field-story">
-															<label for="id_story">CINE SUNT ȘI DE UNDE SUNT</label>
+															<label for="id_story">{% if eu_site_active %}{{ eu_ui.pet_lbl_story }}{% else %}CINE SUNT ȘI DE UNDE SUNT{% endif %}</label>
 															<textarea id="id_story" rows="2" class="mypet-fisa-textarea" disabled>{{ pet.descriere|default:'' }}</textarea>
 														</div>
 
 														<div class="mypet-add-field mypet-fisa-field-story" id="pet-messages-field-wrap">
-															<label for="id_messages">MESAJE</label>
+															<label for="id_messages">{% if eu_site_active %}{{ eu_ui.pet_lbl_messages }}{% else %}MESAJE{% endif %}</label>
 															{% if can_send_pet_message %}
 																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" placeholder="{% if eu_site_active %}{{ eu_ui.pet_msg_ph }}{% else %}Scrie mesajul tău către ONG / owner...{% endif %}"></textarea>
 																<div style="margin-top:.35rem;display:flex;justify-content:flex-end;">
 																	<button type="button" id="petSendMessageBtn" class="pet-msg-send-btn" data-send-url="{% url 'pet_send_message' pet.pk %}">Send</button>
 																</div>
 															{% elif user.is_authenticated %}
-																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled>Acesta este anunțul tău.</textarea>
+																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled>{% if eu_site_active %}{{ eu_ui.pet_msg_own }}{% else %}Acesta este anunțul tău.{% endif %}</textarea>
 															{% else %}
-																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled>Intră în cont pentru a trimite mesaj.</textarea>
+																<textarea id="id_messages" rows="2" class="mypet-fisa-textarea" disabled>{% if eu_site_active %}{{ eu_ui.pet_msg_login }}{% else %}Intră în cont pentru a trimite mesaj.{% endif %}</textarea>
 															{% endif %}
 														</div>
 													</div>
@@ -1731,9 +1731,9 @@
 													data-login-url="{% url 'login' %}"
 													data-login-next="{{ request.get_full_path|urlencode }}"
 													{% if pet_adopt_demo_listing %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_demo_message|escape }}" aria-disabled="true"{% elif pet_adopt_inactive_populare %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_inactive_message|escape }}" aria-disabled="true"{% endif %}
-													aria-label="{% if pet_adopt_demo_listing %}Demonstrativ DEMO{% else %}Vreau să adopt{% endif %}"
+													aria-label="{% if pet_adopt_demo_listing %}Demonstrativ DEMO{% elif eu_site_active %}{{ eu_ui.pet_want_adopt }}{% else %}Vreau să adopt{% endif %}"
 												>
-													<span class="pet-adopt-corner__label">{% if pet_adopt_demo_listing %}DEMO{% else %}VREAU SĂ ADOPT{% endif %}</span>
+													<span class="pet-adopt-corner__label">{% if pet_adopt_demo_listing %}DEMO{% elif eu_site_active %}{{ eu_ui.pet_want_adopt }}{% else %}VREAU SĂ ADOPT{% endif %}</span>
 													{% if pet_adopt_demo_listing %}<span class="pet-adopt-corner__note">Doar demonstrativ</span>{% elif pet_adopt_inactive_populare %}<span class="pet-adopt-corner__note">Inactiv în perioada de populare</span>{% endif %}
 												</div>
 												{% endif %}

@@ -106,16 +106,16 @@
 	{% if prelaunch_mode %}{% include "components/prelaunch_first_hint.html" %}{% endif %}
 	{% if pub_prelaunch_nudge %}{% include "components/pub_prelaunch_nudge.html" %}{% endif %}
 	{% include "components/user_onboarding.html" %}
-	<div id="eu-pwa-install-banner" hidden role="region" aria-label="App EU-Adopt pe telefon" aria-hidden="true">
+	<div id="eu-pwa-install-banner" hidden role="region" aria-label="{% if eu_site_active %}{{ eu_ui.pwa_aria }}{% else %}App EU-Adopt pe telefon{% endif %}" aria-hidden="true">
 		<img class="eu-pwa-install-banner__icon" src="{% static 'images/logo-final-cu-stele.png' %}?v=8-home" width="44" height="44" alt="EU-Adopt" />
 		<div class="eu-pwa-install-banner__text">
-			<strong>App pe telefon: EU-Adopt?</strong>
-			<span>Vrei icon pe ecranul principal — deschide direct Acasă.</span>
-			<p id="eu-pwa-ios-hint" hidden>iPhone: Share → Adaugă pe ecranul principal</p>
+			<strong>{% if eu_site_active %}{{ eu_ui.pwa_title }}{% else %}App pe telefon: EU-Adopt?{% endif %}</strong>
+			<span>{% if eu_site_active %}{{ eu_ui.pwa_body }}{% else %}Vrei icon pe ecranul principal — deschide direct Acasă.{% endif %}</span>
+			<p id="eu-pwa-ios-hint" hidden>{% if eu_site_active %}{{ eu_ui.pwa_ios }}{% else %}iPhone: Share → Adaugă pe ecranul principal{% endif %}</p>
 		</div>
 		<div class="eu-pwa-install-banner__actions">
-			<button type="button" id="eu-pwa-install-btn">Da</button>
-			<button type="button" id="eu-pwa-install-dismiss">Nu</button>
+			<button type="button" id="eu-pwa-install-btn">{% if eu_site_active %}{{ eu_ui.pwa_yes }}{% else %}Da{% endif %}</button>
+			<button type="button" id="eu-pwa-install-dismiss">{% if eu_site_active %}{{ eu_ui.pwa_no }}{% else %}Nu{% endif %}</button>
 		</div>
 	</div>
 	<script src="{% static 'js/wishlist.js' %}?v=5"></script>

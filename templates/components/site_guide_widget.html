@@ -9,17 +9,17 @@
 >
 	<div class="eu-site-guide__panel" role="dialog" aria-labelledby="eu-site-guide-title" aria-modal="false">
 		<div class="eu-site-guide__head">
-			<h2 class="eu-site-guide__title" id="eu-site-guide-title">Ghid EU-Adopt</h2>
-			<button type="button" class="eu-site-guide__close" aria-label="Închide">&times;</button>
+			<h2 class="eu-site-guide__title" id="eu-site-guide-title">{% if eu_site_active %}{{ eu_ui.guide_title }}{% else %}Ghid EU-Adopt{% endif %}</h2>
+			<button type="button" class="eu-site-guide__close" aria-label="{% if eu_site_active %}{{ eu_ui.guide_close }}{% else %}Închide{% endif %}">&times;</button>
 		</div>
 		<div class="eu-site-guide__log" id="eu-site-guide-log"></div>
 		<form class="eu-site-guide__form" id="eu-site-guide-form">
 			{% csrf_token %}
-			<input type="text" class="eu-site-guide__input" maxlength="500" placeholder="Scrie întrebarea…" autocomplete="off" aria-label="Întrebare" />
-			<button type="submit" class="eu-site-guide__send">Trimite</button>
+			<input type="text" class="eu-site-guide__input" maxlength="500" placeholder="{% if eu_site_active %}{{ eu_ui.guide_ph }}{% else %}Scrie întrebarea…{% endif %}" autocomplete="off" aria-label="{% if eu_site_active %}{{ eu_ui.guide_ask }}{% else %}Întrebare{% endif %}" />
+			<button type="submit" class="eu-site-guide__send">{% if eu_site_active %}{{ eu_ui.guide_send }}{% else %}Trimite{% endif %}</button>
 		</form>
 	</div>
-	<button type="button" class="eu-site-guide__toggle" aria-expanded="false" title="Ghid EU-Adopt">
+	<button type="button" class="eu-site-guide__toggle" aria-expanded="false" title="{% if eu_site_active %}{{ eu_ui.guide_title }}{% else %}Ghid EU-Adopt{% endif %}">
 		<svg class="eu-site-guide__toggle-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 			<path d="M6.5 10.5a4.5 4.5 0 1 1 9 0c0 2.2-1.6 3.4-2.8 4.2-.9.6-1.2 1-1.2 1.8h-3c0-1.4.7-2.2 1.8-3 1-.7 1.7-1.4 1.7-3a1.5 1.5 0 1 0-3 0H6.5zm2.5 9h3v-3h-3v3z"/>
 		</svg>

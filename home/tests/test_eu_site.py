@@ -147,6 +147,17 @@ class EuSiteMiddlewareTests(TestCase):
         self.assertContains(r, "Quick guide")
         self.assertNotContains(r, "Susține EU-Adopt")
         self.assertNotContains(r, "Hai la noi!")
+        self.assertContains(r, "#DontBuy")
+        self.assertNotContains(r, "#NuCumpar")
+
+    @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
+    def test_burtiera_default_en_for_eu_market(self):
+        from home.views import HOME_BURTIERA_DEFAULT_TEXT_EN, _get_home_burtiera_text
+        from home.pub_markets import PUB_MARKET_EU, PUB_MARKET_RO
+
+        self.assertIn("DontBuy", _get_home_burtiera_text(market=PUB_MARKET_EU))
+        self.assertEqual(_get_home_burtiera_text(market=PUB_MARKET_EU), HOME_BURTIERA_DEFAULT_TEXT_EN)
+        self.assertIn("NuCumpar", _get_home_burtiera_text(market=PUB_MARKET_RO))
 
     @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
     def test_adaposturi_redirects_on_eu(self):

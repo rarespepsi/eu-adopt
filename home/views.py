@@ -501,6 +501,10 @@ HOME_BURTIERA_DEFAULT_TEXT = (
     "#EuAdopt #NuCumpar – EU-Adopt este o inițiativă independentă pentru promovarea adopției "
     "animalelor. Acest proiect nu este afiliat, finanțat sau administrat de Uniunea Europeană."
 )
+HOME_BURTIERA_DEFAULT_TEXT_EN = (
+    "#EuAdopt #DontBuy – EU-Adopt is an independent initiative promoting animal adoption. "
+    "This project is not affiliated with, funded by, or run by the European Union."
+)
 HOME_BURTIERA_DEFAULT_SPEED_SECONDS = 28
 
 
@@ -509,7 +513,14 @@ def _get_home_burtiera_text(market: str = PUB_MARKET_RO) -> str:
     note = ReclamaSlotNote.objects.filter(section="home", slot_code="Burtieră", market=mkt).first()
     txt = (note.text if note else "") or ""
     txt = txt.strip()
-    return txt or HOME_BURTIERA_DEFAULT_TEXT
+    if txt:
+        # Dacă pe EU a rămas din greșeală default-ul RO, afișăm EN.
+        if mkt == PUB_MARKET_EU and txt == HOME_BURTIERA_DEFAULT_TEXT.strip():
+            return HOME_BURTIERA_DEFAULT_TEXT_EN
+        return txt
+    if mkt == PUB_MARKET_EU:
+        return HOME_BURTIERA_DEFAULT_TEXT_EN
+    return HOME_BURTIERA_DEFAULT_TEXT
 
 
 def _get_home_burtiera_link(market: str = PUB_MARKET_RO) -> str:
