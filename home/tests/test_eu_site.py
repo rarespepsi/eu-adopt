@@ -35,6 +35,8 @@ class EuSiteHostTests(SimpleTestCase):
         self.assertFalse(path_blocked_on_eu_hub("/pets/"))
         self.assertFalse(path_blocked_on_eu_hub("/transport/"))
         self.assertFalse(path_blocked_on_eu_hub("/transport"))
+        self.assertFalse(path_blocked_on_eu_hub("/custi/"))
+        self.assertTrue(path_blocked_on_eu_hub("/donatii/"))
 
     def test_nav_labels_all_languages(self):
         from home.eu_nav_labels import assert_all_languages_complete, eu_nav_label

@@ -249,6 +249,8 @@ _EN: dict[str, str] = {
     "transport_t2_8_tip": "Veterinary equipment and treatment available during the journey.",
     "transport_t2_9": "Grooming VET",
     "transport_t2_9_tip": "Grooming and veterinary care on request during road breaks.",
+    "transport_center_crates_title": "Coach crate map — view crate places",
+    "transport_center_crates_alt": "EU-Adopt coach — crate map",
     "transport_t3_title": "For transport…",
     "transport_t3_aria": "Transport advertising spaces",
     "transport_map_title": "Choose location on the map",

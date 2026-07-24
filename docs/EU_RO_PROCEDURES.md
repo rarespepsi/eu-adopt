@@ -19,7 +19,7 @@ Același Django + aceeași bază de animale. Pe EU prezentăm animalele și inte
 | Caseta DESTINATION COUNTRY pe Transport | nu (hidden RO) | da |
 | Transport: dispatch colaboratori | da | **nu** — mail la `transport@eu-adopt.ro` |
 | Navbar Servicii / Shop / Coș | da | **nu** (rute blocate) |
-| Transport pagină publică | da | da (standalone) |
+| Transport pagină publică | da | da (standalone; hub autocar → `/custi/`) |
 | UI limbi EN (`eu_ui`) | nu | da |
 
 ## Cum folosești

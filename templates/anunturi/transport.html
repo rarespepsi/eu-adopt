@@ -350,9 +350,15 @@
 					<!-- Hub: centrul = bulina rotativă (mobil) / autocar (desktop); inelul = 9 cercuri -->
 					<div class="t2-hub">
 						{% include "components/transport_bulina.html" %}
+						{% if eu_site_active %}
+						<a href="{% url 'custi' %}?sursa=transport_hub" class="t2-center" title="{{ eu_ui.transport_center_crates_title }}">
+							<img src="{% static 'images/transport/servicii/central.jpeg' %}" alt="{{ eu_ui.transport_center_crates_alt }}" class="t2-center-img" />
+						</a>
+						{% else %}
 						<a href="{% url 'donatii_generale' %}?sursa=transport_hub" class="t2-center">
 							<img src="{% static 'images/transport/servicii/central.jpeg' %}" alt="" class="t2-center-img" />
 						</a>
+						{% endif %}
 						<div class="t2-circles">
 						<div class="t2-circle t2-circle--1">
 							<img src="{% static 'images/transport/servicii/servicii_1.jpeg' %}" alt="" />

@@ -184,7 +184,7 @@ EU_SITE_BLOCKED_PATH_PREFIXES = (
     "/publicitate/",
     "/reclama/",
     "/donatii/",
-    "/custi/",
+    # /custi/ — permis pe EU (harta cuști din Transport hub)
     "/signup/colaborator",
 )
 
