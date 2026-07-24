@@ -234,3 +234,21 @@ class EuNonRoStaffGateTests(TestCase):
         c = Client(HTTP_HOST="eu-adopt.ro")
         r = c.get("/")
         self.assertNotEqual(r.status_code, 403)
+
+
+class PetFieldValueEnTests(SimpleTestCase):
+    def test_size_yes_no_age(self):
+        from home.pet_ui_display import pet_field_value_en
+
+        self.assertEqual(pet_field_value_en("mica"), "Small")
+        self.assertEqual(pet_field_value_en("mică"), "Small")
+        self.assertEqual(pet_field_value_en("medie"), "Medium")
+        self.assertEqual(pet_field_value_en("mare"), "Large")
+        self.assertEqual(pet_field_value_en("da"), "Yes")
+        self.assertEqual(pet_field_value_en("Nu"), "No")
+        self.assertEqual(pet_field_value_en("Nu știu"), "Don't know")
+        self.assertEqual(pet_field_value_en("2 ani"), "2 years")
+        self.assertEqual(pet_field_value_en("1 an"), "1 year")
+        self.assertEqual(pet_field_value_en("10+ ani"), "10+ years")
+        self.assertEqual(pet_field_value_en("<1 an"), "<1 year")
+        self.assertEqual(pet_field_value_en("Cluj-Napoca"), "Cluj-Napoca")

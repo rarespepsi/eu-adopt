@@ -7,10 +7,22 @@ from home.pet_traits import trait_label
 register = template.Library()
 
 
-@register.simple_tag
-def animal_trait_label(species, field_name):
+@register.simple_tag(takes_context=True)
+def animal_trait_label(context, species, field_name):
     """Text afișat pentru o trăsătură (câmp DB), în funcție de specie (dog/cat)."""
-    return trait_label(species, field_name)
+    return trait_label(species, field_name, english=bool(context.get("eu_site_active")))
+
+
+@register.simple_tag(takes_context=True)
+def eu_pet_val(context, raw, default=""):
+    """Valoare câmp fișă: EN pe site EU, altfel textul din DB (sau default dacă e gol)."""
+    if raw is None or str(raw).strip() == "":
+        return default
+    if not context.get("eu_site_active"):
+        return str(raw)
+    from home.pet_ui_display import pet_field_value_en
+
+    return pet_field_value_en(raw) or default
 
 
 @register.simple_tag
@@ -49,23 +61,3 @@ def animal_public_href(pet_or_listing):
 
         return reverse("pets_single", args=[pk])
     return animal_public_url(listing)
-
-
-@register.simple_tag(takes_context=True)
-def eu_t(context, key, ro_fallback=""):
-    """
-    Text UI: pe site EU → engleză din eu_ui / eu_ui_labels;
-    pe .ro → ro_fallback (sau cheia).
-    """
-    request = context.get("request")
-    eu_active = bool(context.get("eu_site_active"))
-    if request is not None and getattr(request, "eu_site_active", False):
-        eu_active = True
-    if eu_active:
-        pack = context.get("eu_ui") or {}
-        if key in pack and pack[key]:
-            return pack[key]
-        from home.eu_ui_labels import eu_ui_label
-
-        return eu_ui_label(key) or ro_fallback or key
-    return ro_fallback or key

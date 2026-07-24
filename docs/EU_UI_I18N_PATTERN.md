@@ -8,7 +8,8 @@
 2. **Template:** `{% if eu_site_active %}{{ eu_ui.key }}{% else %}Text RO{% endif %}`.
 3. **Logică Python** (flash, burtieră, stări): `is_eu_site_host(request.get_host())` sau `request.eu_site_active` / `get_language().startswith("en")`.
 4. **Navbar:** deja `home/eu_nav_labels.py` (24 limbi) — același model pentru body UI când adaugi DE/FR/ES.
-5. **Trăsături:** `home/pet_traits.py` — EN când limba activă e `en`.
+5. **Trăsături:** `home/pet_traits.py` — EN pe `eu_site_active` (și când limba e `en`).
+6. **Valori fișă (talie/da/ani):** `home/pet_ui_display.py` + tag `{% eu_pet_val … %}` — doar afișare; DB rămâne RO.
 
 ## Fișiere tipice atinse
 
@@ -19,7 +20,7 @@
 | HOME | `home_v2.html`, `views._get_home_burtiera_text`, `data.A2_QUOTE_POOL_EN` |
 | PT | `pt.html`, `pt_p2_card.html`, JS label-uri din `data-pt-lbl-*` |
 | Transport | `transport.html` + mesaje submit în `views.py` |
-| Fișă animal | `pets-single.html` |
+| Fișă animal | `pets-single.html`, `pet_ui_display.py`, tag `eu_pet_val` |
 | Cont / chrome | `account.html`, `site_guide_widget.html`, `base.html` PWA, `login_required_modal.html` |
 | 404 / Contact / Termeni hub | `404.html`, `contact.html`, `termeni.html` |
 

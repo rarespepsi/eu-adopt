@@ -297,6 +297,22 @@ _EN: dict[str, str] = {
     "pet_msg_login": "Sign in to send a message.",
     "pet_want_adopt": "I WANT TO ADOPT",
     "pet_traits_h": "Personality",
+    "pet_traits_match_h": "Adopter match details",
+    "pet_observatii_h": "Notes (details about the animal)",
+    "pet_observatii_hint": "Behaviour, care — visible to adopters.",
+    "pet_qr_title": "Scan the profile",
+    "pet_qr_hint": "Open on your phone",
+    "pet_qr_aria": "Profile QR code",
+    "pet_qr_alt": "QR code to this profile",
+    "pet_adopt_demo_note": "Demo only",
+    "pet_adopt_inactive_note": "Inactive during population phase",
+    "pet_adopt_state_aria": "Adoption status",
+    "pet_adopt_state_free": "Available",
+    "pet_adopt_demo_msg": "This animal is for demonstration (DEMO) and cannot be adopted.",
+    "pet_adopt_inactive_msg": (
+        "The “I want to adopt” button is inactive during the population phase. "
+        "Online adoptions open after the official launch."
+    ),
     # MyPet / I Love
     "mypet_title": "MyPet | EU-ADOPT",
     "mypet_my_adoptions": "My adoptions",

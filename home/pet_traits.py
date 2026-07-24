@@ -94,17 +94,19 @@ def _use_english_traits() -> bool:
         return False
 
 
-def trait_label(species: str | None, field_name: str) -> str:
+def trait_label(species: str | None, field_name: str, *, english: bool | None = None) -> str:
     s = (species or "").strip().lower()
-    if _use_english_traits():
+    use_en = _use_english_traits() if english is None else bool(english)
+    if use_en:
         table = _LABELS_CAT_EN if s == "cat" else _LABELS_DOG_EN
     else:
         table = _LABELS_CAT if s == "cat" else _LABELS_DOG
     return table.get(field_name, field_name)
 
 
-def traits_labels_for_species(species: str | None) -> dict[str, str]:
+def traits_labels_for_species(species: str | None, *, english: bool | None = None) -> dict[str, str]:
     s = (species or "").strip().lower()
-    if _use_english_traits():
+    use_en = _use_english_traits() if english is None else bool(english)
+    if use_en:
         return dict(_LABELS_CAT_EN if s == "cat" else _LABELS_DOG_EN)
     return dict(_LABELS_CAT if s == "cat" else _LABELS_DOG)

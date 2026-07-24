@@ -5074,6 +5074,17 @@ def render_dog_profile(request, listing: AnimalListing):
     from home.prelaunch_soft_lock import PRELAUNCH_SOFT_MESSAGES
 
     pet_adopt_demo_listing = is_demo_animal_listing(listing)
+    eu_active = bool(getattr(request, "eu_site_active", False))
+    if eu_active:
+        from home.eu_ui_labels import eu_ui_label
+
+        pet_adopt_demo_message = eu_ui_label("pet_adopt_demo_msg") or DEMO_ADOPTION_INACTIVE_MESSAGE
+        pet_adopt_inactive_message = eu_ui_label("pet_adopt_inactive_msg") or PRELAUNCH_SOFT_MESSAGES.get(
+            "adopt", ""
+        )
+    else:
+        pet_adopt_demo_message = DEMO_ADOPTION_INACTIVE_MESSAGE
+        pet_adopt_inactive_message = PRELAUNCH_SOFT_MESSAGES.get("adopt", "")
 
     viewer_can_adopt = bool(
         request.user.is_authenticated
@@ -5111,9 +5122,9 @@ def render_dog_profile(request, listing: AnimalListing):
         "can_send_pet_message": can_send_pet_message,
         "show_pet_adopt_corner": show_pet_adopt_corner,
         "pet_adopt_demo_listing": pet_adopt_demo_listing,
-        "pet_adopt_demo_message": DEMO_ADOPTION_INACTIVE_MESSAGE,
+        "pet_adopt_demo_message": pet_adopt_demo_message,
         **pop_adopt_ctx,
-        "pet_adopt_inactive_message": PRELAUNCH_SOFT_MESSAGES.get("adopt", ""),
+        "pet_adopt_inactive_message": pet_adopt_inactive_message,
         "pet_owner_id": listing.owner_id,
         "adoption_request_status": adoption_request_status,
         # Hibrid: mesaje înainte de accept — același prag ca can_send_pet_message (șabloane vechi).
