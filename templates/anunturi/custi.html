@@ -4,7 +4,7 @@
 {% block title %}{% if eu_site_active %}{{ eu_ui.custi_title }}{% else %}Harta cuștilor autocarului | EU Adopt{% endif %}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/custi.css' %}?v=14-valoare-on-click" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/custi.css' %}?v=15-slot-nums-visible" type="text/css" media="screen" />
 <style>
 	/* Asigurăm fundalul unic cu poza de cuști pe tot TWW */
 	#TWW.custi-page {
@@ -152,25 +152,26 @@
 	}
 	#TWW .tww-row .tww-slot {
 		flex: 1 1 0;
-		min-width: 85px;
-		min-height: 40px;
+		min-width: 88px;
+		min-height: 44px;
 	}
 
 	#TWW .tww-slot {
 		flex: 1 1 0;
 		margin: 0.08rem 0;
-		padding: 0.32rem 0.35rem 0.42rem;
+		/* padding-bottom rezervă spațiu pentru bara de progres — cifra nu se taie */
+		padding: 0.28rem 0.4rem 0.58rem;
 		border-radius: 4px;
 		/* casetă semi-transparentă cu blur pe fundal, culoare controlată din JS */
 		background: var(--slot-bg, rgba(220, 53, 69, 0.6)); /* roșu mai aprins implicit */
 		backdrop-filter: blur(3px);
 		-webkit-backdrop-filter: blur(3px);
 		color: #111;
-		font-size: 0.82rem;
+		font-size: 0.88rem;
 		font-weight: 800;
 		font-variant-numeric: tabular-nums;
-		line-height: 1;
-		letter-spacing: -0.02em;
+		line-height: 1.2;
+		letter-spacing: 0;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -178,30 +179,34 @@
 		cursor: pointer;
 		text-decoration: none;
 		box-sizing: border-box;
+		overflow: visible;
+		white-space: nowrap;
 		--fill: 0%;
 	}
 
-	/* Bara de donații în interiorul fiecărei casete (nu schimbăm dimensiunile) */
+	/* Bara de donații sub cifră (nu pe text) */
 	#TWW .tww-slot::after {
 		content: "";
 		position: absolute;
-		left: 4px;
-		right: 4px;
-		bottom: 4px;
-		height: 4px;
+		left: 5px;
+		right: 5px;
+		bottom: 5px;
+		height: 3px;
 		border-radius: 999px;
 		background: rgba(0,0,0,0.12); /* fundal gol */
+		pointer-events: none;
 	}
 	#TWW .tww-slot::before {
 		content: "";
 		position: absolute;
-		left: 4px;
-		bottom: 4px;
-		height: 4px;
+		left: 5px;
+		bottom: 5px;
+		height: 3px;
 		border-radius: 999px;
 		/* culoare controlată din JS: aceeași nuanță cu caseta, puțin mai închisă */
 		background: var(--bar-color, #b0b0b0);
 		width: var(--fill, 0%);
+		pointer-events: none;
 	}
 
 	/* Overlay: implicit = tot viewport-ul, conținut centrat (nu lipit sub navbar). Pe cușcă = ancorat la banda cu imaginea (.tww-strip--main), centrat pe „harta” cuștilor. */
@@ -539,31 +544,45 @@
 			min-width: 0;
 			width: 100%;
 			max-width: 100%;
+			min-height: 0;
+			overflow: hidden;
+			align-items: stretch;
 		}
 		#TWW .tww-side {
 			flex: 1 1 0;
 			min-width: 0;
 			max-width: 50%;
-		}
-		/* Casete ~½ lățime față de împărțirea 50–50 pe rând → mai mult autocar vizibil */
-		#TWW .tww-row {
+			min-height: 0;
+			overflow-x: hidden;
+			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
 			gap: 0.28rem;
+		}
+		/* Rânduri cu înălțime naturală + scroll pe coloană → cifrele nu se mai taie */
+		#TWW .tww-row {
+			flex: 0 0 auto;
+			gap: 0.32rem;
 			min-width: 0;
+			min-height: 0;
 			justify-content: center;
 		}
 		#TWW .tww-row .tww-slot {
-			flex: 0 0 25%;
-			max-width: 25%;
-			min-width: 0;
-			min-height: clamp(34px, 6.2vmin, 48px);
+			flex: 0 0 42%;
+			max-width: 42%;
+			min-width: 2.35rem;
+			min-height: 40px;
+			height: 40px;
 		}
 		#TWW .tww-slot {
-			font-size: clamp(0.62rem, 3.1vw, 0.82rem);
+			font-size: clamp(0.72rem, 3.4vw, 0.92rem);
 			font-weight: 800;
 			font-variant-numeric: tabular-nums;
-			padding: 0.22rem 0.15rem 0.38rem;
-			margin: 0.06rem 0;
-			line-height: 1;
+			padding: 0.2rem 0.28rem 0.52rem;
+			margin: 0;
+			line-height: 1.2;
+			letter-spacing: 0;
+			overflow: visible;
+			white-space: nowrap;
 		}
 		#TWW .tww-strip--bottom {
 			padding: 0.35rem 0.45rem;
@@ -649,15 +668,20 @@
 		#TWW .tww-row .tww-slot {
 			flex: 0 0 44%;
 			max-width: 44%;
-			min-width: 2rem;
-			min-height: 42px;
+			min-width: 2.4rem;
+			min-height: 44px;
+			height: 44px;
 		}
 		#TWW .tww-slot {
 			margin: 0;
 			border: 2px solid rgba(12, 12, 12, 0.82);
 			box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
-			font-size: clamp(0.68rem, 2.8vmin, 0.9rem);
-			padding: 0.3rem 0.25rem 0.4rem;
+			font-size: clamp(0.74rem, 2.9vmin, 0.95rem);
+			line-height: 1.2;
+			letter-spacing: 0;
+			padding: 0.26rem 0.3rem 0.55rem;
+			overflow: visible;
+			white-space: nowrap;
 		}
 	}
 </style>

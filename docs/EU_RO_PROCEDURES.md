@@ -21,7 +21,14 @@ Același Django + aceeași bază de animale. Pe EU prezentăm animalele și inte
 | Navbar Servicii / Shop / Coș | da | **nu** (rute blocate) |
 | Transport pagină publică | da | da (standalone; hub autocar → `/custi/`) |
 | `/custi/` + `/donatii/` pe hub | da | accesibile EN (preview; lansare publică donații mai târziu) |
+| Monedă donații / cuști | **RON (lei)** | preview tot **RON**; la **lansare publică** + **cont bancar fundație** → trecere la **EUR** (label + sume + min. alert) |
 | UI limbi EN (`eu_ui`) | nu | da |
+
+### Donații EU — monedă (TODO la deschidere)
+
+- Acum pe hub: texte EN, sume încă în **RON** (`eu_ui.custi_currency`, `don_amt_*`, etc.).
+- Când există **contul fundației** și se **deschid donațiile** public: pe EU schimbă moneda în **euro** (`.ro` rămâne lei).
+- Locuri tipice: `home/eu_ui_labels.py` (`custi_*`, `don_*`), eventual flag în `home/eu_procedures.py` (`donations_currency`).
 
 ## Cum folosești
 
