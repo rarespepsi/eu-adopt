@@ -4,7 +4,7 @@
 {% block title %}{% if eu_site_active %}{{ eu_ui.custi_title }}{% else %}Harta cuștilor autocarului | EU Adopt{% endif %}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/custi.css' %}?v=15-slot-nums-visible" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/custi.css' %}?v=16-eu-double-cols" type="text/css" media="screen" />
 <style>
 	/* Asigurăm fundalul unic cu poza de cuști pe tot TWW */
 	#TWW.custi-page {
@@ -152,26 +152,25 @@
 	}
 	#TWW .tww-row .tww-slot {
 		flex: 1 1 0;
-		min-width: 88px;
-		min-height: 44px;
+		min-width: 85px;
+		min-height: 40px;
 	}
 
 	#TWW .tww-slot {
 		flex: 1 1 0;
 		margin: 0.08rem 0;
-		/* padding-bottom rezervă spațiu pentru bara de progres — cifra nu se taie */
-		padding: 0.28rem 0.4rem 0.58rem;
+		padding: 0.32rem 0.35rem 0.42rem;
 		border-radius: 4px;
 		/* casetă semi-transparentă cu blur pe fundal, culoare controlată din JS */
 		background: var(--slot-bg, rgba(220, 53, 69, 0.6)); /* roșu mai aprins implicit */
 		backdrop-filter: blur(3px);
 		-webkit-backdrop-filter: blur(3px);
 		color: #111;
-		font-size: 0.88rem;
+		font-size: 0.82rem;
 		font-weight: 800;
 		font-variant-numeric: tabular-nums;
-		line-height: 1.2;
-		letter-spacing: 0;
+		line-height: 1;
+		letter-spacing: -0.02em;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -179,34 +178,30 @@
 		cursor: pointer;
 		text-decoration: none;
 		box-sizing: border-box;
-		overflow: visible;
-		white-space: nowrap;
 		--fill: 0%;
 	}
 
-	/* Bara de donații sub cifră (nu pe text) */
+	/* Bara de donații în interiorul fiecărei casete (nu schimbăm dimensiunile) */
 	#TWW .tww-slot::after {
 		content: "";
 		position: absolute;
-		left: 5px;
-		right: 5px;
-		bottom: 5px;
-		height: 3px;
+		left: 4px;
+		right: 4px;
+		bottom: 4px;
+		height: 4px;
 		border-radius: 999px;
 		background: rgba(0,0,0,0.12); /* fundal gol */
-		pointer-events: none;
 	}
 	#TWW .tww-slot::before {
 		content: "";
 		position: absolute;
-		left: 5px;
-		bottom: 5px;
-		height: 3px;
+		left: 4px;
+		bottom: 4px;
+		height: 4px;
 		border-radius: 999px;
 		/* culoare controlată din JS: aceeași nuanță cu caseta, puțin mai închisă */
 		background: var(--bar-color, #b0b0b0);
 		width: var(--fill, 0%);
-		pointer-events: none;
 	}
 
 	/* Overlay: implicit = tot viewport-ul, conținut centrat (nu lipit sub navbar). Pe cușcă = ancorat la banda cu imaginea (.tww-strip--main), centrat pe „harta” cuștilor. */
@@ -544,45 +539,31 @@
 			min-width: 0;
 			width: 100%;
 			max-width: 100%;
-			min-height: 0;
-			overflow: hidden;
-			align-items: stretch;
 		}
 		#TWW .tww-side {
 			flex: 1 1 0;
 			min-width: 0;
 			max-width: 50%;
-			min-height: 0;
-			overflow-x: hidden;
-			overflow-y: auto;
-			-webkit-overflow-scrolling: touch;
-			gap: 0.28rem;
 		}
-		/* Rânduri cu înălțime naturală + scroll pe coloană → cifrele nu se mai taie */
+		/* Casete ~½ lățime față de împărțirea 50–50 pe rând → mai mult autocar vizibil */
 		#TWW .tww-row {
-			flex: 0 0 auto;
-			gap: 0.32rem;
+			gap: 0.28rem;
 			min-width: 0;
-			min-height: 0;
 			justify-content: center;
 		}
 		#TWW .tww-row .tww-slot {
-			flex: 0 0 42%;
-			max-width: 42%;
-			min-width: 2.35rem;
-			min-height: 40px;
-			height: 40px;
+			flex: 0 0 25%;
+			max-width: 25%;
+			min-width: 0;
+			min-height: clamp(34px, 6.2vmin, 48px);
 		}
 		#TWW .tww-slot {
-			font-size: clamp(0.72rem, 3.4vw, 0.92rem);
+			font-size: clamp(0.62rem, 3.1vw, 0.82rem);
 			font-weight: 800;
 			font-variant-numeric: tabular-nums;
-			padding: 0.2rem 0.28rem 0.52rem;
-			margin: 0;
-			line-height: 1.2;
-			letter-spacing: 0;
-			overflow: visible;
-			white-space: nowrap;
+			padding: 0.22rem 0.15rem 0.38rem;
+			margin: 0.06rem 0;
+			line-height: 1;
 		}
 		#TWW .tww-strip--bottom {
 			padding: 0.35rem 0.45rem;
@@ -668,19 +649,166 @@
 		#TWW .tww-row .tww-slot {
 			flex: 0 0 44%;
 			max-width: 44%;
-			min-width: 2.4rem;
-			min-height: 44px;
-			height: 44px;
+			min-width: 2rem;
+			min-height: 42px;
 		}
 		#TWW .tww-slot {
 			margin: 0;
 			border: 2px solid rgba(12, 12, 12, 0.82);
 			box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
-			font-size: clamp(0.74rem, 2.9vmin, 0.95rem);
-			line-height: 1.2;
-			letter-spacing: 0;
-			padding: 0.26rem 0.3rem 0.55rem;
-			overflow: visible;
+			font-size: clamp(0.68rem, 2.8vmin, 0.9rem);
+			padding: 0.3rem 0.25rem 0.4rem;
+		}
+	}
+
+	/*
+	 * EU / .com ONLY — coloane duble stânga/dreapta pe harta cuștilor
+	 * (telefon, tabletă, desktop). .ro rămâne pe regulile de mai sus.
+	 */
+	body.eu-site-active.page-custi #TWW .tww-main-layout {
+		margin-top: 1.25%;
+		padding: 0.35rem clamp(0.75rem, 4.5vw, 2.75rem) 0.45rem;
+		max-width: min(1180px, 100%);
+		margin-left: auto;
+		margin-right: auto;
+	}
+	body.eu-site-active.page-custi #TWW .tww-cages-wrap {
+		justify-content: space-between;
+		align-items: stretch;
+		/* culoar central = culoarul din poză */
+		gap: clamp(3.25rem, 20vw, 13rem);
+		width: 100%;
+		max-width: 100%;
+		padding-inline: 0;
+	}
+	body.eu-site-active.page-custi #TWW .tww-side {
+		flex: 0 1 auto;
+		width: clamp(8.25rem, 19.5vw, 12.25rem);
+		min-width: 7.25rem;
+		max-width: 26%;
+		gap: 0.12rem;
+		min-height: 0;
+		overflow: hidden;
+	}
+	body.eu-site-active.page-custi #TWW .tww-row {
+		flex: 1 1 0;
+		min-height: 0;
+		gap: 0.22rem;
+		justify-content: center;
+		align-items: stretch;
+	}
+	body.eu-site-active.page-custi #TWW .tww-row .tww-slot {
+		flex: 0 0 calc(50% - 0.12rem);
+		max-width: calc(50% - 0.12rem);
+		min-width: 0;
+		min-height: 0;
+		height: auto;
+		align-self: stretch;
+	}
+	body.eu-site-active.page-custi #TWW .tww-slot {
+		margin: 0;
+		padding: 0.1rem 0.12rem 0.38rem;
+		font-size: clamp(0.68rem, 0.95vw + 0.4rem, 0.9rem);
+		font-weight: 800;
+		font-variant-numeric: tabular-nums;
+		line-height: 1.15;
+		letter-spacing: 0;
+		white-space: nowrap;
+		overflow: hidden;
+		border-radius: 3px;
+	}
+	body.eu-site-active.page-custi #TWW .tww-slot::after,
+	body.eu-site-active.page-custi #TWW .tww-slot::before {
+		left: 4px;
+		bottom: 4px;
+		height: 3px;
+		pointer-events: none;
+	}
+	body.eu-site-active.page-custi #TWW .tww-slot::after {
+		right: 4px;
+	}
+
+	/* EU tablet / telefon portrait */
+	@media (max-width: 900px) {
+		body.eu-site-active.page-custi #TWW .tww-main-layout {
+			margin-top: 1%;
+			padding: 0.25rem clamp(0.35rem, 2.5vw, 1rem) 0.35rem;
+		}
+		body.eu-site-active.page-custi #TWW .tww-cages-wrap {
+			gap: clamp(1.5rem, 14vw, 4.5rem);
+		}
+		body.eu-site-active.page-custi #TWW .tww-side {
+			width: auto;
+			flex: 1 1 0;
+			min-width: 0;
+			max-width: 37%;
+			gap: 0.1rem;
+			overflow: hidden;
+		}
+		body.eu-site-active.page-custi #TWW .tww-row {
+			flex: 1 1 0;
+			gap: 0.18rem;
+			justify-content: center;
+		}
+		body.eu-site-active.page-custi #TWW .tww-row .tww-slot {
+			flex: 0 0 calc(50% - 0.1rem);
+			max-width: calc(50% - 0.1rem);
+			min-width: 0;
+			min-height: 0;
+			height: auto;
+		}
+		body.eu-site-active.page-custi #TWW .tww-slot {
+			font-size: clamp(0.58rem, 2.55vw, 0.8rem);
+			padding: 0.06rem 0.08rem 0.3rem;
+			line-height: 1.12;
+			margin: 0;
+			overflow: hidden;
+			white-space: nowrap;
+		}
+	}
+
+	/* EU telefon landscape scurt */
+	@media (orientation: landscape) and (max-height: 520px) {
+		body.eu-site-active.page-custi #TWW .tww-main-layout {
+			margin-top: 0.5%;
+			padding: 0.15rem 0.55rem 0.25rem;
+		}
+		body.eu-site-active.page-custi #TWW .tww-cages-wrap {
+			gap: clamp(2rem, 16vw, 6rem);
+		}
+		body.eu-site-active.page-custi #TWW .tww-side {
+			width: auto;
+			flex: 1 1 0;
+			min-width: 0;
+			max-width: 34%;
+			overflow-x: hidden;
+			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
+			gap: 0.2rem;
+		}
+		body.eu-site-active.page-custi #TWW .tww-row {
+			flex: 0 0 auto !important;
+			flex-grow: 0 !important;
+			flex-shrink: 0 !important;
+			min-height: 0;
+			gap: 0.22rem;
+			justify-content: center;
+		}
+		body.eu-site-active.page-custi #TWW .tww-row .tww-slot {
+			flex: 0 0 calc(50% - 0.12rem);
+			max-width: calc(50% - 0.12rem);
+			min-width: 1.85rem;
+			min-height: 32px;
+			height: 32px;
+		}
+		body.eu-site-active.page-custi #TWW .tww-slot {
+			margin: 0;
+			border: 2px solid rgba(12, 12, 12, 0.82);
+			box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+			font-size: clamp(0.62rem, 2.4vmin, 0.82rem);
+			padding: 0.08rem 0.12rem 0.34rem;
+			line-height: 1.12;
+			overflow: hidden;
 			white-space: nowrap;
 		}
 	}

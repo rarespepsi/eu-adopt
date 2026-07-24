@@ -21,6 +21,7 @@ Același Django + aceeași bază de animale. Pe EU prezentăm animalele și inte
 | Navbar Servicii / Shop / Coș | da | **nu** (rute blocate) |
 | Transport pagină publică | da | da (standalone; hub autocar → `/custi/`) |
 | `/custi/` + `/donatii/` pe hub | da | accesibile EN (preview; lansare publică donații mai târziu) |
+| Cuști: layout coloane duble | layout `.ro` | pe hub: override `body.eu-site-active.page-custi` (culoar + 2×2 pe stânga/dreapta; telefon/tabletă/desktop) |
 | Monedă donații / cuști | **RON (lei)** | preview tot **RON**; la **lansare publică** + **cont bancar fundație** → trecere la **EUR** (label + sume + min. alert) |
 | UI limbi EN (`eu_ui`) | nu | da |
 
