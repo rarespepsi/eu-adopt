@@ -1733,6 +1733,7 @@
 													{% if not eu_site_active %}
 													data-transport-url="{% url 'transport' %}?from_adoption=1&pet={{ pet.pk }}"
 													{% endif %}
+													{% endif %}
 													data-servicii-url="{% url 'servicii' %}"
 													data-login-url="{% url 'login' %}"
 													data-login-next="{{ request.get_full_path|urlencode }}"
