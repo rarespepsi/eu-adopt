@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Harta cuștilor autocarului | EU Adopt{% endblock %}
+{% block title %}{% if eu_site_active %}{{ eu_ui.custi_title }}{% else %}Harta cuștilor autocarului | EU Adopt{% endif %}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/custi.css' %}?v=14-valoare-on-click" type="text/css" media="screen" />
@@ -694,27 +694,27 @@
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
-	<main id="TWW" class="custi-page" aria-label="Harta cuștilor autocarului">
+	<main id="TWW" class="custi-page" aria-label="{% if eu_site_active %}{{ eu_ui.custi_aria }}{% else %}Harta cuștilor autocarului{% endif %}">
 		<div class="tww-strip tww-strip--top" aria-label="Bandă sus TWW">
 			<div class="tww-top-inner">
-				<h1 class="tww-top-title">Autocarul EU-ADOPT – Sponsorizează o cușcă</h1>
-				<p class="tww-top-subtitle">Fiecare loc oferă siguranță și condiții unui suflet în drum spre casă. Alege o cușcă și sprijină să îndeplinim proiectul!</p>
+				<h1 class="tww-top-title">{% if eu_site_active %}{{ eu_ui.custi_h1 }}{% else %}Autocarul EU-ADOPT – Sponsorizează o cușcă{% endif %}</h1>
+				<p class="tww-top-subtitle">{% if eu_site_active %}{{ eu_ui.custi_sub }}{% else %}Fiecare loc oferă siguranță și condiții unui suflet în drum spre casă. Alege o cușcă și sprijină să îndeplinim proiectul!{% endif %}</p>
 				<div class="tww-top-actions">
 					{% if custi_from_transport %}
-					<div class="tww-top-actions-left"><a href="{% url 'transport' %}" class="tww-top-btn">Înapoi la Transport</a></div>
-					<div class="tww-top-actions-center"><a href="{% url 'donatii_generale' %}?sursa=custi&amp;intent=medicale_hrana" class="tww-top-btn">Donează pentru servicii medicale și hrană</a></div>
-					<div class="tww-top-actions-right"><a href="{% url 'pets_all' %}" class="tww-top-btn">Înapoi la Prietenii tăi</a></div>
+					<div class="tww-top-actions-left"><a href="{% url 'transport' %}" class="tww-top-btn">{% if eu_site_active %}{{ eu_ui.custi_back_transport }}{% else %}Înapoi la Transport{% endif %}</a></div>
+					<div class="tww-top-actions-center"><a href="{% url 'donatii_generale' %}?sursa=custi&amp;intent=medicale_hrana" class="tww-top-btn">{% if eu_site_active %}{{ eu_ui.custi_donate_medical }}{% else %}Donează pentru servicii medicale și hrană{% endif %}</a></div>
+					<div class="tww-top-actions-right"><a href="{% url 'pets_all' %}" class="tww-top-btn">{% if eu_site_active %}{{ eu_ui.custi_back_pets }}{% else %}Înapoi la Prietenii tăi{% endif %}</a></div>
 					{% else %}
-					<div class="tww-top-actions-left"><a href="{% url 'pets_all' %}" class="tww-top-btn">Înapoi la Prietenii tăi</a></div>
-					<div class="tww-top-actions-center"><a href="{% url 'donatii_generale' %}?sursa=custi&amp;intent=medicale_hrana" class="tww-top-btn">Donează pentru servicii medicale și hrană</a></div>
-					<div class="tww-top-actions-right"><a href="{% url 'transport' %}" class="tww-top-btn">Înapoi la Transport</a></div>
+					<div class="tww-top-actions-left"><a href="{% url 'pets_all' %}" class="tww-top-btn">{% if eu_site_active %}{{ eu_ui.custi_back_pets }}{% else %}Înapoi la Prietenii tăi{% endif %}</a></div>
+					<div class="tww-top-actions-center"><a href="{% url 'donatii_generale' %}?sursa=custi&amp;intent=medicale_hrana" class="tww-top-btn">{% if eu_site_active %}{{ eu_ui.custi_donate_medical }}{% else %}Donează pentru servicii medicale și hrană{% endif %}</a></div>
+					<div class="tww-top-actions-right"><a href="{% url 'transport' %}" class="tww-top-btn">{% if eu_site_active %}{{ eu_ui.custi_back_transport }}{% else %}Înapoi la Transport{% endif %}</a></div>
 					{% endif %}
 				</div>
 			</div>
 		</div>
 		<div class="tww-strip tww-strip--main" aria-label="Zona principală TWW">
 			<div class="tww-main-layout">
-				<div class="tww-cages-wrap" role="group" aria-label="Cuști numerotate: 1–30 stânga, 31–60 dreapta">
+				<div class="tww-cages-wrap" role="group" aria-label="{% if eu_site_active %}{{ eu_ui.custi_cages_aria }}{% else %}Cuști numerotate: 1–30 stânga, 31–60 dreapta{% endif %}">
 				<div class="tww-side tww-side--left">
 					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot" data-loc="L1">1</a><a href="#tww-donate-modal" class="tww-slot" data-loc="L2">2</a></div>
 					<div class="tww-row"><a href="#tww-donate-modal" class="tww-slot" data-loc="L3">3</a><a href="#tww-donate-modal" class="tww-slot" data-loc="L4">4</a></div>
@@ -754,25 +754,25 @@
 		</div>
 		<div class="tww-strip tww-strip--bottom" aria-label="Caseta text jos">
 			<div class="tww-bottom-box">
-				<span class="tww-bottom-text">Ajută la construcția proiectului · We COME TO YOU · Alege o cușcă și fii sponsorul ei!</span>
+				<span class="tww-bottom-text">{% if eu_site_active %}{{ eu_ui.custi_bottom }}{% else %}Ajută la construcția proiectului · We COME TO YOU · Alege o cușcă și fii sponsorul ei!{% endif %}</span>
 			</div>
 		</div>
 		<div class="tww-donate-modal" id="tww-donate-modal">
 			<div class="tww-donate-content" id="tww-donate-content">
-				<button type="button" id="tww-donate-close" class="tww-donate-close" aria-label="Închide">×</button>
+				<button type="button" id="tww-donate-close" class="tww-donate-close" aria-label="{% if eu_site_active %}{{ eu_ui.custi_close }}{% else %}Închide{% endif %}">×</button>
 				<div class="tww-donate-form">
 					<h2>
-						<span id="tww-donate-h2-general" class="tww-donate-h2-general is-hidden">Donație pentru servicii medicale și hrană</span>
-						<span id="tww-donate-h2-slot" class="tww-donate-h2-slot">Donație pentru loc <span id="tww-donate-loc"></span></span>
+						<span id="tww-donate-h2-general" class="tww-donate-h2-general is-hidden">{% if eu_site_active %}{{ eu_ui.custi_h2_general }}{% else %}Donație pentru servicii medicale și hrană{% endif %}</span>
+						<span id="tww-donate-h2-slot" class="tww-donate-h2-slot">{% if eu_site_active %}{{ eu_ui.custi_h2_slot }}{% else %}Donație pentru loc{% endif %} <span id="tww-donate-loc"></span></span>
 					</h2>
 					<div class="tww-donate-valori" aria-hidden="false">
-						<div class="tww-donate-valoare-col"><span class="tww-donate-label">Valoare cușcă</span><span class="tww-donate-cifra"><strong id="tww-donate-5000">5.000</strong> lei</span></div>
-						<div class="tww-donate-valoare-col"><span class="tww-donate-label">Valoare rămasă</span><span class="tww-donate-cifra"><span id="tww-donate-ramasa">5.000</span> lei</span></div>
+						<div class="tww-donate-valoare-col"><span class="tww-donate-label">{% if eu_site_active %}{{ eu_ui.custi_val_crate }}{% else %}Valoare cușcă{% endif %}</span><span class="tww-donate-cifra"><strong id="tww-donate-5000">5.000</strong> {% if eu_site_active %}{{ eu_ui.custi_currency }}{% else %}lei{% endif %}</span></div>
+						<div class="tww-donate-valoare-col"><span class="tww-donate-label">{% if eu_site_active %}{{ eu_ui.custi_val_left }}{% else %}Valoare rămasă{% endif %}</span><span class="tww-donate-cifra"><span id="tww-donate-ramasa">5.000</span> {% if eu_site_active %}{{ eu_ui.custi_currency }}{% else %}lei{% endif %}</span></div>
 					</div>
 					<div class="tww-donate-progress"></div>
 					<div class="tww-donate-sum-row">
-						<label for="tww-donate-suma">Sumă de donat</label>
-						<span class="tww-donate-altă-wrap">Altă sumă</span>
+						<label for="tww-donate-suma">{% if eu_site_active %}{{ eu_ui.custi_sum_label }}{% else %}Sumă de donat{% endif %}</label>
+						<span class="tww-donate-altă-wrap">{% if eu_site_active %}{{ eu_ui.custi_other_sum }}{% else %}Altă sumă{% endif %}</span>
 					</div>
 					<div class="tww-donate-presets">
 						<button type="button" data-amount="25">25</button>
@@ -781,11 +781,11 @@
 						<input type="number" id="tww-donate-suma" min="25" max="5000" step="25" value="50" />
 					</div>
 					<div class="tww-donate-actions">
-						<button type="button" id="tww-donate-confirm" data-variant="primary">Donează</button>
+						<button type="button" id="tww-donate-confirm" data-variant="primary">{% if eu_site_active %}{{ eu_ui.custi_donate_btn }}{% else %}Donează{% endif %}</button>
 					</div>
 				</div>
 				<div class="tww-donate-thanks">
-					<h3>Mulțumim</h3>
+					<h3>{% if eu_site_active %}{{ eu_ui.custi_thanks }}{% else %}Mulțumim{% endif %}</h3>
 					<ul class="tww-donate-donors">
 						<li><img src="https://flagcdn.com/w20/ro.png" alt="" class="tww-donate-flag" /> Maria P.</li>
 						<li><img src="https://flagcdn.com/w20/md.png" alt="" class="tww-donate-flag" /> Ion M.</li>
@@ -1010,7 +1010,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var key = slotKey(currentSlot);
     var val = parseInt(sumaInput ? sumaInput.value : '', 10);
     if (!isFinite(val) || val < 25) {
-      window.alert('Alege sau introdu o sumă de cel puțin 25 lei.');
+      window.alert("{% if eu_site_active %}{{ eu_ui.custi_alert_min|escapejs }}{% else %}Alege sau introdu o sumă de cel puțin 25 lei.{% endif %}");
       return;
     }
     var base = (typeof EUADOPT_DONATII_GENERALE_URL !== 'undefined' && EUADOPT_DONATII_GENERALE_URL) ? EUADOPT_DONATII_GENERALE_URL : '/donatii/';

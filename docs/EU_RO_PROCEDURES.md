@@ -20,6 +20,7 @@ Același Django + aceeași bază de animale. Pe EU prezentăm animalele și inte
 | Transport: dispatch colaboratori | da | **nu** — mail la `transport@eu-adopt.ro` |
 | Navbar Servicii / Shop / Coș | da | **nu** (rute blocate) |
 | Transport pagină publică | da | da (standalone; hub autocar → `/custi/`) |
+| `/custi/` + `/donatii/` pe hub | da | accesibile EN (preview; lansare publică donații mai târziu) |
 | UI limbi EN (`eu_ui`) | nu | da |
 
 ## Cum folosești
