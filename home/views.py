@@ -4258,6 +4258,11 @@ def transport_view(request):
     from home.eu_procedures import procedures_for_request
 
     site_proc = procedures_for_request(request)
+    from home.donatii_constants import EUADOPT_PARTNER_NGO
+
+    partner_base = (EUADOPT_PARTNER_NGO.get("url") or "https://eu-adopt.ro/donatii/").strip().rstrip("/")
+    partner_bulina = f"{partner_base}/?sursa=transport_bulina"
+
     prefill_country = "RO"
     if site_proc.transport_destination_country_field:
         hint = default_country_hint_for_host(request.get_host())
