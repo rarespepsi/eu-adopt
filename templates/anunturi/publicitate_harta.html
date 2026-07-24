@@ -21,6 +21,7 @@
 		</a>
 		{% if pub_superuser_unlimited %}
 		<a href="{% url 'publicitate_eu_direct' %}" class="pub-tab pub-tab--eu-direct" title="Postează pe euadopt.com / .de / .fr / .es (market EU)">PUB EU</a>
+		<a href="{% url 'publicitate_campanii_ro' %}" class="pub-tab pub-tab--campanii" title="Campanii.ro — casete rezervate pe .ro (A5.3, P4.3, TDR.3, IL.L1)">Campanii.ro</a>
 		{% endif %}
 		{% endif %}
 	</div>
@@ -328,6 +329,7 @@
 	</div>
 </section>
 {{ pub_slot_map|json_script:"pub-slot-map-json" }}
+{{ pub_ro_campaign_slots|default_if_none:"[]"|json_script:"pub-ro-campaign-slots-json" }}
 {{ pub_selected_section|json_script:"pub-selected-section-json" }}
 {{ pub_initial_slot|json_script:"pub-initial-slot-json" }}
 {{ pub_a2_images|json_script:"pub-a2-images-json" }}
@@ -468,6 +470,18 @@
 	.pub-tab.pub-tab--eu-direct:hover {
 		background: #b71c1c;
 		border-color: #8e0000;
+		color: #fff;
+	}
+	.pub-tab.pub-tab--campanii {
+		margin-left: 0.65rem;
+		background: #6a1b9a;
+		border-color: #4a148c;
+		color: #fff;
+		box-shadow: 0 1px 3px rgba(74, 20, 140, 0.35);
+	}
+	.pub-tab.pub-tab--campanii:hover {
+		background: #4a148c;
+		border-color: #311b92;
 		color: #fff;
 	}
 	.pub-my-orders-badge {
@@ -1032,6 +1046,17 @@
 	body.page-publicitate-harta .reclama-home-wire [data-slot].is-static-no-rent .reclama-slot-name::after {
 		content: " · STATIC";
 		color: #2e7d32;
+		font-weight: 900;
+	}
+	body.page-publicitate-harta [data-slot].is-campaign-reserved {
+		cursor: default;
+		opacity: 0.78;
+		outline: 2px dashed #6a1b9a;
+		outline-offset: -2px;
+	}
+	body.page-publicitate-harta [data-slot].is-campaign-reserved .reclama-slot-name::after {
+		content: " · Campanii.ro";
+		color: #6a1b9a;
 		font-weight: 900;
 	}
 	body.page-publicitate-harta .reclama-home-wire [data-slot^="A2."].is-static-no-rent .reclama-slot-name::after {
@@ -2382,6 +2407,14 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 	const slotMap = JSON.parse(document.getElementById("pub-slot-map-json").textContent || "{}");
+	var roCampaignKeys = {};
+	try {
+		var campList = JSON.parse(document.getElementById("pub-ro-campaign-slots-json").textContent || "[]");
+		(campList || []).forEach(function (k) { roCampaignKeys[String(k)] = true; });
+	} catch (_campErr) {}
+	function isRoCampaignSlot(sec, code) {
+		return !!roCampaignKeys[String(sec || "") + ":" + String(code || "")];
+	}
 	const section = JSON.parse(document.getElementById("pub-selected-section-json").textContent || '"home"');
 	const a2Images = JSON.parse(document.getElementById("pub-a2-images-json").textContent || "[]");
 	const a13Images = JSON.parse(document.getElementById("pub-a13-images-json").textContent || "[]");
@@ -2935,6 +2968,16 @@ document.addEventListener("DOMContentLoaded", function () {
 				}
 				return;
 			}
+			if (!EU_DIRECT && isRoCampaignSlot("home", slotCode)) {
+				n.classList.add("is-campaign-reserved");
+				n.setAttribute("title", "Rezervat Campanii.ro — nu se închiriază în PUB public");
+				n.addEventListener("click", function () {
+					homeRoot.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
+					n.classList.add("pub-wire-selected");
+					showInfo("Slotul <strong>" + slotCode + "</strong> este rezervat <strong>Campanii.ro</strong> (nu se închiriază în PUB public pe .ro).");
+				});
+				return;
+			}
 			n.addEventListener("click", function () {
 				homeRoot.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
 				n.classList.add("pub-wire-selected");
@@ -2978,10 +3021,20 @@ document.addEventListener("DOMContentLoaded", function () {
 		if (!root) return;
 		var cat = catalogByCode("transport");
 		root.querySelectorAll("[data-slot]").forEach(function (n) {
+			var slotCode = (n.getAttribute("data-slot") || "").trim();
+			if (!EU_DIRECT && isRoCampaignSlot("transport", slotCode)) {
+				n.classList.add("is-campaign-reserved");
+				n.setAttribute("title", "Rezervat Campanii.ro — nu se închiriază în PUB public");
+				n.addEventListener("click", function () {
+					root.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
+					n.classList.add("pub-wire-selected");
+					showInfo("Slotul <strong>" + slotCode + "</strong> este rezervat <strong>Campanii.ro</strong> (nu se închiriază în PUB public pe .ro).");
+				});
+				return;
+			}
 			n.addEventListener("click", function () {
 				root.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
 				n.classList.add("pub-wire-selected");
-				var slotCode = (n.getAttribute("data-slot") || "").trim();
 				var s = cat[slotCode];
 				if (s) {
 					showDetails(s);
@@ -3035,10 +3088,20 @@ document.addEventListener("DOMContentLoaded", function () {
 		if (!root) return;
 		var cat = catalogByCode("i_love");
 		root.querySelectorAll("[data-slot]").forEach(function (n) {
+			var slotCode = (n.getAttribute("data-slot") || "").trim();
+			if (!EU_DIRECT && isRoCampaignSlot("i_love", slotCode)) {
+				n.classList.add("is-campaign-reserved");
+				n.setAttribute("title", "Rezervat Campanii.ro — nu se închiriază în PUB public");
+				n.addEventListener("click", function () {
+					root.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
+					n.classList.add("pub-wire-selected");
+					showInfo("Slotul <strong>" + slotCode + "</strong> este rezervat <strong>Campanii.ro</strong> (nu se închiriază în PUB public pe .ro).");
+				});
+				return;
+			}
 			n.addEventListener("click", function () {
 				root.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
 				n.classList.add("pub-wire-selected");
-				var slotCode = (n.getAttribute("data-slot") || "").trim();
 				var s = cat[slotCode];
 				if (s) {
 					showDetails(s);
@@ -3077,6 +3140,11 @@ document.addEventListener("DOMContentLoaded", function () {
 		if (!root) return;
 		var cat = catalogByCode("pt");
 		root.querySelectorAll("[data-slot]").forEach(function (n) {
+			var slotCode0 = (n.getAttribute("data-slot") || "").trim();
+			if (!EU_DIRECT && isRoCampaignSlot("pt", slotCode0)) {
+				n.classList.add("is-campaign-reserved");
+				n.setAttribute("title", "Rezervat Campanii.ro — nu se închiriază în PUB public");
+			}
 			n.addEventListener("click", function () {
 				root.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
 				n.classList.add("pub-wire-selected");
@@ -3085,6 +3153,10 @@ document.addEventListener("DOMContentLoaded", function () {
 					showInfo(
 						"Celula <strong>" + slotCode + "</strong> este rezervată mesajelor <strong>EU Adopt</strong> (editate de staff în Reclama / notă slot). Nu se comercializează online."
 					);
+					return;
+				}
+				if (!EU_DIRECT && isRoCampaignSlot("pt", slotCode)) {
+					showInfo("Slotul <strong>" + slotCode + "</strong> este rezervat <strong>Campanii.ro</strong> (nu se închiriază în PUB public pe .ro).");
 					return;
 				}
 				var s = cat[slotCode];

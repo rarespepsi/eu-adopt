@@ -12821,6 +12821,33 @@ def _publicitate_register_strip_band_catalog():
 
 _publicitate_register_strip_band_catalog()
 
+# Casete scoase din PUB public pe .ro (rezervate Campanii.ro). Rămân pe EU direct.
+PUBLICITATE_RO_CAMPAIGN_SLOTS = frozenset(
+    {
+        ("home", "A5.3"),
+        ("pt", "P4.3"),
+        ("transport", "TDR.3"),
+        ("i_love", "IL.L1"),
+    }
+)
+
+
+def publicitate_ro_campaign_slot(section: str, code: str) -> bool:
+    return (str(section or "").strip().lower(), str(code or "").strip()) in PUBLICITATE_RO_CAMPAIGN_SLOTS
+
+
+def publicitate_slot_map_for_ro_public(slot_map: dict | None = None) -> dict:
+    """Catalog PUB .ro fără casetele rezervate Campanii.ro."""
+    from home.prelaunch_free_access import publicitate_effective_slot_map
+
+    base = publicitate_effective_slot_map(slot_map or PUBLICITATE_SLOT_MAP)
+    out: dict = {}
+    for section, rows in (base or {}).items():
+        kept = [r for r in (rows or []) if not publicitate_ro_campaign_slot(section, r.get("code") or "")]
+        out[section] = kept
+    return out
+
+
 # Burtieră HOME: un singur text/link per linie de coș; două conținuri = două linii (două achiziții).
 PUBLICITATE_BURTIERA_NOTE_MAXLEN = 100
 
@@ -13256,7 +13283,6 @@ def _publicitate_harta_context(request, pub_nav: str) -> dict:
 
     from home.prelaunch_free_access import (
         PRELAUNCH_FREE_BANNER,
-        publicitate_effective_slot_map,
         publicitate_max_slots_per_user,
         publicitate_max_weeks_per_order,
         publicitate_prelaunch_free_enabled,
@@ -13268,7 +13294,10 @@ def _publicitate_harta_context(request, pub_nav: str) -> dict:
         "pub_nav": pub_nav,
         "pub_selected_section": selected_section,
         "pub_initial_slot": (request.GET.get("slot") or "").strip(),
-        "pub_slot_map": publicitate_effective_slot_map(PUBLICITATE_SLOT_MAP),
+        "pub_slot_map": publicitate_slot_map_for_ro_public(PUBLICITATE_SLOT_MAP),
+        "pub_ro_campaign_slots": sorted(
+            f"{sec}:{code}" for sec, code in PUBLICITATE_RO_CAMPAIGN_SLOTS
+        ),
         "pub_a2_images": [d.get("imagine_fallback") for d in DEMO_DOGS if d.get("imagine_fallback")][:12],
         "pub_a13_images": list(HERO_SLIDER_IMAGES or []),
         "reclama_burtiera_display_text": _get_home_burtiera_text(),
@@ -13347,6 +13376,23 @@ def publicitate_harta_view(request):
         return _publicitate_denied_response(request)
     # Superuser pe .ro: hartă clasică (fără plafon 1 casetă). EU = /publicitate/eu/
     return render(request, "anunturi/publicitate_harta.html", _publicitate_harta_context(request, "harta"))
+
+
+@login_required
+def publicitate_campanii_ro_view(request):
+    """Stub Campanii.ro — casete rezervate A5.3 / P4.3 / TDR.3 / IL.L1 (doar superuser)."""
+    if not getattr(request.user, "is_superuser", False):
+        return _publicitate_denied_response(request)
+    return render(
+        request,
+        "anunturi/publicitate_campanii_ro.html",
+        {
+            "campanii_slots": sorted(
+                [{"section": sec, "code": code} for sec, code in PUBLICITATE_RO_CAMPAIGN_SLOTS],
+                key=lambda x: (x["section"], x["code"]),
+            ),
+        },
+    )
 
 
 @login_required
@@ -13520,6 +13566,14 @@ def _publicitate_parse_cart_lines(lines_in, user=None):
         if not cat:
             return None, None, None, JsonResponse(
                 {"ok": False, "error": f"Slot necunoscut: {section}/{code}"}, status=400
+            )
+        if publicitate_ro_campaign_slot(section, code):
+            return None, None, None, JsonResponse(
+                {
+                    "ok": False,
+                    "error": f"Slotul {section}/{code} este rezervat Campanii.ro (nu se închiriază în PUB public).",
+                },
+                status=400,
             )
         try:
             unit_price = Decimal(str(raw.get("unit_price")))

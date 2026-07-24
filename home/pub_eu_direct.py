@@ -449,7 +449,8 @@ def publicitate_eu_direct_view(request):
         return redirect(f"{reverse('publicitate_eu_direct')}?sect={section}&slot={slot}")
 
     # GET — aceeași hartă (wire) ca PUB, fără coș/tarife; panou stânga = upload EU
-    from home.views import _publicitate_harta_context
+    from home.prelaunch_free_access import publicitate_effective_slot_map
+    from home.views import PUBLICITATE_SLOT_MAP, _publicitate_harta_context
 
     current = None
     creative = None
@@ -502,6 +503,9 @@ def publicitate_eu_direct_view(request):
     ctx["pub_initial_slot"] = selected or ""
     ctx["pub_eu_direct_mode"] = True
     ctx["pub_nav"] = "eu_direct"
+    # EU păstrează tot catalogul (inclusiv casetele rezervate pe .ro pentru Campanii)
+    ctx["pub_slot_map"] = publicitate_effective_slot_map(PUBLICITATE_SLOT_MAP)
+    ctx["pub_ro_campaign_slots"] = []
     ctx["eu_slot"] = selected
     ctx["eu_note"] = current
     ctx["eu_creative"] = creative

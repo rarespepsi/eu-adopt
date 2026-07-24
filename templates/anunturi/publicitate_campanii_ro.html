@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Campanii.ro | EU Adopt{% endblock %}
+{% block body_class %}page-publicitate-campanii{% endblock %}
+
+{% block content %}
+<section class="pub-campanii-wrap" aria-label="Campanii.ro">
+	<div class="pub-campanii-card">
+		<h1>Campanii.ro</h1>
+		<p>Zonă rezervată pe <strong>.ro</strong> (nu e mail și nu e site public). Casetele de mai jos sunt scoase din PUB-ul public și vor fi gestionate de aici.</p>
+		<ul class="pub-campanii-slots">
+			{% for s in campanii_slots %}
+			<li><code>{{ s.section }} / {{ s.code }}</code></li>
+			{% endfor %}
+		</ul>
+		<p class="pub-campanii-note">Fluxul de încărcare / calendar pentru aceste casete urmează — după ce finalizezi ideea.</p>
+		<p class="pub-campanii-actions">
+			<a class="pub-campanii-btn" href="{% url 'publicitate_harta' %}">← Înapoi la PUB .ro</a>
+			<a class="pub-campanii-btn pub-campanii-btn--eu" href="{% url 'publicitate_eu_direct' %}">PUB EU</a>
+		</p>
+	</div>
+</section>
+<style>
+	.pub-campanii-wrap {
+		max-width: 40rem;
+		margin: 1.25rem auto;
+		padding: 0 0.85rem 2rem;
+	}
+	.pub-campanii-card {
+		background: #fff;
+		border: 1px solid #e0e0e0;
+		border-radius: 12px;
+		padding: 1.25rem 1.35rem;
+		box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+	}
+	.pub-campanii-card h1 {
+		margin: 0 0 0.55rem;
+		font-size: 1.35rem;
+		color: #b71c1c;
+	}
+	.pub-campanii-card p { margin: 0 0 0.75rem; line-height: 1.45; color: #333; }
+	.pub-campanii-slots {
+		margin: 0 0 1rem;
+		padding-left: 1.2rem;
+		font-weight: 700;
+	}
+	.pub-campanii-note { font-size: 0.9rem; color: #666; }
+	.pub-campanii-actions { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 1rem; }
+	.pub-campanii-btn {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.4rem 0.85rem;
+		border-radius: 999px;
+		text-decoration: none;
+		font-weight: 800;
+		font-size: 0.85rem;
+		background: #1565c0;
+		color: #fff;
+	}
+	.pub-campanii-btn--eu { background: #c62828; }
+</style>
+{% endblock %}

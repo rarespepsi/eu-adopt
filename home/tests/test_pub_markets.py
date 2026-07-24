@@ -180,10 +180,19 @@ class PubMarketNotesTests(TestCase):
         self.assertContains(r, "superuser")
         self.assertContains(r, "fără limită")
         self.assertContains(r, "PUB EU")
+        self.assertContains(r, "Campanii.ro")
         self.assertContains(r, reverse("publicitate_eu_direct"))
-        self.assertFalse(r.context["pub_superuser_eu_client"])
-        self.assertIsNone(r.context["pub_max_slots_per_user"])
-        self.assertIsNone(r.context["pub_slots_remaining"])
+        self.assertContains(r, reverse("publicitate_campanii_ro"))
+        slot_map = r.context["pub_slot_map"]
+        home_codes = {row["code"] for row in slot_map.get("home") or []}
+        self.assertNotIn("A5.3", home_codes)
+        self.assertIn("A5.1", home_codes)
+        pt_codes = {row["code"] for row in slot_map.get("pt") or []}
+        self.assertNotIn("P4.3", pt_codes)
+        tr_codes = {row["code"] for row in slot_map.get("transport") or []}
+        self.assertNotIn("TDR.3", tr_codes)
+        il_codes = {row["code"] for row in slot_map.get("i_love") or []}
+        self.assertNotIn("IL.L1", il_codes)
 
     def test_eu_host_uses_eu_market(self):
         from home.eu_site import eu_product_skin_enabled
