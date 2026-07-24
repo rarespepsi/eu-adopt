@@ -5185,7 +5185,13 @@ def render_dog_profile(request, listing: AnimalListing):
         "adopter_messaging_unlocked": can_send_pet_message,
         "promote_allowed": promote_allowed,
         "adoption_after_transport": bool(after_transport),
-        "adoption_transport_option_available": bool(has_county and not after_transport),
+        # Pe .com / EU: fără pasul „doresc transport” în fluxul de adopție (doar pe .ro).
+        "adoption_transport_option_available": bool(
+            has_county
+            and not after_transport
+            and not getattr(request, "eu_site_active", False)
+        ),
+        "adoption_skip_pickup_choice": bool(getattr(request, "eu_site_active", False)),
         "pet_back_url": pet_back_url,
         "pet_back_label": _pet_ficha_back_label(pet_back_url),
         "pet_from_home": (request.GET.get("from") or "").strip().lower() == "home",

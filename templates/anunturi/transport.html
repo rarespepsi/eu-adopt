@@ -262,6 +262,7 @@
 								<option value="{{ code }}"{% if code == prefill_country %} selected{% endif %}>{{ label }}</option>
 								{% endfor %}
 							</select>
+							<p class="t1-hint">{{ eu_ui.transport_country_hint }}</p>
 						</div>
 						{% else %}
 						<input type="hidden" name="country" value="RO" />
