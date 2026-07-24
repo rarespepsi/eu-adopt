@@ -12,6 +12,7 @@ Același Django + aceeași bază de animale. Pe EU prezentăm animalele și inte
 |-----------|-------|-------------------------|
 | Catalog animale (comun) | da | da |
 | Filtru țară pe PT | nu (doar RO) | da |
+| Benzi cursive P1/P3 pe PT | da | **nu** (casetele P2 mai înalte) |
 | Adopție: alegere ridicare / transport | da | **nu** (cerere direct) |
 | Transport legat din fluxul Adopt | da | **nu** |
 | Bonus oferte Servicii la adopție | da | **nu** |

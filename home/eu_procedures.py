@@ -24,6 +24,8 @@ class SiteProcedures:
     pt_country_filter: bool
     # Animalele pleacă din RO; pe EU filtram / etichetăm țara de destinație / listare
     animals_origin_romania: bool
+    # EU: fără benzile cursive P1/P3 — casetele P2 umplu înălțimea
+    pt_hide_marquee_strips: bool
 
     # Adopție — EU = prezentare + intermediere (cerere → mail ONG → stabilesc între ei)
     adoption_simple_intermediation: bool
@@ -47,6 +49,7 @@ RO_PROCEDURES = SiteProcedures(
     is_eu=False,
     pt_country_filter=False,
     animals_origin_romania=True,
+    pt_hide_marquee_strips=False,
     adoption_simple_intermediation=False,
     adoption_skip_pickup_choice=False,
     adoption_transport_in_flow=True,
@@ -63,6 +66,7 @@ EU_PROCEDURES = SiteProcedures(
     is_eu=True,
     pt_country_filter=True,
     animals_origin_romania=True,
+    pt_hide_marquee_strips=True,
     adoption_simple_intermediation=True,
     adoption_skip_pickup_choice=True,
     adoption_transport_in_flow=False,

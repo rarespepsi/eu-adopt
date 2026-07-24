@@ -226,6 +226,8 @@ class EuProceduresTests(SimpleTestCase):
         self.assertTrue(EU_PROCEDURES.transport_destination_country_field)
         self.assertTrue(EU_PROCEDURES.transport_email_inbox)
         self.assertFalse(RO_PROCEDURES.transport_email_inbox)
+        self.assertTrue(EU_PROCEDURES.pt_hide_marquee_strips)
+        self.assertFalse(RO_PROCEDURES.pt_hide_marquee_strips)
         self.assertIs(procedures_for_eu_flag(True), EU_PROCEDURES)
         self.assertIs(procedures_for_eu_flag(False), RO_PROCEDURES)
 

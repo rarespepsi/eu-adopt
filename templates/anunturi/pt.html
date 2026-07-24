@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt385-pet-card-meta" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt386-eu-no-strips" type="text/css" media="screen" />
 <style>
 	/* PT: strat CSS unic (fără layer mobil dedicat). */
 	@media (min-width: 768px) and (min-height: 521px) and (hover: hover) and (pointer: fine) {
@@ -1058,6 +1058,65 @@
 		}
 		body.page-pt #PW .pt-strip-track--p3 {
 			animation: pt-strip-p3 90s linear infinite !important;
+		}
+	}
+
+	/*
+	 * EU hub (.com): fără benzile cursive P1/P3 — spațiul trece la casetele P2 (+ laterale).
+	 * .ro rămâne neschimbat.
+	 */
+	body.page-pt.eu-site-active #PW .pt-cell-1,
+	body.page-pt.eu-site-active #PW .pt-cell-3,
+	body.page-pt.eu-site-active #PW #P3,
+	body.page-pt.eu-site-active #PW .pt-strip-wrap--portrait-merged,
+	body.page-pt.eu-site-active #PW .pt-strip-wrap--desktop-p1 {
+		display: none !important;
+		height: 0 !important;
+		min-height: 0 !important;
+		max-height: 0 !important;
+		overflow: hidden !important;
+		border: none !important;
+		padding: 0 !important;
+		margin: 0 !important;
+	}
+
+	@media (min-width: 768px) and (min-height: 521px) {
+		body.page-pt.eu-site-active #PW .pt-grid {
+			grid-template-rows: minmax(0, 1fr) !important;
+			row-gap: 0 !important;
+		}
+		body.page-pt.eu-site-active #PW .pt-cell-2,
+		body.page-pt.eu-site-active #PW .pt-cell-4,
+		body.page-pt.eu-site-active #PW .pt-cell-5 {
+			grid-row: 1 !important;
+		}
+		body.page-pt.eu-site-active #PW .pt-cell-2 {
+			/* Fără P1 72px + P3 54px → rânduri card mai înalte */
+			--p2-row-h: calc((100vh - var(--nav-h, 64px) - 6px) / 3) !important;
+		}
+	}
+
+	@media (orientation: landscape) and (max-height: 34em) and (hover: none) and (pointer: coarse) {
+		body.page-pt.eu-site-active #PW .pt-grid {
+			grid-template-rows: minmax(0, 1fr) !important;
+			row-gap: 0 !important;
+		}
+		body.page-pt.eu-site-active #PW .pt-cell-2,
+		body.page-pt.eu-site-active #PW .pt-cell-4,
+		body.page-pt.eu-site-active #PW .pt-cell-5 {
+			grid-row: 1 !important;
+		}
+		body.page-pt.eu-site-active #PW .pt-cell-2 {
+			--p2-row-h: calc((100dvh - var(--nav-height, 64px) - var(--pt-land-banner, 0px) - 6px) / 2) !important;
+		}
+	}
+
+	@media (max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+		body.page-pt.eu-site-active #PW .pt-cell-1 {
+			display: none !important;
+			flex: 0 0 0 !important;
+			min-height: 0 !important;
+			height: 0 !important;
 		}
 	}
 </style>
