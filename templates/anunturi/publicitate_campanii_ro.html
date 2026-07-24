@@ -1,18 +1,12 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Campanii.ro — sterilizări pe județe | EU Adopt{% endblock %}
+{% block title %}Campanii gratuite de sterilizare | EU Adopt{% endblock %}
 {% block body_class %}page-campanii-ro{% endblock %}
 
 {% block content %}
-<section class="campanii-map-page" aria-label="Campanii.ro — harta județelor">
+<section class="campanii-map-page" aria-label="Campanii gratuite de sterilizare — harta județelor">
 	<header class="campanii-map-head">
-		<h1>Campanii.ro</h1>
-		<p class="campanii-map-lead">
-			Info <strong>sterilizări gratuite</strong> pe județe. Apasă pe județ pe hartă — vezi campaniile active.
-		</p>
-		<p class="campanii-map-slots-note" title="Casete PUB rezervate pe .ro">
-			Intrare din casetele: {% for s in campanii_slots %}<code>{{ s.code }}</code>{% if not forloop.last %}, {% endif %}{% endfor %}
-		</p>
+		<h1>Campanii gratuite de sterilizare</h1>
 	</header>
 
 	{# ~2/3 din ecran — harta SVG România pe județe #}
@@ -107,25 +101,9 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 	.campanii-map-head { margin-bottom: 0.55rem; }
 	.campanii-map-head h1 {
-		margin: 0 0 0.25rem;
+		margin: 0;
 		font-size: clamp(1.25rem, 2.8vw, 1.6rem);
 		color: #6a1b9a;
-	}
-	.campanii-map-lead {
-		margin: 0 0 0.25rem;
-		line-height: 1.4;
-		color: #333;
-		max-width: 42rem;
-		font-size: 0.95rem;
-	}
-	.campanii-map-slots-note {
-		margin: 0;
-		font-size: 0.72rem;
-		color: #777;
-	}
-	.campanii-map-slots-note code {
-		font-weight: 700;
-		color: #4a148c;
 	}
 	.campanii-map-stage {
 		height: 66vh;

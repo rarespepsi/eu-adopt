@@ -21,7 +21,7 @@
 		</a>
 		{% if pub_superuser_unlimited %}
 		<a href="{% url 'publicitate_eu_direct' %}" class="pub-tab pub-tab--eu-direct" title="Postează pe euadopt.com / .de / .fr / .es (market EU)">PUB EU</a>
-		<a href="{% url 'publicitate_campanii_ro' %}" class="pub-tab pub-tab--campanii" title="Campanii.ro — casete rezervate pe .ro (A5.3, P4.3, TDR.3, IL.L1)">Campanii.ro</a>
+		<a href="{% url 'publicitate_campanii_ro' %}" class="pub-tab pub-tab--campanii" title="Campanii gratuite de sterilizare">Campanii</a>
 		{% endif %}
 		{% endif %}
 	</div>
@@ -1051,7 +1051,7 @@
 		outline-offset: -2px;
 	}
 	body.page-publicitate-harta [data-slot].is-campaign-reserved .reclama-slot-name::after {
-		content: " · Campanii.ro";
+		content: " · Campanii";
 		color: #6a1b9a;
 		font-weight: 900;
 	}
@@ -2970,7 +2970,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			}
 			if (!EU_DIRECT && isRoCampaignSlot("home", slotCode)) {
 				n.classList.add("is-campaign-reserved");
-				n.setAttribute("title", "Campanii.ro — sterilizări pe județe");
+				n.setAttribute("title", "Campanii — sterilizări pe județe");
 				n.addEventListener("click", function () { goCampaniiRo(); });
 				return;
 			}
@@ -3020,7 +3020,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			var slotCode = (n.getAttribute("data-slot") || "").trim();
 			if (!EU_DIRECT && isRoCampaignSlot("transport", slotCode)) {
 				n.classList.add("is-campaign-reserved");
-				n.setAttribute("title", "Campanii.ro — sterilizări pe județe");
+				n.setAttribute("title", "Campanii — sterilizări pe județe");
 				n.addEventListener("click", function () { goCampaniiRo(); });
 				return;
 			}
@@ -3083,7 +3083,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			var slotCode = (n.getAttribute("data-slot") || "").trim();
 			if (!EU_DIRECT && isRoCampaignSlot("i_love", slotCode)) {
 				n.classList.add("is-campaign-reserved");
-				n.setAttribute("title", "Campanii.ro — sterilizări pe județe");
+				n.setAttribute("title", "Campanii — sterilizări pe județe");
 				n.addEventListener("click", function () { goCampaniiRo(); });
 				return;
 			}
@@ -3131,7 +3131,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			var slotCode0 = (n.getAttribute("data-slot") || "").trim();
 			if (!EU_DIRECT && isRoCampaignSlot("pt", slotCode0)) {
 				n.classList.add("is-campaign-reserved");
-				n.setAttribute("title", "Campanii.ro — sterilizări pe județe");
+				n.setAttribute("title", "Campanii — sterilizări pe județe");
 			}
 			n.addEventListener("click", function () {
 				root.querySelectorAll(".pub-wire-selected").forEach(function (el) { el.classList.remove("pub-wire-selected"); });
