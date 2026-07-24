@@ -17,6 +17,10 @@ from home.pub_markets import (
 PUB_COVER_COUNT = 30
 PUB_COVER_STATIC_PREFIX = "images/pub/covers/"
 
+# Casete rezervate Campanii pe .ro — imagine + link hartă (nu catalog public)
+RO_CAMPAIGN_PUB_CODES = frozenset({"A5.3", "P4.3", "TDR.3", "IL.L1"})
+RO_CAMPAIGN_PUB_IMAGE = "images/campanii/campanii-gratuite-pub.png"
+
 
 def pub_cover_static_path(slot_code: str) -> str:
     """Cale statică deterministă — același slot = aceeași imagine."""
@@ -144,12 +148,31 @@ def pub_slot_live_creative(
     Creative pentru afișare pe site live.
     Fără material client: cover default, fără link.
     Cu material: imagine/video client + link client (dacă e setat).
+    Pe .ro, sloturile Campanii (A5.3 / P4.3 / TDR.3 / IL.L1) = afiș + link hartă.
     """
     from .views import _pt_pub_slot_parse_note
 
     code = (slot_code or "").strip()
     sect = (section or "home").strip().lower()
     mkt = normalize_pub_market(market)
+
+    if code in RO_CAMPAIGN_PUB_CODES and mkt == PUB_MARKET_RO:
+        return _creative_with_href(
+            sect,
+            code,
+            {
+                "img": static(RO_CAMPAIGN_PUB_IMAGE),
+                "video": "",
+                "link": reverse("publicitate_campanii_ro"),
+                "alt": "Campanii gratuite de sterilizare",
+                "caption": "Campanii gratuite de sterilizare",
+                "price": "",
+                "discount": "",
+                "is_default_cover": False,
+            },
+            market=mkt,
+        )
+
     default_img = pub_cover_url(code)
     parsed = _pt_pub_slot_parse_note(note) if note is not None else None
 

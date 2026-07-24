@@ -303,6 +303,22 @@ class PubMarketNotesTests(TestCase):
         self.assertEqual(r_del.status_code, 302)
         self.assertFalse(CampanieSterilizare.objects.filter(pk=camp.pk).exists())
 
+    def test_campanie_pub_slots_use_campaign_image_and_map_link(self):
+        from home.pub_slot_defaults import pub_slot_live_creative
+
+        cases = (
+            ("home", "A5.3"),
+            ("pt", "P4.3"),
+            ("transport", "TDR.3"),
+            ("i_love", "IL.L1"),
+        )
+        for section, code in cases:
+            creative = pub_slot_live_creative(section, code, None, market=PUB_MARKET_RO)
+            self.assertTrue(creative.get("has_link"), code)
+            dest = (creative.get("href") or creative.get("link") or "")
+            self.assertIn("/publicitate/campanii/", dest, code)
+            self.assertIn("campanii-gratuite-pub", creative.get("img") or "", code)
+
     def test_eu_host_uses_eu_market(self):
         from home.eu_site import eu_product_skin_enabled
 
