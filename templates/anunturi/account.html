@@ -884,12 +884,62 @@ body.page-account .account-right-panel {
 		line-height: 1.3;
 		color: #666;
 	}
-	.cont-pf-campanie-form {
-		margin-top: 0.55rem;
-		padding: 0.55rem 0.5rem;
-		border-radius: 10px;
-		background: #faf5ff;
-		border: 1px solid #e1bee7;
+	/* Notă centrală overlay — nu împinge casetele din fișă */
+	.cont-pf-campanie-modal {
+		position: fixed;
+		inset: 0;
+		z-index: 10050;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.85rem;
+		box-sizing: border-box;
+	}
+	.cont-pf-campanie-modal[hidden] {
+		display: none !important;
+	}
+	.cont-pf-campanie-modal__backdrop {
+		position: absolute;
+		inset: 0;
+		background: rgba(33, 24, 48, 0.48);
+		cursor: pointer;
+	}
+	.cont-pf-campanie-modal__panel {
+		position: relative;
+		z-index: 1;
+		width: min(100%, 26rem);
+		max-height: min(92vh, 38rem);
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		box-sizing: border-box;
+		padding: 1rem 1.05rem 1.1rem;
+		border-radius: 14px;
+		background: linear-gradient(180deg, #faf5ff 0%, #fff 40%);
+		border: 1px solid #ce93d8;
+		box-shadow: 0 12px 40px rgba(74, 20, 140, 0.28);
+	}
+	.cont-pf-campanie-modal__head {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 0.5rem;
+		margin-bottom: 0.65rem;
+	}
+	.cont-pf-campanie-modal__head h2 {
+		margin: 0;
+		font-size: 1.05rem;
+		line-height: 1.25;
+		color: #4a148c;
+	}
+	.cont-pf-campanie-modal__x {
+		flex: 0 0 auto;
+		border: none;
+		background: transparent;
+		font-size: 1.45rem;
+		line-height: 1;
+		color: #6a1b9a;
+		cursor: pointer;
+		padding: 0.1rem 0.25rem;
 	}
 	.cont-pf-campanie-fields {
 		display: flex;
@@ -911,10 +961,11 @@ body.page-account .account-right-panel {
 	.cont-pf-campanie-fields select {
 		width: 100%;
 		box-sizing: border-box;
-		padding: 0.35rem 0.45rem;
+		padding: 0.4rem 0.5rem;
 		border-radius: 8px;
 		border: 1px solid #ce93d8;
-		font-size: 0.88rem;
+		font-size: 0.9rem;
+		background: #fff;
 	}
 	.cont-pf-campanie-species {
 		border: none;
@@ -938,6 +989,12 @@ body.page-account .account-right-panel {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.3rem;
+	}
+	.cont-pf-campanie-modal__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		margin-top: 0.85rem;
 	}
 
 	/* Slot poză din caseta de lângă avatar – stil inspirat din MyPet, dar scos doar aici */
@@ -1673,52 +1730,13 @@ body.page-account .account-right-panel {
 			<div class="cont-pf-bottom-row">
 				<div class="cont-pf-card cont-pf-despre-card">
 					{% if campanie_ok %}<p class="cont-pf-updated" style="margin:0 0 0.5rem;">Campania a fost înregistrată.</p>{% endif %}
-					{# Slot 1: Campanii (în locul vechiului Facebook) #}
+					{# Slot 1: Campanii — buton pe card; formular = notă centrală overlay #}
 					<div class="cont-pf-despre-block cont-pf-campanie-block">
 						<label>Campanii gratuite sterilizare</label>
-						<button type="button" id="btn-toggle-campanie" class="btn-pf btn-pf-secondary cont-pf-campanie-toggle">
+						<button type="button" id="btn-toggle-campanie" class="btn-pf btn-pf-secondary cont-pf-campanie-toggle" aria-haspopup="dialog" aria-controls="campanie-modal">
 							Publică o campanie
 						</button>
 						<p class="cont-pf-campanie-hint">Poză + județ + localitate + câini/pisici + perioadă. Apare pe harta Campanii.</p>
-						<form
-							method="post"
-							action="{% url 'account_edit' %}"
-							enctype="multipart/form-data"
-							id="campanie-sterilizare-form"
-							class="cont-pf-campanie-form"
-							{% if not campanie_form_open %}hidden{% endif %}
-						>
-							{% csrf_token %}
-							<input type="hidden" name="form_type" value="campanie_sterilizare" />
-							<div class="cont-pf-campanie-fields">
-								<label for="id_campanie_judet">Județ *</label>
-								<select id="id_campanie_judet" name="campanie_judet" required>
-									<option value="">— alege județul —</option>
-									{% for j in campanii_judete %}
-									<option value="{{ j.name }}">{{ j.name }}</option>
-									{% endfor %}
-								</select>
-								<label for="id_campanie_localitate">Localitate *</label>
-								<input type="text" id="id_campanie_localitate" name="campanie_localitate" maxlength="120" required placeholder="ex. Piatra Neamț" />
-								<fieldset class="cont-pf-campanie-species">
-									<legend>Pentru *</legend>
-									<label><input type="checkbox" name="campanie_dogs" value="1" /> Câini</label>
-									<label><input type="checkbox" name="campanie_cats" value="1" /> Pisici</label>
-								</fieldset>
-								<label for="id_campanie_date_start">Perioadă — de la *</label>
-								<input type="date" id="id_campanie_date_start" name="campanie_date_start" required />
-								<label for="id_campanie_date_end">până la *</label>
-								<input type="date" id="id_campanie_date_end" name="campanie_date_end" required />
-								<label for="id_campanie_photo">Poză / afiș *</label>
-								<input type="file" id="id_campanie_photo" name="campanie_photo" accept="image/*" required />
-								<label for="id_campanie_link">Link campanie (opțional)</label>
-								<input type="text" inputmode="url" id="id_campanie_link" name="campanie_link" maxlength="500" placeholder="https://…" />
-							</div>
-							<div class="cont-pf-despre-actions" style="margin-top:0.45rem;">
-								<button type="submit" class="btn-pf btn-pf-home">Salvează campania</button>
-								<button type="button" id="btn-close-campanie" class="btn-pf btn-pf-secondary">Închide</button>
-							</div>
-						</form>
 					</div>
 					<form method="post" action="{% url 'account_edit' %}" id="promo-links-form" class="cont-pf-despre-form">
 						{% csrf_token %}
@@ -1855,6 +1873,63 @@ body.page-account .account-right-panel {
 				<a href="{% url 'account_delete' %}" class="btn-sterge-cont">{% if eu_site_active %}{{ eu_ui.account_delete }}{% else %}Ștergere cont{% endif %}</a>
 			</div>
 		</div>
+	</div>
+</div>
+{# Notă centrală campanie — în afara casetelor (fixed overlay) #}
+<div
+	id="campanie-modal"
+	class="cont-pf-campanie-modal"
+	{% if not campanie_form_open %}hidden{% endif %}
+	aria-hidden="{% if campanie_form_open %}false{% else %}true{% endif %}"
+>
+	<div class="cont-pf-campanie-modal__backdrop" id="campanie-modal-backdrop" title="Închide"></div>
+	<div
+		class="cont-pf-campanie-modal__panel"
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="campanie-modal-title"
+	>
+		<div class="cont-pf-campanie-modal__head">
+			<h2 id="campanie-modal-title">Campanii gratuite sterilizare</h2>
+			<button type="button" class="cont-pf-campanie-modal__x" id="btn-close-campanie-x" aria-label="Închide">&times;</button>
+		</div>
+		<form
+			method="post"
+			action="{% url 'account_edit' %}"
+			enctype="multipart/form-data"
+			id="campanie-sterilizare-form"
+		>
+			{% csrf_token %}
+			<input type="hidden" name="form_type" value="campanie_sterilizare" />
+			<div class="cont-pf-campanie-fields">
+				<label for="id_campanie_judet">Județ *</label>
+				<select id="id_campanie_judet" name="campanie_judet" required>
+					<option value="">— alege județul —</option>
+					{% for j in campanii_judete %}
+					<option value="{{ j.name }}">{{ j.name }}</option>
+					{% endfor %}
+				</select>
+				<label for="id_campanie_localitate">Localitate *</label>
+				<input type="text" id="id_campanie_localitate" name="campanie_localitate" maxlength="120" required placeholder="ex. Piatra Neamț" />
+				<fieldset class="cont-pf-campanie-species">
+					<legend>Pentru *</legend>
+					<label><input type="checkbox" name="campanie_dogs" value="1" /> Câini</label>
+					<label><input type="checkbox" name="campanie_cats" value="1" /> Pisici</label>
+				</fieldset>
+				<label for="id_campanie_date_start">Perioadă — de la *</label>
+				<input type="date" id="id_campanie_date_start" name="campanie_date_start" required />
+				<label for="id_campanie_date_end">până la *</label>
+				<input type="date" id="id_campanie_date_end" name="campanie_date_end" required />
+				<label for="id_campanie_photo">Poză / afiș *</label>
+				<input type="file" id="id_campanie_photo" name="campanie_photo" accept="image/*" required />
+				<label for="id_campanie_link">Link campanie (opțional)</label>
+				<input type="text" inputmode="url" id="id_campanie_link" name="campanie_link" maxlength="500" placeholder="https://…" />
+			</div>
+			<div class="cont-pf-campanie-modal__actions">
+				<button type="submit" class="btn-pf btn-pf-home">Salvează campania</button>
+				<button type="button" id="btn-close-campanie" class="btn-pf btn-pf-secondary">Închide</button>
+			</div>
+		</form>
 	</div>
 </div>
 {% else %}
@@ -2005,18 +2080,38 @@ document.addEventListener('DOMContentLoaded', function() {
 		promoForm.addEventListener('input', enableSavePromo);
 		promoForm.addEventListener('change', enableSavePromo);
 	}
-	var campanieForm = document.getElementById('campanie-sterilizare-form');
+	var campanieModal = document.getElementById('campanie-modal');
 	var btnToggleCampanie = document.getElementById('btn-toggle-campanie');
 	var btnCloseCampanie = document.getElementById('btn-close-campanie');
-	if (campanieForm && btnToggleCampanie) {
-		btnToggleCampanie.addEventListener('click', function() {
-			campanieForm.hidden = !campanieForm.hidden;
-		});
+	var btnCloseCampanieX = document.getElementById('btn-close-campanie-x');
+	var campanieBackdrop = document.getElementById('campanie-modal-backdrop');
+	function openCampanieModal() {
+		if (!campanieModal) return;
+		campanieModal.hidden = false;
+		campanieModal.setAttribute('aria-hidden', 'false');
+		document.body.style.overflow = 'hidden';
+		var first = document.getElementById('id_campanie_judet');
+		if (first) try { first.focus(); } catch (e) {}
 	}
-	if (campanieForm && btnCloseCampanie) {
-		btnCloseCampanie.addEventListener('click', function() {
-			campanieForm.hidden = true;
-		});
+	function closeCampanieModal() {
+		if (!campanieModal) return;
+		campanieModal.hidden = true;
+		campanieModal.setAttribute('aria-hidden', 'true');
+		document.body.style.overflow = '';
+	}
+	if (btnToggleCampanie) {
+		btnToggleCampanie.addEventListener('click', openCampanieModal);
+	}
+	if (btnCloseCampanie) btnCloseCampanie.addEventListener('click', closeCampanieModal);
+	if (btnCloseCampanieX) btnCloseCampanieX.addEventListener('click', closeCampanieModal);
+	if (campanieBackdrop) campanieBackdrop.addEventListener('click', closeCampanieModal);
+	document.addEventListener('keydown', function(ev) {
+		if (ev.key === 'Escape' && campanieModal && !campanieModal.hidden) {
+			closeCampanieModal();
+		}
+	});
+	if (campanieModal && !campanieModal.hidden) {
+		document.body.style.overflow = 'hidden';
 	}
 	var despreFormPf = document.getElementById('despre-link-form-pf');
 	var btnModificareDesprePf = document.getElementById('btn-modificare-despre-pf');
