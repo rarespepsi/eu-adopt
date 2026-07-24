@@ -30,9 +30,6 @@
 
 	<p class="campanii-map-foot">
 		<a href="{% url 'publicitate_harta' %}">← PUB .ro</a>
-		{% if user.is_authenticated and user.is_superuser %}
-		· <a href="{% url 'publicitate_eu_direct' %}">PUB EU</a>
-		{% endif %}
 	</p>
 </section>
 <style>
