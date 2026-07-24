@@ -18,15 +18,18 @@
 	<details class="campanii-map-fallback">
 		<summary>Listă județe (dacă harta nu răspunde)</summary>
 		<div class="campanii-map-grid" role="list">
-			{% for j in campanii_judete %}
+			{% for row in campanii_judete_rows %}
 			<a
 				role="listitem"
 				class="campanii-judet-card"
-				href="{% url 'publicitate_campanii_judet' j.slug %}"
-				title="Campanii în {{ j.name }}"
+				href="{% url 'publicitate_campanii_judet' row.judet.slug %}"
+				title="Campanii în {{ row.judet.name }}"
 			>
-				<span class="campanii-judet-name">{{ j.name }}</span>
-				<span class="campanii-judet-cities">{{ j.main_cities|join:", " }}</span>
+				<span class="campanii-judet-name">
+					{{ row.judet.name }}
+					{% if row.count %}<em class="campanii-judet-badge">{{ row.count }}</em>{% endif %}
+				</span>
+				<span class="campanii-judet-cities">{{ row.judet.main_cities|join:", " }}</span>
 			</a>
 			{% endfor %}
 		</div>
@@ -37,6 +40,7 @@
 	</p>
 </section>
 {{ campanii_url_by_code|json_script:"campanii-url-by-code" }}
+{{ campanii_count_by_code|json_script:"campanii-count-by-code" }}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 	var stage = document.getElementById("campaniiMapStage");
@@ -44,8 +48,12 @@ document.addEventListener("DOMContentLoaded", function () {
 	var hint = document.getElementById("campaniiMapHint");
 	if (!stage) return;
 	var urls = {};
+	var counts = {};
 	try {
 		urls = JSON.parse(document.getElementById("campanii-url-by-code").textContent || "{}");
+	} catch (e) {}
+	try {
+		counts = JSON.parse(document.getElementById("campanii-count-by-code").textContent || "{}");
 	} catch (e) {}
 	var svgUrl = "{% static 'images/campanii/romania-counties.svg' %}";
 	fetch(svgUrl, { credentials: "same-origin" })
@@ -60,6 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			svg.setAttribute("role", "img");
 			svg.setAttribute("aria-label", "Harta României — alege un județ");
 			svg.classList.add("campanii-ro-svg");
+			var ns = "http://www.w3.org/2000/svg";
 			stage.querySelectorAll('path[id^="ro-"]').forEach(function (path) {
 				var code = String(path.getAttribute("id") || "").replace(/^ro-/i, "").toUpperCase();
 				var url = urls[code];
@@ -68,7 +77,23 @@ document.addEventListener("DOMContentLoaded", function () {
 				path.setAttribute("tabindex", "0");
 				path.setAttribute("role", "link");
 				var label = path.getAttribute("aria-label") || code;
-				path.setAttribute("aria-label", "Campanii în " + label);
+				var n = parseInt(counts[code] || 0, 10) || 0;
+				path.setAttribute("aria-label", "Campanii în " + label + (n ? (" — " + n) : ""));
+				if (n > 0) {
+					path.classList.add("campanii-judet-path--has");
+					try {
+						var box = path.getBBox();
+						var t = document.createElementNS(ns, "text");
+						t.setAttribute("x", String(box.x + box.width / 2));
+						t.setAttribute("y", String(box.y + box.height / 2));
+						t.setAttribute("text-anchor", "middle");
+						t.setAttribute("dominant-baseline", "central");
+						t.setAttribute("class", "campanii-judet-num");
+						t.setAttribute("pointer-events", "none");
+						t.textContent = String(n);
+						svg.appendChild(t);
+					} catch (err) {}
+				}
 				function go() { window.location.href = url; }
 				path.addEventListener("click", go);
 				path.addEventListener("keydown", function (ev) {
@@ -80,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function () {
 				path.addEventListener("mouseenter", function () {
 					if (hint) {
 						hint.hidden = false;
-						hint.textContent = label + " — click pentru campanii";
+						hint.textContent = label + (n ? (" — " + n + (n === 1 ? " campanie" : " campanii")) : " — fără campanii încă") + " · click";
 					}
 				});
 			});
@@ -141,11 +166,23 @@ document.addEventListener("DOMContentLoaded", function () {
 		transition: fill 0.12s ease, stroke-width 0.12s ease;
 		outline: none;
 	}
+	.campanii-judet-path--has {
+		fill: #ce93d8;
+	}
 	.campanii-judet-path:hover,
 	.campanii-judet-path:focus {
 		fill: #ba68c8;
 		stroke: #4a148c;
 		stroke-width: 1.1;
+	}
+	.campanii-judet-num {
+		fill: #4a148c;
+		font-size: 11px;
+		font-weight: 800;
+		font-family: system-ui, sans-serif;
+		paint-order: stroke;
+		stroke: #fff;
+		stroke-width: 2.5px;
 	}
 	.campanii-map-hint {
 		margin: 0.35rem 0 0;
@@ -182,6 +219,17 @@ document.addEventListener("DOMContentLoaded", function () {
 		min-height: 4.2rem;
 	}
 	.campanii-judet-name { font-weight: 800; font-size: 0.92rem; }
+	.campanii-judet-badge {
+		display: inline-block;
+		margin-left: 0.25rem;
+		padding: 0.05rem 0.35rem;
+		border-radius: 999px;
+		background: #6a1b9a;
+		color: #fff;
+		font-style: normal;
+		font-size: 0.75rem;
+		font-weight: 800;
+	}
 	.campanii-judet-cities {
 		font-size: 0.68rem;
 		line-height: 1.25;

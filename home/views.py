@@ -5552,6 +5552,11 @@ def account_view(request):
             }
     ctx["account_updated"] = request.GET.get("updated") == "1"
     ctx["username_updated"] = request.GET.get("username_updated") == "1"
+    ctx["campanie_form_open"] = request.GET.get("campanie") == "1"
+    ctx["campanie_ok"] = request.GET.get("campanie_ok") == "1"
+    from home.campanii_ro import campanii_judete
+
+    ctx["campanii_judete"] = campanii_judete()
     from . import account_deletion as _acct_del
 
     ctx["pending_account_deletion"] = (
@@ -7667,21 +7672,84 @@ def account_edit_view(request):
         request.session["account_updated"] = True
         return redirect(reverse("account") + "?updated=1")
 
-    # Formular „3 sloturi promo” (FB/social, mâncare, link propriu)
+    # Formular „2 sloturi promo” (mâncare + FB/social pe câmpul fost „link propriu”)
     if form_type == "promo_links":
         from home.shelter_directory import normalize_external_link
 
-        link_social = normalize_external_link(request.POST.get("link_social") or "")
         link_mancare = normalize_external_link(request.POST.get("link_mancare") or "")
-        link_propriu = normalize_external_link(request.POST.get("link_propriu") or "")
+        # Caseta de jos (fost „Link propriu”) = Facebook / Insta / TikTok → link_social
+        link_social = normalize_external_link(request.POST.get("link_social") or "")
         if user_profile is None:
             user_profile = UserProfile.objects.create(user=user)
         user_profile.link_social = link_social
         user_profile.link_mancare = link_mancare
-        user_profile.link_propriu = link_propriu
-        user_profile.save(update_fields=["link_social", "link_mancare", "link_propriu"])
+        user_profile.save(update_fields=["link_social", "link_mancare"])
         request.session["account_updated"] = True
         return redirect(reverse("account") + "?updated=1")
+
+    # Formular campanie sterilizare (.ro) — poză + județ + localitate + specii + perioadă
+    if form_type == "campanie_sterilizare":
+        from datetime import datetime
+
+        from django.contrib import messages
+
+        from home.campanii_ro import resolve_campanii_judet
+        from home.models import CampanieSterilizare
+        from home.shelter_directory import normalize_external_link
+
+        judet_raw = (request.POST.get("campanie_judet") or "").strip()
+        localitate = (request.POST.get("campanie_localitate") or "").strip()
+        link = normalize_external_link(request.POST.get("campanie_link") or "")
+        dogs = (request.POST.get("campanie_dogs") or "") in ("1", "on", "true", "da")
+        cats = (request.POST.get("campanie_cats") or "") in ("1", "on", "true", "da")
+        start_raw = (request.POST.get("campanie_date_start") or "").strip()
+        end_raw = (request.POST.get("campanie_date_end") or "").strip()
+        photo = request.FILES.get("campanie_photo")
+
+        errors = []
+        judet_obj = resolve_campanii_judet(judet_raw)
+        if judet_obj is None:
+            errors.append("Alege un județ.")
+        if not localitate:
+            errors.append("Localitatea este obligatorie.")
+        elif len(localitate) > 120:
+            localitate = localitate[:120]
+        if not dogs and not cats:
+            errors.append("Bifează Câini și/sau Pisici.")
+        if not photo:
+            errors.append("Încarcă o poză / afiș al campaniei.")
+        date_start = date_end = None
+        try:
+            date_start = datetime.strptime(start_raw, "%Y-%m-%d").date()
+        except ValueError:
+            errors.append("Data de început este invalidă.")
+        try:
+            date_end = datetime.strptime(end_raw, "%Y-%m-%d").date()
+        except ValueError:
+            errors.append("Data de sfârșit este invalidă.")
+        if date_start and date_end and date_end < date_start:
+            errors.append("Data de sfârșit trebuie să fie după început.")
+
+        if errors:
+            for err in errors:
+                messages.error(request, err)
+            return redirect(reverse("account") + "?campanie=1")
+
+        CampanieSterilizare.objects.create(
+            user=user,
+            judet=judet_obj.name,
+            judet_slug=judet_obj.slug,
+            localitate=localitate,
+            species_dogs=dogs,
+            species_cats=cats,
+            date_start=date_start,
+            date_end=date_end,
+            photo=photo,
+            link=link or "",
+        )
+        messages.success(request, "Campania a fost înregistrată și apare pe harta județului.")
+        request.session["account_updated"] = True
+        return redirect(reverse("account") + "?updated=1&campanie_ok=1")
 
     # Formular „DATE FIRMĂ” – ONG + colaborator
     if form_type == "firma" and account_profile.role in (AccountProfile.ROLE_COLLAB, AccountProfile.ROLE_ORG):
@@ -13379,9 +13447,10 @@ def publicitate_harta_view(request):
 
 
 def publicitate_campanii_ro_view(request):
-    """Hartă națională Campanii.ro — județe (sterilizări / info). Public."""
-    from home.campanii_ro import campanii_judete, campanii_url_by_code
+    """Hartă națională Campanii — județe (sterilizări). Public."""
+    from home.campanii_ro import campanii_count_by_code, campanii_judete, campanii_url_by_code
 
+    counts = campanii_count_by_code()
     return render(
         request,
         "anunturi/publicitate_campanii_ro.html",
@@ -13392,13 +13461,17 @@ def publicitate_campanii_ro_view(request):
             ),
             "campanii_judete": campanii_judete(),
             "campanii_url_by_code": campanii_url_by_code(),
+            "campanii_count_by_code": counts,
+            "campanii_judete_rows": [
+                {"judet": j, "count": int(counts.get(j.code, 0) or 0)} for j in campanii_judete()
+            ],
         },
     )
 
 
 def publicitate_campanii_judet_view(request, judet_slug: str):
-    """Listă campanii active pe județ (stub — încă fără postări user)."""
-    from home.campanii_ro import campanii_judet_by_slug
+    """Listă campanii vizibile pe județ (alfabetic după localitate)."""
+    from home.campanii_ro import campanii_for_judet_slug, campanii_judet_by_slug
 
     judet = campanii_judet_by_slug(judet_slug)
     if judet is None:
@@ -13410,7 +13483,7 @@ def publicitate_campanii_judet_view(request, judet_slug: str):
         "anunturi/publicitate_campanii_judet.html",
         {
             "judet": judet,
-            "campanii_active": [],  # stub — postările user vin ulterior
+            "campanii_active": campanii_for_judet_slug(judet.slug),
         },
     )
 

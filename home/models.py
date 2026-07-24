@@ -2325,3 +2325,56 @@ class UserPageOnboardingSeen(models.Model):
     def __str__(self):
         return f"{self.user_id} · {self.page_key}"
 
+
+class CampanieSterilizare(models.Model):
+    """Campanie gratuită de sterilizare — postare din cont, listă pe județ (.ro)."""
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="campanii_sterilizare",
+    )
+    judet = models.CharField("Județ", max_length=64, db_index=True)
+    judet_slug = models.CharField("Slug județ", max_length=80, db_index=True)
+    localitate = models.CharField("Localitate", max_length=120)
+    species_dogs = models.BooleanField("Câini", default=False)
+    species_cats = models.BooleanField("Pisici", default=False)
+    date_start = models.DateField("Început")
+    date_end = models.DateField("Sfârșit")
+    photo = models.ImageField("Poză / afiș", upload_to="campanii/%Y/%m/")
+    link = models.CharField(
+        "Link campanie",
+        max_length=500,
+        blank=True,
+        default="",
+        help_text="URL opțional (FB / Insta / site campanie).",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Campanie sterilizare"
+        verbose_name_plural = "Campanii sterilizare"
+        ordering = ["localitate", "-date_start", "-pk"]
+        indexes = [
+            models.Index(fields=["judet_slug", "date_end"]),
+            models.Index(fields=["date_end"]),
+        ]
+
+    def __str__(self):
+        return f"{self.localitate} ({self.judet}) {self.date_start}–{self.date_end}"
+
+    @property
+    def visible_until(self):
+        from datetime import timedelta
+
+        return self.date_end + timedelta(days=3)
+
+    def species_label(self) -> str:
+        parts = []
+        if self.species_dogs:
+            parts.append("Câini")
+        if self.species_cats:
+            parts.append("Pisici")
+        return " · ".join(parts) if parts else "—"
+

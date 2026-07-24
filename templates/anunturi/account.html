@@ -869,6 +869,76 @@ body.page-account .account-right-panel {
 	.cont-pf-despre-puncte a:hover {
 		text-decoration: underline;
 	}
+	.cont-pf-campanie-block {
+		margin-bottom: 0.65rem;
+		padding-bottom: 0.55rem;
+		border-bottom: 1px dashed rgba(106, 27, 154, 0.35);
+	}
+	.cont-pf-campanie-toggle {
+		width: 100%;
+		margin-top: 0.25rem;
+	}
+	.cont-pf-campanie-hint {
+		margin: 0.35rem 0 0;
+		font-size: 0.72rem;
+		line-height: 1.3;
+		color: #666;
+	}
+	.cont-pf-campanie-form {
+		margin-top: 0.55rem;
+		padding: 0.55rem 0.5rem;
+		border-radius: 10px;
+		background: #faf5ff;
+		border: 1px solid #e1bee7;
+	}
+	.cont-pf-campanie-fields {
+		display: flex;
+		flex-direction: column;
+		gap: 0.28rem;
+	}
+	.cont-pf-campanie-fields label,
+	.cont-pf-campanie-fields legend {
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+		color: #6a1b9a;
+		margin-top: 0.2rem;
+	}
+	.cont-pf-campanie-fields input[type="text"],
+	.cont-pf-campanie-fields input[type="date"],
+	.cont-pf-campanie-fields input[type="file"],
+	.cont-pf-campanie-fields select {
+		width: 100%;
+		box-sizing: border-box;
+		padding: 0.35rem 0.45rem;
+		border-radius: 8px;
+		border: 1px solid #ce93d8;
+		font-size: 0.88rem;
+	}
+	.cont-pf-campanie-species {
+		border: none;
+		margin: 0.15rem 0 0;
+		padding: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.65rem;
+		align-items: center;
+	}
+	.cont-pf-campanie-species legend {
+		padding: 0;
+		margin-bottom: 0.15rem;
+		width: 100%;
+	}
+	.cont-pf-campanie-species label {
+		text-transform: none;
+		letter-spacing: 0;
+		font-weight: 600;
+		color: #333;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+	}
 
 	/* Slot poză din caseta de lângă avatar – stil inspirat din MyPet, dar scos doar aici */
 	.cont-pf-photo-card .mypet-fisa-photo-slot {
@@ -1602,24 +1672,58 @@ body.page-account .account-right-panel {
 			</div>
 			<div class="cont-pf-bottom-row">
 				<div class="cont-pf-card cont-pf-despre-card">
+					{% if campanie_ok %}<p class="cont-pf-updated" style="margin:0 0 0.5rem;">Campania a fost înregistrată.</p>{% endif %}
+					{# Slot 1: Campanii (în locul vechiului Facebook) #}
+					<div class="cont-pf-despre-block cont-pf-campanie-block">
+						<label>Campanii gratuite sterilizare</label>
+						<button type="button" id="btn-toggle-campanie" class="btn-pf btn-pf-secondary cont-pf-campanie-toggle">
+							Publică o campanie
+						</button>
+						<p class="cont-pf-campanie-hint">Poză + județ + localitate + câini/pisici + perioadă. Apare pe harta Campanii.</p>
+						<form
+							method="post"
+							action="{% url 'account_edit' %}"
+							enctype="multipart/form-data"
+							id="campanie-sterilizare-form"
+							class="cont-pf-campanie-form"
+							{% if not campanie_form_open %}hidden{% endif %}
+						>
+							{% csrf_token %}
+							<input type="hidden" name="form_type" value="campanie_sterilizare" />
+							<div class="cont-pf-campanie-fields">
+								<label for="id_campanie_judet">Județ *</label>
+								<select id="id_campanie_judet" name="campanie_judet" required>
+									<option value="">— alege județul —</option>
+									{% for j in campanii_judete %}
+									<option value="{{ j.name }}">{{ j.name }}</option>
+									{% endfor %}
+								</select>
+								<label for="id_campanie_localitate">Localitate *</label>
+								<input type="text" id="id_campanie_localitate" name="campanie_localitate" maxlength="120" required placeholder="ex. Piatra Neamț" />
+								<fieldset class="cont-pf-campanie-species">
+									<legend>Pentru *</legend>
+									<label><input type="checkbox" name="campanie_dogs" value="1" /> Câini</label>
+									<label><input type="checkbox" name="campanie_cats" value="1" /> Pisici</label>
+								</fieldset>
+								<label for="id_campanie_date_start">Perioadă — de la *</label>
+								<input type="date" id="id_campanie_date_start" name="campanie_date_start" required />
+								<label for="id_campanie_date_end">până la *</label>
+								<input type="date" id="id_campanie_date_end" name="campanie_date_end" required />
+								<label for="id_campanie_photo">Poză / afiș *</label>
+								<input type="file" id="id_campanie_photo" name="campanie_photo" accept="image/*" required />
+								<label for="id_campanie_link">Link campanie (opțional)</label>
+								<input type="text" inputmode="url" id="id_campanie_link" name="campanie_link" maxlength="500" placeholder="https://…" />
+							</div>
+							<div class="cont-pf-despre-actions" style="margin-top:0.45rem;">
+								<button type="submit" class="btn-pf btn-pf-home">Salvează campania</button>
+								<button type="button" id="btn-close-campanie" class="btn-pf btn-pf-secondary">Închide</button>
+							</div>
+						</form>
+					</div>
 					<form method="post" action="{% url 'account_edit' %}" id="promo-links-form" class="cont-pf-despre-form">
 						{% csrf_token %}
 						<input type="hidden" name="form_type" value="promo_links" />
 						<div class="cont-pf-despre-stack">
-							<div class="cont-pf-despre-block">
-								<label for="id_link_social">Facebook / Insta / TikTok</label>
-								<input
-									type="text"
-									inputmode="url"
-									id="id_link_social"
-									name="link_social"
-									class="despre-link-field"
-									maxlength="500"
-									readonly
-									placeholder="https://…"
-									value="{% if user_profile %}{{ user_profile.link_social|default:'' }}{% endif %}"
-								/>
-							</div>
 							<div class="cont-pf-despre-block">
 								<label for="id_link_mancare">Link mâncare adăpost</label>
 								<input
@@ -1635,17 +1739,17 @@ body.page-account .account-right-panel {
 								/>
 							</div>
 							<div class="cont-pf-despre-block">
-								<label for="id_link_propriu">Link propriu <span style="font-weight:500;text-transform:none;letter-spacing:0;opacity:.75;">(gol = Suflet și Caracter)</span></label>
+								<label for="id_link_social">Facebook / Insta / TikTok</label>
 								<input
 									type="text"
 									inputmode="url"
-									id="id_link_propriu"
-									name="link_propriu"
+									id="id_link_social"
+									name="link_social"
 									class="despre-link-field"
 									maxlength="500"
 									readonly
-									placeholder="https://… sau lasă gol"
-									value="{% if user_profile %}{{ user_profile.link_propriu|default:'' }}{% endif %}"
+									placeholder="https://…"
+									value="{% if user_profile %}{{ user_profile.link_social|default:'' }}{% endif %}"
 								/>
 							</div>
 						</div>
@@ -1900,6 +2004,19 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		promoForm.addEventListener('input', enableSavePromo);
 		promoForm.addEventListener('change', enableSavePromo);
+	}
+	var campanieForm = document.getElementById('campanie-sterilizare-form');
+	var btnToggleCampanie = document.getElementById('btn-toggle-campanie');
+	var btnCloseCampanie = document.getElementById('btn-close-campanie');
+	if (campanieForm && btnToggleCampanie) {
+		btnToggleCampanie.addEventListener('click', function() {
+			campanieForm.hidden = !campanieForm.hidden;
+		});
+	}
+	if (campanieForm && btnCloseCampanie) {
+		btnCloseCampanie.addEventListener('click', function() {
+			campanieForm.hidden = true;
+		});
 	}
 	var despreFormPf = document.getElementById('despre-link-form-pf');
 	var btnModificareDesprePf = document.getElementById('btn-modificare-despre-pf');

@@ -140,3 +140,57 @@ def campanii_url_by_code() -> dict[str, str]:
         for j in campanii_judete()
         if j.code
     }
+
+
+def campanii_visible_until_cutoff():
+    """Vizibil până la date_end + 3 zile (inclusiv ziua a 3-a)."""
+    from datetime import date, timedelta
+
+    return date.today() - timedelta(days=3)
+
+
+def campanii_visible_queryset():
+    """Campanii încă afișate public (în perioada + 3 zile după expirare)."""
+    from home.models import CampanieSterilizare
+
+    return CampanieSterilizare.objects.filter(date_end__gte=campanii_visible_until_cutoff())
+
+
+def campanii_for_judet_slug(judet_slug: str):
+    """Listă vizibilă pe județ, alfabetic după localitate (fără nume user)."""
+    from home.ro_location import fold_key
+
+    qs = list(
+        campanii_visible_queryset()
+        .filter(judet_slug=judet_slug)
+        .order_by("localitate", "date_start", "pk")
+    )
+    qs.sort(key=lambda c: (fold_key(c.localitate or ""), c.date_start or "", c.pk))
+    return qs
+
+
+def campanii_count_by_code() -> dict[str, int]:
+    """{ 'NT': 2, ... } — contor pe județ (cod auto) pentru harta SVG."""
+    from django.db.models import Count
+
+    slug_to_code = {j.slug: j.code for j in campanii_judete() if j.code}
+    out: dict[str, int] = {}
+    for row in campanii_visible_queryset().values("judet_slug").annotate(n=Count("id")):
+        code = slug_to_code.get(row["judet_slug"]) or ""
+        if code:
+            out[code] = int(row["n"] or 0)
+    return out
+
+
+def resolve_campanii_judet(name_or_slug: str) -> CampaniiJudet | None:
+    raw = (name_or_slug or "").strip()
+    if not raw:
+        return None
+    by_slug = campanii_judet_by_slug(raw)
+    if by_slug:
+        return by_slug
+    key = fold_key(raw)
+    for j in campanii_judete():
+        if fold_key(j.name) == key:
+            return j
+    return None

@@ -18,9 +18,19 @@
 	<ul class="campanii-list">
 		{% for c in campanii_active %}
 		<li class="campanii-list-item">
-			<strong>{{ c.title }}</strong>
-			{% if c.localitate %}<span> · {{ c.localitate }}</span>{% endif %}
-			{% if c.period %}<span class="campanii-period">{{ c.period }}</span>{% endif %}
+			{% if c.photo %}
+			<a class="campanii-list-photo" href="{% if c.link %}{{ c.link }}{% else %}{{ c.photo.url }}{% endif %}" {% if c.link %}target="_blank" rel="noopener noreferrer"{% endif %}>
+				<img src="{{ c.photo.url }}" alt="Campanie {{ c.localitate }}" loading="lazy" />
+			</a>
+			{% endif %}
+			<div class="campanii-list-body">
+				<p class="campanii-list-loc"><strong>{{ c.localitate }}</strong> · {{ c.judet }}</p>
+				<p class="campanii-list-species">{{ c.species_label }}</p>
+				<p class="campanii-period">{{ c.date_start|date:"d.m.Y" }} – {{ c.date_end|date:"d.m.Y" }}</p>
+				{% if c.link %}
+				<p class="campanii-list-link"><a href="{{ c.link }}" target="_blank" rel="noopener noreferrer">Link campanie</a></p>
+				{% endif %}
+			</div>
 		</li>
 		{% endfor %}
 	</ul>
@@ -28,7 +38,7 @@
 	<div class="campanii-empty">
 		<p>Momentan <strong>nu sunt campanii active</strong> înregistrate în {{ judet.name }}.</p>
 		<p class="campanii-empty-hint">
-			Userii vor putea posta campanii de sterilizare din zona de cont (locul formularului — de stabilit).
+			Poți publica o campanie din <a href="{% url 'account' %}">pagina ta de cont</a> (butonul Campanii gratuite sterilizare).
 		</p>
 	</div>
 	{% endif %}
@@ -39,7 +49,7 @@
 </section>
 <style>
 	.campanii-judet-page {
-		max-width: 40rem;
+		max-width: 44rem;
 		margin: 0.85rem auto 2rem;
 		padding: 0 0.85rem;
 	}
@@ -70,25 +80,63 @@
 	}
 	.campanii-empty p { margin: 0 0 0.5rem; line-height: 1.45; }
 	.campanii-empty-hint { font-size: 0.88rem; color: #666; margin-bottom: 0 !important; }
+	.campanii-empty-hint a { color: #6a1b9a; font-weight: 700; }
 	.campanii-list {
 		list-style: none;
 		margin: 0;
 		padding: 0;
 		display: flex;
 		flex-direction: column;
-		gap: 0.55rem;
+		gap: 0.75rem;
 	}
 	.campanii-list-item {
-		padding: 0.75rem 0.9rem;
-		border-radius: 10px;
+		display: grid;
+		grid-template-columns: minmax(7rem, 9.5rem) minmax(0, 1fr);
+		gap: 0.75rem;
+		padding: 0.65rem;
+		border-radius: 12px;
 		background: #fff;
 		border: 1px solid #e1bee7;
+		align-items: start;
+	}
+	.campanii-list-photo {
+		display: block;
+		border-radius: 10px;
+		overflow: hidden;
+		aspect-ratio: 1;
+		background: #f3e5f5;
+	}
+	.campanii-list-photo img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+	.campanii-list-body { min-width: 0; }
+	.campanii-list-loc {
+		margin: 0 0 0.25rem;
+		font-size: 1rem;
+		color: #311b92;
+	}
+	.campanii-list-species {
+		margin: 0 0 0.2rem;
+		font-size: 0.88rem;
+		font-weight: 700;
+		color: #6a1b9a;
 	}
 	.campanii-period {
-		display: block;
-		margin-top: 0.25rem;
+		margin: 0;
 		font-size: 0.82rem;
 		color: #666;
+	}
+	.campanii-list-link {
+		margin: 0.35rem 0 0;
+		font-size: 0.85rem;
+	}
+	.campanii-list-link a {
+		font-weight: 700;
+		color: #1565c0;
+		text-decoration: none;
 	}
 	.campanii-judet-foot {
 		margin-top: 1.25rem;
@@ -97,6 +145,14 @@
 		font-weight: 700;
 		color: #1565c0;
 		text-decoration: none;
+	}
+	@media (max-width: 520px) {
+		.campanii-list-item {
+			grid-template-columns: 1fr;
+		}
+		.campanii-list-photo {
+			max-width: 12rem;
+		}
 	}
 </style>
 {% endblock %}

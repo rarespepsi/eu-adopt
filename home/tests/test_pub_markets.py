@@ -3,7 +3,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
-from home.models import ReclamaSlotNote
+from home.models import AccountProfile, ReclamaSlotNote, UserProfile
 from home.pub_markets import (
     PUB_MARKET_EU,
     PUB_MARKET_RO,
@@ -203,11 +203,63 @@ class PubMarketNotesTests(TestCase):
         self.assertContains(r, "campaniiMapStage")
         self.assertIn("NT", r.context["campanii_url_by_code"])
         self.assertTrue(r.context["campanii_url_by_code"]["NT"].endswith("/neamt/"))
+        self.assertEqual(r.context["campanii_count_by_code"], {})
         r2 = c.get(reverse("publicitate_campanii_judet", kwargs={"judet_slug": "neamt"}))
         self.assertEqual(r2.status_code, 200)
         self.assertContains(r2, "Neamț")
         self.assertContains(r2, "nu sunt campanii active")
         self.assertContains(r2, "Piatra Neamț")
+
+    def test_campanie_create_shows_on_map_and_expires_after_grace(self):
+        from datetime import date, timedelta
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from home.models import CampanieSterilizare
+
+        User = get_user_model()
+        u = User.objects.create_user("camp_poster", "c@b.c", "x")
+        ap, _ = AccountProfile.objects.get_or_create(user=u)
+        ap.role = AccountProfile.ROLE_PF
+        ap.save(update_fields=["role"])
+        UserProfile.objects.get_or_create(user=u)
+        c = Client(HTTP_HOST="eu-adopt.ro")
+        c.force_login(u)
+        start = date.today()
+        end = date.today() + timedelta(days=2)
+        photo = SimpleUploadedFile("afiș.jpg", b"\xff\xd8\xff\xd9", content_type="image/jpeg")
+        r = c.post(
+            reverse("account_edit"),
+            {
+                "form_type": "campanie_sterilizare",
+                "campanie_judet": "Neamț",
+                "campanie_localitate": "Roman",
+                "campanie_dogs": "1",
+                "campanie_date_start": start.isoformat(),
+                "campanie_date_end": end.isoformat(),
+                "campanie_link": "https://example.com/camp",
+                "campanie_photo": photo,
+            },
+        )
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(CampanieSterilizare.objects.count(), 1)
+        camp = CampanieSterilizare.objects.get()
+        self.assertEqual(camp.judet_slug, "neamt")
+        self.assertEqual(camp.localitate, "Roman")
+        self.assertNotIn(u.username, camp.localitate)
+
+        r_map = c.get(reverse("publicitate_campanii_ro"))
+        self.assertEqual(r_map.context["campanii_count_by_code"].get("NT"), 1)
+        r_judet = c.get(reverse("publicitate_campanii_judet", kwargs={"judet_slug": "neamt"}))
+        self.assertContains(r_judet, "Roman")
+        self.assertContains(r_judet, "Câini")
+        self.assertContains(r_judet, 'class="campanii-list-loc"')
+        self.assertNotContains(r_judet, 'class="campanii-list-user"')
+
+        camp.date_end = date.today() - timedelta(days=4)
+        camp.save(update_fields=["date_end"])
+        r_map2 = c.get(reverse("publicitate_campanii_ro"))
+        self.assertEqual(r_map2.context["campanii_count_by_code"].get("NT"), None)
+        r_judet2 = c.get(reverse("publicitate_campanii_judet", kwargs={"judet_slug": "neamt"}))
+        self.assertContains(r_judet2, "nu sunt campanii active")
 
     def test_eu_host_uses_eu_market(self):
         from home.eu_site import eu_product_skin_enabled
