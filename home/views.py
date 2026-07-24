@@ -5554,9 +5554,21 @@ def account_view(request):
     ctx["username_updated"] = request.GET.get("username_updated") == "1"
     ctx["campanie_form_open"] = request.GET.get("campanie") == "1"
     ctx["campanie_ok"] = request.GET.get("campanie_ok") == "1"
-    from home.campanii_ro import campanii_judete
+    ctx["campanii_mele_open"] = request.GET.get("campanii_mele") == "1"
+    from home.campanii_ro import campanii_for_user, campanii_judete
 
     ctx["campanii_judete"] = campanii_judete()
+    ctx["campanii_mele"] = campanii_for_user(user)
+    campanie_edit_id = (request.GET.get("campanie_edit") or "").strip()
+    ctx["campanie_edit"] = None
+    if campanie_edit_id.isdigit():
+        from home.models import CampanieSterilizare
+
+        ctx["campanie_edit"] = (
+            CampanieSterilizare.objects.filter(pk=int(campanie_edit_id), user=user).first()
+        )
+        if ctx["campanie_edit"]:
+            ctx["campanie_form_open"] = True
     from . import account_deletion as _acct_del
 
     ctx["pending_account_deletion"] = (
@@ -7697,6 +7709,14 @@ def account_edit_view(request):
         from home.models import CampanieSterilizare
         from home.shelter_directory import normalize_external_link
 
+        edit_id_raw = (request.POST.get("campanie_id") or "").strip()
+        edit_obj = None
+        if edit_id_raw.isdigit():
+            edit_obj = CampanieSterilizare.objects.filter(pk=int(edit_id_raw), user=user).first()
+            if edit_obj is None:
+                messages.error(request, "Campania nu a fost găsită.")
+                return redirect(reverse("account") + "?campanii_mele=1")
+
         judet_raw = (request.POST.get("campanie_judet") or "").strip()
         localitate = (request.POST.get("campanie_localitate") or "").strip()
         link = normalize_external_link(request.POST.get("campanie_link") or "")
@@ -7716,7 +7736,7 @@ def account_edit_view(request):
             localitate = localitate[:120]
         if not dogs and not cats:
             errors.append("Bifează Câini și/sau Pisici.")
-        if not photo:
+        if not photo and edit_obj is None:
             errors.append("Încarcă o poză / afiș al campaniei.")
         date_start = date_end = None
         try:
@@ -7733,7 +7753,37 @@ def account_edit_view(request):
         if errors:
             for err in errors:
                 messages.error(request, err)
+            if edit_obj:
+                return redirect(reverse("account") + f"?campanie_edit={edit_obj.pk}")
             return redirect(reverse("account") + "?campanie=1")
+
+        if edit_obj:
+            edit_obj.judet = judet_obj.name
+            edit_obj.judet_slug = judet_obj.slug
+            edit_obj.localitate = localitate
+            edit_obj.species_dogs = dogs
+            edit_obj.species_cats = cats
+            edit_obj.date_start = date_start
+            edit_obj.date_end = date_end
+            edit_obj.link = link or ""
+            update_fields = [
+                "judet",
+                "judet_slug",
+                "localitate",
+                "species_dogs",
+                "species_cats",
+                "date_start",
+                "date_end",
+                "link",
+                "updated_at",
+            ]
+            if photo:
+                edit_obj.photo = photo
+                update_fields.append("photo")
+            edit_obj.save(update_fields=update_fields)
+            messages.success(request, "Campania a fost actualizată.")
+            request.session["account_updated"] = True
+            return redirect(reverse("account") + "?updated=1&campanii_mele=1")
 
         CampanieSterilizare.objects.create(
             user=user,
@@ -7750,6 +7800,28 @@ def account_edit_view(request):
         messages.success(request, "Campania a fost înregistrată și apare pe harta județului.")
         request.session["account_updated"] = True
         return redirect(reverse("account") + "?updated=1&campanie_ok=1")
+
+    if form_type == "campanie_sterilizare_delete":
+        from django.contrib import messages
+
+        from home.models import CampanieSterilizare
+
+        del_id = (request.POST.get("campanie_id") or "").strip()
+        obj = None
+        if del_id.isdigit():
+            obj = CampanieSterilizare.objects.filter(pk=int(del_id), user=user).first()
+        if obj is None:
+            messages.error(request, "Campania nu a putut fi ștearsă.")
+        else:
+            if obj.photo:
+                try:
+                    obj.photo.delete(save=False)
+                except Exception:
+                    pass
+            obj.delete()
+            messages.success(request, "Campania a fost ștearsă.")
+            request.session["account_updated"] = True
+        return redirect(reverse("account") + "?campanii_mele=1")
 
     # Formular „DATE FIRMĂ” – ONG + colaborator
     if form_type == "firma" and account_profile.role in (AccountProfile.ROLE_COLLAB, AccountProfile.ROLE_ORG):

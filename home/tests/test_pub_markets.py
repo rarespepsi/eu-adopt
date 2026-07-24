@@ -261,6 +261,48 @@ class PubMarketNotesTests(TestCase):
         r_judet2 = c.get(reverse("publicitate_campanii_judet", kwargs={"judet_slug": "neamt"}))
         self.assertContains(r_judet2, "nu sunt campanii active")
 
+    def test_campanie_list_edit_delete_from_account(self):
+        from datetime import date, timedelta
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from home.models import CampanieSterilizare
+
+        User = get_user_model()
+        u = User.objects.create_user("camp_owner", "o@b.c", "x")
+        ap, _ = AccountProfile.objects.get_or_create(user=u)
+        ap.role = AccountProfile.ROLE_PF
+        ap.save(update_fields=["role"])
+        UserProfile.objects.get_or_create(user=u)
+        photo = SimpleUploadedFile("a.jpg", b"\xff\xd8\xff\xd9", content_type="image/jpeg")
+        camp = CampanieSterilizare.objects.create(
+            user=u,
+            judet="Neamț",
+            judet_slug="neamt",
+            localitate="Roman",
+            species_dogs=True,
+            species_cats=False,
+            date_start=date.today(),
+            date_end=date.today() + timedelta(days=5),
+            photo=photo,
+            link="",
+        )
+        c = Client(HTTP_HOST="eu-adopt.ro")
+        c.force_login(u)
+        r = c.get(reverse("account") + "?campanii_mele=1")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Campaniile mele")
+        self.assertContains(r, "Roman")
+        self.assertContains(r, "Modifică")
+        self.assertContains(r, "Șterge")
+        r_edit = c.get(reverse("account") + f"?campanie_edit={camp.pk}")
+        self.assertContains(r_edit, "Modifică campania")
+        self.assertContains(r_edit, 'value="Roman"')
+        r_del = c.post(
+            reverse("account_edit"),
+            {"form_type": "campanie_sterilizare_delete", "campanie_id": str(camp.pk)},
+        )
+        self.assertEqual(r_del.status_code, 302)
+        self.assertFalse(CampanieSterilizare.objects.filter(pk=camp.pk).exists())
+
     def test_eu_host_uses_eu_market(self):
         from home.eu_site import eu_product_skin_enabled
 

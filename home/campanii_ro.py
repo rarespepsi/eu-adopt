@@ -182,6 +182,17 @@ def campanii_count_by_code() -> dict[str, int]:
     return out
 
 
+def campanii_for_user(user):
+    """Campanii vizibile ale userului (perioadă + 3 zile), cele mai noi primele."""
+    if not user or not getattr(user, "is_authenticated", False):
+        return []
+    return list(
+        campanii_visible_queryset()
+        .filter(user=user)
+        .order_by("-date_start", "-pk")
+    )
+
+
 def resolve_campanii_judet(name_or_slug: str) -> CampaniiJudet | None:
     raw = (name_or_slug or "").strip()
     if not raw:
