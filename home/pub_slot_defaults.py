@@ -165,10 +165,11 @@ def pub_slot_live_creative(
                 "video": "",
                 "link": reverse("publicitate_campanii_ro"),
                 "alt": "Campanii gratuite de sterilizare",
-                "caption": "Campanii gratuite de sterilizare",
+                "caption": "",
                 "price": "",
                 "discount": "",
                 "is_default_cover": False,
+                "is_campaign_pub": True,
             },
             market=mkt,
         )

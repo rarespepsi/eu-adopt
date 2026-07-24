@@ -1,7 +1,7 @@
 {% if creative.price or creative.discount %}
 <span class="pub-live-mini-badges">{% if creative.price %}<span class="pub-live-mini-badge pub-live-mini-badge--price">{{ creative.price }}</span>{% endif %}{% if creative.discount %}<span class="pub-live-mini-badge pub-live-mini-badge--discount">{{ creative.discount }}</span>{% endif %}</span>
 {% endif %}
-<span class="pub-live-cover{% if layout %} pub-live-cover--{{ layout }}{% endif %}">
+<span class="pub-live-cover{% if layout %} pub-live-cover--{{ layout }}{% endif %}{% if creative.is_campaign_pub %} pub-live-cover--campanie{% endif %}">
 	{% if creative.video %}
 	<video src="{{ creative.video }}" autoplay muted loop playsinline controls preload="metadata"></video>
 	{% elif creative.img %}

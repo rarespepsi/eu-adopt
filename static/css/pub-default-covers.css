@@ -39,6 +39,25 @@ a.pub-live-default-cover {
 	-webkit-user-drag: none;
 	user-select: none;
 }
+/* Campanii sterilizare: afișul întreg în casetă (ca pe Home), fără tăiere pe margini */
+.pub-live-cover--campanie {
+	background: #0a4a55;
+}
+.pub-live-cover--campanie img {
+	object-fit: contain !important;
+	object-position: center center !important;
+}
+#PW .pt-p43-creative-card .pub-live-cover--campanie img,
+#PW .pt-p43-desktop-slot .pub-live-cover--campanie img,
+#PW .pt-p43-slot .pub-live-cover--campanie img,
+#TW #T3 .t3-box .pub-live-cover--campanie img,
+.ilove-case .pub-live-cover--campanie img {
+	object-fit: contain !important;
+	object-position: center center !important;
+	width: 100% !important;
+	height: 100% !important;
+	max-height: 100% !important;
+}
 /* Video cu controale: click pe player rămâne pe site */
 .pub-live-cover-link--video-player {
 	cursor: default;
