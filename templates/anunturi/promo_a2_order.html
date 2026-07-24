@@ -1,56 +1,90 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Comandă promovare A2 | EU-ADOPT{% endblock %}
+{% block title %}{% if eu_site_active %}{{ eu_ui.promo_title }}{% else %}Comandă promovare A2 | EU-ADOPT{% endif %}{% endblock %}
 {% block body_class %}page-promo-a2-order{% endblock %}
 
 {% block extra_css %}
 <style>
+	/* Încadrează nota în viewport: fără scroll pe pagină */
+	body.page-promo-a2-order,
+	body.page-promo-a2-order #main_wrap {
+		height: 100dvh;
+		max-height: 100dvh;
+		overflow: hidden;
+	}
 	body.page-promo-a2-order #main_content {
-		min-height: calc(100vh - var(--nav-h, 64px));
+		height: calc(100dvh - var(--nav-h, 64px));
+		max-height: calc(100dvh - var(--nav-h, 64px));
+		min-height: 0;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 0.8rem;
+		padding: 0.45rem 0.65rem;
 		box-sizing: border-box;
+		overflow: hidden;
 	}
 	.promo-a2-wrap {
-		width: min(760px, 100%);
+		width: min(720px, 100%);
+		max-height: 100%;
+		overflow: hidden;
 		background: #fff;
 		border: 1px solid #dbe3ef;
 		border-radius: 12px;
 		box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-		padding: 0.9rem 1rem;
+		padding: 0.55rem 0.75rem 0.65rem;
 		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+	.promo-a2-wrap > form {
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		overflow: hidden;
 	}
 	.promo-a2-title {
-		margin: 0 0 0.4rem;
-		font-size: 1.05rem;
+		margin: 0;
+		font-size: clamp(0.9rem, 2.2vh, 1.05rem);
 		font-weight: 800;
 		color: #1565c0;
+		line-height: 1.2;
+		flex: 0 0 auto;
 	}
 	.promo-a2-prelaunch {
-		margin: 0 0 0.45rem;
-		padding: 0.4rem 0.55rem;
+		margin: 0;
+		padding: 0.28rem 0.45rem;
 		border-radius: 8px;
 		background: #e8f5e9;
 		border: 1px solid #a5d6a7;
 		color: #1b5e20;
-		font-size: 0.78rem;
+		font-size: clamp(0.68rem, 1.7vh, 0.78rem);
 		font-weight: 700;
+		line-height: 1.3;
+		flex: 0 0 auto;
 	}
-		margin: 0 0 0.8rem;
-		font-size: 0.85rem;
+	.promo-a2-sub {
+		margin: 0;
+		font-size: clamp(0.75rem, 1.8vh, 0.85rem);
 		color: #455a64;
+		line-height: 1.3;
+		flex: 0 0 auto;
 	}
 	.promo-a2-grid {
 		display: grid;
-		grid-template-columns: 180px 1fr;
-		gap: 0.9rem;
+		grid-template-columns: minmax(88px, 140px) minmax(0, 1fr);
+		gap: 0.55rem;
+		align-items: start;
+		min-height: 0;
+		flex: 1 1 auto;
+		overflow: hidden;
 	}
 	.promo-a2-photo {
 		width: 100%;
 		aspect-ratio: 1 / 1;
+		max-height: min(140px, 22vh);
 		border-radius: 10px;
 		overflow: hidden;
 		background: #eceff1;
@@ -62,88 +96,67 @@
 		object-fit: cover;
 		display: block;
 	}
-	.promo-a2-fields { display: grid; gap: 0.5rem; }
-	.promo-a2-fields-row {
+	.promo-a2-fields {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 0.5rem;
+		gap: 0.35rem;
+		min-height: 0;
+		overflow: hidden;
 	}
 	.promo-a2-field label {
 		display: block;
-		margin-bottom: 0.2rem;
-		font-size: 0.78rem;
+		margin-bottom: 0.15rem;
+		font-size: clamp(0.7rem, 1.6vh, 0.78rem);
 		font-weight: 700;
 		color: #1f2d3d;
 	}
-	.promo-a2-field select {
-		width: 100%;
-		padding: 0.35rem 0.45rem;
-		border-radius: 8px;
-		border: 1px solid #c7d3e3;
-		font-size: 0.85rem;
-		box-sizing: border-box;
-	}
-	.promo-a2-field input[type="date"] {
-		width: 100%;
-		padding: 0.35rem 0.45rem;
-		border-radius: 8px;
-		border: 1px solid #c7d3e3;
-		font-size: 0.85rem;
-		box-sizing: border-box;
-	}
-	.promo-a2-field input[type="number"] {
-		width: 100%;
-		padding: 0.35rem 0.45rem;
-		border-radius: 8px;
-		border: 1px solid #c7d3e3;
-		font-size: 0.85rem;
-		box-sizing: border-box;
-	}
 	.promo-a2-field input[readonly] {
 		width: 100%;
-		padding: 0.35rem 0.45rem;
+		padding: 0.28rem 0.4rem;
 		border-radius: 8px;
 		border: 1px solid #c7d3e3;
-		font-size: 0.85rem;
+		font-size: clamp(0.72rem, 1.7vh, 0.82rem);
 		box-sizing: border-box;
 		background: #f8fbff;
 		color: #1f2d3d;
 	}
 	.promo-a2-field-help {
-		margin-top: 0.35rem;
-		font-size: 0.76rem;
-		line-height: 1.45;
+		margin: 0;
+		font-size: clamp(0.65rem, 1.55vh, 0.74rem);
+		line-height: 1.35;
 		color: #546e7a;
 		background: #f5f9ff;
 		border: 1px solid #d8e7fb;
 		border-radius: 8px;
-		padding: 0.45rem 0.55rem;
+		padding: 0.35rem 0.45rem;
+		overflow: hidden;
 	}
 	.promo-a2-note {
-		margin-top: 0.75rem;
-		font-size: 0.78rem;
+		margin: 0;
+		font-size: clamp(0.7rem, 1.6vh, 0.78rem);
 		color: #546e7a;
 		background: #f5f9ff;
 		border: 1px solid #d8e7fb;
 		border-radius: 8px;
-		padding: 0.45rem 0.55rem;
+		padding: 0.35rem 0.45rem;
+		flex: 0 0 auto;
 	}
 	.promo-a2-actions {
-		margin-top: 0.8rem;
+		margin: 0;
 		display: flex;
-		gap: 0.5rem;
+		gap: 0.45rem;
 		flex-wrap: wrap;
+		flex: 0 0 auto;
 	}
 	.promo-a2-btn {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		padding: 0.42rem 0.8rem;
+		padding: 0.38rem 0.75rem;
 		border-radius: 8px;
 		border: 1px solid #1565c0;
 		background: #1565c0;
 		color: #fff;
-		font-size: 0.82rem;
+		font-size: clamp(0.75rem, 1.7vh, 0.82rem);
 		font-weight: 800;
 		text-decoration: none;
 		cursor: pointer;
@@ -153,34 +166,49 @@
 		color: #1565c0;
 	}
 	.promo-a2-ok {
-		margin-top: 0.7rem;
+		margin: 0;
 		border: 1px solid #c8e6c9;
 		background: #e8f5e9;
 		color: #1b5e20;
 		border-radius: 8px;
-		padding: 0.45rem 0.6rem;
-		font-size: 0.82rem;
+		padding: 0.35rem 0.5rem;
+		font-size: clamp(0.72rem, 1.7vh, 0.82rem);
+		flex: 0 0 auto;
 	}
-	@media (max-width: 620px) {
+	@media (max-width: 620px), (max-height: 520px) {
+		.promo-a2-grid {
+			grid-template-columns: minmax(72px, 100px) minmax(0, 1fr);
+			gap: 0.4rem;
+		}
+		.promo-a2-photo { max-height: min(100px, 18vh); }
+	}
+	@media (max-width: 420px) and (orientation: portrait) {
 		.promo-a2-grid { grid-template-columns: 1fr; }
-		.promo-a2-photo { max-width: 220px; }
-		.promo-a2-fields-row { grid-template-columns: 1fr; }
+		.promo-a2-photo {
+			max-width: 96px;
+			max-height: 96px;
+			justify-self: start;
+		}
 	}
 </style>
 {% endblock %}
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
-	<div class="promo-a2-wrap" aria-label="Notă comandă promovare A2">
-		<h1 class="promo-a2-title">Notă comandă promovare A2</h1>
+	<div class="promo-a2-wrap" aria-label="{% if eu_site_active %}{{ eu_ui.promo_aria }}{% else %}Notă comandă promovare A2{% endif %}">
+		<h1 class="promo-a2-title">{% if eu_site_active %}{{ eu_ui.promo_h1 }}{% else %}Notă comandă promovare A2{% endif %}</h1>
 		{% if promo_prelaunch_free %}
-		<p class="promo-a2-prelaunch">{{ promo_prelaunch_banner }} · maximum 1 promovare per cont</p>
+		<p class="promo-a2-prelaunch">{% if eu_site_active %}{{ promo_prelaunch_banner }} · {{ eu_ui.promo_prelaunch_max }}{% else %}{{ promo_prelaunch_banner }} · maximum 1 promovare per cont{% endif %}</p>
 		{% endif %}
-		<p class="promo-a2-sub">Pet: <strong>{{ pet.name|default:"—" }}</strong> · specie: <strong>{{ pet.species|default:"—" }}</strong></p>
+		<p class="promo-a2-sub">{% if eu_site_active %}{{ eu_ui.promo_pet }}{% else %}Pet{% endif %}: <strong>{{ pet.name|default:"—" }}</strong> · {% if eu_site_active %}{{ eu_ui.promo_species }}{% else %}specie{% endif %}: <strong>{% if eu_site_active %}{% if pet.species == "dog" %}{{ eu_ui.pet_species_dog }}{% elif pet.species == "cat" %}{{ eu_ui.pet_species_cat }}{% else %}{{ pet.species|default:"—" }}{% endif %}{% else %}{{ pet.species|default:"—" }}{% endif %}</strong></p>
 
 		{% if order_submitted %}
 		<div class="promo-a2-ok" id="promoA2SimpleNote">
+			{% if eu_site_active %}
+			<strong>{{ eu_ui.promo_done }}</strong> {{ eu_ui.promo_done_qty }}: <strong>{{ quantity }}</strong> · {{ eu_ui.promo_done_period }}: <strong>{{ package }}</strong>.
+			{% else %}
 			<strong>Comandă finalizată.</strong> Nr Oferte: <strong>{{ quantity }}</strong> · Perioada: <strong>{{ package }}</strong>.
+			{% endif %}
 		</div>
 		{% endif %}
 
@@ -196,18 +224,20 @@
 				</div>
 				<div class="promo-a2-fields">
 					<div class="promo-a2-field">
-						<label for="id_price_info">Serviciu inclus</label>
-						<input type="text" id="id_price_info" value="{{ promo_a2_imp }} apariții în grila A2 (Acasă), câte {{ promo_a2_minutes_each }} minute fiecare · {{ promo_price_label }}" readonly />
+						<label for="id_price_info">{% if eu_site_active %}{{ eu_ui.promo_service_lbl }}{% else %}Serviciu inclus{% endif %}</label>
+						<input type="text" id="id_price_info" value="{% if eu_site_active %}{{ promo_service_value_display }}{% else %}{{ promo_a2_imp }} apariții în grila A2 (Acasă), câte {{ promo_a2_minutes_each }} minute fiecare · {{ promo_price_label }}{% endif %}" readonly />
 						<p class="promo-a2-field-help">
+							{% if eu_site_active %}{{ eu_ui.promo_help }}{% else %}
 							După activarea plății, anunțul intră în programul de rotație pentru grila centrală A2 (12 casete): câte o apariție per casetă, în două valuri consecutive.
 							Dacă platforma e aglomerată, livrarea întregului pachet poate depăși 24 h, fără să pierzi apariții — vei primi pe email raport cu data/ora și numărul casetei pentru fiecare apariție.
+							{% endif %}
 						</p>
 					</div>
 				</div>
 			</div>
-			<p class="promo-a2-note">Total: <strong>{{ promo_price_label }}</strong>.{% if promo_prelaunch_free %} Activare gratuită în pre-lansare.{% else %} Metoda și plata se stabilesc la finalizarea comenzii din coș.{% endif %}</p>
+			<p class="promo-a2-note">{% if eu_site_active %}{{ eu_ui.promo_total }}{% else %}Total{% endif %}: <strong>{{ promo_price_label }}</strong>.{% if promo_prelaunch_free %} {% if eu_site_active %}{{ eu_ui.promo_total_free }}{% else %}Activare gratuită în pre-lansare.{% endif %}{% else %} {% if eu_site_active %}{{ eu_ui.promo_total_paid }}{% else %}Metoda și plata se stabilesc la finalizarea comenzii din coș.{% endif %}{% endif %}</p>
 			<div class="promo-a2-actions">
-				<button type="submit" class="promo-a2-btn">Adaugă în coș</button>
+				<button type="submit" class="promo-a2-btn">{% if eu_site_active %}{{ eu_ui.promo_add_cart }}{% else %}Adaugă în coș{% endif %}</button>
 				<a href="{{ promo_flow_exit_url }}" class="promo-a2-btn promo-a2-btn--ghost">{{ promo_flow_exit_label }}</a>
 			</div>
 		</form>

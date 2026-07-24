@@ -393,12 +393,26 @@ def _user_has_published_animals(user) -> bool:
     return AnimalListing.objects.filter(owner_id=user.pk, is_published=True).exists()
 
 
-def _promo_a2_nav_context(user) -> dict:
+def _promo_a2_nav_context(user, *, english: bool = False) -> dict:
     """
     Link + etichete pentru ieșirea din fluxul promovare A2:
     - cu animale postate → MyPet
     - fără → Prietenul tău (PT / pets_all)
     """
+    if english:
+        from home.eu_ui_labels import eu_ui_label
+
+        if _user_has_published_animals(user):
+            return {
+                "promo_flow_exit_url": reverse("mypet"),
+                "promo_flow_exit_label": eu_ui_label("promo_exit_mypet"),
+                "promo_flow_done_label": eu_ui_label("promo_exit_mypet_go"),
+            }
+        return {
+            "promo_flow_exit_url": reverse("pets_all"),
+            "promo_flow_exit_label": eu_ui_label("promo_exit_pt"),
+            "promo_flow_done_label": eu_ui_label("promo_exit_pt_go"),
+        }
     if _user_has_published_animals(user):
         return {
             "promo_flow_exit_url": reverse("mypet"),
@@ -437,19 +451,32 @@ def _promo_a2_nav_context_for_request(request, user) -> dict:
     - exit=mypet → MyPet
     - fallback: PT (nu după profil user cu animale postate)
     """
+    eu = bool(getattr(request, "eu_site_active", False))
+    if eu:
+        from home.eu_ui_labels import eu_ui_label
+
+        lbl_pt = eu_ui_label("promo_exit_pt")
+        lbl_pt_go = eu_ui_label("promo_exit_pt_go")
+        lbl_mp = eu_ui_label("promo_exit_mypet")
+        lbl_mp_go = eu_ui_label("promo_exit_mypet_go")
+    else:
+        lbl_pt = "Înapoi la Prietenul tău"
+        lbl_pt_go = "Mergi la Prietenul tău"
+        lbl_mp = "Înapoi la MyPet"
+        lbl_mp_go = "Mergi la MyPet"
 
     def _pt_exit(url=None):
         return {
             "promo_flow_exit_url": url or reverse("pets_all"),
-            "promo_flow_exit_label": "Înapoi la Prietenul tău",
-            "promo_flow_done_label": "Mergi la Prietenul tău",
+            "promo_flow_exit_label": lbl_pt,
+            "promo_flow_done_label": lbl_pt_go,
         }
 
     def _mypet_exit(url=None):
         return {
             "promo_flow_exit_url": url or reverse("mypet"),
-            "promo_flow_exit_label": "Înapoi la MyPet",
-            "promo_flow_done_label": "Mergi la MyPet",
+            "promo_flow_exit_label": lbl_mp,
+            "promo_flow_done_label": lbl_mp_go,
         }
 
     def _safe_relative_back(raw: str) -> str:
@@ -5153,6 +5180,7 @@ def promo_a2_order_view(request, pk):
     Nota de comandă încarcă linia în coșul site (/i-love/cos/); plata unificată este la site_cart_checkout.
     Orice utilizator autentificat poate sponsoriza un anunț publicat (câine/pisică).
     """
+    from home.eu_ui_labels import eu_ui_label
     from home.prelaunch_free_access import (
         PRELAUNCH_FREE_BANNER,
         promo_a2_price_label,
@@ -5161,11 +5189,12 @@ def promo_a2_order_view(request, pk):
         publicitate_prelaunch_free_enabled,
     )
 
+    eu = bool(getattr(request, "eu_site_active", False))
     pet = get_object_or_404(AnimalListing, pk=pk)
     if not pet.is_published:
         messages.info(
             request,
-            "Anunțul trebuie să fie publicat înainte de promovare.",
+            eu_ui_label("promo_msg_need_pub") if eu else "Anunțul trebuie să fie publicat înainte de promovare.",
         )
         return _promo_a2_flow_redirect(request, pet)
 
@@ -5179,33 +5208,60 @@ def promo_a2_order_view(request, pk):
     quantity = 1
     unit_price = promo_a2_price_lei()
     total_price = promo_a2_price_lei()
+    price_lbl = (
+        eu_ui_label("promo_price_free")
+        if (eu and publicitate_prelaunch_free_enabled())
+        else promo_a2_price_label()
+    )
     if request.method == "POST":
         ok_promo, msg_promo = promo_a2_user_can_order(request.user)
         if not ok_promo:
+            if eu and "singură promovare" in (msg_promo or ""):
+                msg_promo = eu_ui_label("promo_msg_one_only")
             messages.error(request, msg_promo)
             return redirect("promo_a2_order", pk=pk)
         ref_key = f"promo_a2:{pet.pk}"
-        price_lbl = promo_a2_price_label()
-        titlu = (
-            f"Promovare A2 · {(pet.name or 'Anunț').strip()} — {price_lbl} "
-            f"({PROMO_A2_STD_IMPRESSIONS} apariții × {PROMO_A2_DWELL_MINUTES} min)"
-        )
+        if eu:
+            titlu = eu_ui_label(
+                "promo_cart_title",
+                name=(pet.name or "Listing").strip(),
+                price=price_lbl,
+                imp=PROMO_A2_STD_IMPRESSIONS,
+                mins=PROMO_A2_DWELL_MINUTES,
+            )
+        else:
+            titlu = (
+                f"Promovare A2 · {(pet.name or 'Anunț').strip()} — {price_lbl} "
+                f"({PROMO_A2_STD_IMPRESSIONS} apariții × {PROMO_A2_DWELL_MINUTES} min)"
+            )
         det_url = reverse("promo_a2_order", args=[pet.pk])
         existing = SiteCartItem.objects.filter(user=request.user, ref_key=ref_key).first()
         if existing:
             messages.info(
                 request,
-                "Acest anunț este deja în coș pentru promovare A2.",
+                eu_ui_label("promo_msg_already_cart")
+                if eu
+                else "Acest anunț este deja în coș pentru promovare A2.",
             )
             return redirect("i_love_cos")
         if SiteCartItem.objects.filter(user=request.user, kind=SiteCartItem.KIND_PROMO_A2).exclude(ref_key=ref_key).exists():
-            messages.error(request, "În pre-lansare puteți activa o singură promovare A2 per cont.")
+            messages.error(
+                request,
+                eu_ui_label("promo_msg_one_only")
+                if eu
+                else "În pre-lansare puteți activa o singură promovare A2 per cont.",
+            )
             return redirect("promo_a2_order", pk=pk)
         n_cart = SiteCartItem.objects.filter(user=request.user).count()
         if n_cart >= SITE_CART_MAX_ITEMS:
             messages.warning(
                 request,
-                f"Coșul are deja articole (limită {SITE_CART_MAX_ITEMS}). Elimină articole în coș dacă ai nevoie de loc.",
+                eu_ui_label("promo_msg_cart_full", n=SITE_CART_MAX_ITEMS)
+                if eu
+                else (
+                    f"Coșul are deja articole (limită {SITE_CART_MAX_ITEMS}). "
+                    "Elimină articole în coș dacă ai nevoie de loc."
+                ),
             )
             return redirect("promo_a2_order", pk=pk)
         SiteCartItem.objects.create(
@@ -5215,16 +5271,35 @@ def promo_a2_order_view(request, pk):
             title=titlu,
             detail_url=det_url,
         )
-        messages.success(
-            request,
-            "Am adăugat promovarea A2 în coș."
-            + (
+        if eu:
+            msg_ok = eu_ui_label("promo_msg_added") + (
+                eu_ui_label("promo_msg_added_free")
+                if publicitate_prelaunch_free_enabled()
+                else eu_ui_label("promo_msg_added_pay")
+            )
+        else:
+            msg_ok = "Am adăugat promovarea A2 în coș." + (
                 " Activarea este gratuită în pre-lansare."
                 if publicitate_prelaunch_free_enabled()
                 else " Continuă spre Plată pentru a încasa totalul și a confirma."
-            ),
-        )
+            )
+        messages.success(request, msg_ok)
         return redirect("i_love_cos")
+
+    if eu:
+        service_value = eu_ui_label(
+            "promo_service_value",
+            imp=PROMO_A2_STD_IMPRESSIONS,
+            mins=PROMO_A2_DWELL_MINUTES,
+            price=price_lbl,
+        )
+        banner = eu_ui_label("promo_prelaunch_banner")
+    else:
+        service_value = (
+            f"{PROMO_A2_STD_IMPRESSIONS} apariții în grila A2 (Acasă), "
+            f"câte {PROMO_A2_DWELL_MINUTES} minute fiecare · {price_lbl}"
+        )
+        banner = PRELAUNCH_FREE_BANNER
 
     ctx_order = {
         "pet": pet,
@@ -5239,8 +5314,9 @@ def promo_a2_order_view(request, pk):
         "promo_a2_imp": PROMO_A2_STD_IMPRESSIONS,
         "promo_a2_minutes_each": PROMO_A2_DWELL_MINUTES,
         "promo_prelaunch_free": publicitate_prelaunch_free_enabled(),
-        "promo_prelaunch_banner": PRELAUNCH_FREE_BANNER,
-        "promo_price_label": promo_a2_price_label(),
+        "promo_prelaunch_banner": banner,
+        "promo_price_label": price_lbl,
+        "promo_service_value_display": service_value,
     }
     ctx_order.update(_promo_a2_nav_context_for_request(request, request.user))
     return render(request, "anunturi/promo_a2_order.html", ctx_order)
@@ -5287,7 +5363,12 @@ def promo_a2_checkout_demo_view(request, pk):
         "schedule": checkout.get("schedule", "intercalat"),
         "promo_order_id": order.pk,
     }
-    ctx_checkout.update(_promo_a2_nav_context(request.user))
+    ctx_checkout.update(
+        _promo_a2_nav_context(
+            request.user,
+            english=bool(getattr(request, "eu_site_active", False)),
+        )
+    )
     return render(request, "anunturi/promo_a2_checkout_demo.html", ctx_checkout)
 
 
@@ -5336,7 +5417,12 @@ def promo_a2_checkout_demo_success_view(request, pk):
         "start_date": checkout.get("start_date", ""),
         "promo_order_id": order.pk,
     }
-    ctx.update(_promo_a2_nav_context(request.user))
+    ctx.update(
+        _promo_a2_nav_context(
+            request.user,
+            english=bool(getattr(request, "eu_site_active", False)),
+        )
+    )
     request.session.pop("promo_a2_checkout", None)
     return render(request, "anunturi/promo_a2_checkout_demo_success.html", ctx)
 
