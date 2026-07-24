@@ -179,6 +179,8 @@ class PubMarketNotesTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "superuser")
         self.assertContains(r, "fără limită")
+        self.assertContains(r, "PUB EU")
+        self.assertContains(r, reverse("publicitate_eu_direct"))
         self.assertFalse(r.context["pub_superuser_eu_client"])
         self.assertIsNone(r.context["pub_max_slots_per_user"])
         self.assertIsNone(r.context["pub_slots_remaining"])
