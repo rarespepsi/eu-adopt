@@ -177,10 +177,9 @@ class PubMarketNotesTests(TestCase):
         c.force_login(su)
         r = c.get(reverse("publicitate_harta"))
         self.assertEqual(r.status_code, 200)
-        self.assertContains(r, "superuser")
-        self.assertContains(r, "fără limită")
         self.assertContains(r, "PUB EU")
         self.assertContains(r, "Campanii.ro")
+        self.assertNotContains(r, "fără limită de casete pe .ro")
         self.assertContains(r, reverse("publicitate_eu_direct"))
         self.assertContains(r, reverse("publicitate_campanii_ro"))
         slot_map = r.context["pub_slot_map"]
@@ -193,6 +192,18 @@ class PubMarketNotesTests(TestCase):
         self.assertNotIn("TDR.3", tr_codes)
         il_codes = {row["code"] for row in slot_map.get("i_love") or []}
         self.assertNotIn("IL.L1", il_codes)
+
+    def test_campanii_map_and_judet_pages(self):
+        c = Client(HTTP_HOST="eu-adopt.ro")
+        r = c.get(reverse("publicitate_campanii_ro"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Campanii.ro")
+        self.assertContains(r, "Neamț")
+        r2 = c.get(reverse("publicitate_campanii_judet", kwargs={"judet_slug": "neamt"}))
+        self.assertEqual(r2.status_code, 200)
+        self.assertContains(r2, "Neamț")
+        self.assertContains(r2, "nu sunt campanii active")
+        self.assertContains(r2, "Piatra Neamț")
 
     def test_eu_host_uses_eu_market(self):
         from home.eu_site import eu_product_skin_enabled

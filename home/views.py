@@ -13378,11 +13378,10 @@ def publicitate_harta_view(request):
     return render(request, "anunturi/publicitate_harta.html", _publicitate_harta_context(request, "harta"))
 
 
-@login_required
 def publicitate_campanii_ro_view(request):
-    """Stub Campanii.ro — casete rezervate A5.3 / P4.3 / TDR.3 / IL.L1 (doar superuser)."""
-    if not getattr(request.user, "is_superuser", False):
-        return _publicitate_denied_response(request)
+    """Hartă națională Campanii.ro — județe (sterilizări / info). Public."""
+    from home.campanii_ro import campanii_judete
+
     return render(
         request,
         "anunturi/publicitate_campanii_ro.html",
@@ -13391,6 +13390,26 @@ def publicitate_campanii_ro_view(request):
                 [{"section": sec, "code": code} for sec, code in PUBLICITATE_RO_CAMPAIGN_SLOTS],
                 key=lambda x: (x["section"], x["code"]),
             ),
+            "campanii_judete": campanii_judete(),
+        },
+    )
+
+
+def publicitate_campanii_judet_view(request, judet_slug: str):
+    """Listă campanii active pe județ (stub — încă fără postări user)."""
+    from home.campanii_ro import campanii_judet_by_slug
+
+    judet = campanii_judet_by_slug(judet_slug)
+    if judet is None:
+        from django.http import Http404
+
+        raise Http404("Județ necunoscut")
+    return render(
+        request,
+        "anunturi/publicitate_campanii_judet.html",
+        {
+            "judet": judet,
+            "campanii_active": [],  # stub — postările user vin ulterior
         },
     )
 

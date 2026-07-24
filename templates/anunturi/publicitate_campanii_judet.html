@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Campanii {{ judet.name }} — sterilizări | EU Adopt{% endblock %}
+{% block body_class %}page-campanii-judet{% endblock %}
+
+{% block content %}
+<section class="campanii-judet-page" aria-label="Campanii în {{ judet.name }}">
+	<header class="campanii-judet-head">
+		<p class="campanii-judet-crumb">
+			<a href="{% url 'publicitate_campanii_ro' %}">Campanii.ro</a> · {{ judet.name }}
+		</p>
+		<h1>Campanii active — {{ judet.name }}</h1>
+		<p class="campanii-judet-cities">
+			Localități principale: <strong>{{ judet.main_cities|join:", " }}</strong>
+		</p>
+	</header>
+
+	{% if campanii_active %}
+	<ul class="campanii-list">
+		{% for c in campanii_active %}
+		<li class="campanii-list-item">
+			<strong>{{ c.title }}</strong>
+			{% if c.localitate %}<span> · {{ c.localitate }}</span>{% endif %}
+			{% if c.period %}<span class="campanii-period">{{ c.period }}</span>{% endif %}
+		</li>
+		{% endfor %}
+	</ul>
+	{% else %}
+	<div class="campanii-empty">
+		<p>Momentan <strong>nu sunt campanii active</strong> înregistrate în {{ judet.name }}.</p>
+		<p class="campanii-empty-hint">
+			Userii vor putea posta campanii de sterilizare din zona de cont (locul formularului — de stabilit).
+		</p>
+	</div>
+	{% endif %}
+
+	<p class="campanii-judet-foot">
+		<a href="{% url 'publicitate_campanii_ro' %}">← Înapoi la harta județelor</a>
+	</p>
+</section>
+<style>
+	.campanii-judet-page {
+		max-width: 40rem;
+		margin: 0.85rem auto 2rem;
+		padding: 0 0.85rem;
+	}
+	.campanii-judet-crumb {
+		margin: 0 0 0.35rem;
+		font-size: 0.85rem;
+	}
+	.campanii-judet-crumb a {
+		color: #6a1b9a;
+		font-weight: 700;
+		text-decoration: none;
+	}
+	.campanii-judet-head h1 {
+		margin: 0 0 0.4rem;
+		font-size: clamp(1.25rem, 3vw, 1.55rem);
+		color: #4a148c;
+	}
+	.campanii-judet-cities {
+		margin: 0 0 1rem;
+		color: #555;
+		line-height: 1.4;
+	}
+	.campanii-empty {
+		background: #faf5ff;
+		border: 1px dashed #ce93d8;
+		border-radius: 12px;
+		padding: 1rem 1.1rem;
+	}
+	.campanii-empty p { margin: 0 0 0.5rem; line-height: 1.45; }
+	.campanii-empty-hint { font-size: 0.88rem; color: #666; margin-bottom: 0 !important; }
+	.campanii-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.55rem;
+	}
+	.campanii-list-item {
+		padding: 0.75rem 0.9rem;
+		border-radius: 10px;
+		background: #fff;
+		border: 1px solid #e1bee7;
+	}
+	.campanii-period {
+		display: block;
+		margin-top: 0.25rem;
+		font-size: 0.82rem;
+		color: #666;
+	}
+	.campanii-judet-foot {
+		margin-top: 1.25rem;
+	}
+	.campanii-judet-foot a {
+		font-weight: 700;
+		color: #1565c0;
+		text-decoration: none;
+	}
+</style>
+{% endblock %}
