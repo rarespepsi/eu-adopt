@@ -224,6 +224,8 @@ class EuProceduresTests(SimpleTestCase):
         self.assertFalse(EU_PROCEDURES.adoption_transport_in_flow)
         self.assertFalse(EU_PROCEDURES.adoption_bonus_enabled)
         self.assertTrue(EU_PROCEDURES.transport_destination_country_field)
+        self.assertTrue(EU_PROCEDURES.transport_email_inbox)
+        self.assertFalse(RO_PROCEDURES.transport_email_inbox)
         self.assertIs(procedures_for_eu_flag(True), EU_PROCEDURES)
         self.assertIs(procedures_for_eu_flag(False), RO_PROCEDURES)
 

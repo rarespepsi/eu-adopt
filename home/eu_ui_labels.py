@@ -190,7 +190,15 @@ _EN: dict[str, str] = {
     "transport_submit": "SUBMIT REQUEST",
     "transport_aria": "Transport content",
     "transport_t1_title": "Vet transport – request",
-    "transport_t1_intro": "Your request goes to partners; the first to accept gets the details.",
+    "transport_t1_intro": (
+        "Your request goes to our transport team (transport@eu-adopt.ro). "
+        "If we find a suitable transport option, we will inform you. "
+        "If not, arrangements remain between the adopter and the shelter."
+    ),
+    "transport_submit_ok": (
+        "Your transport request was sent to our team. "
+        "If we find transport, we will contact you; otherwise it remains with the adopter and the shelter."
+    ),
     "transport_want": "I want transport",
     "transport_donate": "Donate to a cause",
     "transport_collapse": "Collapse form",

@@ -4314,8 +4314,10 @@ def _safe_local_redirect_path(path_val: str) -> str | None:
 def transport_submit_view(request):
     """Salvează cererea de transport veterinar din formularul paginii /transport/."""
     from home.eu_countries import normalize_country_code
+    from home.eu_procedures import procedures_for_request
     from home.eu_site import is_eu_site_host
 
+    site_proc = procedures_for_request(request)
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
     country = normalize_country_code(request.POST.get("country")) or "RO"
@@ -4325,7 +4327,7 @@ def transport_submit_view(request):
     if not judet or not oras or not plecare or not sosire:
         msg = (
             "Please fill in county, locality and pick-up / drop-off points."
-            if is_eu_site_host(request.get_host())
+            if site_proc.is_eu
             else "Completează județul, localitatea și punctele de plecare / sosire."
         )
         messages.error(request, msg)
@@ -4371,18 +4373,32 @@ def transport_submit_view(request):
         route_scope=rs,
         urgency_window=uw,
     )
-    if request.user.is_authenticated:
-        from .transport_dispatch import create_dispatch_for_tvr
+    if site_proc.transport_email_inbox:
+        from home.eu_ui_labels import eu_ui_label
+        from home.transport_eu_inbox import send_eu_transport_request_to_inbox
 
-        create_dispatch_for_tvr(request, tvr)
-    messages.success(
-        request,
-        (
-            "Your transport request has been registered."
-            if is_eu_site_host(request.get_host())
-            else "Cererea de transport a fost înregistrată."
-        ),
-    )
+        sent = send_eu_transport_request_to_inbox(request, tvr)
+        if sent:
+            messages.success(request, eu_ui_label("transport_submit_ok"))
+        else:
+            messages.success(
+                request,
+                eu_ui_label("transport_submit_ok")
+                + " (Request saved; email to the team may be delayed — we will follow up.)",
+            )
+    else:
+        if request.user.is_authenticated:
+            from .transport_dispatch import create_dispatch_for_tvr
+
+            create_dispatch_for_tvr(request, tvr)
+        messages.success(
+            request,
+            (
+                "Your transport request has been registered."
+                if is_eu_site_host(request.get_host())
+                else "Cererea de transport a fost înregistrată."
+            ),
+        )
 
     next_path = _safe_local_redirect_path(request.POST.get("next") or "")
     if next_path:

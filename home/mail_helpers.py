@@ -38,6 +38,7 @@ def send_mail_text_and_html(
     html_body: str | None = None,
     *,
     mail_kind: str = "",
+    reply_to: list | None = None,
 ) -> None:
     """
     Trimite un singur mesaj SMTP cu Message-ID unic.
@@ -52,12 +53,14 @@ def send_mail_text_and_html(
     to = [str(x).strip() for x in (recipient_list or []) if str(x).strip()]
     if not to:
         return
+    rt = [str(x).strip() for x in (reply_to or []) if str(x).strip()]
     msg = EmailMultiAlternatives(
         subject=subject,
         body=body_text or "",
         from_email=from_email,
         to=to,
         headers=headers,
+        reply_to=rt or None,
     )
     if html_body:
         msg.attach_alternative(html_body, "text/html")

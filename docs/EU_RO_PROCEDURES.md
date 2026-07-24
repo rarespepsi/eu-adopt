@@ -16,6 +16,7 @@ Același Django + aceeași bază de animale. Pe EU prezentăm animalele și inte
 | Transport legat din fluxul Adopt | da | **nu** |
 | Bonus oferte Servicii la adopție | da | **nu** |
 | Caseta DESTINATION COUNTRY pe Transport | nu (hidden RO) | da |
+| Transport: dispatch colaboratori | da | **nu** — mail la `transport@eu-adopt.ro` |
 | Navbar Servicii / Shop / Coș | da | **nu** (rute blocate) |
 | Transport pagină publică | da | da (standalone) |
 | UI limbi EN (`eu_ui`) | nu | da |
