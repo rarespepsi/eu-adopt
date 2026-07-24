@@ -130,8 +130,15 @@ def _publicitate_user_reserved_line_count(user) -> int:
     return active.distinct().count()
 
 
+def publicitate_user_has_unlimited_slots(user) -> bool:
+    """Superuser pe .ro: fără plafon pre-lansare (1 casetă/cont)."""
+    return bool(user and getattr(user, "is_superuser", False))
+
+
 def publicitate_user_slots_remaining(user) -> int | None:
     """None = fără limită; 0 = epuizat."""
+    if publicitate_user_has_unlimited_slots(user):
+        return None
     cap = publicitate_max_slots_per_user()
     if cap <= 0:
         return None
@@ -160,8 +167,8 @@ def publicitate_user_needs_pub_nudge(user) -> bool:
 
 
 def publicitate_user_can_reserve_slots(user, additional_lines: int = 1) -> tuple[bool, str]:
-    # Superuser = client EU: fără plafon pre-lansare
-    if user and getattr(user, "is_superuser", False):
+    # Superuser: fără plafon pre-lansare (umple casetele .ro la populare)
+    if publicitate_user_has_unlimited_slots(user):
         return True, ""
     cap = publicitate_max_slots_per_user()
     if cap <= 0:

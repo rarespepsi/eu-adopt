@@ -25,7 +25,11 @@
 	<p class="pub-eu-super-banner">Mod superuser: tu ești clientul EU — ce rezervi și încarci aici apare pe <strong>euadopt.com / .de / .fr / .es</strong>, nu pe .ro.</p>
 	{% endif %}
 	{% if pub_prelaunch_free and not pub_eu_direct_mode %}
+	{% if pub_superuser_unlimited %}
+	<p class="pub-prelaunch-banner">{{ pub_prelaunch_banner }} · <strong>superuser</strong>: fără limită de casete pe .ro · {% if pub_max_weeks_per_order == 1 %}7 zile (1 bloc săptămânal){% else %}{{ pub_max_weeks_per_order }} săptămâni{% endif %} per rezervare · EU: <a href="{% url 'publicitate_eu_direct' %}">PUB EU direct</a></p>
+	{% else %}
 	<p class="pub-prelaunch-banner">{{ pub_prelaunch_banner }} · maximum {{ pub_max_slots_per_user }} casetă publicitară per cont · {% if pub_max_weeks_per_order == 1 %}7 zile (1 bloc săptămânal){% else %}{{ pub_max_weeks_per_order }} săptămâni{% endif %} per rezervare{% if pub_slots_remaining is not None %} · {% if pub_slots_remaining %}mai puteți rezerva {{ pub_slots_remaining }}{% else %}ați folosit caseta gratuită{% endif %}{% endif %}</p>
+	{% endif %}
 	{% endif %}
 	<div class="pub-grid{% if pub_eu_direct_mode %} pub-grid--eu-direct{% endif %}">
 		{% if pub_eu_direct_mode %}

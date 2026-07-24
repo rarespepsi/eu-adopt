@@ -4283,6 +4283,7 @@ def transport_view(request):
         "prefill_country": prefill_country,
         "transport_country_choices": country_choices(english=site_proc.is_eu),
         "transport_show_destination_country": site_proc.transport_destination_country_field,
+        "transport_bulina_partner_url": partner_bulina,
         "transport_pub_slots": pub_slots_ordered(
             "transport",
             ("TDR.1", "TDR.2", "TDR.3"),
@@ -12886,12 +12887,9 @@ def _buyer_note_to_pt_slot_json(buyer_note: str) -> str:
 
 def _publicitate_order_target_market(order: PublicitateOrder) -> str:
     """
-    Superuser = „clientul site-ului EU”: materialele din PUB merg pe market=eu
-    (.com + oglindă .de/.fr/.es). Orice alt user → market=ro.
+    Fluxul clasic hartă/coș Publicitate → market=ro (.ro).
+    Casetele EU (.com) se umplu separat prin publicitate_eu_direct.
     """
-    user = getattr(order, "user", None)
-    if user is not None and getattr(user, "is_superuser", False):
-        return PUB_MARKET_EU
     return PUB_MARKET_RO
 
 
@@ -13287,7 +13285,15 @@ def _publicitate_harta_context(request, pub_nav: str) -> dict:
         "pub_my_orders_pending_materials": my_pub_orders_pending_materials,
         "pub_prelaunch_free": publicitate_prelaunch_free_enabled(),
         "pub_prelaunch_banner": PRELAUNCH_FREE_BANNER,
-        "pub_max_slots_per_user": publicitate_max_slots_per_user() or None,
+        "pub_max_slots_per_user": (
+            None
+            if (
+                getattr(request.user, "is_authenticated", False)
+                and request.user.is_authenticated
+                and getattr(request.user, "is_superuser", False)
+            )
+            else (publicitate_max_slots_per_user() or None)
+        ),
         "pub_max_weeks_per_order": (
             publicitate_max_weeks_per_order()
             if publicitate_prelaunch_free_enabled()
@@ -13298,11 +13304,13 @@ def _publicitate_harta_context(request, pub_nav: str) -> dict:
             if getattr(request.user, "is_authenticated", False) and request.user.is_authenticated
             else None
         ),
-        "pub_superuser_eu_client": bool(
+        "pub_superuser_unlimited": bool(
             getattr(request.user, "is_authenticated", False)
             and request.user.is_authenticated
             and getattr(request.user, "is_superuser", False)
         ),
+        # Legacy flag (banner EU pe hartă clasică): dezactivat — EU e doar pe eu-direct
+        "pub_superuser_eu_client": False,
     }
     return ctx
 
@@ -13337,9 +13345,7 @@ def pub_slot_go_view(request):
 def publicitate_harta_view(request):
     if not _user_can_use_publicitate(request):
         return _publicitate_denied_response(request)
-    # Superuser: flux direct EU (fără tarife / coș)
-    if getattr(request.user, "is_superuser", False):
-        return redirect("publicitate_eu_direct")
+    # Superuser pe .ro: hartă clasică (fără plafon 1 casetă). EU = /publicitate/eu/
     return render(request, "anunturi/publicitate_harta.html", _publicitate_harta_context(request, "harta"))
 
 
@@ -13348,8 +13354,6 @@ def publicitate_cos_view(request):
     """Aceeași interfață ca harta (Detalii slot | Hartă | Coș), pentru achiziție pe pagina dedicată coșului."""
     if not _user_can_use_publicitate(request):
         return _publicitate_denied_response(request)
-    if getattr(request.user, "is_superuser", False):
-        return redirect("publicitate_eu_direct")
     return render(request, "anunturi/publicitate_harta.html", _publicitate_harta_context(request, "cos"))
 
 
@@ -13488,7 +13492,8 @@ def _publicitate_parse_cart_lines(lines_in, user=None):
         return None, None, None, JsonResponse({"ok": False, "error": "Coșul este gol."}, status=400)
     prelaunch_free = publicitate_prelaunch_free_enabled()
     max_weeks = publicitate_max_weeks_per_order() if prelaunch_free else 48
-    if prelaunch_free:
+    su_unlimited = bool(user and getattr(user, "is_superuser", False))
+    if prelaunch_free and not su_unlimited:
         cap = publicitate_max_slots_per_user()
         if cap and len(lines_in) > cap:
             return None, None, None, JsonResponse(

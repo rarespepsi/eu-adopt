@@ -91,6 +91,41 @@ class PrelaunchFreeAccessTests(TestCase):
         self.assertFalse(ok)
         self.assertIn("caseta", msg.lower())
 
+    def test_superuser_unlimited_pub_slots(self):
+        from home.prelaunch_free_access import (
+            publicitate_user_has_unlimited_slots,
+            publicitate_user_slots_remaining,
+        )
+
+        su = User.objects.create_superuser(
+            username=f"su_pub_{uuid.uuid4().hex[:6]}",
+            email=f"su_pub_{uuid.uuid4().hex[:6]}@t.local",
+            password="x",
+        )
+        order = PublicitateOrder.objects.create(
+            user=su,
+            status=PublicitateOrder.STATUS_PAID,
+            total_lei=0,
+            payment_provider="prelaunch_free",
+            paid_at=timezone.now(),
+        )
+        PublicitateOrderLine.objects.create(
+            order=order,
+            section="mypet",
+            slot_code="MP.L1",
+            title_snapshot="MyPet L1",
+            unit_label="saptamana",
+            unit_price_lei=0,
+            quantity=1,
+            line_total_lei=0,
+            ends_at=timezone.now() + timezone.timedelta(days=7),
+        )
+        self.assertTrue(publicitate_user_has_unlimited_slots(su))
+        self.assertIsNone(publicitate_user_slots_remaining(su))
+        ok, msg = publicitate_user_can_reserve_slots(su, 12)
+        self.assertTrue(ok)
+        self.assertEqual(msg, "")
+
     def test_collab_offer_limit(self):
         user = User.objects.create_user(username=f"col_{uuid.uuid4().hex[:6]}", password="x")
         AccountProfile.objects.filter(user=user).update(role=AccountProfile.ROLE_COLLAB)

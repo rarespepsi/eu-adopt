@@ -59,7 +59,7 @@ class PubMarketNotesTests(TestCase):
         self.assertContains(r, "Publi EU")
         self.assertContains(r, "reclama-market-toggle")
 
-    def test_superuser_pub_applies_to_eu_market(self):
+    def test_superuser_pub_applies_to_ro_market(self):
         from home.models import PublicitateOrder, PublicitateOrderLine
         from home.views import _apply_publicitate_line_to_site, _publicitate_order_target_market
 
@@ -72,7 +72,7 @@ class PubMarketNotesTests(TestCase):
         order_ro = PublicitateOrder.objects.create(
             user=other, status=PublicitateOrder.STATUS_PAID, total_lei=10
         )
-        self.assertEqual(_publicitate_order_target_market(order_su), PUB_MARKET_EU)
+        self.assertEqual(_publicitate_order_target_market(order_su), PUB_MARKET_RO)
         self.assertEqual(_publicitate_order_target_market(order_ro), PUB_MARKET_RO)
         line = PublicitateOrderLine.objects.create(
             order=order_su,
@@ -83,17 +83,17 @@ class PubMarketNotesTests(TestCase):
             unit_price_lei=0,
             quantity=1,
             line_total_lei=0,
-            buyer_note='{"img":"/media/x.jpg","link":"https://eu-adopt.ro/pets/1/","alt":"EU dog"}',
+            buyer_note='{"img":"/media/x.jpg","link":"https://eu-adopt.ro/pets/1/","alt":"RO dog"}',
         )
         _apply_publicitate_line_to_site(line, order_su)
         self.assertTrue(
             ReclamaSlotNote.objects.filter(
-                section="home", slot_code="A5.1", market=PUB_MARKET_EU
+                section="home", slot_code="A5.1", market=PUB_MARKET_RO
             ).exists()
         )
         self.assertFalse(
             ReclamaSlotNote.objects.filter(
-                section="home", slot_code="A5.1", market=PUB_MARKET_RO
+                section="home", slot_code="A5.1", market=PUB_MARKET_EU
             ).exists()
         )
 
@@ -170,14 +170,18 @@ class PubMarketNotesTests(TestCase):
         self.assertTrue(creative.get("has_link"))
         self.assertEqual(creative.get("link"), "https://www.example.com/ad")
 
-    def test_harta_redirects_superuser_to_eu_direct(self):
+    def test_harta_allows_superuser_on_ro(self):
         User = get_user_model()
         su = User.objects.create_superuser("eu_redir_su", "r@b.c", "x")
         c = Client(HTTP_HOST="eu-adopt.ro")
         c.force_login(su)
         r = c.get(reverse("publicitate_harta"))
-        self.assertEqual(r.status_code, 302)
-        self.assertIn("/publicitate/eu/", r["Location"])
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "superuser")
+        self.assertContains(r, "fără limită")
+        self.assertFalse(r.context["pub_superuser_eu_client"])
+        self.assertIsNone(r.context["pub_max_slots_per_user"])
+        self.assertIsNone(r.context["pub_slots_remaining"])
 
     def test_eu_host_uses_eu_market(self):
         from home.eu_site import eu_product_skin_enabled
