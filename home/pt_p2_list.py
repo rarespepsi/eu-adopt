@@ -108,16 +108,18 @@ def pt_pets_page_context(request):
         default_country_hint_for_host,
         normalize_country_code,
     )
+    from home.eu_procedures import procedures_for_request
     from home.eu_site import is_eu_site_host
 
     host = request.get_host()
-    eu_site = is_eu_site_host(host)
-    english_ui = bool(getattr(request, "eu_site_active", False)) or eu_site
+    site_proc = procedures_for_request(request)
+    eu_site = site_proc.pt_country_filter or is_eu_site_host(host)
+    english_ui = site_proc.is_eu or bool(getattr(request, "eu_site_active", False)) or eu_site
 
     if "country" in request.GET:
         selected_country = normalize_country_code(request.GET.get("country"))
     else:
-        selected_country = default_country_hint_for_host(host)
+        selected_country = default_country_hint_for_host(host) if site_proc.pt_country_filter else ""
 
     selected_judet = (request.GET.get("judet") or "").strip()
     # Județul RO se aplică doar când țara e RO (sau piața .ro).
@@ -312,7 +314,7 @@ def pt_pets_page_context(request):
         "selected_sex": selected_sex,
         "selected_species": selected_species,
         "country_choices": country_choices(english=english_ui),
-        "show_pt_country_filter": eu_site,
+        "show_pt_country_filter": site_proc.pt_country_filter,
         "show_county_filter": show_county_filter,
         "judet_choices": judet_choices,
         "marime_choices": marime_choices,

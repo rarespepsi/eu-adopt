@@ -254,7 +254,7 @@
 						{% if from_adoption_pet_pk %}
 						<input type="hidden" name="related_pet_id" value="{{ from_adoption_pet_pk }}" />
 						{% endif %}
-						{% if eu_site_active %}
+						{% if transport_show_destination_country %}
 						<div class="t1-field t1-caseta t1-row-inline t1-country-field">
 							<label class="t1-label" for="tw-country">{{ eu_ui.transport_country }}</label>
 							<select class="t1-input" id="tw-country" name="country" aria-label="{{ eu_ui.transport_country }}">

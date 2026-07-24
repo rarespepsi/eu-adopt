@@ -1536,6 +1536,10 @@ def _servicii_bundle_adoption_bonus(request):
         "adoption_bonus_servicii_locked": False,
         "adoption_bonus_ar_pending": False,
     }
+    from home.eu_procedures import procedures_for_request
+
+    if not procedures_for_request(request).adoption_bonus_enabled:
+        return bundle
     user = getattr(request, "user", None)
     if not user or not user.is_authenticated:
         return bundle
@@ -4251,10 +4255,11 @@ def servicii_view(request):
 def transport_view(request):
     """Pagina Transport – wrapper TW, layout ca PW/SW."""
     from home.eu_countries import country_choices, default_country_hint_for_host, normalize_country_code
-    from home.eu_site import is_eu_site_host
+    from home.eu_procedures import procedures_for_request
 
+    site_proc = procedures_for_request(request)
     prefill_country = "RO"
-    if is_eu_site_host(request.get_host()):
+    if site_proc.transport_destination_country_field:
         hint = default_country_hint_for_host(request.get_host())
         prefill_country = hint or "RO"
         if request.user.is_authenticated:
@@ -4271,9 +4276,8 @@ def transport_view(request):
         "prefill_judet": "",
         "prefill_oras": "",
         "prefill_country": prefill_country,
-        "transport_country_choices": country_choices(
-            english=bool(getattr(request, "eu_site_active", False))
-        ),
+        "transport_country_choices": country_choices(english=site_proc.is_eu),
+        "transport_show_destination_country": site_proc.transport_destination_country_field,
         "transport_pub_slots": pub_slots_ordered(
             "transport",
             ("TDR.1", "TDR.2", "TDR.3"),
@@ -4284,7 +4288,8 @@ def transport_view(request):
     if request.user.is_authenticated:
         ctx["prefill_judet"] = _adopter_profile_county_raw(request.user)
         ctx["prefill_oras"] = _adopter_profile_city_raw(request.user)
-    if request.GET.get("from_adoption") == "1":
+    # Bridging adopție→transport doar pe .ro (procedură completă).
+    if site_proc.adoption_transport_in_flow and request.GET.get("from_adoption") == "1":
         raw = (request.GET.get("pet") or "").strip()
         if raw.isdigit():
             pk = int(raw)
@@ -5148,6 +5153,9 @@ def render_dog_profile(request, listing: AnimalListing):
 
     after_transport = (request.GET.get("after_transport") == "1")
     has_county = _adopter_has_county_for_transport(request.user) if request.user.is_authenticated else False
+    from home.eu_procedures import procedures_for_request
+
+    site_proc = procedures_for_request(request)
 
     can_send_pet_message = bool(
         request.user.is_authenticated
@@ -5185,13 +5193,11 @@ def render_dog_profile(request, listing: AnimalListing):
         "adopter_messaging_unlocked": can_send_pet_message,
         "promote_allowed": promote_allowed,
         "adoption_after_transport": bool(after_transport),
-        # Pe .com / EU: fără pasul „doresc transport” în fluxul de adopție (doar pe .ro).
+        # Proceduri: pe EU fără pas transport în adopție (vezi home.eu_procedures).
         "adoption_transport_option_available": bool(
-            has_county
-            and not after_transport
-            and not getattr(request, "eu_site_active", False)
+            site_proc.adoption_transport_in_flow and has_county and not after_transport
         ),
-        "adoption_skip_pickup_choice": bool(getattr(request, "eu_site_active", False)),
+        "adoption_skip_pickup_choice": bool(site_proc.adoption_skip_pickup_choice),
         "pet_back_url": pet_back_url,
         "pet_back_label": _pet_ficha_back_label(pet_back_url),
         "pet_from_home": (request.GET.get("from") or "").strip().lower() == "home",
@@ -11782,6 +11788,10 @@ def pet_adoption_request_view(request, pk: int):
 @csrf_protect
 def adoption_bonus_offer_toggle_view(request):
     """Inimioară ofertă Servicii legată de cerere adopție (max 1 / categorie)."""
+    from home.eu_procedures import procedures_for_request
+
+    if not procedures_for_request(request).adoption_bonus_enabled:
+        return JsonResponse({"ok": False, "error": "Bonus adoption is not available on this site."}, status=403)
     try:
         rid = int((request.POST.get("adoption_request_id") or "").strip())
         oid = int((request.POST.get("offer_id") or "").strip())

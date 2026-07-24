@@ -43,6 +43,10 @@ class EuSiteMiddleware:
             if request.eu_site_active and self._should_block(request):
                 return redirect("home")
 
+        from home.eu_procedures import procedures_for_request
+
+        request.site_proc = procedures_for_request(request)
+
         response = self.get_response(request)
         if getattr(request, "eu_site_active", False) and hasattr(request, "LANGUAGE_CODE"):
             response.setdefault("Content-Language", request.LANGUAGE_CODE)

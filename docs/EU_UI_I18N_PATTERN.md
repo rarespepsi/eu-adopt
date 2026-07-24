@@ -7,9 +7,10 @@
 1. **Cheie** în `home/eu_ui_labels.py` (`_EN["key"] = "English…"`).
 2. **Template:** `{% if eu_site_active %}{{ eu_ui.key }}{% else %}Text RO{% endif %}`.
 3. **Logică Python** (flash, burtieră, stări): `is_eu_site_host(request.get_host())` sau `request.eu_site_active` / `get_language().startswith("en")`.
-4. **Navbar:** deja `home/eu_nav_labels.py` (24 limbi) — același model pentru body UI când adaugi DE/FR/ES.
-5. **Trăsături:** `home/pet_traits.py` — EN pe `eu_site_active` (și când limba e `en`).
-6. **Valori fișă (talie/da/ani):** `home/pet_ui_display.py` + tag `{% eu_pet_val … %}` — doar afișare; DB rămâne RO.
+4. **Proceduri produs** (adopție, Servicii/Shop, transport în flux): `home/eu_procedures.py` → `site_proc` — vezi `docs/EU_RO_PROCEDURES.md`. Nu amesteca i18n cu proceduri.
+5. **Navbar:** deja `home/eu_nav_labels.py` (24 limbi) — același model pentru body UI când adaugi DE/FR/ES.
+6. **Trăsături:** `home/pet_traits.py` — EN pe `eu_site_active` (și când limba e `en`).
+7. **Valori fișă (talie/da/ani):** `home/pet_ui_display.py` + tag `{% eu_pet_val … %}` — doar afișare; DB rămâne RO.
 
 ## Fișiere tipice atinse
 

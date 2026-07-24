@@ -206,6 +206,38 @@ class EuSiteMiddlewareTests(TestCase):
         self.assertTrue(ctx["eu_force_english"])
         self.assertTrue(ctx["eu_ui"].get("login_heading"))
         self.assertEqual(ctx["eu_site_lang"], "en")
+        self.assertTrue(ctx["site_proc"].is_eu)
+        self.assertTrue(ctx["site_proc"].adoption_skip_pickup_choice)
+        self.assertFalse(ctx["site_proc"].nav_servicii)
+        self.assertTrue(ctx["site_proc_adoption_simple_intermediation"])
+
+
+class EuProceduresTests(SimpleTestCase):
+    def test_ro_vs_eu_flags(self):
+        from home.eu_procedures import EU_PROCEDURES, RO_PROCEDURES, procedures_for_eu_flag
+
+        self.assertFalse(RO_PROCEDURES.is_eu)
+        self.assertTrue(RO_PROCEDURES.adoption_transport_in_flow)
+        self.assertTrue(RO_PROCEDURES.nav_shop)
+        self.assertTrue(EU_PROCEDURES.is_eu)
+        self.assertTrue(EU_PROCEDURES.adoption_simple_intermediation)
+        self.assertFalse(EU_PROCEDURES.adoption_transport_in_flow)
+        self.assertFalse(EU_PROCEDURES.adoption_bonus_enabled)
+        self.assertTrue(EU_PROCEDURES.transport_destination_country_field)
+        self.assertIs(procedures_for_eu_flag(True), EU_PROCEDURES)
+        self.assertIs(procedures_for_eu_flag(False), RO_PROCEDURES)
+
+    @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
+    def test_context_ro_host(self):
+        from home.eu_site import eu_site_context_for_request
+
+        rf = RequestFactory()
+        req = rf.get("/", HTTP_HOST="eu-adopt.ro")
+        ctx = eu_site_context_for_request(req)
+        self.assertFalse(ctx["eu_site_active"])
+        self.assertFalse(ctx["site_proc"].is_eu)
+        self.assertTrue(ctx["site_proc"].nav_servicii)
+        self.assertFalse(ctx["site_proc"].adoption_skip_pickup_choice)
 
 
 @override_settings(EUADOPT_NON_RO_STAFF_ONLY=True, PRELAUNCH_MODE=False)

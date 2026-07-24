@@ -259,6 +259,8 @@ def path_blocked_on_eu_hub(path: str) -> bool:
 
 
 def eu_site_context_for_request(request) -> dict[str, Any]:
+    from home.eu_procedures import procedures_context
+
     if not eu_product_skin_enabled():
         return {
             "eu_site_hub": False,
@@ -269,6 +271,7 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
             "eu_nav_text": {},
             "eu_ui": {},
             "eu_force_english": False,
+            **procedures_context(eu_active=False),
         }
     host = request.get_host()
     hub = is_eu_hub_host(host)
@@ -283,6 +286,7 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
             "eu_nav_text": {},
             "eu_ui": {},
             "eu_force_english": False,
+            **procedures_context(eu_active=False),
         }
     lang = get_language() or EU_SITE_DEFAULT_LANGUAGE
     if lang not in EU_SITE_LANGUAGE_CODES:
@@ -324,4 +328,5 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
         "eu_nav_text": eu_nav_text,
         "eu_ui": eu_ui_pack() if eu else {},
         "eu_force_english": hub,
+        **procedures_context(eu_active=eu),
     }

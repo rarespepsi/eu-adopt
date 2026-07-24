@@ -1730,7 +1730,7 @@
 													{% if not pet_adopt_demo_listing %}
 													data-adopt-url="{% url 'pet_adoption_request' pet.pk %}"
 													{% if pet_adopt_simple_populare %}data-population-form-url="{% url 'pet_population_adoption_submit' pet.pk %}" data-simple-populare="1"{% endif %}
-													{% if not eu_site_active %}
+													{% if site_proc.adoption_transport_in_flow %}
 													data-transport-url="{% url 'transport' %}?from_adoption=1&pet={{ pet.pk }}"
 													{% endif %}
 													{% endif %}
@@ -1850,7 +1850,7 @@
 					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--primary" id="petAdoptChoiceSubmitAfter">{% if eu_site_active %}{{ eu_ui.pet_adopt_send_full }}{% else %}Trimite cererea de adopție{% endif %}</button>
 				</div>
 				{% else %}
-				{% if not adoption_skip_pickup_choice %}
+				{% if not site_proc.adoption_skip_pickup_choice %}
 				<h3 class="pet-adopt-choice-modal__title" id="petAdoptChoiceTitle">{% if eu_site_active %}{{ eu_ui.pet_adopt_how }}{% else %}Cum preiei animalul?{% endif %}</h3>
 				<p class="pet-adopt-choice-modal__text">Alege o opțiune înainte de a trimite cererea de adopție.</p>
 				<div class="pet-adopt-choice-modal__options">
@@ -2403,7 +2403,7 @@
 					document.body.style.overflow = "hidden";
 				}
 				var afterTransportMode = {% if adoption_after_transport %}true{% else %}false{% endif %};
-				var skipPickupChoice = {% if adoption_skip_pickup_choice %}true{% else %}false{% endif %};
+				var skipPickupChoice = {% if site_proc.adoption_skip_pickup_choice %}true{% else %}false{% endif %};
 				if (afterTransportMode && adoptChoiceModal) {
 					document.body.style.overflow = "hidden";
 				}
