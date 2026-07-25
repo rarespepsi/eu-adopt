@@ -131,10 +131,14 @@ class PrelaunchEnabledTests(TestCase):
         self.assertIn(reverse("signup_verificare_sms"), r_post.url)
         self.assertNotIn("/login/", r_post.url)
 
-    def test_login_hides_signup_link(self):
+    def test_login_shows_signup_link_on_ro_prelaunch(self):
+        """Pe .ro, Creează cont e vizibil și în prelaunch (nu doar invitați email)."""
         c = Client()
         r = c.get(reverse("login"))
-        self.assertNotIn(b'class="login-links"', r.content)
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b'class="login-links"', r.content)
+        self.assertContains(r, "Creează cont")
+        self.assertContains(r, reverse("signup_choose_type"))
 
     def test_forgot_password_accessible(self):
         c = Client()
