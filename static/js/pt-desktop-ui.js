@@ -218,7 +218,6 @@
 
   Array.prototype.forEach.call(matchBtns, function (btn) {
     btn.addEventListener("click", function (e) {
-      if (!isPhone()) return;
       e.preventDefault();
       if (isActive) {
         try {
