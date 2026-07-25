@@ -2022,7 +2022,14 @@ body.page-account .account-right-panel {
 					{% endfor %}
 				</select>
 				<label for="id_campanie_localitate">Localitate *</label>
-				<input type="text" id="id_campanie_localitate" name="campanie_localitate" maxlength="120" required placeholder="ex. Piatra Neamț" value="{% if campanie_edit %}{{ campanie_edit.localitate }}{% endif %}" />
+				<select
+					id="id_campanie_localitate"
+					name="campanie_localitate"
+					required
+					data-current-localitate="{% if campanie_edit %}{{ campanie_edit.localitate }}{% endif %}"
+				>
+					<option value="">— alege localitatea —</option>
+				</select>
 				<fieldset class="cont-pf-campanie-species">
 					<legend>Pentru *</legend>
 					<label><input type="checkbox" name="campanie_dogs" value="1" {% if campanie_edit and campanie_edit.species_dogs %}checked{% endif %} /> Câini</label>
@@ -2264,6 +2271,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		var form = document.getElementById('campanie-sterilizare-form');
 		if (form) form.reset();
 		if (idEl) idEl.value = '';
+		var locSel = document.getElementById('id_campanie_localitate');
+		if (locSel) locSel.setAttribute('data-current-localitate', '');
+		if (typeof window.__euFillCampanieLocalitate === 'function') {
+			window.__euFillCampanieLocalitate();
+		}
 		var photo = document.getElementById('id_campanie_photo');
 		if (photo) photo.required = true;
 		var title = document.getElementById('campanie-modal-title');
@@ -2411,44 +2423,66 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <script>
 (function() {
-	/* Județ = select (toate 41). Oraș = select populat din JSON la schimbarea județului (același fișier ca la înregistrare). */
+	/* Județ → localități din același JSON (profil PF + campanie sterilizare). */
 	var localitiesByCounty = {};
 	var orasSelect = document.getElementById("id_oras_pf");
 	var judetSelect = document.getElementById("id_judet_pf");
-	function fillOras() {
-		if (!orasSelect || !judetSelect) return;
-		var county = judetSelect.value;
-		var currentOras = (orasSelect.getAttribute("data-current-oras") || "").trim();
-		orasSelect.innerHTML = "";
+	var campanieJudet = document.getElementById("id_campanie_judet");
+	var campanieLoc = document.getElementById("id_campanie_localitate");
+	function fillLocalitySelect(selectEl, county, currentAttr, emptyLabel) {
+		if (!selectEl) return;
+		var current = (selectEl.getAttribute(currentAttr) || "").trim();
+		selectEl.innerHTML = "";
 		var opt0 = document.createElement("option");
 		opt0.value = "";
-		opt0.textContent = "—— Alege orașul ——";
-		orasSelect.appendChild(opt0);
+		opt0.textContent = emptyLabel;
+		selectEl.appendChild(opt0);
 		var list = localitiesByCounty[county];
 		if (list && list.length) {
 			for (var i = 0; i < list.length; i++) {
 				var opt = document.createElement("option");
 				opt.value = list[i];
 				opt.textContent = list[i];
-				if (list[i] === currentOras) opt.selected = true;
-				orasSelect.appendChild(opt);
+				if (list[i] === current) opt.selected = true;
+				selectEl.appendChild(opt);
 			}
 		}
-		if (currentOras && (!list || list.indexOf(currentOras) === -1)) {
+		if (current && (!list || list.indexOf(current) === -1)) {
 			var optCustom = document.createElement("option");
-			optCustom.value = currentOras;
-			optCustom.textContent = currentOras;
+			optCustom.value = current;
+			optCustom.textContent = current;
 			optCustom.selected = true;
-			orasSelect.appendChild(optCustom);
+			selectEl.appendChild(optCustom);
 		}
-		orasSelect.removeAttribute("data-current-oras");
+		selectEl.removeAttribute(currentAttr);
 	}
+	function fillOras() {
+		if (!orasSelect || !judetSelect) return;
+		fillLocalitySelect(orasSelect, judetSelect.value, "data-current-oras", "—— Alege orașul ——");
+	}
+	function fillCampanieLocalitate() {
+		if (!campanieLoc || !campanieJudet) return;
+		fillLocalitySelect(
+			campanieLoc,
+			campanieJudet.value,
+			"data-current-localitate",
+			"— alege localitatea —"
+		);
+	}
+	window.__euFillCampanieLocalitate = fillCampanieLocalitate;
 	fetch("{% static 'data/ro_counties_cities.json' %}").then(function(r) { return r.json(); }).then(function(data) {
 		for (var k in data) localitiesByCounty[k] = data[k];
 		fillOras();
+		fillCampanieLocalitate();
 	}).catch(function() {});
 	if (judetSelect) {
 		judetSelect.addEventListener("change", fillOras);
+	}
+	if (campanieJudet) {
+		campanieJudet.addEventListener("change", function() {
+			if (campanieLoc) campanieLoc.setAttribute("data-current-localitate", "");
+			fillCampanieLocalitate();
+		});
 	}
 })();
 </script>

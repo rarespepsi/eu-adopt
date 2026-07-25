@@ -282,6 +282,9 @@ _site_guide_gemini = os.environ.get("EUADOPT_SITE_GUIDE_GEMINI_ENABLED", "").str
 SITE_GUIDE_GEMINI_ENABLED = _site_guide_gemini in ("1", "true", "yes", "on")
 EUADOPT_GEMINI_API_KEY = os.environ.get("EUADOPT_GEMINI_API_KEY", "").strip()
 SITE_GUIDE_GEMINI_MODEL = os.environ.get("EUADOPT_SITE_GUIDE_GEMINI_MODEL", "gemini-2.5-flash").strip()
+# Traducere UGC (fișă + mesaje): implicit ON dacă există cheia Gemini; oprește cu 0/false.
+_ugc_tr = os.environ.get("EUADOPT_UGC_TRANSLATE_ENABLED", "1").strip().lower()
+UGC_TRANSLATE_ENABLED = _ugc_tr in ("1", "true", "yes", "on")
 SITE_GUIDE_RATE_LIMIT_PER_HOUR = int(os.environ.get("EUADOPT_SITE_GUIDE_RATE_LIMIT", "30") or "30")
 
 # Add USER — invitații email prospecte. Implicit DEZACTIVAT (mod tehnic, doar log/simulare).

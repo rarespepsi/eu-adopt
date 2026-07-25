@@ -5128,6 +5128,11 @@ def render_dog_profile(request, listing: AnimalListing):
         "slug": getattr(listing, "slug", "") or "",
     }
 
+    if eu_en:
+        from home.ugc_translate import translate_pet_fields_for_display
+
+        pet = translate_pet_fields_for_display(pet, request)
+
     adoption_request_status = None
     if request.user.is_authenticated and request.user.pk != listing.owner_id:
         last_ar = (
@@ -11137,11 +11142,13 @@ def mypet_messages_thread_view(request, pk: int, sender_id: int):
         .order_by("created_at")
     )
     items = []
+    from home.ugc_translate import body_for_viewer
+
     for msg in qs:
         items.append({
             "id": msg.id,
             "from_owner": msg.sender_id == request.user.id,
-            "body": msg.body,
+            "body": body_for_viewer(msg.body, request),
             "created_at": msg.created_at.isoformat(),
             "is_read": bool(msg.is_read),
         })
@@ -11351,12 +11358,14 @@ def adopter_messages_thread_view(request, pk: int):
         .order_by("created_at")
     )
     items = []
+    from home.ugc_translate import body_for_viewer
+
     for msg in qs:
         items.append({
             "id": msg.id,
             "from_me": msg.sender_id == user.id,
             "from_owner": msg.sender_id == owner.id,
-            "body": msg.body,
+            "body": body_for_viewer(msg.body, request),
             "created_at": msg.created_at.isoformat(),
             "is_read": bool(msg.is_read),
         })
