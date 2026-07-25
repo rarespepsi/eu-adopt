@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Animale · {{ owner_username }} · staff{% endblock %}
+{% block body_class %}page-staff-owner-animals{% endblock %}
+
+{% block extra_css %}
+<style>
+	body.page-staff-owner-animals .layout { grid-template-columns: 1fr; }
+	body.page-staff-owner-animals .sidebar-left,
+	body.page-staff-owner-animals .sidebar-right { display: none; }
+	.su-owner-wrap {
+		max-width: 42rem;
+		margin: 1rem auto;
+		padding: 0 0.85rem 2rem;
+		box-sizing: border-box;
+	}
+	.su-owner-wrap h1 {
+		margin: 0 0 0.35rem;
+		font-size: 1.15rem;
+		font-weight: 800;
+		color: #0d47a1;
+	}
+	.su-owner-meta {
+		margin: 0 0 0.85rem;
+		font-size: 0.85rem;
+		color: #374151;
+	}
+	.su-owner-back {
+		display: inline-block;
+		margin-bottom: 0.75rem;
+		font-size: 0.82rem;
+		font-weight: 700;
+		color: #0d47a1;
+		text-decoration: none;
+	}
+	.su-owner-back:hover { text-decoration: underline; }
+	.su-owner-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+	}
+	.su-owner-item {
+		display: block;
+		padding: 0.55rem 0.7rem;
+		border-radius: 10px;
+		border: 1px solid rgba(13, 71, 161, 0.28);
+		background: rgba(227, 242, 253, 0.65);
+		text-decoration: none;
+		color: #111827;
+		font-size: 0.88rem;
+		font-weight: 700;
+	}
+	.su-owner-item:hover { background: rgba(187, 222, 251, 0.85); }
+	.su-owner-item--off {
+		opacity: 0.72;
+		cursor: default;
+		background: rgba(243, 244, 246, 0.9);
+		border-color: rgba(0, 0, 0, 0.12);
+	}
+	.su-owner-item small {
+		display: block;
+		margin-top: 0.2rem;
+		font-size: 0.72rem;
+		font-weight: 600;
+		color: #4b5563;
+	}
+	.su-owner-empty {
+		padding: 0.85rem;
+		border-radius: 10px;
+		border: 1px dashed rgba(0, 0, 0, 0.2);
+		font-size: 0.88rem;
+		color: #4b5563;
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="su-owner-wrap">
+	<a class="su-owner-back" href="javascript:history.back()">← Înapoi</a>
+	<h1>Animale · @{{ owner_username }}</h1>
+	<p class="su-owner-meta">{{ animal_count }} anunțuri (superuser)</p>
+	{% if animal_rows %}
+	<ul class="su-owner-list">
+		{% for row in animal_rows %}
+		<li>
+			{% if row.url %}
+			<a class="su-owner-item" href="{{ row.url }}">
+				{{ row.name }}
+				<small>
+					{% if row.species == 'dog' %}Câine{% elif row.species == 'cat' %}Pisică{% else %}Altceva{% endif %}
+					{% if row.city or row.county %} · {{ row.city }}{% if row.city and row.county %}, {% endif %}{{ row.county }}{% endif %}
+					{% if row.adoption_state %} · {{ row.adoption_state }}{% endif %}
+					{% if not row.is_published %} · nepublicat{% endif %}
+				</small>
+			</a>
+			{% else %}
+			<span class="su-owner-item su-owner-item--off">
+				{{ row.name }}
+				<small>
+					{% if row.species == 'dog' %}Câine{% elif row.species == 'cat' %}Pisică{% else %}Altceva{% endif %}
+					{% if row.city or row.county %} · {{ row.city }}{% if row.city and row.county %}, {% endif %}{{ row.county }}{% endif %}
+					· nepublicat (fără link public)
+				</small>
+			</span>
+			{% endif %}
+		</li>
+		{% endfor %}
+	</ul>
+	{% else %}
+	<p class="su-owner-empty">Acest user nu are animale în listă.</p>
+	{% endif %}
+</div>
+{% endblock %}

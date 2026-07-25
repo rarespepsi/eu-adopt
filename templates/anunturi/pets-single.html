@@ -842,6 +842,51 @@
 				text-align: center;
 				opacity: 0.95;
 			}
+			/* Superuser: casetă owner deasupra „Vreau să adopt” (stack fixed) */
+			.pet-adopt-stack {
+				position: fixed;
+				right: 168px;
+				bottom: 10px;
+				z-index: 2500;
+				display: flex;
+				flex-direction: column;
+				align-items: stretch;
+				gap: 8px;
+				width: 148px;
+				box-sizing: border-box;
+			}
+			.pet-owner-su-link {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				box-sizing: border-box;
+				min-height: 2.45rem;
+				padding: 0.4rem 0.45rem;
+				border-radius: 0.65rem;
+				border: 1px solid rgba(255, 255, 255, 0.28);
+				background: rgba(21, 101, 192, 0.9);
+				box-shadow:
+					0 0 0 1px rgba(0, 0, 0, 0.28) inset,
+					0 6px 16px rgba(0, 0, 0, 0.28);
+				color: #fff;
+				text-decoration: none;
+				text-align: center;
+				font-size: 0.72rem;
+				font-weight: 700;
+				font-family: inherit;
+				line-height: 1.2;
+				word-break: break-word;
+			}
+			.pet-owner-su-link:hover {
+				background: rgba(13, 71, 161, 0.95);
+				color: #fff;
+			}
+			.pet-adopt-stack .pet-adopt-corner {
+				position: static;
+				right: auto;
+				bottom: auto;
+				width: 100%;
+			}
 			.pet-adopt-corner {
 				position: fixed;
 				right: 168px;
@@ -920,6 +965,10 @@
 			@media (max-width: 820px) {
 				.pet-qr-corner { width: 132px; }
 				.pet-qr-corner__img { width: 116px; height: 116px; }
+				.pet-adopt-stack {
+					right: 150px;
+					width: 132px;
+				}
 				.pet-adopt-corner {
 					right: 150px;
 					width: 132px;
@@ -1009,6 +1058,12 @@
 				.pet-qr-corner__img {
 					width: min(116px, 32vw);
 					height: min(116px, 32vw);
+				}
+				.pet-adopt-stack {
+					right: 10px !important;
+					left: auto;
+					bottom: calc(188px + env(safe-area-inset-bottom, 0px)) !important;
+					width: min(132px, 38vw);
 				}
 				.pet-adopt-corner {
 					right: 10px !important;
@@ -1121,6 +1176,7 @@
 					margin: 0.35rem auto 0.15rem !important;
 					align-self: center !important;
 				}
+				.pet-adopt-qr-inline .pet-adopt-stack,
 				.pet-adopt-qr-inline .pet-adopt-corner,
 				.pet-adopt-qr-inline .pet-qr-corner {
 					position: static !important;
@@ -1134,6 +1190,16 @@
 					margin: 0 !important;
 					backdrop-filter: none !important;
 					-webkit-backdrop-filter: none !important;
+				}
+				.pet-adopt-qr-inline .pet-adopt-stack {
+					width: min(124px, 36vw) !important;
+				}
+				.pet-adopt-qr-inline .pet-adopt-stack .pet-adopt-corner {
+					width: 100% !important;
+				}
+				.pet-adopt-qr-inline .pet-owner-su-link {
+					width: 100% !important;
+					font-size: 0.68rem !important;
 				}
 				.pet-adopt-qr-inline .pet-adopt-corner {
 					min-height: 96px !important;
@@ -1721,27 +1787,38 @@
 											{% endif %}
 											<div class="pet-adoption-state-corner" aria-label="{% if eu_site_active %}{{ eu_ui.pet_adopt_state_aria }}{% else %}Stare adopție{% endif %}">{% if eu_site_active %}{{ pet.adoption_state_label|default:eu_ui.pet_adopt_state_free }}{% else %}{{ pet.adoption_state_label|default:"Liber" }}{% endif %}</div>
 											<div class="pet-adopt-qr-inline" id="petAdoptQrInline" aria-label="{% if eu_site_active %}{{ eu_ui.pet_adopt_qr_aria }}{% else %}Adopție și cod QR{% endif %}">
-												{% if show_pet_adopt_corner %}
-												<div
-													class="pet-adopt-corner{% if pet_adopt_demo_listing or pet_adopt_inactive_populare %} pet-adopt-corner--inactive{% endif %}"
-													id="petAdoptCorner"
-													role="button"
-													tabindex="0"
-													{% if not pet_adopt_demo_listing %}
-													data-adopt-url="{% url 'pet_adoption_request' pet.pk %}"
-													{% if pet_adopt_simple_populare %}data-population-form-url="{% url 'pet_population_adoption_submit' pet.pk %}" data-simple-populare="1"{% endif %}
-													{% if site_proc.adoption_transport_in_flow %}
-													data-transport-url="{% url 'transport' %}?from_adoption=1&pet={{ pet.pk }}"
+												{% if show_pet_owner_su_link or show_pet_adopt_corner %}
+												<div class="pet-adopt-stack">
+													{% if show_pet_owner_su_link and pet_owner_animals_url %}
+													<a
+														class="pet-owner-su-link"
+														href="{{ pet_owner_animals_url }}"
+														title="Animalele acestui user (doar superuser)"
+													>@{{ pet_owner_username }}</a>
 													{% endif %}
+													{% if show_pet_adopt_corner %}
+													<div
+														class="pet-adopt-corner{% if pet_adopt_demo_listing or pet_adopt_inactive_populare %} pet-adopt-corner--inactive{% endif %}"
+														id="petAdoptCorner"
+														role="button"
+														tabindex="0"
+														{% if not pet_adopt_demo_listing %}
+														data-adopt-url="{% url 'pet_adoption_request' pet.pk %}"
+														{% if pet_adopt_simple_populare %}data-population-form-url="{% url 'pet_population_adoption_submit' pet.pk %}" data-simple-populare="1"{% endif %}
+														{% if site_proc.adoption_transport_in_flow %}
+														data-transport-url="{% url 'transport' %}?from_adoption=1&pet={{ pet.pk }}"
+														{% endif %}
+														{% endif %}
+														data-servicii-url="{% url 'servicii' %}"
+														data-login-url="{% url 'login' %}"
+														data-login-next="{{ request.get_full_path|urlencode }}"
+														{% if pet_adopt_demo_listing %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_demo_message|escape }}" aria-disabled="true"{% elif pet_adopt_inactive_populare %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_inactive_message|escape }}" aria-disabled="true"{% endif %}
+														aria-label="{% if pet_adopt_demo_listing %}{% if eu_site_active %}DEMO{% else %}Demonstrativ DEMO{% endif %}{% elif eu_site_active %}{{ eu_ui.pet_want_adopt }}{% else %}Vreau să adopt{% endif %}"
+													>
+														<span class="pet-adopt-corner__label">{% if pet_adopt_demo_listing %}DEMO{% elif eu_site_active %}{{ eu_ui.pet_want_adopt }}{% else %}VREAU SĂ ADOPT{% endif %}</span>
+														{% if pet_adopt_demo_listing %}<span class="pet-adopt-corner__note">{% if eu_site_active %}{{ eu_ui.pet_adopt_demo_note }}{% else %}Doar demonstrativ{% endif %}</span>{% elif pet_adopt_inactive_populare %}<span class="pet-adopt-corner__note">{% if eu_site_active %}{{ eu_ui.pet_adopt_inactive_note }}{% else %}Inactiv în perioada de populare{% endif %}</span>{% endif %}
+													</div>
 													{% endif %}
-													data-servicii-url="{% url 'servicii' %}"
-													data-login-url="{% url 'login' %}"
-													data-login-next="{{ request.get_full_path|urlencode }}"
-													{% if pet_adopt_demo_listing %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_demo_message|escape }}" aria-disabled="true"{% elif pet_adopt_inactive_populare %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_inactive_message|escape }}" aria-disabled="true"{% endif %}
-													aria-label="{% if pet_adopt_demo_listing %}{% if eu_site_active %}DEMO{% else %}Demonstrativ DEMO{% endif %}{% elif eu_site_active %}{{ eu_ui.pet_want_adopt }}{% else %}Vreau să adopt{% endif %}"
-												>
-													<span class="pet-adopt-corner__label">{% if pet_adopt_demo_listing %}DEMO{% elif eu_site_active %}{{ eu_ui.pet_want_adopt }}{% else %}VREAU SĂ ADOPT{% endif %}</span>
-													{% if pet_adopt_demo_listing %}<span class="pet-adopt-corner__note">{% if eu_site_active %}{{ eu_ui.pet_adopt_demo_note }}{% else %}Doar demonstrativ{% endif %}</span>{% elif pet_adopt_inactive_populare %}<span class="pet-adopt-corner__note">{% if eu_site_active %}{{ eu_ui.pet_adopt_inactive_note }}{% else %}Inactiv în perioada de populare{% endif %}</span>{% endif %}
 												</div>
 												{% endif %}
 												<div class="pet-qr-corner" id="petQrCorner" aria-label="{% if eu_site_active %}{{ eu_ui.pet_qr_aria }}{% else %}Cod QR fișă{% endif %}">

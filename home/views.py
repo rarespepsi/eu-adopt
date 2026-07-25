@@ -20,7 +20,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
-from django.http import HttpResponse, JsonResponse, QueryDict
+from django.http import Http404, HttpResponse, JsonResponse, QueryDict
 from django.db.models import Case, Count, Exists, IntegerField, Max, OuterRef, Q, Subquery, Sum, When
 from django.db.models import F
 from django.db.models.functions import TruncMonth
@@ -5223,8 +5223,60 @@ def render_dog_profile(request, listing: AnimalListing):
         "pet_back_url": pet_back_url,
         "pet_back_label": _pet_ficha_back_label(pet_back_url),
         "pet_from_home": (request.GET.get("from") or "").strip().lower() == "home",
+        "show_pet_owner_su_link": bool(
+            request.user.is_authenticated
+            and request.user.is_superuser
+            and listing.owner_id
+        ),
+        "pet_owner_username": (listing.owner.username if listing.owner_id else "") or "",
+        "pet_owner_animals_url": (
+            reverse("staff_owner_animals", kwargs={"username": listing.owner.username})
+            if listing.owner_id and listing.owner.username
+            else ""
+        ),
     }
     return render(request, "anunturi/pets-single.html", ctx)
+
+
+@login_required
+def staff_owner_animals_view(request, username: str):
+    """Superuser only: listă animale ale unui owner (din caseta de pe fișă)."""
+    if not request.user.is_superuser:
+        raise Http404()
+    UserModel = get_user_model()
+    owner = get_object_or_404(UserModel, username__iexact=(username or "").strip())
+    from home.shelter_directory import animal_public_url, ensure_animal_slug
+
+    animals = list(
+        AnimalListing.objects.filter(owner=owner)
+        .order_by("-is_published", "-created_at")[:300]
+    )
+    rows = []
+    for a in animals:
+        ensure_animal_slug(a, save=True)
+        public_ok = bool(a.is_published and (a.slug or "").strip())
+        rows.append(
+            {
+                "listing": a,
+                "name": a.name or f"#{a.pk}",
+                "species": (a.species or "").strip().lower(),
+                "city": (a.city or "").strip(),
+                "county": (a.county or "").strip(),
+                "is_published": bool(a.is_published),
+                "adoption_state": (a.adoption_state or "").strip(),
+                "url": animal_public_url(a) if public_ok else "",
+            }
+        )
+    return render(
+        request,
+        "anunturi/staff_owner_animals.html",
+        {
+            "owner_user": owner,
+            "owner_username": owner.username,
+            "animal_rows": rows,
+            "animal_count": len(rows),
+        },
+    )
 
 
 def dog_profile_view(request, pk):

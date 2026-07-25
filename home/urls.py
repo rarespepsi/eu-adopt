@@ -156,6 +156,11 @@ urlpatterns = [
     path('caini/<slug:slug>/', shelter_views.animal_public_by_slug_view, {'species': 'dog'}, name='animal_public_dog'),
     path('pisici/<slug:slug>/', shelter_views.animal_public_by_slug_view, {'species': 'cat'}, name='animal_public_cat'),
     path('altele/<slug:slug>/', shelter_views.animal_public_by_slug_view, {'species': 'other'}, name='animal_public_other'),
+    path(
+        'staff/owner/<str:username>/animale/',
+        views.staff_owner_animals_view,
+        name='staff_owner_animals',
+    ),
     path('pets/', views.home_view, name='pets_all'),
     path('pets/p2-more/', views.pets_p2_more_view, name='pets_p2_more'),
     path('pets/<int:pk>/', shelter_views.dog_profile_pk_redirect, name='pets_single'),
