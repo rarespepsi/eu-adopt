@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Înregistrare Persoană Fizică – EU-ADOPT{% endblock %}
+{% block title %}{% if eu_site_active %}{{ eu_ui.signup_pf_title }}{% else %}Înregistrare Persoană Fizică – EU-ADOPT{% endif %}{% endblock %}
 {% block body_class %}page-login{% endblock %}
 
 {% block extra_css %}
@@ -633,12 +633,12 @@
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
-	<main class="login-main signup-pf-main signup-main" aria-label="Înregistrare Persoană Fizică EU-ADOPT">
+	<main class="login-main signup-pf-main signup-main" aria-label="{% if eu_site_active %}{{ eu_ui.signup_pf_h1 }}{% else %}Înregistrare Persoană Fizică EU-ADOPT{% endif %}">
 		<div class="signup-pf-stack">
 		<div class="signup-form-wrap">
 			<div class="signup-form-header">
-				<h1>Înregistrare Persoană Fizică</h1>
-				<p class="signup-intro">Completează datele de bază pentru a crea un cont personal.</p>
+				<h1>{% if eu_site_active %}{{ eu_ui.signup_pf_h1 }}{% else %}Înregistrare Persoană Fizică{% endif %}</h1>
+				<p class="signup-intro">{% if eu_site_active %}{{ eu_ui.signup_pf_intro }}{% else %}Completează datele de bază pentru a crea un cont personal.{% endif %}</p>
 			</div>
 			<form id="signup-pf-form" method="post" action="{% url 'signup_pf' %}" enctype="multipart/form-data" autocomplete="off">
 				{% csrf_token %}
@@ -656,21 +656,21 @@
 				</div>
 				<div class="signup-casete-row">
 				<div class="signup-caseta">
-					<h2>Date de identificare</h2>
+					<h2>{% if eu_site_active %}{{ eu_ui.signup_pf_id_h }}{% else %}Date de identificare{% endif %}</h2>
 					<div class="signup-field signup-field-box">
-						<label for="id_last_name">Nume *</label>
+						<label for="id_last_name">{% if eu_site_active %}{{ eu_ui.signup_lbl_last }}{% else %}Nume *{% endif %}</label>
 						<input type="text" id="id_last_name" name="last_name" required autocomplete="off" value="{% if form_prefill %}{{ form_prefill.last_name|default:'' }}{% endif %}" />
 					</div>
 					<div class="signup-field signup-field-box">
-						<label for="id_first_name">Prenume *</label>
+						<label for="id_first_name">{% if eu_site_active %}{{ eu_ui.signup_lbl_first }}{% else %}Prenume *{% endif %}</label>
 						<input type="text" id="id_first_name" name="first_name" required autocomplete="off" value="{% if form_prefill %}{{ form_prefill.first_name|default:'' }}{% endif %}" />
 					</div>
 					<div class="signup-field signup-field-box">
-						<label for="id_email">Email *</label>
+						<label for="id_email">{% if eu_site_active %}{{ eu_ui.signup_lbl_email }}{% else %}Email *{% endif %}</label>
 						<input type="email" id="id_email" name="email" required autocomplete="off" value="{% if form_prefill %}{{ form_prefill.email|default:'' }}{% endif %}" />
 					</div>
 					<div class="signup-field signup-field-box">
-						<label for="id_phone">Telefon *</label>
+						<label for="id_phone">{% if eu_site_active %}{{ eu_ui.signup_lbl_phone }}{% else %}Telefon *{% endif %}</label>
 						<div class="signup-phone-row">
 							<div class="signup-phone-prefix">
 								<select id="id_phone_country" name="phone_country" required>
@@ -692,25 +692,25 @@
 						</div>
 					</div>
 					<div class="signup-field signup-field-box">
-						<label for="id_judet">Județ *</label>
+						<label for="id_judet">{% if eu_site_active %}{{ eu_ui.signup_lbl_county }}{% else %}Județ *{% endif %}</label>
 						{% include "anunturi/includes/ro_county_select.html" with select_id="id_judet" select_name="judet" current=form_prefill.judet profile_editable=True %}
 					</div>
 					<div class="signup-field signup-field-box">
-						<label for="id_oras">Oraș / Localitate *</label>
+						<label for="id_oras">{% if eu_site_active %}{{ eu_ui.signup_lbl_city }}{% else %}Oraș / Localitate *{% endif %}</label>
 						{% include "anunturi/includes/ro_city_select.html" with select_id="id_oras" select_name="oras" current=form_prefill.oras profile_editable=True %}
 					</div>
 				</div>
 				<div class="signup-caseta">
-					<h2>Parolă și acorduri</h2>
+					<h2>{% if eu_site_active %}{{ eu_ui.signup_pf_pass_h }}{% else %}Parolă și acorduri{% endif %}</h2>
 					<div class="signup-field signup-field-box signup-pwd-wrap">
-						<label for="id_password1">Parolă *</label>
+						<label for="id_password1">{% if eu_site_active %}{{ eu_ui.signup_lbl_pass }}{% else %}Parolă *{% endif %}</label>
 						<span class="signup-pwd-inner">
 							<input type="password" id="id_password1" name="password1" required autocomplete="new-password" value="{% if form_prefill %}{{ form_prefill.password1|default:'' }}{% endif %}" />
 							<span class="signup-pwd-eye" data-pwd="id_password1" title="Arată parola" aria-label="Arată parola" role="button" tabindex="0"></span>
 						</span>
 					</div>
 					<div class="signup-field signup-field-box signup-pwd-wrap">
-						<label for="id_password2">Confirmare parolă *</label>
+						<label for="id_password2">{% if eu_site_active %}{{ eu_ui.signup_lbl_pass2 }}{% else %}Confirmare parolă *{% endif %}</label>
 						<span class="signup-pwd-inner">
 							<input type="password" id="id_password2" name="password2" required autocomplete="new-password" value="{% if form_prefill %}{{ form_prefill.password2|default:'' }}{% endif %}" />
 							<span class="signup-pwd-eye" data-pwd="id_password2" title="Arată parola" aria-label="Arată parola" role="button" tabindex="0"></span>
@@ -719,26 +719,26 @@
 					<div class="signup-field signup-field-box">
 						<label class="signup-bifa-label">
 							<input type="checkbox" id="id_accept_termeni" name="accept_termeni" required {% if form_prefill and form_prefill.accept_termeni %}checked{% endif %} />
-							<span>Accept <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">Termenii și condițiile de utilizare</a> *</span>
+							<span>{% if eu_site_active %}I accept the <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">Terms and conditions of use</a> *{% else %}Accept <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">Termenii și condițiile de utilizare</a> *{% endif %}</span>
 						</label>
 					</div>
 					<div class="signup-field signup-field-box">
 						<label class="signup-bifa-label">
 							<input type="checkbox" id="id_accept_gdpr" name="accept_gdpr" required {% if form_prefill and form_prefill.accept_gdpr %}checked{% endif %} />
-							<span>Accept <a href="{% url 'politica_confidentialitate' %}" target="_blank" rel="noopener">Politica de confidențialitate (GDPR)</a> *</span>
+							<span>{% if eu_site_active %}I accept the <a href="{% url 'politica_confidentialitate' %}" target="_blank" rel="noopener">Privacy policy (GDPR)</a> *{% else %}Accept <a href="{% url 'politica_confidentialitate' %}" target="_blank" rel="noopener">Politica de confidențialitate (GDPR)</a> *{% endif %}</span>
 						</label>
 					</div>
 					<div class="signup-field signup-field-box">
 						<label class="signup-bifa-label">
 							<input type="checkbox" id="id_email_opt_in_wishlist" name="email_opt_in_wishlist" {% if form_prefill and form_prefill.email_opt_in_wishlist %}checked{% endif %} />
-							<span>Doresc notificări email EU-Adopt (opțional)</span>
+							<span>{% if eu_site_active %}{{ eu_ui.signup_accept_notify }}{% else %}Doresc notificări email EU-Adopt (opțional){% endif %}</span>
 						</label>
 					</div>
 					<div class="signup-actions">
-						<button type="submit" class="signup-submit">Creează cont</button>
+						<button type="submit" class="signup-submit">{% if eu_site_active %}{{ eu_ui.signup_submit }}{% else %}Creează cont{% endif %}</button>
 						<p class="signup-small">
-							<a href="{% url 'signup_choose_type' %}">Înapoi la alegerea tipului de cont</a> ·
-							<a href="{% url 'home' %}">Prima pagină</a>
+							<a href="{% url 'signup_choose_type' %}">{% if eu_site_active %}Back to account type{% else %}Înapoi la alegerea tipului de cont{% endif %}</a> ·
+							<a href="{% url 'home' %}">{% if eu_site_active %}{{ eu_ui.signup_choose_back_home }}{% else %}Prima pagină{% endif %}</a>
 						</p>
 					</div>
 				</div>

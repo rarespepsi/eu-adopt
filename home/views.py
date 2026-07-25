@@ -1159,12 +1159,12 @@ def _adoption_pet_public_email_lines(pet: AnimalListing):
     return adoption_pet_public_email_lines(pet)
 
 
-def _send_adoption_request_adopter_email(ar: AdoptionRequest):
+def _send_adoption_request_adopter_email(ar: AdoptionRequest, *, english: bool = False):
     """Adoptator: confirmare cerere + rezumat animal + link către fișa publică."""
     from .euadopt_email import send_adoption_confirmation_email
 
     try:
-        send_adoption_confirmation_email(ar, fail_silently=False)
+        send_adoption_confirmation_email(ar, fail_silently=False, english=english)
     except Exception:
         logging.getLogger(__name__).exception("adoption_request_email_adopter ar_id=%s", ar.pk)
 
@@ -2294,7 +2294,7 @@ def _strip_cells_apply_donatii_eu_href(section: str, cells: list[dict]) -> list[
     return out
 
 
-def _strip_cells_apply_sms_strip_href(section: str, cells: list[dict]) -> list[dict]:
+def _strip_cells_apply_sms_strip_href(section: str, cells: list[dict], *, english: bool = False) -> list[dict]:
     """Celule EU dedicate SMS în P1/P3 și S1/S7 → /donatii/#donatii-sms."""
     if section == "pt":
         targets = _PT_SMS_STRIP_EU_SLOTS
@@ -2310,8 +2310,10 @@ def _strip_cells_apply_sms_strip_href(section: str, cells: list[dict]) -> list[d
         EUADOPT_DONATION_SMS_PAGE_ANCHOR,
         EUADOPT_SMS_STRIP_LABEL,
         EUADOPT_SMS_STRIP_MSG,
+        EUADOPT_SMS_STRIP_MSG_EN,
     )
 
+    sms_msg = EUADOPT_SMS_STRIP_MSG_EN if english else EUADOPT_SMS_STRIP_MSG
     out = []
     for c in cells:
         if c.get("kind") == "eu" and c.get("code") in targets:
@@ -2321,7 +2323,7 @@ def _strip_cells_apply_sms_strip_href(section: str, cells: list[dict]) -> list[d
                     **c,
                     "eu_sms_strip_href": f"{don}?{q}#{EUADOPT_DONATION_SMS_PAGE_ANCHOR}",
                     "eu_sms_strip_label": EUADOPT_SMS_STRIP_LABEL,
-                    "eu_sms_strip_msg": EUADOPT_SMS_STRIP_MSG,
+                    "eu_sms_strip_msg": sms_msg,
                 }
             )
         else:
@@ -2329,7 +2331,7 @@ def _strip_cells_apply_sms_strip_href(section: str, cells: list[dict]) -> list[d
     return out
 
 
-def _strip_cells_apply_pwa_strip_msg(section: str, cells: list[dict]) -> list[dict]:
+def _strip_cells_apply_pwa_strip_msg(section: str, cells: list[dict], *, english: bool = False) -> list[dict]:
     """Celule EU *.3 — anunț App pe Mobil EU-ADOPT (vizibil pe desk în bandă)."""
     if section == "pt":
         targets = _PT_PWA_STRIP_EU_SLOTS
@@ -2337,8 +2339,13 @@ def _strip_cells_apply_pwa_strip_msg(section: str, cells: list[dict]) -> list[di
         targets = _SERVICII_PWA_STRIP_EU_SLOTS
     else:
         return cells
-    from home.donatii_constants import EUADOPT_PWA_STRIP_LABEL, EUADOPT_PWA_STRIP_MSG
+    from home.donatii_constants import (
+        EUADOPT_PWA_STRIP_LABEL,
+        EUADOPT_PWA_STRIP_MSG,
+        EUADOPT_PWA_STRIP_MSG_EN,
+    )
 
+    pwa_msg = EUADOPT_PWA_STRIP_MSG_EN if english else EUADOPT_PWA_STRIP_MSG
     out = []
     for c in cells:
         if c.get("kind") == "eu" and c.get("code") in targets:
@@ -2347,8 +2354,8 @@ def _strip_cells_apply_pwa_strip_msg(section: str, cells: list[dict]) -> list[di
                     **c,
                     "eu_pwa_strip": True,
                     "eu_pwa_strip_label": EUADOPT_PWA_STRIP_LABEL,
-                    "eu_pwa_strip_msg": EUADOPT_PWA_STRIP_MSG,
-                    "eu_text": EUADOPT_PWA_STRIP_MSG,
+                    "eu_pwa_strip_msg": pwa_msg,
+                    "eu_text": pwa_msg,
                 }
             )
         else:
@@ -2356,11 +2363,16 @@ def _strip_cells_apply_pwa_strip_msg(section: str, cells: list[dict]) -> list[di
     return out
 
 
-def _strip_cells_donatii_pt_or_servicii(section: str, cells: list[dict]) -> list[dict]:
+def _strip_cells_donatii_pt_or_servicii(
+    section: str, cells: list[dict], *, english: bool = False
+) -> list[dict]:
     """Aplică donații + SMS + anunț PWA pe benzile cursivă PT / Servicii."""
     return _strip_cells_apply_pwa_strip_msg(
         section,
-        _strip_cells_apply_sms_strip_href(section, _strip_cells_apply_donatii_eu_href(section, cells)),
+        _strip_cells_apply_sms_strip_href(
+            section, _strip_cells_apply_donatii_eu_href(section, cells), english=english
+        ),
+        english=english,
     )
 
 
@@ -2576,10 +2588,14 @@ def home_view(request):
         _pub_mkt = pub_market_for_request(request)
         _pub_lang = getattr(request, "LANGUAGE_CODE", None)
         p1_strip_cells = _strip_cells_donatii_pt_or_servicii(
-            "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P1, market=_pub_mkt, lang=_pub_lang)
+            "pt",
+            _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P1, market=_pub_mkt, lang=_pub_lang),
+            english=bool(getattr(request, "eu_site_active", False)),
         )
         p3_strip_cells = _strip_cells_donatii_pt_or_servicii(
-            "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P3, market=_pub_mkt, lang=_pub_lang)
+            "pt",
+            _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P3, market=_pub_mkt, lang=_pub_lang),
+            english=bool(getattr(request, "eu_site_active", False)),
         )
         return render(
             request,
@@ -2789,7 +2805,12 @@ def forgot_password_view(request):
                 try:
                     from .euadopt_email import send_password_reset_email
 
-                    send_password_reset_email(user, reset_url, fail_silently=False)
+                    send_password_reset_email(
+                        user,
+                        reset_url,
+                        fail_silently=False,
+                        english=bool(getattr(request, "eu_site_active", False)),
+                    )
                 except Exception:
                     ctx["error"] = "Nu am putut trimite emailul. Încearcă din nou mai târziu."
                     ctx["submitted_email"] = email
@@ -4207,6 +4228,7 @@ def servicii_view(request):
                     market=pub_market_for_request(request),
                     lang=getattr(request, "LANGUAGE_CODE", None),
                 ),
+                english=bool(getattr(request, "eu_site_active", False)),
             ),
             "servicii_strip_s7_cells": _strip_cells_donatii_pt_or_servicii(
                 "servicii",
@@ -4216,6 +4238,7 @@ def servicii_view(request):
                     market=pub_market_for_request(request),
                     lang=getattr(request, "LANGUAGE_CODE", None),
                 ),
+                english=bool(getattr(request, "eu_site_active", False)),
             ),
             "vet_offers": vet_offers,
             "vet_offer_empty_slots": vet_offer_empty_slots,
@@ -10941,18 +10964,34 @@ def pet_send_message_view(request, pk: int):
     """Mesaj nou trimis din fișa publică a animalului către owner."""
     pet = get_object_or_404(AnimalListing, pk=pk, is_published=True)
     if pet.owner_id == request.user.id:
-        return JsonResponse({"ok": False, "error": "Nu poți trimite mesaj către tine."}, status=400)
+        from home.eu_ui_labels import eu_or_ro
+
+        return JsonResponse(
+            {"ok": False, "error": eu_or_ro(request, "pet_err_msg_self", "Nu poți trimite mesaj către tine.")},
+            status=400,
+        )
     if not _adopter_messaging_allowed(pet, request.user):
+        from home.eu_ui_labels import eu_or_ro
+
         return JsonResponse(
             {
                 "ok": False,
-                "error": "Nu poți trimite mesaj în această situație (cont, anunț sau animal deja adoptat).",
+                "error": eu_or_ro(
+                    request,
+                    "pet_err_msg_forbidden",
+                    "Nu poți trimite mesaj în această situație (cont, anunț sau animal deja adoptat).",
+                ),
             },
             status=403,
         )
     text = (request.POST.get("message") or "").strip()
     if not text:
-        return JsonResponse({"ok": False, "error": "Mesajul este gol."}, status=400)
+        from home.eu_ui_labels import eu_or_ro
+
+        return JsonResponse(
+            {"ok": False, "error": eu_or_ro(request, "pet_err_msg_empty", "Mesajul este gol.")},
+            status=400,
+        )
     if len(text) > 2000:
         text = text[:2000]
     PetMessage.objects.create(
@@ -11892,17 +11931,34 @@ def pet_population_adoption_submit_view(request, pk: int):
     )
 
     if not population_simple_adoption_active_for_user(request.user):
+        from home.eu_ui_labels import eu_or_ro
+
         return JsonResponse(
-            {"ok": False, "error": "Formularul simplu de adopție nu este activ."},
+            {
+                "ok": False,
+                "error": eu_or_ro(
+                    request,
+                    "pet_err_simple_inactive",
+                    "Formularul simplu de adopție nu este activ.",
+                ),
+            },
             status=403,
         )
 
     pet = get_object_or_404(AnimalListing, pk=pk, is_published=True)
     _sync_animal_adoption_state(pet)
+    from home.eu_ui_labels import eu_or_ro
+
     if pet.adoption_state == AnimalListing.ADOPTION_STATE_ADOPTED:
-        return JsonResponse({"ok": False, "error": "Acest animal este deja adoptat."}, status=400)
+        return JsonResponse(
+            {"ok": False, "error": eu_or_ro(request, "pet_err_already_adopted", "Acest animal este deja adoptat.")},
+            status=400,
+        )
     if pet.owner_id == request.user.id:
-        return JsonResponse({"ok": False, "error": "Nu poți solicita adopția propriului anunț."}, status=400)
+        return JsonResponse(
+            {"ok": False, "error": eu_or_ro(request, "pet_err_own_listing", "Nu poți solicita adopția propriului anunț.")},
+            status=400,
+        )
 
     from home.demo_listings import DEMO_ADOPTION_INACTIVE_MESSAGE, is_demo_animal_listing
     from home.population_onboarding import user_may_adopt_animals
@@ -11912,7 +11968,7 @@ def pet_population_adoption_submit_view(request, pk: int):
 
     if not user_may_adopt_animals(request.user):
         return JsonResponse(
-            {"ok": False, "error": "Tipul de cont nu poate solicita adopții."},
+            {"ok": False, "error": eu_or_ro(request, "pet_err_account_type", "Tipul de cont nu poate solicita adopții.")},
             status=403,
         )
 
@@ -11920,7 +11976,11 @@ def pet_population_adoption_submit_view(request, pk: int):
         return JsonResponse(
             {
                 "ok": False,
-                "error": "Ai trimis deja o cerere pentru acest animal astăzi. Proprietarul te va contacta.",
+                "error": eu_or_ro(
+                    request,
+                    "pet_err_already_sent_today",
+                    "Ai trimis deja o cerere pentru acest animal astăzi. Proprietarul te va contacta.",
+                ),
             },
             status=429,
         )
@@ -11935,7 +11995,14 @@ def pet_population_adoption_submit_view(request, pk: int):
         form=form_data,
     )
     if not ok:
-        return JsonResponse({"ok": False, "error": err or "Eroare la trimitere."}, status=500)
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": err
+                or eu_or_ro(request, "pet_err_send_generic", "Eroare la trimitere."),
+            },
+            status=500,
+        )
     return JsonResponse({"ok": True})
 
 
@@ -11949,10 +12016,18 @@ def pet_adoption_request_view(request, pk: int):
     """
     pet = get_object_or_404(AnimalListing, pk=pk, is_published=True)
     _sync_animal_adoption_state(pet)
+    from home.eu_ui_labels import eu_or_ro
+
     if pet.adoption_state == AnimalListing.ADOPTION_STATE_ADOPTED:
-        return JsonResponse({"ok": False, "error": "Acest animal este deja adoptat."}, status=400)
+        return JsonResponse(
+            {"ok": False, "error": eu_or_ro(request, "pet_err_already_adopted", "Acest animal este deja adoptat.")},
+            status=400,
+        )
     if pet.owner_id == request.user.id:
-        return JsonResponse({"ok": False, "error": "Nu poți solicita adopția propriului anunț."}, status=400)
+        return JsonResponse(
+            {"ok": False, "error": eu_or_ro(request, "pet_err_own_listing", "Nu poți solicita adopția propriului anunț.")},
+            status=400,
+        )
 
     from home.demo_listings import DEMO_ADOPTION_INACTIVE_MESSAGE, is_demo_animal_listing
 
@@ -11973,7 +12048,7 @@ def pet_adoption_request_view(request, pk: int):
 
     if not user_may_adopt_animals(request.user):
         return JsonResponse(
-            {"ok": False, "error": "Tipul de cont nu poate solicita adopții."},
+            {"ok": False, "error": eu_or_ro(request, "pet_err_account_type", "Tipul de cont nu poate solicita adopții.")},
             status=403,
         )
 
@@ -11990,11 +12065,23 @@ def pet_adoption_request_view(request, pk: int):
             request.session[SESSION_ADOPTION_BONUS_AR] = last.pk
             return JsonResponse({"ok": True, "already": "accepted", "adoption_request_id": last.pk})
         if last.status == AdoptionRequest.STATUS_FINALIZED:
-            return JsonResponse({"ok": False, "error": "Adopția pentru acest animal este deja finalizată."}, status=400)
+            return JsonResponse(
+                {
+                    "ok": False,
+                    "error": eu_or_ro(
+                        request,
+                        "pet_err_already_finalized",
+                        "Adopția pentru acest animal este deja finalizată.",
+                    ),
+                },
+                status=400,
+            )
 
-    body = (
+    body = eu_or_ro(
+        request,
+        "pet_sys_adopt_body",
         "Am trimis o cerere de adopție pentru acest animal prin EU-Adopt. "
-        "Datele mele de contact îți vor fi disponibile după ce accepți cererea în MyPet → Mesaje."
+        "Datele mele de contact îți vor fi disponibile după ce accepți cererea în MyPet → Mesaje.",
     )
     has_active_accepted = AdoptionRequest.objects.filter(
         animal=pet,
@@ -12032,7 +12119,9 @@ def pet_adoption_request_view(request, pk: int):
         metadata={"pet_id": pet.pk, "adoption_request_id": ar.pk},
     )
     _send_adoption_request_owner_email(ar)
-    _send_adoption_request_adopter_email(ar)
+    _send_adoption_request_adopter_email(
+        ar, english=bool(getattr(request, "eu_site_active", False))
+    )
     if has_active_accepted:
         _send_adoption_waiting_list_email(ar)
     _sync_animal_adoption_state(pet)

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Alege tipul de cont – EU-ADOPT{% endblock %}
+{% block title %}{% if eu_site_active %}{{ eu_ui.signup_choose_title }}{% else %}Alege tipul de cont – EU-ADOPT{% endif %}{% endblock %}
 {% block body_class %}page-login{% endblock %}
 
 {% block extra_css %}
@@ -400,55 +400,55 @@
 
 {% block main_wrap_after_header %}
 <section class="wrapper" id="main_content">
-	<main class="login-main signup-choose-main" aria-label="Alege tipul de cont EU-ADOPT">
+	<main class="login-main signup-choose-main" aria-label="{% if eu_site_active %}{{ eu_ui.signup_choose_h1 }}{% else %}Alege tipul de cont EU-ADOPT{% endif %}">
 		<div class="signup-choose-page">
-			<h1>Alege tipul contului</h1>
-			<p class="intro">Selectați categoria care vă descrie pentru a continua cu înregistrarea.</p>
+			<h1>{% if eu_site_active %}{{ eu_ui.signup_choose_h1 }}{% else %}Alege tipul contului{% endif %}</h1>
+			<p class="intro">{% if eu_site_active %}{{ eu_ui.signup_choose_intro }}{% else %}Selectați categoria care vă descrie pentru a continua cu înregistrarea.{% endif %}</p>
 			{% if link_expirat %}
 			<div class="signup-choose-alert" role="alert">
-				Linkul de activare a expirat (e valabil {{ activation_validity_label|default:"24 de ore" }}). Poți porni o nouă înregistrare mai jos.
+				{% if eu_site_active %}{{ eu_ui.signup_link_expired }}{% else %}Linkul de activare a expirat (e valabil {{ activation_validity_label|default:"24 de ore" }}). Poți porni o nouă înregistrare mai jos.{% endif %}
 			</div>
 			{% endif %}
 			{% if link_invalid %}
 			<div class="signup-choose-alert" role="alert">
-				Linkul de activare este invalid sau a fost deja folosit. Poți porni o nouă înregistrare mai jos.
+				{% if eu_site_active %}{{ eu_ui.signup_link_invalid }}{% else %}Linkul de activare este invalid sau a fost deja folosit. Poți porni o nouă înregistrare mai jos.{% endif %}
 			</div>
 			{% endif %}
 
 			<div class="signup-cards">
 				<div class="signup-card">
 					<div class="signup-card-icon" aria-hidden="true">👤</div>
-					<h2>Persoană fizică</h2>
-					<p>Cont personal pentru adoptatori sau persoane care doresc să interacționeze cu platforma.</p>
-					<a href="{% url 'signup_pf' %}" class="signup-card-btn">Continuă</a>
+					<h2>{% if eu_site_active %}{{ eu_ui.signup_choose_pf_h }}{% else %}Persoană fizică{% endif %}</h2>
+					<p>{% if eu_site_active %}{{ eu_ui.signup_choose_pf_p }}{% else %}Cont personal pentru adoptatori sau persoane care doresc să interacționeze cu platforma.{% endif %}</p>
+					<a href="{% url 'signup_pf' %}" class="signup-card-btn">{% if eu_site_active %}{{ eu_ui.signup_choose_continue }}{% else %}Continuă{% endif %}</a>
 				</div>
 				<div class="signup-card">
 					<div class="signup-card-icon" aria-hidden="true">🏠</div>
-					<h2>Adăpost / ONG / Firmă</h2>
-					<p>SRL/SA, ONG, asociații, fundații, adăposturi publice sau private.</p>
-					<a href="{% url 'signup_organizatie' %}" class="signup-card-btn">Continuă</a>
+					<h2>{% if eu_site_active %}{{ eu_ui.signup_choose_org_h }}{% else %}Adăpost / ONG / Firmă{% endif %}</h2>
+					<p>{% if eu_site_active %}{{ eu_ui.signup_choose_org_p }}{% else %}SRL/SA, ONG, asociații, fundații, adăposturi publice sau private.{% endif %}</p>
+					<a href="{% url 'signup_organizatie' %}" class="signup-card-btn">{% if eu_site_active %}{{ eu_ui.signup_choose_continue }}{% else %}Continuă{% endif %}</a>
 				</div>
 				<div class="signup-card">
 					<div class="signup-card-icon" aria-hidden="true">🖐️</div>
-					<h2>Cabinet / Magazin / Servicii / Transportator</h2>
-					<p>Cabinete veterinare, toaletare pet, magazine, transportatori de animale și alți parteneri.</p>
-					<a href="{% url 'signup_colaborator' %}" class="signup-card-btn">Continuă</a>
+					<h2>{% if eu_site_active %}{{ eu_ui.signup_choose_col_h }}{% else %}Cabinet / Magazin / Servicii / Transportator{% endif %}</h2>
+					<p>{% if eu_site_active %}{{ eu_ui.signup_choose_col_p }}{% else %}Cabinete veterinare, toaletare pet, magazine, transportatori de animale și alți parteneri.{% endif %}</p>
+					<a href="{% url 'signup_colaborator' %}" class="signup-card-btn">{% if eu_site_active %}{{ eu_ui.signup_choose_continue }}{% else %}Continuă{% endif %}</a>
 				</div>
 			</div>
 
-			<div class="signup-rules-box" aria-label="Regulile site-ului">
-				<h2>Reguli site</h2>
-				<h3 class="signup-rules-main">Regula principală</h3>
-				<p class="signup-rules-main">Pe această platformă NU se vând și NU se cumpără animale.</p>
-				<p class="signup-rules-main">Animalele listate sunt oferite exclusiv pentru adopție.</p>
-				<p class="signup-rules-main">Orice încercare de comercializare sau negociere de preț duce la ștergerea definitivă a contului.</p>
-				<p>Înainte de înregistrare, vă rugăm să citiți regulamentul și termenii și condițiile platformei. Prin crearea unui cont, acceptați aceste reguli.</p>
-				<p class="signup-rules-termeni"><a href="{% url 'termeni' %}">Termeni și condiții</a></p>
+			<div class="signup-rules-box" aria-label="{% if eu_site_active %}{{ eu_ui.signup_choose_rules_h }}{% else %}Regulile site-ului{% endif %}">
+				<h2>{% if eu_site_active %}{{ eu_ui.signup_choose_rules_h }}{% else %}Reguli site{% endif %}</h2>
+				<h3 class="signup-rules-main">{% if eu_site_active %}{{ eu_ui.signup_choose_rules_main_h }}{% else %}Regula principală{% endif %}</h3>
+				<p class="signup-rules-main">{% if eu_site_active %}{{ eu_ui.signup_choose_rules_1 }}{% else %}Pe această platformă NU se vând și NU se cumpără animale.{% endif %}</p>
+				<p class="signup-rules-main">{% if eu_site_active %}{{ eu_ui.signup_choose_rules_2 }}{% else %}Animalele listate sunt oferite exclusiv pentru adopție.{% endif %}</p>
+				<p class="signup-rules-main">{% if eu_site_active %}{{ eu_ui.signup_choose_rules_3 }}{% else %}Orice încercare de comercializare sau negociere de preț duce la ștergerea definitivă a contului.{% endif %}</p>
+				<p>{% if eu_site_active %}{{ eu_ui.signup_choose_rules_read }}{% else %}Înainte de înregistrare, vă rugăm să citiți regulamentul și termenii și condițiile platformei. Prin crearea unui cont, acceptați aceste reguli.{% endif %}</p>
+				<p class="signup-rules-termeni"><a href="{% url 'termeni' %}">{% if eu_site_active %}{{ eu_ui.signup_choose_terms }}{% else %}Termeni și condiții{% endif %}</a></p>
 			</div>
 
 			<div class="signup-back">
-				<a href="{% url 'login' %}">Am deja cont — autentificare</a><br />
-				<a href="{% url 'home' %}">Înapoi la prima pagină</a>
+				<a href="{% url 'login' %}">{% if eu_site_active %}{{ eu_ui.signup_choose_have_account }}{% else %}Am deja cont — autentificare{% endif %}</a><br />
+				<a href="{% url 'home' %}">{% if eu_site_active %}{{ eu_ui.signup_choose_back_home }}{% else %}Înapoi la prima pagină{% endif %}</a>
 			</div>
 		</div>
 	</main>

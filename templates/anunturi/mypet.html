@@ -120,7 +120,7 @@
 					<tr>
 						<th class="mypet-th mypet-th-nr"><span class="mypet-th-v">Nr</span></th>
 						<th class="mypet-th mypet-th-photo"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_photo }}{% else %}Poză{% endif %}</span></th>
-						<th class="mypet-th mypet-th-name"><span class="mypet-th-v">Nume</span></th>
+						<th class="mypet-th mypet-th-name"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_name }}{% else %}Nume{% endif %}</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Sex</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_age }}{% else %}Vârstă{% endif %}</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Talie</span></th>
@@ -128,15 +128,15 @@
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">I love</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_in_progress }}{% else %}În curs{% endif %}</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">Adoptat</span></th>
-						<th class="mypet-th mypet-th-date"><span class="mypet-th-v">Data in</span></th>
-						<th class="mypet-th mypet-th-date"><span class="mypet-th-v">Data out</span></th>
+						<th class="mypet-th mypet-th-date"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_date_in }}{% else %}Data in{% endif %}</span></th>
+						<th class="mypet-th mypet-th-date"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_date_out }}{% else %}Data out{% endif %}</span></th>
 						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="fisa"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_sheet }}{% else %}Fișă %{% endif %}</span></th>
 						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="views"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_views }}{% else %}Vizualizări{% endif %}</span></th>
 						<th class="mypet-th mypet-th-narrow mypet-th-sort" data-sort-key="shares"><span class="mypet-th-v">Distribuiri</span></th>
 						<th class="mypet-th mypet-th-narrow"><span class="mypet-th-v">$</span></th>
 						<th class="mypet-th mypet-th-mypet-adopt" colspan="5"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_adoption }}{% else %}Adopție{% endif %}</span></th>
 						<th class="mypet-th mypet-th-cip-rua"><span class="mypet-th-v">CIP/RUA</span></th>
-						<th class="mypet-th mypet-th-mesaje"><span class="mypet-th-v">Mesaje</span></th>
+						<th class="mypet-th mypet-th-mesaje"><span class="mypet-th-v">{% if eu_site_active %}{{ eu_ui.mypet_messages }}{% else %}Mesaje{% endif %}</span></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -216,14 +216,14 @@
 											data-can-extend="{% if pet.adoption_can_extend %}1{% else %}0{% endif %}"
 											data-can-next="{% if pet.adoption_can_next %}1{% else %}0{% endif %}"
 											{% if pet.adoption_manage_is_expired %}
-											title="Adopție expirată — prelungește 7 zile sau treci la următorul utilizator"
+											title="{% if eu_site_active %}{{ eu_ui.mypet_expired_title }}{% else %}Adopție expirată — prelungește 7 zile sau treci la următorul utilizator{% endif %}"
 											{% else %}
 											title="Prelungește termenul sau treci la următorul din lista de așteptare"
 											{% endif %}
 										>⚙</button>
 									{% elif pet.adoption_pending_req_id %}
-										<button type="button" class="mypet-row-adopt-btn mypet-row-adopt-accept" data-req-id="{{ pet.adoption_pending_req_id }}" title="Acceptă cererea de adopție">✓</button>
-										<button type="button" class="mypet-row-adopt-btn mypet-row-adopt-reject" data-req-id="{{ pet.adoption_pending_req_id }}" title="Respinge cererea">✕</button>
+										<button type="button" class="mypet-row-adopt-btn mypet-row-adopt-accept" data-req-id="{{ pet.adoption_pending_req_id }}" title="{% if eu_site_active %}{{ eu_ui.mypet_accept_title }}{% else %}Acceptă cererea de adopție{% endif %}">✓</button>
+										<button type="button" class="mypet-row-adopt-btn mypet-row-adopt-reject" data-req-id="{{ pet.adoption_pending_req_id }}" title="{% if eu_site_active %}{{ eu_ui.mypet_reject_title }}{% else %}Respinge cererea{% endif %}">✕</button>
 									{% else %}
 										<span class="mypet-row-adopt-empty">—</span>
 									{% endif %}
@@ -1642,6 +1642,17 @@
 	}
 </style>
 <script>
+window.MYPET_UI = {
+	finalizeMsg: "{% if eu_site_active %}{{ eu_ui.mypet_finalize_msg|escapejs }}{% else %}Marchezi adopția ca finalizată? Animalul va rămâne vizibil cu eticheta „Adoptat”, iar adoptatorul apare la „Adoptați”.{% endif %}",
+	finalizeOk: "{% if eu_site_active %}{{ eu_ui.mypet_finalize_ok|escapejs }}{% else %}Da, finalizez{% endif %}",
+	finalizeCancel: "{% if eu_site_active %}{{ eu_ui.mypet_cancel|escapejs }}{% else %}Anulează{% endif %}",
+	finalizeFail: "{% if eu_site_active %}{{ eu_ui.mypet_finalize_fail|escapejs }}{% else %}Nu s-a putut finaliza.{% endif %}",
+	messages: "{% if eu_site_active %}{{ eu_ui.mypet_messages|escapejs }}{% else %}Mesaje{% endif %}",
+	messagesNew: "{% if eu_site_active %}{{ eu_ui.mypet_messages_new|escapejs }}{% else %}Mesaje noi: {n}{% endif %}",
+	messagesNone: "{% if eu_site_active %}{{ eu_ui.mypet_messages_none|escapejs }}{% else %}Nu ai mesaje noi{% endif %}",
+	messagesMine: "{% if eu_site_active %}{{ eu_ui.mypet_messages_mine|escapejs }}{% else %}Mesajele mele{% endif %}",
+	messagesPet: "{% if eu_site_active %}{{ eu_ui.mypet_messages_pet|escapejs }}{% else %}Mesaje - {name}{% endif %}"
+};
 (function() {
 	function measureRight() {
 		var wrap = document.querySelector('.mypet-table-wrap');
@@ -1995,7 +2006,7 @@ document.addEventListener("DOMContentLoaded", function() {
 				}
 			} catch (err) {}
 			if (!url) return;
-			var finMsg = "Marchezi adopția ca finalizată? Animalul va rămâne vizibil cu eticheta „Adoptat”, iar adoptatorul apare la „Adoptați”.";
+			var finMsg = (window.MYPET_UI && MYPET_UI.finalizeMsg) || "Marchezi adopția ca finalizată?";
 			var doFinalize = function() {
 			btn.disabled = true;
 			wrap.classList.add("is-adopt-busy");
@@ -2012,19 +2023,23 @@ document.addEventListener("DOMContentLoaded", function() {
 				.then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
 				.then(function(res) {
 					if (!res.data || !res.data.ok) {
-						throw new Error((res.data && res.data.error) || "Nu s-a putut finaliza.");
+						throw new Error((res.data && res.data.error) || ((window.MYPET_UI && MYPET_UI.finalizeFail) || "Nu s-a putut finaliza."));
 					}
 					window.location.reload();
 				})
 				.catch(function(err) {
-					alert(err.message || "Eroare");
+					alert(err.message || "Error");
 					btn.disabled = false;
 					wrap.classList.remove("is-adopt-busy");
 					wrap.removeAttribute("aria-busy");
 				});
 			};
 			if (window.mypetConfirmPromise) {
-				window.mypetConfirmPromise(finMsg, "Da, finalizez", "Anulează").then(function(ok) {
+				window.mypetConfirmPromise(
+					finMsg,
+					(window.MYPET_UI && MYPET_UI.finalizeOk) || "Da, finalizez",
+					(window.MYPET_UI && MYPET_UI.finalizeCancel) || "Anulează"
+				).then(function(ok) {
 					if (ok) doFinalize();
 				});
 			} else if (window.confirm(finMsg)) {
@@ -2582,7 +2597,9 @@ document.addEventListener("DOMContentLoaded", function() {
 				badge.textContent = String(n);
 				btn.appendChild(badge);
 			}
-			var label = n > 0 ? ("Mesaje noi: " + n) : "Mesaje";
+				var label = n > 0
+					? ((window.MYPET_UI && MYPET_UI.messagesNew) || "Mesaje noi: {n}").replace(/\{n\}/g, String(n))
+					: ((window.MYPET_UI && MYPET_UI.messages) || "Mesaje");
 			btn.setAttribute("aria-label", label);
 			btn.setAttribute("title", label);
 		}
@@ -2615,7 +2632,9 @@ document.addEventListener("DOMContentLoaded", function() {
 		function updateEnvelopeCount(unreadTotal) {
 			try {
 				var total = parseInt(unreadTotal || 0, 10) || 0;
-				var label = total > 0 ? ("Mesaje noi: " + total) : "Nu ai mesaje noi";
+				var label = total > 0
+					? ((window.MYPET_UI && MYPET_UI.messagesNew) || "Mesaje noi: {n}").replace(/\{n\}/g, String(total))
+					: ((window.MYPET_UI && MYPET_UI.messagesNone) || "Nu ai mesaje noi");
 				document.querySelectorAll(".a0-nav-envelope-icon").forEach(function (icon) {
 					icon.classList.toggle("is-hot", total > 0);
 				});
@@ -2677,7 +2696,9 @@ document.addEventListener("DOMContentLoaded", function() {
 					} else if (ab && ab.parentNode) {
 						ab.parentNode.removeChild(ab);
 					}
-					var albl = adopterTot > 0 ? ("Mesaje noi: " + adopterTot) : "Mesaje";
+					var albl = adopterTot > 0
+						? ((window.MYPET_UI && MYPET_UI.messagesNew) || "Mesaje noi: {n}").replace(/\{n\}/g, String(adopterTot))
+						: ((window.MYPET_UI && MYPET_UI.messages) || "Mesaje");
 					aib.setAttribute("aria-label", albl);
 					aib.setAttribute("title", albl);
 				}
@@ -2784,7 +2805,10 @@ document.addEventListener("DOMContentLoaded", function() {
 			state.petId = btn.getAttribute("data-pet-id");
 			state.petName = btn.getAttribute("data-pet-name") || "";
 			state.listUrl = btn.getAttribute("data-list-url") || "";
-			title.textContent = "Mesaje - " + (state.petName || ("Pet #" + state.petId));
+			title.textContent = ((window.MYPET_UI && MYPET_UI.messagesPet) || "Mesaje - {name}").replace(
+				/\{name\}/g,
+				(state.petName || ("Pet #" + state.petId))
+			);
 			modal.hidden = false;
 			modal.style.display = "flex";
 			threadEl.textContent = "";
@@ -2826,12 +2850,15 @@ document.addEventListener("DOMContentLoaded", function() {
 		function openAdopterModal(listUrl, preferredAnimalId) {
 			state.mode = "adopter";
 			state.petId = null;
-			state.petName = "Mesajele mele";
+			state.petName = (window.MYPET_UI && MYPET_UI.messagesMine) || "Mesajele mele";
 			state.listUrl = listUrl || "";
 			var preferAid = preferredAnimalId != null && preferredAnimalId !== ""
 				? String(preferredAnimalId)
 				: "";
-			title.textContent = "Mesaje - " + state.petName;
+			title.textContent = ((window.MYPET_UI && MYPET_UI.messagesPet) || "Mesaje - {name}").replace(
+				/\{name\}/g,
+				state.petName
+			);
 			modal.hidden = false;
 			modal.style.display = "flex";
 			threadEl.textContent = "";

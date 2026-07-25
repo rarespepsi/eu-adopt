@@ -1855,26 +1855,26 @@
 			<div class="pet-adopt-choice-modal__backdrop" id="petPopAdoptFormBackdrop"></div>
 			<div class="pet-adopt-choice-modal__panel pet-pop-adopt-form-panel" role="dialog" aria-modal="true" aria-labelledby="petPopAdoptFormTitle">
 				<h3 class="pet-adopt-choice-modal__title" id="petPopAdoptFormTitle">{% if eu_site_active %}{{ eu_ui.pet_adopt_title }}{% else %}Cerere de adopție{% endif %}</h3>
-				<p class="pet-adopt-choice-modal__text">Completează formularul. Datele tale vor fi trimise proprietarului / adăpostului, care te va contacta direct.</p>
+				<p class="pet-adopt-choice-modal__text">{% if eu_site_active %}{{ eu_ui.pet_adopt_intro }}{% else %}Completează formularul. Datele tale vor fi trimise proprietarului / adăpostului, care te va contacta direct.{% endif %}</p>
 				<form id="petPopAdoptForm" class="pet-pop-adopt-form" novalidate>
 					{% csrf_token %}
 					<div class="pet-pop-adopt-form__grid">
 						<label class="pet-pop-adopt-form__field">
-							<span>Nume *</span>
+							<span>{% if eu_site_active %}{{ eu_ui.pet_adopt_lbl_last }}{% else %}Nume *{% endif %}</span>
 							<input type="text" name="last_name" required autocomplete="family-name" value="{{ pet_adopt_form_prefill.last_name|default:'' }}" />
 						</label>
 						<label class="pet-pop-adopt-form__field">
-							<span>Prenume *</span>
+							<span>{% if eu_site_active %}{{ eu_ui.pet_adopt_lbl_first }}{% else %}Prenume *{% endif %}</span>
 							<input type="text" name="first_name" required autocomplete="given-name" value="{{ pet_adopt_form_prefill.first_name|default:'' }}" />
 						</label>
 						<label class="pet-pop-adopt-form__field pet-pop-adopt-form__field--full">
-							<span>Email *</span>
+							<span>{% if eu_site_active %}{{ eu_ui.pet_adopt_lbl_email }}{% else %}Email *{% endif %}</span>
 							<input type="email" name="email" required autocomplete="email" value="{{ pet_adopt_form_prefill.email|default:'' }}" />
 						</label>
 						<label class="pet-pop-adopt-form__field pet-pop-adopt-form__field--full">
-							<span>Telefon *</span>
+							<span>{% if eu_site_active %}{{ eu_ui.pet_adopt_lbl_phone }}{% else %}Telefon *{% endif %}</span>
 							<span class="pet-pop-adopt-form__phone">
-								<select name="phone_country" aria-label="Prefix telefon">
+								<select name="phone_country" aria-label="{% if eu_site_active %}{{ eu_ui.pet_adopt_lbl_phone_prefix }}{% else %}Prefix telefon{% endif %}">
 									<option value="+40" {% if not pet_adopt_form_prefill.phone_country or pet_adopt_form_prefill.phone_country == '+40' %}selected{% endif %}>RO +40</option>
 									<option value="+39" {% if pet_adopt_form_prefill.phone_country == '+39' %}selected{% endif %}>IT +39</option>
 									<option value="+33" {% if pet_adopt_form_prefill.phone_country == '+33' %}selected{% endif %}>FR +33</option>
@@ -1885,11 +1885,11 @@
 							</span>
 						</label>
 						<label class="pet-pop-adopt-form__field">
-							<span>Județ *</span>
+							<span>{% if eu_site_active %}{{ eu_ui.pet_adopt_lbl_county }}{% else %}Județ *{% endif %}</span>
 							{% include "anunturi/includes/ro_county_select.html" with select_id="petPopAdoptJudet" select_name="judet" current=pet_adopt_form_prefill.judet profile_editable=True %}
 						</label>
 						<label class="pet-pop-adopt-form__field">
-							<span>Oraș *</span>
+							<span>{% if eu_site_active %}{{ eu_ui.pet_adopt_lbl_city }}{% else %}Oraș *{% endif %}</span>
 							{% include "anunturi/includes/ro_city_select.html" with select_id="petPopAdoptOras" select_name="oras" current=pet_adopt_form_prefill.oras profile_editable=True %}
 						</label>
 						<label class="pet-pop-adopt-form__field pet-pop-adopt-form__field--full">
@@ -1898,11 +1898,11 @@
 						</label>
 						<label class="pet-pop-adopt-form__check pet-pop-adopt-form__field--full">
 							<input type="checkbox" name="accept_termeni" required />
-							<span>Accept <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">Termenii și condițiile</a> *</span>
+							<span>{% if eu_site_active %}I accept the <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">Terms and conditions</a> *{% else %}Accept <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">Termenii și condițiile</a> *{% endif %}</span>
 						</label>
 						<label class="pet-pop-adopt-form__check pet-pop-adopt-form__field--full">
 							<input type="checkbox" name="accept_gdpr" required />
-							<span>Accept <a href="{% url 'politica_confidentialitate' %}" target="_blank" rel="noopener">Politica de confidențialitate (GDPR)</a> *</span>
+							<span>{% if eu_site_active %}I accept the <a href="{% url 'politica_confidentialitate' %}" target="_blank" rel="noopener">Privacy policy (GDPR)</a> *{% else %}Accept <a href="{% url 'politica_confidentialitate' %}" target="_blank" rel="noopener">Politica de confidențialitate (GDPR)</a> *{% endif %}</span>
 						</label>
 					</div>
 					<div class="pet-adopt-choice-modal__actions">
@@ -1921,7 +1921,7 @@
 			<div class="pet-adopt-choice-modal__panel" role="dialog" aria-modal="true" aria-labelledby="petAdoptChoiceTitle">
 				{% if adoption_after_transport %}
 				<h3 class="pet-adopt-choice-modal__title" id="petAdoptChoiceTitle">{% if eu_site_active %}{{ eu_ui.pet_adopt_finish }}{% else %}Finalizează cererea de adopție{% endif %}</h3>
-				<p class="pet-adopt-choice-modal__text">Ai completat pasul cu transportul veterinar. Poți trimite acum cererea către organizație.</p>
+				<p class="pet-adopt-choice-modal__text">{% if eu_site_active %}{{ eu_ui.pet_adopt_after_transport }}{% else %}Ai completat pasul cu transportul veterinar. Poți trimite acum cererea către organizație.{% endif %}</p>
 				<div class="pet-adopt-choice-modal__actions">
 					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--secondary" id="petAdoptChoiceCancelAfter">{% if eu_site_active %}{{ eu_ui.pet_adopt_close }}{% else %}Închide{% endif %}</button>
 					<button type="button" class="pet-adopt-choice-modal__btn pet-adopt-choice-modal__btn--primary" id="petAdoptChoiceSubmitAfter">{% if eu_site_active %}{{ eu_ui.pet_adopt_send_full }}{% else %}Trimite cererea de adopție{% endif %}</button>
@@ -1929,19 +1929,19 @@
 				{% else %}
 				{% if not site_proc.adoption_skip_pickup_choice %}
 				<h3 class="pet-adopt-choice-modal__title" id="petAdoptChoiceTitle">{% if eu_site_active %}{{ eu_ui.pet_adopt_how }}{% else %}Cum preiei animalul?{% endif %}</h3>
-				<p class="pet-adopt-choice-modal__text">Alege o opțiune înainte de a trimite cererea de adopție.</p>
+				<p class="pet-adopt-choice-modal__text">{% if eu_site_active %}{{ eu_ui.pet_adopt_choose_hint }}{% else %}Alege o opțiune înainte de a trimite cererea de adopție.{% endif %}</p>
 				<div class="pet-adopt-choice-modal__options">
 					<label class="pet-adopt-choice-modal__opt">
 						<input type="radio" name="pet_adopt_pickup" value="personal" checked />
-						<span>Ridicare personală (mă întâlnesc cu organizația / punctul convenit)</span>
+						<span>{% if eu_site_active %}{{ eu_ui.pet_adopt_pickup_personal }}{% else %}Ridicare personală (mă întâlnesc cu organizația / punctul convenit){% endif %}</span>
 					</label>
 					{% if adoption_transport_option_available %}
 					<label class="pet-adopt-choice-modal__opt">
 						<input type="radio" name="pet_adopt_pickup" value="transport" />
-						<span>Doresc transport veterinar (completezi formularul, apoi revii la cererea de adopție)</span>
+						<span>{% if eu_site_active %}{{ eu_ui.pet_adopt_pickup_transport }}{% else %}Doresc transport veterinar (completezi formularul, apoi revii la cererea de adopție){% endif %}</span>
 					</label>
 					{% else %}
-					<p class="pet-adopt-choice-modal__hint">Pentru opțiunea de transport, completează <strong>județul</strong> în <a href="{% url 'account_edit' %}">contul tău</a>, apoi revino la această fișă.</p>
+					<p class="pet-adopt-choice-modal__hint">{% if eu_site_active %}{{ eu_ui.pet_adopt_transport_need_county }}{% else %}Pentru opțiunea de transport, completează <strong>județul</strong> în <a href="{% url 'account_edit' %}">contul tău</a>, apoi revino la această fișă.{% endif %}</p>
 					{% endif %}
 				</div>
 				<div class="pet-adopt-choice-modal__actions">
@@ -1958,6 +1958,29 @@
 		<script src="{% static 'js/eu-media-modal.js' %}?v=2"></script>
 		<script>
 		(function() {
+			var PET_UI = {
+				shareTitleNamed: "{% if eu_site_active %}{{ eu_ui.pet_share_title_named|escapejs }}{% else %}Fișa lui {name} | EU-Adopt{% endif %}",
+				shareTitle: "{% if eu_site_active %}{{ eu_ui.pet_share_title|escapejs }}{% else %}Fișa animalului | EU-Adopt{% endif %}",
+				shareText: "{% if eu_site_active %}{{ eu_ui.pet_share_text|escapejs }}{% else %}Uite fișa pe EU-Adopt:{% endif %}",
+				linkCopiedMobile: "{% if eu_site_active %}{{ eu_ui.pet_link_copied_mobile|escapejs }}{% else %}Linkul fișei a fost copiat. Deschide aplicația unde vrei să îl trimiți (WhatsApp, Mesaje etc.) și lipește acolo (ține apăsat în câmp → Lipire).{% endif %}",
+				linkCopiedDesk: "{% if eu_site_active %}{{ eu_ui.pet_link_copied_desk|escapejs }}{% else %}Linkul fișei a fost copiat. Poți să îl lipești cu Ctrl+V în mesaj, e-mail sau unde vrei să trimiți fișa.{% endif %}",
+				linkFailMobile: "{% if eu_site_active %}{{ eu_ui.pet_link_fail_mobile|escapejs }}{% else %}Nu am putut copia automat linkul pe acest browser. Folosește codul QR din colț sau meniul browserului (Distribuie / Copiază link), dacă îl vezi.{% endif %}",
+				linkFailDesk: "{% if eu_site_active %}{{ eu_ui.pet_link_fail_desk|escapejs }}{% else %}Nu am putut copia automat linkul. Copiază-l din bara de adrese sau folosește codul QR din colț.{% endif %}",
+				msgEmpty: "{% if eu_site_active %}{{ eu_ui.pet_js_msg_empty|escapejs }}{% else %}Scrie un mesaj înainte de trimitere.{% endif %}",
+				sending: "{% if eu_site_active %}{{ eu_ui.pet_js_sending|escapejs }}{% else %}Se trimite...{% endif %}",
+				sent: "{% if eu_site_active %}{{ eu_ui.pet_js_sent|escapejs }}{% else %}Trimis{% endif %}",
+				msgFail: "{% if eu_site_active %}{{ eu_ui.pet_js_msg_fail|escapejs }}{% else %}Mesajul nu s-a trimis.{% endif %}",
+				msgErr: "{% if eu_site_active %}{{ eu_ui.pet_js_msg_err|escapejs }}{% else %}Eroare la trimitere mesaj.{% endif %}",
+				adoptPending: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_pending|escapejs }}{% else %}Ai deja o cerere în așteptare pentru acest animal. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).{% endif %}",
+				adoptAccepted: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_accepted|escapejs }}{% else %}Cererea ta a fost deja acceptată. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).{% endif %}",
+				adoptQueued: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_queued|escapejs }}{% else %}Cererea a fost înregistrată în lista de așteptare. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).{% endif %}",
+				adoptOk: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_ok|escapejs }}{% else %}Cererea de adopție a fost trimisă. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).{% endif %}",
+				adoptFail: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_fail|escapejs }}{% else %}Nu am putut trimite cererea.{% endif %}",
+				adoptErr: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_err|escapejs }}{% else %}Eroare la trimitere.{% endif %}",
+				popOk: "{% if eu_site_active %}{{ eu_ui.pet_js_pop_ok|escapejs }}{% else %}Cererea ta a fost trimisă. Proprietarul / adăpostul te va contacta direct pe email sau telefon.{% endif %}",
+				copied: "{% if eu_site_active %}{{ eu_ui.pet_copied|escapejs }}{% else %}Copiat!{% endif %}",
+				finalizeConfirm: "{% if eu_site_active %}{{ eu_ui.pet_js_finalize_confirm|escapejs }}{% else %}Sigur marcați adopția pentru {name} ca finalizată? Adoptatorul va fi notificat.{% endif %}"
+			};
 			// Fundal: Transport + voal #141a22 (~78%) pe #main_wrap; casete sticlă echilibrate
 			(function setPetSingleSubtleFundal() {
 				var el = document.getElementById("main_wrap");
@@ -2140,8 +2163,10 @@
 			async function shareOrCopyPetLink() {
 				trackPetEvent("share_click");
 				var name = "{{ pet.nume|default:''|escapejs }}";
-				var shareTitle = (name ? ("Fișa lui " + name) : "Fișa animalului") + " | EU-Adopt";
-				var fullPayload = { title: shareTitle, text: "Uite fișa pe EU-Adopt:", url: pageUrl };
+				var shareTitle = name
+					? PET_UI.shareTitleNamed.replace(/\{name\}/g, name)
+					: PET_UI.shareTitle;
+				var fullPayload = { title: shareTitle, text: PET_UI.shareText, url: pageUrl };
 				var urlOnly = { url: pageUrl };
 				if (navigator.share) {
 					var tryShare = async function(payload) {
@@ -2168,16 +2193,12 @@
 				if (await copyPetLinkToClipboard()) {
 					showPetAppMessage(typeof petLinkCopiedMsg !== "undefined"
 						? petLinkCopiedMsg
-						: (mobile
-						? "Linkul fișei a fost copiat. Deschide aplicația unde vrei să îl trimiți (WhatsApp, Mesaje etc.) și lipește acolo (ține apăsat în câmp → Lipire)."
-						: "Linkul fișei a fost copiat. Poți să îl lipești cu Ctrl+V în mesaj, e-mail sau unde vrei să trimiți fișa."));
+						: (mobile ? PET_UI.linkCopiedMobile : PET_UI.linkCopiedDesk));
 					return;
 				}
 				showPetAppMessage(typeof petLinkCopyFailMsg !== "undefined"
 					? petLinkCopyFailMsg
-					: (mobile
-					? "Nu am putut copia automat linkul pe acest browser. Folosește codul QR din colț sau meniul browserului (Distribuie / Copiază link), dacă îl vezi."
-					: "Nu am putut copia automat linkul. Copiază-l din bara de adrese sau folosește codul QR din colț."));
+					: (mobile ? PET_UI.linkFailMobile : PET_UI.linkFailDesk));
 			}
 			// QR în colț (encodează linkul fișei ca imagine)
 			(function initQrCorner() {
@@ -2206,8 +2227,8 @@
 
 			document.querySelectorAll(".js-finalize-form-pet").forEach(function(form) {
 				form.addEventListener("submit", function(e) {
-					var petName = form.getAttribute("data-pet-name") || "acest animal";
-					if (!confirm("Sigur marcați adopția pentru " + petName + " ca finalizată? Adoptatorul va fi notificat.")) {
+					var petName = form.getAttribute("data-pet-name") || "this animal";
+					if (!confirm(PET_UI.finalizeConfirm.replace(/\{name\}/g, petName))) {
 						e.preventDefault();
 					}
 				});
@@ -2296,7 +2317,7 @@
 					try {
 						await navigator.clipboard.writeText(pageUrl);
 						const old = btn.textContent;
-						btn.textContent = "Copiat!";
+						btn.textContent = PET_UI.copied;
 						setTimeout(function() { btn.textContent = old; }, 1200);
 					} catch (e) {
 						var ta = document.createElement('textarea');
@@ -2307,8 +2328,8 @@
 						ta.select();
 						try {
 							document.execCommand('copy');
-							btn.textContent = 'Copiat!';
-							setTimeout(function() { btn.textContent = btn.getAttribute('data-original') || 'Copiază link'; }, 1200);
+							btn.textContent = PET_UI.copied;
+							setTimeout(function() { btn.textContent = btn.getAttribute('data-original') || old; }, 1200);
 						} finally { document.body.removeChild(ta); }
 					}
 				});
@@ -2347,12 +2368,12 @@
 				async function submitPetMessage() {
 					var text = (msgTa.value || "").trim();
 					if (!text) {
-						showPetAppMessage("Scrie un mesaj înainte de trimitere.");
+						showPetAppMessage(PET_UI.msgEmpty);
 						return;
 					}
 					var old = sendBtn.textContent;
 					sendBtn.disabled = true;
-					sendBtn.textContent = "Se trimite...";
+					sendBtn.textContent = PET_UI.sending;
 					try {
 						var body = new URLSearchParams();
 						body.set("message", text);
@@ -2368,13 +2389,13 @@
 						var data = {};
 						try { data = await resp.json(); } catch (e) {}
 						if (!resp.ok || !data.ok) {
-							throw new Error((data && data.error) || "Mesajul nu s-a trimis.");
+							throw new Error((data && data.error) || PET_UI.msgFail);
 						}
 						msgTa.value = "";
-						sendBtn.textContent = "Trimis";
+						sendBtn.textContent = PET_UI.sent;
 						setTimeout(function() { sendBtn.textContent = old; }, 1200);
 					} catch (err) {
-						showPetAppMessage(err.message || "Eroare la trimitere mesaj.");
+						showPetAppMessage(err.message || PET_UI.msgErr);
 						sendBtn.textContent = old;
 					} finally {
 						sendBtn.disabled = false;
@@ -2432,35 +2453,23 @@
 						var data = {};
 						try { data = await resp.json(); } catch (e) {}
 						if (data.already === "pending") {
-							showPetAppMessage(
-								"Ai deja o cerere în așteptare pentru acest animal. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).",
-								goToServicii
-							);
+							showPetAppMessage(PET_UI.adoptPending, goToServicii);
 							return;
 						}
 						if (data.already === "accepted") {
-							showPetAppMessage(
-								"Cererea ta a fost deja acceptată. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).",
-								goToServicii
-							);
+							showPetAppMessage(PET_UI.adoptAccepted, goToServicii);
 							return;
 						}
 						if (!resp.ok || !data.ok) {
-							throw new Error((data && data.error) || "Nu am putut trimite cererea.");
+							throw new Error((data && data.error) || PET_UI.adoptFail);
 						}
 						if (data.queued) {
-							showPetAppMessage(
-								"Cererea a fost înregistrată în lista de așteptare. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).",
-								goToServicii
-							);
+							showPetAppMessage(PET_UI.adoptQueued, goToServicii);
 							return;
 						}
-						showPetAppMessage(
-							"Cererea de adopție a fost trimisă. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).",
-							goToServicii
-						);
+						showPetAppMessage(PET_UI.adoptOk, goToServicii);
 					} catch (err) {
-						showPetAppMessage(err.message || "Eroare la trimitere.");
+						showPetAppMessage(err.message || PET_UI.adoptErr);
 					} finally {
 						adoptCorner.removeAttribute("aria-busy");
 						if (labelEl) labelEl.textContent = old;
@@ -2501,10 +2510,10 @@
 					if (!popFormUrl || !popAdoptForm) return;
 					if (!popAdoptForm.reportValidity()) return;
 					var submitBtn = document.getElementById("petPopAdoptFormSubmit");
-					var oldSubmit = submitBtn ? submitBtn.textContent : "Trimite cererea";
+					var oldSubmit = submitBtn ? submitBtn.textContent : PET_UI.sending;
 					if (submitBtn) {
 						submitBtn.disabled = true;
-						submitBtn.textContent = "Se trimite...";
+						submitBtn.textContent = PET_UI.sending;
 					}
 					try {
 						var body = new URLSearchParams(new FormData(popAdoptForm));
@@ -2520,14 +2529,12 @@
 						var data = {};
 						try { data = await resp.json(); } catch (eJson) {}
 						if (!resp.ok || !data.ok) {
-							throw new Error((data && data.error) || "Nu am putut trimite cererea.");
+							throw new Error((data && data.error) || PET_UI.adoptFail);
 						}
 						closePopAdoptFormModal();
-						showPetAppMessage(
-							"Cererea ta a fost trimisă. Proprietarul / adăpostul te va contacta direct pe email sau telefon."
-						);
+						showPetAppMessage(PET_UI.popOk);
 					} catch (errPop) {
-						showPetAppMessage(errPop.message || "Eroare la trimitere.");
+						showPetAppMessage(errPop.message || PET_UI.adoptErr);
 					} finally {
 						if (submitBtn) {
 							submitBtn.disabled = false;

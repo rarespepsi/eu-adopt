@@ -1,4 +1,17 @@
-Bună ziua{% if adopter_name %}, {{ adopter_name }}{% endif %}!
+{% if english %}Hello{% if adopter_name %}, {{ adopter_name }}{% endif %}!
+
+We registered your adoption request for {{ pet_label }}.
+
+{% if summary_lines %}Listing summary:
+{% for line in summary_lines %}- {{ line }}
+{% endfor %}{% endif %}
+{% if pet_link %}Listing: {{ pet_link }}
+{% endif %}
+The owner / shelter will be notified.
+
+—
+{{ site_name }}
+{% else %}Bună ziua{% if adopter_name %}, {{ adopter_name }}{% endif %}!
 
 Am înregistrat cererea ta de adopție pentru {{ pet_label }}.
 
@@ -11,3 +24,4 @@ Proprietarul / adăpostul va fi notificat.
 
 —
 {{ site_name }}
+{% endif %}

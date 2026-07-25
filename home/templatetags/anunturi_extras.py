@@ -31,10 +31,15 @@ def pet_thumb_url(image_field, size=400):
     return pet_thumb_url_for(image_field, size)
 
 
-@register.inclusion_tag("anunturi/includes/pet_card_meta_footer.html")
-def pet_card_meta_footer(pet):
-    """Localitate + M/F + vârstă (rânduri sub nume pe card)."""
-    return pet_card_meta_context(pet)
+@register.inclusion_tag("anunturi/includes/pet_card_meta_footer.html", takes_context=True)
+def pet_card_meta_footer(context, pet):
+    """Localitate + M/F + vârstă (rânduri sub nume pe card). EN age pe site EU."""
+    meta = pet_card_meta_context(pet)
+    if context.get("eu_site_active") and meta.get("age_text"):
+        from home.pet_ui_display import pet_field_value_en
+
+        meta["age_text"] = pet_field_value_en(meta["age_text"]) or meta["age_text"]
+    return meta
 
 
 @register.simple_tag

@@ -1566,7 +1566,7 @@ body.page-account .account-right-panel {
 	{# Coloana stângă: casetă cu toate câmpurile de firmă din fișa Colaborator (editabile în UI; salvarea completă va necesita un pas backend separat) #}
 	<aside class="cont-pf-left" aria-label="Date firmă">
 		<div class="cont-pf-edit-box cont-pf-edit-box-empty">
-			<h2>{% if display_role|default:account_profile.role == 'org' %}DATE ONG, SRL, SA, ASOCIATIE{% else %}DATE FIRMĂ{% endif %}</h2>
+			<h2>{% if display_role|default:account_profile.role == 'org' %}{% if eu_site_active %}{{ eu_ui.account_org_data }}{% else %}DATE ONG, SRL, SA, ASOCIATIE{% endif %}{% else %}{% if eu_site_active %}{{ eu_ui.account_firm_data }}{% else %}DATE FIRMĂ{% endif %}{% endif %}</h2>
 			{% if display_role|default:account_profile.role == 'org' %}
 			<p class="edit-intro">Date SRL;SA,PF</p>
 			{% endif %}
@@ -1976,7 +1976,7 @@ body.page-account .account-right-panel {
 					</div>
 				</div>
 				<div class="signup-actions">
-					<button type="button" id="btn-modificare-profil" class="btn-modificare-profil" {% if edit_errors %}style="display:none;"{% endif %}>Modificare profil</button>
+					<button type="button" id="btn-modificare-profil" class="btn-modificare-profil" {% if edit_errors %}style="display:none;"{% endif %}>{% if eu_site_active %}{{ eu_ui.account_edit_profile }}{% else %}Modificare profil{% endif %}</button>
 					<button type="submit" id="btn-save-profil" class="btn-save" {% if not edit_errors %}style="display:none;"{% endif %} {% if not edit_errors %}disabled{% endif %}>{% if eu_site_active %}{{ eu_ui.account_save_profile }}{% else %}Salvează profil{% endif %}</button>
 				</div>
 			</form>

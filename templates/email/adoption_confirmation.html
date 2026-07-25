@@ -1,6 +1,24 @@
 ﻿{% extends "email/base.html" %}
-{% block title %}Cerere adopție – {{ site_name }}{% endblock %}
+{% block title %}{% if english %}Adoption request – {{ site_name }}{% else %}Cerere adopție – {{ site_name }}{% endif %}{% endblock %}
 {% block content %}
+{% if english %}
+<p style="margin:0 0 16px;">Hello{% if adopter_name %}, <strong>{{ adopter_name }}</strong>{% endif %}!</p>
+<p style="margin:0 0 16px;">We registered your adoption request for <strong>{{ pet_label }}</strong>.</p>
+{% if summary_lines %}
+<div style="background:#f5f9fc;border-left:4px solid #1565c0;padding:16px 18px;border-radius:0 8px 8px 0;margin:20px 0;">
+  <p style="margin:0 0 10px;font-weight:600;color:#1565c0;">Listing summary</p>
+  <ul style="margin:0;padding-left:18px;color:#455a64;">
+    {% for line in summary_lines %}<li style="margin:4px 0;">{{ line }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% if pet_link %}
+<p style="margin:20px 0;text-align:center;">
+  <a href="{{ pet_link }}" style="display:inline-block;background:#2e7d32;color:#ffffff;text-decoration:none;font-weight:600;padding:12px 24px;border-radius:8px;">View listing</a>
+</p>
+{% endif %}
+<p style="margin:16px 0 0;font-size:14px;color:#546e7a;">The owner / shelter will be notified. You will receive a reply via the platform or the contact details provided.</p>
+{% else %}
 <p style="margin:0 0 16px;">Bună ziua{% if adopter_name %}, <strong>{{ adopter_name }}</strong>{% endif %}!</p>
 <p style="margin:0 0 16px;">Am înregistrat cererea ta de adopție pentru <strong>{{ pet_label }}</strong>.</p>
 {% if summary_lines %}
@@ -17,4 +35,5 @@
 </p>
 {% endif %}
 <p style="margin:16px 0 0;font-size:14px;color:#546e7a;">Proprietarul / adăpostul va fi notificat. Vei primi un răspuns prin platformă sau la datele de contact indicate.</p>
+{% endif %}
 {% endblock %}

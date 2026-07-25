@@ -192,18 +192,28 @@ def send_account_activation_email(
     )
 
 
-def send_password_reset_email(user, reset_url: str, *, fail_silently: bool = False) -> bool:
+def send_password_reset_email(
+    user, reset_url: str, *, fail_silently: bool = False, english: bool = False
+) -> bool:
+    from home.eu_ui_labels import eu_ui_label
+
+    subj = eu_ui_label("mail_reset_subj") if english else None
     return send_euadopt_email(
         MAIL_PASSWORD_RESET,
         user.email,
-        {"reset_url": reset_url, "username": user.username},
+        {"reset_url": reset_url, "username": user.username, "english": english},
+        subject=subj,
         username=user.username,
         fail_silently=fail_silently,
     )
 
 
-def send_adoption_confirmation_email(ar, *, fail_silently: bool = False) -> bool:
+def send_adoption_confirmation_email(
+    ar, *, fail_silently: bool = False, english: bool = False
+) -> bool:
     from django.urls import reverse
+
+    from home.eu_ui_labels import eu_ui_label
 
     pet = ar.animal
     adopter = ar.adopter
@@ -217,6 +227,11 @@ def send_adoption_confirmation_email(ar, *, fail_silently: bool = False) -> bool
         pet_path = f"/pets/{pet.pk}/"
     pet_link = f"{site_base}{pet_path}" if site_base else pet_path
     summary_lines = adoption_pet_public_email_lines(pet)
+    subject = (
+        eu_ui_label("mail_adopt_confirm_subj", pet=pet_label)
+        if english
+        else f"Cererea ta de adopție pentru {pet_label}"
+    )
     return send_euadopt_email(
         MAIL_ADOPTION_CONFIRMATION,
         adopter.email,
@@ -225,8 +240,9 @@ def send_adoption_confirmation_email(ar, *, fail_silently: bool = False) -> bool
             "pet_link": pet_link,
             "summary_lines": summary_lines,
             "adopter_name": (f"{adopter.first_name} {adopter.last_name}").strip() or adopter.username,
+            "english": english,
         },
-        subject=f"Cererea ta de adopție pentru {pet_label}",
+        subject=subject,
         username=adopter.username,
         fail_silently=fail_silently,
     )

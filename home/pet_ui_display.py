@@ -35,6 +35,9 @@ _COLOR = {
     "tricolor": "Tricolor",
     "mix": "Mixed",
     "mixt": "Mixed",
+    "roscat": "Ginger",
+    "patat": "Spotted",
+    "alta culoare": "Other colour",
 }
 
 

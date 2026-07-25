@@ -410,10 +410,104 @@ _EN: dict[str, str] = {
         "The “I want to adopt” button is inactive during the population phase. "
         "Online adoptions open after the official launch."
     ),
+    "pet_adopt_intro": (
+        "Fill in the form. Your details will be sent to the owner / shelter, who will contact you directly."
+    ),
+    "pet_adopt_lbl_last": "Last name *",
+    "pet_adopt_lbl_first": "First name *",
+    "pet_adopt_lbl_email": "Email *",
+    "pet_adopt_lbl_phone": "Phone *",
+    "pet_adopt_lbl_phone_prefix": "Phone prefix",
+    "pet_adopt_lbl_county": "County *",
+    "pet_adopt_lbl_city": "City *",
+    "pet_adopt_accept_terms": "I accept the Terms and conditions *",
+    "pet_adopt_accept_gdpr": "I accept the Privacy policy (GDPR) *",
+    "pet_adopt_after_transport": (
+        "You completed the veterinary transport step. You can now send the request to the organisation."
+    ),
+    "pet_adopt_choose_hint": "Choose an option before sending the adoption request.",
+    "pet_adopt_pickup_personal": "Personal pickup (I meet the organisation / agreed location)",
+    "pet_adopt_pickup_transport": (
+        "I want veterinary transport (fill the form, then return to the adoption request)"
+    ),
+    "pet_adopt_transport_need_county": (
+        "For the transport option, complete your county in your account, then return to this profile."
+    ),
+    "pet_share_title_named": "{name}'s profile | EU-Adopt",
+    "pet_share_title": "Animal profile | EU-Adopt",
+    "pet_share_text": "Check out this profile on EU-Adopt:",
+    "pet_link_copied_mobile": (
+        "Profile link copied. Open the app where you want to send it (WhatsApp, Messages, etc.) "
+        "and paste (long-press → Paste)."
+    ),
+    "pet_link_copied_desk": (
+        "Profile link copied. Paste with Ctrl+V in a message, email, or wherever you want to share it."
+    ),
+    "pet_link_fail_mobile": (
+        "Could not copy the link automatically. Use the QR code in the corner or your browser’s "
+        "Share / Copy link menu, if available."
+    ),
+    "pet_link_fail_desk": (
+        "Could not copy the link automatically. Copy it from the address bar or use the QR code."
+    ),
+    "pet_js_msg_empty": "Write a message before sending.",
+    "pet_js_sending": "Sending…",
+    "pet_js_sent": "Sent",
+    "pet_js_msg_fail": "Message could not be sent.",
+    "pet_js_msg_err": "Error sending message.",
+    "pet_js_adopt_pending": (
+        "You already have a pending request for this animal. Redirecting to Services for optional "
+        "selection (♥, max. 1 offer / category)."
+    ),
+    "pet_js_adopt_accepted": (
+        "Your request was already accepted. Redirecting to Services for optional selection "
+        "(♥, max. 1 offer / category)."
+    ),
+    "pet_js_adopt_queued": (
+        "Request added to the waiting list. Redirecting to Services for optional selection "
+        "(♥, max. 1 offer / category)."
+    ),
+    "pet_js_adopt_ok": (
+        "Adoption request sent. Redirecting to Services for optional selection "
+        "(♥, max. 1 offer / category)."
+    ),
+    "pet_js_adopt_fail": "Could not send the request.",
+    "pet_js_adopt_err": "Error sending request.",
+    "pet_js_pop_ok": (
+        "Your request was sent. The owner / shelter will contact you directly by email or phone."
+    ),
+    "pet_js_finalize_confirm": (
+        "Mark adoption as finalized for {name}? The adopter will be notified."
+    ),
+    "pet_err_already_adopted": "This animal is already adopted.",
+    "pet_err_own_listing": "You cannot request adoption of your own listing.",
+    "pet_err_account_type": "This account type cannot request adoptions.",
+    "pet_err_already_finalized": "Adoption for this animal is already finalized.",
+    "pet_err_simple_inactive": "The simple adoption form is not active.",
+    "pet_err_already_sent_today": (
+        "You already sent a request for this animal today. The owner will contact you."
+    ),
+    "pet_err_send_generic": "Sending failed.",
+    "pet_err_msg_empty": "Message is empty.",
+    "pet_err_msg_self": "You cannot message yourself.",
+    "pet_err_msg_forbidden": (
+        "You cannot send a message in this situation (account, listing, or animal already adopted)."
+    ),
+    "pet_sys_adopt_body": (
+        "I sent an adoption request for this animal via EU-Adopt. "
+        "My contact details will be available after you accept the request in MyPet → Messages."
+    ),
+    "pet_copied": "Copied!",
+    "sms_strip_msg": "SMS donation: steps and systems — see the Donations page.",
+    "pwa_strip_msg": "EU-Adopt app on MOBILE",
     # MyPet / I Love
     "mypet_title": "MyPet | EU-ADOPT",
     "mypet_my_adoptions": "My adoptions",
     "mypet_messages": "Messages",
+    "mypet_messages_new": "New messages: {n}",
+    "mypet_messages_none": "No new messages",
+    "mypet_messages_mine": "My messages",
+    "mypet_messages_pet": "Messages - {name}",
     "mypet_add": "Add a pet",
     "mypet_search_ph": "Search name or chip/RUA",
     "mypet_search_aria": "Search animals",
@@ -421,6 +515,9 @@ _EN: dict[str, str] = {
     "mypet_cats": "Cats",
     "mypet_other": "Other",
     "mypet_photo": "Photo",
+    "mypet_name": "Name",
+    "mypet_date_in": "Date in",
+    "mypet_date_out": "Date out",
     "mypet_age": "Age",
     "mypet_in_progress": "In progress",
     "mypet_sheet": "Sheet %",
@@ -430,6 +527,18 @@ _EN: dict[str, str] = {
     "mypet_cancel": "Cancel",
     "mypet_archive": "Archive",
     "mypet_reply_ph": "Reply here…",
+    "mypet_accept_title": "Accept adoption request",
+    "mypet_reject_title": "Reject request",
+    "mypet_expired_title": "Adoption expired — extend 7 days or move to next user",
+    "mypet_finalize_msg": (
+        "Mark adoption as finalized? The animal stays visible as “Adopted”, "
+        "and the adopter appears under “Adopted”."
+    ),
+    "mypet_finalize_ok": "Yes, finalize",
+    "mypet_finalize_fail": "Could not finalize.",
+    "account_edit_profile": "Edit profile",
+    "account_firm_data": "COMPANY DETAILS",
+    "account_org_data": "NGO / COMPANY DETAILS",
     # Promo A2 order note
     "promo_title": "A2 promotion order | EU-ADOPT",
     "promo_h1": "A2 promotion order note",
@@ -505,9 +614,92 @@ _EN: dict[str, str] = {
     "login_modal_close": "Close",
     # Auth / misc
     "signup_title": "Create account | EU-ADOPT",
+    "signup_choose_title": "Choose account type – EU-ADOPT",
+    "signup_choose_h1": "Choose account type",
+    "signup_choose_intro": "Select the category that describes you to continue registration.",
+    "signup_choose_pf_h": "Individual",
+    "signup_choose_pf_p": "Personal account for adopters or people who want to use the platform.",
+    "signup_choose_org_h": "Shelter / NGO / Company",
+    "signup_choose_org_p": "Ltd/SA, NGO, associations, foundations, public or private shelters.",
+    "signup_choose_col_h": "Clinic / Shop / Services / Transporter",
+    "signup_choose_col_p": (
+        "Veterinary clinics, pet grooming, shops, animal transporters and other partners."
+    ),
+    "signup_choose_continue": "Continue",
+    "signup_choose_rules_h": "Site rules",
+    "signup_choose_rules_main_h": "Main rule",
+    "signup_choose_rules_1": "On this platform animals are NOT bought or sold.",
+    "signup_choose_rules_2": "Listed animals are offered for adoption only.",
+    "signup_choose_rules_3": (
+        "Any attempt to commercialize or negotiate a price leads to permanent account deletion."
+    ),
+    "signup_choose_rules_read": (
+        "Before registering, please read the platform rules and terms. "
+        "By creating an account, you accept these rules."
+    ),
+    "signup_choose_terms": "Terms and conditions",
+    "signup_choose_have_account": "I already have an account — sign in",
+    "signup_choose_back_home": "Back to home",
+    "signup_link_expired": (
+        "The activation link expired (valid 24 hours). You can start a new registration below."
+    ),
+    "signup_link_invalid": (
+        "The activation link is invalid or already used. You can start a new registration below."
+    ),
+    "signup_pf_title": "Individual registration – EU-ADOPT",
+    "signup_pf_h1": "Individual registration",
+    "signup_pf_intro": "Fill in the basic details to create a personal account.",
+    "signup_pf_id_h": "Identity details",
+    "signup_pf_pass_h": "Password and agreements",
+    "signup_lbl_last": "Last name *",
+    "signup_lbl_first": "First name *",
+    "signup_lbl_email": "Email *",
+    "signup_lbl_phone": "Phone *",
+    "signup_lbl_county": "County *",
+    "signup_lbl_city": "City / locality *",
+    "signup_lbl_pass": "Password *",
+    "signup_lbl_pass2": "Confirm password *",
+    "signup_accept_terms": "I accept the Terms and conditions of use *",
+    "signup_accept_gdpr": "I accept the Privacy policy (GDPR) *",
+    "signup_accept_notify": "Email notifications from EU-Adopt (partner news)",
+    "signup_submit": "Create account",
+    "signup_sms_code": "SMS code (6 digits)",
+    "forgot_title": "Reset password – EU-ADOPT",
+    "forgot_h1": "Reset password",
+    "forgot_intro": (
+        "Enter your email address and we will send a password reset link (valid 1 hour)."
+    ),
+    "forgot_success": (
+        "If an account exists with this email, you will receive a link within a few minutes. "
+        "Check spam too."
+    ),
+    "forgot_submit": "Send reset link",
+    "forgot_back": "← Back to sign in",
+    "reset_title": "New password – EU-ADOPT",
+    "reset_h1": "New password",
+    "reset_intro": "Choose a new password (minimum 8 characters).",
+    "reset_lbl_pass": "New password",
+    "reset_lbl_pass2": "Confirm password",
+    "reset_submit": "Save password",
+    "mail_adopt_confirm_subj": "Your adoption request for {pet}",
+    "mail_reset_subj": "Password reset – EU-Adopt",
     "publi": "Ad",
     "publicitate": "Advertising",
 }
+
+
+def eu_or_ro(request, key: str, ro: str, **fmt) -> str:
+    """EN from pack when request is on EU site; otherwise Romanian `ro`."""
+    if getattr(request, "eu_site_active", False):
+        text = eu_ui_label(key, **fmt)
+        if text and text != key:
+            return text
+    if fmt:
+        try:
+            return ro.format(**fmt)
+        except Exception:
+            return ro
+    return ro
 
 
 def eu_ui_label(key: str, **fmt) -> str:
