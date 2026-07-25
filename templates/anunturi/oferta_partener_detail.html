@@ -61,6 +61,15 @@
 				<p class="oferte-d-note">
 					Pentru această ofertă nu se fac programări în site. Apasă butonul de mai jos: primești pe <strong>email</strong> un <strong>cod alfanumeric comun</strong> cu cabinetul, datele de contact ale partenerului și detalii despre ofertă. Colaboratorul primește aceeași solicitare cu datele tale (nume, email; din cont: telefon și localitate dacă sunt completate). Verifică și folderul <strong>Spam</strong>. Dacă oferta are număr limitat de locuri, după epuizare dispare din listările publice.
 				</p>
+				{% if show_offer_owner_su_link and offer_owner_offers_url %}
+				<p class="oferte-d-su-owner-wrap">
+					<a
+						class="oferte-d-su-owner"
+						href="{{ offer_owner_offers_url }}"
+						title="Ofertele acestui user (doar superuser)"
+					>@{{ offer_owner_username }}</a>
+				</p>
+				{% endif %}
 				{% if can_request_public_collab_offer %}
 				<form class="oferte-d-form" method="post" action="{% url 'public_offer_request' offer.pk %}">
 					{% csrf_token %}
@@ -290,6 +299,33 @@
 	}
 	.oferte-d-cta:hover {
 		background: #1b5e20;
+	}
+	.oferte-d-su-owner-wrap {
+		margin: 0 0 0.55rem;
+	}
+	.oferte-d-su-owner {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: 100%;
+		min-height: 2.45rem;
+		padding: 0.45rem 0.65rem;
+		border-radius: 10px;
+		border: 1px solid rgba(255, 255, 255, 0.28);
+		background: rgba(21, 101, 192, 0.92);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+		color: #fff;
+		text-decoration: none;
+		text-align: center;
+		font-size: 0.88rem;
+		font-weight: 800;
+		line-height: 1.2;
+		word-break: break-word;
+	}
+	.oferte-d-su-owner:hover {
+		background: rgba(13, 71, 161, 0.96);
+		color: #fff;
 	}
 </style>
 {% endblock %}

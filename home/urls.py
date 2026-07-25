@@ -161,6 +161,11 @@ urlpatterns = [
         views.staff_owner_animals_view,
         name='staff_owner_animals',
     ),
+    path(
+        'staff/owner/<str:username>/oferte/',
+        views.staff_collaborator_offers_view,
+        name='staff_collaborator_offers',
+    ),
     path('pets/', views.home_view, name='pets_all'),
     path('pets/p2-more/', views.pets_p2_more_view, name='pets_p2_more'),
     path('pets/<int:pk>/', shelter_views.dog_profile_pk_redirect, name='pets_single'),

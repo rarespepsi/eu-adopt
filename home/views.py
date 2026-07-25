@@ -5279,6 +5279,42 @@ def staff_owner_animals_view(request, username: str):
     )
 
 
+@login_required
+def staff_collaborator_offers_view(request, username: str):
+    """Superuser only: listă oferte/produse ale unui colaborator (din caseta pe detaliu ofertă)."""
+    if not request.user.is_superuser:
+        raise Http404()
+    UserModel = get_user_model()
+    collab = get_object_or_404(UserModel, username__iexact=(username or "").strip())
+    offers = list(
+        CollaboratorServiceOffer.objects.filter(collaborator=collab)
+        .order_by("-is_active", "-created_at")[:300]
+    )
+    rows = []
+    for o in offers:
+        public_ok = bool(o.is_active and _collab_offer_is_valid_today(o))
+        rows.append(
+            {
+                "offer": o,
+                "title": o.title or f"#{o.pk}",
+                "partner_kind": (o.partner_kind or "").strip(),
+                "is_active": bool(o.is_active),
+                "public_ok": public_ok,
+                "url": reverse("public_offer_detail", args=[o.pk]) if public_ok else "",
+            }
+        )
+    return render(
+        request,
+        "anunturi/staff_collaborator_offers.html",
+        {
+            "collab_user": collab,
+            "collab_username": collab.username,
+            "offer_rows": rows,
+            "offer_count": len(rows),
+        },
+    )
+
+
 def dog_profile_view(request, pk):
     """Compat /pets/<pk>/ → redirect la URL frumos (slug)."""
     from home.shelter_views import dog_profile_pk_redirect
@@ -15561,6 +15597,10 @@ def public_offer_detail_view(request, pk: int):
         pk=pk,
     )
     _attach_public_offer_stock(offer)
+    collab = offer.collaborator
+    show_su = bool(
+        request.user.is_authenticated and request.user.is_superuser and collab and collab.username
+    )
     return render(
         request,
         "anunturi/oferta_partener_detail.html",
@@ -15568,6 +15608,13 @@ def public_offer_detail_view(request, pk: int):
             "offer": offer,
             "can_request_public_collab_offer": _user_can_request_public_collab_offer(
                 request.user
+            ),
+            "show_offer_owner_su_link": show_su,
+            "offer_owner_username": (collab.username if collab else "") or "",
+            "offer_owner_offers_url": (
+                reverse("staff_collaborator_offers", kwargs={"username": collab.username})
+                if show_su
+                else ""
             ),
         },
     )

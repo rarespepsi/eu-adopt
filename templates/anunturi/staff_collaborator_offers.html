@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Oferte · {{ collab_username }} · staff{% endblock %}
+{% block body_class %}page-staff-collab-offers{% endblock %}
+
+{% block extra_css %}
+<style>
+	body.page-staff-collab-offers .layout { grid-template-columns: 1fr; }
+	body.page-staff-collab-offers .sidebar-left,
+	body.page-staff-collab-offers .sidebar-right { display: none; }
+	.su-collab-wrap {
+		max-width: 42rem;
+		margin: 1rem auto;
+		padding: 0 0.85rem 2rem;
+		box-sizing: border-box;
+	}
+	.su-collab-wrap h1 {
+		margin: 0 0 0.35rem;
+		font-size: 1.15rem;
+		font-weight: 800;
+		color: #0d47a1;
+	}
+	.su-collab-meta {
+		margin: 0 0 0.85rem;
+		font-size: 0.85rem;
+		color: #374151;
+	}
+	.su-collab-back {
+		display: inline-block;
+		margin-bottom: 0.75rem;
+		font-size: 0.82rem;
+		font-weight: 700;
+		color: #0d47a1;
+		text-decoration: none;
+	}
+	.su-collab-back:hover { text-decoration: underline; }
+	.su-collab-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+	}
+	.su-collab-item {
+		display: block;
+		padding: 0.55rem 0.7rem;
+		border-radius: 10px;
+		border: 1px solid rgba(13, 71, 161, 0.28);
+		background: rgba(227, 242, 253, 0.65);
+		text-decoration: none;
+		color: #111827;
+		font-size: 0.88rem;
+		font-weight: 700;
+	}
+	.su-collab-item:hover { background: rgba(187, 222, 251, 0.85); }
+	.su-collab-item--off {
+		opacity: 0.72;
+		cursor: default;
+		background: rgba(243, 244, 246, 0.9);
+		border-color: rgba(0, 0, 0, 0.12);
+	}
+	.su-collab-item small {
+		display: block;
+		margin-top: 0.2rem;
+		font-size: 0.72rem;
+		font-weight: 600;
+		color: #4b5563;
+	}
+	.su-collab-empty {
+		padding: 0.85rem;
+		border-radius: 10px;
+		border: 1px dashed rgba(0, 0, 0, 0.2);
+		font-size: 0.88rem;
+		color: #4b5563;
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="su-collab-wrap">
+	<a class="su-collab-back" href="javascript:history.back()">← Înapoi</a>
+	<h1>Oferte · @{{ collab_username }}</h1>
+	<p class="su-collab-meta">{{ offer_count }} oferte (superuser)</p>
+	{% if offer_rows %}
+	<ul class="su-collab-list">
+		{% for row in offer_rows %}
+		<li>
+			{% if row.url %}
+			<a class="su-collab-item" href="{{ row.url }}">
+				{{ row.title }}
+				<small>
+					{% if row.partner_kind %}{{ row.partner_kind }} · {% endif %}
+					{% if row.is_active %}activă{% else %}inactivă{% endif %}
+				</small>
+			</a>
+			{% else %}
+			<span class="su-collab-item su-collab-item--off">
+				{{ row.title }}
+				<small>
+					{% if row.partner_kind %}{{ row.partner_kind }} · {% endif %}
+					{% if row.is_active %}în afara valabilității{% else %}inactivă{% endif %}
+					· fără link public
+				</small>
+			</span>
+			{% endif %}
+		</li>
+		{% endfor %}
+	</ul>
+	{% else %}
+	<p class="su-collab-empty">Acest user nu are oferte în listă.</p>
+	{% endif %}
+</div>
+{% endblock %}
