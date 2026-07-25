@@ -41,17 +41,21 @@ class PrelaunchEnabledTests(TestCase):
         self.user.is_active = True
         self.user.save()
 
-    def test_anonymous_home_redirects_login(self):
+    def test_anonymous_home_pt_servicii_view_only(self):
+        """HOME / PT / Servicii: vizualizare anonimă; acțiunile rămân pe rute cu login."""
         c = Client()
-        r = c.get(reverse("home"))
-        self.assertEqual(r.status_code, 302)
-        self.assertIn("/login/", r.url)
-
-    def test_anonymous_pets_redirects_login(self):
-        c = Client()
-        r = c.get(reverse("pets_all"))
-        self.assertEqual(r.status_code, 302)
-        self.assertIn("/login/", r.url)
+        self.assertEqual(c.get(reverse("home")).status_code, 200)
+        self.assertEqual(c.get(reverse("pets_all")).status_code, 200)
+        self.assertEqual(c.get(reverse("servicii")).status_code, 200)
+        # Acțiune pe animal: nu e path public → login
+        r_msg = c.get("/pets/1/message/")
+        self.assertEqual(r_msg.status_code, 302)
+        self.assertIn("/login/", r_msg.url or "")
+        # Shop / Transport rămân blocate
+        for name in ("shop", "transport"):
+            r = c.get(reverse(name))
+            self.assertEqual(r.status_code, 302, msg=name)
+            self.assertIn("/login/", r.url or "", msg=name)
 
     def test_anonymous_pet_ficha_accessible(self):
         listing = AnimalListing.objects.create(
@@ -61,16 +65,17 @@ class PrelaunchEnabledTests(TestCase):
             is_published=True,
         )
         c = Client()
-        r = c.get(reverse("pets_single", args=[listing.pk]))
+        r = c.get(reverse("pets_single", args=[listing.pk]), follow=True)
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "Rex")
         self.assertContains(r, "VREAU SĂ ADOPT")
 
-    def test_anonymous_pets_p2_more_still_blocked(self):
+    def test_anonymous_pets_p2_more_allowed_for_view(self):
         c = Client()
         r = c.get("/pets/p2-more/")
-        self.assertEqual(r.status_code, 302)
-        self.assertIn("/login/", r.url)
+        self.assertNotEqual(r.status_code, 302)
+        if hasattr(r, "url") and r.url:
+            self.assertNotIn("/login/", r.url)
 
     def test_anonymous_signup_choose_type_allowed(self):
         c = Client()
@@ -162,6 +167,9 @@ class PrelaunchEnabledTests(TestCase):
         r = c.get(reverse("logout"))
         self.assertEqual(r.status_code, 302)
         self.assertIn("/login/", r.url)
-        r2 = c.get(reverse("home"))
-        self.assertEqual(r2.status_code, 302)
-        self.assertIn("/login/", r2.url)
+        # HOME e public (vizualizare); rutele blocate încă cer login
+        r_home = c.get(reverse("home"))
+        self.assertEqual(r_home.status_code, 200)
+        r_shop = c.get(reverse("shop"))
+        self.assertEqual(r_shop.status_code, 302)
+        self.assertIn("/login/", r_shop.url)

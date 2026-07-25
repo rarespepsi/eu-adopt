@@ -1,7 +1,8 @@
 """
 Căi accesibile fără autentificare când PRELAUNCH_MODE este activ.
 
-Variantă strictă: fără înregistrare publică (/signup/ în afară de activare cont).
+Vizitator anonim pe .ro (vizualizare): HOME, PT, Servicii + fișe animal.
+Acțiunile (adopt, mesaj, etc.) rămân pe rute care cer login.
 """
 from __future__ import annotations
 
@@ -9,12 +10,15 @@ import re
 
 from django.conf import settings
 
-# Fișă animal publicată — vizualizare anonimă (link Distribuie / QR), fără listă PT.
+# Fișă animal publicată — vizualizare anonimă (link Distribuie / QR).
 _PRELAUNCH_PET_FICHA_RE = re.compile(r"^/pets/\d+/?$")
 # URL frumos animal: /caini|pisici|altele/<slug>/
 _PRELAUNCH_PET_SLUG_RE = re.compile(r"^/(caini|pisici|altele)/[a-z0-9\-]+/?$", re.I)
+# Thumb-uri carduri PT (citire media).
+_PRELAUNCH_PET_THUMB_RE = re.compile(r"^/img/pet-thumb/\d+/", re.I)
 
 # Prefixe URL (path trebuie să înceapă cu una dintre aceste valori).
+# NU adăuga "/" aici — ar deschide tot site-ul.
 PRELAUNCH_ANONYMOUS_PREFIXES: tuple[str, ...] = (
     "/login/",
     "/pub/go/",
@@ -41,9 +45,17 @@ PRELAUNCH_ANONYMOUS_PREFIXES: tuple[str, ...] = (
     "/admin-analysis/add-user/invite-inbound-webhook/",
 )
 
+# HOME / PT listă / Servicii — doar aceste path-uri exacte (nu și /pets/<id>/adopt/…).
 PRELAUNCH_ANONYMOUS_EXACT: frozenset[str] = frozenset(
     {
         "/favicon.ico",
+        "/",
+        "/pets",
+        "/pets/",
+        "/pets/p2-more",
+        "/pets/p2-more/",
+        "/servicii",
+        "/servicii/",
     }
 )
 
@@ -62,6 +74,8 @@ def is_prelaunch_public_path(path: str) -> bool:
     if _PRELAUNCH_PET_FICHA_RE.match(p):
         return True
     if _PRELAUNCH_PET_SLUG_RE.match(p):
+        return True
+    if _PRELAUNCH_PET_THUMB_RE.match(p):
         return True
     return p.startswith(PRELAUNCH_ANONYMOUS_PREFIXES)
 

@@ -5,8 +5,8 @@
 		<h2 id="login-required-modal-title" class="login-required-modal-title">{% if eu_site_active %}{{ eu_ui.login_modal_title }}{% else %}Continuă adopția{% endif %}</h2>
 		<p class="login-required-modal-message">{% if eu_site_active %}{{ eu_ui.login_modal_body }}{% else %}Pentru a continua, creează un cont gratuit (durează 30 secunde).{% endif %}</p>
 		<div class="login-required-modal-actions">
-			<a href="{% url 'home' %}?next={{ request.get_full_path|urlencode }}" class="login-required-btn login-required-btn-login">{% if eu_site_active %}{{ eu_ui.login_modal_login }}{% else %}Login{% endif %}</a>
-			<a href="{% url 'home' %}?next={{ request.get_full_path|urlencode }}" class="login-required-btn login-required-btn-register">{% if eu_site_active %}{{ eu_ui.login_modal_register }}{% else %}Creează cont{% endif %}</a>
+			<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" class="login-required-btn login-required-btn-login">{% if eu_site_active %}{{ eu_ui.login_modal_login }}{% else %}Login{% endif %}</a>
+			<a href="{% url 'signup_choose_type' %}?next={{ request.get_full_path|urlencode }}" class="login-required-btn login-required-btn-register">{% if eu_site_active %}{{ eu_ui.login_modal_register }}{% else %}Creează cont{% endif %}</a>
 		</div>
 		<button type="button" class="login-required-close" aria-label="{% if eu_site_active %}{{ eu_ui.login_modal_close }}{% else %}Închide{% endif %}" title="{% if eu_site_active %}{{ eu_ui.login_modal_close }}{% else %}Închide{% endif %}">&times;</button>
 	</div>
