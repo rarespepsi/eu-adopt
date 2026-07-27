@@ -113,8 +113,11 @@ class EuSiteMiddlewareTests(TestCase):
         r = c.get("/contact/")
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "a0-eu-lang-select")
+        self.assertContains(r, "a0-eu-lang-bar")
+        self.assertContains(r, 'id="a0_eu_lang_select_bar"')
         self.assertContains(r, 'value="en" selected')
         self.assertNotContains(r, "a0-eu-lang-item--forced")
+        self.assertNotContains(r, "a0-eu-lang-forced-label")
 
     @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
     def test_language_switcher_on_com_de_manual(self):

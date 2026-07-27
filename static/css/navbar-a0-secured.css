@@ -1348,7 +1348,7 @@ body.page-animale #A0 {
 	}
 }
 
-/* .com hub: limba forțată EN — fără select, doar badge */
+/* .com hub: limba forțată EN — badge vechi (păstrat doar dacă reapare eu_force_english) */
 #A0.a0-eu-site #menu-main-menu > li.a0-eu-lang-item--forced {
 	gap: 0.28rem;
 	padding-inline: 0.15rem;
@@ -1359,4 +1359,41 @@ body.page-animale #A0 {
 	letter-spacing: 0.04em;
 	color: #f8fafc;
 	line-height: 1;
+}
+
+/* Hub .com: selector vizibil lângă căutare (desktop) */
+#A0.a0-eu-site .a0-eu-lang-bar {
+	display: inline-flex;
+	align-items: center;
+	flex-shrink: 0;
+	margin-right: 0.35rem;
+}
+#A0.a0-eu-site .a0-eu-lang-form--bar .a0-eu-lang-select {
+	max-width: 6.5rem;
+	min-width: 4.75rem;
+}
+#A0.a0-eu-site .a0-eu-lang-shortcut {
+	display: none;
+	align-items: center;
+	flex-shrink: 0;
+	margin-right: 0.2rem;
+}
+#A0.a0-eu-site .a0-eu-lang-form--mobile-shortcut .a0-eu-lang-select {
+	max-width: 5.5rem;
+	min-width: 4.25rem;
+	font-size: 0.62rem;
+	padding: 0.08rem 0.15rem;
+}
+@media (min-width: 70.001em) {
+	#A0.a0-eu-site #menu-main-menu > li.a0-eu-lang-item--menu {
+		display: none !important;
+	}
+}
+@media (max-width: 70em) {
+	#A0.a0-eu-site .a0-eu-lang-bar {
+		display: none !important;
+	}
+	#A0.a0-eu-site .a0-eu-lang-shortcut {
+		display: inline-flex !important;
+	}
 }
