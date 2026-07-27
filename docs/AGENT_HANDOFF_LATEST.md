@@ -17,11 +17,11 @@
 
 ## Git
 - Branch: main
-- Commit: (vezi git log -1 după push)
-- Push: da (cerut)
+- Commit: `de871c4` feat(eu): multi-language UI packs for .com hub and country TLDs
+- Push: da
 
 ## Deploy Hetzner
-- da · `deploy_hetzner_from_pc.ps1`
+- da · `deploy_hetzner_from_pc.ps1` · live `de871c4` · backup ZIP `good_20260727_150945_de871c4.zip`
 
 ## Pentru agent laptop
 - git log -3 --oneline
