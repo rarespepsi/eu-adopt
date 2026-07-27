@@ -23,6 +23,23 @@ def demo_animal_owner_usernames() -> frozenset[str]:
     return frozenset(parts)
 
 
+def demo_owner_keywords() -> tuple[str, ...]:
+    """
+    Fallback robust pentru conturi demo create intern.
+    Dacă owner-ul conține aceste fragmente, anunțul e tratat ca DEMO.
+    """
+    raw = getattr(
+        settings,
+        "EUADOPT_DEMO_ANIMAL_OWNER_KEYWORDS",
+        ("demo", "[seed]", "seed_"),
+    )
+    if isinstance(raw, str):
+        parts = [p.strip().lower() for p in raw.split(",") if p.strip()]
+    else:
+        parts = [str(p).strip().lower() for p in raw if str(p).strip()]
+    return tuple(parts)
+
+
 def is_demo_animal_listing(listing: AnimalListing | None) -> bool:
     if not listing:
         return False
@@ -43,7 +60,13 @@ def is_demo_animal_listing(listing: AnimalListing | None) -> bool:
         .values_list("username", flat=True)
         .first()
     )
-    return bool(username and username.strip().lower() in owners)
+    uname = (username or "").strip().lower()
+    if not uname:
+        return False
+    if uname in owners:
+        return True
+    keywords = demo_owner_keywords()
+    return any(k and k in uname for k in keywords)
 
 
 DEMO_ADOPTION_INACTIVE_MESSAGE = (

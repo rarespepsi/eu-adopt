@@ -5214,11 +5214,11 @@ def render_dog_profile(request, listing: AnimalListing):
         and listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
         and not population_ui_restricted_for_user(request.user)
     )
-    # Buton adopție: DEMO (inactiv) pe anunțuri demonstrative; altfel VREAU SĂ ADOPT (fără colaboratori).
+    # Buton adopție: ascuns complet pentru anunțuri demonstrative (DEMO).
     not_owner = not request.user.is_authenticated or request.user.pk != listing.owner_id
     not_adopted = listing.adoption_state != AnimalListing.ADOPTION_STATE_ADOPTED
     if pet_adopt_demo_listing:
-        show_pet_adopt_corner = bool(not_adopted and not_owner)
+        show_pet_adopt_corner = False
     else:
         show_pet_adopt_corner = bool(
             not_adopted
@@ -12083,10 +12083,13 @@ def pet_adoption_request_view(request, pk: int):
         "Am trimis o cerere de adopție pentru acest animal prin EU-Adopt. "
         "Datele mele de contact îți vor fi disponibile după ce accepți cererea în MyPet → Mesaje.",
     )
-    has_active_accepted = AdoptionRequest.objects.filter(
-        animal=pet,
-        status=AdoptionRequest.STATUS_ACCEPTED,
-    ).filter(Q(accepted_expires_at__isnull=True) | Q(accepted_expires_at__gte=timezone.now())).exists()
+    is_eu_site = bool(getattr(request, "eu_site_active", False))
+    has_active_accepted = False
+    if not is_eu_site:
+        has_active_accepted = AdoptionRequest.objects.filter(
+            animal=pet,
+            status=AdoptionRequest.STATUS_ACCEPTED,
+        ).filter(Q(accepted_expires_at__isnull=True) | Q(accepted_expires_at__gte=timezone.now())).exists()
 
     with transaction.atomic():
         ar = AdoptionRequest.objects.create(
@@ -12125,7 +12128,8 @@ def pet_adoption_request_view(request, pk: int):
     if has_active_accepted:
         _send_adoption_waiting_list_email(ar)
     _sync_animal_adoption_state(pet)
-    request.session[SESSION_ADOPTION_BONUS_AR] = ar.pk
+    if not is_eu_site:
+        request.session[SESSION_ADOPTION_BONUS_AR] = ar.pk
     return JsonResponse(
         {"ok": True, "queued": bool(has_active_accepted), "adoption_request_id": ar.pk},
     )

@@ -455,22 +455,10 @@ _EN: dict[str, str] = {
     "pet_js_sent": "Sent",
     "pet_js_msg_fail": "Message could not be sent.",
     "pet_js_msg_err": "Error sending message.",
-    "pet_js_adopt_pending": (
-        "You already have a pending request for this animal. Redirecting to Services for optional "
-        "selection (♥, max. 1 offer / category)."
-    ),
-    "pet_js_adopt_accepted": (
-        "Your request was already accepted. Redirecting to Services for optional selection "
-        "(♥, max. 1 offer / category)."
-    ),
-    "pet_js_adopt_queued": (
-        "Request added to the waiting list. Redirecting to Services for optional selection "
-        "(♥, max. 1 offer / category)."
-    ),
-    "pet_js_adopt_ok": (
-        "Adoption request sent. Redirecting to Services for optional selection "
-        "(♥, max. 1 offer / category)."
-    ),
+    "pet_js_adopt_pending": "You already have a pending request for this animal.",
+    "pet_js_adopt_accepted": "Your request for this animal was already accepted.",
+    "pet_js_adopt_queued": "Request added to the waiting list.",
+    "pet_js_adopt_ok": "Adoption request sent.",
     "pet_js_adopt_fail": "Could not send the request.",
     "pet_js_adopt_err": "Error sending request.",
     "pet_js_pop_ok": (

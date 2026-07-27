@@ -1809,7 +1809,6 @@
 														data-transport-url="{% url 'transport' %}?from_adoption=1&pet={{ pet.pk }}"
 														{% endif %}
 														{% endif %}
-														data-servicii-url="{% url 'servicii' %}"
 														data-login-url="{% url 'login' %}"
 														data-login-next="{{ request.get_full_path|urlencode }}"
 														{% if pet_adopt_demo_listing %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_demo_message|escape }}" aria-disabled="true"{% elif pet_adopt_inactive_populare %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_inactive_message|escape }}" aria-disabled="true"{% endif %}
@@ -1971,10 +1970,10 @@
 				sent: "{% if eu_site_active %}{{ eu_ui.pet_js_sent|escapejs }}{% else %}Trimis{% endif %}",
 				msgFail: "{% if eu_site_active %}{{ eu_ui.pet_js_msg_fail|escapejs }}{% else %}Mesajul nu s-a trimis.{% endif %}",
 				msgErr: "{% if eu_site_active %}{{ eu_ui.pet_js_msg_err|escapejs }}{% else %}Eroare la trimitere mesaj.{% endif %}",
-				adoptPending: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_pending|escapejs }}{% else %}Ai deja o cerere în așteptare pentru acest animal. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).{% endif %}",
-				adoptAccepted: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_accepted|escapejs }}{% else %}Cererea ta a fost deja acceptată. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).{% endif %}",
-				adoptQueued: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_queued|escapejs }}{% else %}Cererea a fost înregistrată în lista de așteptare. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).{% endif %}",
-				adoptOk: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_ok|escapejs }}{% else %}Cererea de adopție a fost trimisă. Te redirecționăm către Servicii pentru selecția opțională (♥, max. 1 ofertă / categorie).{% endif %}",
+				adoptPending: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_pending|escapejs }}{% else %}Ai deja o cerere în așteptare pentru acest animal.{% endif %}",
+				adoptAccepted: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_accepted|escapejs }}{% else %}Cererea ta pentru acest animal a fost deja acceptată.{% endif %}",
+				adoptQueued: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_queued|escapejs }}{% else %}Cererea a fost înregistrată în lista de așteptare.{% endif %}",
+				adoptOk: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_ok|escapejs }}{% else %}Cererea de adopție a fost trimisă.{% endif %}",
 				adoptFail: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_fail|escapejs }}{% else %}Nu am putut trimite cererea.{% endif %}",
 				adoptErr: "{% if eu_site_active %}{{ eu_ui.pet_js_adopt_err|escapejs }}{% else %}Eroare la trimitere.{% endif %}",
 				popOk: "{% if eu_site_active %}{{ eu_ui.pet_js_pop_ok|escapejs }}{% else %}Cererea ta a fost trimisă. Proprietarul / adăpostul te va contacta direct pe email sau telefon.{% endif %}",
@@ -2419,7 +2418,6 @@
 				var popFormUrl = adoptCorner.getAttribute("data-population-form-url") || "";
 				var simplePopulare = adoptCorner.getAttribute("data-simple-populare") === "1";
 				var transportUrl = adoptCorner.getAttribute("data-transport-url") || "";
-				var serviciiUrl = adoptCorner.getAttribute("data-servicii-url") || "";
 				var loginBase = adoptCorner.getAttribute("data-login-url") || "";
 				var loginNextEnc = adoptCorner.getAttribute("data-login-next") || "";
 				var adoptInactive = adoptCorner.getAttribute("data-adopt-inactive") === "1";
@@ -2429,10 +2427,6 @@
 					showPetAppMessage(
 						adoptInactiveMsg || "Butonul de adopție este inactiv în perioada de populare."
 					);
-				}
-				function goToServicii() {
-					if (!serviciiUrl) return;
-					window.location.href = serviciiUrl;
 				}
 				async function submitAdoptRequest() {
 					if (!adoptUrl) return;
@@ -2453,21 +2447,21 @@
 						var data = {};
 						try { data = await resp.json(); } catch (e) {}
 						if (data.already === "pending") {
-							showPetAppMessage(PET_UI.adoptPending, goToServicii);
+							showPetAppMessage(PET_UI.adoptPending);
 							return;
 						}
 						if (data.already === "accepted") {
-							showPetAppMessage(PET_UI.adoptAccepted, goToServicii);
+							showPetAppMessage(PET_UI.adoptAccepted);
 							return;
 						}
 						if (!resp.ok || !data.ok) {
 							throw new Error((data && data.error) || PET_UI.adoptFail);
 						}
 						if (data.queued) {
-							showPetAppMessage(PET_UI.adoptQueued, goToServicii);
+							showPetAppMessage(PET_UI.adoptQueued);
 							return;
 						}
-						showPetAppMessage(PET_UI.adoptOk, goToServicii);
+						showPetAppMessage(PET_UI.adoptOk);
 					} catch (err) {
 						showPetAppMessage(err.message || PET_UI.adoptErr);
 					} finally {

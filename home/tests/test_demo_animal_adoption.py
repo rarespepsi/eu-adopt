@@ -1,4 +1,4 @@
-"""Anunțuri animal DEMO — buton inactiv, fără cerere adopție."""
+"""Anunțuri animal DEMO — fără buton adopție, fără cerere adopție."""
 
 import uuid
 from unittest.mock import patch
@@ -17,6 +17,7 @@ _SOFT_LOCK = dict(
     PRELAUNCH_MONETIZATION_SOFT_LOCK=True,
     POPULATION_ONBOARDING_ENABLED=False,
     EUADOPT_DEMO_ANIMAL_OWNER_USERNAMES=("rarespepsi",),
+    EUADOPT_NON_RO_STAFF_ONLY=False,
 )
 
 
@@ -69,18 +70,41 @@ class DemoAnimalListingAdoptionTests(TestCase):
         self.assertTrue(is_demo_animal_listing(seed))
         self.assertFalse(is_demo_animal_listing(self.real_pet))
 
-    def test_ficha_shows_inactive_demo_button(self):
-        resp = self.client.get(reverse("pets_single", args=[self.demo_pet.pk]))
+    def test_is_demo_by_owner_keyword(self):
+        demo_kw_owner = User.objects.create_user(
+            username=f"demo_user_{uuid.uuid4().hex[:6]}",
+            password="x",
+            email="demo-kw@test.example",
+        )
+        kw_pet = AnimalListing.objects.create(
+            owner=demo_kw_owner,
+            name="Bella",
+            species="dog",
+            is_published=True,
+        )
+        self.assertTrue(is_demo_animal_listing(kw_pet))
+
+    def test_ficha_hides_demo_adopt_button(self):
+        self.client.force_login(self.adopter)
+        resp = self.client.get(reverse("pets_single", args=[self.demo_pet.pk]), follow=True)
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, ">DEMO<")
-        self.assertNotContains(resp, "VREAU SĂ ADOPT")
-        self.assertContains(resp, "pet-adopt-corner--inactive")
-        self.assertContains(resp, "Doar demonstrativ")
+        self.assertNotContains(resp, 'id="petAdoptCorner"')
 
     def test_ficha_real_pet_still_shows_adopt_for_anonymous(self):
-        resp = self.client.get(reverse("pets_single", args=[self.real_pet.pk]))
+        self.client.force_login(self.adopter)
+        resp = self.client.get(reverse("pets_single", args=[self.real_pet.pk]), follow=True)
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "VREAU SĂ ADOPT")
+
+    def test_ficha_demo_hides_adopt_corner_on_eu(self):
+        self.client.force_login(self.adopter)
+        resp = self.client.get(
+            reverse("pets_single", args=[self.demo_pet.pk]),
+            HTTP_HOST="euadopt.com",
+            follow=True,
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, 'id="petAdoptCorner"')
 
     @patch("home.population_simple_adoption.send_mail_text_and_html")
     def test_demo_submit_blocked(self, mock_mail):
