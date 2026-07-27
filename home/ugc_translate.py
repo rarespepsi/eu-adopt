@@ -36,6 +36,9 @@ _LANG_NAMES = {
     "fr": "French",
     "es": "Spanish",
     "it": "Italian",
+    "pl": "Polish",
+    "nl": "Dutch",
+    "pt": "Portuguese",
 }
 
 

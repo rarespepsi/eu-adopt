@@ -1,9 +1,19 @@
 """
-UI page strings for EU sites — English forced on .com (full UI).
+UI page strings for EU sites — multi-language packs (variant B).
 Romanian stays hard-coded on .ro templates via eu_t / if eu_site_active fallback.
 """
 from __future__ import annotations
 
+import json
+from functools import lru_cache
+from pathlib import Path
+
+from django.utils.translation import get_language
+
+EU_UI_DEFAULT_LANGUAGE = "en"
+EU_UI_HUB_LANGUAGE_CODES = frozenset({"en", "de", "fr", "es", "it", "pl", "nl", "pt", "ro"})
+
+_I18N_JSON = Path(__file__).resolve().parent / "eu_ui_labels_i18n.json"
 _EN: dict[str, str] = {
     # Common / chrome
     "messages_new": "New messages: {n}",
@@ -677,9 +687,10 @@ _EN: dict[str, str] = {
 
 
 def eu_or_ro(request, key: str, ro: str, **fmt) -> str:
-    """EN from pack when request is on EU site; otherwise Romanian `ro`."""
+    """Localized pack when request is on EU site; otherwise Romanian `ro`."""
     if getattr(request, "eu_site_active", False):
-        text = eu_ui_label(key, **fmt)
+        lang = getattr(request, "eu_site_lang", None) or getattr(request, "LANGUAGE_CODE", None)
+        text = eu_ui_label(key, lang=lang, **fmt)
         if text and text != key:
             return text
     if fmt:
@@ -690,8 +701,49 @@ def eu_or_ro(request, key: str, ro: str, **fmt) -> str:
     return ro
 
 
-def eu_ui_label(key: str, **fmt) -> str:
-    text = _EN.get(key, "")
+def _resolve_lang(lang: str | None) -> str:
+    code = (lang or get_language() or EU_UI_DEFAULT_LANGUAGE).split("-")[0].lower()
+    if code not in EU_UI_HUB_LANGUAGE_CODES and code != EU_UI_DEFAULT_LANGUAGE:
+        # .de/.fr/.es may use any EU_SITE language via manual switch
+        from home.eu_site import EU_SITE_LANGUAGE_CODES
+
+        if code not in EU_SITE_LANGUAGE_CODES:
+            code = EU_UI_DEFAULT_LANGUAGE
+    return code
+
+
+@lru_cache(maxsize=1)
+def _load_i18n_packs() -> dict[str, dict[str, str]]:
+    if not _I18N_JSON.is_file():
+        return {}
+    try:
+        raw = json.loads(_I18N_JSON.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(raw, dict):
+        return {}
+    out: dict[str, dict[str, str]] = {}
+    for lang, pack in raw.items():
+        if isinstance(pack, dict):
+            out[str(lang).lower()] = {str(k): str(v) for k, v in pack.items()}
+    return out
+
+
+def _pack_for_lang(lang: str | None) -> dict[str, str]:
+    code = _resolve_lang(lang)
+    if code == EU_UI_DEFAULT_LANGUAGE:
+        return _EN
+    extra = _load_i18n_packs().get(code)
+    if not extra:
+        return _EN
+    merged = dict(_EN)
+    merged.update(extra)
+    return merged
+
+
+def eu_ui_label(key: str, lang: str | None = None, **fmt) -> str:
+    pack = _pack_for_lang(lang)
+    text = pack.get(key, "")
     if not text:
         return key
     if fmt:
@@ -702,5 +754,21 @@ def eu_ui_label(key: str, **fmt) -> str:
     return text
 
 
-def eu_ui_pack() -> dict[str, str]:
-    return dict(_EN)
+def eu_ui_pack(lang: str | None = None) -> dict[str, str]:
+    return dict(_pack_for_lang(lang))
+
+
+def assert_hub_ui_languages_complete() -> None:
+    """Test helper: variant B hub languages have all EN keys."""
+    packs = _load_i18n_packs()
+    missing: list[str] = []
+    for code in sorted(EU_UI_HUB_LANGUAGE_CODES - {EU_UI_DEFAULT_LANGUAGE}):
+        pack = packs.get(code)
+        if not pack:
+            missing.append(f"{code}: no pack")
+            continue
+        for key in _EN:
+            if key not in pack or not str(pack[key]).strip():
+                missing.append(f"{code}.{key}")
+    if missing:
+        raise AssertionError("Incomplete EU UI labels: " + ", ".join(missing[:40]))

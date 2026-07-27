@@ -1,38 +1,34 @@
-# EU UI i18n — tipar (EN master → alte limbi)
+# EU UI i18n — tipar (EN master → limbi hub + TLD)
 
-**Scop:** UI pe domenii EU (`.com` / `.de` / `.fr` / `.es`) fără texte RO hardcodate. Conținutul din DB (descrieri animale) rămâne limba autorului.
+**Scop:** UI pe domenii EU (`.com` / `.de` / `.fr` / `.es`) fără texte RO hardcodate. Conținutul din DB (descrieri animale) rămâne limba autorului; pe EU se poate traduce la afișare (UGC/Gemini).
 
 ## Tipar
 
 1. **Cheie** în `home/eu_ui_labels.py` (`_EN["key"] = "English…"`).
-2. **Template:** `{% if eu_site_active %}{{ eu_ui.key }}{% else %}Text RO{% endif %}`.
-3. **Logică Python** (flash, burtieră, stări): `is_eu_site_host(request.get_host())` sau `request.eu_site_active` / `get_language().startswith("en")`.
-4. **Proceduri produs** (adopție, Servicii/Shop, transport în flux): `home/eu_procedures.py` → `site_proc` — vezi `docs/EU_RO_PROCEDURES.md`. Nu amesteca i18n cu proceduri.
-5. **Navbar:** deja `home/eu_nav_labels.py` (24 limbi) — același model pentru body UI când adaugi DE/FR/ES.
-6. **Trăsături:** `home/pet_traits.py` — EN pe `eu_site_active` (și când limba e `en`).
-7. **Valori fișă (talie/da/ani):** `home/pet_ui_display.py` + tag `{% eu_pet_val … %}` — doar afișare; DB rămâne RO.
+2. **Traduceri variantă B** în `home/eu_ui_labels_i18n.json` (de/fr/es/it/pl/nl/pt/ro) — generare: `scripts/_gen_eu_ui_i18n.py`.
+3. **Template:** `{% if eu_site_active %}{{ eu_ui.key }}{% else %}Text RO{% endif %}`.
+4. **Logică Python:** `eu_ui_label(key, lang=...)` / `eu_or_ro(...)`.
+5. **Proceduri produs:** `home/eu_procedures.py` → `site_proc` — vezi `docs/EU_RO_PROCEDURES.md`.
+6. **Navbar:** `home/eu_nav_labels.py` (24 limbi).
+7. **Hub `.com`:** selector cu 9 limbi (`EU_HUB_UI_LANGUAGE_CHOICES`); `.de/.fr/.es` forțează limba TLD + selector full.
 
-## Fișiere tipice atinse
+## Fișiere tipice
 
 | Zonă | Fișiere |
 |------|---------|
-| Pack EN | `home/eu_ui_labels.py` |
-| Context | `home/eu_site.py` → `eu_ui`, `eu_force_english` |
-| HOME | `home_v2.html`, `views._get_home_burtiera_text`, `data.A2_QUOTE_POOL_EN` |
-| PT | `pt.html`, `pt_p2_card.html`, JS label-uri din `data-pt-lbl-*` |
-| Transport | `transport.html` + mesaje submit în `views.py` |
-| Fișă animal | `pets-single.html`, `pet_ui_display.py`, tag `eu_pet_val` |
-| Cont / chrome | `account.html`, `site_guide_widget.html`, `base.html` PWA, `login_required_modal.html` |
-| 404 / Contact / Termeni hub | `404.html`, `contact.html`, `termeni.html` |
+| Pack EN + loader | `home/eu_ui_labels.py`, `home/eu_ui_labels_i18n.json` |
+| Context | `home/eu_site.py` → `eu_ui`, `eu_site_languages` |
+| Locale middleware | `euadopt_final/eu_site_middleware.py` |
 
-## Următorul pas multi-limbă
+## Regenerare pack-uri
 
-- Copiază `_EN` → `_DE` / `_FR` / `_ES` (sau `eu_ui_pack(lang)`).
-- `eu_site_context_for_request` alege pack după `eu_site_lang`.
-- Pe `.com` reactivezi selectorul când pack-ul limbii e complet (`eu_force_english` doar până atunci).
-- Traducere asistată: LibreTranslate self-hosted pe Hetzner (fără abonament) pentru generat pack-uri, nu ca MT live pe fiecare request.
+```powershell
+python scripts/_gen_eu_ui_i18n.py
+```
+
+Necesită `EUADOPT_GEMINI_API_KEY` în `.env`. Resume-safe (completează cheile lipsă).
 
 ## Nu traduce aici
 
-- Descrieri / note din `AnimalListing` (DB) — UI chrome da; conținut la cerere / câmp separat.
-- Documente legale full — hub EN + notă; text legal RO rămâne obligatoriu până la versiune EN oficială.
+- Descrieri / note din `AnimalListing` (DB) — UGC la afișare.
+- Documente legale full — hub + notă; text legal RO rămâne obligatoriu până la versiune oficială.

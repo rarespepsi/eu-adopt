@@ -108,25 +108,34 @@ class EuSiteMiddlewareTests(TestCase):
         self.assertNotEqual(r.status_code, 301)
 
     @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
-    def test_language_forced_en_on_com_hub(self):
+    def test_language_switcher_on_com_hub(self):
         c = Client(HTTP_HOST="euadopt.com")
         r = c.get("/contact/")
         self.assertEqual(r.status_code, 200)
-        self.assertNotContains(r, "a0-eu-lang-select")
-        self.assertContains(r, "a0-eu-lang-item--forced")
-        self.assertContains(r, "a0-eu-lang-forced-label")
-        self.assertContains(r, ">EN<")
-        self.assertContains(r, "a0-eu-lang-flag")
-        self.assertContains(r, "flagcdn.com")
-        self.assertNotContains(r, "🇬🇧")
-        self.assertNotContains(r, ">Shop</a>")
-        self.assertNotContains(r, "shelter_directory")
-        self.assertNotContains(r, "Adăpost/ONG")
-        self.assertContains(r, 'href="/transport/"')
-        self.assertContains(r, ">Transport<")
-        self.assertContains(r, "Contact EU-ADOPT")
-        self.assertContains(r, "Send email")
-        self.assertContains(r, "General support")
+        self.assertContains(r, "a0-eu-lang-select")
+        self.assertContains(r, 'value="en" selected')
+        self.assertNotContains(r, "a0-eu-lang-item--forced")
+
+    @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
+    def test_language_switcher_on_com_de_manual(self):
+        c = Client(HTTP_HOST="euadopt.com")
+        r = c.post(
+            "/i18n/setlang/",
+            {"language": "de", "next": "/contact/"},
+            follow=True,
+            HTTP_HOST="euadopt.com",
+        )
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'value="de" selected')
+        self.assertContains(r, "Kontakt")
+
+    @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
+    def test_language_forced_en_on_com_hub_removed(self):
+        """Legacy test replaced: .com now has language selector (variant B)."""
+        c = Client(HTTP_HOST="euadopt.com")
+        r = c.get("/contact/")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "a0-eu-lang-select")
 
     @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
     def test_login_english_on_com(self):
@@ -178,6 +187,15 @@ class EuSiteMiddlewareTests(TestCase):
             self.assertNotEqual(r["Location"], reverse("home"))
 
     @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
+    def test_de_host_shows_german_ui(self):
+        c = Client(HTTP_HOST="euadopt.de")
+        r = c.get("/contact/")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'value="de" selected')
+        self.assertContains(r, "Kontakt")
+        self.assertNotContains(r, "Contact EU-ADOPT")
+
+    @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
     def test_language_switcher_on_es_host(self):
         c = Client(HTTP_HOST="euadopt.es")
         r = c.get("/contact/")
@@ -206,13 +224,19 @@ class EuSiteMiddlewareTests(TestCase):
         rf = RequestFactory()
         req = rf.get("/", HTTP_HOST="euadopt.com")
         ctx = eu_site_context_for_request(req)
-        self.assertTrue(ctx["eu_force_english"])
+        self.assertFalse(ctx["eu_force_english"])
         self.assertTrue(ctx["eu_ui"].get("login_heading"))
         self.assertEqual(ctx["eu_site_lang"], "en")
+        self.assertEqual(len(ctx["eu_site_languages"]), 9)
         self.assertTrue(ctx["site_proc"].is_eu)
         self.assertTrue(ctx["site_proc"].adoption_skip_pickup_choice)
         self.assertFalse(ctx["site_proc"].nav_servicii)
         self.assertTrue(ctx["site_proc_adoption_simple_intermediation"])
+
+    def test_hub_ui_labels_complete(self):
+        from home.eu_ui_labels import assert_hub_ui_languages_complete
+
+        assert_hub_ui_languages_complete()
 
 
 class EuProceduresTests(SimpleTestCase):

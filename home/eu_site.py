@@ -41,6 +41,15 @@ EU_SITE_LANGUAGE_CODES = frozenset(code for code, _ in EU_SITE_LANGUAGE_CHOICES)
 
 EU_SITE_DEFAULT_LANGUAGE = "en"
 
+# Variantă B — hub .com: limbile de circulație EU (selector + UI pack complet).
+EU_HUB_UI_LANGUAGE_CODES: frozenset[str] = frozenset(
+    {"en", "de", "fr", "es", "it", "pl", "nl", "pt", "ro"}
+)
+
+EU_HUB_UI_LANGUAGE_CHOICES: tuple[tuple[str, str], ...] = tuple(
+    (code, label) for code, label in EU_SITE_LANGUAGE_CHOICES if code in EU_HUB_UI_LANGUAGE_CODES
+)
+
 # Cod țară ISO pentru steag PNG (flagcdn) — nu emoji (pe Windows apar ca inițiale).
 EU_SITE_FLAG_ISO: dict[str, str] = {
     "en": "gb",
@@ -190,14 +199,10 @@ EU_SITE_BLOCKED_PATH_PREFIXES = (
 
 def pick_language_for_hub(request) -> str:
     """
-    Hub (.com): limba forțată EN (UI complet englez).
+    Hub (.com): EN implicit; selector cu limbile EU_HUB_UI (cookie/sesiune/Accept-Language).
     Țară (.de/.fr/.es): limba TLD, exceptând schimbare manuală (eu_lang_manual).
     """
     host = request.get_host()
-    # .com hub — engleză totală (cerere produs)
-    if is_eu_hub_host(host):
-        return EU_SITE_DEFAULT_LANGUAGE
-
     forced = forced_locale_for_host(host)
     session = getattr(request, "session", None)
     sess_lang = ""
@@ -205,20 +210,27 @@ def pick_language_for_hub(request) -> str:
         sess_lang = (session.get("django_language") or "").strip().lower()
     cookie_lang = (request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME) or "").strip().lower()
 
+    allowed = EU_HUB_UI_LANGUAGE_CODES if is_eu_hub_host(host) else EU_SITE_LANGUAGE_CODES
+
     if forced:
         manual = bool(session and session.get("eu_lang_manual"))
-        if manual and sess_lang in EU_SITE_LANGUAGE_CODES:
-            return sess_lang
+        if manual:
+            # Cookie from set_language is authoritative after a manual switch
+            if cookie_lang in allowed:
+                return cookie_lang
+            if sess_lang in allowed:
+                return sess_lang
         return forced
 
-    if sess_lang in EU_SITE_LANGUAGE_CODES:
-        return sess_lang
-    if cookie_lang in EU_SITE_LANGUAGE_CODES:
+    # Hub (.com): cookie first (set_language), then session, then Accept-Language
+    if cookie_lang in allowed:
         return cookie_lang
+    if sess_lang in allowed:
+        return sess_lang
     accept = (request.META.get("HTTP_ACCEPT_LANGUAGE") or "").split(",")[0].strip().lower()
     if accept:
         primary = accept.split("-")[0]
-        if primary in EU_SITE_LANGUAGE_CODES:
+        if primary in allowed:
             return primary
     return EU_SITE_DEFAULT_LANGUAGE
 
@@ -290,8 +302,17 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
     lang = get_language() or EU_SITE_DEFAULT_LANGUAGE
     if lang not in EU_SITE_LANGUAGE_CODES:
         lang = EU_SITE_DEFAULT_LANGUAGE
-    # .com: UI forțat EN
-    if hub:
+    # Prefer middleware-resolved language when available
+    picked = None
+    try:
+        picked = pick_language_for_hub(request)
+    except Exception:
+        picked = None
+    if picked and picked in EU_SITE_LANGUAGE_CODES:
+        if hub and picked not in EU_HUB_UI_LANGUAGE_CODES:
+            picked = EU_SITE_DEFAULT_LANGUAGE
+        lang = picked
+    elif hub and lang not in EU_HUB_UI_LANGUAGE_CODES:
         lang = EU_SITE_DEFAULT_LANGUAGE
     from home.eu_nav_labels import eu_nav_label
     from home.eu_ui_labels import eu_ui_pack
@@ -314,18 +335,18 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
         "close_menu",
         "eu_blocked",
     )
-    # Pe hub .com navbar tot în EN
-    nav_lang = EU_SITE_DEFAULT_LANGUAGE if hub else lang
+    nav_lang = lang
     eu_nav_text = {k: eu_nav_label(nav_lang, k) for k in nav_keys}
+    lang_choices = EU_HUB_UI_LANGUAGE_CHOICES if hub else EU_SITE_LANGUAGE_CHOICES
 
     return {
         "eu_site_hub": hub,
         "eu_site_active": eu,
         "eu_site_lang": nav_lang,
-        "eu_site_languages": EU_SITE_LANGUAGE_CHOICES,
+        "eu_site_languages": lang_choices,
         "eu_site_flag_url": eu_flag_img_url(nav_lang),
         "eu_nav_text": eu_nav_text,
-        "eu_ui": eu_ui_pack() if eu else {},
-        "eu_force_english": hub,
+        "eu_ui": eu_ui_pack(lang) if eu else {},
+        "eu_force_english": False,
         **procedures_context(eu_active=eu),
     }

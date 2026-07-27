@@ -94,13 +94,18 @@ class EuSiteLocaleFixMiddleware:
             if lang in EU_SITE_LANGUAGE_CODES:
                 translation.activate(lang)
                 request.LANGUAGE_CODE = lang
+                request.eu_site_lang = lang
                 if hasattr(request, "session") and request.session is not None:
                     request.session["django_language"] = lang
         return self.get_response(request)
 
 
 def eu_set_language(request):
-    """set_language + marchează alegerea manuală (pentru .de/.fr/.es)."""
+    """set_language + marchează alegerea manuală (pentru .com / .de/.fr/.es)."""
     if request.method == "POST" and hasattr(request, "session"):
         request.session["eu_lang_manual"] = "1"
+        lang = (request.POST.get("language") or "").strip().lower()
+        if lang in EU_SITE_LANGUAGE_CODES:
+            # Sync session immediately so LocaleFix on the next request sees it
+            request.session["django_language"] = lang
     return django_set_language(request)
