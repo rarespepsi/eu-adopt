@@ -28,9 +28,23 @@
   var isBurtiera = section === "home" && slot === "Burtieră";
   var submitting = false;
 
+  function findSlotNode(slotCode) {
+    if (!slotCode) return null;
+    var safe = String(slotCode).replace(/"/g, "");
+    var nodes = Array.prototype.slice.call(
+      document.querySelectorAll('[data-slot="' + safe + '"]')
+    );
+    if (!nodes.length) return null;
+    // Prefer the currently visible wire slot (active tab/section on screen).
+    for (var i = 0; i < nodes.length; i += 1) {
+      if (nodes[i].offsetParent !== null) return nodes[i];
+    }
+    return nodes[0];
+  }
+
   function paintSlotPreview(slotCode, url, isVideo) {
     if (!slotCode || !url) return;
-    var node = document.querySelector('[data-slot="' + String(slotCode).replace(/"/g, "") + '"]');
+    var node = findSlotNode(slotCode);
     if (!node) return;
     node.classList.add("is-eu-occupied");
     var preview = node.querySelector(".reclama-slot-preview");
@@ -69,7 +83,7 @@
     }
     Object.keys(data).forEach(function (code) {
       var info = data[code] || {};
-      var node = document.querySelector('[data-slot="' + String(code).replace(/"/g, "") + '"]');
+      var node = findSlotNode(code);
       if (!node) return;
       node.classList.add("is-eu-occupied");
       if (info.burtiera) {
@@ -127,7 +141,7 @@
 
   function slotAspectRatio() {
     if (!slot) return 3 / 4;
-    var node = document.querySelector('[data-slot="' + slot.replace(/"/g, "") + '"]');
+    var node = findSlotNode(slot);
     if (!node) return 3 / 4;
     // Măsoară zona utilă (preview plin), ca pe HOME — nu chenarul cu etichetă
     var preview = node.querySelector(".reclama-slot-preview") || node;
@@ -362,7 +376,7 @@
       if (imageEl) imageEl.value = "";
       if (videoEl) videoEl.value = "";
       setCropEmpty("Imagine / video");
-      var node = document.querySelector('[data-slot="' + slot.replace(/"/g, "") + '"]');
+      var node = findSlotNode(slot);
       if (node) {
         var preview = node.querySelector(".reclama-slot-preview");
         if (preview) {

@@ -651,7 +651,8 @@
 	body.page-pub-eu-direct [data-slot] .reclama-slot-preview.has-eu-live-preview img.eu-wire-prev {
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
+		object-fit: contain;
+		object-position: center center;
 		display: block;
 		position: absolute;
 		inset: 0;
@@ -879,7 +880,8 @@
 	body.page-pub-eu-direct [data-slot] .reclama-slot-preview.has-eu-live-preview img.eu-wire-prev {
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
+		object-fit: contain;
+		object-position: center center;
 		display: block;
 	}
 	/* Taburi EU: verde site, text vizibil */
@@ -3409,7 +3411,7 @@ document.addEventListener("DOMContentLoaded", function () {
 {% if pub_eu_direct_mode %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" crossorigin="anonymous" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" crossorigin="anonymous"></script>
-<script src="{% static 'js/pub-eu-direct.js' %}?v=5-eu-wire-occupied"></script>
+<script src="{% static 'js/pub-eu-direct.js' %}?v=6-eu-wire-live-preview-fix"></script>
 {% endif %}
 <style>
 	body.page-publicitate-harta .reclama-home-wire [data-slot].pub-wire-selected,
