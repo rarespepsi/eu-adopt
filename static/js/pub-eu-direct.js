@@ -162,13 +162,22 @@
     return ar;
   }
 
+  function refreshCropAspectAndCropper() {
+    var ar = applyCropBoxAspect();
+    if (!cropper || !ar) return;
+    try {
+      cropper.setAspectRatio(ar);
+    } catch (_e) {}
+  }
+
   function initCropperOn(img) {
     if (typeof Cropper === "undefined" || !img) return;
     destroyCropper();
     var ar = applyCropBoxAspect();
     cropper = new Cropper(img, {
       aspectRatio: ar,
-      viewMode: 1,
+      // viewMode 0 lets users zoom out enough to see the full image.
+      viewMode: 0,
       dragMode: "move",
       autoCropArea: 1,
       restore: false,
@@ -365,7 +374,18 @@
   }
   if (zoomOut) {
     zoomOut.addEventListener("click", function () {
-      if (cropper) cropper.zoom(-0.1);
+      if (!cropper) return;
+      try {
+        cropper.zoom(-0.1);
+      } catch (_e) {}
+      // Fallback: explicit ratio step so "-" always reacts.
+      try {
+        var data = cropper.getData ? cropper.getData() : null;
+        if (data && data.width) {
+          var ratio = cropper.getImageData().naturalWidth / data.width;
+          cropper.zoomTo(Math.max(0.02, ratio * 0.9));
+        }
+      } catch (_e2) {}
     });
   }
 
@@ -399,6 +419,12 @@
 
   // Init cropper pe imaginea existentă de pe server
   applyCropBoxAspect();
+  requestAnimationFrame(function () {
+    refreshCropAspectAndCropper();
+  });
+  window.addEventListener("resize", function () {
+    refreshCropAspectAndCropper();
+  });
   var existingImg = document.getElementById("pubEuCropImg");
   if (existingImg && typeof Cropper !== "undefined") {
     initCropperOn(existingImg);

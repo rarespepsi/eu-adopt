@@ -663,8 +663,8 @@
 	/* Crop box: raport din caseta măsurată pe wire (nu 1:1) */
 	body.page-pub-eu-direct .pub-eu-crop-box {
 		aspect-ratio: var(--eu-crop-ar, 3 / 4) !important;
-		max-height: 220px;
-		width: 100%;
+		width: min(100%, 22rem);
+		margin-inline: auto;
 	}
 	/* PT / alte wire-uri: preview umple slotul, fără pătrat */
 	body.page-pub-eu-direct .reclama-pt-wire__slot .reclama-slot-preview,
@@ -836,9 +836,9 @@
 	}
 	.pub-eu-crop-box {
 		position: relative;
-		width: 100%;
+		width: min(100%, 22rem);
+		margin-inline: auto;
 		aspect-ratio: var(--eu-crop-ar, 4 / 3);
-		max-height: 180px;
 		background: #e8f5e9;
 		border: 1px solid #81c784;
 		border-radius: 8px;
@@ -3411,7 +3411,7 @@ document.addEventListener("DOMContentLoaded", function () {
 {% if pub_eu_direct_mode %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" crossorigin="anonymous" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" crossorigin="anonymous"></script>
-<script src="{% static 'js/pub-eu-direct.js' %}?v=6-eu-wire-live-preview-fix"></script>
+<script src="{% static 'js/pub-eu-direct.js' %}?v=7-eu-wire-aspect-zoom-fix"></script>
 {% endif %}
 <style>
 	body.page-publicitate-harta .reclama-home-wire [data-slot].pub-wire-selected,
