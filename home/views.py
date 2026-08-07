@@ -1076,6 +1076,14 @@ def _adoption_contact_block(user):
     if prof:
         if prof.phone:
             lines.append(f"Telefon: {prof.phone}")
+        country = (getattr(prof, "country", None) or "").strip().upper()
+        if country and country != "RO":
+            try:
+                from home.eu_countries import country_label
+
+                lines.append(f"Țară: {country_label(country, english=False) or country}")
+            except Exception:
+                lines.append(f"Țară: {country}")
         if ap and ap.role == AccountProfile.ROLE_PF:
             loc = ", ".join(x for x in (prof.judet, prof.oras) if x)
             if loc:
@@ -2997,6 +3005,13 @@ def inscriere_view(request):
 
 def signup_choose_type_view(request):
     """Pagina de alegere tip cont (persoană fizică / firmă / ONG / colaborator)."""
+    # EU: doar PF simplu — fără alegere ONG/colaborator.
+    if getattr(request, "eu_site_active", False):
+        q = request.GET.urlencode()
+        url = reverse("signup_pf")
+        if q:
+            url = f"{url}?{q}"
+        return redirect(url)
     ctx = {
         "activation_validity_label": _signup_activation_validity_label(),
     }
@@ -3008,19 +3023,30 @@ def signup_choose_type_view(request):
 
 
 def signup_pf_view(request):
-    """Formular înregistrare – Persoană fizică. La POST: validează, salvează în sesiune, redirect SMS. La GET: prefill din sesiune dacă user a dat Back din SMS."""
+    """Formular înregistrare – Persoană fizică.
+    RO: POST → sesiune → SMS → email activare.
+    EU: POST → creare cont + email activare (fără SMS, fără județ/oraș RO).
+    """
+    eu = bool(getattr(request, "eu_site_active", False))
     if request.method != "POST":
         inv_redir = _capture_staff_invite_token_for_signup(request, StaffOnboardingLead.KIND_PF)
         if inv_redir:
             return inv_redir
-        ctx = {}
+        ctx = {"eu_simple_signup": eu}
         if request.GET.get("phone_taken"):
-            ctx["signup_errors"] = ["Acest număr de telefon este deja folosit. Te rugăm folosește alt număr."]
+            ctx["signup_errors"] = [
+                "This phone number is already in use. Please use another number."
+                if eu
+                else "Acest număr de telefon este deja folosit. Te rugăm folosește alt număr."
+            ]
         if request.GET.get("email_taken"):
-            ctx["signup_errors"] = ["Acest email este deja folosit. Te rugăm folosește alt email."]
+            ctx["signup_errors"] = [
+                "This email is already in use. Please use another email."
+                if eu
+                else "Acest email este deja folosit. Te rugăm folosește alt email."
+            ]
         data = _get_signup_pending(request)
         if data and data.get("role") == "pf":
-            # Include password1/password2 din sesiune ca parola să rămână vizibilă la erori (ex. phone_taken)
             prefill = dict(data)
             pwd = data.get("password", "")
             prefill["password1"] = pwd
@@ -3030,7 +3056,19 @@ def signup_pf_view(request):
             inv_prefill = _signup_prefill_from_invite_session(request)
             if inv_prefill:
                 ctx["form_prefill"] = inv_prefill
+        if eu:
+            from home.eu_countries import country_choices
+            from home.eu_signup import default_eu_signup_country, phone_prefix_for_country
+
+            default_country = (ctx.get("form_prefill") or {}).get("country") or default_eu_signup_country(request)
+            ctx["country_choices"] = country_choices(english=True)
+            ctx["default_country"] = default_country
+            pref = (ctx.get("form_prefill") or {}).get("phone_country") or phone_prefix_for_country(default_country)
+            ctx["default_phone_prefix"] = pref
         return render(request, "anunturi/signup_pf.html", ctx)
+
+    if eu:
+        return _signup_pf_eu_post(request)
 
     User = get_user_model()
     first_name = (request.POST.get("first_name") or "").strip()
@@ -3099,6 +3137,94 @@ def signup_pf_view(request):
     _begin_signup_sms_flow(request)
     return redirect(reverse("signup_verificare_sms"))
 
+
+def _signup_pf_eu_post(request):
+    """EU PF: validare simplă → creare cont + email activare (fără SMS)."""
+    from home.eu_countries import country_choices, normalize_country_code
+    from home.eu_signup import phone_prefix_for_country
+
+    first_name = (request.POST.get("first_name") or "").strip()
+    last_name = (request.POST.get("last_name") or "").strip()
+    email = (request.POST.get("email") or "").strip().lower()
+    country = normalize_country_code(request.POST.get("country"))
+    phone_country = (request.POST.get("phone_country") or phone_prefix_for_country(country)).strip()
+    phone = (request.POST.get("phone") or "").strip()
+    password1 = request.POST.get("password1") or ""
+    password2 = request.POST.get("password2") or ""
+    accept_termeni = request.POST.get("accept_termeni") == "on"
+    accept_gdpr = request.POST.get("accept_gdpr") == "on"
+    email_opt_in_wishlist = request.POST.get("email_opt_in_wishlist") == "on"
+
+    errors = []
+    if not email:
+        errors.append("Email is required.")
+    if _email_duplicate_blocked(email):
+        errors.append("This email is already in use.")
+    if not first_name:
+        errors.append("First name is required.")
+    if not last_name:
+        errors.append("Last name is required.")
+    if not country:
+        errors.append("Country is required.")
+    if not phone:
+        errors.append("Phone number is required.")
+    full_phone = f"{phone_country} {phone}".strip()
+    if phone and _phone_already_used(full_phone):
+        errors.append("This phone number is already in use.")
+    if len(password1) < 8:
+        errors.append("Password must be at least 8 characters.")
+    if password1 != password2:
+        errors.append("Passwords do not match.")
+    if not accept_termeni:
+        errors.append("You must accept the Terms and conditions.")
+    if not accept_gdpr:
+        errors.append("You must accept the Privacy policy (GDPR).")
+
+    prefill = {
+        "first_name": first_name,
+        "last_name": last_name,
+        "email": email,
+        "country": country,
+        "phone_country": phone_country,
+        "phone": phone,
+        "password1": password1,
+        "password2": password2,
+        "accept_termeni": accept_termeni,
+        "accept_gdpr": accept_gdpr,
+        "email_opt_in_wishlist": email_opt_in_wishlist,
+    }
+    if errors:
+        return render(
+            request,
+            "anunturi/signup_pf.html",
+            {
+                "signup_errors": errors,
+                "form_prefill": prefill,
+                "eu_simple_signup": True,
+                "country_choices": country_choices(english=True),
+                "default_country": country,
+                "default_phone_prefix": phone_country,
+            },
+        )
+
+    data = {
+        "role": "pf",
+        "first_name": first_name,
+        "last_name": last_name,
+        "email": email,
+        "country": country,
+        "phone_country": phone_country,
+        "phone": phone,
+        "judet": "",
+        "oras": "",
+        "password": password1,
+        "accept_termeni": accept_termeni,
+        "accept_gdpr": accept_gdpr,
+        "email_opt_in_wishlist": email_opt_in_wishlist,
+        "eu_simple": True,
+    }
+    request.session["signup_pending"] = data
+    return _finalize_signup_after_identity_verified(request, data)
 
 def _get_signup_pending(request):
     """Returnează datele signup din sesiune (signup_pending sau migrare din signup_pf_pending)."""
@@ -3185,7 +3311,11 @@ def _make_signup_username(data, role):
         base = _normalize_username_base(data.get("denumire_societate") or data.get("denumire") or "")
     if not base:
         base = "User"
-    judet_code = _judet_to_code(data.get("judet") or "")
+    country = (data.get("country") or "").strip().upper()
+    if country and len(country) == 2 and country.isalpha():
+        judet_code = country
+    else:
+        judet_code = _judet_to_code(data.get("judet") or "")
     User = get_user_model()
     username = base
     if User.objects.filter(username=username).exists():
@@ -3201,6 +3331,10 @@ def _make_signup_username(data, role):
 
 def signup_verificare_sms_view(request):
     """Pas SMS comun pentru PF, ONG, Colaborator: OTP SMS (SMSAPI) sau cod dev din settings."""
+    # EU: fără SMS — înapoi la formularul simplu (activare pe email).
+    if getattr(request, "eu_site_active", False):
+        return redirect(reverse("signup_pf"))
+
     from home.sms_otp import (
         ensure_signup_otp_sent,
         sms_otp_template_context,
@@ -3273,18 +3407,24 @@ def signup_verificare_sms_view(request):
         ctx.update(sms_otp_template_context())
         return render(request, "anunturi/signup_pf_sms.html", ctx)
 
+    return _finalize_signup_after_identity_verified(request, data)
+
+
+def _finalize_signup_after_identity_verified(request, data: dict):
+    """Creează user inactiv + profil, trimite email activare, redirect Verifică email."""
+    role = data.get("role", "pf")
+    email = (data.get("email") or "").strip().lower()
+
     if role == "pf":
         full_phone = f"{data.get('phone_country', '')} {data.get('phone', '')}".strip()
     else:
         full_phone = (data.get("telefon") or "").strip()
 
     if _phone_already_used(full_phone):
-        # Nu ștergem signup_pending – ca la redirect pe formular datele (inclusiv parola) să rămână
         return redirect(_redirect_for_role(role, "phone") + "?phone_taken=1")
 
     User = get_user_model()
     if _email_duplicate_blocked(email):
-        # Nu ștergem signup_pending – ca la redirect pe formular datele să rămână
         return redirect(_redirect_for_role(role, "email") + "?email_taken=1")
 
     username = _make_signup_username(data, role)
@@ -3303,6 +3443,7 @@ def signup_verificare_sms_view(request):
         acc.save()
         profile, _ = UserProfile.objects.get_or_create(user=user, defaults={})
         profile.phone = full_phone
+        profile.country = (data.get("country") or profile.country or "RO")[:2].upper() or "RO"
         profile.judet = data.get("judet", "")
         profile.oras = data.get("oras", "")
         profile.accept_termeni = data.get("accept_termeni", False)
@@ -3315,7 +3456,7 @@ def signup_verificare_sms_view(request):
             accept_termeni=profile.accept_termeni,
             accept_gdpr=profile.accept_gdpr,
             email_opt_in=profile.email_opt_in_wishlist,
-            source="signup_pf_sms",
+            source="signup_pf_eu" if data.get("eu_simple") else "signup_pf_sms",
         )
     elif role == "org":
         user = User.objects.create_user(
@@ -3337,7 +3478,6 @@ def signup_verificare_sms_view(request):
         profile.accept_termeni = data.get("accept_termeni", False)
         profile.accept_gdpr = data.get("accept_gdpr", False)
         profile.email_opt_in_wishlist = data.get("email_opt_in", False)
-        # Păstrăm și datele de entitate juridică pentru afișarea corectă în fișa contului ONG/SRL.
         profile.company_display_name = data.get("denumire", "")
         profile.company_legal_name = data.get("denumire_societate", "")
         profile.company_cui = data.get("cui", "")
@@ -3374,7 +3514,6 @@ def signup_verificare_sms_view(request):
         profile.phone = full_phone
         profile.judet = data.get("judet", "")
         profile.oras = data.get("oras", "")
-        # Date firmă / colaborator salvate în profil pentru contul Colaborator
         profile.company_display_name = data.get("denumire", "")
         profile.company_legal_name = data.get("denumire_societate", "")
         profile.company_cui = data.get("cui", "")
@@ -3434,10 +3573,8 @@ def signup_verificare_sms_view(request):
     request.session["signup_email_resend_count"] = 0
     request.session.pop("signup_pending", None)
     request.session.pop("signup_pf_pending", None)
-    # Mereu redirect la „Verifică email” – nu la home; logarea se face doar după click pe link din email
     check_email_url = reverse("signup_pf_check_email") + f"?email={quote(email)}"
     return redirect(check_email_url)
-
 
 def signup_retrimite_sms_view(request):
     """Retrimite cod SMS: resetează timerul 5 min. Max 3 încercări, apoi cooldown 45 min."""

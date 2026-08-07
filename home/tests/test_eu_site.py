@@ -32,7 +32,10 @@ class EuSiteHostTests(SimpleTestCase):
         self.assertTrue(path_blocked_on_eu_hub("/shop/"))
         self.assertTrue(path_blocked_on_eu_hub("/servicii/"))
         self.assertTrue(path_blocked_on_eu_hub("/adaposturi/"))
+        self.assertTrue(path_blocked_on_eu_hub("/signup/organizatie"))
+        self.assertTrue(path_blocked_on_eu_hub("/signup/colaborator"))
         self.assertFalse(path_blocked_on_eu_hub("/pets/"))
+        self.assertFalse(path_blocked_on_eu_hub("/signup/persoana-fizica/"))
         self.assertFalse(path_blocked_on_eu_hub("/transport/"))
         self.assertFalse(path_blocked_on_eu_hub("/transport"))
         self.assertFalse(path_blocked_on_eu_hub("/custi/"))
@@ -286,6 +289,11 @@ class EuNonRoStaffGateTests(TestCase):
         c = Client(HTTP_HOST="euadopt.com")
         r = c.get("/login/")
         self.assertIn(r.status_code, (200, 302))
+
+    def test_signup_allowed_under_gate(self):
+        c = Client(HTTP_HOST="euadopt.com")
+        r = c.get("/signup/persoana-fizica/")
+        self.assertEqual(r.status_code, 200)
 
     def test_staff_can_access(self):
         User = get_user_model()

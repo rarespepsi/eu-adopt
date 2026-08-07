@@ -673,6 +673,26 @@
 						<label for="id_phone">{% if eu_site_active %}{{ eu_ui.signup_lbl_phone }}{% else %}Telefon *{% endif %}</label>
 						<div class="signup-phone-row">
 							<div class="signup-phone-prefix">
+								{% if eu_simple_signup %}
+								{% with pc=form_prefill.phone_country|default:default_phone_prefix|default:"+49" %}
+								<select id="id_phone_country" name="phone_country" required>
+									<option value="+49" {% if pc == '+49' %}selected{% endif %}>DE +49</option>
+									<option value="+33" {% if pc == '+33' %}selected{% endif %}>FR +33</option>
+									<option value="+34" {% if pc == '+34' %}selected{% endif %}>ES +34</option>
+									<option value="+39" {% if pc == '+39' %}selected{% endif %}>IT +39</option>
+									<option value="+31" {% if pc == '+31' %}selected{% endif %}>NL +31</option>
+									<option value="+32" {% if pc == '+32' %}selected{% endif %}>BE +32</option>
+									<option value="+43" {% if pc == '+43' %}selected{% endif %}>AT +43</option>
+									<option value="+41" {% if pc == '+41' %}selected{% endif %}>CH +41</option>
+									<option value="+48" {% if pc == '+48' %}selected{% endif %}>PL +48</option>
+									<option value="+351" {% if pc == '+351' %}selected{% endif %}>PT +351</option>
+									<option value="+44" {% if pc == '+44' %}selected{% endif %}>UK +44</option>
+									<option value="+40" {% if pc == '+40' %}selected{% endif %}>RO +40</option>
+									<option value="+1" {% if pc == '+1' %}selected{% endif %}>US +1</option>
+									<option value="+000" {% if pc == '+000' %}selected{% endif %}>Other…</option>
+								</select>
+								{% endwith %}
+								{% else %}
 								<select id="id_phone_country" name="phone_country" required>
 									<option value="+40" {% if not form_prefill or form_prefill.phone_country == '+40' %}selected{% endif %}>RO +40</option>
 									<option value="+39" {% if form_prefill and form_prefill.phone_country == '+39' %}selected{% endif %}>IT +39</option>
@@ -685,12 +705,24 @@
 									<option value="+1" {% if form_prefill and form_prefill.phone_country == '+1' %}selected{% endif %}>US +1</option>
 									<option value="+000" {% if form_prefill and form_prefill.phone_country == '+000' %}selected{% endif %}>Alt cod…</option>
 								</select>
+								{% endif %}
 							</div>
 							<div class="signup-phone-number">
 								<input type="tel" id="id_phone" name="phone" required autocomplete="tel-national" value="{% if form_prefill %}{{ form_prefill.phone|default:'' }}{% endif %}" />
 							</div>
 						</div>
 					</div>
+					{% if eu_simple_signup %}
+					<div class="signup-field signup-field-box">
+						<label for="id_country">{% if eu_site_active %}{{ eu_ui.signup_lbl_country }}{% else %}Țară *{% endif %}</label>
+						<select id="id_country" name="country" required>
+							<option value="">—</option>
+							{% for code, label in country_choices %}
+							<option value="{{ code }}" {% if form_prefill.country == code or not form_prefill.country and default_country == code %}selected{% endif %}>{{ label }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					{% else %}
 					<div class="signup-field signup-field-box">
 						<label for="id_judet">{% if eu_site_active %}{{ eu_ui.signup_lbl_county }}{% else %}Județ *{% endif %}</label>
 						{% include "anunturi/includes/ro_county_select.html" with select_id="id_judet" select_name="judet" current=form_prefill.judet profile_editable=True %}
@@ -699,6 +731,7 @@
 						<label for="id_oras">{% if eu_site_active %}{{ eu_ui.signup_lbl_city }}{% else %}Oraș / Localitate *{% endif %}</label>
 						{% include "anunturi/includes/ro_city_select.html" with select_id="id_oras" select_name="oras" current=form_prefill.oras profile_editable=True %}
 					</div>
+					{% endif %}
 				</div>
 				<div class="signup-caseta">
 					<h2>{% if eu_site_active %}{{ eu_ui.signup_pf_pass_h }}{% else %}Parolă și acorduri{% endif %}</h2>
@@ -882,7 +915,30 @@
 	}
 })();
 </script>
+{% if not eu_simple_signup %}
 {% include "anunturi/includes/ro_county_locality_select_script.html" with judet_select_id="id_judet" oras_select_id="id_oras" %}
+{% else %}
+<script>
+(function() {
+	var map = {
+		RO: "+40", AT: "+43", BE: "+32", BG: "+359", HR: "+385", CY: "+357", CZ: "+420",
+		DK: "+45", EE: "+372", FI: "+358", FR: "+33", DE: "+49", GR: "+30", HU: "+36",
+		IE: "+353", IT: "+39", LV: "+371", LT: "+370", LU: "+352", MT: "+356", NL: "+31",
+		PL: "+48", PT: "+351", SK: "+421", SI: "+386", ES: "+34", SE: "+46", CH: "+41",
+		NO: "+47", GB: "+44"
+	};
+	var country = document.getElementById("id_country");
+	var phonePrefix = document.getElementById("id_phone_country");
+	if (!country || !phonePrefix) return;
+	country.addEventListener("change", function() {
+		var pref = map[country.value];
+		if (!pref) return;
+		var opt = phonePrefix.querySelector('option[value="' + pref + '"]');
+		if (opt) phonePrefix.value = pref;
+	});
+})();
+</script>
+{% endif %}
 <script>
 (function() {
 	document.querySelectorAll('.signup-pwd-eye').forEach(function(eye) {

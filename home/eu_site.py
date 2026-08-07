@@ -174,6 +174,7 @@ EU_SITE_BLOCKED_URL_NAMES = frozenset(
         "shelter_directory",
         "shelter_detail",
         "signup_colaborator",
+        "signup_organizatie",
         "inscriere",
         "publicitate_harta",
         "publicitate_cos",
@@ -194,6 +195,7 @@ EU_SITE_BLOCKED_PATH_PREFIXES = (
     "/reclama/",
     # /donatii/ — accesibil pe EU pentru traducere / preview (lansare publică mai târziu)
     "/signup/colaborator",
+    "/signup/organizatie",
 )
 
 

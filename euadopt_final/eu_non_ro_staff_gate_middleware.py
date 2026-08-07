@@ -19,6 +19,7 @@ def non_ro_staff_only_enabled() -> bool:
 _ALLOW_PREFIXES = (
     "/login",
     "/logout",
+    "/signup",
     "/admin",
     "/static",
     "/media",

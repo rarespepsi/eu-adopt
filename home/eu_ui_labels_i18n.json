@@ -588,7 +588,8 @@
     "mail_adopt_confirm_subj": "Ihr Adoptionsantrag für {pet}",
     "mail_reset_subj": "Passwort-Reset – EU-Adopt",
     "publi": "Anzeige",
-    "publicitate": "Werbung"
+    "publicitate": "Werbung",
+    "signup_lbl_country": "Country *"
   },
   "fr": {
     "messages_new": "Nouveaux messages : {n}",
@@ -1179,7 +1180,8 @@
     "mail_adopt_confirm_subj": "Votre demande d'adoption pour {pet}",
     "mail_reset_subj": "Réinitialisation du mot de passe – EU-Adopt",
     "publi": "Annonce",
-    "publicitate": "Publicité"
+    "publicitate": "Publicité",
+    "signup_lbl_country": "Country *"
   },
   "es": {
     "messages_new": "Nuevos mensajes: {n}",
@@ -1770,7 +1772,8 @@
     "mail_adopt_confirm_subj": "Su solicitud de adopción para {pet}",
     "mail_reset_subj": "Restablecimiento de contraseña – UE-Adoptar",
     "publi": "Anuncio",
-    "publicitate": "Publicidad"
+    "publicitate": "Publicidad",
+    "signup_lbl_country": "Country *"
   },
   "it": {
     "messages_new": "Nuovi messaggi: {n}",
@@ -2361,7 +2364,8 @@
     "mail_adopt_confirm_subj": "La tua richiesta di adozione per {pet}",
     "mail_reset_subj": "Reimpostazione password – EU-Adopt",
     "publi": "Annuncio",
-    "publicitate": "Pubblicità"
+    "publicitate": "Pubblicità",
+    "signup_lbl_country": "Country *"
   },
   "pl": {
     "messages_new": "Nowe wiadomości: {n}",
@@ -2952,7 +2956,8 @@
     "mail_adopt_confirm_subj": "Twoja prośba o adopcję {pet}",
     "mail_reset_subj": "Resetowanie hasła – EU-Adopt",
     "publi": "Reklama",
-    "publicitate": "Reklama"
+    "publicitate": "Reklama",
+    "signup_lbl_country": "Country *"
   },
   "nl": {
     "messages_new": "Nieuwe berichten: {n}",
@@ -3543,7 +3548,8 @@
     "mail_adopt_confirm_subj": "Uw adoptieverzoek voor {pet}",
     "mail_reset_subj": "Wachtwoord opnieuw instellen – EU-Adopt",
     "publi": "Advertentie",
-    "publicitate": "Reclame"
+    "publicitate": "Reclame",
+    "signup_lbl_country": "Country *"
   },
   "pt": {
     "messages_new": "Novas mensagens: {n}",
@@ -4134,7 +4140,8 @@
     "mail_adopt_confirm_subj": "Seu pedido de adoção para {pet}",
     "mail_reset_subj": "Redefinição de senha – EU-Adopt",
     "publi": "Anúncio",
-    "publicitate": "Anúncio"
+    "publicitate": "Anúncio",
+    "signup_lbl_country": "Country *"
   },
   "ro": {
     "messages_new": "Mesaje noi: {n}",
@@ -4725,6 +4732,7 @@
     "mail_adopt_confirm_subj": "Solicitarea dvs. de adopție pentru {pet}",
     "mail_reset_subj": "Resetarea parolei – UE-Adopt",
     "publi": "Ad",
-    "publicitate": "Publicitate"
+    "publicitate": "Publicitate",
+    "signup_lbl_country": "Country *"
   }
 }
