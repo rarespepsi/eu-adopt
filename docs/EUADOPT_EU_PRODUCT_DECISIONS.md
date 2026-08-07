@@ -11,9 +11,8 @@
 | Host | Rol |
 |------|-----|
 | `eu-adopt.ro` | Site RO complet |
-| `euadopt.com` | Hub EU — limba start **EN**; selector toate limbile UE |
-| `euadopt.de` / `.fr` / `.es` | Același catalog; default DE/FR/ES |
-| `.eu` / `.org` / cratimă | 301 → `.com` |
+| `euadopt.com` | Hub EU unic — limba start **EN**; selector limbi UE |
+| `.de` / `.fr` / `.es` / `.eu` / `.org` / cratimă | **301 →** `.com` (țară: + limba din TLD via `?eu_lang=`) |
 
 O app, o DB. Animale din RO. Coming soon public pe non-`.ro` până la **lansarea full `.ro`** (`EUADOPT_NON_RO_STAFF_ONLY=1`).
 

@@ -1,39 +1,27 @@
-# Hub EU — domenii fără cratimă (principal)
+# Hub EU — un singur site pe .com (aug 2026)
 
-**Actualizat:** portfolio Hostico — principal **`euadopt.*`**, dublaj **`eu-adopt.*`** → **301**.
+**Portfolio Hostico:** `eu-adopt.ro/com/eu` + `euadopt.com/de/es/eu/fr/org`.
 
-## Mapare domenii
+## Mapare
 
-| Domeniu principal | Rol |
-|-------------------|-----|
-| **eu-adopt.ro** | România — site complet (singurul `.ro` din cont) |
-| **euadopt.com**, **euadopt.eu**, **euadopt.org** (+ `www`) | Hub EU — selector **24 limbi UE + EN** |
-| **euadopt.de**, **euadopt.fr**, **euadopt.es** (+ `www`) | Aceeași formă EU, limba forțată (DE / FR / ES) |
-
-| Dublaj (301 → principal) | Țintă |
-|------------------------|--------|
-| eu-adopt.com, www | euadopt.com / www |
-| eu-adopt.eu, www | euadopt.eu / www |
-
-**Notă:** nu ai `euadopt.ro` — **`.ro` rămâne `eu-adopt.ro`** (fără redirect).
-
-Redirect: **nginx** (recomandat) + **fallback Django** (`EU_HYPHEN_REDIRECT_MAP` în `home/eu_site.py`).
+| Domeniu | Rol |
+|---------|-----|
+| **eu-adopt.ro** (+ www) | România — site complet (fără redirect) |
+| **euadopt.com** (+ www) | **Hub EU unic** — EN + selector limbi |
+| **euadopt.de / .fr / .es** (+ www) | **301 →** `.com` + `?eu_lang=` (DE/FR/ES) |
+| **euadopt.eu / .org**, **eu-adopt.com / .eu** (+ www) | **301 →** `euadopt.com` |
 
 ## DNS
 
-Punctează A/AAAA către Hetzner pentru toate hosturile active (principal + dublaj, ca să poți face 301).
+A/AAAA către Hetzner pentru **toate** hosturile (inclusiv cele care doar redirecționează).
 
 ## Nginx
 
-- `deploy/hetzner/nginx-eu-adopt-eu-hub.conf` — proxy pentru `euadopt.*`
-- Blocuri HTTPS + `return 301` pentru `eu-adopt.com` / `.eu` către `euadopt.*`
+- `deploy/hetzner/nginx-euadopt-all-domains.conf` — proxy toate hosturile; Django face 301
+- HTTPS: certbot pe fiecare host sau SAN; redirect HTTPS separat pe server
 
 ## Cod
 
-- `EUADOPT_EU_HUB_HOSTS` — override listă hub
+- Registru: `home/euadopt_domains.py`
+- Middleware: `euadopt_final/eu_site_middleware.py`
 - Teste: `python manage.py test home.tests.test_eu_site`
-
-## Următorii pași
-
-- Traducere fișe animale (Google + cache)
-- Signup org EU simplificat

@@ -1,13 +1,13 @@
-# EU-Adopt — domenii (arhitectură stabilită iul 2026)
+# EU-Adopt — domenii (strategie UX aug 2026)
 
 ## Ierarhie
 
 | Host | Rol |
 |------|-----|
-| **eu-adopt.ro** (+ www) | Site principal RO — public |
-| **euadopt.com** (+ www) | Hub EU — EN + **toate limbile UE** (selector) |
-| **euadopt.de / .fr / .es** (+ www) | Același catalog; limba DE/FR/ES (schimbare manuală posibilă) |
-| **euadopt.eu**, **euadopt.org**, **eu-adopt.com**, **eu-adopt.eu** (+ www) | **301** → `euadopt.com` / `www.euadopt.com` |
+| **eu-adopt.ro** (+ www) | Site principal RO — public, neschimbat |
+| **euadopt.com** (+ www) | **Singurul hub EU** — EN + selector limbi |
+| **euadopt.de / .fr / .es** (+ www) | **301 →** `.com` + `?eu_lang=de\|fr\|es` (limba din TLD) |
+| **euadopt.eu**, **euadopt.org**, **eu-adopt.com**, **eu-adopt.eu** (+ www) | **301 →** `euadopt.com` |
 
 O singură aplicație Django, o DB, un admin. Animalele = din RO.
 
@@ -15,15 +15,15 @@ O singură aplicație Django, o DB, un admin. Animalele = din RO.
 
 | Env | Rol |
 |-----|-----|
-| `EUADOPT_EU_PRODUCT_SKIN=1` | Activează limbi + meniu EU pe hosturi non-.ro |
-| `EUADOPT_NON_RO_STAFF_ONLY=1` | Public = Coming soon pe `.com`/`.de`/`.fr`/`.es`; doar staff/superuser |
+| `EUADOPT_EU_PRODUCT_SKIN=1` | Activează limbi + meniu EU pe `.com` |
+| `EUADOPT_NON_RO_STAFF_ONLY=1` | Public = Coming soon pe `.com`; doar staff/superuser |
 
 La lansare publică EU: `EUADOPT_NON_RO_STAFF_ONLY=0`.
 
 ## SEO
 
 - **canonical** → `https://eu-adopt.ro{path}` (anti-duplicate)
-- **hreflang**: ro / en / de / fr / es + x-default → `.com`
+- **hreflang**: `ro` → `.ro`, `en` + `x-default` → `.com`
 
 ## Cod
 

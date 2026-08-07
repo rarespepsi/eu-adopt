@@ -90,13 +90,13 @@ def eu_flag_img_url(lang: str | None) -> str:
 
 
 # Host-uri hub EU — doar .com (override: EUADOPT_EU_HUB_HOSTS=...).
-# .eu / .org fac 301 → .com (vezi euadopt_domains).
+# .de / .fr / .es / .eu / .org (+ cratimă) → 301 la .com (vezi euadopt_domains).
 _DEFAULT_EU_HUB_HOSTS = (
     "euadopt.com",
     "www.euadopt.com",
 )
 
-# Domenii cu cratimă → redirect 301 (registru home.euadopt_domains; excepție: eu-adopt.ro).
+# Mapare TLD țară → limba (folosită la redirect ?eu_lang= și legacy detect).
 EU_COUNTRY_TLD_LOCALE: dict[str, str] = {
     "de": "de",
     "fr": "fr",
@@ -156,9 +156,10 @@ def eu_product_skin_enabled() -> bool:
 
 
 def is_eu_site_host(host: str | None) -> bool:
+    """Skin EU doar pe hub .com (țările fac 301 aici înainte de skin)."""
     if not eu_product_skin_enabled():
         return False
-    return is_eu_hub_host(host) or is_eu_country_host(host)
+    return is_eu_hub_host(host)
 
 
 # Rute RO-only: redirect Acasă pe hub EU (staff Django admin rămâne pe /admin/).
@@ -201,11 +202,10 @@ EU_SITE_BLOCKED_PATH_PREFIXES = (
 
 def pick_language_for_hub(request) -> str:
     """
-    Hub (.com): EN implicit; selector cu limbile EU_HUB_UI (cookie/sesiune/Accept-Language).
-    Țară (.de/.fr/.es): limba TLD, exceptând schimbare manuală (eu_lang_manual).
+    Hub (.com): EN implicit; selector EU_HUB_UI (cookie/sesiune/Accept-Language).
+    ?eu_lang= din redirect .de/.fr/.es are prioritate (o dată, apoi cookie/sesiune).
     """
     host = request.get_host()
-    forced = forced_locale_for_host(host)
     session = getattr(request, "session", None)
     sess_lang = ""
     if session is not None:
@@ -214,15 +214,24 @@ def pick_language_for_hub(request) -> str:
 
     allowed = EU_HUB_UI_LANGUAGE_CODES if is_eu_hub_host(host) else EU_SITE_LANGUAGE_CODES
 
+    get_lang = ""
+    try:
+        get_lang = (request.GET.get("eu_lang") or "").strip().lower()
+    except Exception:
+        get_lang = ""
+    if get_lang in allowed:
+        return get_lang
+
+    # Legacy: dacă requestul ar ajunge pe host țară (fără redirect), limba TLD
+    forced = forced_locale_for_host(host)
     if forced:
         manual = bool(session and session.get("eu_lang_manual"))
         if manual:
-            # Cookie from set_language is authoritative after a manual switch
             if cookie_lang in allowed:
                 return cookie_lang
             if sess_lang in allowed:
                 return sess_lang
-        return forced
+        return forced if forced in allowed else EU_SITE_DEFAULT_LANGUAGE
 
     # Hub (.com): cookie first (set_language), then session, then Accept-Language
     if cookie_lang in allowed:
@@ -238,12 +247,10 @@ def pick_language_for_hub(request) -> str:
 
 
 RO_CANONICAL_HOST = "eu-adopt.ro"
+# Hub unic EU: hreflang pe .com (țările sunt doar 301).
 HREFLANG_HOSTS: tuple[tuple[str, str], ...] = (
     ("ro", "eu-adopt.ro"),
     ("en", "euadopt.com"),
-    ("de", "euadopt.de"),
-    ("fr", "euadopt.fr"),
-    ("es", "euadopt.es"),
 )
 
 
@@ -288,7 +295,7 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
         }
     host = request.get_host()
     hub = is_eu_hub_host(host)
-    eu = hub or forced_locale_for_host(host) is not None
+    eu = hub
     if not eu:
         return {
             "eu_site_hub": False,

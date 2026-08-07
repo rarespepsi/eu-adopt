@@ -3,13 +3,18 @@ Domenii EU-Adopt: redirect 301; skin EU; limba după LocaleMiddleware.
 """
 from __future__ import annotations
 
-from django.http import HttpResponsePermanentRedirect
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
+from django.conf import settings
+from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import Resolver404, resolve
 from django.utils import translation
 from django.views.i18n import set_language as django_set_language
 
+from home.euadopt_domains import inject_query_param, redirect_lang_for_host
 from home.eu_site import (
+    EU_HUB_UI_LANGUAGE_CODES,
     EU_SITE_BLOCKED_URL_NAMES,
     EU_SITE_LANGUAGE_CODES,
     eu_product_skin_enabled,
@@ -21,8 +26,16 @@ from home.eu_site import (
 )
 
 
+def _strip_query_param(full_path: str, key: str) -> str:
+    parts = urlsplit(full_path or "/")
+    q = [(k, v) for k, v in parse_qsl(parts.query, keep_blank_values=True) if k != key]
+    new_q = urlencode(q)
+    path = parts.path or "/"
+    return f"{path}?{new_q}" if new_q else path
+
+
 class EuSiteMiddleware:
-    """Redirect 301 + flag-uri eu_site_* (înainte de Locale)."""
+    """Redirect 301 (alias/țară → .com) + flag-uri eu_site_* (înainte de Locale)."""
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -33,7 +46,29 @@ class EuSiteMiddleware:
         if canon:
             scheme = "https" if request.is_secure() else "http"
             path = request.get_full_path()
+            lang = redirect_lang_for_host(host)
+            if lang and "eu_lang=" not in path:
+                path = inject_query_param(path, "eu_lang", lang)
             return HttpResponsePermanentRedirect(f"{scheme}://{canon}{path}")
+
+        # Hub .com: ?eu_lang=de din redirect țară → setează sesiune/cookie + URL curat
+        if is_eu_hub_host(host):
+            raw = (request.GET.get("eu_lang") or "").strip().lower()
+            if raw and raw in EU_HUB_UI_LANGUAGE_CODES:
+                if hasattr(request, "session") and request.session is not None:
+                    request.session["django_language"] = raw
+                    request.session.modified = True
+                clean = _strip_query_param(request.get_full_path(), "eu_lang")
+                resp = HttpResponseRedirect(clean)
+                cookie_name = getattr(settings, "LANGUAGE_COOKIE_NAME", "django_language")
+                resp.set_cookie(
+                    cookie_name,
+                    raw,
+                    max_age=getattr(settings, "LANGUAGE_COOKIE_AGE", 60 * 60 * 24 * 365),
+                    path=getattr(settings, "LANGUAGE_COOKIE_PATH", "/"),
+                    samesite=getattr(settings, "LANGUAGE_COOKIE_SAMESITE", "Lax"),
+                )
+                return resp
 
         request.eu_site_hub = False
         request.eu_site_active = False

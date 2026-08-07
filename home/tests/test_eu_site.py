@@ -27,6 +27,18 @@ class EuSiteHostTests(SimpleTestCase):
         self.assertEqual(m.get("euadopt.org"), "euadopt.com")
         self.assertEqual(m.get("eu-adopt.eu"), "euadopt.com")
         self.assertEqual(m.get("eu-adopt.com"), "euadopt.com")
+        self.assertEqual(m.get("euadopt.de"), "euadopt.com")
+        self.assertEqual(m.get("euadopt.fr"), "euadopt.com")
+        self.assertEqual(m.get("euadopt.es"), "euadopt.com")
+
+    def test_country_redirect_lang(self):
+        from home.euadopt_domains import redirect_lang_for_host
+
+        self.assertEqual(redirect_lang_for_host("euadopt.de"), "de")
+        self.assertEqual(redirect_lang_for_host("www.euadopt.fr"), "fr")
+        self.assertEqual(redirect_lang_for_host("euadopt.es"), "es")
+        self.assertIsNone(redirect_lang_for_host("euadopt.org"))
+        self.assertIsNone(redirect_lang_for_host("euadopt.com"))
 
     def test_blocked_paths(self):
         self.assertTrue(path_blocked_on_eu_hub("/shop/"))
@@ -58,14 +70,14 @@ class EuSiteHostTests(SimpleTestCase):
 
     def test_seo_canonical_points_to_ro(self):
         rf = RequestFactory()
-        req = rf.get("/pets/12/", HTTP_HOST="euadopt.de")
+        req = rf.get("/pets/12/", HTTP_HOST="euadopt.com")
         self.assertEqual(seo_canonical_url(req), "https://eu-adopt.ro/pets/12/")
         alts = seo_hreflang_alternates(req)
         langs = {a["hreflang"] for a in alts}
         self.assertIn("ro", langs)
         self.assertIn("en", langs)
-        self.assertIn("de", langs)
         self.assertIn("x-default", langs)
+        self.assertNotIn("de", langs)
 
 
 @override_settings(EUADOPT_NON_RO_STAFF_ONLY=False)
@@ -193,21 +205,31 @@ class EuSiteMiddlewareTests(TestCase):
             self.assertNotEqual(r["Location"], reverse("home"))
 
     @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
-    def test_de_host_shows_german_ui(self):
+    def test_de_host_redirects_to_com_with_lang(self):
         c = Client(HTTP_HOST="euadopt.de")
-        r = c.get("/contact/")
+        r = c.get("/contact/?foo=1")
+        self.assertEqual(r.status_code, 301)
+        loc = r["Location"]
+        self.assertIn("euadopt.com", loc)
+        self.assertIn("eu_lang=de", loc)
+        self.assertIn("foo=1", loc)
+
+    @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
+    def test_com_eu_lang_sets_german_ui(self):
+        c = Client(HTTP_HOST="euadopt.com")
+        r = c.get("/contact/?eu_lang=de", follow=True)
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'value="de" selected')
         self.assertContains(r, "Kontakt")
         self.assertNotContains(r, "Contact EU-ADOPT")
 
     @override_settings(PRELAUNCH_MODE=False, EUADOPT_EU_PRODUCT_SKIN=True)
-    def test_language_switcher_on_es_host(self):
+    def test_es_host_redirects_to_com_with_lang(self):
         c = Client(HTTP_HOST="euadopt.es")
         r = c.get("/contact/")
-        self.assertEqual(r.status_code, 200)
-        self.assertContains(r, "a0-eu-lang-select")
-        self.assertContains(r, 'value="es" selected')
+        self.assertEqual(r.status_code, 301)
+        self.assertIn("euadopt.com", r["Location"])
+        self.assertIn("eu_lang=es", r["Location"])
 
     def test_pick_language_default_en(self):
         rf = RequestFactory()
