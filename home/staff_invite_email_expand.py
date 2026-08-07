@@ -4,10 +4,30 @@ from __future__ import annotations
 
 import re
 
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+
 from home.models import StaffOnboardingLead
 from home.staff_lead_contact_normalize import normalize_lead_phone, split_phone_field as split_phone_field_norm
 
 EMAIL_SPLIT_RE = re.compile(r"[\s/;,|]+")
+
+
+def is_plausible_invite_email(em: str | None) -> bool:
+    """Filtru rapid + validate_email (respinge ex. babeni@://e-adm.com)."""
+    value = (em or "").strip().lower()
+    if not value or "@" not in value or "://" in value or " " in value:
+        return False
+    local, _, domain = value.partition("@")
+    if not local or not domain or "." not in domain:
+        return False
+    if domain.startswith(".") or domain.endswith(".") or ".." in domain:
+        return False
+    try:
+        validate_email(value)
+    except ValidationError:
+        return False
+    return True
 
 
 def split_email_field(raw: str | None) -> list[str]:
@@ -15,10 +35,7 @@ def split_email_field(raw: str | None) -> list[str]:
     seen: set[str] = set()
     for part in EMAIL_SPLIT_RE.split((raw or "").strip()):
         em = part.strip().lower()
-        if not em or "@" not in em:
-            continue
-        local, _, domain = em.partition("@")
-        if not local or not domain or "." not in domain:
+        if not is_plausible_invite_email(em):
             continue
         if em not in seen:
             seen.add(em)

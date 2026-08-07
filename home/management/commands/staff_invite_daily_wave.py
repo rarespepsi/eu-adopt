@@ -74,8 +74,10 @@ class Command(BaseCommand):
         )
         if result.skipped:
             self.stdout.write(self.style.WARNING(result.message))
+            self.stdout.flush()
             return
         if result.stats.get("sent") or result.stats.get("simulated"):
             self.stdout.write(self.style.SUCCESS(result.message))
         else:
             self.stdout.write(self.style.WARNING(result.message))
+        self.stdout.flush()

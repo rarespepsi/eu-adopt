@@ -439,6 +439,8 @@ if _EMAIL_CONFIGURED:
     EMAIL_HOST_USER = _EMAIL_USER.strip()
     EMAIL_HOST_PASSWORD = _EMAIL_PASSWORD
     DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default=_EMAIL_USER.strip())
+    # Evită blocaj infinit pe SMTP (cron invitații / raport).
+    EMAIL_TIMEOUT = config("EMAIL_TIMEOUT", default=60, cast=int)
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
     EMAIL_HOST = ""

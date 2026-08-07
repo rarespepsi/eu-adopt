@@ -757,6 +757,21 @@ def staff_invite_process_one(
     if staff_invite_daily_remaining(now) <= 0:
         return "daily_cap"
     em = (lead.email or "").strip()
+    from home.staff_invite_email_expand import is_plausible_invite_email
+
+    if not is_plausible_invite_email(em):
+        StaffOnboardingInviteLog.objects.create(
+            lead=lead,
+            sent_by=staff_user,
+            to_email=em[:255],
+            subject="(skip — email invalid)",
+            outcome=StaffOnboardingInviteLog.OUTCOME_ERROR,
+            error_message=f"email invalid: {em[:200]}",
+            template_key="",
+            dispatch_kind=dispatch_kind,
+        )
+        return "error"
+
     prev_token = (lead.consent_invite_token or "").strip()
     rotating = staff_invite_should_rotate_token(lead)
     staff_invite_prepare_token_for_send(lead)
