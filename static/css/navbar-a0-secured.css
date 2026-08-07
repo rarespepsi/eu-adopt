@@ -1361,19 +1361,46 @@ body.page-animale #A0 {
 	line-height: 1;
 }
 
-/* Hub .com: selector vizibil lângă căutare (desktop) */
+/* Hub .com: selector vizibil lângă căutare (desktop) — fără overlap */
+#A0.a0-eu-site #main_menu .a0-search-right {
+	/* Încape lupa + select limbă; pe .ro rămâne max-width îngust */
+	max-width: min(17.5rem, calc(100vw - 12rem)) !important;
+	gap: 0.5rem !important;
+	align-items: center !important;
+	overflow: visible !important;
+}
+#A0.a0-eu-site #main_menu .a0-search-right.a0-search-expanded {
+	max-width: min(38rem, calc(100vw - 4rem)) !important;
+}
+#A0.a0-eu-site #main_menu .a0-search-right > .a0-search-form-inline {
+	flex: 0 1 auto !important;
+	min-width: 2.25rem !important;
+	max-width: 8.75rem !important;
+}
+#A0.a0-eu-site #main_menu .a0-search-right.a0-search-expanded > .a0-search-form-inline {
+	max-width: min(28rem, calc(100vw - 14rem)) !important;
+	flex: 1 1 auto !important;
+}
 #A0.a0-eu-site .a0-eu-lang-bar {
 	display: inline-flex;
 	align-items: center;
+	flex: 0 0 auto;
 	flex-shrink: 0;
-	margin-right: 0.35rem;
+	margin: 0 !important;
+	position: relative;
+	z-index: 2;
+	order: 0; /* cu row-reverse: limba rămâne vizual la dreapta față de căutare */
+}
+#A0.a0-eu-site .a0-eu-lang-form--bar {
+	gap: 0.22rem;
 }
 #A0.a0-eu-site .a0-eu-lang-form--bar .a0-eu-lang-select {
-	max-width: 6.5rem;
-	min-width: 4.75rem;
+	max-width: 6.75rem;
+	min-width: 5rem;
 }
 #A0.a0-eu-site .a0-eu-lang-shortcut {
-	display: none;
+	/* Duplicatul din bara scurtă produce suprapuneri pe unele rezoluții */
+	display: none !important;
 	align-items: center;
 	flex-shrink: 0;
 	margin-right: 0.2rem;
@@ -1393,7 +1420,5 @@ body.page-animale #A0 {
 	#A0.a0-eu-site .a0-eu-lang-bar {
 		display: none !important;
 	}
-	#A0.a0-eu-site .a0-eu-lang-shortcut {
-		display: inline-flex !important;
-	}
+	/* Selectorul rămâne în meniu (drawer), fără duplicat în shortcut bar */
 }
