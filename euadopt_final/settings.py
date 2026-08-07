@@ -294,13 +294,23 @@ _cron_invite_on = os.environ.get("EUADOPT_STAFF_INVITE_CRON_ENABLED", "").strip(
 STAFF_INVITE_CRON_ENABLED = _cron_invite_on in ("1", "true", "yes", "on")
 STAFF_INVITE_CRON_WAVE_SIZE = int(os.environ.get("EUADOPT_STAFF_INVITE_CRON_WAVE_SIZE", "25") or "25")
 STAFF_INVITE_CRON_ACCOUNT_KIND = os.environ.get("EUADOPT_STAFF_INVITE_CRON_ACCOUNT_KIND", "adapost").strip() or "adapost"
+# Al doilea calup (16:00): colaboratori cabinet / magazin / grooming
+STAFF_INVITE_CRON_PM_WAVE_SIZE = int(os.environ.get("EUADOPT_STAFF_INVITE_CRON_PM_WAVE_SIZE", "25") or "25")
+STAFF_INVITE_CRON_PM_ACCOUNT_KIND = (
+    os.environ.get("EUADOPT_STAFF_INVITE_CRON_PM_ACCOUNT_KIND", "collaborator").strip() or "collaborator"
+)
+STAFF_INVITE_CRON_PM_COLLAB_SUBTYPES = (
+    os.environ.get("EUADOPT_STAFF_INVITE_CRON_PM_COLLAB_SUBTYPES", "cabinet,magazin,grooming").strip()
+    or "cabinet,magazin,grooming"
+)
 _report_invite_on = os.environ.get("EUADOPT_STAFF_INVITE_REPORT_ENABLED", "").strip().lower()
 STAFF_INVITE_REPORT_ENABLED = _report_invite_on in ("1", "true", "yes", "on")
 STAFF_INVITE_REPORT_EMAIL = os.environ.get("STAFF_INVITE_REPORT_EMAIL", "").strip()
 STAFF_LEAD_INVITE_COOLDOWN_DAYS = int(os.environ.get("EUADOPT_STAFF_INVITE_COOLDOWN_DAYS", "7") or "7")
 STAFF_LEAD_INVITE_LINK_VALID_DAYS = int(os.environ.get("EUADOPT_STAFF_INVITE_LINK_VALID_DAYS", "7") or "7")
 STAFF_LEAD_INVITE_MAX_BATCH = 100
-STAFF_LEAD_INVITE_MAX_PER_DAY = 30
+# 25 AM adăpost + 25 PM colaboratori (+ mică rezervă manuală)
+STAFF_LEAD_INVITE_MAX_PER_DAY = int(os.environ.get("EUADOPT_STAFF_INVITE_MAX_PER_DAY", "55") or "55")
 STAFF_LEAD_INVITE_WAVE_DEFAULT = 20
 
 # Faza C — răspunsuri / bounce (Reply-To invite+{lead_id}@domeniu)
