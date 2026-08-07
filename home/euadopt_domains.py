@@ -142,7 +142,8 @@ def inject_query_param(full_path: str, key: str, value: str) -> str:
     parts = urlsplit(path)
     q = [(k, v) for k, v in parse_qsl(parts.query, keep_blank_values=True) if k != key]
     q.append((key, value))
-    return urlunsplit(("", "", parts.path or "/", "", urlencode(q)))
+    # urlunsplit: (scheme, netloc, path, query, fragment)
+    return urlunsplit(("", "", parts.path or "/", urlencode(q), ""))
 
 
 def allowed_hosts_from_registry(*extra: str) -> list[str]:

@@ -32,13 +32,16 @@ class EuSiteHostTests(SimpleTestCase):
         self.assertEqual(m.get("euadopt.es"), "euadopt.com")
 
     def test_country_redirect_lang(self):
-        from home.euadopt_domains import redirect_lang_for_host
+        from home.euadopt_domains import inject_query_param, redirect_lang_for_host
 
         self.assertEqual(redirect_lang_for_host("euadopt.de"), "de")
         self.assertEqual(redirect_lang_for_host("www.euadopt.fr"), "fr")
         self.assertEqual(redirect_lang_for_host("euadopt.es"), "es")
         self.assertIsNone(redirect_lang_for_host("euadopt.org"))
         self.assertIsNone(redirect_lang_for_host("euadopt.com"))
+        self.assertEqual(inject_query_param("/", "eu_lang", "de"), "/?eu_lang=de")
+        self.assertEqual(inject_query_param("/contact/?foo=1", "eu_lang", "fr"), "/contact/?foo=1&eu_lang=fr")
+        self.assertNotIn("#", inject_query_param("/", "eu_lang", "de"))
 
     def test_blocked_paths(self):
         self.assertTrue(path_blocked_on_eu_hub("/shop/"))
