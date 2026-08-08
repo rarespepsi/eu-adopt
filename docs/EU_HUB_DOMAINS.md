@@ -1,4 +1,4 @@
-# Hub EU — un singur site pe .com (aug 2026)
+# Hub EU — strategie B (domenii țară active)
 
 **Portfolio Hostico:** `eu-adopt.ro/com/eu` + `euadopt.com/de/es/eu/fr/org`.
 
@@ -6,22 +6,20 @@
 
 | Domeniu | Rol |
 |---------|-----|
-| **eu-adopt.ro** (+ www) | România — site complet (fără redirect) |
-| **euadopt.com** (+ www) | **Hub EU unic** — EN + selector limbi |
-| **euadopt.de / .fr / .es** (+ www) | **301 →** `.com` + `?eu_lang=` (DE/FR/ES) |
+| **eu-adopt.ro** (+ www) | România — site complet |
+| **euadopt.com** (+ www) | Hub EU — EN + selector limbi |
+| **euadopt.de / .fr / .es** (+ www) | **Active** — limba TLD, URL rămâne |
 | **euadopt.eu / .org**, **eu-adopt.com / .eu** (+ www) | **301 →** `euadopt.com` |
 
 ## DNS
 
-A/AAAA către Hetzner pentru **toate** hosturile (inclusiv cele care doar redirecționează).
+A/AAAA către Hetzner pentru toate hosturile.
 
 ## Nginx
 
-- `deploy/hetzner/nginx-euadopt-all-domains.conf` — proxy toate hosturile; Django face 301
-- HTTPS: certbot pe fiecare host sau SAN; redirect HTTPS separat pe server
+`deploy/hetzner/nginx-euadopt-all-domains.conf` — proxy toate hosturile; Django face 301 doar pe aliasuri.
 
 ## Cod
 
 - Registru: `home/euadopt_domains.py`
-- Middleware: `euadopt_final/eu_site_middleware.py`
 - Teste: `python manage.py test home.tests.test_eu_site`

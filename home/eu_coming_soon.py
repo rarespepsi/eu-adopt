@@ -51,7 +51,16 @@ COMING_SOON_LANGS = frozenset(COMING_SOON_I18N.keys())
 
 
 def coming_soon_lang_for_request(request) -> str:
-    """Limba Coming soon: cookie/sesiune/?eu_lang= (după redirect .de/.fr/.es)."""
+    """Limba Coming soon: TLD țară, apoi cookie/sesiune/?eu_lang=."""
+    try:
+        from home.eu_site import forced_locale_for_host
+
+        forced = forced_locale_for_host(request.get_host())
+        if forced in COMING_SOON_LANGS:
+            return forced
+    except Exception:
+        pass
+
     get_lang = ""
     try:
         get_lang = (request.GET.get("eu_lang") or "").strip().lower()

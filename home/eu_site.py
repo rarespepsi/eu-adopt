@@ -90,13 +90,13 @@ def eu_flag_img_url(lang: str | None) -> str:
 
 
 # Host-uri hub EU — doar .com (override: EUADOPT_EU_HUB_HOSTS=...).
-# .de / .fr / .es / .eu / .org (+ cratimă) → 301 la .com (vezi euadopt_domains).
+# .de / .fr / .es = ACTIVE cu limba TLD; .eu / .org / cratimă → 301 .com.
 _DEFAULT_EU_HUB_HOSTS = (
     "euadopt.com",
     "www.euadopt.com",
 )
 
-# Mapare TLD țară → limba (folosită la redirect ?eu_lang= și legacy detect).
+# Mapare TLD țară → limba forțată pe hostul activ.
 EU_COUNTRY_TLD_LOCALE: dict[str, str] = {
     "de": "de",
     "fr": "fr",
@@ -156,10 +156,10 @@ def eu_product_skin_enabled() -> bool:
 
 
 def is_eu_site_host(host: str | None) -> bool:
-    """Skin EU doar pe hub .com (țările fac 301 aici înainte de skin)."""
+    """Skin EU pe hub .com și pe domeniile țară .de/.fr/.es."""
     if not eu_product_skin_enabled():
         return False
-    return is_eu_hub_host(host)
+    return is_eu_hub_host(host) or is_eu_country_host(host)
 
 
 # Rute RO-only: redirect Acasă pe hub EU (staff Django admin rămâne pe /admin/).
@@ -203,7 +203,7 @@ EU_SITE_BLOCKED_PATH_PREFIXES = (
 def pick_language_for_hub(request) -> str:
     """
     Hub (.com): EN implicit; selector EU_HUB_UI (cookie/sesiune/Accept-Language).
-    ?eu_lang= din redirect .de/.fr/.es are prioritate (o dată, apoi cookie/sesiune).
+    Țară (.de/.fr/.es): limba TLD, exceptând schimbare manuală (eu_lang_manual).
     """
     host = request.get_host()
     session = getattr(request, "session", None)
@@ -222,7 +222,6 @@ def pick_language_for_hub(request) -> str:
     if get_lang in allowed:
         return get_lang
 
-    # Legacy: dacă requestul ar ajunge pe host țară (fără redirect), limba TLD
     forced = forced_locale_for_host(host)
     if forced:
         manual = bool(session and session.get("eu_lang_manual"))
@@ -247,10 +246,12 @@ def pick_language_for_hub(request) -> str:
 
 
 RO_CANONICAL_HOST = "eu-adopt.ro"
-# Hub unic EU: hreflang pe .com (țările sunt doar 301).
 HREFLANG_HOSTS: tuple[tuple[str, str], ...] = (
     ("ro", "eu-adopt.ro"),
     ("en", "euadopt.com"),
+    ("de", "euadopt.de"),
+    ("fr", "euadopt.fr"),
+    ("es", "euadopt.es"),
 )
 
 
@@ -295,7 +296,7 @@ def eu_site_context_for_request(request) -> dict[str, Any]:
         }
     host = request.get_host()
     hub = is_eu_hub_host(host)
-    eu = hub
+    eu = hub or forced_locale_for_host(host) is not None
     if not eu:
         return {
             "eu_site_hub": False,

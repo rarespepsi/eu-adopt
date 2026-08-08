@@ -1,22 +1,22 @@
 """
 Registru domenii EU-Adopt — sursă unică pentru ALLOWED_HOSTS, CSRF, redirect 301.
 
-Portfolio Hostico (confirmat): eu-adopt.ro/com/eu + euadopt.com/de/es/eu/fr/org.
-Strategie UX (aug 2026): .ro separat; tot restul → euadopt.com (Țară: + ?eu_lang=).
-Nu adăuga TLD-uri neconfirmate (ex. .it) până nu există în registrul de mai jos.
+Portfolio Hostico: eu-adopt.ro/com/eu + euadopt.com/de/es/eu/fr/org.
+Strategie B (aug 2026): .ro separat; .com hub; .de/.fr/.es active (limba TLD);
+.eu/.org + cratimă → 301 la .com.
+Nu adăuga TLD-uri neconfirmate (ex. .it).
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Iterable
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 
 class DomainRole(str, Enum):
     RO_PRIMARY = "ro_primary"  # eu-adopt.ro — site RO, fără redirect
-    ACTIVE = "active"  # hub EU (euadopt.com) — același Django
-    REDIRECT_301 = "redirect_301"  # tot non-.ro non-hub → euadopt.com
+    ACTIVE = "active"  # .com hub + .de/.fr/.es țară
+    REDIRECT_301 = "redirect_301"  # .eu/.org + cratimă → euadopt.com
 
 
 @dataclass(frozen=True)
@@ -25,7 +25,7 @@ class DomainEntry:
     role: DomainRole
     note: str = ""
     redirect_to: str = ""
-    # La 301 către .com: limba din TLD (ex. de → ?eu_lang=de). Gol = fără param.
+    # Opțional la REDIRECT_301 (ex. legacy); țările ACTIVE nu folosesc asta.
     redirect_lang: str = ""
 
 
@@ -33,57 +33,19 @@ class DomainEntry:
 EUADOPT_DOMAIN_REGISTRY: tuple[DomainEntry, ...] = (
     DomainEntry("eu-adopt.ro", DomainRole.RO_PRIMARY, "România — principal, nemodificat"),
     DomainEntry("www.eu-adopt.ro", DomainRole.RO_PRIMARY, "România — principal"),
-    DomainEntry("euadopt.com", DomainRole.ACTIVE, "Hub EU unic — EN + selector limbi"),
+    DomainEntry("euadopt.com", DomainRole.ACTIVE, "Hub EU — EN + selector limbi"),
     DomainEntry("www.euadopt.com", DomainRole.ACTIVE, ""),
-    # Țară → .com + limba TLD
-    DomainEntry(
-        "euadopt.de",
-        DomainRole.REDIRECT_301,
-        "DE → .com + limba germană",
-        redirect_to="euadopt.com",
-        redirect_lang="de",
-    ),
-    DomainEntry(
-        "www.euadopt.de",
-        DomainRole.REDIRECT_301,
-        "",
-        redirect_to="www.euadopt.com",
-        redirect_lang="de",
-    ),
-    DomainEntry(
-        "euadopt.fr",
-        DomainRole.REDIRECT_301,
-        "FR → .com + limba franceză",
-        redirect_to="euadopt.com",
-        redirect_lang="fr",
-    ),
-    DomainEntry(
-        "www.euadopt.fr",
-        DomainRole.REDIRECT_301,
-        "",
-        redirect_to="www.euadopt.com",
-        redirect_lang="fr",
-    ),
-    DomainEntry(
-        "euadopt.es",
-        DomainRole.REDIRECT_301,
-        "ES → .com + limba spaniolă",
-        redirect_to="euadopt.com",
-        redirect_lang="es",
-    ),
-    DomainEntry(
-        "www.euadopt.es",
-        DomainRole.REDIRECT_301,
-        "",
-        redirect_to="www.euadopt.com",
-        redirect_lang="es",
-    ),
+    DomainEntry("euadopt.de", DomainRole.ACTIVE, "DE — limba germană, URL rămâne .de"),
+    DomainEntry("www.euadopt.de", DomainRole.ACTIVE, ""),
+    DomainEntry("euadopt.fr", DomainRole.ACTIVE, "FR — limba franceză"),
+    DomainEntry("www.euadopt.fr", DomainRole.ACTIVE, ""),
+    DomainEntry("euadopt.es", DomainRole.ACTIVE, "ES — limba spaniolă"),
+    DomainEntry("www.euadopt.es", DomainRole.ACTIVE, ""),
     # Alias hub → .com
     DomainEntry("euadopt.eu", DomainRole.REDIRECT_301, "Alias → .com", redirect_to="euadopt.com"),
     DomainEntry("www.euadopt.eu", DomainRole.REDIRECT_301, "", redirect_to="www.euadopt.com"),
     DomainEntry("euadopt.org", DomainRole.REDIRECT_301, "Alias → .com", redirect_to="euadopt.com"),
     DomainEntry("www.euadopt.org", DomainRole.REDIRECT_301, "", redirect_to="www.euadopt.com"),
-    # Cratimă → fără cratimă (.com)
     DomainEntry(
         "eu-adopt.com",
         DomainRole.REDIRECT_301,
@@ -142,7 +104,6 @@ def inject_query_param(full_path: str, key: str, value: str) -> str:
     parts = urlsplit(path)
     q = [(k, v) for k, v in parse_qsl(parts.query, keep_blank_values=True) if k != key]
     q.append((key, value))
-    # urlunsplit: (scheme, netloc, path, query, fragment)
     return urlunsplit(("", "", parts.path or "/", urlencode(q), ""))
 
 
@@ -177,7 +138,6 @@ def is_romania_primary_host(host: str | None) -> bool:
 
 
 def _ascii_safe(text: str) -> str:
-    """Console-safe (Windows cp1252): diacritice -> ASCII aproximativ."""
     if not text:
         return text
     repl = str.maketrans(
