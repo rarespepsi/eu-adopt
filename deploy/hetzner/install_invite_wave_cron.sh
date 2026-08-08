@@ -32,18 +32,23 @@ if [[ -f "${ENV_FILE}" ]]; then
   chown euadopt:euadopt "${ENV_FILE}" 2>/dev/null || true
 fi
 
-CRON_AM='0 10 * * * TZ=Europe/Bucharest '"${SCRIPT_AM}"
-CRON_PM='0 16 * * * TZ=Europe/Bucharest '"${SCRIPT_PM}"
+CRON_AM='0 10 * * * '"${SCRIPT_AM}"
+CRON_PM='0 16 * * * '"${SCRIPT_PM}"
 
 TMP="$(mktemp)"
 crontab -l 2>/dev/null \
   | grep -v 'run_invite_daily_wave.sh' \
-  | grep -v 'run_invite_daily_wave_pm.sh' > "${TMP}" || true
+  | grep -v 'run_invite_daily_wave_pm.sh' \
+  | grep -v '^CRON_TZ=' > "${TMP}" || true
+# Ora locală RO: CRON_TZ pe crontab (TZ= în CMD nu mută ora de declanșare pe server UTC).
+if ! grep -q '^CRON_TZ=' "${TMP}" 2>/dev/null; then
+  echo 'CRON_TZ=Europe/Bucharest' >> "${TMP}"
+fi
 echo "${CRON_AM}" >> "${TMP}"
 echo "${CRON_PM}" >> "${TMP}"
 crontab "${TMP}"
 rm -f "${TMP}"
 
-echo "Cron invitații instalat:"
-crontab -l | grep run_invite_daily_wave || true
+echo "Cron invitații instalat (CRON_TZ=Europe/Bucharest):"
+crontab -l | grep -E 'CRON_TZ|run_invite_daily_wave' || true
 echo "Log: /var/log/euadopt-invite-wave.log"

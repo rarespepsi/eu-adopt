@@ -19,14 +19,18 @@ if [[ -f "${ENV_FILE}" ]]; then
   chown euadopt:euadopt "${ENV_FILE}" 2>/dev/null || true
 fi
 
-CRON_LINE='0 9 * * * TZ=Europe/Bucharest '"${SCRIPT}"
+CRON_LINE='0 9 * * * '"${SCRIPT}"
 
 TMP="$(mktemp)"
-crontab -l 2>/dev/null | grep -v 'run_invite_daily_report.sh' > "${TMP}" || true
+crontab -l 2>/dev/null \
+  | grep -v 'run_invite_daily_report.sh' \
+  | grep -v '^CRON_TZ=' > "${TMP}" || true
+# Ora locală RO: CRON_TZ pe crontab (serverul e UTC; TZ= în CMD nu mută ora).
+echo 'CRON_TZ=Europe/Bucharest' >> "${TMP}"
 echo "${CRON_LINE}" >> "${TMP}"
 crontab "${TMP}"
 rm -f "${TMP}"
 
-echo "Cron raport invitații instalat (09:00 Europe/Bucharest):"
-crontab -l | grep run_invite_daily_report || true
+echo "Cron raport invitații instalat (09:00 Europe/Bucharest via CRON_TZ):"
+crontab -l | grep -E 'CRON_TZ|run_invite_daily_report' || true
 echo "Log: /var/log/euadopt-invite-report.log"

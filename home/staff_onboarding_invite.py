@@ -249,6 +249,10 @@ def staff_invite_can_send(lead: StaffOnboardingLead, now=None) -> tuple[bool, st
     em = (lead.email or "").strip()
     if not em or is_placeholder_lead_email(em):
         return False, "fără email valid"
+    from home.staff_invite_email_expand import is_plausible_invite_email
+
+    if not is_plausible_invite_email(em):
+        return False, "email invalid"
     if lead.imported_user_id:
         return False, "cont creat"
     st = staff_invite_display_status(lead)
@@ -770,6 +774,12 @@ def staff_invite_process_one(
             template_key="",
             dispatch_kind=dispatch_kind,
         )
+        # Nu mai reîncerca la valuri: marchează bounce tehnic.
+        StaffOnboardingLead.objects.filter(pk=lead.pk).update(
+            invite_mail_status=StaffOnboardingLead.INVITE_BOUNCED,
+            updated_at=timezone.now(),
+        )
+        lead.invite_mail_status = StaffOnboardingLead.INVITE_BOUNCED
         return "error"
 
     prev_token = (lead.consent_invite_token or "").strip()
