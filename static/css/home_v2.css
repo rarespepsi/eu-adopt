@@ -415,7 +415,7 @@ body.page-home-v2 #home-col-right {
     flex-direction: column !important;
     width: 100% !important;
     min-height: 0 !important;
-    background: #c00 !important;
+    background: transparent !important;
     padding: 0 !important;
     box-sizing: border-box !important;
 }
@@ -429,8 +429,8 @@ body.page-home-v2 #home-col-right .home-v2-side-inner {
     min-height: 0 !important;
     height: 100% !important;
     width: 100% !important;
-    border: 2px solid #999 !important;
-    border-radius: 4px !important;
+    border: none !important;
+    border-radius: 0 !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
 }
@@ -463,7 +463,7 @@ body.page-home-v2 #home-col-right .home-v2-slot-white img {
     object-fit: cover !important;
     display: block !important;
 }
-/* A5/A6 – parteneri: imaginea se încadrează în casetă (întreagă, fără tăieri) */
+/* A5/A6 – parteneri: imaginea umple caseta (fără spații vizibile) */
 body.page-home-v2 #home-col-left .home-v2-slot-partener,
 body.page-home-v2 #home-col-right .home-v2-slot-partener {
     display: flex !important;
@@ -480,7 +480,7 @@ body.page-home-v2 #home-col-right .home-v2-slot-partener a:not(.pub-live-video-l
     width: 100% !important;
     height: 100% !important;
     min-height: 0 !important;
-    padding: 6px !important;
+    padding: 0 !important;
     box-sizing: border-box !important;
 }
 body.page-home-v2 #home-col-left .home-v2-slot-partener:has(video.slot-img-fit),
@@ -493,11 +493,11 @@ body.page-home-v2 #home-col-right .home-v2-slot-partener a:has(video.slot-img-fi
 }
 body.page-home-v2 #home-col-left .slot-img-fit,
 body.page-home-v2 #home-col-right .slot-img-fit {
-    max-width: 100% !important;
-    max-height: 100% !important;
-    width: auto !important;
-    height: auto !important;
-    object-fit: contain !important;
+    max-width: none !important;
+    max-height: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
     display: block !important;
 }
 body.page-home-v2 #home-col-left video.slot-img-fit,
