@@ -279,7 +279,8 @@ def run_staff_invite_daily_wave(
         max_count=len(expanded),
     )
 
-    if picked and (stats.get("sent") or stats.get("simulated")):
+    if picked:
+        # Avansăm A↔B chiar dacă SMTP a eșuat (altfel rămânem blocați pe o grupă goală/invalidă).
         mark_region_group_used(grp, slot)
 
     logger.info(
