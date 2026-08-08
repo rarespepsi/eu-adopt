@@ -365,7 +365,7 @@ class EuNonRoStaffGateTests(TestCase):
 
 class PetFieldValueEnTests(SimpleTestCase):
     def test_size_yes_no_age(self):
-        from home.pet_ui_display import pet_field_value_en
+        from home.pet_ui_display import pet_field_value, pet_field_value_en
 
         self.assertEqual(pet_field_value_en("mica"), "Small")
         self.assertEqual(pet_field_value_en("mică"), "Small")
@@ -379,6 +379,35 @@ class PetFieldValueEnTests(SimpleTestCase):
         self.assertEqual(pet_field_value_en("10+ ani"), "10+ years")
         self.assertEqual(pet_field_value_en("<1 an"), "<1 year")
         self.assertEqual(pet_field_value_en("Cluj-Napoca"), "Cluj-Napoca")
+
+    def test_de_fr_es_yes_no_size(self):
+        from home.pet_ui_display import pet_field_value
+
+        self.assertEqual(pet_field_value("da", "de"), "Ja")
+        self.assertEqual(pet_field_value("nu", "de"), "Nein")
+        self.assertEqual(pet_field_value("mica", "de"), "Klein")
+        self.assertEqual(pet_field_value("2 ani", "de"), "2 Jahre")
+        self.assertEqual(pet_field_value("da", "fr"), "Oui")
+        self.assertEqual(pet_field_value("nu", "fr"), "Non")
+        self.assertEqual(pet_field_value("mare", "fr"), "Grand")
+        self.assertEqual(pet_field_value("da", "es"), "Sí")
+        self.assertEqual(pet_field_value("medie", "es"), "Mediano")
+        self.assertEqual(pet_field_value("3 ani", "es"), "3 años")
+
+    def test_a2_quote_pools_aligned(self):
+        from home.data import (
+            A2_QUOTE_POOL_DE,
+            A2_QUOTE_POOL_EN,
+            A2_QUOTE_POOL_ES,
+            A2_QUOTE_POOL_FR,
+            A2_QUOTE_POOLS_BY_LANG,
+        )
+
+        n = len(A2_QUOTE_POOL_EN)
+        self.assertEqual(len(A2_QUOTE_POOL_DE), n)
+        self.assertEqual(len(A2_QUOTE_POOL_FR), n)
+        self.assertEqual(len(A2_QUOTE_POOL_ES), n)
+        self.assertEqual(A2_QUOTE_POOLS_BY_LANG["de"][0], A2_QUOTE_POOL_DE[0])
 
 
 class EuCountriesTests(SimpleTestCase):

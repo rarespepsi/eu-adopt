@@ -986,10 +986,12 @@ def _adopter_messaging_allowed(pet, user) -> bool:
 
 def _a2_quote_pool_for_request(request) -> list:
     try:
-        from home.eu_site import is_eu_site_host
+        from home.data import A2_QUOTE_POOLS_BY_LANG
+        from home.eu_site import is_eu_site_host, pick_language_for_hub
 
         if is_eu_site_host(request.get_host()):
-            return A2_QUOTE_POOL_EN
+            lang = (pick_language_for_hub(request) or "en").split("-")[0].lower()
+            return A2_QUOTE_POOLS_BY_LANG.get(lang) or A2_QUOTE_POOLS_BY_LANG["en"]
     except Exception:
         pass
     return A2_QUOTE_POOL

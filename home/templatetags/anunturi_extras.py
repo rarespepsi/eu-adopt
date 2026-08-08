@@ -15,14 +15,15 @@ def animal_trait_label(context, species, field_name):
 
 @register.simple_tag(takes_context=True)
 def eu_pet_val(context, raw, default=""):
-    """Valoare câmp fișă: EN pe site EU, altfel textul din DB (sau default dacă e gol)."""
+    """Valoare câmp fișă: limba EU (EN/DE/FR/ES), altfel textul din DB."""
     if raw is None or str(raw).strip() == "":
         return default
     if not context.get("eu_site_active"):
         return str(raw)
-    from home.pet_ui_display import pet_field_value_en
+    from home.pet_ui_display import pet_field_value
 
-    return pet_field_value_en(raw) or default
+    lang = (context.get("eu_site_lang") or "en").split("-")[0].lower()
+    return pet_field_value(raw, lang) or default
 
 
 @register.simple_tag
@@ -33,12 +34,13 @@ def pet_thumb_url(image_field, size=400):
 
 @register.inclusion_tag("anunturi/includes/pet_card_meta_footer.html", takes_context=True)
 def pet_card_meta_footer(context, pet):
-    """Localitate + M/F + vârstă (rânduri sub nume pe card). EN age pe site EU."""
+    """Localitate + M/F + vârstă (rânduri sub nume pe card). Vârstă i18n pe site EU."""
     meta = pet_card_meta_context(pet)
     if context.get("eu_site_active") and meta.get("age_text"):
-        from home.pet_ui_display import pet_field_value_en
+        from home.pet_ui_display import pet_field_value
 
-        meta["age_text"] = pet_field_value_en(meta["age_text"]) or meta["age_text"]
+        lang = (context.get("eu_site_lang") or "en").split("-")[0].lower()
+        meta["age_text"] = pet_field_value(meta["age_text"], lang) or meta["age_text"]
     return meta
 
 
