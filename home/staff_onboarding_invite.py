@@ -755,8 +755,27 @@ def staff_invite_process_one(
     Procesează un lead. Returnează: sent | simulated | blocked | error | daily_cap
     """
     now = now or timezone.now()
-    ok, _reason = staff_invite_can_send(lead, now)
+    ok, reason = staff_invite_can_send(lead, now)
     if not ok:
+        from home.staff_invite_email_expand import (
+            UNSENDABLE_EMAIL_REASONS,
+            staff_invite_retire_unsendable_email,
+        )
+
+        if reason in UNSENDABLE_EMAIL_REASONS:
+            em = (lead.email or "").strip()
+            StaffOnboardingInviteLog.objects.create(
+                lead=lead,
+                sent_by=staff_user,
+                to_email=(em or "(gol)")[:255],
+                subject="(skip — email invalid)",
+                outcome=StaffOnboardingInviteLog.OUTCOME_ERROR,
+                error_message=f"{reason}: {em[:200]}",
+                template_key="",
+                dispatch_kind=dispatch_kind,
+            )
+            staff_invite_retire_unsendable_email(lead)
+            return "invalid"
         return "blocked"
     if staff_invite_daily_remaining(now) <= 0:
         return "daily_cap"
@@ -774,13 +793,10 @@ def staff_invite_process_one(
             template_key="",
             dispatch_kind=dispatch_kind,
         )
-        # Nu mai reîncerca la valuri: marchează bounce tehnic.
-        StaffOnboardingLead.objects.filter(pk=lead.pk).update(
-            invite_mail_status=StaffOnboardingLead.INVITE_BOUNCED,
-            updated_at=timezone.now(),
-        )
-        lead.invite_mail_status = StaffOnboardingLead.INVITE_BOUNCED
-        return "error"
+        from home.staff_invite_email_expand import staff_invite_retire_unsendable_email
+
+        staff_invite_retire_unsendable_email(lead)
+        return "invalid"
 
     prev_token = (lead.consent_invite_token or "").strip()
     rotating = staff_invite_should_rotate_token(lead)
@@ -815,6 +831,13 @@ def staff_invite_process_one(
                 template_key=template_key,
                 dispatch_kind=dispatch_kind,
             )
+            # Adresă refuzată de SMTP (ex. Invalid address) → scoate din pool, continuă valul.
+            err_l = str(exc).lower()
+            if "invalid address" in err_l or "invalid email" in err_l:
+                from home.staff_invite_email_expand import staff_invite_retire_unsendable_email
+
+                staff_invite_retire_unsendable_email(lead)
+                return "invalid"
             return "error"
         StaffOnboardingInviteLog.objects.create(
             lead=lead,
@@ -880,6 +903,9 @@ def staff_invite_process_batch(
             processed += 1
         elif result == "blocked":
             stats["blocked"] += 1
+        elif result == "invalid":
+            # Skip — nu oprește valul, nu consumă slot din plafonul de trimitere.
+            stats["invalid"] += 1
         elif result == "error":
             stats["error"] += 1
         elif result == "daily_cap":
@@ -904,6 +930,8 @@ def staff_invite_build_result_message(stats: dict[str, int], *, wave: bool = Fal
         parts.append(f"{prefix}0 trimise.")
     if stats.get("blocked"):
         parts.append(f"blocate: {stats['blocked']}")
+    if stats.get("invalid"):
+        parts.append(f"email invalide sărite: {stats['invalid']}")
     if stats.get("error"):
         parts.append(f"erori: {stats['error']}")
     if stats.get("daily_cap"):

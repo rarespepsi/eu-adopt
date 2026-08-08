@@ -6,11 +6,15 @@ import re
 
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
+from django.utils import timezone
 
 from home.models import StaffOnboardingLead
 from home.staff_lead_contact_normalize import normalize_lead_phone, split_phone_field as split_phone_field_norm
 
 EMAIL_SPLIT_RE = re.compile(r"[\s/;,|]+")
+
+# Motive din staff_invite_can_send — lead scos din pool (nu reîncerca la val).
+UNSENDABLE_EMAIL_REASONS = frozenset({"email invalid", "fără email valid"})
 
 
 def is_plausible_invite_email(em: str | None) -> bool:
@@ -41,6 +45,18 @@ def split_email_field(raw: str | None) -> list[str]:
             seen.add(em)
             out.append(em)
     return out
+
+
+def staff_invite_retire_unsendable_email(lead: StaffOnboardingLead) -> bool:
+    """Marchează lead cu email invalid/gol ca bounced ca să nu blocheze valurile."""
+    if lead.invite_mail_status == StaffOnboardingLead.INVITE_BOUNCED:
+        return False
+    StaffOnboardingLead.objects.filter(pk=lead.pk).update(
+        invite_mail_status=StaffOnboardingLead.INVITE_BOUNCED,
+        updated_at=timezone.now(),
+    )
+    lead.invite_mail_status = StaffOnboardingLead.INVITE_BOUNCED
+    return True
 
 
 def clone_lead_for_email(source: StaffOnboardingLead, email: str) -> StaffOnboardingLead:
@@ -80,11 +96,15 @@ def clone_lead_for_email(source: StaffOnboardingLead, email: str) -> StaffOnboar
 
 
 def staff_invite_expand_lead_send_targets(lead: StaffOnboardingLead) -> list[StaffOnboardingLead]:
-    """Lead cu N emailuri în câmp → N leaduri (primul rămâne pe pk original)."""
+    """Lead cu N emailuri în câmp → N leaduri (primul rămâne pe pk original).
+
+    Zero adrese valide → [] + bounced (nu reintroduce lead-ul invalid în val).
+    """
     normalize_lead_phone(lead, save=True)
     emails = split_email_field(lead.email)
     if not emails:
-        return [lead]
+        staff_invite_retire_unsendable_email(lead)
+        return []
     targets: list[StaffOnboardingLead] = []
     for i, em in enumerate(emails):
         if i == 0:

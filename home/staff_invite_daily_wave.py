@@ -25,7 +25,11 @@ from home.staff_onboarding_invite import (
     staff_invite_email_enabled,
     staff_invite_process_batch,
 )
-from home.staff_invite_email_expand import staff_invite_expand_picked_leads
+from home.staff_invite_email_expand import (
+    UNSENDABLE_EMAIL_REASONS,
+    staff_invite_expand_picked_leads,
+    staff_invite_retire_unsendable_email,
+)
 from home.views import _staff_onboarding_leads_filtered_qs_from_querydict
 
 logger = logging.getLogger(__name__)
@@ -185,8 +189,12 @@ def pick_leads_for_daily_wave(
         qs = qs.filter(subtype_q)
     picked: list[StaffOnboardingLead] = []
     for lead in qs.order_by("judet", "oras", "pk").iterator():
-        if staff_invite_can_send(lead)[0]:
+        ok, reason = staff_invite_can_send(lead)
+        if ok:
             picked.append(lead)
+        elif reason in UNSENDABLE_EMAIL_REASONS:
+            # Scoate din pool și continuă până umpli valul cu adrese valide.
+            staff_invite_retire_unsendable_email(lead)
         if len(picked) >= wave_limit:
             break
     return picked
@@ -279,9 +287,8 @@ def run_staff_invite_daily_wave(
         max_count=len(expanded),
     )
 
-    if picked:
-        # Avansăm A↔B chiar dacă SMTP a eșuat (altfel rămânem blocați pe o grupă goală/invalidă).
-        mark_region_group_used(grp, slot)
+    # Avansăm A↔B după orice încercare reală (inclusiv pool doar cu invalide scoase / SMTP erori).
+    mark_region_group_used(grp, slot)
 
     logger.info(
         "staff_invite_daily_wave slot=%s grp=%s kind=%s subtypes=%s picked=%s expanded=%s stats=%s smtp=%s",
