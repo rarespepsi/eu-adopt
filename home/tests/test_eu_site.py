@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.test import Client, RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
@@ -309,6 +310,29 @@ class EuNonRoStaffGateTests(TestCase):
         r = c.get("/")
         self.assertEqual(r.status_code, 403)
         self.assertContains(r, "coming soon", status_code=403)
+
+    def test_coming_soon_french_from_cookie(self):
+        c = Client(HTTP_HOST="euadopt.com")
+        c.cookies[settings.LANGUAGE_COOKIE_NAME] = "fr"
+        r = c.get("/")
+        self.assertEqual(r.status_code, 403)
+        self.assertContains(r, "bientôt disponible", status_code=403)
+        self.assertContains(r, "Connexion staff", status_code=403)
+        self.assertNotContains(r, "This international site", status_code=403)
+
+    def test_coming_soon_german_from_cookie(self):
+        c = Client(HTTP_HOST="euadopt.com")
+        c.cookies[settings.LANGUAGE_COOKIE_NAME] = "de"
+        r = c.get("/")
+        self.assertEqual(r.status_code, 403)
+        self.assertContains(r, "demnächst", status_code=403)
+
+    def test_coming_soon_spanish_from_cookie(self):
+        c = Client(HTTP_HOST="euadopt.com")
+        c.cookies[settings.LANGUAGE_COOKIE_NAME] = "es"
+        r = c.get("/")
+        self.assertEqual(r.status_code, 403)
+        self.assertContains(r, "próximamente", status_code=403)
 
     def test_login_allowed(self):
         c = Client(HTTP_HOST="euadopt.com")

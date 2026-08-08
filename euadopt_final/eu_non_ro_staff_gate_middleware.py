@@ -73,12 +73,15 @@ class EuNonRoStaffGateMiddleware:
         if _path_allowed(request.path or "/"):
             return self.get_response(request)
 
+        from home.eu_coming_soon import coming_soon_copy
+
         return render(
             request,
             "anunturi/eu_coming_soon.html",
             {
                 "ro_home_url": "https://eu-adopt.ro/",
                 "login_url": "/login/",
+                "cs": coming_soon_copy(request),
             },
             status=403,
         )
