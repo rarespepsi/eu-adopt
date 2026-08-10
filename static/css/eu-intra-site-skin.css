@@ -283,6 +283,15 @@ body.euadopt-intra-skin.page-home-v2 #home-col-right .home-v2-side-inner {
 	box-shadow: none !important;
 }
 
+body.euadopt-intra-skin.page-home-v2 #home-col-left .home-v2-slot,
+body.euadopt-intra-skin.page-home-v2 #home-col-right .home-v2-slot,
+body.euadopt-intra-skin.page-home-v2 #A5 .home-v2-slot,
+body.euadopt-intra-skin.page-home-v2 #A6 .home-v2-slot {
+	border: 1px solid rgba(255, 255, 255, 0.16) !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+}
+
 body.euadopt-intra-skin.page-home-v2 #home-col-left .home-v2-slot-bg1,
 body.euadopt-intra-skin.page-home-v2 #home-col-right .home-v2-slot-bg1,
 body.euadopt-intra-skin.page-home-v2 #home-col-left .home-v2-slot-bg2,
@@ -290,9 +299,6 @@ body.euadopt-intra-skin.page-home-v2 #home-col-right .home-v2-slot-bg2,
 body.euadopt-intra-skin.page-home-v2 #home-col-left .home-v2-slot-bg3,
 body.euadopt-intra-skin.page-home-v2 #home-col-right .home-v2-slot-bg3 {
 	background: var(--eu-intra-glass-bg) !important;
-	border: none !important;
-	border-radius: 0 !important;
-	box-shadow: none !important;
 }
 
 body.euadopt-intra-skin.page-home-v2 #home-col-left .home-v2-slot-white,

@@ -434,11 +434,20 @@ body.page-home-v2 #home-col-right .home-v2-side-inner {
     box-sizing: border-box !important;
     overflow: hidden !important;
 }
+/* Chenar fin pe fiecare casetă (între 1–2–3 se dublează unde se ating) */
+body.page-home-v2 #home-col-left .home-v2-slot,
+body.page-home-v2 #home-col-right .home-v2-slot,
+body.page-home-v2 #A5 .home-v2-slot,
+body.page-home-v2 #A6 .home-v2-slot {
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-radius: 0 !important;
+    box-sizing: border-box !important;
+}
 body.page-home-v2 #home-col-left .home-v2-slot-white,
 body.page-home-v2 #home-col-right .home-v2-slot-white {
     background: #fff !important;
     min-height: 0 !important;
-    border: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
     border-radius: 0 !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
