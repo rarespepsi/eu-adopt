@@ -42,9 +42,14 @@ class PrelaunchEnabledTests(TestCase):
         self.user.save()
 
     def test_anonymous_only_home_public(self):
-        """Doar HOME e vizualizare anonimă; PT / Servicii / Shop cer login."""
+        """HOME + harta Campanii anonime; PT / Servicii / Shop cer login."""
         c = Client()
         self.assertEqual(c.get(reverse("home")).status_code, 200)
+        r_camp = c.get(reverse("publicitate_campanii_ro"))
+        self.assertEqual(r_camp.status_code, 200)
+        self.assertContains(r_camp, "Campanii gratuite de sterilizare")
+        r_judet = c.get(reverse("publicitate_campanii_judet", kwargs={"judet_slug": "neamt"}))
+        self.assertEqual(r_judet.status_code, 200)
         for name in ("pets_all", "servicii", "shop", "transport"):
             r = c.get(reverse(name))
             self.assertEqual(r.status_code, 302, msg=name)

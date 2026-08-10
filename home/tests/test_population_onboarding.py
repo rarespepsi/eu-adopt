@@ -2,6 +2,7 @@
 
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
+from django.urls import reverse
 
 from home.models import AccountProfile, AnimalListing
 
@@ -124,6 +125,27 @@ class PopulationOnboardingTests(TestCase):
         c = Client()
         c.login(username="ong_pop", password="x")
         r = c.get("/shop/")
+        self.assertEqual(r.status_code, 302)
+        self.assertIn("/mypet/", r.url)
+
+    def test_org_can_view_campanii_map(self):
+        """Harta Campanii e publică — adăpost/ONG nu e redirecționat la MyPet."""
+        self.org_user.set_password("x")
+        self.org_user.save()
+        c = Client()
+        c.login(username="ong_pop", password="x")
+        r = c.get(reverse("publicitate_campanii_ro"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Campanii gratuite de sterilizare")
+        r2 = c.get(reverse("publicitate_campanii_judet", kwargs={"judet_slug": "neamt"}))
+        self.assertEqual(r2.status_code, 200)
+
+    def test_org_still_blocked_from_publicitate_harta(self):
+        self.org_user.set_password("x")
+        self.org_user.save()
+        c = Client()
+        c.login(username="ong_pop", password="x")
+        r = c.get(reverse("publicitate_harta"))
         self.assertEqual(r.status_code, 302)
         self.assertIn("/mypet/", r.url)
 

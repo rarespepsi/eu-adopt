@@ -1,7 +1,7 @@
 """
 Căi accesibile fără autentificare când PRELAUNCH_MODE este activ.
 
-Vizitator anonim pe .ro (vizualizare): doar HOME (+ fișe animal pe link/QR).
+Vizitator anonim pe .ro (vizualizare): HOME, harta Campanii (+ fișe animal pe link/QR).
 PT / Servicii și restul site-ului cer login.
 """
 from __future__ import annotations
@@ -37,6 +37,7 @@ PRELAUNCH_ANONYMOUS_PREFIXES: tuple[str, ...] = (
     "/signup/check-activation-status/",
     "/cont/editeaza/confirmare-email/",
     "/adaposturi/",
+    "/publicitate/campanii/",
     "/admin/",
     "/static/",
     "/media/",
