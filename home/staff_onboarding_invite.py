@@ -6,6 +6,7 @@ Trimiterea SMTP este dezactivată implicit (mod tehnic); activare: EUADOPT_STAFF
 from __future__ import annotations
 
 import logging
+import re
 import secrets
 from datetime import timedelta
 from typing import Any
@@ -40,6 +41,73 @@ _DISPATCH_OUTCOMES = (
     StaffOnboardingInviteLog.OUTCOME_SENT,
     StaffOnboardingInviteLog.OUTCOME_DRY_RUN,
 )
+
+# org_display_name din importuri e deseori adresă — nu o pune în „Bună ziua pentru …”.
+_ORG_ADDRESS_START_RE = re.compile(
+    r"(?is)^\s*(str\.|strada|bulevardul|bd\.|calea|nr\.|comuna|sat\b|municipiul|"
+    r"ora[sș]ul|jude[tț]|sector\s*\d|sediul|zona\s|proiecte\s)",
+)
+_ORG_ADDRESS_INLINE_RE = re.compile(
+    r"(?is)\b(adres[aă]\s*fizic[aă]|adresa\s*:|\bnr\.?\s*\d)",
+)
+_ORG_NAME_KEYWORDS_RE = re.compile(
+    r"(?is)\b(asocia[tț]i[ae]|ad[aă]post|prim[aă]ri|funda[tț]|ong\b|cabinet|"
+    r"clinic|servici|magazin|grooming|transport|s\.?c\.|srl|sa\b)",
+)
+
+
+def _invite_strip_address_tail(raw: str) -> str:
+    text = (raw or "").strip()
+    if not text:
+        return ""
+    parts = re.split(r"(?is)\s+adres[aă]\s*fizic[aă]\b|\s+adresa\s*:", text, maxsplit=1)
+    return parts[0].strip(" ,;-–—")
+
+
+def _invite_looks_like_address(raw: str) -> bool:
+    text = (raw or "").strip()
+    if not text:
+        return True
+    if _ORG_ADDRESS_START_RE.match(text):
+        return True
+    if _ORG_NAME_KEYWORDS_RE.search(text):
+        return False
+    if _ORG_ADDRESS_INLINE_RE.search(text) and re.search(
+        r"(?is)(str\.|strada|sector|bulevard|calea)", text
+    ):
+        return True
+    return False
+
+
+def _invite_name_from_email(email: str) -> str:
+    value = (email or "").strip().lower()
+    if "@" not in value:
+        return ""
+    local, _, domain = value.partition("@")
+    generic = {"contact", "office", "info", "admin", "mail", "hello", "support", "noreply"}
+    parts = [p for p in re.split(r"[._+\-]+", local) if p and not p.isdigit()]
+    if parts and parts[0] not in generic:
+        return " ".join(p[:1].upper() + p[1:] for p in parts[:6]).strip()
+    root = (domain.split(".", 1)[0] or "").strip()
+    if root and root not in {"gmail", "yahoo", "outlook", "hotmail", "icloud", "mail"}:
+        return root.replace("-", " ").title()
+    return ""
+
+
+def staff_invite_org_greeting_name(lead: StaffOnboardingLead) -> str:
+    """Denumire organizație pentru textul invitației (evită adrese din câmpurile de import)."""
+    for candidate in (
+        lead.company_legal_name,
+        lead.org_display_name,
+        lead.display_name,
+        lead.username_suggested,
+    ):
+        cleaned = _invite_strip_address_tail(candidate or "")
+        if cleaned and not _invite_looks_like_address(cleaned):
+            if len(cleaned) > 100:
+                cleaned = cleaned[:100].rsplit(" ", 1)[0].strip(" ,;-")
+            return cleaned
+    return _invite_name_from_email(lead.email or "")
 
 
 def staff_invite_email_enabled() -> bool:
@@ -614,9 +682,8 @@ def staff_invite_subject_body(
     now = now or timezone.now()
     template_key = staff_invite_template_key(lead)
     kind_label = lead.get_account_kind_display()
-    org_line = ""
-    if (lead.org_display_name or "").strip():
-        org_line = f" pentru {lead.org_display_name.strip()}"
+    org_name = staff_invite_org_greeting_name(lead)
+    org_line = f" pentru {org_name}" if org_name else ""
     signup_url = _invite_signup_url(request, lead)
     link_valid_until = now + timedelta(days=staff_invite_link_valid_days())
 
@@ -985,7 +1052,9 @@ def staff_invite_signup_prefill_for_lead(lead: StaffOnboardingLead) -> dict | No
     email = (lead.email or "").strip().lower()
     phone = (lead.phone or "").strip()
     contact = (lead.display_name or "").strip()
-    org_name = (lead.org_display_name or "").strip()
+    if contact and _invite_looks_like_address(contact):
+        contact = staff_invite_org_greeting_name(lead) or contact
+    org_name = staff_invite_org_greeting_name(lead)
     terms_ok = bool(lead.consent_terms_at)
     gdpr_ok = bool(lead.consent_privacy_at)
     kind = (lead.account_kind or "").strip()
