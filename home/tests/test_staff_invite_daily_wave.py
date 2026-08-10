@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.test import TestCase, override_settings
 
-from home.models import StaffOnboardingLead
+from home.models import StaffOnboardingLead, StaffOnboardingInviteLog
 from home.staff_invite_daily_wave import (
     STAFF_INVITE_CRON_PM_REGION_CACHE_KEY,
     STAFF_INVITE_CRON_REGION_CACHE_KEY,
@@ -108,6 +108,37 @@ class StaffInviteDailyWaveTests(TestCase):
         self.assertFalse(result.skipped)
         self.assertEqual(result.picked_count, 0)
         self.assertEqual(next_region_group_for_cron(), "b")
+
+    def test_pick_fills_with_resend_when_first_empty(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        # Lead deja invitat, cooldown trecut → eligibil val 2
+        lead = StaffOnboardingLead.objects.create(
+            email="resend.ok@example.com",
+            display_name="Resend",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            judet="Cluj",
+            invite_mail_status=StaffOnboardingLead.INVITE_SENT,
+        )
+        StaffOnboardingInviteLog.objects.create(
+            lead=lead,
+            to_email=lead.email,
+            outcome=StaffOnboardingInviteLog.OUTCOME_SENT,
+            dispatch_kind=StaffOnboardingInviteLog.DISPATCH_WAVE,
+        )
+        StaffOnboardingLead.objects.filter(pk=lead.pk).update(
+            invite_email_last_sent_at=timezone.now() - timedelta(days=10),
+            invite_mail_status=StaffOnboardingLead.INVITE_SENT,
+        )
+        lead.refresh_from_db()
+        picked = pick_leads_for_daily_wave(
+            region_group="a",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            wave_limit=5,
+        )
+        self.assertEqual([p.pk for p in picked], [lead.pk])
 
     @override_settings(STAFF_INVITE_CRON_ENABLED=False)
     def test_cron_disabled_skips(self):

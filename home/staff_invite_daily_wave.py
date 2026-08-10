@@ -2,6 +2,9 @@
 
 Slot morning (10:00): adăposturi (implicit).
 Slot afternoon (16:00): colaboratori cabinet + magazin/farmacie + grooming.
+
+Selecție: întâi prospecte fără invitație (val 1), apoi — dacă mai e loc în val —
+retrimiteri eligibile (val 2+, după cooldown), ca pool-ul „never” epuizat să nu lase valul gol.
 """
 
 from __future__ import annotations
@@ -167,36 +170,80 @@ def _cron_staff_user():
     )
 
 
+def _wave_base_qs(
+    *,
+    region_group: str,
+    account_kind: str,
+    collab_subtypes: list[str] | None,
+    invite_mode: str,
+):
+    """invite_mode: first | resend."""
+    params = {
+        "account_kind": account_kind,
+        "region_group": region_group,
+    }
+    if invite_mode == "resend":
+        params["invite_resend_only"] = "1"
+    else:
+        params["invite_first_only"] = "1"
+    qd = QueryDict(urlencode(params))
+    qs = _staff_onboarding_leads_filtered_qs_from_querydict(qd)
+    if invite_mode == "first":
+        qs = qs.filter(invite_mail_status=StaffOnboardingLead.INVITE_NEVER)
+    if account_kind == StaffOnboardingLead.KIND_COLLAB and collab_subtypes:
+        subtype_q = Q(collaborator_subtype__in=collab_subtypes)
+        if StaffOnboardingLead.COLLAB_CABINET in collab_subtypes:
+            subtype_q |= Q(collaborator_subtype=StaffOnboardingLead.COLLAB_CV)
+        qs = qs.filter(subtype_q)
+    return qs
+
+
+def _append_pickable_leads(
+    qs,
+    *,
+    picked: list[StaffOnboardingLead],
+    wave_limit: int,
+    seen: set[int],
+) -> None:
+    for lead in qs.order_by("judet", "oras", "pk").iterator():
+        if lead.pk in seen:
+            continue
+        ok, reason = staff_invite_can_send(lead)
+        if ok:
+            picked.append(lead)
+            seen.add(lead.pk)
+        elif reason in UNSENDABLE_EMAIL_REASONS:
+            staff_invite_retire_unsendable_email(lead)
+        if len(picked) >= wave_limit:
+            break
+
+
 def pick_leads_for_daily_wave(
     *,
     region_group: str,
     account_kind: str,
     wave_limit: int,
     collab_subtypes: list[str] | None = None,
+    allow_resend: bool = True,
 ) -> list[StaffOnboardingLead]:
-    params = {
-        "account_kind": account_kind,
-        "region_group": region_group,
-        "invite_first_only": "1",
-    }
-    qd = QueryDict(urlencode(params))
-    qs = _staff_onboarding_leads_filtered_qs_from_querydict(qd)
-    qs = qs.filter(invite_mail_status=StaffOnboardingLead.INVITE_NEVER)
-    if account_kind == StaffOnboardingLead.KIND_COLLAB and collab_subtypes:
-        subtype_q = Q(collaborator_subtype__in=collab_subtypes)
-        if StaffOnboardingLead.COLLAB_CABINET in collab_subtypes:
-            subtype_q |= Q(collaborator_subtype=StaffOnboardingLead.COLLAB_CV)
-        qs = qs.filter(subtype_q)
+    """Val 1 (never) prioritar; dacă nu umple valul, completează cu val 2+ (resend eligibil)."""
     picked: list[StaffOnboardingLead] = []
-    for lead in qs.order_by("judet", "oras", "pk").iterator():
-        ok, reason = staff_invite_can_send(lead)
-        if ok:
-            picked.append(lead)
-        elif reason in UNSENDABLE_EMAIL_REASONS:
-            # Scoate din pool și continuă până umpli valul cu adrese valide.
-            staff_invite_retire_unsendable_email(lead)
-        if len(picked) >= wave_limit:
-            break
+    seen: set[int] = set()
+    first_qs = _wave_base_qs(
+        region_group=region_group,
+        account_kind=account_kind,
+        collab_subtypes=collab_subtypes,
+        invite_mode="first",
+    )
+    _append_pickable_leads(first_qs, picked=picked, wave_limit=wave_limit, seen=seen)
+    if allow_resend and len(picked) < wave_limit:
+        resend_qs = _wave_base_qs(
+            region_group=region_group,
+            account_kind=account_kind,
+            collab_subtypes=collab_subtypes,
+            invite_mode="resend",
+        )
+        _append_pickable_leads(resend_qs, picked=picked, wave_limit=wave_limit, seen=seen)
     return picked
 
 
