@@ -6,6 +6,17 @@ from dataclasses import dataclass
 
 from home.ro_location import all_counties, fold_key
 
+# Hartă + listă județ — pagină publică pentru orice vizitator (fără login).
+CAMPANII_PUBLIC_PATH_ROOT = "/publicitate/campanii/"
+
+
+def is_campanii_public_path(path: str) -> bool:
+    """True pentru harta națională și paginile pe județ (/publicitate/campanii/…)."""
+    p = (path or "/").split("?", 1)[0]
+    if not p.startswith("/"):
+        p = "/" + p
+    return p == CAMPANII_PUBLIC_PATH_ROOT.rstrip("/") or p.startswith(CAMPANII_PUBLIC_PATH_ROOT)
+
 
 # Cod auto (AB, CJ, …) — aliniat cu id-urile SVG `ro-ab`, `ro-cj`, …
 _COUNTY_CODES: dict[str, str] = {

@@ -1,7 +1,8 @@
 """
 Căi accesibile fără autentificare când PRELAUNCH_MODE este activ.
 
-Vizitator anonim pe .ro (vizualizare): HOME, harta Campanii (+ fișe animal pe link/QR).
+Vizitator anonim pe .ro (vizualizare): HOME (+ fișe animal pe link/QR).
+Harta Campanii = pagină publică permanentă (home.campanii_ro.is_campanii_public_path).
 PT / Servicii și restul site-ului cer login.
 """
 from __future__ import annotations
@@ -37,7 +38,6 @@ PRELAUNCH_ANONYMOUS_PREFIXES: tuple[str, ...] = (
     "/signup/check-activation-status/",
     "/cont/editeaza/confirmare-email/",
     "/adaposturi/",
-    "/publicitate/campanii/",
     "/admin/",
     "/static/",
     "/media/",
@@ -67,6 +67,10 @@ def is_prelaunch_public_path(path: str) -> bool:
     if _PRELAUNCH_PET_FICHA_RE.match(p):
         return True
     if _PRELAUNCH_PET_SLUG_RE.match(p):
+        return True
+    from home.campanii_ro import is_campanii_public_path
+
+    if is_campanii_public_path(p):
         return True
     return p.startswith(PRELAUNCH_ANONYMOUS_PREFIXES)
 

@@ -181,15 +181,9 @@ POPULATION_ORG_BLOCKED_PREFIXES: tuple[str, ...] = (
 )
 
 
-def is_campanii_public_path(path: str) -> bool:
-    """Hartă campanii sterilizare — publică (vizitatori + adăpost/ONG în populare)."""
-    p = (path or "/").split("?", 1)[0]
-    if not p.startswith("/"):
-        p = "/" + p
-    return p == "/publicitate/campanii" or p.startswith("/publicitate/campanii/")
-
-
 def is_population_blocked_path_for_org(path: str) -> bool:
+    from home.campanii_ro import is_campanii_public_path
+
     p = (path or "/").split("?", 1)[0]
     if not p.startswith("/"):
         p = "/" + p
