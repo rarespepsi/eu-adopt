@@ -296,7 +296,7 @@ STAFF_INVITE_CRON_ENABLED = _cron_invite_on in ("1", "true", "yes", "on")
 # Facebook — postări automate pe Pagina EU-Adopt (animale + campanii sterilizare)
 _fb_auto = os.environ.get("EUADOPT_FACEBOOK_AUTO_POST", "").strip().lower()
 FACEBOOK_AUTO_POST_ENABLED = _fb_auto in ("1", "true", "yes", "on")
-FACEBOOK_PAGE_ID = os.environ.get("EUADOPT_FACEBOOK_PAGE_ID", "61588044314372").strip() or "61588044314372"
+FACEBOOK_PAGE_ID = os.environ.get("EUADOPT_FACEBOOK_PAGE_ID", "970069896196143").strip() or "970069896196143"
 FACEBOOK_PAGE_ACCESS_TOKEN = os.environ.get("EUADOPT_FACEBOOK_PAGE_ACCESS_TOKEN", "").strip()
 FACEBOOK_MAX_POSTS_PER_DAY = int(os.environ.get("EUADOPT_FACEBOOK_MAX_POSTS_PER_DAY", "10") or "10")
 FACEBOOK_GRAPH_API_VERSION = os.environ.get("EUADOPT_FACEBOOK_GRAPH_API_VERSION", "v21.0").strip() or "v21.0"
