@@ -1,8 +1,11 @@
 """
-Postări automate pe pagina Facebook EU-Adopt (Graph API).
+Postări automate Facebook — multi-piață (RO/DE/FR/ES/COM).
 
-Animale noi publicate + campanii sterilizare noi → coadă → post imediat
-(dacă sub plafonul zilnic), altfel așteaptă cronul.
+Flux 1: animal / campanie site → delivery per piață configurată.
+Flux 2 (mirror RO): în home.facebook_ro_mirror (oprit până la tokenuri).
+
+Anti-buclă: doar RO e sursă Facebook pentru mirror; DE/FR/ES/COM niciodată.
+Tokenurile nu se loghează.
 """
 from __future__ import annotations
 
@@ -17,10 +20,18 @@ from datetime import datetime, timedelta
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from django.conf import settings
 from django.db import transaction
 from django.urls import reverse
 from django.utils import timezone
+
+from home.facebook_markets import (
+    configured_markets,
+    facebook_auto_post_enabled,
+    facebook_graph_version,
+    facebook_max_posts_per_day,
+    market_creds,
+    market_lang,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,11 +39,13 @@ RO_TZ = ZoneInfo("Europe/Bucharest")
 
 KIND_ANIMAL = "animal"
 KIND_CAMPANIE = "campanie"
+KIND_RO_MIRROR = "ro_mirror"
 
 STATUS_PENDING = "pending"
 STATUS_POSTED = "posted"
 STATUS_FAILED = "failed"
 STATUS_SKIPPED = "skipped"
+STATUS_PARTIAL = "partial"
 
 
 @dataclass
@@ -40,35 +53,13 @@ class FacebookPostResult:
     ok: bool
     facebook_post_id: str = ""
     error: str = ""
-    deferred: bool = False  # sub plafon? False = așteaptă altă zi
-
-
-def facebook_auto_post_enabled() -> bool:
-    if not bool(getattr(settings, "FACEBOOK_AUTO_POST_ENABLED", False)):
-        return False
-    token = (getattr(settings, "FACEBOOK_PAGE_ACCESS_TOKEN", "") or "").strip()
-    page_id = (getattr(settings, "FACEBOOK_PAGE_ID", "") or "").strip()
-    return bool(token and page_id)
-
-
-def facebook_max_posts_per_day() -> int:
-    return max(1, int(getattr(settings, "FACEBOOK_MAX_POSTS_PER_DAY", 10) or 10))
-
-
-def facebook_page_id() -> str:
-    return (getattr(settings, "FACEBOOK_PAGE_ID", "") or "").strip()
-
-
-def facebook_page_token() -> str:
-    return (getattr(settings, "FACEBOOK_PAGE_ACCESS_TOKEN", "") or "").strip()
-
-
-def facebook_graph_version() -> str:
-    v = (getattr(settings, "FACEBOOK_GRAPH_API_VERSION", "") or "v21.0").strip()
-    return v if v.startswith("v") else f"v{v}"
+    deferred: bool = False
+    market: str = ""
 
 
 def site_base_url() -> str:
+    from django.conf import settings
+
     return (getattr(settings, "SITE_BASE_URL", "") or "https://eu-adopt.ro").rstrip("/")
 
 
@@ -86,21 +77,22 @@ def absolute_media_url(file_field) -> str:
     return site_base_url() + (url if url.startswith("/") else "/" + url)
 
 
-def posts_today_count() -> int:
-    from home.models import FacebookOutboundPost
+def posts_today_count(market: str = "ro") -> int:
+    from home.models import FacebookOutboundDelivery
 
     now_ro = timezone.now().astimezone(RO_TZ)
     start = datetime(now_ro.year, now_ro.month, now_ro.day, tzinfo=RO_TZ)
     end = start + timedelta(days=1)
-    return FacebookOutboundPost.objects.filter(
+    return FacebookOutboundDelivery.objects.filter(
+        market=market,
         status=STATUS_POSTED,
         posted_at__gte=start,
         posted_at__lt=end,
     ).count()
 
 
-def remaining_posts_today() -> int:
-    return max(0, facebook_max_posts_per_day() - posts_today_count())
+def remaining_posts_today(market: str = "ro") -> int:
+    return max(0, facebook_max_posts_per_day() - posts_today_count(market))
 
 
 def _species_ro(listing) -> str:
@@ -113,7 +105,6 @@ def _species_ro(listing) -> str:
 
 
 def build_animal_message(listing) -> tuple[str, str, str]:
-    """message, link, image_url"""
     name = (listing.name or "Prieten").strip()
     species = _species_ro(listing)
     age = (listing.age_label or "").strip()
@@ -156,12 +147,100 @@ def build_campanie_message(camp) -> tuple[str, str, str]:
     return "\n".join(lines), link, img
 
 
-def _graph_post(path: str, params: dict[str, str]) -> dict[str, Any]:
+def translate_facebook_message(text: str, *, target_lang: str) -> str:
+    """
+    Gemini: păstrează sens, ton, linkuri; fără informații inventate.
+    Dacă traducerea eșuează → textul original (RO).
+    """
+    raw = (text or "").strip()
+    tl = (target_lang or "en").strip().lower()[:2]
+    if not raw or tl == "ro":
+        return raw
+    try:
+        from home.ugc_translate import _gemini_translate
+
+        # Prompt mai strict pentru postări FB (linkuri intacte)
+        translated = _gemini_translate_fb(raw, tl)
+        if translated:
+            return translated
+        # fallback pe helperul UGC
+        alt = _gemini_translate(raw, tl)
+        return (alt or raw).strip() or raw
+    except Exception:
+        logger.exception("facebook translate failed lang=%s", tl)
+        return raw
+
+
+def _gemini_translate_fb(text: str, target_lang: str) -> str | None:
+    from django.conf import settings
+
+    api_key = getattr(settings, "EUADOPT_GEMINI_API_KEY", "").strip()
+    if not api_key:
+        return None
+    from home.facebook_markets import MARKET_LANG_NAME
+
+    lang_name = MARKET_LANG_NAME.get(target_lang, target_lang)
+    primary = getattr(settings, "SITE_GUIDE_GEMINI_MODEL", "gemini-2.5-flash").strip()
+    models = [primary]
+    for alt in ("gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"):
+        if alt not in models:
+            models.append(alt)
+    system = (
+        f"You translate Facebook posts for the EU-Adopt pet adoption platform into {lang_name}. "
+        "Rules: preserve meaning and tone; keep ALL URLs and links exactly unchanged; "
+        "do not invent facts, ages, places, or medical claims; keep emoji; "
+        "return ONLY the translated post text, no commentary."
+    )
+    payload = {
+        "system_instruction": {"parts": [{"text": system}]},
+        "contents": [{"role": "user", "parts": [{"text": text}]}],
+        "generationConfig": {"temperature": 0.1, "maxOutputTokens": 2048},
+    }
+    for model in models:
+        url = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+            f"?key={api_key}"
+        )
+        try:
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=45) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+            parts = (
+                ((data.get("candidates") or [{}])[0].get("content") or {}).get("parts") or []
+            )
+            out = "".join((p.get("text") or "") for p in parts).strip()
+            if out:
+                return out
+        except Exception:
+            continue
+    return None
+
+
+def _graph_request(
+    *,
+    page_id: str,
+    access_token: str,
+    path: str,
+    method: str = "POST",
+    params: dict[str, str] | None = None,
+) -> dict[str, Any]:
     version = facebook_graph_version()
-    page_id = facebook_page_id()
-    url = f"https://graph.facebook.com/{version}/{page_id}/{path.lstrip('/')}"
-    data = urllib.parse.urlencode(params).encode("utf-8")
-    req = urllib.request.Request(url, data=data, method="POST")
+    base = f"https://graph.facebook.com/{version}/{page_id}/{path.lstrip('/')}"
+    params = dict(params or {})
+    params["access_token"] = access_token
+    if method.upper() == "GET":
+        url = base + "?" + urllib.parse.urlencode(params)
+        req = urllib.request.Request(url, method="GET")
+        body_data = None
+    else:
+        url = base
+        body_data = urllib.parse.urlencode(params).encode("utf-8")
+        req = urllib.request.Request(url, data=body_data, method="POST")
     try:
         with urllib.request.urlopen(req, timeout=45) as resp:
             body = resp.read().decode("utf-8", errors="replace")
@@ -181,40 +260,104 @@ def _graph_post(path: str, params: dict[str, str]) -> dict[str, Any]:
         raise RuntimeError(f"Facebook network: {e.reason}") from e
 
 
-def post_to_facebook_page(*, message: str, link: str, image_url: str = "") -> FacebookPostResult:
-    if not facebook_auto_post_enabled():
-        return FacebookPostResult(ok=False, error="Facebook auto-post dezactivat / fără token")
-    token = facebook_page_token()
+def post_to_facebook_page(
+    *,
+    message: str,
+    link: str,
+    image_url: str = "",
+    market: str = "ro",
+) -> FacebookPostResult:
+    if not facebook_auto_post_enabled() and market == "ro":
+        # RO rămâne gated de flag-ul global; piețele mirror pot posta dacă au creds
+        # (apelate din mirror cu check separat).
+        pass
+    creds = market_creds(market)
+    if not creds.configured:
+        return FacebookPostResult(ok=False, error=f"Piața {market} neconfigurată", market=market)
+    if market == "ro" and not facebook_auto_post_enabled():
+        return FacebookPostResult(ok=False, error="Facebook auto-post dezactivat", market=market)
     try:
         if image_url:
-            raw = _graph_post(
-                "photos",
-                {
+            raw = _graph_request(
+                page_id=creds.page_id,
+                access_token=creds.access_token,
+                path="photos",
+                method="POST",
+                params={
                     "url": image_url,
                     "caption": message[:2000],
-                    "access_token": token,
                 },
             )
             post_id = str(raw.get("post_id") or raw.get("id") or "").strip()
         else:
-            payload = {
-                "message": message[:2000],
-                "access_token": token,
-            }
+            payload = {"message": message[:2000]}
             if link:
                 payload["link"] = link
-            raw = _graph_post("feed", payload)
+            raw = _graph_request(
+                page_id=creds.page_id,
+                access_token=creds.access_token,
+                path="feed",
+                method="POST",
+                params=payload,
+            )
             post_id = str(raw.get("id") or "").strip()
         if not post_id:
-            return FacebookPostResult(ok=False, error="Răspuns FB fără id postare")
-        return FacebookPostResult(ok=True, facebook_post_id=post_id)
+            return FacebookPostResult(ok=False, error="Răspuns FB fără id postare", market=market)
+        return FacebookPostResult(ok=True, facebook_post_id=post_id, market=market)
     except Exception as exc:
-        logger.exception("facebook_page_post failed")
-        return FacebookPostResult(ok=False, error=str(exc)[:500])
+        logger.exception("facebook_page_post failed market=%s", market)
+        return FacebookPostResult(ok=False, error=str(exc)[:500], market=market)
+
+
+def ensure_deliveries(outbound, markets: list[str] | None = None) -> list[Any]:
+    from home.models import FacebookOutboundDelivery
+
+    markets = markets if markets is not None else configured_markets()
+    created = []
+    for m in markets:
+        d, _ = FacebookOutboundDelivery.objects.get_or_create(
+            outbound=outbound,
+            market=m,
+            defaults={"status": STATUS_PENDING},
+        )
+        created.append(d)
+    return created
+
+
+def refresh_outbound_aggregate(outbound) -> None:
+    from home.models import FacebookOutboundDelivery
+
+    statuses = list(outbound.deliveries.values_list("status", flat=True))
+    if not statuses:
+        outbound.status = STATUS_PENDING
+    elif all(s == STATUS_POSTED for s in statuses):
+        outbound.status = STATUS_POSTED
+        ro = outbound.deliveries.filter(market="ro", status=STATUS_POSTED).first()
+        if ro:
+            outbound.facebook_post_id = ro.facebook_post_id or outbound.facebook_post_id
+            outbound.posted_at = ro.posted_at or outbound.posted_at
+            outbound.error = ""
+    elif all(s == STATUS_SKIPPED for s in statuses):
+        outbound.status = STATUS_SKIPPED
+    elif any(s == STATUS_POSTED for s in statuses) and any(
+        s in (STATUS_FAILED, STATUS_PENDING) for s in statuses
+    ):
+        outbound.status = STATUS_PARTIAL
+    elif any(s == STATUS_PENDING for s in statuses):
+        outbound.status = STATUS_PENDING
+    else:
+        outbound.status = STATUS_FAILED
+        last_err = (
+            outbound.deliveries.exclude(error="")
+            .order_by("-updated_at")
+            .values_list("error", flat=True)
+            .first()
+        )
+        outbound.error = (last_err or "")[:500]
+    outbound.save(update_fields=["status", "facebook_post_id", "posted_at", "error", "updated_at"])
 
 
 def enqueue_animal(listing, *, schedule: bool = True) -> Any:
-    """Creează rând coadă pentru animal publicat. Returnează FacebookOutboundPost sau None."""
     if not listing or not getattr(listing, "pk", None):
         return None
     if not getattr(listing, "is_published", False):
@@ -223,19 +366,14 @@ def enqueue_animal(listing, *, schedule: bool = True) -> Any:
         return None
     from home.models import FacebookOutboundPost
 
-    row, created = FacebookOutboundPost.objects.get_or_create(
+    row, _ = FacebookOutboundPost.objects.get_or_create(
         kind=KIND_ANIMAL,
         object_id=int(listing.pk),
         defaults={"status": STATUS_PENDING},
     )
-    if row.status == STATUS_POSTED:
-        return row
-    if row.status != STATUS_PENDING:
-        row.status = STATUS_PENDING
-        row.error = ""
-        row.save(update_fields=["status", "error", "updated_at"])
+    ensure_deliveries(row)
     if schedule:
-        _schedule_process(row.pk)
+        _schedule_process_outbound(row.pk)
     return row
 
 
@@ -246,123 +384,210 @@ def enqueue_campanie(camp, *, schedule: bool = True) -> Any:
         return None
     from home.models import FacebookOutboundPost
 
-    row, created = FacebookOutboundPost.objects.get_or_create(
+    row, _ = FacebookOutboundPost.objects.get_or_create(
         kind=KIND_CAMPANIE,
         object_id=int(camp.pk),
         defaults={"status": STATUS_PENDING},
     )
-    if row.status == STATUS_POSTED:
-        return row
-    if row.status != STATUS_PENDING:
-        row.status = STATUS_PENDING
-        row.error = ""
-        row.save(update_fields=["status", "error", "updated_at"])
+    ensure_deliveries(row)
     if schedule:
-        _schedule_process(row.pk)
+        _schedule_process_outbound(row.pk)
     return row
 
 
-def _schedule_process(row_pk: int) -> None:
+def _schedule_process_outbound(outbound_pk: int) -> None:
     def _run():
         try:
-            process_outbound_row(row_pk)
+            process_outbound_row(outbound_pk)
         except Exception:
-            logger.exception("facebook outbound process row=%s", row_pk)
+            logger.exception("facebook outbound process source=%s", outbound_pk)
 
     transaction.on_commit(lambda: threading.Thread(target=_run, daemon=True).start())
 
 
-def process_outbound_row(row_pk: int) -> FacebookPostResult:
-    from home.models import AnimalListing, CampanieSterilizare, FacebookOutboundPost
+def _schedule_process_delivery(delivery_pk: int) -> None:
+    def _run():
+        try:
+            process_delivery(delivery_pk)
+        except Exception:
+            logger.exception("facebook delivery process id=%s", delivery_pk)
+
+    transaction.on_commit(lambda: threading.Thread(target=_run, daemon=True).start())
+
+
+def _message_for_outbound(outbound) -> tuple[str, str, str]:
+    from home.models import AnimalListing, CampanieSterilizare, FacebookRoInboundPost
+
+    if outbound.kind == KIND_ANIMAL:
+        listing = AnimalListing.objects.filter(pk=outbound.object_id).first()
+        if listing is None or not listing.is_published:
+            raise ValueError("Animal lipsă sau nepublicat")
+        return build_animal_message(listing)
+    if outbound.kind == KIND_CAMPANIE:
+        camp = CampanieSterilizare.objects.filter(pk=outbound.object_id).first()
+        if camp is None:
+            raise ValueError("Campanie lipsă")
+        return build_campanie_message(camp)
+    if outbound.kind == KIND_RO_MIRROR:
+        inbound = FacebookRoInboundPost.objects.filter(pk=outbound.object_id).first()
+        if inbound is None:
+            raise ValueError("Inbound RO lipsă")
+        msg = (inbound.message or "").strip()
+        link = (inbound.permalink or "").strip()
+        img = (inbound.picture_url or "").strip()
+        return msg, link, img
+    raise ValueError(f"Kind necunoscut: {outbound.kind}")
+
+
+def process_delivery(delivery_pk: int) -> FacebookPostResult:
+    from home.models import FacebookOutboundDelivery
 
     try:
-        row = FacebookOutboundPost.objects.get(pk=row_pk)
-    except FacebookOutboundPost.DoesNotExist:
-        return FacebookPostResult(ok=False, error="missing row")
+        delivery = FacebookOutboundDelivery.objects.select_related("outbound").get(pk=delivery_pk)
+    except FacebookOutboundDelivery.DoesNotExist:
+        return FacebookPostResult(ok=False, error="missing delivery")
 
-    if row.status == STATUS_POSTED:
-        return FacebookPostResult(ok=True, facebook_post_id=row.facebook_post_id)
+    if delivery.status == STATUS_POSTED:
+        return FacebookPostResult(
+            ok=True,
+            facebook_post_id=delivery.facebook_post_id,
+            market=delivery.market,
+        )
 
-    if not facebook_auto_post_enabled():
-        return FacebookPostResult(ok=False, error="disabled")
+    market = delivery.market
+    creds = market_creds(market)
+    if not creds.configured:
+        delivery.status = STATUS_SKIPPED
+        delivery.error = f"Piața {market} fără credențiale"
+        delivery.save(update_fields=["status", "error", "updated_at"])
+        refresh_outbound_aggregate(delivery.outbound)
+        return FacebookPostResult(ok=False, error=delivery.error, market=market)
 
-    if remaining_posts_today() <= 0:
-        row.status = STATUS_PENDING
-        row.error = "Plafon zilnic atins — așteaptă ziua următoare"
-        row.save(update_fields=["status", "error", "updated_at"])
-        return FacebookPostResult(ok=False, deferred=True, error=row.error)
+    if market == "ro" and not facebook_auto_post_enabled():
+        return FacebookPostResult(ok=False, error="disabled", market=market)
 
-    message = link = image_url = ""
-    if row.kind == KIND_ANIMAL:
-        listing = AnimalListing.objects.filter(pk=row.object_id).first()
-        if listing is None or not listing.is_published:
-            row.status = STATUS_SKIPPED
-            row.error = "Animal lipsă sau nepublicat"
-            row.save(update_fields=["status", "error", "updated_at"])
-            return FacebookPostResult(ok=False, error=row.error)
-        message, link, image_url = build_animal_message(listing)
-    elif row.kind == KIND_CAMPANIE:
-        camp = CampanieSterilizare.objects.filter(pk=row.object_id).first()
-        if camp is None:
-            row.status = STATUS_SKIPPED
-            row.error = "Campanie lipsă"
-            row.save(update_fields=["status", "error", "updated_at"])
-            return FacebookPostResult(ok=False, error=row.error)
-        message, link, image_url = build_campanie_message(camp)
-    else:
-        row.status = STATUS_SKIPPED
-        row.error = f"Kind necunoscut: {row.kind}"
-        row.save(update_fields=["status", "error", "updated_at"])
-        return FacebookPostResult(ok=False, error=row.error)
+    # Plafon zilnic per piață (RO păstrează comportamentul existent)
+    if remaining_posts_today(market) <= 0:
+        delivery.status = STATUS_PENDING
+        delivery.error = "Plafon zilnic atins — așteaptă ziua următoare"
+        delivery.save(update_fields=["status", "error", "updated_at"])
+        return FacebookPostResult(ok=False, deferred=True, error=delivery.error, market=market)
 
-    result = post_to_facebook_page(message=message, link=link, image_url=image_url)
+    try:
+        message_ro, link, image_url = _message_for_outbound(delivery.outbound)
+    except ValueError as exc:
+        delivery.status = STATUS_SKIPPED
+        delivery.error = str(exc)[:500]
+        delivery.save(update_fields=["status", "error", "updated_at"])
+        refresh_outbound_aggregate(delivery.outbound)
+        return FacebookPostResult(ok=False, error=delivery.error, market=market)
+
+    lang = market_lang(market)
+    message = (
+        message_ro
+        if lang == "ro"
+        else translate_facebook_message(message_ro, target_lang=lang)
+    )
+
+    delivery.attempt_count = int(delivery.attempt_count or 0) + 1
+    delivery.save(update_fields=["attempt_count", "updated_at"])
+
+    # Pentru mirror/site pe piețe non-RO: permitem post chiar dacă flag-ul e doar pentru RO
+    # (tokenurile DE/... vor activa piețele).
+    result = post_to_facebook_page(
+        message=message,
+        link=link,
+        image_url=image_url,
+        market=market,
+    )
     if result.ok:
-        row.status = STATUS_POSTED
-        row.facebook_post_id = result.facebook_post_id
-        row.posted_at = timezone.now()
-        row.error = ""
-        row.save(update_fields=["status", "facebook_post_id", "posted_at", "error", "updated_at"])
+        delivery.status = STATUS_POSTED
+        delivery.facebook_post_id = result.facebook_post_id
+        delivery.posted_at = timezone.now()
+        delivery.error = ""
+        delivery.save(
+            update_fields=["status", "facebook_post_id", "posted_at", "error", "updated_at"]
+        )
     else:
-        row.status = STATUS_FAILED
-        row.error = (result.error or "eroare")[:500]
-        row.save(update_fields=["status", "error", "updated_at"])
+        delivery.status = STATUS_FAILED
+        delivery.error = (result.error or "eroare")[:500]
+        delivery.save(update_fields=["status", "error", "updated_at"])
+    refresh_outbound_aggregate(delivery.outbound)
     return result
 
 
+def process_outbound_row(row_pk: int) -> FacebookPostResult:
+    """Compat: procesează toate delivery-urile pending/failed ale sursei (izolat pe piață)."""
+    from home.models import FacebookOutboundDelivery, FacebookOutboundPost
+
+    try:
+        outbound = FacebookOutboundPost.objects.get(pk=row_pk)
+    except FacebookOutboundPost.DoesNotExist:
+        return FacebookPostResult(ok=False, error="missing row")
+
+    ensure_deliveries(outbound)
+    last = FacebookPostResult(ok=False, error="no deliveries")
+    any_ok = False
+    any_deferred = False
+    for d in FacebookOutboundDelivery.objects.filter(
+        outbound=outbound, status__in=(STATUS_PENDING, STATUS_FAILED)
+    ).order_by("market"):
+        if d.status == STATUS_FAILED:
+            d.status = STATUS_PENDING
+            d.save(update_fields=["status", "updated_at"])
+        last = process_delivery(d.pk)
+        if last.ok:
+            any_ok = True
+        if last.deferred:
+            any_deferred = True
+    if any_ok:
+        return FacebookPostResult(ok=True, facebook_post_id=outbound.facebook_post_id)
+    if any_deferred:
+        return FacebookPostResult(ok=False, deferred=True, error=last.error)
+    return last
+
+
 def flush_pending(*, limit: int | None = None) -> dict[str, int]:
-    """Procesează coada pending (și failed pentru retry ușor), respectând plafonul zilnic."""
-    from home.models import FacebookOutboundPost
+    """Procesează delivery-uri pending/failed; eșec pe o piață nu oprește celelalte."""
+    from home.models import FacebookOutboundDelivery
 
     stats = {"posted": 0, "deferred": 0, "failed": 0, "skipped": 0}
-    if not facebook_auto_post_enabled():
+    if not facebook_auto_post_enabled() and not configured_markets(for_mirror_targets=True):
         return stats
 
-    cap = remaining_posts_today()
-    if cap <= 0:
-        stats["deferred"] = FacebookOutboundPost.objects.filter(status=STATUS_PENDING).count()
-        return stats
+    qs = FacebookOutboundDelivery.objects.filter(
+        status__in=(STATUS_PENDING, STATUS_FAILED)
+    ).order_by("created_at", "pk")
+    if limit:
+        qs = qs[: int(limit)]
 
-    max_n = limit if limit is not None else cap
-    max_n = min(max_n, cap)
-    qs = FacebookOutboundPost.objects.filter(status__in=(STATUS_PENDING, STATUS_FAILED)).order_by(
-        "created_at", "pk"
-    )[:max_n]
-
-    for row in qs:
-        if remaining_posts_today() <= 0:
-            stats["deferred"] += 1
+    for delivery in qs:
+        if delivery.status == STATUS_FAILED:
+            delivery.status = STATUS_PENDING
+            delivery.save(update_fields=["status", "updated_at"])
+        # skip RO dacă auto-post off
+        if delivery.market == "ro" and not facebook_auto_post_enabled():
             continue
-        # failed → retry ca pending
-        if row.status == STATUS_FAILED:
-            row.status = STATUS_PENDING
-            row.save(update_fields=["status", "updated_at"])
-        result = process_outbound_row(row.pk)
+        if delivery.market != "ro" and not market_creds(delivery.market).configured:
+            continue
+        result = process_delivery(delivery.pk)
         if result.ok:
             stats["posted"] += 1
         elif result.deferred:
             stats["deferred"] += 1
-        elif (result.error or "").startswith("Animal") or (result.error or "").startswith("Campanie"):
+        elif delivery.status == STATUS_SKIPPED or (result.error or "").startswith(
+            ("Animal", "Campanie", "Inbound")
+        ):
             stats["skipped"] += 1
         else:
             stats["failed"] += 1
     return stats
+
+
+# Alias vechi pentru importuri
+def facebook_page_id() -> str:
+    return market_creds("ro").page_id
+
+
+def facebook_page_token() -> str:
+    return market_creds("ro").access_token

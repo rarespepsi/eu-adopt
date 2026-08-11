@@ -300,6 +300,22 @@ FACEBOOK_PAGE_ID = os.environ.get("EUADOPT_FACEBOOK_PAGE_ID", "970069896196143")
 FACEBOOK_PAGE_ACCESS_TOKEN = os.environ.get("EUADOPT_FACEBOOK_PAGE_ACCESS_TOKEN", "").strip()
 FACEBOOK_MAX_POSTS_PER_DAY = int(os.environ.get("EUADOPT_FACEBOOK_MAX_POSTS_PER_DAY", "10") or "10")
 FACEBOOK_GRAPH_API_VERSION = os.environ.get("EUADOPT_FACEBOOK_GRAPH_API_VERSION", "v21.0").strip() or "v21.0"
+# Alias RO + piețe DE/FR/ES/COM (Page token sau System User token — aceeași cheie env)
+FACEBOOK_PAGE_ID_RO = os.environ.get("EUADOPT_FACEBOOK_PAGE_ID_RO", "").strip() or FACEBOOK_PAGE_ID
+FACEBOOK_PAGE_ACCESS_TOKEN_RO = (
+    os.environ.get("EUADOPT_FACEBOOK_PAGE_ACCESS_TOKEN_RO", "").strip() or FACEBOOK_PAGE_ACCESS_TOKEN
+)
+FACEBOOK_PAGE_ID_DE = os.environ.get("EUADOPT_FACEBOOK_PAGE_ID_DE", "").strip()
+FACEBOOK_PAGE_ACCESS_TOKEN_DE = os.environ.get("EUADOPT_FACEBOOK_PAGE_ACCESS_TOKEN_DE", "").strip()
+FACEBOOK_PAGE_ID_FR = os.environ.get("EUADOPT_FACEBOOK_PAGE_ID_FR", "").strip()
+FACEBOOK_PAGE_ACCESS_TOKEN_FR = os.environ.get("EUADOPT_FACEBOOK_PAGE_ACCESS_TOKEN_FR", "").strip()
+FACEBOOK_PAGE_ID_ES = os.environ.get("EUADOPT_FACEBOOK_PAGE_ID_ES", "").strip()
+FACEBOOK_PAGE_ACCESS_TOKEN_ES = os.environ.get("EUADOPT_FACEBOOK_PAGE_ACCESS_TOKEN_ES", "").strip()
+FACEBOOK_PAGE_ID_COM = os.environ.get("EUADOPT_FACEBOOK_PAGE_ID_COM", "").strip()
+FACEBOOK_PAGE_ACCESS_TOKEN_COM = os.environ.get("EUADOPT_FACEBOOK_PAGE_ACCESS_TOKEN_COM", "").strip()
+_fb_mirror = os.environ.get("EUADOPT_FACEBOOK_RO_MIRROR_ENABLED", "").strip().lower()
+FACEBOOK_RO_MIRROR_ENABLED = _fb_mirror in ("1", "true", "yes", "on")
+FACEBOOK_RO_MIRROR_MAX_PER_RUN = int(os.environ.get("EUADOPT_FACEBOOK_RO_MIRROR_MAX_PER_RUN", "10") or "10")
 STAFF_INVITE_CRON_WAVE_SIZE = int(os.environ.get("EUADOPT_STAFF_INVITE_CRON_WAVE_SIZE", "25") or "25")
 STAFF_INVITE_CRON_ACCOUNT_KIND = os.environ.get("EUADOPT_STAFF_INVITE_CRON_ACCOUNT_KIND", "adapost").strip() or "adapost"
 # Al doilea calup (16:00): colaboratori cabinet / magazin / grooming

@@ -30,6 +30,8 @@ from .models import (
     StaffOnboardingInviteInbound,
     PartnerLocation,
     FacebookOutboundPost,
+    FacebookOutboundDelivery,
+    FacebookRoInboundPost,
 )
 
 
@@ -402,3 +404,37 @@ class FacebookOutboundPostAdmin(admin.ModelAdmin):
     list_filter = ("kind", "status", "posted_at")
     search_fields = ("facebook_post_id", "error", "object_id")
     readonly_fields = ("created_at", "updated_at", "posted_at")
+
+
+@admin.register(FacebookOutboundDelivery)
+class FacebookOutboundDeliveryAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "outbound",
+        "market",
+        "status",
+        "facebook_post_id",
+        "attempt_count",
+        "posted_at",
+        "created_at",
+    )
+    list_filter = ("market", "status", "posted_at")
+    search_fields = ("facebook_post_id", "error", "outbound__object_id")
+    raw_id_fields = ("outbound",)
+    readonly_fields = ("created_at", "updated_at", "posted_at")
+
+
+@admin.register(FacebookRoInboundPost)
+class FacebookRoInboundPostAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "source_fb_post_id",
+        "status",
+        "fb_created_time",
+        "outbound",
+        "created_at",
+    )
+    list_filter = ("status",)
+    search_fields = ("source_fb_post_id", "message", "skip_reason", "error")
+    raw_id_fields = ("outbound",)
+    readonly_fields = ("created_at", "updated_at")

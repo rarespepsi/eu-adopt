@@ -2380,13 +2380,79 @@ class CampanieSterilizare(models.Model):
 
 
 class FacebookOutboundPost(models.Model):
-    """Coadă / jurnal postări pe pagina Facebook EU-Adopt."""
+    """
+    Sursă de conținut de distribuit pe paginile Facebook (1 rând = 1 animal / campanie / mirror RO).
+    Livrările pe piețe sunt în FacebookOutboundDelivery.
+    """
 
     KIND_ANIMAL = "animal"
     KIND_CAMPANIE = "campanie"
+    KIND_RO_MIRROR = "ro_mirror"
     KIND_CHOICES = (
         (KIND_ANIMAL, "Animal"),
         (KIND_CAMPANIE, "Campanie sterilizare"),
+        (KIND_RO_MIRROR, "Mirror postare RO"),
+    )
+
+    # Status agregat (derivat din delivery-uri; păstrat pentru compat / admin)
+    STATUS_PENDING = "pending"
+    STATUS_POSTED = "posted"
+    STATUS_FAILED = "failed"
+    STATUS_SKIPPED = "skipped"
+    STATUS_PARTIAL = "partial"
+    STATUS_CHOICES = (
+        (STATUS_PENDING, "În așteptare"),
+        (STATUS_POSTED, "Postat (toate piețele)"),
+        (STATUS_PARTIAL, "Parțial"),
+        (STATUS_FAILED, "Eșuat"),
+        (STATUS_SKIPPED, "Omis"),
+    )
+
+    kind = models.CharField(max_length=20, choices=KIND_CHOICES, db_index=True)
+    object_id = models.PositiveIntegerField(db_index=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING,
+        db_index=True,
+    )
+    # Legacy RO (copiate pe delivery RO la migrare; nu mai sunt sursa de adevăr)
+    facebook_post_id = models.CharField(max_length=64, blank=True, default="")
+    error = models.CharField(max_length=500, blank=True, default="")
+    posted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Postare Facebook (sursă)"
+        verbose_name_plural = "Postări Facebook (surse)"
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["kind", "object_id"], name="uniq_fb_outbound_kind_object"),
+        ]
+        indexes = [
+            models.Index(fields=["status", "created_at"]),
+            models.Index(fields=["posted_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.kind}:{self.object_id} [{self.status}]"
+
+
+class FacebookOutboundDelivery(models.Model):
+    """Livrare pe o piață (RO/DE/FR/ES/COM) — retry izolat per pagină."""
+
+    MARKET_RO = "ro"
+    MARKET_DE = "de"
+    MARKET_FR = "fr"
+    MARKET_ES = "es"
+    MARKET_COM = "com"
+    MARKET_CHOICES = (
+        (MARKET_RO, "România"),
+        (MARKET_DE, "Germania"),
+        (MARKET_FR, "Franța"),
+        (MARKET_ES, "Spania"),
+        (MARKET_COM, "International"),
     )
 
     STATUS_PENDING = "pending"
@@ -2400,32 +2466,89 @@ class FacebookOutboundPost(models.Model):
         (STATUS_SKIPPED, "Omis"),
     )
 
-    kind = models.CharField(max_length=20, choices=KIND_CHOICES, db_index=True)
-    object_id = models.PositiveIntegerField(db_index=True)
+    outbound = models.ForeignKey(
+        FacebookOutboundPost,
+        on_delete=models.CASCADE,
+        related_name="deliveries",
+    )
+    market = models.CharField(max_length=8, choices=MARKET_CHOICES, db_index=True)
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
         default=STATUS_PENDING,
         db_index=True,
     )
-    facebook_post_id = models.CharField(max_length=64, blank=True, default="")
+    facebook_post_id = models.CharField(max_length=64, blank=True, default="", db_index=True)
     error = models.CharField(max_length=500, blank=True, default="")
+    attempt_count = models.PositiveSmallIntegerField(default=0)
     posted_at = models.DateTimeField(null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Postare Facebook"
-        verbose_name_plural = "Postări Facebook"
-        ordering = ["-created_at"]
+        verbose_name = "Livrare Facebook"
+        verbose_name_plural = "Livrări Facebook"
+        ordering = ["outbound_id", "market"]
         constraints = [
-            models.UniqueConstraint(fields=["kind", "object_id"], name="uniq_fb_outbound_kind_object"),
+            models.UniqueConstraint(fields=["outbound", "market"], name="uniq_fb_delivery_outbound_market"),
         ]
         indexes = [
-            models.Index(fields=["status", "created_at"]),
-            models.Index(fields=["posted_at"]),
+            models.Index(fields=["status", "market", "created_at"]),
+            models.Index(fields=["facebook_post_id"]),
         ]
 
     def __str__(self):
-        return f"{self.kind}:{self.object_id} [{self.status}]"
+        return f"{self.outbound_id}:{self.market} [{self.status}]"
+
+
+class FacebookRoInboundPost(models.Model):
+    """
+    Postare văzută pe pagina Facebook RO (manuală sau auto).
+    Mirror doar pentru postări manuale; DE/FR/ES/COM nu sunt niciodată surse.
+    """
+
+    STATUS_PENDING = "pending"
+    STATUS_PROCESSED = "processed"
+    STATUS_SKIPPED_AUTO = "skipped_auto"
+    STATUS_FAILED = "failed"
+    STATUS_CHOICES = (
+        (STATUS_PENDING, "În așteptare"),
+        (STATUS_PROCESSED, "Procesat (mirror)"),
+        (STATUS_SKIPPED_AUTO, "Omis (auto site)"),
+        (STATUS_FAILED, "Eșuat"),
+    )
+
+    source_fb_post_id = models.CharField(max_length=64, unique=True, db_index=True)
+    message = models.TextField(blank=True, default="")
+    permalink = models.CharField(max_length=500, blank=True, default="")
+    picture_url = models.CharField(max_length=1000, blank=True, default="")
+    fb_created_time = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING,
+        db_index=True,
+    )
+    skip_reason = models.CharField(max_length=200, blank=True, default="")
+    outbound = models.ForeignKey(
+        FacebookOutboundPost,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ro_inbounds",
+    )
+    error = models.CharField(max_length=500, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Postare inbound Facebook RO"
+        verbose_name_plural = "Postări inbound Facebook RO"
+        ordering = ["-fb_created_time", "-pk"]
+        indexes = [
+            models.Index(fields=["status", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"RO inbound {self.source_fb_post_id} [{self.status}]"
 
