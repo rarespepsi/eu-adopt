@@ -589,7 +589,10 @@
     "mail_reset_subj": "Passwort-Reset – EU-Adopt",
     "publi": "Anzeige",
     "publicitate": "Werbung",
-    "signup_lbl_country": "Country *"
+    "signup_lbl_country": "Country *",
+    "contact_whatsapp": "WhatsApp",
+    "contact_call": "Anrufen",
+    "contact_prefer_whatsapp": "Bitte bevorzugen Sie WhatsApp-Nachrichten (empfohlen außerhalb Rumäniens)."
   },
   "fr": {
     "messages_new": "Nouveaux messages : {n}",
@@ -1181,7 +1184,10 @@
     "mail_reset_subj": "Réinitialisation du mot de passe – EU-Adopt",
     "publi": "Annonce",
     "publicitate": "Publicité",
-    "signup_lbl_country": "Country *"
+    "signup_lbl_country": "Country *",
+    "contact_whatsapp": "WhatsApp",
+    "contact_call": "Appeler",
+    "contact_prefer_whatsapp": "Préférez un message WhatsApp (recommandé hors Roumanie)."
   },
   "es": {
     "messages_new": "Nuevos mensajes: {n}",
@@ -1773,7 +1779,10 @@
     "mail_reset_subj": "Restablecimiento de contraseña – UE-Adoptar",
     "publi": "Anuncio",
     "publicitate": "Publicidad",
-    "signup_lbl_country": "Country *"
+    "signup_lbl_country": "Country *",
+    "contact_whatsapp": "WhatsApp",
+    "contact_call": "Llamar",
+    "contact_prefer_whatsapp": "Prefiera un mensaje de WhatsApp (recomendado fuera de Rumanía)."
   },
   "it": {
     "messages_new": "Nuovi messaggi: {n}",
@@ -2365,7 +2374,10 @@
     "mail_reset_subj": "Reimpostazione password – EU-Adopt",
     "publi": "Annuncio",
     "publicitate": "Pubblicità",
-    "signup_lbl_country": "Country *"
+    "signup_lbl_country": "Country *",
+    "contact_whatsapp": "WhatsApp",
+    "contact_call": "Chiama",
+    "contact_prefer_whatsapp": "Preferisci un messaggio WhatsApp (consigliato fuori dalla Romania)."
   },
   "pl": {
     "messages_new": "Nowe wiadomości: {n}",
@@ -2957,7 +2969,10 @@
     "mail_reset_subj": "Resetowanie hasła – EU-Adopt",
     "publi": "Reklama",
     "publicitate": "Reklama",
-    "signup_lbl_country": "Country *"
+    "signup_lbl_country": "Country *",
+    "contact_whatsapp": "WhatsApp",
+    "contact_call": "Zadzwoń",
+    "contact_prefer_whatsapp": "Preferuj wiadomość WhatsApp (zalecane poza Rumunią)."
   },
   "nl": {
     "messages_new": "Nieuwe berichten: {n}",
@@ -3549,7 +3564,10 @@
     "mail_reset_subj": "Wachtwoord opnieuw instellen – EU-Adopt",
     "publi": "Advertentie",
     "publicitate": "Reclame",
-    "signup_lbl_country": "Country *"
+    "signup_lbl_country": "Country *",
+    "contact_whatsapp": "WhatsApp",
+    "contact_call": "Bellen",
+    "contact_prefer_whatsapp": "Geef de voorkeur aan een WhatsApp-bericht (aanbevolen buiten Roemenië)."
   },
   "pt": {
     "messages_new": "Novas mensagens: {n}",
@@ -4141,7 +4159,10 @@
     "mail_reset_subj": "Redefinição de senha – EU-Adopt",
     "publi": "Anúncio",
     "publicitate": "Anúncio",
-    "signup_lbl_country": "Country *"
+    "signup_lbl_country": "Country *",
+    "contact_whatsapp": "WhatsApp",
+    "contact_call": "Ligar",
+    "contact_prefer_whatsapp": "Prefira uma mensagem WhatsApp (recomendado fora da Roménia)."
   },
   "ro": {
     "messages_new": "Mesaje noi: {n}",
@@ -4733,6 +4754,9 @@
     "mail_reset_subj": "Resetarea parolei – UE-Adopt",
     "publi": "Ad",
     "publicitate": "Publicitate",
-    "signup_lbl_country": "Country *"
+    "signup_lbl_country": "Country *",
+    "contact_whatsapp": "WhatsApp",
+    "contact_call": "Sună",
+    "contact_prefer_whatsapp": "Preferă mesaj WhatsApp (recomandat în afara României)."
   }
 }

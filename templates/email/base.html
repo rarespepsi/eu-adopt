@@ -26,6 +26,10 @@
               <p style="margin:16px 0 8px;">Acest mesaj a fost trimis automat de {{ site_name }}.</p>
               {% if site_url %}<p style="margin:0;"><a href="{{ site_url }}" style="color:#1565c0;text-decoration:none;">{{ site_url }}</a></p>{% endif %}
               {% if support_email %}<p style="margin:8px 0 0;">Contact: <a href="mailto:{{ support_email }}" style="color:#1565c0;">{{ support_email }}</a></p>{% endif %}
+              {% if euadopt_phone_display %}
+              <p style="margin:8px 0 0;">Tel: <a href="{{ euadopt_phone_tel }}" style="color:#1565c0;">{{ euadopt_phone_display }}</a>
+                · WhatsApp: <a href="{{ euadopt_whatsapp_url }}" style="color:#1565c0;">{{ euadopt_phone_display }}</a></p>
+              {% endif %}
             </td>
           </tr>
         </table>

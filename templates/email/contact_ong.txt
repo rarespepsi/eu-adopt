@@ -13,3 +13,4 @@ Mesaj:
 
 —
 {{ site_name }}
+{% if euadopt_phone_display %}Tel: {{ euadopt_phone_display }} · WhatsApp: {{ euadopt_whatsapp_url }}{% endif %}

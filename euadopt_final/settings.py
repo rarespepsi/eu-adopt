@@ -183,6 +183,7 @@ TEMPLATES = [
                 'home.context_processors.eu_pwa_login_pulse',
                 'home.context_processors.eu_site',
                 'home.context_processors.eu_seo',
+                'home.context_processors.euadopt_public_contact',
             ],
         },
     },

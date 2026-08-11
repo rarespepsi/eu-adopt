@@ -55,10 +55,13 @@ def get_contact_notify_email() -> str:
 
 
 def _render_pair(kind: str, context: dict[str, Any]) -> tuple[str, str]:
+    from home.euadopt_public_contact import public_contact_context
+
     ctx = {
         "site_name": "EU-Adopt",
         "site_url": (getattr(settings, "SITE_BASE_URL", "") or "").rstrip("/"),
         "support_email": get_from_email(),
+        **public_contact_context(),
         **context,
     }
     html_name = f"email/{kind}.html"

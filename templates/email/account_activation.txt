@@ -10,3 +10,4 @@ Dacă nu ai creat cont, poți ignora acest email.
 —
 {{ site_name }}
 {% if site_url %}{{ site_url }}{% endif %}
+{% if euadopt_phone_display %}Tel: {{ euadopt_phone_display }} · WhatsApp: {{ euadopt_whatsapp_url }}{% endif %}

@@ -6,3 +6,4 @@ Configurare: Zoho SMTP (smtppro.zoho.eu, port 465, SSL).
 
 —
 {{ site_name }}
+{% if euadopt_phone_display %}Tel: {{ euadopt_phone_display }} · WhatsApp: {{ euadopt_whatsapp_url }}{% endif %}

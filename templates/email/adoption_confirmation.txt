@@ -11,6 +11,7 @@ The owner / shelter will be notified.
 
 —
 {{ site_name }}
+{% if euadopt_phone_display %}Tel: {{ euadopt_phone_display }} · WhatsApp: {{ euadopt_whatsapp_url }}{% endif %}
 {% else %}Bună ziua{% if adopter_name %}, {{ adopter_name }}{% endif %}!
 
 Am înregistrat cererea ta de adopție pentru {{ pet_label }}.
@@ -24,4 +25,5 @@ Proprietarul / adăpostul va fi notificat.
 
 —
 {{ site_name }}
+{% if euadopt_phone_display %}Tel: {{ euadopt_phone_display }} · WhatsApp: {{ euadopt_whatsapp_url }}{% endif %}
 {% endif %}

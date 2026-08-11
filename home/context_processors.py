@@ -244,6 +244,13 @@ def eu_site(request):
     return eu_site_context_for_request(request)
 
 
+def euadopt_public_contact(request):
+    """Telefon public site + WhatsApp (Contact, Termeni, email footer)."""
+    from home.euadopt_public_contact import public_contact_context
+
+    return public_contact_context()
+
+
 def eu_seo(request):
     """Canonical (.ro) + hreflang pentru hosturi multi-limbă."""
     from home.eu_site import seo_canonical_url, seo_hreflang_alternates
