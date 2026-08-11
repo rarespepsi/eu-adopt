@@ -64,6 +64,31 @@ def facebook_ro_mirror_max_per_run() -> int:
     return max(1, int(getattr(settings, "FACEBOOK_RO_MIRROR_MAX_PER_RUN", 10) or 10))
 
 
+def facebook_ro_mirror_since():
+    """
+    Momentul de activare: postări RO cu created_time <= since nu se oglindesc.
+    Returnează datetime aware sau None.
+    """
+    raw = (getattr(settings, "FACEBOOK_RO_MIRROR_SINCE", "") or "").strip()
+    if not raw:
+        return None
+    from datetime import datetime
+
+    from django.utils import timezone
+    from django.utils.dateparse import parse_datetime
+
+    dt = parse_datetime(raw)
+    if dt is None:
+        try:
+            dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        except Exception:
+            return None
+    if timezone.is_naive(dt):
+        dt = timezone.make_aware(dt, timezone.utc)
+    return dt
+
+
+
 def _env_page_id(market: str) -> str:
     m = (market or "").strip().lower()
     if m == "ro":

@@ -227,3 +227,27 @@ class FacebookRoMirrorTests(TestCase):
         stats = ingest_ro_posts([{"id": "same_1", "message": "a"}])
         self.assertEqual(stats["existing"], 1)
         self.assertEqual(FacebookRoInboundPost.objects.filter(source_fb_post_id="same_1").count(), 1)
+
+    @override_settings(FACEBOOK_RO_MIRROR_SINCE="2026-08-11T20:00:00+00:00")
+    def test_ingest_skips_posts_before_since(self):
+        stats = ingest_ro_posts(
+            [
+                {
+                    "id": "old_1",
+                    "message": "istoric",
+                    "created_time": "2026-08-10T12:00:00+0000",
+                },
+                {
+                    "id": "new_1",
+                    "message": "nou dupa activare",
+                    "created_time": "2026-08-11T21:00:00+0000",
+                },
+            ]
+        )
+        self.assertEqual(stats["skipped_before_since"], 1)
+        self.assertEqual(stats["new"], 1)
+        old = FacebookRoInboundPost.objects.get(source_fb_post_id="old_1")
+        self.assertEqual(old.status, FacebookRoInboundPost.STATUS_SKIPPED_AUTO)
+        self.assertEqual(old.skip_reason, "before_mirror_since")
+        new = FacebookRoInboundPost.objects.get(source_fb_post_id="new_1")
+        self.assertEqual(new.status, FacebookRoInboundPost.STATUS_PENDING)

@@ -316,6 +316,9 @@ FACEBOOK_PAGE_ACCESS_TOKEN_COM = os.environ.get("EUADOPT_FACEBOOK_PAGE_ACCESS_TO
 _fb_mirror = os.environ.get("EUADOPT_FACEBOOK_RO_MIRROR_ENABLED", "").strip().lower()
 FACEBOOK_RO_MIRROR_ENABLED = _fb_mirror in ("1", "true", "yes", "on")
 FACEBOOK_RO_MIRROR_MAX_PER_RUN = int(os.environ.get("EUADOPT_FACEBOOK_RO_MIRROR_MAX_PER_RUN", "10") or "10")
+# ISO8601: postări RO cu created_time <= acest moment = omise (fără republicare istorică).
+FACEBOOK_RO_MIRROR_SINCE = os.environ.get("EUADOPT_FACEBOOK_RO_MIRROR_SINCE", "").strip()
+
 STAFF_INVITE_CRON_WAVE_SIZE = int(os.environ.get("EUADOPT_STAFF_INVITE_CRON_WAVE_SIZE", "25") or "25")
 STAFF_INVITE_CRON_ACCOUNT_KIND = os.environ.get("EUADOPT_STAFF_INVITE_CRON_ACCOUNT_KIND", "adapost").strip() or "adapost"
 # Al doilea calup (16:00): colaboratori cabinet / magazin / grooming

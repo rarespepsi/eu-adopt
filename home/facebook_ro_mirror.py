@@ -20,6 +20,7 @@ from home.facebook_markets import (
     configured_markets,
     facebook_ro_mirror_enabled,
     facebook_ro_mirror_max_per_run,
+    facebook_ro_mirror_since,
     market_creds,
 )
 from home.facebook_page_post import (
@@ -90,10 +91,11 @@ def _parse_fb_time(raw: str | None):
 
 
 def ingest_ro_posts(posts: list[dict[str, Any]]) -> dict[str, int]:
-    """Înregistrează postări RO noi; marchează auto ca skipped_auto."""
+    """Înregistrează postări RO noi; marchează auto / istorice (≤ since) ca skipped."""
     from home.models import FacebookRoInboundPost
 
-    stats = {"new": 0, "skipped_auto": 0, "existing": 0}
+    stats = {"new": 0, "skipped_auto": 0, "skipped_before_since": 0, "existing": 0}
+    since = facebook_ro_mirror_since()
     for item in posts or []:
         pid = str(item.get("id") or "").strip()
         if not pid:
@@ -102,7 +104,98 @@ def ingest_ro_posts(posts: list[dict[str, Any]]) -> dict[str, int]:
         if existing:
             stats["existing"] += 1
             continue
+        fb_created = _parse_fb_time(item.get("created_time"))
+        message = (item.get("message") or "")[:10000]
+        permalink = (item.get("permalink_url") or "")[:500]
+        picture_url = (item.get("full_picture") or "")[:1000]
         if _is_our_auto_ro_post(pid):
+            FacebookRoInboundPost.objects.create(
+                source_fb_post_id=pid,
+                message=message,
+                permalink=permalink,
+                picture_url=picture_url,
+                fb_created_time=fb_created,
+                status=FacebookRoInboundPost.STATUS_SKIPPED_AUTO,
+                skip_reason="outbound_auto_ro",
+            )
+            stats["skipped_auto"] += 1
+            continue
+        # Nu republica istoric: tot ce e înainte de activare (sau fără created_time când since e setat).
+        if since is not None and (fb_created is None or fb_created <= since):
+            FacebookRoInboundPost.objects.create(
+                source_fb_post_id=pid,
+                message=message,
+                permalink=permalink,
+                picture_url=picture_url,
+                fb_created_time=fb_created,
+                status=FacebookRoInboundPost.STATUS_SKIPPED_AUTO,
+                skip_reason="before_mirror_since",
+            )
+            stats["skipped_before_since"] += 1
+            continue
+        FacebookRoInboundPost.objects.create(
+            source_fb_post_id=pid,
+            message=message,
+            permalink=permalink,
+            picture_url=picture_url,
+            fb_created_time=fb_created,
+            status=FacebookRoInboundPost.STATUS_PENDING,
+        )
+        stats["new"] += 1
+    return stats
+
+
+def baseline_existing_ro_posts(*, max_pages: int = 10, page_size: int = 50) -> dict[str, int]:
+    """
+    Marchează postările RO deja publice ca omise (baseline la activare).
+    Nu creează delivery / nu publică pe DE/FR/ES/COM.
+    """
+    from home.models import FacebookRoInboundPost
+
+    stats = {"fetched": 0, "baselined": 0, "existing": 0, "pages": 0, "error": ""}
+    creds = market_creds("ro")
+    if not creds.configured:
+        stats["error"] = "RO credentials missing"
+        return stats
+
+    after = None
+    for _ in range(max(1, max_pages)):
+        params: dict[str, Any] = {
+            "fields": "id,message,created_time,permalink_url,full_picture",
+            "limit": str(max(1, min(int(page_size), 100))),
+        }
+        if after:
+            params["after"] = after
+        try:
+            raw = _graph_request(
+                page_id=creds.page_id,
+                access_token=creds.access_token,
+                path="posts",
+                method="GET",
+                params=params,
+            )
+        except Exception as exc:
+            stats["error"] = str(exc)[:300]
+            break
+        data = raw.get("data") if isinstance(raw, dict) else None
+        if not isinstance(data, list) or not data:
+            break
+        stats["pages"] += 1
+        stats["fetched"] += len(data)
+        for item in data:
+            pid = str(item.get("id") or "").strip()
+            if not pid:
+                continue
+            existing = FacebookRoInboundPost.objects.filter(source_fb_post_id=pid).first()
+            if existing:
+                if existing.status == FacebookRoInboundPost.STATUS_PENDING:
+                    existing.status = FacebookRoInboundPost.STATUS_SKIPPED_AUTO
+                    existing.skip_reason = existing.skip_reason or "baseline_pre_activation"
+                    existing.save(update_fields=["status", "skip_reason", "updated_at"])
+                    stats["baselined"] += 1
+                else:
+                    stats["existing"] += 1
+                continue
             FacebookRoInboundPost.objects.create(
                 source_fb_post_id=pid,
                 message=(item.get("message") or "")[:10000],
@@ -110,19 +203,14 @@ def ingest_ro_posts(posts: list[dict[str, Any]]) -> dict[str, int]:
                 picture_url=(item.get("full_picture") or "")[:1000],
                 fb_created_time=_parse_fb_time(item.get("created_time")),
                 status=FacebookRoInboundPost.STATUS_SKIPPED_AUTO,
-                skip_reason="outbound_auto_ro",
+                skip_reason="baseline_pre_activation",
             )
-            stats["skipped_auto"] += 1
-            continue
-        FacebookRoInboundPost.objects.create(
-            source_fb_post_id=pid,
-            message=(item.get("message") or "")[:10000],
-            permalink=(item.get("permalink_url") or "")[:500],
-            picture_url=(item.get("full_picture") or "")[:1000],
-            fb_created_time=_parse_fb_time(item.get("created_time")),
-            status=FacebookRoInboundPost.STATUS_PENDING,
-        )
-        stats["new"] += 1
+            stats["baselined"] += 1
+        paging = raw.get("paging") if isinstance(raw, dict) else None
+        cursors = paging.get("cursors") if isinstance(paging, dict) else None
+        after = (cursors or {}).get("after") if isinstance(cursors, dict) else None
+        if not after:
+            break
     return stats
 
 
