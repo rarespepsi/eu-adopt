@@ -29,6 +29,7 @@ from .models import (
     StaffOnboardingInviteLog,
     StaffOnboardingInviteInbound,
     PartnerLocation,
+    FacebookOutboundPost,
 )
 
 
@@ -393,3 +394,11 @@ class StaffOnboardingInviteInboundAdmin(admin.ModelAdmin):
     search_fields = ("from_email", "subject", "snippet", "lead__email")
     raw_id_fields = ("lead",)
     readonly_fields = ("received_at",)
+
+
+@admin.register(FacebookOutboundPost)
+class FacebookOutboundPostAdmin(admin.ModelAdmin):
+    list_display = ("id", "kind", "object_id", "status", "facebook_post_id", "posted_at", "created_at")
+    list_filter = ("kind", "status", "posted_at")
+    search_fields = ("facebook_post_id", "error", "object_id")
+    readonly_fields = ("created_at", "updated_at", "posted_at")

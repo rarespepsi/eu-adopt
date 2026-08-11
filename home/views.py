@@ -8040,7 +8040,7 @@ def account_edit_view(request):
             request.session["account_updated"] = True
             return redirect(reverse("account") + "?updated=1&campanii_mele=1")
 
-        CampanieSterilizare.objects.create(
+        campanie_noua = CampanieSterilizare.objects.create(
             user=user,
             judet=judet_obj.name,
             judet_slug=judet_obj.slug,
@@ -8052,6 +8052,12 @@ def account_edit_view(request):
             photo=photo,
             link=link or "",
         )
+        try:
+            from home.facebook_page_post import enqueue_campanie
+
+            enqueue_campanie(campanie_noua)
+        except Exception:
+            pass
         messages.success(request, "Campania a fost înregistrată și apare pe harta județului.")
         request.session["account_updated"] = True
         return redirect(reverse("account") + "?updated=1&campanie_ok=1")
@@ -9024,6 +9030,12 @@ def mypet_add_view(request):
                     trait_necesita_experienta=trait("trait_necesita_experienta"),
                     is_published=True,
                 )
+                try:
+                    from home.facebook_page_post import enqueue_animal
+
+                    enqueue_animal(listing)
+                except Exception:
+                    pass
                 return redirect("mypet")
             except Exception as exc:
                 error = str(exc)

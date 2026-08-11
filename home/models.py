@@ -2378,3 +2378,54 @@ class CampanieSterilizare(models.Model):
             parts.append("Pisici")
         return " · ".join(parts) if parts else "—"
 
+
+class FacebookOutboundPost(models.Model):
+    """Coadă / jurnal postări pe pagina Facebook EU-Adopt."""
+
+    KIND_ANIMAL = "animal"
+    KIND_CAMPANIE = "campanie"
+    KIND_CHOICES = (
+        (KIND_ANIMAL, "Animal"),
+        (KIND_CAMPANIE, "Campanie sterilizare"),
+    )
+
+    STATUS_PENDING = "pending"
+    STATUS_POSTED = "posted"
+    STATUS_FAILED = "failed"
+    STATUS_SKIPPED = "skipped"
+    STATUS_CHOICES = (
+        (STATUS_PENDING, "În așteptare"),
+        (STATUS_POSTED, "Postat"),
+        (STATUS_FAILED, "Eșuat"),
+        (STATUS_SKIPPED, "Omis"),
+    )
+
+    kind = models.CharField(max_length=20, choices=KIND_CHOICES, db_index=True)
+    object_id = models.PositiveIntegerField(db_index=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING,
+        db_index=True,
+    )
+    facebook_post_id = models.CharField(max_length=64, blank=True, default="")
+    error = models.CharField(max_length=500, blank=True, default="")
+    posted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Postare Facebook"
+        verbose_name_plural = "Postări Facebook"
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["kind", "object_id"], name="uniq_fb_outbound_kind_object"),
+        ]
+        indexes = [
+            models.Index(fields=["status", "created_at"]),
+            models.Index(fields=["posted_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.kind}:{self.object_id} [{self.status}]"
+
