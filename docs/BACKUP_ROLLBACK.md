@@ -19,6 +19,14 @@ Două rotații automate câte **3 variante** (la a 4-a se șterge cea mai veche)
 - Log: `/var/log/euadopt-healthcheck.log`
 - Instalare cron: `bash /opt/eu-adopt/deploy/hetzner/install_site_healthcheck_cron.sh`
 
+### Bounce / IMAP invitații
+
+- Poll inbox Zoho la **30 min**: `run_invite_poll_inbox.sh` (marchează lead `bounced` din NDR 552).
+- Backlog one-shot: `EUADOPT_INVITE_IMAP_BACKLOG=1 EUADOPT_INVITE_IMAP_MAX=400 bash .../run_invite_poll_inbox.sh`
+- Raport săptămânal bounce: Luni 09:15 — `run_invite_bounce_weekly_report.sh`
+- Instalare: `bash /opt/eu-adopt/deploy/hetzner/install_invite_poll_inbox_cron.sh`
+- Log: `/var/log/euadopt-invite-imap.log`
+
 ---
 
 ## 1. Copii „bune” pe PC (cod)

@@ -1275,6 +1275,40 @@ class Carte81_100Tests(TestCase):
         lead.refresh_from_db()
         self.assertEqual(lead.invite_mail_status, StaffOnboardingLead.INVITE_BOUNCED)
 
+    def test_109j2b_inbound_bounce_final_recipient(self):
+        """NDR Zoho: From=mailer-daemon, adresa e în Final-Recipient."""
+        from home.models import StaffOnboardingLead
+        from home.staff_onboarding_invite_inbound import process_inbound_email
+
+        lead = StaffOnboardingLead.objects.create(
+            email="barnafarmavet@yahoo.com",
+            display_name="Dr Barna",
+            account_kind=StaffOnboardingLead.KIND_COLLAB,
+            judet="Alba",
+            invite_mail_status=StaffOnboardingLead.INVITE_SENT,
+        )
+        body = (
+            "This message was created automatically by mail delivery software.\n"
+            "A message that you sent could not be delivered to one or more of its recipients. "
+            "This is a permanent error.\n\n"
+            "barnafarmavet@yahoo.com, ERROR CODE :552 - 1 Requested mail action aborted, mailbox not found\n\n"
+            "Final-Recipient: rfc822; barnafarmavet@yahoo.com\n"
+            "Status: 552\n"
+            "Diagnostic-Code: 1 Requested mail action aborted, mailbox not found\n"
+        )
+        result = process_inbound_email(
+            from_email="Mail Delivery System <noreply@eu.zohomail.eu>",
+            to_addrs=["contact@eu-adopt.ro"],
+            subject="",
+            body=body,
+            external_id="test-bounce-final-recip-1",
+        )
+        self.assertEqual(result.get("kind"), "bounce")
+        self.assertEqual(result.get("lead_id"), lead.pk)
+        self.assertTrue(result.get("applied"))
+        lead.refresh_from_db()
+        self.assertEqual(lead.invite_mail_status, StaffOnboardingLead.INVITE_BOUNCED)
+
     def test_109i5_staff_invite_template_key_adapost(self):
         from home.models import StaffOnboardingLead
         from home.staff_onboarding_invite import staff_invite_template_key

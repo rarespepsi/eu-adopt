@@ -8,7 +8,8 @@ Necesită în .env:
 
 Rulare:
   python manage.py staff_invite_poll_inbox
-  python manage.py staff_invite_poll_inbox --max 20 --dry-run
+  python manage.py staff_invite_poll_inbox --max 80
+  python manage.py staff_invite_poll_inbox --bounce-backlog --max 300 --since-days 60
 """
 from django.core.management.base import BaseCommand
 
@@ -19,11 +20,22 @@ class Command(BaseCommand):
     help = "Procesează emailuri noi (IMAP) pentru invitații Add USER — răspuns / bounce / opt-out."
 
     def add_arguments(self, parser):
-        parser.add_argument("--max", type=int, default=40, help="Max. mesaje UNSEEN de procesat.")
+        parser.add_argument("--max", type=int, default=40, help="Max. mesaje de procesat.")
         parser.add_argument(
             "--no-mark-seen",
             action="store_true",
             help="Nu marca mesajele ca citite în IMAP.",
+        )
+        parser.add_argument(
+            "--bounce-backlog",
+            action="store_true",
+            help="Procesează NDR-uri recente (inclusiv deja citite), nu doar UNSEEN.",
+        )
+        parser.add_argument(
+            "--since-days",
+            type=int,
+            default=45,
+            help="Pentru --bounce-backlog: câte zile înapoi (implicit 45).",
         )
 
     def handle(self, *args, **options):
@@ -33,9 +45,12 @@ class Command(BaseCommand):
                 "STAFF_INVITE_IMAP_PASSWORD în .env."
             )
             return
+        mode = "bounce_backlog" if options.get("bounce_backlog") else "unseen"
         stats = poll_imap_inbox(
             max_messages=max(1, options["max"]),
             mark_seen=not options["no_mark_seen"],
+            mode=mode,
+            since_days=int(options.get("since_days") or 45),
         )
         if stats.get("error") and stats.get("message"):
             self.stderr.write(str(stats["message"]))

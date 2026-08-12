@@ -30,10 +30,17 @@ _LEAD_HEADER_RE = re.compile(r"^X-EUAdopt-Lead-Id:\s*(\d+)\s*$", re.I | re.M)
 _BOUNCE_FROM = re.compile(r"mailer-daemon|postmaster|mail delivery|noreply.*bounce", re.I)
 _BOUNCE_SUBJ = re.compile(
     r"undelivered|delivery failed|failure notice|returned mail|delivery status|"
-    r"undeliverable|mail delivery failed",
+    r"undeliverable|mail delivery failed|could not be delivered|permanent error",
     re.I,
 )
 _OPT_OUT_RE = re.compile(r"nu\s*contacta|nu\s*ma\s*contact|stop\s*contact|unsubscribe", re.I)
+# NDR Zoho/Yahoo: Final-Recipient: rfc822; user@domain
+_BOUNCE_RECIPIENT_RE = re.compile(
+    r"(?:Final-Recipient|Original-Recipient|X-Failed-Recipients)\s*:\s*"
+    r"(?:rfc822\s*;\s*)?<?([^\s<>;]+@[^\s<>;]+)>?",
+    re.I,
+)
+_LEAD_ID_IN_BODY_RE = re.compile(r"X-EUAdopt-Lead-Id:\s*(\d+)", re.I)
 
 
 def staff_invite_reply_to_address(lead_id: int) -> str:
@@ -123,8 +130,8 @@ def _parse_lead_id_from_headers(headers: dict[str, str]) -> int | None:
     return None
 
 
-def _match_lead_by_from(from_email: str) -> StaffOnboardingLead | None:
-    em = (from_email or "").strip().lower()
+def _match_lead_by_email(email_addr: str) -> StaffOnboardingLead | None:
+    em = (email_addr or "").strip().lower()
     if not em or is_placeholder_lead_email(em):
         return None
     return (
@@ -134,12 +141,38 @@ def _match_lead_by_from(from_email: str) -> StaffOnboardingLead | None:
     )
 
 
+def _match_lead_by_from(from_email: str) -> StaffOnboardingLead | None:
+    return _match_lead_by_email(parseaddr(from_email)[1] or from_email)
+
+
+def extract_bounce_recipient_emails(body: str, subject: str = "") -> list[str]:
+    """Extrage adresele eșuate din NDR (Final-Recipient etc.)."""
+    text = f"{subject or ''}\n{body or ''}"
+    out: list[str] = []
+    seen: set[str] = set()
+    for m in _BOUNCE_RECIPIENT_RE.finditer(text):
+        em = (m.group(1) or "").strip().lower().rstrip(".")
+        if not em or "@" not in em or em in seen:
+            continue
+        if is_placeholder_lead_email(em):
+            continue
+        seen.add(em)
+        out.append(em)
+    return out
+
+
 def classify_inbound(from_email: str, subject: str, body: str, headers: dict[str, str]) -> str:
     """reply | bounce | opt_out | unknown"""
     subj = subject or ""
     body_l = (body or "").lower()
     from_l = (from_email or "").lower()
-    if _BOUNCE_FROM.search(from_l) or _BOUNCE_SUBJ.search(subj):
+    if (
+        _BOUNCE_FROM.search(from_l)
+        or _BOUNCE_SUBJ.search(subj)
+        or _BOUNCE_RECIPIENT_RE.search(body or "")
+        or "mailbox not found" in body_l
+        or "could not be delivered" in body_l
+    ):
         return StaffOnboardingInviteInbound.KIND_BOUNCE
     if _OPT_OUT_RE.search(subj) or _OPT_OUT_RE.search(body_l):
         return StaffOnboardingInviteInbound.KIND_OPT_OUT
@@ -152,14 +185,43 @@ def resolve_lead_for_inbound(
     from_email: str,
     to_addrs: list[str],
     headers: dict[str, str],
+    *,
+    body: str = "",
+    subject: str = "",
+    kind: str = "",
 ) -> StaffOnboardingLead | None:
     addrs = list(to_addrs) + [headers.get("To") or "", headers.get("Cc") or "", headers.get("Reply-To") or ""]
-    lid = _parse_lead_id_from_addresses(*addrs)
+    # invite+{id}@ din antete / corp (NDR poate include mesajul original)
+    lid = _parse_lead_id_from_addresses(*(addrs + [body or "", subject or ""]))
     if lid:
-        return StaffOnboardingLead.objects.filter(pk=lid).first()
+        lead = StaffOnboardingLead.objects.filter(pk=lid).first()
+        if lead:
+            return lead
     lid = _parse_lead_id_from_headers(headers)
     if lid:
-        return StaffOnboardingLead.objects.filter(pk=lid).first()
+        lead = StaffOnboardingLead.objects.filter(pk=lid).first()
+        if lead:
+            return lead
+    m = _LEAD_ID_IN_BODY_RE.search(body or "")
+    if m:
+        lead = StaffOnboardingLead.objects.filter(pk=int(m.group(1))).first()
+        if lead:
+            return lead
+    # Bounce Zoho: From=mailer-daemon, adresa reală e în Final-Recipient
+    if kind == StaffOnboardingInviteInbound.KIND_BOUNCE or _BOUNCE_FROM.search((from_email or "").lower()):
+        for em in extract_bounce_recipient_emails(body, subject):
+            lead = _match_lead_by_email(em)
+            if lead:
+                return lead
+            # fallback: ultimul log de trimitere către acel email
+            log = (
+                StaffOnboardingInviteLog.objects.filter(to_email__iexact=em)
+                .order_by("-sent_at")
+                .select_related("lead")
+                .first()
+            )
+            if log and log.lead_id:
+                return log.lead
     return _match_lead_by_from(from_email)
 
 
@@ -228,7 +290,9 @@ def process_inbound_email(
 
     from_addr = parseaddr(from_email)[1] or (from_email or "").strip()
     kind = classify_inbound(from_addr, subject, body, headers)
-    lead = resolve_lead_for_inbound(from_addr, to_addrs, headers)
+    lead = resolve_lead_for_inbound(
+        from_addr, to_addrs, headers, body=body or "", subject=subject or "", kind=kind
+    )
     snippet = (subject or "")[:200]
     if body:
         snippet = f"{snippet} | {(body or '')[:300]}"
@@ -259,8 +323,19 @@ def process_inbound_email(
     }
 
 
-def poll_imap_inbox(*, max_messages: int = 40, mark_seen: bool = True) -> dict[str, int]:
-    """Citește inbox IMAP Zoho (sau alt server) și procesează mesaje noi."""
+def poll_imap_inbox(
+    *,
+    max_messages: int = 40,
+    mark_seen: bool = True,
+    mode: str = "unseen",
+    since_days: int = 45,
+) -> dict[str, int]:
+    """Citește inbox IMAP Zoho (sau alt server) și procesează mesaje.
+
+    mode:
+      unseen — doar UNSEEN (cron normal)
+      bounce_backlog — NDR-uri recente (inclusiv deja citite), doar bounce
+    """
     if not staff_invite_imap_configured():
         return {"error": 1, "message": "IMAP neconfigurat"}
 
@@ -269,8 +344,21 @@ def poll_imap_inbox(*, max_messages: int = 40, mark_seen: bool = True) -> dict[s
     user = settings.STAFF_INVITE_IMAP_USER.strip()
     password = settings.STAFF_INVITE_IMAP_PASSWORD.strip()
     folder = (getattr(settings, "STAFF_INVITE_IMAP_FOLDER", None) or "INBOX").strip()
+    mode = (mode or "unseen").strip().lower()
+    since_days = max(1, min(int(since_days or 45), 120))
 
-    stats = {"processed": 0, "replies": 0, "bounces": 0, "opt_out": 0, "unknown": 0, "skipped_dup": 0, "no_lead": 0, "errors": 0}
+    stats = {
+        "processed": 0,
+        "replies": 0,
+        "bounces": 0,
+        "opt_out": 0,
+        "unknown": 0,
+        "skipped_dup": 0,
+        "skipped_non_bounce": 0,
+        "no_lead": 0,
+        "errors": 0,
+        "mode": mode,
+    }
 
     try:
         if port == 993:
@@ -279,13 +367,27 @@ def poll_imap_inbox(*, max_messages: int = 40, mark_seen: bool = True) -> dict[s
             conn = imaplib.IMAP4(host, port)
         conn.login(user, password)
         conn.select(folder)
-        typ, data = conn.search(None, "UNSEEN")
+
+        if mode == "bounce_backlog":
+            since = (timezone.now() - timedelta(days=since_days)).strftime("%d-%b-%Y")
+            # Filtrăm bounce în Python (criteriile OR IMAP diferă pe Zoho).
+            typ, data = conn.search(None, f"(SINCE {since})")
+        else:
+            typ, data = conn.search(None, "UNSEEN")
+
         if typ != "OK":
             conn.logout()
             return {**stats, "errors": 1}
         ids = (data[0] or b"").split()
-        ids = ids[-max_messages:]
+        if mode == "bounce_backlog":
+            ids = list(reversed(ids))  # cele mai recente întâi
+        else:
+            ids = ids[-max_messages:]
+
+        bounce_seen = 0
         for num in ids:
+            if mode == "bounce_backlog" and bounce_seen >= max_messages:
+                break
             try:
                 typ, msg_data = conn.fetch(num, "(RFC822)")
                 if typ != "OK" or not msg_data or not msg_data[0]:
@@ -297,7 +399,21 @@ def poll_imap_inbox(*, max_messages: int = 40, mark_seen: bool = True) -> dict[s
                 to_h = _decode_mime_header(msg.get("To"))
                 body = _extract_body(msg)
                 headers = _headers_dict(msg)
-                ext_id = f"imap-{folder}-{num.decode() if isinstance(num, bytes) else num}"
+                mid = (msg.get("Message-ID") or "").strip()
+                if mid:
+                    ext_id = f"msgid-{mid}"[:120]
+                else:
+                    ext_id = f"imap-{folder}-{num.decode() if isinstance(num, bytes) else num}"
+
+                kind_preview = classify_inbound(
+                    parseaddr(from_h)[1] or from_h, subj, body, headers
+                )
+                if mode == "bounce_backlog" and kind_preview != StaffOnboardingInviteInbound.KIND_BOUNCE:
+                    stats["skipped_non_bounce"] += 1
+                    continue
+                if mode == "bounce_backlog":
+                    bounce_seen += 1
+
                 result = process_inbound_email(
                     from_email=from_h,
                     to_addrs=[to_h],
@@ -309,6 +425,8 @@ def poll_imap_inbox(*, max_messages: int = 40, mark_seen: bool = True) -> dict[s
                 )
                 if result.get("skipped"):
                     stats["skipped_dup"] += 1
+                    if mark_seen:
+                        conn.store(num, "+FLAGS", "\\Seen")
                     continue
                 stats["processed"] += 1
                 k = result.get("kind") or "unknown"
