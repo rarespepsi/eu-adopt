@@ -1,18 +1,24 @@
 #!/usr/bin/env python3
 """
-Site healthcheck: smoke HTTP + teste Maps + comparare SHA.
+Site healthcheck: smoke HTTP + Maps source checks + SHA vs EXPECTED_RELEASE.
 Exit 0 = OK, 1 = FAIL. Fără secrete în output.
+
+Modes:
+  check  — full (default, cron)
+  smoke  — HTTP + Maps source only (post-deploy; fără SHA/dirty)
 """
 from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 APP_DIR = Path(os.environ.get("EUADOPT_APP_DIR", "/opt/eu-adopt"))
 EXPECTED_PATH = Path(
@@ -20,19 +26,28 @@ EXPECTED_PATH = Path(
 )
 BASE_URL = (os.environ.get("EUADOPT_HEALTHCHECK_BASE_URL") or "https://eu-adopt.ro").rstrip("/")
 
+# path → needles (empty = doar HTTP 200). Contact: vezi run_smoke (prelaunch → login).
 SMOKE_CHECKS: list[tuple[str, list[str]]] = [
     ("/", []),
     ("/pets/", []),
     ("/servicii/", []),
     ("/transport/", ["plecare_map_pick", "sosire_map_pick", "transportMapModal"]),
     ("/shop/", []),
-    ("/contact/", ["wa.me/40733823678", "+40 73 EUADOPT", "WhatsApp"]),
+    ("/contact/", []),  # special: 302→login OK în prelaunch; 200 → phone markers
     ("/signup/colaborator/", ["signup_col_map_pick", "signup_col_map_modal", "safeAutocomplete"]),
     ("/signup/organizatie/", ["signup_org_map_pick", "signup_org_map_modal"]),
     ("/login/", []),
     ("/termeni/", []),
     ("/i-love/", []),
 ]
+
+CONTACT_PHONE_NEEDLES = ["wa.me/40733823678", "+40 73 EUADOPT", "WhatsApp"]
+
+_FORBIDDEN_MIXED_TYPES = re.compile(
+    r"types\s*:\s*\[\s*['\"]establishment['\"]\s*,\s*['\"]geocode['\"]\s*\]"
+    r"|types\s*:\s*\[\s*['\"]geocode['\"]\s*,\s*['\"]establishment['\"]\s*\]",
+    re.IGNORECASE,
+)
 
 
 def _now() -> str:
@@ -60,41 +75,55 @@ def sha_match(live: str, expected: str) -> bool:
     return live == expected or live.startswith(expected) or expected.startswith(live)
 
 
-def http_get(path: str, timeout: int = 25) -> tuple[int, str]:
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # noqa: ANN001
+        return None
+
+
+def http_get(path: str, timeout: int = 25, follow: bool = True) -> tuple[int, str, Optional[str]]:
+    """Return (status, body, location_header_if_redirect)."""
     url = BASE_URL + path
     req = urllib.request.Request(
         url,
         headers={"User-Agent": "EUAdopt-Healthcheck/1.0"},
         method="GET",
     )
+    opener = urllib.request.build_opener() if follow else urllib.request.build_opener(_NoRedirect)
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with opener.open(req, timeout=timeout) as resp:
             body = resp.read().decode("utf-8", errors="replace")
-            return int(resp.status), body
+            return int(resp.status), body, None
     except urllib.error.HTTPError as e:
-        body = e.read().decode("utf-8", errors="replace")
-        return int(e.code), body
+        body = e.read().decode("utf-8", errors="replace") if e.fp else ""
+        loc = e.headers.get("Location") if e.headers else None
+        return int(e.code), body, loc
     except Exception as e:
-        return 0, f"{type(e).__name__}: {e}"
+        return 0, f"{type(e).__name__}: {e}", None
 
 
 def run_smoke() -> list[str]:
     fails: list[str] = []
     for path, needles in SMOKE_CHECKS:
-        code, body = http_get(path)
+        if path == "/contact/":
+            code, body, loc = http_get(path, follow=False)
+            if code in (301, 302, 303, 307, 308) and loc and "/login/" in loc:
+                continue  # prelaunch / auth gate — OK
+            if code == 200:
+                if not any(n in body for n in CONTACT_PHONE_NEEDLES):
+                    fails.append(f"missing contact phone/whatsapp markers on {path}")
+                continue
+            fails.append(f"HTTP {code} {path} loc={loc} :: {str(body)[:120]}")
+            continue
+
+        code, body, _ = http_get(path, follow=True)
         if code != 200:
             fails.append(f"HTTP {code} {path} :: {str(body)[:180]}")
             continue
         if not needles:
             continue
-        if path == "/contact/":
-            if not any(n in body for n in needles):
-                fails.append(f"missing contact phone/whatsapp markers on {path}")
-            continue
         missing = [n for n in needles if n not in body]
         if not missing:
             continue
-        # Fără cheie Maps: butoanele pot lipsi — nu eșua doar pe astea
         map_only = all(
             ("map" in m.lower()) or ("Modal" in m) or (m == "safeAutocomplete") for m in missing
         )
@@ -104,24 +133,47 @@ def run_smoke() -> list[str]:
     return fails
 
 
-def run_maps_tests() -> list[str]:
-    env = os.environ.copy()
-    env["DJANGO_SETTINGS_MODULE"] = "euadopt_final.settings"
-    try:
-        p = subprocess.run(
-            [sys.executable, "manage.py", "test", "home.tests.test_google_maps_picker", "-v0"],
-            cwd=str(APP_DIR),
-            capture_output=True,
-            text=True,
-            timeout=180,
-            env=env,
-        )
-    except Exception as e:
-        return [f"maps_tests_exception: {type(e).__name__}: {e}"]
-    if p.returncode != 0:
-        tail = ((p.stdout or "") + "\n" + (p.stderr or ""))[-800:]
-        return [f"maps_tests_exit={p.returncode}\n{tail}"]
-    return []
+def run_phone_source_check() -> list[str]:
+    """Telefon public — verifică sursa (paginile pot fi în spatele login prelaunch)."""
+    fails: list[str] = []
+    py = APP_DIR / "home" / "euadopt_public_contact.py"
+    if not py.is_file():
+        return [f"missing {py}"]
+    src = py.read_text(encoding="utf-8", errors="replace")
+    for needle in ("+40733823678", "+40 73 EUADOPT", "wa.me/40733823678"):
+        if needle not in src:
+            fails.append(f"phone_source missing {needle} in {py.name}")
+    return fails
+
+
+def run_maps_source_check() -> list[str]:
+    """
+    Verifică sursa Maps fără create-database (euadopt nu are CREATEDB pe Postgres).
+    Acoperă aceleași regresii ca GoogleMapsPickerSourceTests.
+    """
+    fails: list[str] = []
+    signup = APP_DIR / "templates" / "anunturi" / "includes" / "signup_adresa_google_maps_script.html"
+    transport = APP_DIR / "templates" / "anunturi" / "transport.html"
+    for path, must in (
+        (
+            signup,
+            ("safeAutocomplete", "document.body.appendChild(mapModal)", "componentRestrictions"),
+        ),
+        (
+            transport,
+            ("safeAutocomplete", "document.body.appendChild(transportMapModal)"),
+        ),
+    ):
+        if not path.is_file():
+            fails.append(f"maps_source missing file {path}")
+            continue
+        src = path.read_text(encoding="utf-8", errors="replace")
+        if _FORBIDDEN_MIXED_TYPES.search(src):
+            fails.append(f"maps_source forbidden mixed Places types in {path.name}")
+        for m in must:
+            if m not in src:
+                fails.append(f"maps_source missing {m!r} in {path.name}")
+    return fails
 
 
 def main() -> int:
@@ -150,8 +202,9 @@ def main() -> int:
             fails.append(f"sha_mismatch live={live} expected={exp_sha}")
 
         try:
+            # Doar fișiere tracked modificate (untracked pe H e normal: exports, tmp, venv)
             dirty = subprocess.check_output(
-                ["git", "status", "--porcelain"], cwd=str(APP_DIR), text=True
+                ["git", "status", "--porcelain", "-uno"], cwd=str(APP_DIR), text=True
             ).strip()
             if dirty:
                 lines = [
@@ -160,6 +213,7 @@ def main() -> int:
                     if "AUTO_REPAIR_STATE" not in ln
                     and ".pyc" not in ln
                     and "EXPECTED_RELEASE.txt" not in ln
+                    and not ln.startswith("??")
                 ]
                 if lines:
                     fails.append("git_dirty:\n" + "\n".join(lines[:40]))
@@ -170,9 +224,13 @@ def main() -> int:
     fails.extend(smoke_fails)
     report.append(f"smoke_fails={len(smoke_fails)}")
 
-    maps_fails = run_maps_tests()
+    phone_fails = run_phone_source_check()
+    fails.extend(phone_fails)
+    report.append(f"phone_source_fails={len(phone_fails)}")
+
+    maps_fails = run_maps_source_check()
     fails.extend(maps_fails)
-    report.append(f"maps_fails={len(maps_fails)}")
+    report.append(f"maps_source_fails={len(maps_fails)}")
 
     ok = len(fails) == 0
     report.append(f"result={'OK' if ok else 'FAIL'}")

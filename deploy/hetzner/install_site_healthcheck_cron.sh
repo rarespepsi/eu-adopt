@@ -12,6 +12,8 @@ chmod +x "${SCRIPT}" \
   "${APP_DIR}/deploy/hetzner/site_healthcheck.py" 2>/dev/null || true
 
 mkdir -p "${STATE_DIR}"
+chgrp euadopt "${STATE_DIR}" 2>/dev/null || true
+chmod 775 "${STATE_DIR}" 2>/dev/null || true
 touch /var/log/euadopt-healthcheck.log
 chmod 644 /var/log/euadopt-healthcheck.log
 

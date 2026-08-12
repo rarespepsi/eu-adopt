@@ -17,6 +17,9 @@ AUTO_REPAIR="${EUADOPT_HEALTHCHECK_AUTO_REPAIR:-1}"
 ALERT_TO="${EUADOPT_HEALTHCHECK_EMAIL:-rarespepsi@gmail.com}"
 
 mkdir -p "${STATE_DIR}" "$(dirname "${LOG}")" /var/lock 2>/dev/null || true
+# euadopt trebuie să poată scrie last_healthcheck.json
+chgrp euadopt "${STATE_DIR}" 2>/dev/null || true
+chmod 775 "${STATE_DIR}" 2>/dev/null || true
 touch "${LOG}"
 chmod 644 "${LOG}" 2>/dev/null || true
 
@@ -31,6 +34,9 @@ log() { echo "$(date -Iseconds) $*" | tee -a "${LOG}"; }
 send_mail_django() {
   local subject="$1"
   local body_file="$2"
+  # body trebuie citibil de userul euadopt
+  chmod 644 "${body_file}" 2>/dev/null || true
+  chown root:euadopt "${body_file}" 2>/dev/null || true
   sudo -u euadopt bash -lc "cd '${APP_DIR}' && source venv/bin/activate && python - <<'PY'
 import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'euadopt_final.settings')
@@ -127,7 +133,8 @@ do_rollback() {
     fi
   fi
 
-  REPORT="$(mktemp)"
+  REPORT="$(mktemp "${STATE_DIR}/hc_report.XXXXXX")"
+  chmod 644 "${REPORT}" 2>/dev/null || true
   HC_EC=0
   if [[ "${svc_ok}" -ne 1 ]]; then
     echo "FAIL: systemd euadopt not active" > "${REPORT}"
@@ -159,7 +166,8 @@ do_rollback() {
   BEFORE="$(sudo -u euadopt git -C "${APP_DIR}" rev-parse HEAD 2>/dev/null || echo unknown)"
 
   if [[ "${AUTO_REPAIR}" != "1" ]]; then
-    BODY="$(mktemp)"
+    BODY="$(mktemp "${STATE_DIR}/hc_mail.XXXXXX")"
+    chmod 644 "${BODY}" 2>/dev/null || true
     {
       echo "EU-Adopt healthcheck FAIL (auto-repair OFF)"
       echo
@@ -175,7 +183,8 @@ do_rollback() {
   if do_rollback "${TARGET}"; then
     AFTER="$(sudo -u euadopt git -C "${APP_DIR}" rev-parse HEAD 2>/dev/null || echo unknown)"
     # re-check
-    RECHECK="$(mktemp)"
+    RECHECK="$(mktemp "${STATE_DIR}/hc_recheck.XXXXXX")"
+    chmod 644 "${RECHECK}" 2>/dev/null || true
     RE_EC=0
     if ! sudo -u euadopt env \
       EUADOPT_APP_DIR="${APP_DIR}" \
@@ -190,7 +199,8 @@ do_rollback() {
     cat "${RECHECK}" >> "${LOG}"
     if [[ "${RE_EC}" -eq 0 ]]; then
       write_repair_state "healthcheck_fail_rollback" "${BEFORE}" "${AFTER}" true
-      BODY="$(mktemp)"
+      BODY="$(mktemp "${STATE_DIR}/hc_mail.XXXXXX")"
+      chmod 644 "${BODY}" 2>/dev/null || true
       {
         echo "EU-Adopt: FAIL detectat → ROLLBACK automat la versiunea bună."
         echo "sha_before=${BEFORE}"
@@ -210,7 +220,8 @@ do_rollback() {
       exit 0
     else
       write_repair_state "healthcheck_fail_rollback_still_bad" "${BEFORE}" "${AFTER}" false
-      BODY="$(mktemp)"
+      BODY="$(mktemp "${STATE_DIR}/hc_mail.XXXXXX")"
+      chmod 644 "${BODY}" 2>/dev/null || true
       {
         echo "CRITICAL: rollback executat dar healthcheck tot FAIL. Intervenție om."
         echo "sha_before=${BEFORE}"
@@ -229,7 +240,8 @@ do_rollback() {
     fi
   else
     write_repair_state "rollback_command_failed" "${BEFORE}" "${BEFORE}" false
-    BODY="$(mktemp)"
+    BODY="$(mktemp "${STATE_DIR}/hc_mail.XXXXXX")"
+    chmod 644 "${BODY}" 2>/dev/null || true
     {
       echo "CRITICAL: nu s-a putut face rollback la ${TARGET}"
       echo "sha_before=${BEFORE}"
