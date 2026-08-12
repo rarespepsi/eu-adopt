@@ -106,11 +106,10 @@ do_rollback() {
   export EUADOPT_HEALTHCHECK_BASE_URL="${EUADOPT_HEALTHCHECK_BASE_URL:-https://eu-adopt.ro}"
   export EUADOPT_HEALTHCHECK_EMAIL="${ALERT_TO}"
 
-  # Seed EXPECTED from repo copy if missing on server
-  if [[ ! -f "${EXPECTED}" && -f "${APP_DIR}/deploy/EXPECTED_RELEASE.txt" ]]; then
-    cp -a "${APP_DIR}/deploy/EXPECTED_RELEASE.txt" "${EXPECTED}"
-    chown root:root "${EXPECTED}" 2>/dev/null || true
-    log "seeded EXPECTED from repo copy"
+  # Seed EXPECTED from live HEAD if missing (nu copia din repo — poate fi SHA vechi)
+  if [[ ! -f "${EXPECTED}" ]]; then
+    bash "${APP_DIR}/deploy/hetzner/mark_expected_release.sh" "seed on first healthcheck"
+    log "seeded EXPECTED from live HEAD"
   fi
 
   svc_ok=1
