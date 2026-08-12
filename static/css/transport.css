@@ -1796,10 +1796,15 @@
 	box-sizing: border-box;
 	padding: 0.55rem 0.75rem;
 	font-size: 1rem;
-	border: 1px solid rgba(255, 255, 255, 0.14);
+	border: 1px solid rgba(255, 255, 255, 0.22);
 	border-radius: 8px;
-	background: rgba(15, 23, 42, 0.85);
-	color: #f1f5f9;
+	background: rgba(15, 23, 42, 0.92);
+	color: #f8fafc;
+	caret-color: #f8fafc;
+}
+.transport-map-modal__search::placeholder {
+	color: #94a3b8;
+	opacity: 1;
 }
 .transport-map-modal__search:focus {
 	outline: none;
@@ -1821,38 +1826,40 @@
 	min-height: 280px;
 	padding: 1rem 1.1rem;
 	overflow-y: auto;
-	font-size: 0.85rem;
-	line-height: 1.45;
-	color: #fecdd3;
-	background: rgba(127, 29, 29, 0.22);
-	border: 1px solid rgba(248, 113, 113, 0.35);
+	font-size: 0.9rem;
+	line-height: 1.5;
+	color: #fff1f2;
+	background: rgba(127, 29, 29, 0.45);
+	border: 1px solid rgba(254, 202, 202, 0.55);
 	border-radius: 8px;
 }
 .transport-map-auth-fail strong {
 	display: block;
 	margin-bottom: 0.5rem;
-	font-size: 0.95rem;
+	font-size: 1rem;
 	color: #fecdd3;
 }
 .transport-map-auth-fail p {
 	margin: 0.5rem 0;
+	color: #ffe4e6;
 }
 .transport-map-auth-fail__code {
 	display: block;
 	margin: 0.65rem 0;
-	padding: 0.5rem 0.65rem;
-	font-size: 0.78rem;
+	padding: 0.55rem 0.7rem;
+	font-size: 0.85rem;
+	font-weight: 700;
 	word-break: break-all;
-	background: rgba(15, 23, 42, 0.75);
-	border: 1px dashed rgba(255, 255, 255, 0.25);
+	background: rgba(15, 23, 42, 0.9);
+	border: 1px dashed rgba(255, 255, 255, 0.45);
 	border-radius: 6px;
-	color: #e2e8f0;
+	color: #f8fafc;
 }
 .transport-map-auth-fail a {
 	display: inline-block;
 	margin-top: 0.5rem;
 	font-weight: 700;
-	color: #67e8f9;
+	color: #a5f3fc;
 }
 .transport-map-modal__actions {
 	display: flex;
