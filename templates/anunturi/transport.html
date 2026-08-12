@@ -5,7 +5,7 @@
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=74-t1-country-intro-under-title" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=75-map-modal-zindex" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Servicii / Intra */
 	body.page-transport {
@@ -761,25 +761,39 @@
 	script.async = true;
 	script.defer = true;
 	window.transportPlacesReady = function() {
-		if (typeof google === 'undefined' || !google.maps || !google.maps.places) return;
+		if (typeof google === 'undefined' || !google.maps) return;
 		var geocoder = new google.maps.Geocoder();
 		/* Limite aproximative România – bias slab dacă nu e ales județul */
 		var romaniaBounds = new google.maps.LatLngBounds(
 			new google.maps.LatLng(43.62, 20.22),
 			new google.maps.LatLng(48.28, 29.75)
 		);
+		/* Nu combina establishment + geocode — Places Autocomplete respinge tipurile mixte. */
 		var baseOpts = {
-			types: ['establishment', 'geocode'],
 			componentRestrictions: { country: 'ro' }
 		};
 		var plecareInput = document.getElementById('plecare_input');
 		var sosireInput = document.getElementById('sosire_input');
 		var judetEl = document.getElementById('tw-judet');
 		var orasEl = document.getElementById('tw-oras');
+		var transportMapModal = document.getElementById('transportMapModal');
+		var transportMapCanvas = document.getElementById('transportMapCanvas');
+		if (transportMapModal && transportMapModal.parentNode !== document.body) {
+			document.body.appendChild(transportMapModal);
+		}
+		function safeAutocomplete(input, opts) {
+			if (!input || !google.maps.places || !google.maps.places.Autocomplete) return null;
+			try {
+				return new google.maps.places.Autocomplete(input, opts || baseOpts);
+			} catch (err) {
+				try { console.warn('EU-Adopt Places Autocomplete:', err); } catch (e0) {}
+				return null;
+			}
+		}
 		var ac1 = null;
 		var ac2 = null;
-		if (plecareInput) ac1 = new google.maps.places.Autocomplete(plecareInput, baseOpts);
-		if (sosireInput) ac2 = new google.maps.places.Autocomplete(sosireInput, baseOpts);
+		if (plecareInput) ac1 = safeAutocomplete(plecareInput, baseOpts);
+		if (sosireInput) ac2 = safeAutocomplete(sosireInput, baseOpts);
 		function boundsAroundPoint(lat, lng, kmDelta) {
 			var d = kmDelta / 111.0;
 			return new google.maps.LatLngBounds(
@@ -789,34 +803,36 @@
 		}
 		var regionTimer = null;
 		function applyRegionBoundsToAutocomplete() {
-			if (!ac1 || !ac2) return;
+			function setB(ac, bounds) {
+				if (ac && typeof ac.setBounds === 'function') ac.setBounds(bounds);
+			}
 			var judet = judetEl && judetEl.value ? String(judetEl.value).trim() : '';
 			var oras = orasEl && orasEl.value ? String(orasEl.value).trim() : '';
 			if (!judet) {
-				ac1.setBounds(romaniaBounds);
-				ac2.setBounds(romaniaBounds);
+				setB(ac1, romaniaBounds);
+				setB(ac2, romaniaBounds);
 				return;
 			}
 			var query = oras ? (oras + ', ' + judet + ', România') : (judet + ', România');
 			geocoder.geocode({ address: query, region: 'ro' }, function(results, status) {
 				if (status !== 'OK' || !results || !results.length) {
-					ac1.setBounds(romaniaBounds);
-					ac2.setBounds(romaniaBounds);
+					setB(ac1, romaniaBounds);
+					setB(ac2, romaniaBounds);
 					return;
 				}
 				var g = results[0].geometry;
 				if (g.viewport) {
-					ac1.setBounds(g.viewport);
-					ac2.setBounds(g.viewport);
+					setB(ac1, g.viewport);
+					setB(ac2, g.viewport);
 				} else if (g.location) {
 					var lat = g.location.lat();
 					var lng = g.location.lng();
 					var b = boundsAroundPoint(lat, lng, oras ? 22 : 45);
-					ac1.setBounds(b);
-					ac2.setBounds(b);
+					setB(ac1, b);
+					setB(ac2, b);
 				} else {
-					ac1.setBounds(romaniaBounds);
-					ac2.setBounds(romaniaBounds);
+					setB(ac1, romaniaBounds);
+					setB(ac2, romaniaBounds);
 				}
 			});
 		}
@@ -858,10 +874,8 @@
 			});
 		}
 		/* ——— Hartă în modal (aceeași pagină) ——— */
-		var transportMapModal = document.getElementById('transportMapModal');
-		var transportMapCanvas = document.getElementById('transportMapCanvas');
 		function setTransportModalAcBoundsFromForm() {
-			if (!mapPickerModalAc) return;
+			if (!mapPickerModalAc || typeof mapPickerModalAc.setBounds !== 'function') return;
 			var judet = judetEl && judetEl.value ? String(judetEl.value).trim() : '';
 			var oras = orasEl && orasEl.value ? String(orasEl.value).trim() : '';
 			if (!judet) {
@@ -946,27 +960,29 @@
 				mapPickerMarker.setMap(mapPickerMap);
 			});
 			var searchInput = document.getElementById('transportMapSearch');
-			if (searchInput && google.maps.places && google.maps.places.Autocomplete) {
+			if (searchInput) {
 				var modalAcOpts = { componentRestrictions: { country: 'ro' } };
-				mapPickerModalAc = new google.maps.places.Autocomplete(searchInput, modalAcOpts);
-				mapPickerModalAc.setBounds(romaniaBounds);
-				mapPickerModalAc.addListener('place_changed', function() {
-					var place = mapPickerModalAc.getPlace();
-					if (!place.geometry || !place.geometry.location) return;
-					var loc = place.geometry.location;
-					mapPickerMarker.setPosition(loc);
-					mapPickerMarker.setMap(mapPickerMap);
-					if (place.geometry.viewport) {
-						mapPickerMap.fitBounds(place.geometry.viewport);
-					} else {
-						mapPickerMap.setCenter(loc);
-						mapPickerMap.setZoom(16);
-					}
-					setTimeout(function() {
-						google.maps.event.trigger(mapPickerMap, 'resize');
-						mapPickerMap.setCenter(loc);
-					}, 100);
-				});
+				mapPickerModalAc = safeAutocomplete(searchInput, modalAcOpts);
+				if (mapPickerModalAc) {
+					mapPickerModalAc.setBounds(romaniaBounds);
+					mapPickerModalAc.addListener('place_changed', function() {
+						var place = mapPickerModalAc.getPlace();
+						if (!place.geometry || !place.geometry.location) return;
+						var loc = place.geometry.location;
+						mapPickerMarker.setPosition(loc);
+						mapPickerMarker.setMap(mapPickerMap);
+						if (place.geometry.viewport) {
+							mapPickerMap.fitBounds(place.geometry.viewport);
+						} else {
+							mapPickerMap.setCenter(loc);
+							mapPickerMap.setZoom(16);
+						}
+						setTimeout(function() {
+							google.maps.event.trigger(mapPickerMap, 'resize');
+							mapPickerMap.setCenter(loc);
+						}, 100);
+					});
+				}
 				if (!transportModalSearchInputBound) {
 					transportModalSearchInputBound = true;
 					searchInput.addEventListener('input', scheduleTransportModalSearchGeocode);
