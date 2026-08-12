@@ -38,6 +38,13 @@ alwaysApply: true
 - **Format:** `good_YYYYMMDD_HHMMSS_<sha>.zip` + `.txt` cu commit
 - La al 4-lea backup → **șterge automat** cel mai vechi
 
+### A2) Pointer „site funcțional” (EXPECTED_RELEASE)
+
+- **Pe H:** `/var/lib/euadopt/EXPECTED_RELEASE.txt` (sursă operațională)
+- **În repo:** `deploy/EXPECTED_RELEASE.txt`
+- Actualizat de `deploy/hetzner/mark_expected_release.sh` după deploy + smoke OK
+- Healthcheck 3×/zi + auto-rollback: `run_site_healthcheck.sh` / `install_site_healthcheck_cron.sh`
+
 ### B) Dump PostgreSQL pe Hetzner (ultimele 3)
 
 - **Script:** `deploy/hetzner/backup_db_rotate.sh`

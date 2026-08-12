@@ -6,6 +6,21 @@ Două rotații automate câte **3 variante** (la a 4-a se șterge cea mai veche)
 
 ---
 
+## 0. Versiune „site funcțional” (regula de aur)
+
+**Pointer operațional pe Hetzner:** `/var/lib/euadopt/EXPECTED_RELEASE.txt`  
+**Copie în repo:** `deploy/EXPECTED_RELEASE.txt`
+
+- Se **actualizează automat** după `deploy_update.sh` dacă smoke + Maps trec.
+- Healthcheck **3×/zi** (06/14/22 Europe/Bucharest) compară live cu acest SHA.
+- La FAIL → **rollback** la SHA din EXPECTED (nu inventează fix-uri) + email `rarespepsi@gmail.com`.
+- Undo: `bash /opt/eu-adopt/deploy/hetzner/undo_last_auto_repair.sh`
+- State: `/var/lib/euadopt/AUTO_REPAIR_STATE.json`
+- Log: `/var/log/euadopt-healthcheck.log`
+- Instalare cron: `bash /opt/eu-adopt/deploy/hetzner/install_site_healthcheck_cron.sh`
+
+---
+
 ## 1. Copii „bune” pe PC (cod)
 
 **Script:** `scripts/backup_good_release_rotate.ps1`
