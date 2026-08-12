@@ -92,8 +92,10 @@ do_rollback() {
   sudo -u euadopt bash -lc "
     set -e
     cd '${APP_DIR}'
+    # rollback pe detached HEAD rupe `git pull` la următorul deploy — rămâi pe main
     git fetch --quiet origin || true
-    git checkout --force '${target_sha}'
+    git checkout -B main --track origin/main 2>/dev/null || git checkout -B main
+    git reset --hard '${target_sha}'
     source venv/bin/activate
     python manage.py collectstatic --noinput >/dev/null
   "

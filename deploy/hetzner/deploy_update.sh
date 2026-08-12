@@ -33,7 +33,9 @@ echo "[$(date -Is)] Git înainte: ${BEFORE_SHA}"
 sudo -u euadopt bash -c '
   set -e
   source venv/bin/activate
-  git pull
+  git fetch origin
+  git checkout -B main --track origin/main 2>/dev/null || git checkout main || git checkout -B main
+  git reset --hard origin/main
   pip install -q -r requirements.txt
   python manage.py migrate --noinput
   python manage.py collectstatic --noinput
@@ -69,7 +71,9 @@ else
     sudo -u euadopt bash -lc "
       set -e
       cd '${APP_DIR}'
-      git checkout --force '${PREV_GOOD}'
+      git fetch --quiet origin || true
+      git checkout -B main --track origin/main 2>/dev/null || git checkout -B main
+      git reset --hard '${PREV_GOOD}'
       source venv/bin/activate
       python manage.py collectstatic --noinput
     "

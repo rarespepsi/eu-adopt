@@ -31,7 +31,8 @@ sudo -u euadopt bash -lc "
   set -e
   cd '${APP_DIR}'
   git fetch --quiet origin || true
-  git checkout --force '${BEFORE}'
+  git checkout -B main --track origin/main 2>/dev/null || git checkout -B main
+  git reset --hard '${BEFORE}'
   source venv/bin/activate
   python manage.py collectstatic --noinput
 "

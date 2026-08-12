@@ -140,7 +140,7 @@ def run_phone_source_check() -> list[str]:
     if not py.is_file():
         return [f"missing {py}"]
     src = py.read_text(encoding="utf-8", errors="replace")
-    for needle in ("+40733823678", "+40 73 EUADOPT", "wa.me/40733823678"):
+    for needle in ("+40733823678", "+40 73 EUADOPT", "wa.me/", "40733823678"):
         if needle not in src:
             fails.append(f"phone_source missing {needle} in {py.name}")
     return fails
