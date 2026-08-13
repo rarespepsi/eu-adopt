@@ -66,21 +66,25 @@
 			max-height: calc(100dvh - 0px) !important;
 			padding-top: calc(var(--nav-height, 56px) + 0.15rem) !important;
 			padding-bottom: 0.2rem !important;
-			overflow-y: hidden !important;
+			/* visible: caseta Tip (margin negativ) nu trebuie tăiată */
+			overflow-x: visible !important;
+			overflow-y: auto !important;
 		}
 		body.page-login .login-main {
 			padding: 0.1rem 0 0.15rem !important;
 			width: 100%;
-			max-height: calc(100dvh - var(--nav-height, 56px) - 0.35rem);
-			overflow: hidden;
+			max-height: none;
+			overflow: visible;
 		}
 		.signup-col-main,
 		.signup-org-main {
-			gap: 0.35rem !important;
-			max-width: min(1080px, 98vw);
+			gap: 0.45rem !important;
+			max-width: min(1100px, 98vw);
 			margin: 0 auto;
-			max-height: calc(100dvh - var(--nav-height, 56px) - 0.45rem);
-			overflow: hidden;
+			max-height: none;
+			overflow: visible;
+			align-items: flex-start !important;
+			flex-wrap: nowrap !important;
 		}
 		.signup-col-header,
 		.signup-org-header {
@@ -94,15 +98,53 @@
 			line-height: 1.2 !important;
 		}
 		.signup-col-intro,
-		.signup-org-intro {
+		.signup-org-intro,
+		.signup-intro {
 			display: none !important;
 		}
-		.signup-col-tip-box,
-		.signup-org-tip-box {
-			padding: 0.28rem 0.4rem !important;
+		/* Tip partener (Colab) */
+		.signup-col-tip-box {
+			padding: 0.35rem 0.45rem !important;
 			min-height: 0 !important;
-			width: 168px !important;
-			align-self: stretch !important;
+			width: 180px !important;
+			margin-left: 0 !important;
+			align-self: flex-start !important;
+			overflow: visible !important;
+			flex-shrink: 0 !important;
+		}
+		.signup-col-form-area {
+			margin-left: 0.5rem !important;
+			min-width: 0 !important;
+			flex: 1 1 auto !important;
+		}
+		/* Tip adăpost (ONG) — caseta laterală, întreagă */
+		.signup-org-public-box {
+			padding: 0.4rem 0.5rem !important;
+			min-height: 0 !important;
+			width: 200px !important;
+			margin-left: 0 !important;
+			align-self: flex-start !important;
+			overflow: visible !important;
+			flex-shrink: 0 !important;
+			height: auto !important;
+		}
+		.signup-org-form-area {
+			margin-left: 0.5rem !important;
+			min-width: 0 !important;
+			flex: 1 1 auto !important;
+		}
+		.signup-org-public-title {
+			font-size: 0.7rem !important;
+			margin: 0 0 0.2rem !important;
+		}
+		.signup-org-public-text {
+			font-size: 0.58rem !important;
+			line-height: 1.28 !important;
+			margin: 0 0 0.28rem !important;
+		}
+		.signup-org-public-checkbox {
+			font-size: 0.6rem !important;
+			gap: 0.18rem !important;
 		}
 		.signup-col-caseta,
 		.signup-org-caseta {
@@ -180,7 +222,8 @@
 			line-height: 1.25 !important;
 		}
 		.signup-col-tip-title,
-		.signup-org-tip-title {
+		.signup-org-tip-title,
+		.signup-org-public-title {
 			font-size: 0.66rem !important;
 			margin: 0 0 0.12rem !important;
 		}
