@@ -20,10 +20,10 @@
 	<div class="signup-phone-landline-row">
 		<div class="signup-phone-landline-prefix">
 			<label for="{{ prefix_input_id }}">Prefix județ</label>
-			<select id="{{ prefix_input_id }}" name="telefon_fix_prefix" class="signup-phone-landline-select" data-signup-landline-prefix>
-				<option value="">— Prefix —</option>
+			<select id="{{ prefix_input_id }}" name="telefon_fix_prefix" class="signup-phone-landline-select" data-signup-landline-prefix title="Prefix zonă (județ)">
+				<option value="">—</option>
 				{% for pref, label in landline_prefix_choices %}
-				<option value="{{ pref }}" {% if form_prefill and form_prefill.telefon_fix_prefix == pref %}selected{% endif %}>{{ label }}</option>
+				<option value="{{ pref }}" title="{{ label }}" {% if form_prefill and form_prefill.telefon_fix_prefix == pref %}selected{% endif %}>{{ pref }}</option>
 				{% endfor %}
 			</select>
 		</div>

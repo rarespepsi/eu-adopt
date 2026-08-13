@@ -1,31 +1,36 @@
-{# Stiluri telefon mobil/fix + compactare formular signup Colab/ONG #}
+{# Stiluri telefon mobil/fix + formular Colab/ONG pe o singură pagină (desktop) #}
 <style>
 	.signup-phone-hint {
-		margin: 0.15rem 0 0;
-		font-size: 0.72rem;
-		line-height: 1.3;
+		margin: 0.1rem 0 0;
+		font-size: 0.68rem;
+		line-height: 1.25;
 		color: #94a3b8;
 	}
 	.signup-phone-landline-label {
 		display: block;
-		font-size: 0.78rem;
+		font-size: 0.74rem;
 		font-weight: 600;
 		color: #e2e8f0;
-		margin-bottom: 0.28rem;
+		margin-bottom: 0.18rem;
 	}
 	.signup-phone-landline-row {
 		display: grid;
-		grid-template-columns: minmax(9.5rem, 1.15fr) minmax(0, 1fr);
-		gap: 0.4rem;
+		/* Prefix îngust; numărul ia restul */
+		grid-template-columns: 5.1rem minmax(0, 1fr);
+		gap: 0.35rem;
 		align-items: end;
+	}
+	.signup-phone-landline-prefix {
+		min-width: 0;
+		max-width: 5.1rem;
 	}
 	.signup-phone-landline-prefix label,
 	.signup-phone-landline-number label {
 		display: block;
-		font-size: 0.68rem;
+		font-size: 0.64rem;
 		font-weight: 600;
 		color: #94a3b8;
-		margin-bottom: 0.15rem;
+		margin-bottom: 0.1rem;
 		text-transform: none;
 		letter-spacing: 0;
 	}
@@ -33,80 +38,195 @@
 	.signup-phone-landline-number input {
 		width: 100%;
 		box-sizing: border-box;
-		min-height: 2rem;
-		font-size: 0.85rem !important;
-		padding: 0.32rem 0.4rem !important;
+		min-height: 1.85rem;
+		font-size: 0.8rem !important;
+		padding: 0.22rem 0.28rem !important;
+	}
+	.signup-phone-landline-select {
+		max-width: 5.1rem;
+		padding-left: 0.2rem !important;
+		padding-right: 0.15rem !important;
 	}
 	@media (max-width: 520px) {
 		.signup-phone-landline-row {
-			grid-template-columns: 1fr;
+			grid-template-columns: 5.1rem minmax(0, 1fr);
 		}
 	}
 
-	/* Compactare: mai puțin scroll pe desktop */
-	@media (min-width: 900px) and (min-height: 700px) {
+	/*
+	  Desktop: tot formularul pe o singură pagină (fără scroll pe #main_content).
+	  Compactare densă pe Colab + ONG.
+	*/
+	@media (min-width: 900px) and (min-height: 620px) {
 		body.page-login:not(.page-home-v2):not(.page-animale) #main_content {
 			align-items: flex-start !important;
+			justify-content: center !important;
 			min-height: 0 !important;
-			padding-top: calc(var(--nav-height, 56px) + 0.35rem) !important;
-			padding-bottom: 0.5rem !important;
+			height: auto !important;
+			max-height: calc(100dvh - 0px) !important;
+			padding-top: calc(var(--nav-height, 56px) + 0.15rem) !important;
+			padding-bottom: 0.2rem !important;
+			overflow-y: hidden !important;
 		}
 		body.page-login .login-main {
-			padding: 0.2rem 0 0.4rem !important;
+			padding: 0.1rem 0 0.15rem !important;
 			width: 100%;
+			max-height: calc(100dvh - var(--nav-height, 56px) - 0.35rem);
+			overflow: hidden;
 		}
 		.signup-col-main,
 		.signup-org-main {
-			gap: 0.45rem !important;
-			max-width: min(1100px, 98vw);
+			gap: 0.35rem !important;
+			max-width: min(1080px, 98vw);
 			margin: 0 auto;
+			max-height: calc(100dvh - var(--nav-height, 56px) - 0.45rem);
+			overflow: hidden;
+		}
+		.signup-col-header,
+		.signup-org-header {
+			margin: 0 !important;
+			padding: 0 !important;
 		}
 		.signup-col-header h1,
 		.signup-org-header h1 {
-			font-size: 1.05rem !important;
-			margin: 0 0 0.15rem !important;
+			font-size: 0.95rem !important;
+			margin: 0 0 0.05rem !important;
+			line-height: 1.2 !important;
 		}
 		.signup-col-intro,
 		.signup-org-intro {
-			font-size: 0.8rem !important;
-			margin: 0 0 0.35rem !important;
+			display: none !important;
 		}
 		.signup-col-tip-box,
 		.signup-org-tip-box {
-			padding: 0.35rem 0.55rem !important;
+			padding: 0.28rem 0.4rem !important;
+			min-height: 0 !important;
+			width: 168px !important;
+			align-self: stretch !important;
 		}
 		.signup-col-caseta,
 		.signup-org-caseta {
-			padding: 0.35rem 0.55rem !important;
+			padding: 0.28rem 0.45rem !important;
 		}
 		.signup-col-caseta h2,
 		.signup-org-caseta h2 {
-			font-size: 0.92rem !important;
-			margin: 0 0 0.3rem !important;
+			font-size: 0.78rem !important;
+			margin: 0 0 0.18rem !important;
+			line-height: 1.2 !important;
 		}
 		.signup-col-field-box,
 		.signup-org-field-box {
-			margin-bottom: 0.18rem !important;
-			padding: 0.18rem 0.32rem !important;
+			margin-bottom: 0.1rem !important;
+			padding: 0.1rem 0.22rem !important;
+		}
+		.signup-col-field,
+		.signup-org-field {
+			margin-bottom: 0.08rem !important;
 		}
 		.signup-col-casete-row,
 		.signup-org-casete-row {
-			gap: 0.55rem !important;
+			gap: 0.4rem !important;
 		}
 		.signup-col-adresa-hint,
-		.signup-org-adresa-hint {
+		.signup-org-adresa-hint,
+		.signup-phone-hint {
+			display: none !important;
+		}
+		.signup-phone-landline-prefix label,
+		.signup-phone-landline-number label {
+			display: none !important;
+		}
+		.signup-phone-landline-label {
 			font-size: 0.68rem !important;
-			margin: 0.1rem 0 0 !important;
+			margin-bottom: 0.1rem !important;
+		}
+		.signup-col-field-box label,
+		.signup-org-field-box label,
+		.signup-col-field > label,
+		.signup-org-field > label {
+			font-size: 0.68rem !important;
+			margin-bottom: 0.05rem !important;
+			line-height: 1.2 !important;
+		}
+		.signup-col-field-box input:not([type="checkbox"]):not([type="radio"]),
+		.signup-org-field-box input:not([type="checkbox"]):not([type="radio"]),
+		.signup-col-field-box select,
+		.signup-org-field-box select,
+		.signup-phone-landline-select,
+		.signup-phone-landline-number input {
+			min-height: 1.55rem !important;
+			font-size: 0.78rem !important;
+			padding: 0.15rem 0.28rem !important;
+			line-height: 1.2 !important;
+		}
+		.signup-phone-landline-select {
+			max-width: 5.1rem !important;
+			padding-left: 0.15rem !important;
+			padding-right: 0.1rem !important;
 		}
 		.signup-col-pl-wrap h3,
 		.signup-org-pl-wrap h3 {
-			font-size: 0.85rem !important;
-			margin: 0 0 0.25rem !important;
+			font-size: 0.72rem !important;
+			margin: 0 0 0.12rem !important;
 		}
 		.signup-col-pl-wrap > p,
 		.signup-org-pl-wrap > p {
-			font-size: 0.72rem !important;
-			margin: 0 0 0.35rem !important;
+			display: none !important;
+		}
+		.signup-col-pl-wrap .check,
+		.signup-org-pl-wrap .check {
+			margin-bottom: 0.2rem !important;
+			font-size: 0.68rem !important;
+			line-height: 1.25 !important;
+		}
+		.signup-col-tip-title,
+		.signup-org-tip-title {
+			font-size: 0.66rem !important;
+			margin: 0 0 0.12rem !important;
+		}
+		.signup-col-tip-options,
+		.signup-org-tip-options {
+			font-size: 0.62rem !important;
+			gap: 0.1rem !important;
+		}
+		.signup-col-tip-nota,
+		.signup-org-tip-nota {
+			font-size: 0.58rem !important;
+			margin: 0.25rem 0 0 !important;
+			padding: 0.2rem 0.3rem !important;
+		}
+		.signup-col-bife-actions,
+		.signup-org-bife-actions {
+			gap: 0.08rem !important;
+		}
+		.signup-col-bifa-row,
+		.signup-org-bifa-row {
+			font-size: 0.66rem !important;
+			line-height: 1.25 !important;
+		}
+		.signup-col-actions,
+		.signup-org-actions,
+		.signup-col-submit-wrap,
+		.signup-org-submit-wrap {
+			margin-top: 0.2rem !important;
+		}
+		.signup-col-actions button,
+		.signup-org-actions button,
+		.signup-col-submit,
+		.signup-org-submit,
+		button.signup-col-btn,
+		button.signup-org-btn {
+			min-height: 1.85rem !important;
+			padding: 0.28rem 0.75rem !important;
+			font-size: 0.82rem !important;
+		}
+		.signup-col-cui-stanga .signup-cui-ro-display,
+		.signup-org-cui-stanga .signup-cui-ro-display,
+		.signup-col-cui-stanga select,
+		.signup-org-cui-stanga select {
+			min-height: 1.55rem !important;
+			font-size: 0.68rem !important;
+			padding: 0.15rem 0.2rem !important;
 		}
 	}
 </style>
