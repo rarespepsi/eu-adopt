@@ -28,3 +28,10 @@ class RoLandlinePrefixesTests(SimpleTestCase):
         values = {p for p, _ in landline_prefix_choices()}
         self.assertIn("0256", values)
         self.assertIn("021", values)
+
+    def test_parse_landline_for_edit(self):
+        from home.ro_landline_prefixes import parse_landline_for_edit
+
+        self.assertEqual(parse_landline_for_edit("0256 212345"), ("0256", "212345"))
+        self.assertEqual(parse_landline_for_edit(""), ("", ""))
+        self.assertEqual(parse_landline_for_edit("0211234567")[0], "021")

@@ -11,7 +11,7 @@
 		placeholder="07xx xxx xxx"
 		value="{% if form_prefill %}{{ form_prefill.telefon|default:'' }}{% endif %}"
 	/>
-	<p class="signup-phone-hint">Dacă completezi mobilul, verificăm prin SMS (07…). Poți folosi doar fixul, fără SMS.</p>
+	<p class="signup-phone-hint">Mobil → SMS. Poți lăsa doar fixul (fără SMS).</p>
 	{% if field_errors and field_errors.telefon %}<p class="signup-field-err" role="alert">{{ field_errors.telefon }}</p>{% endif %}
 </div>
 <div class="signup-phone-landline-box signup-{{ signup_variant }}-field signup-{{ signup_variant }}-field-box">
@@ -39,6 +39,6 @@
 			/>
 		</div>
 	</div>
-	<p class="signup-phone-hint">Obligatoriu mobil sau fix (cel puțin unul).</p>
+	<p class="signup-phone-hint">Obligatoriu: mobil sau fix.</p>
 	{% if field_errors and field_errors.telefon_fix %}<p class="signup-field-err" role="alert">{{ field_errors.telefon_fix }}</p>{% endif %}
 </div>

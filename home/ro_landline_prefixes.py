@@ -107,3 +107,21 @@ def combine_landline(prefix: str | None, number: str | None) -> str:
         # uneori userul pune 0 local
         pass
     return f"{pref} {num}".strip()
+
+
+def parse_landline_for_edit(stored: str | None) -> tuple[str, str]:
+    """Din '0256 212345' → (prefix, număr) pentru formularul de cont."""
+    raw = (stored or "").strip()
+    if not raw:
+        return "", ""
+    digits = re.sub(r"\D", "", raw)
+    if not digits:
+        return "", ""
+    prefixes = sorted({p for p, _ in landline_prefix_choices()}, key=len, reverse=True)
+    for pref in prefixes:
+        if digits.startswith(pref) and len(digits) > len(pref):
+            return pref, digits[len(pref) :]
+    parts = raw.split(None, 1)
+    if len(parts) == 2:
+        return re.sub(r"\D", "", parts[0]), re.sub(r"\D", "", parts[1])
+    return "", digits

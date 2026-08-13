@@ -5852,18 +5852,29 @@ def account_view(request):
             ctx["form_prefill_firma"] = request.session.pop("edit_prefill_firma", None)
         else:
             phone_country, phone = _parse_phone_for_edit(user_profile.phone if user_profile else "")
+            from home.ro_landline_prefixes import parse_landline_for_edit
+
+            ll_pref, ll_nr = parse_landline_for_edit(
+                user_profile.phone_landline if user_profile else ""
+            )
             ctx["form_prefill"] = {
                 "first_name": user.first_name or "",
                 "last_name": user.last_name or "",
                 "email": user.email or "",
                 "phone_country": phone_country,
                 "phone": phone,
+                "telefon_fix_prefix": ll_pref,
+                "telefon_fix_nr": ll_nr,
+                "telefon_fix": (user_profile.phone_landline if user_profile else "") or "",
                 "judet": user_profile.judet if user_profile else "",
                 "oras": user_profile.oras if user_profile else "",
                 "accept_termeni": user_profile.accept_termeni if user_profile else False,
                 "accept_gdpr": user_profile.accept_gdpr if user_profile else False,
                 "email_opt_in_wishlist": user_profile.email_opt_in_wishlist if user_profile else False,
             }
+        from home.ro_landline_prefixes import landline_prefix_choices
+
+        ctx["landline_prefix_choices"] = landline_prefix_choices()
     ctx["account_updated"] = request.GET.get("updated") == "1"
     ctx["username_updated"] = request.GET.get("username_updated") == "1"
     ctx["campanie_form_open"] = request.GET.get("campanie") == "1"
@@ -8222,11 +8233,16 @@ def account_edit_view(request):
         return redirect(reverse("account") + "?updated=1")
 
     # Formular principal (PF + colaborator) – date persoană
+    from home.ro_landline_prefixes import combine_landline
+
     first_name = (request.POST.get("first_name") or "").strip()
     last_name = (request.POST.get("last_name") or "").strip()
     email = (request.POST.get("email") or "").strip().lower()
     phone_country = (request.POST.get("phone_country") or "+40").strip()
     phone = (request.POST.get("phone") or "").strip()
+    telefon_fix_prefix = (request.POST.get("telefon_fix_prefix") or "").strip()
+    telefon_fix_nr = (request.POST.get("telefon_fix_nr") or "").strip()
+    telefon_fix = combine_landline(telefon_fix_prefix, telefon_fix_nr)
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
     judet, oras = normalize_location_pair(judet, oras)
@@ -8245,6 +8261,8 @@ def account_edit_view(request):
         errors.append("Numele este obligatoriu.")
     if not phone:
         errors.append("Telefonul este obligatoriu.")
+    if (telefon_fix_prefix or telefon_fix_nr) and not telefon_fix:
+        errors.append("Completează prefixul județului și numărul de telefon fix, sau lasă ambele goale.")
     if not judet:
         errors.append("Județul este obligatoriu.")
     if not oras:
@@ -8263,6 +8281,8 @@ def account_edit_view(request):
         prefill = {
             "first_name": first_name, "last_name": last_name, "email": email,
             "phone_country": phone_country, "phone": phone, "judet": judet, "oras": oras,
+            "telefon_fix_prefix": telefon_fix_prefix,
+            "telefon_fix_nr": telefon_fix_nr,
             "accept_termeni": accept_termeni, "accept_gdpr": accept_gdpr, "email_opt_in_wishlist": email_opt_in_wishlist,
         }
         request.session["edit_errors"] = errors
@@ -8281,6 +8301,7 @@ def account_edit_view(request):
         if user_profile is None:
             user_profile = UserProfile.objects.create(user=user)
         user_profile.phone = full_phone
+        user_profile.phone_landline = (telefon_fix or "")[:40]
         user_profile.judet = judet
         user_profile.oras = oras
         user_profile.accept_termeni = accept_termeni
@@ -8302,6 +8323,9 @@ def account_edit_view(request):
         "user_pk": user.pk,
         "first_name": first_name, "last_name": last_name, "email": email,
         "phone_country": phone_country, "phone": phone, "judet": judet, "oras": oras,
+        "telefon_fix": telefon_fix,
+        "telefon_fix_prefix": telefon_fix_prefix,
+        "telefon_fix_nr": telefon_fix_nr,
         "accept_termeni": accept_termeni, "accept_gdpr": accept_gdpr, "email_opt_in_wishlist": email_opt_in_wishlist,
         "phone_changed": phone_changed, "email_changed": email_changed,
     }
@@ -8350,6 +8374,8 @@ def _apply_account_edit_pending_data(request, user, data, new_email, *, source: 
     }
     full_phone = f"{data.get('phone_country', '')} {data.get('phone', '')}".strip()
     profile.phone = full_phone
+    if "telefon_fix" in data:
+        profile.phone_landline = (data.get("telefon_fix") or "")[:40]
     profile.judet = data.get("judet", "")
     profile.oras = data.get("oras", "")
     profile.accept_termeni = data.get("accept_termeni", False)
@@ -8422,6 +8448,8 @@ def edit_verificare_sms_view(request):
     user.last_name = data.get("last_name", "")
     user.save(update_fields=["first_name", "last_name"])
     profile.phone = full_phone
+    if "telefon_fix" in data:
+        profile.phone_landline = (data.get("telefon_fix") or "")[:40]
     profile.judet = data.get("judet", "")
     profile.oras = data.get("oras", "")
     profile.accept_termeni = data.get("accept_termeni", False)

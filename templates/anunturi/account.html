@@ -210,6 +210,25 @@ body.page-account .account-right-panel {
 	.cont-pf-edit-box .signup-phone-row { display: flex; gap: 0.3rem; }
 	.cont-pf-edit-box .signup-phone-prefix { flex: 0 0 80px; }
 	.cont-pf-edit-box .signup-phone-number { flex: 1; min-width: 0; }
+	/* Telefon fix pe Contul meu (temă deschisă) */
+	body.page-account .signup-phone-landline-label {
+		color: #333;
+		font-size: 0.7rem;
+		margin-bottom: 0.15rem;
+	}
+	body.page-account .signup-phone-landline-prefix label,
+	body.page-account .signup-phone-landline-number label {
+		color: #555;
+	}
+	body.page-account .signup-phone-hint {
+		color: #666;
+		font-size: 0.68rem;
+		line-height: 1.2;
+		margin: 0.1rem 0 0;
+	}
+	body.page-account .signup-phone-landline-row {
+		grid-template-columns: 5.1rem minmax(0, 1fr);
+	}
 	.cont-pf-edit-box .signup-actions { margin-top: 0.5rem; flex-shrink: 0; }
 	.cont-pf-edit-box .btn-save { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 0.4rem; border-radius: 6px; border: none; background: #c62828; color: #fff; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
 	.cont-pf-edit-box .btn-save:hover { background: #b71c1c; color: #fff; }
@@ -1557,6 +1576,7 @@ body.page-account .account-right-panel {
 		}
 	}
 </style>
+{% include "anunturi/includes/signup_phone_landline_styles.html" %}
 {% endblock %}
 
 {% block content %}
@@ -1896,11 +1916,11 @@ body.page-account .account-right-panel {
 				<div class="cont-pf-card">
 					<h2>Date la înscriere &amp; contact</h2>
 					{% if user_profile %}
-						<p><strong>Telefon:</strong> {{ user_profile.phone|default:"—" }}</p>
+						<p><strong>Telefon mobil:</strong> {{ user_profile.phone|default:"—" }}</p>
+						<p><strong>Telefon fix / sediu:</strong> {{ user_profile.phone_landline|default:"—" }}</p>
 						<p><strong>Județ:</strong> {{ user_profile.judet|default:"—" }} &nbsp; · &nbsp; <strong>Oraș:</strong> {{ user_profile.oras|default:"—" }}</p>
 						<p><strong>Accept termeni:</strong> {{ user_profile.accept_termeni|yesno:"Da,Nu" }} &nbsp; · &nbsp; <strong>GDPR:</strong> {{ user_profile.accept_gdpr|yesno:"Da,Nu" }} &nbsp; · &nbsp; <strong>Notificări wishlist:</strong> {{ user_profile.email_opt_in_wishlist|yesno:"Da,Nu" }}</p>
 						<p><strong>Persoană contact:</strong> {{ user.get_full_name|default:user.username }}</p>
-						<p><strong>Telefon contact:</strong> {{ user_profile.phone|default:"—" }}</p>
 					{% else %}
 						<p>Nu există încă profil salvat.</p>
 					{% endif %}
@@ -1937,7 +1957,7 @@ body.page-account .account-right-panel {
 						<input type="email" id="id_email_pf" name="email" required value="{{ form_prefill.email|default:'' }}" class="profil-field" {% if not edit_errors %}readonly{% endif %} />
 					</div>
 					<div class="signup-field span2">
-						<label>Telefon *</label>
+						<label>Telefon mobil *</label>
 						<div class="signup-phone-row">
 							<div class="signup-phone-prefix">
 								<select id="id_phone_country_pf" name="phone_country" required class="profil-field" {% if not edit_errors %}disabled{% endif %}>
@@ -1956,6 +1976,25 @@ body.page-account .account-right-panel {
 								<input type="tel" id="id_phone_pf" name="phone" required value="{{ form_prefill.phone|default:'' }}" class="profil-field" {% if not edit_errors %}readonly{% endif %} />
 							</div>
 						</div>
+					</div>
+					<div class="signup-field span2 signup-phone-landline-box">
+						<span class="signup-phone-landline-label">Telefon fix / sediu</span>
+						<div class="signup-phone-landline-row">
+							<div class="signup-phone-landline-prefix">
+								<label for="id_telefon_fix_prefix_account">Prefix</label>
+								<select id="id_telefon_fix_prefix_account" name="telefon_fix_prefix" class="signup-phone-landline-select profil-field" data-signup-landline-prefix {% if not edit_errors %}disabled{% endif %}>
+									<option value="">—</option>
+									{% for pref, label in landline_prefix_choices %}
+									<option value="{{ pref }}" title="{{ label }}" {% if form_prefill.telefon_fix_prefix == pref %}selected{% endif %}>{{ pref }}</option>
+									{% endfor %}
+								</select>
+							</div>
+							<div class="signup-phone-landline-number">
+								<label for="id_telefon_fix_nr_account">Număr fix</label>
+								<input type="tel" id="id_telefon_fix_nr_account" name="telefon_fix_nr" class="profil-field" inputmode="numeric" placeholder="xxx xxx" value="{{ form_prefill.telefon_fix_nr|default:'' }}" {% if not edit_errors %}readonly{% endif %} />
+							</div>
+						</div>
+						<p class="signup-phone-hint">Opțional. Schimbarea mobilului cere SMS; fixul se salvează direct.</p>
 					</div>
 					<div class="signup-field">
 						<label for="id_judet_pf">Județ *</label>
@@ -2144,7 +2183,8 @@ body.page-account .account-right-panel {
 		<div class="cont-meu-card">
 			<h2>Contact</h2>
 			{% if user_profile %}
-				<p><strong>Telefon:</strong> {{ user_profile.phone|default:"—" }}</p>
+				<p><strong>Telefon mobil:</strong> {{ user_profile.phone|default:"—" }}</p>
+				<p><strong>Telefon fix / sediu:</strong> {{ user_profile.phone_landline|default:"—" }}</p>
 				<p><strong>Accept termeni:</strong> {{ user_profile.accept_termeni|yesno:"Da,Nu" }}</p>
 				<p><strong>GDPR:</strong> {{ user_profile.accept_gdpr|yesno:"Da,Nu" }}</p>
 				<p><strong>Notificări email:</strong> {{ user_profile.email_opt_in_wishlist|yesno:"Da,Nu" }}</p>
@@ -2698,6 +2738,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	initAvatarSlot();
 })();
 </script>
+{% include "anunturi/includes/signup_phone_landline_script.html" %}
 {% endif %}
 {% endblock %}
 
