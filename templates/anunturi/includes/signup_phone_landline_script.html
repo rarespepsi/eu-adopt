@@ -1,0 +1,43 @@
+{# Sync prefix telefon fix la schimbarea județului (opțional, doar dacă prefix e gol). #}
+<script>
+(function () {
+	var MAP = {
+		"alba": "0258", "arad": "0257", "arges": "0248", "bacau": "0234", "bihor": "0259",
+		"bistrita-nasaud": "0263", "botosani": "0231", "brasov": "0268", "braila": "0239",
+		"bucuresti": "021", "buzau": "0238", "calarasi": "0242", "caras-severin": "0255",
+		"cluj": "0264", "constanta": "0241", "covasna": "0267", "dambovita": "0245",
+		"dolj": "0251", "galati": "0236", "giurgiu": "0246", "gorj": "0253", "harghita": "0266",
+		"hunedoara": "0254", "ialomita": "0243", "iasi": "0232", "ilfov": "021",
+		"maramures": "0262", "mehedinti": "0252", "mures": "0265", "neamt": "0233",
+		"olt": "0249", "prahova": "0244", "satu mare": "0261", "salaj": "0260", "sibiu": "0269",
+		"suceava": "0230", "teleorman": "0247", "timis": "0256", "tulcea": "0240",
+		"vaslui": "0235", "valcea": "0250", "vrancea": "0237"
+	};
+	function fold(s) {
+		return (s || "").toLowerCase()
+			.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+			.replace(/ș/g, "s").replace(/ț/g, "t")
+			.replace(/[\s_\-]+/g, " ").trim();
+	}
+	function bind(judetSel, prefixSel) {
+		if (!judetSel || !prefixSel) return;
+		function sync() {
+			if (prefixSel.value) return;
+			var key = fold(judetSel.value || judetSel.options[judetSel.selectedIndex] && judetSel.options[judetSel.selectedIndex].text);
+			var pref = MAP[key];
+			if (!pref) return;
+			for (var i = 0; i < prefixSel.options.length; i++) {
+				if (prefixSel.options[i].value === pref) {
+					prefixSel.selectedIndex = i;
+					break;
+				}
+			}
+		}
+		judetSel.addEventListener("change", sync);
+	}
+	document.addEventListener("DOMContentLoaded", function () {
+		bind(document.getElementById("id_judet_col"), document.getElementById("id_telefon_fix_prefix_col"));
+		bind(document.getElementById("id_judet"), document.getElementById("id_telefon_fix_prefix_org"));
+	});
+})();
+</script>

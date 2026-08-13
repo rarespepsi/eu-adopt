@@ -662,6 +662,7 @@
 	}
 {% include "anunturi/includes/signup_adresa_map_styles.html" %}
 </style>
+{% include "anunturi/includes/signup_phone_landline_styles.html" %}
 {% endblock %}
 
 {% block extra_css_after %}
@@ -863,10 +864,7 @@
 					<label for="id_email_col">Email contact *</label>
 					<input type="email" id="id_email_col" name="email" required autocomplete="off" value="{% if form_prefill %}{{ form_prefill.email|default:'' }}{% endif %}" />
 				</div>
-				<div class="signup-col-field signup-col-field-box">
-					<label for="id_telefon_col">Telefon *</label>
-					<input type="tel" id="id_telefon_col" name="telefon" required autocomplete="tel-national" value="{% if form_prefill %}{{ form_prefill.telefon|default:'' }}{% endif %}" />
-				</div>
+				{% include "anunturi/includes/signup_telefon_mobil_fix.html" with signup_variant="col" telefon_input_id="id_telefon_col" prefix_input_id="id_telefon_fix_prefix_col" number_input_id="id_telefon_fix_nr_col" %}
 				<div class="signup-col-field signup-col-field-box signup-pwd-wrap">
 					<label for="id_parola1_col">Parolă *</label>
 					<span class="signup-pwd-inner">
@@ -1125,4 +1123,5 @@
 })();
 </script>
 {% include "anunturi/includes/signup_adresa_google_maps_script.html" with modal_prefix="signup_col" maps_callback="signupColAdresaPlacesReady" judet_input_id="id_judet_col" oras_input_id="id_oras_col" addr_input_id="id_adresa_firma_col" lat_hidden_id="id_adresa_lat_col" lng_hidden_id="id_adresa_lng_col" maps_link_id="signup_col_maps_link" %}
+{% include "anunturi/includes/signup_phone_landline_script.html" %}
 {% endblock %}

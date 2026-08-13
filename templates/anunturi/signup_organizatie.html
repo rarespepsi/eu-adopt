@@ -783,6 +783,7 @@
 	}
 {% include "anunturi/includes/signup_adresa_map_styles.html" %}
 </style>
+{% include "anunturi/includes/signup_phone_landline_styles.html" %}
 {% endblock %}
 
 {% block extra_js %}
@@ -896,6 +897,7 @@
 </script>
 {% include "anunturi/includes/ro_county_locality_select_script.html" with judet_select_id="id_judet" oras_select_id="id_oras" %}
 {% include "anunturi/includes/signup_adresa_google_maps_script.html" with modal_prefix="signup_org" maps_callback="signupOrgAdresaPlacesReady" judet_input_id="id_judet" oras_input_id="id_oras" addr_input_id="id_adresa_firma_org" lat_hidden_id="id_adresa_lat_org" lng_hidden_id="id_adresa_lng_org" maps_link_id="signup_org_maps_link" %}
+{% include "anunturi/includes/signup_phone_landline_script.html" %}
 {% endblock %}
 
 {% block main_wrap_after_header %}
@@ -1008,11 +1010,7 @@
 							<input type="email" id="id_email" name="email" required autocomplete="off" value="{% if form_prefill %}{{ form_prefill.email|default:'' }}{% endif %}" />
 							{% if field_errors and field_errors.email %}<p class="signup-field-err" role="alert">{{ field_errors.email }}</p>{% endif %}
 						</div>
-						<div class="signup-org-field signup-org-field-box">
-							<label for="id_telefon">Telefon *</label>
-							<input type="tel" id="id_telefon" name="telefon" required autocomplete="tel-national" value="{% if form_prefill %}{{ form_prefill.telefon|default:'' }}{% endif %}" />
-							{% if field_errors and field_errors.telefon %}<p class="signup-field-err" role="alert">{{ field_errors.telefon }}</p>{% endif %}
-						</div>
+						{% include "anunturi/includes/signup_telefon_mobil_fix.html" with signup_variant="org" telefon_input_id="id_telefon" prefix_input_id="id_telefon_fix_prefix_org" number_input_id="id_telefon_fix_nr_org" %}
 						<div class="signup-org-field signup-org-field-box signup-pwd-wrap">
 							<label for="id_parola1">Parolă *</label>
 							<span class="signup-pwd-inner">

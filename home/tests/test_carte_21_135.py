@@ -23,6 +23,11 @@ def _uniq():
     return uuid.uuid4().hex[:10]
 
 
+def _ro_mobile(u: str, stem: str = "741") -> str:
+    digits = "".join(ch for ch in u if ch.isdigit()) + "000000"
+    return f"+40{stem}{digits[:6]}"
+
+
 class Carte21VerifyEmailEdgeCasesTests(TestCase):
     """21: link activare lipsă / invalid / expirat → redirect alegere tip cu query."""
 
@@ -69,7 +74,7 @@ class Carte22_25OrganizatieTests(TestCase):
                 "cui_cu_ro": "da",
                 "pers_contact": "Ion",
                 "email": f"org_{u}@carte-test.local",
-                "telefon": f"+40741{u[:7].zfill(7)}",
+                "telefon": _ro_mobile(u, "741"),
                 "judet": "Cluj",
                 "oras": "Cluj-Napoca",
                 "adresa_firma": "Str. Memorandumului 28, Cluj-Napoca",
@@ -92,7 +97,7 @@ class Carte22_25OrganizatieTests(TestCase):
                 "cui_cu_ro": "da",
                 "pers_contact": "Ion",
                 "email": f"org2_{u}@carte-test.local",
-                "telefon": f"+40742{u[:7].zfill(7)}",
+                "telefon": _ro_mobile(u, "742"),
                 "judet": "Cluj",
                 "oras": "Cluj-Napoca",
                 "adresa_firma": "Str. Memorandumului 28, Cluj-Napoca",
@@ -116,7 +121,7 @@ class Carte22_25OrganizatieTests(TestCase):
                 "cui_cu_ro": "da",
                 "pers_contact": "Ion",
                 "email": f"orgok_{u}@carte-test.local",
-                "telefon": f"+40743{u[:7].zfill(7)}",
+                "telefon": _ro_mobile(u, "743"),
                 "judet": "Cluj",
                 "oras": "Cluj-Napoca",
                 "adresa_firma": "Str. Memorandumului 28, Cluj-Napoca",

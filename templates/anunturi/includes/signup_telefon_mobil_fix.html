@@ -1,0 +1,44 @@
+{# Telefon mobil (SMS) + telefon fix opțional (prefix județ + număr). #}
+{# Context: landline_prefix_choices, form_prefill.telefon / telefon_fix_prefix / telefon_fix_nr #}
+<div class="signup-phone-mobile-box signup-{{ signup_variant }}-field signup-{{ signup_variant }}-field-box">
+	<label for="{{ telefon_input_id }}">Telefon mobil *</label>
+	<input
+		type="tel"
+		id="{{ telefon_input_id }}"
+		name="telefon"
+		required
+		autocomplete="tel-national"
+		inputmode="tel"
+		placeholder="07xx xxx xxx"
+		value="{% if form_prefill %}{{ form_prefill.telefon|default:'' }}{% endif %}"
+	/>
+	<p class="signup-phone-hint">Pentru verificare SMS. Doar număr mobil (07…).</p>
+	{% if field_errors and field_errors.telefon %}<p class="signup-field-err" role="alert">{{ field_errors.telefon }}</p>{% endif %}
+</div>
+<div class="signup-phone-landline-box signup-{{ signup_variant }}-field signup-{{ signup_variant }}-field-box">
+	<span class="signup-phone-landline-label">Telefon fix / sediu (opțional)</span>
+	<div class="signup-phone-landline-row">
+		<div class="signup-phone-landline-prefix">
+			<label for="{{ prefix_input_id }}">Prefix județ</label>
+			<select id="{{ prefix_input_id }}" name="telefon_fix_prefix" class="signup-phone-landline-select" data-signup-landline-prefix>
+				<option value="">— Prefix —</option>
+				{% for pref, label in landline_prefix_choices %}
+				<option value="{{ pref }}" {% if form_prefill and form_prefill.telefon_fix_prefix == pref %}selected{% endif %}>{{ label }}</option>
+				{% endfor %}
+			</select>
+		</div>
+		<div class="signup-phone-landline-number">
+			<label for="{{ number_input_id }}">Număr fix</label>
+			<input
+				type="tel"
+				id="{{ number_input_id }}"
+				name="telefon_fix_nr"
+				autocomplete="off"
+				inputmode="numeric"
+				placeholder="xxx xxx"
+				value="{% if form_prefill %}{{ form_prefill.telefon_fix_nr|default:'' }}{% endif %}"
+			/>
+		</div>
+	</div>
+	{% if field_errors and field_errors.telefon_fix %}<p class="signup-field-err" role="alert">{{ field_errors.telefon_fix }}</p>{% endif %}
+</div>

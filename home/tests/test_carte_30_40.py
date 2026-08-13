@@ -17,6 +17,12 @@ def _uniq():
     return uuid.uuid4().hex[:10]
 
 
+def _ro_mobile(u: str, stem: str = "752") -> str:
+    """Mobil RO valid (+40 7xx xxx xxx) din hex unic — doar cifre."""
+    digits = "".join(ch for ch in u if ch.isdigit()) + "000000"
+    return f"+40{stem}{digits[:6]}"
+
+
 def _collab_post_transport_no_checks(u: str):
     """Colaborator transport fără național/internațional — restul câmpuri valide."""
     return {
@@ -30,7 +36,7 @@ def _collab_post_transport_no_checks(u: str):
         "oras": "Piatra Neamț",
         "adresa_firma": "Str. Test 5, Piatra Neamț",
         "email": f"col_tr_{u}@carte-test.local",
-        "telefon": f"+40752{u[:7].zfill(7)}",
+        "telefon": _ro_mobile(u, "752"),
         "parola1": "ParolaColab12",
         "parola2": "ParolaColab12",
         "accept_termeni_col": "on",
@@ -52,11 +58,12 @@ def _collab_post_cabinet_ok(u: str):
         "oras": "Cluj-Napoca",
         "adresa_firma": "Str. Horea 1, Cluj-Napoca",
         "email": f"col_cb_{u}@carte-test.local",
-        "telefon": f"+40753{u[:7].zfill(7)}",
+        "telefon": _ro_mobile(u, "753"),
         "parola1": "ParolaColab12",
         "parola2": "ParolaColab12",
         "accept_termeni_col": "on",
         "accept_gdpr_col": "on",
+        "pl_same_as_sediu": "on",
     }
 
 

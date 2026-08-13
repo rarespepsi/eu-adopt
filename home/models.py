@@ -19,6 +19,13 @@ class UserProfile(models.Model):
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     phone = models.CharField("Telefon", max_length=20, blank=True)
+    phone_landline = models.CharField(
+        "Telefon fix / sediu",
+        max_length=40,
+        blank=True,
+        default="",
+        help_text="Opțional. Prefix zonă + număr (fără SMS).",
+    )
     country = models.CharField(
         "Țară",
         max_length=2,

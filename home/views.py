@@ -3475,6 +3475,7 @@ def _finalize_signup_after_identity_verified(request, data: dict):
         acc.save()
         profile, _ = UserProfile.objects.get_or_create(user=user, defaults={})
         profile.phone = full_phone
+        profile.phone_landline = (data.get("telefon_fix") or "")[:40]
         profile.judet = data.get("judet", "")
         profile.oras = data.get("oras", "")
         profile.accept_termeni = data.get("accept_termeni", False)
@@ -3514,6 +3515,7 @@ def _finalize_signup_after_identity_verified(request, data: dict):
         acc.save()
         profile, _ = UserProfile.objects.get_or_create(user=user, defaults={})
         profile.phone = full_phone
+        profile.phone_landline = (data.get("telefon_fix") or "")[:40]
         profile.judet = data.get("judet", "")
         profile.oras = data.get("oras", "")
         profile.company_display_name = data.get("denumire", "")
@@ -3814,11 +3816,35 @@ def _no_cache_response(response):
 
 
 def _signup_maps_ctx(request):
-    """Cheie Maps + origin pentru autocomplete / modal (ca la Transport)."""
+    """Cheie Maps + origin + prefixe telefon fix (ONG / Colaborator)."""
+    from home.ro_landline_prefixes import landline_prefix_choices
+
     return {
         "google_maps_api_key": getattr(settings, "GOOGLE_MAPS_API_KEY", "") or "",
         "maps_page_origin": request.build_absolute_uri("/").rstrip("/"),
+        "landline_prefix_choices": landline_prefix_choices(),
     }
+
+
+def _signup_read_landline(request) -> tuple[str, str, str]:
+    """Returnează (prefix, număr, combinat). Combinat gol dacă incomplet."""
+    from home.ro_landline_prefixes import combine_landline
+
+    prefix = (request.POST.get("telefon_fix_prefix") or "").strip()
+    number = (request.POST.get("telefon_fix_nr") or "").strip()
+    combined = combine_landline(prefix, number)
+    return prefix, number, combined
+
+
+def _signup_validate_mobile_or_error(telefon: str) -> str:
+    """Mesaj eroare sau '' dacă OK."""
+    from home.ro_landline_prefixes import is_ro_mobile_number
+
+    if not (telefon or "").strip():
+        return "Telefonul mobil este obligatoriu."
+    if not is_ro_mobile_number(telefon):
+        return "Introdu un număr de telefon mobil valid (07…)."
+    return ""
 
 
 def signup_organizatie_view(request):
@@ -3872,6 +3898,7 @@ def signup_organizatie_view(request):
     pers_contact = (request.POST.get("pers_contact") or "").strip()
     email = (request.POST.get("email") or "").strip().lower()
     telefon = (request.POST.get("telefon") or "").strip()
+    telefon_fix_prefix, telefon_fix_nr, telefon_fix = _signup_read_landline(request)
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
     judet, oras = normalize_location_pair(judet, oras)
@@ -3897,10 +3924,13 @@ def signup_organizatie_view(request):
         field_errors["denumire_societate"] = "Denumirea societății este obligatorie."
     if not pers_contact:
         field_errors["pers_contact"] = "Persoana de contact este obligatorie."
-    if not telefon:
-        field_errors["telefon"] = "Telefonul este obligatoriu."
+    mob_err = _signup_validate_mobile_or_error(telefon)
+    if mob_err:
+        field_errors["telefon"] = mob_err
     elif _phone_already_used(telefon):
         field_errors["telefon"] = "Acest număr de telefon este deja folosit."
+    if (telefon_fix_prefix or telefon_fix_nr) and not telefon_fix:
+        field_errors["telefon_fix"] = "Completează prefixul județului și numărul de telefon fix, sau lasă ambele goale."
     if not judet:
         field_errors["judet"] = "Județul este obligatoriu."
     if not oras:
@@ -3925,6 +3955,8 @@ def signup_organizatie_view(request):
             "pers_contact": pers_contact,
             "email": email,
             "telefon": telefon,
+            "telefon_fix_prefix": telefon_fix_prefix,
+            "telefon_fix_nr": telefon_fix_nr,
             "judet": judet,
             "oras": oras,
             "adresa_firma": adresa_firma,
@@ -3947,6 +3979,9 @@ def signup_organizatie_view(request):
         "pers_contact": pers_contact,
         "email": email,
         "telefon": telefon.strip(),
+        "telefon_fix": telefon_fix,
+        "telefon_fix_prefix": telefon_fix_prefix,
+        "telefon_fix_nr": telefon_fix_nr,
         "judet": judet,
         "oras": oras,
         "adresa_firma": adresa_firma,
@@ -3998,6 +4033,7 @@ def signup_colaborator_view(request):
     pers_contact = (request.POST.get("pers_contact") or "").strip()
     email = (request.POST.get("email") or "").strip().lower()
     telefon = (request.POST.get("telefon") or "").strip()
+    telefon_fix_prefix, telefon_fix_nr, telefon_fix = _signup_read_landline(request)
     judet = (request.POST.get("judet") or "").strip()
     oras = (request.POST.get("oras") or "").strip()
     judet, oras = normalize_location_pair(judet, oras)
@@ -4042,10 +4078,13 @@ def signup_colaborator_view(request):
         errors.append("Denumirea societății este obligatorie.")
     if not pers_contact:
         errors.append("Persoana de contact este obligatorie.")
-    if not telefon:
-        errors.append("Telefonul este obligatoriu.")
-    if _phone_already_used(telefon):
+    mob_err = _signup_validate_mobile_or_error(telefon)
+    if mob_err:
+        errors.append(mob_err)
+    elif _phone_already_used(telefon):
         errors.append("Acest număr de telefon este deja folosit.")
+    if (telefon_fix_prefix or telefon_fix_nr) and not telefon_fix:
+        errors.append("Completează prefixul județului și numărul de telefon fix, sau lasă ambele goale.")
     if not judet:
         errors.append("Județul este obligatoriu.")
     if not oras:
@@ -4084,6 +4123,8 @@ def signup_colaborator_view(request):
             "pl_phone": pl_phone,
             "email": email,
             "telefon": telefon,
+            "telefon_fix_prefix": telefon_fix_prefix,
+            "telefon_fix_nr": telefon_fix_nr,
             "tip_partener": tip_partener if tip_partener in ("cabinet", "cv", "servicii", "magazin", "transport") else "",
             "transport_national": transport_national,
             "transport_international": transport_international,
@@ -4108,6 +4149,9 @@ def signup_colaborator_view(request):
         "pers_contact": pers_contact,
         "email": email,
         "telefon": telefon.strip(),
+        "telefon_fix": telefon_fix,
+        "telefon_fix_prefix": telefon_fix_prefix,
+        "telefon_fix_nr": telefon_fix_nr,
         "judet": judet,
         "oras": oras,
         "adresa_firma": adresa_firma,
