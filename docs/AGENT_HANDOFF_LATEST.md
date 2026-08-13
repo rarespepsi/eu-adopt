@@ -1,34 +1,34 @@
 ---
-# Handoff agent — ultima pauză
-**Data/ora (RO):** 2026-07-27 ~15:10
+# Handoff agent — salvare finală
+**Data/ora (RO):** 2026-08-13 09:55
 **Sursă:** laptop · eu-adopt / main
-**User:** pleacă — implementare i18n variantă B + commit + deploy H
+**User:** salvare finală + flag + 3 verificări zilnice
 
-## Ce s-a făcut
-- Variantă B multi-limbă EU: `.com` cu selector (EN/DE/FR/ES/IT/PL/NL/PT/RO); `.de/.fr/.es` limba TLD + UI tradus
-- Pack-uri UI în `home/eu_ui_labels_i18n.json` (589 chei × 8 limbi)
-- Deblocat `eu_force_english`; cookie limbă prioritar față de sesiune
-- Teste EU actualizate; generator `scripts/_gen_eu_ui_i18n.py`
-
-## Fișiere atinse
-- `home/eu_site.py`, `home/eu_ui_labels.py`, `home/eu_ui_labels_i18n.json`
-- `euadopt_final/eu_site_middleware.py`, `home/ugc_translate.py`
-- `home/tests/test_eu_site.py`, `docs/EU_UI_I18N_PATTERN.md`, `scripts/_gen_eu_ui_i18n.py`
+## Ce s-a făcut (sesiune telefon mobil/fix)
+- Signup Colab/ONG: Telefon mobil + Telefon fix (prefix județ)
+- Fără unicitate pe telefon; mobil SAU fix; SMS doar dacă există mobil
+- Mărime formular restaurată (fără compactare agresivă)
+- Tip adăpost ONG centrat vertical
 
 ## Git
 - Branch: main
-- Commit: `de871c4` feat(eu): multi-language UI packs for .com hub and country TLDs
+- Commit live: **c6634a2** (`feat: telefon fără unicitate; Colab/ONG mobil sau fix; SMS doar pe mobil.`)
 - Push: da
 
-## Deploy Hetzner
-- da · `deploy_hetzner_from_pc.ps1` · live `de871c4` · backup ZIP `good_20260727_150945_de871c4.zip`
+## Salvare finală
+- ZIP PC: `Desktop\EU-Adopt-backups\good-releases\good_20260813_095538_c6634a2.zip` (+ .txt)
+- Rotație 3 ZIP păstrate
+- Flag Hetzner: `/var/lib/euadopt/EXPECTED_RELEASE.txt` → **c6634a2** (NOTE=final save)
+- Healthcheck manual acum: **OK** (`last_healthcheck.json` ok=true)
+- Cron 3×/zi (Europe/Bucharest): **06:00, 14:00, 22:00** → `run_site_healthcheck.sh`
+- Backup DB zilnic 03:00 (rotație 3)
 
-## Pentru agent laptop
-- git log -3 --oneline
-- teste: `python manage.py test home.tests.test_eu_site`
-- pe live: euadopt.com selector limbă; euadopt.de Contact în germană
+## Dacă ceva e stricat pe site
+1. Citește `/var/lib/euadopt/EXPECTED_RELEASE.txt` + `last_healthcheck.json` + `AUTO_REPAIR_STATE.json`
+2. Healthcheck auto-rollback la SHA din EXPECTED_RELEASE
+3. ZIP local: `good_20260813_095538_c6634a2.zip` = punct de revenire cod
 
 ## Următorul pas
-- Revizie umană pe texte cheie (adopt/login) dacă se observă calitate MT slabă
-- Opțional: restul limbilor UE pe `.com` (varianta C)
+- Continuă alte zone doar cu `1977` + OK
+- Nu atinge HOME/PT/Servicii/Transport/Shop fără parolă
 ---

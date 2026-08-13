@@ -1,10 +1,8 @@
-# Versiune marcată „site funcțional” (ultima deploy reușit + smoke OK).
-# Actualizat AUTOMAT de deploy_update.sh după smoke post-deploy.
-# Healthcheck 3×/zi compară live cu acest SHA; la FAIL → rollback aici (nu inventează fix-uri).
-# Pe server: /var/lib/euadopt/EXPECTED_RELEASE.txt (copiat/scris la deploy).
-# Copie în repo (referință / documentație) — sursa operațională e pe Hetzner.
-SHA=e566de1f97c77d3a6089ebdd90b2d12ae5170f55
-SHORT=e566de1
-PREV_SHA=
-UPDATED=2026-08-12T08:39:24+03:00
-NOTE=baseline: Google Maps picker tests + prior multi-market FB
+# Site funcțional — ultima versiune validată (deploy + smoke).
+# Healthcheck revine aici la incident. Nu edita manual decât dacă știi ce faci.
+# Pe server: /var/lib/euadopt/EXPECTED_RELEASE.txt (sursă operațională).
+SHA=c6634a275066d4b146662b5790e2ed5630f62dec
+SHORT=c6634a2
+PREV_SHA=c6634a275066d4b146662b5790e2ed5630f62dec
+UPDATED=2026-08-13T06:55:44Z
+NOTE=final save c6634a2 telefon
