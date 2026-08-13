@@ -426,10 +426,31 @@ body.page-account .account-right-panel {
 	.cont-pf-card p strong { color: #1a1a1a; }
 	.cont-pf-card.cont-pf-card-wide { grid-column: 1 / -1; }
 
+	/* Rol cont — text strâns ca să încapă cele 3 rânduri în casetă */
+	.cont-pf-card-rol {
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		min-height: 0;
+	}
+	.cont-pf-card-rol h2 {
+		margin: 0 0 0.2rem !important;
+		font-size: 0.65rem !important;
+		line-height: 1.15 !important;
+		letter-spacing: 0.04em;
+	}
+	.cont-pf-card-rol p {
+		margin: 0.05rem 0 !important;
+		font-size: 0.72rem !important;
+		line-height: 1.18 !important;
+	}
+
 	/* Randul 2 (Identificare + Rol cont) mai mic pe înălțime ~jumătate față de rândul 3 */
 	.cont-pf-body > .cont-pf-card {
-		padding-top: 0.35rem;
-		padding-bottom: 0.35rem;
+		padding-top: 0.28rem;
+		padding-bottom: 0.28rem;
+		padding-left: 0.65rem;
+		padding-right: 0.65rem;
 	}
 
 	/* RO + CUI pe un singur rând, micșorate pentru caseta „Date firmă” din stânga */
@@ -1848,7 +1869,7 @@ body.page-account .account-right-panel {
 				<p><strong>Prenume:</strong> {{ user.first_name|default:"—" }}</p>
 				<p><strong>Email:</strong> {{ user.email|default:"—" }}</p>
 			</div>
-			<div class="cont-pf-card">
+			<div class="cont-pf-card cont-pf-card-rol">
 				<h2>Rol cont</h2>
 				{% if account_profile %}
 					<p><strong>Rol:</strong> {{ account_profile.get_role_display }}</p>
