@@ -3103,8 +3103,6 @@ def signup_pf_view(request):
     if not oras:
         errors.append("Orașul / localitatea este obligatoriu.")
     full_phone = f"{phone_country} {phone}".strip()
-    if _phone_already_used(full_phone):
-        errors.append("Acest număr de telefon este deja folosit.")
     if len(password1) < 8:
         errors.append("Parola trebuie să aibă cel puțin 8 caractere.")
     if password1 != password2:
@@ -3171,8 +3169,6 @@ def _signup_pf_eu_post(request):
     if not phone:
         errors.append("Phone number is required.")
     full_phone = f"{phone_country} {phone}".strip()
-    if phone and _phone_already_used(full_phone):
-        errors.append("This phone number is already in use.")
     if len(password1) < 8:
         errors.append("Password must be at least 8 characters.")
     if password1 != password2:
@@ -3421,9 +3417,6 @@ def _finalize_signup_after_identity_verified(request, data: dict):
         full_phone = f"{data.get('phone_country', '')} {data.get('phone', '')}".strip()
     else:
         full_phone = (data.get("telefon") or "").strip()
-
-    if _phone_already_used(full_phone):
-        return redirect(_redirect_for_role(role, "phone") + "?phone_taken=1")
 
     User = get_user_model()
     if _email_duplicate_blocked(email):
@@ -3836,15 +3829,48 @@ def _signup_read_landline(request) -> tuple[str, str, str]:
     return prefix, number, combined
 
 
-def _signup_validate_mobile_or_error(telefon: str) -> str:
-    """Mesaj eroare sau '' dacă OK."""
+def _signup_partner_phone_error(
+    telefon: str,
+    telefon_fix: str,
+    telefon_fix_prefix: str = "",
+    telefon_fix_nr: str = "",
+) -> str:
+    """
+    Colab/ONG: mobil SAU fix (cel puțin unul).
+    Mobil, dacă e completat, trebuie 07… Validare SMS doar când există mobil.
+    """
     from home.ro_landline_prefixes import is_ro_mobile_number
 
-    if not (telefon or "").strip():
-        return "Telefonul mobil este obligatoriu."
-    if not is_ro_mobile_number(telefon):
-        return "Introdu un număr de telefon mobil valid (07…)."
+    mobil = (telefon or "").strip()
+    fix = (telefon_fix or "").strip()
+    if (telefon_fix_prefix or telefon_fix_nr) and not fix:
+        return "Completează prefixul județului și numărul de telefon fix, sau lasă ambele goale."
+    if not mobil and not fix:
+        return "Completează telefonul mobil (SMS) sau telefonul fix / sediu."
+    if mobil and not is_ro_mobile_number(mobil):
+        return "Introdu un număr de telefon mobil valid (07…), sau lasă mobilul gol și completează fixul."
     return ""
+
+
+def _signup_pending_needs_sms(data: dict | None) -> bool:
+    """SMS doar dacă există mobil RO valid în pending (PF mereu; Colab/ONG doar cu mobil)."""
+    if not data:
+        return False
+    role = (data.get("role") or "pf").strip().lower()
+    if role == "pf":
+        return True
+    from home.ro_landline_prefixes import is_ro_mobile_number
+
+    return is_ro_mobile_number((data.get("telefon") or "").strip())
+
+
+def _signup_continue_after_form(request, pending: dict):
+    """Salvează pending; SMS dacă e mobil, altfel creează cont (doar fix) → email activare."""
+    request.session["signup_pending"] = pending
+    if _signup_pending_needs_sms(pending):
+        _begin_signup_sms_flow(request)
+        return redirect(reverse("signup_verificare_sms"))
+    return _finalize_signup_after_identity_verified(request, pending)
 
 
 def signup_organizatie_view(request):
@@ -3924,13 +3950,9 @@ def signup_organizatie_view(request):
         field_errors["denumire_societate"] = "Denumirea societății este obligatorie."
     if not pers_contact:
         field_errors["pers_contact"] = "Persoana de contact este obligatorie."
-    mob_err = _signup_validate_mobile_or_error(telefon)
+    mob_err = _signup_partner_phone_error(telefon, telefon_fix, telefon_fix_prefix, telefon_fix_nr)
     if mob_err:
         field_errors["telefon"] = mob_err
-    elif _phone_already_used(telefon):
-        field_errors["telefon"] = "Acest număr de telefon este deja folosit."
-    if (telefon_fix_prefix or telefon_fix_nr) and not telefon_fix:
-        field_errors["telefon_fix"] = "Completează prefixul județului și numărul de telefon fix, sau lasă ambele goale."
     if not judet:
         field_errors["judet"] = "Județul este obligatoriu."
     if not oras:
@@ -3991,8 +4013,7 @@ def signup_organizatie_view(request):
         "email_opt_in": email_opt_in,
         "is_public_shelter": is_public_shelter,
     }
-    _begin_signup_sms_flow(request)
-    return redirect(reverse("signup_verificare_sms"))
+    return _signup_continue_after_form(request, request.session["signup_pending"])
 
 
 def signup_colaborator_view(request):
@@ -4078,13 +4099,9 @@ def signup_colaborator_view(request):
         errors.append("Denumirea societății este obligatorie.")
     if not pers_contact:
         errors.append("Persoana de contact este obligatorie.")
-    mob_err = _signup_validate_mobile_or_error(telefon)
+    mob_err = _signup_partner_phone_error(telefon, telefon_fix, telefon_fix_prefix, telefon_fix_nr)
     if mob_err:
         errors.append(mob_err)
-    elif _phone_already_used(telefon):
-        errors.append("Acest număr de telefon este deja folosit.")
-    if (telefon_fix_prefix or telefon_fix_nr) and not telefon_fix:
-        errors.append("Completează prefixul județului și numărul de telefon fix, sau lasă ambele goale.")
     if not judet:
         errors.append("Județul este obligatoriu.")
     if not oras:
@@ -4171,9 +4188,7 @@ def signup_colaborator_view(request):
         pending["transport_international"] = transport_international
         pending["max_caini"] = max_caini
         pending["max_pisici"] = max_pisici
-    request.session["signup_pending"] = pending
-    _begin_signup_sms_flow(request)
-    return redirect(reverse("signup_verificare_sms"))
+    return _signup_continue_after_form(request, pending)
 
 
 def _attach_public_offer_stock(offer):
@@ -8237,12 +8252,6 @@ def account_edit_view(request):
     full_phone = f"{phone_country} {phone}".strip()
     current_phone = (user_profile.phone or "").strip() if user_profile else ""
     phone_changed = full_phone != current_phone
-    if phone_changed:
-        norm_new = _phone_normalize_for_compare(_phone_digits(full_phone))
-        for p in UserProfile.objects.exclude(user=user).exclude(phone="").exclude(phone__isnull=True):
-            if _phone_normalize_for_compare(_phone_digits(p.phone)) == norm_new:
-                errors.append("Acest număr de telefon este deja folosit.")
-                break
     if not accept_termeni:
         errors.append("Trebuie să accepți termenii și condițiile.")
     if not accept_gdpr:
