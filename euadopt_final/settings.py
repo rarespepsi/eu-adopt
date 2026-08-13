@@ -108,7 +108,8 @@ EUADOPT_EU_PRODUCT_SKIN = _eu_skin in ("1", "true", "yes", "on")
 _eu_staff_only = _os.environ.get("EUADOPT_NON_RO_STAFF_ONLY", "1").strip().lower()
 EUADOPT_NON_RO_STAFF_ONLY = _eu_staff_only not in ("0", "false", "no", "off")
 
-# Publicitate + promovare A2 gratuite în pre-lansare (1 casetă PUB/cont, 1 promovare/cont, 1 ofertă serviciu/cont).
+# Publicitate + promovare A2 gratuite în pre-lansare (1 casetă PUB/cont, 1 promovare/cont).
+# Oferte colaborator: 0 = nelimitat.
 _pub_free_env = _os.environ.get("EUADOPT_PUBLICITATE_PRELAUNCH_FREE", "").strip().lower()
 if _pub_free_env in ("0", "false", "no", "off"):
     PUBLICITATE_PRELAUNCH_FREE = False
@@ -122,7 +123,9 @@ PUBLICITATE_PRELAUNCH_MAX_WEEKS_PER_ORDER = int(_os.environ.get("EUADOPT_PUB_MAX
 _pub_superonly = _os.environ.get("EUADOPT_PUBLICITATE_TEMP_SUPERUSER_ONLY", "1").strip().lower()
 PUBLICITATE_TEMP_SUPERUSER_ONLY = _pub_superonly not in ("0", "false", "no", "off")
 PROMO_A2_PRELAUNCH_MAX_PER_USER = int(_os.environ.get("EUADOPT_PROMO_A2_MAX_PER_USER", "1") or "1")
-COLLAB_PRELAUNCH_MAX_OFFERS_PER_USER = int(_os.environ.get("EUADOPT_COLLAB_MAX_OFFERS_PER_USER", "1") or "1")
+COLLAB_PRELAUNCH_MAX_OFFERS_PER_USER = int(_os.environ.get("EUADOPT_COLLAB_MAX_OFFERS_PER_USER", "0") or "0")
+# PF: maxim câini publicabili (pisici / altele fără acest plafon).
+PF_MAX_DOG_LISTINGS = int(_os.environ.get("EUADOPT_PF_MAX_DOGS", "10") or "10")
 PROMO_A2_BASE_PRICE_LEI = 10
 # Blocare soft Shop / donații / coș comercial în pre-lansare (implicit = PRELAUNCH_MODE). Staff poate testa.
 _mon_soft = _os.environ.get("EUADOPT_PRELAUNCH_MONETIZATION_SOFT_LOCK", "").strip().lower()
@@ -259,7 +262,8 @@ elif _population_on in ("1", "true", "yes", "on"):
 else:
     POPULATION_ONBOARDING_ENABLED = PRELAUNCH_MODE
 POPULATION_ANIMAL_MIN = int(os.environ.get("EUADOPT_POPULATION_ANIMAL_MIN", "2") or "2")
-POPULATION_ANIMAL_MAX = int(os.environ.get("EUADOPT_POPULATION_ANIMAL_MAX", "5") or "5")
+# 0 = nelimitat pentru ONG / asociații (adăpost).
+POPULATION_ANIMAL_MAX = int(os.environ.get("EUADOPT_POPULATION_ANIMAL_MAX", "0") or "0")
 _population_superuser_only = os.environ.get("EUADOPT_POPULATION_SUPERUSER_ONLY", "").strip().lower()
 POPULATION_SUPERUSER_ONLY_LOGIN = _population_superuser_only in ("1", "true", "yes", "on")
 

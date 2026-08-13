@@ -331,8 +331,8 @@ class AnimalListing(models.Model):
     """
     Anunț/postare animal (bază pentru MyPet).
 
-    Regula PF: max 3 animale postate pe lună calendaristică.
-    (ONG/Org nu are limită aici; limitele se pot adăuga ulterior.)
+    Regula PF: maxim 10 câini (pisici și alte specii fără acest plafon).
+    ONG / asociații: fără plafon de număr (în populare poate rămâne un minim de publicare).
     """
 
     SPECIES_CHOICES = [
@@ -444,21 +444,8 @@ class AnimalListing(models.Model):
     def __str__(self):
         return self.name or f"Animal #{self.pk}"
 
-    @staticmethod
-    def _month_bounds(dt):
-        start = dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        if start.month == 12:
-            end = start.replace(year=start.year + 1, month=1)
-        else:
-            end = start.replace(month=start.month + 1)
-        return start, end
-
     def clean(self):
         super().clean()
-        # Aplicăm limita doar la crearea unui anunț nou.
-        if self.pk:
-            return
-
         role = None
         if self.owner_id:
             role = (
@@ -467,8 +454,8 @@ class AnimalListing(models.Model):
                 .first()
             )
 
-        if role != AccountProfile.ROLE_PF:
-            if role == AccountProfile.ROLE_ORG:
+        if role == AccountProfile.ROLE_ORG:
+            if not self.pk:
                 from home.population_onboarding import check_org_can_add_animal
 
                 ok, msg = check_org_can_add_animal(self.owner)
@@ -476,12 +463,21 @@ class AnimalListing(models.Model):
                     raise ValidationError(msg)
             return
 
-        now = timezone.now()
-        start, end = self._month_bounds(now)
-        posted_this_month = AnimalListing.objects.filter(owner=self.owner, created_at__gte=start, created_at__lt=end).count()
-        limit = 3
-        if posted_this_month >= limit:
-            raise ValidationError(f"Limită PF: maxim {limit} animale postate pe lună.")
+        if role != AccountProfile.ROLE_PF:
+            return
+
+        species = (self.species or "").strip().lower()
+        if species != "dog":
+            return
+
+        from django.conf import settings as dj_settings
+
+        limit = int(getattr(dj_settings, "PF_MAX_DOG_LISTINGS", 10) or 10)
+        qs = AnimalListing.objects.filter(owner=self.owner, species="dog")
+        if self.pk:
+            qs = qs.exclude(pk=self.pk)
+        if qs.count() >= limit:
+            raise ValidationError(f"Limită persoană fizică: maxim {limit} câini.")
 
     def save(self, *args, **kwargs):
         # Asigurăm că regula se aplică și dacă cineva salvează din cod/admin fără form validation.

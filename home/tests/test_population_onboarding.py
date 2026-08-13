@@ -214,3 +214,34 @@ class PopulationSuperuserOnlyLoginTests(TestCase):
         c = Client()
         r = c.get(f"/signup/organizatie/?inv={lead.consent_invite_token}")
         self.assertEqual(r.status_code, 200)
+
+
+@override_settings(
+    POPULATION_ONBOARDING_ENABLED=True,
+    PRELAUNCH_MODE=True,
+    POPULATION_ANIMAL_MIN=2,
+    POPULATION_ANIMAL_MAX=0,
+)
+class PopulationUnlimitedOrgAndPfDogsTests(TestCase):
+    def test_org_unlimited_can_add_past_old_cap(self):
+        from home.population_onboarding import check_org_can_add_animal, population_at_max_animals
+
+        org = User.objects.create_user(username="ong_unlim", password="x")
+        AccountProfile.objects.filter(user=org).update(role=AccountProfile.ROLE_ORG)
+        for i in range(6):
+            AnimalListing.objects.create(owner=org, name=f"U{i}", is_published=True)
+        ok, _ = check_org_can_add_animal(org)
+        self.assertTrue(ok)
+        self.assertFalse(population_at_max_animals(org))
+
+    def test_pf_max_10_dogs_allows_cats(self):
+        from django.core.exceptions import ValidationError
+
+        pf = User.objects.create_user(username="pf_dogs", password="x")
+        AccountProfile.objects.filter(user=pf).update(role=AccountProfile.ROLE_PF)
+        for i in range(10):
+            AnimalListing.objects.create(owner=pf, name=f"D{i}", species="dog", is_published=True)
+        with self.assertRaises(ValidationError):
+            AnimalListing.objects.create(owner=pf, name="D11", species="dog", is_published=True)
+        cat = AnimalListing.objects.create(owner=pf, name="C1", species="cat", is_published=True)
+        self.assertTrue(cat.pk)

@@ -63,9 +63,8 @@ def promo_a2_max_per_user() -> int:
 
 
 def collab_max_offers_per_user() -> int:
-    if not publicitate_prelaunch_free_enabled():
-        return 0
-    return max(1, int(getattr(settings, "COLLAB_PRELAUNCH_MAX_OFFERS_PER_USER", 1)))
+    """0 = fără plafon (implicit). Valoare >0 doar dacă e setată explicit în env."""
+    return max(0, int(getattr(settings, "COLLAB_PRELAUNCH_MAX_OFFERS_PER_USER", 0) or 0))
 
 
 def promo_a2_price_lei() -> int:
@@ -227,5 +226,5 @@ def collab_user_can_create_offer(user) -> tuple[bool, str]:
 
     total = CollaboratorServiceOffer.objects.filter(collaborator=user).count()
     if total >= cap:
-        return False, "În pre-lansare puteți publica un singur serviciu/ofertă per cont."
+        return False, f"Puteți publica maximum {cap} oferte per cont."
     return True, ""

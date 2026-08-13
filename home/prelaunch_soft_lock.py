@@ -60,7 +60,7 @@ PRELAUNCH_FIRST_HINTS: dict[str, str] = {
     "mypet": "MyPet: adaugă animale publicate, apoi poți promova gratuit un câine în HOME (1 promovare/cont).",
     "publicitate_harta": "Publicitate: alege o casetă pe hartă, adaugă în coș și activează gratuit (1 casetă/cont în pre-lansare).",
     "publicitate_cos": "Coș publicitate: transferă în Coș general → Plată → activare gratuită.",
-    "collab_offers_control": "Oferte partener: în pre-lansare poți publica 1 serviciu/ofertă per cont.",
+    "collab_offers_control": "Oferte partener: publici servicii/produse din Magazinul meu; fără plafon de număr.",
     "pets_all": "Prietenul tău: răsfoiește anunțuri; din fișă poți promova un animal în grila Acasă.",
     "i_love_cos": "Coș: în pre-lansare finalizează doar publicitate sau promovare A2 (gratuit).",
 }

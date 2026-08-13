@@ -23,7 +23,8 @@ def population_animal_min() -> int:
 
 
 def population_animal_max() -> int:
-    return int(getattr(settings, "POPULATION_ANIMAL_MAX", 5))
+    """0 sau negativ = fără plafon (ONG / asociații nelimitat)."""
+    return int(getattr(settings, "POPULATION_ANIMAL_MAX", 0) or 0)
 
 
 def population_banner_hidden_sec() -> int:
@@ -43,11 +44,14 @@ def population_banner_mode(user) -> str:
     n = org_published_animal_count(user)
     mn = population_animal_min()
     mx = population_animal_max()
-    if n >= mx:
-        return "hidden"
     if n < mn:
         return "always"
-    return "intermittent"
+    if mx > 0 and n >= mx:
+        return "hidden"
+    if mx > 0 and n >= mn:
+        return "intermittent"
+    # Nelimitat: după minim, banner-ul nu mai insistă cu plafon.
+    return "hidden"
 
 
 def _account_role(user) -> str | None:
@@ -218,15 +222,20 @@ def population_onboarding_complete(user) -> bool:
 def population_at_max_animals(user) -> bool:
     if not is_org_population_user(user):
         return False
-    return org_published_animal_count(user) >= population_animal_max()
+    mx = population_animal_max()
+    if mx <= 0:
+        return False
+    return org_published_animal_count(user) >= mx
 
 
 def check_org_can_add_animal(user) -> tuple[bool, str]:
     """Înainte de creare animal nou pentru ONG în faza populare."""
     if not is_org_population_user(user):
         return True, ""
-    n = org_published_animal_count(user)
     mx = population_animal_max()
+    if mx <= 0:
+        return True, ""
+    n = org_published_animal_count(user)
     if n >= mx:
         return (
             False,
@@ -252,9 +261,9 @@ def population_context_for_user(user) -> dict[str, Any]:
         "population_banner_hidden_sec": population_banner_hidden_sec(),
         "population_banner_visible_sec": population_banner_visible_sec(),
         "population_onboarding_complete": (not active) or n >= mn,
-        "population_at_max_animals": active and n >= mx,
+        "population_at_max_animals": active and mx > 0 and n >= mx,
         "population_animals_until_min": max(0, mn - n) if active else 0,
-        "population_animals_remaining": max(0, mx - n) if active else 0,
+        "population_animals_remaining": (max(0, mx - n) if active and mx > 0 else None),
     }
 
 

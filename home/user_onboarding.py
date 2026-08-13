@@ -236,8 +236,7 @@ ONBOARDING_PAGES: dict[str, OnboardingPage] = {
         page_key="collab_offers_control",
         banner_title="Magazinul meu — oferte",
         banner_text=(
-            "Panoul colaborator: publici și gestionezi oferte/servicii/produse. "
-            "În pre-lansare poți avea limită de 1 ofertă activă per cont."
+            "Panoul colaborator: publici și gestionezi oferte/servicii/produse."
         ),
         steps=(
             OnboardingStep(

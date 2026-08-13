@@ -549,9 +549,14 @@ def _invite_population_rules_block(*, animals: bool) -> str:
         "",
     ]
     if animals:
+        cap = (
+            f"maximum {mx} în această etapă"
+            if mx and mx > 0
+            else "număr nelimitat"
+        )
         lines.extend(
             [
-                f"  • minimum {mn} și maximum {mx} animale publicate (câini, pisici sau alte specii);",
+                f"  • minimum {mn} animale publicate (câini, pisici sau alte specii); {cap};",
                 "  • fiecare animal cu fișă cât mai completă: nume, vârstă, talie, sex,",
                 "    date medicale (sterilizat, vaccinat, carnet, CIP unde e cazul);",
                 "  • minimum 3 fotografii clare per animal;",
@@ -570,7 +575,7 @@ def _invite_population_rules_block(*, animals: bool) -> str:
         lines.extend(
             [
                 "  • profil de partener completat cu datele de contact actualizate;",
-                "  • o ofertă sau un produs reprezentativ (după tipul de colaborator);",
+                "  • oferte sau produse reprezentative (după tipul de colaborator);",
                 "  • detaliile pot fi extinse după lansarea oficială.",
             ]
         )

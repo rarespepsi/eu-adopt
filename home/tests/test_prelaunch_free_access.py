@@ -18,6 +18,8 @@ from home.models import (
     SiteCartItem,
 )
 from home.prelaunch_free_access import (
+    collab_max_offers_per_user,
+    collab_user_can_create_offer,
     promo_a2_price_lei,
     publicitate_effective_slot_map,
     publicitate_max_weeks_per_order,
@@ -46,6 +48,12 @@ class PrelaunchFreeAccessTests(TestCase):
         self.assertEqual(publicitate_max_weeks_per_order(), 1)
         eff = publicitate_effective_slot_map(PUBLICITATE_SLOT_MAP)
         self.assertEqual(eff["home"][0]["price"], 0)
+
+    def test_collab_offers_unlimited_by_default(self):
+        self.assertEqual(collab_max_offers_per_user(), 0)
+        user = User.objects.create_user(username=f"off_{uuid.uuid4().hex[:6]}", password="x")
+        ok, _ = collab_user_can_create_offer(user)
+        self.assertTrue(ok)
 
     @override_settings(PUBLICITATE_TEMP_SUPERUSER_ONLY=False)
     def test_pub_nudge_for_user_without_active_slot(self):
