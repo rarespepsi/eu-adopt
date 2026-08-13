@@ -1573,6 +1573,12 @@ def _servicii_tag_offer_bonus(offer, bundle: dict, county_norm: str) -> None:
     sm = bundle.get("adoption_bonus_selection_by_kind") or {}
     rid = bundle.get("adoption_bonus_request_id")
     offer.adoption_bonus_heart_frozen = False
+    if getattr(offer, "public_upcoming", False):
+        # Preview înainte de start: fără inimă / fără acțiuni.
+        offer.adoption_bonus_show_heart = False
+        offer.adoption_bonus_selected = False
+        offer.site_cart_ref_key = f"servicii_offer:{offer.pk}"
+        return
     if not rid:
         offer.adoption_bonus_show_heart = False
     elif bundle.get("adoption_bonus_servicii_locked"):
@@ -4230,13 +4236,19 @@ def _servicii_offers_for_kind(partner_kind: str, max_n: int = 24):
         if partner_kind == CollaboratorServiceOffer.PARTNER_KIND_SERVICII:
             base = _servicii_saloane_qs_exclude_transportatori(base)
         offers = list(
-            _collab_offer_valid_public_qs(base)
+            _collab_offer_listed_public_qs(base)
             .select_related("collaborator", "partner_location")
             .annotate(claims_count=Count("claims", distinct=True))
             .order_by("-created_at")[:max_n]
         )
         for o in offers:
             _attach_public_offer_stock(o)
+            upcoming = _collab_offer_is_upcoming(o)
+            o.public_upcoming = upcoming
+            if upcoming and o.valid_from is not None:
+                o.public_upcoming_label = f"Valabil de la {o.valid_from.strftime('%d.%m.%Y')}"
+            else:
+                o.public_upcoming_label = ""
         pad = max(0, max_n - len(offers))
         return offers, [None] * pad
     except Exception:
@@ -13059,6 +13071,20 @@ def _collab_offer_valid_public_qs(base_qs):
         (Q(valid_from__isnull=True) | Q(valid_from__lte=today))
         & (Q(valid_until__isnull=True) | Q(valid_until__gte=today))
     )
+
+
+def _collab_offer_listed_public_qs(base_qs):
+    """
+    Listări Servicii: oferte active neexpirate, inclusiv cu start în viitor (preview).
+    Solicitare / detaliu / coș rămân pe _collab_offer_is_valid_today.
+    """
+    today = _ro_today()
+    return base_qs.filter(Q(valid_until__isnull=True) | Q(valid_until__gte=today))
+
+
+def _collab_offer_is_upcoming(offer) -> bool:
+    today = _ro_today()
+    return offer.valid_from is not None and today < offer.valid_from
 
 
 def _collab_offer_is_valid_today(offer) -> bool:

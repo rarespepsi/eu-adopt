@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=65-geo-picker-landscape" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=67-bonus-intro-5s" type="text/css" media="screen" />
 <link rel="stylesheet" href="{% static 'css/eu-media-modal.css' %}?v=2" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Intra / signup (linie profesională) */
@@ -234,7 +234,8 @@
 	#SW .sw-s2-1-cell.sw-s2-1-cell--vet-offer {
 		padding: 0;
 	}
-	#SW .sw-s2-1-cell--vet-offer .sw-s2-1-vet-offer-link {
+	#SW .sw-s2-1-cell--vet-offer .sw-s2-1-vet-offer-link,
+	#SW .sw-s2-1-cell--vet-offer .sw-s2-1-vet-offer-static {
 		display: flex;
 		flex-direction: column;
 		width: 100%;
@@ -244,6 +245,41 @@
 		text-decoration: none;
 		color: inherit;
 		box-sizing: border-box;
+	}
+	#SW .sw-s2-1-cell--vet-offer .sw-s2-1-vet-offer-static {
+		cursor: default;
+		pointer-events: none;
+		user-select: none;
+	}
+	#SW .sw-s2-1-cell--vet-offer .sw-s2-1-vet-offer-inner--upcoming {
+		cursor: default;
+	}
+	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-upcoming-note {
+		position: absolute;
+		left: 0.35rem;
+		right: 0.35rem;
+		bottom: 0.35rem;
+		z-index: 3;
+		padding: 0.28rem 0.4rem;
+		border-radius: 6px;
+		background: rgba(20, 28, 24, 0.82);
+		color: #fff;
+		font-size: clamp(0.62rem, 1.7vw, 0.78rem);
+		font-weight: 650;
+		line-height: 1.2;
+		text-align: center;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.15s ease;
+	}
+	#SW .sw-s2-1-cell--vet-offer .sw-s2-1-vet-offer-inner--upcoming:hover .sw-vet-offer-upcoming-note,
+	#SW .sw-s2-1-cell--vet-offer .sw-s2-1-vet-offer-inner--upcoming:focus-within .sw-vet-offer-upcoming-note {
+		opacity: 1;
+	}
+	@media (hover: none) and (pointer: coarse) {
+		#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-upcoming-note {
+			opacity: 1;
+		}
 	}
 	/* Zonă imagine (preț peste poză) + subsol titlu — fără bandă întunecată peste fotografie */
 	#SW .sw-s2-1-cell--vet-offer .sw-vet-offer-card-stack {
@@ -442,6 +478,9 @@
 		color: #fecdd3;
 	}
 	#SW .sw-adopt-bonus-banner.sw-adopt-bonus-banner--dismissed {
+		display: none !important;
+	}
+	#SW .sw-adopt-bonus-intro.sw-adopt-bonus-intro--hidden {
 		display: none !important;
 	}
 	#SW .sw-adopt-bonus-banner--locked {
@@ -1035,16 +1074,38 @@
 		</script>
 		{% elif not adoption_bonus_servicii_locked %}
 		<div id="swAdoptBonusBanner" class="sw-adopt-bonus-banner" aria-hidden="false">
-			<strong>Bonus adopție:</strong> din bunătatea ta de a adopta, partenerii pot oferi servicii cu preț special.
-			Apasă <strong>♥</strong> pe cel mult <strong>o ofertă</strong> din fiecare categorie din <strong>județul din contul tău</strong> (cabinet, salon, magazin).
-			Celelalte inimioare din <strong>aceeași categorie</strong> se ascund până când apeși din nou pe ♥ ca să renunți sau să alegi altă ofertă.
-			Totul este <strong>opțional</strong>.
+			<div id="swAdoptBonusIntro" class="sw-adopt-bonus-intro" aria-hidden="false">
+				<strong>Bonus adopție:</strong> din bunătatea ta de a adopta, partenerii pot oferi servicii cu preț special.
+				Apasă <strong>♥</strong> pe cel mult <strong>o ofertă</strong> din fiecare categorie din <strong>județul din contul tău</strong> (cabinet, salon, magazin).
+				Celelalte inimioare din <strong>aceeași categorie</strong> se ascund până când apeși din nou pe ♥ ca să renunți sau să alegi altă ofertă.
+				Totul este <strong>opțional</strong>.
+				<p class="sw-adopt-bonus-mail-note">La <strong>finalizarea adopției</strong>, pentru <strong>ofertele bifate</strong>, primești pe <strong>e-mail</strong> coduri și date / adrese utile.</p>
+			</div>
 			<p id="swAdoptBonusKindNote" class="sw-adopt-bonus-kind-note" aria-live="polite"></p>
-			<p class="sw-adopt-bonus-mail-note">La <strong>finalizarea adopției</strong>, pentru <strong>ofertele bifate</strong>, primești pe <strong>e-mail</strong> coduri și date / adrese utile.</p>
 			<div id="swAdoptBonusSaveRow" class="sw-adopt-bonus-save-row" hidden>
 				<button type="button" id="swAdoptBonusSaveBtn" class="sw-adopt-bonus-save-btn">Salvează alegerile</button>
 			</div>
 		</div>
+		<script>
+		(function () {
+			var INTRO_HIDE_MS = 5000;
+			var intro = document.getElementById("swAdoptBonusIntro");
+			var banner = document.getElementById("swAdoptBonusBanner");
+			if (!intro || !banner || banner.classList.contains("sw-adopt-bonus-banner--locked")) return;
+			setTimeout(function () {
+				intro.classList.add("sw-adopt-bonus-intro--hidden");
+				intro.setAttribute("aria-hidden", "true");
+				var note = document.getElementById("swAdoptBonusKindNote");
+				var saveRow = document.getElementById("swAdoptBonusSaveRow");
+				var noteVisible = !!(note && note.style.display !== "none" && (note.textContent || "").trim());
+				var saveVisible = !!(saveRow && !saveRow.hidden);
+				if (!noteVisible && !saveVisible) {
+					banner.classList.add("sw-adopt-bonus-banner--dismissed");
+					banner.setAttribute("aria-hidden", "true");
+				}
+			}, INTRO_HIDE_MS);
+		})();
+		</script>
 		<div id="swAdoptBonusThankYou" class="sw-adopt-bonus-thankyou sw-adopt-bonus-followup--hidden" hidden aria-hidden="true">
 			<strong>Mulțumim!</strong> Redirecționăm către Shop…
 		</div>
@@ -1121,7 +1182,7 @@
 						<div class="sw-s2-1-body">
 							<div class="sw-s2-1-grid">
 								{% for offer in vet_offers %}
-								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S3.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}" data-offer-county="{% firstof offer.collaborator.profile.company_judet offer.collaborator.profile.judet '' %}" data-offer-city="{% firstof offer.collaborator.profile.company_oras offer.collaborator.profile.oras '' %}">
+								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer{% if offer.public_upcoming %} sw-s2-1-cell--offer-upcoming{% endif %}" data-slot="S3.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}" data-offer-county="{% firstof offer.collaborator.profile.company_judet offer.collaborator.profile.judet '' %}" data-offer-city="{% firstof offer.collaborator.profile.company_oras offer.collaborator.profile.oras '' %}">
 									{% include "anunturi/includes/servicii_offer_card_link.html" with offer=offer media_gallery="S3" %}
 								</div>
 								{% endfor %}
@@ -1143,7 +1204,7 @@
 						<div class="sw-s2-1-body">
 							<div class="sw-s2-1-grid">
 								{% for offer in shop_offers %}
-								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S4.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}" data-offer-county="{% firstof offer.collaborator.profile.company_judet offer.collaborator.profile.judet '' %}" data-offer-city="{% firstof offer.collaborator.profile.company_oras offer.collaborator.profile.oras '' %}">
+								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer{% if offer.public_upcoming %} sw-s2-1-cell--offer-upcoming{% endif %}" data-slot="S4.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}" data-offer-county="{% firstof offer.collaborator.profile.company_judet offer.collaborator.profile.judet '' %}" data-offer-city="{% firstof offer.collaborator.profile.company_oras offer.collaborator.profile.oras '' %}">
 									{% include "anunturi/includes/servicii_offer_card_link.html" with offer=offer show_pdf_badge=True media_gallery="S4" %}
 								</div>
 								{% endfor %}
@@ -1165,7 +1226,7 @@
 						<div class="sw-s2-1-body">
 							<div class="sw-s2-1-grid">
 								{% for offer in groom_offers %}
-								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer" data-slot="S5.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}" data-offer-county="{% firstof offer.collaborator.profile.company_judet offer.collaborator.profile.judet '' %}" data-offer-city="{% firstof offer.collaborator.profile.company_oras offer.collaborator.profile.oras '' %}">
+								<div class="sw-s2-1-cell sw-s2-1-cell--vet-offer{% if offer.public_upcoming %} sw-s2-1-cell--offer-upcoming{% endif %}" data-slot="S5.{{ forloop.counter }}" data-offer-species data-species-dog="{% if offer.species_dog %}1{% else %}0{% endif %}" data-species-cat="{% if offer.species_cat %}1{% else %}0{% endif %}" data-species-other="{% if offer.species_other %}1{% else %}0{% endif %}" data-offer-county="{% firstof offer.collaborator.profile.company_judet offer.collaborator.profile.judet '' %}" data-offer-city="{% firstof offer.collaborator.profile.company_oras offer.collaborator.profile.oras '' %}">
 									{% include "anunturi/includes/servicii_offer_card_link.html" with offer=offer media_gallery="S5" %}
 								</div>
 								{% endfor %}
@@ -1216,6 +1277,7 @@
 {% include "anunturi/includes/eu_media_modal.html" %}
 
 {% for offer in vet_offers %}
+{% if not offer.public_upcoming %}
 <template id="sw-vet-offer-modal-tpl-{{ offer.pk }}">
 	<article class="sw-vet-offer-nota">
 		{% if offer.image %}
@@ -1264,8 +1326,10 @@
 		{% endif %}
 	</article>
 </template>
+{% endif %}
 {% endfor %}
 {% for offer in groom_offers %}
+{% if not offer.public_upcoming %}
 <template id="sw-vet-offer-modal-tpl-{{ offer.pk }}">
 	<article class="sw-vet-offer-nota">
 		{% if offer.image %}
@@ -1314,8 +1378,10 @@
 		{% endif %}
 	</article>
 </template>
+{% endif %}
 {% endfor %}
 {% for offer in shop_offers %}
+{% if not offer.public_upcoming %}
 <template id="sw-vet-offer-modal-tpl-{{ offer.pk }}">
 	<article class="sw-vet-offer-nota">
 		{% if offer.image %}
@@ -1364,6 +1430,7 @@
 		{% endif %}
 	</article>
 </template>
+{% endif %}
 {% endfor %}
 
 {% endblock %}

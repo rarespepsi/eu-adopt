@@ -2,8 +2,41 @@
   Card ofertă în grila Servicii (imagine + overlay preț / stoc).
   Variabile: offer, show_pdf_badge (opțional, default False)
   adoption_bonus_show_heart / adoption_bonus_selected / adoption_bonus_heart_frozen — servicii_view
+  offer.public_upcoming — activă, dar valid_from în viitor: vizibilă fără click
 {% endcomment %}
-<div class="sw-s2-1-vet-offer-inner" style="position:relative;width:100%;height:100%;min-height:0;">
+<div class="sw-s2-1-vet-offer-inner{% if offer.public_upcoming %} sw-s2-1-vet-offer-inner--upcoming{% endif %}" style="position:relative;width:100%;height:100%;min-height:0;"{% if offer.public_upcoming and offer.public_upcoming_label %} title="{{ offer.public_upcoming_label|escape }}"{% endif %}>
+	{% if offer.public_upcoming %}
+	<span class="sw-s2-1-vet-offer-static" aria-label="{{ offer.title|escape }} — {{ offer.public_upcoming_label|escape }}">
+		<span class="sw-vet-offer-card-stack">
+			<span class="sw-vet-offer-media">
+				{% if offer.image %}<img src="{{ offer.image.url }}" alt="{{ offer.title|escape }}" loading="lazy" draggable="false" />{% endif %}
+				{% if show_pdf_badge and offer.product_sheet %}<span class="sw-vet-offer-sheet-badge" aria-hidden="true">PDF</span>{% endif %}
+				{% if offer.price_after_discount_display or offer.price_hint or offer.show_stock_public %}
+				<span class="sw-vet-offer-mid" aria-hidden="true">
+					{% if offer.price_after_discount_display %}
+						{% if offer.price_hint %}<span class="sw-vet-offer-price-old">{{ offer.price_hint }}</span>{% endif %}
+						<span class="sw-vet-offer-price-final">{{ offer.price_after_discount_display }}</span>
+					{% elif offer.price_hint %}
+						<span class="sw-vet-offer-price-final sw-vet-offer-price-final--solo">{{ offer.price_hint }}</span>
+					{% endif %}
+					{% if offer.show_stock_public %}
+						<span class="sw-vet-offer-remain">{{ offer.remaining_slots_public }} din {{ offer.quantity_total_public }} oferte</span>
+					{% endif %}
+				</span>
+				{% endif %}
+				{% if offer.public_upcoming_label %}
+				<span class="sw-vet-offer-upcoming-note" aria-hidden="true">{{ offer.public_upcoming_label }}</span>
+				{% endif %}
+			</span>
+			<span class="sw-vet-offer-card-foot">
+				<span class="sw-vet-offer-title">{{ offer.title }}</span>
+				{% if offer.description %}
+				<span class="sw-vet-offer-desc">{{ offer.description }}</span>
+				{% endif %}
+			</span>
+		</span>
+	</span>
+	{% else %}
 	{% if user.is_authenticated and servicii_show_offer_cart and not offer.adoption_bonus_show_heart %}
 	<button type="button"
 		class="sw-s2-1-site-cart{% if site_cart_ref_keys and offer.site_cart_ref_key in site_cart_ref_keys %} is-active{% endif %}"
@@ -61,4 +94,5 @@
 			</span>
 		</span>
 	</a>
+	{% endif %}
 </div>
