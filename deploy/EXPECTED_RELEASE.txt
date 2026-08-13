@@ -1,8 +1,7 @@
 # Site funcțional — ultima versiune validată (deploy + smoke).
 # Healthcheck revine aici la incident. Nu edita manual decât dacă știi ce faci.
-# Pe server: /var/lib/euadopt/EXPECTED_RELEASE.txt (sursă operațională).
-SHA=e6df163c8c5b1bc06004b5e5385e60c16c672d01
-SHORT=e6df163
-PREV_SHA=c6634a275066d4b146662b5790e2ed5630f62dec
-UPDATED=2026-08-13T07:07:14Z
-NOTE=deploy_update e6df163 telefon fix cont + text compact
+SHA=62d9814da7d80114b81ef3ad1f9cf291ce698804
+SHORT=62d9814
+PREV_SHA=5a13279867b94e5d910406bb9032ceefab8aa1b0
+UPDATED=2026-08-13T10:53:06Z
+NOTE=deploy_update 62d9814 oferte nelimitate + PF 10 caini + ONG nelimitat
