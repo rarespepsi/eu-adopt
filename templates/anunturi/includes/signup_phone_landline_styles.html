@@ -1,23 +1,22 @@
-{# Stiluri telefon mobil/fix + formular Colab/ONG pe o singură pagină (desktop) #}
+{# Telefon mobil/fix + poziție Tip (fără compactare agresivă pe formular) #}
 <style>
 	.signup-phone-hint {
-		margin: 0.1rem 0 0;
-		font-size: 0.68rem;
-		line-height: 1.25;
+		margin: 0.15rem 0 0;
+		font-size: 0.72rem;
+		line-height: 1.3;
 		color: #94a3b8;
 	}
 	.signup-phone-landline-label {
 		display: block;
-		font-size: 0.74rem;
+		font-size: 0.78rem;
 		font-weight: 600;
 		color: #e2e8f0;
-		margin-bottom: 0.18rem;
+		margin-bottom: 0.28rem;
 	}
 	.signup-phone-landline-row {
 		display: grid;
-		/* Prefix îngust; numărul ia restul */
 		grid-template-columns: 5.1rem minmax(0, 1fr);
-		gap: 0.35rem;
+		gap: 0.4rem;
 		align-items: end;
 	}
 	.signup-phone-landline-prefix {
@@ -27,10 +26,10 @@
 	.signup-phone-landline-prefix label,
 	.signup-phone-landline-number label {
 		display: block;
-		font-size: 0.64rem;
+		font-size: 0.68rem;
 		font-weight: 600;
 		color: #94a3b8;
-		margin-bottom: 0.1rem;
+		margin-bottom: 0.15rem;
 		text-transform: none;
 		letter-spacing: 0;
 	}
@@ -38,13 +37,13 @@
 	.signup-phone-landline-number input {
 		width: 100%;
 		box-sizing: border-box;
-		min-height: 1.85rem;
-		font-size: 0.8rem !important;
-		padding: 0.22rem 0.28rem !important;
+		min-height: 2.1rem;
+		font-size: 0.85rem !important;
+		padding: 0.35rem 0.4rem !important;
 	}
 	.signup-phone-landline-select {
 		max-width: 5.1rem;
-		padding-left: 0.2rem !important;
+		padding-left: 0.25rem !important;
 		padding-right: 0.15rem !important;
 	}
 	@media (max-width: 520px) {
@@ -54,222 +53,51 @@
 	}
 
 	/*
-	  Desktop: tot formularul pe o singură pagină (fără scroll pe #main_content).
-	  Compactare densă pe Colab + ONG.
+	  Desktop: doar layout Tip (fără clip) + mărime normală.
+	  Nu micșorăm fonturi/inputuri față de stilul paginii.
 	*/
-	@media (min-width: 900px) and (min-height: 620px) {
+	@media (min-width: 900px) {
 		body.page-login:not(.page-home-v2):not(.page-animale) #main_content {
-			align-items: flex-start !important;
-			justify-content: center !important;
-			min-height: 0 !important;
-			height: auto !important;
-			max-height: calc(100dvh - 0px) !important;
-			padding-top: calc(var(--nav-height, 56px) + 0.15rem) !important;
-			padding-bottom: 0.2rem !important;
-			/* visible: caseta Tip (margin negativ) nu trebuie tăiată */
 			overflow-x: visible !important;
 			overflow-y: auto !important;
 		}
 		body.page-login .login-main {
-			padding: 0.1rem 0 0.15rem !important;
-			width: 100%;
-			max-height: none;
 			overflow: visible;
 		}
 		.signup-col-main,
 		.signup-org-main {
-			gap: 0.45rem !important;
-			max-width: min(1100px, 98vw);
-			margin: 0 auto;
-			max-height: none;
 			overflow: visible;
 			align-items: flex-start !important;
 			flex-wrap: nowrap !important;
+			max-width: min(1100px, 98vw);
+			margin: 0 auto;
 		}
-		.signup-col-header,
-		.signup-org-header {
-			margin: 0 !important;
-			padding: 0 !important;
-		}
-		.signup-col-header h1,
-		.signup-org-header h1 {
-			font-size: 0.95rem !important;
-			margin: 0 0 0.05rem !important;
-			line-height: 1.2 !important;
-		}
-		.signup-col-intro,
-		.signup-org-intro,
-		.signup-intro {
-			display: none !important;
-		}
-		/* Tip partener (Colab) */
 		.signup-col-tip-box {
-			padding: 0.35rem 0.45rem !important;
-			min-height: 0 !important;
-			width: 180px !important;
-			margin-left: 0 !important;
-			align-self: flex-start !important;
-			overflow: visible !important;
-			flex-shrink: 0 !important;
-		}
-		.signup-col-form-area {
-			margin-left: 0.5rem !important;
-			min-width: 0 !important;
-			flex: 1 1 auto !important;
-		}
-		/* Tip adăpost (ONG) — caseta laterală, întreagă, la jumătatea formularului */
-		.signup-org-public-box {
-			padding: 0.4rem 0.5rem !important;
-			min-height: 0 !important;
-			width: 200px !important;
 			margin-left: 0 !important;
 			align-self: center !important;
 			overflow: visible !important;
 			flex-shrink: 0 !important;
+			min-height: 0 !important;
 			height: auto !important;
 		}
-		.signup-org-form-area {
-			margin-left: 0.5rem !important;
+		.signup-col-form-area {
+			margin-left: 0.65rem !important;
 			min-width: 0 !important;
 			flex: 1 1 auto !important;
 		}
-		.signup-org-public-title {
-			font-size: 0.7rem !important;
-			margin: 0 0 0.2rem !important;
+		.signup-org-public-box {
+			margin-left: 0 !important;
+			align-self: center !important;
+			overflow: visible !important;
+			flex-shrink: 0 !important;
+			min-height: 0 !important;
+			height: auto !important;
+			width: 200px !important;
 		}
-		.signup-org-public-text {
-			font-size: 0.58rem !important;
-			line-height: 1.28 !important;
-			margin: 0 0 0.28rem !important;
-		}
-		.signup-org-public-checkbox {
-			font-size: 0.6rem !important;
-			gap: 0.18rem !important;
-		}
-		.signup-col-caseta,
-		.signup-org-caseta {
-			padding: 0.28rem 0.45rem !important;
-		}
-		.signup-col-caseta h2,
-		.signup-org-caseta h2 {
-			font-size: 0.78rem !important;
-			margin: 0 0 0.18rem !important;
-			line-height: 1.2 !important;
-		}
-		.signup-col-field-box,
-		.signup-org-field-box {
-			margin-bottom: 0.1rem !important;
-			padding: 0.1rem 0.22rem !important;
-		}
-		.signup-col-field,
-		.signup-org-field {
-			margin-bottom: 0.08rem !important;
-		}
-		.signup-col-casete-row,
-		.signup-org-casete-row {
-			gap: 0.4rem !important;
-		}
-		.signup-col-adresa-hint,
-		.signup-org-adresa-hint,
-		.signup-phone-hint {
-			display: none !important;
-		}
-		.signup-phone-landline-prefix label,
-		.signup-phone-landline-number label {
-			display: none !important;
-		}
-		.signup-phone-landline-label {
-			font-size: 0.68rem !important;
-			margin-bottom: 0.1rem !important;
-		}
-		.signup-col-field-box label,
-		.signup-org-field-box label,
-		.signup-col-field > label,
-		.signup-org-field > label {
-			font-size: 0.68rem !important;
-			margin-bottom: 0.05rem !important;
-			line-height: 1.2 !important;
-		}
-		.signup-col-field-box input:not([type="checkbox"]):not([type="radio"]),
-		.signup-org-field-box input:not([type="checkbox"]):not([type="radio"]),
-		.signup-col-field-box select,
-		.signup-org-field-box select,
-		.signup-phone-landline-select,
-		.signup-phone-landline-number input {
-			min-height: 1.55rem !important;
-			font-size: 0.78rem !important;
-			padding: 0.15rem 0.28rem !important;
-			line-height: 1.2 !important;
-		}
-		.signup-phone-landline-select {
-			max-width: 5.1rem !important;
-			padding-left: 0.15rem !important;
-			padding-right: 0.1rem !important;
-		}
-		.signup-col-pl-wrap h3,
-		.signup-org-pl-wrap h3 {
-			font-size: 0.72rem !important;
-			margin: 0 0 0.12rem !important;
-		}
-		.signup-col-pl-wrap > p,
-		.signup-org-pl-wrap > p {
-			display: none !important;
-		}
-		.signup-col-pl-wrap .check,
-		.signup-org-pl-wrap .check {
-			margin-bottom: 0.2rem !important;
-			font-size: 0.68rem !important;
-			line-height: 1.25 !important;
-		}
-		.signup-col-tip-title,
-		.signup-org-tip-title,
-		.signup-org-public-title {
-			font-size: 0.66rem !important;
-			margin: 0 0 0.12rem !important;
-		}
-		.signup-col-tip-options,
-		.signup-org-tip-options {
-			font-size: 0.62rem !important;
-			gap: 0.1rem !important;
-		}
-		.signup-col-tip-nota,
-		.signup-org-tip-nota {
-			font-size: 0.58rem !important;
-			margin: 0.25rem 0 0 !important;
-			padding: 0.2rem 0.3rem !important;
-		}
-		.signup-col-bife-actions,
-		.signup-org-bife-actions {
-			gap: 0.08rem !important;
-		}
-		.signup-col-bifa-row,
-		.signup-org-bifa-row {
-			font-size: 0.66rem !important;
-			line-height: 1.25 !important;
-		}
-		.signup-col-actions,
-		.signup-org-actions,
-		.signup-col-submit-wrap,
-		.signup-org-submit-wrap {
-			margin-top: 0.2rem !important;
-		}
-		.signup-col-actions button,
-		.signup-org-actions button,
-		.signup-col-submit,
-		.signup-org-submit,
-		button.signup-col-btn,
-		button.signup-org-btn {
-			min-height: 1.85rem !important;
-			padding: 0.28rem 0.75rem !important;
-			font-size: 0.82rem !important;
-		}
-		.signup-col-cui-stanga .signup-cui-ro-display,
-		.signup-org-cui-stanga .signup-cui-ro-display,
-		.signup-col-cui-stanga select,
-		.signup-org-cui-stanga select {
-			min-height: 1.55rem !important;
-			font-size: 0.68rem !important;
-			padding: 0.15rem 0.2rem !important;
+		.signup-org-form-area {
+			margin-left: 0.65rem !important;
+			min-width: 0 !important;
+			flex: 1 1 auto !important;
 		}
 	}
 </style>
