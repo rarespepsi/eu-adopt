@@ -1,8 +1,8 @@
 # Site funcțional — ultima versiune validată (deploy + smoke).
 # Healthcheck revine aici la incident. Nu edita manual decât dacă știi ce faci.
 # Pe server: /var/lib/euadopt/EXPECTED_RELEASE.txt (sursă operațională).
-SHA=c6634a275066d4b146662b5790e2ed5630f62dec
-SHORT=c6634a2
+SHA=e6df163c8c5b1bc06004b5e5385e60c16c672d01
+SHORT=e6df163
 PREV_SHA=c6634a275066d4b146662b5790e2ed5630f62dec
-UPDATED=2026-08-13T06:55:44Z
-NOTE=final save c6634a2 telefon
+UPDATED=2026-08-13T07:07:14Z
+NOTE=deploy_update e6df163 telefon fix cont + text compact
