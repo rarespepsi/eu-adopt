@@ -71,6 +71,9 @@ if DEBUG:
         ]
     )
 
+# Pagină RO prietenoasă în loc de „Interzis (403) / Verificarea CSRF nereușită”.
+CSRF_FAILURE_VIEW = "home.csrf_views.csrf_failure"
+
 
 # Application definition
 

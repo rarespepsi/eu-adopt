@@ -38,7 +38,7 @@ from django.views.decorators.http import require_POST, require_http_methods
 from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_cookie
 from django.contrib.staticfiles import finders
 from .data import DEMO_DOGS, DEMO_DOG_IMAGE, A2_QUOTE_POOL, A2_QUOTE_POOL_EN, HERO_SLIDER_IMAGES
 from .pet_age_bands import (
@@ -2972,6 +2972,7 @@ def _attach_staff_onboarding_lead_from_inv_token(user, token: str) -> None:
 
 @require_http_methods(["GET", "POST"])
 @csrf_protect
+@ensure_csrf_cookie
 def inscriere_view(request):
     """Formular scurt (Facebook etc.) → redirect la înregistrare cu ?inv= și prefill."""
     from home.inscriere_landing import INSCRIERE_CATEGORY_CHOICES, process_inscriere_post
@@ -3030,6 +3031,7 @@ def signup_choose_type_view(request):
     return render(request, "anunturi/signup_choose_type.html", ctx)
 
 
+@ensure_csrf_cookie
 def signup_pf_view(request):
     """Formular înregistrare – Persoană fizică.
     RO: POST → sesiune → SMS → email activare.
@@ -3879,6 +3881,7 @@ def _signup_continue_after_form(request, pending: dict):
     return _finalize_signup_after_identity_verified(request, pending)
 
 
+@ensure_csrf_cookie
 def signup_organizatie_view(request):
     """Formular înregistrare – Adăpost / ONG / Firmă. La POST: validează, salvează în sesiune, redirect SMS. La GET: prefill din sesiune dacă user a dat Back din SMS."""
     from home.population_onboarding import population_org_signup_allowed
@@ -4022,6 +4025,7 @@ def signup_organizatie_view(request):
     return _signup_continue_after_form(request, request.session["signup_pending"])
 
 
+@ensure_csrf_cookie
 def signup_colaborator_view(request):
     """Formular înregistrare – Cabinet / Magazin / Servicii. La POST: validează, salvează în sesiune, redirect SMS. La GET: prefill din sesiune dacă user a dat Back din SMS."""
     if request.method != "POST":
