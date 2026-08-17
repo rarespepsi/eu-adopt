@@ -74,6 +74,16 @@ if DEBUG:
 # Pagină RO prietenoasă în loc de „Interzis (403) / Verificarea CSRF nereușită”.
 CSRF_FAILURE_VIEW = "home.csrf_views.csrf_failure"
 
+# După login, aceste emailuri PF deschid Contul meu cu formular campanii sterilizare.
+# Override: EUADOPT_CAMPANII_LOGIN_LANDING_EMAILS=a@x.ro,b@y.ro
+_campanii_landing_env = os.environ.get("EUADOPT_CAMPANII_LOGIN_LANDING_EMAILS")
+if _campanii_landing_env is None:
+    CAMPANII_LOGIN_LANDING_EMAILS = frozenset({"serbacov.ioana@gmail.com"})
+else:
+    CAMPANII_LOGIN_LANDING_EMAILS = frozenset(
+        e.strip().lower() for e in _campanii_landing_env.split(",") if e.strip()
+    )
+
 
 # Application definition
 

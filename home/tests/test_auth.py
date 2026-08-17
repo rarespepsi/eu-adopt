@@ -36,7 +36,34 @@ class LoginLogoutTests(TestCase):
             {"login": self.user.email, "password": "AuthTest_Pass12"},
         )
         self.assertEqual(r.status_code, 302)
+        self.assertEqual(r.url, "/")
         self.assertTrue(c.session.get("_auth_user_id"))
+
+    def test_login_campanii_landing_user_opens_campaign_form(self):
+        self.user.email = "serbacov.ioana@gmail.com"
+        self.user.save(update_fields=["email"])
+        AccountProfile.objects.get_or_create(
+            user=self.user,
+            defaults={"role": AccountProfile.ROLE_PF},
+        )
+        c = Client()
+        r = c.post(
+            reverse("login"),
+            {"login": self.user.email, "password": "AuthTest_Pass12"},
+        )
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(r.url, reverse("account") + "?campanie=1")
+
+    def test_login_campanii_landing_respects_explicit_next(self):
+        self.user.email = "serbacov.ioana@gmail.com"
+        self.user.save(update_fields=["email"])
+        c = Client()
+        r = c.post(
+            reverse("login") + "?next=/pets/",
+            {"login": self.user.email, "password": "AuthTest_Pass12"},
+        )
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(r.url, "/pets/")
 
     def test_login_invalid_password_shows_error(self):
         c = Client()

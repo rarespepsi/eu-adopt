@@ -2775,6 +2775,9 @@ def login_view(request):
                         record_site_login_event(user, "login")
                         request.session["eu_pwa_login_pulse"] = 1
                         next_url = request.GET.get("next") or request.POST.get("next") or "/"
+                        from home.campanii_login import landing_after_login
+
+                        next_url = landing_after_login(user, next_url)
                         from django.shortcuts import redirect
                         return attach_pwa_login_pulse(redirect(next_url))
                 else:
