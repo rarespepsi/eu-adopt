@@ -19,7 +19,7 @@ if [[ -f "${ENV_FILE}" ]]; then
   chown euadopt:euadopt "${ENV_FILE}" 2>/dev/null || true
 fi
 
-CRON_LINE='0 9 * * * '"${SCRIPT}"
+CRON_LINE='0 9 * * * bash '"${SCRIPT}"
 
 TMP="$(mktemp)"
 crontab -l 2>/dev/null \

@@ -9,7 +9,7 @@ chmod +x "${SCRIPT}" 2>/dev/null || true
 touch /var/log/euadopt-facebook-ro-mirror.log
 chmod 644 /var/log/euadopt-facebook-ro-mirror.log
 
-CRON_LINE='*/15 * * * * '"${SCRIPT}"
+CRON_LINE='*/15 * * * * bash '"${SCRIPT}"
 
 TMP="$(mktemp)"
 crontab -l 2>/dev/null \

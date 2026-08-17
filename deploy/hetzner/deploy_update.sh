@@ -41,6 +41,9 @@ sudo -u euadopt bash -c '
   python manage.py collectstatic --noinput
 '
 
+# Git pe Windows salvează .sh ca 644; cron pe H cere +x. Fără asta, un deploy oprește invitațiile.
+chmod a+x "${APP_DIR}/deploy/hetzner/"*.sh 2>/dev/null || true
+
 AFTER_SHA="$(sudo -u euadopt git rev-parse --short HEAD 2>/dev/null || echo '?')"
 AFTER_FULL="$(sudo -u euadopt git rev-parse HEAD 2>/dev/null || echo '')"
 echo "[$(date -Is)] Git după: ${AFTER_SHA}"
@@ -77,6 +80,7 @@ else
       source venv/bin/activate
       python manage.py collectstatic --noinput
     "
+    chmod a+x "${APP_DIR}/deploy/hetzner/"*.sh 2>/dev/null || true
     systemctl restart euadopt
     sleep 2
     systemctl is-active --quiet euadopt

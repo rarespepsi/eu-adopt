@@ -25,9 +25,9 @@ fi
 # CRON_TZ pe crontab (Debian/Ubuntu)
 CRON_BLOCK=$(cat <<EOF
 CRON_TZ=Europe/Bucharest
-0 6 * * * ${SCRIPT}
-0 14 * * * ${SCRIPT}
-0 22 * * * ${SCRIPT}
+0 6 * * * bash ${SCRIPT}
+0 14 * * * bash ${SCRIPT}
+0 22 * * * bash ${SCRIPT}
 EOF
 )
 
@@ -52,9 +52,9 @@ fi
 awk 'BEGIN{seen=0} /^CRON_TZ=Europe\/Bucharest$/{if(seen++) next} {print}' "${TMP}" > "${TMP}.3"
 mv "${TMP}.3" "${TMP}"
 
-echo "0 6 * * * ${SCRIPT}" >> "${TMP}"
-echo "0 14 * * * ${SCRIPT}" >> "${TMP}"
-echo "0 22 * * * ${SCRIPT}" >> "${TMP}"
+echo "0 6 * * * bash ${SCRIPT}" >> "${TMP}"
+echo "0 14 * * * bash ${SCRIPT}" >> "${TMP}"
+echo "0 22 * * * bash ${SCRIPT}" >> "${TMP}"
 crontab "${TMP}"
 rm -f "${TMP}"
 

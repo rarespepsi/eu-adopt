@@ -29,9 +29,9 @@ fi
 awk 'BEGIN{seen=0} /^CRON_TZ=Europe\/Bucharest$/{if(seen++) next} {print}' "${TMP}" > "${TMP}.3"
 mv "${TMP}.3" "${TMP}"
 
-echo "*/30 * * * * ${SCRIPT}" >> "${TMP}"
+echo "*/30 * * * * bash ${SCRIPT}" >> "${TMP}"
 # Luni 09:15 — raport bounce 7 zile
-echo "15 9 * * 1 ${REPORT_SCRIPT}" >> "${TMP}"
+echo "15 9 * * 1 bash ${REPORT_SCRIPT}" >> "${TMP}"
 crontab "${TMP}"
 rm -f "${TMP}"
 

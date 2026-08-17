@@ -32,8 +32,8 @@ if [[ -f "${ENV_FILE}" ]]; then
   chown euadopt:euadopt "${ENV_FILE}" 2>/dev/null || true
 fi
 
-CRON_AM='0 10 * * * '"${SCRIPT_AM}"
-CRON_PM='0 16 * * * '"${SCRIPT_PM}"
+CRON_AM='0 10 * * * bash '"${SCRIPT_AM}"
+CRON_PM='0 16 * * * bash '"${SCRIPT_PM}"
 
 TMP="$(mktemp)"
 crontab -l 2>/dev/null \
