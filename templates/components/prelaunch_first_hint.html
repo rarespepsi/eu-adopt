@@ -2,11 +2,11 @@
 <div id="prelaunchFirstHint" class="prelaunch-first-hint" hidden
 	data-hint-key="{{ request.resolver_match.url_name|default:'' }}"
 	data-hint-text="{{ prelaunch_first_hint|escape }}">
-	<span class="prelaunch-first-hint__title">Sfat pre-lansare</span>
+	<span class="prelaunch-first-hint__title">{% if eu_site_active %}{{ eu_ui.prelaunch_hint_title }}{% else %}Sfat pre-lansare{% endif %}</span>
 	<span class="prelaunch-first-hint__text"></span>
 	<div class="prelaunch-first-hint__actions">
-		<button type="button" class="prelaunch-first-hint__btn prelaunch-first-hint__btn--ghost" data-prelaunch-hint-close>Închide</button>
-		<button type="button" class="prelaunch-first-hint__btn" data-prelaunch-hint-ok>Am înțeles</button>
+		<button type="button" class="prelaunch-first-hint__btn prelaunch-first-hint__btn--ghost" data-prelaunch-hint-close>{% if eu_site_active %}{{ eu_ui.prelaunch_hint_close }}{% else %}Închide{% endif %}</button>
+		<button type="button" class="prelaunch-first-hint__btn" data-prelaunch-hint-ok>{% if eu_site_active %}{{ eu_ui.prelaunch_hint_ok }}{% else %}Am înțeles{% endif %}</button>
 	</div>
 </div>
 {% endif %}

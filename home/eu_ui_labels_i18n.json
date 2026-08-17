@@ -592,7 +592,16 @@
     "signup_lbl_country": "Country *",
     "contact_whatsapp": "WhatsApp",
     "contact_call": "Anrufen",
-    "contact_prefer_whatsapp": "Bitte bevorzugen Sie WhatsApp-Nachrichten (empfohlen außerhalb Rumäniens)."
+    "contact_prefer_whatsapp": "Bitte bevorzugen Sie WhatsApp-Nachrichten (empfohlen außerhalb Rumäniens).",
+    "prelaunch_hint_title": "Tipp vor dem Start",
+    "prelaunch_hint_close": "Schließen",
+    "prelaunch_hint_ok": "Verstanden",
+    "prelaunch_hint_mypet": "MyPet: fügen Sie veröffentlichte Tiere hinzu; danach können Sie einen Hund kostenlos auf der Startseite bewerben (1 Werbung pro Konto).",
+    "prelaunch_hint_publicitate_harta": "Werbung: wählen Sie ein Feld auf der Karte, legen Sie es in den Warenkorb und aktivieren Sie es kostenlos (1 Feld pro Konto in der Vorstartphase).",
+    "prelaunch_hint_publicitate_cos": "Werbe-Warenkorb: in den allgemeinen Warenkorb übertragen → Bezahlen → kostenlose Aktivierung.",
+    "prelaunch_hint_collab_offers": "Partnerangebote: veröffentlichen Sie Dienste/Produkte unter Mein Shop; ohne Mengenlimit.",
+    "prelaunch_hint_pets_all": "Finde einen Freund: stöbern Sie in den Anzeigen; über das Tierprofil können Sie ein Tier im Raster der Startseite bewerben.",
+    "prelaunch_hint_i_love_cos": "Warenkorb: in der Vorstartphase können Sie nur Werbung oder die Startseiten-Promotion abschließen (kostenlos)."
   },
   "fr": {
     "messages_new": "Nouveaux messages : {n}",
@@ -1187,7 +1196,16 @@
     "signup_lbl_country": "Country *",
     "contact_whatsapp": "WhatsApp",
     "contact_call": "Appeler",
-    "contact_prefer_whatsapp": "Préférez un message WhatsApp (recommandé hors Roumanie)."
+    "contact_prefer_whatsapp": "Préférez un message WhatsApp (recommandé hors Roumanie).",
+    "prelaunch_hint_title": "Conseil avant le lancement",
+    "prelaunch_hint_close": "Fermer",
+    "prelaunch_hint_ok": "J'ai compris",
+    "prelaunch_hint_mypet": "MyPet : ajoutez des animaux publiés, puis vous pouvez promouvoir un chien gratuitement sur l'Accueil (1 promotion par compte).",
+    "prelaunch_hint_publicitate_harta": "Publicité : choisissez une case sur la carte, ajoutez-la au panier et activez-la gratuitement (1 case par compte avant le lancement).",
+    "prelaunch_hint_publicitate_cos": "Panier publicité : transférez vers le panier général → Paiement → activation gratuite.",
+    "prelaunch_hint_collab_offers": "Offres partenaire : publiez services/produits depuis Mon magasin ; sans plafond de nombre.",
+    "prelaunch_hint_pets_all": "Trouver un ami : parcourez les annonces ; depuis une fiche, vous pouvez promouvoir un animal sur la grille Accueil.",
+    "prelaunch_hint_i_love_cos": "Panier : avant le lancement, vous ne pouvez finaliser que la publicité ou la promotion Accueil (gratuit)."
   },
   "es": {
     "messages_new": "Nuevos mensajes: {n}",
@@ -1782,7 +1800,16 @@
     "signup_lbl_country": "Country *",
     "contact_whatsapp": "WhatsApp",
     "contact_call": "Llamar",
-    "contact_prefer_whatsapp": "Prefiera un mensaje de WhatsApp (recomendado fuera de Rumanía)."
+    "contact_prefer_whatsapp": "Prefiera un mensaje de WhatsApp (recomendado fuera de Rumanía).",
+    "prelaunch_hint_title": "Consejo previo al lanzamiento",
+    "prelaunch_hint_close": "Cerrar",
+    "prelaunch_hint_ok": "Entendido",
+    "prelaunch_hint_mypet": "MyPet: añade animales publicados; después puedes promocionar un perro gratis en Inicio (1 promoción por cuenta).",
+    "prelaunch_hint_publicitate_harta": "Publicidad: elige una casilla en el mapa, añádela al carrito y actívala gratis (1 casilla por cuenta en el prelanzamiento).",
+    "prelaunch_hint_publicitate_cos": "Carrito de publicidad: pásalo al carrito general → Pago → activación gratuita.",
+    "prelaunch_hint_collab_offers": "Ofertas de socio: publica servicios/productos desde Mi tienda; sin tope de número.",
+    "prelaunch_hint_pets_all": "Encuentra un amigo: explora anuncios; desde la ficha puedes promocionar un animal en la cuadrícula de Inicio.",
+    "prelaunch_hint_i_love_cos": "Carrito: en el prelanzamiento solo puedes completar publicidad o promoción en Inicio (gratis)."
   },
   "it": {
     "messages_new": "Nuovi messaggi: {n}",
@@ -2377,7 +2404,16 @@
     "signup_lbl_country": "Country *",
     "contact_whatsapp": "WhatsApp",
     "contact_call": "Chiama",
-    "contact_prefer_whatsapp": "Preferisci un messaggio WhatsApp (consigliato fuori dalla Romania)."
+    "contact_prefer_whatsapp": "Preferisci un messaggio WhatsApp (consigliato fuori dalla Romania).",
+    "prelaunch_hint_title": "Suggerimento pre-lancio",
+    "prelaunch_hint_close": "Chiudi",
+    "prelaunch_hint_ok": "Ho capito",
+    "prelaunch_hint_mypet": "MyPet: aggiungi animali pubblicati; poi puoi promuovere un cane gratis in Home (1 promozione per account).",
+    "prelaunch_hint_publicitate_harta": "Pubblicità: scegli una casella sulla mappa, aggiungila al carrello e attivala gratis (1 casella per account in pre-lancio).",
+    "prelaunch_hint_publicitate_cos": "Carrello pubblicità: sposta nel carrello generale → Pagamento → attivazione gratuita.",
+    "prelaunch_hint_collab_offers": "Offerte partner: pubblica servizi/prodotti da Il mio negozio; senza tetto numerico.",
+    "prelaunch_hint_pets_all": "Trova un amico: sfoglia gli annunci; dalla scheda puoi promuovere un animale nella griglia Home.",
+    "prelaunch_hint_i_love_cos": "Carrello: in pre-lancio puoi completare solo pubblicità o promozione Home (gratis)."
   },
   "pl": {
     "messages_new": "Nowe wiadomości: {n}",
@@ -2972,7 +3008,16 @@
     "signup_lbl_country": "Country *",
     "contact_whatsapp": "WhatsApp",
     "contact_call": "Zadzwoń",
-    "contact_prefer_whatsapp": "Preferuj wiadomość WhatsApp (zalecane poza Rumunią)."
+    "contact_prefer_whatsapp": "Preferuj wiadomość WhatsApp (zalecane poza Rumunią).",
+    "prelaunch_hint_title": "Wskazówka przed startem",
+    "prelaunch_hint_close": "Zamknij",
+    "prelaunch_hint_ok": "Rozumiem",
+    "prelaunch_hint_mypet": "MyPet: dodaj opublikowane zwierzęta, a potem możesz bezpłatnie wypromować psa na stronie głównej (1 promocja na konto).",
+    "prelaunch_hint_publicitate_harta": "Reklama: wybierz pole na mapie, dodaj do koszyka i aktywuj za darmo (1 pole na konto przed startem).",
+    "prelaunch_hint_publicitate_cos": "Koszyk reklamy: przenieś do koszyka ogólnego → Płatność → darmowa aktywacja.",
+    "prelaunch_hint_collab_offers": "Oferty partnera: publikujesz usługi/produkty w Moim sklepie; bez limitu liczby.",
+    "prelaunch_hint_pets_all": "Znajdź przyjaciela: przeglądaj ogłoszenia; z karty zwierzęcia możesz wypromować je w siatce na stronie głównej.",
+    "prelaunch_hint_i_love_cos": "Koszyk: przed startem możesz sfinalizować tylko reklamę lub promocję na stronie głównej (za darmo)."
   },
   "nl": {
     "messages_new": "Nieuwe berichten: {n}",
@@ -3567,7 +3612,16 @@
     "signup_lbl_country": "Country *",
     "contact_whatsapp": "WhatsApp",
     "contact_call": "Bellen",
-    "contact_prefer_whatsapp": "Geef de voorkeur aan een WhatsApp-bericht (aanbevolen buiten Roemenië)."
+    "contact_prefer_whatsapp": "Geef de voorkeur aan een WhatsApp-bericht (aanbevolen buiten Roemenië).",
+    "prelaunch_hint_title": "Tip vóór de lancering",
+    "prelaunch_hint_close": "Sluiten",
+    "prelaunch_hint_ok": "Begrepen",
+    "prelaunch_hint_mypet": "MyPet: voeg gepubliceerde dieren toe; daarna kun je één hond gratis op Home promoten (1 promotie per account).",
+    "prelaunch_hint_publicitate_harta": "Reclame: kies een vak op de kaart, zet het in de winkelwagen en activeer het gratis (1 vak per account in de voorlancering).",
+    "prelaunch_hint_publicitate_cos": "Reclamewinkelwagen: verplaats naar de algemene winkelwagen → Betalen → gratis activering.",
+    "prelaunch_hint_collab_offers": "Partneraanbiedingen: publiceer diensten/producten via Mijn winkel; geen aantalslimiet.",
+    "prelaunch_hint_pets_all": "Vind een vriend: blader door advertenties; via een profiel kun je een dier op het Home-raster promoten.",
+    "prelaunch_hint_i_love_cos": "Winkelwagen: vóór de lancering kun je alleen reclame of Home-promotie afronden (gratis)."
   },
   "pt": {
     "messages_new": "Novas mensagens: {n}",
@@ -4162,7 +4216,16 @@
     "signup_lbl_country": "Country *",
     "contact_whatsapp": "WhatsApp",
     "contact_call": "Ligar",
-    "contact_prefer_whatsapp": "Prefira uma mensagem WhatsApp (recomendado fora da Roménia)."
+    "contact_prefer_whatsapp": "Prefira uma mensagem WhatsApp (recomendado fora da Roménia).",
+    "prelaunch_hint_title": "Dica pré-lançamento",
+    "prelaunch_hint_close": "Fechar",
+    "prelaunch_hint_ok": "Percebi",
+    "prelaunch_hint_mypet": "MyPet: adicione animais publicados; depois pode promover um cão grátis na página inicial (1 promoção por conta).",
+    "prelaunch_hint_publicitate_harta": "Publicidade: escolha uma caixa no mapa, adicione ao carrinho e ative grátis (1 caixa por conta no pré-lançamento).",
+    "prelaunch_hint_publicitate_cos": "Carrinho de publicidade: transfira para o carrinho geral → Pagamento → ativação gratuita.",
+    "prelaunch_hint_collab_offers": "Ofertas de parceiro: publique serviços/produtos em A minha loja; sem limite de número.",
+    "prelaunch_hint_pets_all": "Encontrar um amigo: navegue pelos anúncios; a partir da ficha pode promover um animal na grelha da página inicial.",
+    "prelaunch_hint_i_love_cos": "Carrinho: no pré-lançamento só pode concluir publicidade ou promoção na página inicial (grátis)."
   },
   "ro": {
     "messages_new": "Mesaje noi: {n}",
@@ -4757,6 +4820,15 @@
     "signup_lbl_country": "Country *",
     "contact_whatsapp": "WhatsApp",
     "contact_call": "Sună",
-    "contact_prefer_whatsapp": "Preferă mesaj WhatsApp (recomandat în afara României)."
+    "contact_prefer_whatsapp": "Preferă mesaj WhatsApp (recomandat în afara României).",
+    "prelaunch_hint_title": "Sfat pre-lansare",
+    "prelaunch_hint_close": "Închide",
+    "prelaunch_hint_ok": "Am înțeles",
+    "prelaunch_hint_mypet": "MyPet: adaugă animale publicate, apoi poți promova gratuit un câine în HOME (1 promovare/cont).",
+    "prelaunch_hint_publicitate_harta": "Publicitate: alege o casetă pe hartă, adaugă în coș și activează gratuit (1 casetă/cont în pre-lansare).",
+    "prelaunch_hint_publicitate_cos": "Coș publicitate: transferă în Coș general → Plată → activare gratuită.",
+    "prelaunch_hint_collab_offers": "Oferte partener: publici servicii/produse din Magazinul meu; fără plafon de număr.",
+    "prelaunch_hint_pets_all": "Prietenul tău: răsfoiește anunțuri; din fișă poți promova un animal în grila Acasă.",
+    "prelaunch_hint_i_love_cos": "Coș: în pre-lansare finalizează doar publicitate sau promovare A2 (gratuit)."
   }
 }

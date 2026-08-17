@@ -178,7 +178,7 @@ def prelaunch_mode(request):
         "prelaunch_mode": bool(getattr(settings, "PRELAUNCH_MODE", False)),
         "prelaunch_soft_lock": prelaunch_soft_lock_active_for_user(user),
         "prelaunch_soft_lock_banner": PRELAUNCH_SOFT_LOCK_BANNER,
-        "prelaunch_first_hint": prelaunch_first_hint_for_url_name(url_name or ""),
+        "prelaunch_first_hint": prelaunch_first_hint_for_url_name(url_name or "", request),
         "prelaunch_monetization_soft_lock": prelaunch_monetization_soft_lock_enabled(),
         "pub_prelaunch_nudge": pub_nudge,
         "pub_prelaunch_nudge_text": PUB_PRELAUNCH_NUDGE_TEXT,

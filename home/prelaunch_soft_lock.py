@@ -55,7 +55,7 @@ PRELAUNCH_SOFT_BLOCKED_CART_KINDS = frozenset(
     }
 )
 
-# Hint scurt la prima vizită (cheie localStorage → mesaj).
+# Hint scurt la prima vizită (cheie localStorage → mesaj RO; pe EU → eu_ui).
 PRELAUNCH_FIRST_HINTS: dict[str, str] = {
     "mypet": "MyPet: adaugă animale publicate, apoi poți promova gratuit un câine în HOME (1 promovare/cont).",
     "publicitate_harta": "Publicitate: alege o casetă pe hartă, adaugă în coș și activează gratuit (1 casetă/cont în pre-lansare).",
@@ -63,6 +63,15 @@ PRELAUNCH_FIRST_HINTS: dict[str, str] = {
     "collab_offers_control": "Oferte partener: publici servicii/produse din Magazinul meu; fără plafon de număr.",
     "pets_all": "Prietenul tău: răsfoiește anunțuri; din fișă poți promova un animal în grila Acasă.",
     "i_love_cos": "Coș: în pre-lansare finalizează doar publicitate sau promovare A2 (gratuit).",
+}
+
+PRELAUNCH_FIRST_HINT_UI_KEYS: dict[str, str] = {
+    "mypet": "prelaunch_hint_mypet",
+    "publicitate_harta": "prelaunch_hint_publicitate_harta",
+    "publicitate_cos": "prelaunch_hint_publicitate_cos",
+    "collab_offers_control": "prelaunch_hint_collab_offers",
+    "pets_all": "prelaunch_hint_pets_all",
+    "i_love_cos": "prelaunch_hint_i_love_cos",
 }
 
 
@@ -100,11 +109,19 @@ def prelaunch_checkout_lines_soft_blocked(lines: list[dict]) -> bool:
     return False
 
 
-def prelaunch_first_hint_for_url_name(url_name: str) -> str | None:
+def prelaunch_first_hint_for_url_name(url_name: str, request=None) -> str | None:
     if not prelaunch_monetization_soft_lock_enabled():
         return None
     key = (url_name or "").strip()
-    return PRELAUNCH_FIRST_HINTS.get(key)
+    ro = PRELAUNCH_FIRST_HINTS.get(key)
+    if not ro:
+        return None
+    ui_key = PRELAUNCH_FIRST_HINT_UI_KEYS.get(key)
+    if request is not None and ui_key:
+        from home.eu_ui_labels import eu_or_ro
+
+        return eu_or_ro(request, ui_key, ro)
+    return ro
 
 
 def prelaunch_soft_lock_redirect(request, area: str, *, redirect_name: str = "mypet"):

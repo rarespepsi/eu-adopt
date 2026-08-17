@@ -7,7 +7,7 @@ from __future__ import annotations
 import uuid
 
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase, override_settings
+from django.test import Client, RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -169,3 +169,30 @@ class PrelaunchEnabledTests(TestCase):
         r_pt = c.get(reverse("pets_all"))
         self.assertEqual(r_pt.status_code, 302)
         self.assertIn("/login/", r_pt.url)
+
+
+@override_settings(PRELAUNCH_MODE=True)
+class PrelaunchFirstHintI18nTests(SimpleTestCase):
+    def setUp(self):
+        from home.eu_ui_labels import _load_i18n_packs
+
+        _load_i18n_packs.cache_clear()
+
+    def _hint(self, url_name: str, *, host_lang: str | None):
+        from home.prelaunch_soft_lock import prelaunch_first_hint_for_url_name
+
+        req = RequestFactory().get("/")
+        if host_lang:
+            req.eu_site_active = True
+            req.eu_site_lang = host_lang
+        else:
+            req.eu_site_active = False
+        return prelaunch_first_hint_for_url_name(url_name, request=req)
+
+    def test_pt_hint_follows_site_language(self):
+        self.assertIn("Find a friend", self._hint("pets_all", host_lang="en"))
+        self.assertIn("Finde einen Freund", self._hint("pets_all", host_lang="de"))
+        self.assertIn("Encuentra un amigo", self._hint("pets_all", host_lang="es"))
+        self.assertIn("Trouver un ami", self._hint("pets_all", host_lang="fr"))
+        self.assertIn("răsfoiește", self._hint("pets_all", host_lang=None))
+        self.assertNotIn("răsfoiește", self._hint("pets_all", host_lang="de"))
