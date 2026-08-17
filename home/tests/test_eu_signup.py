@@ -1,4 +1,4 @@
-"""Signup EU simplu (PF) — fără SMS, fără județ RO."""
+"""Signup EU simplu (PF) — fără telefon, fără SMS, fără județ RO."""
 
 import uuid
 
@@ -10,14 +10,11 @@ from home.models import UserProfile
 
 
 def _eu_pf_payload(unique: str):
-    n = abs(hash(unique)) % 900000000 + 100000000
     return {
         "first_name": "Maria",
         "last_name": "Mueller",
         "email": f"eu_{unique}@euadopt-test.local",
         "country": "DE",
-        "phone_country": "+49",
-        "phone": str(n)[1:],
         "password1": "SecurePass12",
         "password2": "SecurePass12",
         "accept_termeni": "on",
@@ -38,6 +35,8 @@ class EuSimpleSignupTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'name="country"')
         self.assertNotContains(r, 'name="judet"')
+        self.assertNotContains(r, 'name="phone"')
+        self.assertNotContains(r, 'name="phone_country"')
 
     def test_choose_type_redirects_to_pf(self):
         c = Client(HTTP_HOST="euadopt.com")
@@ -59,7 +58,7 @@ class EuSimpleSignupTests(TestCase):
         self.assertEqual(user.last_name, "Mueller")
         prof = UserProfile.objects.get(user=user)
         self.assertEqual(prof.country, "DE")
-        self.assertIn("+49", prof.phone)
+        self.assertEqual((prof.phone or "").strip(), "")
         self.assertEqual((prof.judet or "").strip(), "")
 
     def test_ro_signup_still_goes_to_sms(self):

@@ -3038,7 +3038,7 @@ def signup_choose_type_view(request):
 def signup_pf_view(request):
     """Formular înregistrare – Persoană fizică.
     RO: POST → sesiune → SMS → email activare.
-    EU: POST → creare cont + email activare (fără SMS, fără județ/oraș RO).
+    EU: POST → creare cont + email activare (fără telefon, fără SMS, fără județ/oraș RO).
     """
     eu = bool(getattr(request, "eu_site_active", False))
     if request.method != "POST":
@@ -3071,13 +3071,11 @@ def signup_pf_view(request):
                 ctx["form_prefill"] = inv_prefill
         if eu:
             from home.eu_countries import country_choices
-            from home.eu_signup import default_eu_signup_country, phone_prefix_for_country
+            from home.eu_signup import default_eu_signup_country
 
             default_country = (ctx.get("form_prefill") or {}).get("country") or default_eu_signup_country(request)
             ctx["country_choices"] = country_choices(english=True)
             ctx["default_country"] = default_country
-            pref = (ctx.get("form_prefill") or {}).get("phone_country") or phone_prefix_for_country(default_country)
-            ctx["default_phone_prefix"] = pref
         return render(request, "anunturi/signup_pf.html", ctx)
 
     if eu:
@@ -3150,16 +3148,13 @@ def signup_pf_view(request):
 
 
 def _signup_pf_eu_post(request):
-    """EU PF: validare simplă → creare cont + email activare (fără SMS)."""
+    """EU PF: validare simplă → creare cont + email activare (fără telefon, fără SMS)."""
     from home.eu_countries import country_choices, normalize_country_code
-    from home.eu_signup import phone_prefix_for_country
 
     first_name = (request.POST.get("first_name") or "").strip()
     last_name = (request.POST.get("last_name") or "").strip()
     email = (request.POST.get("email") or "").strip().lower()
     country = normalize_country_code(request.POST.get("country"))
-    phone_country = (request.POST.get("phone_country") or phone_prefix_for_country(country)).strip()
-    phone = (request.POST.get("phone") or "").strip()
     password1 = request.POST.get("password1") or ""
     password2 = request.POST.get("password2") or ""
     accept_termeni = request.POST.get("accept_termeni") == "on"
@@ -3177,9 +3172,6 @@ def _signup_pf_eu_post(request):
         errors.append("Last name is required.")
     if not country:
         errors.append("Country is required.")
-    if not phone:
-        errors.append("Phone number is required.")
-    full_phone = f"{phone_country} {phone}".strip()
     if len(password1) < 8:
         errors.append("Password must be at least 8 characters.")
     if password1 != password2:
@@ -3194,8 +3186,6 @@ def _signup_pf_eu_post(request):
         "last_name": last_name,
         "email": email,
         "country": country,
-        "phone_country": phone_country,
-        "phone": phone,
         "password1": password1,
         "password2": password2,
         "accept_termeni": accept_termeni,
@@ -3212,7 +3202,6 @@ def _signup_pf_eu_post(request):
                 "eu_simple_signup": True,
                 "country_choices": country_choices(english=True),
                 "default_country": country,
-                "default_phone_prefix": phone_country,
             },
         )
 
@@ -3222,8 +3211,8 @@ def _signup_pf_eu_post(request):
         "last_name": last_name,
         "email": email,
         "country": country,
-        "phone_country": phone_country,
-        "phone": phone,
+        "phone_country": "",
+        "phone": "",
         "judet": "",
         "oras": "",
         "password": password1,
