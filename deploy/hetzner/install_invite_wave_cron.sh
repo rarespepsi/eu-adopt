@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Cron invitații Add USER:
-# - 12:00 Europe/Bucharest — val 1 (UAT sau adăpost, după .env)
-# - 14:00 Europe/Bucharest — val 2
+# - 10:00 Europe/Bucharest — val 1 (UAT sau adăpost, după .env)
+# - 13:00 Europe/Bucharest — val 2
 set -euo pipefail
 
 APP_DIR="${EUADOPT_APP_DIR:-/opt/eu-adopt}"
@@ -47,8 +47,8 @@ if [[ -f "${ENV_FILE}" ]]; then
   chown euadopt:euadopt "${ENV_FILE}" 2>/dev/null || true
 fi
 
-CRON_AM='0 12 * * * bash '"${SCRIPT_AM}"
-CRON_PM='0 14 * * * bash '"${SCRIPT_PM}"
+CRON_AM='0 10 * * * bash '"${SCRIPT_AM}"
+CRON_PM='0 13 * * * bash '"${SCRIPT_PM}"
 
 TMP="$(mktemp)"
 crontab -l 2>/dev/null \
