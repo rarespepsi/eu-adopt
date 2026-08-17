@@ -53,6 +53,7 @@ _EN: dict[str, str] = {
     "login_reset_ok": "Password was reset.",
     "login_reset_ok_hint": "Sign in with your new password.",
     "login_aria": "EU-ADOPT sign-in",
+    "login_pre_slogan": "EU-Adopt — Don't buy!!! Free adoption site!",
     # Contact
     "contact_title": "Contact | EU-ADOPT",
     "contact_heading": "Contact EU-ADOPT",

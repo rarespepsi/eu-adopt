@@ -577,7 +577,7 @@
 			</form>
 		</div>
 		{% if prelaunch_mode %}
-		<p class="prelaunch-slogan" role="doc-subtitle">EU-Adopt — Nu cumpăr!!! Site de adopții gratuit!</p>
+		<p class="prelaunch-slogan" role="doc-subtitle">{% if eu_site_active %}{{ eu_ui.login_pre_slogan }}{% else %}EU-Adopt — Nu cumpăr!!! Site de adopții gratuit!{% endif %}</p>
 		{% endif %}
 	</main>
 </section>

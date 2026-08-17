@@ -202,7 +202,8 @@ EU_SITE_BLOCKED_PATH_PREFIXES = (
 
 def pick_language_for_hub(request) -> str:
     """
-    Hub (.com): EN implicit; selector EU_HUB_UI (cookie/sesiune/Accept-Language).
+    Hub (.com): EN implicit; altă limbă doar din selector (?eu_lang= / eu_lang_manual).
+    Nu copiază Accept-Language și nu ține cookie-uri rămase din browser.
     Țară (.de/.fr/.es): limba TLD, exceptând schimbare manuală (eu_lang_manual).
     """
     host = request.get_host()
@@ -232,16 +233,13 @@ def pick_language_for_hub(request) -> str:
                 return sess_lang
         return forced if forced in allowed else EU_SITE_DEFAULT_LANGUAGE
 
-    # Hub (.com): cookie first (set_language), then session, then Accept-Language
-    if cookie_lang in allowed:
-        return cookie_lang
-    if sess_lang in allowed:
-        return sess_lang
-    accept = (request.META.get("HTTP_ACCEPT_LANGUAGE") or "").split(",")[0].strip().lower()
-    if accept:
-        primary = accept.split("-")[0]
-        if primary in allowed:
-            return primary
+    # Hub (.com): selector only
+    manual = bool(session and session.get("eu_lang_manual"))
+    if manual:
+        if cookie_lang in allowed:
+            return cookie_lang
+        if sess_lang in allowed:
+            return sess_lang
     return EU_SITE_DEFAULT_LANGUAGE
 
 

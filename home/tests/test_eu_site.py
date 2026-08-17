@@ -234,10 +234,17 @@ class EuSiteMiddlewareTests(TestCase):
 
     def test_pick_language_default_en(self):
         rf = RequestFactory()
-        req = rf.get("/", HTTP_HOST="euadopt.com")
+        req = rf.get("/", HTTP_HOST="euadopt.com", HTTP_ACCEPT_LANGUAGE="fr-FR,fr;q=0.9")
         req.session = {}
-        req.COOKIES = {}
+        req.COOKIES = {"euadopt_lang": "fr"}
         self.assertEqual(pick_language_for_hub(req), "en")
+
+    def test_pick_language_com_selector_manual(self):
+        rf = RequestFactory()
+        req = rf.get("/", HTTP_HOST="euadopt.com")
+        req.session = {"eu_lang_manual": "1", "django_language": "fr"}
+        req.COOKIES = {"euadopt_lang": "fr"}
+        self.assertEqual(pick_language_for_hub(req), "fr")
 
     def test_pick_language_de_host(self):
         rf = RequestFactory()
@@ -310,28 +317,27 @@ class EuNonRoStaffGateTests(TestCase):
         self.assertEqual(r.status_code, 403)
         self.assertContains(r, "coming soon", status_code=403)
 
-    def test_coming_soon_french_from_cookie(self):
+    def test_coming_soon_english_on_com_ignores_browser_and_cookie(self):
         c = Client(HTTP_HOST="euadopt.com")
+        c.cookies[settings.LANGUAGE_COOKIE_NAME] = "fr"
+        r = c.get("/", HTTP_ACCEPT_LANGUAGE="fr-FR,fr;q=0.9")
+        self.assertEqual(r.status_code, 403)
+        self.assertContains(r, "coming soon", status_code=403)
+        self.assertNotContains(r, "bientôt disponible", status_code=403)
+        self.assertNotContains(r, "Connexion staff", status_code=403)
+
+    def test_coming_soon_french_from_selector_on_com(self):
+        c = Client(HTTP_HOST="euadopt.com")
+        session = c.session
+        session["eu_lang_manual"] = "1"
+        session["django_language"] = "fr"
+        session.save()
         c.cookies[settings.LANGUAGE_COOKIE_NAME] = "fr"
         r = c.get("/")
         self.assertEqual(r.status_code, 403)
         self.assertContains(r, "bientôt disponible", status_code=403)
         self.assertContains(r, "Connexion staff", status_code=403)
         self.assertNotContains(r, "This international site", status_code=403)
-
-    def test_coming_soon_german_from_cookie(self):
-        c = Client(HTTP_HOST="euadopt.com")
-        c.cookies[settings.LANGUAGE_COOKIE_NAME] = "de"
-        r = c.get("/")
-        self.assertEqual(r.status_code, 403)
-        self.assertContains(r, "demnächst", status_code=403)
-
-    def test_coming_soon_spanish_from_cookie(self):
-        c = Client(HTTP_HOST="euadopt.com")
-        c.cookies[settings.LANGUAGE_COOKIE_NAME] = "es"
-        r = c.get("/")
-        self.assertEqual(r.status_code, 403)
-        self.assertContains(r, "próximamente", status_code=403)
 
     def test_coming_soon_french_on_fr_host(self):
         c = Client(HTTP_HOST="euadopt.fr")
@@ -344,6 +350,16 @@ class EuNonRoStaffGateTests(TestCase):
         c = Client(HTTP_HOST="euadopt.com")
         r = c.get("/login/")
         self.assertIn(r.status_code, (200, 302))
+
+    @override_settings(EUADOPT_EU_PRODUCT_SKIN=True, PRELAUNCH_MODE=True)
+    def test_com_login_english_slogan_ignores_french_browser(self):
+        c = Client(HTTP_HOST="euadopt.com")
+        r = c.get("/login/", HTTP_ACCEPT_LANGUAGE="fr-FR,fr;q=0.9")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Sign in")
+        self.assertContains(r, "Free adoption site")
+        self.assertNotContains(r, "Se connecter")
+        self.assertNotContains(r, "Nu cumpăr")
 
     def test_signup_allowed_under_gate(self):
         c = Client(HTTP_HOST="euadopt.com")

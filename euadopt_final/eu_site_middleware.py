@@ -57,6 +57,7 @@ class EuSiteMiddleware:
             if raw and raw in EU_HUB_UI_LANGUAGE_CODES:
                 if hasattr(request, "session") and request.session is not None:
                     request.session["django_language"] = raw
+                    request.session["eu_lang_manual"] = "1"
                     request.session.modified = True
                 clean = _strip_query_param(request.get_full_path(), "eu_lang")
                 resp = HttpResponseRedirect(clean)

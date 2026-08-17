@@ -51,13 +51,16 @@ COMING_SOON_LANGS = frozenset(COMING_SOON_I18N.keys())
 
 
 def coming_soon_lang_for_request(request) -> str:
-    """Limba Coming soon: TLD țară, apoi cookie/sesiune/?eu_lang=."""
+    """Limba Coming soon: TLD țară; pe .com aceleași reguli ca UI (EN implicit)."""
     try:
-        from home.eu_site import forced_locale_for_host
+        from home.eu_site import forced_locale_for_host, is_eu_hub_host, pick_language_for_hub
 
         forced = forced_locale_for_host(request.get_host())
         if forced in COMING_SOON_LANGS:
             return forced
+        if is_eu_hub_host(request.get_host()):
+            picked = pick_language_for_hub(request)
+            return picked if picked in COMING_SOON_LANGS else "en"
     except Exception:
         pass
 
