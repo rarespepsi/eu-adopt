@@ -1,22 +1,22 @@
 {% if prelaunch_mode %}
-<aside class="prelaunch-panel prelaunch-panel--left" aria-label="Informații PRE-LAUNCH — prezentare">
-	<p class="prelaunch-panel__badge">Perioadă PRE-LAUNCH</p>
-	<p>EU-Adopt este o platformă dedicată adopțiilor responsabile și colaborării dintre adăposturi, asociații, cabinete veterinare, magazine, transportatori și alte servicii dedicate animalelor.</p>
-	<p>Proiectul este susținut de inițiativa asociațiilor de profil și a persoanelor implicate în acest domeniu și are ca obiectiv crearea unui punct unic de întâlnire între animalele care își caută o familie, organizațiile care le îngrijesc și persoanele care doresc să adopte sau să ofere sprijin.</p>
-	<p>Platforma se află în prezent în etapa de populare, validare și testare înaintea lansării publice oficiale.</p>
-	<p class="prelaunch-panel__emph">Accesul este disponibil momentan doar utilizatorilor și colaboratorilor înregistrați.</p>
+<aside class="prelaunch-panel prelaunch-panel--left" aria-label="{% if eu_site_active %}{{ eu_ui.login_pre_left_aria }}{% else %}Informații PRE-LAUNCH — prezentare{% endif %}">
+	<p class="prelaunch-panel__badge">{% if eu_site_active %}{{ eu_ui.login_pre_badge }}{% else %}Perioadă PRE-LAUNCH{% endif %}</p>
+	<p>{% if eu_site_active %}{{ eu_ui.login_pre_p1 }}{% else %}EU-Adopt este o platformă dedicată adopțiilor responsabile și colaborării dintre adăposturi, asociații, cabinete veterinare, magazine, transportatori și alte servicii dedicate animalelor.{% endif %}</p>
+	<p>{% if eu_site_active %}{{ eu_ui.login_pre_p2 }}{% else %}Proiectul este susținut de inițiativa asociațiilor de profil și a persoanelor implicate în acest domeniu și are ca obiectiv crearea unui punct unic de întâlnire între animalele care își caută o familie, organizațiile care le îngrijesc și persoanele care doresc să adopte sau să ofere sprijin.{% endif %}</p>
+	<p>{% if eu_site_active %}{{ eu_ui.login_pre_p3 }}{% else %}Platforma se află în prezent în etapa de populare, validare și testare înaintea lansării publice oficiale.{% endif %}</p>
+	<p class="prelaunch-panel__emph">{% if eu_site_active %}{{ eu_ui.login_pre_emph }}{% else %}Accesul este disponibil momentan doar utilizatorilor și colaboratorilor înregistrați.{% endif %}</p>
 </aside>
-<aside class="prelaunch-panel prelaunch-panel--right" aria-label="Informații PRE-LAUNCH — etapă curentă">
-	<p class="prelaunch-panel__heading">În această perioadă:</p>
+<aside class="prelaunch-panel prelaunch-panel--right" aria-label="{% if eu_site_active %}{{ eu_ui.login_pre_right_aria }}{% else %}Informații PRE-LAUNCH — etapă curentă{% endif %}">
+	<p class="prelaunch-panel__heading">{% if eu_site_active %}{{ eu_ui.login_pre_heading }}{% else %}În această perioadă:{% endif %}</p>
 	<ul class="prelaunch-panel__list">
-		<li>sunt validate conturile colaboratorilor;</li>
-		<li>sunt introduse animalele disponibile pentru adopție;</li>
-		<li>sunt configurate serviciile și partenerii platformei;</li>
-		<li>sunt efectuate testele finale de funcționare și securitate.</li>
+		<li>{% if eu_site_active %}{{ eu_ui.login_pre_li1 }}{% else %}sunt validate conturile colaboratorilor;{% endif %}</li>
+		<li>{% if eu_site_active %}{{ eu_ui.login_pre_li2 }}{% else %}sunt introduse animalele disponibile pentru adopție;{% endif %}</li>
+		<li>{% if eu_site_active %}{{ eu_ui.login_pre_li3 }}{% else %}sunt configurate serviciile și partenerii platformei;{% endif %}</li>
+		<li>{% if eu_site_active %}{{ eu_ui.login_pre_li4 }}{% else %}sunt efectuate testele finale de funcționare și securitate.{% endif %}</li>
 	</ul>
-	<p>Pentru etapa de populare recomandăm introducerea inițială a maximum <strong>5 animale</strong> și a unui singur serviciu sau produs reprezentativ, după caz. După lansarea oficială, informațiile vor putea fi completate și actualizate în orice moment.</p>
-	<p>Vă rugăm ca orice eroare, blocaj, informație afișată incorect sau problemă tehnică întâlnită în timpul utilizării platformei să ne fie comunicată. Observațiile și sugestiile dumneavoastră ne ajută să îmbunătățim platforma înaintea lansării publice.</p>
-	<p>Lansarea publică va avea loc după finalizarea procesului de populare și validare a informațiilor.</p>
-	<p class="prelaunch-panel__signoff">Vă mulțumim pentru interes, încredere și sprijin.<br /><strong>Echipa EU-Adopt</strong></p>
+	<p>{% if eu_site_active %}{{ eu_ui.login_pre_max }}{% else %}Pentru etapa de populare recomandăm introducerea inițială a maximum <strong>5 animale</strong> și a unui singur serviciu sau produs reprezentativ, după caz. După lansarea oficială, informațiile vor putea fi completate și actualizate în orice moment.{% endif %}</p>
+	<p>{% if eu_site_active %}{{ eu_ui.login_pre_report }}{% else %}Vă rugăm ca orice eroare, blocaj, informație afișată incorect sau problemă tehnică întâlnită în timpul utilizării platformei să ne fie comunicată. Observațiile și sugestiile dumneavoastră ne ajută să îmbunătățim platforma înaintea lansării publice.{% endif %}</p>
+	<p>{% if eu_site_active %}{{ eu_ui.login_pre_launch }}{% else %}Lansarea publică va avea loc după finalizarea procesului de populare și validare a informațiilor.{% endif %}</p>
+	<p class="prelaunch-panel__signoff">{% if eu_site_active %}{{ eu_ui.login_pre_thanks }}<br /><strong>{{ eu_ui.login_pre_team }}</strong>{% else %}Vă mulțumim pentru interes, încredere și sprijin.<br /><strong>Echipa EU-Adopt</strong>{% endif %}</p>
 </aside>
 {% endif %}

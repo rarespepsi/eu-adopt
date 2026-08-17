@@ -5101,12 +5101,12 @@ def shop_magazin_foto_more_view(request):
 
     from home.prelaunch_soft_lock import (
         prelaunch_soft_lock_active_for_user,
-        PRELAUNCH_SOFT_MESSAGES,
+        prelaunch_soft_message,
     )
 
     if prelaunch_soft_lock_active_for_user(request.user):
         return JsonResponse(
-            {"ok": False, "error": PRELAUNCH_SOFT_MESSAGES.get("shop", "")},
+            {"ok": False, "error": prelaunch_soft_message(request, "shop")},
             status=403,
         )
     try:
@@ -5397,7 +5397,7 @@ def render_dog_profile(request, listing: AnimalListing):
     from home.demo_listings import DEMO_ADOPTION_INACTIVE_MESSAGE, is_demo_animal_listing
     from home.population_onboarding import population_ui_restricted_for_user, user_may_adopt_animals
     from home.population_simple_adoption import population_adoption_context_for_request
-    from home.prelaunch_soft_lock import PRELAUNCH_SOFT_MESSAGES
+    from home.prelaunch_soft_lock import prelaunch_soft_message
 
     pet_adopt_demo_listing = is_demo_animal_listing(listing)
     eu_active = bool(getattr(request, "eu_site_active", False))
@@ -5405,12 +5405,12 @@ def render_dog_profile(request, listing: AnimalListing):
         from home.eu_ui_labels import eu_ui_label
 
         pet_adopt_demo_message = eu_ui_label("pet_adopt_demo_msg") or DEMO_ADOPTION_INACTIVE_MESSAGE
-        pet_adopt_inactive_message = eu_ui_label("pet_adopt_inactive_msg") or PRELAUNCH_SOFT_MESSAGES.get(
-            "adopt", ""
+        pet_adopt_inactive_message = eu_ui_label("pet_adopt_inactive_msg") or prelaunch_soft_message(
+            request, "adopt"
         )
     else:
         pet_adopt_demo_message = DEMO_ADOPTION_INACTIVE_MESSAGE
-        pet_adopt_inactive_message = PRELAUNCH_SOFT_MESSAGES.get("adopt", "")
+        pet_adopt_inactive_message = prelaunch_soft_message(request, "adopt")
 
     viewer_can_adopt = bool(
         request.user.is_authenticated
@@ -10606,9 +10606,9 @@ def site_cart_free_acquire_view(request):
     """
     from home.prelaunch_free_access import site_cart_skip_payment_form_enabled
     from home.prelaunch_soft_lock import (
-        PRELAUNCH_SOFT_MESSAGES,
         prelaunch_checkout_lines_soft_blocked,
         prelaunch_soft_lock_active_for_user,
+        prelaunch_soft_message,
     )
 
     if not site_cart_skip_payment_form_enabled():
@@ -10622,7 +10622,7 @@ def site_cart_free_acquire_view(request):
         messages.info(request, "Coșul nu este gratuit — completează formularul de plată.")
         return redirect("site_cart_checkout")
     if prelaunch_soft_lock_active_for_user(request.user) and prelaunch_checkout_lines_soft_blocked(lines):
-        messages.info(request, PRELAUNCH_SOFT_MESSAGES.get("checkout", ""))
+        messages.info(request, prelaunch_soft_message(request, "checkout"))
         return redirect("i_love_cos")
 
     eu_paid_lines, partner_direct_lines = _site_cart_split_fulfillment(lines)
@@ -10732,13 +10732,13 @@ def site_cart_checkout_view(request):
         messages.info(request, "Coșul este gol. Adaugă articole înainte de plată.")
         return redirect("i_love_cos")
     from home.prelaunch_soft_lock import (
-        PRELAUNCH_SOFT_MESSAGES,
         prelaunch_checkout_lines_soft_blocked,
         prelaunch_soft_lock_active_for_user,
+        prelaunch_soft_message,
     )
 
     if prelaunch_soft_lock_active_for_user(request.user) and prelaunch_checkout_lines_soft_blocked(lines):
-        messages.info(request, PRELAUNCH_SOFT_MESSAGES.get("checkout", ""))
+        messages.info(request, prelaunch_soft_message(request, "checkout"))
         return redirect("i_love_cos")
     eu_paid_lines, partner_direct_lines = _site_cart_split_fulfillment(lines)
     has_eu_paid = bool(eu_paid_lines)
@@ -11080,14 +11080,14 @@ def site_cart_toggle_view(request):
     if kind not in allowed_kinds:
         return JsonResponse({"ok": False, "error": "invalid_kind"}, status=400)
     from home.prelaunch_soft_lock import (
-        PRELAUNCH_SOFT_MESSAGES,
         prelaunch_cart_kind_soft_blocked,
         prelaunch_soft_lock_active_for_user,
+        prelaunch_soft_message,
     )
 
     if prelaunch_soft_lock_active_for_user(request.user) and prelaunch_cart_kind_soft_blocked(kind):
         return JsonResponse(
-            {"ok": False, "error": PRELAUNCH_SOFT_MESSAGES.get("cart_add", "")},
+            {"ok": False, "error": prelaunch_soft_message(request, "cart_add")},
             status=403,
         )
     if not ref_key or not title:
@@ -12304,13 +12304,13 @@ def pet_adoption_request_view(request, pk: int):
         return JsonResponse({"ok": False, "error": DEMO_ADOPTION_INACTIVE_MESSAGE}, status=403)
 
     from home.prelaunch_soft_lock import (
-        PRELAUNCH_SOFT_MESSAGES,
         prelaunch_soft_lock_active_for_user,
+        prelaunch_soft_message,
     )
 
     if prelaunch_soft_lock_active_for_user(request.user):
         return JsonResponse(
-            {"ok": False, "error": PRELAUNCH_SOFT_MESSAGES.get("adopt", "")},
+            {"ok": False, "error": prelaunch_soft_message(request, "adopt")},
             status=403,
         )
     from home.population_onboarding import user_may_adopt_animals

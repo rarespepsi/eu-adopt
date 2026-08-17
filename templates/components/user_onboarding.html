@@ -13,17 +13,17 @@
 		<span class="eu-user-onboard__text"></span>
 		<span class="eu-user-onboard__hint"></span>
 		<div class="eu-user-onboard__actions">
-			<button type="button" class="eu-user-onboard__btn eu-user-onboard__btn--ghost" data-onboard-skip>Sari peste</button>
-			<button type="button" class="eu-user-onboard__btn" data-onboard-tour>Continuă turul</button>
+			<button type="button" class="eu-user-onboard__btn eu-user-onboard__btn--ghost" data-onboard-skip>{% if eu_site_active %}{{ eu_ui.onboard_skip }}{% else %}Sari peste{% endif %}</button>
+			<button type="button" class="eu-user-onboard__btn" data-onboard-tour>{% if eu_site_active %}{{ eu_ui.onboard_tour }}{% else %}Continuă turul{% endif %}</button>
 		</div>
 	</div>
-	<div class="eu-user-onboard__tour" hidden role="dialog" aria-label="Tur pagină">
+	<div class="eu-user-onboard__tour" hidden role="dialog" aria-label="{% if eu_site_active %}{{ eu_ui.onboard_tour_aria }}{% else %}Tur pagină{% endif %}">
 		<p class="eu-user-onboard__tour-step"></p>
 		<p class="eu-user-onboard__tour-text"></p>
 		<div class="eu-user-onboard__actions">
-			<button type="button" class="eu-user-onboard__btn eu-user-onboard__btn--ghost" data-onboard-skip>Închide</button>
-			<button type="button" class="eu-user-onboard__btn" data-onboard-next hidden>Următorul</button>
-			<button type="button" class="eu-user-onboard__btn" data-onboard-done hidden>Am înțeles</button>
+			<button type="button" class="eu-user-onboard__btn eu-user-onboard__btn--ghost" data-onboard-skip>{% if eu_site_active %}{{ eu_ui.onboard_close }}{% else %}Închide{% endif %}</button>
+			<button type="button" class="eu-user-onboard__btn" data-onboard-next hidden>{% if eu_site_active %}{{ eu_ui.onboard_next }}{% else %}Următorul{% endif %}</button>
+			<button type="button" class="eu-user-onboard__btn" data-onboard-done hidden>{% if eu_site_active %}{{ eu_ui.onboard_done }}{% else %}Am înțeles{% endif %}</button>
 		</div>
 	</div>
 </div>

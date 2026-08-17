@@ -1,11 +1,11 @@
 {% if pub_prelaunch_nudge %}
 <div id="pubPrelaunchNudge" class="pub-prelaunch-nudge" hidden
 	data-nudge-interval="{{ pub_prelaunch_nudge_interval|default:3 }}">
-	<span class="pub-prelaunch-nudge__label">INFO</span>
+	<span class="pub-prelaunch-nudge__label">{% if eu_site_active %}{{ eu_ui.pub_nudge_label }}{% else %}INFO{% endif %}</span>
 	<p class="pub-prelaunch-nudge__text">{{ pub_prelaunch_nudge_text }}</p>
 	<div class="pub-prelaunch-nudge__actions">
-		<button type="button" class="pub-prelaunch-nudge__btn pub-prelaunch-nudge__btn--ghost" data-pub-nudge-close>Mai târziu</button>
-		<a href="{{ pub_prelaunch_nudge_url }}" class="pub-prelaunch-nudge__btn pub-prelaunch-nudge__btn--cta">Ia o casetă gratuită acum</a>
+		<button type="button" class="pub-prelaunch-nudge__btn pub-prelaunch-nudge__btn--ghost" data-pub-nudge-close>{% if eu_site_active %}{{ eu_ui.pub_nudge_later }}{% else %}Mai târziu{% endif %}</button>
+		<a href="{{ pub_prelaunch_nudge_url }}" class="pub-prelaunch-nudge__btn pub-prelaunch-nudge__btn--cta">{% if eu_site_active %}{{ eu_ui.pub_nudge_cta }}{% else %}Ia o casetă gratuită acum{% endif %}</a>
 	</div>
 </div>
 {% endif %}

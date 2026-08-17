@@ -135,7 +135,7 @@
 			</label>
 
 			{% if checkout_is_free %}
-			<p class="ilove-cos-checkout-free-note">Etapa pre-lansare: activarea este gratuită — nu este nevoie de plată.</p>
+			<p class="ilove-cos-checkout-free-note">{% if eu_site_active %}{{ eu_ui.checkout_prelaunch_free }}{% else %}Etapa pre-lansare: activarea este gratuită — nu este nevoie de plată.{% endif %}</p>
 			{% elif has_eu_paid %}
 			<h2 class="ilove-cos-checkout-h2">Mod de plată pentru liniile EU-ADOPT <span class="req">*</span></h2>
 			<div class="ilove-cos-checkout-payments" role="radiogroup" aria-label="Mod de plată">

@@ -359,11 +359,25 @@ def onboarding_payload_for_request(request) -> dict[str, Any] | None:
         return None
     if user_has_seen_onboarding_page(user, page.page_key):
         return None
+    from home.eu_ui_labels import eu_or_ro
+
+    title_key = f"onboard_{page.page_key}_title"
+    text_key = f"onboard_{page.page_key}_text"
     return {
         "page_key": page.page_key,
-        "banner_title": page.banner_title,
-        "banner_text": page.banner_text,
-        "steps": [{"selector": s.selector, "text": s.text} for s in page.steps],
+        "banner_title": eu_or_ro(request, title_key, page.banner_title),
+        "banner_text": eu_or_ro(request, text_key, page.banner_text),
+        "steps": [
+            {
+                "selector": s.selector,
+                "text": eu_or_ro(request, f"onboard_{page.page_key}_s{i}", s.text),
+            }
+            for i, s in enumerate(page.steps, start=1)
+        ],
         "storage_key": f"euadopt_onboard_{page.page_key}",
-        "site_guide_hint": "Ai întrebări? Apasă butonul Ghid EU-Adopt jos-dreapta.",
+        "site_guide_hint": eu_or_ro(
+            request,
+            "onboard_guide_hint",
+            "Ai întrebări? Apasă butonul Ghid EU-Adopt jos-dreapta.",
+        ),
     }

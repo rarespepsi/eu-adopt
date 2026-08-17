@@ -196,3 +196,15 @@ class PrelaunchFirstHintI18nTests(SimpleTestCase):
         self.assertIn("Trouver un ami", self._hint("pets_all", host_lang="fr"))
         self.assertIn("răsfoiește", self._hint("pets_all", host_lang=None))
         self.assertNotIn("răsfoiește", self._hint("pets_all", host_lang="de"))
+
+    def test_login_prelaunch_panels_follow_site_language(self):
+        from home.eu_ui_labels import eu_or_ro
+
+        req = RequestFactory().get("/login/")
+        req.eu_site_active = True
+        req.eu_site_lang = "de"
+        self.assertIn("Tierheimen", eu_or_ro(req, "login_pre_p1", "RO"))
+        req.eu_site_lang = "es"
+        self.assertIn("refugios", eu_or_ro(req, "login_pre_p1", "RO"))
+        req.eu_site_active = False
+        self.assertIn("adăposturi", eu_or_ro(req, "login_pre_p1", "EU-Adopt este o platformă dedicată adopțiilor responsabile și colaborării dintre adăposturi, asociații, cabinete veterinare, magazine, transportatori și alte servicii dedicate animalelor."))

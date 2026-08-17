@@ -1,5 +1,5 @@
 {% if prelaunch_soft_lock %}
 <div class="prelaunch-soft-lock-banner" role="status">
-	<strong>Pre-lansare</strong> — {{ prelaunch_soft_lock_banner }}
+	<strong>{% if eu_site_active %}{{ eu_ui.prelaunch_banner_label }}{% else %}Pre-lansare{% endif %}</strong> — {{ prelaunch_soft_lock_banner }}
 </div>
 {% endif %}

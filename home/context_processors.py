@@ -144,6 +144,7 @@ def prelaunch_mode(request):
     """True când modul PRE-LAUNCH este activ (EUADOPT_PRELAUNCH_MODE=1)."""
     from django.urls import reverse
 
+    from home.eu_ui_labels import eu_or_ro
     from home.prelaunch_free_access import (
         PUB_PRELAUNCH_NUDGE_INTERVAL,
         PUB_PRELAUNCH_NUDGE_TEXT,
@@ -177,11 +178,13 @@ def prelaunch_mode(request):
     return {
         "prelaunch_mode": bool(getattr(settings, "PRELAUNCH_MODE", False)),
         "prelaunch_soft_lock": prelaunch_soft_lock_active_for_user(user),
-        "prelaunch_soft_lock_banner": PRELAUNCH_SOFT_LOCK_BANNER,
+        "prelaunch_soft_lock_banner": eu_or_ro(
+            request, "prelaunch_banner_body", PRELAUNCH_SOFT_LOCK_BANNER
+        ),
         "prelaunch_first_hint": prelaunch_first_hint_for_url_name(url_name or "", request),
         "prelaunch_monetization_soft_lock": prelaunch_monetization_soft_lock_enabled(),
         "pub_prelaunch_nudge": pub_nudge,
-        "pub_prelaunch_nudge_text": PUB_PRELAUNCH_NUDGE_TEXT,
+        "pub_prelaunch_nudge_text": eu_or_ro(request, "pub_nudge_text", PUB_PRELAUNCH_NUDGE_TEXT),
         "pub_prelaunch_nudge_url": pub_nudge_url,
         "pub_prelaunch_nudge_interval": PUB_PRELAUNCH_NUDGE_INTERVAL,
     }

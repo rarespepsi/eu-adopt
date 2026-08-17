@@ -38,6 +38,15 @@ PRELAUNCH_SOFT_MESSAGES = {
     ),
 }
 
+PRELAUNCH_SOFT_MESSAGE_UI_KEYS: dict[str, str] = {
+    "shop": "prelaunch_msg_shop",
+    "donatii": "prelaunch_msg_donatii",
+    "custi": "prelaunch_msg_custi",
+    "checkout": "prelaunch_msg_checkout",
+    "cart_add": "prelaunch_msg_cart_add",
+    "adopt": "prelaunch_msg_adopt",
+}
+
 # În pre-lansare rămân permise doar publicitate + promovare A2 (gratuite).
 PRELAUNCH_SOFT_ALLOWED_CART_KINDS = frozenset(
     {
@@ -109,6 +118,16 @@ def prelaunch_checkout_lines_soft_blocked(lines: list[dict]) -> bool:
     return False
 
 
+def prelaunch_soft_message(request, area: str) -> str:
+    ro = PRELAUNCH_SOFT_MESSAGES.get(area) or PRELAUNCH_SOFT_LOCK_BANNER
+    ui_key = PRELAUNCH_SOFT_MESSAGE_UI_KEYS.get(area, "prelaunch_banner_body")
+    if request is not None:
+        from home.eu_ui_labels import eu_or_ro
+
+        return eu_or_ro(request, ui_key, ro)
+    return ro
+
+
 def prelaunch_first_hint_for_url_name(url_name: str, request=None) -> str | None:
     if not prelaunch_monetization_soft_lock_enabled():
         return None
@@ -130,7 +149,7 @@ def prelaunch_soft_lock_redirect(request, area: str, *, redirect_name: str = "my
     from django.shortcuts import redirect
     from django.urls import reverse
 
-    msg = PRELAUNCH_SOFT_MESSAGES.get(area) or PRELAUNCH_SOFT_LOCK_BANNER
+    msg = prelaunch_soft_message(request, area)
     messages.info(request, msg)
     try:
         target = reverse(redirect_name)
