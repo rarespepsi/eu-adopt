@@ -1937,9 +1937,13 @@ body.page-account .account-right-panel {
 				<div class="cont-pf-card">
 					<h2>Date la înscriere &amp; contact</h2>
 					{% if user_profile %}
+						{% if eu_site_active %}
+						<p><strong>Country:</strong> {{ user_profile.country|default:"—" }}</p>
+						{% else %}
 						<p><strong>Telefon mobil:</strong> {{ user_profile.phone|default:"—" }}</p>
 						<p><strong>Telefon fix / sediu:</strong> {{ user_profile.phone_landline|default:"—" }}</p>
 						<p><strong>Județ:</strong> {{ user_profile.judet|default:"—" }} &nbsp; · &nbsp; <strong>Oraș:</strong> {{ user_profile.oras|default:"—" }}</p>
+						{% endif %}
 						<p><strong>Accept termeni:</strong> {{ user_profile.accept_termeni|yesno:"Da,Nu" }} &nbsp; · &nbsp; <strong>GDPR:</strong> {{ user_profile.accept_gdpr|yesno:"Da,Nu" }} &nbsp; · &nbsp; <strong>Notificări wishlist:</strong> {{ user_profile.email_opt_in_wishlist|yesno:"Da,Nu" }}</p>
 						<p><strong>Persoană contact:</strong> {{ user.get_full_name|default:user.username }}</p>
 					{% else %}
@@ -1956,7 +1960,7 @@ body.page-account .account-right-panel {
 	<div class="account-right-panel" aria-label="Modificare profil">
 		<div class="cont-pf-edit-box" id="profil-box">
 			<h2>Date persoană contact</h2>
-			<p class="edit-intro">Modifică datele și salvează. Dacă schimbi telefonul sau emailul, vom verifica prin SMS și email.</p>
+			<p class="edit-intro">{% if eu_site_active %}Change your details and save. If you change your email, we will send a confirmation link.{% else %}Modifică datele și salvează. Dacă schimbi telefonul sau emailul, vom verifica prin SMS și email.{% endif %}</p>
 			{% if edit_errors %}
 			<div class="signup-errors" role="alert">
 				<ul>{% for err in edit_errors %}<li>{{ err }}</li>{% endfor %}</ul>
@@ -1977,6 +1981,17 @@ body.page-account .account-right-panel {
 						<label for="id_email_pf">Email *</label>
 						<input type="email" id="id_email_pf" name="email" required value="{{ form_prefill.email|default:'' }}" class="profil-field" {% if not edit_errors %}readonly{% endif %} />
 					</div>
+					{% if eu_site_active %}
+					<div class="signup-field span2">
+						<label for="id_country_pf">{{ eu_ui.signup_lbl_country }}</label>
+						<select id="id_country_pf" name="country" required class="profil-field" {% if not edit_errors %}disabled{% endif %}>
+							<option value="">—</option>
+							{% for code, label in country_choices %}
+							<option value="{{ code }}" {% if form_prefill.country == code %}selected{% endif %}>{{ label }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					{% else %}
 					<div class="signup-field span2">
 						<label>Telefon mobil *</label>
 						<div class="signup-phone-row">
@@ -2025,6 +2040,7 @@ body.page-account .account-right-panel {
 						<label for="id_oras_pf">Oraș / Localitate *</label>
 						{% include "anunturi/includes/ro_city_select.html" with select_id="id_oras_pf" select_name="oras" current=form_prefill.oras profile_editable=edit_errors %}
 					</div>
+					{% endif %}
 					<div class="signup-field span2">
 						<label class="check"><input type="checkbox" name="accept_termeni" required class="profil-field" {% if form_prefill.accept_termeni %}checked{% endif %} {% if not edit_errors %}disabled{% endif %} /> Accept <a href="{% url 'termeni_read' %}" target="_blank" rel="noopener">Termenii și condițiile de utilizare</a> *</label>
 					</div>

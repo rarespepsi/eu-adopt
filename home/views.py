@@ -5874,6 +5874,7 @@ def account_view(request):
                 "telefon_fix_prefix": ll_pref,
                 "telefon_fix_nr": ll_nr,
                 "telefon_fix": (user_profile.phone_landline if user_profile else "") or "",
+                "country": (user_profile.country if user_profile else "") or "",
                 "judet": user_profile.judet if user_profile else "",
                 "oras": user_profile.oras if user_profile else "",
                 "accept_termeni": user_profile.accept_termeni if user_profile else False,
@@ -5883,6 +5884,12 @@ def account_view(request):
         from home.ro_landline_prefixes import landline_prefix_choices
 
         ctx["landline_prefix_choices"] = landline_prefix_choices()
+        if getattr(request, "eu_site_active", False):
+            from home.eu_countries import country_choices
+
+            ctx["country_choices"] = country_choices(english=True)
+            if ctx.get("form_prefill") and not ctx["form_prefill"].get("country"):
+                ctx["form_prefill"]["country"] = (user_profile.country if user_profile else "") or ""
     ctx["account_updated"] = request.GET.get("updated") == "1"
     ctx["username_updated"] = request.GET.get("username_updated") == "1"
     ctx["campanie_form_open"] = request.GET.get("campanie") == "1"
@@ -8248,52 +8255,73 @@ def account_edit_view(request):
     # Formular principal (PF + colaborator) – date persoană
     from home.ro_landline_prefixes import combine_landline
 
+    eu = bool(getattr(request, "eu_site_active", False))
     first_name = (request.POST.get("first_name") or "").strip()
     last_name = (request.POST.get("last_name") or "").strip()
     email = (request.POST.get("email") or "").strip().lower()
-    phone_country = (request.POST.get("phone_country") or "+40").strip()
-    phone = (request.POST.get("phone") or "").strip()
-    telefon_fix_prefix = (request.POST.get("telefon_fix_prefix") or "").strip()
-    telefon_fix_nr = (request.POST.get("telefon_fix_nr") or "").strip()
-    telefon_fix = combine_landline(telefon_fix_prefix, telefon_fix_nr)
-    judet = (request.POST.get("judet") or "").strip()
-    oras = (request.POST.get("oras") or "").strip()
-    judet, oras = normalize_location_pair(judet, oras)
+    if eu:
+        from home.eu_countries import normalize_country_code
+
+        country = normalize_country_code(request.POST.get("country"))
+        phone_country = ""
+        phone = ""
+        telefon_fix_prefix = ""
+        telefon_fix_nr = ""
+        telefon_fix = ""
+        judet = ""
+        oras = ""
+    else:
+        country = ""
+        phone_country = (request.POST.get("phone_country") or "+40").strip()
+        phone = (request.POST.get("phone") or "").strip()
+        telefon_fix_prefix = (request.POST.get("telefon_fix_prefix") or "").strip()
+        telefon_fix_nr = (request.POST.get("telefon_fix_nr") or "").strip()
+        telefon_fix = combine_landline(telefon_fix_prefix, telefon_fix_nr)
+        judet = (request.POST.get("judet") or "").strip()
+        oras = (request.POST.get("oras") or "").strip()
+        judet, oras = normalize_location_pair(judet, oras)
     accept_termeni = request.POST.get("accept_termeni") == "on"
     accept_gdpr = request.POST.get("accept_gdpr") == "on"
     email_opt_in_wishlist = request.POST.get("email_opt_in_wishlist") == "on"
 
     errors = []
     if not email:
-        errors.append("Email obligatoriu.")
+        errors.append("Email is required." if eu else "Email obligatoriu.")
     if _email_duplicate_blocked(email, exclude_user_pk=user.pk):
-        errors.append("Acest email este deja folosit.")
+        errors.append("This email is already in use." if eu else "Acest email este deja folosit.")
     if not first_name:
-        errors.append("Prenumele este obligatoriu.")
+        errors.append("First name is required." if eu else "Prenumele este obligatoriu.")
     if not last_name:
-        errors.append("Numele este obligatoriu.")
-    if not phone:
-        errors.append("Telefonul este obligatoriu.")
-    if (telefon_fix_prefix or telefon_fix_nr) and not telefon_fix:
-        errors.append("Completează prefixul județului și numărul de telefon fix, sau lasă ambele goale.")
-    if not judet:
-        errors.append("Județul este obligatoriu.")
-    if not oras:
-        errors.append("Orașul / localitatea este obligatoriu.")
-    full_phone = f"{phone_country} {phone}".strip()
-    current_phone = (user_profile.phone or "").strip() if user_profile else ""
-    phone_changed = full_phone != current_phone
+        errors.append("Last name is required." if eu else "Numele este obligatoriu.")
+    if eu:
+        if not country:
+            errors.append("Country is required.")
+        full_phone = ""
+        phone_changed = False
+    else:
+        if not phone:
+            errors.append("Telefonul este obligatoriu.")
+        if (telefon_fix_prefix or telefon_fix_nr) and not telefon_fix:
+            errors.append("Completează prefixul județului și numărul de telefon fix, sau lasă ambele goale.")
+        if not judet:
+            errors.append("Județul este obligatoriu.")
+        if not oras:
+            errors.append("Orașul / localitatea este obligatoriu.")
+        full_phone = f"{phone_country} {phone}".strip()
+        current_phone = (user_profile.phone or "").strip() if user_profile else ""
+        phone_changed = full_phone != current_phone
     if not accept_termeni:
-        errors.append("Trebuie să accepți termenii și condițiile.")
+        errors.append("You must accept the Terms and conditions." if eu else "Trebuie să accepți termenii și condițiile.")
     if not accept_gdpr:
-        errors.append("Trebuie să accepți prelucrarea datelor conform GDPR.")
+        errors.append("You must accept the Privacy policy (GDPR)." if eu else "Trebuie să accepți prelucrarea datelor conform GDPR.")
 
     email_changed = email != (user.email or "")
 
     if errors:
         prefill = {
             "first_name": first_name, "last_name": last_name, "email": email,
-            "phone_country": phone_country, "phone": phone, "judet": judet, "oras": oras,
+            "phone_country": phone_country, "phone": phone, "country": country,
+            "judet": judet, "oras": oras,
             "telefon_fix_prefix": telefon_fix_prefix,
             "telefon_fix_nr": telefon_fix_nr,
             "accept_termeni": accept_termeni, "accept_gdpr": accept_gdpr, "email_opt_in_wishlist": email_opt_in_wishlist,
@@ -8315,8 +8343,13 @@ def account_edit_view(request):
             user_profile = UserProfile.objects.create(user=user)
         user_profile.phone = full_phone
         user_profile.phone_landline = (telefon_fix or "")[:40]
-        user_profile.judet = judet
-        user_profile.oras = oras
+        if eu:
+            user_profile.country = country[:2].upper() if country else (user_profile.country or "")
+            user_profile.judet = ""
+            user_profile.oras = ""
+        else:
+            user_profile.judet = judet
+            user_profile.oras = oras
         user_profile.accept_termeni = accept_termeni
         user_profile.accept_gdpr = accept_gdpr
         user_profile.email_opt_in_wishlist = email_opt_in_wishlist
@@ -8336,6 +8369,8 @@ def account_edit_view(request):
         "user_pk": user.pk,
         "first_name": first_name, "last_name": last_name, "email": email,
         "phone_country": phone_country, "phone": phone, "judet": judet, "oras": oras,
+        "country": country,
+        "eu_profile": eu,
         "telefon_fix": telefon_fix,
         "telefon_fix_prefix": telefon_fix_prefix,
         "telefon_fix_nr": telefon_fix_nr,
@@ -8386,11 +8421,20 @@ def _apply_account_edit_pending_data(request, user, data, new_email, *, source: 
         UserLegalConsent.CONSENT_MARKETING: bool(profile.email_opt_in_wishlist),
     }
     full_phone = f"{data.get('phone_country', '')} {data.get('phone', '')}".strip()
-    profile.phone = full_phone
-    if "telefon_fix" in data:
-        profile.phone_landline = (data.get("telefon_fix") or "")[:40]
-    profile.judet = data.get("judet", "")
-    profile.oras = data.get("oras", "")
+    if data.get("eu_profile"):
+        profile.phone = ""
+        profile.phone_landline = ""
+        profile.judet = ""
+        profile.oras = ""
+        ctry = (data.get("country") or "").strip().upper()[:2]
+        if ctry:
+            profile.country = ctry
+    else:
+        profile.phone = full_phone
+        if "telefon_fix" in data:
+            profile.phone_landline = (data.get("telefon_fix") or "")[:40]
+        profile.judet = data.get("judet", "")
+        profile.oras = data.get("oras", "")
     profile.accept_termeni = data.get("accept_termeni", False)
     profile.accept_gdpr = data.get("accept_gdpr", False)
     profile.email_opt_in_wishlist = data.get("email_opt_in_wishlist", False)
