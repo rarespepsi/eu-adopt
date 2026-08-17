@@ -83,6 +83,10 @@ def staff_invite_cron_enabled() -> bool:
     return bool(getattr(settings, "STAFF_INVITE_CRON_ENABLED", False))
 
 
+def staff_invite_cron_uat_only() -> bool:
+    return bool(getattr(settings, "STAFF_INVITE_CRON_UAT_ONLY", False))
+
+
 def staff_invite_cron_wave_size() -> int:
     return int(getattr(settings, "STAFF_INVITE_CRON_WAVE_SIZE", 25) or 25)
 
@@ -204,8 +208,10 @@ def _append_pickable_leads(
     picked: list[StaffOnboardingLead],
     wave_limit: int,
     seen: set[int],
+    keep_order: bool = False,
 ) -> None:
-    for lead in qs.order_by("judet", "oras", "pk").iterator():
+    it = qs.iterator() if keep_order else qs.order_by("judet", "oras", "pk").iterator()
+    for lead in it:
         if lead.pk in seen:
             continue
         ok, reason = staff_invite_can_send(lead)
@@ -227,6 +233,8 @@ def pick_leads_for_daily_wave(
     allow_resend: bool = True,
 ) -> list[StaffOnboardingLead]:
     """Val 1 (never) prioritar; dacă nu umple valul, completează cu val 2+ (resend eligibil)."""
+    if staff_invite_cron_uat_only():
+        return pick_uat_leads_for_daily_wave(wave_limit=wave_limit)
     picked: list[StaffOnboardingLead] = []
     seen: set[int] = set()
     first_qs = _wave_base_qs(
@@ -244,6 +252,32 @@ def pick_leads_for_daily_wave(
             invite_mode="resend",
         )
         _append_pickable_leads(resend_qs, picked=picked, wave_limit=wave_limit, seen=seen)
+    return picked
+
+
+def pick_uat_leads_for_daily_wave(*, wave_limit: int) -> list[StaffOnboardingLead]:
+    """CJ → PMB → municipii → orașe → comune; doar never-sent, fără grupă A/B."""
+    from django.db.models import Case, IntegerField, Value, When
+
+    whens = [
+        When(uat_category=key, then=Value(i))
+        for i, key in enumerate(StaffOnboardingLead.UAT_SEND_ORDER)
+    ]
+    qs = (
+        StaffOnboardingLead.objects.filter(
+            imported_user__isnull=True,
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            uat_category__in=StaffOnboardingLead.UAT_SEND_ORDER,
+            invite_mail_status=StaffOnboardingLead.INVITE_NEVER,
+        )
+        .annotate(
+            _uat_ord=Case(*whens, default=Value(99), output_field=IntegerField()),
+        )
+        .order_by("_uat_ord", "judet", "oras", "pk")
+    )
+    picked: list[StaffOnboardingLead] = []
+    seen: set[int] = set()
+    _append_pickable_leads(qs, picked=picked, wave_limit=wave_limit, seen=seen, keep_order=True)
     return picked
 
 
@@ -285,6 +319,12 @@ def run_staff_invite_daily_wave(
         kind = account_kind or staff_invite_cron_account_kind()
         limit = wave_limit if wave_limit is not None else staff_invite_cron_wave_size()
         subtypes = list(collab_subtypes) if collab_subtypes else []
+
+    uat_only = staff_invite_cron_uat_only()
+    if uat_only:
+        kind = StaffOnboardingLead.KIND_ADAPOST
+        subtypes = []
+        grp = "all"
 
     limit = max(1, min(int(limit), int(getattr(settings, "STAFF_LEAD_INVITE_MAX_BATCH", 100))))
 
@@ -334,8 +374,9 @@ def run_staff_invite_daily_wave(
         max_count=len(expanded),
     )
 
-    # Avansăm A↔B după orice încercare reală (inclusiv pool doar cu invalide scoase / SMTP erori).
-    mark_region_group_used(grp, slot)
+    # Avansăm A↔B după orice încercare reală, exceptând campania UAT (fără grupă județ).
+    if not uat_only:
+        mark_region_group_used(grp, slot)
 
     logger.info(
         "staff_invite_daily_wave slot=%s grp=%s kind=%s subtypes=%s picked=%s expanded=%s stats=%s smtp=%s",

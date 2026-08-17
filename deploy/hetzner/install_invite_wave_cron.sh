@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Cron invitații Add USER:
-# - 10:00 Europe/Bucharest — adăposturi (AM)
-# - 16:00 Europe/Bucharest — colaboratori cabinet/magazin/grooming (PM)
+# - 12:00 Europe/Bucharest — val 1 (UAT sau adăpost, după .env)
+# - 14:00 Europe/Bucharest — val 2
 set -euo pipefail
 
 APP_DIR="${EUADOPT_APP_DIR:-/opt/eu-adopt}"
@@ -20,9 +20,24 @@ if [[ -f "${ENV_FILE}" ]]; then
     echo 'EUADOPT_STAFF_INVITE_CRON_ENABLED=1' >> "${ENV_FILE}"
   fi
   if grep -q '^EUADOPT_STAFF_INVITE_MAX_PER_DAY=' "${ENV_FILE}"; then
-    sed -i 's/^EUADOPT_STAFF_INVITE_MAX_PER_DAY=.*/EUADOPT_STAFF_INVITE_MAX_PER_DAY=55/' "${ENV_FILE}"
+    sed -i 's/^EUADOPT_STAFF_INVITE_MAX_PER_DAY=.*/EUADOPT_STAFF_INVITE_MAX_PER_DAY=100/' "${ENV_FILE}"
   else
-    echo 'EUADOPT_STAFF_INVITE_MAX_PER_DAY=55' >> "${ENV_FILE}"
+    echo 'EUADOPT_STAFF_INVITE_MAX_PER_DAY=100' >> "${ENV_FILE}"
+  fi
+  if grep -q '^EUADOPT_STAFF_INVITE_CRON_WAVE_SIZE=' "${ENV_FILE}"; then
+    sed -i 's/^EUADOPT_STAFF_INVITE_CRON_WAVE_SIZE=.*/EUADOPT_STAFF_INVITE_CRON_WAVE_SIZE=50/' "${ENV_FILE}"
+  else
+    echo 'EUADOPT_STAFF_INVITE_CRON_WAVE_SIZE=50' >> "${ENV_FILE}"
+  fi
+  if grep -q '^EUADOPT_STAFF_INVITE_CRON_PM_WAVE_SIZE=' "${ENV_FILE}"; then
+    sed -i 's/^EUADOPT_STAFF_INVITE_CRON_PM_WAVE_SIZE=.*/EUADOPT_STAFF_INVITE_CRON_PM_WAVE_SIZE=50/' "${ENV_FILE}"
+  else
+    echo 'EUADOPT_STAFF_INVITE_CRON_PM_WAVE_SIZE=50' >> "${ENV_FILE}"
+  fi
+  if grep -q '^EUADOPT_STAFF_INVITE_CRON_UAT_ONLY=' "${ENV_FILE}"; then
+    sed -i 's/^EUADOPT_STAFF_INVITE_CRON_UAT_ONLY=.*/EUADOPT_STAFF_INVITE_CRON_UAT_ONLY=1/' "${ENV_FILE}"
+  else
+    echo 'EUADOPT_STAFF_INVITE_CRON_UAT_ONLY=1' >> "${ENV_FILE}"
   fi
   if grep -q '^EUADOPT_STAFF_INVITE_CRON_PM_COLLAB_SUBTYPES=' "${ENV_FILE}"; then
     sed -i 's/^EUADOPT_STAFF_INVITE_CRON_PM_COLLAB_SUBTYPES=.*/EUADOPT_STAFF_INVITE_CRON_PM_COLLAB_SUBTYPES=cabinet,magazin,grooming/' "${ENV_FILE}"
@@ -32,8 +47,8 @@ if [[ -f "${ENV_FILE}" ]]; then
   chown euadopt:euadopt "${ENV_FILE}" 2>/dev/null || true
 fi
 
-CRON_AM='0 10 * * * bash '"${SCRIPT_AM}"
-CRON_PM='0 16 * * * bash '"${SCRIPT_PM}"
+CRON_AM='0 12 * * * bash '"${SCRIPT_AM}"
+CRON_PM='0 14 * * * bash '"${SCRIPT_PM}"
 
 TMP="$(mktemp)"
 crontab -l 2>/dev/null \

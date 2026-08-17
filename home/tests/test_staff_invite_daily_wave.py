@@ -144,3 +144,54 @@ class StaffInviteDailyWaveTests(TestCase):
     def test_cron_disabled_skips(self):
         result = run_staff_invite_daily_wave()
         self.assertTrue(result.skipped)
+
+
+class StaffInviteUatWaveTests(TestCase):
+    def test_uat_order_cj_before_comuna_skips_plain_shelter(self):
+        shelter = StaffOnboardingLead.objects.create(
+            email="shelter@example.com",
+            display_name="Adapost vechi",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            judet="Alba",
+            invite_mail_status=StaffOnboardingLead.INVITE_NEVER,
+        )
+        comuna = StaffOnboardingLead.objects.create(
+            email="comuna@example.com",
+            display_name="Primaria X",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_ADPUB,
+            is_public_shelter=True,
+            uat_category=StaffOnboardingLead.UAT_COMUNA,
+            judet="Alba",
+            invite_mail_status=StaffOnboardingLead.INVITE_NEVER,
+        )
+        cj = StaffOnboardingLead.objects.create(
+            email="cj@example.com",
+            display_name="CJ Alba",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_ADPUB,
+            is_public_shelter=True,
+            uat_category=StaffOnboardingLead.UAT_CJ,
+            judet="Alba",
+            invite_mail_status=StaffOnboardingLead.INVITE_NEVER,
+        )
+        with self.settings(STAFF_INVITE_CRON_UAT_ONLY=True):
+            from home.staff_invite_daily_wave import pick_leads_for_daily_wave
+
+            picked = pick_leads_for_daily_wave(
+                region_group="a",
+                account_kind=StaffOnboardingLead.KIND_ADAPOST,
+                wave_limit=10,
+            )
+        self.assertEqual([p.pk for p in picked], [cj.pk, comuna.pk])
+        self.assertNotIn(shelter.pk, [p.pk for p in picked])
+
+    def test_uat_template_key(self):
+        from home.staff_onboarding_invite import staff_invite_template_key
+
+        lead = StaffOnboardingLead(
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            uat_category=StaffOnboardingLead.UAT_CJ,
+            is_public_shelter=True,
+        )
+        self.assertEqual(staff_invite_template_key(lead), "uat_public")

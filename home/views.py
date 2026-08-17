@@ -6794,6 +6794,9 @@ def _staff_onboarding_leads_filtered_qs_from_querydict(qd: QueryDict):
             ).filter(
                 Q(vet_prospect_kind=StaffOnboardingLead.VET_PROSPECT_CV) | Q(vet_prospect_kind=""),
             )
+    uat = (qd.get("uat_category") or "").strip().lower()
+    if uat in dict(StaffOnboardingLead.UAT_CATEGORY_CHOICES) and uat:
+        qs = qs.filter(uat_category=uat)
     if (qd.get("invite_eligible") or "").strip().lower() in ("1", "true", "da", "yes"):
         qs = staff_invite_filter_eligible_qs(qs)
     first_only = (qd.get("invite_first_only") or "").strip().lower() in ("1", "true", "da", "yes")
@@ -7196,6 +7199,8 @@ def admin_analysis_add_user_view(request):
             "filter_oras": (request.GET.get("oras") or "").strip(),
             "filter_collab_subtype": (request.GET.get("collab_subtype") or "").strip(),
             "filter_vet_kind": (request.GET.get("vet_kind") or "").strip(),
+            "filter_uat_category": (request.GET.get("uat_category") or "").strip(),
+            "uat_category_choices": StaffOnboardingLead.UAT_CATEGORY_CHOICES,
             "staff_invite_cooldown_days": int(getattr(settings, "STAFF_LEAD_INVITE_COOLDOWN_DAYS", 7)),
             "staff_invite_link_valid_days": staff_invite_link_valid_days(),
             "staff_invite_max_batch": int(getattr(settings, "STAFF_LEAD_INVITE_MAX_BATCH", 100)),

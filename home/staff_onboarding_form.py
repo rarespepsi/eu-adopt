@@ -61,6 +61,7 @@ class StaffOnboardingLeadForm(forms.ModelForm):
             "company_oras",
             "collaborator_subtype",
             "vet_prospect_kind",
+            "uat_category",
             "segments",
             "marketing_emails_requested",
             "notes",

@@ -46,6 +46,7 @@ CSV_HEADER_ROW = [
     "marketing_email_viitor",
     "nota_interna",
     "stare",
+    "categorie_uat",
 ]
 
 # Mapare antet normalizat (lowercase, fără spații extra) → cheie canonică din CSV_HEADER_ROW
@@ -95,6 +96,9 @@ _HEADER_ALIASES = {
     "nota_interna": "nota_interna",
     "stare": "stare",
     "status": "stare",
+    "categorie_uat": "categorie_uat",
+    "uat_category": "categorie_uat",
+    "categorie uat": "categorie_uat",
 }
 
 
@@ -170,6 +174,24 @@ def _normalize_status(raw: str) -> str:
     return StaffOnboardingLead.ST_READY
 
 
+def _normalize_uat_category(raw: str) -> str:
+    t = (raw or "").strip().lower().replace(" ", "_").replace("ă", "a").replace("â", "a").replace("ș", "s").replace("ş", "s")
+    aliases = {
+        "cj": StaffOnboardingLead.UAT_CJ,
+        "consiliu": StaffOnboardingLead.UAT_CJ,
+        "consiliu_judetean": StaffOnboardingLead.UAT_CJ,
+        "pmb": StaffOnboardingLead.UAT_PMB,
+        "bucuresti": StaffOnboardingLead.UAT_PMB,
+        "primarie_municipiu": StaffOnboardingLead.UAT_MUNICIPIU,
+        "municipiu": StaffOnboardingLead.UAT_MUNICIPIU,
+        "primarie_oras": StaffOnboardingLead.UAT_ORAS,
+        "oras": StaffOnboardingLead.UAT_ORAS,
+        "primarie_comuna": StaffOnboardingLead.UAT_COMUNA,
+        "comuna": StaffOnboardingLead.UAT_COMUNA,
+    }
+    return aliases.get(t, "")
+
+
 _CANON_KEYS = frozenset(CSV_HEADER_ROW)
 
 # Adrese generate când lipsește coloana / valoarea email — prospect doar pentru căutare; nu se trimit invitații.
@@ -208,6 +230,7 @@ def _csv_row_has_identity(canon: dict[str, str]) -> bool:
         "localitate_firma",
         "nota_interna",
         "segmente",
+        "categorie_uat",
     ):
         if (canon.get(key) or "").strip():
             return True
@@ -306,6 +329,7 @@ def row_canon_to_lead_kwargs(canon: dict[str, str]) -> dict[str, Any]:
         "marketing_emails_requested": _bool_cell(g("marketing_email_viitor")),
         "notes": notes,
         "status": _normalize_status(g("stare")),
+        "uat_category": _normalize_uat_category(g("categorie_uat")),
     }
     return normalize_lead_location_kwargs(payload)
 
@@ -338,6 +362,7 @@ def lead_to_csv_row(lead: StaffOnboardingLead) -> dict[str, str]:
         "marketing_email_viitor": "1" if lead.marketing_emails_requested else "",
         "nota_interna": lead.notes or "",
         "stare": lead.status,
+        "categorie_uat": lead.uat_category or "",
     }
 
 

@@ -423,6 +423,8 @@ def staff_invite_count_eligible(qs, now=None) -> int:
 
 
 def staff_invite_template_key(lead: StaffOnboardingLead) -> str:
+    if (lead.uat_category or "").strip() in StaffOnboardingLead.UAT_SEND_ORDER:
+        return "uat_public"
     if lead.account_kind == StaffOnboardingLead.KIND_ADAPOST:
         sub = (lead.collaborator_subtype or "").strip()
         if sub == StaffOnboardingLead.COLLAB_ADPRV:
@@ -608,7 +610,53 @@ def _invite_footer_block() -> str:
     )
 
 
+def _invite_uat_public_body(lead: StaffOnboardingLead, org_line: str, signup_url: str) -> str:
+    cat = (lead.uat_category or "").strip()
+    forward_line = ""
+    if cat in (StaffOnboardingLead.UAT_CJ, StaffOnboardingLead.UAT_PMB):
+        forward_line = (
+            "Rugăm Consiliile Județene să transmită această informare primăriilor din județ, "
+            "pentru ca acestea și/sau operatorii serviciului să poată folosi platforma.\n\n"
+        )
+    return (
+        f"Stimată Doamnă / Stimate Domn{org_line},\n\n"
+        + _invite_middle_block("uat_public", org_line)
+        + f"Contul se creează aici (link personal):\n{signup_url}\n\n"
+        + forward_line
+        + "Obiectivul este simplu: cât mai mulți câini să fie văzuți și adoptați.\n\n"
+        + "Contact:\n"
+        + "https://eu-adopt.ro\n"
+        + "contact@eu-adopt.ro\n"
+        + "Telefon / WhatsApp: 0733 823 678\n\n"
+        + "Cu stimă,\n"
+        + "EU-Adopt\n\n"
+        + "P.S. Conform OUG 155/2001, art. 4 alin. (1) și HG 1059/2013, art. 16–17, "
+        "serviciul/operatorul are obligația de a promova revendicarea și adopția și de a "
+        "informa populația (panouri la adăpost + website cu data/locul capturării loturilor). "
+        "EU-Adopt nu înlocuiește aceste obligații; poate fi un canal suplimentar, gratuit.\n\n"
+        + "Dacă nu doriți să fiți contactat, răspundeți la acest email cu „nu contacta”.\n"
+    )
+
+
 def _invite_middle_block(template_key: str, org_line: str) -> str:
+    if template_key == "uat_public":
+        return (
+            "EU-Adopt pune la dispoziția autorităților administrației publice locale, "
+            "gratuit, platforma https://eu-adopt.ro, pentru promovarea câinilor fără stăpân "
+            "aflați în adăposturi și pentru creșterea șanselor acestora de a fi adoptați.\n\n"
+            "Accesul se adresează:\n"
+            "- primăriilor și serviciilor publice care gestionează direct activitatea "
+            "privind câinii fără stăpân;\n"
+            "- operatorilor, societăților sau altor entități cărora autoritatea locală "
+            "le-a delegat ori încredințat acest serviciu.\n\n"
+            "La înregistrare se alege Adăpost public.\n\n"
+            "Pe platformă se pot publica câinii disponibili pentru adopție, cu fotografii, "
+            "informații, date de contact și alte elemente utile potențialilor adoptatori. "
+            "Vizibilitatea este atât în România, cât și la nivel european.\n\n"
+            "Utilizarea EU-Adopt nu înlocuiește evidențele, registrele, obligațiile de "
+            "publicitate sau celelalte proceduri prevăzute de lege. Este un instrument "
+            "suplimentar, pus gratuit la dispoziție.\n\n"
+        )
     if template_key == "adapost_adpub":
         return (
             f"Ca adăpost public, prin EU-Adopt puteți publica și administra "
@@ -668,6 +716,7 @@ def _invite_middle_block(template_key: str, org_line: str) -> str:
 def _invite_subject(template_key: str, kind_label: str) -> str:
     base = "EU-Adopt — invitație de colaborare (participare gratuită)"
     subjects = {
+        "uat_public": "Platformă gratuită EU-Adopt pentru promovarea câinilor fără stăpân în vederea adopției",
         "adapost_adpub": "EU-Adopt — adăpost public: platformă națională, participare gratuită",
         "adapost_adprv": "EU-Adopt — adăpost privat: platformă națională, participare gratuită",
         "ong": "EU-Adopt — ONG / asociație: adopții responsabile (gratuit)",
@@ -693,6 +742,9 @@ def staff_invite_subject_body(
     link_valid_until = now + timedelta(days=staff_invite_link_valid_days())
 
     subject = _invite_subject(template_key, kind_label)
+    if template_key == "uat_public":
+        body = _invite_uat_public_body(lead, org_line, signup_url)
+        return subject, body, template_key
     animals_population = template_key in ("adapost_adpub", "adapost_adprv", "ong")
     body = (
         f"Bună ziua{org_line},\n\n"

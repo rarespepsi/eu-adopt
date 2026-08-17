@@ -1372,9 +1372,9 @@
 {% block content %}
 <section class="analysis-shell" aria-label="Add USER staff">
 	<div class="add-user-header-row">
-		<h1>Add USER — prospecte (neînregistrați)</h1>
-		<div class="analysis-subnav">
-			<a href="{% url 'admin_analysis_home' %}">Înapoi la Analiza (central)</a>
+	<h1>Add USER — prospecte (neînregistrați)</h1>
+	<div class="analysis-subnav">
+		<a href="{% url 'admin_analysis_home' %}">Înapoi la Analiza (central)</a>
 		</div>
 	</div>
 	<div class="add-user-scroll">
@@ -1465,6 +1465,17 @@
 				</select>
 			</div>
 			<div>
+				<label for="f-uat">Categorie UAT</label>
+				<select id="f-uat" name="uat_category">
+					<option value="" {% if not filter_uat_category %}selected{% endif %}>— Toate —</option>
+					<option value="cj" {% if filter_uat_category == "cj" %}selected{% endif %}>CJ</option>
+					<option value="pmb" {% if filter_uat_category == "pmb" %}selected{% endif %}>PMB</option>
+					<option value="primarie_municipiu" {% if filter_uat_category == "primarie_municipiu" %}selected{% endif %}>Primărie municipiu</option>
+					<option value="primarie_oras" {% if filter_uat_category == "primarie_oras" %}selected{% endif %}>Primărie oraș</option>
+					<option value="primarie_comuna" {% if filter_uat_category == "primarie_comuna" %}selected{% endif %}>Primărie comună</option>
+				</select>
+			</div>
+			<div>
 				<label for="f-reggrp">Grup regiuni</label>
 				<select id="f-reggrp" name="region_group">
 					<option value="" {% if not filter_region_group %}selected{% endif %}>— Toate —</option>
@@ -1508,8 +1519,8 @@
 					</label>
 				</div>
 				<div class="add-user-filters-actions">
-					<button type="submit" class="add-user-btn">Aplică filtre</button>
-					<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user' %}">Resetează</a>
+			<button type="submit" class="add-user-btn">Aplică filtre</button>
+			<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user' %}">Resetează</a>
 					<a class="add-user-btn add-user-btn--secondary" href="{% url 'admin_analysis_add_user' %}?{{ filter_query_toggle_imported }}">{% if show_imported_active %}Fără importați{% else %}+ importați{% endif %}</a>
 				</div>
 			</div>
@@ -1540,6 +1551,7 @@
 							<th>Login cont</th>
 							<th>Nume</th>
 							<th>Tip</th>
+							<th>UAT</th>
 							<th>Colab.</th>
 							<th>CV/FV</th>
 							<th>Județ</th>
@@ -1597,6 +1609,7 @@
 							</td>
 							<td>{% if lead.org_display_name and lead.org_display_name|lower != lead.display_name|lower %}{{ lead.display_name }} — {{ lead.org_display_name }}{% else %}{{ lead.display_name|default:lead.org_display_name|default:"—" }}{% endif %}</td>
 							<td>{{ lead.get_account_kind_display }}</td>
+							<td>{% if lead.uat_category %}{{ lead.get_uat_category_display }}{% else %}—{% endif %}</td>
 							<td>{% if lead.collaborator_subtype %}{{ lead.get_collaborator_subtype_display }}{% else %}—{% endif %}</td>
 							<td>{% if lead.account_kind == "collaborator" and lead.collaborator_subtype == "cabinet" %}{% if lead.vet_prospect_kind == "fv" %}FV{% else %}CV{% endif %}{% else %}—{% endif %}</td>
 							<td>{{ lead.judet|default:"—" }}</td>
@@ -1620,11 +1633,11 @@
 								<div class="add-user-tbl-actions">
 									{% if not lead.imported_user_id and lead.invite_status_code != "do_not_contact" and lead.invite_status_code != "signed_up" %}
 									<form method="post" action="{% url 'admin_analysis_add_user_invite_mark_replied' %}" style="display:inline;margin:0;">
-										{% csrf_token %}
+			{% csrf_token %}
 										<input type="hidden" name="lead_id" value="{{ lead.pk }}" />
-										<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
+			<input type="hidden" name="preserve_query" value="{{ filter_query }}" />
 										<button type="submit" class="add-user-tbl-btn add-user-tbl-btn--secondary" title="Marchează că a răspuns la email">Răspuns</button>
-									</form>
+		</form>
 									<form method="post" action="{% url 'admin_analysis_add_user_invite_do_not_contact' %}" style="display:inline;margin:0;" onsubmit="return confirm('Marchezi „Nu contacta” pentru {{ lead.email }}?');">
 										{% csrf_token %}
 										<input type="hidden" name="lead_id" value="{{ lead.pk }}" />
@@ -1845,6 +1858,13 @@
 						<p class="add-user-manual-hint">CV = clinică, FV = farmacie veterinară (implicit clinică).</p>
 						{{ form.vet_prospect_kind.errors }}
 						{{ form.vet_prospect_kind }}
+			</div>
+
+					<div class="add-user-manual-section">
+						<h3>Categorie UAT</h3>
+						<p class="add-user-manual-hint">Doar pentru CJ / primării. Gol pentru adăposturi obișnuite.</p>
+						{{ form.uat_category.errors }}
+						{{ form.uat_category }}
 					</div>
 
 					<div class="add-user-manual-section add-user-manual-section--prefs">
@@ -1863,9 +1883,9 @@
 							{{ form.notes.errors }}
 						</p>
 					</div>
-				</form>
+									</form>
+								</div>
 			</div>
-		</div>
 		<div class="add-user-manual-modal__foot">
 			<button type="button" class="add-user-btn add-user-btn--secondary" data-add-user-manual-close>Închide</button>
 			{% if editing_lead %}

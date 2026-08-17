@@ -1964,6 +1964,31 @@ class StaffOnboardingLead(models.Model):
         choices=VET_PROSPECT_KIND_CHOICES,
         help_text="Doar pentru colaborator cu tip cabinet: clinică (CV) sau farmacie (FV).",
     )
+    UAT_NONE = ""
+    UAT_CJ = "cj"
+    UAT_PMB = "pmb"
+    UAT_MUNICIPIU = "primarie_municipiu"
+    UAT_ORAS = "primarie_oras"
+    UAT_COMUNA = "primarie_comuna"
+    UAT_CATEGORY_CHOICES = [
+        (UAT_NONE, "—"),
+        (UAT_CJ, "CJ"),
+        (UAT_PMB, "PMB"),
+        (UAT_MUNICIPIU, "Primărie municipiu"),
+        (UAT_ORAS, "Primărie oraș"),
+        (UAT_COMUNA, "Primărie comună"),
+    ]
+    # Ordine trimitere val UAT: CJ → PMB → municipii → orașe → comune.
+    UAT_SEND_ORDER = (UAT_CJ, UAT_PMB, UAT_MUNICIPIU, UAT_ORAS, UAT_COMUNA)
+    uat_category = models.CharField(
+        "Categorie UAT",
+        max_length=24,
+        blank=True,
+        default="",
+        db_index=True,
+        choices=UAT_CATEGORY_CHOICES,
+        help_text="Consiliu județean / PMB / primărie (municipiu, oraș, comună). Gol = nu e prospect UAT.",
+    )
     judet = models.CharField("Județ", max_length=120, blank=True, default="")
     oras = models.CharField("Oraș / localitate", max_length=120, blank=True, default="")
     segments = models.JSONField("Segmente / categorii mail", default=list, blank=True)
