@@ -21,6 +21,7 @@ class SiteProcedures:
     is_eu: bool
 
     # Catalog / PT
+    # EU: același catalog ca .ro, fără filtru țară/județ/localitate
     pt_country_filter: bool
     # Animalele pleacă din RO; pe EU filtram / etichetăm țara de destinație / listare
     animals_origin_romania: bool
@@ -64,7 +65,7 @@ RO_PROCEDURES = SiteProcedures(
 # Hub EU — catalog + intermediere adopție; fără ecosistemul comercial RO
 EU_PROCEDURES = SiteProcedures(
     is_eu=True,
-    pt_country_filter=True,
+    pt_country_filter=False,
     animals_origin_romania=True,
     pt_hide_marquee_strips=True,
     adoption_simple_intermediation=True,

@@ -284,6 +284,8 @@ class EuProceduresTests(SimpleTestCase):
         self.assertFalse(RO_PROCEDURES.transport_email_inbox)
         self.assertTrue(EU_PROCEDURES.pt_hide_marquee_strips)
         self.assertFalse(RO_PROCEDURES.pt_hide_marquee_strips)
+        self.assertFalse(EU_PROCEDURES.pt_country_filter)
+        self.assertFalse(RO_PROCEDURES.pt_country_filter)
         self.assertIs(procedures_for_eu_flag(True), EU_PROCEDURES)
         self.assertIs(procedures_for_eu_flag(False), RO_PROCEDURES)
 
@@ -418,3 +420,41 @@ class EuCountriesTests(SimpleTestCase):
         self.assertEqual(normalize_country_code("xx"), "")
         self.assertEqual(country_label("RO", english=True), "Romania")
         self.assertEqual(country_label("RO", english=False), "România")
+
+
+@override_settings(EUADOPT_EU_PRODUCT_SKIN=True, PRELAUNCH_MODE=False, EUADOPT_NON_RO_STAFF_ONLY=False)
+class EuPtNoGeoFilterTests(TestCase):
+    def test_de_shows_ro_listing_without_geo_filters(self):
+        from django.contrib.auth.models import AnonymousUser
+
+        from home.models import AnimalListing
+        from home.pt_p2_list import pt_pets_page_context
+
+        User = get_user_model()
+        owner = User.objects.create_user("ptgeo_ro", "ptgeo@t.local", "x")
+        AnimalListing.objects.create(
+            owner=owner,
+            name="BrunoRO",
+            species="dog",
+            is_published=True,
+            country="RO",
+        )
+        AnimalListing.objects.create(
+            owner=owner,
+            name="HansDE",
+            species="dog",
+            is_published=True,
+            country="DE",
+        )
+        rf = RequestFactory()
+        req = rf.get("/pets/?country=DE&judet=Cluj", HTTP_HOST="euadopt.de")
+        req.eu_site_active = True
+        req.user = AnonymousUser()
+        ctx = pt_pets_page_context(req)
+        self.assertFalse(ctx["show_pt_country_filter"])
+        self.assertFalse(ctx["show_county_filter"])
+        self.assertEqual(ctx["selected_country"], "")
+        self.assertEqual(ctx["selected_judet"], "")
+        names = [p["nume"] for p in ctx["p2_list"]]
+        self.assertIn("BrunoRO", names)
+        self.assertNotIn("HansDE", names)

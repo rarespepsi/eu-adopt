@@ -103,28 +103,28 @@ def pt_pets_page_context(request):
     """
     from django.db.models import Q
 
-    from home.eu_countries import (
-        country_choices,
-        default_country_hint_for_host,
-        normalize_country_code,
-    )
+    from home.eu_countries import country_choices
     from home.eu_procedures import procedures_for_request
     from home.eu_site import is_eu_site_host
 
     host = request.get_host()
     site_proc = procedures_for_request(request)
-    eu_site = site_proc.pt_country_filter or is_eu_site_host(host)
+    eu_site = bool(site_proc.is_eu) or is_eu_site_host(host)
     english_ui = site_proc.is_eu or bool(getattr(request, "eu_site_active", False)) or eu_site
 
-    if "country" in request.GET:
-        selected_country = normalize_country_code(request.GET.get("country"))
-    else:
-        selected_country = default_country_hint_for_host(host) if site_proc.pt_country_filter else ""
-
-    selected_judet = (request.GET.get("judet") or "").strip()
-    # Județul RO se aplică doar când țara e RO (sau piața .ro).
-    if selected_country and selected_country != "RO":
+    if eu_site:
+        selected_country = ""
         selected_judet = ""
+    else:
+        from home.eu_countries import normalize_country_code
+
+        if "country" in request.GET:
+            selected_country = normalize_country_code(request.GET.get("country"))
+        else:
+            selected_country = ""
+        selected_judet = (request.GET.get("judet") or "").strip()
+        if selected_country and selected_country != "RO":
+            selected_judet = ""
 
     selected_marime = (request.GET.get("marime") or "").strip()
     selected_varsta = (request.GET.get("varsta") or "").strip()
@@ -160,7 +160,6 @@ def pt_pets_page_context(request):
 
     filter_active = any(
         [
-            selected_country if eu_site else False,
             selected_judet,
             selected_marime,
             selected_varsta,
@@ -220,10 +219,7 @@ def pt_pets_page_context(request):
     show_county_filter = (not eu_site) or (selected_country == "RO")
 
     qs_base = AnimalListing.objects.filter(is_published=True)
-    if not eu_site:
-        qs_base = qs_base.filter(Q(country="") | Q(country__iexact="RO"))
-    elif selected_country:
-        qs_base = qs_base.filter(country__iexact=selected_country)
+    qs_base = qs_base.filter(Q(country="") | Q(country__iexact="RO"))
 
     p2_list = []
     if not filter_active:

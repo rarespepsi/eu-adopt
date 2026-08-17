@@ -1311,8 +1311,10 @@
 
 			<form id="ptMatchMiniForm" method="post">
 				<input type="hidden" name="species" value="{{ selected_species|default:'' }}" />
+				{% if not eu_site_active %}
 				<input type="hidden" name="country" value="{{ selected_country|default:'' }}" />
 				<input type="hidden" name="judet" value="{{ selected_judet|default:'' }}" />
+				{% endif %}
 				<input type="hidden" name="marime" value="{{ selected_marime|default:'' }}" />
 				<input type="hidden" name="varsta" value="{{ selected_varsta|default:'' }}" />
 				<input type="hidden" name="sex" value="{{ selected_sex|default:'' }}" />
