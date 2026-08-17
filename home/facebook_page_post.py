@@ -5,7 +5,8 @@ Flux 1: animal / campanie site → delivery per piață configurată.
 Flux 2 (mirror RO): în home.facebook_ro_mirror (oprit până la tokenuri).
 
 Anti-buclă: doar RO e sursă Facebook pentru mirror; DE/FR/ES/COM niciodată.
-Tokenurile nu se loghează.
+Tokenurile nu se loghează. System User token din .env e convertit la Page token
+via GET /me/accounts (New Page Experience cere Page token, eroare 190/2069032).
 """
 from __future__ import annotations
 

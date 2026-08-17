@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 from unittest.mock import patch
+import json
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -32,6 +33,7 @@ User = get_user_model()
     FACEBOOK_AUTO_POST_ENABLED=True,
     FACEBOOK_PAGE_ID="970069896196143",
     FACEBOOK_PAGE_ACCESS_TOKEN="test-token-ro",
+    FACEBOOK_PAGE_ACCESS_TOKEN_RO="test-token-ro",
     FACEBOOK_PAGE_ID_DE="",
     FACEBOOK_PAGE_ACCESS_TOKEN_DE="",
     FACEBOOK_PAGE_ID_FR="",
@@ -168,8 +170,15 @@ class FacebookOutboundTests(TestCase):
     FACEBOOK_AUTO_POST_ENABLED=True,
     FACEBOOK_PAGE_ID="970069896196143",
     FACEBOOK_PAGE_ACCESS_TOKEN="test-token-ro",
+    FACEBOOK_PAGE_ACCESS_TOKEN_RO="test-token-ro",
     FACEBOOK_PAGE_ID_DE="de-page",
     FACEBOOK_PAGE_ACCESS_TOKEN_DE="de-token",
+    FACEBOOK_PAGE_ID_FR="",
+    FACEBOOK_PAGE_ACCESS_TOKEN_FR="",
+    FACEBOOK_PAGE_ID_ES="",
+    FACEBOOK_PAGE_ACCESS_TOKEN_ES="",
+    FACEBOOK_PAGE_ID_COM="",
+    FACEBOOK_PAGE_ACCESS_TOKEN_COM="",
     FACEBOOK_RO_MIRROR_ENABLED=True,
     FACEBOOK_RO_MIRROR_MAX_PER_RUN=10,
     SITE_BASE_URL="https://eu-adopt.ro",
@@ -251,3 +260,69 @@ class FacebookRoMirrorTests(TestCase):
         self.assertEqual(old.skip_reason, "before_mirror_since")
         new = FacebookRoInboundPost.objects.get(source_fb_post_id="new_1")
         self.assertEqual(new.status, FacebookRoInboundPost.STATUS_PENDING)
+
+
+class _FakeGraphResp:
+    def __init__(self, payload: dict):
+        self._payload = json.dumps(payload).encode("utf-8")
+
+    def read(self):
+        return self._payload
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+
+class FacebookPageTokenResolveTests(TestCase):
+    def setUp(self):
+        from home.facebook_markets import clear_page_token_cache
+
+        clear_page_token_cache()
+
+    def tearDown(self):
+        from home.facebook_markets import clear_page_token_cache
+
+        clear_page_token_cache()
+
+    def test_non_eaa_token_skips_graph(self):
+        from home.facebook_markets import resolve_page_access_token
+
+        with patch("home.facebook_markets.urllib.request.urlopen") as mock_open:
+            tok = resolve_page_access_token("970069896196143", "test-token-ro")
+        self.assertEqual(tok, "test-token-ro")
+        mock_open.assert_not_called()
+
+    @patch("home.facebook_markets.urllib.request.urlopen")
+    def test_system_user_token_uses_page_token_from_accounts(self, mock_open):
+        from home.facebook_markets import resolve_page_access_token
+
+        mock_open.return_value = _FakeGraphResp(
+            {
+                "data": [
+                    {"id": "970069896196143", "access_token": "EAA_PAGE_RO"},
+                    {"id": "1156775504195672", "access_token": "EAA_PAGE_DE"},
+                ]
+            }
+        )
+        su = "EAA_SYSTEM_USER_TOKEN"
+        self.assertEqual(resolve_page_access_token("970069896196143", su), "EAA_PAGE_RO")
+        self.assertEqual(resolve_page_access_token("1156775504195672", su), "EAA_PAGE_DE")
+        mock_open.assert_called_once()
+
+    @patch("home.facebook_markets.urllib.request.urlopen")
+    def test_unknown_page_falls_back_to_env_token(self, mock_open):
+        from home.facebook_markets import resolve_page_access_token
+
+        mock_open.return_value = _FakeGraphResp({"data": [{"id": "other", "access_token": "EAA_X"}]})
+        su = "EAA_SYSTEM_USER_TOKEN"
+        self.assertEqual(resolve_page_access_token("970069896196143", su), su)
+
+    @patch("home.facebook_markets.urllib.request.urlopen", side_effect=OSError("offline"))
+    def test_accounts_error_falls_back(self, _mock_open):
+        from home.facebook_markets import resolve_page_access_token
+
+        su = "EAA_SYSTEM_USER_TOKEN"
+        self.assertEqual(resolve_page_access_token("970069896196143", su), su)
