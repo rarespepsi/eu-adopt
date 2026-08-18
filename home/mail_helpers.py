@@ -80,6 +80,37 @@ def send_mail_text_and_html(
         raise
 
 
+def pet_copy_location_text(pet) -> str:
+    """
+    Locație publică RO de copiat (fișă + mail) în formularul Transport:
+    adresă adăpost (dacă există), oraș, județ, România.
+    """
+    city = (getattr(pet, "city", None) or "").strip()
+    county = (getattr(pet, "county", None) or "").strip()
+    addr = ""
+    owner = getattr(pet, "owner", None)
+    if owner is not None:
+        try:
+            prof = owner.profile
+        except Exception:
+            prof = None
+        if prof is not None:
+            addr = (getattr(prof, "company_address", None) or "").strip()
+            if not city:
+                city = (getattr(prof, "company_oras", None) or getattr(prof, "oras", None) or "").strip()
+            if not county:
+                county = (getattr(prof, "company_judet", None) or getattr(prof, "judet", None) or "").strip()
+    lines = []
+    if addr:
+        lines.append(addr)
+    loc = ", ".join(x for x in (city, county) if x)
+    if loc:
+        lines.append(loc)
+    if lines:
+        lines.append("România")
+    return "\n".join(lines)
+
+
 def adoption_pet_public_email_lines(pet) -> list[str]:
     """Rezumat din fișă (date publice) pentru email adoptator."""
     species_map = {"dog": "Câine", "cat": "Pisică", "other": "Alt"}
@@ -96,6 +127,10 @@ def adoption_pet_public_email_lines(pet) -> list[str]:
     loc = ", ".join(x for x in (pet.county, pet.city) if x)
     if loc:
         lines.append(f"Zonă: {loc}")
+    copy_loc = pet_copy_location_text(pet)
+    if copy_loc:
+        lines.append("Locație PET (copie pentru Transport):")
+        lines.extend(copy_loc.split("\n"))
     if pet.color:
         lines.append(f"Culoare: {pet.color}")
     if pet.greutate_aprox:

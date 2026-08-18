@@ -787,7 +787,61 @@
 				font-family: inherit;
 			}
 
-			/* QR (colț jos dreapta) */
+			.pet-copy-loc {
+				width: 100%;
+				max-width: 15.5rem;
+				margin: 0.45rem auto 0.35rem;
+				padding: 0.5rem 0.65rem 0.55rem;
+				box-sizing: border-box;
+				border-radius: 0.75rem;
+				border: 1px solid rgba(255, 255, 255, 0.14);
+				background: linear-gradient(
+					168deg,
+					rgba(24, 32, 46, 0.55) 0%,
+					rgba(14, 20, 32, 0.72) 100%
+				);
+				box-shadow:
+					0 0 0 1px rgba(0, 0, 0, 0.35) inset,
+					0 8px 18px rgba(0, 0, 0, 0.28);
+				backdrop-filter: blur(12px) saturate(1.05);
+				-webkit-backdrop-filter: blur(12px) saturate(1.05);
+			}
+			.pet-copy-loc__title {
+				margin: 0 0 0.35rem;
+				font-size: 0.68rem;
+				font-weight: 800;
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
+				color: #f8fafc;
+				text-align: center;
+				line-height: 1.25;
+			}
+			.pet-copy-loc__text {
+				margin: 0 0 0.4rem;
+				font-size: 0.78rem;
+				line-height: 1.35;
+				color: #e2e8f0;
+				white-space: pre-line;
+				text-align: center;
+				word-break: break-word;
+			}
+			.pet-copy-loc__btn {
+				display: block;
+				width: 100%;
+				margin: 0;
+				padding: 0.28rem 0.4rem;
+				border-radius: 0.5rem;
+				border: 1px solid rgba(255, 255, 255, 0.22);
+				background: rgba(6, 182, 212, 0.85);
+				color: #fff;
+				font-size: 0.7rem;
+				font-weight: 700;
+				font-family: inherit;
+				cursor: pointer;
+			}
+			.pet-copy-loc__btn:hover {
+				filter: brightness(1.06);
+			}
 			.pet-qr-corner {
 				position: fixed;
 				right: 10px;
@@ -1785,6 +1839,13 @@
 												</div>
 											</div>
 											{% endif %}
+											{% if pet_copy_location %}
+											<div class="pet-copy-loc" id="petCopyLoc" aria-label="{% if eu_site_active %}{{ eu_ui.pet_copy_loc_aria }}{% else %}Locația PET de copiat pentru Transport{% endif %}">
+												<p class="pet-copy-loc__title">{% if eu_site_active %}{{ eu_ui.pet_copy_loc_title }}{% else %}Copie locația PET{% endif %}</p>
+												<p class="pet-copy-loc__text" id="petCopyLocText">{{ pet_copy_location }}</p>
+												<button type="button" class="pet-copy-loc__btn" id="petCopyLocBtn" data-copied="{% if eu_site_active %}{{ eu_ui.pet_copy_loc_done }}{% else %}Copiat{% endif %}">{% if eu_site_active %}{{ eu_ui.pet_copy_loc_btn }}{% else %}Copiază{% endif %}</button>
+											</div>
+											{% endif %}
 											<div class="pet-adoption-state-corner" aria-label="{% if eu_site_active %}{{ eu_ui.pet_adopt_state_aria }}{% else %}Stare adopție{% endif %}">{% if eu_site_active %}{{ pet.adoption_state_label|default:eu_ui.pet_adopt_state_free }}{% else %}{{ pet.adoption_state_label|default:"Liber" }}{% endif %}</div>
 											<div class="pet-adopt-qr-inline" id="petAdoptQrInline" aria-label="{% if eu_site_active %}{{ eu_ui.pet_adopt_qr_aria }}{% else %}Adopție și cod QR{% endif %}">
 												{% if show_pet_owner_su_link or show_pet_adopt_corner %}
@@ -2199,6 +2260,27 @@
 					? petLinkCopyFailMsg
 					: (mobile ? PET_UI.linkFailMobile : PET_UI.linkFailDesk));
 			}
+			(function initPetCopyLocation() {
+				var btn = document.getElementById("petCopyLocBtn");
+				var textEl = document.getElementById("petCopyLocText");
+				if (!btn || !textEl) return;
+				var original = btn.textContent;
+				btn.addEventListener("click", function() {
+					var t = (textEl.textContent || "").trim();
+					if (!t) return;
+					function ok() {
+						btn.textContent = btn.getAttribute("data-copied") || "Copied";
+						setTimeout(function() { btn.textContent = original; }, 1600);
+					}
+					if (navigator.clipboard && navigator.clipboard.writeText) {
+						navigator.clipboard.writeText(t).then(ok).catch(function() {
+							window.prompt("Copy PET location", t);
+						});
+					} else {
+						window.prompt("Copy PET location", t);
+					}
+				});
+			})();
 			// QR în colț (encodează linkul fișei ca imagine)
 			(function initQrCorner() {
 				var img = document.getElementById("petQrImg");
