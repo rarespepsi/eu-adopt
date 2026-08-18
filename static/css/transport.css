@@ -1724,9 +1724,27 @@
 }
 
 /* Modal hartă – alegere punct plecare/sosire pe aceeași pagină */
-/* Sugestiile Google Places deasupra modalului */
+/* Sugestiile Google Places: text negru pe alb (tema EU moștenește text deschis → invizibil) */
 .pac-container {
 	z-index: 120050 !important;
+	background: #fff !important;
+	color: #111 !important;
+}
+.pac-container .pac-item {
+	color: #111 !important;
+	background: #fff !important;
+	border-top: 1px solid #e5e7eb !important;
+}
+.pac-container .pac-item:hover,
+.pac-container .pac-item-selected {
+	background: #e8f0fe !important;
+}
+.pac-container .pac-item-query,
+.pac-container .pac-matched {
+	color: #0d47a1 !important;
+}
+.pac-container .pac-item span {
+	color: #333 !important;
 }
 
 .transport-map-modal {
@@ -1796,14 +1814,16 @@
 	box-sizing: border-box;
 	padding: 0.55rem 0.75rem;
 	font-size: 1rem;
-	border: 1px solid rgba(255, 255, 255, 0.22);
+	border: 2px solid #333;
 	border-radius: 8px;
-	background: rgba(15, 23, 42, 0.92);
-	color: #f8fafc;
-	caret-color: #f8fafc;
+	background: #ffffff !important;
+	color: #111 !important;
+	-webkit-text-fill-color: #111;
+	caret-color: #111;
 }
 .transport-map-modal__search::placeholder {
-	color: #94a3b8;
+	color: #555 !important;
+	-webkit-text-fill-color: #555;
 	opacity: 1;
 }
 .transport-map-modal__search:focus {
