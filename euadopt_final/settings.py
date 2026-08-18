@@ -167,6 +167,7 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',
     'euadopt_final.eu_site_middleware.EuSiteLocaleFixMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'euadopt_final.auth_next_middleware.SanitizeAuthNextMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'euadopt_final.eu_non_ro_staff_gate_middleware.EuNonRoStaffGateMiddleware',

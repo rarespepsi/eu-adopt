@@ -34,7 +34,9 @@ class LoginRequiredMiddleware:
         if path.rstrip("/") == login_url.rstrip("/"):
             return self.get_response(request)
 
-        next_target = request.get_full_path()
-        if next_target and next_target != login_url:
-            return redirect(f"{login_url}?next={quote(next_target, safe='/&?=')}")
+        from home.auth_next import sanitize_post_login_next
+
+        next_target = sanitize_post_login_next(request.get_full_path())
+        if next_target:
+            return redirect(f"{login_url}?next={quote(next_target, safe='/')}")
         return redirect(login_url)

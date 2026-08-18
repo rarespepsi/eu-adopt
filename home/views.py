@@ -2771,10 +2771,13 @@ def login_view(request):
                         auth_login(request, user)
                         from home.metrics_t0 import record_site_login_event
                         from home.pwa import attach_pwa_login_pulse
+                        from home.auth_next import sanitize_post_login_next
 
                         record_site_login_event(user, "login")
                         request.session["eu_pwa_login_pulse"] = 1
-                        next_url = request.GET.get("next") or request.POST.get("next") or "/"
+                        next_url = sanitize_post_login_next(
+                            request.GET.get("next") or request.POST.get("next") or ""
+                        ) or "/"
                         from home.campanii_login import landing_after_login
 
                         next_url = landing_after_login(user, next_url)
@@ -3019,10 +3022,14 @@ def signup_choose_type_view(request):
     """Pagina de alegere tip cont (persoană fizică / firmă / ONG / colaborator)."""
     # EU: doar PF simplu — fără alegere ONG/colaborator.
     if getattr(request, "eu_site_active", False):
-        q = request.GET.urlencode()
+        from home.auth_next import apply_sanitized_next_to_querydict
+
+        q = request.GET.copy()
+        apply_sanitized_next_to_querydict(q)
         url = reverse("signup_pf")
-        if q:
-            url = f"{url}?{q}"
+        qs = q.urlencode()
+        if qs:
+            url = f"{url}?{qs}"
         return redirect(url)
     ctx = {
         "activation_validity_label": _signup_activation_validity_label(),
