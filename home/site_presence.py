@@ -99,21 +99,29 @@ def _cleanup_stale_active(threshold) -> None:
     SitePresenceActive.objects.filter(last_seen__lt=threshold - timedelta(hours=2)).delete()
 
 
+def _cleanup_old_day_sessions() -> None:
+    """Keep only last 2 days of per-session rows; older data lives in SitePresenceDaily aggregates."""
+    cutoff = timezone.localdate() - timedelta(days=2)
+    SitePresenceDaySession.objects.filter(day__lt=cutoff).delete()
+
+
 def _distinct_visitors_since(day_start) -> int:
+    """Sum of daily unique_visitors (pre-aggregated, not COUNT DISTINCT on millions of rows)."""
     return (
-        SitePresenceDaySession.objects.filter(day__gte=day_start)
-        .values("session_hash")
-        .distinct()
-        .count()
+        SitePresenceDaily.objects.filter(date__gte=day_start).aggregate(
+            total=Sum("unique_visitors")
+        )["total"]
+        or 0
     )
 
 
 def _distinct_logged_since(day_start) -> int:
+    """Sum of daily unique_logged_in (pre-aggregated)."""
     return (
-        SitePresenceDayUser.objects.filter(day__gte=day_start)
-        .values("user_id")
-        .distinct()
-        .count()
+        SitePresenceDaily.objects.filter(date__gte=day_start).aggregate(
+            total=Sum("unique_logged_in")
+        )["total"]
+        or 0
     )
 
 
@@ -154,6 +162,7 @@ def staff_analysis_presence_page_context() -> dict:
     today = timezone.localdate()
     threshold = now - timedelta(minutes=ONLINE_WINDOW_MINUTES)
     _cleanup_stale_active(threshold)
+    _cleanup_old_day_sessions()
 
     from home.metrics_t0 import metrics_t0_start
 
