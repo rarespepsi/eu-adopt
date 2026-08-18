@@ -41,9 +41,9 @@ class TransportEuInboxLabelsTests(SimpleTestCase):
     def test_intro_mentions_find_or_not(self):
         from home.eu_ui_labels import eu_ui_label
 
-        intro = eu_ui_label("transport_t1_intro")
+        intro = eu_ui_label("transport_t1_intro", lang="en")
         self.assertIn("transport@eu-adopt.ro", intro)
         self.assertIn("If we find", intro)
         self.assertIn("shelter", intro.lower())
-        ok = eu_ui_label("transport_submit_ok")
+        ok = eu_ui_label("transport_submit_ok", lang="en")
         self.assertIn("sent to our team", ok)

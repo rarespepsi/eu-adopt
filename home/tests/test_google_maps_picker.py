@@ -48,6 +48,8 @@ class GoogleMapsPickerSourceTests(TestCase):
         )
         self.assertIn("safeAutocomplete", src)
         self.assertIn("document.body.appendChild(transportMapModal)", src)
+        self.assertIn("selectedCountryCode", src)
+        self.assertIn("setComponentRestrictions", src)
 
 
 @override_settings(
@@ -88,4 +90,22 @@ class GoogleMapsPickerRenderTests(TestCase):
         self.assertIn('id="transportMapModal"', html)
         self.assertIn("safeAutocomplete", html)
         self.assertIn("document.body.appendChild(transportMapModal)", html)
+        self.assertIn("selectedCountryCode", html)
         self.assertIsNone(_FORBIDDEN_MIXED_TYPES.search(html))
+
+    @override_settings(
+        EUADOPT_EU_PRODUCT_SKIN=True,
+        EUADOPT_NON_RO_STAFF_ONLY=False,
+        PRELAUNCH_MODE=False,
+        EUADOPT_GOOGLE_MAPS_API_KEY="AIzaSyTestKeyForMapsPickerRegression000",
+        GOOGLE_MAPS_API_KEY="AIzaSyTestKeyForMapsPickerRegression000",
+    )
+    def test_eu_transport_has_destination_country_and_country_aware_maps(self):
+        c = Client(HTTP_HOST="euadopt.com")
+        resp = c.get(reverse("transport"))
+        self.assertEqual(resp.status_code, 200)
+        html = resp.content.decode("utf-8", errors="replace")
+        self.assertIn('id="tw-country"', html)
+        self.assertIn("selectedCountryCode", html)
+        self.assertIn("setComponentRestrictions", html)
+        self.assertIn("DESTINATION COUNTRY", html)
