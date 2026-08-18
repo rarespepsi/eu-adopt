@@ -267,16 +267,18 @@
 						{% else %}
 						<input type="hidden" name="country" value="RO" />
 						{% endif %}
+						{% if not eu_site_active %}
 						<div class="t1-field t1-caseta t1-row-inline">
-							<label class="t1-label" for="tw-judet">{% if eu_site_active %}{{ eu_ui.transport_county }}{% else %}JUDET{% endif %}</label>
-							<input type="text" class="t1-input" id="tw-judet" name="judet" list="county-list-tw" placeholder="{% if eu_site_active %}{{ eu_ui.transport_ph_county }}{% else %}Alege sau scrie județul{% endif %}" autocomplete="off" value="{{ prefill_judet|default:'' }}" />
+							<label class="t1-label" for="tw-judet">JUDET</label>
+							<input type="text" class="t1-input" id="tw-judet" name="judet" list="county-list-tw" placeholder="Alege sau scrie județul" autocomplete="off" value="{{ prefill_judet|default:'' }}" />
 							{% include "anunturi/includes/ro_county_list.html" with datalist_id="county-list-tw" %}
 						</div>
 						<div class="t1-field t1-caseta t1-row-inline">
-							<label class="t1-label" for="tw-oras">{% if eu_site_active %}{{ eu_ui.transport_city }}{% else %}ORAȘ / LOCALITATE{% endif %}</label>
-							<input type="text" class="t1-input" id="tw-oras" name="oras" list="city-list-tw" placeholder="{% if eu_site_active %}{{ eu_ui.transport_ph_city }}{% else %}Alege mai întâi județul{% endif %}" autocomplete="off" value="{{ prefill_oras|default:'' }}" />
+							<label class="t1-label" for="tw-oras">ORAȘ / LOCALITATE</label>
+							<input type="text" class="t1-input" id="tw-oras" name="oras" list="city-list-tw" placeholder="Alege mai întâi județul" autocomplete="off" value="{{ prefill_oras|default:'' }}" />
 							<datalist id="city-list-tw"></datalist>
 						</div>
+						{% endif %}
 						<div class="t1-field t1-caseta">
 							<div class="t1-label-row">
 								<label class="t1-label" for="plecare_input">{% if eu_site_active %}{{ eu_ui.transport_from }}{% else %}PUNCT PLECARE{% endif %}</label>

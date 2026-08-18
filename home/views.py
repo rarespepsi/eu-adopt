@@ -4527,7 +4527,7 @@ def transport_view(request):
             lang=getattr(request, "LANGUAGE_CODE", None),
         ),
     }
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and not site_proc.is_eu:
         ctx["prefill_judet"] = _adopter_profile_county_raw(request.user)
         ctx["prefill_oras"] = _adopter_profile_city_raw(request.user)
     # Bridging adopție→transport doar pe .ro (procedură completă).
@@ -4566,12 +4566,13 @@ def transport_submit_view(request):
     judet, oras = normalize_location_pair(judet, oras)
     plecare = (request.POST.get("plecare") or "").strip()
     sosire = (request.POST.get("sosire") or "").strip()
-    if not judet or not oras or not plecare or not sosire:
-        msg = (
-            "Please fill in county, locality and pick-up / drop-off points."
-            if site_proc.is_eu
-            else "Completează județul, localitatea și punctele de plecare / sosire."
-        )
+    if site_proc.is_eu:
+        missing = not plecare or not sosire
+        msg = "Please fill in pick-up and drop-off points."
+    else:
+        missing = not judet or not oras or not plecare or not sosire
+        msg = "Completează județul, localitatea și punctele de plecare / sosire."
+    if missing:
         messages.error(request, msg)
         return redirect("transport")
 

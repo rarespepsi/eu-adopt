@@ -109,3 +109,7 @@ class GoogleMapsPickerRenderTests(TestCase):
         self.assertIn("selectedCountryCode", html)
         self.assertIn("setComponentRestrictions", html)
         self.assertIn("DESTINATION COUNTRY", html)
+        self.assertNotIn('id="tw-judet"', html)
+        self.assertNotIn('id="tw-oras"', html)
+        self.assertIn('id="plecare_input"', html)
+        self.assertIn('id="sosire_input"', html)

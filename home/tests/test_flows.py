@@ -18,6 +18,7 @@ User = get_user_model()
 class TransportSubmitFlowTests(TestCase):
     """9: POST transport cu date minime valide."""
 
+    @override_settings(PRELAUNCH_MODE=False)
     def test_transport_submit_valid_creates_request(self):
         c = Client()
         r = c.post(
@@ -35,6 +36,27 @@ class TransportSubmitFlowTests(TestCase):
             TransportVeterinaryRequest.objects.filter(
                 judet="Cluj",
                 oras="Cluj-Napoca",
+            ).exists(),
+        )
+
+    @override_settings(EUADOPT_EU_PRODUCT_SKIN=True, EUADOPT_NON_RO_STAFF_ONLY=False, PRELAUNCH_MODE=False)
+    def test_eu_transport_submit_without_county_city(self):
+        c = Client(HTTP_HOST="euadopt.com")
+        r = c.post(
+            reverse("transport_submit"),
+            {
+                "country": "FR",
+                "plecare": "Shelter Romania",
+                "sosire": "Paris",
+                "nr_caini": "1",
+            },
+        )
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(
+            TransportVeterinaryRequest.objects.filter(
+                country="FR",
+                plecare="Shelter Romania",
+                sosire="Paris",
             ).exists(),
         )
 

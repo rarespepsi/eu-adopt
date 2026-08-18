@@ -56,8 +56,6 @@ def send_eu_transport_request_to_inbox(request, tvr) -> bool:
         f"Phone: {phone or '—'}",
         "",
         f"Destination country: {(tvr.country or 'RO').upper()}",
-        f"County: {tvr.judet}",
-        f"City / place: {tvr.oras}",
         f"Pick-up: {tvr.plecare}",
         f"Drop-off: {tvr.sosire}",
         f"Date: {tvr.data_raw or '—'}",
@@ -70,7 +68,8 @@ def send_eu_transport_request_to_inbox(request, tvr) -> bool:
         "Reply to this email to contact the requester (Reply-To set when email is known).",
     ]
     body = "\n".join(lines)
-    subject = f"[EU transport #{tvr.pk}] {username} — {(tvr.country or 'RO').upper()} {tvr.oras}"
+    dest = (tvr.sosire or "")[:80]
+    subject = f"[EU transport #{tvr.pk}] {username} — {(tvr.country or 'RO').upper()} {dest}".strip()
     reply_to = [user_email] if user_email else None
     try:
         send_mail_text_and_html(
