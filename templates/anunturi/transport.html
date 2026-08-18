@@ -5,7 +5,7 @@
 {% block body_class %}page-transport{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=77-map-search-black" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/transport.css' %}?v=78-map-below-nav-paris" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Servicii / Intra */
 	body.page-transport {
@@ -920,17 +920,25 @@
 			return (mapPickerMode === 'sosire') ? selectedCountryCode() : 'ro';
 		}
 		function setTransportModalAcBoundsFromForm() {
-			if (!mapPickerModalAc || typeof mapPickerModalAc.setBounds !== 'function') return;
+			if (!mapPickerModalAc) return;
 			var cc = mapModeCountry();
-			setAcCountry(mapPickerModalAc, cc);
-			if (cc !== 'ro') {
-				geocodeAndSetBounds(mapPickerModalAc, countryLabelForGeocode(cc), cc, null);
+			if (mapPickerMode === 'sosire') {
+				if (cc && cc !== 'ro') {
+					setAcCountry(mapPickerModalAc, cc);
+					geocodeAndSetBounds(mapPickerModalAc, countryLabelForGeocode(cc), cc, null);
+				} else {
+					try { mapPickerModalAc.setComponentRestrictions({}); } catch (eClear) {}
+					if (typeof mapPickerModalAc.setBounds === 'function') {
+						try { mapPickerModalAc.setBounds(null); } catch (eB) {}
+					}
+				}
 				return;
 			}
+			setAcCountry(mapPickerModalAc, 'ro');
 			var judet = judetEl && judetEl.value ? String(judetEl.value).trim() : '';
 			var oras = orasEl && orasEl.value ? String(orasEl.value).trim() : '';
 			if (!judet) {
-				mapPickerModalAc.setBounds(romaniaBounds);
+				if (typeof mapPickerModalAc.setBounds === 'function') mapPickerModalAc.setBounds(romaniaBounds);
 				return;
 			}
 			var q = oras ? (oras + ', ' + judet + ', România') : (judet + ', România');
@@ -939,18 +947,7 @@
 		function buildTransportModalGeocodeQuery(raw) {
 			var t = (raw || '').trim();
 			if (t.length < 3) return null;
-			var cc = mapModeCountry();
-			var parts = [t];
-			if (cc === 'ro') {
-				var judet = judetEl && judetEl.value ? String(judetEl.value).trim() : '';
-				var oras = orasEl && orasEl.value ? String(orasEl.value).trim() : '';
-				if (oras) parts.push(oras);
-				if (judet) parts.push(judet);
-				parts.push('România');
-			} else {
-				parts.push(countryLabelForGeocode(cc));
-			}
-			return parts.join(', ');
+			return t;
 		}
 		function scheduleTransportModalSearchGeocode() {
 			if (transportModalSearchTimer) clearTimeout(transportModalSearchTimer);
@@ -959,8 +956,7 @@
 				if (!si || !mapPickerMap || !mapPickerMarker) return;
 				var q = buildTransportModalGeocodeQuery(si.value);
 				if (!q) return;
-				var cc = mapModeCountry();
-				geocoder.geocode({ address: q, region: cc }, function(results, status) {
+				geocoder.geocode({ address: q }, function(results, status) {
 					if (status !== 'OK' || !results || !results[0] || !results[0].geometry) return;
 					var g = results[0].geometry;
 					var loc = g.location;
@@ -1003,10 +999,12 @@
 			});
 			var searchInput = document.getElementById('transportMapSearch');
 			if (searchInput) {
-				var modalAcOpts = acOptsForCountry(mapModeCountry());
+				var modalAcOpts = (mapPickerMode === 'sosire' && mapModeCountry() !== 'ro')
+					? acOptsForCountry(mapModeCountry())
+					: (mapPickerMode === 'plecare' ? originOpts : {});
 				mapPickerModalAc = safeAutocomplete(searchInput, modalAcOpts);
 				if (mapPickerModalAc) {
-					if (mapModeCountry() === 'ro') mapPickerModalAc.setBounds(romaniaBounds);
+					if (mapPickerMode === 'plecare') mapPickerModalAc.setBounds(romaniaBounds);
 					mapPickerModalAc.addListener('place_changed', function() {
 						var place = mapPickerModalAc.getPlace();
 						if (!place.geometry || !place.geometry.location) return;

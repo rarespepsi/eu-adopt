@@ -1726,7 +1726,7 @@
 /* Modal hartă – alegere punct plecare/sosire pe aceeași pagină */
 /* Sugestiile Google Places: text negru pe alb (tema EU moștenește text deschis → invizibil) */
 .pac-container {
-	z-index: 120050 !important;
+	z-index: 1000020 !important;
 	background: #fff !important;
 	color: #111 !important;
 }
@@ -1750,11 +1750,12 @@
 .transport-map-modal {
 	position: fixed;
 	inset: 0;
-	z-index: 200000;
+	z-index: 1000010;
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: center;
 	padding: 1rem;
+	padding-top: calc(var(--nav-height, 56px) + 1cm);
 	box-sizing: border-box;
 }
 .transport-map-modal[hidden] {
@@ -1772,7 +1773,7 @@
 	z-index: 1;
 	width: min(100%, 920px);
 	max-width: 96vw;
-	max-height: min(96vh, 900px);
+	max-height: min(calc(100vh - var(--nav-height, 56px) - 1cm - 2rem), 900px);
 	display: flex;
 	flex-direction: column;
 	gap: 0.65rem;
