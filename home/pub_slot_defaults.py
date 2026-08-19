@@ -17,21 +17,33 @@ from home.pub_markets import (
 PUB_COVER_COUNT = 30
 PUB_COVER_STATIC_PREFIX = "images/pub/covers/"
 
-# Casete rezervate Campanii pe .ro — imagine + link hartă (nu catalog public)
-RO_CAMPAIGN_PUB_CODES = frozenset({"A5.3", "P4.3", "TDR.3", "IL.L1"})
-RO_CAMPAIGN_PUB_IMAGE = "images/campanii/campanii-gratuite-pub.png"
+# Placeholder live: poze animale (până la material client) — set curat 6 imagini distincte
+PUB_ANIMAL_COVER_COUNT = 6
+PUB_ANIMAL_COVER_PREFIX = "images/pub/animals/"
+PUB_ANIMAL_COVER_FILES = tuple(f"pub_animale_{n:02d}_a.jpg" for n in range(1, 7))
+
+
+def pub_animal_cover_static_path(index: int) -> str:
+    """index 1..PUB_ANIMAL_COVER_COUNT"""
+    i = max(1, min(int(index), PUB_ANIMAL_COVER_COUNT)) - 1
+    return f"{PUB_ANIMAL_COVER_PREFIX}{PUB_ANIMAL_COVER_FILES[i]}"
 
 
 def pub_cover_static_path(slot_code: str) -> str:
     """Cale statică deterministă — același slot = aceeași imagine."""
     code = (slot_code or "").strip() or "?"
     digest = hashlib.md5(code.encode("utf-8")).hexdigest()
-    idx = (int(digest[:8], 16) % PUB_COVER_COUNT) + 1
-    return f"{PUB_COVER_STATIC_PREFIX}cover_{idx:02d}.svg"
+    idx = (int(digest[:8], 16) % PUB_ANIMAL_COVER_COUNT) + 1
+    return pub_animal_cover_static_path(idx)
 
 
 def pub_cover_url(slot_code: str) -> str:
     return static(pub_cover_static_path(slot_code))
+
+
+# Casete rezervate Campanii pe .ro — imagine + link hartă (nu catalog public)
+RO_CAMPAIGN_PUB_CODES = frozenset({"A5.3", "P4.3", "TDR.3", "IL.L1"})
+RO_CAMPAIGN_PUB_IMAGE = "images/campanii/campanii-gratuite-pub.png"
 
 
 def pub_harta_url(section: str, slot_code: str) -> str:
@@ -225,7 +237,7 @@ def pub_slot_live_creative(
             "img": default_img,
             "video": "",
             "link": "",
-            "alt": "Publicitate",
+            "alt": "EU-Adopt",
             "caption": "",
             "price": "",
             "discount": "",

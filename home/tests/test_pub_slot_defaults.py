@@ -17,7 +17,7 @@ class PubSlotDefaultsTests(SimpleTestCase):
         c = pub_cover_static_path("S1.15")
         self.assertEqual(a, b)
         self.assertNotEqual(a, c)
-        self.assertTrue(a.startswith("images/pub/covers/cover_"))
+        self.assertTrue(a.startswith("images/pub/animals/pub_animale_"))
 
     def test_default_creative_has_no_click_link(self):
         creative = pub_slot_live_creative("servicii", "S2.2", note=None)
