@@ -7,9 +7,10 @@ set -euo pipefail
 APP_DIR="${EUADOPT_APP_DIR:-/opt/eu-adopt}"
 SCRIPT_AM="${APP_DIR}/deploy/hetzner/run_invite_daily_wave.sh"
 SCRIPT_PM="${APP_DIR}/deploy/hetzner/run_invite_daily_wave_pm.sh"
+SCRIPT_SCHED="${APP_DIR}/deploy/hetzner/run_invite_daily_wave_at_ro_hour.sh"
 ENV_FILE="${APP_DIR}/.env"
 
-chmod +x "${SCRIPT_AM}" "${SCRIPT_PM}" 2>/dev/null || true
+chmod +x "${SCRIPT_AM}" "${SCRIPT_PM}" "${SCRIPT_SCHED}" 2>/dev/null || true
 touch /var/log/euadopt-invite-wave.log
 chmod 644 /var/log/euadopt-invite-wave.log
 
@@ -47,23 +48,21 @@ if [[ -f "${ENV_FILE}" ]]; then
   chown euadopt:euadopt "${ENV_FILE}" 2>/dev/null || true
 fi
 
-CRON_AM='0 10 * * * bash '"${SCRIPT_AM}"
-CRON_PM='0 13 * * * bash '"${SCRIPT_PM}"
+# Server H = UTC; CRON_TZ nu e aplicat de cron pe acest host → verificăm ora RO în script.
+CRON_AM='0 * * * * bash '"${SCRIPT_SCHED}"' 10 am'
+CRON_PM='0 * * * * bash '"${SCRIPT_SCHED}"' 13 pm'
 
 TMP="$(mktemp)"
 crontab -l 2>/dev/null \
   | grep -v 'run_invite_daily_wave.sh' \
   | grep -v 'run_invite_daily_wave_pm.sh' \
-  | grep -v '^CRON_TZ=' > "${TMP}" || true
-# Ora locală RO: CRON_TZ pe crontab (TZ= în CMD nu mută ora de declanșare pe server UTC).
-if ! grep -q '^CRON_TZ=' "${TMP}" 2>/dev/null; then
-  echo 'CRON_TZ=Europe/Bucharest' >> "${TMP}"
-fi
+  | grep -v 'run_invite_daily_wave_at_ro_hour.sh' \
+  > "${TMP}" || true
 echo "${CRON_AM}" >> "${TMP}"
 echo "${CRON_PM}" >> "${TMP}"
 crontab "${TMP}"
 rm -f "${TMP}"
 
-echo "Cron invitații instalat (CRON_TZ=Europe/Bucharest):"
-crontab -l | grep -E 'CRON_TZ|run_invite_daily_wave' || true
+echo "Cron invitații instalat (10:00 + 13:00 Europe/Bucharest via hourly check):"
+crontab -l | grep -E 'run_invite_daily_wave' || true
 echo "Log: /var/log/euadopt-invite-wave.log"

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Val zilnic PM invitații colaboratori (16:00 RO) — cabinet / magazin / grooming.
+# Val zilnic PM invitații colaboratori (13:00 RO) — cabinet / magazin / grooming.
 set -uo pipefail
 
 APP_DIR="${EUADOPT_APP_DIR:-/opt/eu-adopt}"
