@@ -409,6 +409,30 @@ class EuNonRoStaffGateTests(TestCase):
         self.assertNotEqual(r.status_code, 403)
 
 
+@override_settings(
+    PRELAUNCH_MODE=True,
+    EUADOPT_NON_RO_STAFF_ONLY=False,
+    EUADOPT_EU_PRODUCT_SKIN=True,
+)
+class EuPublicBrowseDuringPrelaunchTests(TestCase):
+    """EU: navigare liberă fără login; .ro rămâne sub prelaunch."""
+
+    def test_anon_eu_home_and_pets_ok(self):
+        c = Client(HTTP_HOST="euadopt.com")
+        self.assertEqual(c.get("/").status_code, 200)
+        self.assertEqual(c.get("/pets/").status_code, 200)
+
+    def test_anon_eu_de_home_ok(self):
+        c = Client(HTTP_HOST="euadopt.de")
+        self.assertEqual(c.get("/").status_code, 200)
+
+    def test_anon_ro_pets_still_gated(self):
+        c = Client(HTTP_HOST="eu-adopt.ro")
+        r = c.get("/pets/")
+        self.assertEqual(r.status_code, 302)
+        self.assertIn("/login", r["Location"])
+
+
 class PetFieldValueEnTests(SimpleTestCase):
     def test_size_yes_no_age(self):
         from home.pet_ui_display import pet_field_value, pet_field_value_en

@@ -118,8 +118,8 @@ _eu_skin = _os.environ.get("EUADOPT_EU_PRODUCT_SKIN", "0").strip().lower()
 EUADOPT_EU_PRODUCT_SKIN = _eu_skin in ("1", "true", "yes", "on")
 
 # Extensii non-.ro: doar staff/superuser (Coming soon pentru public). 0 = deschis public.
-_eu_staff_only = _os.environ.get("EUADOPT_NON_RO_STAFF_ONLY", "1").strip().lower()
-EUADOPT_NON_RO_STAFF_ONLY = _eu_staff_only not in ("0", "false", "no", "off")
+_eu_staff_only = _os.environ.get("EUADOPT_NON_RO_STAFF_ONLY", "0").strip().lower()
+EUADOPT_NON_RO_STAFF_ONLY = _eu_staff_only in ("1", "true", "yes", "on")
 
 # Publicitate + promovare A2 gratuite în pre-lansare (1 casetă PUB/cont, 1 promovare/cont).
 # Oferte colaborator: 0 = nelimitat.

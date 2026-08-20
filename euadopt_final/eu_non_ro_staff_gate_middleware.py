@@ -1,7 +1,8 @@
 """
-Gate: pe domeniile non-.ro, vizitatorii anonimi văd „Coming soon”;
-staff/superuser și userii PF (persoană fizică) pot lucra pe extensii.
-Activ implicit: EUADOPT_NON_RO_STAFF_ONLY=1 (dezactivare totală = 0).
+Gate opțional: pe domeniile non-.ro, „Coming soon” pentru anonimi / non-PF.
+
+Implicit OFF (EUADOPT_NON_RO_STAFF_ONLY=0): navigare liberă pe EU.
+Activare (1): doar staff + useri PF (+ login/signup) trec de poartă.
 """
 from __future__ import annotations
 
@@ -10,7 +11,7 @@ from django.shortcuts import render
 
 
 def non_ro_staff_only_enabled() -> bool:
-    raw = (getattr(settings, "EUADOPT_NON_RO_STAFF_ONLY", True))
+    raw = (getattr(settings, "EUADOPT_NON_RO_STAFF_ONLY", False))
     if isinstance(raw, bool):
         return raw
     return str(raw).strip().lower() in ("1", "true", "yes", "on")

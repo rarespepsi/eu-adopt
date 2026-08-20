@@ -1,8 +1,9 @@
 """
-Mod PRE-LAUNCH: acces site doar după autentificare.
+Mod PRE-LAUNCH: pe .ro, acces site doar după autentificare (cu excepții publice).
 
 Activ doar când settings.PRELAUNCH_MODE este True (env EUADOPT_PRELAUNCH_MODE=1).
-Când PRELAUNCH_MODE este False, middleware-ul nu face nimic — vitrina publică normală.
+Pe site-urile EU (.com / .de / .fr / .es) navigarea rămâne liberă fără login;
+adopția și acțiunile de cont cer autentificare separat (view-uri @login_required).
 """
 from __future__ import annotations
 
@@ -14,12 +15,27 @@ from django.shortcuts import redirect
 from euadopt_final.prelaunch_paths import is_prelaunch_public_request
 
 
+def _is_eu_browse_host(request) -> bool:
+    """EU product hosts: vitrină publică chiar în PRELAUNCH (doar .ro rămâne blocat)."""
+    try:
+        from home.eu_site import is_eu_country_host, is_eu_hub_host
+
+        host = request.get_host()
+        return bool(is_eu_hub_host(host) or is_eu_country_host(host))
+    except Exception:
+        return False
+
+
 class LoginRequiredMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
         if not getattr(settings, "PRELAUNCH_MODE", False):
+            return self.get_response(request)
+
+        # EU: navigare liberă; login doar la acțiuni (adopție, cont, etc.).
+        if _is_eu_browse_host(request):
             return self.get_response(request)
 
         user = getattr(request, "user", None)
