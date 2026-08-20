@@ -3,13 +3,13 @@
  * Override linkuri cyan din eu-intra-site-skin pe fundal deschis.
  */
 body.euadopt-intra-skin.page-admin-analysis .main-content
-	a:not(.btn):not(.button):not([class*="btn-"]):not(.dog-card-link):not(.analysis-subnav a):not(.analysis-btn-comercial):not(.analysis-btn-prezenta):not(.analysis-view-as a):not(.analysis-view-as-tip a):not(.users-mail-btn) {
+	a:not(.btn):not(.button):not([class*="btn-"]):not(.dog-card-link):not(.analysis-subnav a):not(.analysis-btn-comercial):not(.analysis-btn-prezenta):not(.analysis-btn-prezenta-eu):not(.analysis-view-as a):not(.analysis-view-as-tip a):not(.users-mail-btn):not(.eu-hub-card):not(.eu-hub-nav a):not(.eu-mkt-nav a) {
 	color: #1f2937;
 	text-decoration: none;
 }
 
 body.euadopt-intra-skin.page-admin-analysis .main-content
-	a:not(.btn):not(.button):not([class*="btn-"]):not(.dog-card-link):not(.analysis-subnav a):not(.analysis-btn-comercial):not(.analysis-btn-prezenta):not(.analysis-view-as a):not(.analysis-view-as-tip a):not(.users-mail-btn):hover {
+	a:not(.btn):not(.button):not([class*="btn-"]):not(.dog-card-link):not(.analysis-subnav a):not(.analysis-btn-comercial):not(.analysis-btn-prezenta):not(.analysis-btn-prezenta-eu):not(.analysis-view-as a):not(.analysis-view-as-tip a):not(.users-mail-btn):not(.eu-hub-card):not(.eu-hub-nav a):not(.eu-mkt-nav a):hover {
 	color: #0d47a1;
 	text-decoration: underline;
 }
@@ -53,6 +53,57 @@ body.page-admin-analysis .analysis-shell h1,
 body.page-admin-analysis .analysis-home-shell h1,
 body.page-admin-analysis .users-panel h2,
 body.page-admin-analysis .performance-panel h2,
-body.page-admin-analysis .presence-section-title {
+body.page-admin-analysis .presence-section-title,
+body.page-admin-analysis .eu-hub-shell h1,
+body.page-admin-analysis .eu-mkt-shell h1 {
 	color: #0d47a1;
+}
+
+/* Prezență EU — contrast forțat (carduri + nav sunt <a>) */
+body.page-admin-analysis .eu-hub-nav a,
+body.page-admin-analysis .eu-mkt-nav a {
+	color: #0d47a1 !important;
+	background: #ffffff !important;
+	border: 1px solid #1565c0 !important;
+	font-weight: 800 !important;
+	text-decoration: none !important;
+}
+body.page-admin-analysis .eu-mkt-nav a.is-active {
+	background: #1565c0 !important;
+	color: #ffffff !important;
+}
+body.page-admin-analysis .eu-hub-card {
+	color: #111827 !important;
+	background: #e3f2fd !important;
+	border: 1px solid #1565c0 !important;
+	text-decoration: none !important;
+}
+body.page-admin-analysis .eu-hub-card:hover {
+	background: #bbdefb !important;
+}
+body.page-admin-analysis .eu-hub-card--eu {
+	background: #c8e6c9 !important;
+	border-color: #2e7d32 !important;
+}
+body.page-admin-analysis .eu-hub-card--eu:hover {
+	background: #a5d6a7 !important;
+}
+body.page-admin-analysis .eu-hub-card-code {
+	color: #0d47a1 !important;
+}
+body.page-admin-analysis .eu-hub-card--eu .eu-hub-card-code {
+	color: #1b5e20 !important;
+}
+body.page-admin-analysis .eu-hub-card-label,
+body.page-admin-analysis .eu-hub-card-kpis,
+body.page-admin-analysis .eu-hub-meta,
+body.page-admin-analysis .eu-mkt-meta {
+	color: #111827 !important;
+}
+body.page-admin-analysis .eu-hub-card-kpis strong {
+	color: #0d47a1 !important;
+}
+body.page-admin-analysis .analysis-btn-prezenta-eu {
+	color: #0d47a1 !important;
+	text-decoration: none !important;
 }
