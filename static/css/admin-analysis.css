@@ -53,57 +53,45 @@ body.page-admin-analysis .analysis-shell h1,
 body.page-admin-analysis .analysis-home-shell h1,
 body.page-admin-analysis .users-panel h2,
 body.page-admin-analysis .performance-panel h2,
-body.page-admin-analysis .presence-section-title,
-body.page-admin-analysis .eu-hub-shell h1,
-body.page-admin-analysis .eu-mkt-shell h1 {
+body.page-admin-analysis .presence-section-title {
 	color: #0d47a1;
 }
 
-/* Prezență EU — contrast forțat (carduri + nav sunt <a>) */
+/* Prezență EU — doar text mai deschis/vizibil, fără schimbare de fundal */
 body.page-admin-analysis .eu-hub-nav a,
 body.page-admin-analysis .eu-mkt-nav a {
-	color: #0d47a1 !important;
-	background: #ffffff !important;
-	border: 1px solid #1565c0 !important;
-	font-weight: 800 !important;
+	color: #81d4fa !important;
 	text-decoration: none !important;
+	font-weight: 800 !important;
 }
 body.page-admin-analysis .eu-mkt-nav a.is-active {
-	background: #1565c0 !important;
-	color: #ffffff !important;
+	color: #e1f5fe !important;
+	font-weight: 900 !important;
 }
 body.page-admin-analysis .eu-hub-card {
-	color: #111827 !important;
-	background: #e3f2fd !important;
-	border: 1px solid #1565c0 !important;
+	color: #e3f2fd !important;
 	text-decoration: none !important;
 }
-body.page-admin-analysis .eu-hub-card:hover {
-	background: #bbdefb !important;
-}
-body.page-admin-analysis .eu-hub-card--eu {
-	background: #c8e6c9 !important;
-	border-color: #2e7d32 !important;
-}
-body.page-admin-analysis .eu-hub-card--eu:hover {
-	background: #a5d6a7 !important;
-}
 body.page-admin-analysis .eu-hub-card-code {
-	color: #0d47a1 !important;
+	color: #b3e5fc !important;
 }
 body.page-admin-analysis .eu-hub-card--eu .eu-hub-card-code {
-	color: #1b5e20 !important;
+	color: #c8e6c9 !important;
 }
 body.page-admin-analysis .eu-hub-card-label,
 body.page-admin-analysis .eu-hub-card-kpis,
 body.page-admin-analysis .eu-hub-meta,
 body.page-admin-analysis .eu-mkt-meta {
-	color: #111827 !important;
+	color: #e0f7fa !important;
 }
 body.page-admin-analysis .eu-hub-card-kpis strong {
-	color: #0d47a1 !important;
+	color: #fff9c4 !important;
+}
+body.page-admin-analysis .eu-hub-shell h1,
+body.page-admin-analysis .eu-mkt-shell h1 {
+	color: #b3e5fc !important;
 }
 body.page-admin-analysis .analysis-btn-prezenta-eu {
-	color: #0d47a1 !important;
+	color: #81d4fa !important;
 	text-decoration: none !important;
 }
