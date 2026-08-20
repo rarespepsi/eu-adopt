@@ -1,7 +1,7 @@
 """
-Gate: pe domeniile non-.ro, vizitatorii văd „Coming soon”;
-doar staff/superuser (după login) pot lucra pe extensii.
-Activ implicit: EUADOPT_NON_RO_STAFF_ONLY=1 (dezactivare = 0).
+Gate: pe domeniile non-.ro, vizitatorii anonimi văd „Coming soon”;
+staff/superuser și userii PF (persoană fizică) pot lucra pe extensii.
+Activ implicit: EUADOPT_NON_RO_STAFF_ONLY=1 (dezactivare totală = 0).
 """
 from __future__ import annotations
 
@@ -44,6 +44,28 @@ def _path_allowed(path: str) -> bool:
     return False
 
 
+def _user_may_access_eu(user) -> bool:
+    """Staff/superuser sau cont PF autentificat."""
+    if user is None or not getattr(user, "is_authenticated", False):
+        return False
+    if user.is_staff or user.is_superuser:
+        return True
+    try:
+        from home.models import AccountProfile
+
+        role = (
+            AccountProfile.objects.filter(user_id=user.pk)
+            .values_list("role", flat=True)
+            .first()
+        )
+    except Exception:
+        return False
+    if role is None:
+        # Cont fără profil = tratat ca PF (default la creare).
+        return True
+    return role == AccountProfile.ROLE_PF
+
+
 class EuNonRoStaffGateMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
@@ -66,8 +88,7 @@ class EuNonRoStaffGateMiddleware:
         if not (is_eu_hub_host(host) or is_eu_country_host(host)):
             return self.get_response(request)
 
-        user = getattr(request, "user", None)
-        if user is not None and user.is_authenticated and (user.is_staff or user.is_superuser):
+        if _user_may_access_eu(getattr(request, "user", None)):
             return self.get_response(request)
 
         if _path_allowed(request.path or "/"):

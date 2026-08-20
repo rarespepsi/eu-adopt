@@ -375,6 +375,34 @@ class EuNonRoStaffGateTests(TestCase):
         self.assertIn(r.status_code, (200, 302))
         self.assertNotContains(r, "coming soon", status_code=r.status_code)
 
+    def test_pf_user_can_access(self):
+        from home.models import AccountProfile
+
+        User = get_user_model()
+        u = User.objects.create_user(username="eu_pf", password="x")
+        AccountProfile.objects.update_or_create(
+            user=u, defaults={"role": AccountProfile.ROLE_PF}
+        )
+        c = Client(HTTP_HOST="euadopt.com")
+        c.force_login(u)
+        r = c.get("/")
+        self.assertIn(r.status_code, (200, 302))
+        self.assertNotContains(r, "coming soon", status_code=r.status_code)
+
+    def test_org_user_still_blocked(self):
+        from home.models import AccountProfile
+
+        User = get_user_model()
+        u = User.objects.create_user(username="eu_org", password="x")
+        AccountProfile.objects.update_or_create(
+            user=u, defaults={"role": AccountProfile.ROLE_ORG}
+        )
+        c = Client(HTTP_HOST="euadopt.com")
+        c.force_login(u)
+        r = c.get("/")
+        self.assertEqual(r.status_code, 403)
+        self.assertContains(r, "coming soon", status_code=403)
+
     def test_ro_unaffected(self):
         c = Client(HTTP_HOST="eu-adopt.ro")
         r = c.get("/")
