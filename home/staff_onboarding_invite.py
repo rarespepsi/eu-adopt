@@ -8,6 +8,7 @@ from __future__ import annotations
 import logging
 import re
 import secrets
+import time
 from datetime import timedelta
 from typing import Any
 from urllib.parse import quote
@@ -987,6 +988,14 @@ def staff_invite_process_one(
     return "simulated"
 
 
+def staff_invite_send_delay_sec() -> int:
+    """Pauză între trimiteri SMTP (anti-blocaj Zoho). Implicit 0; pe H: 60."""
+    try:
+        return max(0, int(getattr(settings, "STAFF_INVITE_SEND_DELAY_SEC", 0) or 0))
+    except (TypeError, ValueError):
+        return 0
+
+
 def staff_invite_process_batch(
     request,
     staff_user,
@@ -997,6 +1006,7 @@ def staff_invite_process_batch(
 ) -> dict[str, int]:
     max_batch = int(getattr(settings, "STAFF_LEAD_INVITE_MAX_BATCH", 100))
     limit = max_batch if max_count is None else min(max_count, max_batch)
+    delay_sec = staff_invite_send_delay_sec()
     stats = {
         "sent": 0,
         "simulated": 0,
@@ -1006,12 +1016,15 @@ def staff_invite_process_batch(
         "invalid": 0,
     }
     processed = 0
+    smtp_attempts = 0
     for lead in leads:
         if processed >= limit:
             break
         if staff_invite_daily_remaining() <= 0:
             stats["daily_cap"] += 1
             break
+        if delay_sec > 0 and smtp_attempts > 0:
+            time.sleep(delay_sec)
         result = staff_invite_process_one(
             request,
             staff_user,
@@ -1022,6 +1035,7 @@ def staff_invite_process_batch(
         if result == "sent":
             stats["sent"] += 1
             processed += 1
+            smtp_attempts += 1
         elif result == "simulated":
             stats["simulated"] += 1
             processed += 1
@@ -1032,6 +1046,7 @@ def staff_invite_process_batch(
             stats["invalid"] += 1
         elif result == "error":
             stats["error"] += 1
+            smtp_attempts += 1
         elif result == "daily_cap":
             stats["daily_cap"] += 1
             break

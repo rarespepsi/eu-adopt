@@ -7,7 +7,8 @@ APP_DIR="${EUADOPT_APP_DIR:-/opt/eu-adopt}"
 LOG="/var/log/euadopt-invite-wave.log"
 LOCK="/var/lock/euadopt-invite-wave.lock"
 # Max 15 min — evită procese blocate pe SMTP fără log
-TIMEOUT_SEC="${EUADOPT_INVITE_WAVE_TIMEOUT:-900}"
+# 25×60s delay ≈ 24 min; default 35 min
+TIMEOUT_SEC="${EUADOPT_INVITE_WAVE_TIMEOUT:-2100}"
 
 mkdir -p "$(dirname "${LOG}")" /var/lock 2>/dev/null || true
 touch "${LOG}"
