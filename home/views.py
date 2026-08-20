@@ -2172,12 +2172,15 @@ def _send_adoption_waiting_list_email(ar: AdoptionRequest):
         logging.getLogger(__name__).exception("adoption_waiting_email_adopter: %s", exc)
 
 
+A2_DEMO_FILLER_PK_BASE = -9000
+
+
 def select_a2_dogs(available_dogs, limit=A2_SLOT_COUNT):
     """
     From available_dogs (each dict with 'id' and optional 'added_at' datetime):
-    - Dogs added in last A2_NEW_HOURS appear first (newest first).
+    - Animals added in last A2_NEW_HOURS appear first (newest first).
     - Remaining slots filled randomly from the rest.
-    - Returns up to `limit` dogs; never empty if available_dogs is non-empty.
+    - Returns up to `limit` items; never empty if available_dogs is non-empty.
     """
     if not available_dogs:
         return []
@@ -2202,6 +2205,34 @@ def select_a2_dogs(available_dogs, limit=A2_SLOT_COUNT):
         fill = random.sample(remaining, min(need, len(remaining)))
         chosen.extend(fill)
     return chosen[:limit]
+
+
+def pad_a2_dogs_with_demo(chosen, limit=A2_SLOT_COUNT):
+    """A2 is always 12 filled cells: pad with DEMO_DOGS (dog/cat/other) if fewer real listings."""
+    out = [deepcopy(d) for d in (chosen or [])]
+    if len(out) >= limit:
+        return out[:limit]
+    now = timezone.now()
+    used_keys = set()
+    for d in out:
+        used_keys.add((d.get("nume"), d.get("imagine_fallback")))
+    i = 0
+    while len(out) < limit and DEMO_DOGS:
+        src = DEMO_DOGS[i % len(DEMO_DOGS)]
+        row = deepcopy(src)
+        row["added_at"] = now - timezone.timedelta(hours=A2_NEW_HOURS + 1)
+        row["a2_filler"] = True
+        row["id"] = A2_DEMO_FILLER_PK_BASE - (i + 1)
+        key = (row.get("nume"), row.get("imagine_fallback"))
+        if key in used_keys and i < len(DEMO_DOGS):
+            i += 1
+            continue
+        used_keys.add(key)
+        out.append(row)
+        i += 1
+        if i > limit * 4:
+            break
+    return out[:limit]
 
 
 PT_PUB_SLOT_CODES = ("P4.3", "P5.1", "P5.2", "P5.3")
@@ -2635,9 +2666,9 @@ def home_view(request):
     is_home = request.resolver_match.url_name == "home"
     now_promo = timezone.now()
 
-    # Available dogs pentru A2 (HOME) / PT:
-    # 1) întâi din DB (AnimalListing, is_published=True), cu added_at = created_at
-    # 2) dacă nu există niciun câine în DB, folosim lista demo (DEMO_DOGS)
+    # Available animals pentru A2 (HOME) / PT:
+    # 1) întâi din DB (AnimalListing, is_published=True, toate speciile), added_at = created_at
+    # 2) dacă sunt sub 12, completăm cu DEMO_DOGS (câini / pisici / altele)
     available_for_pt = []
     db_pets_for_a2 = list(
         AnimalListing.objects.filter(is_published=True).order_by("-created_at")[:200]
@@ -2647,6 +2678,7 @@ def home_view(request):
             available_for_pt.append({
                 "id": listing.pk,
                 "nume": listing.name or "—",
+                "species": (listing.species or "").strip().lower(),
                 "varsta": listing.age_label or "",
                 "sex": (listing.sex or "").strip(),
                 "oras": (listing.city or "").strip(),
@@ -2660,19 +2692,23 @@ def home_view(request):
             })
     else:
         now = timezone.now()
-        for d in DEMO_DOGS:
+        for i, d in enumerate(DEMO_DOGS):
             row = deepcopy(d)
             if "added_at" not in row:
                 row["added_at"] = now - timezone.timedelta(hours=A2_NEW_HOURS + 1)
+            row["a2_filler"] = True
+            row["id"] = A2_DEMO_FILLER_PK_BASE - (i + 1)
             available_for_pt.append(row)
 
-    # A2: 12 dogs – new (last 24h) first, then fill randomly from PT
+    # A2: mereu 12 casete – noi (24h) întâi, rest random, apoi demo dacă sunt sub 12
     a2_selected = select_a2_dogs(available_for_pt, limit=A2_SLOT_COUNT)
+    a2_selected = pad_a2_dogs_with_demo(a2_selected, limit=A2_SLOT_COUNT)
     a2_pets = []
     for d in a2_selected:
         pet = {
             "pk": d["id"],
             "nume": d["nume"],
+            "species": (d.get("species") or "").strip().lower(),
             "varsta": d["varsta"],
             "sex": (d.get("sex") or "").strip(),
             "oras": (d.get("oras") or "").strip(),
@@ -2681,6 +2717,7 @@ def home_view(request):
             "imagine_2": d.get("imagine_2"),
             "imagine_3": d.get("imagine_3"),
             "imagine_fallback": d.get("imagine_fallback", DEMO_DOG_IMAGE),
+            "a2_filler": bool(d.get("a2_filler")),
         }
         if is_home:
             pet["quote"] = random.choice(_a2_quote_pool_for_request(request))
@@ -6651,6 +6688,33 @@ def admin_analysis_presence_view(request):
 
     ctx = staff_analysis_presence_page_context()
     return render(request, "anunturi/admin_analysis_presence.html", ctx)
+
+
+@login_required
+def admin_analysis_eu_hub_view(request):
+    """Hub Prezență EU — doar superuser. Butoane ES / DE / FR / COM / EU."""
+    if not request.user.is_superuser:
+        return redirect(reverse("home"))
+    from home.admin_analysis_eu import build_eu_hub_context
+
+    return render(request, "anunturi/admin_analysis_eu_hub.html", build_eu_hub_context())
+
+
+@login_required
+def admin_analysis_eu_market_view(request, market: str):
+    """Analiză pe piață EU (sau total EU). Doar superuser."""
+    if not request.user.is_superuser:
+        return redirect(reverse("home"))
+    from home.admin_analysis_eu import build_eu_market_analysis_context, normalize_eu_market
+
+    code = normalize_eu_market(market)
+    if not code:
+        return redirect(reverse("admin_analysis_eu_hub"))
+    return render(
+        request,
+        "anunturi/admin_analysis_eu_market.html",
+        build_eu_market_analysis_context(code),
+    )
 
 
 STAFF_ONBOARDING_LEADS_PER_PAGE = 100

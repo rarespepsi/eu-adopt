@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Analiza EU — {{ eu_market_label }}{% endblock %}
+{% block body_class %}page-admin-analysis{% endblock %}
+
+{% block extra_css %}
+<style>
+	body.page-admin-analysis { overflow: hidden !important; height: 100dvh; }
+	body.page-admin-analysis #main_wrap { height: 100dvh !important; overflow: hidden !important; display: flex; flex-direction: column; }
+	body.page-admin-analysis .layout { grid-template-columns: 1fr; height: 100%; min-height: 0; }
+	body.page-admin-analysis .sidebar-left, body.page-admin-analysis .sidebar-right { display: none; }
+	body.page-admin-analysis #main_content { height: calc(100dvh - var(--nav-h, 64px)) !important; min-height: calc(100dvh - var(--nav-h, 64px)) !important; flex: 1 1 auto; overflow: hidden; padding: 0; box-sizing: border-box; }
+	body.page-admin-analysis .main-content { max-width: 100%; padding: 0; height: 100%; overflow: hidden; }
+	.eu-mkt-shell { min-height: 100%; height: 100%; border: 2px solid rgba(21, 101, 192, 0.75); border-radius: 14px; padding: 0.75rem; box-sizing: border-box; display: flex; flex-direction: column; min-height: 0; }
+	.eu-mkt-shell h1 { margin: 0; font-size: 1rem; font-weight: 800; color: #0d47a1; text-transform: uppercase; }
+	.eu-mkt-meta { margin: 0.2rem 0 0; font-size: 0.65rem; font-weight: 700; color: #546e7a; }
+	.eu-mkt-nav { margin-top: 0.4rem; display: flex; gap: 0.35rem; flex-wrap: wrap; }
+	.eu-mkt-nav a { text-decoration: none; padding: 0.18rem 0.42rem; border-radius: 999px; border: 1px solid rgba(13, 71, 161, 0.5); color: #0d47a1; font-size: 0.7rem; font-weight: 700; }
+	.eu-mkt-nav a.is-active { background: rgba(21, 101, 192, 0.16); font-weight: 900; }
+	.eu-mkt-body { margin-top: 0.5rem; flex: 1 1 auto; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 0.5rem; }
+	.eu-kpi-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.4rem; }
+	.eu-kpi { border-radius: 10px; border: 1px solid rgba(0,0,0,0.16); padding: 0.4rem 0.45rem; text-align: center; background: rgba(255,255,255,0.55); }
+	.eu-kpi strong { display: block; font-size: 1.05rem; font-weight: 900; color: #0d47a1; line-height: 1.15; }
+	.eu-kpi span { font-size: 0.62rem; font-weight: 800; color: #37474f; }
+	.eu-kpi-a { background: rgba(129, 212, 250, 0.55); }
+	.eu-kpi-b { background: rgba(197, 225, 165, 0.55); }
+	.eu-kpi-c { background: rgba(255, 224, 178, 0.55); }
+	.eu-kpi-d { background: rgba(206, 147, 216, 0.45); }
+	.eu-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+	.eu-panel { border-radius: 10px; border: 1px solid rgba(0,0,0,0.16); padding: 0.5rem 0.55rem; background: rgba(255,255,255,0.5); }
+	.eu-panel h2 { margin: 0 0 0.35rem; font-size: 0.72rem; font-weight: 900; text-transform: uppercase; color: #1565c0; }
+	.eu-panel dl { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 0.1rem 0.4rem; font-size: 0.68rem; font-weight: 700; color: #263238; }
+	.eu-panel dd { margin: 0; font-weight: 900; color: #0d47a1; text-align: right; }
+	.eu-table-wrap { border-radius: 10px; border: 1px solid rgba(0,0,0,0.16); background: rgba(255,255,255,0.5); padding: 0.45rem 0.5rem; overflow: auto; max-height: 42vh; }
+	.eu-table-wrap h2 { margin: 0 0 0.35rem; font-size: 0.72rem; font-weight: 900; text-transform: uppercase; color: #1565c0; }
+	.eu-table { width: 100%; border-collapse: collapse; font-size: 0.68rem; }
+	.eu-table th, .eu-table td { padding: 0.22rem 0.3rem; border-bottom: 1px solid rgba(0,0,0,0.08); text-align: left; }
+	.eu-table th { font-weight: 900; color: #0d47a1; position: sticky; top: 0; background: #e3f2fd; }
+	.eu-badge { display: inline-block; padding: 0.05rem 0.3rem; border-radius: 4px; font-size: 0.6rem; font-weight: 800; }
+	.eu-badge-ok { background: rgba(165, 214, 167, 0.7); color: #1b5e20; }
+	.eu-badge-off { background: rgba(239, 154, 154, 0.7); color: #b71c1c; }
+	@media (max-width: 900px) {
+		.eu-kpi-row, .eu-panels { grid-template-columns: 1fr 1fr; }
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="eu-mkt-shell" aria-label="{{ eu_market_label }}">
+	<h1>{{ eu_market_label }}</h1>
+	<p class="eu-mkt-meta">Useri după țara din profil · fără staff · v1: conturi, login, adopții, I Love, mesaje</p>
+	<nav class="eu-mkt-nav" aria-label="Piețe EU">
+		<a href="{% url 'admin_analysis_eu_hub' %}">Hub EU</a>
+		<a href="{% url 'admin_analysis_home' %}">Central RO</a>
+		{% for m in eu_markets %}
+		<a href="{% url 'admin_analysis_eu_market' m.code %}"{% if m.active %} class="is-active"{% endif %}>{{ m.code|upper }}</a>
+		{% endfor %}
+	</nav>
+	<div class="eu-mkt-body">
+		<div class="eu-kpi-row">
+			<div class="eu-kpi eu-kpi-a"><strong>{{ kpi_users_total }}</strong><span>Useri total</span></div>
+			<div class="eu-kpi eu-kpi-b"><strong>{{ kpi_users_active }}</strong><span>Activi</span></div>
+			<div class="eu-kpi eu-kpi-c"><strong>{{ kpi_new_7d }}</strong><span>Noi 7 zile</span></div>
+			<div class="eu-kpi eu-kpi-d"><strong>{{ kpi_login_unique_7d }}</strong><span>Logați unici 7z</span></div>
+		</div>
+		<div class="eu-panels">
+			<div class="eu-panel">
+				<h2>Conturi</h2>
+				<dl>
+					<dt>Total</dt><dd>{{ kpi_users_total }}</dd>
+					<dt>PF (rol)</dt><dd>{{ kpi_users_pf }}</dd>
+					<dt>Activi</dt><dd>{{ kpi_users_active }}</dd>
+					<dt>Inactivi</dt><dd>{{ kpi_users_inactive }}</dd>
+					<dt>Noi 24h</dt><dd>{{ kpi_new_1d }}</dd>
+					<dt>Noi 7z</dt><dd>{{ kpi_new_7d }}</dd>
+					<dt>Noi 30z</dt><dd>{{ kpi_new_30d }}</dd>
+				</dl>
+			</div>
+			<div class="eu-panel">
+				<h2>Logări</h2>
+				<dl>
+					<dt>Evenimente 24h</dt><dd>{{ kpi_login_1d }}</dd>
+					<dt>Evenimente 7z</dt><dd>{{ kpi_login_7d }}</dd>
+					<dt>Evenimente 30z</dt><dd>{{ kpi_login_30d }}</dd>
+					<dt>Unici 7z</dt><dd>{{ kpi_login_unique_7d }}</dd>
+					<dt>Unici 30z</dt><dd>{{ kpi_login_unique_30d }}</dd>
+				</dl>
+			</div>
+			<div class="eu-panel">
+				<h2>Adopții</h2>
+				<dl>
+					<dt>Total cereri</dt><dd>{{ kpi_adopt_total }}</dd>
+					<dt>În așteptare</dt><dd>{{ kpi_adopt_pending }}</dd>
+					<dt>Acceptate</dt><dd>{{ kpi_adopt_accepted }}</dd>
+					<dt>Respinse</dt><dd>{{ kpi_adopt_rejected }}</dd>
+					<dt>Finalizate</dt><dd>{{ kpi_adopt_finalized }}</dd>
+					<dt>Noi 7z</dt><dd>{{ kpi_adopt_7d }}</dd>
+					<dt>Noi 30z</dt><dd>{{ kpi_adopt_30d }}</dd>
+				</dl>
+			</div>
+			<div class="eu-panel">
+				<h2>Engajament</h2>
+				<dl>
+					<dt>I Love (inimioare)</dt><dd>{{ kpi_wishlist }}</dd>
+					<dt>Mesaje trimise</dt><dd>{{ kpi_messages_sent }}</dd>
+					<dt>Mesaje 7z</dt><dd>{{ kpi_messages_7d }}</dd>
+				</dl>
+				{% if country_breakdown %}
+				<h2 style="margin-top:0.55rem;">Țări (top)</h2>
+				<dl>
+					{% for row in country_breakdown %}
+					<dt>{{ row.country }}</dt><dd>{{ row.c }}</dd>
+					{% endfor %}
+				</dl>
+				{% endif %}
+			</div>
+		</div>
+		<div class="eu-table-wrap">
+			<h2>Useri recenti (max 40)</h2>
+			{% if recent_users %}
+			<table class="eu-table">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>User</th>
+						<th>Email</th>
+						<th>Țară</th>
+						<th>Activ</th>
+						<th>Înscris</th>
+						<th>Ultim login</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for u in recent_users %}
+					<tr>
+						<td>{{ u.id }}</td>
+						<td>{{ u.username }}</td>
+						<td>{{ u.email }}</td>
+						<td>{{ u.country }}</td>
+						<td>{% if u.is_active %}<span class="eu-badge eu-badge-ok">da</span>{% else %}<span class="eu-badge eu-badge-off">nu</span>{% endif %}</td>
+						<td>{{ u.date_joined|date:"Y-m-d H:i" }}</td>
+						<td>{% if u.last_login_event %}{{ u.last_login_event|date:"Y-m-d H:i" }}{% elif u.last_login %}{{ u.last_login|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			{% else %}
+			<p style="margin:0;font-size:0.72rem;font-weight:700;color:#546e7a;">Niciun user pe această piață încă.</p>
+			{% endif %}
+		</div>
+	</div>
+</section>
+{% endblock %}

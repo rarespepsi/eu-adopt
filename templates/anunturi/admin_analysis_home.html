@@ -96,6 +96,18 @@
 		letter-spacing: 0.04em;
 	}
 	.analysis-btn-prezenta:hover { background: rgba(46, 125, 50, 0.16); }
+	.analysis-btn-prezenta-eu {
+		text-decoration: none;
+		padding: 0.2rem 0.45rem;
+		border-radius: 6px;
+		border: 1px solid rgba(25, 118, 210, 0.55);
+		font-size: 0.7rem;
+		font-weight: 800;
+		color: #1565c0;
+		background: rgba(100, 181, 246, 0.28);
+		letter-spacing: 0.04em;
+	}
+	.analysis-btn-prezenta-eu:hover { background: rgba(25, 118, 210, 0.16); }
 	.analysis-home-shell h1 {
 		margin: 0;
 		font-size: 1rem;
@@ -372,6 +384,9 @@
 		</div>
 		<div class="analysis-home-header-center">
 			<a href="{% url 'admin_analysis_presence' %}" class="analysis-btn-prezenta">PREZENȚĂ</a>
+			{% if user.is_superuser %}
+			<a href="{% url 'admin_analysis_eu_hub' %}" class="analysis-btn-prezenta-eu">PREZENȚĂ EU</a>
+			{% endif %}
 			<a href="{% url 'admin_analysis_add_user' %}" class="analysis-btn-comercial">Add USER</a>
 		</div>
 		<div class="analysis-view-as">
