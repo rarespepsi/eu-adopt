@@ -172,8 +172,12 @@ def import_media_csv(text: str, *, default_source: str = "import CSV") -> dict[s
         )
 
         obj = None
+        # Nu unifica pe email singur (ex. office@digi.ro e partajat de mai multe branduri).
         if email:
-            obj = MediaOutreachProspect.objects.filter(email__iexact=email).first()
+            obj = MediaOutreachProspect.objects.filter(
+                email__iexact=email,
+                outlet_name__iexact=outlet,
+            ).first()
         if obj is None:
             obj = MediaOutreachProspect.objects.filter(
                 outlet_name__iexact=outlet,
