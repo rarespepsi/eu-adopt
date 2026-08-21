@@ -5,7 +5,7 @@
 {% block body_class %}page-admin-analysis{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/admin-analysis.css' %}?v=20260821-media">
+<link rel="stylesheet" href="{% static 'css/admin-analysis.css' %}?v=20260821-media-invite">
 <style>
 	body.page-admin-analysis { overflow: hidden !important; height: 100dvh; }
 	body.page-admin-analysis #main_wrap { height: 100dvh !important; overflow: hidden !important; display: flex; flex-direction: column; }
@@ -74,6 +74,16 @@
 		<div class="media-kpi"><strong>{{ kpi.with_phone }}</strong>Cu telefon</div>
 		<div class="media-kpi"><strong>{{ kpi.phone_only }}</strong>Doar telefon</div>
 	</div>
+
+	{% if media_invite %}
+	<div class="media-toolbar" style="margin-bottom:0.45rem;">
+		{% if media_invite.email_enabled %}
+		<p class="media-hint" role="status"><strong>SMTP activ</strong> · cooldown {{ media_invite.cooldown_days }} zile · max {{ media_invite.max_sends_default }}/prospect · azi {{ media_invite.dispatch_today }}/{{ media_invite.daily_cap }} ({{ media_invite.daily_remaining }} rămase) · reale {{ media_invite.sent_today }} · sim {{ media_invite.sim_today }}</p>
+		{% else %}
+		<p class="media-hint" role="status"><strong>SMTP dezactivat</strong> — bifă = simulare în jurnal · cooldown {{ media_invite.cooldown_days }} zile · max {{ media_invite.max_sends_default }}/prospect · azi {{ media_invite.dispatch_today }}/{{ media_invite.daily_cap }}</p>
+		{% endif %}
+	</div>
+	{% endif %}
 
 	{% if messages %}
 	<ul class="media-hint">
@@ -173,36 +183,66 @@
 		<table class="media-table">
 			<thead>
 				<tr>
+					<th title="Include la trimitere">✉</th>
 					<th>Tip</th>
 					<th>Denumire</th>
-					<th>Contact</th>
 					<th>Email</th>
 					<th>Telefon</th>
-					<th>Loc</th>
 					<th>Status</th>
+					<th>Trimiteri</th>
+					<th>Ultimul</th>
+					<th>Cooldown</th>
 					<th>Acțiuni</th>
 				</tr>
 			</thead>
 			<tbody>
 				{% for p in leads %}
 				<tr>
+					<td>
+						{% if p.invite_on_cooldown %}
+						<span title="Cooldown {{ p.invite_cooldown_days_display }} zile">aștept.</span>
+						{% elif p.invite_checkbox %}
+						<input type="checkbox" form="media-invite-send-form" name="prospect_id" value="{{ p.pk }}" title="{% if media_invite.email_enabled %}Include la trimitere{% else %}Simulare în jurnal{% endif %}" />
+						{% elif p.invite_block_reason %}
+						<span title="{{ p.invite_block_reason }}">—</span>
+						{% else %}
+						<span>—</span>
+						{% endif %}
+					</td>
 					<td>{{ p.get_media_kind_display }}</td>
 					<td>
 						<strong>{{ p.outlet_name }}</strong>
+						{% if p.contact_name %}<div class="media-hint">{{ p.contact_name }}</div>{% endif %}
 						{% if p.website %}<div><a href="{{ p.website }}" target="_blank" rel="noopener">site</a></div>{% endif %}
-						{% if p.source %}<div class="media-hint">{{ p.source }}</div>{% endif %}
+						<div class="media-hint">{{ p.judet }}{% if p.oras %} / {{ p.oras }}{% endif %}</div>
 					</td>
-					<td>{{ p.contact_name|default:"—" }}</td>
 					<td>{% if p.email %}<a href="mailto:{{ p.email }}">{{ p.email }}</a>{% else %}<span class="media-hint">—</span>{% endif %}</td>
 					<td>{{ p.phone|default:"—" }}</td>
-					<td>{{ p.judet }}{% if p.oras %} / {{ p.oras }}{% endif %}</td>
-					<td>{{ p.get_outreach_status_display }}</td>
+					<td>
+						{{ p.get_outreach_status_display }}
+						{% if p.replied_at %}<div class="media-hint">răsp. {{ p.replied_at|timesince }}</div>{% endif %}
+						{% if p.invite_block_reason and not p.invite_checkbox %}<div class="media-hint" title="{{ p.invite_block_reason }}">{{ p.invite_block_reason }}</div>{% endif %}
+					</td>
+					<td title="Reale: {{ p.invite_sent_count }}/{{ p.invite_max_sends_display }}{% if p.invite_sim_count %} · sim {{ p.invite_sim_count }}{% endif %}">
+						{{ p.invite_sent_count }}/{{ p.invite_max_sends_display }}{% if p.invite_sim_count %}<span class="media-hint"> +{{ p.invite_sim_count }}s</span>{% endif %}
+					</td>
+					<td>{% if p.last_email_sent_at %}<span title="{{ p.last_email_sent_at|date:'d.m.Y H:i' }}">{{ p.last_email_sent_at|timesince }}</span>{% else %}—{% endif %}</td>
+					<td>{{ p.invite_cooldown_days_display }}z</td>
 					<td style="white-space:nowrap;">
+						{% if p.outreach_status != 'do_not_contact' and p.outreach_status != 'partner' %}
+						<form method="post" action="{% url 'admin_analysis_media_mark_replied' %}" style="display:inline;margin:0;">
+							{% csrf_token %}
+							<input type="hidden" name="pk" value="{{ p.pk }}">
+							<button type="submit" class="media-btn" title="Marchează că a răspuns">Răspuns</button>
+						</form>
+						<form method="post" action="{% url 'admin_analysis_media_do_not_contact' %}" style="display:inline;margin:0;" onsubmit="return confirm('Nu contacta {{ p.outlet_name }}?');">
+							{% csrf_token %}
+							<input type="hidden" name="pk" value="{{ p.pk }}">
+							<button type="submit" class="media-btn media-btn--danger">Nu contacta</button>
+						</form>
+						{% endif %}
 						{% if p.has_phone %}
 						<a class="media-btn" href="{% url 'admin_analysis_media' %}?wa={{ p.pk }}">Text WA</a>
-						{% endif %}
-						{% if p.has_email %}
-						<span class="media-hint">mail: mai târziu</span>
 						{% endif %}
 						<form method="post" action="{% url 'admin_analysis_media_delete' %}" style="display:inline;margin:0;" onsubmit="return confirm('Ștergi {{ p.outlet_name }}?');">
 							{% csrf_token %}
@@ -212,17 +252,23 @@
 					</td>
 				</tr>
 				{% empty %}
-				<tr><td colspan="8">Niciun prospect încă. Adaugă manual sau importă CSV — apoi încărcăm date de pe net.</td></tr>
+				<tr><td colspan="10">Niciun prospect încă. Adaugă manual sau importă CSV.</td></tr>
 				{% endfor %}
 			</tbody>
 		</table>
 	</div>
-	{% if page_obj.paginator.num_pages > 1 %}
-	<div class="media-pager">
-		Pagina {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
-		{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">←</a>{% endif %}
-		{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">→</a>{% endif %}
+	<div style="display:flex;flex-wrap:wrap;gap:0.45rem;align-items:center;margin-top:0.4rem;">
+		<form id="media-invite-send-form" method="post" action="{% url 'admin_analysis_media_invite_send' %}" style="margin:0;">
+			{% csrf_token %}
+			<input type="hidden" name="preserve_query" value="{{ filter_query }}">
+			<button type="submit" class="media-btn">{% if media_invite.email_enabled %}Trimite MAIL outreach{% else %}Simulare outreach (jurnal){% endif %}</button>
+		</form>
+		{% if page_obj.paginator.num_pages > 1 %}
+		<span class="media-hint">Pagina {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+			{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">←</a>{% endif %}
+			{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">→</a>{% endif %}
+		</span>
+		{% endif %}
 	</div>
-	{% endif %}
 </section>
 {% endblock %}

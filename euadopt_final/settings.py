@@ -353,6 +353,18 @@ _uat_only_on = os.environ.get("EUADOPT_STAFF_INVITE_CRON_UAT_ONLY", "").strip().
 STAFF_INVITE_CRON_UAT_ONLY = _uat_only_on in ("1", "true", "yes", "on")
 # Pauză între mailuri SMTP (sec) — anti „Unusual sending activity” Zoho
 STAFF_INVITE_SEND_DELAY_SEC = int(os.environ.get("EUADOPT_STAFF_INVITE_SEND_DELAY_SEC", "0") or "0")
+# Audio/TV outreach — aceleași reguli operaționale ca Add USER
+_media_mail = os.environ.get("EUADOPT_MEDIA_OUTREACH_EMAIL_ENABLED", "").strip().lower()
+if _media_mail in ("1", "true", "yes", "on"):
+    MEDIA_OUTREACH_EMAIL_ENABLED = True
+elif _media_mail in ("0", "false", "no", "off"):
+    MEDIA_OUTREACH_EMAIL_ENABLED = False
+else:
+    MEDIA_OUTREACH_EMAIL_ENABLED = None  # moștenește STAFF_INVITE_EMAIL_ENABLED
+MEDIA_OUTREACH_COOLDOWN_DAYS = int(os.environ.get("EUADOPT_MEDIA_OUTREACH_COOLDOWN_DAYS", "7") or "7")
+MEDIA_OUTREACH_MAX_SENDS = int(os.environ.get("EUADOPT_MEDIA_OUTREACH_MAX_SENDS", "3") or "3")
+MEDIA_OUTREACH_MAX_PER_DAY = int(os.environ.get("EUADOPT_MEDIA_OUTREACH_MAX_PER_DAY", "20") or "20")
+MEDIA_OUTREACH_SEND_DELAY_SEC = int(os.environ.get("EUADOPT_MEDIA_OUTREACH_SEND_DELAY_SEC", "0") or "0")
 _report_invite_on = os.environ.get("EUADOPT_STAFF_INVITE_REPORT_ENABLED", "").strip().lower()
 STAFF_INVITE_REPORT_ENABLED = _report_invite_on in ("1", "true", "yes", "on")
 STAFF_INVITE_REPORT_EMAIL = os.environ.get("STAFF_INVITE_REPORT_EMAIL", "").strip()

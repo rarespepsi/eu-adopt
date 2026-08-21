@@ -6757,6 +6757,9 @@ def admin_analysis_media_view(request):
 
     qs = media_prospects_filtered(request)
     page_obj = Paginator(qs, MEDIA_OUTREACH_PER_PAGE).get_page(request.GET.get("page") or 1)
+    from home.media_outreach_invite import media_outreach_annotate_row, media_outreach_stats_banner
+
+    leads = [media_outreach_annotate_row(p) for p in page_obj.object_list]
     wa_pk = request.GET.get("wa")
     wa_prospect = None
     wa_text = ""
@@ -6767,13 +6770,15 @@ def admin_analysis_media_view(request):
             wa_text = build_media_outreach_whatsapp_text(wa_prospect)
             wa_url = build_media_wa_me_url(wa_prospect)
 
+    filter_query = request.GET.urlencode()
     return render(
         request,
         "anunturi/admin_analysis_media.html",
         {
             "page_obj": page_obj,
-            "leads": page_obj.object_list,
+            "leads": leads,
             "kpi": media_kpi_counts(),
+            "media_invite": media_outreach_stats_banner(),
             "kind_choices": MediaOutreachProspect.KIND_CHOICES,
             "status_choices": MediaOutreachProspect.STATUS_CHOICES,
             "filter_kind": (request.GET.get("kind") or "").strip(),
@@ -6781,11 +6786,85 @@ def admin_analysis_media_view(request):
             "filter_contact": (request.GET.get("contact") or "").strip(),
             "filter_judet": (request.GET.get("judet") or "").strip(),
             "filter_q": (request.GET.get("q") or "").strip(),
+            "filter_query": filter_query,
             "wa_prospect": wa_prospect,
             "wa_text": wa_text,
             "wa_url": wa_url,
         },
     )
+
+
+@login_required
+def admin_analysis_media_invite_send_view(request):
+    """Trimite / simulează email outreach pentru prospectele bifate (ca Add USER)."""
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    if request.method != "POST":
+        return redirect(reverse("admin_analysis_media"))
+    from home.media_outreach_invite import media_outreach_email_enabled, media_outreach_process_batch
+    from home.models import MediaOutreachProspect
+
+    ids = request.POST.getlist("prospect_id")
+    prospects = list(MediaOutreachProspect.objects.filter(pk__in=ids).order_by("pk"))
+    if not prospects:
+        messages.warning(request, "Niciun prospect bifat.")
+        return redirect(reverse("admin_analysis_media"))
+    stats = media_outreach_process_batch(request.user, prospects, max_count=len(prospects))
+    parts = []
+    if media_outreach_email_enabled():
+        if stats.get("sent"):
+            parts.append(f"trimise {stats['sent']}")
+    else:
+        if stats.get("simulated"):
+            parts.append(f"simulare {stats['simulated']}")
+    if stats.get("blocked"):
+        parts.append(f"blocate {stats['blocked']}")
+    if stats.get("error"):
+        parts.append(f"erori {stats['error']}")
+    if stats.get("daily_cap"):
+        parts.append("plafon zilnic")
+    messages.success(request, "Outreach media: " + (", ".join(parts) if parts else "nimic procesat."))
+    pq = (request.POST.get("preserve_query") or "").strip()
+    if pq and len(pq) < 4000:
+        return redirect(f"{reverse('admin_analysis_media')}?{pq}")
+    return redirect(reverse("admin_analysis_media"))
+
+
+@login_required
+def admin_analysis_media_mark_replied_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    if request.method != "POST":
+        return redirect(reverse("admin_analysis_media"))
+    from django.utils import timezone
+
+    from home.models import MediaOutreachProspect
+
+    pk = request.POST.get("pk")
+    obj = MediaOutreachProspect.objects.filter(pk=pk).first()
+    if obj:
+        obj.outreach_status = MediaOutreachProspect.ST_REPLIED
+        obj.replied_at = timezone.now()
+        obj.save(update_fields=["outreach_status", "replied_at", "updated_at"])
+        messages.success(request, f"Marcat răspuns: {obj.outlet_name}")
+    return redirect(reverse("admin_analysis_media"))
+
+
+@login_required
+def admin_analysis_media_do_not_contact_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    if request.method != "POST":
+        return redirect(reverse("admin_analysis_media"))
+    from home.models import MediaOutreachProspect
+
+    pk = request.POST.get("pk")
+    obj = MediaOutreachProspect.objects.filter(pk=pk).first()
+    if obj:
+        obj.outreach_status = MediaOutreachProspect.ST_DNC
+        obj.save(update_fields=["outreach_status", "updated_at"])
+        messages.success(request, f"Nu contacta: {obj.outlet_name}")
+    return redirect(reverse("admin_analysis_media"))
 
 
 @login_required

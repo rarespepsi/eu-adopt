@@ -2643,7 +2643,19 @@ class MediaOutreachProspect(models.Model):
         default=ST_NEW,
         db_index=True,
     )
-    last_email_sent_at = models.DateTimeField(null=True, blank=True)
+    last_email_sent_at = models.DateTimeField("Ultimul email outreach", null=True, blank=True)
+    replied_at = models.DateTimeField("Răspuns redacție", null=True, blank=True)
+    max_sends = models.PositiveSmallIntegerField(
+        "Max. trimiteri email",
+        default=3,
+        help_text="După acest număr nu se mai trimite (doar trimiteri reale).",
+    )
+    cooldown_days = models.PositiveSmallIntegerField(
+        "Cooldown retrimitere (zile)",
+        null=True,
+        blank=True,
+        help_text="Gol = setare globală (implicit 7 zile).",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -2666,4 +2678,60 @@ class MediaOutreachProspect(models.Model):
     @property
     def has_phone(self) -> bool:
         return bool((self.phone or "").strip())
+
+
+class MediaOutreachInviteLog(models.Model):
+    """Jurnal trimiteri / simulări email Audio/TV (ca StaffOnboardingInviteLog)."""
+
+    OUTCOME_SENT = "sent"
+    OUTCOME_ERROR = "error"
+    OUTCOME_DRY_RUN = "dry_run"
+    OUTCOME_CHOICES = [
+        (OUTCOME_SENT, "Trimis"),
+        (OUTCOME_ERROR, "Eroare SMTP"),
+        (OUTCOME_DRY_RUN, "Simulare (mail dezactivat)"),
+    ]
+
+    DISPATCH_MANUAL = "manual"
+    DISPATCH_WAVE = "wave"
+    DISPATCH_KIND_CHOICES = [
+        (DISPATCH_MANUAL, "Bifă manuală"),
+        (DISPATCH_WAVE, "Val"),
+    ]
+
+    prospect = models.ForeignKey(
+        MediaOutreachProspect,
+        on_delete=models.CASCADE,
+        related_name="invite_logs",
+    )
+    sent_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    sent_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="media_outreach_invite_logs",
+    )
+    to_email = models.EmailField()
+    subject = models.CharField(max_length=255, blank=True, default="")
+    outcome = models.CharField(max_length=12, choices=OUTCOME_CHOICES, db_index=True)
+    error_message = models.TextField(blank=True, default="")
+    dispatch_kind = models.CharField(
+        max_length=10,
+        choices=DISPATCH_KIND_CHOICES,
+        default=DISPATCH_MANUAL,
+        db_index=True,
+    )
+    message_id = models.CharField(max_length=255, blank=True, default="")
+
+    class Meta:
+        verbose_name = "Log email media outreach"
+        verbose_name_plural = "Loguri email media outreach"
+        ordering = ["-sent_at"]
+        indexes = [
+            models.Index(fields=["prospect", "outcome", "sent_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.to_email} [{self.outcome}]"
 
