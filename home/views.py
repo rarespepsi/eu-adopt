@@ -6717,6 +6717,151 @@ def admin_analysis_eu_market_view(request, market: str):
     )
 
 
+MEDIA_OUTREACH_PER_PAGE = 100
+
+
+@login_required
+def admin_analysis_media_view(request):
+    """Audio/TV — listă + adăugare manuală prospecte media."""
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+
+    from home.admin_analysis_media import (
+        build_media_outreach_whatsapp_text,
+        build_media_wa_me_url,
+        media_kpi_counts,
+        media_prospects_filtered,
+        normalize_media_kind,
+    )
+    from home.models import MediaOutreachProspect
+
+    if request.method == "POST" and request.POST.get("action") == "add":
+        outlet = (request.POST.get("outlet_name") or "").strip()
+        if not outlet:
+            messages.error(request, "Denumirea (post / redacție) e obligatorie.")
+        else:
+            MediaOutreachProspect.objects.create(
+                media_kind=normalize_media_kind(request.POST.get("media_kind") or ""),
+                outlet_name=outlet[:255],
+                contact_name=(request.POST.get("contact_name") or "").strip()[:200],
+                email=(request.POST.get("email") or "").strip().lower()[:254],
+                phone=(request.POST.get("phone") or "").strip()[:40],
+                website=(request.POST.get("website") or "").strip()[:500],
+                judet=(request.POST.get("judet") or "").strip()[:120],
+                oras=(request.POST.get("oras") or "").strip()[:120],
+                notes=(request.POST.get("notes") or "").strip(),
+                source=(request.POST.get("source") or "manual").strip()[:120] or "manual",
+            )
+            messages.success(request, f"Prospect media adăugat: {outlet}")
+        return redirect(reverse("admin_analysis_media"))
+
+    qs = media_prospects_filtered(request)
+    page_obj = Paginator(qs, MEDIA_OUTREACH_PER_PAGE).get_page(request.GET.get("page") or 1)
+    wa_pk = request.GET.get("wa")
+    wa_prospect = None
+    wa_text = ""
+    wa_url = ""
+    if wa_pk:
+        wa_prospect = MediaOutreachProspect.objects.filter(pk=wa_pk).first()
+        if wa_prospect and wa_prospect.has_phone:
+            wa_text = build_media_outreach_whatsapp_text(wa_prospect)
+            wa_url = build_media_wa_me_url(wa_prospect)
+
+    return render(
+        request,
+        "anunturi/admin_analysis_media.html",
+        {
+            "page_obj": page_obj,
+            "leads": page_obj.object_list,
+            "kpi": media_kpi_counts(),
+            "kind_choices": MediaOutreachProspect.KIND_CHOICES,
+            "status_choices": MediaOutreachProspect.STATUS_CHOICES,
+            "filter_kind": (request.GET.get("kind") or "").strip(),
+            "filter_status": (request.GET.get("status") or "").strip(),
+            "filter_contact": (request.GET.get("contact") or "").strip(),
+            "filter_judet": (request.GET.get("judet") or "").strip(),
+            "filter_q": (request.GET.get("q") or "").strip(),
+            "wa_prospect": wa_prospect,
+            "wa_text": wa_text,
+            "wa_url": wa_url,
+        },
+    )
+
+
+@login_required
+def admin_analysis_media_import_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    if request.method != "POST":
+        return redirect(reverse("admin_analysis_media"))
+    from home.admin_analysis_media import import_media_csv
+
+    f = request.FILES.get("csv_file")
+    if not f:
+        messages.error(request, "Selectează un fișier CSV.")
+        return redirect(reverse("admin_analysis_media"))
+    try:
+        raw = f.read().decode("utf-8-sig")
+    except UnicodeDecodeError:
+        raw = f.read().decode("latin-1")
+    stats = import_media_csv(raw)
+    messages.success(
+        request,
+        f"Import media: create {stats['created']}, actualizate {stats['updated']}, sărite {stats['skipped']}.",
+    )
+    return redirect(reverse("admin_analysis_media"))
+
+
+@login_required
+def admin_analysis_media_export_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    from django.http import HttpResponse
+
+    from home.admin_analysis_media import export_media_csv, media_prospects_filtered
+
+    body = export_media_csv(media_prospects_filtered(request))
+    resp = HttpResponse(body, content_type="text/csv; charset=utf-8")
+    resp["Content-Disposition"] = 'attachment; filename="media_outreach_prospects.csv"'
+    return resp
+
+
+@login_required
+def admin_analysis_media_delete_view(request):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    if request.method != "POST":
+        return redirect(reverse("admin_analysis_media"))
+    from home.models import MediaOutreachProspect
+
+    pk = request.POST.get("pk")
+    obj = MediaOutreachProspect.objects.filter(pk=pk).first()
+    if obj:
+        name = obj.outlet_name
+        obj.delete()
+        messages.success(request, f"Șters: {name}")
+    return redirect(reverse("admin_analysis_media"))
+
+
+@login_required
+def admin_analysis_media_mark_wa_view(request):
+    """Marchează status wa_ready după ce ai copiat textul WhatsApp."""
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect(reverse("home"))
+    if request.method != "POST":
+        return redirect(reverse("admin_analysis_media"))
+    from home.models import MediaOutreachProspect
+
+    pk = request.POST.get("pk")
+    obj = MediaOutreachProspect.objects.filter(pk=pk).first()
+    if obj:
+        obj.outreach_status = MediaOutreachProspect.ST_WA_READY
+        obj.save(update_fields=["outreach_status", "updated_at"])
+        messages.success(request, f"Marcat «Text WA pregătit»: {obj.outlet_name}")
+        return redirect(f"{reverse('admin_analysis_media')}?wa={obj.pk}")
+    return redirect(reverse("admin_analysis_media"))
+
+
 STAFF_ONBOARDING_LEADS_PER_PAGE = 100
 
 

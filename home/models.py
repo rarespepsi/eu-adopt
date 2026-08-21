@@ -2580,3 +2580,90 @@ class FacebookRoInboundPost(models.Model):
     def __str__(self):
         return f"RO inbound {self.source_fb_post_id} [{self.status}]"
 
+
+class MediaOutreachProspect(models.Model):
+    """Prospect media (radio / TV / presă) — Analiza → Audio/TV. Separat de Add USER."""
+
+    KIND_RADIO = "radio"
+    KIND_TV = "tv"
+    KIND_PRESS = "press"
+    KIND_PODCAST = "podcast"
+    KIND_OTHER = "other"
+    KIND_CHOICES = [
+        (KIND_RADIO, "Radio"),
+        (KIND_TV, "TV"),
+        (KIND_PRESS, "Ziar / redacție"),
+        (KIND_PODCAST, "Podcast"),
+        (KIND_OTHER, "Altele"),
+    ]
+
+    ST_NEW = "new"
+    ST_EMAILED = "emailed"
+    ST_WA_READY = "wa_ready"
+    ST_CONTACTED = "contacted"
+    ST_REPLIED = "replied"
+    ST_PARTNER = "partner"
+    ST_DNC = "do_not_contact"
+    STATUS_CHOICES = [
+        (ST_NEW, "Nou"),
+        (ST_EMAILED, "Email trimis"),
+        (ST_WA_READY, "Text WA pregătit"),
+        (ST_CONTACTED, "Contactat"),
+        (ST_REPLIED, "A răspuns"),
+        (ST_PARTNER, "Partener"),
+        (ST_DNC, "Nu contacta"),
+    ]
+
+    media_kind = models.CharField(
+        "Tip media",
+        max_length=16,
+        choices=KIND_CHOICES,
+        default=KIND_PRESS,
+        db_index=True,
+    )
+    outlet_name = models.CharField("Denumire (post / redacție)", max_length=255, db_index=True)
+    contact_name = models.CharField("Persoană contact", max_length=200, blank=True, default="")
+    email = models.EmailField("E-mail", blank=True, default="", db_index=True)
+    phone = models.CharField("Telefon", max_length=40, blank=True, default="")
+    website = models.CharField("Site / URL", max_length=500, blank=True, default="")
+    judet = models.CharField("Județ", max_length=120, blank=True, default="", db_index=True)
+    oras = models.CharField("Oraș", max_length=120, blank=True, default="")
+    notes = models.TextField("Note", blank=True, default="")
+    source = models.CharField(
+        "Sursă date",
+        max_length=120,
+        blank=True,
+        default="",
+        help_text="ex. web, import CSV, manual",
+    )
+    outreach_status = models.CharField(
+        "Status outreach",
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=ST_NEW,
+        db_index=True,
+    )
+    last_email_sent_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Prospect media (Audio/TV)"
+        verbose_name_plural = "Prospecte media (Audio/TV)"
+        ordering = ["media_kind", "judet", "outlet_name"]
+        indexes = [
+            models.Index(fields=["media_kind", "outreach_status"]),
+            models.Index(fields=["-updated_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.outlet_name} ({self.get_media_kind_display()})"
+
+    @property
+    def has_email(self) -> bool:
+        return bool((self.email or "").strip())
+
+    @property
+    def has_phone(self) -> bool:
+        return bool((self.phone or "").strip())
+

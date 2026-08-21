@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Audio/TV — EU-ADOPT{% endblock %}
+{% block body_class %}page-admin-analysis{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin-analysis.css' %}?v=20260821-media">
+<style>
+	body.page-admin-analysis { overflow: hidden !important; height: 100dvh; }
+	body.page-admin-analysis #main_wrap { height: 100dvh !important; overflow: hidden !important; display: flex; flex-direction: column; }
+	body.page-admin-analysis .layout { grid-template-columns: 1fr; height: 100%; min-height: 0; }
+	body.page-admin-analysis .sidebar-left, body.page-admin-analysis .sidebar-right { display: none; }
+	body.page-admin-analysis #main_content {
+		height: calc(100dvh - var(--nav-h, 64px)) !important;
+		min-height: calc(100dvh - var(--nav-h, 64px)) !important;
+		flex: 1 1 auto; overflow: hidden; padding: 0; box-sizing: border-box;
+	}
+	body.page-admin-analysis .main-content { max-width: 100%; padding: 0; height: 100%; overflow: hidden; }
+	.media-shell { height: 100%; display: flex; flex-direction: column; min-height: 0; padding: 0.55rem 0.65rem; box-sizing: border-box; }
+	.media-shell h1 { margin: 0 0 0.35rem; font-size: 1.05rem; color: #6a1b9a; }
+	.media-nav { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 0.45rem; font-size: 0.78rem; font-weight: 700; }
+	.media-nav a { color: #0d47a1; }
+	.media-kpis { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; }
+	.media-kpi {
+		padding: 0.25rem 0.5rem; border-radius: 8px; border: 1px solid rgba(106, 27, 154, 0.35);
+		background: rgba(243, 229, 245, 0.75); font-size: 0.72rem; font-weight: 700; color: #4a148c;
+	}
+	.media-kpi strong { display: block; font-size: 0.95rem; color: #6a1b9a; }
+	.media-toolbar, .media-add, .media-wa {
+		margin-bottom: 0.45rem; padding: 0.45rem 0.55rem; border-radius: 10px;
+		border: 1px solid rgba(106, 27, 154, 0.25); background: rgba(255,255,255,0.72);
+	}
+	.media-toolbar form, .media-add form { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: end; }
+	.media-toolbar label, .media-add label { display: flex; flex-direction: column; gap: 0.12rem; font-size: 0.68rem; font-weight: 700; color: #4a148c; }
+	.media-toolbar input, .media-toolbar select,
+	.media-add input, .media-add select, .media-add textarea {
+		min-height: 1.7rem; padding: 0.2rem 0.35rem; border-radius: 6px;
+		border: 1px solid rgba(106, 27, 154, 0.35); font-size: 0.78rem;
+	}
+	.media-btn {
+		display: inline-flex; align-items: center; justify-content: center;
+		padding: 0.28rem 0.55rem; border-radius: 7px; border: 1px solid rgba(106, 27, 154, 0.45);
+		background: rgba(186, 104, 200, 0.25); color: #4a148c; font-size: 0.72rem; font-weight: 800;
+		text-decoration: none; cursor: pointer;
+	}
+	.media-btn:hover { background: rgba(156, 39, 176, 0.22); }
+	.media-btn--danger { border-color: rgba(183, 28, 28, 0.45); color: #b71c1c; background: rgba(255, 205, 210, 0.45); }
+	.media-table-wrap { flex: 1 1 auto; min-height: 0; overflow: auto; border: 1px solid rgba(106, 27, 154, 0.2); border-radius: 10px; background: #fff; }
+	.media-table { width: 100%; border-collapse: collapse; font-size: 0.74rem; }
+	.media-table th, .media-table td { padding: 0.35rem 0.4rem; border-bottom: 1px solid rgba(0,0,0,0.06); text-align: left; vertical-align: top; }
+	.media-table th { position: sticky; top: 0; background: #f3e5f5; color: #4a148c; font-weight: 800; z-index: 1; }
+	.media-wa textarea { width: 100%; min-height: 8rem; font-size: 0.8rem; box-sizing: border-box; }
+	.media-hint { font-size: 0.72rem; color: #455a64; margin: 0.2rem 0 0; }
+	.media-pager { margin-top: 0.35rem; font-size: 0.75rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="media-shell" aria-label="Audio TV media prospects">
+	<h1>Audio/TV — prospecte media (parteneriate difuzare)</h1>
+	<nav class="media-nav">
+		<a href="{% url 'admin_analysis_home' %}">Înapoi la Analiza</a>
+		<a href="{% url 'admin_analysis_add_user' %}">Add USER</a>
+	</nav>
+
+	<div class="media-kpis" aria-label="KPI media">
+		<div class="media-kpi"><strong>{{ kpi.total }}</strong>Total</div>
+		<div class="media-kpi"><strong>{{ kpi.radio }}</strong>Radio</div>
+		<div class="media-kpi"><strong>{{ kpi.tv }}</strong>TV</div>
+		<div class="media-kpi"><strong>{{ kpi.press }}</strong>Presă</div>
+		<div class="media-kpi"><strong>{{ kpi.podcast }}</strong>Podcast</div>
+		<div class="media-kpi"><strong>{{ kpi.with_email }}</strong>Cu email</div>
+		<div class="media-kpi"><strong>{{ kpi.with_phone }}</strong>Cu telefon</div>
+		<div class="media-kpi"><strong>{{ kpi.phone_only }}</strong>Doar telefon</div>
+	</div>
+
+	{% if messages %}
+	<ul class="media-hint">
+		{% for message in messages %}<li>{{ message }}</li>{% endfor %}
+	</ul>
+	{% endif %}
+
+	{% if wa_prospect %}
+	<div class="media-wa">
+		<strong>Text WhatsApp — {{ wa_prospect.outlet_name }}{% if wa_prospect.phone %} · {{ wa_prospect.phone }}{% endif %}</strong>
+		<p class="media-hint">Copiază textul și trimite tu din telefon. Linkul wa.me e opțional (include tot textul).</p>
+		<textarea readonly id="mediaWaText">{{ wa_text }}</textarea>
+		<div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.35rem;">
+			<button type="button" class="media-btn" onclick="navigator.clipboard.writeText(document.getElementById('mediaWaText').value)">Copiază text</button>
+			{% if wa_url %}<a class="media-btn" href="{{ wa_url }}" target="_blank" rel="noopener">Deschide wa.me</a>{% endif %}
+			<form method="post" action="{% url 'admin_analysis_media_mark_wa' %}" style="display:inline;margin:0;">
+				{% csrf_token %}
+				<input type="hidden" name="pk" value="{{ wa_prospect.pk }}">
+				<button type="submit" class="media-btn">Marchează «Text WA pregătit»</button>
+			</form>
+			<a class="media-btn" href="{% url 'admin_analysis_media' %}">Închide</a>
+		</div>
+	</div>
+	{% endif %}
+
+	<div class="media-toolbar">
+		<form method="get" action="{% url 'admin_analysis_media' %}">
+			<label>Tip
+				<select name="kind">
+					<option value="">Toate</option>
+					{% for val, label in kind_choices %}
+					<option value="{{ val }}" {% if filter_kind == val %}selected{% endif %}>{{ label }}</option>
+					{% endfor %}
+				</select>
+			</label>
+			<label>Status
+				<select name="status">
+					<option value="">Toate</option>
+					{% for val, label in status_choices %}
+					<option value="{{ val }}" {% if filter_status == val %}selected{% endif %}>{{ label }}</option>
+					{% endfor %}
+				</select>
+			</label>
+			<label>Contact
+				<select name="contact">
+					<option value="">Toate</option>
+					<option value="email" {% if filter_contact == 'email' %}selected{% endif %}>Cu email</option>
+					<option value="phone" {% if filter_contact == 'phone' %}selected{% endif %}>Cu telefon</option>
+					<option value="phone_only" {% if filter_contact == 'phone_only' %}selected{% endif %}>Doar telefon</option>
+					<option value="email_only" {% if filter_contact == 'email_only' %}selected{% endif %}>Doar email</option>
+					<option value="both" {% if filter_contact == 'both' %}selected{% endif %}>Email + telefon</option>
+					<option value="none" {% if filter_contact == 'none' %}selected{% endif %}>Fără contact</option>
+				</select>
+			</label>
+			<label>Județ <input type="text" name="judet" value="{{ filter_judet }}" placeholder="ex. Iași"></label>
+			<label>Caută <input type="text" name="q" value="{{ filter_q }}" placeholder="nume, mail, tel…"></label>
+			<button type="submit" class="media-btn">Filtrează</button>
+			<a class="media-btn" href="{% url 'admin_analysis_media' %}">Reset</a>
+		</form>
+		<div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.4rem;">
+			<a class="media-btn" href="{% url 'admin_analysis_media_export' %}{% if request.GET.urlencode %}?{{ request.GET.urlencode }}{% endif %}">Export CSV</a>
+			<form class="media-import-form" method="post" action="{% url 'admin_analysis_media_import' %}" enctype="multipart/form-data" style="display:flex;gap:0.35rem;align-items:center;margin:0;">
+				{% csrf_token %}
+				<input type="file" name="csv_file" accept=".csv,text/csv" required>
+				<button type="submit" class="media-btn">Import CSV</button>
+			</form>
+		</div>
+		<p class="media-hint">CSV: media_kind, outlet_name, contact_name, email, phone, website, judet, oras, notes, source · tipuri: radio / tv / press / podcast</p>
+	</div>
+
+	<div class="media-add">
+		<strong style="font-size:0.78rem;color:#4a148c;">Adaugă prospect</strong>
+		<form method="post" action="{% url 'admin_analysis_media' %}">
+			{% csrf_token %}
+			<input type="hidden" name="action" value="add">
+			<label>Tip
+				<select name="media_kind">
+					{% for val, label in kind_choices %}
+					<option value="{{ val }}">{{ label }}</option>
+					{% endfor %}
+				</select>
+			</label>
+			<label>Denumire * <input name="outlet_name" required maxlength="255"></label>
+			<label>Contact <input name="contact_name" maxlength="200"></label>
+			<label>Email <input name="email" type="email" maxlength="254"></label>
+			<label>Telefon <input name="phone" maxlength="40"></label>
+			<label>Site <input name="website" maxlength="500" placeholder="https://…"></label>
+			<label>Județ <input name="judet" maxlength="120"></label>
+			<label>Oraș <input name="oras" maxlength="120"></label>
+			<label>Sursă <input name="source" value="manual" maxlength="120"></label>
+			<label style="flex:1 1 12rem;">Note <input name="notes" maxlength="500"></label>
+			<button type="submit" class="media-btn">Salvează</button>
+		</form>
+	</div>
+
+	<div class="media-table-wrap">
+		<table class="media-table">
+			<thead>
+				<tr>
+					<th>Tip</th>
+					<th>Denumire</th>
+					<th>Contact</th>
+					<th>Email</th>
+					<th>Telefon</th>
+					<th>Loc</th>
+					<th>Status</th>
+					<th>Acțiuni</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for p in leads %}
+				<tr>
+					<td>{{ p.get_media_kind_display }}</td>
+					<td>
+						<strong>{{ p.outlet_name }}</strong>
+						{% if p.website %}<div><a href="{{ p.website }}" target="_blank" rel="noopener">site</a></div>{% endif %}
+						{% if p.source %}<div class="media-hint">{{ p.source }}</div>{% endif %}
+					</td>
+					<td>{{ p.contact_name|default:"—" }}</td>
+					<td>{% if p.email %}<a href="mailto:{{ p.email }}">{{ p.email }}</a>{% else %}<span class="media-hint">—</span>{% endif %}</td>
+					<td>{{ p.phone|default:"—" }}</td>
+					<td>{{ p.judet }}{% if p.oras %} / {{ p.oras }}{% endif %}</td>
+					<td>{{ p.get_outreach_status_display }}</td>
+					<td style="white-space:nowrap;">
+						{% if p.has_phone %}
+						<a class="media-btn" href="{% url 'admin_analysis_media' %}?wa={{ p.pk }}">Text WA</a>
+						{% endif %}
+						{% if p.has_email %}
+						<span class="media-hint">mail: mai târziu</span>
+						{% endif %}
+						<form method="post" action="{% url 'admin_analysis_media_delete' %}" style="display:inline;margin:0;" onsubmit="return confirm('Ștergi {{ p.outlet_name }}?');">
+							{% csrf_token %}
+							<input type="hidden" name="pk" value="{{ p.pk }}">
+							<button type="submit" class="media-btn media-btn--danger">Șterge</button>
+						</form>
+					</td>
+				</tr>
+				{% empty %}
+				<tr><td colspan="8">Niciun prospect încă. Adaugă manual sau importă CSV — apoi încărcăm date de pe net.</td></tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	{% if page_obj.paginator.num_pages > 1 %}
+	<div class="media-pager">
+		Pagina {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+		{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">←</a>{% endif %}
+		{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">→</a>{% endif %}
+	</div>
+	{% endif %}
+</section>
+{% endblock %}

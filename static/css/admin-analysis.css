@@ -3,13 +3,13 @@
  * Override linkuri cyan din eu-intra-site-skin pe fundal deschis.
  */
 body.euadopt-intra-skin.page-admin-analysis .main-content
-	a:not(.btn):not(.button):not([class*="btn-"]):not(.dog-card-link):not(.analysis-subnav a):not(.analysis-btn-comercial):not(.analysis-btn-prezenta):not(.analysis-btn-prezenta-eu):not(.analysis-view-as a):not(.analysis-view-as-tip a):not(.users-mail-btn):not(.eu-hub-card):not(.eu-hub-nav a):not(.eu-mkt-nav a) {
+	a:not(.btn):not(.button):not([class*="btn-"]):not(.dog-card-link):not(.analysis-subnav a):not(.analysis-btn-comercial):not(.analysis-btn-prezenta):not(.analysis-btn-prezenta-eu):not(.analysis-btn-media):not(.analysis-view-as a):not(.analysis-view-as-tip a):not(.users-mail-btn):not(.eu-hub-card):not(.eu-hub-nav a):not(.eu-mkt-nav a) {
 	color: #1f2937;
 	text-decoration: none;
 }
 
 body.euadopt-intra-skin.page-admin-analysis .main-content
-	a:not(.btn):not(.button):not([class*="btn-"]):not(.dog-card-link):not(.analysis-subnav a):not(.analysis-btn-comercial):not(.analysis-btn-prezenta):not(.analysis-btn-prezenta-eu):not(.analysis-view-as a):not(.analysis-view-as-tip a):not(.users-mail-btn):not(.eu-hub-card):not(.eu-hub-nav a):not(.eu-mkt-nav a):hover {
+	a:not(.btn):not(.button):not([class*="btn-"]):not(.dog-card-link):not(.analysis-subnav a):not(.analysis-btn-comercial):not(.analysis-btn-prezenta):not(.analysis-btn-prezenta-eu):not(.analysis-btn-media):not(.analysis-view-as a):not(.analysis-view-as-tip a):not(.users-mail-btn):not(.eu-hub-card):not(.eu-hub-nav a):not(.eu-mkt-nav a):hover {
 	color: #0d47a1;
 	text-decoration: underline;
 }

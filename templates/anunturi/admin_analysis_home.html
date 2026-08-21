@@ -108,6 +108,18 @@
 		letter-spacing: 0.04em;
 	}
 	.analysis-btn-prezenta-eu:hover { background: rgba(25, 118, 210, 0.16); }
+	.analysis-btn-media {
+		text-decoration: none;
+		padding: 0.2rem 0.45rem;
+		border-radius: 6px;
+		border: 1px solid rgba(123, 31, 162, 0.55);
+		font-size: 0.7rem;
+		font-weight: 800;
+		color: #6a1b9a;
+		background: rgba(186, 104, 200, 0.28);
+		letter-spacing: 0.04em;
+	}
+	.analysis-btn-media:hover { background: rgba(123, 31, 162, 0.16); }
 	.analysis-home-shell h1 {
 		margin: 0;
 		font-size: 1rem;
@@ -388,6 +400,7 @@
 			<a href="{% url 'admin_analysis_eu_hub' %}" class="analysis-btn-prezenta-eu">PREZENȚĂ EU</a>
 			{% endif %}
 			<a href="{% url 'admin_analysis_add_user' %}" class="analysis-btn-comercial">Add USER</a>
+			<a href="{% url 'admin_analysis_media' %}" class="analysis-btn-media">Audio/TV</a>
 		</div>
 		<div class="analysis-view-as">
 			<span class="analysis-view-as-label">Vezi ca:</span>
