@@ -14367,14 +14367,16 @@ def animale_pierdute_view(request):
     }
     chosen = (request.GET.get("judet") or "").strip().lower()
     active_judet = next((j for j in judete if (j.slug or "").strip().lower() == chosen), None)
-    active_label = f"Județ selectat: {active_judet.name}" if active_judet else ""
+    active_code = (getattr(active_judet, "code", "") or "").strip().upper() if active_judet else ""
+    active_name = (getattr(active_judet, "name", "") or "").strip() if active_judet else ""
 
     return render(
         request,
         "anunturi/animale_pierdute.html",
         {
             "ap_map_urls": map_urls,
-            "ap_active_label": active_label,
+            "ap_active_code": active_code,
+            "ap_active_name": active_name,
             "ap_top_band": top_band,
             "ap_right_band": right_band,
             "ap_bottom_band": bottom_band,

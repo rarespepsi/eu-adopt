@@ -24,11 +24,10 @@
 		</div>
 
 		<div class="ap-map-wrap">
-			<div class="ap-map-stage" id="apMapStage" aria-label="Harta României pe județe">
+			<div class="ap-map-stage" id="apMapStage" aria-label="Harta României pe județe" data-active-code="{{ ap_active_code|default:'' }}">
 				<div class="ap-map-loading" id="apMapLoading">Se încarcă harta…</div>
 			</div>
-			<span class="ap-map-bubble" role="note">Click pe județ în hartă pentru filtrare rapidă (modul în lucru).</span>
-			<p class="ap-map-hint" id="apMapHint">{{ ap_active_label }}</p>
+			<span class="ap-map-bubble" id="apMapBubble" role="note">{% if ap_active_name %}Județ: {{ ap_active_name }}{% else %}Click pe județ{% endif %}</span>
 		</div>
 
 		<div class="ap-band ap-band-right" aria-hidden="true">
@@ -52,10 +51,12 @@
 document.addEventListener("DOMContentLoaded", function () {
 	var stage = document.getElementById("apMapStage");
 	var loading = document.getElementById("apMapLoading");
-	var hint = document.getElementById("apMapHint");
+	var bubble = document.getElementById("apMapBubble");
 	if (!stage) return;
 	var urls = {};
 	try { urls = JSON.parse(document.getElementById("ap-map-urls").textContent || "{}"); } catch (e) {}
+	var activeCode = String(stage.getAttribute("data-active-code") || "").toUpperCase();
+	var defaultBubble = bubble ? bubble.textContent : "Click pe județ";
 	fetch("{% static 'images/campanii/romania-counties.svg' %}", { credentials: "same-origin" })
 		.then(function (r) { if (!r.ok) throw new Error("svg"); return r.text(); })
 		.then(function (markup) {
@@ -70,6 +71,9 @@ document.addEventListener("DOMContentLoaded", function () {
 				var target = urls[code] || "";
 				if (!target) return;
 				path.classList.add("ap-judet-path");
+				if (activeCode && code === activeCode) {
+					path.classList.add("ap-judet-path--active");
+				}
 				path.setAttribute("tabindex", "0");
 				path.setAttribute("role", "link");
 				path.addEventListener("click", function () { window.location.href = target; });
@@ -77,10 +81,12 @@ document.addEventListener("DOMContentLoaded", function () {
 					if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); window.location.href = target; }
 				});
 				path.addEventListener("mouseenter", function () {
-					if (hint) {
-						var label = path.getAttribute("aria-label") || code;
-						hint.textContent = "Județ: " + label;
-					}
+					if (!bubble) return;
+					var label = path.getAttribute("aria-label") || code;
+					bubble.textContent = "Județ: " + label;
+				});
+				path.addEventListener("mouseleave", function () {
+					if (bubble) bubble.textContent = defaultBubble;
 				});
 			});
 			if (loading) loading.remove();
@@ -157,8 +163,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		grid-area: map;
 		min-height: 0;
 		display: grid;
-		grid-template-rows: 1fr auto;
-		gap: 0.15rem;
+		grid-template-rows: 1fr;
 		position: relative;
 	}
 	.ap-map-stage {
@@ -174,18 +179,18 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 	.ap-map-bubble {
 		position: absolute;
-		top: 0.45rem;
-		right: 0.45rem;
+		top: 0.35rem;
+		right: 0.35rem;
 		z-index: 4;
-		max-width: min(16rem, calc(100% - 1.2rem));
-		padding: 0.38rem 0.7rem;
+		max-width: min(10.5rem, calc(100% - 1rem));
+		padding: 0.22rem 0.5rem;
 		border-radius: 999px;
-		background: rgba(13, 71, 161, 0.92);
+		background: rgba(13, 71, 161, 0.9);
 		color: #fff;
-		font-size: clamp(0.68rem, 1.5vw, 0.8rem);
+		font-size: clamp(0.58rem, 1.2vw, 0.7rem);
 		font-weight: 700;
-		line-height: 1.25;
-		box-shadow: 0 4px 12px rgba(13, 71, 161, 0.28);
+		line-height: 1.2;
+		box-shadow: 0 3px 10px rgba(13, 71, 161, 0.24);
 		pointer-events: none;
 		text-align: center;
 	}
@@ -204,12 +209,14 @@ document.addEventListener("DOMContentLoaded", function () {
 		stroke-width: 1.15;
 		outline: none;
 	}
-	.ap-map-hint {
-		margin: 0;
-		font-size: 0.82rem;
-		font-weight: 700;
-		color: #0d47a1;
-		min-height: 1.1em;
+	.ap-judet-path--active {
+		fill: #1565c0 !important;
+		stroke: #0d47a1;
+		stroke-width: 1.2;
+	}
+	.ap-judet-path--active:hover,
+	.ap-judet-path--active:focus {
+		fill: #1976d2 !important;
 	}
 	.ap-foot {
 		margin: 0;
@@ -234,11 +241,11 @@ document.addEventListener("DOMContentLoaded", function () {
 		.ap-band-track img { flex-basis: 4.7rem; width: 4.7rem; }
 		.ap-band-track-vert img { height: 4.7rem; }
 		.ap-map-bubble {
-			top: 0.3rem;
-			right: 0.3rem;
-			max-width: min(12rem, calc(100% - 0.8rem));
-			font-size: 0.64rem;
-			padding: 0.3rem 0.55rem;
+			top: 0.22rem;
+			right: 0.22rem;
+			max-width: min(8.5rem, calc(100% - 0.7rem));
+			font-size: 0.56rem;
+			padding: 0.18rem 0.4rem;
 		}
 	}
 </style>
