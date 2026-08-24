@@ -42,7 +42,7 @@
 		</label>
 
 		<label class="ap-add__label">Județ *
-			<select name="judet_slug" required>
+			<select name="judet_slug" id="apAddJudet" required>
 				<option value="">— alege județul —</option>
 				{% for j in judete %}
 				<option value="{{ j.slug }}" {% if request.POST.judet_slug == j.slug or pre_judet == j.slug %}selected{% endif %}>{{ j.name }}</option>
@@ -51,7 +51,12 @@
 		</label>
 
 		<label class="ap-add__label">Localitate *
-			<input type="text" name="localitate" maxlength="120" required value="{{ request.POST.localitate|default:'' }}" placeholder="Oraș / comună">
+			<select name="localitate" id="apAddLoc" required {% if not pre_cities %}disabled{% endif %}>
+				<option value="">— alege localitatea —</option>
+				{% for city in pre_cities %}
+				<option value="{{ city }}" {% if posted_localitate == city %}selected{% endif %}>{{ city }}</option>
+				{% endfor %}
+			</select>
 		</label>
 
 		<label class="ap-add__label">Detalii *
@@ -167,5 +172,44 @@
 		text-decoration: none;
 	}
 	.ap-add__cancel:hover { text-decoration: underline; }
+	.ap-add__label select:disabled {
+		opacity: 0.65;
+		cursor: not-allowed;
+		background: #eceff1;
+	}
 </style>
+{{ cities_by_slug|json_script:"ap-cities-by-slug" }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+	var judet = document.getElementById("apAddJudet");
+	var loc = document.getElementById("apAddLoc");
+	if (!judet || !loc) return;
+	var map = {};
+	try { map = JSON.parse(document.getElementById("ap-cities-by-slug").textContent || "{}"); } catch (e) {}
+	var kept = "{{ posted_localitate|escapejs }}";
+
+	function fillLoc(slug, prefer) {
+		var cities = map[slug] || [];
+		loc.innerHTML = "";
+		var opt0 = document.createElement("option");
+		opt0.value = "";
+		opt0.textContent = cities.length ? "— alege localitatea —" : "— alege mai întâi județul —";
+		loc.appendChild(opt0);
+		cities.forEach(function (c) {
+			var o = document.createElement("option");
+			o.value = c;
+			o.textContent = c;
+			if (prefer && prefer === c) o.selected = true;
+			loc.appendChild(o);
+		});
+		loc.disabled = !cities.length;
+		loc.required = true;
+	}
+
+	judet.addEventListener("change", function () {
+		fillLoc(String(judet.value || ""), "");
+	});
+	if (judet.value) fillLoc(String(judet.value), kept);
+});
+</script>
 {% endblock %}

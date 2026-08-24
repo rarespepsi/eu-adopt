@@ -14327,8 +14327,36 @@ def animale_pierdute_view(request):
     from home.campanii_ro import campanii_judete
     from home.models import LostFoundAnimal
 
+    judete = campanii_judete()
+    chosen = (request.GET.get("judet") or "").strip().lower()
+    loc_filter = (request.GET.get("loc") or "").strip()
+    active_judet = next((j for j in judete if (j.slug or "").strip().lower() == chosen), None)
+    active_code = (getattr(active_judet, "code", "") or "").strip().upper() if active_judet else ""
+    active_name = (getattr(active_judet, "name", "") or "").strip() if active_judet else ""
+
+    lf_qs = LostFoundAnimal.objects.filter(is_active=True).exclude(photo="")
+    if active_judet is not None:
+        lf_qs = lf_qs.filter(judet_slug=active_judet.slug)
+    # Localități disponibile în județ (înainte de filtrul pe localitate)
+    loc_options: list[str] = []
+    if active_judet is not None:
+        loc_options = sorted(
+            {
+                (x or "").strip()
+                for x in lf_qs.values_list("localitate", flat=True)
+                if (x or "").strip()
+            },
+            key=lambda s: s.casefold(),
+        )
+        if loc_filter:
+            lf_qs = lf_qs.filter(localitate__iexact=loc_filter)
+            if loc_filter not in loc_options:
+                loc_options = [loc_filter] + loc_options
+    lf_list = list(lf_qs.select_related("user").order_by("-created_at")[:60])
+    filter_count = lf_qs.count() if active_judet is not None else 0
+
     pics: list[str] = []
-    for row in LostFoundAnimal.objects.filter(is_active=True).exclude(photo="").order_by("-created_at")[:40]:
+    for row in lf_list[:40]:
         try:
             u = (row.photo.url or "").strip()
         except Exception:
@@ -14337,7 +14365,8 @@ def animale_pierdute_view(request):
             pics.append(u)
         if len(pics) >= 28:
             break
-    if len(pics) < 28:
+    # Fără filtru județ: completează benzile din adopții dacă e nevoie.
+    if active_judet is None and len(pics) < 28:
         qs = (
             AnimalListing.objects.filter(is_published=True)
             .exclude(photo_1__isnull=True)
@@ -14361,7 +14390,6 @@ def animale_pierdute_view(request):
             "/static/images/campanii/campanii-gratuite-pub.png",
         ]
 
-    # Populăm cele 4 benzi (jumătate față de înainte) — casete mai mari, mai vizibile.
     ring: list[str] = []
     while len(ring) < 28:
         ring.extend(pics)
@@ -14372,14 +14400,26 @@ def animale_pierdute_view(request):
     bottom_band = ring[14:21]
     left_band = ring[21:28]
 
-    judete = campanii_judete()
     map_urls = {
         j.code: f"{reverse('animale_pierdute')}?judet={j.slug}" for j in judete if getattr(j, "code", None)
     }
-    chosen = (request.GET.get("judet") or "").strip().lower()
-    active_judet = next((j for j in judete if (j.slug or "").strip().lower() == chosen), None)
-    active_code = (getattr(active_judet, "code", "") or "").strip().upper() if active_judet else ""
-    active_name = (getattr(active_judet, "name", "") or "").strip() if active_judet else ""
+
+    filter_items = []
+    for row in lf_list[:24]:
+        try:
+            img = (row.photo.url or "").strip()
+        except Exception:
+            img = ""
+        filter_items.append(
+            {
+                "kind": row.get_kind_display(),
+                "species": row.get_species_display(),
+                "name": (row.name or "").strip() or row.get_species_display(),
+                "localitate": (row.localitate or "").strip(),
+                "img": img,
+                "desc": (row.description or "")[:120],
+            }
+        )
 
     return render(
         request,
@@ -14388,6 +14428,11 @@ def animale_pierdute_view(request):
             "ap_map_urls": map_urls,
             "ap_active_code": active_code,
             "ap_active_name": active_name,
+            "ap_active_slug": (active_judet.slug if active_judet else ""),
+            "ap_loc_filter": loc_filter,
+            "ap_loc_options": loc_options,
+            "ap_filter_count": filter_count,
+            "ap_filter_items": filter_items,
             "ap_top_band": top_band,
             "ap_right_band": right_band,
             "ap_bottom_band": bottom_band,
@@ -14403,22 +14448,35 @@ def animale_pierdute_adauga_view(request):
     """Formular anunț animal pierdut / găsit — doar user logat."""
     from home.campanii_ro import campanii_judete
     from home.models import LostFoundAnimal
+    from home.ro_location import _cities_by_county, resolve_locality
     from django.contrib import messages
 
     judete = campanii_judete()
     pre_judet = (request.GET.get("judet") or request.POST.get("judet_slug") or "").strip().lower()
+    cities_by_slug = {
+        j.slug: list(_cities_by_county().get(j.name, []) or []) for j in judete
+    }
+    pre_cities = cities_by_slug.get(pre_judet, [])
 
     if request.method == "POST":
         kind = (request.POST.get("kind") or "").strip()
         species = (request.POST.get("species") or "dog").strip()
         name = (request.POST.get("name") or "").strip()[:80]
         judet_slug = (request.POST.get("judet_slug") or "").strip().lower()
-        localitate = (request.POST.get("localitate") or "").strip()[:120]
+        localitate_raw = (request.POST.get("localitate") or "").strip()[:120]
         description = (request.POST.get("description") or "").strip()[:2000]
         phone = (request.POST.get("phone") or "").strip()[:32]
         photo = request.FILES.get("photo")
 
         judet_obj = next((j for j in judete if (j.slug or "").strip().lower() == judet_slug), None)
+        localitate = ""
+        if judet_obj is not None:
+            localitate = resolve_locality(localitate_raw, judet_obj.name)
+            allowed = set(cities_by_slug.get(judet_obj.slug, []) or [])
+            if localitate and allowed and localitate not in allowed:
+                # acceptă doar din listă
+                localitate = ""
+
         errors = []
         if kind not in (LostFoundAnimal.KIND_LOST, LostFoundAnimal.KIND_FOUND):
             errors.append("Alege tipul: pierdut sau găsit.")
@@ -14427,7 +14485,7 @@ def animale_pierdute_adauga_view(request):
         if judet_obj is None:
             errors.append("Alege județul.")
         if not localitate:
-            errors.append("Completează localitatea.")
+            errors.append("Alege localitatea din listă.")
         if len(description) < 10:
             errors.append("Detaliile trebuie să aibă cel puțin 10 caractere.")
         if not photo:
@@ -14436,6 +14494,8 @@ def animale_pierdute_adauga_view(request):
         if errors:
             for e in errors:
                 messages.error(request, e)
+            pre_cities = cities_by_slug.get(judet_slug, [])
+            pre_judet = judet_slug
         else:
             LostFoundAnimal.objects.create(
                 user=request.user,
@@ -14458,8 +14518,11 @@ def animale_pierdute_adauga_view(request):
         {
             "judete": judete,
             "pre_judet": pre_judet,
+            "pre_cities": pre_cities,
+            "cities_by_slug": cities_by_slug,
             "kind_choices": LostFoundAnimal.KIND_CHOICES,
             "species_choices": LostFoundAnimal.SPECIES_CHOICES,
+            "posted_localitate": (request.POST.get("localitate") or "").strip(),
         },
     )
 

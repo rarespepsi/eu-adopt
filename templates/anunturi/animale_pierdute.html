@@ -23,11 +23,50 @@
 			<div class="ap-map-stage" id="apMapStage" aria-label="Harta României pe județe" data-active-code="{{ ap_active_code|default:'' }}">
 				<div class="ap-map-loading" id="apMapLoading">Se încarcă harta…</div>
 			</div>
-			<span class="ap-map-bubble" id="apMapBubble" role="note">{% if ap_active_name %}Județ: {{ ap_active_name }}{% else %}Click pe județ{% endif %}</span>
+			<span class="ap-map-bubble" id="apMapBubble" role="note">{% if ap_active_name %}Filtru: {{ ap_active_name }} · {{ ap_filter_count }} anunț{% if ap_filter_count != 1 %}uri{% endif %}{% else %}Click pe județ{% endif %}</span>
 			{% if user.is_authenticated %}
-			<a class="ap-map-add" href="{% url 'animale_pierdute_adauga' %}{% if ap_active_code %}?judet={{ request.GET.judet|urlencode }}{% endif %}">＋ Adaugă</a>
+			<a class="ap-map-add" href="{% url 'animale_pierdute_adauga' %}{% if ap_active_slug %}?judet={{ ap_active_slug|urlencode }}{% endif %}">＋ Adaugă</a>
 			{% else %}
 			<a class="ap-map-add" href="{% url 'login' %}?next={% url 'animale_pierdute_adauga' %}">＋ Adaugă</a>
+			{% endif %}
+			{% if ap_active_name %}
+			<aside class="ap-filter" aria-label="Filtru activ {{ ap_active_name }}">
+				<div class="ap-filter__head">
+					<strong>Filtru activ</strong>
+					<a class="ap-filter__reset" href="{% url 'animale_pierdute' %}">Resetează</a>
+				</div>
+				<p class="ap-filter__meta">{{ ap_active_name }}{% if ap_loc_filter %} · {{ ap_loc_filter }}{% endif %} · {{ ap_filter_count }} anunț{% if ap_filter_count != 1 %}uri{% endif %}</p>
+				{% if ap_loc_options %}
+				<form class="ap-filter__loc" method="get" action="{% url 'animale_pierdute' %}">
+					<input type="hidden" name="judet" value="{{ ap_active_slug }}">
+					<label>
+						<span class="ap-filter__loc-lab">Localitate</span>
+						<select name="loc" onchange="this.form.submit()">
+							<option value="">— toate —</option>
+							{% for city in ap_loc_options %}
+							<option value="{{ city }}" {% if ap_loc_filter == city %}selected{% endif %}>{{ city }}</option>
+							{% endfor %}
+						</select>
+					</label>
+				</form>
+				{% endif %}
+				<div class="ap-filter__list">
+					{% if ap_filter_items %}
+						{% for it in ap_filter_items %}
+						<article class="ap-filter__card">
+							{% if it.img %}<img src="{{ it.img }}" alt="" loading="lazy" decoding="async">{% endif %}
+							<div>
+								<strong>{{ it.kind }} · {{ it.name }}</strong>
+								<span>{{ it.localitate }} · {{ it.species }}</span>
+								{% if it.desc %}<em>{{ it.desc }}</em>{% endif %}
+							</div>
+						</article>
+						{% endfor %}
+					{% else %}
+						<p class="ap-filter__empty">Niciun anunț în acest județ încă. Fii primul — folosește „＋ Adaugă”.</p>
+					{% endif %}
+				</div>
+			</aside>
 			{% endif %}
 			<div class="ap-map-title" role="group" aria-label="Titlu pagină">
 				<a class="ap-map-back" href="{% url 'home' %}">← Acasă</a>
@@ -235,6 +274,116 @@ document.addEventListener("DOMContentLoaded", function () {
 		line-height: 1.2;
 	}
 	.ap-map-add:hover { background: #1b5e20; color: #fff; }
+	.ap-filter {
+		position: absolute;
+		top: 2.35rem;
+		right: 0.35rem;
+		bottom: 3.2rem;
+		z-index: 5;
+		width: min(15.5rem, calc(100% - 0.7rem));
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		padding: 0.45rem 0.5rem;
+		border-radius: 10px;
+		background: rgba(255, 255, 255, 0.95);
+		border: 1px solid rgba(13, 71, 161, 0.28);
+		box-shadow: 0 4px 14px rgba(13, 71, 161, 0.16);
+		overflow: hidden;
+		pointer-events: auto;
+	}
+	.ap-filter__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.4rem;
+	}
+	.ap-filter__head strong {
+		font-size: 0.78rem;
+		color: #0d47a1;
+		font-weight: 800;
+	}
+	.ap-filter__reset {
+		font-size: 0.68rem;
+		font-weight: 700;
+		color: #c62828;
+		text-decoration: none;
+	}
+	.ap-filter__reset:hover { text-decoration: underline; }
+	.ap-filter__meta {
+		margin: 0;
+		font-size: 0.68rem;
+		font-weight: 650;
+		color: #455a64;
+		line-height: 1.25;
+	}
+	.ap-filter__loc label {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+	.ap-filter__loc-lab {
+		font-size: 0.62rem;
+		font-weight: 700;
+		color: #0d47a1;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+	}
+	.ap-filter__loc select {
+		font: inherit;
+		font-size: 0.72rem;
+		padding: 0.28rem 0.35rem;
+		border-radius: 6px;
+		border: 1px solid #90caf9;
+		background: #fff;
+		max-width: 100%;
+	}
+	.ap-filter__list {
+		min-height: 0;
+		flex: 1;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		padding-right: 0.1rem;
+	}
+	.ap-filter__card {
+		display: grid;
+		grid-template-columns: 2.6rem minmax(0, 1fr);
+		gap: 0.35rem;
+		padding: 0.3rem;
+		border-radius: 8px;
+		border: 1px solid #e3f2fd;
+		background: #f8fbff;
+	}
+	.ap-filter__card img {
+		width: 2.6rem;
+		height: 2.6rem;
+		object-fit: cover;
+		border-radius: 6px;
+		display: block;
+	}
+	.ap-filter__card strong {
+		display: block;
+		font-size: 0.68rem;
+		color: #0d47a1;
+		line-height: 1.2;
+	}
+	.ap-filter__card span,
+	.ap-filter__card em {
+		display: block;
+		font-size: 0.62rem;
+		color: #546e7a;
+		font-style: normal;
+		line-height: 1.25;
+	}
+	.ap-filter__empty {
+		margin: 0.2rem 0 0;
+		font-size: 0.7rem;
+		color: #546e7a;
+		line-height: 1.35;
+	}
 	.ap-map-title {
 		position: absolute;
 		left: 0.4rem;
@@ -334,6 +483,16 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 		.ap-map-title strong { font-size: 0.66rem; }
 		.ap-map-back { font-size: 0.62rem; }
+		.ap-filter {
+			top: 2rem;
+			right: 0.22rem;
+			bottom: 2.6rem;
+			width: min(11.5rem, calc(100% - 0.5rem));
+			padding: 0.35rem 0.4rem;
+		}
+		.ap-filter__head strong { font-size: 0.7rem; }
+		.ap-filter__card { grid-template-columns: 2.1rem minmax(0, 1fr); }
+		.ap-filter__card img { width: 2.1rem; height: 2.1rem; }
 	}
 </style>
 {% endblock %}
