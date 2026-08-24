@@ -509,6 +509,12 @@ body.page-home-v2 #home-col-right .slot-img-fit {
     object-fit: cover !important;
     display: block !important;
 }
+body.page-home-v2 #home-col-left .slot-img-contain,
+body.page-home-v2 #home-col-right .slot-img-contain,
+body.page-home-v2 .home-v2-mobile-ad-slot .slot-img-contain {
+    object-fit: contain !important;
+    object-position: center center !important;
+}
 body.page-home-v2 #home-col-left video.slot-img-fit,
 body.page-home-v2 #home-col-right video.slot-img-fit {
     max-width: none !important;
@@ -1378,6 +1384,10 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
         height: 100% !important;
         object-fit: cover !important;
         display: block;
+    }
+    body.page-home-v2 .home-v2-mobile-ad-slot .slot-img-contain {
+        object-fit: contain !important;
+        object-position: center center !important;
     }
 
     body.page-home-v2 #A2 {

@@ -2577,6 +2577,7 @@ def _home_sidebar_pub_slots_for_template(
             "discount": (creative.get("discount") or "").strip(),
             "is_default_cover": bool(creative.get("is_default_cover")),
             "link_external": bool(creative.get("link_external")),
+            "is_internal_home_pub": bool(creative.get("is_internal_home_pub")),
             "caption": (creative.get("caption") or "").strip()[:200],
             "alt": (creative.get("alt") or creative.get("caption") or "Publicitate").strip()[:200],
         }
