@@ -512,9 +512,12 @@ body.page-home-v2 #home-col-right .slot-img-fit {
 body.page-home-v2 #home-col-left .home-v2-slot-partener .slot-img-fit.slot-img-contain,
 body.page-home-v2 #home-col-right .home-v2-slot-partener .slot-img-fit.slot-img-contain,
 body.page-home-v2 .home-v2-mobile-ad-slot .slot-img-fit.slot-img-contain {
-    object-fit: contain !important;
-    object-position: center center !important;
-    background: #f0ebe5 !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 100% !important;
+    object-fit: fill !important;
+    display: block !important;
+    align-self: center !important;
 }
 body.page-home-v2 #home-col-left video.slot-img-fit,
 body.page-home-v2 #home-col-right video.slot-img-fit {
@@ -1387,9 +1390,12 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
         display: block;
     }
     body.page-home-v2 .home-v2-mobile-ad-slot .slot-img-fit.slot-img-contain {
-        object-fit: contain !important;
-        object-position: center center !important;
-        background: #f0ebe5 !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: 100% !important;
+        object-fit: fill !important;
+        display: block !important;
+        align-self: center !important;
     }
 
     body.page-home-v2 #A2 {
