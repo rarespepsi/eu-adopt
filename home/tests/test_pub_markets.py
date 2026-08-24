@@ -112,7 +112,7 @@ class PubMarketNotesTests(TestCase):
         self.assertContains(r, "pub-eu-quad")
         self.assertContains(r, "pub-home-wire-clip")
         self.assertContains(r, "Postează")
-        r2 = c.get(reverse("publicitate_eu_direct") + "?sect=home&slot=A5.1")
+        r2 = c.get(reverse("publicitate_eu_direct") + "?sect=home&slot=A6.1")
         self.assertEqual(r2.status_code, 200)
         self.assertContains(r2, "pub-eu-cal-day")
         self.assertContains(r2, "pub-eu-cal-month")
@@ -123,7 +123,7 @@ class PubMarketNotesTests(TestCase):
             reverse("publicitate_eu_direct"),
             {
                 "sect": "home",
-                "slot": "A5.1",
+                "slot": "A6.1",
                 "action": "publish",
                 "start_date": "2026-07-23",
                 "end_date": "2027-07-23",
@@ -134,14 +134,14 @@ class PubMarketNotesTests(TestCase):
             },
         )
         self.assertEqual(r.status_code, 302)
-        note = ReclamaSlotNote.objects.get(section="home", slot_code="A5.1", market=PUB_MARKET_EU)
+        note = ReclamaSlotNote.objects.get(section="home", slot_code="A6.1", market=PUB_MARKET_EU)
         self.assertIn("Adopt", note.text)
         r3 = c.get(reverse("publicitate_eu_direct") + "?sect=home")
         self.assertEqual(r3.status_code, 200)
         self.assertContains(r3, "eu-wire-previews-json")
-        self.assertIn("A5.1", r3.context["eu_wire_previews"])
-        self.assertTrue(r3.context["eu_wire_previews"]["A5.1"].get("occupied"))
-        self.assertTrue((r3.context["eu_wire_previews"]["A5.1"].get("image_url") or "").startswith("/media/"))
+        self.assertIn("A6.1", r3.context["eu_wire_previews"])
+        self.assertTrue(r3.context["eu_wire_previews"]["A6.1"].get("occupied"))
+        self.assertTrue((r3.context["eu_wire_previews"]["A6.1"].get("image_url") or "").startswith("/media/"))
 
     def test_normalize_pub_link_http_and_www(self):
         from home.pub_slot_defaults import normalize_pub_outbound_link, pub_slot_live_creative
@@ -186,7 +186,8 @@ class PubMarketNotesTests(TestCase):
         slot_map = r.context["pub_slot_map"]
         home_codes = {row["code"] for row in slot_map.get("home") or []}
         self.assertNotIn("A5.3", home_codes)
-        self.assertIn("A5.1", home_codes)
+        self.assertNotIn("A5.1", home_codes)
+        self.assertNotIn("A5.2", home_codes)
         pt_codes = {row["code"] for row in slot_map.get("pt") or []}
         self.assertNotIn("P4.3", pt_codes)
         tr_codes = {row["code"] for row in slot_map.get("transport") or []}
@@ -261,6 +262,17 @@ class PubMarketNotesTests(TestCase):
         r_judet2 = c.get(reverse("publicitate_campanii_judet", kwargs={"judet_slug": "neamt"}))
         self.assertContains(r_judet2, "nu sunt campanii active")
 
+    def test_internal_placeholder_pages(self):
+        c = Client(HTTP_HOST="eu-adopt.ro")
+        r1 = c.get(reverse("animale_pierdute"))
+        self.assertEqual(r1.status_code, 200)
+        self.assertContains(r1, "Animale pierdute sau găsite")
+        self.assertContains(r1, "Pagină în lucru")
+        r2 = c.get(reverse("semnaleaza_abuz"))
+        self.assertEqual(r2.status_code, 200)
+        self.assertContains(r2, "Semnalează un abuz")
+        self.assertContains(r2, "Pagină în lucru")
+
     def test_campanie_list_edit_delete_from_account(self):
         from datetime import date, timedelta
         from django.core.files.uploadedfile import SimpleUploadedFile
@@ -302,6 +314,21 @@ class PubMarketNotesTests(TestCase):
         )
         self.assertEqual(r_del.status_code, 302)
         self.assertFalse(CampanieSterilizare.objects.filter(pk=camp.pk).exists())
+
+    def test_internal_home_pub_slots_use_dedicated_image_and_link(self):
+        from home.pub_slot_defaults import pub_slot_live_creative
+
+        cases = (
+            ("A5.1", "animale-pierdute", "a5-pierdute-gasite"),
+            ("A5.2", "semnaleaza-abuz", "a5-semnaleaza-abuz"),
+        )
+        for code, path_part, img_part in cases:
+            creative = pub_slot_live_creative("home", code, None, market=PUB_MARKET_RO)
+            self.assertTrue(creative.get("has_link"), code)
+            dest = (creative.get("href") or creative.get("link") or "")
+            self.assertIn(f"/{path_part}/", dest, code)
+            self.assertIn(img_part, creative.get("img") or "", code)
+            self.assertTrue(creative.get("is_internal_home_pub"), code)
 
     def test_campanie_pub_slots_use_campaign_image_and_map_link(self):
         from home.pub_slot_defaults import pub_slot_live_creative

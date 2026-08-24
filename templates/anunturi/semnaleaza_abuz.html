@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Semnalează un abuz | EU Adopt{% endblock %}
+{% block body_class %}page-semnaleaza-abuz{% endblock %}
+
+{% block content %}
+<section class="eu-internal-page" aria-label="Semnalează un abuz">
+	<header class="eu-internal-page__head">
+		<h1>Semnalează un abuz</h1>
+		<p class="eu-internal-page__lead">
+			Pagină în lucru — harta pe județe și formularul de sesizare vor fi disponibile curând.
+		</p>
+	</header>
+	<div class="eu-internal-page__hero">
+		<img
+			src="{% static 'images/home/a5-semnaleaza-abuz.png' %}"
+			alt="Semnalează un abuz"
+			width="640"
+			height="640"
+			loading="eager"
+			decoding="async"
+		>
+	</div>
+	<p class="eu-internal-page__foot">
+		<a href="{% url 'home' %}">← Înapoi la Acasă</a>
+	</p>
+</section>
+<style>
+	.eu-internal-page {
+		max-width: 42rem;
+		margin: 0.75rem auto 2rem;
+		padding: 0 0.85rem;
+	}
+	.eu-internal-page__head h1 {
+		margin: 0 0 0.45rem;
+		font-size: clamp(1.25rem, 2.8vw, 1.55rem);
+		color: #b71c1c;
+	}
+	.eu-internal-page__lead {
+		margin: 0;
+		color: #37474f;
+		font-size: 0.95rem;
+		line-height: 1.45;
+	}
+	.eu-internal-page__hero {
+		margin: 1rem 0;
+		border-radius: 14px;
+		overflow: hidden;
+		border: 1px solid #ef9a9a;
+		box-shadow: 0 4px 16px rgba(183, 28, 28, 0.12);
+	}
+	.eu-internal-page__hero img {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+	.eu-internal-page__foot {
+		margin: 0.85rem 0 0;
+		font-weight: 700;
+	}
+	.eu-internal-page__foot a {
+		color: #b71c1c;
+	}
+</style>
+{% endblock %}

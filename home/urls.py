@@ -103,6 +103,8 @@ urlpatterns = [
     path('collab/transport/pending/accept/', views.transport_op_accept_pending_view, name='transport_op_accept_pending'),
     path('collab/transport/pending/decline/', views.transport_op_decline_pending_view, name='transport_op_decline_pending'),
     path('pub/go/', views.pub_slot_go_view, name='pub_slot_go'),
+    path('animale-pierdute/', views.animale_pierdute_view, name='animale_pierdute'),
+    path('semnaleaza-abuz/', views.semnaleaza_abuz_view, name='semnaleaza_abuz'),
     path('publicitate/eu/', views.publicitate_eu_direct_view, name='publicitate_eu_direct'),
     path('publicitate/campanii/', views.publicitate_campanii_ro_view, name='publicitate_campanii_ro'),
     path(

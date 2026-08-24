@@ -45,6 +45,21 @@ def pub_cover_url(slot_code: str) -> str:
 RO_CAMPAIGN_PUB_CODES = frozenset({"A5.3", "P4.3", "TDR.3", "IL.L1"})
 RO_CAMPAIGN_PUB_IMAGE = "images/campanii/campanii-gratuite-pub.png"
 
+# HOME coloană stânga — casete EU-Adopt (nu se închiriază; link pagini dedicate)
+RO_INTERNAL_HOME_PUB = {
+    "A5.1": {
+        "image": "images/home/a5-pierdute-gasite.png",
+        "url_name": "animale_pierdute",
+        "alt": "Animale pierdute sau găsite",
+    },
+    "A5.2": {
+        "image": "images/home/a5-semnaleaza-abuz.png",
+        "url_name": "semnaleaza_abuz",
+        "alt": "Semnalează un abuz",
+    },
+}
+RO_INTERNAL_HOME_PUB_CODES = frozenset(RO_INTERNAL_HOME_PUB.keys())
+
 
 def pub_harta_url(section: str, slot_code: str) -> str:
     sect = (section or "home").strip().lower()
@@ -161,12 +176,32 @@ def pub_slot_live_creative(
     Fără material client: cover default, fără link.
     Cu material: imagine/video client + link client (dacă e setat).
     Pe .ro, sloturile Campanii (A5.3 / P4.3 / TDR.3 / IL.L1) = afiș + link hartă.
+    Pe .ro, A5.1 / A5.2 = casete EU-Adopt (pierdute / abuz) — nu catalog PUB.
     """
     from .views import _pt_pub_slot_parse_note
 
     code = (slot_code or "").strip()
     sect = (section or "home").strip().lower()
     mkt = normalize_pub_market(market)
+
+    if sect == "home" and code in RO_INTERNAL_HOME_PUB_CODES and mkt == PUB_MARKET_RO:
+        cfg = RO_INTERNAL_HOME_PUB[code]
+        return _creative_with_href(
+            sect,
+            code,
+            {
+                "img": static(cfg["image"]),
+                "video": "",
+                "link": reverse(cfg["url_name"]),
+                "alt": cfg["alt"],
+                "caption": "",
+                "price": "",
+                "discount": "",
+                "is_default_cover": False,
+                "is_internal_home_pub": True,
+            },
+            market=mkt,
+        )
 
     if code in RO_CAMPAIGN_PUB_CODES and mkt == PUB_MARKET_RO:
         return _creative_with_href(

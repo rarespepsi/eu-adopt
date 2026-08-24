@@ -11,6 +11,7 @@ class _NoteStub:
 
 
 class PubSlotDefaultsTests(SimpleTestCase):
+    databases = {"default"}
     def test_cover_path_is_deterministic(self):
         a = pub_cover_static_path("S1.14")
         b = pub_cover_static_path("S1.14")
@@ -33,8 +34,8 @@ class PubSlotDefaultsTests(SimpleTestCase):
         note = _NoteStub(
             '{"img": "images/logo-final-cu-stele.png", "link": "https://eu-adopt.ro", "alt": "EU-Adopt"}'
         )
-        mock_fetch_notes.return_value = {"A5.1": note}
-        creative = pub_slot_live_creative("home", "A5.1", note=note)
+        mock_fetch_notes.return_value = {"A6.1": note}
+        creative = pub_slot_live_creative("home", "A6.1", note=note)
         self.assertTrue(creative["has_link"])
         self.assertIn("/pub/go/", creative["href"])
         client = Client()

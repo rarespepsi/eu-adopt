@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Animale pierdute sau găsite | EU Adopt{% endblock %}
+{% block body_class %}page-animale-pierdute{% endblock %}
+
+{% block content %}
+<section class="eu-internal-page" aria-label="Animale pierdute sau găsite">
+	<header class="eu-internal-page__head">
+		<h1>Animale pierdute sau găsite</h1>
+		<p class="eu-internal-page__lead">
+			Pagină în lucru — harta pe județe, listă și formular de anunț vor fi disponibile curând.
+		</p>
+	</header>
+	<div class="eu-internal-page__hero">
+		<img
+			src="{% static 'images/home/a5-pierdute-gasite.png' %}"
+			alt="Animale pierdute sau găsite"
+			width="640"
+			height="640"
+			loading="eager"
+			decoding="async"
+		>
+	</div>
+	<p class="eu-internal-page__foot">
+		<a href="{% url 'home' %}">← Înapoi la Acasă</a>
+	</p>
+</section>
+<style>
+	.eu-internal-page {
+		max-width: 42rem;
+		margin: 0.75rem auto 2rem;
+		padding: 0 0.85rem;
+	}
+	.eu-internal-page__head h1 {
+		margin: 0 0 0.45rem;
+		font-size: clamp(1.25rem, 2.8vw, 1.55rem);
+		color: #1565c0;
+	}
+	.eu-internal-page__lead {
+		margin: 0;
+		color: #37474f;
+		font-size: 0.95rem;
+		line-height: 1.45;
+	}
+	.eu-internal-page__hero {
+		margin: 1rem 0;
+		border-radius: 14px;
+		overflow: hidden;
+		border: 1px solid #90caf9;
+		box-shadow: 0 4px 16px rgba(21, 101, 192, 0.12);
+	}
+	.eu-internal-page__hero img {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+	.eu-internal-page__foot {
+		margin: 0.85rem 0 0;
+		font-weight: 700;
+	}
+	.eu-internal-page__foot a {
+		color: #1565c0;
+	}
+</style>
+{% endblock %}

@@ -13672,8 +13672,6 @@ def _publicitate_denied_response(request):
 # Catalog tarife publicitate (sursă unică: coș, validare comandă, viitor gateway plată).
 PUBLICITATE_SLOT_MAP = {
     "home": [
-        {"code": "A5.1", "title": "Home – coloană stânga A5.1", "types": ["image", "link", "video"], "unit": "luna", "price": 120},
-        {"code": "A5.2", "title": "Home – coloană stânga A5.2", "types": ["image", "link", "video"], "unit": "luna", "price": 120},
         {"code": "A5.3", "title": "Home – coloană stânga A5.3", "types": ["image", "link", "video"], "unit": "luna", "price": 120},
         {"code": "A6.1", "title": "Home – coloană dreapta A6.1", "types": ["image", "link", "video"], "unit": "luna", "price": 110},
         {"code": "A6.2", "title": "Home – coloană dreapta A6.2", "types": ["image", "link", "video"], "unit": "luna", "price": 110},
@@ -13765,9 +13763,11 @@ def _publicitate_register_strip_band_catalog():
 
 _publicitate_register_strip_band_catalog()
 
-# Casete scoase din PUB public pe .ro (rezervate Campanii.ro). Rămân pe EU direct.
+# Casete scoase din PUB public pe .ro (EU-Adopt intern / Campanii). Rămân pe EU direct (except A5.1/A5.2 — scoase din catalog).
 PUBLICITATE_RO_CAMPAIGN_SLOTS = frozenset(
     {
+        ("home", "A5.1"),
+        ("home", "A5.2"),
         ("home", "A5.3"),
         ("pt", "P4.3"),
         ("transport", "TDR.3"),
@@ -14322,6 +14322,16 @@ def publicitate_harta_view(request):
     return render(request, "anunturi/publicitate_harta.html", _publicitate_harta_context(request, "harta"))
 
 
+def animale_pierdute_view(request):
+    """Animale pierdute / găsite — placeholder (hartă județe + formulare, în lucru)."""
+    return render(request, "anunturi/animale_pierdute.html")
+
+
+def semnaleaza_abuz_view(request):
+    """Semnalare abuz — placeholder (hartă județe + formular sesizare, în lucru)."""
+    return render(request, "anunturi/semnaleaza_abuz.html")
+
+
 def publicitate_campanii_ro_view(request):
     """Hartă națională Campanii — județe (sterilizări). Public."""
     from home.campanii_ro import campanii_count_by_code, campanii_judete, campanii_url_by_code
@@ -14540,7 +14550,7 @@ def _publicitate_parse_cart_lines(lines_in, user=None):
             return None, None, None, JsonResponse(
                 {
                     "ok": False,
-                    "error": f"Slotul {section}/{code} este rezervat Campanii.ro (nu se închiriază în PUB public).",
+                    "error": f"Slotul {section}/{code} este rezervat EU-Adopt (nu se comercializează online).",
                 },
                 status=400,
             )
