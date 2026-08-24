@@ -14325,24 +14325,35 @@ def publicitate_harta_view(request):
 def animale_pierdute_view(request):
     """Animale pierdute / găsite — hartă județe + benzi media (fără scroll pagină)."""
     from home.campanii_ro import campanii_judete
+    from home.models import LostFoundAnimal
 
     pics: list[str] = []
-    qs = (
-        AnimalListing.objects.filter(is_published=True)
-        .exclude(photo_1__isnull=True)
-        .exclude(photo_1="")
-        .order_by("-created_at")[:140]
-    )
-    for pet in qs:
+    for row in LostFoundAnimal.objects.filter(is_active=True).exclude(photo="").order_by("-created_at")[:40]:
         try:
-            u = (pet.photo_1.url or "").strip()
+            u = (row.photo.url or "").strip()
         except Exception:
             u = ""
-        if not u or u in pics:
-            continue
-        pics.append(u)
+        if u and u not in pics:
+            pics.append(u)
         if len(pics) >= 28:
             break
+    if len(pics) < 28:
+        qs = (
+            AnimalListing.objects.filter(is_published=True)
+            .exclude(photo_1__isnull=True)
+            .exclude(photo_1="")
+            .order_by("-created_at")[:140]
+        )
+        for pet in qs:
+            try:
+                u = (pet.photo_1.url or "").strip()
+            except Exception:
+                u = ""
+            if not u or u in pics:
+                continue
+            pics.append(u)
+            if len(pics) >= 28:
+                break
     if not pics:
         pics = [
             "/static/images/home/a5-pierdute-gasite.png",
@@ -14381,6 +14392,74 @@ def animale_pierdute_view(request):
             "ap_right_band": right_band,
             "ap_bottom_band": bottom_band,
             "ap_left_band": left_band,
+            "ap_add_url": reverse("animale_pierdute_adauga"),
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def animale_pierdute_adauga_view(request):
+    """Formular anunț animal pierdut / găsit — doar user logat."""
+    from home.campanii_ro import campanii_judete
+    from home.models import LostFoundAnimal
+    from django.contrib import messages
+
+    judete = campanii_judete()
+    pre_judet = (request.GET.get("judet") or request.POST.get("judet_slug") or "").strip().lower()
+
+    if request.method == "POST":
+        kind = (request.POST.get("kind") or "").strip()
+        species = (request.POST.get("species") or "dog").strip()
+        name = (request.POST.get("name") or "").strip()[:80]
+        judet_slug = (request.POST.get("judet_slug") or "").strip().lower()
+        localitate = (request.POST.get("localitate") or "").strip()[:120]
+        description = (request.POST.get("description") or "").strip()[:2000]
+        phone = (request.POST.get("phone") or "").strip()[:32]
+        photo = request.FILES.get("photo")
+
+        judet_obj = next((j for j in judete if (j.slug or "").strip().lower() == judet_slug), None)
+        errors = []
+        if kind not in (LostFoundAnimal.KIND_LOST, LostFoundAnimal.KIND_FOUND):
+            errors.append("Alege tipul: pierdut sau găsit.")
+        if species not in ("dog", "cat", "other"):
+            errors.append("Alege specia.")
+        if judet_obj is None:
+            errors.append("Alege județul.")
+        if not localitate:
+            errors.append("Completează localitatea.")
+        if len(description) < 10:
+            errors.append("Detaliile trebuie să aibă cel puțin 10 caractere.")
+        if not photo:
+            errors.append("Încarcă o poză.")
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+        else:
+            LostFoundAnimal.objects.create(
+                user=request.user,
+                kind=kind,
+                species=species,
+                name=name,
+                judet=judet_obj.name,
+                judet_slug=judet_obj.slug,
+                localitate=localitate,
+                description=description,
+                photo=photo,
+                phone=phone,
+            )
+            messages.success(request, "Anunțul a fost publicat. Mulțumim!")
+            return redirect(f"{reverse('animale_pierdute')}?judet={judet_obj.slug}")
+
+    return render(
+        request,
+        "anunturi/animale_pierdute_adauga.html",
+        {
+            "judete": judete,
+            "pre_judet": pre_judet,
+            "kind_choices": LostFoundAnimal.KIND_CHOICES,
+            "species_choices": LostFoundAnimal.SPECIES_CHOICES,
         },
     )
 

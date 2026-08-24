@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Adaugă anunț pierdut/găsit | EU Adopt{% endblock %}
+{% block body_class %}page-animale-pierdute-adauga{% endblock %}
+
+{% block content %}
+<section class="ap-add" aria-label="Adaugă anunț animal pierdut sau găsit">
+	<header class="ap-add__head">
+		<h1>Adaugă anunț</h1>
+		<p>Postează un animal <strong>pierdut</strong> sau <strong>găsit</strong>. Anunțul apare pe harta județului ales.</p>
+	</header>
+
+	<form class="ap-add__form" method="post" enctype="multipart/form-data" novalidate>
+		{% csrf_token %}
+
+		<fieldset class="ap-add__fieldset">
+			<legend>Tip anunț</legend>
+			<div class="ap-add__row ap-add__row--radio">
+				{% for val, label in kind_choices %}
+				<label class="ap-add__radio">
+					<input type="radio" name="kind" value="{{ val }}" required {% if request.POST.kind == val %}checked{% elif not request.POST.kind and val == "pierdut" %}checked{% endif %}>
+					<span>{{ label }}</span>
+				</label>
+				{% endfor %}
+			</div>
+		</fieldset>
+
+		<fieldset class="ap-add__fieldset">
+			<legend>Specie</legend>
+			<div class="ap-add__row ap-add__row--radio">
+				{% for val, label in species_choices %}
+				<label class="ap-add__radio">
+					<input type="radio" name="species" value="{{ val }}" required {% if request.POST.species == val %}checked{% elif not request.POST.species and val == "dog" %}checked{% endif %}>
+					<span>{{ label }}</span>
+				</label>
+				{% endfor %}
+			</div>
+		</fieldset>
+
+		<label class="ap-add__label">Nume (opțional)
+			<input type="text" name="name" maxlength="80" value="{{ request.POST.name|default:'' }}" placeholder="ex. Rex">
+		</label>
+
+		<label class="ap-add__label">Județ *
+			<select name="judet_slug" required>
+				<option value="">— alege județul —</option>
+				{% for j in judete %}
+				<option value="{{ j.slug }}" {% if request.POST.judet_slug == j.slug or pre_judet == j.slug %}selected{% endif %}>{{ j.name }}</option>
+				{% endfor %}
+			</select>
+		</label>
+
+		<label class="ap-add__label">Localitate *
+			<input type="text" name="localitate" maxlength="120" required value="{{ request.POST.localitate|default:'' }}" placeholder="Oraș / comună">
+		</label>
+
+		<label class="ap-add__label">Detalii *
+			<textarea name="description" rows="4" maxlength="2000" required placeholder="Culoare, talie, locul unde a fost văzut, alte semne distinctive…">{{ request.POST.description|default:'' }}</textarea>
+		</label>
+
+		<label class="ap-add__label">Telefon contact (opțional)
+			<input type="tel" name="phone" maxlength="32" value="{{ request.POST.phone|default:'' }}" placeholder="07xx…">
+		</label>
+
+		<label class="ap-add__label">Poză *
+			<input type="file" name="photo" accept="image/*" required>
+		</label>
+
+		<div class="ap-add__actions">
+			<button type="submit" class="ap-add__submit">Publică anunțul</button>
+			<a class="ap-add__cancel" href="{% url 'animale_pierdute' %}">← Înapoi la hartă</a>
+		</div>
+	</form>
+</section>
+<style>
+	.ap-add {
+		max-width: 32rem;
+		margin: 0.75rem auto 2rem;
+		padding: 0 0.85rem;
+	}
+	.ap-add__head h1 {
+		margin: 0 0 0.35rem;
+		font-size: clamp(1.2rem, 2.6vw, 1.5rem);
+		color: #0d47a1;
+	}
+	.ap-add__head p {
+		margin: 0 0 1rem;
+		color: #455a64;
+		font-size: 0.92rem;
+		line-height: 1.4;
+	}
+	.ap-add__form {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		padding: 1rem;
+		border-radius: 12px;
+		border: 1px solid #90caf9;
+		background: #f8fbff;
+	}
+	.ap-add__fieldset {
+		margin: 0;
+		padding: 0.55rem 0.65rem;
+		border: 1px solid #bbdefb;
+		border-radius: 8px;
+		background: #fff;
+	}
+	.ap-add__fieldset legend {
+		font-weight: 800;
+		font-size: 0.82rem;
+		color: #0d47a1;
+		padding: 0 0.25rem;
+	}
+	.ap-add__row--radio {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.55rem 1rem;
+	}
+	.ap-add__radio {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-weight: 700;
+		font-size: 0.9rem;
+		cursor: pointer;
+	}
+	.ap-add__label {
+		display: flex;
+		flex-direction: column;
+		gap: 0.28rem;
+		font-weight: 700;
+		font-size: 0.86rem;
+		color: #0d47a1;
+	}
+	.ap-add__label input,
+	.ap-add__label select,
+	.ap-add__label textarea {
+		font: inherit;
+		font-weight: 500;
+		color: #263238;
+		padding: 0.45rem 0.55rem;
+		border-radius: 8px;
+		border: 1px solid #90caf9;
+		background: #fff;
+	}
+	.ap-add__actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.65rem 1rem;
+		margin-top: 0.25rem;
+	}
+	.ap-add__submit {
+		border: 0;
+		border-radius: 999px;
+		padding: 0.55rem 1.15rem;
+		font-weight: 800;
+		font-size: 0.95rem;
+		color: #fff;
+		background: #1565c0;
+		cursor: pointer;
+	}
+	.ap-add__submit:hover { background: #0d47a1; }
+	.ap-add__cancel {
+		font-weight: 700;
+		color: #1565c0;
+		text-decoration: none;
+	}
+	.ap-add__cancel:hover { text-decoration: underline; }
+</style>
+{% endblock %}

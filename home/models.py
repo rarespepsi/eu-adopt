@@ -2735,3 +2735,46 @@ class MediaOutreachInviteLog(models.Model):
     def __str__(self):
         return f"{self.to_email} [{self.outcome}]"
 
+
+class LostFoundAnimal(models.Model):
+    """Anunț animal pierdut / găsit — postat din /animale-pierdute/ de user logat."""
+
+    KIND_LOST = "pierdut"
+    KIND_FOUND = "gasit"
+    KIND_CHOICES = (
+        (KIND_LOST, "Pierdut"),
+        (KIND_FOUND, "Găsit"),
+    )
+    SPECIES_CHOICES = (
+        ("dog", "Câine"),
+        ("cat", "Pisică"),
+        ("other", "Alt"),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="lost_found_animals")
+    kind = models.CharField("Tip", max_length=12, choices=KIND_CHOICES, db_index=True)
+    species = models.CharField("Specie", max_length=12, choices=SPECIES_CHOICES, default="dog")
+    name = models.CharField("Nume (opțional)", max_length=80, blank=True, default="")
+    judet = models.CharField("Județ", max_length=64, db_index=True)
+    judet_slug = models.CharField("Slug județ", max_length=80, db_index=True)
+    localitate = models.CharField("Localitate", max_length=120)
+    description = models.TextField("Detalii", max_length=2000)
+    photo = models.ImageField("Poză", upload_to="pierdute/%Y/%m/")
+    phone = models.CharField("Telefon contact", max_length=32, blank=True, default="")
+    is_active = models.BooleanField("Activ", default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Animal pierdut/găsit"
+        verbose_name_plural = "Animale pierdute/găsite"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["judet_slug", "is_active", "-created_at"]),
+            models.Index(fields=["kind", "is_active"]),
+        ]
+
+    def __str__(self):
+        label = self.name or self.get_species_display()
+        return f"{self.get_kind_display()}: {label} — {self.localitate}"
+

@@ -24,6 +24,11 @@
 				<div class="ap-map-loading" id="apMapLoading">Se încarcă harta…</div>
 			</div>
 			<span class="ap-map-bubble" id="apMapBubble" role="note">{% if ap_active_name %}Județ: {{ ap_active_name }}{% else %}Click pe județ{% endif %}</span>
+			{% if user.is_authenticated %}
+			<a class="ap-map-add" href="{% url 'animale_pierdute_adauga' %}{% if ap_active_code %}?judet={{ request.GET.judet|urlencode }}{% endif %}">＋ Adaugă</a>
+			{% else %}
+			<a class="ap-map-add" href="{% url 'login' %}?next={% url 'animale_pierdute_adauga' %}">＋ Adaugă</a>
+			{% endif %}
 			<div class="ap-map-title" role="group" aria-label="Titlu pagină">
 				<a class="ap-map-back" href="{% url 'home' %}">← Acasă</a>
 				<strong>Animale pierdute sau găsite</strong>
@@ -211,6 +216,25 @@ document.addEventListener("DOMContentLoaded", function () {
 		pointer-events: none;
 		text-align: center;
 	}
+	.ap-map-add {
+		position: absolute;
+		top: 0.35rem;
+		left: 0.35rem;
+		z-index: 5;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.32rem 0.7rem;
+		border-radius: 999px;
+		background: #2e7d32;
+		color: #fff;
+		font-size: clamp(0.72rem, 1.35vw, 0.88rem);
+		font-weight: 800;
+		text-decoration: none;
+		box-shadow: 0 3px 10px rgba(46, 125, 50, 0.3);
+		line-height: 1.2;
+	}
+	.ap-map-add:hover { background: #1b5e20; color: #fff; }
 	.ap-map-title {
 		position: absolute;
 		left: 0.4rem;
@@ -295,6 +319,12 @@ document.addEventListener("DOMContentLoaded", function () {
 			max-width: min(8.5rem, calc(100% - 0.7rem));
 			font-size: 0.56rem;
 			padding: 0.18rem 0.4rem;
+		}
+		.ap-map-add {
+			top: 0.22rem;
+			left: 0.22rem;
+			font-size: 0.7rem;
+			padding: 0.26rem 0.55rem;
 		}
 		.ap-map-title {
 			left: 0.25rem;
