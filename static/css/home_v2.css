@@ -512,8 +512,8 @@ body.page-home-v2 #home-col-right .slot-img-fit {
 body.page-home-v2 #home-col-left .slot-img-contain,
 body.page-home-v2 #home-col-right .slot-img-contain,
 body.page-home-v2 .home-v2-mobile-ad-slot .slot-img-contain {
-    object-fit: contain !important;
-    object-position: center center !important;
+    object-fit: cover !important;
+    object-position: center top !important;
 }
 body.page-home-v2 #home-col-left video.slot-img-fit,
 body.page-home-v2 #home-col-right video.slot-img-fit {
@@ -1386,8 +1386,8 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
         display: block;
     }
     body.page-home-v2 .home-v2-mobile-ad-slot .slot-img-contain {
-        object-fit: contain !important;
-        object-position: center center !important;
+        object-fit: cover !important;
+        object-position: center top !important;
     }
 
     body.page-home-v2 #A2 {
