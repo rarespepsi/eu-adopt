@@ -4,62 +4,223 @@
 {% block body_class %}page-animale-pierdute{% endblock %}
 
 {% block content %}
-<section class="eu-internal-page" aria-label="Animale pierdute sau găsite">
-	<header class="eu-internal-page__head">
+<section class="ap-layout" aria-label="Animale pierdute sau găsite">
+	<header class="ap-head">
 		<h1>Animale pierdute sau găsite</h1>
-		<p class="eu-internal-page__lead">
-			Pagină în lucru — harta pe județe, listă și formular de anunț vor fi disponibile curând.
-		</p>
+		<p>Click pe județ în hartă pentru filtrare rapidă (modul în lucru).</p>
 	</header>
-	<div class="eu-internal-page__hero">
-		<img
-			src="{% static 'images/home/a5-pierdute-gasite.png' %}"
-			alt="Animale pierdute sau găsite"
-			width="640"
-			height="640"
-			loading="eager"
-			decoding="async"
-		>
+
+	<div class="ap-frame">
+		<div class="ap-band ap-band-top" aria-hidden="true">
+			<div class="ap-band-track">
+				{% for img in ap_top_band %}<img src="{{ img }}" alt="" loading="lazy" decoding="async">{% endfor %}
+				{% for img in ap_top_band %}<img src="{{ img }}" alt="" loading="lazy" decoding="async">{% endfor %}
+			</div>
+		</div>
+		<div class="ap-band ap-band-left" aria-hidden="true">
+			<div class="ap-band-track ap-band-track-vert">
+				{% for img in ap_left_band %}<img src="{{ img }}" alt="" loading="lazy" decoding="async">{% endfor %}
+				{% for img in ap_left_band %}<img src="{{ img }}" alt="" loading="lazy" decoding="async">{% endfor %}
+			</div>
+		</div>
+
+		<div class="ap-map-wrap">
+			<div class="ap-map-stage" id="apMapStage" aria-label="Harta României pe județe">
+				<div class="ap-map-loading" id="apMapLoading">Se încarcă harta…</div>
+			</div>
+			<p class="ap-map-hint" id="apMapHint">{{ ap_active_label }}</p>
+		</div>
+
+		<div class="ap-band ap-band-right" aria-hidden="true">
+			<div class="ap-band-track ap-band-track-vert ap-band-track-vert-rev">
+				{% for img in ap_right_band %}<img src="{{ img }}" alt="" loading="lazy" decoding="async">{% endfor %}
+				{% for img in ap_right_band %}<img src="{{ img }}" alt="" loading="lazy" decoding="async">{% endfor %}
+			</div>
+		</div>
+		<div class="ap-band ap-band-bottom" aria-hidden="true">
+			<div class="ap-band-track ap-band-track-rev">
+				{% for img in ap_bottom_band %}<img src="{{ img }}" alt="" loading="lazy" decoding="async">{% endfor %}
+				{% for img in ap_bottom_band %}<img src="{{ img }}" alt="" loading="lazy" decoding="async">{% endfor %}
+			</div>
+		</div>
 	</div>
-	<p class="eu-internal-page__foot">
-		<a href="{% url 'home' %}">← Înapoi la Acasă</a>
-	</p>
+
+	<p class="ap-foot"><a href="{% url 'home' %}">← Înapoi la Acasă</a></p>
 </section>
+{{ ap_map_urls|json_script:"ap-map-urls" }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+	var stage = document.getElementById("apMapStage");
+	var loading = document.getElementById("apMapLoading");
+	var hint = document.getElementById("apMapHint");
+	if (!stage) return;
+	var urls = {};
+	try { urls = JSON.parse(document.getElementById("ap-map-urls").textContent || "{}"); } catch (e) {}
+	fetch("{% static 'images/campanii/romania-counties.svg' %}", { credentials: "same-origin" })
+		.then(function (r) { if (!r.ok) throw new Error("svg"); return r.text(); })
+		.then(function (markup) {
+			stage.innerHTML = markup;
+			var svg = stage.querySelector("svg");
+			if (!svg) throw new Error("no svg");
+			svg.classList.add("ap-ro-svg");
+			svg.setAttribute("role", "img");
+			svg.setAttribute("aria-label", "Harta României — alege un județ");
+			stage.querySelectorAll('path[id^="ro-"]').forEach(function (path) {
+				var code = String(path.getAttribute("id") || "").replace(/^ro-/i, "").toUpperCase();
+				var target = urls[code] || "";
+				if (!target) return;
+				path.classList.add("ap-judet-path");
+				path.setAttribute("tabindex", "0");
+				path.setAttribute("role", "link");
+				path.addEventListener("click", function () { window.location.href = target; });
+				path.addEventListener("keydown", function (ev) {
+					if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); window.location.href = target; }
+				});
+				path.addEventListener("mouseenter", function () {
+					if (hint) {
+						var label = path.getAttribute("aria-label") || code;
+						hint.textContent = "Județ: " + label;
+					}
+				});
+			});
+			if (loading) loading.remove();
+		})
+		.catch(function () { if (loading) loading.textContent = "Harta nu s-a putut încărca."; });
+});
+</script>
 <style>
-	.eu-internal-page {
-		max-width: 42rem;
-		margin: 0.75rem auto 2rem;
-		padding: 0 0.85rem;
+	body.page-animale-pierdute,
+	body.page-animale-pierdute #main_wrap,
+	body.page-animale-pierdute #main_content,
+	body.page-animale-pierdute .layout,
+	body.page-animale-pierdute .main-content {
+		height: 100dvh;
+		overflow: hidden !important;
 	}
-	.eu-internal-page__head h1 {
-		margin: 0 0 0.45rem;
-		font-size: clamp(1.25rem, 2.8vw, 1.55rem);
-		color: #1565c0;
-	}
-	.eu-internal-page__lead {
-		margin: 0;
-		color: #37474f;
-		font-size: 0.95rem;
-		line-height: 1.45;
-	}
-	.eu-internal-page__hero {
-		margin: 1rem 0;
-		border-radius: 14px;
+	.ap-layout {
+		height: calc(100dvh - 0.4rem);
+		display: grid;
+		grid-template-rows: auto 1fr auto;
+		gap: 0.35rem;
+		padding: 0.25rem 0.55rem 0.5rem;
+		box-sizing: border-box;
 		overflow: hidden;
-		border: 1px solid #90caf9;
-		box-shadow: 0 4px 16px rgba(21, 101, 192, 0.12);
 	}
-	.eu-internal-page__hero img {
+	.ap-head h1 {
+		margin: 0;
+		font-size: clamp(1rem, 2.3vw, 1.35rem);
+		color: #0d47a1;
+	}
+	.ap-head p {
+		margin: 0.08rem 0 0;
+		font-size: 0.84rem;
+		color: #37474f;
+	}
+	.ap-frame {
+		min-height: 0;
+		display: grid;
+		grid-template-columns: 5.1rem minmax(0, 1fr) 5.1rem;
+		grid-template-rows: 5.1rem minmax(0, 1fr) 5.1rem;
+		grid-template-areas:
+			"top top top"
+			"left map right"
+			"bottom bottom bottom";
+		gap: 0.2rem;
+		overflow: hidden;
+	}
+	.ap-band { border-radius: 10px; overflow: hidden; background: #fff; border: 1px solid #bbdefb; }
+	.ap-band-top { grid-area: top; }
+	.ap-band-bottom { grid-area: bottom; }
+	.ap-band-left { grid-area: left; }
+	.ap-band-right { grid-area: right; }
+	.ap-band-track {
+		height: 100%;
+		display: flex;
+		gap: 0.16rem;
+		animation: apX 40s linear infinite;
+	}
+	.ap-band-track-rev { animation-direction: reverse; }
+	.ap-band-track img {
+		flex: 0 0 5.4rem;
+		height: 100%;
+		width: 5.4rem;
+		object-fit: cover;
+	}
+	.ap-band-track-vert {
+		flex-direction: column;
+		animation-name: apY;
+		animation-duration: 42s;
+	}
+	.ap-band-track-vert img {
 		display: block;
 		width: 100%;
-		height: auto;
+		height: 5.4rem;
 	}
-	.eu-internal-page__foot {
-		margin: 0.85rem 0 0;
+	.ap-band-track-vert-rev { animation-direction: reverse; }
+
+	.ap-map-wrap {
+		grid-area: map;
+		min-height: 0;
+		display: grid;
+		grid-template-rows: 1fr auto;
+		gap: 0.2rem;
+	}
+	.ap-map-stage {
+		min-height: 0;
+		border-radius: 12px;
+		border: 1px solid #90caf9;
+		background: linear-gradient(180deg, #f8fbff 0%, #eaf4ff 100%);
+		overflow: hidden;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.2rem;
+	}
+	.ap-map-loading { font-weight: 700; color: #0d47a1; font-size: 0.88rem; }
+	.ap-ro-svg { width: 100%; height: 100%; display: block; }
+	.ap-judet-path {
+		fill: #bbdefb;
+		stroke: #0d47a1;
+		stroke-width: 0.55;
+		cursor: pointer;
+		transition: fill 0.12s ease, stroke-width 0.12s ease;
+	}
+	.ap-judet-path:hover,
+	.ap-judet-path:focus {
+		fill: #64b5f6;
+		stroke-width: 1.15;
+		outline: none;
+	}
+	.ap-map-hint {
+		margin: 0;
+		font-size: 0.82rem;
 		font-weight: 700;
+		color: #0d47a1;
+		min-height: 1.1em;
 	}
-	.eu-internal-page__foot a {
-		color: #1565c0;
+	.ap-foot {
+		margin: 0;
+		font-weight: 700;
+		font-size: 0.86rem;
+	}
+	.ap-foot a { color: #0d47a1; }
+
+	@keyframes apX {
+		0% { transform: translateX(0); }
+		100% { transform: translateX(-50%); }
+	}
+	@keyframes apY {
+		0% { transform: translateY(0); }
+		100% { transform: translateY(-50%); }
+	}
+	@media (max-width: 767.98px) {
+		.ap-frame {
+			grid-template-columns: 3.3rem minmax(0, 1fr) 3.3rem;
+			grid-template-rows: 3.3rem minmax(0, 1fr) 3.3rem;
+		}
+		.ap-band-track img { flex-basis: 3.5rem; width: 3.5rem; }
+		.ap-band-track-vert img { height: 3.5rem; }
+		.ap-head p { display: none; }
 	}
 </style>
 {% endblock %}

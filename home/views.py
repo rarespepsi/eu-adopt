@@ -14324,8 +14324,64 @@ def publicitate_harta_view(request):
 
 
 def animale_pierdute_view(request):
-    """Animale pierdute / găsite — placeholder (hartă județe + formulare, în lucru)."""
-    return render(request, "anunturi/animale_pierdute.html")
+    """Animale pierdute / găsite — hartă județe + benzi media (fără scroll pagină)."""
+    from home.campanii_ro import campanii_judete
+
+    pics: list[str] = []
+    qs = (
+        AnimalListing.objects.filter(is_published=True)
+        .exclude(photo_1__isnull=True)
+        .exclude(photo_1="")
+        .order_by("-created_at")[:140]
+    )
+    for pet in qs:
+        try:
+            u = (pet.photo_1.url or "").strip()
+        except Exception:
+            u = ""
+        if not u or u in pics:
+            continue
+        pics.append(u)
+        if len(pics) >= 56:
+            break
+    if not pics:
+        pics = [
+            "/static/images/home/a5-pierdute-gasite.png",
+            "/static/images/home/a5-semnaleaza-abuz.png",
+            "/static/images/campanii/campanii-gratuite-pub.png",
+        ]
+
+    # Populăm cele 4 benzi cu enough items pentru animație continuă.
+    ring: list[str] = []
+    while len(ring) < 56:
+        ring.extend(pics)
+    ring = ring[:56]
+
+    top_band = ring[0:14]
+    right_band = ring[14:28]
+    bottom_band = ring[28:42]
+    left_band = ring[42:56]
+
+    judete = campanii_judete()
+    map_urls = {
+        j.code: f"{reverse('animale_pierdute')}?judet={j.slug}" for j in judete if getattr(j, "code", None)
+    }
+    chosen = (request.GET.get("judet") or "").strip().lower()
+    active_judet = next((j for j in judete if (j.slug or "").strip().lower() == chosen), None)
+    active_label = f"Județ selectat: {active_judet.name}" if active_judet else ""
+
+    return render(
+        request,
+        "anunturi/animale_pierdute.html",
+        {
+            "ap_map_urls": map_urls,
+            "ap_active_label": active_label,
+            "ap_top_band": top_band,
+            "ap_right_band": right_band,
+            "ap_bottom_band": bottom_band,
+            "ap_left_band": left_band,
+        },
+    )
 
 
 def semnaleaza_abuz_view(request):
