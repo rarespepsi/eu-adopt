@@ -114,13 +114,13 @@ document.addEventListener("DOMContentLoaded", function () {
 	.ap-frame {
 		min-height: 0;
 		display: grid;
-		grid-template-columns: 5.1rem minmax(0, 1fr) 5.1rem;
-		grid-template-rows: 5.1rem minmax(0, 1fr) 5.1rem;
+		grid-template-columns: 7.6rem minmax(0, 1fr) 7.6rem;
+		grid-template-rows: 7.6rem minmax(0, 1fr) 7.6rem;
 		grid-template-areas:
 			"top top top"
 			"left map right"
 			"bottom bottom bottom";
-		gap: 0.2rem;
+		gap: 0.28rem;
 		overflow: hidden;
 	}
 	.ap-band { border-radius: 10px; overflow: hidden; background: #fff; border: 1px solid #bbdefb; }
@@ -131,25 +131,26 @@ document.addEventListener("DOMContentLoaded", function () {
 	.ap-band-track {
 		height: 100%;
 		display: flex;
-		gap: 0.16rem;
-		animation: apX 40s linear infinite;
+		gap: 0.28rem;
+		animation: apX 36s linear infinite;
 	}
 	.ap-band-track-rev { animation-direction: reverse; }
 	.ap-band-track img {
-		flex: 0 0 5.4rem;
+		flex: 0 0 7.2rem;
 		height: 100%;
-		width: 5.4rem;
+		width: 7.2rem;
 		object-fit: cover;
+		border-radius: 6px;
 	}
 	.ap-band-track-vert {
 		flex-direction: column;
 		animation-name: apY;
-		animation-duration: 42s;
+		animation-duration: 38s;
 	}
 	.ap-band-track-vert img {
 		display: block;
 		width: 100%;
-		height: 5.4rem;
+		height: 7.2rem;
 	}
 	.ap-band-track-vert-rev { animation-direction: reverse; }
 	.ap-map-wrap {
@@ -157,19 +158,19 @@ document.addEventListener("DOMContentLoaded", function () {
 		min-height: 0;
 		display: grid;
 		grid-template-rows: 1fr auto;
-		gap: 0.2rem;
+		gap: 0.15rem;
 		position: relative;
 	}
 	.ap-map-stage {
 		min-height: 0;
-		border-radius: 12px;
+		border-radius: 10px;
 		border: 1px solid #90caf9;
 		background: linear-gradient(180deg, #f8fbff 0%, #eaf4ff 100%);
 		overflow: hidden;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 0.2rem;
+		padding: 0.08rem;
 	}
 	.ap-map-bubble {
 		position: absolute;
@@ -227,11 +228,11 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 	@media (max-width: 767.98px) {
 		.ap-frame {
-			grid-template-columns: 3.3rem minmax(0, 1fr) 3.3rem;
-			grid-template-rows: 3.3rem minmax(0, 1fr) 3.3rem;
+			grid-template-columns: 5rem minmax(0, 1fr) 5rem;
+			grid-template-rows: 5rem minmax(0, 1fr) 5rem;
 		}
-		.ap-band-track img { flex-basis: 3.5rem; width: 3.5rem; }
-		.ap-band-track-vert img { height: 3.5rem; }
+		.ap-band-track img { flex-basis: 4.7rem; width: 4.7rem; }
+		.ap-band-track-vert img { height: 4.7rem; }
 		.ap-map-bubble {
 			top: 0.3rem;
 			right: 0.3rem;

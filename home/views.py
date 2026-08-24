@@ -14341,7 +14341,7 @@ def animale_pierdute_view(request):
         if not u or u in pics:
             continue
         pics.append(u)
-        if len(pics) >= 56:
+        if len(pics) >= 28:
             break
     if not pics:
         pics = [
@@ -14350,16 +14350,16 @@ def animale_pierdute_view(request):
             "/static/images/campanii/campanii-gratuite-pub.png",
         ]
 
-    # Populăm cele 4 benzi cu enough items pentru animație continuă.
+    # Populăm cele 4 benzi (jumătate față de înainte) — casete mai mari, mai vizibile.
     ring: list[str] = []
-    while len(ring) < 56:
+    while len(ring) < 28:
         ring.extend(pics)
-    ring = ring[:56]
+    ring = ring[:28]
 
-    top_band = ring[0:14]
-    right_band = ring[14:28]
-    bottom_band = ring[28:42]
-    left_band = ring[42:56]
+    top_band = ring[0:7]
+    right_band = ring[7:14]
+    bottom_band = ring[14:21]
+    left_band = ring[21:28]
 
     judete = campanii_judete()
     map_urls = {
