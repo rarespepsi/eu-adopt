@@ -103,14 +103,29 @@ document.addEventListener("DOMContentLoaded", function () {
 		height: 100dvh;
 		overflow: hidden !important;
 	}
+	/* Folosim toată lățimea: sidebarele goale din layout dispar pe această pagină. */
+	body.page-animale-pierdute .layout {
+		grid-template-columns: minmax(0, 1fr) !important;
+		gap: 0 !important;
+	}
+	body.page-animale-pierdute .layout .sidebar-left,
+	body.page-animale-pierdute .layout .sidebar-right {
+		display: none !important;
+	}
+	body.page-animale-pierdute #main_content,
+	body.page-animale-pierdute .main-content {
+		max-width: none !important;
+		width: 100% !important;
+	}
 	.ap-layout {
 		height: calc(100dvh - 0.4rem);
 		display: grid;
 		grid-template-rows: auto 1fr auto;
 		gap: 0.35rem;
-		padding: 0.25rem 0.55rem 0.5rem;
+		padding: 0.25rem 0.4rem 0.45rem;
 		box-sizing: border-box;
 		overflow: hidden;
+		width: 100%;
 	}
 	.ap-head h1 {
 		margin: 0;
@@ -120,14 +135,16 @@ document.addEventListener("DOMContentLoaded", function () {
 	.ap-frame {
 		min-height: 0;
 		display: grid;
-		grid-template-columns: 7.6rem minmax(0, 1fr) 7.6rem;
-		grid-template-rows: 7.6rem minmax(0, 1fr) 7.6rem;
+		/* Varianta A: benzi laterale late — casete câini mai mari stânga/dreapta */
+		grid-template-columns: minmax(10.5rem, 13rem) minmax(0, 1fr) minmax(10.5rem, 13rem);
+		grid-template-rows: 8rem minmax(0, 1fr) 8rem;
 		grid-template-areas:
 			"top top top"
 			"left map right"
 			"bottom bottom bottom";
-		gap: 0.28rem;
+		gap: 0.3rem;
 		overflow: hidden;
+		width: 100%;
 	}
 	.ap-band { border-radius: 10px; overflow: hidden; background: #fff; border: 1px solid #bbdefb; }
 	.ap-band-top { grid-area: top; }
@@ -137,14 +154,14 @@ document.addEventListener("DOMContentLoaded", function () {
 	.ap-band-track {
 		height: 100%;
 		display: flex;
-		gap: 0.28rem;
+		gap: 0.3rem;
 		animation: apX 36s linear infinite;
 	}
 	.ap-band-track-rev { animation-direction: reverse; }
 	.ap-band-track img {
-		flex: 0 0 7.2rem;
+		flex: 0 0 7.6rem;
 		height: 100%;
-		width: 7.2rem;
+		width: 7.6rem;
 		object-fit: cover;
 		border-radius: 6px;
 	}
@@ -156,7 +173,9 @@ document.addEventListener("DOMContentLoaded", function () {
 	.ap-band-track-vert img {
 		display: block;
 		width: 100%;
-		height: 7.2rem;
+		height: 11.5rem;
+		object-fit: cover;
+		border-radius: 6px;
 	}
 	.ap-band-track-vert-rev { animation-direction: reverse; }
 	.ap-map-wrap {
@@ -233,13 +252,21 @@ document.addEventListener("DOMContentLoaded", function () {
 		0% { transform: translateY(0); }
 		100% { transform: translateY(-50%); }
 	}
+	@media (max-width: 900px) {
+		.ap-frame {
+			grid-template-columns: minmax(7.5rem, 9.5rem) minmax(0, 1fr) minmax(7.5rem, 9.5rem);
+			grid-template-rows: 6.5rem minmax(0, 1fr) 6.5rem;
+		}
+		.ap-band-track img { flex-basis: 6.1rem; width: 6.1rem; }
+		.ap-band-track-vert img { height: 8.5rem; }
+	}
 	@media (max-width: 767.98px) {
 		.ap-frame {
-			grid-template-columns: 5rem minmax(0, 1fr) 5rem;
-			grid-template-rows: 5rem minmax(0, 1fr) 5rem;
+			grid-template-columns: 5.4rem minmax(0, 1fr) 5.4rem;
+			grid-template-rows: 5.2rem minmax(0, 1fr) 5.2rem;
 		}
-		.ap-band-track img { flex-basis: 4.7rem; width: 4.7rem; }
-		.ap-band-track-vert img { height: 4.7rem; }
+		.ap-band-track img { flex-basis: 4.9rem; width: 4.9rem; }
+		.ap-band-track-vert img { height: 5.2rem; }
 		.ap-map-bubble {
 			top: 0.22rem;
 			right: 0.22rem;
