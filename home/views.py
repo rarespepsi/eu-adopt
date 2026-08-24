@@ -13673,7 +13673,6 @@ def _publicitate_denied_response(request):
 # Catalog tarife publicitate (sursă unică: coș, validare comandă, viitor gateway plată).
 PUBLICITATE_SLOT_MAP = {
     "home": [
-        {"code": "A5.3", "title": "Home – coloană stânga A5.3", "types": ["image", "link", "video"], "unit": "luna", "price": 120},
         {"code": "A6.1", "title": "Home – coloană dreapta A6.1", "types": ["image", "link", "video"], "unit": "luna", "price": 110},
         {"code": "A6.2", "title": "Home – coloană dreapta A6.2", "types": ["image", "link", "video"], "unit": "luna", "price": 110},
         {"code": "A6.3", "title": "Home – coloană dreapta A6.3", "types": ["image", "link", "video"], "unit": "luna", "price": 110},
