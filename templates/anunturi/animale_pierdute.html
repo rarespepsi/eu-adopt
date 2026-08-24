@@ -7,7 +7,6 @@
 <section class="ap-layout" aria-label="Animale pierdute sau găsite">
 	<header class="ap-head">
 		<h1>Animale pierdute sau găsite</h1>
-		<p>Click pe județ în hartă pentru filtrare rapidă (modul în lucru).</p>
 	</header>
 
 	<div class="ap-frame">
@@ -28,6 +27,7 @@
 			<div class="ap-map-stage" id="apMapStage" aria-label="Harta României pe județe">
 				<div class="ap-map-loading" id="apMapLoading">Se încarcă harta…</div>
 			</div>
+			<span class="ap-map-bubble" role="note">Click pe județ în hartă pentru filtrare rapidă (modul în lucru).</span>
 			<p class="ap-map-hint" id="apMapHint">{{ ap_active_label }}</p>
 		</div>
 
@@ -111,11 +111,6 @@ document.addEventListener("DOMContentLoaded", function () {
 		font-size: clamp(1rem, 2.3vw, 1.35rem);
 		color: #0d47a1;
 	}
-	.ap-head p {
-		margin: 0.08rem 0 0;
-		font-size: 0.84rem;
-		color: #37474f;
-	}
 	.ap-frame {
 		min-height: 0;
 		display: grid;
@@ -157,13 +152,13 @@ document.addEventListener("DOMContentLoaded", function () {
 		height: 5.4rem;
 	}
 	.ap-band-track-vert-rev { animation-direction: reverse; }
-
 	.ap-map-wrap {
 		grid-area: map;
 		min-height: 0;
 		display: grid;
 		grid-template-rows: 1fr auto;
 		gap: 0.2rem;
+		position: relative;
 	}
 	.ap-map-stage {
 		min-height: 0;
@@ -175,6 +170,23 @@ document.addEventListener("DOMContentLoaded", function () {
 		align-items: center;
 		justify-content: center;
 		padding: 0.2rem;
+	}
+	.ap-map-bubble {
+		position: absolute;
+		top: 0.45rem;
+		right: 0.45rem;
+		z-index: 4;
+		max-width: min(16rem, calc(100% - 1.2rem));
+		padding: 0.38rem 0.7rem;
+		border-radius: 999px;
+		background: rgba(13, 71, 161, 0.92);
+		color: #fff;
+		font-size: clamp(0.68rem, 1.5vw, 0.8rem);
+		font-weight: 700;
+		line-height: 1.25;
+		box-shadow: 0 4px 12px rgba(13, 71, 161, 0.28);
+		pointer-events: none;
+		text-align: center;
 	}
 	.ap-map-loading { font-weight: 700; color: #0d47a1; font-size: 0.88rem; }
 	.ap-ro-svg { width: 100%; height: 100%; display: block; }
@@ -220,7 +232,13 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 		.ap-band-track img { flex-basis: 3.5rem; width: 3.5rem; }
 		.ap-band-track-vert img { height: 3.5rem; }
-		.ap-head p { display: none; }
+		.ap-map-bubble {
+			top: 0.3rem;
+			right: 0.3rem;
+			max-width: min(12rem, calc(100% - 0.8rem));
+			font-size: 0.64rem;
+			padding: 0.3rem 0.55rem;
+		}
 	}
 </style>
 {% endblock %}
