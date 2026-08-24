@@ -514,6 +514,8 @@ body.page-home-v2 #home-col-right .slot-img-contain,
 body.page-home-v2 .home-v2-mobile-ad-slot .slot-img-contain {
     object-fit: cover !important;
     object-position: center top !important;
+    height: calc(100% - 15px) !important;
+    align-self: center !important;
 }
 body.page-home-v2 #home-col-left video.slot-img-fit,
 body.page-home-v2 #home-col-right video.slot-img-fit {
@@ -1388,6 +1390,8 @@ body.page-home-v2 #A4 .home-slot-badge-a4 {
     body.page-home-v2 .home-v2-mobile-ad-slot .slot-img-contain {
         object-fit: cover !important;
         object-position: center top !important;
+        height: calc(100% - 15px) !important;
+        align-self: center !important;
     }
 
     body.page-home-v2 #A2 {
