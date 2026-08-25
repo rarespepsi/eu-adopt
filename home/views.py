@@ -14324,6 +14324,7 @@ def publicitate_harta_view(request):
 
 def animale_pierdute_view(request):
     """Animale pierdute / găsite — hartă județe + benzi media (fără scroll pagină)."""
+    from django.db.models import Count
     from home.campanii_ro import campanii_judete
     from home.models import LostFoundAnimal
 
@@ -14379,11 +14380,46 @@ def animale_pierdute_view(request):
         if getattr(j, "code", None) and getattr(j, "slug", None)
     }
 
+    # Contor pe județ: găsite / pierdute (ex. "3/4") — cheie = cod auto (AB, CJ, …).
+    slug_to_code = {
+        (j.slug or "").strip().lower(): (j.code or "").strip().upper()
+        for j in judete
+        if getattr(j, "code", None) and getattr(j, "slug", None)
+    }
+    stats: dict[str, dict[str, int]] = {}
+    for row in (
+        LostFoundAnimal.objects.filter(is_active=True)
+        .exclude(photo="")
+        .values("judet_slug", "kind")
+        .annotate(n=Count("id"))
+    ):
+        code = slug_to_code.get((row["judet_slug"] or "").strip().lower() or "")
+        if not code:
+            continue
+        bucket = stats.setdefault(code, {"gasit": 0, "pierdut": 0})
+        kind = (row["kind"] or "").strip().lower()
+        if kind == LostFoundAnimal.KIND_FOUND:
+            bucket["gasit"] += int(row["n"] or 0)
+        elif kind == LostFoundAnimal.KIND_LOST:
+            bucket["pierdut"] += int(row["n"] or 0)
+
+    map_counts = {
+        code: {
+            "gasit": v["gasit"],
+            "pierdut": v["pierdut"],
+            "label": f'{v["gasit"]}/{v["pierdut"]}',
+            "total": v["gasit"] + v["pierdut"],
+        }
+        for code, v in stats.items()
+        if (v["gasit"] + v["pierdut"]) > 0
+    }
+
     return render(
         request,
         "anunturi/animale_pierdute.html",
         {
             "ap_map_urls": map_urls,
+            "ap_map_counts": map_counts,
             "ap_active_code": "",
             "ap_active_name": "",
             "ap_top_band": ring[0:7],

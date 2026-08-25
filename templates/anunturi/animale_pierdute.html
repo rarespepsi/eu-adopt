@@ -24,6 +24,7 @@
 				<div class="ap-map-loading" id="apMapLoading">Se încarcă harta…</div>
 			</div>
 			<span class="ap-map-bubble" id="apMapBubble" role="note">Click pe județ</span>
+			<p class="ap-map-legend" aria-hidden="true"><strong>găsite</strong>/<strong>pierdute</strong></p>
 			{% if user.is_authenticated %}
 			<a class="ap-map-add" href="{% url 'animale_pierdute_adauga' %}">＋ Adaugă</a>
 			{% else %}
@@ -50,6 +51,7 @@
 	</div>
 </section>
 {{ ap_map_urls|json_script:"ap-map-urls" }}
+{{ ap_map_counts|json_script:"ap-map-counts" }}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 	var stage = document.getElementById("apMapStage");
@@ -57,7 +59,9 @@ document.addEventListener("DOMContentLoaded", function () {
 	var bubble = document.getElementById("apMapBubble");
 	if (!stage) return;
 	var urls = {};
+	var counts = {};
 	try { urls = JSON.parse(document.getElementById("ap-map-urls").textContent || "{}"); } catch (e) {}
+	try { counts = JSON.parse(document.getElementById("ap-map-counts").textContent || "{}"); } catch (e) {}
 	var activeCode = String(stage.getAttribute("data-active-code") || "").toUpperCase();
 	var defaultBubble = bubble ? bubble.textContent : "Click pe județ";
 	fetch("{% static 'images/campanii/romania-counties.svg' %}", { credentials: "same-origin" })
@@ -69,6 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			svg.classList.add("ap-ro-svg");
 			svg.setAttribute("role", "img");
 			svg.setAttribute("aria-label", "Harta României — alege un județ");
+			var ns = "http://www.w3.org/2000/svg";
 			stage.querySelectorAll('path[id^="ro-"]').forEach(function (path) {
 				var code = String(path.getAttribute("id") || "").replace(/^ro-/i, "").toUpperCase();
 				var target = urls[code] || "";
@@ -76,6 +81,30 @@ document.addEventListener("DOMContentLoaded", function () {
 				path.classList.add("ap-judet-path");
 				if (activeCode && code === activeCode) {
 					path.classList.add("ap-judet-path--active");
+				}
+				var info = counts[code] || null;
+				var ratio = info && info.label ? String(info.label) : "";
+				var gasit = info ? (parseInt(info.gasit, 10) || 0) : 0;
+				var pierdut = info ? (parseInt(info.pierdut, 10) || 0) : 0;
+				var nameLabel = path.getAttribute("aria-label") || code;
+				if (ratio) {
+					path.classList.add("ap-judet-path--has");
+					path.setAttribute(
+						"aria-label",
+						nameLabel + " — " + gasit + " găsite, " + pierdut + " pierdute"
+					);
+					try {
+						var box = path.getBBox();
+						var t = document.createElementNS(ns, "text");
+						t.setAttribute("x", String(box.x + box.width / 2));
+						t.setAttribute("y", String(box.y + box.height / 2));
+						t.setAttribute("text-anchor", "middle");
+						t.setAttribute("dominant-baseline", "central");
+						t.setAttribute("class", "ap-judet-num");
+						t.setAttribute("pointer-events", "none");
+						t.textContent = ratio;
+						svg.appendChild(t);
+					} catch (err) {}
 				}
 				path.setAttribute("tabindex", "0");
 				path.setAttribute("role", "link");
@@ -85,8 +114,11 @@ document.addEventListener("DOMContentLoaded", function () {
 				});
 				path.addEventListener("mouseenter", function () {
 					if (!bubble) return;
-					var label = path.getAttribute("aria-label") || code;
-					bubble.textContent = "Județ: " + label;
+					if (ratio) {
+						bubble.textContent = nameLabel + " · " + gasit + " găsite / " + pierdut + " pierdute";
+					} else {
+						bubble.textContent = "Județ: " + nameLabel;
+					}
 				});
 				path.addEventListener("mouseleave", function () {
 					if (bubble) bubble.textContent = defaultBubble;
@@ -235,6 +267,25 @@ document.addEventListener("DOMContentLoaded", function () {
 		line-height: 1.2;
 	}
 	.ap-map-add:hover { background: #1b5e20; color: #fff; }
+	.ap-map-legend {
+		position: absolute;
+		top: 2.35rem;
+		left: 0.35rem;
+		z-index: 4;
+		margin: 0;
+		padding: 0.22rem 0.5rem;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.92);
+		border: 1px solid rgba(13, 71, 161, 0.22);
+		color: #455a64;
+		font-size: clamp(0.58rem, 1.15vw, 0.7rem);
+		font-weight: 650;
+		line-height: 1.2;
+		pointer-events: none;
+		box-shadow: 0 2px 8px rgba(13, 71, 161, 0.12);
+	}
+	.ap-map-legend strong:first-child { color: #2e7d32; }
+	.ap-map-legend strong:last-child { color: #c62828; }
 	.ap-map-title {
 		position: absolute;
 		left: 0.4rem;
@@ -280,6 +331,11 @@ document.addEventListener("DOMContentLoaded", function () {
 		stroke-width: 1.15;
 		outline: none;
 	}
+	.ap-judet-path--has {
+		fill: #64b5f6;
+		stroke: #0d47a1;
+		stroke-width: 0.85;
+	}
 	.ap-judet-path--active {
 		fill: #1565c0 !important;
 		stroke: #0d47a1;
@@ -288,6 +344,15 @@ document.addEventListener("DOMContentLoaded", function () {
 	.ap-judet-path--active:hover,
 	.ap-judet-path--active:focus {
 		fill: #1976d2 !important;
+	}
+	.ap-judet-num {
+		fill: #0d47a1;
+		font-size: 11px;
+		font-weight: 800;
+		paint-order: stroke;
+		stroke: rgba(255, 255, 255, 0.95);
+		stroke-width: 2.5px;
+		pointer-events: none;
 	}
 
 	@keyframes apX {
@@ -326,6 +391,13 @@ document.addEventListener("DOMContentLoaded", function () {
 			font-size: 0.7rem;
 			padding: 0.26rem 0.55rem;
 		}
+		.ap-map-legend {
+			top: 1.95rem;
+			left: 0.22rem;
+			font-size: 0.55rem;
+			padding: 0.16rem 0.4rem;
+		}
+		.ap-judet-num { font-size: 9px; stroke-width: 2px; }
 		.ap-map-title {
 			left: 0.25rem;
 			bottom: 0.25rem;
