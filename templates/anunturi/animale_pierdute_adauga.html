@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Adaugă anunț pierdut/găsit | EU Adopt{% endblock %}
+{% block title %}{% if edit_obj %}Modifică anunț pierdut/găsit{% else %}Adaugă anunț pierdut/găsit{% endif %} | EU Adopt{% endblock %}
 {% block body_class %}page-animale-pierdute-adauga{% endblock %}
 
 {% block content %}
-<section class="ap-add" aria-label="Adaugă anunț animal pierdut sau găsit">
+<section class="ap-add" aria-label="{% if edit_obj %}Modifică anunț{% else %}Adaugă anunț animal pierdut sau găsit{% endif %}">
 	<header class="ap-add__head">
-		<h1>Adaugă anunț</h1>
-		<p>Postează un animal <strong>pierdut</strong> sau <strong>găsit</strong>. Anunțul apare pe harta județului ales.</p>
+		<h1>{% if edit_obj %}Modifică anunț{% else %}Adaugă anunț{% endif %}</h1>
+		<p>{% if edit_obj %}Actualizează detaliile anunțului tău.{% else %}Postează un animal <strong>pierdut</strong> sau <strong>găsit</strong>. Anunțul apare pe harta județului ales.{% endif %}</p>
 	</header>
 
 	<form class="ap-add__form" method="post" enctype="multipart/form-data" novalidate>
@@ -18,7 +18,7 @@
 			<div class="ap-add__row ap-add__row--radio">
 				{% for val, label in kind_choices %}
 				<label class="ap-add__radio">
-					<input type="radio" name="kind" value="{{ val }}" required {% if request.POST.kind == val %}checked{% elif not request.POST.kind and val == "pierdut" %}checked{% endif %}>
+					<input type="radio" name="kind" value="{{ val }}" required {% if request.POST.kind == val %}checked{% elif not request.POST.kind and edit_obj and edit_obj.kind == val %}checked{% elif not request.POST.kind and not edit_obj and val == "pierdut" %}checked{% endif %}>
 					<span>{{ label }}</span>
 				</label>
 				{% endfor %}
@@ -30,7 +30,7 @@
 			<div class="ap-add__row ap-add__row--radio">
 				{% for val, label in species_choices %}
 				<label class="ap-add__radio">
-					<input type="radio" name="species" value="{{ val }}" required {% if request.POST.species == val %}checked{% elif not request.POST.species and val == "dog" %}checked{% endif %}>
+					<input type="radio" name="species" value="{{ val }}" required {% if request.POST.species == val %}checked{% elif not request.POST.species and edit_obj and edit_obj.species == val %}checked{% elif not request.POST.species and not edit_obj and val == "dog" %}checked{% endif %}>
 					<span>{{ label }}</span>
 				</label>
 				{% endfor %}
@@ -38,7 +38,7 @@
 		</fieldset>
 
 		<label class="ap-add__label">Nume (opțional)
-			<input type="text" name="name" maxlength="80" value="{{ request.POST.name|default:'' }}" placeholder="ex. Rex">
+			<input type="text" name="name" maxlength="80" value="{% if request.POST %}{{ request.POST.name }}{% elif edit_obj %}{{ edit_obj.name }}{% endif %}" placeholder="ex. Rex">
 		</label>
 
 		<label class="ap-add__label">Județ *
@@ -60,20 +60,23 @@
 		</label>
 
 		<label class="ap-add__label">Detalii *
-			<textarea name="description" rows="4" maxlength="2000" required placeholder="Culoare, talie, locul unde a fost văzut, alte semne distinctive…">{{ request.POST.description|default:'' }}</textarea>
+			<textarea name="description" rows="4" maxlength="2000" required placeholder="Culoare, talie, locul unde a fost văzut, alte semne distinctive…">{% if request.POST %}{{ request.POST.description }}{% elif edit_obj %}{{ edit_obj.description }}{% endif %}</textarea>
 		</label>
 
 		<label class="ap-add__label">Telefon contact (opțional)
-			<input type="tel" name="phone" maxlength="32" value="{{ request.POST.phone|default:'' }}" placeholder="07xx…">
+			<input type="tel" name="phone" maxlength="32" value="{% if request.POST %}{{ request.POST.phone }}{% elif edit_obj %}{{ edit_obj.phone }}{% endif %}" placeholder="07xx…">
 		</label>
 
-		<label class="ap-add__label">Poză *
-			<input type="file" name="photo" accept="image/*" required>
+		<label class="ap-add__label">{% if edit_obj %}Poză (lasă gol ca să păstrezi poza actuală){% else %}Poză *{% endif %}
+			{% if edit_obj and edit_obj.photo %}
+			<span class="ap-add__current-photo"><img src="{{ edit_obj.photo.url }}" alt="" width="96" height="96"></span>
+			{% endif %}
+			<input type="file" name="photo" accept="image/*" {% if not edit_obj %}required{% endif %}>
 		</label>
 
 		<div class="ap-add__actions">
-			<button type="submit" class="ap-add__submit">Publică anunțul</button>
-			<a class="ap-add__cancel" href="{% url 'animale_pierdute' %}">← Înapoi la hartă</a>
+			<button type="submit" class="ap-add__submit">{% if edit_obj %}Salvează{% else %}Publică anunțul{% endif %}</button>
+			<a class="ap-add__cancel" href="{% if edit_obj %}{% url 'animale_pierdute_mele' %}{% else %}{% url 'animale_pierdute' %}{% endif %}">← Înapoi</a>
 		</div>
 	</form>
 </section>
@@ -176,6 +179,17 @@
 		opacity: 0.65;
 		cursor: not-allowed;
 		background: #eceff1;
+	}
+	.ap-add__current-photo {
+		display: block;
+		margin: 0.15rem 0 0.35rem;
+	}
+	.ap-add__current-photo img {
+		width: 6rem;
+		height: 6rem;
+		object-fit: cover;
+		border-radius: 8px;
+		border: 1px solid #90caf9;
 	}
 </style>
 {{ cities_by_slug|json_script:"ap-cities-by-slug" }}

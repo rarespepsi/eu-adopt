@@ -14590,8 +14590,164 @@ def animale_pierdute_adauga_view(request):
             "kind_choices": LostFoundAnimal.KIND_CHOICES,
             "species_choices": LostFoundAnimal.SPECIES_CHOICES,
             "posted_localitate": (request.POST.get("localitate") or "").strip(),
+            "edit_obj": None,
         },
     )
+
+
+@login_required
+def animale_pierdute_mele_view(request):
+    """Anunțurile userului logat — grilă 4×2 + Modifică / Șterge."""
+    from home.models import LostFoundAnimal
+
+    items = list(
+        LostFoundAnimal.objects.filter(user=request.user, is_active=True)
+        .exclude(photo="")
+        .order_by("-created_at")[:120]
+    )
+    cards = []
+    for row in items:
+        try:
+            img = (row.photo.url or "").strip()
+        except Exception:
+            img = ""
+        if not img:
+            continue
+        cards.append(
+            {
+                "id": row.pk,
+                "kind": row.kind,
+                "kind_label": row.get_kind_display(),
+                "name": (row.name or "").strip() or row.get_species_display(),
+                "localitate": (row.localitate or "").strip(),
+                "judet": row.judet,
+                "img": img,
+                "created": row.created_at.strftime("%d.%m.%Y") if row.created_at else "",
+                "edit_url": reverse("animale_pierdute_modifica", kwargs={"pk": row.pk}),
+                "delete_url": reverse("animale_pierdute_sterge", kwargs={"pk": row.pk}),
+            }
+        )
+    n_cards = len(cards)
+    grid_rows = max(2, (n_cards + 3) // 4)
+    empty_slots = max(0, grid_rows * 4 - n_cards)
+    total_cells = n_cards + empty_slots
+    grid_rows_mobile = max(2, (total_cells + 1) // 2)
+    return render(
+        request,
+        "anunturi/animale_pierdute_mele.html",
+        {
+            "ap_cards": cards,
+            "ap_empty_slots": range(empty_slots),
+            "ap_grid_rows": grid_rows,
+            "ap_grid_rows_mobile": grid_rows_mobile,
+        },
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def animale_pierdute_modifica_view(request, pk):
+    """Editează un anunț propriu (activ)."""
+    from home.campanii_ro import campanii_judete
+    from home.models import LostFoundAnimal
+    from home.ro_location import _cities_by_county, resolve_locality
+    from django.contrib import messages
+    from django.shortcuts import get_object_or_404
+
+    obj = get_object_or_404(LostFoundAnimal, pk=pk, user=request.user, is_active=True)
+    judete = campanii_judete()
+    cities_by_slug = {
+        j.slug: list(_cities_by_county().get(j.name, []) or []) for j in judete
+    }
+    pre_judet = (request.POST.get("judet_slug") or obj.judet_slug or "").strip().lower()
+    pre_cities = cities_by_slug.get(pre_judet, [])
+    posted_localitate = (request.POST.get("localitate") or obj.localitate or "").strip()
+
+    if request.method == "POST":
+        kind = (request.POST.get("kind") or "").strip()
+        species = (request.POST.get("species") or "dog").strip()
+        name = (request.POST.get("name") or "").strip()[:80]
+        judet_slug = (request.POST.get("judet_slug") or "").strip().lower()
+        localitate_raw = (request.POST.get("localitate") or "").strip()[:120]
+        description = (request.POST.get("description") or "").strip()[:2000]
+        phone = (request.POST.get("phone") or "").strip()[:32]
+        photo = request.FILES.get("photo")
+
+        judet_obj = next((j for j in judete if (j.slug or "").strip().lower() == judet_slug), None)
+        localitate = ""
+        if judet_obj is not None:
+            localitate = resolve_locality(localitate_raw, judet_obj.name)
+            allowed = set(cities_by_slug.get(judet_obj.slug, []) or [])
+            if localitate and allowed and localitate not in allowed:
+                localitate = ""
+
+        errors = []
+        if kind not in (LostFoundAnimal.KIND_LOST, LostFoundAnimal.KIND_FOUND):
+            errors.append("Alege tipul: pierdut sau găsit.")
+        if species not in ("dog", "cat", "other"):
+            errors.append("Alege specia.")
+        if judet_obj is None:
+            errors.append("Alege județul.")
+        if not localitate:
+            errors.append("Alege localitatea din listă.")
+        if len(description) < 10:
+            errors.append("Detaliile trebuie să aibă cel puțin 10 caractere.")
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+            pre_cities = cities_by_slug.get(judet_slug, [])
+            pre_judet = judet_slug
+            posted_localitate = localitate_raw
+        else:
+            obj.kind = kind
+            obj.species = species
+            obj.name = name
+            obj.judet = judet_obj.name
+            obj.judet_slug = judet_obj.slug
+            obj.localitate = localitate
+            obj.description = description
+            obj.phone = phone
+            if photo:
+                obj.photo = photo
+            obj.save()
+            messages.success(request, "Anunțul a fost actualizat.")
+            return redirect("animale_pierdute_mele")
+
+    return render(
+        request,
+        "anunturi/animale_pierdute_adauga.html",
+        {
+            "judete": judete,
+            "pre_judet": pre_judet,
+            "pre_cities": pre_cities,
+            "cities_by_slug": cities_by_slug,
+            "kind_choices": LostFoundAnimal.KIND_CHOICES,
+            "species_choices": LostFoundAnimal.SPECIES_CHOICES,
+            "posted_localitate": posted_localitate,
+            "edit_obj": obj,
+        },
+    )
+
+
+@login_required
+@require_http_methods(["POST"])
+def animale_pierdute_sterge_view(request, pk):
+    """Soft-delete: ascunde public + păstrează 45 zile, apoi cleanup hard."""
+    from home.models import LostFoundAnimal
+    from django.contrib import messages
+    from django.shortcuts import get_object_or_404
+    from django.utils import timezone
+
+    obj = get_object_or_404(LostFoundAnimal, pk=pk, user=request.user, is_active=True)
+    obj.is_active = False
+    obj.deleted_at = timezone.now()
+    obj.save(update_fields=["is_active", "deleted_at", "updated_at"])
+    messages.success(
+        request,
+        "Anunțul a fost retras. Rămâne arhivat 45 de zile, apoi se șterge definitiv.",
+    )
+    return redirect("animale_pierdute_mele")
 
 
 def semnaleaza_abuz_view(request):

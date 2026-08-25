@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Anunțurile mele — pierdute/găsite | EU Adopt{% endblock %}
+{% block body_class %}page-animale-pierdute-mele{% endblock %}
+
+{% block content %}
+<section class="apj apm" aria-label="Anunțurile mele pierdute sau găsite">
+	<header class="apj__head">
+		<p class="apj__crumb">
+			<a href="{% url 'animale_pierdute' %}">Hartă</a> · Ale mele
+		</p>
+		<div class="apj__head-row">
+			<h1>Anunțurile mele</h1>
+			<div class="apj__actions">
+				<a class="apj__add" href="{% url 'animale_pierdute_adauga' %}">＋ Adaugă</a>
+				<a class="apj__back" href="{% url 'animale_pierdute' %}">← Hartă</a>
+			</div>
+		</div>
+		<p class="apj__sub">Modifică sau șterge anunțurile tale. La ștergere dispar din hartă; rămân arhivate 45 de zile.</p>
+	</header>
+
+	<div class="apj__stage" aria-label="Anunțurile mele">
+		<div class="apj__grid" id="apjGrid" style="--apj-rows: {{ ap_grid_rows }}; --apj-rows-m: {{ ap_grid_rows_mobile }};">
+			{% for card in ap_cards %}
+			<article class="apj__card apm__card">
+				<img src="{{ card.img }}" alt="" loading="lazy" decoding="async">
+				<span class="apj__badge apj__badge--{{ card.kind }}">{{ card.kind_label }}</span>
+				<div class="apm__overlay">
+					<strong class="apm__name">{{ card.name }}</strong>
+					<span class="apm__meta">{{ card.localitate }} · {{ card.judet }}{% if card.created %} · {{ card.created }}{% endif %}</span>
+					<div class="apm__btns">
+						<a class="apm__btn apm__btn--edit" href="{{ card.edit_url }}">Modifică</a>
+						<form method="post" action="{{ card.delete_url }}" class="apm__del-form" onsubmit="return confirm('Ștergi anunțul? Dispare din hartă acum; arhivă 45 zile.');">
+							{% csrf_token %}
+							<button type="submit" class="apm__btn apm__btn--del">Șterge</button>
+						</form>
+					</div>
+				</div>
+			</article>
+			{% empty %}
+			{% endfor %}
+			{% for _ in ap_empty_slots %}
+			<div class="apj__slot" aria-hidden="true"></div>
+			{% endfor %}
+		</div>
+		{% if not ap_cards %}
+		<p class="apm__empty-msg">Nu ai anunțuri active. Folosește „＋ Adaugă”.</p>
+		{% endif %}
+	</div>
+</section>
+
+<style>
+	body.page-animale-pierdute-mele,
+	body.page-animale-pierdute-mele #main_wrap,
+	body.page-animale-pierdute-mele #main_content,
+	body.page-animale-pierdute-mele .layout,
+	body.page-animale-pierdute-mele .main-content {
+		height: 100dvh;
+		overflow: hidden !important;
+	}
+	body.page-animale-pierdute-mele .layout {
+		grid-template-columns: minmax(0, 1fr) !important;
+		gap: 0 !important;
+	}
+	body.page-animale-pierdute-mele .layout .sidebar-left,
+	body.page-animale-pierdute-mele .layout .sidebar-right {
+		display: none !important;
+	}
+	body.page-animale-pierdute-mele #main_content,
+	body.page-animale-pierdute-mele .main-content {
+		max-width: none !important;
+		width: 100% !important;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+
+	.apj {
+		flex: 1 1 auto;
+		min-height: 0;
+		width: 100%;
+		margin: 0;
+		padding: 0.45rem 0.75rem 0.65rem;
+		box-sizing: border-box;
+		display: grid;
+		grid-template-rows: auto minmax(0, 1fr);
+		gap: 0.45rem;
+		overflow: hidden;
+	}
+	.apj__crumb { margin: 0 0 0.2rem; font-size: 0.82rem; }
+	.apj__crumb a { color: #1565c0; font-weight: 700; text-decoration: none; }
+	.apj__head-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.4rem 0.85rem;
+	}
+	.apj__head h1 {
+		margin: 0;
+		font-size: clamp(1.1rem, 2.4vw, 1.4rem);
+		color: #0d47a1;
+	}
+	.apj__sub { margin: 0.35rem 0 0; color: #546e7a; font-size: 0.82rem; }
+	.apj__actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 0.85rem;
+	}
+	.apj__add {
+		display: inline-flex;
+		padding: 0.35rem 0.75rem;
+		border-radius: 999px;
+		background: #2e7d32;
+		color: #fff;
+		font-weight: 800;
+		font-size: 0.82rem;
+		text-decoration: none;
+	}
+	.apj__add:hover { background: #1b5e20; color: #fff; }
+	.apj__back {
+		font-weight: 700;
+		color: #1565c0;
+		text-decoration: none;
+		font-size: 0.82rem;
+	}
+
+	.apj__stage {
+		position: relative;
+		min-height: 0;
+		height: 100%;
+		overflow-x: hidden;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		border-radius: 12px;
+		border: 1px solid #90caf9;
+		background: #eaf4ff;
+		padding: 0.45rem;
+		box-sizing: border-box;
+	}
+	.apj__grid {
+		--apj-gap: 0.45rem;
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		grid-template-rows: repeat(var(--apj-rows, 2), minmax(0, 1fr));
+		gap: var(--apj-gap);
+		height: calc(var(--apj-rows, 2) / 2 * 100%);
+		min-height: 100%;
+		box-sizing: border-box;
+	}
+	.apj__card,
+	.apj__slot {
+		position: relative;
+		min-height: 0;
+		margin: 0;
+		padding: 0;
+		border-radius: 12px;
+		overflow: hidden;
+		border: 1px solid #90caf9;
+		background: #fff;
+		width: 100%;
+		height: 100%;
+	}
+	.apj__card img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+	.apj__slot {
+		border-style: dashed;
+		border-color: #64b5f6;
+		background: linear-gradient(180deg, #ffffff 0%, #e3f2fd 100%);
+		pointer-events: none;
+	}
+	.apj__badge {
+		position: absolute;
+		left: 0.45rem;
+		top: 0.45rem;
+		z-index: 2;
+		padding: 0.2rem 0.55rem;
+		border-radius: 999px;
+		font-size: 0.75rem;
+		font-weight: 800;
+		color: #fff;
+		line-height: 1.2;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+	}
+	.apj__badge--pierdut { background: #c62828; }
+	.apj__badge--gasit { background: #2e7d32; }
+
+	.apm__overlay {
+		position: absolute;
+		inset: auto 0 0 0;
+		z-index: 2;
+		padding: 0.45rem 0.5rem 0.5rem;
+		background: linear-gradient(180deg, transparent 0%, rgba(13, 33, 55, 0.88) 35%);
+		color: #fff;
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+	}
+	.apm__name {
+		font-size: 0.85rem;
+		font-weight: 800;
+		line-height: 1.2;
+	}
+	.apm__meta {
+		font-size: 0.68rem;
+		opacity: 0.9;
+		line-height: 1.25;
+	}
+	.apm__btns {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		margin-top: 0.25rem;
+	}
+	.apm__btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.28rem 0.55rem;
+		border-radius: 999px;
+		font-size: 0.72rem;
+		font-weight: 800;
+		text-decoration: none;
+		border: 0;
+		cursor: pointer;
+		font: inherit;
+	}
+	.apm__btn--edit {
+		background: #1565c0;
+		color: #fff;
+	}
+	.apm__btn--edit:hover { background: #0d47a1; color: #fff; }
+	.apm__btn--del {
+		background: #c62828;
+		color: #fff;
+	}
+	.apm__btn--del:hover { background: #b71c1c; }
+	.apm__del-form { margin: 0; display: inline; }
+	.apm__empty-msg {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		margin: 0;
+		padding: 0.75rem 1rem;
+		border-radius: 10px;
+		background: rgba(255,255,255,0.95);
+		border: 1px solid #90caf9;
+		color: #455a64;
+		font-weight: 650;
+		font-size: 0.9rem;
+		text-align: center;
+		z-index: 3;
+		pointer-events: none;
+	}
+
+	@media (max-width: 700px) {
+		.apj__grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			grid-template-rows: repeat(var(--apj-rows-m, 2), minmax(0, 1fr));
+			height: calc(var(--apj-rows-m, 2) / 2 * 100%);
+		}
+	}
+</style>
+{% endblock %}

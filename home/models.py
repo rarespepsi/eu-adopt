@@ -2762,6 +2762,13 @@ class LostFoundAnimal(models.Model):
     photo = models.ImageField("Poză", upload_to="pierdute/%Y/%m/")
     phone = models.CharField("Telefon contact", max_length=32, blank=True, default="")
     is_active = models.BooleanField("Activ", default=True, db_index=True)
+    deleted_at = models.DateTimeField(
+        "Șters de user (soft)",
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="La ștergere: is_active=False + deleted_at. Hard-delete după 45 zile.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
