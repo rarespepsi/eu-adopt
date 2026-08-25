@@ -2816,6 +2816,19 @@ class AbuseReport(models.Model):
     judet_code = models.CharField("Cod județ", max_length=4, blank=True, default="")
     destinatie = models.CharField("Destinație", max_length=12, choices=DEST_CHOICES)
     description = models.TextField("Problema reclamată", max_length=4000)
+    incident_location = models.CharField(
+        "Locația faptei",
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Localitate, adresă, puncte de reper",
+    )
+    incident_when = models.CharField(
+        "Data / ora aproximativă",
+        max_length=120,
+        blank=True,
+        default="",
+    )
     media = models.FileField(
         "Poză / video",
         upload_to="abuz/%Y/%m/",
@@ -2840,6 +2853,13 @@ class AbuseReport(models.Model):
     reporter_name = models.CharField("Nume sesizor", max_length=200)
     reporter_email = models.EmailField("Email sesizor")
     reporter_phone = models.CharField("Telefon sesizor", max_length=40, blank=True, default="")
+    reporter_domicile = models.CharField(
+        "Domiciliu sesizor",
+        max_length=255,
+        blank=True,
+        default="",
+    )
+    gdpr_accepted = models.BooleanField("Acord GDPR", default=False)
     status = models.CharField(
         "Status trimitere",
         max_length=20,

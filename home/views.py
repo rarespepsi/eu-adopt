@@ -14763,10 +14763,10 @@ def semnaleaza_abuz_view(request):
         "EU-Adopt intermediază, nu judecă cazul.",
         "Răspunderea pentru conținut aparține sesizorului.",
         "Organul competent decide următorii pași.",
-        "Alegi județul pe hartă, completezi formularul.",
+        "Petițiile anonime se clasează (OG 27/2002).",
+        "Urgență iminentă: apelează 112, nu formularul.",
         "Destinatar: DSVSA, Poliția Animalelor sau ambele.",
-        "Poți atașa poză sau video.",
-        "Mailul pleacă de la EU-Adopt, cu datele tale din cont.",
+        "Mailul pleacă de la EU-Adopt, cu datele tale.",
         "Nu ne asumăm corectitudinea sau realitatea sesizării.",
         "Tu semnalezi · noi transmitem · autoritatea acționează.",
     ]
@@ -14774,14 +14774,22 @@ def semnaleaza_abuz_view(request):
     reporter_name = ""
     reporter_email = ""
     reporter_phone = ""
+    reporter_domicile = ""
     if request.user.is_authenticated:
         u = request.user
         reporter_name = (u.get_full_name() or "").strip() or (u.username or "").strip()
         reporter_email = (u.email or "").strip()
         try:
-            reporter_phone = (getattr(u.profile, "phone", None) or "").strip()
+            profile = u.profile
+            reporter_phone = (getattr(profile, "phone", None) or "").strip()
+            parts = [
+                (getattr(profile, "oras", None) or "").strip(),
+                (getattr(profile, "judet", None) or "").strip(),
+            ]
+            reporter_domicile = ", ".join(p for p in parts if p)
         except Exception:
             reporter_phone = ""
+            reporter_domicile = ""
 
     return render(
         request,
@@ -14793,6 +14801,7 @@ def semnaleaza_abuz_view(request):
             "sa_reporter_name": reporter_name,
             "sa_reporter_email": reporter_email,
             "sa_reporter_phone": reporter_phone,
+            "sa_reporter_domicile": reporter_domicile,
             "sa_pre_judet": (request.GET.get("judet") or "").strip().lower(),
         },
     )
@@ -14809,27 +14818,46 @@ def semnaleaza_abuz_trimite_view(request):
     slug = (request.POST.get("judet_slug") or "").strip().lower()
     destinatie = (request.POST.get("destinatie") or "").strip().lower()
     description = (request.POST.get("description") or "").strip()
+    incident_location = (request.POST.get("incident_location") or "").strip()[:255]
+    incident_when = (request.POST.get("incident_when") or "").strip()[:120]
+    reporter_name = (request.POST.get("reporter_name") or "").strip()[:200]
+    reporter_email = (request.POST.get("reporter_email") or "").strip()[:254]
+    reporter_phone = (request.POST.get("reporter_phone") or "").strip()[:40]
+    reporter_domicile = (request.POST.get("reporter_domicile") or "").strip()[:255]
+    gdpr_ok = (request.POST.get("gdpr") or "").strip() in ("1", "on", "true", "yes")
     media = request.FILES.get("media")
 
     row = abuz_contact_by_slug(slug)
     u = request.user
-    reporter_name = (u.get_full_name() or "").strip() or (u.username or "").strip()
-    reporter_email = (u.email or "").strip()
-    reporter_phone = ""
-    try:
-        reporter_phone = (getattr(u.profile, "phone", None) or "").strip()
-    except Exception:
-        pass
+    if not reporter_name:
+        reporter_name = (u.get_full_name() or "").strip() or (u.username or "").strip()
+    if not reporter_email:
+        reporter_email = (u.email or "").strip()
+    if not reporter_phone:
+        try:
+            reporter_phone = (getattr(u.profile, "phone", None) or "").strip()
+        except Exception:
+            pass
 
     errors = []
     if row is None:
         errors.append("Județ invalid.")
     if destinatie not in (DEST_DSVSA, DEST_BPA, DEST_BOTH):
         errors.append("Alege destinatarul: DSVSA, Poliția Animalelor sau ambele.")
+    if len(reporter_name) < 3:
+        errors.append("Completează numele și prenumele.")
+    if not reporter_email or "@" not in reporter_email:
+        errors.append("Completează o adresă de e-mail validă.")
+    if len(reporter_phone) < 6:
+        errors.append("Completează numărul de telefon.")
+    if len(reporter_domicile) < 5:
+        errors.append("Completează adresa de domiciliu.")
+    if len(incident_location) < 3:
+        errors.append("Completează locația exactă a faptei.")
     if len(description) < 20:
         errors.append("Descrie problema în cel puțin 20 de caractere.")
-    if not reporter_email:
-        errors.append("Contul tău nu are email. Actualizează datele din profil.")
+    if not gdpr_ok:
+        errors.append("Trebuie să accepți transmiterea datelor (GDPR).")
     if media is not None and media.size > 25 * 1024 * 1024:
         errors.append("Fișierul poate avea maxim 25 MB.")
 
@@ -14845,9 +14873,13 @@ def semnaleaza_abuz_trimite_view(request):
         judet_code=row.code,
         destinatie=destinatie,
         description=description[:4000],
-        reporter_name=reporter_name[:200],
+        incident_location=incident_location,
+        incident_when=incident_when,
+        reporter_name=reporter_name,
         reporter_email=reporter_email,
-        reporter_phone=reporter_phone[:40],
+        reporter_phone=reporter_phone,
+        reporter_domicile=reporter_domicile,
+        gdpr_accepted=True,
     )
     if media is not None:
         report.media = media
@@ -14867,14 +14899,12 @@ def semnaleaza_abuz_trimite_view(request):
     elif status == AbuseReport.STATUS_PARTIAL:
         messages.success(
             request,
-            "Sesizarea a fost înregistrată și trimisă parțial. "
-            "Contactele lipsă vor fi completate ulterior.",
+            "Sesizarea a fost înregistrată și trimisă parțial.",
         )
     elif status == AbuseReport.STATUS_PENDING_CONTACT:
         messages.success(
             request,
-            "Sesizarea a fost înregistrată. Contactele DSVSA/BPA pentru acest județ "
-            "vor fi adăugate curând — o vom transmite atunci.",
+            "Sesizarea a fost înregistrată. O vom transmite când contactul organului e disponibil.",
         )
     else:
         messages.warning(

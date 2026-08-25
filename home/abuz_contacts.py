@@ -1,10 +1,9 @@
 """
 Contacte organe competente pe județ — semnalări abuz.
 
-Listele reale DSVSA / BPA se completează ulterior.
-Până atunci: email gol → fallback Poliție județeană (dacă există) cu mențiunea
-„Către Biroul de Protecție a Animalelor”; altfel sesizarea rămâne înregistrată
-și se notifică inbox-ul EU-Adopt (pending).
+DSVSA: office-{judet}@ansvsa.ro (ANSVSA / site-uri *.dsvsa.ro).
+BPA / poliție: cabinet@{cod}.politiaromana.ro; București: bpa@b.politiaromana.ro.
+La BPA fără adresă dedicată: cabinet IPJ + mențiune „Către Biroul de Protecție a Animalelor”.
 """
 
 from __future__ import annotations
@@ -31,15 +30,181 @@ class AbuzContactRow:
     slug: str
     dsvsa_email: str = ""
     bpa_email: str = ""
-    # Fallback: poliție județeană — folosit când lipsește BPA
+    # Fallback: poliție județeană — folosit când lipsește BPA dedicat
     politie_judeteana_email: str = ""
 
 
-# Completare ulterioară: emailuri reale pe cod județ (AB, CJ, …).
-# Chei: dsvsa | bpa | politie
+# Emailuri pe cod auto (AB, CJ, B, …).
 _MANUAL_CONTACTS: dict[str, dict[str, str]] = {
-    # Exemplu (dezactivat):
-    # "NT": {"dsvsa": "office@dsvsa-neamt.example", "bpa": "", "politie": "bjneamt@politiaromana.ro"},
+    "AB": {
+        "dsvsa": "office-alba@ansvsa.ro",
+        "politie": "cabinet@ab.politiaromana.ro",
+    },
+    "AR": {
+        "dsvsa": "office-arad@ansvsa.ro",
+        "politie": "cabinet@ar.politiaromana.ro",
+    },
+    "AG": {
+        "dsvsa": "office-arges@ansvsa.ro",
+        "politie": "cabinet@ag.politiaromana.ro",
+    },
+    "BC": {
+        "dsvsa": "office-bacau@ansvsa.ro",
+        "politie": "cabinet@bc.politiaromana.ro",
+    },
+    "BH": {
+        "dsvsa": "office-bihor@ansvsa.ro",
+        "politie": "cabinet@bh.politiaromana.ro",
+    },
+    "BN": {
+        "dsvsa": "office-bistrita-nasaud@ansvsa.ro",
+        "politie": "cabinet@bn.politiaromana.ro",
+    },
+    "BT": {
+        "dsvsa": "office-botosani@ansvsa.ro",
+        "politie": "cabinet@bt.politiaromana.ro",
+    },
+    "BR": {
+        "dsvsa": "office-braila@ansvsa.ro",
+        "politie": "cabinet@br.politiaromana.ro",
+    },
+    "BV": {
+        "dsvsa": "office-brasov@ansvsa.ro",
+        "politie": "cabinet@bv.politiaromana.ro",
+    },
+    "B": {
+        "dsvsa": "office-bucuresti@ansvsa.ro",
+        "bpa": "bpa@b.politiaromana.ro",
+        "politie": "cabinet@b.politiaromana.ro",
+    },
+    "BZ": {
+        "dsvsa": "office-buzau@ansvsa.ro",
+        "politie": "cabinet@bz.politiaromana.ro",
+    },
+    "CL": {
+        "dsvsa": "office-calarasi@ansvsa.ro",
+        "politie": "cabinet@cl.politiaromana.ro",
+    },
+    "CS": {
+        "dsvsa": "office-caras-severin@ansvsa.ro",
+        "politie": "cabinet@cs.politiaromana.ro",
+    },
+    "CJ": {
+        "dsvsa": "office-cluj@ansvsa.ro",
+        "politie": "cabinet@cj.politiaromana.ro",
+    },
+    "CT": {
+        "dsvsa": "office-constanta@ansvsa.ro",
+        "politie": "cabinet@ct.politiaromana.ro",
+    },
+    "CV": {
+        "dsvsa": "office-covasna@ansvsa.ro",
+        "politie": "cabinet@cv.politiaromana.ro",
+    },
+    "DB": {
+        "dsvsa": "office-dambovita@ansvsa.ro",
+        "politie": "cabinet@db.politiaromana.ro",
+    },
+    "DJ": {
+        "dsvsa": "office-dolj@ansvsa.ro",
+        "politie": "cabinet@dj.politiaromana.ro",
+    },
+    "GL": {
+        "dsvsa": "office-galati@ansvsa.ro",
+        "politie": "cabinet@gl.politiaromana.ro",
+    },
+    "GR": {
+        "dsvsa": "office-giurgiu@ansvsa.ro",
+        "politie": "cabinet@gr.politiaromana.ro",
+    },
+    "GJ": {
+        "dsvsa": "office-gorj@ansvsa.ro",
+        "politie": "cabinet@gj.politiaromana.ro",
+    },
+    "HR": {
+        "dsvsa": "office-harghita@ansvsa.ro",
+        "politie": "cabinet@hr.politiaromana.ro",
+    },
+    "HD": {
+        "dsvsa": "office-hunedoara@ansvsa.ro",
+        "politie": "cabinet@hd.politiaromana.ro",
+    },
+    "IL": {
+        "dsvsa": "office-ialomita@ansvsa.ro",
+        "politie": "cabinet@il.politiaromana.ro",
+    },
+    "IS": {
+        "dsvsa": "office-iasi@ansvsa.ro",
+        "politie": "cabinet@is.politiaromana.ro",
+    },
+    "IF": {
+        "dsvsa": "office-ilfov@ansvsa.ro",
+        "politie": "cabinet@if.politiaromana.ro",
+    },
+    "MM": {
+        "dsvsa": "office-maramures@ansvsa.ro",
+        "politie": "cabinet@mm.politiaromana.ro",
+    },
+    "MH": {
+        "dsvsa": "office-mehedinti@ansvsa.ro",
+        "politie": "cabinet@mh.politiaromana.ro",
+    },
+    "MS": {
+        "dsvsa": "office-mures@ansvsa.ro",
+        "politie": "cabinet@ms.politiaromana.ro",
+    },
+    "NT": {
+        "dsvsa": "office-neamt@ansvsa.ro",
+        "politie": "cabinet@nt.politiaromana.ro",
+    },
+    "OT": {
+        "dsvsa": "office-olt@ansvsa.ro",
+        "politie": "cabinet@ot.politiaromana.ro",
+    },
+    "PH": {
+        "dsvsa": "office-prahova@ansvsa.ro",
+        "politie": "cabinet@ph.politiaromana.ro",
+    },
+    "SJ": {
+        "dsvsa": "office-salaj@ansvsa.ro",
+        "politie": "cabinet@sj.politiaromana.ro",
+    },
+    "SM": {
+        "dsvsa": "office-satu-mare@ansvsa.ro",
+        "politie": "cabinet@sm.politiaromana.ro",
+    },
+    "SB": {
+        "dsvsa": "office-sibiu@ansvsa.ro",
+        "politie": "cabinet@sb.politiaromana.ro",
+    },
+    "SV": {
+        "dsvsa": "office-suceava@ansvsa.ro",
+        "politie": "cabinet@sv.politiaromana.ro",
+    },
+    "TR": {
+        "dsvsa": "office-teleorman@ansvsa.ro",
+        "politie": "cabinet@tr.politiaromana.ro",
+    },
+    "TM": {
+        "dsvsa": "office-timis@ansvsa.ro",
+        "politie": "cabinet@tm.politiaromana.ro",
+    },
+    "TL": {
+        "dsvsa": "office-tulcea@ansvsa.ro",
+        "politie": "cabinet@tl.politiaromana.ro",
+    },
+    "VL": {
+        "dsvsa": "office-valcea@ansvsa.ro",
+        "politie": "cabinet@vl.politiaromana.ro",
+    },
+    "VS": {
+        "dsvsa": "office-vaslui@ansvsa.ro",
+        "politie": "cabinet@vs.politiaromana.ro",
+    },
+    "VN": {
+        "dsvsa": "office-vrancea@ansvsa.ro",
+        "politie": "cabinet@vn.politiaromana.ro",
+    },
 }
 
 
@@ -109,17 +274,19 @@ def resolve_abuz_recipients(row: AbuzContactRow, destinatie: str) -> list[dict]:
                 {
                     "email": bpa,
                     "label": "Poliția Animalelor (BPA)",
-                    "attention_line": f"Către Biroul de Protecție a Animalelor — județul {row.name}",
+                    "attention_line": (
+                        f"Către Biroul pentru Protecția Animalelor — județul {row.name}"
+                    ),
                 }
             )
         elif politie:
             recipients.append(
                 {
                     "email": politie,
-                    "label": "Poliția județeană (fallback BPA)",
+                    "label": "Poliția județeană (IPJ — BPA)",
                     "attention_line": (
-                        f"Către Biroul de Protecție a Animalelor — "
-                        f"Poliția Județeană {row.name}"
+                        f"Către Biroul pentru Protecția Animalelor — "
+                        f"Inspectoratul de Poliție Județean {row.name}"
                     ),
                 }
             )
@@ -129,7 +296,7 @@ def resolve_abuz_recipients(row: AbuzContactRow, destinatie: str) -> list[dict]:
                     "email": "",
                     "label": "Poliția Animalelor / Poliție județeană",
                     "attention_line": (
-                        f"Către Biroul de Protecție a Animalelor — județul {row.name}"
+                        f"Către Biroul pentru Protecția Animalelor — județul {row.name}"
                     ),
                     "pending": True,
                 }

@@ -19,7 +19,6 @@ def _staff_fallback_inbox() -> str:
     if raw:
         return raw.split(",")[0].strip()
     from_email = (getattr(settings, "DEFAULT_FROM_EMAIL", None) or "").strip()
-    # extrage adresa din "Name <addr>"
     if "<" in from_email and ">" in from_email:
         return from_email.split("<", 1)[1].split(">", 1)[0].strip()
     return from_email
@@ -29,26 +28,52 @@ def build_abuz_mail_bodies(report, recipient: dict) -> tuple[str, str]:
     attention = (recipient.get("attention_line") or "").strip()
     dest_label = (recipient.get("label") or "").strip()
     username = getattr(report.user, "username", "") or "—"
-    subject_line = f"[EU-Adopt] Sesizare abuz — {report.judet} — {dest_label}"
+    name = (report.reporter_name or "").strip() or "—"
+    is_bpa = "bpa" in dest_label.lower() or "poli" in dest_label.lower()
+
+    if is_bpa:
+        subject_line = (
+            f"PETIȚIE: În atenția Biroului pentru Protecția Animalelor — "
+            f"Județul {report.judet} — {name}"
+        )
+    else:
+        subject_line = (
+            f"PETIȚIE: În atenția DSVSA — Județul {report.judet} — {name}"
+        )
+
+    loc = (getattr(report, "incident_location", None) or "").strip() or "—"
+    domicile = (getattr(report, "reporter_domicile", None) or "").strip() or "—"
+    when = (getattr(report, "incident_when", None) or "").strip()
 
     text = (
         f"{attention}\n\n"
+        f"DOMNULE INSPECTOR ȘEF / DOMNULE DIRECTOR,\n\n"
+        f"Subsemnatul/a {name.upper()}, cu domiciliul în {domicile},\n"
+        f"posesor al adresei de e-mail {report.reporter_email} și al nr. de telefon "
+        f"{report.reporter_phone or '—'},\n"
+        f"vă înaintez prezenta sesizare.\n\n"
         f"Această sesizare a fost transmisă prin intermediul platformei EU-Adopt "
-        f"(https://eu-adopt.ro), de către utilizatorul înregistrat pe site.\n\n"
-        f"=== Date sesizor (din contul EU-Adopt) ===\n"
-        f"Nume: {report.reporter_name}\n"
-        f"Username: {username}\n"
-        f"Email: {report.reporter_email}\n"
-        f"Telefon: {report.reporter_phone or '—'}\n\n"
-        f"=== Județ ===\n"
-        f"{report.judet}\n\n"
-        f"=== Problema reclamată ===\n"
-        f"{report.description}\n\n"
+        f"(https://eu-adopt.ro), de către utilizatorul înregistrat pe site "
+        f"(username: {username}).\n\n"
+        f"--- DETALII SESIZARE ---\n"
+        f"Destinatar solicitat: {dest_label}\n"
+        f"Județ: {report.judet}\n"
+        f"Locația faptei: {loc}\n"
+    )
+    if when:
+        text += f"Data / ora aproximativă: {when}\n"
+    text += (
+        f"\nDescrierea faptei:\n{report.description}\n\n"
+        f"------------------------\n\n"
+        f"Menționez că am luat la cunoștință prevederile legale privind falsul în "
+        f"declarații și declar pe propria răspundere că datele transmise sunt reale.\n\n"
         f"=== Notă EU-Adopt ===\n"
-        f"EU-Adopt intermediază transmisia acestei sesizări. Nu verificăm și nu ne "
-        f"asumăm veridicitatea sau corectitudinea conținutului — răspunderea pentru "
-        f"afirmații aparține sesizorului. Organul competent decide următorii pași.\n\n"
-        f"— EU-Adopt\n"
+        f"EU-Adopt intermediază transmisia. Nu verificăm și nu ne asumăm veridicitatea "
+        f"sau corectitudinea conținutului — răspunderea pentru afirmații aparține "
+        f"sesizorului. Organul competent decide următorii pași.\n\n"
+        f"Solicit număr de înregistrare și comunicarea răspunsului la adresa de e-mail "
+        f"a reclamantului: {report.reporter_email}\n\n"
+        f"Cu respect,\n{name}\n"
     )
     return subject_line, text
 
