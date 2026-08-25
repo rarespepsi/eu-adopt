@@ -14765,7 +14765,7 @@ def semnaleaza_abuz_view(request):
         "Organul competent decide următorii pași.",
         "Petițiile anonime se clasează (OG 27/2002).",
         "Urgență iminentă: apelează 112, nu formularul.",
-        "Destinatar: DSVSA, Poliția Animalelor sau ambele.",
+        "Maxim 3 sesizări pe zi per cont.",
         "Mailul pleacă de la EU-Adopt, cu datele tale.",
         "Nu ne asumăm corectitudinea sau realitatea sesizării.",
         "Tu semnalezi · noi transmitem · autoritatea acționează.",
@@ -14774,7 +14774,7 @@ def semnaleaza_abuz_view(request):
     reporter_name = ""
     reporter_email = ""
     reporter_phone = ""
-    reporter_domicile = ""
+    geo_hint = ""
     if request.user.is_authenticated:
         u = request.user
         reporter_name = (u.get_full_name() or "").strip() or (u.username or "").strip()
@@ -14786,10 +14786,10 @@ def semnaleaza_abuz_view(request):
                 (getattr(profile, "oras", None) or "").strip(),
                 (getattr(profile, "judet", None) or "").strip(),
             ]
-            reporter_domicile = ", ".join(p for p in parts if p)
+            geo_hint = ", ".join(p for p in parts if p)
         except Exception:
             reporter_phone = ""
-            reporter_domicile = ""
+            geo_hint = ""
 
     return render(
         request,
@@ -14801,8 +14801,10 @@ def semnaleaza_abuz_view(request):
             "sa_reporter_name": reporter_name,
             "sa_reporter_email": reporter_email,
             "sa_reporter_phone": reporter_phone,
-            "sa_reporter_domicile": reporter_domicile,
+            "sa_phone_missing": not bool(reporter_phone),
+            "sa_geo_hint": geo_hint,
             "sa_pre_judet": (request.GET.get("judet") or "").strip().lower(),
+            "sa_daily_limit": 3,
         },
     )
 
@@ -14811,6 +14813,8 @@ def semnaleaza_abuz_view(request):
 @require_http_methods(["POST"])
 def semnaleaza_abuz_trimite_view(request):
     """Primește formularul de sesizare și trimite mailul către organ(e)."""
+    from django.utils import timezone
+
     from home.abuz_contacts import DEST_BOTH, DEST_BPA, DEST_DSVSA, abuz_contact_by_slug
     from home.abuz_mail import send_abuse_report_emails
     from home.models import AbuseReport
@@ -14820,38 +14824,37 @@ def semnaleaza_abuz_trimite_view(request):
     description = (request.POST.get("description") or "").strip()
     incident_location = (request.POST.get("incident_location") or "").strip()[:255]
     incident_when = (request.POST.get("incident_when") or "").strip()[:120]
-    reporter_name = (request.POST.get("reporter_name") or "").strip()[:200]
-    reporter_email = (request.POST.get("reporter_email") or "").strip()[:254]
-    reporter_phone = (request.POST.get("reporter_phone") or "").strip()[:40]
     reporter_domicile = (request.POST.get("reporter_domicile") or "").strip()[:255]
     gdpr_ok = (request.POST.get("gdpr") or "").strip() in ("1", "on", "true", "yes")
     media = request.FILES.get("media")
 
     row = abuz_contact_by_slug(slug)
     u = request.user
-    if not reporter_name:
-        reporter_name = (u.get_full_name() or "").strip() or (u.username or "").strip()
-    if not reporter_email:
-        reporter_email = (u.email or "").strip()
+    # Nume + email mereu din cont (nu se pot șterge din formular).
+    reporter_name = (u.get_full_name() or "").strip() or (u.username or "").strip()
+    reporter_email = (u.email or "").strip()
+    reporter_phone = ""
+    try:
+        reporter_phone = (getattr(u.profile, "phone", None) or "").strip()
+    except Exception:
+        reporter_phone = ""
+    # Dacă lipsește din profil (cazuri rare / import), cere completare în formular.
     if not reporter_phone:
-        try:
-            reporter_phone = (getattr(u.profile, "phone", None) or "").strip()
-        except Exception:
-            pass
+        reporter_phone = (request.POST.get("reporter_phone") or "").strip()[:40]
 
     errors = []
     if row is None:
         errors.append("Județ invalid.")
     if destinatie not in (DEST_DSVSA, DEST_BPA, DEST_BOTH):
         errors.append("Alege destinatarul: DSVSA, Poliția Animalelor sau ambele.")
-    if len(reporter_name) < 3:
-        errors.append("Completează numele și prenumele.")
+    if len(reporter_name) < 2:
+        errors.append("Contul nu are nume. Actualizează Contul meu.")
     if not reporter_email or "@" not in reporter_email:
-        errors.append("Completează o adresă de e-mail validă.")
+        errors.append("Contul nu are e-mail valid. Actualizează Contul meu.")
     if len(reporter_phone) < 6:
-        errors.append("Completează numărul de telefon.")
-    if len(reporter_domicile) < 5:
-        errors.append("Completează adresa de domiciliu.")
+        errors.append("Telefonul lipsește — completează-l obligatoriu în acest formular.")
+    if len(reporter_domicile) < 8:
+        errors.append("Completează adresa de domiciliu (stradă, nr., localitate).")
     if len(incident_location) < 3:
         errors.append("Completează locația exactă a faptei.")
     if len(description) < 20:
@@ -14861,10 +14864,33 @@ def semnaleaza_abuz_trimite_view(request):
     if media is not None and media.size > 25 * 1024 * 1024:
         errors.append("Fișierul poate avea maxim 25 MB.")
 
+    # Limită: 3 sesizări / zi (calendar local), staff exceptat.
+    if not (u.is_staff or u.is_superuser):
+        day_start = timezone.localtime(timezone.now()).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        day_start_utc = day_start.astimezone(timezone.utc)
+        sent_today = AbuseReport.objects.filter(
+            user=u, created_at__gte=day_start_utc
+        ).count()
+        if sent_today >= 3:
+            errors.append(
+                "Ai atins limita de 3 sesizări pe zi. Pentru urgențe apelează 112."
+            )
+
     if errors:
         for e in errors:
             messages.error(request, e)
         return redirect(f"{reverse('semnaleaza_abuz')}?judet={slug}" if slug else reverse("semnaleaza_abuz"))
+
+    # Salvează telefonul în profil dacă lipsea și a fost completat acum.
+    try:
+        profile = u.profile
+        if not (getattr(profile, "phone", None) or "").strip() and reporter_phone:
+            profile.phone = reporter_phone[:20]
+            profile.save(update_fields=["phone"])
+    except Exception:
+        pass
 
     report = AbuseReport(
         user=u,
@@ -14875,9 +14901,9 @@ def semnaleaza_abuz_trimite_view(request):
         description=description[:4000],
         incident_location=incident_location,
         incident_when=incident_when,
-        reporter_name=reporter_name,
+        reporter_name=reporter_name[:200],
         reporter_email=reporter_email,
-        reporter_phone=reporter_phone,
+        reporter_phone=reporter_phone[:40],
         reporter_domicile=reporter_domicile,
         gdpr_accepted=True,
     )
@@ -14914,6 +14940,7 @@ def semnaleaza_abuz_trimite_view(request):
         )
 
     return redirect("semnaleaza_abuz")
+
 
 
 def publicitate_campanii_ro_view(request):

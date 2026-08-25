@@ -74,18 +74,31 @@
 
 		<fieldset class="sa-form__set">
 			<legend>1. Date reclamant (obligatoriu)</legend>
-			<label class="sa-label">Nume și prenume *
-				<input type="text" name="reporter_name" maxlength="200" required value="{{ sa_reporter_name|default:'' }}" autocomplete="name">
+			<p class="sa-form__hint">Nume, e-mail și telefon vin din contul tău și nu pot fi șterse aici. Adresa de domiciliu (stradă) se completează obligatoriu — în Contul meu ai doar județ/localitate.</p>
+			<div class="sa-locked">
+				<span class="sa-locked__lab">Nume și prenume</span>
+				<strong>{{ sa_reporter_name|default:"—" }}</strong>
+			</div>
+			<div class="sa-locked">
+				<span class="sa-locked__lab">E-mail</span>
+				<strong>{{ sa_reporter_email|default:"—" }}</strong>
+			</div>
+			{% if sa_phone_missing %}
+			<label class="sa-label">Telefon * <em class="sa-need">(lipsește din profil — completează acum)</em>
+				<input type="tel" name="reporter_phone" maxlength="40" required autocomplete="tel" placeholder="07xx…">
 			</label>
-			<label class="sa-label">E-mail *
-				<input type="email" name="reporter_email" maxlength="254" required value="{{ sa_reporter_email|default:'' }}" autocomplete="email">
+			{% else %}
+			<div class="sa-locked">
+				<span class="sa-locked__lab">Telefon</span>
+				<strong>{{ sa_reporter_phone }}</strong>
+			</div>
+			{% endif %}
+			<label class="sa-label">Adresa de domiciliu (stradă, nr.) *
+				<input type="text" name="reporter_domicile" maxlength="255" required placeholder="Stradă, număr{% if sa_geo_hint %}, apoi {{ sa_geo_hint }}{% endif %}">
 			</label>
-			<label class="sa-label">Telefon *
-				<input type="tel" name="reporter_phone" maxlength="40" required value="{{ sa_reporter_phone|default:'' }}" autocomplete="tel" placeholder="07xx…">
-			</label>
-			<label class="sa-label">Adresa de domiciliu *
-				<input type="text" name="reporter_domicile" maxlength="255" required value="{{ sa_reporter_domicile|default:'' }}" placeholder="Stradă, nr., localitate, județ">
-			</label>
+			{% if sa_geo_hint %}
+			<p class="sa-form__hint">Din profil: {{ sa_geo_hint }} — adaugă strada și numărul mai sus.</p>
+			{% endif %}
 		</fieldset>
 
 		<fieldset class="sa-form__set">
@@ -433,6 +446,36 @@ document.addEventListener("DOMContentLoaded", function () {
 		border: 1px solid #ffe0b2;
 		border-radius: 8px;
 		padding: 0.45rem 0.55rem;
+	}
+	.sa-form__hint {
+		margin: 0;
+		font-size: 0.68rem;
+		line-height: 1.35;
+		color: #6d4c41;
+		font-weight: 500;
+	}
+	.sa-need { color: #c62828; font-weight: 700; font-style: normal; }
+	.sa-locked {
+		display: flex;
+		flex-direction: column;
+		gap: 0.12rem;
+		padding: 0.35rem 0.45rem;
+		border-radius: 8px;
+		background: #f5f5f5;
+		border: 1px solid #e0e0e0;
+	}
+	.sa-locked__lab {
+		font-size: 0.68rem;
+		font-weight: 700;
+		color: #8d6e63;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+	}
+	.sa-locked strong {
+		font-size: 0.88rem;
+		color: #263238;
+		font-weight: 700;
+		word-break: break-word;
 	}
 	.sa-form__set {
 		margin: 0;
