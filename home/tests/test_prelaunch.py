@@ -42,7 +42,7 @@ class PrelaunchEnabledTests(TestCase):
         self.user.save()
 
     def test_anonymous_only_home_public(self):
-        """HOME + harta Campanii anonime; PT / Servicii / Shop cer login."""
+        """HOME + harta Campanii + Animale pierdute anonime; PT / Servicii / Shop cer login."""
         c = Client()
         self.assertEqual(c.get(reverse("home")).status_code, 200)
         r_camp = c.get(reverse("publicitate_campanii_ro"))
@@ -50,6 +50,13 @@ class PrelaunchEnabledTests(TestCase):
         self.assertContains(r_camp, "Campanii gratuite de sterilizare")
         r_judet = c.get(reverse("publicitate_campanii_judet", kwargs={"judet_slug": "neamt"}))
         self.assertEqual(r_judet.status_code, 200)
+        r_ap = c.get(reverse("animale_pierdute"))
+        self.assertEqual(r_ap.status_code, 200)
+        r_ap_j = c.get(reverse("animale_pierdute_judet", kwargs={"judet_slug": "neamt"}))
+        self.assertEqual(r_ap_j.status_code, 200)
+        r_ap_add = c.get(reverse("animale_pierdute_adauga"))
+        self.assertEqual(r_ap_add.status_code, 302)
+        self.assertIn("/login/", r_ap_add.url or "")
         for name in ("pets_all", "servicii", "shop", "transport"):
             r = c.get(reverse(name))
             self.assertEqual(r.status_code, 302, msg=name)

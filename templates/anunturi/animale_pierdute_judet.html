@@ -10,7 +10,7 @@
 			<a href="{% url 'animale_pierdute' %}">Hartă</a> · {{ judet.name }}
 		</p>
 		<h1>Bibliotecă — {{ judet.name }}</h1>
-		<p class="apj__sub">Toate anunțurile din județ. Click pe poză pentru detalii.</p>
+		<p class="apj__sub">{% if ap_can_see_details %}Toate anunțurile din județ. Click pe poză pentru detalii.{% else %}Toate anunțurile din județ. Pentru detalii complete, intră în cont.{% endif %}</p>
 		<nav class="apj__tabs" aria-label="Tip anunț">
 			<a class="apj__tab{% if not ap_kind_filter %} is-active{% endif %}" href="{% url 'animale_pierdute_judet' judet.slug %}">Toate ({{ ap_count_all }})</a>
 			<a class="apj__tab{% if ap_kind_filter == 'pierdut' %} is-active{% endif %}" href="?tip=pierdut">Pierdute ({{ ap_count_lost }})</a>
@@ -284,6 +284,8 @@
 </style>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+	var canSee = {{ ap_can_see_details|yesno:"true,false" }};
+	var loginUrl = "{% url 'login' %}?next={{ ap_login_next|urlencode }}";
 	var dlg = document.getElementById("apjNote");
 	if (!dlg) return;
 	var img = document.getElementById("apjNoteImg");
@@ -324,7 +326,13 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
 	document.querySelectorAll("[data-apj-open]").forEach(function (btn) {
-		btn.addEventListener("click", function () { openNote(btn); });
+		btn.addEventListener("click", function () {
+			if (!canSee) {
+				window.location.href = loginUrl;
+				return;
+			}
+			openNote(btn);
+		});
 	});
 });
 </script>
