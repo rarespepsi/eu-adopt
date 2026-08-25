@@ -1,0 +1,9 @@
+# PRE-POPULARE TEMPORAR — SCOATE LA LANSARE
+
+Când user cere **lansare completă** / „scoatem regulile de populare”, citește:
+
+**`docs/PRELAUNCH_POPULARE_SCOATE_LA_LANSARE.md`**
+
+Acolo e checklist-ul + env-urile (`PRELAUNCH_MODE`, `PUBLICITATE_PRELAUNCH_FREE`, `PUBLICITATE_TEMP_SUPERUSER_ONLY`) și modulul `home/prelaunch_free_access.py`.
+
+**Nu** rescrie fluxul PUB: oprește flag-urile, restart Hetzner, verifică PLATESTE + prețuri reale.

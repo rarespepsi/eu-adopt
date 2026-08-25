@@ -1,39 +1,38 @@
 ---
-# Handoff agent — ultima salvare
-**Data/ora (RO):** 2026-08-17 18:48
+# Handoff agent — ultima pauză
+**Data/ora (RO):** 2026-08-25 ~16:00
 **Sursă:** laptop · eu-adopt / main
-**User:** ZIP + git pentru Facebook Page tokens
+**User:** salvează pe desk, commit, push
 
-## Ce s-a făcut
-- Token Facebook System User (`Euadoptserver`) în `.env` local + Hetzner (aceleași 6 chei; **nu e în git**)
-- Cod: System User → Page token via `GET /me/accounts` (New Page Experience, eroare 190/2069032)
-- Live: commit **83e78a5** pe Hetzner; smoke OK
-- Citire postări RO: OK. Cron oglindire RO → DE/FR/ES/COM pornit (user: lasă catch-up)
-- Unele oglindiri OK; altele eșuate `(#200) publish_actions deprecated` (POST `/feed`+link)
-- Idee viitor (nu implementată): user leagă pagina FB (OAuth Meta, cheie automată) → postări site și pe pagina lui
+## Ce s-a făcut (sesiune 24–25 aug)
+- **Animale pierdute/găsite:** hartă, bibliotecă pe județ, Adaugă, Ale mele, filtre — live
+- **Semnalează abuz (A5.2):** hartă full-page; formular pe județ (DSVSA / BPA / Ambele); contacte DSVSA + IPJ; OG27/GDPR/112; mail formal Reply-To user; max **3 sesizări/zi**; nume/email/telefon din cont (readonly); adresă stradă obligatorie în formular
+- **SOS pe HOME:** lăsat neschimbat (fără animație)
+- **Val invitații automate:** verificat Hetzner — azi **100/100 sent** OK (4×25 la 9/11/13/15 RO)
 
-## Fișiere atinse (în git)
-- `home/facebook_markets.py` — resolve Page token + cache
-- `home/facebook_page_post.py` — comentariu
-- `home/tests/test_facebook_page_post.py` — teste resolve + izolare env
+## Fișiere cheie abuz
+- `home/abuz_contacts.py`, `home/abuz_mail.py`
+- `templates/anunturi/semnaleaza_abuz.html`
+- migrări `0088_abuse_report`, `0089_abuse_report_fields`
+- prelaunch public: `/semnaleaza-abuz/`
 
 ## Git
 - Branch: main
-- Commit Facebook: **83e78a5**
-- Push: da
-- Deploy H: da (17 aug 2026)
+- Ultimele commit-uri abuz: `913f7e7` → `5cc4949` → `4102c68` (+ handoff/backup după)
+- Push: da (la zi cu origin după acest pas)
 
 ## Deploy Hetzner
-- da · `.\scripts\deploy_hetzner_from_pc.ps1`
-- SHA live: **83e78a5**
-- Flag: `/var/lib/euadopt/EXPECTED_RELEASE.txt`
+- da — live SHA așteptat ~`4102c68` (sau HEAD după commit handoff)
+- Producție: https://eu-adopt.ro · doar Hetzner
 
 ## Pentru agent laptop
-- `git log -3 --oneline`
-- citește acest handoff
-- `.env` nu se comite; tokenurile Facebook rămân doar în `.env` local + `/opt/eu-adopt/.env`
+- `git log -5 --oneline`
+- citește `docs/AGENT_HANDOFF_LATEST.md`
+- test: https://eu-adopt.ro/semnaleaza-abuz/ · https://eu-adopt.ro/animale-pierdute/
+- val invite: log `/var/log/euadopt-invite-wave.log` (max 100/zi)
 
 ## Următorul pas
-- Oglindirea continuă (user a zis să meargă)
-- Legare pagină FB per user = idee viitor, fără cod
+- User testează formularul abuz pe live
+- Continuă valul invite (cron deja OK)
+- SOS animație pe A5.2: **nu** (user a zis lasă)
 ---

@@ -1,26 +1,25 @@
-# Fixed set of 12 demo dogs – same list used across Home, Prietenul tău, profiles, etc.
-# Do not add more demo dogs; use this single source.
-# Each dog has a unique imagine_fallback (static path) so A2 grid shows 12 different images.
-# Optional: "added_at" (datetime) for A2 selection: dogs added in last 24h appear first in A2.
-# "traits" = two personality traits for PT P2 card (max 2 shown).
+# Fixed set of 12 demo animals (câini, pisici, altele) – same list used across Home, PT, etc.
+# Unique imagine_fallback so A2 always shows 12 different photos.
+# Optional: "added_at" for A2 (last 24h first). "traits" = max 2 on PT P2.
+# Poze: static/images/a2_demo/ (+ copie Desktop: Poze site/Poze demo A2).
 
 DEMO_DOGS = [
-    {"id": 1, "nume": "Charlie", "varsta": "2 ani", "descriere": "Prietenos și jucăuș, se înțelege cu copiii.", "imagine_fallback": "images/pets/charlie-400x200.jpg", "traits": ["Prietenos", "Jucăuș"]},
-    {"id": 2, "nume": "Luna", "varsta": "4 ani", "descriere": "Liniștită, ideală pentru apartament.", "imagine_fallback": "images/pets/archie1-275x275.jpg", "traits": ["Liniștită", "Blândă"]},
-    {"id": 3, "nume": "Max", "varsta": "3 ani", "descriere": "Energic, iubește plimbările lungi.", "imagine_fallback": "images/pets/candy1-275x275.jpeg", "traits": ["Energic", "Activist"]},
-    {"id": 4, "nume": "Bella", "varsta": "5 ani", "descriere": "Dulce și devotată, adoptată din adăpost.", "imagine_fallback": "images/pets/chance1-275x275.jpg", "traits": ["Dulce", "Devotată"]},
-    {"id": 5, "nume": "Rex", "varsta": "2 ani", "descriere": "Tânăr și curios, dresat la bază.", "imagine_fallback": "images/pets/chester1-275x275.jpg", "traits": ["Curios", "Dresat"]},
-    {"id": 6, "nume": "Daisy", "varsta": "6 ani", "descriere": "Calmă, potrivită pentru familie.", "imagine_fallback": "images/pets/cindy1-275x275.jpg", "traits": ["Calmă", "Familie"]},
-    {"id": 7, "nume": "Bruno", "varsta": "3 ani", "descriere": "Fidel și protectiv, bun paznic.", "imagine_fallback": "images/pets/grissom1-275x275.jpg", "traits": ["Fidel", "Protectiv"]},
-    {"id": 8, "nume": "Mia", "varsta": "1 an", "descriere": "Pui activ, în căutare de jocuri.", "imagine_fallback": "images/pets/happy1-275x275.jpg", "traits": ["Activă", "Jucăușă"]},
-    {"id": 9, "nume": "Rocky", "varsta": "4 ani", "descriere": "Rezistent, îi place natura.", "imagine_fallback": "images/pets/inga1-275x275.jpg", "traits": ["Rezistent", "Natură"]},
-    {"id": 10, "nume": "Nala", "varsta": "2 ani", "descriere": "Sociabilă, se împrietenește cu alți câini.", "imagine_fallback": "images/pets/JazzyGirlAverill-1-275x275.jpg", "traits": ["Sociabilă", "Prietenoasă"]},
-    {"id": 11, "nume": "Oscar", "varsta": "5 ani", "descriere": "Liniștit și afectuos, adaptat la interior.", "imagine_fallback": "images/pets/winston1-275x275.jpg", "traits": ["Liniștit", "Afectuos"]},
-    {"id": 12, "nume": "Zara", "varsta": "3 ani", "descriere": "Inteligentă, răspunde bine la comenzi.", "imagine_fallback": "images/pets/shorty1-400x200.jpg", "traits": ["Inteligentă", "Ascultătoare"]},
+    {"id": 1, "nume": "Charlie", "species": "dog", "varsta": "2 ani", "descriere": "Prietenos și jucăuș, se înțelege cu copiii.", "imagine_fallback": "images/a2_demo/a2_demo_01_caine.jpg", "traits": ["Prietenos", "Jucăuș"]},
+    {"id": 2, "nume": "Max", "species": "dog", "varsta": "3 ani", "descriere": "Energic, iubește plimbările lungi.", "imagine_fallback": "images/a2_demo/a2_demo_02_caine.jpg", "traits": ["Energic", "Activist"]},
+    {"id": 3, "nume": "Bella", "species": "dog", "varsta": "5 ani", "descriere": "Dulce și devotată, adoptată din adăpost.", "imagine_fallback": "images/a2_demo/a2_demo_03_caine.jpg", "traits": ["Dulce", "Devotată"]},
+    {"id": 4, "nume": "Rex", "species": "dog", "varsta": "2 ani", "descriere": "Tânăr și curios, dresat la bază.", "imagine_fallback": "images/a2_demo/a2_demo_04_caine.jpg", "traits": ["Curios", "Dresat"]},
+    {"id": 5, "nume": "Luna", "species": "cat", "varsta": "4 ani", "descriere": "Liniștită, ideală pentru apartament.", "imagine_fallback": "images/a2_demo/a2_demo_05_pisica.jpg", "traits": ["Liniștită", "Blândă"]},
+    {"id": 6, "nume": "Mia", "species": "cat", "varsta": "1 an", "descriere": "Pui activă, în căutare de jocuri.", "imagine_fallback": "images/a2_demo/a2_demo_06_pisica.jpg", "traits": ["Activă", "Jucăușă"]},
+    {"id": 7, "nume": "Nala", "species": "cat", "varsta": "2 ani", "descriere": "Sociabilă, se împrietenește ușor.", "imagine_fallback": "images/a2_demo/a2_demo_07_pisica.jpg", "traits": ["Sociabilă", "Prietenoasă"]},
+    {"id": 8, "nume": "Zara", "species": "cat", "varsta": "3 ani", "descriere": "Independentă, iubește pervazul.", "imagine_fallback": "images/a2_demo/a2_demo_08_pisica.jpg", "traits": ["Independentă", "Calmă"]},
+    {"id": 9, "nume": "Rocky", "species": "other", "varsta": "1 an", "descriere": "Iepure curios, iubește verdețurile.", "imagine_fallback": "images/a2_demo/a2_demo_09_iepure.jpg", "traits": ["Curios", "Blând"]},
+    {"id": 10, "nume": "Oscar", "species": "other", "varsta": "8 luni", "descriere": "Hamster liniștit, activ seara.", "imagine_fallback": "images/a2_demo/a2_demo_10_hamster.jpg", "traits": ["Liniștit", "Nocturn"]},
+    {"id": 11, "nume": "Daisy", "species": "other", "varsta": "2 ani", "descriere": "Pasăre sociabilă, cântă dimineața.", "imagine_fallback": "images/a2_demo/a2_demo_11_pasare.jpg", "traits": ["Sociabilă", "Vocală"]},
+    {"id": 12, "nume": "Bruno", "species": "other", "varsta": "2 ani", "descriere": "Porcușor de Guineea blând, bun cu copiii.", "imagine_fallback": "images/a2_demo/a2_demo_12_porcusor.jpg", "traits": ["Blând", "Familie"]},
 ]
 
-# Fallback when a dog has no imagine_fallback (e.g. legacy code)
-DEMO_DOG_IMAGE = "images/pets/charlie-400x200.jpg"
+# Fallback when a listing has no photo
+DEMO_DOG_IMAGE = "images/a2_demo/a2_demo_01_caine.jpg"
 
 # Hero A1 (caseta cu sigle) – poze cu câini/animale care se rotesc în fundal.
 # Dimensiuni recomandate: landscape 2:1 sau 3:1, ex. 1200×400 px sau 1600×500 px,

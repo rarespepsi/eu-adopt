@@ -1,0 +1,31 @@
+# DESKTOP BLOCAT TOTAL – FĂRĂ EXCEPȚII
+
+**Decizie impusă de utilizator:** pe tot ce înseamnă **desktop** în site (orice viewport/livrabil cu impact desktop), este interzisă orice modificare.
+
+## Regulă principală
+
+- Nu modifica **niciun fișier** dacă schimbarea poate afecta desktopul, direct sau indirect.
+- „Desktop” include orice impact pentru viewport **>= 768px**, plus orice cod comun (HTML/Python/JS/CSS global) care se propagă pe desktop.
+- Se aplică la tot proiectul: template-uri, CSS, JS, view-uri, URL-uri, componente comune, layout-uri globale, scripturi care rulează pe desktop.
+
+## Ce este interzis
+
+- Editări în afara media query-urilor strict mobile.
+- Editări în media query-uri desktop/tablet (`min-width`, breakpoints mari).
+- Editări în fișiere comune care pot schimba desktopul (ex. `base.html`, navbar, CSS global, JS global, view/context comun).
+- Refactorizări „neutre” care pot produce efecte de randare pe desktop.
+
+## Ce este permis
+
+- Discuții, analiză, propuneri fără modificări de cod.
+- Modificări **strict mobile-only**, izolate explicit pentru ecrane mici, fără efect colateral pe desktop.
+
+## Procedură obligatorie
+
+- Înainte de orice implementare, verifică explicit dacă există risc de impact desktop.
+- Dacă există orice risc de impact desktop: **oprește implementarea** și cere instrucțiuni noi de la utilizator.
+- Nu face workaround-uri care „pare că nu ating desktopul” fără izolare clară mobil-only.
+
+## Rezumat
+
+**Pe desktop nu se modifică absolut nimic în site. Nici măcar o virgulă cu impact desktop.**
