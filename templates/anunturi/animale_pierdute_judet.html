@@ -25,23 +25,55 @@
 			<a class="apj__tab{% if ap_kind_filter == 'pierdut' %} is-active{% endif %}" href="?tip=pierdut">Pierdute ({{ ap_count_lost }})</a>
 			<a class="apj__tab{% if ap_kind_filter == 'gasit' %} is-active{% endif %}" href="?tip=gasit">Găsite ({{ ap_count_found }})</a>
 		</nav>
-		<p class="apj__sub">Cadru layout: <strong>4 coloane × 2 rânduri</strong> (casete goale) — verificare încadrare pe pagină.</p>
+		<p class="apj__sub">{% if ap_can_see_details %}Click pe poză pentru detalii.{% else %}Click pe poză → login pentru detalii.{% endif %}</p>
 	</header>
 
-	{# Temporar: 8 casete goale 4×2 pe toate taburile (inclusiv Pierdute / Găsite) #}
-	<div class="apj__stage" aria-label="Grilă 4 pe 2 — casete goale">
-		<div class="apj__grid" id="apjGrid">
-			{% for i in "12345678" %}
-			<div class="apj__slot" aria-hidden="true">
-				<span class="apj__slot-lab">{{ forloop.counter }}</span>
-			</div>
+	<div class="apj__stage" aria-label="Galerie anunțuri">
+		<div class="apj__grid" id="apjGrid" style="--apj-rows: {{ ap_grid_rows }}; --apj-rows-m: {{ ap_grid_rows_mobile }};">
+			{% for card in ap_cards %}
+			<button
+				type="button"
+				class="apj__card"
+				data-apj-open
+				data-kind="{{ card.kind_label }}"
+				data-name="{{ card.name }}"
+				data-species="{{ card.species }}"
+				data-loc="{{ card.localitate }}"
+				data-judet="{{ card.judet }}"
+				data-desc="{{ card.description }}"
+				data-phone="{{ card.phone }}"
+				data-created="{{ card.created }}"
+				data-img="{{ card.img }}"
+				aria-label="{{ card.kind_label }}: {{ card.name }}"
+			>
+				<img src="{{ card.img }}" alt="" loading="lazy" decoding="async">
+				<span class="apj__badge apj__badge--{{ card.kind }}">{{ card.kind_label }}</span>
+			</button>
+			{% empty %}
+			{% endfor %}
+			{% for _ in ap_empty_slots %}
+			<div class="apj__slot" aria-hidden="true"></div>
 			{% endfor %}
 		</div>
 	</div>
 </section>
 
+<dialog class="apj-note" id="apjNote" aria-labelledby="apjNoteTitle">
+	<form method="dialog" class="apj-note__inner">
+		<button type="submit" class="apj-note__close" aria-label="Închide">×</button>
+		<img class="apj-note__img" id="apjNoteImg" src="" alt="">
+		<div class="apj-note__body">
+			<p class="apj-note__kind" id="apjNoteKind"></p>
+			<h2 class="apj-note__title" id="apjNoteTitle"></h2>
+			<p class="apj-note__meta" id="apjNoteMeta"></p>
+			<p class="apj-note__desc" id="apjNoteDesc"></p>
+			<p class="apj-note__phone" id="apjNotePhone" hidden></p>
+			<p class="apj-note__date" id="apjNoteDate"></p>
+		</div>
+	</form>
+</dialog>
+
 <style>
-	/* Pagina umple viewportul sub navbar — grila 4×2 mare, vizibilă */
 	body.page-animale-pierdute-judet,
 	body.page-animale-pierdute-judet #main_wrap,
 	body.page-animale-pierdute-judet #main_content,
@@ -71,7 +103,6 @@
 		flex: 1 1 auto;
 		min-height: 0;
 		width: 100%;
-		max-width: none;
 		margin: 0;
 		padding: 0.45rem 0.75rem 0.65rem;
 		box-sizing: border-box;
@@ -80,15 +111,8 @@
 		gap: 0.45rem;
 		overflow: hidden;
 	}
-	.apj__crumb {
-		margin: 0 0 0.2rem;
-		font-size: 0.82rem;
-	}
-	.apj__crumb a {
-		color: #1565c0;
-		font-weight: 700;
-		text-decoration: none;
-	}
+	.apj__crumb { margin: 0 0 0.2rem; font-size: 0.82rem; }
+	.apj__crumb a { color: #1565c0; font-weight: 700; text-decoration: none; }
 	.apj__crumb a:hover { text-decoration: underline; }
 	.apj__head-row {
 		display: flex;
@@ -102,11 +126,7 @@
 		font-size: clamp(1.1rem, 2.4vw, 1.4rem);
 		color: #0d47a1;
 	}
-	.apj__sub {
-		margin: 0.35rem 0 0;
-		color: #546e7a;
-		font-size: 0.82rem;
-	}
+	.apj__sub { margin: 0.35rem 0 0; color: #546e7a; font-size: 0.82rem; }
 	.apj__tabs {
 		display: flex;
 		flex-wrap: wrap;
@@ -158,42 +178,212 @@
 	.apj__stage {
 		min-height: 0;
 		height: 100%;
-		overflow: hidden;
+		overflow-x: hidden;
+		overflow-y: auto;
+		overscroll-behavior: contain;
 		border-radius: 12px;
 		border: 1px solid #90caf9;
 		background: #eaf4ff;
 		padding: 0.45rem;
 		box-sizing: border-box;
 	}
+	/* 2 rânduri = 100% din stage; 3+ rânduri → scroll */
 	.apj__grid {
-		height: 100%;
+		--apj-gap: 0.45rem;
 		display: grid;
 		grid-template-columns: repeat(4, minmax(0, 1fr));
-		grid-template-rows: repeat(2, minmax(0, 1fr));
-		gap: 0.45rem;
+		grid-template-rows: repeat(var(--apj-rows, 2), minmax(0, 1fr));
+		gap: var(--apj-gap);
+		height: calc(var(--apj-rows, 2) / 2 * 100%);
+		min-height: 100%;
+		box-sizing: border-box;
+	}
+	.apj__card,
+	.apj__slot {
+		position: relative;
+		min-height: 0;
+		margin: 0;
+		padding: 0;
+		border-radius: 12px;
+		overflow: hidden;
+		border: 1px solid #90caf9;
+		background: #fff;
+		width: 100%;
+		height: 100%;
+	}
+	.apj__card {
+		cursor: pointer;
+		display: block;
+	}
+	.apj__card img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+	.apj__card:hover,
+	.apj__card:focus-visible {
+		outline: 2px solid #1565c0;
+		outline-offset: 1px;
 	}
 	.apj__slot {
-		min-height: 0;
-		border-radius: 12px;
-		border: 2px dashed #64b5f6;
+		border-style: dashed;
+		border-color: #64b5f6;
 		background: linear-gradient(180deg, #ffffff 0%, #e3f2fd 100%);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		box-shadow: inset 0 0 0 1px rgba(13, 71, 161, 0.06);
+		pointer-events: none;
 	}
-	.apj__slot-lab {
-		font-size: clamp(1rem, 2.5vw, 1.35rem);
+	.apj__badge {
+		position: absolute;
+		left: 0.45rem;
+		top: 0.45rem;
+		padding: 0.2rem 0.55rem;
+		border-radius: 999px;
+		font-size: 0.75rem;
 		font-weight: 800;
-		color: #90a4ae;
-		user-select: none;
+		color: #fff;
+		line-height: 1.2;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 	}
+	.apj__badge--pierdut { background: #c62828; }
+	.apj__badge--gasit { background: #2e7d32; }
+
+	.apj-note {
+		border: 0;
+		padding: 0;
+		border-radius: 14px;
+		max-width: min(26rem, calc(100vw - 1.5rem));
+		width: 100%;
+		box-shadow: 0 12px 40px rgba(13, 71, 161, 0.28);
+		background: transparent;
+	}
+	.apj-note::backdrop { background: rgba(13, 33, 55, 0.55); }
+	.apj-note__inner {
+		margin: 0;
+		position: relative;
+		background: #fff;
+		border-radius: 14px;
+		overflow: hidden;
+		border: 1px solid #90caf9;
+	}
+	.apj-note__close {
+		position: absolute;
+		top: 0.35rem;
+		right: 0.4rem;
+		z-index: 2;
+		width: 2rem;
+		height: 2rem;
+		border: 0;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.92);
+		color: #0d47a1;
+		font-size: 1.35rem;
+		font-weight: 700;
+		line-height: 1;
+		cursor: pointer;
+	}
+	.apj-note__img {
+		width: 100%;
+		max-height: 14rem;
+		object-fit: cover;
+		display: block;
+		background: #e3f2fd;
+	}
+	.apj-note__body { padding: 0.85rem 1rem 1.1rem; }
+	.apj-note__kind {
+		margin: 0 0 0.2rem;
+		font-size: 0.75rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		color: #1565c0;
+	}
+	.apj-note__title {
+		margin: 0 0 0.35rem;
+		font-size: 1.15rem;
+		color: #0d47a1;
+	}
+	.apj-note__meta,
+	.apj-note__date {
+		margin: 0 0 0.35rem;
+		font-size: 0.82rem;
+		color: #546e7a;
+		font-weight: 650;
+	}
+	.apj-note__desc {
+		margin: 0.45rem 0;
+		font-size: 0.92rem;
+		line-height: 1.45;
+		color: #263238;
+		white-space: pre-wrap;
+	}
+	.apj-note__phone {
+		margin: 0.5rem 0 0;
+		font-size: 0.95rem;
+		font-weight: 800;
+	}
+	.apj-note__phone a { color: #2e7d32; text-decoration: none; }
+	.apj-note__phone a:hover { text-decoration: underline; }
 
 	@media (max-width: 700px) {
 		.apj__grid {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
-			grid-template-rows: repeat(4, minmax(0, 1fr));
+			grid-template-rows: repeat(var(--apj-rows-m, 2), minmax(0, 1fr));
+			height: calc(var(--apj-rows-m, 2) / 2 * 100%);
 		}
 	}
 </style>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+	var canSee = {{ ap_can_see_details|yesno:"true,false" }};
+	var loginUrl = "{% url 'login' %}?next={{ ap_login_next|urlencode }}";
+	var dlg = document.getElementById("apjNote");
+	if (!dlg) return;
+	var img = document.getElementById("apjNoteImg");
+	var kind = document.getElementById("apjNoteKind");
+	var title = document.getElementById("apjNoteTitle");
+	var meta = document.getElementById("apjNoteMeta");
+	var desc = document.getElementById("apjNoteDesc");
+	var phone = document.getElementById("apjNotePhone");
+	var dateEl = document.getElementById("apjNoteDate");
+
+	function openNote(btn) {
+		if (img) {
+			img.src = btn.getAttribute("data-img") || "";
+			img.alt = btn.getAttribute("data-name") || "";
+		}
+		if (kind) kind.textContent = btn.getAttribute("data-kind") || "";
+		if (title) title.textContent = btn.getAttribute("data-name") || "";
+		var loc = btn.getAttribute("data-loc") || "";
+		var jud = btn.getAttribute("data-judet") || "";
+		var sp = btn.getAttribute("data-species") || "";
+		if (meta) meta.textContent = [sp, loc, jud].filter(Boolean).join(" · ");
+		if (desc) desc.textContent = btn.getAttribute("data-desc") || "";
+		var ph = (btn.getAttribute("data-phone") || "").trim();
+		if (phone) {
+			if (ph) {
+				phone.hidden = false;
+				phone.innerHTML = 'Contact: <a href="tel:' + ph.replace(/"/g, "") + '">' + ph.replace(/</g, "") + "</a>";
+			} else {
+				phone.hidden = true;
+				phone.textContent = "";
+			}
+		}
+		if (dateEl) {
+			var d = btn.getAttribute("data-created") || "";
+			dateEl.textContent = d ? ("Publicat: " + d) : "";
+		}
+		if (typeof dlg.showModal === "function") dlg.showModal();
+	}
+
+	document.querySelectorAll("[data-apj-open]").forEach(function (btn) {
+		btn.addEventListener("click", function () {
+			if (!canSee) {
+				window.location.href = loginUrl;
+				return;
+			}
+			openNote(btn);
+		});
+	});
+});
+</script>
 {% endblock %}

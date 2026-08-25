@@ -14484,6 +14484,13 @@ def animale_pierdute_judet_view(request, judet_slug):
         is_active=True, judet_slug=judet.slug, kind=LostFoundAnimal.KIND_FOUND
     ).exclude(photo="").count()
 
+    n_cards = len(cards)
+    # Desktop: min. 2 rânduri × 4 coloane; sloturi goale până la umplerea grilei.
+    grid_rows = max(2, (n_cards + 3) // 4)
+    empty_slots = max(0, grid_rows * 4 - n_cards)
+    total_cells = n_cards + empty_slots
+    grid_rows_mobile = max(2, (total_cells + 1) // 2)
+
     return render(
         request,
         "anunturi/animale_pierdute_judet.html",
@@ -14496,6 +14503,9 @@ def animale_pierdute_judet_view(request, judet_slug):
             "ap_count_found": count_found,
             "ap_can_see_details": can_see_details,
             "ap_login_next": request.get_full_path(),
+            "ap_empty_slots": range(empty_slots),
+            "ap_grid_rows": grid_rows,
+            "ap_grid_rows_mobile": grid_rows_mobile,
         },
     )
 
