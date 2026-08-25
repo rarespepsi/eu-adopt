@@ -27,27 +27,29 @@
 	</header>
 
 	{% if ap_cards %}
-	<div class="apj__grid" id="apjGrid">
-		{% for card in ap_cards %}
-		<button
-			type="button"
-			class="apj__card"
-			data-apj-open
-			data-kind="{{ card.kind_label }}"
-			data-name="{{ card.name }}"
-			data-species="{{ card.species }}"
-			data-loc="{{ card.localitate }}"
-			data-judet="{{ card.judet }}"
-			data-desc="{{ card.description }}"
-			data-phone="{{ card.phone }}"
-			data-created="{{ card.created }}"
-			data-img="{{ card.img }}"
-			aria-label="{{ card.kind_label }}: {{ card.name }}"
-		>
-			<img src="{{ card.img }}" alt="" loading="lazy" decoding="async">
-			<span class="apj__badge apj__badge--{{ card.kind }}">{{ card.kind_label }}</span>
-		</button>
-		{% endfor %}
+	<div class="apj__grid-scroll" aria-label="Galerie anunțuri">
+		<div class="apj__grid" id="apjGrid">
+			{% for card in ap_cards %}
+			<button
+				type="button"
+				class="apj__card"
+				data-apj-open
+				data-kind="{{ card.kind_label }}"
+				data-name="{{ card.name }}"
+				data-species="{{ card.species }}"
+				data-loc="{{ card.localitate }}"
+				data-judet="{{ card.judet }}"
+				data-desc="{{ card.description }}"
+				data-phone="{{ card.phone }}"
+				data-created="{{ card.created }}"
+				data-img="{{ card.img }}"
+				aria-label="{{ card.kind_label }}: {{ card.name }}"
+			>
+				<img src="{{ card.img }}" alt="" loading="lazy" decoding="async">
+				<span class="apj__badge apj__badge--{{ card.kind }}">{{ card.kind_label }}</span>
+			</button>
+			{% endfor %}
+		</div>
 	</div>
 	{% else %}
 	<div class="apj__empty">
@@ -146,10 +148,26 @@
 		font-size: 0.88rem;
 	}
 	.apj__back:hover { text-decoration: underline; }
+	/* Viewport: 2 rânduri × N coloane; restul cu scroll */
+	.apj__grid-scroll {
+		--apj-gap: 0.55rem;
+		--apj-cols: 4;
+		--apj-rows: 2;
+		container-type: inline-size;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		/* 2 celule pătrate + 1 gap între rânduri */
+		max-height: calc(
+			(var(--apj-rows) * (100cqi - (var(--apj-cols) - 1) * var(--apj-gap)) / var(--apj-cols))
+			+ (var(--apj-rows) - 1) * var(--apj-gap)
+		);
+		padding-right: 0.15rem;
+		border-radius: 10px;
+	}
 	.apj__grid {
 		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: 0.55rem;
+		grid-template-columns: repeat(var(--apj-cols), minmax(0, 1fr));
+		gap: var(--apj-gap);
 	}
 	.apj__card {
 		position: relative;
@@ -275,10 +293,10 @@
 	.apj-note__phone a { color: #2e7d32; text-decoration: none; }
 	.apj-note__phone a:hover { text-decoration: underline; }
 	@media (max-width: 900px) {
-		.apj__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+		.apj__grid-scroll { --apj-cols: 3; }
 	}
 	@media (max-width: 560px) {
-		.apj__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+		.apj__grid-scroll { --apj-cols: 2; }
 		.apj-note__img { max-height: 11rem; }
 	}
 </style>
