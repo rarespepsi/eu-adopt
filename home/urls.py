@@ -110,6 +110,7 @@ urlpatterns = [
     path('animale-pierdute/<int:pk>/sterge/', views.animale_pierdute_sterge_view, name='animale_pierdute_sterge'),
     path('animale-pierdute/<slug:judet_slug>/', views.animale_pierdute_judet_view, name='animale_pierdute_judet'),
     path('semnaleaza-abuz/', views.semnaleaza_abuz_view, name='semnaleaza_abuz'),
+    path('semnaleaza-abuz/trimite/', views.semnaleaza_abuz_trimite_view, name='semnaleaza_abuz_trimite'),
     path('publicitate/eu/', views.publicitate_eu_direct_view, name='publicitate_eu_direct'),
     path('publicitate/campanii/', views.publicitate_campanii_ro_view, name='publicitate_campanii_ro'),
     path(

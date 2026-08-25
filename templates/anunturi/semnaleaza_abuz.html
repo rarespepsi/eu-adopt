@@ -4,62 +4,493 @@
 {% block body_class %}page-semnaleaza-abuz{% endblock %}
 
 {% block content %}
-<section class="eu-internal-page" aria-label="Semnalează un abuz">
-	<header class="eu-internal-page__head">
-		<h1>Semnalează un abuz</h1>
-		<p class="eu-internal-page__lead">
-			Pagină în lucru — harta pe județe și formularul de sesizare vor fi disponibile curând.
-		</p>
-	</header>
-	<div class="eu-internal-page__hero">
-		<img
-			src="{% static 'images/home/a5-semnaleaza-abuz.png' %}"
-			alt="Semnalează un abuz"
-			width="640"
-			height="640"
-			loading="eager"
-			decoding="async"
-		>
+<section class="sa-layout" aria-label="Semnalează un abuz">
+	<div class="sa-frame">
+		<div class="sa-band sa-band-top" aria-hidden="true">
+			<div class="sa-band-track">
+				{% for card in sa_band_cards %}<div class="sa-card">{{ card }}</div>{% endfor %}
+				{% for card in sa_band_cards %}<div class="sa-card">{{ card }}</div>{% endfor %}
+			</div>
+		</div>
+		<div class="sa-band sa-band-left" aria-hidden="true">
+			<div class="sa-band-track sa-band-track-vert">
+				{% for card in sa_band_cards %}<div class="sa-card sa-card--tall">{{ card }}</div>{% endfor %}
+				{% for card in sa_band_cards %}<div class="sa-card sa-card--tall">{{ card }}</div>{% endfor %}
+			</div>
+		</div>
+
+		<div class="sa-map-wrap">
+			<div class="sa-map-stage" id="saMapStage" aria-label="Harta României pe județe">
+				<div class="sa-map-loading" id="saMapLoading">Se încarcă harta…</div>
+			</div>
+			<span class="sa-map-bubble" id="saMapBubble" role="note">Click pe județ</span>
+			<div class="sa-map-title" role="group" aria-label="Titlu pagină">
+				<a class="sa-map-back" href="{% url 'home' %}">← Acasă</a>
+				<strong>Semnalează un abuz</strong>
+				<em>Tu semnalezi · EU-Adopt transmite · organul din județ</em>
+			</div>
+		</div>
+
+		<div class="sa-band sa-band-right" aria-hidden="true">
+			<div class="sa-band-track sa-band-track-vert sa-band-track-vert-rev">
+				{% for card in sa_band_cards %}<div class="sa-card sa-card--tall">{{ card }}</div>{% endfor %}
+				{% for card in sa_band_cards %}<div class="sa-card sa-card--tall">{{ card }}</div>{% endfor %}
+			</div>
+		</div>
+		<div class="sa-band sa-band-bottom" aria-hidden="true">
+			<div class="sa-band-track sa-band-track-rev">
+				{% for card in sa_band_cards %}<div class="sa-card">{{ card }}</div>{% endfor %}
+				{% for card in sa_band_cards %}<div class="sa-card">{{ card }}</div>{% endfor %}
+			</div>
+		</div>
 	</div>
-	<p class="eu-internal-page__foot">
-		<a href="{% url 'home' %}">← Înapoi la Acasă</a>
-	</p>
 </section>
+
+<dialog class="sa-dialog" id="saDialog" aria-labelledby="saDialogTitle">
+	<form class="sa-form" method="post" enctype="multipart/form-data" action="{% url 'semnaleaza_abuz_trimite' %}" id="saForm">
+		{% csrf_token %}
+		<input type="hidden" name="judet_slug" id="saJudetSlug" value="">
+		<header class="sa-form__head">
+			<h2 id="saDialogTitle">Sesizare — <span id="saJudetName">județ</span></h2>
+			<button type="button" class="sa-form__close" id="saDialogClose" aria-label="Închide">×</button>
+		</header>
+		<p class="sa-form__disc">
+			EU-Adopt intermediază transmisia. Nu verificăm și nu ne asumăm dacă sesizarea e reală sau corectă —
+			răspunderea pentru conținut aparține sesizorului.
+		</p>
+		{% if user.is_authenticated %}
+		<fieldset class="sa-form__set">
+			<legend>Destinatar</legend>
+			<label class="sa-radio"><input type="radio" name="destinatie" value="dsvsa" required> <span>DSVSA</span></label>
+			<label class="sa-radio"><input type="radio" name="destinatie" value="bpa"> <span>Poliția Animalelor (BPA)</span></label>
+			<label class="sa-radio"><input type="radio" name="destinatie" value="both" checked> <span>Ambele</span></label>
+		</fieldset>
+		<label class="sa-label">Problema reclamată *
+			<textarea name="description" rows="5" maxlength="4000" required placeholder="Descrie situația, locul, când ai observat…"></textarea>
+		</label>
+		<label class="sa-label">Poză sau video (opțional)
+			<input type="file" name="media" accept="image/*,video/*">
+		</label>
+		<div class="sa-form__contact">
+			<strong>Datele tale din cont (vor apărea în mail)</strong>
+			<ul>
+				<li>Nume: {{ sa_reporter_name|default:"—" }}</li>
+				<li>Email: {{ sa_reporter_email|default:"—" }}</li>
+				<li>Telefon: {{ sa_reporter_phone|default:"—" }}</li>
+			</ul>
+		</div>
+		<div class="sa-form__actions">
+			<button type="submit" class="sa-submit">Trimite sesizarea</button>
+			<button type="button" class="sa-cancel" id="saDialogCancel">Anulează</button>
+		</div>
+		{% else %}
+		<p class="sa-form__login">Pentru a trimite o sesizare trebuie să fii autentificat.</p>
+		<a class="sa-submit" id="saLoginLink" href="{% url 'login' %}?next={% url 'semnaleaza_abuz' %}">Intră în cont</a>
+		{% endif %}
+	</form>
+</dialog>
+
+{{ sa_judete|json_script:"sa-judete" }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+	var stage = document.getElementById("saMapStage");
+	var loading = document.getElementById("saMapLoading");
+	var bubble = document.getElementById("saMapBubble");
+	var dialog = document.getElementById("saDialog");
+	var judetSlug = document.getElementById("saJudetSlug");
+	var judetName = document.getElementById("saJudetName");
+	var loginLink = document.getElementById("saLoginLink");
+	if (!stage) return;
+	var judete = {};
+	try { judete = JSON.parse(document.getElementById("sa-judete").textContent || "{}"); } catch (e) {}
+	var defaultBubble = bubble ? bubble.textContent : "Click pe județ";
+
+	function openJudet(code) {
+		var info = judete[code];
+		if (!info) return;
+		if (judetSlug) judetSlug.value = info.slug || "";
+		if (judetName) judetName.textContent = info.name || code;
+		if (loginLink) {
+			var base = loginLink.getAttribute("href").split("?")[0];
+			loginLink.setAttribute("href", base + "?next=" + encodeURIComponent("{% url 'semnaleaza_abuz' %}?judet=" + encodeURIComponent(info.slug || "")));
+		}
+		if (dialog && typeof dialog.showModal === "function") dialog.showModal();
+	}
+
+	document.getElementById("saDialogClose") && document.getElementById("saDialogClose").addEventListener("click", function () {
+		if (dialog) dialog.close();
+	});
+	document.getElementById("saDialogCancel") && document.getElementById("saDialogCancel").addEventListener("click", function () {
+		if (dialog) dialog.close();
+	});
+
+	var pre = "{{ sa_pre_judet|escapejs }}";
+	fetch("{% static 'images/campanii/romania-counties.svg' %}", { credentials: "same-origin" })
+		.then(function (r) { if (!r.ok) throw new Error("svg"); return r.text(); })
+		.then(function (markup) {
+			stage.innerHTML = markup;
+			var svg = stage.querySelector("svg");
+			if (!svg) throw new Error("no svg");
+			svg.classList.add("sa-ro-svg");
+			svg.setAttribute("role", "img");
+			svg.setAttribute("aria-label", "Harta României — alege un județ");
+			stage.querySelectorAll('path[id^="ro-"]').forEach(function (path) {
+				var code = String(path.getAttribute("id") || "").replace(/^ro-/i, "").toUpperCase();
+				if (!judete[code]) return;
+				path.classList.add("sa-judet-path");
+				path.setAttribute("tabindex", "0");
+				path.setAttribute("role", "button");
+				path.addEventListener("click", function () { openJudet(code); });
+				path.addEventListener("keydown", function (ev) {
+					if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); openJudet(code); }
+				});
+				path.addEventListener("mouseenter", function () {
+					if (bubble) bubble.textContent = "Județ: " + (judete[code].name || code);
+				});
+				path.addEventListener("mouseleave", function () {
+					if (bubble) bubble.textContent = defaultBubble;
+				});
+			});
+			if (loading) loading.remove();
+			if (pre) {
+				var hitCode = null;
+				Object.keys(judete).forEach(function (c) {
+					if ((judete[c].slug || "").toLowerCase() === String(pre).toLowerCase()) hitCode = c;
+				});
+				if (hitCode) openJudet(hitCode);
+			}
+		})
+		.catch(function () { if (loading) loading.textContent = "Harta nu s-a putut încărca."; });
+});
+</script>
 <style>
-	.eu-internal-page {
-		max-width: 42rem;
-		margin: 0.75rem auto 2rem;
-		padding: 0 0.85rem;
+	body.page-semnaleaza-abuz,
+	body.page-semnaleaza-abuz #main_wrap,
+	body.page-semnaleaza-abuz #main_content,
+	body.page-semnaleaza-abuz .layout,
+	body.page-semnaleaza-abuz .main-content {
+		height: 100dvh;
+		overflow: hidden !important;
 	}
-	.eu-internal-page__head h1 {
-		margin: 0 0 0.45rem;
-		font-size: clamp(1.25rem, 2.8vw, 1.55rem);
-		color: #b71c1c;
+	body.page-semnaleaza-abuz .layout {
+		grid-template-columns: minmax(0, 1fr) !important;
+		gap: 0 !important;
 	}
-	.eu-internal-page__lead {
-		margin: 0;
-		color: #37474f;
-		font-size: 0.95rem;
-		line-height: 1.45;
+	body.page-semnaleaza-abuz .layout .sidebar-left,
+	body.page-semnaleaza-abuz .layout .sidebar-right {
+		display: none !important;
 	}
-	.eu-internal-page__hero {
-		margin: 1rem 0;
-		border-radius: 14px;
+	body.page-semnaleaza-abuz #main_content,
+	body.page-semnaleaza-abuz .main-content {
+		max-width: none !important;
+		width: 100% !important;
+	}
+	.sa-layout {
+		height: calc(100dvh - 0.25rem);
+		display: grid;
+		grid-template-rows: 1fr;
+		padding: 0.2rem 0.35rem 0.3rem;
+		box-sizing: border-box;
 		overflow: hidden;
-		border: 1px solid #ef9a9a;
-		box-shadow: 0 4px 16px rgba(183, 28, 28, 0.12);
-	}
-	.eu-internal-page__hero img {
-		display: block;
 		width: 100%;
-		height: auto;
 	}
-	.eu-internal-page__foot {
-		margin: 0.85rem 0 0;
+	.sa-frame {
+		min-height: 0;
+		display: grid;
+		grid-template-columns: minmax(11.5rem, 14rem) minmax(0, 1fr) minmax(11.5rem, 14rem);
+		grid-template-rows: 9.5rem minmax(0, 1fr) 9.5rem;
+		grid-template-areas:
+			"top top top"
+			"left map right"
+			"bottom bottom bottom";
+		gap: 0.3rem;
+		overflow: hidden;
+		width: 100%;
+	}
+	.sa-band { border-radius: 10px; overflow: hidden; background: #fff; border: 1px solid #ef9a9a; }
+	.sa-band-top { grid-area: top; }
+	.sa-band-bottom { grid-area: bottom; }
+	.sa-band-left { grid-area: left; }
+	.sa-band-right { grid-area: right; }
+	.sa-band-track {
+		height: 100%;
+		display: flex;
+		gap: 0;
+		width: max-content;
+		animation: saX 42s linear infinite;
+		will-change: transform;
+	}
+	.sa-band-track-rev { animation-direction: reverse; }
+	.sa-band-track-vert {
+		flex-direction: column;
+		width: 100%;
+		height: max-content;
+		animation-name: saY;
+		animation-duration: 44s;
+	}
+	.sa-band-track-vert-rev { animation-direction: reverse; }
+	.sa-card {
+		flex: 0 0 11rem;
+		width: 11rem;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.45rem 0.55rem;
+		box-sizing: border-box;
+		text-align: center;
+		font-size: clamp(0.62rem, 1.15vw, 0.78rem);
 		font-weight: 700;
+		line-height: 1.25;
+		color: #5d1a1a;
+		background: linear-gradient(160deg, #fff5f5 0%, #ffebee 100%);
+		border-right: 1px solid #ffcdd2;
 	}
-	.eu-internal-page__foot a {
+	.sa-card--tall {
+		flex: 0 0 7.5rem;
+		width: 100%;
+		height: 7.5rem;
+		border-right: 0;
+		border-bottom: 1px solid #ffcdd2;
+	}
+	.sa-map-wrap {
+		grid-area: map;
+		min-height: 0;
+		display: grid;
+		position: relative;
+	}
+	.sa-map-stage {
+		min-height: 0;
+		border-radius: 10px;
+		border: 1px solid #ef9a9a;
+		background: linear-gradient(180deg, #fff8f8 0%, #ffebee 100%);
+		overflow: hidden;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.08rem;
+	}
+	.sa-map-bubble {
+		position: absolute;
+		top: 0.35rem;
+		right: 0.35rem;
+		z-index: 4;
+		max-width: min(10.5rem, calc(100% - 1rem));
+		padding: 0.22rem 0.5rem;
+		border-radius: 999px;
+		background: rgba(183, 28, 28, 0.92);
+		color: #fff;
+		font-size: clamp(0.58rem, 1.2vw, 0.7rem);
+		font-weight: 700;
+		pointer-events: none;
+		text-align: center;
+	}
+	.sa-map-title {
+		position: absolute;
+		left: 0.4rem;
+		bottom: 0.4rem;
+		z-index: 4;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.1rem;
+		max-width: min(17rem, calc(100% - 1rem));
+		padding: 0.28rem 0.55rem;
+		border-radius: 10px;
+		background: rgba(255, 255, 255, 0.94);
+		border: 1px solid rgba(183, 28, 28, 0.28);
+		box-shadow: 0 3px 10px rgba(183, 28, 28, 0.12);
+	}
+	.sa-map-title strong {
+		font-size: clamp(0.72rem, 1.4vw, 0.9rem);
 		color: #b71c1c;
+		font-weight: 800;
+		line-height: 1.2;
+	}
+	.sa-map-title em {
+		font-style: normal;
+		font-size: 0.62rem;
+		font-weight: 650;
+		color: #6d4c41;
+		line-height: 1.2;
+	}
+	.sa-map-back {
+		font-size: 0.7rem;
+		font-weight: 700;
+		color: #c62828;
+		text-decoration: none;
+	}
+	.sa-map-back:hover { text-decoration: underline; }
+	.sa-map-loading { font-weight: 700; color: #b71c1c; font-size: 0.88rem; }
+	.sa-ro-svg { width: 100%; height: 100%; display: block; }
+	.sa-judet-path {
+		fill: #ffcdd2;
+		stroke: #b71c1c;
+		stroke-width: 0.55;
+		cursor: pointer;
+		transition: fill 0.12s ease, stroke-width 0.12s ease;
+	}
+	.sa-judet-path:hover,
+	.sa-judet-path:focus {
+		fill: #ef9a9a;
+		stroke-width: 1.15;
+		outline: none;
+	}
+	@keyframes saX {
+		0% { transform: translateX(0); }
+		100% { transform: translateX(-50%); }
+	}
+	@keyframes saY {
+		0% { transform: translateY(0); }
+		100% { transform: translateY(-50%); }
+	}
+
+	.sa-dialog {
+		border: 0;
+		border-radius: 14px;
+		padding: 0;
+		max-width: min(28rem, calc(100vw - 1.2rem));
+		width: 100%;
+		box-shadow: 0 12px 40px rgba(183, 28, 28, 0.28);
+	}
+	.sa-dialog::backdrop { background: rgba(33, 33, 33, 0.45); }
+	.sa-form {
+		display: flex;
+		flex-direction: column;
+		gap: 0.65rem;
+		padding: 0.85rem 0.95rem 1rem;
+		background: #fffafa;
+	}
+	.sa-form__head {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+	.sa-form__head h2 {
+		margin: 0;
+		font-size: 1.05rem;
+		color: #b71c1c;
+	}
+	.sa-form__close {
+		border: 0;
+		background: transparent;
+		font-size: 1.4rem;
+		line-height: 1;
+		cursor: pointer;
+		color: #6d4c41;
+	}
+	.sa-form__disc {
+		margin: 0;
+		font-size: 0.72rem;
+		line-height: 1.35;
+		color: #6d4c41;
+		background: #fff3e0;
+		border: 1px solid #ffe0b2;
+		border-radius: 8px;
+		padding: 0.45rem 0.55rem;
+	}
+	.sa-form__set {
+		margin: 0;
+		padding: 0.45rem 0.55rem;
+		border: 1px solid #ef9a9a;
+		border-radius: 8px;
+		background: #fff;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+	.sa-form__set legend {
+		font-weight: 800;
+		font-size: 0.78rem;
+		color: #b71c1c;
+		padding: 0 0.2rem;
+	}
+	.sa-radio {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.86rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+	.sa-label {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		font-weight: 700;
+		font-size: 0.82rem;
+		color: #b71c1c;
+	}
+	.sa-label textarea,
+	.sa-label input[type="file"] {
+		font: inherit;
+		font-weight: 500;
+		color: #263238;
+		padding: 0.4rem 0.5rem;
+		border-radius: 8px;
+		border: 1px solid #ef9a9a;
+		background: #fff;
+	}
+	.sa-form__contact {
+		font-size: 0.78rem;
+		color: #455a64;
+		background: #fff;
+		border: 1px solid #ffcdd2;
+		border-radius: 8px;
+		padding: 0.45rem 0.55rem;
+	}
+	.sa-form__contact strong { display: block; color: #b71c1c; margin-bottom: 0.2rem; }
+	.sa-form__contact ul { margin: 0; padding-left: 1.1rem; }
+	.sa-form__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.55rem;
+		align-items: center;
+	}
+	.sa-submit {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border: 0;
+		border-radius: 999px;
+		padding: 0.5rem 1.05rem;
+		font-weight: 800;
+		font-size: 0.9rem;
+		color: #fff;
+		background: #c62828;
+		text-decoration: none;
+		cursor: pointer;
+	}
+	.sa-submit:hover { background: #b71c1c; color: #fff; }
+	.sa-cancel {
+		border: 0;
+		background: transparent;
+		font-weight: 700;
+		color: #6d4c41;
+		cursor: pointer;
+		text-decoration: underline;
+	}
+	.sa-form__login { margin: 0; font-size: 0.9rem; color: #455a64; }
+
+	@media (max-width: 900px) {
+		.sa-frame {
+			grid-template-columns: minmax(8rem, 10.5rem) minmax(0, 1fr) minmax(8rem, 10.5rem);
+			grid-template-rows: 7.5rem minmax(0, 1fr) 7.5rem;
+		}
+		.sa-card { flex-basis: 9rem; width: 9rem; }
+		.sa-card--tall { flex-basis: 6.2rem; height: 6.2rem; }
+	}
+	@media (max-width: 767.98px) {
+		.sa-frame {
+			grid-template-columns: 5.6rem minmax(0, 1fr) 5.6rem;
+			grid-template-rows: 5.6rem minmax(0, 1fr) 5.6rem;
+		}
+		.sa-card { flex-basis: 7.2rem; width: 7.2rem; font-size: 0.58rem; padding: 0.3rem; }
+		.sa-card--tall { flex-basis: 5rem; height: 5rem; }
+		.sa-map-title { left: 0.25rem; bottom: 0.25rem; max-width: min(12rem, calc(100% - 0.6rem)); }
+		.sa-map-title strong { font-size: 0.66rem; }
+		.sa-map-title em { font-size: 0.52rem; }
 	}
 </style>
 {% endblock %}

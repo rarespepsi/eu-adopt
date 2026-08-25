@@ -2785,3 +2785,82 @@ class LostFoundAnimal(models.Model):
         label = self.name or self.get_species_display()
         return f"{self.get_kind_display()}: {label} — {self.localitate}"
 
+
+class AbuseReport(models.Model):
+    """Sesizare abuz — intermediată de EU-Adopt către DSVSA / BPA pe județ."""
+
+    DEST_DSVSA = "dsvsa"
+    DEST_BPA = "bpa"
+    DEST_BOTH = "both"
+    DEST_CHOICES = (
+        (DEST_DSVSA, "DSVSA"),
+        (DEST_BPA, "Poliția Animalelor (BPA)"),
+        (DEST_BOTH, "Ambele"),
+    )
+    STATUS_QUEUED = "queued"
+    STATUS_SENT = "sent"
+    STATUS_PARTIAL = "partial"
+    STATUS_PENDING_CONTACT = "pending_contact"
+    STATUS_FAILED = "failed"
+    STATUS_CHOICES = (
+        (STATUS_QUEUED, "În așteptare"),
+        (STATUS_SENT, "Trimis"),
+        (STATUS_PARTIAL, "Parțial trimis"),
+        (STATUS_PENDING_CONTACT, "Fără contact organ — în așteptare"),
+        (STATUS_FAILED, "Eșuat"),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="abuse_reports")
+    judet = models.CharField("Județ", max_length=64, db_index=True)
+    judet_slug = models.CharField("Slug județ", max_length=80, db_index=True)
+    judet_code = models.CharField("Cod județ", max_length=4, blank=True, default="")
+    destinatie = models.CharField("Destinație", max_length=12, choices=DEST_CHOICES)
+    description = models.TextField("Problema reclamată", max_length=4000)
+    media = models.FileField(
+        "Poză / video",
+        upload_to="abuz/%Y/%m/",
+        blank=True,
+        null=True,
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=[
+                    "jpg",
+                    "jpeg",
+                    "png",
+                    "webp",
+                    "gif",
+                    "mp4",
+                    "mov",
+                    "webm",
+                    "m4v",
+                ]
+            )
+        ],
+    )
+    reporter_name = models.CharField("Nume sesizor", max_length=200)
+    reporter_email = models.EmailField("Email sesizor")
+    reporter_phone = models.CharField("Telefon sesizor", max_length=40, blank=True, default="")
+    status = models.CharField(
+        "Status trimitere",
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_QUEUED,
+        db_index=True,
+    )
+    sent_to = models.TextField("Destinatari (emailuri)", blank=True, default="")
+    send_log = models.TextField("Jurnal trimitere", blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Sesizare abuz"
+        verbose_name_plural = "Sesizări abuz"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["judet_slug", "-created_at"]),
+            models.Index(fields=["status", "-created_at"]),
+        ]
+
+    def __str__(self):
+        return f"Abuz {self.judet} · {self.get_destinatie_display()} · {self.reporter_email}"
+

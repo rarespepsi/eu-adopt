@@ -14751,8 +14751,139 @@ def animale_pierdute_sterge_view(request, pk):
 
 
 def semnaleaza_abuz_view(request):
-    """Semnalare abuz — placeholder (hartă județe + formular sesizare, în lucru)."""
-    return render(request, "anunturi/semnaleaza_abuz.html")
+    """Semnalare abuz — hartă județe (fără scroll) + formular la click."""
+    from home.abuz_contacts import DEST_CHOICES, abuz_contact_rows
+
+    rows = abuz_contact_rows()
+    judete_json = {
+        r.code: {"name": r.name, "slug": r.slug} for r in rows if r.code
+    }
+    band_cards = [
+        "Transmitem sesizarea — nu verificăm dacă e reală.",
+        "EU-Adopt intermediază, nu judecă cazul.",
+        "Răspunderea pentru conținut aparține sesizorului.",
+        "Organul competent decide următorii pași.",
+        "Alegi județul pe hartă, completezi formularul.",
+        "Destinatar: DSVSA, Poliția Animalelor sau ambele.",
+        "Poți atașa poză sau video.",
+        "Mailul pleacă de la EU-Adopt, cu datele tale din cont.",
+        "Nu ne asumăm corectitudinea sau realitatea sesizării.",
+        "Tu semnalezi · noi transmitem · autoritatea acționează.",
+    ]
+
+    reporter_name = ""
+    reporter_email = ""
+    reporter_phone = ""
+    if request.user.is_authenticated:
+        u = request.user
+        reporter_name = (u.get_full_name() or "").strip() or (u.username or "").strip()
+        reporter_email = (u.email or "").strip()
+        try:
+            reporter_phone = (getattr(u.profile, "phone", None) or "").strip()
+        except Exception:
+            reporter_phone = ""
+
+    return render(
+        request,
+        "anunturi/semnaleaza_abuz.html",
+        {
+            "sa_judete": judete_json,
+            "sa_band_cards": band_cards,
+            "sa_dest_choices": DEST_CHOICES,
+            "sa_reporter_name": reporter_name,
+            "sa_reporter_email": reporter_email,
+            "sa_reporter_phone": reporter_phone,
+            "sa_pre_judet": (request.GET.get("judet") or "").strip().lower(),
+        },
+    )
+
+
+@login_required
+@require_http_methods(["POST"])
+def semnaleaza_abuz_trimite_view(request):
+    """Primește formularul de sesizare și trimite mailul către organ(e)."""
+    from home.abuz_contacts import DEST_BOTH, DEST_BPA, DEST_DSVSA, abuz_contact_by_slug
+    from home.abuz_mail import send_abuse_report_emails
+    from home.models import AbuseReport
+
+    slug = (request.POST.get("judet_slug") or "").strip().lower()
+    destinatie = (request.POST.get("destinatie") or "").strip().lower()
+    description = (request.POST.get("description") or "").strip()
+    media = request.FILES.get("media")
+
+    row = abuz_contact_by_slug(slug)
+    u = request.user
+    reporter_name = (u.get_full_name() or "").strip() or (u.username or "").strip()
+    reporter_email = (u.email or "").strip()
+    reporter_phone = ""
+    try:
+        reporter_phone = (getattr(u.profile, "phone", None) or "").strip()
+    except Exception:
+        pass
+
+    errors = []
+    if row is None:
+        errors.append("Județ invalid.")
+    if destinatie not in (DEST_DSVSA, DEST_BPA, DEST_BOTH):
+        errors.append("Alege destinatarul: DSVSA, Poliția Animalelor sau ambele.")
+    if len(description) < 20:
+        errors.append("Descrie problema în cel puțin 20 de caractere.")
+    if not reporter_email:
+        errors.append("Contul tău nu are email. Actualizează datele din profil.")
+    if media is not None and media.size > 25 * 1024 * 1024:
+        errors.append("Fișierul poate avea maxim 25 MB.")
+
+    if errors:
+        for e in errors:
+            messages.error(request, e)
+        return redirect(f"{reverse('semnaleaza_abuz')}?judet={slug}" if slug else reverse("semnaleaza_abuz"))
+
+    report = AbuseReport(
+        user=u,
+        judet=row.name,
+        judet_slug=row.slug,
+        judet_code=row.code,
+        destinatie=destinatie,
+        description=description[:4000],
+        reporter_name=reporter_name[:200],
+        reporter_email=reporter_email,
+        reporter_phone=reporter_phone[:40],
+    )
+    if media is not None:
+        report.media = media
+    report.save()
+
+    status, sent_to, log = send_abuse_report_emails(report)
+    report.status = status
+    report.sent_to = sent_to
+    report.send_log = log
+    report.save(update_fields=["status", "sent_to", "send_log", "updated_at"])
+
+    if status == AbuseReport.STATUS_SENT:
+        messages.success(
+            request,
+            "Sesizarea a fost trimisă organului competent. Mulțumim.",
+        )
+    elif status == AbuseReport.STATUS_PARTIAL:
+        messages.success(
+            request,
+            "Sesizarea a fost înregistrată și trimisă parțial. "
+            "Contactele lipsă vor fi completate ulterior.",
+        )
+    elif status == AbuseReport.STATUS_PENDING_CONTACT:
+        messages.success(
+            request,
+            "Sesizarea a fost înregistrată. Contactele DSVSA/BPA pentru acest județ "
+            "vor fi adăugate curând — o vom transmite atunci.",
+        )
+    else:
+        messages.warning(
+            request,
+            "Sesizarea a fost salvată, dar trimiterea pe email a eșuat. "
+            "Echipa EU-Adopt o va prelua manual.",
+        )
+
+    return redirect("semnaleaza_abuz")
 
 
 def publicitate_campanii_ro_view(request):

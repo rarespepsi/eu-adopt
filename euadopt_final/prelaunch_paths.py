@@ -2,7 +2,8 @@
 Căi accesibile fără autentificare când PRELAUNCH_MODE este activ.
 
 Vizitator anonim pe .ro (vizualizare): HOME (+ fișe animal pe link/QR),
-Animale pierdute/găsite (hartă + bibliotecă județ).
+Animale pierdute/găsite (hartă + bibliotecă județ),
+Semnalează abuz (hartă — formularul de trimitere cere login).
 Harta Campanii = pagină publică permanentă (home.campanii_ro.is_campanii_public_path).
 PT / Servicii și restul site-ului cer login.
 Detalii anunț pierdut/găsit + postare nouă cer autentificare (template / @login_required).
@@ -42,12 +43,13 @@ PRELAUNCH_ANONYMOUS_PREFIXES: tuple[str, ...] = (
     "/adaposturi/",
     # Hartă + bibliotecă pe județ — vizualizare anonimă; postare = @login_required pe /adauga/.
     "/animale-pierdute/",
+    # Hartă abuz — vizualizare anonimă; trimitere = @login_required pe /trimite/.
+    "/semnaleaza-abuz/",
     "/admin/",
     "/static/",
     "/media/",
     "/admin-analysis/add-user/invite-inbound-webhook/",
 )
-
 # Doar HOME (și favicon) — path-uri exacte.
 PRELAUNCH_ANONYMOUS_EXACT: frozenset[str] = frozenset(
     {

@@ -57,6 +57,12 @@ class PrelaunchEnabledTests(TestCase):
         r_ap_add = c.get(reverse("animale_pierdute_adauga"))
         self.assertEqual(r_ap_add.status_code, 302)
         self.assertIn("/login/", r_ap_add.url or "")
+        r_abuz = c.get(reverse("semnaleaza_abuz"))
+        self.assertEqual(r_abuz.status_code, 200)
+        self.assertContains(r_abuz, "Semnalează un abuz")
+        r_abuz_post = c.post(reverse("semnaleaza_abuz_trimite"), {})
+        self.assertEqual(r_abuz_post.status_code, 302)
+        self.assertIn("/login/", r_abuz_post.url or "")
         for name in ("pets_all", "servicii", "shop", "transport"):
             r = c.get(reverse(name))
             self.assertEqual(r.status_code, 302, msg=name)
