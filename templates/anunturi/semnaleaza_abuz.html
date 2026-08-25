@@ -177,10 +177,26 @@ document.addEventListener("DOMContentLoaded", function () {
 			svg.classList.add("sa-ro-svg");
 			svg.setAttribute("role", "img");
 			svg.setAttribute("aria-label", "Harta României — alege un județ");
+			var ns = "http://www.w3.org/2000/svg";
 			stage.querySelectorAll('path[id^="ro-"]').forEach(function (path) {
 				var code = String(path.getAttribute("id") || "").replace(/^ro-/i, "").toUpperCase();
 				if (!judete[code]) return;
 				path.classList.add("sa-judet-path");
+				var nameLabel = judete[code].name || code;
+				path.setAttribute("aria-label", code + " — " + nameLabel);
+				/* Indicativ județ (CJ, TM, B…) — vizibil pe toate județele */
+				try {
+					var box = path.getBBox();
+					var t = document.createElementNS(ns, "text");
+					t.setAttribute("x", String(box.x + box.width / 2));
+					t.setAttribute("y", String(box.y + box.height / 2));
+					t.setAttribute("text-anchor", "middle");
+					t.setAttribute("dominant-baseline", "central");
+					t.setAttribute("class", "sa-judet-code");
+					t.setAttribute("pointer-events", "none");
+					t.textContent = code;
+					svg.appendChild(t);
+				} catch (err) {}
 				path.setAttribute("tabindex", "0");
 				path.setAttribute("role", "button");
 				path.addEventListener("click", function () { openJudet(code); });
@@ -188,7 +204,7 @@ document.addEventListener("DOMContentLoaded", function () {
 					if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); openJudet(code); }
 				});
 				path.addEventListener("mouseenter", function () {
-					if (bubble) bubble.textContent = "Județ: " + (judete[code].name || code);
+					if (bubble) bubble.textContent = code + " · " + nameLabel;
 				});
 				path.addEventListener("mouseleave", function () {
 					if (bubble) bubble.textContent = defaultBubble;
@@ -378,6 +394,17 @@ document.addEventListener("DOMContentLoaded", function () {
 		fill: #ef9a9a;
 		stroke-width: 1.15;
 		outline: none;
+	}
+	.sa-judet-code {
+		fill: #b71c1c;
+		font-size: 10px;
+		font-weight: 800;
+		letter-spacing: 0.02em;
+		paint-order: stroke;
+		stroke: rgba(255, 255, 255, 0.95);
+		stroke-width: 2.6px;
+		pointer-events: none;
+		user-select: none;
 	}
 	@keyframes saX {
 		0% { transform: translateX(0); }
@@ -581,6 +608,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		.sa-map-title { left: 0.25rem; bottom: 0.25rem; max-width: min(12rem, calc(100% - 0.6rem)); }
 		.sa-map-title strong { font-size: 0.66rem; }
 		.sa-map-title em { font-size: 0.52rem; }
+		.sa-judet-code { font-size: 8px; stroke-width: 2.2px; }
 	}
 </style>
 {% endblock %}
