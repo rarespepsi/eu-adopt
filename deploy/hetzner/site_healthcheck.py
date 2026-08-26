@@ -49,6 +49,89 @@ _FORBIDDEN_MIXED_TYPES = re.compile(
     re.IGNORECASE,
 )
 
+# Dirty pe H ignorat: zgomot CRLF / fișiere pe care cron-ul le poate atinge fără schimbare de conținut.
+_DIRTY_IGNORE_SUBSTRINGS = (
+    "AUTO_REPAIR_STATE",
+    ".pyc",
+    "EXPECTED_RELEASE.txt",
+)
+_DIRTY_IGNORE_PATHS = frozenset(
+    {
+        "deploy/hetzner/install_cleanup_lost_found_cron.sh",
+        "deploy/hetzner/run_cleanup_lost_found.sh",
+    }
+)
+
+
+def _porcelain_path(line: str) -> str:
+    """Extrage path din linie `git status --porcelain` (fără rename complex)."""
+    s = (line or "").rstrip("\n")
+    if len(s) < 4:
+        return ""
+    # XY<space>path  sau  XY path -> path
+    rest = s[3:] if s[2:3] == " " else s[2:].lstrip()
+    if " -> " in rest:
+        rest = rest.split(" -> ", 1)[-1]
+    return rest.strip().strip('"')
+
+
+def _git_diff_has_content(cwd: Path, rel_path: str) -> bool:
+    """False dacă diff-ul e gol (inclusiv doar CRLF / fără linii schimbate)."""
+    if not rel_path:
+        return True
+    try:
+        numstat = subprocess.check_output(
+            ["git", "diff", "--numstat", "--", rel_path],
+            cwd=str(cwd),
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+        cached = subprocess.check_output(
+            ["git", "diff", "--cached", "--numstat", "--", rel_path],
+            cwd=str(cwd),
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except Exception:
+        return True
+    combined = "\n".join(x for x in (numstat, cached) if x)
+    if not combined:
+        return False
+    for row in combined.splitlines():
+        parts = row.split("\t")
+        if len(parts) < 2:
+            continue
+        a, b = parts[0], parts[1]
+        if a == "-" and b == "-":  # binary touched
+            return True
+        try:
+            if int(a) > 0 or int(b) > 0:
+                return True
+        except ValueError:
+            return True
+    return False
+
+
+def meaningful_git_dirty_lines(cwd: Path, porcelain: str) -> list[str]:
+    """Filtrează dirty irelevant (EXPECTED, CRLF-only, scripturi cleanup cunoscute)."""
+    out: list[str] = []
+    for ln in (porcelain or "").splitlines():
+        if not ln.strip() or ln.startswith("??"):
+            continue
+        if any(s in ln for s in _DIRTY_IGNORE_SUBSTRINGS):
+            continue
+        path = _porcelain_path(ln)
+        if path in _DIRTY_IGNORE_PATHS:
+            continue
+        if path.startswith("deploy/hetzner/") and path.endswith(".sh"):
+            # Scripturi shell pe H: dacă nu e schimbare de conținut → ignoră (CRLF).
+            if not _git_diff_has_content(cwd, path):
+                continue
+        elif not _git_diff_has_content(cwd, path):
+            continue
+        out.append(ln)
+    return out
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -207,14 +290,10 @@ def main() -> int:
                 ["git", "status", "--porcelain", "-uno"], cwd=str(APP_DIR), text=True
             ).strip()
             if dirty:
-                lines = [
-                    ln
-                    for ln in dirty.splitlines()
-                    if "AUTO_REPAIR_STATE" not in ln
-                    and ".pyc" not in ln
-                    and "EXPECTED_RELEASE.txt" not in ln
-                    and not ln.startswith("??")
-                ]
+                lines = meaningful_git_dirty_lines(APP_DIR, dirty)
+                ignored = max(0, len([ln for ln in dirty.splitlines() if ln.strip()]) - len(lines))
+                if ignored:
+                    report.append(f"git_dirty_ignored={ignored}")
                 if lines:
                     fails.append("git_dirty:\n" + "\n".join(lines[:40]))
         except Exception as e:

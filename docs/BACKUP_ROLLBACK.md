@@ -21,8 +21,8 @@ Două rotații automate câte **3 variante** (la a 4-a se șterge cea mai veche)
 
 ### Bounce / IMAP invitații
 
-- Poll inbox Zoho la **30 min**: `run_invite_poll_inbox.sh` (marchează lead `bounced` din NDR 552).
-- Dacă NDR propune **adresă nouă** → update email prospect + retransmitere (`dispatch_kind=bounce_rd`); max 1 redirect/lead.
+- Poll inbox Zoho la **30 min**: `run_invite_poll_inbox.sh` (marchează lead `bounced` din NDR 552; dacă NDR propune adresă nouă → update + retransmit `bounce_rd`).
+- Healthcheck: ignoră dirty CRLF / diff gol pe scripturi `deploy/hetzner/*.sh` (nu mai declanșează rollback fals); email „ROLLBACK” doar dacă SHA se schimbă.
 - Backlog one-shot: `EUADOPT_INVITE_IMAP_BACKLOG=1 EUADOPT_INVITE_IMAP_MAX=400 bash .../run_invite_poll_inbox.sh`
 - Raport săptămânal bounce: Luni 09:15 — `run_invite_bounce_weekly_report.sh`
 - Instalare: `bash /opt/eu-adopt/deploy/hetzner/install_invite_poll_inbox_cron.sh`

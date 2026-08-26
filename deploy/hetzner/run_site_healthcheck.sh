@@ -203,6 +203,24 @@ do_rollback() {
       write_repair_state "healthcheck_fail_rollback" "${BEFORE}" "${AFTER}" true
       BODY="$(mktemp "${STATE_DIR}/hc_mail.XXXXXX")"
       chmod 644 "${BODY}" 2>/dev/null || true
+      if [[ "${BEFORE}" == "${AFTER}" ]]; then
+        {
+          echo "EU-Adopt: healthcheck FAIL cosmetic → working tree curățat (același SHA)."
+          echo "sha=${AFTER}"
+          echo "Nu e nevoie de undo — nu s-a schimbat versiunea live."
+          echo
+          echo "--- fail inițial ---"
+          cat "${REPORT}"
+          echo
+          echo "--- după curățare ---"
+          cat "${RECHECK}"
+        } > "${BODY}"
+        send_mail_django "[EU-Adopt] Healthcheck: curățare dirty (fără schimbare SHA)" "${BODY}" || log "email_failed"
+        rm -f "${BODY}" "${REPORT}" "${RECHECK}"
+        log "auto_repair=OK_NOOP_SAME_SHA"
+        echo "=== $(date -Iseconds) site_healthcheck END exit=0 ==="
+        exit 0
+      fi
       {
         echo "EU-Adopt: FAIL detectat → ROLLBACK automat la versiunea bună."
         echo "sha_before=${BEFORE}"
