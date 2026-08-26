@@ -2098,9 +2098,11 @@ class StaffOnboardingInviteLog(models.Model):
 
     DISPATCH_MANUAL = "manual"
     DISPATCH_WAVE = "wave"
+    DISPATCH_BOUNCE_RD = "bounce_rd"  # redirect automat după NDR cu adresă nouă
     DISPATCH_KIND_CHOICES = [
         (DISPATCH_MANUAL, "Bifă manuală"),
         (DISPATCH_WAVE, "Val (filtru)"),
+        (DISPATCH_BOUNCE_RD, "Redirect bounce"),
     ]
 
     lead = models.ForeignKey(

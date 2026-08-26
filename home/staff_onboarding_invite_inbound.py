@@ -41,6 +41,26 @@ _BOUNCE_RECIPIENT_RE = re.compile(
     re.I,
 )
 _LEAD_ID_IN_BODY_RE = re.compile(r"X-EUAdopt-Lead-Id:\s*(\d+)", re.I)
+# NDR / auto-reply care propune o adresă alternativă
+_SUGGESTED_EMAIL_RES = (
+    re.compile(
+        r"(?:try\s+(?:sending\s+)?(?:it\s+)?to|please\s+(?:try\s+)?(?:sending\s+)?to|"
+        r"please\s+use|instead\s+(?:use|try|to)|send\s+(?:it\s+)?(?:instead\s+)?to|"
+        r"new\s+(?:e-?mail|address)\s*(?:is|:)|correct\s+(?:e-?mail|address)\s*(?:is|:)|"
+        r"forward(?:ed)?\s+to|redirect(?:ed)?\s+to|recipient(?:\s+has)?\s+changed(?:\s+to)?|"
+        r"mailbox\s+has\s+moved(?:\s+to)?|use\s+this\s+(?:e-?mail|address)\s*(?:instead)?|"
+        r"adresa\s+(?:corect[aă]|nou[aă])\s*(?:este|:)?|noua\s+adres[aă]\s*(?:este|:)?|"
+        r"folosi[tț]i\s+(?:adresa|e-?mail(?:ul)?))\s*[:=]?\s*<?([A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,})>?",
+        re.I,
+    ),
+    re.compile(
+        r"(?:X-Actual-Recipient|Suggested-Recipient|X-Failed-Recipients-Alternate)\s*:\s*"
+        r"(?:rfc822\s*;\s*)?<?([A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,})>?",
+        re.I,
+    ),
+)
+_GENERIC_EMAIL_RE = re.compile(r"[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}", re.I)
+_OUR_DOMAINS = frozenset({"eu-adopt.ro", "euadopt.ro"})
 
 
 def staff_invite_reply_to_address(lead_id: int) -> str:
@@ -158,6 +178,154 @@ def extract_bounce_recipient_emails(body: str, subject: str = "") -> list[str]:
             continue
         seen.add(em)
         out.append(em)
+    return out
+
+
+def _normalize_candidate_email(raw: str) -> str:
+    em = (raw or "").strip().lower().rstrip(".,;:>)")
+    em = em.lstrip("<").rstrip(">")
+    return em
+
+
+def _is_our_system_email(em: str) -> bool:
+    em = _normalize_candidate_email(em)
+    if not em or "@" not in em:
+        return True
+    local, _, domain = em.partition("@")
+    if domain in _OUR_DOMAINS:
+        return True
+    if local.startswith("invite+") or local in {"mailer-daemon", "postmaster", "noreply", "no-reply"}:
+        return True
+    return False
+
+
+def extract_suggested_redirect_email(
+    body: str,
+    subject: str = "",
+    *,
+    failed_emails: list[str] | None = None,
+    lead_email: str = "",
+) -> str | None:
+    """
+    Din NDR: adresa nouă sugerată (dacă există), diferită de adresa eșuată / lead.
+    Nu tratează „Please try again later” ca redirect.
+    """
+    from home.staff_invite_email_expand import is_plausible_invite_email
+
+    text = f"{subject or ''}\n{body or ''}"
+    failed = {_normalize_candidate_email(e) for e in (failed_emails or []) if e}
+    lead_em = _normalize_candidate_email(lead_email)
+    if lead_em:
+        failed.add(lead_em)
+
+    candidates: list[str] = []
+    for rx in _SUGGESTED_EMAIL_RES:
+        for m in rx.finditer(text):
+            em = _normalize_candidate_email(m.group(1))
+            if em:
+                candidates.append(em)
+
+    for em in candidates:
+        if em in failed or _is_our_system_email(em):
+            continue
+        if not is_plausible_invite_email(em):
+            continue
+        return em
+    return None
+
+
+def apply_bounce_email_redirect(
+    lead: StaffOnboardingLead,
+    new_email: str,
+    *,
+    old_email: str = "",
+    body: str = "",
+    subject: str = "",
+) -> dict:
+    """
+    Actualizează emailul prospectului + încearcă retransmitere invitație.
+    Returnează dict: redirected, resend_outcome, reason, new_email.
+    """
+    from django.test import RequestFactory
+
+    from home.staff_invite_daily_wave import _cron_staff_user
+    from home.staff_invite_email_expand import is_plausible_invite_email
+    from home.staff_onboarding_invite import staff_invite_process_one
+
+    new_em = _normalize_candidate_email(new_email)
+    old_em = _normalize_candidate_email(old_email) or _normalize_candidate_email(lead.email)
+    out: dict = {
+        "redirected": False,
+        "new_email": new_em,
+        "old_email": old_em,
+        "resend_outcome": "",
+        "reason": "",
+    }
+    if lead.imported_user_id:
+        out["reason"] = "already_imported"
+        return out
+    if not is_plausible_invite_email(new_em):
+        out["reason"] = "new_email_invalid"
+        return out
+    if new_em == old_em:
+        out["reason"] = "same_email"
+        return out
+
+    notes = lead.invite_staff_notes or ""
+    marker = f"[BOUNCE-REDIRECT] {old_em} → {new_em}"
+    if marker in notes or f"→ {new_em}" in notes and "[BOUNCE-REDIRECT]" in notes:
+        out["reason"] = "already_redirected"
+        return out
+    # Max 1 redirect automat per lead (evită bucle NDR).
+    if "[BOUNCE-REDIRECT]" in notes:
+        out["reason"] = "redirect_limit"
+        return out
+
+    other = (
+        StaffOnboardingLead.objects.filter(email__iexact=new_em)
+        .exclude(pk=lead.pk)
+        .order_by("pk")
+        .first()
+    )
+    if other:
+        _append_inbound_note(
+            lead,
+            f"[BOUNCE-REDIRECT SKIP] {old_em} → {new_em} (deja pe lead #{other.pk})",
+        )
+        out["reason"] = "email_taken"
+        return out
+
+    lead.email = new_em[:254]
+    # Scoate din bounced ca să poată fi retrimis; cooldown anulat o dată.
+    lead.invite_mail_status = StaffOnboardingLead.INVITE_SENT
+    lead.invite_email_last_sent_at = None
+    lead.save(
+        update_fields=["email", "invite_mail_status", "invite_email_last_sent_at", "updated_at"]
+    )
+    _append_inbound_note(
+        lead,
+        f"{marker} @ {timezone.now():%Y-%m-%d %H:%M} subj={(subject or '')[:60]}",
+    )
+    out["redirected"] = True
+
+    staff = _cron_staff_user()
+    request = RequestFactory().get("/", HTTP_HOST="www.eu-adopt.ro", secure=True)
+    try:
+        outcome = staff_invite_process_one(
+            request,
+            staff,
+            lead,
+            dispatch_kind=StaffOnboardingInviteLog.DISPATCH_BOUNCE_RD,
+        )
+    except Exception:
+        logger.exception("bounce_redirect_resend lead_id=%s new=%s", lead.pk, new_em)
+        outcome = "error"
+    out["resend_outcome"] = outcome or ""
+    if outcome not in ("sent", "simulated"):
+        _append_inbound_note(
+            lead,
+            f"[BOUNCE-REDIRECT RESEND] outcome={outcome or 'empty'} — email actualizat, retrimitere la val/manual",
+        )
     return out
 
 
@@ -307,20 +475,66 @@ def process_inbound_email(
         snippet=snippet[:500],
     )
     applied = False
+    redirect_info: dict = {}
     if lead:
-        applied = apply_inbound_to_lead(lead, kind, from_email=from_addr, subject=subject)
-        if applied:
-            _append_inbound_note(
-                lead,
-                f"[INBOUND {timezone.now():%Y-%m-%d %H:%M}] {kind} de la {from_addr}: {(subject or '')[:80]}",
+        if kind == StaffOnboardingInviteInbound.KIND_BOUNCE:
+            failed = extract_bounce_recipient_emails(body or "", subject or "")
+            suggested = extract_suggested_redirect_email(
+                body or "",
+                subject or "",
+                failed_emails=failed,
+                lead_email=lead.email or "",
             )
+            if suggested:
+                redirect_info = apply_bounce_email_redirect(
+                    lead,
+                    suggested,
+                    old_email=lead.email or "",
+                    body=body or "",
+                    subject=subject or "",
+                )
+                if redirect_info.get("redirected"):
+                    applied = True
+                elif redirect_info.get("reason") in ("already_redirected", "redirect_limit", "same_email"):
+                    applied = False
+                else:
+                    # fără redirect util → marchează bounced ca înainte
+                    applied = apply_inbound_to_lead(
+                        lead, kind, from_email=from_addr, subject=subject
+                    )
+                    if applied:
+                        _append_inbound_note(
+                            lead,
+                            f"[INBOUND {timezone.now():%Y-%m-%d %H:%M}] {kind} de la {from_addr}: "
+                            f"{(subject or '')[:80]} (sugerat {suggested}, skip={redirect_info.get('reason')})",
+                        )
+            else:
+                applied = apply_inbound_to_lead(lead, kind, from_email=from_addr, subject=subject)
+                if applied:
+                    _append_inbound_note(
+                        lead,
+                        f"[INBOUND {timezone.now():%Y-%m-%d %H:%M}] {kind} de la {from_addr}: {(subject or '')[:80]}",
+                    )
+        else:
+            applied = apply_inbound_to_lead(lead, kind, from_email=from_addr, subject=subject)
+            if applied:
+                _append_inbound_note(
+                    lead,
+                    f"[INBOUND {timezone.now():%Y-%m-%d %H:%M}] {kind} de la {from_addr}: {(subject or '')[:80]}",
+                )
     inbound.save()
-    return {
+    result = {
         "kind": kind,
         "lead_id": lead.pk if lead else None,
         "applied": applied,
         "inbound_id": inbound.pk,
     }
+    if redirect_info:
+        result["redirected"] = bool(redirect_info.get("redirected"))
+        result["redirect_email"] = redirect_info.get("new_email") or ""
+        result["redirect_reason"] = redirect_info.get("reason") or ""
+        result["resend_outcome"] = redirect_info.get("resend_outcome") or ""
+    return result
 
 
 def poll_imap_inbox(
@@ -357,6 +571,7 @@ def poll_imap_inbox(
         "skipped_non_bounce": 0,
         "no_lead": 0,
         "errors": 0,
+        "redirects": 0,
         "mode": mode,
     }
 
@@ -434,6 +649,8 @@ def poll_imap_inbox(
                     stats["replies"] += 1
                 elif k == StaffOnboardingInviteInbound.KIND_BOUNCE:
                     stats["bounces"] += 1
+                    if result.get("redirected"):
+                        stats["redirects"] += 1
                 elif k == StaffOnboardingInviteInbound.KIND_OPT_OUT:
                     stats["opt_out"] += 1
                 else:
