@@ -125,6 +125,39 @@ class MediaOutreachTests(TestCase):
         self.assertFalse(ok)
         self.assertIn("radio", reason.lower())
 
+    @override_settings(
+        MEDIA_OUTREACH_CRON_ENABLED=True,
+        MEDIA_OUTREACH_EMAIL_ENABLED=False,
+        MEDIA_OUTREACH_MAX_PER_DAY=20,
+        MEDIA_OUTREACH_CRON_WAVE_SIZE=3,
+        STAFF_INVITE_EMAIL_ENABLED=False,
+    )
+    def test_radio_daily_wave_picks_and_simulates(self):
+        from home.media_outreach_daily_wave import run_media_outreach_radio_daily_wave
+
+        for i in range(5):
+            MediaOutreachProspect.objects.create(
+                media_kind=MediaOutreachProspect.KIND_RADIO,
+                outlet_name=f"Radio Wave {i}",
+                email=f"radio{i}@wave-demo.example",
+            )
+        MediaOutreachProspect.objects.create(
+            media_kind=MediaOutreachProspect.KIND_TV,
+            outlet_name="TV Skip",
+            email="tv@wave-demo.example",
+        )
+        result = run_media_outreach_radio_daily_wave(wave_limit=3, force=True)
+        self.assertFalse(result.skipped)
+        self.assertEqual(result.picked_count, 3)
+        self.assertEqual(result.stats.get("simulated"), 3)
+        self.assertEqual(
+            MediaOutreachInviteLog.objects.filter(
+                dispatch_kind=MediaOutreachInviteLog.DISPATCH_WAVE,
+                outcome=MediaOutreachInviteLog.OUTCOME_DRY_RUN,
+            ).count(),
+            3,
+        )
+
     @override_settings(STAFF_INVITE_EMAIL_ENABLED=False, MEDIA_OUTREACH_EMAIL_ENABLED=None)
     def test_mark_dnc_blocks_send(self):
         p = MediaOutreachProspect.objects.create(

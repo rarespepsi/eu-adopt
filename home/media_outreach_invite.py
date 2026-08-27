@@ -301,7 +301,13 @@ def media_outreach_process_one(
     return "simulated"
 
 
-def media_outreach_process_batch(staff_user, prospects, *, max_count: int | None = None) -> dict[str, int]:
+def media_outreach_process_batch(
+    staff_user,
+    prospects,
+    *,
+    max_count: int | None = None,
+    dispatch_kind: str = MediaOutreachInviteLog.DISPATCH_MANUAL,
+) -> dict[str, int]:
     import time
 
     delay = int(getattr(settings, "MEDIA_OUTREACH_SEND_DELAY_SEC", 0) or 0)
@@ -318,7 +324,7 @@ def media_outreach_process_batch(staff_user, prospects, *, max_count: int | None
             break
         if delay > 0 and smtp_n > 0:
             time.sleep(delay)
-        result = media_outreach_process_one(staff_user, p)
+        result = media_outreach_process_one(staff_user, p, dispatch_kind=dispatch_kind)
         if result == "sent":
             stats["sent"] += 1
             smtp_n += 1
