@@ -37,7 +37,7 @@ SMOKE_CHECKS: list[tuple[str, list[str]]] = [
     ("/signup/colaborator/", ["signup_col_map_pick", "signup_col_map_modal", "safeAutocomplete"]),
     ("/signup/organizatie/", ["signup_org_map_pick", "signup_org_map_modal"]),
     ("/login/", []),
-    ("/termeni/", []),
+    ("/termeni-si-conditii/", []),
     ("/i-love/", []),
 ]
 
