@@ -75,9 +75,10 @@ class MediaOutreachTests(TestCase):
     @override_settings(STAFF_INVITE_EMAIL_ENABLED=False, MEDIA_OUTREACH_EMAIL_ENABLED=None)
     def test_simulate_send(self):
         p = MediaOutreachProspect.objects.create(
-            media_kind=MediaOutreachProspect.KIND_PRESS,
-            outlet_name="Ziar Demo",
-            email="redactie@demo-media.example",
+            media_kind=MediaOutreachProspect.KIND_RADIO,
+            outlet_name="Radio Demo",
+            contact_name="Ana",
+            email="redactie@demo-radio.example",
             max_sends=3,
             cooldown_days=7,
         )
@@ -92,12 +93,40 @@ class MediaOutreachTests(TestCase):
         )
         self.assertEqual(media_outreach_sent_count(p), 0)
 
-    @override_settings(STAFF_INVITE_EMAIL_ENABLED=False, MEDIA_OUTREACH_EMAIL_ENABLED=None)
-    def test_mark_dnc_blocks_send(self):
+    def test_radio_email_template_and_greeting(self):
+        from home.media_outreach_invite import media_outreach_greeting_name, media_outreach_subject_body
+
+        p = MediaOutreachProspect.objects.create(
+            media_kind=MediaOutreachProspect.KIND_RADIO,
+            outlet_name="Radio Moldovei",
+            contact_name="Ioana Popescu",
+            email="ioana@radio.example",
+        )
+        self.assertEqual(media_outreach_greeting_name(p), "Ioana Popescu")
+        subj, body = media_outreach_subject_body(p)
+        self.assertIn("Radio Moldovei", subj)
+        self.assertIn("Bună ziua, Ioana Popescu,", body)
+        self.assertIn("Adrian", body)
+        self.assertIn("eu-adopt.ro", body)
+        self.assertIn("animale-pierdute", body)
+        self.assertIn("+40 73 EUADOPT", body)
+
+    def test_tv_blocked_from_radio_email(self):
         p = MediaOutreachProspect.objects.create(
             media_kind=MediaOutreachProspect.KIND_TV,
             outlet_name="TV Demo",
             email="stiri@tv-demo.example",
+        )
+        ok, reason = media_outreach_can_send(p)
+        self.assertFalse(ok)
+        self.assertIn("radio", reason.lower())
+
+    @override_settings(STAFF_INVITE_EMAIL_ENABLED=False, MEDIA_OUTREACH_EMAIL_ENABLED=None)
+    def test_mark_dnc_blocks_send(self):
+        p = MediaOutreachProspect.objects.create(
+            media_kind=MediaOutreachProspect.KIND_RADIO,
+            outlet_name="Radio DNC",
+            email="stiri@radio-dnc.example",
             outreach_status=MediaOutreachProspect.ST_DNC,
         )
         ok, reason = media_outreach_can_send(p)

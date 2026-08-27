@@ -6806,11 +6806,31 @@ def admin_analysis_media_invite_send_view(request):
     from home.models import MediaOutreachProspect
 
     ids = request.POST.getlist("prospect_id")
-    prospects = list(MediaOutreachProspect.objects.filter(pk__in=ids).order_by("pk"))
+    # Email outreach curent = doar radio (spot audio). TV = clip video separat.
+    prospects = list(
+        MediaOutreachProspect.objects.filter(
+            pk__in=ids,
+            media_kind=MediaOutreachProspect.KIND_RADIO,
+        ).order_by("pk")
+    )
+    skipped_non_radio = (
+        MediaOutreachProspect.objects.filter(pk__in=ids)
+        .exclude(media_kind=MediaOutreachProspect.KIND_RADIO)
+        .count()
+    )
     if not prospects:
-        messages.warning(request, "Niciun prospect bifat.")
+        messages.warning(
+            request,
+            "Niciun prospect radio bifat. Emailul cu spot audio se trimite doar către Radio "
+            "(TV = clip video, separat).",
+        )
         return redirect(reverse("admin_analysis_media"))
     stats = media_outreach_process_batch(request.user, prospects, max_count=len(prospects))
+    if skipped_non_radio:
+        messages.info(
+            request,
+            f"Sărite {skipped_non_radio} bifate non-radio (doar Radio primește spotul audio).",
+        )
     parts = []
     if media_outreach_email_enabled():
         if stats.get("sent"):

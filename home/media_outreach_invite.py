@@ -1,16 +1,23 @@
 """
 Email outreach Audio/TV — același model operațional ca Add USER (cooldown, max sends, jurnal).
+
+Valul curent de email = doar RADIO (spot audio atașat). TV = clip video separat (mai târziu).
 """
 from __future__ import annotations
 
 import logging
+import re
 from datetime import timedelta
+from pathlib import Path
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.utils import timezone
 
-from home.euadopt_public_contact import EUADOPT_PUBLIC_PHONE_DISPLAY
+from home.euadopt_public_contact import (
+    EUADOPT_PUBLIC_PHONE_DISPLAY,
+    EUADOPT_PUBLIC_PHONE_E164,
+)
 from home.models import MediaOutreachInviteLog, MediaOutreachProspect
 from home.staff_invite_email_expand import is_plausible_invite_email
 from home.staff_onboarding_csv import is_placeholder_lead_email
@@ -24,6 +31,12 @@ _TERMINAL = frozenset(
         MediaOutreachProspect.ST_DNC,
     }
 )
+
+# Spot radio (~30s, voce feminină) — atașat la emailurile către posturi radio.
+RADIO_SPOT_REL = Path("static") / "audio" / "eu-adopt-spot-radio-30s-alina.mp3"
+RADIO_SPOT_FILENAME = "EU-Adopt-spot-radio-30s.mp3"
+
+_EMAIL_LOCAL_CLEAN_RE = re.compile(r"[^a-zA-ZăâîșțĂÂÎȘȚ\-_.]+")
 
 
 def media_outreach_email_enabled() -> bool:
@@ -74,8 +87,42 @@ def media_outreach_daily_remaining(now=None) -> int:
     return max(0, media_outreach_max_per_day() - used)
 
 
+def media_outreach_radio_spot_path() -> Path | None:
+    """Cale absolută către MP3-ul spot radio (static din repo)."""
+    base = Path(getattr(settings, "BASE_DIR", Path.cwd()))
+    candidates = [
+        base / RADIO_SPOT_REL,
+        base / "staticfiles" / "audio" / "eu-adopt-spot-radio-30s-alina.mp3",
+    ]
+    for path in candidates:
+        if path.is_file():
+            return path
+    return None
+
+
+def media_outreach_greeting_name(p: MediaOutreachProspect) -> str:
+    """Nume din DB (contact) → outlet → local-part email → gol."""
+    who = (p.contact_name or "").strip()
+    if who:
+        return who
+    outlet = (p.outlet_name or "").strip()
+    if outlet:
+        return outlet
+    em = (p.email or "").strip()
+    if em and "@" in em:
+        local = em.split("@", 1)[0]
+        local = _EMAIL_LOCAL_CLEAN_RE.sub(" ", local).replace(".", " ").replace("_", " ").strip()
+        parts = [w for w in local.split() if len(w) > 1]
+        if parts and not any(ch.isdigit() for ch in "".join(parts)):
+            return " ".join(w[:1].upper() + w[1:].lower() for w in parts[:3])
+    return ""
+
+
 def media_outreach_can_send(p: MediaOutreachProspect, now=None) -> tuple[bool, str]:
     now = now or timezone.now()
+    # Emailul curent = doar radio (spot audio). TV / press = alte materiale.
+    if (p.media_kind or "").strip().lower() != MediaOutreachProspect.KIND_RADIO:
+        return False, "doar radio (spot audio)"
     em = (p.email or "").strip()
     if not em or is_placeholder_lead_email(em):
         return False, "fără email valid"
@@ -100,27 +147,55 @@ def media_outreach_on_cooldown(p: MediaOutreachProspect, now=None) -> bool:
 
 
 def media_outreach_subject_body(p: MediaOutreachProspect) -> tuple[str, str]:
-    who = (p.contact_name or "").strip()
-    greet = f"Stimată doamnă / Stimate domnule {who}," if who else "Stimată redacție,"
-    outlet = (p.outlet_name or "").strip() or "redacția dumneavoastră"
-    kind = p.get_media_kind_display()
-    subject = f"EU-Adopt — propunere parteneriat editorial ({outlet})"
+    who = media_outreach_greeting_name(p)
+    outlet = (p.outlet_name or "").strip() or "postul dumneavoastră"
+    greet = f"Bună ziua, {who}," if who else "Bună ziua,"
+    subject = f"Colaborare EU-Adopt × {outlet} — difuzare spot ↔ promovare pe platformă"
+    phone_line = f"{EUADOPT_PUBLIC_PHONE_DISPLAY} ({EUADOPT_PUBLIC_PHONE_E164})"
     body = (
         f"{greet}\n\n"
-        f"Vă scriu din partea EU-Adopt (https://www.eu-adopt.ro/) — platformă națională "
-        f"și europeană dedicată adopțiilor responsabile, gratuită pentru adăposturi "
-        f"și parteneri din ecosistem.\n\n"
-        f"Propunem un parteneriat editorial cu {outlet} ({kind}): "
-        f"difuzare articol și/sau material audio-video despre adopții și rețeaua EU-Adopt, "
-        f"fără cost pentru redacție.\n\n"
-        f"Putem furniza un brief scurt, date, imagini și un interlocutor pentru interviu, "
-        f"adaptat formatului dumneavoastră.\n\n"
-        f"Dacă sunteți deschiși, răspundeți la acest email și revenim cu detaliile.\n\n"
-        f"Cu respect,\n"
-        f"Echipa EU-Adopt\n"
-        f"https://www.eu-adopt.ro/\n"
+        f"Sunt Adrian, de la EU-Adopt — o platformă națională (și cu deschidere europeană) "
+        f"dedicată animalelor de companie, construită pe o misiune de tip ONG: să legăm "
+        f"adăposturi, organizații, oameni și parteneri din teren, fără costuri de bază "
+        f"pentru cei care salvează și îngrijesc animale.\n\n"
+        f"Ce facem, pe scurt\n"
+        f"Pe eu-adopt.ro aducem într-un singur loc:\n"
+        f"- adopție și anunțuri de animale;\n"
+        f"- adăposturi și ONG-uri;\n"
+        f"- cabinete / clinici veterinare, farmacii, grooming, transport și alte servicii din România;\n"
+        f"- utilități pentru public (inclusiv semnale despre animale pierdute / găsite).\n\n"
+        f"Ajutăm gratuit adăposturile, ONG-urile și mediul de afaceri din domeniu să fie vizibile — "
+        f"pentru că impactul real se vede când oamenii știu unde să caute și pe cine să contacteze.\n\n"
+        f"De ce vă scriem\n"
+        f"Dorim să promovăm platforma către publicul {outlet} — oameni care iubesc animalele "
+        f"și pot adopta, ajuta sau colabora. Avem un spot radio scurt (~30 secunde) pregătit "
+        f"(atașat acestui email).\n\n"
+        f"Despre spot\n"
+        f"Vă rugăm să ne scuzați dacă editarea nu sună la nivelul unui studio profesional: "
+        f"nu suntem profesioniști în producție audio și lucrăm doar noi, fără fonduri de marketing. "
+        f"Spotul este făcut cu mijloace proprii, din dorința de a transmite mesajul clar — "
+        f"misiunea EU-Adopt și invitația pe eu-adopt.ro. Dacă doriți, putem ajusta textul "
+        f"sau lungimea după cerințele postului.\n\n"
+        f"Propunere de colaborare (barter)\n"
+        f"În schimbul a câteva difuzări ale spotului EU-Adopt (program și frecvență de discutat "
+        f"împreună), oferim:\n"
+        f"- reclamă gratuită a postului pe site (vizibilitate pe platformă);\n"
+        f"- afișarea postului ca partener EU-Adopt (mențiune / spațiu dedicat partenerilor media).\n\n"
+        f"Nu cerem buget de media — vrem un parteneriat corect, cu beneficiu reciproc: "
+        f"voi ajutați un proiect cu misiune socială să ajungă la oameni; noi vă dăm vizibilitate "
+        f"în comunitatea animalelor din România.\n\n"
+        f"Linkuri utile:\n"
+        f"- Site: https://eu-adopt.ro/\n"
+        f"- Animale pierdute / găsite: https://eu-adopt.ro/animale-pierdute/\n"
+        f"- Semnalează abuz: https://eu-adopt.ro/semnaleaza-abuz/\n"
+        f"- Prietenul tău (adopții): https://eu-adopt.ro/pets/\n\n"
+        f"Dacă ideea vi se potrivește, rămân disponibil pentru un telefon scurt sau un email de răspuns. "
+        f"Spotul este atașat (MP3, ~30 secunde).\n\n"
+        f"Cu respect și mulțumiri,\n"
+        f"Adrian\n"
+        f"EU-Adopt · https://eu-adopt.ro/\n"
+        f"Telefon / WhatsApp: {phone_line}\n"
         f"contact@eu-adopt.ro\n"
-        f"Telefon / WhatsApp: {EUADOPT_PUBLIC_PHONE_DISPLAY}\n"
     )
     return subject, body
 
@@ -158,6 +233,7 @@ def media_outreach_process_one(
     subj, body = media_outreach_subject_body(p)
     from_email = getattr(settings, "DEFAULT_FROM_EMAIL", None) or "noreply@eu-adopt.ro"
     mail_on = media_outreach_email_enabled()
+    spot = media_outreach_radio_spot_path()
 
     if mail_on:
         try:
@@ -168,6 +244,10 @@ def media_outreach_process_one(
                 to=[em],
                 reply_to=[getattr(settings, "DEFAULT_FROM_EMAIL", from_email)],
             )
+            if spot is not None:
+                msg.attach_file(str(spot), mimetype="audio/mpeg")
+            else:
+                logger.warning("media_outreach: spot radio lipsă (fără atașament) prospect_id=%s", p.pk)
             msg.send(fail_silently=False)
         except Exception as exc:
             logger.exception("media_outreach_send prospect_id=%s", p.pk)
@@ -207,6 +287,7 @@ def media_outreach_process_one(
         subject=subj[:255],
         outcome=MediaOutreachInviteLog.OUTCOME_DRY_RUN,
         dispatch_kind=dispatch_kind,
+        error_message="" if spot else "simulare fără atașament (spot lipsă pe disk)",
     )
     return "simulated"
 

@@ -11,6 +11,7 @@ from urllib.parse import quote
 from django.db.models import Count, Q, QuerySet
 from django.http import HttpRequest
 
+from home.euadopt_public_contact import EUADOPT_PUBLIC_PHONE_DISPLAY
 from home.models import MediaOutreachProspect
 
 CSV_FIELDS = (
@@ -62,21 +63,19 @@ def media_wa_digits(phone: str) -> str:
 
 
 def build_media_outreach_whatsapp_text(p: MediaOutreachProspect) -> str:
-    who = (p.contact_name or "").strip() or "Stimată redacție"
-    outlet = (p.outlet_name or "").strip() or "redacția dumneavoastră"
-    kind = p.get_media_kind_display()
+    who = (p.contact_name or "").strip() or (p.outlet_name or "").strip() or "Stimată redacție"
+    outlet = (p.outlet_name or "").strip() or "postul dumneavoastră"
     return (
         f"Bună ziua, {who},\n\n"
-        f"Scriu din partea EU-Adopt (eu-adopt.ro) — platformă națională/europeană "
-        f"pentru adopții responsabile, gratuită pentru adăposturi și parteneri.\n\n"
-        f"Vă propun un parteneriat editorial cu {outlet} ({kind}): "
-        f"difuzare articol / material audio sau video despre adopții și rețeaua EU-Adopt, "
-        f"fără cost pentru redacție.\n\n"
-        f"Site: https://www.eu-adopt.ro/\n"
-        f"Contact: contact@eu-adopt.ro · 0733 823 678\n\n"
-        f"Dacă sunteți deschiși, revenim cu un brief scurt adaptat formatului dumneavoastră.\n\n"
+        f"Sunt Adrian, de la EU-Adopt (eu-adopt.ro) — platformă națională/europeană "
+        f"pentru animale, cu misiune de tip ONG, gratuită pentru adăposturi și parteneri.\n\n"
+        f"Propunem un parteneriat cu {outlet}: câteva difuzări ale spotului nostru radio (~30s) "
+        f"în schimbul promovării postului pe site (partener media).\n\n"
+        f"Site: https://eu-adopt.ro/\n"
+        f"Contact: contact@eu-adopt.ro · {EUADOPT_PUBLIC_PHONE_DISPLAY}\n\n"
+        f"Dacă sunteți deschiși, vă trimit spotul pe email.\n\n"
         f"Cu respect,\n"
-        f"Echipa EU-Adopt"
+        f"Adrian · EU-Adopt"
     )
 
 
