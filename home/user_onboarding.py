@@ -71,8 +71,7 @@ ONBOARDING_PAGES: dict[str, OnboardingPage] = {
         page_key="publicitate_harta",
         banner_title="Publicitate — hartă tarife",
         banner_text=(
-            "Alegi o casetă pe hartă, vezi detaliile în stânga și o adaugi în coș. "
-            "În pre-lansare, publicitatea poate fi gratuită (limită per cont)."
+            "Alegi o casetă pe hartă, vezi detaliile în stânga și o adaugi în coș."
         ),
         steps=(
             OnboardingStep(
@@ -206,7 +205,7 @@ ONBOARDING_PAGES: dict[str, OnboardingPage] = {
             ),
             OnboardingStep(
                 ".shop-grid",
-                "Produse — click pe card pentru detalii și coș (după lansare).",
+                "Produse — click pe card pentru detalii și coș.",
             ),
         ),
     ),
@@ -214,8 +213,7 @@ ONBOARDING_PAGES: dict[str, OnboardingPage] = {
         page_key="publicitate_cos",
         banner_title="Coș publicitate",
         banner_text=(
-            "Verifici sloturile alese, perioadele și treci la plată / activare. "
-            "În pre-lansare poate fi activare gratuită."
+            "Verifici sloturile alese, perioadele și treci la plată / activare."
         ),
         steps=(
             OnboardingStep(
@@ -288,7 +286,7 @@ ONBOARDING_PAGES: dict[str, OnboardingPage] = {
         banner_title="Coș I Love / general",
         banner_text=(
             "Coșul reunește oferte Servicii și publicitate. "
-            "În pre-lansare finalizezi doar articole gratuite (pub / promovare)."
+            "Verifici liniile și mergi la plată când e disponibilă."
         ),
         steps=(
             OnboardingStep(

@@ -7,34 +7,30 @@ from django.conf import settings
 from home.models import SiteCartItem
 
 PRELAUNCH_SOFT_LOCK_BANNER = (
-    "Etapa pre-lansare: Shop, donații și plățile comerciale sunt temporar închise. "
-    "Publicitatea și promovarea A2 sunt gratuite ca să învățați platforma."
+    "Unele funcții comerciale pot fi temporar indisponibile. "
+    "Secțiunile deschise (adopții, transport etc.) rămân utilizabile."
 )
 
 PRELAUNCH_SOFT_MESSAGES = {
     "shop": (
-        "Shop-ul (produse, magazin foto, personalizate inclusiv autocar/cuști) "
-        "se deschide după lansare. Acum puteți folosi publicitatea gratuită și înscrierea partenerilor."
+        "Shop-ul este temporar indisponibil. "
+        "Poți folosi Prietenul tău, Transport și celelalte secțiuni deschise."
     ),
     "donatii": (
-        "Donațiile și formularele fiscale online se activează după lansare. "
-        "În pre-lansare ne concentrăm pe popularea platformei."
+        "Donațiile online sunt temporar indisponibile. Îți mulțumim pentru interes."
     ),
     "custi": (
-        "Pagina cuști / autocar este temporar închisă în pre-lansare. "
-        "Reveniți după lansarea oficială."
+        "Pagina cuști / autocar este temporar indisponibilă."
     ),
     "checkout": (
-        "Coșul conține articole comerciale (shop, servicii plătite) care nu pot fi finalizate "
-        "în pre-lansare. Eliminați-le sau așteptați lansarea."
+        "Coșul conține articole care nu pot fi finalizate acum. "
+        "Elimină-le sau încearcă din nou mai târziu."
     ),
     "cart_add": (
-        "Nu puteți adăuga acest articol în coș în pre-lansare. "
-        "Shop-ul și ofertele plătite se deschid după lansare."
+        "Nu poți adăuga acest articol în coș momentan."
     ),
     "adopt": (
-        "Butonul „Vreau să adopt” este inactiv în perioada de populare. "
-        "Adopțiile online se deschid după lansarea oficială."
+        "Folosește formularul de pe fișă pentru a contacta proprietarul / adăpostul."
     ),
 }
 
@@ -66,12 +62,12 @@ PRELAUNCH_SOFT_BLOCKED_CART_KINDS = frozenset(
 
 # Hint scurt la prima vizită (cheie localStorage → mesaj RO; pe EU → eu_ui).
 PRELAUNCH_FIRST_HINTS: dict[str, str] = {
-    "mypet": "MyPet: adaugă animale publicate, apoi poți promova gratuit un câine în HOME (1 promovare/cont).",
-    "publicitate_harta": "Publicitate: alege o casetă pe hartă, adaugă în coș și activează gratuit (1 casetă/cont în pre-lansare).",
-    "publicitate_cos": "Coș publicitate: transferă în Coș general → Plată → activare gratuită.",
-    "collab_offers_control": "Oferte partener: publici servicii/produse din Magazinul meu; fără plafon de număr.",
+    "mypet": "MyPet: adaugă animale publicate, apoi poți promova un câine în HOME.",
+    "publicitate_harta": "Publicitate: alege o casetă pe hartă, adaugă în coș și finalizează comanda.",
+    "publicitate_cos": "Coș publicitate: transferă în Coș general → Plată → activare.",
+    "collab_offers_control": "Oferte partener: publici servicii/produse din Magazinul meu.",
     "pets_all": "Prietenul tău: răsfoiește anunțuri; din fișă poți promova un animal în grila Acasă.",
-    "i_love_cos": "Coș: în pre-lansare finalizează doar publicitate sau promovare A2 (gratuit).",
+    "i_love_cos": "Coș: verifică articolele și continuă la plată când e gata.",
 }
 
 PRELAUNCH_FIRST_HINT_UI_KEYS: dict[str, str] = {

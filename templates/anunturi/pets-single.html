@@ -1876,7 +1876,7 @@
 														aria-label="{% if pet_adopt_demo_listing %}{% if eu_site_active %}DEMO{% else %}Demonstrativ DEMO{% endif %}{% elif eu_site_active %}{{ eu_ui.pet_want_adopt }}{% else %}Vreau să adopt{% endif %}"
 													>
 														<span class="pet-adopt-corner__label">{% if pet_adopt_demo_listing %}DEMO{% elif eu_site_active %}{{ eu_ui.pet_want_adopt }}{% else %}VREAU SĂ ADOPT{% endif %}</span>
-														{% if pet_adopt_demo_listing %}<span class="pet-adopt-corner__note">{% if eu_site_active %}{{ eu_ui.pet_adopt_demo_note }}{% else %}Doar demonstrativ{% endif %}</span>{% elif pet_adopt_inactive_populare %}<span class="pet-adopt-corner__note">{% if eu_site_active %}{{ eu_ui.pet_adopt_inactive_note }}{% else %}Inactiv în perioada de populare{% endif %}</span>{% endif %}
+														{% if pet_adopt_demo_listing %}<span class="pet-adopt-corner__note">{% if eu_site_active %}{{ eu_ui.pet_adopt_demo_note }}{% else %}Doar demonstrativ{% endif %}</span>{% elif pet_adopt_inactive_populare %}<span class="pet-adopt-corner__note">{% if eu_site_active %}{{ eu_ui.pet_adopt_inactive_note }}{% else %}Temporar inactiv{% endif %}</span>{% endif %}
 													</div>
 													{% endif %}
 												</div>
@@ -2507,7 +2507,7 @@
 				var isAuth = document.body.getAttribute("data-user-authenticated") === "true";
 				function showAdoptInactiveMessage() {
 					showPetAppMessage(
-						adoptInactiveMsg || "Butonul de adopție este inactiv în perioada de populare."
+						adoptInactiveMsg || "Adopția este temporar indisponibilă pentru acest anunț."
 					);
 				}
 				async function submitAdoptRequest() {

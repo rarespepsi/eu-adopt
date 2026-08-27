@@ -170,7 +170,7 @@
 					<button type="button" class="pub-qty-chip" data-days="32">32</button>
 					<button type="button" class="pub-qty-chip" data-days="48">48</button>
 				</div>
-				<p id="pubPrelaunchDurationHint" class="pub-prelaunch-duration-hint" hidden>Durată: <strong>7 zile</strong> (1 bloc — pre-lansare)</p>
+				<p id="pubPrelaunchDurationHint" class="pub-prelaunch-duration-hint" hidden>Durată: <strong>7 zile</strong> (1 bloc)</p>
 				<label for="pubStartDate">Perioada publicitate:</label>
 				<div class="pub-start-row">
 					<input id="pubStartDate" type="hidden" />
@@ -2438,7 +2438,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	} catch (_preErr) {}
 	function pubMoneyLabel(amount) {
 		var n = Number(amount || 0);
-		if (pubPrelaunchFree && n <= 0) return "Gratuit (pre-lansare)";
+		if (pubPrelaunchFree && n <= 0) return "Gratuit";
 		return n + " lei";
 	}
 	const grid = document.getElementById("pubSlotGrid");
@@ -3271,11 +3271,11 @@ document.addEventListener("DOMContentLoaded", function () {
 		addBtn.addEventListener("click", function () {
 			if (!selected) return;
 			if (pubPrelaunchFree && pubMaxSlotsPerUser && cart.length >= pubMaxSlotsPerUser) {
-				window.alert("În pre-lansare: maximum " + pubMaxSlotsPerUser + " casetă publicitară per cont.");
+				window.alert("Maximum " + pubMaxSlotsPerUser + " casetă publicitară per cont.");
 				return;
 			}
 			if (pubSlotsRemaining !== null && pubSlotsRemaining <= 0) {
-				window.alert("Ați folosit deja caseta publicitară gratuită din pre-lansare.");
+				window.alert("Ați folosit deja caseta publicitară gratuită disponibilă.");
 				return;
 			}
 			var noteTrim = (noteEl && noteEl.value) ? String(noteEl.value).trim() : "";

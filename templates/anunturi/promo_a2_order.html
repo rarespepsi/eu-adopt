@@ -235,7 +235,7 @@
 					</div>
 				</div>
 			</div>
-			<p class="promo-a2-note">{% if eu_site_active %}{{ eu_ui.promo_total }}{% else %}Total{% endif %}: <strong>{{ promo_price_label }}</strong>.{% if promo_prelaunch_free %} {% if eu_site_active %}{{ eu_ui.promo_total_free }}{% else %}Activare gratuită în pre-lansare.{% endif %}{% else %} {% if eu_site_active %}{{ eu_ui.promo_total_paid }}{% else %}Metoda și plata se stabilesc la finalizarea comenzii din coș.{% endif %}{% endif %}</p>
+			<p class="promo-a2-note">{% if eu_site_active %}{{ eu_ui.promo_total }}{% else %}Total{% endif %}: <strong>{{ promo_price_label }}</strong>.{% if promo_prelaunch_free %} {% if eu_site_active %}{{ eu_ui.promo_total_free }}{% else %}Activare gratuită pentru această comandă.{% endif %}{% else %} {% if eu_site_active %}{{ eu_ui.promo_total_paid }}{% else %}Metoda și plata se stabilesc la finalizarea comenzii din coș.{% endif %}{% endif %}</p>
 			<div class="promo-a2-actions">
 				<button type="submit" class="promo-a2-btn">{% if eu_site_active %}{{ eu_ui.promo_add_cart }}{% else %}Adaugă în coș{% endif %}</button>
 				<a href="{{ promo_flow_exit_url }}" class="promo-a2-btn promo-a2-btn--ghost">{{ promo_flow_exit_label }}</a>

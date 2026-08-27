@@ -1,6 +1,6 @@
 {% if prelaunch_mode %}
 <p class="prelaunch-disclaimer" role="status">
-	<strong>{% if eu_site_active %}{{ eu_ui.prelaunch_disc_title }}{% else %}Perioadă PRE-LAUNCH.{% endif %}</strong>
-	{% if eu_site_active %}{{ eu_ui.prelaunch_disc_body }}{% else %}Platforma EU-Adopt se pregătește pentru lansarea oficială. Accesul este permis doar utilizatorilor cu cont existent. Înregistrarea publică este temporar dezactivată; conturile noi se creează doar prin invitație echipă.{% endif %}
+	<strong>{% if eu_site_active %}{{ eu_ui.prelaunch_disc_title }}{% else %}EU-Adopt{% endif %}</strong>
+	{% if eu_site_active %}{{ eu_ui.prelaunch_disc_body }}{% else %}Autentifică-te cu contul tău pentru a gestiona anunțurile și preferințele. Conturile noi se creează din linkul de înregistrare.{% endif %}
 </p>
 {% endif %}

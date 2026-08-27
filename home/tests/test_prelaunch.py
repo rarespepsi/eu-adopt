@@ -101,7 +101,8 @@ class PrelaunchEnabledTests(TestCase):
         c = Client()
         r = c.get(reverse("login"))
         self.assertEqual(r.status_code, 200)
-        self.assertIn(b"PRE-LAUNCH", r.content)
+        self.assertIn(b"EU-Adopt", r.content)
+        self.assertIn(b"login-card", r.content)
 
     def test_login_page_has_no_site_navbar(self):
         """Intra: fără A0 / hamburger — doar formular login (+ panouri pre-lansare pe desktop)."""

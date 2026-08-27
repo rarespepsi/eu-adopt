@@ -51,7 +51,7 @@
 						data-mypet-add-base="{% url 'mypet_add' %}"
 					>{% if eu_site_active %}{{ eu_ui.mypet_add }}{% else %}Adaugă un pet{% endif %}</a>
 					{% else %}
-					<span class="mypet-btn mypet-btn-secondary mypet-btn-add is-disabled" title="Limită populare: {{ population_animal_max }} animale">Adaugă un pet</span>
+					<span class="mypet-btn mypet-btn-secondary mypet-btn-add is-disabled" title="Limită: {{ population_animal_max }} animale">Adaugă un pet</span>
 					{% endif %}
 					<div class="mypet-btn mypet-btn-secondary mypet-btn-counter">
 						MyPet {{ mypet_count|default:0 }} / Adoptați {{ adopted_count|default:0 }} / Total {{ total_count|default:0 }}

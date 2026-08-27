@@ -69,7 +69,7 @@
 								{% csrf_token %}
 								<button type="submit" class="ilove-cart-pay-btn">ACHIZIȚIONEAZĂ</button>
 							</form>
-							<p class="ilove-cart-pay-hint">Pre-populare: activare gratuită → treci direct la completarea materialelor casetei.</p>
+							<p class="ilove-cart-pay-hint">Activare gratuită → treci direct la completarea materialelor casetei.</p>
 							{% else %}
 							<a href="{% url 'site_cart_checkout' %}" class="ilove-cart-pay-btn">PLATESTE</a>
 							<p class="ilove-cart-pay-hint">Completezi datele din fișă, alegi modul de plată; echipa primește cererea și te contactează pentru finalizare.</p>

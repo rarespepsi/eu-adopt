@@ -7,9 +7,9 @@ from decimal import Decimal
 from django.conf import settings
 from django.utils import timezone
 
-PRELAUNCH_FREE_BANNER = "Gratuit — etapă pre-lansare"
+PRELAUNCH_FREE_BANNER = "Gratuit"
 PUB_PRELAUNCH_NUDGE_TEXT = (
-    "INFO: În perioada de populare, casetele de publicitate sunt gratuite."
+    "INFO: Casetele de publicitate sunt disponibile pe harta de tarife."
 )
 PUB_PRELAUNCH_NUDGE_INTERVAL = 3
 
@@ -76,7 +76,7 @@ def promo_a2_price_lei() -> int:
 def promo_a2_price_label() -> str:
     p = promo_a2_price_lei()
     if p <= 0:
-        return "Gratuit (pre-lansare)"
+        return "Gratuit"
     return f"{p} lei"
 
 
@@ -176,11 +176,11 @@ def publicitate_user_can_reserve_slots(user, additional_lines: int = 1) -> tuple
     if remaining is None:
         return True, ""
     if additional_lines > cap:
-        return False, f"În pre-lansare puteți rezerva maximum {cap} casetă publicitară per cont."
+        return False, f"Puteți rezerva maximum {cap} casetă publicitară per cont."
     if additional_lines > remaining:
         if remaining <= 0:
-            return False, "Ați folosit deja caseta publicitară gratuită din pre-lansare (1 casetă/cont)."
-        return False, f"Mai puteți rezerva doar {remaining} casetă/casete publicitară în pre-lansare."
+            return False, "Ați folosit deja caseta publicitară gratuită disponibilă (1 casetă/cont)."
+        return False, f"Mai puteți rezerva doar {remaining} casetă/casete publicitară."
     return True, ""
 
 
@@ -201,12 +201,12 @@ def promo_a2_user_can_order(user) -> tuple[bool, str]:
         return True, ""
     used = promo_a2_user_orders_count(user)
     if used >= cap:
-        return False, "În pre-lansare puteți activa o singură promovare A2 per cont."
+        return False, "Puteți activa o singură promovare A2 per cont cu oferta curentă."
     from home.models import SiteCartItem
 
     if SiteCartItem.objects.filter(user=user, kind=SiteCartItem.KIND_PROMO_A2).exists():
         if used + 1 > cap:
-            return False, "În pre-lansare puteți activa o singură promovare A2 per cont."
+            return False, "Puteți activa o singură promovare A2 per cont cu oferta curentă."
     return True, ""
 
 
