@@ -110,6 +110,10 @@ class MediaOutreachTests(TestCase):
         self.assertIn("eu-adopt.ro", body)
         self.assertIn("animale-pierdute", body)
         self.assertIn("+40 73 EUADOPT", body)
+        self.assertIn("pre-programare", body)
+        self.assertIn("sigla", body)
+        self.assertIn("benzile cursive", body)
+        self.assertIn("acord scurt", body)
 
     def test_tv_blocked_from_radio_email(self):
         p = MediaOutreachProspect.objects.create(
