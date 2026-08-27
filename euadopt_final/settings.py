@@ -140,6 +140,15 @@ COLLAB_PRELAUNCH_MAX_OFFERS_PER_USER = int(_os.environ.get("EUADOPT_COLLAB_MAX_O
 # PF: maxim câini publicabili (pisici / altele fără acest plafon).
 PF_MAX_DOG_LISTINGS = int(_os.environ.get("EUADOPT_PF_MAX_DOGS", "10") or "10")
 PROMO_A2_BASE_PRICE_LEI = 10
+# Adopție simplă (formular email pe fișă). Independent de pre-lansare.
+# 1 = forțat on · 0 = forțat off · gol = ca soft-lock (comportament vechi populare).
+_simple_adopt = _os.environ.get("EUADOPT_SIMPLE_ADOPTION", "").strip().lower()
+if _simple_adopt in ("0", "false", "no", "off"):
+    SIMPLE_ADOPTION_ENABLED = False
+elif _simple_adopt in ("1", "true", "yes", "on"):
+    SIMPLE_ADOPTION_ENABLED = True
+else:
+    SIMPLE_ADOPTION_ENABLED = None
 # Blocare soft Shop / donații / coș comercial în pre-lansare (implicit = PRELAUNCH_MODE). Staff poate testa.
 _mon_soft = _os.environ.get("EUADOPT_PRELAUNCH_MONETIZATION_SOFT_LOCK", "").strip().lower()
 if _mon_soft in ("0", "false", "no", "off"):

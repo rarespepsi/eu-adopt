@@ -12655,10 +12655,25 @@ def pet_adoption_request_view(request, pk: int):
     if is_demo_animal_listing(pet):
         return JsonResponse({"ok": False, "error": DEMO_ADOPTION_INACTIVE_MESSAGE}, status=403)
 
+    from home.population_simple_adoption import population_simple_adoption_active_for_user
     from home.prelaunch_soft_lock import (
         prelaunch_soft_lock_active_for_user,
         prelaunch_soft_message,
     )
+
+    # Adopție simplă activă → fluxul vechi (AdoptionRequest) rămâne închis.
+    if population_simple_adoption_active_for_user(request.user):
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": eu_or_ro(
+                    request,
+                    "pet_err_use_simple_form",
+                    "Folosește formularul de pe fișă („Vreau să adopt”).",
+                ),
+            },
+            status=403,
+        )
 
     if prelaunch_soft_lock_active_for_user(request.user):
         return JsonResponse(

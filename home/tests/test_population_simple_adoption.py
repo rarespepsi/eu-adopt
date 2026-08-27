@@ -1,4 +1,4 @@
-"""Formular adopție simplu în etapa de populare (prelaunch soft lock)."""
+"""Formular adopție simplu (EUADOPT_SIMPLE_ADOPTION / soft lock legacy)."""
 
 import json
 import uuid
@@ -18,14 +18,15 @@ from home.population_simple_adoption import (
 
 User = get_user_model()
 
-_SOFT_LOCK = dict(
-    PRELAUNCH_MODE=True,
-    PRELAUNCH_MONETIZATION_SOFT_LOCK=True,
+_SIMPLE_ON = dict(
+    SIMPLE_ADOPTION_ENABLED=True,
+    PRELAUNCH_MODE=False,
+    PRELAUNCH_MONETIZATION_SOFT_LOCK=False,
     POPULATION_ONBOARDING_ENABLED=False,
 )
 
 
-@override_settings(**_SOFT_LOCK)
+@override_settings(**_SIMPLE_ON)
 class PopulationSimpleAdoptionTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -104,7 +105,7 @@ class PopulationSimpleAdoptionTests(TestCase):
 
     def test_ficha_shows_active_button_not_inactive(self):
         self.client.force_login(self.adopter)
-        resp = self.client.get(reverse("pets_single", args=[self.pet.pk]))
+        resp = self.client.get(reverse("pets_single", args=[self.pet.pk]), follow=True)
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "VREAU SĂ ADOPT")
         self.assertNotContains(resp, "Inactiv în perioada de populare")
@@ -201,7 +202,7 @@ class PopulationSimpleAdoptionTests(TestCase):
         self.assertFalse(ap.can_adopt_animals)
 
         self.client.force_login(collab)
-        resp = self.client.get(reverse("pets_single", args=[self.pet.pk]))
+        resp = self.client.get(reverse("pets_single", args=[self.pet.pk]), follow=True)
         self.assertEqual(resp.status_code, 200)
         self.assertNotContains(resp, "VREAU SĂ ADOPT")
 

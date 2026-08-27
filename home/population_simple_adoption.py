@@ -1,8 +1,12 @@
 """
-Adopție simplă în etapa de populare: formular + email către adăpost/proprietar.
+Adopție simplă: formular + email către adăpost/proprietar.
 
-Activ când pre-lansarea blochează fluxul complet (prelaunch soft lock, fără bypass staff).
-La lansare (soft lock off) revine traseul normal din pet_adoption_request_view.
+Activare:
+- EUADOPT_SIMPLE_ADOPTION=1 → forțat on (site normal, fără pre-lansare)
+- EUADOPT_SIMPLE_ADOPTION=0 → forțat off (flux complet)
+- gol → ca soft-lock pre-lansare (comportament vechi)
+
+Staff/superuser: flux complet (bypass).
 """
 
 from __future__ import annotations
@@ -16,11 +20,21 @@ from django.urls import reverse
 
 from home.mail_helpers import adoption_pet_public_email_lines, email_subject_for_user, send_mail_text_and_html
 from home.models import AnimalListing, UserProfile
-from home.prelaunch_soft_lock import prelaunch_soft_lock_active_for_user
+from home.prelaunch_soft_lock import (
+    prelaunch_soft_lock_active_for_user,
+    prelaunch_soft_lock_staff_bypass,
+)
 
 
 def population_simple_adoption_active_for_user(user) -> bool:
-    """Formular email simplu (populare) vs flux complet adopție."""
+    """Formular email simplu vs flux complet adopție."""
+    if not user or not getattr(user, "is_authenticated", False):
+        return False
+    if prelaunch_soft_lock_staff_bypass(user):
+        return False
+    explicit = getattr(settings, "SIMPLE_ADOPTION_ENABLED", None)
+    if explicit is not None:
+        return bool(explicit)
     return prelaunch_soft_lock_active_for_user(user)
 
 
