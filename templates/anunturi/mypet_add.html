@@ -13,9 +13,9 @@
 			<div class="mypet-fisa-photo-slot mypet-fisa-photo-1 {% if has_photo_1 %}has-photo{% endif %}">
 				<div class="mypet-fisa-photo-preview" id="preview_photo_1" aria-hidden="true">
 					{% if listing and listing.photo_1 %}<img src="{{ listing.photo_1.url }}" alt="Poza 1" class="img-crop" />{% endif %}
-					<span class="mypet-fisa-photo-hint">Max 2 MB, JPEG</span>
+					<span class="mypet-fisa-photo-hint">Max 2 MB · JPEG, PNG, HEIC</span>
 				</div>
-				<input type="file" name="photo_1" form="mypet-add-form" accept="image/jpeg,image/jpg" class="mypet-fisa-photo-input-hidden" id="id_photo_1" />
+				<input type="file" name="photo_1" form="mypet-add-form" accept="image/*,.heic,.heif" class="mypet-fisa-photo-input-hidden" id="id_photo_1" />
 				<div class="mypet-fisa-photo-actions">
 					<button type="button" class="mypet-fisa-zoom-btn" data-slot="1" data-action="in" title="Mărește">+</button>
 					<label for="id_photo_1" class="mypet-fisa-photo-btn">Alege poza</label>
@@ -25,9 +25,9 @@
 			<div class="mypet-fisa-photo-slot mypet-fisa-photo-2 {% if has_photo_2 %}has-photo{% endif %}">
 				<div class="mypet-fisa-photo-preview" id="preview_photo_2" aria-hidden="true">
 					{% if listing and listing.photo_2 %}<img src="{{ listing.photo_2.url }}" alt="Poza 2" class="img-crop" />{% endif %}
-					<span class="mypet-fisa-photo-hint">Max 2 MB, JPEG</span>
+					<span class="mypet-fisa-photo-hint">Max 2 MB · JPEG, PNG, HEIC</span>
 				</div>
-				<input type="file" name="photo_2" form="mypet-add-form" accept="image/jpeg,image/jpg" class="mypet-fisa-photo-input-hidden" id="id_photo_2" />
+				<input type="file" name="photo_2" form="mypet-add-form" accept="image/*,.heic,.heif" class="mypet-fisa-photo-input-hidden" id="id_photo_2" />
 				<div class="mypet-fisa-photo-actions">
 					<button type="button" class="mypet-fisa-zoom-btn" data-slot="2" data-action="in" title="Mărește">+</button>
 					<label for="id_photo_2" class="mypet-fisa-photo-btn">Alege poza</label>
@@ -37,9 +37,9 @@
 			<div class="mypet-fisa-photo-slot mypet-fisa-photo-3 {% if has_photo_3 %}has-photo{% endif %}">
 				<div class="mypet-fisa-photo-preview" id="preview_photo_3" aria-hidden="true">
 					{% if listing and listing.photo_3 %}<img src="{{ listing.photo_3.url }}" alt="Poza 3" class="img-crop" />{% endif %}
-					<span class="mypet-fisa-photo-hint">Max 2 MB, JPEG</span>
+					<span class="mypet-fisa-photo-hint">Max 2 MB · JPEG, PNG, HEIC</span>
 				</div>
-				<input type="file" name="photo_3" form="mypet-add-form" accept="image/jpeg,image/jpg" class="mypet-fisa-photo-input-hidden" id="id_photo_3" />
+				<input type="file" name="photo_3" form="mypet-add-form" accept="image/*,.heic,.heif" class="mypet-fisa-photo-input-hidden" id="id_photo_3" />
 				<div class="mypet-fisa-photo-actions">
 					<button type="button" class="mypet-fisa-zoom-btn" data-slot="3" data-action="in" title="Mărește">+</button>
 					<label for="id_photo_3" class="mypet-fisa-photo-btn">Alege poza</label>
@@ -54,7 +54,7 @@
 						{% endif %}
 						<label for="id_video" class="mypet-fisa-video-btn-overlay" id="video_btn_label">{% if listing and listing.video %}Schimbă video{% else %}Alege video{% endif %}</label>
 					</div>
-					<input type="file" id="id_video" name="video" form="mypet-add-form" accept="video/mp4,video/webm" class="mypet-fisa-video-input-hidden" />
+					<input type="file" id="id_video" name="video" form="mypet-add-form" accept="video/*,.mp4,.mov,.m4v,.webm" class="mypet-fisa-video-input-hidden" />
 					<span class="mypet-fisa-video-hint" id="video_info_hint" {% if listing and listing.video %}style="display:none;"{% endif %}>MP4, max. 30 sec, max. 10 MB</span>
 					<a href="https://clideo.com/cut-video" target="_blank" rel="noopener noreferrer" class="mypet-fisa-video-link" id="video_preprocess_link" {% if listing and listing.video %}style="display:none;"{% endif %}>Taie sau micșorează video înainte</a>
 				</div>
@@ -84,7 +84,7 @@
 					ÎNAPOI LA MYPET
 				</a>
 				<div class="mypet-fisa-photo-reminder" id="mypet-fisa-photo-reminder" role="alert" aria-live="polite" style="display: none;">
-					Salvează pozele: apasă <strong>Salvează</strong> la fiecare poză alesă, apoi <strong>Salvează fișa</strong>.
+					Se pregătesc pozele… apoi apasă din nou <strong>Salvează fișa</strong>.
 				</div>
 			</div>
 		</div>
@@ -566,11 +566,14 @@
 	}
 	.mypet-fisa-video-input-hidden {
 		position: absolute;
-		width: 0.1px;
-		height: 0.1px;
-		opacity: 0;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
 		overflow: hidden;
-		z-index: -1;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 	.mypet-fisa-video-hint {
 		font-size: 0.56rem;
@@ -650,11 +653,14 @@
 
 	.mypet-fisa-photo-input-hidden {
 		position: absolute;
-		width: 0.1px;
-		height: 0.1px;
-		opacity: 0;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
 		overflow: hidden;
-		z-index: -1;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 
 	.mypet-fisa-photo-btn {
@@ -1560,6 +1566,81 @@
 (function() {
 	var croppers = { 1: null, 2: null, 3: null };
 	var savedBlobs = { 1: null, 2: null, 3: null };
+	var isTouchDevice = false;
+	try { isTouchDevice = window.matchMedia("(hover: none) and (pointer: coarse)").matches; } catch (eTouch) {}
+
+	function isAcceptableImageFile(file) {
+		if (!file) return false;
+		var t = (file.type || "").toLowerCase();
+		if (t.indexOf("image/") === 0) return true;
+		return /\.(jpe?g|png|gif|webp|heic|heif|bmp)$/i.test(file.name || "");
+	}
+	function isAcceptableVideoFile(file) {
+		if (!file) return false;
+		var t = (file.type || "").toLowerCase();
+		if (t.indexOf("video/") === 0) return true;
+		return /\.(mp4|webm|mov|m4v|3gp|mkv)$/i.test(file.name || "");
+	}
+	function setPhotoHint(preview, text) {
+		if (!preview) return;
+		var hint = preview.querySelector(".mypet-fisa-photo-hint");
+		if (hint) hint.textContent = text;
+		else {
+			hint = document.createElement("span");
+			hint.className = "mypet-fisa-photo-hint";
+			hint.textContent = text;
+			preview.appendChild(hint);
+		}
+	}
+	function applySavedPhotoPreview(n, blob, preview, slot, labelBtn) {
+		if (!preview || !blob) return;
+		var img = document.createElement("img");
+		img.className = "img-crop";
+		img.src = URL.createObjectURL(blob);
+		img.alt = "Poza " + n;
+		img.style.display = "block";
+		img.style.width = "100%";
+		img.style.height = "100%";
+		img.style.objectFit = "cover";
+		preview.innerHTML = "";
+		preview.appendChild(img);
+		setPhotoHint(preview, "Max 2 MB · JPEG, PNG, HEIC");
+		if (slot) {
+			slot.classList.add("has-photo", "saved");
+		}
+		if (labelBtn) {
+			labelBtn.textContent = "Alege poza";
+			labelBtn.setAttribute("for", "id_photo_" + n);
+		}
+		checkAndHidePhotoReminder();
+	}
+	function compressImageFileToJpeg(file, done) {
+		var reader = new FileReader();
+		reader.onerror = function() { done(null); };
+		reader.onload = function(ev) {
+			var img = new Image();
+			img.onerror = function() { done(null); };
+			img.onload = function() {
+				var maxDim = 1600;
+				var w = img.naturalWidth || img.width;
+				var h = img.naturalHeight || img.height;
+				if (!w || !h) { done(null); return; }
+				if (w > maxDim || h > maxDim) {
+					if (w >= h) { h = Math.round(h * maxDim / w); w = maxDim; }
+					else { w = Math.round(w * maxDim / h); h = maxDim; }
+				}
+				var canvas = document.createElement("canvas");
+				canvas.width = w;
+				canvas.height = h;
+				var ctx = canvas.getContext("2d");
+				if (!ctx) { done(null); return; }
+				ctx.drawImage(img, 0, 0, w, h);
+				canvas.toBlob(function(blob) { done(blob); }, "image/jpeg", 0.9);
+			};
+			img.src = ev.target.result;
+		};
+		reader.readAsDataURL(file);
+	}
 	var form = document.getElementById("mypet-add-form");
 	if (!form) return;
 	var isNewListing = {% if listing %}false{% else %}true{% endif %};
@@ -1900,26 +1981,9 @@
 		if (!canvas) return;
 		canvas.toBlob(function(blob) {
 			savedBlobs[n] = blob;
-			var img = document.createElement("img");
-			img.className = "img-crop";
-			img.src = URL.createObjectURL(blob);
-			img.alt = "Poza " + n;
-			img.style.display = "block";
-			img.style.width = "100%";
-			img.style.height = "100%";
-			img.style.objectFit = "cover";
-			preview.innerHTML = "";
-			preview.appendChild(img);
-			var hint = document.createElement("span");
-			hint.className = "mypet-fisa-photo-hint";
-			hint.textContent = "Max 2 MB, JPEG";
-			preview.appendChild(hint);
 			destroyCropper(n);
 			clearCropTouchHint(preview);
-			slot.classList.add("saved");
-			var lab = slot.querySelector("label.mypet-fisa-photo-btn");
-			if (lab) { lab.textContent = "Alege poza"; lab.setAttribute("for", "id_photo_" + n); }
-			checkAndHidePhotoReminder();
+			applySavedPhotoPreview(n, blob, preview, slot, slot && slot.querySelector("label.mypet-fisa-photo-btn"));
 		}, "image/jpeg", 0.9);
 	}
 
@@ -1942,14 +2006,10 @@
 
 		if (labelBtn) {
 			labelBtn.addEventListener("click", function(e) {
-				e.preventDefault();
 				if (!this.getAttribute("for")) {
-					var s = this.closest(".mypet-fisa-photo-slot");
-					var num = s && (s.classList.contains("mypet-fisa-photo-1") ? 1 : s.classList.contains("mypet-fisa-photo-2") ? 2 : s.classList.contains("mypet-fisa-photo-3") ? 3 : 0);
-					if (num) freezeSlot(num);
-					return;
+					e.preventDefault();
+					freezeSlot(n);
 				}
-				input.click();
 			});
 		}
 
@@ -1961,10 +2021,30 @@
 			if (slot) { slot.classList.remove("has-photo"); slot.classList.remove("saved"); }
 			setSlotLabel("Alege poza");
 			var file = this.files && this.files[0];
-			if (!file || !file.type.match(/^image\//)) return;
+			if (!file || !isAcceptableImageFile(file)) {
+				if (file) {
+					alert("Format neacceptat. Folosește o poză (JPEG, PNG sau HEIC) sau încearcă alt browser.");
+				}
+				this.value = "";
+				return;
+			}
 			if (slot) slot.classList.add("has-photo");
-			setSlotLabel("Salvează");
 
+			if (isTouchDevice) {
+				compressImageFileToJpeg(file, function(blob) {
+					if (!blob) {
+						alert("Nu am putut citi poza de pe telefon. Încearcă altă poză sau salvează-o ca JPEG în galerie.");
+						input.value = "";
+						if (slot) slot.classList.remove("has-photo");
+						return;
+					}
+					savedBlobs[n] = blob;
+					applySavedPhotoPreview(n, blob, preview, slot, labelBtn);
+				});
+				return;
+			}
+
+			setSlotLabel("Salvează");
 			var img = document.createElement("img");
 			img.className = "img-crop";
 			img.src = URL.createObjectURL(file);
@@ -2016,6 +2096,13 @@
 					});
 				}
 				window.requestAnimationFrame(startCropper);
+			} else {
+				compressImageFileToJpeg(file, function(blob) {
+					if (blob) {
+						savedBlobs[n] = blob;
+						applySavedPhotoPreview(n, blob, preview, slot, labelBtn);
+					}
+				});
 			}
 		});
 	}
@@ -2036,15 +2123,13 @@
 			if (videoPreprocessLink) videoPreprocessLink.style.display = show ? "inline-block" : "none";
 		}
 		function setLabelState(state) {
-			// state: "add" | "save"
 			if (state === "save") {
 				videoLabel.textContent = "Salvează video";
 				videoLabel.removeAttribute("for");
 				videoSaved = false;
 				setVideoPreInfoVisible(false);
 			} else {
-				// "add" = gata de ales/înlocuit video
-				videoLabel.textContent = videoPreview.classList.contains("has-video") ? "Schimbă video" : "Adaugă video";
+				videoLabel.textContent = videoPreview.classList.contains("has-video") ? "Schimbă video" : "Alege video";
 				videoLabel.setAttribute("for", "id_video");
 				videoSaved = true;
 				setVideoPreInfoVisible(!videoPreview.classList.contains("has-video"));
@@ -2073,7 +2158,12 @@
 			videoPreview.classList.remove("has-video");
 			var oldVideo = videoPreview.querySelector("video");
 			if (oldVideo) { oldVideo.remove(); URL.revokeObjectURL(oldVideo.src); }
-			if (!file || !file.type.match(/^video\//)) return;
+			if (!file || !isAcceptableVideoFile(file)) {
+				if (file) alert("Format video neacceptat. Folosește MP4, MOV sau WebM.");
+				this.value = "";
+				setLabelState("add");
+				return;
+			}
 			var url = URL.createObjectURL(file);
 			var videoEl = document.createElement("video");
 			videoEl.src = url;
@@ -2083,7 +2173,7 @@
 			videoEl.play().catch(function() {});
 			videoPreview.insertBefore(videoEl, videoLabel);
 			videoPreview.classList.add("has-video");
-			setLabelState("save");
+			setLabelState("add");
 		});
 
 		// expune pentru submit
@@ -2145,11 +2235,8 @@
 		}
 		var unsaved = [];
 		for (var n = 1; n <= 3; n++) { if (slotHasPhotoButNotSaved(n)) unsaved.push(n); }
-		if (unsaved.length > 0) {
-			if (reminder) { reminder.style.display = "block"; reminder.scrollIntoView({ behavior: "smooth", block: "nearest" }); }
-			alert("Nu pot salva fișa încă. Ai poze selectate dar nesalvate (apasă „Salvează” la poză): sloturile " + unsaved.join(", ") + ".");
-			saving = false;
-			return;
+		if (unsaved.length > 0 && reminder) {
+			reminder.style.display = "block";
 		}
 		if (typeof window.__euadoptVideoNeedsSave === "function" && window.__euadoptVideoNeedsSave()) {
 			// Nu blocăm salvarea: auto-confirmăm video ca să nu pară că "nu s-a salvat nimic"
@@ -2183,8 +2270,12 @@
 				if (!croppers[n]) {
 					var fileInput = document.getElementById("id_photo_" + n);
 					if (fileInput && fileInput.files && fileInput.files[0]) {
-						resolve({ n: n, blob: fileInput.files[0] });
-					} else resolve({ n: n, blob: null });
+						compressImageFileToJpeg(fileInput.files[0], function(blob) {
+							resolve({ n: n, blob: blob || fileInput.files[0] });
+						});
+						return;
+					}
+					resolve({ n: n, blob: null });
 					return;
 				}
 				var box = croppers[n].getCropBoxData();
