@@ -71,7 +71,7 @@
 			{% if edit_obj and edit_obj.photo %}
 			<span class="ap-add__current-photo"><img src="{{ edit_obj.photo.url }}" alt="" width="96" height="96"></span>
 			{% endif %}
-			<input type="file" name="photo" accept="image/*" {% if not edit_obj %}required{% endif %}>
+			<input type="file" name="photo" accept="image/*,.heic,.heif" {% if not edit_obj %}required{% endif %}>
 		</label>
 
 		<div class="ap-add__actions">

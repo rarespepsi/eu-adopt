@@ -105,7 +105,7 @@
 							<span class="collab-offer-photo-hint">Max 2 MB. Alege poza → +/− → Salvează poza → Salvează modificările.</span>
 							{% endif %}
 						</div>
-						<input type="file" id="id_collab_offer_image" accept="image/jpeg,image/jpg,image/png,image/webp,image/gif" class="collab-offer-photo-input-hidden" autocomplete="off" />
+						<input type="file" id="id_collab_offer_image" accept="image/*,.heic,.heif" class="collab-offer-photo-input-hidden" autocomplete="off" />
 						<div class="collab-offer-photo-actions">
 							<button type="button" class="collab-offer-zoom-btn" data-action="in" title="Mărește">+</button>
 							<label for="id_collab_offer_image" class="collab-offer-photo-btn" id="collab_offer_photo_btn_label">Alege poza</label>
@@ -722,11 +722,14 @@
 	}
 	.collab-offer-photo-input-hidden {
 		position: absolute;
-		width: 0.1px;
-		height: 0.1px;
-		opacity: 0;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
 		overflow: hidden;
-		z-index: -1;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 	.collab-offer-photo-actions {
 		display: flex;
@@ -826,5 +829,6 @@
 
 {% block extra_js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" crossorigin="anonymous"></script>
-<script src="{% static 'js/collab-offer-nou.js' %}?v=2"></script>
+<script src="{% static 'js/eu-mobile-photo-upload.js' %}?v=1"></script>
+<script src="{% static 'js/collab-offer-nou.js' %}?v=3"></script>
 {% endblock %}

@@ -1147,6 +1147,56 @@ body.page-account .account-right-panel {
 		font-size: 0.75rem;
 		color: #666;
 	}
+	.cont-pf-campanie-photo-field {
+		margin-top: 0.15rem;
+	}
+	.cont-pf-campanie-photo-field .cont-pf-campanie-photo-label {
+		display: block;
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.02em;
+		color: #6a1b9a;
+		margin: 0.2rem 0 0.15rem;
+	}
+	.cont-pf-campanie-photo-btn {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		padding: 0.55rem 0.5rem;
+		border-radius: 8px;
+		border: none;
+		background: #c62828;
+		color: #fff;
+		font-size: 0.88rem;
+		font-weight: 700;
+		text-align: center;
+		cursor: pointer;
+	}
+	.cont-pf-campanie-photo-btn:hover {
+		background: #b71c1c;
+		color: #fff;
+	}
+	.cont-pf-campanie-photo-input {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+	.cont-pf-campanie-photo-selected {
+		font-size: 0.78rem;
+		color: #2e7d32;
+		margin: 0.35rem 0 0;
+		min-height: 1.1em;
+	}
+	.cont-pf-campanie-photo-selected:empty {
+		display: none;
+	}
 
 	/* Slot poză din caseta de lângă avatar – stil inspirat din MyPet, dar scos doar aici */
 	.cont-pf-photo-card .mypet-fisa-photo-slot {
@@ -1182,11 +1232,14 @@ body.page-account .account-right-panel {
 	}
 	.cont-pf-photo-card .mypet-fisa-photo-input-hidden {
 		position: absolute;
-		width: 0.1px;
-		height: 0.1px;
-		opacity: 0;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
 		overflow: hidden;
-		z-index: -1;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 	.cont-pf-photo-card .mypet-fisa-photo-actions {
 		display: flex;
@@ -1825,7 +1878,7 @@ body.page-account .account-right-panel {
 						{% endif %}
 						<span class="mypet-fisa-photo-hint">Max 2 MB, JPEG</span>
 					</div>
-					<input type="file" id="id_avatar_file" accept="image/jpeg,image/jpg" class="mypet-fisa-photo-input-hidden" />
+					<input type="file" id="id_avatar_file" accept="image/*,.heic,.heif" class="mypet-fisa-photo-input-hidden" />
 					<div class="mypet-fisa-photo-actions">
 						<button type="button" class="mypet-fisa-zoom-btn" data-slot="1" data-action="in" title="Mărește">+</button>
 						<label for="id_avatar_file" class="mypet-fisa-photo-btn">Alege poza</label>
@@ -2115,9 +2168,13 @@ body.page-account .account-right-panel {
 				<input type="date" id="id_campanie_date_start" name="campanie_date_start" required value="{% if campanie_edit %}{{ campanie_edit.date_start|date:'Y-m-d' }}{% endif %}" />
 				<label for="id_campanie_date_end">până la *</label>
 				<input type="date" id="id_campanie_date_end" name="campanie_date_end" required value="{% if campanie_edit %}{{ campanie_edit.date_end|date:'Y-m-d' }}{% endif %}" />
-				<label for="id_campanie_photo">Poză / afiș {% if not campanie_edit %}*{% endif %}</label>
-				<input type="file" id="id_campanie_photo" name="campanie_photo" accept="image/*" {% if not campanie_edit %}required{% endif %} />
-				{% if campanie_edit %}<p class="cont-pf-campanie-photo-hint">Lasă gol ca să păstrezi poza actuală.</p>{% endif %}
+				<div class="cont-pf-campanie-photo-field">
+					<span class="cont-pf-campanie-photo-label">Poză / afiș {% if not campanie_edit %}*{% endif %}</span>
+					<label for="id_campanie_photo" class="cont-pf-campanie-photo-btn" id="campanie-photo-picker-label">Alege poză / afiș</label>
+					<input type="file" id="id_campanie_photo" name="campanie_photo" accept="image/*,.heic,.heif" class="cont-pf-campanie-photo-input" {% if not campanie_edit %}required{% endif %} />
+					<p class="cont-pf-campanie-photo-selected" id="campanie-photo-selected" aria-live="polite"></p>
+					{% if campanie_edit %}<p class="cont-pf-campanie-photo-hint">Lasă neales ca să păstrezi poza actuală.</p>{% endif %}
+				</div>
 				<label for="id_campanie_link">Link campanie (opțional)</label>
 				<input type="text" inputmode="url" id="id_campanie_link" name="campanie_link" maxlength="500" placeholder="https://…" value="{% if campanie_edit %}{{ campanie_edit.link }}{% endif %}" />
 			</div>
@@ -2240,6 +2297,7 @@ body.page-account .account-right-panel {
 {% block extra_js %}
 {% if display_role|default:account_profile.role == 'pf' or display_role|default:account_profile.role == 'collaborator' or display_role|default:account_profile.role == 'org' %}
 <script src="{% static 'js/cui_cu_ro_display.js' %}?v=1"></script>
+<script src="{% static 'js/eu-mobile-photo-upload.js' %}?v=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -2355,6 +2413,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		var photo = document.getElementById('id_campanie_photo');
 		if (photo) photo.required = true;
+		var photoStatus = document.getElementById('campanie-photo-selected');
+		if (photoStatus) photoStatus.textContent = '';
+		var photoPickLabel = document.getElementById('campanie-photo-picker-label');
+		if (photoPickLabel) photoPickLabel.textContent = 'Alege poză / afiș';
 		var title = document.getElementById('campanie-modal-title');
 		if (title) title.textContent = 'Campanii gratuite sterilizare';
 		var saveBtn = document.getElementById('btn-save-campanie');
@@ -2561,6 +2623,35 @@ document.addEventListener('DOMContentLoaded', function() {
 			fillCampanieLocalitate();
 		});
 	}
+	(function initCampaniePhotoPicker() {
+		var input = document.getElementById("id_campanie_photo");
+		var status = document.getElementById("campanie-photo-selected");
+		var pickLabel = document.getElementById("campanie-photo-picker-label");
+		if (!input) return;
+		var EU = window.EuPhotoUpload || {};
+		function okImage(file) {
+			if (EU.isAcceptableImageFile) return EU.isAcceptableImageFile(file);
+			if (!file) return false;
+			return (file.type || "").indexOf("image/") === 0;
+		}
+		input.addEventListener("change", function() {
+			var file = this.files && this.files[0];
+			if (!file) {
+				if (status) status.textContent = "";
+				if (pickLabel) pickLabel.textContent = "Alege poză / afiș";
+				return;
+			}
+			if (!okImage(file)) {
+				alert("Format neacceptat. Folosește o poză (JPEG, PNG sau HEIC) sau încearcă alt browser.");
+				this.value = "";
+				if (status) status.textContent = "";
+				if (pickLabel) pickLabel.textContent = "Alege poză / afiș";
+				return;
+			}
+			if (status) status.textContent = "Selectat: " + (file.name || "poză");
+			if (pickLabel) pickLabel.textContent = "Schimbă poza / afișul";
+		});
+	})();
 })();
 </script>
 <script>
@@ -2709,13 +2800,55 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		avatarInput.addEventListener("change", function() {
 			var n = 1;
+			var EU = window.EuPhotoUpload || {};
 			destroyCropper(n);
 			savedBlobs[n] = null;
 			avatarPreview.innerHTML = "";
 			avatarSlot.classList.remove("saved");
 			var file = this.files && this.files[0];
-			if (!file || !file.type.match(/^image\//)) return;
+			if (!file || !(EU.isAcceptableImageFile ? EU.isAcceptableImageFile(file) : file.type.match(/^image\//))) {
+				if (file) alert("Format neacceptat. Folosește JPEG, PNG sau HEIC.");
+				this.value = "";
+				return;
+			}
 			avatarSlot.classList.add("has-photo");
+
+			function showSavedBlob(blob) {
+				if (!blob) {
+					alert("Nu am putut citi poza. Încearcă alt browser sau altă poză.");
+					avatarInput.value = "";
+					avatarSlot.classList.remove("has-photo");
+					return;
+				}
+				savedBlobs[n] = blob;
+				var img = document.createElement("img");
+				img.className = "img-crop";
+				img.src = URL.createObjectURL(blob);
+				img.alt = "Poză profil";
+				img.style.display = "block";
+				img.style.width = "100%";
+				img.style.height = "100%";
+				img.style.objectFit = "cover";
+				avatarPreview.innerHTML = "";
+				avatarPreview.appendChild(img);
+				var hint = document.createElement("span");
+				hint.className = "mypet-fisa-photo-hint";
+				hint.textContent = "Max 2 MB · JPEG, PNG, HEIC";
+				avatarPreview.appendChild(hint);
+				avatarSlot.classList.add("saved");
+				if (avatarLabel) {
+					avatarLabel.textContent = "Alege poza";
+					avatarLabel.setAttribute("for", "id_avatar_file");
+				}
+				updateAvatarCircleFromBlob(blob);
+				saveAvatarBlobToServer(blob);
+			}
+
+			if (EU.isTouchDevice && EU.isTouchDevice() && EU.compressImageFileToJpeg) {
+				EU.compressImageFileToJpeg(file, { maxDim: 800, square: true, quality: 0.9 }, showSavedBlob);
+				return;
+			}
+
 			avatarLabel.textContent = "Salvează";
 			avatarLabel.removeAttribute("for");
 			var img = document.createElement("img");
@@ -2724,11 +2857,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			img.src = objectUrl;
 			img.alt = "Poză profil";
 			avatarPreview.appendChild(img);
-			/* Afișăm poza și în cercul avatar imediat ce e aleasă */
 			ensureAvatarCircleImg();
 			if (avatarCircleImg) avatarCircleImg.src = objectUrl;
 			if (typeof Cropper !== "undefined") {
-				/* Pentru avatar: păstrăm un crop pătrat (ca cercul avatarului) */
 				var ratio = 1;
 				croppers[n] = new Cropper(img, {
 					aspectRatio: ratio,

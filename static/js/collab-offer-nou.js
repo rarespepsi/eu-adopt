@@ -3,6 +3,7 @@
  * Flux: Alege poza → Salvează poza (înghețare decupaj) → Alege poza (schimbă imaginea).
  */
 (function () {
+	var EU = window.EuPhotoUpload || {};
 	var form =
 		document.getElementById("collab-oferte-nou-form") ||
 		document.getElementById("collab-oferte-edit-form");
@@ -109,6 +110,32 @@
 		fileInput.value = "";
 	}
 
+	function acceptableImage(file) {
+		if (EU.isAcceptableImageFile) return EU.isAcceptableImageFile(file);
+		return !!(file && file.type && file.type.match(/^image\//));
+	}
+
+	function showSavedPreview(blob) {
+		if (!blob) return;
+		savedBlob = blob;
+		destroyCropper();
+		revokePreviewImages();
+		preview.innerHTML = "";
+		var img = document.createElement("img");
+		img.className = "img-crop";
+		img.alt = "Poză ofertă salvată";
+		img.src = URL.createObjectURL(blob);
+		img.style.display = "block";
+		img.style.width = "100%";
+		img.style.height = "100%";
+		img.style.objectFit = "cover";
+		preview.appendChild(img);
+		setHasPhoto(true);
+		slot.classList.add("is-saved");
+		setLabelChoose();
+		fileInput.value = "";
+	}
+
 	function freezePhoto() {
 		if (!cropper) return;
 		var box = cropper.getCropBoxData();
@@ -123,23 +150,7 @@
 		if (!canvas) return;
 		canvas.toBlob(function (blob) {
 			if (!blob) return;
-			savedBlob = blob;
-			destroyCropper();
-			revokePreviewImages();
-			preview.innerHTML = "";
-			var img = document.createElement("img");
-			img.className = "img-crop";
-			img.alt = "Poză ofertă salvată";
-			img.src = URL.createObjectURL(blob);
-			img.style.display = "block";
-			img.style.width = "100%";
-			img.style.height = "100%";
-			img.style.objectFit = "cover";
-			preview.appendChild(img);
-			setHasPhoto(true);
-			slot.classList.add("is-saved");
-			setLabelChoose();
-			fileInput.value = "";
+			showSavedPreview(blob);
 		}, "image/jpeg", 0.9);
 	}
 
@@ -166,8 +177,8 @@
 			setLabelChoose();
 			return;
 		}
-		if (!file.type.match(/^image\//)) {
-			alert("Alege un fișier imagine.");
+		if (!acceptableImage(file)) {
+			alert("Format neacceptat. Folosește JPEG, PNG, HEIC sau încearcă alt browser.");
 			fileInput.value = "";
 			resetPreviewFully();
 			return;
@@ -176,6 +187,23 @@
 			alert("Fișierul este prea mare. Maxim 2 MB.");
 			fileInput.value = "";
 			resetPreviewFully();
+			return;
+		}
+
+		if (EU.isTouchDevice && EU.isTouchDevice() && EU.compressImageFileToJpeg) {
+			EU.compressImageFileToJpeg(file, { maxDim: 1200, quality: 0.9 }, function (blob) {
+				if (!blob) {
+					alert("Nu am putut citi poza de pe telefon. Încearcă alt browser sau salvează poza ca JPEG.");
+					resetPreviewFully();
+					return;
+				}
+				if (blob.size > MAX_BYTES) {
+					alert("Fișierul este prea mare după procesare. Maxim 2 MB.");
+					resetPreviewFully();
+					return;
+				}
+				showSavedPreview(blob);
+			});
 			return;
 		}
 
@@ -259,7 +287,13 @@
 				return;
 			}
 			var f = fileInput.files && fileInput.files[0];
-			if (f && f.type.match(/^image\//)) {
+			if (f && acceptableImage(f)) {
+				if (EU.compressImageFileToJpeg) {
+					EU.compressImageFileToJpeg(f, { maxDim: 1200, quality: 0.9 }, function (blob) {
+						resolve(blob || f);
+					});
+					return;
+				}
 				resolve(f);
 				return;
 			}
@@ -287,14 +321,6 @@
 			return;
 		}
 		e.preventDefault();
-		if (cropper) {
-			alert(
-				editMode
-					? 'Ai o poză nedefinită: apasă „Salvează poza” înainte de a salva modificările.'
-					: 'Ai o poză nedefinită: apasă „Salvează poza” înainte de „Publică oferta”.'
-			);
-			return;
-		}
 		getImageBlob().then(function (blob) {
 			if (!blob) {
 				if (editMode) {
