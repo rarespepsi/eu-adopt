@@ -2300,6 +2300,47 @@ body.page-account .account-right-panel {
 <script src="{% static 'js/eu-mobile-photo-upload.js' %}?v=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script>
+(function() {
+	/* Token CSRF din cookie la submit — evită 403 după bfcache / picker foto mobil. */
+	function getCsrfCookie() {
+		var v = null;
+		if (document.cookie && document.cookie !== "") {
+			var parts = document.cookie.split("; ");
+			for (var i = 0; i < parts.length; i++) {
+				var p = parts[i].split("=");
+				if (p[0] === "csrftoken") {
+					v = decodeURIComponent((p[1] || "").replace(/\+/g, " "));
+					break;
+				}
+			}
+		}
+		return v;
+	}
+	function applyCsrfToken(form) {
+		if (!form || !form.tagName || form.tagName.toLowerCase() !== "form") return;
+		var method = (form.getAttribute("method") || "get").toLowerCase();
+		if (method !== "post") return;
+		var token = getCsrfCookie();
+		if (!token) return;
+		var input = form.querySelector('input[name="csrfmiddlewaretoken"]');
+		if (!input) {
+			input = document.createElement("input");
+			input.type = "hidden";
+			input.name = "csrfmiddlewaretoken";
+			form.appendChild(input);
+		}
+		input.value = token;
+	}
+	document.addEventListener("submit", function(ev) {
+		applyCsrfToken(ev.target);
+	}, true);
+	window.addEventListener("pageshow", function() {
+		var forms = document.querySelectorAll("form");
+		for (var i = 0; i < forms.length; i++) applyCsrfToken(forms[i]);
+	});
+})();
+</script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
 	var view = document.getElementById('cont-username-view');
 	var wrap = document.getElementById('cont-username-edit-wrap');

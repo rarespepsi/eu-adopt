@@ -72,13 +72,21 @@
 		{% endif %}
 		<p>Ce poți face:</p>
 		<ol>
+			{% if in_app_browser %}
 			<li>Deschide adresa în Safari sau Chrome (nu în fereastra din WhatsApp).</li>
+			{% else %}
+			<li>Dacă ai ajuns aici din WhatsApp sau Facebook, deschide site-ul în Safari sau Chrome.</li>
+			{% endif %}
 			<li>Reîncarcă pagina, apoi completează și trimite din nou.</li>
 		</ol>
 		<div class="actions">
 			<a class="btn btn-primary" href="{{ retry_path }}">Reîncearcă acest formular</a>
+			{% if user.is_authenticated %}
+			<a class="btn btn-secondary" href="{% url 'account' %}">Contul meu</a>
+			{% else %}
 			<a class="btn btn-secondary" href="{% url 'signup_choose_type' %}">Alege tipul de cont</a>
 			<a class="btn btn-secondary" href="{% url 'login' %}">Intră în cont</a>
+			{% endif %}
 		</div>
 	</main>
 </body>

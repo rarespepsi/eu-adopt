@@ -1,7 +1,13 @@
 """Pagină CSRF 403 prietenoasă pe POST fără token."""
 
-from django.test import Client, TestCase
+from django.contrib.auth import get_user_model
+from django.test import Client, RequestFactory, TestCase
 from django.urls import reverse
+
+from home.csrf_views import _safe_retry_path
+from home.models import AccountProfile
+
+User = get_user_model()
 
 
 class CsrfFailurePageTests(TestCase):
@@ -17,6 +23,8 @@ class CsrfFailurePageTests(TestCase):
         self.assertIn("Chrome", body)
         self.assertIn(reverse("signup_colaborator"), body)
         self.assertIn(reverse("login"), body)
+        self.assertIn("Alege tipul de cont", body)
+        self.assertNotIn("Contul meu", body)
 
     def test_signup_colaborator_get_sets_csrf_cookie(self):
         c = Client(enforce_csrf_checks=True)
@@ -33,3 +41,49 @@ class CsrfFailurePageTests(TestCase):
         )
         self.assertEqual(r.status_code, 403)
         self.assertIn("WhatsApp", r.content.decode("utf-8"))
+
+    def test_retry_path_account_edit_opens_campanie_form(self):
+        rf = RequestFactory()
+        req = rf.post(reverse("account_edit"), {"form_type": "campanie_sterilizare"})
+        self.assertEqual(_safe_retry_path(req), reverse("account") + "?campanie=1")
+
+    def test_retry_path_account_edit_opens_campanie_edit(self):
+        rf = RequestFactory()
+        req = rf.post(
+            reverse("account_edit"),
+            {"form_type": "campanie_sterilizare", "campanie_id": "42"},
+        )
+        self.assertEqual(_safe_retry_path(req), reverse("account") + "?campanie_edit=42")
+
+    def test_retry_path_account_edit_delete_opens_list(self):
+        rf = RequestFactory()
+        req = rf.post(
+            reverse("account_edit"),
+            {"form_type": "campanie_sterilizare_delete", "campanie_id": "7"},
+        )
+        self.assertEqual(_safe_retry_path(req), reverse("account") + "?campanii_mele=1")
+
+    def test_retry_path_account_edit_other_form_goes_to_account(self):
+        rf = RequestFactory()
+        req = rf.post(reverse("account_edit"), {"form_type": "firma"})
+        self.assertEqual(_safe_retry_path(req), reverse("account"))
+
+    def test_campanie_post_without_token_retries_campaign_form(self):
+        u = User.objects.create_user("csrf_camp", "csrf_camp@test.local", "x")
+        ap, _ = AccountProfile.objects.get_or_create(user=u)
+        ap.role = AccountProfile.ROLE_PF
+        ap.save(update_fields=["role"])
+        c = Client(enforce_csrf_checks=True)
+        c.force_login(u)
+        r = c.post(
+            reverse("account_edit"),
+            {"form_type": "campanie_sterilizare", "campanie_judet": "Neamț"},
+        )
+        self.assertEqual(r.status_code, 403)
+        body = r.content.decode("utf-8")
+        self.assertIn("Nu am putut trimite formularul", body)
+        self.assertIn(reverse("account") + "?campanie=1", body)
+        self.assertNotIn(reverse("account_edit"), body)
+        self.assertIn("Contul meu", body)
+        self.assertNotIn("Alege tipul de cont", body)
+        self.assertNotIn(f'href="{reverse("login")}"', body)
