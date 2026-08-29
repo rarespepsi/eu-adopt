@@ -1,0 +1,43 @@
+---
+description: După commit + push pe main, deploy obligatoriu pe Hetzner + verificare eu-adopt.ro.
+alwaysApply: true
+---
+
+# DEPLOY HETZNER DUPĂ PUSH PE `main`
+
+**Decizie utilizator (29 aug 2026):** după **commit + push pe `main`**, agentul **execută** deploy pe Hetzner. Nu doar propune.
+
+Editările de site rămân blocate până la **`1977` + OK explicit** (`SITE_GLOBAL_INGHETAT_1977`, `PAROLA_SI_OK_INAINTE_MODIFICARE`). Când acel mesaj a dus la commit + push pe `main`, deploy-ul pornește fără un al doilea OK.
+
+---
+
+## Când
+
+- **Da:** `origin/main` are commit-uri noi față de live (după push direct pe `main` sau după merge PR).
+- **Nu:** push doar pe branch de PR / feature — aștepți actualizarea lui `main`.
+- **Nu:** `git push --force` pe `main`.
+
+---
+
+## Pași (Cloud Agent / Linux)
+
+1. Secret `HETZNER_SSH_KEY` → `~/.ssh/id_ed25519` (newline-uri reale, `chmod 600`). Nu afișa cheia.
+2. Deploy:
+
+```bash
+ssh -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes -i ~/.ssh/id_ed25519 \
+  root@178.104.31.52 "bash /opt/eu-adopt/deploy/hetzner/deploy_update.sh"
+```
+
+3. Confirmă live:
+   - pe server: `git rev-parse --short HEAD` în `/opt/eu-adopt` = SHA de pe `origin/main`
+   - `systemctl is-active euadopt` → `active`
+   - `https://eu-adopt.ro` răspunde **OK** (HTTP 200)
+
+Pe PC Windows, varianta echivalentă rămâne `.\scripts\deploy_hetzner_from_pc.ps1` (vezi `BACKUP_DEPLOY_PROCEDURA.mdc`).
+
+---
+
+## Rezumat
+
+**`main` actualizat → cheia SSH → `deploy_update.sh` → eu-adopt.ro OK.**
