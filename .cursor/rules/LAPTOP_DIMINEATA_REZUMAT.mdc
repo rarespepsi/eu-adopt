@@ -1,0 +1,67 @@
+---
+description: La prima accesare zilnică pe laptop — rezumat automat al lucrului făcut de pe mobil/noaptea.
+alwaysApply: true
+---
+
+# LAPTOP — REZUMAT DIMINEAȚA (DUPĂ LUCRU DE PE MOBIL)
+
+**Decizie utilizator (29 aug 2026):** dacă a lucrat noaptea de pe **telefon / Cloud Agent**, dimineața pe **laptop** agentul trebuie **actualizat** — rezumat scurt al modificărilor, **înainte** sau **la începutul** răspunsului.
+
+---
+
+## Când rulează (trigger)
+
+Rulează **proactiv** la începutul conversației pe laptop dacă mesajul userului e:
+
+- salut / deschidere sesiune fără task concret („bună”, „dimineața”, „revin”, „continuăm”, „ce s-a făct”, „actualizează-te”, „citește handoff-ul”);
+- **prima întrebare** din chat nou pe laptop (fără context anterior în aceeași conversație);
+- cerere explicită de rezumat / handoff.
+
+**Nu** repeta rezumatul în fiecare mesaj din aceeași conversație — o dată la început e suficient (sau când user cere din nou).
+
+---
+
+## Pași obligatorii (în paralel când e posibil)
+
+1. **Citește** `docs/AGENT_HANDOFF_LATEST.md` (sursă principală sesiune mobil).
+2. **Git:**
+   - `git fetch origin`
+   - `git log origin/main --oneline -15` (sau `--since` de la data din handoff)
+   - `git status -sb` — local în urmă / înainte față de `origin/main`
+3. **Live (dacă SSH merge):**
+   - `ssh eu-adopt` / `root@178.104.31.52`: `sudo -u euadopt git -C /opt/eu-adopt rev-parse --short HEAD` + `systemctl is-active euadopt`
+   - compară SHA live cu `origin/main`
+4. **Opțional:** `curl -sI https://eu-adopt.ro/` → status HTTP.
+
+---
+
+## Format rezumat (română, max ~12 rânduri)
+
+```
+## Rezumat de la ultima sesiune (mobil / noapte)
+- **Handoff:** (dată + 2–4 bullets din AGENT_HANDOFF_LATEST.md)
+- **Commit-uri noi pe main:** (SHA scurt + mesaj, cele relevante)
+- **Live Hetzner:** SHA … · serviciu active/inactive · site OK/eroare
+- **Local laptop:** la zi / N commit-uri în urmă (sugerează git pull dacă e cazul)
+- **Următorul pas:** (1–2 bullets din handoff sau din git)
+```
+
+Apoi răspunde la întrebarea concretă a userului (dacă există).
+
+---
+
+## Obligație agent **mobil / Cloud** (final de sesiune)
+
+Când user spune **pauză** / **revin** / tace după task pe mobil, sau la final de task important:
+
+1. Actualizează **`docs/AGENT_HANDOFF_LATEST.md`** (format `PAUZA_HANDOFF.mdc`).
+2. **Commit + push** pe `main` (user vrea să vadă pe laptop fără să întrebe).
+3. Dacă s-a făcut push pe `main` cu cod de site → **deploy H** conform `DEPLOY_HETZNER_DUPA_PUSH_MAIN.mdc`.
+
+Fără handoff + push, rezumatul dimineața pe laptop se bazează doar pe `git log` (mai sărac).
+
+---
+
+## Rezumat
+
+**Laptop dimineața = citește handoff + git + SHA live → rezumat RO scurt. Mobil la final = handoff + push (+ deploy).**
