@@ -21,7 +21,7 @@ alwaysApply: true
 | Situație | Acțiune agent |
 |----------|----------------|
 | Utilizator cere **deploy pe H** / „pune pe server” / „fă push și deploy” | Flux complet mai jos (§3) |
-| După **commit + push** cu modificări pe site | Propune sau execută deploy (cu `1977` + OK dacă nu e deja în mesaj) |
+| După **commit + push pe `main`** | **Execută** deploy pe Hetzner — vezi **`DEPLOY_HETZNER_DUPA_PUSH_MAIN.mdc`**. Nu doar propune. |
 | Deploy cu **migrări Django noi** | Obligatoriu backup DB înainte (`deploy_update.sh` face asta automat) |
 | Utilizator raportează **defect pe live** | Rollback în cascadă (§4), nu improviza |
 
@@ -69,11 +69,16 @@ Face: (1) ZIP local rotație 3 → (2) SSH backup DB rotație 3 → (3) `git pul
 
 Parametri: `-SkipLocalBackup` (fără ZIP PC), `-HetznerHost root@178.104.31.52`.
 
-### Varianta doar pe server (după push deja făcut)
+### Varianta Cloud Agent / Linux (după push pe `main`) — implicită
+
+Pregătește cheia din secretul `HETZNER_SSH_KEY` (`~/.ssh/id_ed25519`, `chmod 600`), apoi:
 
 ```bash
-ssh root@178.104.31.52 "bash /opt/eu-adopt/deploy/hetzner/deploy_update.sh"
+ssh -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes -i ~/.ssh/id_ed25519 \
+  root@178.104.31.52 "bash /opt/eu-adopt/deploy/hetzner/deploy_update.sh"
 ```
+
+Detalii: **`DEPLOY_HETZNER_DUPA_PUSH_MAIN.mdc`**.
 
 ### Verificare după deploy
 
@@ -147,6 +152,6 @@ Când: server compromis / haos total. Din panoul Hetzner — snapshot. Pierderi:
 
 ## 6. Rezumat one-liner pentru agent
 
-**Deploy:** commit → push → `.\scripts\deploy_hetzner_from_pc.ps1` (sau `deploy_update.sh` pe H).  
+**Deploy:** commit → push pe `main` → `deploy_update.sh` pe H (Cloud Agent: `HETZNER_SSH_KEY`) sau `.\scripts\deploy_hetzner_from_pc.ps1` de pe PC.  
 **Backup:** 3 ZIP locale + 3 dump-uri H — rotație automată, nu manual.  
 **Rollback:** git checkout (A) → pg_restore + checkout (B) → snapshot Hetzner (C).
