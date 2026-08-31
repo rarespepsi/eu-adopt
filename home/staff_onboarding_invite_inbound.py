@@ -63,6 +63,18 @@ _GENERIC_EMAIL_RE = re.compile(r"[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}", re.I)
 _OUR_DOMAINS = frozenset({"eu-adopt.ro", "euadopt.ro"})
 
 
+def _sanitize_imap_text(value: str | bytes | None, *, max_len: int | None = None) -> str:
+    """PostgreSQL refuză NUL (0x00) în text — unele NDR IMAP le conțin."""
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        value = value.decode("utf-8", errors="replace")
+    cleaned = str(value).replace("\x00", "")
+    if max_len is not None:
+        return cleaned[:max_len]
+    return cleaned
+
+
 def staff_invite_reply_to_address(lead_id: int) -> str:
     override = (getattr(settings, "STAFF_INVITE_REPLY_TO", None) or "").strip()
     if override and "@" in override:
@@ -96,7 +108,7 @@ def _decode_mime_header(raw) -> str:
             out.append(frag.decode(enc or "utf-8", errors="replace"))
         else:
             out.append(str(frag))
-    return "".join(out).strip()
+    return _sanitize_imap_text("".join(out).strip())
 
 
 def _extract_body(msg: email.message.Message) -> str:
@@ -112,15 +124,15 @@ def _extract_body(msg: email.message.Message) -> str:
         payload = msg.get_payload(decode=True)
         if payload:
             chunks.append(payload.decode(msg.get_content_charset() or "utf-8", errors="replace"))
-    text = "\n".join(chunks).strip()
-    return text[:8000]
+    text = _sanitize_imap_text("\n".join(chunks).strip(), max_len=8000)
+    return text
 
 
 def _headers_dict(msg: email.message.Message) -> dict[str, str]:
     h = {}
     for key in ("From", "To", "Cc", "Subject", "In-Reply-To", "References", "Reply-To", "X-EUAdopt-Lead-Id"):
         if msg.get(key):
-            h[key] = _decode_mime_header(msg.get(key))
+            h[key] = _sanitize_imap_text(_decode_mime_header(msg.get(key)))
     return h
 
 
@@ -437,6 +449,66 @@ def apply_inbound_to_lead(
     return False
 
 
+def _try_lead_email_redirect(
+    lead: StaffOnboardingLead,
+    *,
+    kind: str,
+    body: str,
+    subject: str,
+    from_addr: str,
+) -> tuple[bool, dict]:
+    """
+    NDR sau răspuns uman cu adresă nouă → update + retransmitere.
+    Returnează (applied, redirect_info).
+    """
+    failed = (
+        extract_bounce_recipient_emails(body, subject)
+        if kind == StaffOnboardingInviteInbound.KIND_BOUNCE
+        else [lead.email or ""]
+    )
+    suggested = extract_suggested_redirect_email(
+        body,
+        subject,
+        failed_emails=failed,
+        lead_email=lead.email or "",
+    )
+    if not suggested:
+        return False, {}
+
+    redirect_info = apply_bounce_email_redirect(
+        lead,
+        suggested,
+        old_email=lead.email or "",
+        body=body,
+        subject=subject,
+    )
+    if redirect_info.get("redirected"):
+        return True, redirect_info
+    if redirect_info.get("reason") in ("already_redirected", "redirect_limit", "same_email"):
+        return False, redirect_info
+
+    if kind == StaffOnboardingInviteInbound.KIND_BOUNCE:
+        applied = apply_inbound_to_lead(lead, kind, from_email=from_addr, subject=subject)
+        if applied:
+            _append_inbound_note(
+                lead,
+                f"[INBOUND {timezone.now():%Y-%m-%d %H:%M}] {kind} de la {from_addr}: "
+                f"{subject[:80]} (sugerat {suggested}, skip={redirect_info.get('reason')})",
+            )
+        return applied, redirect_info
+
+    applied = apply_inbound_to_lead(
+        lead, StaffOnboardingInviteInbound.KIND_REPLY, from_email=from_addr, subject=subject
+    )
+    if applied:
+        _append_inbound_note(
+            lead,
+            f"[INBOUND {timezone.now():%Y-%m-%d %H:%M}] reply de la {from_addr}: "
+            f"{subject[:80]} (redirect skip={redirect_info.get('reason')})",
+        )
+    return applied, redirect_info
+
+
 def process_inbound_email(
     *,
     from_email: str,
@@ -450,77 +522,69 @@ def process_inbound_email(
     """
     Procesează un mesaj primit. Returnează dict cu kind, lead_id, applied, skipped_reason.
     """
-    headers = headers or {}
-    to_addrs = to_addrs or []
+    headers = {k: _sanitize_imap_text(v) for k, v in (headers or {}).items()}
+    to_addrs = [_sanitize_imap_text(a) for a in (to_addrs or [])]
+    subject = _sanitize_imap_text(subject)
+    body = _sanitize_imap_text(body)
+    from_email = _sanitize_imap_text(from_email)
+    external_id = _sanitize_imap_text(external_id, max_len=120)
+
     if external_id:
         if StaffOnboardingInviteInbound.objects.filter(source=source, external_id=external_id).exists():
             return {"skipped": True, "reason": "duplicate", "external_id": external_id}
 
-    from_addr = parseaddr(from_email)[1] or (from_email or "").strip()
+    from_addr = parseaddr(from_email)[1] or from_email.strip()
     kind = classify_inbound(from_addr, subject, body, headers)
     lead = resolve_lead_for_inbound(
-        from_addr, to_addrs, headers, body=body or "", subject=subject or "", kind=kind
+        from_addr, to_addrs, headers, body=body, subject=subject, kind=kind
     )
-    snippet = (subject or "")[:200]
+    snippet = subject[:200]
     if body:
-        snippet = f"{snippet} | {(body or '')[:300]}"
+        snippet = f"{snippet} | {body[:300]}"
 
     inbound = StaffOnboardingInviteInbound(
         lead=lead,
         from_email=from_addr[:254] if from_addr else "",
-        subject=(subject or "")[:255],
+        subject=subject[:255],
         kind=kind,
         source=source,
-        external_id=(external_id or "")[:120],
+        external_id=external_id[:120],
         snippet=snippet[:500],
     )
     applied = False
     redirect_info: dict = {}
     if lead:
-        if kind == StaffOnboardingInviteInbound.KIND_BOUNCE:
-            failed = extract_bounce_recipient_emails(body or "", subject or "")
-            suggested = extract_suggested_redirect_email(
-                body or "",
-                subject or "",
-                failed_emails=failed,
-                lead_email=lead.email or "",
+        if kind in (
+            StaffOnboardingInviteInbound.KIND_BOUNCE,
+            StaffOnboardingInviteInbound.KIND_REPLY,
+        ):
+            applied, redirect_info = _try_lead_email_redirect(
+                lead,
+                kind=kind,
+                body=body,
+                subject=subject,
+                from_addr=from_addr,
             )
-            if suggested:
-                redirect_info = apply_bounce_email_redirect(
-                    lead,
-                    suggested,
-                    old_email=lead.email or "",
-                    body=body or "",
-                    subject=subject or "",
-                )
-                if redirect_info.get("redirected"):
-                    applied = True
-                elif redirect_info.get("reason") in ("already_redirected", "redirect_limit", "same_email"):
-                    applied = False
-                else:
-                    # fără redirect util → marchează bounced ca înainte
-                    applied = apply_inbound_to_lead(
-                        lead, kind, from_email=from_addr, subject=subject
-                    )
-                    if applied:
-                        _append_inbound_note(
-                            lead,
-                            f"[INBOUND {timezone.now():%Y-%m-%d %H:%M}] {kind} de la {from_addr}: "
-                            f"{(subject or '')[:80]} (sugerat {suggested}, skip={redirect_info.get('reason')})",
-                        )
-            else:
+            if not applied and not redirect_info and kind == StaffOnboardingInviteInbound.KIND_BOUNCE:
                 applied = apply_inbound_to_lead(lead, kind, from_email=from_addr, subject=subject)
                 if applied:
                     _append_inbound_note(
                         lead,
-                        f"[INBOUND {timezone.now():%Y-%m-%d %H:%M}] {kind} de la {from_addr}: {(subject or '')[:80]}",
+                        f"[INBOUND {timezone.now():%Y-%m-%d %H:%M}] {kind} de la {from_addr}: {subject[:80]}",
+                    )
+            elif not applied and not redirect_info and kind == StaffOnboardingInviteInbound.KIND_REPLY:
+                applied = apply_inbound_to_lead(lead, kind, from_email=from_addr, subject=subject)
+                if applied:
+                    _append_inbound_note(
+                        lead,
+                        f"[INBOUND {timezone.now():%Y-%m-%d %H:%M}] {kind} de la {from_addr}: {subject[:80]}",
                     )
         else:
             applied = apply_inbound_to_lead(lead, kind, from_email=from_addr, subject=subject)
             if applied:
                 _append_inbound_note(
                     lead,
-                    f"[INBOUND {timezone.now():%Y-%m-%d %H:%M}] {kind} de la {from_addr}: {(subject or '')[:80]}",
+                    f"[INBOUND {timezone.now():%Y-%m-%d %H:%M}] {kind} de la {from_addr}: {subject[:80]}",
                 )
     inbound.save()
     result = {
@@ -614,7 +678,7 @@ def poll_imap_inbox(
                 to_h = _decode_mime_header(msg.get("To"))
                 body = _extract_body(msg)
                 headers = _headers_dict(msg)
-                mid = (msg.get("Message-ID") or "").strip()
+                mid = _sanitize_imap_text((msg.get("Message-ID") or "").strip())
                 if mid:
                     ext_id = f"msgid-{mid}"[:120]
                 else:

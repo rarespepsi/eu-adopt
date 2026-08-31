@@ -5,6 +5,7 @@ from django.test import TestCase, override_settings
 
 from home.models import StaffOnboardingInviteLog, StaffOnboardingLead
 from home.staff_onboarding_invite_inbound import (
+    _sanitize_imap_text,
     extract_suggested_redirect_email,
     process_inbound_email,
 )
@@ -116,3 +117,60 @@ class BounceRedirectEmailTests(TestCase):
         lead.refresh_from_db()
         self.assertEqual(lead.invite_mail_status, StaffOnboardingLead.INVITE_BOUNCED)
         self.assertEqual(lead.email.lower(), "doar-bad@exemplu-uat.ro")
+
+    def test_sanitize_imap_text_strips_nul(self):
+        raw = "Undelivered\x00Mail\x00"
+        self.assertEqual(_sanitize_imap_text(raw), "UndeliveredMail")
+
+    @override_settings(STAFF_INVITE_EMAIL_ENABLED=False)
+    def test_process_inbound_saves_body_with_nul_chars(self):
+        lead = StaffOnboardingLead.objects.create(
+            email="nul@exemplu-uat.ro",
+            display_name="NUL Test",
+            account_kind=StaffOnboardingLead.KIND_PF,
+            judet="Cluj",
+            invite_mail_status=StaffOnboardingLead.INVITE_SENT,
+        )
+        body = (
+            "Final-Recipient: rfc822; nul@exemplu-uat.ro\n"
+            "Please use: nou-nul@exemplu-uat.ro\x00extra\n"
+        )
+        result = process_inbound_email(
+            from_email="mailer-daemon@zoho.com",
+            to_addrs=[f"invite+{lead.pk}@eu-adopt.ro"],
+            subject="Undelivered\x00 Mail",
+            body=body,
+            external_id="test-bounce-nul-1",
+        )
+        self.assertEqual(result.get("kind"), "bounce")
+        self.assertTrue(result.get("redirected"))
+        self.assertIsNotNone(result.get("inbound_id"))
+
+    @override_settings(STAFF_INVITE_EMAIL_ENABLED=False)
+    def test_process_reply_with_new_address_redirects(self):
+        User.objects.create_user(
+            username="staff_reply_rd",
+            email="staff_reply_rd@test.local",
+            password="x",
+            is_staff=True,
+        )
+        lead = StaffOnboardingLead.objects.create(
+            email="vechi-reply@exemplu-uat.ro",
+            display_name="Reply Redirect",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            judet="Iași",
+            invite_mail_status=StaffOnboardingLead.INVITE_SENT,
+        )
+        body = "Bună ziua, adresa corectă este contact@exemplu-uat.ro. Mulțumim."
+        result = process_inbound_email(
+            from_email="vechi-reply@exemplu-uat.ro",
+            to_addrs=["contact@eu-adopt.ro"],
+            subject="Re: Invitație EU-Adopt",
+            body=body,
+            external_id="test-reply-redirect-1",
+        )
+        self.assertEqual(result.get("kind"), "reply")
+        self.assertTrue(result.get("redirected"))
+        lead.refresh_from_db()
+        self.assertEqual(lead.email.lower(), "contact@exemplu-uat.ro")
+        self.assertIn("[BOUNCE-REDIRECT]", lead.invite_staff_notes or "")
