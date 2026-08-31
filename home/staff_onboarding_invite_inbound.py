@@ -601,6 +601,124 @@ def process_inbound_email(
     return result
 
 
+def _inbound_text_parts(snippet: str, subject: str) -> tuple[str, str]:
+    """Extrage subject + body din snippet inbound (subject | body)."""
+    subj = _sanitize_imap_text(subject)
+    snip = _sanitize_imap_text(snippet)
+    if " | " in snip:
+        head, body = snip.split(" | ", 1)
+        if not subj:
+            subj = head
+        return subj, body
+    return subj, snip
+
+
+def recover_missed_bounce_redirects(
+    *,
+    dry_run: bool = False,
+    max_leads: int = 500,
+    since_days: int = 90,
+) -> dict[str, int]:
+    """
+    One-shot: lead-uri cu bounce/reply inbound fără [BOUNCE-REDIRECT] — retry redirect.
+    Folosește snippet-ul salvat (subject + primele ~300 car. din body).
+    """
+    since = timezone.now() - timedelta(days=max(1, min(int(since_days or 90), 365)))
+    stats = {
+        "candidates": 0,
+        "redirected": 0,
+        "resend_ok": 0,
+        "skipped_no_suggestion": 0,
+        "skipped_already": 0,
+        "skipped_imported": 0,
+        "errors": 0,
+        "dry_run": int(bool(dry_run)),
+    }
+
+    lead_ids = (
+        StaffOnboardingInviteInbound.objects.filter(
+            received_at__gte=since,
+            kind__in=(
+                StaffOnboardingInviteInbound.KIND_BOUNCE,
+                StaffOnboardingInviteInbound.KIND_REPLY,
+            ),
+            lead_id__isnull=False,
+        )
+        .values_list("lead_id", flat=True)
+        .distinct()
+    )
+
+    leads = (
+        StaffOnboardingLead.objects.filter(pk__in=lead_ids, imported_user__isnull=True)
+        .order_by("-updated_at")[: max(1, int(max_leads or 500))]
+    )
+
+    for lead in leads:
+        stats["candidates"] += 1
+        notes = lead.invite_staff_notes or ""
+        if "[BOUNCE-REDIRECT]" in notes:
+            stats["skipped_already"] += 1
+            continue
+        if lead.imported_user_id:
+            stats["skipped_imported"] += 1
+            continue
+
+        inbound = (
+            lead.invite_inbounds.filter(
+                received_at__gte=since,
+                kind__in=(
+                    StaffOnboardingInviteInbound.KIND_BOUNCE,
+                    StaffOnboardingInviteInbound.KIND_REPLY,
+                ),
+            )
+            .order_by("-received_at")
+            .first()
+        )
+        if not inbound:
+            stats["skipped_no_suggestion"] += 1
+            continue
+
+        subject, body_text = _inbound_text_parts(inbound.snippet or "", inbound.subject or "")
+        failed = extract_bounce_recipient_emails(body_text, subject)
+        if not failed and inbound.kind == StaffOnboardingInviteInbound.KIND_REPLY:
+            failed = [lead.email or ""]
+        suggested = extract_suggested_redirect_email(
+            body_text,
+            subject,
+            failed_emails=failed,
+            lead_email=lead.email or "",
+        )
+        if not suggested:
+            stats["skipped_no_suggestion"] += 1
+            continue
+
+        if dry_run:
+            stats["redirected"] += 1
+            continue
+
+        try:
+            redirect_info = apply_bounce_email_redirect(
+                lead,
+                suggested,
+                old_email=lead.email or "",
+                body=body_text,
+                subject=subject,
+            )
+            if redirect_info.get("redirected"):
+                stats["redirected"] += 1
+                if redirect_info.get("resend_outcome") in ("sent", "simulated"):
+                    stats["resend_ok"] += 1
+            elif redirect_info.get("reason") in ("already_redirected", "redirect_limit"):
+                stats["skipped_already"] += 1
+            else:
+                stats["skipped_no_suggestion"] += 1
+        except Exception:
+            logger.exception("recover_missed_bounce_redirects lead_id=%s", lead.pk)
+            stats["errors"] += 1
+
+    return stats
+
+
 def poll_imap_inbox(
     *,
     max_messages: int = 40,
@@ -613,6 +731,7 @@ def poll_imap_inbox(
     mode:
       unseen — doar UNSEEN (cron normal)
       bounce_backlog — NDR-uri recente (inclusiv deja citite), doar bounce
+      bounce_recover — NDR + reply recente, retry redirect (fără duplicate inbound)
     """
     if not staff_invite_imap_configured():
         return {"error": 1, "message": "IMAP neconfigurat"}
@@ -633,6 +752,8 @@ def poll_imap_inbox(
         "unknown": 0,
         "skipped_dup": 0,
         "skipped_non_bounce": 0,
+        "skipped_already_redirect": 0,
+        "skipped_no_suggestion": 0,
         "no_lead": 0,
         "errors": 0,
         "redirects": 0,
@@ -647,7 +768,7 @@ def poll_imap_inbox(
         conn.login(user, password)
         conn.select(folder)
 
-        if mode == "bounce_backlog":
+        if mode in ("bounce_backlog", "bounce_recover"):
             since = (timezone.now() - timedelta(days=since_days)).strftime("%d-%b-%Y")
             # Filtrăm bounce în Python (criteriile OR IMAP diferă pe Zoho).
             typ, data = conn.search(None, f"(SINCE {since})")
@@ -658,14 +779,14 @@ def poll_imap_inbox(
             conn.logout()
             return {**stats, "errors": 1}
         ids = (data[0] or b"").split()
-        if mode == "bounce_backlog":
+        if mode in ("bounce_backlog", "bounce_recover"):
             ids = list(reversed(ids))  # cele mai recente întâi
         else:
             ids = ids[-max_messages:]
 
         bounce_seen = 0
         for num in ids:
-            if mode == "bounce_backlog" and bounce_seen >= max_messages:
+            if mode in ("bounce_backlog", "bounce_recover") and bounce_seen >= max_messages:
                 break
             try:
                 typ, msg_data = conn.fetch(num, "(RFC822)")
@@ -690,8 +811,54 @@ def poll_imap_inbox(
                 if mode == "bounce_backlog" and kind_preview != StaffOnboardingInviteInbound.KIND_BOUNCE:
                     stats["skipped_non_bounce"] += 1
                     continue
-                if mode == "bounce_backlog":
+                if mode == "bounce_recover" and kind_preview not in (
+                    StaffOnboardingInviteInbound.KIND_BOUNCE,
+                    StaffOnboardingInviteInbound.KIND_REPLY,
+                ):
+                    stats["skipped_non_bounce"] += 1
+                    continue
+                if mode in ("bounce_backlog", "bounce_recover"):
                     bounce_seen += 1
+
+                if mode == "bounce_recover":
+                    from_addr = parseaddr(from_h)[1] or from_h.strip()
+                    lead = resolve_lead_for_inbound(
+                        from_addr,
+                        [to_h],
+                        headers,
+                        body=body,
+                        subject=subj,
+                        kind=kind_preview,
+                    )
+                    if not lead:
+                        stats["no_lead"] += 1
+                        if mark_seen:
+                            conn.store(num, "+FLAGS", "\\Seen")
+                        continue
+                    if "[BOUNCE-REDIRECT]" in (lead.invite_staff_notes or ""):
+                        stats["skipped_already_redirect"] += 1
+                        if mark_seen:
+                            conn.store(num, "+FLAGS", "\\Seen")
+                        continue
+                    applied, redirect_info = _try_lead_email_redirect(
+                        lead,
+                        kind=kind_preview,
+                        body=body,
+                        subject=subj,
+                        from_addr=from_addr,
+                    )
+                    stats["processed"] += 1
+                    if kind_preview == StaffOnboardingInviteInbound.KIND_BOUNCE:
+                        stats["bounces"] += 1
+                    else:
+                        stats["replies"] += 1
+                    if redirect_info.get("redirected"):
+                        stats["redirects"] += 1
+                    elif not redirect_info:
+                        stats["skipped_no_suggestion"] += 1
+                    if mark_seen:
+                        conn.store(num, "+FLAGS", "\\Seen")
+                    continue
 
                 result = process_inbound_email(
                     from_email=from_h,

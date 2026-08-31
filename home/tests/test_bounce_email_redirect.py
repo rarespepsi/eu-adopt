@@ -8,6 +8,7 @@ from home.staff_onboarding_invite_inbound import (
     _sanitize_imap_text,
     extract_suggested_redirect_email,
     process_inbound_email,
+    recover_missed_bounce_redirects,
 )
 
 User = get_user_model()
@@ -173,4 +174,46 @@ class BounceRedirectEmailTests(TestCase):
         self.assertTrue(result.get("redirected"))
         lead.refresh_from_db()
         self.assertEqual(lead.email.lower(), "contact@exemplu-uat.ro")
+        self.assertIn("[BOUNCE-REDIRECT]", lead.invite_staff_notes or "")
+
+    @override_settings(STAFF_INVITE_EMAIL_ENABLED=False)
+    def test_recover_missed_from_inbound_snippet(self):
+        User.objects.create_user(
+            username="staff_recover",
+            email="staff_recover@test.local",
+            password="x",
+            is_staff=True,
+        )
+        lead = StaffOnboardingLead.objects.create(
+            email="vechi-rec@exemplu-uat.ro",
+            display_name="Recover Snippet",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            judet="Cluj",
+            invite_mail_status=StaffOnboardingLead.INVITE_BOUNCED,
+        )
+        body = (
+            "Final-Recipient: rfc822; vechi-rec@exemplu-uat.ro\n"
+            "Please try sending to: nou-rec@exemplu-uat.ro\n"
+        )
+        process_inbound_email(
+            from_email="mailer-daemon@zoho.com",
+            to_addrs=[f"invite+{lead.pk}@eu-adopt.ro"],
+            subject="Undelivered Mail",
+            body="Final-Recipient only — no redirect in first pass",
+            external_id="test-recover-setup-1",
+        )
+        lead.refresh_from_db()
+        self.assertEqual(lead.invite_mail_status, StaffOnboardingLead.INVITE_BOUNCED)
+        # Simulează inbound vechi cu snippet care conține adresa nouă
+        from home.models import StaffOnboardingInviteInbound
+
+        inbound = lead.invite_inbounds.order_by("-received_at").first()
+        self.assertIsNotNone(inbound)
+        inbound.snippet = f"Undelivered | {body[:300]}"
+        inbound.save(update_fields=["snippet"])
+
+        stats = recover_missed_bounce_redirects(max_leads=50, since_days=30)
+        self.assertGreaterEqual(stats["redirected"], 1)
+        lead.refresh_from_db()
+        self.assertEqual(lead.email.lower(), "nou-rec@exemplu-uat.ro")
         self.assertIn("[BOUNCE-REDIRECT]", lead.invite_staff_notes or "")
