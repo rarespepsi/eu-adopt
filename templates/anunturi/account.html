@@ -2301,7 +2301,10 @@ body.page-account .account-right-panel {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script>
 (function() {
-	/* Token CSRF din cookie la submit — evită 403 după bfcache / picker foto mobil. */
+	/* Token CSRF — cookie + refresh la modal campanie / bfcache / picker foto mobil. */
+	var CSRF_REFRESH_URL = "{% url 'account_csrf_refresh' %}";
+	var touchCoarse = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+
 	function getCsrfCookie() {
 		var v = null;
 		if (document.cookie && document.cookie !== "") {
@@ -2316,12 +2319,12 @@ body.page-account .account-right-panel {
 		}
 		return v;
 	}
-	function applyCsrfToken(form) {
-		if (!form || !form.tagName || form.tagName.toLowerCase() !== "form") return;
+	function applyCsrfToken(form, token) {
+		if (!form || !form.tagName || form.tagName.toLowerCase() !== "form") return null;
 		var method = (form.getAttribute("method") || "get").toLowerCase();
-		if (method !== "post") return;
-		var token = getCsrfCookie();
-		if (!token) return;
+		if (method !== "post") return null;
+		var tok = token || getCsrfCookie();
+		if (!tok) return null;
 		var input = form.querySelector('input[name="csrfmiddlewaretoken"]');
 		if (!input) {
 			input = document.createElement("input");
@@ -2329,15 +2332,106 @@ body.page-account .account-right-panel {
 			input.name = "csrfmiddlewaretoken";
 			form.appendChild(input);
 		}
-		input.value = token;
+		input.value = tok;
+		return tok;
 	}
+	function applyCsrfAllForms(token) {
+		var forms = document.querySelectorAll("form");
+		for (var i = 0; i < forms.length; i++) applyCsrfToken(forms[i], token);
+	}
+	function refreshCsrfToken() {
+		return fetch(CSRF_REFRESH_URL, {
+			method: "GET",
+			credentials: "same-origin",
+			headers: { "X-Requested-With": "XMLHttpRequest" }
+		})
+			.then(function(res) {
+				if (!res.ok) throw new Error("csrf_refresh_failed");
+				return res.json();
+			})
+			.then(function(data) {
+				var tok = data && data.csrfToken ? data.csrfToken : getCsrfCookie();
+				if (tok) applyCsrfAllForms(tok);
+				return tok;
+			})
+			.catch(function() {
+				var tok = getCsrfCookie();
+				if (tok) applyCsrfAllForms(tok);
+				return tok;
+			});
+	}
+	window.__euRefreshCsrf = refreshCsrfToken;
+	window.__euApplyCsrf = applyCsrfToken;
+
 	document.addEventListener("submit", function(ev) {
 		applyCsrfToken(ev.target);
 	}, true);
-	window.addEventListener("pageshow", function() {
-		var forms = document.querySelectorAll("form");
-		for (var i = 0; i < forms.length; i++) applyCsrfToken(forms[i]);
+
+	window.addEventListener("pageshow", function(ev) {
+		if (ev.persisted) {
+			refreshCsrfToken();
+		} else {
+			applyCsrfAllForms();
+		}
 	});
+
+	document.addEventListener("visibilitychange", function() {
+		if (document.visibilityState !== "visible") return;
+		var modal = document.getElementById("campanie-modal");
+		if (modal && !modal.hidden) refreshCsrfToken();
+	});
+
+	/* Submit campanie pe touch: fetch + FormData (cookie/token proaspăt după galerie). */
+	var campanieForm = document.getElementById("campanie-sterilizare-form");
+	if (campanieForm && touchCoarse) {
+		campanieForm.addEventListener("submit", function(ev) {
+			ev.preventDefault();
+			var form = campanieForm;
+			var saveBtn = document.getElementById("btn-save-campanie");
+			if (saveBtn) saveBtn.disabled = true;
+			refreshCsrfToken().then(function(token) {
+				if (!token) {
+					alert("Nu am putut pregăti trimiterea. Reîncarcă pagina Cont și încearcă din nou.");
+					if (saveBtn) saveBtn.disabled = false;
+					return;
+				}
+				applyCsrfToken(form, token);
+				var fd = new FormData(form);
+				fd.set("csrfmiddlewaretoken", token);
+				return fetch(form.action, {
+					method: "POST",
+					body: fd,
+					credentials: "same-origin",
+					headers: {
+						"X-CSRFToken": token,
+						"X-Requested-With": "XMLHttpRequest"
+					},
+					redirect: "follow"
+				});
+			}).then(function(res) {
+				if (!res) return;
+				if (res.status === 403) {
+					alert("Sesiunea formularului a expirat. Reîncercăm…");
+					window.location.href = "{% url 'account' %}?campanie=1";
+					return;
+				}
+				if (res.redirected && res.url) {
+					window.location.href = res.url;
+					return;
+				}
+				if (res.ok) {
+					window.location.reload();
+					return;
+				}
+				window.location.href = form.action;
+			}).catch(function() {
+				alert("Eroare la trimitere. Verifică conexiunea și încearcă din nou.");
+				if (saveBtn) saveBtn.disabled = false;
+			});
+		});
+	}
+
+	refreshCsrfToken();
 })();
 </script>
 <script>
@@ -2472,6 +2566,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		campanieModal.hidden = false;
 		campanieModal.setAttribute('aria-hidden', 'false');
 		syncBodyOverflow();
+		if (typeof window.__euRefreshCsrf === 'function') {
+			window.__euRefreshCsrf();
+		}
 		var first = document.getElementById('id_campanie_judet');
 		if (first) try { first.focus(); } catch (e) {}
 	}

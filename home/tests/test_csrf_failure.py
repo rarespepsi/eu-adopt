@@ -87,3 +87,28 @@ class CsrfFailurePageTests(TestCase):
         self.assertIn("Contul meu", body)
         self.assertNotIn("Alege tipul de cont", body)
         self.assertNotIn(f'href="{reverse("login")}"', body)
+
+    def test_account_get_sets_csrf_cookie(self):
+        u = User.objects.create_user("csrf_acct", "csrf_acct@test.local", "x")
+        ap, _ = AccountProfile.objects.get_or_create(user=u)
+        ap.role = AccountProfile.ROLE_PF
+        ap.save(update_fields=["role"])
+        c = Client(enforce_csrf_checks=True)
+        c.force_login(u)
+        r = c.get(reverse("account"))
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("csrftoken", r.cookies)
+
+    def test_account_csrf_refresh_returns_token(self):
+        u = User.objects.create_user("csrf_ref", "csrf_ref@test.local", "x")
+        ap, _ = AccountProfile.objects.get_or_create(user=u)
+        ap.role = AccountProfile.ROLE_PF
+        ap.save(update_fields=["role"])
+        c = Client(enforce_csrf_checks=True)
+        c.force_login(u)
+        r = c.get(reverse("account_csrf_refresh"))
+        self.assertEqual(r.status_code, 200)
+        data = r.json()
+        self.assertTrue(data.get("ok"))
+        self.assertTrue(data.get("csrfToken"))
+        self.assertIn("csrftoken", r.cookies)

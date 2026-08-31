@@ -5858,6 +5858,7 @@ def promo_a2_checkout_demo_success_view(request, pk):
     return render(request, "anunturi/promo_a2_checkout_demo_success.html", ctx)
 
 
+@ensure_csrf_cookie
 def account_view(request):
     """Pagina cont utilizator: date completate la înscriere + rol."""
     if not request.user.is_authenticated:
@@ -5993,6 +5994,18 @@ def account_view(request):
     response["Pragma"] = "no-cache"
     response["Expires"] = "0"
     return response
+
+
+@login_required
+@ensure_csrf_cookie
+def account_csrf_refresh_view(request):
+    """GET JSON — reîmprospătează cookie + token CSRF (formular campanie pe mobil)."""
+    from django.http import JsonResponse
+    from django.middleware.csrf import get_token
+
+    if request.method != "GET":
+        return JsonResponse({"ok": False, "error": "method_not_allowed"}, status=405)
+    return JsonResponse({"ok": True, "csrfToken": get_token(request)})
 
 
 @login_required

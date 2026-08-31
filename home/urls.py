@@ -25,6 +25,7 @@ urlpatterns = [
     path('signup/colaborator/', views.signup_colaborator_view, name='signup_colaborator'),
     path('inscriere/', views.inscriere_view, name='inscriere'),
     path('cont/', views.account_view, name='account'),
+    path('cont/csrf-refresh/', views.account_csrf_refresh_view, name='account_csrf_refresh'),
     path('cont/puncte-de-lucru/', views.account_work_locations_view, name='account_work_locations'),
     path('cont/mesaje/', views.unified_inbox_view, name='unified_inbox'),
     path('cont/mesaje/citit/', views.unified_inbox_mark_read_view, name='unified_inbox_mark_read'),

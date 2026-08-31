@@ -1,37 +1,24 @@
 ---
 # Handoff agent — ultima pauză
-**Data/ora (RO):** 2026-08-29 ~19:15
-**Sursă:** laptop + mobil Cloud · eu-adopt / main
-**User:** 1977 ok — regula rezumat dimineața laptop
+**Data/ora (RO):** 2026-08-31 ~09:20
+**Sursă:** laptop · eu-adopt / main
+**User:** 1977 fix permanent CSRF campanie Servacov
 
-## Ce s-a făcut (29 aug, sesiune mobil + laptop)
-- **Servacov:** mail suport trimis (`adapostrosioriidevede@gmail.com`); diagnostic CSRF la campanie sterilizare (nu doar upload)
-- **SSH Cloud Agent:** secret `HETZNER_SSH_KEY` în Cursor dashboard; cheie `cursor-cloud-euadopt` pe H
-- **Deploy live:** H pe `1d785f6` (= `origin/main`); fix CSRF campanii `5a2ef2d` + upload mobil + handoff
-- **Reguli noi pe main:** `DEPLOY_HETZNER_DUPA_PUSH_MAIN.mdc` (PR #5 merged); `BACKUP_DEPLOY_PROCEDURA.mdc` actualizat
-- **Regulă nouă (acest commit):** `LAPTOP_DIMINEATA_REZUMAT.mdc` — rezumat automat dimineața pe laptop după lucru mobil
+## Ce s-a făcut
+- **Fix CSRF campanie sterilizare (mobil):** `@ensure_csrf_cookie` pe `account_view`; endpoint `GET /cont/csrf-refresh/`; pe touch submit campanie via `fetch`+FormData cu token proaspăt; refresh la deschidere modal / revenire din galerie
+- **Servacov:** încă 0 campanii; erori CSRF 31 aug dimineață (iPhone) — așteptare retest după deploy
+- **Manual:** user va primi detalii campanie de la Servacov pentru publicare staff
 
 ## Fișiere atinse
-- `.cursor/rules/LAPTOP_DIMINEATA_REZUMAT.mdc` — nou
-- `.cursor/rules/DEPLOY_HETZNER_DUPA_PUSH_MAIN.mdc` — pe main (PR #5)
-- `docs/AGENT_HANDOFF_LATEST.md` — acest fișier
+- `home/views.py` — `account_view`, `account_csrf_refresh_view`
+- `home/urls.py` — `cont/csrf-refresh/`
+- `templates/anunturi/account.html` — JS CSRF campanie mobil
+- `home/tests/test_csrf_failure.py` — teste account CSRF
 
-## Git
-- Branch: main
-- Commit(uri) recente: `1d785f6` (merge deploy rule) · `09a6e39` (handoff SSH mobil) · `5a2ef2d` (CSRF campanii) · `fb374b1` (upload mobil)
-- Push: da (după acest handoff)
-
-## Deploy Hetzner
-- da · SHA live `1d785f6` · `euadopt` active · https://eu-adopt.ro 200
-
-## Pentru agent laptop (dimineața)
-- Citește acest fișier + `git log origin/main -15` + SHA live pe H
-- Regulă: `LAPTOP_DIMINEATA_REZUMAT.mdc`
-
-## Pentru agent mobil (final sesiune)
-- Actualizează acest handoff + commit + push; deploy după `DEPLOY_HETZNER_DUPA_PUSH_MAIN.mdc`
+## Git / Deploy
+- Commit + push main → deploy H obligatoriu
 
 ## Următorul pas
-- Servacov: reîncearcă campanie sterilizare pe Safari/Chrome (fix CSRF live)
-- Opțional: harden CSRF suplimentar la cerere user + 1977+OK
+- Servacov retestează pe iPhone (Safari/Chrome) Cont → campanie + link
+- Dacă OK: confirmare; altfel loguri + campanie manuală cu detaliile primite
 ---
