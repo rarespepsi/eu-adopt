@@ -110,10 +110,14 @@ def shelter_detail_view(request, slug: str):
     )
     viewer_id = int(request.user.pk) if request.user.is_authenticated else None
 
+    from home.org_trust_badge import user_has_org_trust_badge
+
+    org_trust = user_has_org_trust_badge(user)
     for a in animals:
         ensure_animal_slug(a, save=True)
         a.public_url = animal_public_url(a)
         a.show_ask_plic = False
+        a.show_org_trust_badge = org_trust
         if can_ask and viewer_id is not None and int(a.owner_id) != viewer_id:
             if (a.adoption_state or "").strip() != AnimalListing.ADOPTION_STATE_ADOPTED:
                 a.show_ask_plic = True
@@ -155,6 +159,7 @@ def shelter_detail_view(request, slug: str):
             "org_animals": animals,
             "org_animal_count": len(animals),
             "org_is_public_shelter": bool(getattr(user.account_profile, "is_public_shelter", False)),
+            "show_org_trust_badge": org_trust,
             "wishlist_ids": wishlist_ids,
         },
     )

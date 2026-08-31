@@ -23,6 +23,7 @@
 		<link rel="stylesheet" href="{% static 'css/navbar-a0-secured.css' %}?v=20260411a" type="text/css" media="screen" />
 		<link rel="stylesheet" href="{% static 'css/pet-images-common.css' %}?v=3" type="text/css" media="screen" />
 		<link rel="stylesheet" href="{% static 'css/eu-media-modal.css' %}?v=2" type="text/css" media="screen" />
+		<link rel="stylesheet" href="{% static 'css/eu-org-trust-badge.css' %}?v=1" type="text/css" media="screen" />
 		<link rel="shortcut icon" href="{% static 'images/favicon.png' %}" />
 		<style>
 			/* PET SINGLE – fundal ca înscriere PF (signup): #141a22 + casete sticlă */
@@ -1621,6 +1622,7 @@
 								<section id="MW" class="mypet-fisa-wrap">
 									<div class="mypet-fisa-inner">
 										<div class="mypet-fisa-col mypet-fisa-col-photos">
+											{% eu_org_trust_badge show=show_org_trust_badge overlay=1 size="md" %}
 											<div class="mypet-fisa-photo-slot mypet-fisa-photo-1{% if pet.imagine %} has-photo{% endif %}">
 												<div class="mypet-fisa-photo-preview" aria-hidden="true">
 													{% if pet.imagine %}

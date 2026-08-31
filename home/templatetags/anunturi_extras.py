@@ -1,5 +1,6 @@
 from django import template
 
+from home.org_trust_badge import pet_shows_org_trust_badge
 from home.pet_card_display import pet_card_meta_context
 from home.pet_media_thumb import pet_thumb_url_for
 from home.pet_traits import trait_label
@@ -30,6 +31,18 @@ def eu_pet_val(context, raw, default=""):
 def pet_thumb_url(image_field, size=400):
     """URL thumbnail JPEG (max latura = size px) pentru poze din MEDIA animals/."""
     return pet_thumb_url_for(image_field, size)
+
+
+@register.inclusion_tag("anunturi/includes/eu_org_trust_badge.html")
+def eu_org_trust_badge(pet=None, show=None, size="", overlay=False):
+    """Badge verde thumbs-up: adăpost / ONG înregistrat."""
+    if show is None:
+        show = pet_shows_org_trust_badge(pet)
+    return {
+        "show": bool(show),
+        "size": (size or "").strip(),
+        "overlay": bool(overlay),
+    }
 
 
 @register.inclusion_tag("anunturi/includes/pet_card_meta_footer.html", takes_context=True)

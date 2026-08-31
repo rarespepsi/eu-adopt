@@ -5,6 +5,7 @@
 <div class="pt-p2-card-photo-wrap">
 	<a href="{{ pet_single_url }}" class="pt-p2-card-link" aria-label="{% if eu_site_active %}View profile {{ pet.nume }}{% else %}Vezi profil {{ pet.nume }}{% endif %}">
 		<div class="pt-p2-card-photo" aria-hidden="true">
+			{% eu_org_trust_badge pet overlay=1 %}
 			{% if pet.imagine %}
 			<img
 				src="{% pet_thumb_url pet.imagine 400 %}"

@@ -96,6 +96,30 @@ def _pt_p2_annotate_show_promo(p2_list):
         row["show_pt_promo"] = sp in ("dog", "cat") and "adoption_state" in row
 
 
+def _pt_p2_annotate_org_trust_badge(p2_list):
+    """Badge verde pe card: owner cu rol org activ."""
+    from home.org_trust_badge import owner_ids_with_org_trust_badge
+
+    owner_ids = []
+    for row in p2_list:
+        oid = row.get("owner_id")
+        if oid is not None:
+            try:
+                owner_ids.append(int(oid))
+            except (TypeError, ValueError):
+                pass
+    trusted = owner_ids_with_org_trust_badge(owner_ids)
+    for row in p2_list:
+        oid = row.get("owner_id")
+        show = False
+        if oid is not None:
+            try:
+                show = int(oid) in trusted
+            except (TypeError, ValueError):
+                show = False
+        row["show_org_trust_badge"] = show
+
+
 def pt_pets_page_context(request):
     """
     Construiește p2_list + câmpurile de filtru pentru șablonul PT.
@@ -299,6 +323,7 @@ def pt_pets_page_context(request):
 
     _pt_p2_annotate_ask_plic(p2_list, request)
     _pt_p2_annotate_show_promo(p2_list)
+    _pt_p2_annotate_org_trust_badge(p2_list)
 
     return {
         "p2_list": p2_list,

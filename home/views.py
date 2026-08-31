@@ -5517,6 +5517,10 @@ def render_dog_profile(request, listing: AnimalListing):
         ),
         "pet_copy_location": pet_copy_location_text(listing),
     }
+    from home.org_trust_badge import user_has_org_trust_badge
+
+    owner = listing.owner if getattr(listing, "owner_id", None) else None
+    ctx["show_org_trust_badge"] = user_has_org_trust_badge(owner)
     return render(request, "anunturi/pets-single.html", ctx)
 
 

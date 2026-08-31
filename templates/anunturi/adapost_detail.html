@@ -4,6 +4,7 @@
 {% block body_class %}page-adapost-detail{% endblock %}
 
 {% block extra_css_after %}
+<link rel="stylesheet" href="{% static 'css/eu-org-trust-badge.css' %}?v=1" type="text/css" media="screen" />
 <style>
 	/* Full-bleed: ascunde sidebars globale goale (260+260) ca pe I Love */
 	body.page-adapost-detail .layout .sidebar-left,
@@ -1672,7 +1673,7 @@
 			{% else %}
 			<div class="adp-det__logo-ph" aria-hidden="true">🏠</div>
 			{% endif %}
-			<h1>{{ org_name }}</h1>
+			<h1>{{ org_name }}{% eu_org_trust_badge show=show_org_trust_badge size="md" %}</h1>
 			{% if org_locality %}<p>{{ org_locality }}</p>{% endif %}
 			<div class="adp-det__addr-head">
 				{% if org_phone %}
@@ -1768,6 +1769,7 @@
 			{% for a in org_animals %}
 			<article class="adp-pet-card">
 				<div class="adp-pet-card__media">
+					{% eu_org_trust_badge a overlay=1 %}
 					<a class="adp-pet-card__photo" href="{{ a.public_url }}?back={{ org_back_path|urlencode }}" aria-label="Vezi {{ a.name|default:'animal' }}">
 						{% if a.photo_1 %}
 						<img src="{{ a.photo_1.url }}" alt="{{ a.name }}" />
