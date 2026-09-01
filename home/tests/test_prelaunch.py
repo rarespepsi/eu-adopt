@@ -7,11 +7,12 @@ from __future__ import annotations
 import uuid
 
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from home.models import AnimalListing, StaffOnboardingLead
+from home.models import AnimalListing, LostFoundAnimal, StaffOnboardingLead
 
 User = get_user_model()
 
@@ -67,6 +68,29 @@ class PrelaunchEnabledTests(TestCase):
             r = c.get(reverse(name))
             self.assertEqual(r.status_code, 302, msg=name)
             self.assertIn("/login/", r.url or "", msg=name)
+
+    def test_anonymous_pierdute_judet_shows_details_without_login(self):
+        """Anonimul vede detalii (telefon, descriere) în pagina județ — fără redirect login."""
+        photo = SimpleUploadedFile("lost.jpg", b"\xff\xd8\xff\xd9", content_type="image/jpeg")
+        LostFoundAnimal.objects.create(
+            user=self.user,
+            kind=LostFoundAnimal.KIND_LOST,
+            species="dog",
+            name="Rex",
+            judet="Neamț",
+            judet_slug="neamt",
+            localitate="Piatra Neamț",
+            description="Câine maro, zgarda roșie",
+            phone="0733823678",
+            photo=photo,
+        )
+        c = Client()
+        r = c.get(reverse("animale_pierdute_judet", kwargs={"judet_slug": "neamt"}))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Click pe poză pentru detalii.")
+        self.assertNotContains(r, "login pentru detalii")
+        self.assertContains(r, 'data-phone="0733823678"')
+        self.assertContains(r, "Câine maro, zgarda roșie")
 
     def test_anonymous_pet_ficha_accessible(self):
         listing = AnimalListing.objects.create(

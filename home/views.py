@@ -14500,8 +14500,6 @@ def animale_pierdute_judet_view(request, judet_slug):
         qs = qs.filter(kind=kind_filter)
     items = list(qs.select_related("user").order_by("-created_at")[:120])
 
-    # Detaliile complete (descriere, telefon) doar pentru user logat.
-    can_see_details = bool(getattr(request.user, "is_authenticated", False))
     cards = []
     for row in items:
         try:
@@ -14515,16 +14513,14 @@ def animale_pierdute_judet_view(request, judet_slug):
                 "id": row.pk,
                 "kind": row.kind,
                 "kind_label": row.get_kind_display(),
-                "species": row.get_species_display() if can_see_details else "",
+                "species": row.get_species_display(),
                 "name": (row.name or "").strip() or row.get_species_display(),
-                "localitate": (row.localitate or "").strip() if can_see_details else "",
-                "judet": row.judet if can_see_details else "",
-                "description": (row.description or "").strip() if can_see_details else "",
-                "phone": (row.phone or "").strip() if can_see_details else "",
+                "localitate": (row.localitate or "").strip(),
+                "judet": row.judet,
+                "description": (row.description or "").strip(),
+                "phone": (row.phone or "").strip(),
                 "img": img,
-                "created": (
-                    row.created_at.strftime("%d.%m.%Y") if (can_see_details and row.created_at) else ""
-                ),
+                "created": row.created_at.strftime("%d.%m.%Y") if row.created_at else "",
             }
         )
 
@@ -14553,8 +14549,6 @@ def animale_pierdute_judet_view(request, judet_slug):
             "ap_count_all": count_all,
             "ap_count_lost": count_lost,
             "ap_count_found": count_found,
-            "ap_can_see_details": can_see_details,
-            "ap_login_next": request.get_full_path(),
             "ap_empty_slots": range(empty_slots),
             "ap_grid_rows": grid_rows,
             "ap_grid_rows_mobile": grid_rows_mobile,

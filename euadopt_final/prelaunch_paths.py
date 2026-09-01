@@ -6,7 +6,7 @@ Animale pierdute/găsite (hartă + bibliotecă județ),
 Semnalează abuz (hartă — formularul de trimitere cere login).
 Harta Campanii = pagină publică permanentă (home.campanii_ro.is_campanii_public_path).
 PT / Servicii și restul site-ului cer login.
-Detalii anunț pierdut/găsit + postare nouă cer autentificare (template / @login_required).
+Detalii anunț pierdut/găsit = publice; postare / editare / ștergere cer autentificare (@login_required).
 """
 from __future__ import annotations
 
