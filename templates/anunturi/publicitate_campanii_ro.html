@@ -13,6 +13,7 @@
 			id="campaniiMapShareBtn"
 			data-share-url="{{ request.scheme }}://{{ request.get_host }}{% url 'publicitate_campanii_ro' %}"
 			data-share-title="Campanii gratuite de sterilizare | EU-Adopt"
+			data-share-text="Harta interactivă a campaniilor gratuite din România!&#10;&#10;Aveți informații despre alte campanii, vă rugăm să le postați aici!"
 			aria-label="Distribuie linkul hărții campaniilor"
 		>↗ Distribuie</button>
 	</header>
@@ -133,22 +134,27 @@ document.addEventListener("DOMContentLoaded", function () {
 	shareBtn.addEventListener("click", function () {
 		var title = shareBtn.getAttribute("data-share-title") || "Campanii gratuite de sterilizare | EU-Adopt";
 		var pageUrl = shareBtn.getAttribute("data-share-url") || window.location.href;
-		var text = "Vezi campaniile gratuite de sterilizare pe EU-Adopt:\n" + pageUrl;
+		var shareText = (shareBtn.getAttribute("data-share-text") || "").trim();
+		var fullText = shareText ? (shareText + "\n\n" + pageUrl) : pageUrl;
 		if (navigator.share) {
-			navigator.share({ title: title, text: text, url: pageUrl }).catch(function () {});
+			navigator.share({
+				title: title,
+				text: shareText || title,
+				url: pageUrl,
+			}).catch(function () {});
 			return;
 		}
 		if (navigator.clipboard && navigator.clipboard.writeText) {
-			navigator.clipboard.writeText(pageUrl).then(function () {
+			navigator.clipboard.writeText(fullText).then(function () {
 				var prev = shareBtn.textContent;
 				shareBtn.textContent = "Copiat!";
 				setTimeout(function () { shareBtn.textContent = prev; }, 1600);
 			}).catch(function () {
-				window.prompt("Copiază linkul:", pageUrl);
+				window.prompt("Copiază textul:", fullText);
 			});
 			return;
 		}
-		window.prompt("Copiază linkul:", pageUrl);
+		window.prompt("Copiază textul:", fullText);
 	});
 });
 </script>

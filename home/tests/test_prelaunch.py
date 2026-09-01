@@ -50,6 +50,7 @@ class PrelaunchEnabledTests(TestCase):
         self.assertEqual(r_camp.status_code, 200)
         self.assertContains(r_camp, "Campanii gratuite de sterilizare")
         self.assertContains(r_camp, "Distribuie")
+        self.assertContains(r_camp, "Harta interactivă a campaniilor gratuite din România")
         r_judet = c.get(reverse("publicitate_campanii_judet", kwargs={"judet_slug": "neamt"}))
         self.assertEqual(r_judet.status_code, 200)
         r_ap = c.get(reverse("animale_pierdute"))
