@@ -7,6 +7,14 @@
 <section class="campanii-map-page" aria-label="Campanii gratuite de sterilizare — harta județelor">
 	<header class="campanii-map-head">
 		<h1>Campanii gratuite de sterilizare</h1>
+		<button
+			type="button"
+			class="campanii-map-share"
+			id="campaniiMapShareBtn"
+			data-share-url="{{ request.scheme }}://{{ request.get_host }}{% url 'publicitate_campanii_ro' %}"
+			data-share-title="Campanii gratuite de sterilizare | EU-Adopt"
+			aria-label="Distribuie linkul hărții campaniilor"
+		>↗ Distribuie</button>
 	</header>
 
 	{# ~2/3 din ecran — harta SVG România pe județe #}
@@ -118,17 +126,70 @@ document.addEventListener("DOMContentLoaded", function () {
 		});
 });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+	var shareBtn = document.getElementById("campaniiMapShareBtn");
+	if (!shareBtn) return;
+	shareBtn.addEventListener("click", function () {
+		var title = shareBtn.getAttribute("data-share-title") || "Campanii gratuite de sterilizare | EU-Adopt";
+		var pageUrl = shareBtn.getAttribute("data-share-url") || window.location.href;
+		var text = "Vezi campaniile gratuite de sterilizare pe EU-Adopt:\n" + pageUrl;
+		if (navigator.share) {
+			navigator.share({ title: title, text: text, url: pageUrl }).catch(function () {});
+			return;
+		}
+		if (navigator.clipboard && navigator.clipboard.writeText) {
+			navigator.clipboard.writeText(pageUrl).then(function () {
+				var prev = shareBtn.textContent;
+				shareBtn.textContent = "Copiat!";
+				setTimeout(function () { shareBtn.textContent = prev; }, 1600);
+			}).catch(function () {
+				window.prompt("Copiază linkul:", pageUrl);
+			});
+			return;
+		}
+		window.prompt("Copiază linkul:", pageUrl);
+	});
+});
+</script>
 <style>
 	.campanii-map-page {
 		max-width: 72rem;
 		margin: 0.5rem auto 1.5rem;
 		padding: 0 0.85rem;
 	}
-	.campanii-map-head { margin-bottom: 0.55rem; }
+	.campanii-map-head {
+		margin-bottom: 0.55rem;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem 0.75rem;
+	}
 	.campanii-map-head h1 {
 		margin: 0;
 		font-size: clamp(1.25rem, 2.8vw, 1.6rem);
 		color: #6a1b9a;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.campanii-map-share {
+		flex: 0 0 auto;
+		border: 1px solid #6a1b9a;
+		background: linear-gradient(180deg, #f3e5f5 0%, #e1bee7 100%);
+		color: #4a148c;
+		font-weight: 800;
+		font-size: 0.88rem;
+		padding: 0.45rem 0.85rem;
+		border-radius: 999px;
+		cursor: pointer;
+		box-shadow: 0 2px 8px rgba(106, 27, 154, 0.12);
+	}
+	.campanii-map-share:hover,
+	.campanii-map-share:focus {
+		background: #ce93d8;
+		color: #311b92;
+		outline: none;
 	}
 	.campanii-map-stage {
 		height: 66vh;
