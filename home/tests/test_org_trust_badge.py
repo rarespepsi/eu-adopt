@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.template import Context, Template
 from django.test import TestCase
 
 from home.models import AccountProfile
@@ -48,3 +49,9 @@ class OrgTrustBadgeTests(TestCase):
     def test_pet_dict_flag(self):
         self.assertTrue(pet_shows_org_trust_badge({"show_org_trust_badge": True}))
         self.assertFalse(pet_shows_org_trust_badge({"show_org_trust_badge": False}))
+
+    def test_badge_template_tooltip_text(self):
+        tpl = Template('{% load anunturi_extras %}{% eu_org_trust_badge show=True %}')
+        html = tpl.render(Context({}))
+        self.assertIn("Adăpost/ONG verificat", html)
+        self.assertIn("eu-org-trust-badge__tip", html)

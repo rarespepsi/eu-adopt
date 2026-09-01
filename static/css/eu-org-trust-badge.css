@@ -3,6 +3,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	position: relative;
 	width: 1.25rem;
 	height: 1.25rem;
 	border-radius: 999px;
@@ -52,4 +53,48 @@ body.page-pet-single .mypet-fisa-col-photos > .eu-org-trust-badge--overlay {
 .adp-det__side h1 .eu-org-trust-badge {
 	margin-left: 0.35rem;
 	transform: translateY(-0.12rem);
+}
+
+/* Tooltip desktop — mic, lizibil */
+.eu-org-trust-badge__tip {
+	position: absolute;
+	bottom: calc(100% + 5px);
+	left: 50%;
+	transform: translateX(-50%);
+	padding: 0.2rem 0.45rem;
+	border-radius: 4px;
+	background: rgba(20, 20, 20, 0.92);
+	color: #fff;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	line-height: 1.25;
+	letter-spacing: 0.01em;
+	white-space: nowrap;
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	z-index: 60;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+	transition: opacity 0.12s ease, visibility 0.12s ease;
+}
+.eu-org-trust-badge--overlay .eu-org-trust-badge__tip {
+	bottom: auto;
+	top: calc(100% + 5px);
+	left: auto;
+	right: 0;
+	transform: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.eu-org-trust-badge {
+		cursor: help;
+	}
+	.eu-org-trust-badge--overlay {
+		pointer-events: auto;
+	}
+	.eu-org-trust-badge:hover .eu-org-trust-badge__tip,
+	.eu-org-trust-badge:focus-visible .eu-org-trust-badge__tip {
+		opacity: 1;
+		visibility: visible;
+	}
 }
