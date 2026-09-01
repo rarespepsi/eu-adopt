@@ -7,8 +7,8 @@ from .models import (
     PetMessage,
     CollabServiceMessage,
     UserInboxNotification,
+    AnimalListing,
 )
-from .data import DEMO_DOGS
 from django.urls import reverse
 from django.utils import timezone
 
@@ -35,6 +35,16 @@ def _mypet_pub_slots_for_request(request):
         )
     except Exception:
         return []
+
+
+def get_navbar_animal_counts():
+    """Contoare reale DB pentru navbar În Site / Adoptați (fără DEMO_DOGS)."""
+    adopted = AnimalListing.ADOPTION_STATE_ADOPTED
+    base = AnimalListing.objects.all()
+    return {
+        "active_animals": base.filter(is_published=True).exclude(adoption_state=adopted).count(),
+        "adopted_animals": base.filter(adoption_state=adopted).count(),
+    }
 
 
 def get_navbar_unread_counts(user):
@@ -299,9 +309,9 @@ def wishlist_counts(request):
             site_cart_ref_keys = frozenset()
             nav_avatar_url = None
 
-    # Contoare animale – demo global (aceleași cifre ca pe Home, bazate pe DEMO_DOGS)
-    active_animals = len(DEMO_DOGS)
-    adopted_animals = 0
+    _animal_counts = get_navbar_animal_counts()
+    active_animals = _animal_counts["active_animals"]
+    adopted_animals = _animal_counts["adopted_animals"]
 
     from home.population_onboarding import is_superuser_full_access
 

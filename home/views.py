@@ -2749,8 +2749,6 @@ def home_view(request):
         "left_sidebar_partners": left_sidebar_partners,
         "right_sidebar_partners": right_sidebar_partners,
         "hero_slider_images": hero_slider_images,
-        "adopted_animals": 0,
-        "active_animals": len(DEMO_DOGS),
         "show_welcome_demo": show_welcome_demo,
         "wishlist_ids": wishlist_ids,
         "home_burtiera_text": _get_home_burtiera_text(market=_pub_mkt),
