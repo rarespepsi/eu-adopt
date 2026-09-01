@@ -13,7 +13,6 @@
 			id="campaniiMapShareBtn"
 			data-share-url="{{ request.scheme }}://{{ request.get_host }}{% url 'publicitate_campanii_ro' %}"
 			data-share-title="Campanii gratuite de sterilizare | EU-Adopt"
-			data-share-text="Harta interactivă a campaniilor gratuite din România!&#10;&#10;Aveți informații despre alte campanii, vă rugăm să le postați aici!"
 			aria-label="Distribuie linkul hărții campaniilor"
 		>↗ Distribuie</button>
 	</header>
@@ -48,6 +47,7 @@
 		<a href="{% url 'pets_all' %}">← Înapoi la PT</a>
 	</p>
 </section>
+{{ "Harta interactivă a campaniilor gratuite din România!\n\nAveți informații despre alte campanii, vă rugăm să le postați aici!"|json_script:"campanii-share-text" }}
 {{ campanii_url_by_code|json_script:"campanii-url-by-code" }}
 {{ campanii_count_by_code|json_script:"campanii-count-by-code" }}
 <script>
@@ -131,30 +131,62 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
 	var shareBtn = document.getElementById("campaniiMapShareBtn");
 	if (!shareBtn) return;
-	shareBtn.addEventListener("click", function () {
-		var title = shareBtn.getAttribute("data-share-title") || "Campanii gratuite de sterilizare | EU-Adopt";
-		var pageUrl = shareBtn.getAttribute("data-share-url") || window.location.href;
-		var shareText = (shareBtn.getAttribute("data-share-text") || "").trim();
-		var fullText = shareText ? (shareText + "\n\n" + pageUrl) : pageUrl;
-		if (navigator.share) {
-			navigator.share({
-				title: title,
-				text: shareText || title,
-				url: pageUrl,
-			}).catch(function () {});
-			return;
-		}
+	var shareText = "";
+	try {
+		var shareTextNode = document.getElementById("campanii-share-text");
+		shareText = JSON.parse(shareTextNode ? shareTextNode.textContent : '""') || "";
+	} catch (e) {}
+	var title = shareBtn.getAttribute("data-share-title") || "Campanii gratuite de sterilizare | EU-Adopt";
+	var pageUrl = shareBtn.getAttribute("data-share-url") || window.location.href;
+	var fullText = shareText ? (shareText + "\n\n" + pageUrl) : pageUrl;
+
+	function showCopied() {
+		var prev = shareBtn.textContent;
+		shareBtn.textContent = "Copiat!";
+		setTimeout(function () { shareBtn.textContent = prev; }, 2000);
+	}
+
+	function copyFullText() {
 		if (navigator.clipboard && navigator.clipboard.writeText) {
-			navigator.clipboard.writeText(fullText).then(function () {
-				var prev = shareBtn.textContent;
-				shareBtn.textContent = "Copiat!";
-				setTimeout(function () { shareBtn.textContent = prev; }, 1600);
+			return navigator.clipboard.writeText(fullText).then(function () {
+				showCopied();
+				return true;
 			}).catch(function () {
 				window.prompt("Copiază textul:", fullText);
+				return false;
 			});
-			return;
 		}
 		window.prompt("Copiază textul:", fullText);
+		return Promise.resolve(false);
+	}
+
+	shareBtn.addEventListener("click", function () {
+		/* Text + link împreună — multe app-uri (WhatsApp, SMS) ignoră text dacă url e separat. */
+		var payloads = [
+			{ text: fullText },
+			{ title: title, text: fullText },
+		];
+		if (!navigator.share) {
+			copyFullText();
+			return;
+		}
+		var idx = 0;
+		function tryNext() {
+			if (idx >= payloads.length) {
+				copyFullText();
+				return;
+			}
+			var payload = payloads[idx++];
+			if (navigator.canShare && !navigator.canShare(payload)) {
+				tryNext();
+				return;
+			}
+			navigator.share(payload).catch(function (err) {
+				if (err && err.name === "AbortError") return;
+				tryNext();
+			});
+		}
+		tryNext();
 	});
 });
 </script>
