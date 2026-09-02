@@ -210,6 +210,7 @@ TEMPLATES = [
                 'home.context_processors.eu_site',
                 'home.context_processors.eu_seo',
                 'home.context_processors.euadopt_public_contact',
+                'home.context_processors.eu_legal_identity',
             ],
         },
     },

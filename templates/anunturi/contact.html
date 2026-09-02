@@ -37,9 +37,10 @@
 	<div class="contact-grid contact-grid-top" role="list">
 		<article class="contact-card contact-card-legal" role="listitem">
 			<h2>{% if eu_site_active %}{{ eu_ui.contact_legal_h }}{% else %}Date operator platformă{% endif %}</h2>
-			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_name }}{% else %}Denumire legală:{% endif %}</strong> EU-ADOPT (operator platformă)</p>
-			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_cui }}{% else %}CUI/CIF:{% endif %}</strong> {% if eu_site_active %}{{ eu_ui.in_progress }}{% else %}în curs de completare{% endif %}</p>
-			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_hq }}{% else %}Sediu:{% endif %}</strong> {% if eu_site_active %}{{ eu_ui.in_progress }}{% else %}în curs de completare{% endif %}</p>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_name }}{% else %}Denumire legală:{% endif %}</strong> {{ eu_platform_operator.legal_name }} ({{ eu_platform_operator.brand }})</p>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_cui }}{% else %}CUI/CIF:{% endif %}</strong> {{ eu_platform_operator.cui }}</p>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_reg_com }}{% else %}Reg. Com.:{% endif %}</strong> {{ eu_platform_operator.reg_com }}</p>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_hq }}{% else %}Sediu:{% endif %}</strong> {{ eu_platform_operator.address }}</p>
 			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_phone }}{% else %}Telefon:{% endif %}</strong>
 				{% if eu_site_active %}
 				<a href="{{ euadopt_whatsapp_url }}" target="_blank" rel="noopener noreferrer">{{ eu_ui.contact_whatsapp }}</a>
@@ -50,7 +51,16 @@
 				· <a href="{{ euadopt_whatsapp_url }}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
 				{% endif %}
 			</p>
-			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_email }}{% else %}E-mail general:{% endif %}</strong> <a href="mailto:contact@eu-adopt.ro">contact@eu-adopt.ro</a></p>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_email }}{% else %}E-mail general:{% endif %}</strong> <a href="mailto:{{ eu_platform_operator.email }}">{{ eu_platform_operator.email }}</a></p>
+			<p class="contact-legal-note">{{ eu_legal_details_note }}</p>
+		</article>
+
+		<article class="contact-card contact-card-partner" role="listitem">
+			<h2>{% if eu_site_active %}{{ eu_ui.contact_partner_h }}{% else %}Partener cauză animale{% endif %}</h2>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_partner_name }}{% else %}Denumire:{% endif %}</strong> {{ eu_partner_ngo.legal_name }}</p>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_partner_locality }}{% else %}Localitate:{% endif %}</strong> {{ eu_partner_ngo.locality }}</p>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_partner_county }}{% else %}Județ:{% endif %}</strong> {{ eu_partner_ngo.county }}</p>
+			<p class="contact-legal-note">{{ eu_legal_details_note }}</p>
 		</article>
 
 		<article class="contact-card" role="listitem">

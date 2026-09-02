@@ -83,11 +83,33 @@ def _fpdf_build_formular_230(org: dict, d: dict) -> bytes | None:
         pdf.ln(1)
     pdf.ln(2)
     pdf.set_font("Helvetica", "B", 10)
-    pdf.multi_cell(0, 6, _sanitize_pdf_text("Beneficiar (date provizorii site):"), new_x=_nx, new_y=_ny)
+    pdf.multi_cell(0, 6, _sanitize_pdf_text("Beneficiar (date publicate pe site):"), new_x=_nx, new_y=_ny)
     pdf.set_font("Helvetica", size=10)
-    pdf.multi_cell(0, 6, _sanitize_pdf_text(f"{org.get('name', '')} - CUI: {org.get('cui', '')}"), new_x=_nx, new_y=_ny)
-    pdf.multi_cell(0, 6, _sanitize_pdf_text(f"Adresa: {org.get('address', '')}"), new_x=_nx, new_y=_ny)
-    pdf.multi_cell(0, 6, _sanitize_pdf_text(f"IBAN: {org.get('iban', '')} - {org.get('bank', '')}"), new_x=_nx, new_y=_ny)
+    pdf.multi_cell(0, 6, _sanitize_pdf_text(org.get("name", "")), new_x=_nx, new_y=_ny)
+    if org.get("address"):
+        pdf.multi_cell(0, 6, _sanitize_pdf_text(f"Localitate: {org.get('address', '')}"), new_x=_nx, new_y=_ny)
+    cui = (org.get("cui") or "").strip()
+    if cui:
+        pdf.multi_cell(0, 6, _sanitize_pdf_text(f"CUI: {cui}"), new_x=_nx, new_y=_ny)
+    iban = (org.get("iban") or "").strip()
+    if iban:
+        bank = (org.get("bank") or "").strip()
+        pdf.multi_cell(
+            0,
+            6,
+            _sanitize_pdf_text(f"IBAN: {iban}" + (f" - {bank}" if bank else "")),
+            new_x=_nx,
+            new_y=_ny,
+        )
+    email = (org.get("email_contact") or "").strip()
+    if email:
+        pdf.multi_cell(
+            0,
+            6,
+            _sanitize_pdf_text(f"Date suplimentare (CUI, sediu, IBAN): {email}"),
+            new_x=_nx,
+            new_y=_ny,
+        )
     return bytes(pdf.output())
 
 
@@ -131,10 +153,31 @@ def _fpdf_build_contract(org: dict, c: dict) -> bytes | None:
     pdf.set_font("Helvetica", "B", 10)
     pdf.multi_cell(0, 6, _sanitize_pdf_text("Beneficiar:"), new_x=_nx, new_y=_ny)
     pdf.set_font("Helvetica", size=10)
-    pdf.multi_cell(0, 6, _sanitize_pdf_text(f"{org.get('name', '')} - CUI {org.get('cui', '')}"), new_x=_nx, new_y=_ny)
-    pdf.multi_cell(0, 6, _sanitize_pdf_text(f"{org.get('address', '')}"), new_x=_nx, new_y=_ny)
-    pdf.multi_cell(0, 6, _sanitize_pdf_text(f"IBAN: {org.get('iban', '')} ({org.get('bank', '')})"), new_x=_nx, new_y=_ny)
-    pdf.multi_cell(0, 6, _sanitize_pdf_text(f"Contact: {org.get('email_contact', '')}"), new_x=_nx, new_y=_ny)
+    pdf.multi_cell(0, 6, _sanitize_pdf_text(org.get("name", "")), new_x=_nx, new_y=_ny)
+    if org.get("address"):
+        pdf.multi_cell(0, 6, _sanitize_pdf_text(f"Localitate: {org.get('address', '')}"), new_x=_nx, new_y=_ny)
+    cui = (org.get("cui") or "").strip()
+    if cui:
+        pdf.multi_cell(0, 6, _sanitize_pdf_text(f"CUI: {cui}"), new_x=_nx, new_y=_ny)
+    iban = (org.get("iban") or "").strip()
+    if iban:
+        bank = (org.get("bank") or "").strip()
+        pdf.multi_cell(
+            0,
+            6,
+            _sanitize_pdf_text(f"IBAN: {iban}" + (f" ({bank})" if bank else "")),
+            new_x=_nx,
+            new_y=_ny,
+        )
+    email = (org.get("email_contact") or "").strip()
+    if email:
+        pdf.multi_cell(
+            0,
+            6,
+            _sanitize_pdf_text(f"Date suplimentare (CUI, sediu, IBAN): {email}"),
+            new_x=_nx,
+            new_y=_ny,
+        )
     pdf.ln(2)
     pdf.set_font("Helvetica", size=10)
     pdf.multi_cell(0, 6, _sanitize_pdf_text("Obiect (rezumat): " + str(c.get("descriere") or "")), new_x=_nx, new_y=_ny)

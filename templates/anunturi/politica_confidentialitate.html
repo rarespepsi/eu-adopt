@@ -9,7 +9,7 @@
 		<h1>Politica de confidențialitate (GDPR) – EU-ADOPT</h1>
 		<p><strong>Versiune:</strong> 1.0</p>
 		<p><strong>Data intrării în vigoare:</strong> 26.03.2026</p>
-		<p><strong>Ultima actualizare:</strong> 26.03.2026</p>
+		<p><strong>Ultima actualizare:</strong> 02.09.2026</p>
 	</header>
 	<nav class="termeni-cats" aria-label="Categorii legale">
 		<a class="termeni-cat" href="{% url 'termeni_read' %}">
@@ -30,13 +30,7 @@
 		<a class="legal-close-x" href="{% url 'termeni' %}" aria-label="Închide" title="Închide">×</a>
 		<h2>1. CINE SUNTEM</h2>
 		<p>Operatorul datelor cu caracter personal:</p>
-		<ul>
-			<li>Denumire: EU-ADOPT (operator platformă)</li>
-			<li>CUI/CIF: în curs de completare</li>
-			<li>Sediu: în curs de completare</li>
-			<li>E-mail GDPR: euadopt@gmail.com</li>
-			<li>Telefon: <a href="{{ euadopt_phone_tel }}">{{ euadopt_phone_display }}</a> · WhatsApp: <a href="{{ euadopt_whatsapp_url }}" target="_blank" rel="noopener noreferrer">{{ euadopt_phone_display }}</a></li>
-		</ul>
+		{% include "anunturi/partials/legal_platform_operator.html" %}
 
 		<h2>2. CE DATE COLECTĂM</h2>
 		<p>În funcție de modul în care utilizezi platforma, putem colecta următoarele categorii de date:</p>
@@ -210,8 +204,8 @@
 		<h2>16. CONTACT GDPR</h2>
 		<p>Pentru cereri sau întrebări legate de datele personale:</p>
 		<ul>
-			<li>E-mail: euadopt@gmail.com</li>
-			<li>Adresă: în curs de completare</li>
+			<li>E-mail: <a href="mailto:{{ eu_platform_operator.email }}">{{ eu_platform_operator.email }}</a></li>
+			<li>Adresă: {{ eu_platform_operator.address }}</li>
 			<li>Telefon: <a href="{{ euadopt_phone_tel }}">{{ euadopt_phone_display }}</a> · WhatsApp: <a href="{{ euadopt_whatsapp_url }}" target="_blank" rel="noopener noreferrer">{{ euadopt_phone_display }}</a></li>
 		</ul>
 		<p>Timp orientativ de răspuns: maximum 30 zile, conform GDPR, cu posibilitatea prelungirii în condițiile legii.</p>

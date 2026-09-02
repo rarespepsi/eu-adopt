@@ -29,10 +29,12 @@
 		{% if d.telefon %}<tr><th>Telefon</th><td>{{ d.telefon }}</td></tr>{% endif %}
 	</table>
 	<div class="benef">
-		<strong>Beneficiar (date provizorii site):</strong><br />
-		{{ org.name }} — CUI: {{ org.cui }}<br />
-		Adresă: {{ org.address }}<br />
-		IBAN: {{ org.iban }} — {{ org.bank }}
+		<strong>Beneficiar (date publicate pe site):</strong><br />
+		{{ org.name }}<br />
+		{% if org.address %}Localitate: {{ org.address }}<br />{% endif %}
+		{% if org.cui %}CUI: {{ org.cui }}<br />{% endif %}
+		{% if org.iban %}IBAN: {{ org.iban }}{% if org.bank %} — {{ org.bank }}{% endif %}<br />{% endif %}
+		{% if org.email_contact %}Date suplimentare (CUI, sediu, IBAN): {{ org.email_contact }}{% endif %}
 	</div>
 </body>
 </html>

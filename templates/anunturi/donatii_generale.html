@@ -40,8 +40,8 @@
 		</div>
 		<aside class="donatii-gen-brand-card" aria-label="{% if eu_site_active %}{{ eu_ui.don_partner_aria }}{% else %}Partener pentru cauza animalelor{% endif %}">
 			<div class="donatii-gen-brand-mark" aria-hidden="true"><span class="donatii-gen-brand-heart">&#9829;</span></div>
-			<p class="donatii-gen-brand-name">{{ donatii_partner.name }}</p>
-			<p class="donatii-gen-brand-legal">{% if eu_site_active %}{{ eu_ui.don_partner_legal }}{% else %}{{ donatii_partner.legal_name }}{% endif %}</p>
+			<p class="donatii-gen-brand-name">{{ donatii_partner.legal_name }}</p>
+			<p class="donatii-gen-brand-legal">{{ donatii_partner.location_display }}</p>
 			<p class="donatii-gen-brand-badge">{% if eu_site_active %}{{ eu_ui.don_partner_badge }}{% else %}{{ donatii_partner.badge }}{% endif %}</p>
 			<p class="donatii-gen-brand-blurb">{% if eu_site_active %}{{ eu_ui.don_partner_blurb }}{% else %}{{ donatii_partner.blurb }}{% endif %}</p>
 		</aside>
@@ -102,10 +102,15 @@
 		</article>
 		<article class="donatii-hub-card" id="donatii-transfer-bank">
 			<h2>{% if eu_site_active %}{{ eu_ui.don_bank_h }}{% else %}Transfer bancar{% endif %}</h2>
-			<p class="donatii-iban-label">{% if eu_site_active %}{{ eu_ui.don_iban_label }}{% else %}IBAN (provizoriu){% endif %}</p>
+			{% if donatii_org.iban %}
+			<p class="donatii-iban-label">{% if eu_site_active %}{{ eu_ui.don_iban_label }}{% else %}IBAN{% endif %}</p>
 			<p class="donatii-iban-value" id="donatiiIbanText">{{ donatii_org.iban }}</p>
-			<p class="donatii-bank-note">{{ donatii_org.bank }}</p>
+			{% if donatii_org.bank %}<p class="donatii-bank-note">{{ donatii_org.bank }}</p>{% endif %}
 			<button type="button" class="donatii-copy-btn" id="donatiiCopyIban" data-copy="{{ donatii_org.iban }}" data-label-copy="{% if eu_site_active %}{{ eu_ui.don_copy_iban }}{% else %}Copiază IBAN{% endif %}" data-label-copied="{% if eu_site_active %}{{ eu_ui.don_copied }}{% else %}Copiat!{% endif %}">{% if eu_site_active %}{{ eu_ui.don_copy_iban }}{% else %}Copiază IBAN{% endif %}</button>
+			{% else %}
+			<p class="donatii-iban-label">{% if eu_site_active %}{{ eu_ui.don_iban_on_request }}{% else %}IBAN / detalii bancare{% endif %}</p>
+			<p class="donatii-iban-value donatii-iban-value--pending">{% if eu_site_active %}{{ eu_ui.don_iban_on_request_p }}{% else %}La cerere — scrieți la <a href="mailto:{{ eu_platform_operator.email }}">{{ eu_platform_operator.email }}</a>.{% endif %}</p>
+			{% endif %}
 		</article>
 		<article class="donatii-hub-card">
 			<h2>{% if eu_site_active %}{{ eu_ui.don_f230_h }}{% else %}Formular 230 (3,5%){% endif %}</h2>
@@ -127,7 +132,8 @@
 			{{ eu_ui.don_info_contact }} <a href="{% url 'contact' %}">Contact</a>.
 			{% else %}
 			<strong>Important:</strong> documentele PDF sunt <strong>orientative</strong>; verifică cu specialist fiscal sau juridic înainte de depunere sau semnare.
-			IBAN-ul din caseta „Transfer bancar” este în curs de aliniere la contul partenerului <strong>{{ donatii_partner.name }}</strong>.
+			Beneficiar: <strong>{{ donatii_partner.legal_name }}</strong>, {{ donatii_partner.location_display }}.
+			IBAN și date complete — la cerere: <a href="mailto:{{ eu_platform_operator.email }}">{{ eu_platform_operator.email }}</a>.
 			Pentru întrebări: <a href="{% url 'contact' %}">Contact</a>.
 			{% endif %}
 		</div>

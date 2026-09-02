@@ -9,7 +9,7 @@
 		<h1>Termeni și condiții de utilizare – EU-ADOPT</h1>
 		<p><strong>Versiune:</strong> 1.1</p>
 		<p><strong>Data intrării în vigoare:</strong> 26.03.2026</p>
-		<p><strong>Ultima actualizare:</strong> 30.04.2026 <span style="opacity:.92">— completări „Magazin foto” și conținut vizual utilizatori (în verificare juridică)</span></p>
+		<p><strong>Ultima actualizare:</strong> 02.09.2026 <span style="opacity:.92">— date operator platformă (Animal Connect SRL)</span></p>
 	</header>
 	<nav class="termeni-cats" aria-label="Categorii legale">
 		<a class="termeni-cat is-active" href="{% url 'termeni_read' %}">
@@ -30,14 +30,7 @@
 		<a class="legal-close-x" href="{% url 'termeni' %}" aria-label="Închide" title="Închide">×</a>
 		<h2>1. IDENTITATEA OPERATORULUI PLATFORMEI</h2>
 		<p>Platforma EU-ADOPT este operată de:</p>
-		<ul>
-			<li>Denumire legală: EU-ADOPT (operator platformă)</li>
-			<li>CUI/CIF: în curs de completare</li>
-			<li>Sediu: în curs de completare</li>
-			<li>E-mail contact: euadopt@gmail.com</li>
-			<li>E-mail juridic/GDPR: euadopt@gmail.com</li>
-			<li>Telefon: <a href="{{ euadopt_phone_tel }}">{{ euadopt_phone_display }}</a> · WhatsApp: <a href="{{ euadopt_whatsapp_url }}" target="_blank" rel="noopener noreferrer">{{ euadopt_phone_display }}</a></li>
-		</ul>
+		{% include "anunturi/partials/legal_platform_operator.html" %}
 
 		<h2>2. DEFINIȚII</h2>
 		<p>În sensul prezentului document:</p>

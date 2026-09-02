@@ -264,6 +264,21 @@ def euadopt_public_contact(request):
     return public_contact_context()
 
 
+def eu_legal_identity(request):
+    """Operator SRL + partener ONG — pagini legale, Contact, Donații."""
+    from home.donatii_constants import (
+        EUADOPT_LEGAL_DETAILS_NOTE,
+        EUADOPT_PARTNER_NGO,
+        EUADOPT_PLATFORM_OPERATOR,
+    )
+
+    return {
+        "eu_platform_operator": EUADOPT_PLATFORM_OPERATOR,
+        "eu_partner_ngo": EUADOPT_PARTNER_NGO,
+        "eu_legal_details_note": EUADOPT_LEGAL_DETAILS_NOTE,
+    }
+
+
 def eu_seo(request):
     """Canonical (.ro) + hreflang pentru hosturi multi-limbă."""
     from home.eu_site import seo_canonical_url, seo_hreflang_alternates
