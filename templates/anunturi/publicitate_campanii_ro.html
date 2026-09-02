@@ -161,10 +161,14 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
 	shareBtn.addEventListener("click", function () {
-		/* Text + link împreună — multe app-uri (WhatsApp, SMS) ignoră text dacă url e separat. */
+		/* Desktop (Facebook, Phone Link etc.) needs url; mobil WhatsApp uneori preferă text+link lipit. */
+		var shortText = (shareText || title).trim();
 		var payloads = [
+			{ title: title, text: shortText, url: pageUrl },
+			{ title: title, text: fullText, url: pageUrl },
 			{ text: fullText },
 			{ title: title, text: fullText },
+			{ url: pageUrl },
 		];
 		if (!navigator.share) {
 			copyFullText();
