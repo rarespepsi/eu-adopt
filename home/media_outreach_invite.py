@@ -32,9 +32,10 @@ _TERMINAL = frozenset(
     }
 )
 
-# Spot radio (~30s, voce feminină) — atașat la emailurile către posturi radio.
-RADIO_SPOT_REL = Path("static") / "audio" / "eu-adopt-spot-radio-30s-alina.mp3"
-RADIO_SPOT_FILENAME = "EU-Adopt-spot-radio-30s.mp3"
+# Spot radio MASTER (~33s) — atașat la emailurile către posturi radio.
+# Canon: eu-adopt-spot-radio-master.mp3 (copiat și peste *-alina.mp3 pentru compat).
+RADIO_SPOT_REL = Path("static") / "audio" / "eu-adopt-spot-radio-master.mp3"
+RADIO_SPOT_FILENAME = "EU-Adopt-spot-radio.mp3"
 
 _EMAIL_LOCAL_CLEAN_RE = re.compile(r"[^a-zA-ZăâîșțĂÂÎȘȚ\-_.]+")
 
@@ -92,6 +93,8 @@ def media_outreach_radio_spot_path() -> Path | None:
     base = Path(getattr(settings, "BASE_DIR", Path.cwd()))
     candidates = [
         base / RADIO_SPOT_REL,
+        base / "static" / "audio" / "eu-adopt-spot-radio-30s-alina.mp3",
+        base / "staticfiles" / "audio" / "eu-adopt-spot-radio-master.mp3",
         base / "staticfiles" / "audio" / "eu-adopt-spot-radio-30s-alina.mp3",
     ]
     for path in candidates:
@@ -168,14 +171,11 @@ def media_outreach_subject_body(p: MediaOutreachProspect) -> tuple[str, str]:
         f"pentru că impactul real se vede când oamenii știu unde să caute și pe cine să contacteze.\n\n"
         f"De ce vă scriem\n"
         f"Dorim să promovăm platforma către publicul {outlet} — oameni care iubesc animalele "
-        f"și pot adopta, ajuta sau colabora. Avem un spot radio scurt (~30 secunde) pregătit "
+        f"și pot adopta, ajuta sau colabora. Avem un spot radio scurt (~33 secunde) pregătit "
         f"(atașat acestui email).\n\n"
         f"Despre spot\n"
-        f"Vă rugăm să ne scuzați dacă editarea nu sună la nivelul unui studio profesional: "
-        f"nu suntem profesioniști în producție audio și lucrăm doar noi, fără fonduri de marketing. "
-        f"Spotul este făcut cu mijloace proprii, din dorința de a transmite mesajul clar — "
-        f"misiunea EU-Adopt și invitația pe eu-adopt.ro. Dacă doriți, putem ajusta textul "
-        f"sau lungimea după cerințele postului.\n\n"
+        f"Spotul transmite misiunea EU-Adopt și invitația pe eu-adopt.ro. "
+        f"Dacă doriți, putem ajusta textul sau lungimea după cerințele postului.\n\n"
         f"Propunere de colaborare (barter)\n"
         f"În schimbul a câteva difuzări ale spotului EU-Adopt (program și frecvență de discutat "
         f"împreună), oferim:\n"
@@ -199,7 +199,7 @@ def media_outreach_subject_body(p: MediaOutreachProspect) -> tuple[str, str]:
         f"- Semnalează abuz: https://eu-adopt.ro/semnaleaza-abuz/\n"
         f"- Prietenul tău (adopții): https://eu-adopt.ro/pets/\n\n"
         f"Dacă ideea vi se potrivește, rămân disponibil pentru un telefon scurt sau un email de răspuns. "
-        f"Spotul este atașat (MP3, ~30 secunde).\n\n"
+        f"Spotul este atașat (MP3, ~33 secunde).\n\n"
         f"Cu respect și mulțumiri,\n"
         f"Adrian\n"
         f"EU-Adopt · https://eu-adopt.ro/\n"

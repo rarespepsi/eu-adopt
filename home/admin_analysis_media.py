@@ -69,7 +69,7 @@ def build_media_outreach_whatsapp_text(p: MediaOutreachProspect) -> str:
         f"Bună ziua, {who},\n\n"
         f"Sunt Adrian, de la EU-Adopt (eu-adopt.ro) — platformă națională/europeană "
         f"pentru animale, cu misiune de tip ONG, gratuită pentru adăposturi și parteneri.\n\n"
-        f"Propunem un parteneriat cu {outlet}: câteva difuzări ale spotului nostru radio (~30s) "
+        f"Propunem un parteneriat cu {outlet}: câteva difuzări ale spotului nostru radio (~33s) "
         f"în schimbul promovării postului pe site (partener media).\n\n"
         f"Site: https://eu-adopt.ro/\n"
         f"Contact: contact@eu-adopt.ro · {EUADOPT_PUBLIC_PHONE_DISPLAY}\n\n"
