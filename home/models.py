@@ -100,6 +100,13 @@ class UserProfile(models.Model):
         "Notificări email wishlist",
         default=False,
     )
+    weekly_thanks_sent_at = models.DateTimeField(
+        "Mail mulțumire săptămânal (membri noi) trimis la",
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="O singură dată: mulțumire + îndemn recomandare colaboratori.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
