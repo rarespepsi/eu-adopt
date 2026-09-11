@@ -1772,7 +1772,7 @@
 					{% eu_org_trust_badge a overlay=1 %}
 					<a class="adp-pet-card__photo" href="{{ a.public_url }}?back={{ org_back_path|urlencode }}" aria-label="Vezi {{ a.name|default:'animal' }}">
 						{% if a.photo_1 %}
-						<img src="{{ a.photo_1.url }}" alt="{{ a.name }}" />
+						<img src="{% pet_thumb_url a.photo_1 400 %}" alt="{{ a.name }}" />
 						{% else %}
 						<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" />
 						{% endif %}

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static anunturi_extras %}
 
 {% block title %}{% if eu_site_active %}{{ eu_ui.promo_title }}{% else %}Comandă promovare A2 | EU-ADOPT{% endif %}{% endblock %}
 {% block body_class %}page-promo-a2-order{% endblock %}
@@ -217,7 +217,7 @@
 			<div class="promo-a2-grid">
 				<div class="promo-a2-photo" aria-hidden="true">
 					{% if pet.photo_1 %}
-					<img src="{{ pet.photo_1.url }}" alt="" />
+					<img src="{% pet_thumb_url pet.photo_1 400 %}" alt="" />
 					{% else %}
 					<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" />
 					{% endif %}

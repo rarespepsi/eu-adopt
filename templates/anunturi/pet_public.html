@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static anunturi_extras %}
 
 {% block title %}{{ pet.name|default:"Câine pentru adopție" }} – Fișă adoptator{% endblock %}
 
@@ -325,7 +325,7 @@
 					<div class="pet-photos-outer-box">
 						<div class="pet-photo-main">
 							{% if pet.photo_1 %}
-								<img src="{{ pet.photo_1.url }}" alt="Poză 1 {{ pet.name }}">
+								<img src="{% pet_thumb_url pet.photo_1 600 %}" alt="Poză 1 {{ pet.name }}">
 							{% else %}
 								<div class="pet-photo-placeholder">Poză 1 – adaugă din MyPet.</div>
 							{% endif %}
@@ -333,14 +333,14 @@
 						</div>
 						<div class="pet-photo-side">
 							{% if pet.photo_2 %}
-								<img src="{{ pet.photo_2.url }}" alt="Poză 2 {{ pet.name }}">
+								<img src="{% pet_thumb_url pet.photo_2 400 %}" alt="Poză 2 {{ pet.name }}">
 							{% else %}
 								<div class="pet-photo-placeholder">Poză 2 – (profil, joacă, plimbare).</div>
 							{% endif %}
 						</div>
 						<div class="pet-photo-side">
 							{% if pet.photo_3 %}
-								<img src="{{ pet.photo_3.url }}" alt="Poză 3 {{ pet.name }}">
+								<img src="{% pet_thumb_url pet.photo_3 400 %}" alt="Poză 3 {{ pet.name }}">
 							{% else %}
 								<div class="pet-photo-placeholder">Poză 3 – spațiu pentru încă o imagine.</div>
 							{% endif %}

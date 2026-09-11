@@ -17,12 +17,12 @@
 			{% endif %}
 			{% if pet.imagine %}
 			<img
-				src="{{ pet.imagine.url }}"
+				src="{% pet_thumb_url pet.imagine 400 %}"
 				alt=""
 				class="pet-rotating-image"
 				{% if pet.imagine_2 or pet.imagine_3 %}
-				data-rot-src-2="{% if pet.imagine_2 %}{{ pet.imagine_2.url }}{% endif %}"
-				data-rot-src-3="{% if pet.imagine_3 %}{{ pet.imagine_3.url }}{% endif %}"
+				data-rot-src-2="{% if pet.imagine_2 %}{% pet_thumb_url pet.imagine_2 400 %}{% endif %}"
+				data-rot-src-3="{% if pet.imagine_3 %}{% pet_thumb_url pet.imagine_3 400 %}{% endif %}"
 				{% endif %}
 			/>
 			{% elif pet.imagine_fallback %}
@@ -46,12 +46,12 @@
 			{% endif %}
 			{% if pet.imagine %}
 			<img
-				src="{{ pet.imagine.url }}"
+				src="{% pet_thumb_url pet.imagine 400 %}"
 				alt=""
 				class="pet-rotating-image"
 				{% if pet.imagine_2 or pet.imagine_3 %}
-				data-rot-src-2="{% if pet.imagine_2 %}{{ pet.imagine_2.url }}{% endif %}"
-				data-rot-src-3="{% if pet.imagine_3 %}{{ pet.imagine_3.url }}{% endif %}"
+				data-rot-src-2="{% if pet.imagine_2 %}{% pet_thumb_url pet.imagine_2 400 %}{% endif %}"
+				data-rot-src-3="{% if pet.imagine_3 %}{% pet_thumb_url pet.imagine_3 400 %}{% endif %}"
 				{% endif %}
 			/>
 			{% elif pet.imagine_fallback %}

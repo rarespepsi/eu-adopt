@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static anunturi_extras %}
 
 {% block title %}{% if eu_site_active %}{{ eu_ui.mypet_title }}{% else %}MyPet | EU Adopt{% endif %}{% endblock %}
 
@@ -146,7 +146,7 @@
 						<td class="mypet-td mypet-td-photo">
 							{% if pet %}
 								{% if pet.photo_1 %}
-								<a href="{% url 'mypet_edit' pet.pk %}" class="mypet-photo-link"><img src="{{ pet.photo_1.url }}" alt="{{ pet.name|default:'' }}" class="mypet-row-photo" /></a>
+								<a href="{% url 'mypet_edit' pet.pk %}" class="mypet-photo-link"><img src="{% pet_thumb_url pet.photo_1 320 %}" alt="{{ pet.name|default:'' }}" class="mypet-row-photo" /></a>
 								{% else %}
 								<a href="{% url 'mypet_edit' pet.pk %}" class="mypet-photo-link mypet-photo-empty">—</a>
 								{% endif %}

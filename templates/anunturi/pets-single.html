@@ -13,8 +13,8 @@
 		<meta property="og:title" content="{% if eu_site_active %}{{ pet.nume }} – Adoption | EU-ADOPT{% else %}{{ pet.nume }} – Adopție | EU-ADOPT{% endif %}" />
 		<meta property="og:description" content="{% if pet.cine_sunt %}{{ pet.cine_sunt|striptags|truncatechars:200 }}{% elif pet.descriere %}{{ pet.descriere|striptags|truncatechars:200 }}{% else %}{% if eu_site_active %}Adoption via EU-ADOPT – {{ pet.nume }}.{% else %}Adopție prin EU-ADOPT – {{ pet.nume }}.{% endif %}{% endif %}" />
 		{% if pet.imagine %}
-		<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ pet.imagine.url }}" />
-		<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ pet.imagine.url }}" />
+		<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% pet_thumb_url pet.imagine 1200 %}" />
+		<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% pet_thumb_url pet.imagine 1200 %}" />
 		{% endif %}
 		<meta property="og:image:alt" content="{% if eu_site_active %}{{ pet.nume }} – adoption EU-ADOPT{% else %}{{ pet.nume }} – adopție EU-ADOPT{% endif %}" />
 		<meta name="twitter:card" content="summary_large_image" />

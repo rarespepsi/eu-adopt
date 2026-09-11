@@ -12,7 +12,7 @@
 		<div class="mypet-fisa-col mypet-fisa-col-photos">
 			<div class="mypet-fisa-photo-slot mypet-fisa-photo-1 {% if has_photo_1 %}has-photo{% endif %}">
 				<div class="mypet-fisa-photo-preview" id="preview_photo_1" aria-hidden="true">
-					{% if listing and listing.photo_1 %}<img src="{{ listing.photo_1.url }}" alt="Poza 1" class="img-crop" />{% endif %}
+					{% if listing and listing.photo_1 %}<img src="{% pet_thumb_url listing.photo_1 400 %}" alt="Poza 1" class="img-crop" />{% endif %}
 					<span class="mypet-fisa-photo-hint">Max 2 MB · JPEG, PNG, HEIC</span>
 				</div>
 				<input type="file" name="photo_1" form="mypet-add-form" accept="image/*,.heic,.heif" class="mypet-fisa-photo-input-hidden" id="id_photo_1" />
@@ -24,7 +24,7 @@
 			</div>
 			<div class="mypet-fisa-photo-slot mypet-fisa-photo-2 {% if has_photo_2 %}has-photo{% endif %}">
 				<div class="mypet-fisa-photo-preview" id="preview_photo_2" aria-hidden="true">
-					{% if listing and listing.photo_2 %}<img src="{{ listing.photo_2.url }}" alt="Poza 2" class="img-crop" />{% endif %}
+					{% if listing and listing.photo_2 %}<img src="{% pet_thumb_url listing.photo_2 400 %}" alt="Poza 2" class="img-crop" />{% endif %}
 					<span class="mypet-fisa-photo-hint">Max 2 MB · JPEG, PNG, HEIC</span>
 				</div>
 				<input type="file" name="photo_2" form="mypet-add-form" accept="image/*,.heic,.heif" class="mypet-fisa-photo-input-hidden" id="id_photo_2" />
@@ -36,7 +36,7 @@
 			</div>
 			<div class="mypet-fisa-photo-slot mypet-fisa-photo-3 {% if has_photo_3 %}has-photo{% endif %}">
 				<div class="mypet-fisa-photo-preview" id="preview_photo_3" aria-hidden="true">
-					{% if listing and listing.photo_3 %}<img src="{{ listing.photo_3.url }}" alt="Poza 3" class="img-crop" />{% endif %}
+					{% if listing and listing.photo_3 %}<img src="{% pet_thumb_url listing.photo_3 400 %}" alt="Poza 3" class="img-crop" />{% endif %}
 					<span class="mypet-fisa-photo-hint">Max 2 MB · JPEG, PNG, HEIC</span>
 				</div>
 				<input type="file" name="photo_3" form="mypet-add-form" accept="image/*,.heic,.heif" class="mypet-fisa-photo-input-hidden" id="id_photo_3" />

@@ -9909,9 +9909,14 @@ def _i_love_pet_from_listing(listing: AnimalListing) -> dict:
     img_url = ""
     if listing.photo_1:
         try:
-            img_url = listing.photo_1.url
+            from home.pet_media_thumb import pet_thumb_url_for
+
+            img_url = pet_thumb_url_for(listing.photo_1, 400) or listing.photo_1.url
         except Exception:
-            img_url = ""
+            try:
+                img_url = listing.photo_1.url
+            except Exception:
+                img_url = ""
     return {
         "pk": listing.pk,
         "nume": listing.name or "—",
