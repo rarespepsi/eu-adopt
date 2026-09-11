@@ -843,6 +843,69 @@
 			.pet-copy-loc__btn:hover {
 				filter: brightness(1.06);
 			}
+			/* Copiază locație + QR: rând, pătrate egale (înălțime = caseta Copiază) */
+			.pet-loc-qr-pair {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: nowrap;
+				align-items: stretch;
+				justify-content: center;
+				gap: 0.5rem;
+				margin: 0.45rem auto 0.5rem;
+				width: 100%;
+				max-width: 100%;
+				box-sizing: border-box;
+			}
+			.pet-loc-qr-pair .pet-copy-loc {
+				margin: 0;
+				max-width: none;
+				flex: 0 0 auto;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				overflow: hidden;
+			}
+			.pet-loc-qr-pair .pet-qr-corner {
+				position: static !important;
+				right: auto !important;
+				bottom: auto !important;
+				left: auto !important;
+				margin: 0;
+				flex: 0 0 auto;
+				width: auto;
+				height: auto;
+				padding: 6px;
+				gap: 3px;
+				box-sizing: border-box;
+				min-width: 0;
+			}
+			.pet-loc-qr-pair .pet-qr-corner__title,
+			.pet-loc-qr-pair .pet-qr-corner__hint {
+				font-size: 0.58rem;
+				line-height: 1.15;
+				flex-shrink: 0;
+			}
+			.pet-loc-qr-pair .pet-qr-corner__img {
+				width: auto;
+				height: auto;
+				flex: 1 1 auto;
+				min-height: 0;
+				max-width: 100%;
+				object-fit: contain;
+			}
+			/* Fără QR fixed jos: Adopt coboară lângă colț */
+			body.page-pet-single:has(#petLocQrPair) .pet-adopt-stack,
+			body.page-pet-single:has(#petLocQrPair) .pet-adopt-corner {
+				right: 10px;
+				bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+			}
+			body.page-pet-single:has(#petLocQrPair) .pet-adoption-state-corner {
+				right: 10px;
+				bottom: calc(148px + env(safe-area-inset-bottom, 0px));
+			}
+			body.page-pet-single:has(#petLocQrPair) .mypet-fisa-wrap {
+				padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px));
+			}
 			.pet-qr-corner {
 				position: fixed;
 				right: 10px;
@@ -1052,6 +1115,12 @@
 				body.page-pet-single:has(#petAdoptCorner) .mypet-fisa-wrap {
 					padding-bottom: calc(340px + env(safe-area-inset-bottom, 0px));
 				}
+				body.page-pet-single:has(#petLocQrPair) .mypet-fisa-wrap {
+					padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px));
+				}
+				body.page-pet-single:has(#petLocQrPair):has(#petAdoptCorner) .mypet-fisa-wrap {
+					padding-bottom: calc(180px + env(safe-area-inset-bottom, 0px));
+				}
 				.mypet-fisa-inner {
 					grid-template-columns: minmax(0, 1fr);
 					grid-template-rows: auto;
@@ -1139,6 +1208,15 @@
 				body.page-pet-single:has(#petAdoptCorner) .pet-adoption-state-corner {
 					right: 10px !important;
 					bottom: calc(328px + env(safe-area-inset-bottom, 0px)) !important;
+				}
+				body.page-pet-single:has(#petLocQrPair) .pet-adoption-state-corner {
+					right: 10px !important;
+					bottom: calc(148px + env(safe-area-inset-bottom, 0px)) !important;
+				}
+				body.page-pet-single:has(#petLocQrPair) .pet-adopt-stack,
+				body.page-pet-single:has(#petLocQrPair) .pet-adopt-corner {
+					right: 10px !important;
+					bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
 				}
 			}
 
@@ -1266,6 +1344,9 @@
 				.pet-adopt-qr-inline .pet-qr-corner__img {
 					width: min(108px, 32vw) !important;
 					height: min(108px, 32vw) !important;
+				}
+				.pet-loc-qr-pair {
+					margin-top: 0.35rem !important;
 				}
 			}
 
@@ -1842,10 +1923,17 @@
 											</div>
 											{% endif %}
 											{% if pet_copy_location %}
-											<div class="pet-copy-loc" id="petCopyLoc" aria-label="{% if eu_site_active %}{{ eu_ui.pet_copy_loc_aria }}{% else %}Locația PET de copiat pentru Transport{% endif %}">
-												<p class="pet-copy-loc__title">{% if eu_site_active %}{{ eu_ui.pet_copy_loc_title }}{% else %}Copie locația PET{% endif %}</p>
-												<p class="pet-copy-loc__text" id="petCopyLocText">{{ pet_copy_location }}</p>
-												<button type="button" class="pet-copy-loc__btn" id="petCopyLocBtn" data-copied="{% if eu_site_active %}{{ eu_ui.pet_copy_loc_done }}{% else %}Copiat{% endif %}">{% if eu_site_active %}{{ eu_ui.pet_copy_loc_btn }}{% else %}Copiază{% endif %}</button>
+											<div class="pet-loc-qr-pair" id="petLocQrPair">
+												<div class="pet-copy-loc" id="petCopyLoc" aria-label="{% if eu_site_active %}{{ eu_ui.pet_copy_loc_aria }}{% else %}Locația PET de copiat pentru Transport{% endif %}">
+													<p class="pet-copy-loc__title">{% if eu_site_active %}{{ eu_ui.pet_copy_loc_title }}{% else %}Copie locația PET{% endif %}</p>
+													<p class="pet-copy-loc__text" id="petCopyLocText">{{ pet_copy_location }}</p>
+													<button type="button" class="pet-copy-loc__btn" id="petCopyLocBtn" data-copied="{% if eu_site_active %}{{ eu_ui.pet_copy_loc_done }}{% else %}Copiat{% endif %}">{% if eu_site_active %}{{ eu_ui.pet_copy_loc_btn }}{% else %}Copiază{% endif %}</button>
+												</div>
+												<div class="pet-qr-corner" id="petQrCorner" aria-label="{% if eu_site_active %}{{ eu_ui.pet_qr_aria }}{% else %}Cod QR fișă{% endif %}">
+													<p class="pet-qr-corner__title">{% if eu_site_active %}{{ eu_ui.pet_qr_title }}{% else %}Scanează fișa{% endif %}</p>
+													<img class="pet-qr-corner__img" id="petQrImg" alt="{% if eu_site_active %}{{ eu_ui.pet_qr_alt }}{% else %}Cod QR către fișă{% endif %}" />
+													<p class="pet-qr-corner__hint">{% if eu_site_active %}{{ eu_ui.pet_qr_hint }}{% else %}Deschide pe telefon{% endif %}</p>
+												</div>
 											</div>
 											{% endif %}
 											<div class="pet-adoption-state-corner" aria-label="{% if eu_site_active %}{{ eu_ui.pet_adopt_state_aria }}{% else %}Stare adopție{% endif %}">{% if eu_site_active %}{{ pet.adoption_state_label|default:eu_ui.pet_adopt_state_free }}{% else %}{{ pet.adoption_state_label|default:"Liber" }}{% endif %}</div>
@@ -1883,11 +1971,13 @@
 													{% endif %}
 												</div>
 												{% endif %}
+												{% if not pet_copy_location %}
 												<div class="pet-qr-corner" id="petQrCorner" aria-label="{% if eu_site_active %}{{ eu_ui.pet_qr_aria }}{% else %}Cod QR fișă{% endif %}">
 													<p class="pet-qr-corner__title">{% if eu_site_active %}{{ eu_ui.pet_qr_title }}{% else %}Scanează fișa{% endif %}</p>
 													<img class="pet-qr-corner__img" id="petQrImg" alt="{% if eu_site_active %}{{ eu_ui.pet_qr_alt }}{% else %}Cod QR către fișă{% endif %}" />
 													<p class="pet-qr-corner__hint">{% if eu_site_active %}{{ eu_ui.pet_qr_hint }}{% else %}Deschide pe telefon{% endif %}</p>
 												</div>
+												{% endif %}
 											</div>
 										</div>
 									</div>
@@ -2282,6 +2372,46 @@
 						window.prompt("Copy PET location", t);
 					}
 				});
+			})();
+			/* Pătrate egale: înălțimea casetei Copiază → lățime=înălțime pentru Copiază + QR */
+			(function syncPetLocQrSquares() {
+				var pair = document.getElementById("petLocQrPair");
+				var loc = document.getElementById("petCopyLoc");
+				var qr = document.getElementById("petQrCorner");
+				var img = document.getElementById("petQrImg");
+				if (!pair || !loc || !qr) return;
+				var run = function () {
+					loc.style.width = "";
+					loc.style.height = "";
+					loc.style.maxWidth = "15.5rem";
+					loc.style.aspectRatio = "auto";
+					qr.style.width = "";
+					qr.style.height = "";
+					if (img) {
+						img.style.width = "";
+						img.style.height = "";
+					}
+					var h = Math.ceil(loc.getBoundingClientRect().height);
+					if (!h || h < 88) h = 88;
+					if (h > 220) h = 220;
+					loc.style.maxWidth = "none";
+					loc.style.width = h + "px";
+					loc.style.height = h + "px";
+					loc.style.aspectRatio = "1 / 1";
+					qr.style.width = h + "px";
+					qr.style.height = h + "px";
+					qr.style.aspectRatio = "1 / 1";
+					if (img) {
+						var s = Math.max(40, h - 46);
+						img.style.width = s + "px";
+						img.style.height = s + "px";
+					}
+				};
+				run();
+				window.addEventListener("resize", run);
+				if (document.fonts && document.fonts.ready) {
+					document.fonts.ready.then(run).catch(function () {});
+				}
 			})();
 			// QR în colț (encodează linkul fișei ca imagine)
 			(function initQrCorner() {
