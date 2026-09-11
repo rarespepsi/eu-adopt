@@ -12,7 +12,7 @@ from home.facebook_page_post import flush_pending, posts_today_count, remaining_
 
 
 class Command(BaseCommand):
-    help = "Procesează FacebookOutboundDelivery (animale + campanii + mirror)."
+    help = "Procesează FacebookOutboundDelivery (animale + campanii + pierderi + mirror)."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -25,6 +25,11 @@ class Command(BaseCommand):
             "--dry-run",
             action="store_true",
             help="Afișează starea fără a posta.",
+        )
+        parser.add_argument(
+            "--no-backfill",
+            action="store_true",
+            help="Nu umple coada cu conținut nepublicat încă pe FB.",
         )
 
     def handle(self, *args, **options):
@@ -48,5 +53,5 @@ class Command(BaseCommand):
             )
             return
         limit = options["limit"] or None
-        stats = flush_pending(limit=limit)
+        stats = flush_pending(limit=limit, backfill=not options["no_backfill"])
         self.stdout.write(self.style.SUCCESS(f"flush: {stats}"))

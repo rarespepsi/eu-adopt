@@ -40,6 +40,7 @@ RO_TZ = ZoneInfo("Europe/Bucharest")
 
 KIND_ANIMAL = "animal"
 KIND_CAMPANIE = "campanie"
+KIND_PIERDUT = "pierdut"
 KIND_RO_MIRROR = "ro_mirror"
 
 STATUS_PENDING = "pending"
@@ -145,6 +146,45 @@ def build_campanie_message(camp) -> tuple[str, str, str]:
     lines.append("Detalii pe harta Campanii:")
     lines.append(link)
     img = absolute_media_url(getattr(camp, "photo", None))
+    return "\n".join(lines), link, img
+
+
+def _species_label_lf(row) -> str:
+    sp = (getattr(row, "species", "") or "").strip().lower()
+    if sp == "dog":
+        return "Câine"
+    if sp == "cat":
+        return "Pisică"
+    return "Animal"
+
+
+def build_pierdut_message(row) -> tuple[str, str, str]:
+    """Text FB pentru anunț pierdut / găsit."""
+    kind = (getattr(row, "kind", "") or "").strip().lower()
+    if kind == "gasit":
+        headline = "💚 Animal GĂSIT"
+    else:
+        headline = "🔎 Animal PIERDUT"
+    species = _species_label_lf(row)
+    name = (getattr(row, "name", "") or "").strip()
+    loc = ", ".join(
+        p for p in ((getattr(row, "localitate", "") or "").strip(), (getattr(row, "judet", "") or "").strip()) if p
+    )
+    path = reverse("animale_pierdute_judet", kwargs={"judet_slug": row.judet_slug})
+    link = site_base_url() + path
+    detail = (getattr(row, "description", "") or "").strip()
+    if len(detail) > 220:
+        detail = detail[:217].rstrip() + "…"
+    lines = [headline, f"{species}" + (f" — {name}" if name else "")]
+    if loc:
+        lines.append(f"📍 {loc}")
+    if detail:
+        lines.append("")
+        lines.append(detail)
+    lines.append("")
+    lines.append("Anunț pe eu-adopt.ro:")
+    lines.append(link)
+    img = absolute_media_url(getattr(row, "photo", None))
     return "\n".join(lines), link, img
 
 
@@ -396,6 +436,122 @@ def enqueue_campanie(camp, *, schedule: bool = True) -> Any:
     return row
 
 
+def enqueue_pierdut(row, *, schedule: bool = True) -> Any:
+    if not row or not getattr(row, "pk", None):
+        return None
+    if not getattr(row, "is_active", False):
+        return None
+    if not facebook_auto_post_enabled():
+        return None
+    from home.models import FacebookOutboundPost
+
+    out, _ = FacebookOutboundPost.objects.get_or_create(
+        kind=KIND_PIERDUT,
+        object_id=int(row.pk),
+        defaults={"status": STATUS_PENDING},
+    )
+    ensure_deliveries(out)
+    if schedule:
+        _schedule_process_outbound(out.pk)
+    return out
+
+
+def enqueue_backfill(*, max_new: int | None = None) -> dict[str, int]:
+    """
+    Umple sloturile zilnice rămase cu conținut care nu a fost niciodată pus în coadă FB.
+    Prioritate: pierderi → animale → campanii. Nu re-postează (unique kind+object_id).
+    """
+    stats = {"enqueued": 0, "pierdut": 0, "animal": 0, "campanie": 0}
+    if not facebook_auto_post_enabled():
+        return stats
+
+    from home.models import (
+        AnimalListing,
+        CampanieSterilizare,
+        FacebookOutboundDelivery,
+        FacebookOutboundPost,
+        LostFoundAnimal,
+    )
+
+    remaining = remaining_posts_today("ro")
+    pending_ro = FacebookOutboundDelivery.objects.filter(
+        market="ro", status__in=(STATUS_PENDING, STATUS_FAILED)
+    ).count()
+    slots = remaining - pending_ro
+    if max_new is not None:
+        slots = min(slots, int(max_new))
+    if slots <= 0:
+        return stats
+
+    def _missing_ids(kind: str, candidate_ids: list[int]) -> list[int]:
+        if not candidate_ids:
+            return []
+        already = set(
+            FacebookOutboundPost.objects.filter(kind=kind, object_id__in=candidate_ids).values_list(
+                "object_id", flat=True
+            )
+        )
+        return [i for i in candidate_ids if i not in already]
+
+    need = slots
+
+    # Pierderi / găsiri active cu poză
+    lf_ids = list(
+        LostFoundAnimal.objects.filter(is_active=True)
+        .exclude(photo="")
+        .order_by("-created_at")
+        .values_list("pk", flat=True)[: need * 3]
+    )
+    for pk in _missing_ids(KIND_PIERDUT, lf_ids):
+        if need <= 0:
+            break
+        obj = LostFoundAnimal.objects.filter(pk=pk, is_active=True).first()
+        if obj is None:
+            continue
+        enqueue_pierdut(obj, schedule=False)
+        stats["pierdut"] += 1
+        stats["enqueued"] += 1
+        need -= 1
+
+    # Animale publicate
+    if need > 0:
+        animal_ids = list(
+            AnimalListing.objects.filter(is_published=True)
+            .order_by("-created_at")
+            .values_list("pk", flat=True)[: need * 3]
+        )
+        for pk in _missing_ids(KIND_ANIMAL, animal_ids):
+            if need <= 0:
+                break
+            listing = AnimalListing.objects.filter(pk=pk, is_published=True).first()
+            if listing is None:
+                continue
+            enqueue_animal(listing, schedule=False)
+            stats["animal"] += 1
+            stats["enqueued"] += 1
+            need -= 1
+
+    # Campanii sterilizare
+    if need > 0:
+        camp_ids = list(
+            CampanieSterilizare.objects.order_by("-created_at").values_list("pk", flat=True)[
+                : need * 3
+            ]
+        )
+        for pk in _missing_ids(KIND_CAMPANIE, camp_ids):
+            if need <= 0:
+                break
+            camp = CampanieSterilizare.objects.filter(pk=pk).first()
+            if camp is None:
+                continue
+            enqueue_campanie(camp, schedule=False)
+            stats["campanie"] += 1
+            stats["enqueued"] += 1
+            need -= 1
+
+    return stats
+
+
 def _schedule_process_outbound(outbound_pk: int) -> None:
     def _run():
         try:
@@ -417,7 +573,7 @@ def _schedule_process_delivery(delivery_pk: int) -> None:
 
 
 def _message_for_outbound(outbound) -> tuple[str, str, str]:
-    from home.models import AnimalListing, CampanieSterilizare, FacebookRoInboundPost
+    from home.models import AnimalListing, CampanieSterilizare, FacebookRoInboundPost, LostFoundAnimal
 
     if outbound.kind == KIND_ANIMAL:
         listing = AnimalListing.objects.filter(pk=outbound.object_id).first()
@@ -429,6 +585,11 @@ def _message_for_outbound(outbound) -> tuple[str, str, str]:
         if camp is None:
             raise ValueError("Campanie lipsă")
         return build_campanie_message(camp)
+    if outbound.kind == KIND_PIERDUT:
+        row = LostFoundAnimal.objects.filter(pk=outbound.object_id).first()
+        if row is None or not row.is_active:
+            raise ValueError("Anunț pierdut/găsit lipsă sau inactiv")
+        return build_pierdut_message(row)
     if outbound.kind == KIND_RO_MIRROR:
         inbound = FacebookRoInboundPost.objects.filter(pk=outbound.object_id).first()
         if inbound is None:
@@ -548,13 +709,17 @@ def process_outbound_row(row_pk: int) -> FacebookPostResult:
     return last
 
 
-def flush_pending(*, limit: int | None = None) -> dict[str, int]:
+def flush_pending(*, limit: int | None = None, backfill: bool = True) -> dict[str, int]:
     """Procesează delivery-uri pending/failed; eșec pe o piață nu oprește celelalte."""
     from home.models import FacebookOutboundDelivery
 
-    stats = {"posted": 0, "deferred": 0, "failed": 0, "skipped": 0}
+    stats = {"posted": 0, "deferred": 0, "failed": 0, "skipped": 0, "backfill": 0}
     if not facebook_auto_post_enabled() and not configured_markets(for_mirror_targets=True):
         return stats
+
+    if backfill and facebook_auto_post_enabled():
+        bf = enqueue_backfill()
+        stats["backfill"] = int(bf.get("enqueued") or 0)
 
     qs = FacebookOutboundDelivery.objects.filter(
         status__in=(STATUS_PENDING, STATUS_FAILED)
@@ -577,7 +742,7 @@ def flush_pending(*, limit: int | None = None) -> dict[str, int]:
         elif result.deferred:
             stats["deferred"] += 1
         elif delivery.status == STATUS_SKIPPED or (result.error or "").startswith(
-            ("Animal", "Campanie", "Inbound")
+            ("Animal", "Campanie", "Inbound", "Anunț pierdut")
         ):
             stats["skipped"] += 1
         else:

@@ -73,7 +73,7 @@ def facebook_graph_version() -> str:
 
 
 def facebook_max_posts_per_day() -> int:
-    return max(1, int(getattr(settings, "FACEBOOK_MAX_POSTS_PER_DAY", 10) or 10))
+    return max(1, int(getattr(settings, "FACEBOOK_MAX_POSTS_PER_DAY", 20) or 20))
 
 
 def facebook_ro_mirror_enabled() -> bool:

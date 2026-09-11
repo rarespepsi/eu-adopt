@@ -2424,10 +2424,12 @@ class FacebookOutboundPost(models.Model):
 
     KIND_ANIMAL = "animal"
     KIND_CAMPANIE = "campanie"
+    KIND_PIERDUT = "pierdut"
     KIND_RO_MIRROR = "ro_mirror"
     KIND_CHOICES = (
         (KIND_ANIMAL, "Animal"),
         (KIND_CAMPANIE, "Campanie sterilizare"),
+        (KIND_PIERDUT, "Pierdut / găsit"),
         (KIND_RO_MIRROR, "Mirror postare RO"),
     )
 

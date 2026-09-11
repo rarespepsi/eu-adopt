@@ -14613,7 +14613,7 @@ def animale_pierdute_adauga_view(request):
             pre_cities = cities_by_slug.get(judet_slug, [])
             pre_judet = judet_slug
         else:
-            LostFoundAnimal.objects.create(
+            pierdut_nou = LostFoundAnimal.objects.create(
                 user=request.user,
                 kind=kind,
                 species=species,
@@ -14625,6 +14625,12 @@ def animale_pierdute_adauga_view(request):
                 photo=photo,
                 phone=phone,
             )
+            try:
+                from home.facebook_page_post import enqueue_pierdut
+
+                enqueue_pierdut(pierdut_nou)
+            except Exception:
+                pass
             messages.success(request, "Anunțul a fost publicat. Mulțumim!")
             return redirect("animale_pierdute_judet", judet_slug=judet_obj.slug)
 

@@ -12,7 +12,9 @@ from django.utils import timezone
 
 from home.facebook_page_post import (
     enqueue_animal,
+    enqueue_backfill,
     enqueue_campanie,
+    enqueue_pierdut,
     flush_pending,
     process_delivery,
     process_outbound_row,
@@ -24,6 +26,7 @@ from home.models import (
     FacebookOutboundDelivery,
     FacebookOutboundPost,
     FacebookRoInboundPost,
+    LostFoundAnimal,
 )
 
 User = get_user_model()
@@ -42,7 +45,7 @@ User = get_user_model()
     FACEBOOK_PAGE_ACCESS_TOKEN_ES="",
     FACEBOOK_PAGE_ID_COM="",
     FACEBOOK_PAGE_ACCESS_TOKEN_COM="",
-    FACEBOOK_MAX_POSTS_PER_DAY=10,
+    FACEBOOK_MAX_POSTS_PER_DAY=20,
     FACEBOOK_RO_MIRROR_ENABLED=False,
     SITE_BASE_URL="https://eu-adopt.ro",
     EUADOPT_GEMINI_API_KEY="",
@@ -83,7 +86,7 @@ class FacebookOutboundTests(TestCase):
     def test_daily_cap_defers_ro(self, mock_graph):
         mock_graph.return_value = {"id": "x", "post_id": "x"}
         now = timezone.now()
-        for i in range(10):
+        for i in range(20):
             src = FacebookOutboundPost.objects.create(
                 kind=FacebookOutboundPost.KIND_ANIMAL,
                 object_id=9000 + i,
@@ -124,6 +127,45 @@ class FacebookOutboundTests(TestCase):
         self.assertTrue(result.ok)
         self.assertEqual(row.deliveries.get(market="ro").status, FacebookOutboundDelivery.STATUS_POSTED)
 
+    @patch("home.facebook_page_post._graph_request")
+    def test_pierdut_enqueue(self, mock_graph):
+        mock_graph.return_value = {"id": "lf1", "post_id": "lf1"}
+        photo = SimpleUploadedFile("lf.jpg", b"\xff\xd8\xff\xd9", content_type="image/jpeg")
+        row_lf = LostFoundAnimal.objects.create(
+            user=self.user,
+            kind=LostFoundAnimal.KIND_LOST,
+            species="dog",
+            name="Bobby",
+            judet="Neamț",
+            judet_slug="neamt",
+            localitate="Roman",
+            description="Câine pierdut ieri seara lângă parc.",
+            photo=photo,
+        )
+        out = enqueue_pierdut(row_lf, schedule=False)
+        self.assertIsNotNone(out)
+        self.assertEqual(out.kind, FacebookOutboundPost.KIND_PIERDUT)
+        result = process_outbound_row(out.pk)
+        self.assertTrue(result.ok)
+        self.assertEqual(out.deliveries.get(market="ro").status, FacebookOutboundDelivery.STATUS_POSTED)
+
+    @patch("home.facebook_page_post._graph_request")
+    def test_backfill_skips_already_queued(self, mock_graph):
+        mock_graph.return_value = {"id": "bf1", "post_id": "bf1"}
+        a1 = self._animal(name="Already")
+        enqueue_animal(a1, schedule=False)
+        a2 = self._animal(name="Fresh")
+        bf = enqueue_backfill(max_new=5)
+        self.assertGreaterEqual(bf["animal"], 1)
+        # a1 nu e dublat
+        self.assertEqual(
+            FacebookOutboundPost.objects.filter(kind=FacebookOutboundPost.KIND_ANIMAL, object_id=a1.pk).count(),
+            1,
+        )
+        self.assertTrue(
+            FacebookOutboundPost.objects.filter(kind=FacebookOutboundPost.KIND_ANIMAL, object_id=a2.pk).exists()
+        )
+
     @override_settings(FACEBOOK_AUTO_POST_ENABLED=False)
     def test_disabled_skips_enqueue(self):
         listing = self._animal()
@@ -135,7 +177,7 @@ class FacebookOutboundTests(TestCase):
         mock_graph.return_value = {"post_id": "flush1", "id": "flush1"}
         listing = self._animal(name="Luna", species="cat")
         enqueue_animal(listing, schedule=False)
-        stats = flush_pending()
+        stats = flush_pending(backfill=False)
         self.assertEqual(stats["posted"], 1)
 
     @override_settings(
