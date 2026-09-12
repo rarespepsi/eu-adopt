@@ -362,10 +362,23 @@ class PtStripRadioSomesTests(TestCase):
         r = Client().get(reverse("pets_all"))
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "radio_somes_logo")
+        self.assertContains(r, "radio_metronom_logo")
         self.assertContains(r, "Radio Someș")
+        self.assertContains(r, "Radio Metronom")
         self.assertContains(r, "COLABORATORI")
         self.assertContains(r, "Noi vă mulțumim.")
-        for code in ("P1.1", "P1.11", "P1.21", "P1.31", "P3.1", "P3.11", "P3.21", "P3.31"):
+        for code in (
+            "P1.1",
+            "P1.6",
+            "P1.11",
+            "P1.16",
+            "P1.31",
+            "P1.36",
+            "P3.1",
+            "P3.6",
+            "P3.31",
+            "P3.36",
+        ):
             self.assertContains(r, f'data-slot="{code}"')
             self.assertContains(r, f"slot={code}&amp;m=ro")
 
@@ -373,8 +386,9 @@ class PtStripRadioSomesTests(TestCase):
         r = Client().get(reverse("servicii"))
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "radio_somes_logo")
+        self.assertContains(r, "radio_metronom_logo")
         self.assertContains(r, "COLABORATORI")
         self.assertContains(r, "Noi vă mulțumim.")
-        for code in ("S1.1", "S1.11", "S1.21", "S1.31", "S7.1", "S7.11", "S7.21", "S7.31"):
+        for code in ("S1.1", "S1.6", "S1.31", "S1.36", "S7.1", "S7.6", "S7.31", "S7.36"):
             self.assertContains(r, f'data-slot="{code}"')
             self.assertContains(r, f"slot={code}&amp;m=ro")
