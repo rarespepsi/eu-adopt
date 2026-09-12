@@ -125,7 +125,7 @@ body.page-pt #main_content {
 }
 
 #PW .pt-strip-track--p1 {
-  animation: pt-strip-p1 40s linear infinite;
+  animation: pt-strip-p1 80s linear infinite;
 }
 
 @keyframes pt-strip-p1 {
@@ -1559,7 +1559,7 @@ body.page-pt #main_content {
 
 /* P3: mișcare dreapta → stânga (track se deplasează la dreapta) */
 #PW .pt-strip-track--p3 {
-  animation: pt-strip-p3 45s linear infinite;
+  animation: pt-strip-p3 90s linear infinite;
 }
 
 @keyframes pt-strip-p3 {

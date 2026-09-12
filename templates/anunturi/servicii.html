@@ -5,7 +5,7 @@
 {% block body_class %}page-servicii{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=67-bonus-intro-5s" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/servicii.css' %}?v=68-strip-thanks" type="text/css" media="screen" />
 <link rel="stylesheet" href="{% static 'css/eu-media-modal.css' %}?v=2" type="text/css" media="screen" />
 <style>
 	/* Fundal pagină ca Intra / signup (linie profesională) */
@@ -951,6 +951,34 @@
 		-webkit-line-clamp: 5;
 		-webkit-box-orient: vertical;
 		word-break: break-word;
+	}
+	#SW .sw-strip-cell--thanks {
+		gap: 0.14rem;
+		background: linear-gradient(165deg, rgba(16, 185, 129, 0.28) 0%, rgba(15, 23, 42, 0.96) 100%) !important;
+		color: #ecfdf5 !important;
+		border-color: rgba(52, 211, 153, 0.38) !important;
+		padding: 0.28rem 0.32rem !important;
+	}
+	#SW .sw-strip-cell-thanks-title {
+		display: block;
+		font-size: 0.7rem;
+		font-weight: 800;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		line-height: 1.15;
+		text-align: center;
+		color: #a7f3d0;
+		font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+	}
+	#SW .sw-strip-cell-thanks-msg {
+		display: block;
+		font-size: 0.54rem;
+		font-weight: 500;
+		letter-spacing: 0.03em;
+		line-height: 1.2;
+		text-align: center;
+		color: #d1fae5;
+		font-family: system-ui, "Segoe UI", Roboto, sans-serif;
 	}
 	/* Anunț App mobil — lizibil pe bandă */
 	#SW .sw-strip-cell--pwa-strip {

@@ -60,15 +60,21 @@ RO_INTERNAL_HOME_PUB = {
 }
 RO_INTERNAL_HOME_PUB_CODES = frozenset(RO_INTERNAL_HOME_PUB.keys())
 
-# PT bandă cursivă P1 — Radio Someș pe prima casetă din fiecare set (EUP1.n + pub).
-_RADIO_SOMES_P1 = {
+# Benzi cursivă PT / Servicii — Radio Someș pe prima casetă din fiecare set.
+_RADIO_SOMES = {
     "image": "images/parteneri/radio_somes_logo.png",
     "link": "https://www.radiosomes.ro",
     "alt": "Radio Someș",
 }
-RO_PT_STRIP_PARTNERS = {
-    code: dict(_RADIO_SOMES_P1) for code in ("P1.1", "P1.11", "P1.21", "P1.31")
+_STRIP_SOMES_CODES = {
+    "pt": ("P1.1", "P1.11", "P1.21", "P1.31", "P3.1", "P3.11", "P3.21", "P3.31"),
+    "servicii": ("S1.1", "S1.11", "S1.21", "S1.31", "S7.1", "S7.11", "S7.21", "S7.31"),
 }
+RO_STRIP_PARTNERS = {
+    sect: {code: dict(_RADIO_SOMES) for code in codes} for sect, codes in _STRIP_SOMES_CODES.items()
+}
+# Alias PT (teste / citire rapidă)
+RO_PT_STRIP_PARTNERS = RO_STRIP_PARTNERS["pt"]
 RO_PT_STRIP_PARTNER_CODES = frozenset(RO_PT_STRIP_PARTNERS.keys())
 
 
@@ -188,7 +194,7 @@ def pub_slot_live_creative(
     Cu material: imagine/video client + link client (dacă e setat).
     Pe .ro, sloturile Campanii (A5.3 / P4.3 / TDR.3 / IL.L1) = afiș + link hartă.
     Pe .ro, A5.1 / A5.2 = casete EU-Adopt (pierdute / abuz) — nu catalog PUB.
-    Pe .ro, P1.1 / P1.11 / P1.21 / P1.31 = Radio Someș (câte una pe set, banda cursivă PT).
+    Pe .ro, P1.1 / P1.11 / P1.21 / P1.31 / P3.* / S1.* / S7.* (prima din set) = Radio Someș.
     """
     from .views import _pt_pub_slot_parse_note
 
@@ -215,8 +221,9 @@ def pub_slot_live_creative(
             market=mkt,
         )
 
-    if sect == "pt" and code in RO_PT_STRIP_PARTNER_CODES and mkt == PUB_MARKET_RO:
-        cfg = RO_PT_STRIP_PARTNERS[code]
+    strip_partners = RO_STRIP_PARTNERS.get(sect) or {}
+    if code in strip_partners and mkt == PUB_MARKET_RO:
+        cfg = strip_partners[code]
         return _creative_with_href(
             sect,
             code,
@@ -230,6 +237,7 @@ def pub_slot_live_creative(
                 "discount": "",
                 "is_default_cover": False,
                 "is_pt_strip_partner": True,
+                "is_strip_partner": True,
             },
             market=mkt,
         )

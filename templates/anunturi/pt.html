@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt386-eu-no-strips" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt387-strip-thanks" type="text/css" media="screen" />
 <link rel="stylesheet" href="{% static 'css/eu-org-trust-badge.css' %}?v=2" type="text/css" media="screen" />
 <style>
 	/* PT: strat CSS unic (fără layer mobil dedicat). */
@@ -203,6 +203,32 @@
 		-webkit-line-clamp: 5;
 		-webkit-box-orient: vertical;
 		word-break: break-word;
+	}
+	#PW .pt-strip-cell--thanks {
+		gap: 0.14rem;
+		background: linear-gradient(165deg, #f1f8e9 0%, #dcedc8 48%, #c5e1a5 100%) !important;
+		color: #1b5e20 !important;
+		padding: 0.28rem 0.32rem !important;
+	}
+	#PW .pt-strip-cell-thanks-title {
+		display: block;
+		font-size: 0.7rem;
+		font-weight: 800;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		line-height: 1.15;
+		text-align: center;
+		font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+	}
+	#PW .pt-strip-cell-thanks-msg {
+		display: block;
+		font-size: 0.54rem;
+		font-weight: 500;
+		letter-spacing: 0.03em;
+		line-height: 1.2;
+		text-align: center;
+		opacity: 0.9;
+		font-family: system-ui, "Segoe UI", Roboto, sans-serif;
 	}
 	/* Anunț App mobil — lizibil pe bandă */
 	#PW .pt-strip-cell--pwa-strip {
@@ -1052,13 +1078,13 @@
 		}
 	}
 
-	/* Touch PT: bandă cursivă P1 + P3 — viteză /2 față de desktop (durată dublă) */
+	/* Touch PT: bandă cursivă P1 + P3 — încă /2 față de desktop (durată dublă) */
 	@media (hover: none) and (pointer: coarse) {
 		body.page-pt #PW .pt-strip-track--p1 {
-			animation: pt-strip-p1 80s linear infinite !important;
+			animation: pt-strip-p1 160s linear infinite !important;
 		}
 		body.page-pt #PW .pt-strip-track--p3 {
-			animation: pt-strip-p3 90s linear infinite !important;
+			animation: pt-strip-p3 180s linear infinite !important;
 		}
 	}
 

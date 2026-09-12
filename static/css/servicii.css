@@ -82,7 +82,7 @@
 }
 
 #SW .sw-strip-track--s1 {
-  animation: sw-strip-s1 40s linear infinite;
+  animation: sw-strip-s1 80s linear infinite;
 }
 
 @keyframes sw-strip-s1 {
@@ -626,7 +626,7 @@
 }
 
 #SW .sw-strip-track--s3 {
-  animation: sw-strip-s3 45s linear infinite;
+  animation: sw-strip-s3 90s linear infinite;
 }
 
 @keyframes sw-strip-s3 {
@@ -744,10 +744,13 @@
   }
 }
 
-/* Touch mobil: banda cursiva la jumatate de viteza (durata dubla). */
+/* Touch mobil: banda cursiva la jumatate de viteza (durata dubla fata de desktop). */
 @media (hover: none) and (pointer: coarse) {
   #SW .sw-strip-track--s1 {
-    animation-duration: 80s;
+    animation-duration: 160s;
+  }
+  #SW .sw-strip-track--s3 {
+    animation-duration: 180s;
   }
 }
 

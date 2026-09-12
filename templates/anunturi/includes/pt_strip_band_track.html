@@ -2,7 +2,12 @@
 {% for cell in cells %}
 	{% with item_variant=cell.strip_variant|default:strip_variant %}
 	{% if cell.kind == "eu" %}
-	{% if cell.eu_sms_strip_href %}
+	{% if cell.eu_thanks_strip %}
+	<span class="pt-strip-item pt-strip-item--{{ item_variant }} pt-strip-cell--eu pt-strip-cell--thanks" data-slot="{{ cell.code }}">
+		<span class="pt-strip-cell-thanks-title">{{ cell.eu_thanks_label }}</span>
+		<span class="pt-strip-cell-thanks-msg">{{ cell.eu_thanks_msg }}</span>
+	</span>
+	{% elif cell.eu_sms_strip_href %}
 	<a href="{{ cell.eu_sms_strip_href }}" class="pt-strip-item pt-strip-item--{{ item_variant }} pt-strip-cell--eu pt-strip-cell--sms-strip" data-slot="{{ cell.code }}">
 		<span class="pt-strip-cell-label">{{ cell.eu_sms_strip_label }}</span>
 		<span class="pt-strip-cell-eu-msg">{{ cell.eu_sms_strip_msg }}</span>

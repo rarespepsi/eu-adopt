@@ -7,11 +7,14 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from home.donatii_constants import EUADOPT_PWA_STRIP_MSG
 from home.pwa import PWA_LOGIN_PULSE_COOKIE
 from home.views import (
+    EU_STRIP_THANKS_LABEL,
+    EU_STRIP_THANKS_MSG,
     PUB_STRIP_SEQ_P1,
+    PUB_STRIP_SEQ_P3,
     PUB_STRIP_SEQ_S1,
+    PUB_STRIP_SEQ_S7,
     _enrich_pub_strip_sequence,
     _strip_cells_donatii_pt_or_servicii,
 )
@@ -41,21 +44,28 @@ class PwaLoginPulseTests(TestCase):
         self.assertEqual(r.cookies.get(PWA_LOGIN_PULSE_COOKIE).value, "1")
 
 
-class PwaStripAnnouncementTests(TestCase):
-    def test_pt_strip_eu_dot3_has_app_message(self):
+class CollaboratoriStripThanksTests(TestCase):
+    def test_pt_strip_eu_cells_say_thanks(self):
         cells = _strip_cells_donatii_pt_or_servicii(
             "pt", _enrich_pub_strip_sequence("pt", PUB_STRIP_SEQ_P1)
         )
-        pwa_cells = [c for c in cells if c.get("code") == "EUP1.3"]
-        self.assertEqual(len(pwa_cells), 1)
-        self.assertTrue(pwa_cells[0].get("eu_pwa_strip"))
-        self.assertIn("MOBIL", pwa_cells[0].get("eu_pwa_strip_msg") or "")
-        self.assertEqual(pwa_cells[0].get("eu_pwa_strip_msg"), EUADOPT_PWA_STRIP_MSG)
+        eu = [c for c in cells if c.get("kind") == "eu"]
+        self.assertEqual(len(eu), 4)
+        for cell in eu:
+            self.assertTrue(cell.get("eu_thanks_strip"), cell.get("code"))
+            self.assertEqual(cell.get("eu_thanks_label"), EU_STRIP_THANKS_LABEL)
+            self.assertEqual(cell.get("eu_thanks_msg"), EU_STRIP_THANKS_MSG)
+            self.assertFalse(cell.get("eu_pwa_strip"))
+            self.assertFalse(cell.get("eu_sms_strip_href"))
 
-    def test_servicii_strip_eu_dot3_has_app_message(self):
-        cells = _strip_cells_donatii_pt_or_servicii(
-            "servicii", _enrich_pub_strip_sequence("servicii", PUB_STRIP_SEQ_S1)
+    def test_pt_p3_and_servicii_eu_cells_say_thanks(self):
+        cases = (
+            ("pt", PUB_STRIP_SEQ_P3, 4),
+            ("servicii", PUB_STRIP_SEQ_S1, 4),
+            ("servicii", PUB_STRIP_SEQ_S7, 4),
         )
-        pwa_cells = [c for c in cells if c.get("code") == "EUS1.3"]
-        self.assertEqual(len(pwa_cells), 1)
-        self.assertTrue(pwa_cells[0].get("eu_pwa_strip"))
+        for section, seq, n_eu in cases:
+            cells = _strip_cells_donatii_pt_or_servicii(section, _enrich_pub_strip_sequence(section, seq))
+            eu = [c for c in cells if c.get("kind") == "eu"]
+            self.assertEqual(len(eu), n_eu, section)
+            self.assertTrue(all(c.get("eu_thanks_strip") for c in eu), section)

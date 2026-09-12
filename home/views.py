@@ -2410,17 +2410,44 @@ def _strip_cells_apply_pwa_strip_msg(section: str, cells: list[dict], *, english
     return out
 
 
+EU_STRIP_THANKS_LABEL = "COLABORATORI"
+EU_STRIP_THANKS_MSG = "Noi vă mulțumim."
+
+
+def _strip_cells_apply_collaboratori_thanks(section: str, cells: list[dict]) -> list[dict]:
+    """Casetele EU din benzile PT / Servicii: mulțumire colaboratori (delimitatori de set)."""
+    if section not in ("pt", "servicii"):
+        return cells
+    out = []
+    for c in cells:
+        if c.get("kind") != "eu":
+            out.append(c)
+            continue
+        row = dict(c)
+        for key in (
+            "eu_sms_strip_href",
+            "eu_sms_strip_label",
+            "eu_sms_strip_msg",
+            "eu_pwa_strip",
+            "eu_pwa_strip_label",
+            "eu_pwa_strip_msg",
+            "eu_donatii_href",
+        ):
+            row.pop(key, None)
+        row["eu_thanks_strip"] = True
+        row["eu_thanks_label"] = EU_STRIP_THANKS_LABEL
+        row["eu_thanks_msg"] = EU_STRIP_THANKS_MSG
+        row["eu_text"] = EU_STRIP_THANKS_MSG
+        out.append(row)
+    return out
+
+
 def _strip_cells_donatii_pt_or_servicii(
     section: str, cells: list[dict], *, english: bool = False
 ) -> list[dict]:
-    """Aplică donații + SMS + anunț PWA pe benzile cursivă PT / Servicii."""
-    return _strip_cells_apply_pwa_strip_msg(
-        section,
-        _strip_cells_apply_sms_strip_href(
-            section, _strip_cells_apply_donatii_eu_href(section, cells), english=english
-        ),
-        english=english,
-    )
+    """Benzile cursivă PT / Servicii: mulțumire colaboratori pe casetele EU."""
+    del english
+    return _strip_cells_apply_collaboratori_thanks(section, cells)
 
 
 def _pt_pub_slot_parse_note(note):
