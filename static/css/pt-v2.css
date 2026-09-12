@@ -120,8 +120,16 @@ body.page-pt #main_content {
   box-sizing: border-box;
 }
 
-#PW .pt-strip-track:hover {
-  animation-play-state: paused;
+/* Pause doar pe mouse real. Pe touch, :hover rămâne lipit după tap → banda îngheață. */
+@media (hover: hover) and (pointer: fine) {
+  #PW .pt-strip-track:hover {
+    animation-play-state: paused;
+  }
+}
+
+html.eu-strip-resume #PW .pt-strip-track,
+html.eu-strip-resume #PW .pt-strip-track:hover {
+  animation-play-state: running !important;
 }
 
 #PW .pt-strip-track--p1 {

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, RequestFactory, SimpleTestCase, TestCase, override_settings
@@ -392,3 +394,31 @@ class PtStripRadioSomesTests(TestCase):
         for code in ("S1.1", "S1.6", "S1.31", "S1.36", "S7.1", "S7.6", "S7.31", "S7.36"):
             self.assertContains(r, f'data-slot="{code}"')
             self.assertContains(r, f"slot={code}&amp;m=ro")
+
+    def test_pt_and_servicii_load_strip_resume_script(self):
+        pt = Client().get(reverse("pets_all"))
+        sw = Client().get(reverse("servicii"))
+        self.assertContains(pt, "eu-strip-resume.js")
+        self.assertContains(sw, "eu-strip-resume.js")
+        self.assertContains(pt, "pt388-strip-resume")
+        self.assertContains(sw, "69-strip-resume")
+
+
+class StripResumeStaticTests(SimpleTestCase):
+    """Hover-pause pe benzi doar pentru mouse; JS repornește animația la revenire."""
+
+    _root = Path(__file__).resolve().parents[2]
+
+    def test_strip_css_and_js_resume_after_outbound_click(self):
+        pt = (self._root / "static/css/pt-v2.css").read_text(encoding="utf-8")
+        sw = (self._root / "static/css/servicii.css").read_text(encoding="utf-8")
+        js = (self._root / "static/js/eu-strip-resume.js").read_text(encoding="utf-8")
+        for css in (pt, sw):
+            self.assertIn("(hover: hover) and (pointer: fine)", css)
+            self.assertIn("html.eu-strip-resume", css)
+            self.assertIn("animation-play-state: running !important", css)
+        self.assertIn("pageshow", js)
+        self.assertIn("visibilitychange", js)
+        self.assertIn("eu-strip-resume", js)
+        self.assertIn(".pt-strip-track", js)
+        self.assertIn(".sw-strip-track", js)
