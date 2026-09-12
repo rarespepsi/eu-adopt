@@ -354,3 +354,13 @@ class PubMarketNotesTests(TestCase):
         self.assertEqual(pub_market_for_request(req), PUB_MARKET_EU)
         req2 = RequestFactory().get("/", HTTP_HOST="eu-adopt.ro")
         self.assertEqual(pub_market_for_request(req2), PUB_MARKET_RO)
+
+
+@override_settings(PRELAUNCH_MODE=False, POPULATION_ONBOARDING_ENABLED=False)
+class PtStripRadioSomesTests(TestCase):
+    def test_pt_page_p1_shows_radio_somes(self):
+        r = Client().get(reverse("pets_all"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "radio_somes_logo")
+        self.assertContains(r, 'data-slot="P1.1"')
+        self.assertContains(r, "Radio Someș")

@@ -47,3 +47,29 @@ class PubSlotDefaultsTests(SimpleTestCase):
         url = pub_harta_url("shop", "SH4.1")
         self.assertIn("sect=shop", url)
         self.assertIn("slot=SH4.1", url)
+
+    def test_pt_p1_1_radio_somes_partner(self):
+        note = _NoteStub(
+            '{"img": "images/other.png", "link": "https://example.com", "alt": "X"}'
+        )
+        creative = pub_slot_live_creative("pt", "P1.1", note=note, market="ro")
+        self.assertTrue(creative.get("is_pt_strip_partner"))
+        self.assertFalse(creative["is_default_cover"])
+        self.assertTrue(creative["has_link"])
+        self.assertIn("radio_somes_logo", creative.get("img") or "")
+        self.assertEqual(creative.get("link"), "https://www.radiosomes.ro")
+        self.assertIn("/pub/go/", creative.get("href") or "")
+        other = pub_slot_live_creative("pt", "P1.2", note=None, market="ro")
+        self.assertFalse(other.get("is_pt_strip_partner"))
+        self.assertTrue(other["is_default_cover"])
+        eu = pub_slot_live_creative("pt", "P1.1", note=None, market="eu")
+        self.assertFalse(eu.get("is_pt_strip_partner"))
+        self.assertTrue(eu["is_default_cover"])
+
+    @override_settings(PRELAUNCH_MODE=False)
+    def test_pub_slot_go_radio_somes_p1_1(self):
+        creative = pub_slot_live_creative("pt", "P1.1", note=None, market="ro")
+        client = Client()
+        response = client.get(creative["href"])
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("radiosomes.ro", response["Location"])
