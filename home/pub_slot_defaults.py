@@ -60,13 +60,14 @@ RO_INTERNAL_HOME_PUB = {
 }
 RO_INTERNAL_HOME_PUB_CODES = frozenset(RO_INTERNAL_HOME_PUB.keys())
 
-# PT bandă cursivă P1 — parteneri colaborare (rezervate; nu cover default).
+# PT bandă cursivă P1 — Radio Someș pe prima casetă din fiecare set (EUP1.n + pub).
+_RADIO_SOMES_P1 = {
+    "image": "images/parteneri/radio_somes_logo.png",
+    "link": "https://www.radiosomes.ro",
+    "alt": "Radio Someș",
+}
 RO_PT_STRIP_PARTNERS = {
-    "P1.1": {
-        "image": "images/parteneri/radio_somes_logo.png",
-        "link": "https://www.radiosomes.ro",
-        "alt": "Radio Someș",
-    },
+    code: dict(_RADIO_SOMES_P1) for code in ("P1.1", "P1.11", "P1.21", "P1.31")
 }
 RO_PT_STRIP_PARTNER_CODES = frozenset(RO_PT_STRIP_PARTNERS.keys())
 
@@ -187,7 +188,7 @@ def pub_slot_live_creative(
     Cu material: imagine/video client + link client (dacă e setat).
     Pe .ro, sloturile Campanii (A5.3 / P4.3 / TDR.3 / IL.L1) = afiș + link hartă.
     Pe .ro, A5.1 / A5.2 = casete EU-Adopt (pierdute / abuz) — nu catalog PUB.
-    Pe .ro, P1.1 = Radio Someș (colaborare, banda cursivă PT).
+    Pe .ro, P1.1 / P1.11 / P1.21 / P1.31 = Radio Someș (câte una pe set, banda cursivă PT).
     """
     from .views import _pt_pub_slot_parse_note
 

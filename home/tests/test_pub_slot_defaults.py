@@ -48,28 +48,31 @@ class PubSlotDefaultsTests(SimpleTestCase):
         self.assertIn("sect=shop", url)
         self.assertIn("slot=SH4.1", url)
 
-    def test_pt_p1_1_radio_somes_partner(self):
+    def test_pt_p1_radio_somes_on_each_set(self):
         note = _NoteStub(
             '{"img": "images/other.png", "link": "https://example.com", "alt": "X"}'
         )
-        creative = pub_slot_live_creative("pt", "P1.1", note=note, market="ro")
-        self.assertTrue(creative.get("is_pt_strip_partner"))
-        self.assertFalse(creative["is_default_cover"])
-        self.assertTrue(creative["has_link"])
-        self.assertIn("radio_somes_logo", creative.get("img") or "")
-        self.assertEqual(creative.get("link"), "https://www.radiosomes.ro")
-        self.assertIn("/pub/go/", creative.get("href") or "")
-        other = pub_slot_live_creative("pt", "P1.2", note=None, market="ro")
-        self.assertFalse(other.get("is_pt_strip_partner"))
-        self.assertTrue(other["is_default_cover"])
-        eu = pub_slot_live_creative("pt", "P1.1", note=None, market="eu")
+        for code in ("P1.1", "P1.11", "P1.21", "P1.31"):
+            creative = pub_slot_live_creative("pt", code, note=note, market="ro")
+            self.assertTrue(creative.get("is_pt_strip_partner"), code)
+            self.assertFalse(creative["is_default_cover"], code)
+            self.assertTrue(creative["has_link"], code)
+            self.assertIn("radio_somes_logo", creative.get("img") or "", code)
+            self.assertEqual(creative.get("link"), "https://www.radiosomes.ro", code)
+            self.assertIn("/pub/go/", creative.get("href") or "", code)
+        for neighbor in ("P1.2", "P1.12", "P1.22", "P1.32"):
+            other = pub_slot_live_creative("pt", neighbor, note=None, market="ro")
+            self.assertFalse(other.get("is_pt_strip_partner"), neighbor)
+            self.assertTrue(other["is_default_cover"], neighbor)
+        eu = pub_slot_live_creative("pt", "P1.11", note=None, market="eu")
         self.assertFalse(eu.get("is_pt_strip_partner"))
         self.assertTrue(eu["is_default_cover"])
 
     @override_settings(PRELAUNCH_MODE=False)
-    def test_pub_slot_go_radio_somes_p1_1(self):
-        creative = pub_slot_live_creative("pt", "P1.1", note=None, market="ro")
+    def test_pub_slot_go_radio_somes_p1_sets(self):
         client = Client()
-        response = client.get(creative["href"])
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("radiosomes.ro", response["Location"])
+        for code in ("P1.1", "P1.11", "P1.21", "P1.31"):
+            creative = pub_slot_live_creative("pt", code, note=None, market="ro")
+            response = client.get(creative["href"])
+            self.assertEqual(response.status_code, 302, code)
+            self.assertIn("radiosomes.ro", response["Location"], code)

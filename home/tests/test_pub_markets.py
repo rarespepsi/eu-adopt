@@ -362,5 +362,7 @@ class PtStripRadioSomesTests(TestCase):
         r = Client().get(reverse("pets_all"))
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "radio_somes_logo")
-        self.assertContains(r, 'data-slot="P1.1"')
         self.assertContains(r, "Radio Someș")
+        for code in ("P1.1", "P1.11", "P1.21", "P1.31"):
+            self.assertContains(r, f'data-slot="{code}"')
+            self.assertContains(r, f"slot={code}&amp;m=ro")
