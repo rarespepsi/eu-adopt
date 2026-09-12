@@ -402,6 +402,7 @@ class PtStripRadioSomesTests(TestCase):
         self.assertContains(sw, "eu-strip-resume.js")
         self.assertContains(pt, "pt388-strip-resume")
         self.assertContains(sw, "69-strip-resume")
+        self.assertContains(pt, "2-strip-resume")
 
 
 class StripResumeStaticTests(SimpleTestCase):

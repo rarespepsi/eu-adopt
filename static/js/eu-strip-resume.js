@@ -50,10 +50,8 @@
 	document.addEventListener("visibilitychange", function () {
 		if (!document.hidden) resumeStrip();
 	});
-	window.addEventListener("pageshow", resumeStrip);
-	window.addEventListener("focus", resumeStrip);
-	window.addEventListener("blur", function () {
-		document.documentElement.classList.add(RESUME_CLASS);
+	window.addEventListener("pageshow", function (e) {
+		if (e.persisted) resumeStrip();
 	});
 
 	document.addEventListener(
