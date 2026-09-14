@@ -275,9 +275,9 @@ def ask_gemini(question: str, page_path: str = "") -> str | None:
     if not api_key:
         return None
 
-    primary = getattr(settings, "SITE_GUIDE_GEMINI_MODEL", "gemini-2.5-flash").strip()
+    primary = getattr(settings, "SITE_GUIDE_GEMINI_MODEL", "gemini-2.5-flash-lite").strip()
     fallbacks = [primary]
-    for alt in ("gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"):
+    for alt in ("gemini-2.5-flash-lite", "gemini-2.5-flash"):
         if alt not in fallbacks:
             fallbacks.append(alt)
 

@@ -89,9 +89,10 @@ def _gemini_translate(text: str, target_lang: str) -> str | None:
         return None
 
     lang_name = _LANG_NAMES.get(target_lang[:2], target_lang)
-    primary = getattr(settings, "SITE_GUIDE_GEMINI_MODEL", "gemini-2.5-flash").strip()
+    primary = getattr(settings, "SITE_GUIDE_GEMINI_MODEL", "gemini-2.5-flash-lite").strip()
     fallbacks = [primary]
-    for alt in ("gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"):
+    # gemini-2.0-flash retras (404); lite înainte de flash ca să economisim cotă.
+    for alt in ("gemini-2.5-flash-lite", "gemini-2.5-flash"):
         if alt not in fallbacks:
             fallbacks.append(alt)
 

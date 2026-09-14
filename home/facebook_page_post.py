@@ -221,9 +221,10 @@ def _gemini_translate_fb(text: str, target_lang: str) -> str | None:
     from home.facebook_markets import MARKET_LANG_NAME
 
     lang_name = MARKET_LANG_NAME.get(target_lang, target_lang)
-    primary = getattr(settings, "SITE_GUIDE_GEMINI_MODEL", "gemini-2.5-flash").strip()
+    primary = getattr(settings, "SITE_GUIDE_GEMINI_MODEL", "gemini-2.5-flash-lite").strip()
     models = [primary]
-    for alt in ("gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"):
+    # Fără gemini-2.0-flash (retras). Lite primul = mai puțină cotă pe flush masiv.
+    for alt in ("gemini-2.5-flash-lite", "gemini-2.5-flash"):
         if alt not in models:
             models.append(alt)
     system = (
@@ -319,29 +320,40 @@ def post_to_facebook_page(
         return FacebookPostResult(ok=False, error="Facebook auto-post dezactivat", market=market)
     try:
         if image_url:
-            raw = _graph_request(
-                page_id=creds.page_id,
-                access_token=creds.access_token,
-                path="photos",
-                method="POST",
-                params={
-                    "url": image_url,
-                    "caption": message[:2000],
-                },
-            )
-            post_id = str(raw.get("post_id") or raw.get("id") or "").strip()
-        else:
-            payload = {"message": message[:2000]}
-            if link:
-                payload["link"] = link
-            raw = _graph_request(
-                page_id=creds.page_id,
-                access_token=creds.access_token,
-                path="feed",
-                method="POST",
-                params=payload,
-            )
-            post_id = str(raw.get("id") or "").strip()
+            try:
+                raw = _graph_request(
+                    page_id=creds.page_id,
+                    access_token=creds.access_token,
+                    path="photos",
+                    method="POST",
+                    params={
+                        "url": image_url,
+                        "caption": message[:2000],
+                    },
+                )
+                post_id = str(raw.get("post_id") or raw.get("id") or "").strip()
+                if post_id:
+                    return FacebookPostResult(ok=True, facebook_post_id=post_id, market=market)
+            except Exception as img_exc:
+                # URL media invalid / inaccesibil pentru Graph → post text+link, fără imagine
+                logger.warning(
+                    "facebook photo failed market=%s; fallback feed: %s",
+                    market,
+                    str(img_exc)[:180],
+                )
+                image_url = ""
+
+        payload = {"message": message[:2000]}
+        if link:
+            payload["link"] = link
+        raw = _graph_request(
+            page_id=creds.page_id,
+            access_token=creds.access_token,
+            path="feed",
+            method="POST",
+            params=payload,
+        )
+        post_id = str(raw.get("id") or "").strip()
         if not post_id:
             return FacebookPostResult(ok=False, error="Răspuns FB fără id postare", market=market)
         return FacebookPostResult(ok=True, facebook_post_id=post_id, market=market)
