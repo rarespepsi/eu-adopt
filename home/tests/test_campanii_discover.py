@@ -62,6 +62,18 @@ class CampaniiDiscoverTests(TestCase):
         self.assertEqual(hit.status, CampanieDiscoverHit.STATUS_NEW)
         self.assertTrue(hit.date_start)
 
+    def test_publisher_is_only_superuser(self):
+        from home.campanii_discover_publish import publisher_user
+
+        User.objects.create_user("IoanaSerbacov", "ioana@test.local", "x")
+        staff = User.objects.create_user("staffy", "s@test.local", "x", is_staff=True)
+        superu = User.objects.create_superuser("onlysuper", "su@test.local", "x")
+        pub = publisher_user()
+        self.assertEqual(pub.pk, superu.pk)
+        self.assertTrue(pub.is_superuser)
+        self.assertNotEqual(pub.username, "IoanaSerbacov")
+        self.assertNotEqual(pub.pk, staff.pk)
+
     def test_empty_judete_excludes_visible_campaign(self):
         user = User.objects.create_user("camp_disc", "c@test.local", "x")
         photo = SimpleUploadedFile("c.jpg", b"\xff\xd8\xff\xd9", content_type="image/jpeg")

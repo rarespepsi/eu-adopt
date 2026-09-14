@@ -50,11 +50,15 @@ _LOC_PATTERNS = (
 
 
 def publisher_user():
-    for name in ("IoanaSerbacov", "admin", "euadopt"):
-        u = User.objects.filter(username__iexact=name).first()
-        if u:
-            return u
-    return User.objects.filter(is_staff=True).order_by("id").first()
+    """Doar superuser-ul site-ului — niciodată useri Cont (ex. IoanaSerbacov)."""
+    qs = User.objects.filter(is_superuser=True).order_by("id")
+    n = qs.count()
+    if n == 0:
+        logger.error("no superuser for campanii discover publish")
+        return None
+    if n > 1:
+        logger.warning("multiple superusers (%s) — using lowest id", n)
+    return qs.first()
 
 
 def normalize_hit_url(url: str) -> str:
@@ -239,12 +243,12 @@ def _download_image(url: str) -> Path | None:
 
 
 def _already_on_map(link: str, judet_slug: str, localitate: str, d0: date, d1: date) -> CampanieSterilizare | None:
+    """Dedupe față de ORICE campanie pe hartă (inclusiv useri) — nu republicăm."""
     link_n = normalize_hit_url(link)
     if link_n:
         hit = CampanieSterilizare.objects.filter(link=link_n).first()
         if hit:
             return hit
-        # partial: same path without query
         base = link_n.split("?")[0]
         if len(base) > 20:
             hit = CampanieSterilizare.objects.filter(link__startswith=base[:180]).first()
@@ -256,6 +260,23 @@ def _already_on_map(link: str, judet_slug: str, localitate: str, d0: date, d1: d
         date_start=d0,
         date_end=d1,
     ).first()
+
+
+def reassign_discover_owned_to_superuser(*, pks: list[int] | None = None) -> int:
+    """Mută campaniile create greșit pe user → pe unicul superuser. Nu atinge alte conturi."""
+    owner = publisher_user()
+    if not owner:
+        return 0
+    qs = CampanieSterilizare.objects.filter(pk__in=pks) if pks else CampanieSterilizare.objects.none()
+    n = 0
+    for obj in qs:
+        if obj.user_id == owner.id:
+            continue
+        # doar cele din fluxul discover (pk-uri explicite) — nu mutăm Serbacov / ONG
+        obj.user = owner
+        obj.save(update_fields=["user", "updated_at"])
+        n += 1
+    return n
 
 
 def publish_new_hits(
