@@ -30,6 +30,10 @@ fi
   if [[ "${ec}" -ne 0 ]]; then
     echo "FAIL: exit=${ec}"
   fi
+  # După flush: dacă backlog Eu e gol → coboară plafonul la 15 (altfel lasă 40).
+  if [[ -x "${APP_DIR}/deploy/hetzner/maybe_lower_facebook_cap_after_backlog.sh" ]]; then
+    bash "${APP_DIR}/deploy/hetzner/maybe_lower_facebook_cap_after_backlog.sh" || true
+  fi
   echo "=== $(date -Iseconds) facebook_outbound_flush END exit=${ec} ==="
   exit "${ec}"
 } >> "${LOG}" 2>&1
