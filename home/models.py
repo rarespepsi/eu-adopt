@@ -2416,6 +2416,68 @@ class CampanieSterilizare(models.Model):
         return " · ".join(parts) if parts else "—"
 
 
+class CampanieDiscoverHit(models.Model):
+    """
+    Rezultat căutare gratuită campanii sterilizare (DDG/Bing).
+    Refresh la 3 zile; publicarea pe hartă+FB doar dacă trece filtrele (afiș, dată, non-dublură).
+    """
+
+    STATUS_NEW = "new"
+    STATUS_SKIPPED = "skipped"
+    STATUS_PUBLISHED = "published"
+    STATUS_QUARANTINE = "quarantine"
+    STATUS_CHOICES = (
+        (STATUS_NEW, "Nou"),
+        (STATUS_SKIPPED, "Omis"),
+        (STATUS_PUBLISHED, "Publicat"),
+        (STATUS_QUARANTINE, "Carantină / vechi"),
+    )
+
+    url = models.URLField(max_length=500, unique=True)
+    url_norm = models.CharField(max_length=500, blank=True, default="", db_index=True)
+    judet = models.CharField(max_length=64, db_index=True)
+    judet_slug = models.CharField(max_length=80, db_index=True)
+    judet_code = models.CharField(max_length=8, blank=True, default="")
+    title = models.CharField(max_length=300, blank=True, default="")
+    snippet = models.CharField(max_length=500, blank=True, default="")
+    image_url = models.URLField(max_length=500, blank=True, default="")
+    guessed_dates = models.CharField(max_length=120, blank=True, default="")
+    source = models.CharField(max_length=16, blank=True, default="")
+    query = models.CharField(max_length=240, blank=True, default="")
+    status = models.CharField(
+        max_length=16,
+        choices=STATUS_CHOICES,
+        default=STATUS_NEW,
+        db_index=True,
+    )
+    skip_reason = models.CharField(max_length=240, blank=True, default="")
+    localitate_guess = models.CharField(max_length=120, blank=True, default="")
+    date_start = models.DateField(null=True, blank=True)
+    date_end = models.DateField(null=True, blank=True)
+    campanie = models.ForeignKey(
+        CampanieSterilizare,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="discover_hits",
+    )
+    first_seen_at = models.DateTimeField(auto_now_add=True)
+    last_seen_at = models.DateTimeField(auto_now=True)
+    published_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Descoperire campanie"
+        verbose_name_plural = "Descoperiri campanii"
+        ordering = ["-last_seen_at", "-pk"]
+        indexes = [
+            models.Index(fields=["status", "judet_slug"]),
+            models.Index(fields=["last_seen_at"]),
+        ]
+
+    def __str__(self):
+        return f"[{self.status}] {self.judet}: {(self.title or self.url)[:60]}"
+
+
 class FacebookOutboundPost(models.Model):
     """
     Sursă de conținut de distribuit pe paginile Facebook (1 rând = 1 animal / campanie / mirror RO).

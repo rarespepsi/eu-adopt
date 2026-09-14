@@ -13,10 +13,13 @@ from home.campanii_discover import (
     build_queries,
     discover_for_judet,
     empty_campanii_judete,
+    is_junk_campaign_url,
+    parse_campaign_dates,
     write_candidates_csv,
 )
+from home.campanii_discover_publish import classify_candidate, upsert_candidates
 from home.campanii_ro import CampaniiJudet
-from home.models import CampanieSterilizare
+from home.models import CampanieDiscoverHit, CampanieSterilizare
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from datetime import date, timedelta
@@ -30,6 +33,34 @@ class CampaniiDiscoverTests(TestCase):
         qs = build_queries(j, include_smeura=True)
         self.assertTrue(any("site:smeura.com" in q for q in qs))
         self.assertTrue(any("Ilfov" in q for q in qs))
+
+    def test_junk_and_dates(self):
+        self.assertTrue(is_junk_campaign_url("https://smeura.com/"))
+        self.assertFalse(is_junk_campaign_url("https://smeura.com/event/livadaarad/"))
+        self.assertTrue(is_junk_campaign_url("https://www.litoralulromanesc.ro/hotel_x.htm"))
+        dates = parse_campaign_dates("Aug 14, 2026 · Primăria Sebeș campanie sterilizare")
+        self.assertIn(date(2026, 8, 14), dates)
+
+    def test_classify_and_upsert(self):
+        cand = CampanieCandidate(
+            judet="Sibiu",
+            judet_slug="sibiu",
+            judet_code="SB",
+            title="Campanie sterilizare gratuită Sibiu din 3 august 2026",
+            url="https://example-news.ro/sterilizare-sibiu-2026",
+            snippet="Începând cu 3 august 2026, în limita fondurilor disponibile.",
+            source="ddg",
+            query="q",
+            guessed_dates="03.08.2026",
+            image_url="https://example-news.ro/afis.jpg",
+        )
+        meta = classify_candidate(cand, min_date=date(2026, 8, 1), today=date(2026, 9, 14))
+        self.assertEqual(meta["status"], CampanieDiscoverHit.STATUS_NEW)
+        ups = upsert_candidates([cand], min_date=date(2026, 8, 1), fetch_images=False)
+        self.assertEqual(ups["created"], 1)
+        hit = CampanieDiscoverHit.objects.get()
+        self.assertEqual(hit.status, CampanieDiscoverHit.STATUS_NEW)
+        self.assertTrue(hit.date_start)
 
     def test_empty_judete_excludes_visible_campaign(self):
         user = User.objects.create_user("camp_disc", "c@test.local", "x")
