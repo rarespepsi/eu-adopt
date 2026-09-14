@@ -77,8 +77,16 @@
   box-sizing: border-box;
 }
 
-#SW .sw-strip-track:hover {
-  animation-play-state: paused;
+/* Pause doar pe mouse real. Pe touch, :hover rămâne lipit după tap → banda îngheață. */
+@media (hover: hover) and (pointer: fine) {
+  #SW .sw-strip-track:hover {
+    animation-play-state: paused;
+  }
+}
+
+html.eu-strip-resume #SW .sw-strip-track,
+html.eu-strip-resume #SW .sw-strip-track:hover {
+  animation-play-state: running !important;
 }
 
 #SW .sw-strip-track--s1 {
