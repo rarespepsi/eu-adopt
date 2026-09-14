@@ -26,6 +26,24 @@ EXPECTED_PATH = Path(
 )
 BASE_URL = (os.environ.get("EUADOPT_HEALTHCHECK_BASE_URL") or "https://eu-adopt.ro").rstrip("/")
 
+# Hub Eu + piețe TLD + Cazareamea — doar GET / (200, fără „Bad Request”).
+# Override: EUADOPT_HEALTHCHECK_EXTRA_BASE_URLS=url1,url2
+_DEFAULT_EXTRA_BASES = (
+    "https://euadopt.com",
+    "https://euadopt.de",
+    "https://euadopt.fr",
+    "https://euadopt.es",
+    "https://cazareamea.ro",
+)
+
+
+def extra_base_urls() -> list[str]:
+    raw = (os.environ.get("EUADOPT_HEALTHCHECK_EXTRA_BASE_URLS") or "").strip()
+    if raw:
+        return [u.strip().rstrip("/") for u in raw.split(",") if u.strip()]
+    return list(_DEFAULT_EXTRA_BASES)
+
+
 # path → needles (empty = doar HTTP 200). Contact: vezi run_smoke (prelaunch → login).
 SMOKE_CHECKS: list[tuple[str, list[str]]] = [
     ("/", []),
@@ -163,9 +181,8 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
-def http_get(path: str, timeout: int = 25, follow: bool = True) -> tuple[int, str, Optional[str]]:
+def http_get_url(url: str, timeout: int = 25, follow: bool = True) -> tuple[int, str, Optional[str]]:
     """Return (status, body, location_header_if_redirect)."""
-    url = BASE_URL + path
     req = urllib.request.Request(
         url,
         headers={"User-Agent": "EUAdopt-Healthcheck/1.0"},
@@ -182,6 +199,10 @@ def http_get(path: str, timeout: int = 25, follow: bool = True) -> tuple[int, st
         return int(e.code), body, loc
     except Exception as e:
         return 0, f"{type(e).__name__}: {e}", None
+
+
+def http_get(path: str, timeout: int = 25, follow: bool = True) -> tuple[int, str, Optional[str]]:
+    return http_get_url(BASE_URL + path, timeout=timeout, follow=follow)
 
 
 def run_smoke() -> list[str]:
@@ -213,6 +234,28 @@ def run_smoke() -> list[str]:
         if map_only and "maps.googleapis.com" not in body:
             continue
         fails.append(f"missing {missing} on {path}")
+    return fails
+
+
+def run_extra_sites_check() -> list[str]:
+    """
+    Smoke minim pe hub Eu (.com/.de/.fr/.es) + Cazareamea.
+    Prinde regresii tip nginx catch-all greșit (400 Bad Request pe host).
+    """
+    fails: list[str] = []
+    for base in extra_base_urls():
+        code, body, loc = http_get_url(base + "/", follow=True)
+        if code in (301, 302) and loc:
+            # un redirect HTTPS/apex e OK dacă destinația tot pe același host-ish
+            code2, body2, _ = http_get_url(loc if loc.startswith("http") else base + loc, follow=True)
+            code, body = code2, body2
+        low = (body or "").lower()
+        if code != 200:
+            fails.append(f"extra_site HTTP {code} {base}/ :: {str(body)[:120]}")
+            continue
+        if "bad request" in low and "<h1>bad request" in low:
+            fails.append(f"extra_site Bad Request page on {base}/")
+            continue
     return fails
 
 
@@ -302,6 +345,11 @@ def main() -> int:
     smoke_fails = run_smoke()
     fails.extend(smoke_fails)
     report.append(f"smoke_fails={len(smoke_fails)}")
+
+    extra_fails = run_extra_sites_check()
+    fails.extend(extra_fails)
+    report.append(f"extra_site_fails={len(extra_fails)}")
+    report.append(f"extra_sites={','.join(extra_base_urls())}")
 
     phone_fails = run_phone_source_check()
     fails.extend(phone_fails)
