@@ -74,7 +74,7 @@ _RADIO_METRONOM = {
 }
 _RADIO_STAR_SEBES = {
     "image": "images/parteneri/radio_star_sebes_logo.jpg",
-    "link": "https://radiostarsebes.ro/",
+    "link": "https://radiostarsebes.ro/radio-live/",
     "alt": "Radio Star Sebeș",
 }
 _STRIP_PARTNER_PLACEMENTS = (
