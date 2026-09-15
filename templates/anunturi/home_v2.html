@@ -9,7 +9,7 @@
 {% block body_class %}page-home-v2{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/home_v2.css' %}?v=20260824-a5-full-width-auto-h" type="text/css" media="all" />
+<link rel="stylesheet" href="{% static 'css/home_v2.css' %}?v=20260915-hero-contain-blur" type="text/css" media="all" />
 <style>
 	.home-welcome-overlay-backdrop {
 		position: fixed;
@@ -147,10 +147,14 @@
 					<div class="hero-v2-bg" aria-hidden="true">
 						{% for hero_path in hero_slider_images %}
 						<div class="hero-v2-slide">
+							<img src="{% static hero_path %}" alt="" class="hero-v2-bg-blur" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';" />
 							<img src="{% static hero_path %}" alt="" class="hero-v2-bg-img" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';" />
 						</div>
 						{% empty %}
-						<div class="hero-v2-slide"><img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" class="hero-v2-bg-img" /></div>
+						<div class="hero-v2-slide">
+							<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" class="hero-v2-bg-blur" />
+							<img src="{% static 'images/pets/charlie-400x200.jpg' %}" alt="" class="hero-v2-bg-img" />
+						</div>
 						{% endfor %}
 					</div>
 					<div class="hero-v2-inner">
