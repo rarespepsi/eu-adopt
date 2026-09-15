@@ -2757,6 +2757,18 @@ def home_view(request):
         _promo_a2_apply_overlay_to_home_a2(a2_pets, now_promo, with_quotes=True)
 
     hero_slider_images = HERO_SLIDER_IMAGES[:5]
+    # Mid-slot photos: două seturi disjuncte (animale diferite), cu rotație ușoară
+    _hero_uniq = []
+    _seen_keys = set()
+    for _p in hero_slider_images:
+        _key = (_p or "").rsplit("/", 1)[-1].split("-")[0].split("1")[0].lower()
+        if _key and _key not in _seen_keys:
+            _seen_keys.add(_key)
+            _hero_uniq.append(_p)
+    if len(_hero_uniq) < 2:
+        _hero_uniq = list(hero_slider_images) or ["images/pets/charlie-400x200.jpg"]
+    hero_mid_left_images = _hero_uniq[0::2] or _hero_uniq[:1]
+    hero_mid_right_images = _hero_uniq[1::2] or _hero_uniq[-1:]
     # Notă bun venit: welcome=1 (după activare cont); welcome_demo=1 e legacy
     show_welcome_demo = request.GET.get("welcome_demo") == "1" or request.GET.get("welcome") == "1"
     wishlist_ids = set()
@@ -2776,6 +2788,8 @@ def home_view(request):
         "left_sidebar_partners": left_sidebar_partners,
         "right_sidebar_partners": right_sidebar_partners,
         "hero_slider_images": hero_slider_images,
+        "hero_mid_left_images": hero_mid_left_images,
+        "hero_mid_right_images": hero_mid_right_images,
         "show_welcome_demo": show_welcome_demo,
         "wishlist_ids": wishlist_ids,
         "home_burtiera_text": _get_home_burtiera_text(market=_pub_mkt),
