@@ -60,7 +60,8 @@ RO_INTERNAL_HOME_PUB = {
 }
 RO_INTERNAL_HOME_PUB_CODES = frozenset(RO_INTERNAL_HOME_PUB.keys())
 
-# Benzi cursivă PT / Servicii — parteneri radio pe prima casetă din set, apoi +4.
+# Benzi cursivă PT / Servicii — radiouri la pas 5 (4 casete libere între active):
+# *.1 Someș → *.6 Metronom → *.11 Star Sebeș → *.16 Someș → …
 _RADIO_SOMES = {
     "image": "images/parteneri/radio_somes_logo.png",
     "link": "https://www.radiosomes.ro",
@@ -71,19 +72,31 @@ _RADIO_METRONOM = {
     "link": "http://metronom-fm.ro:8000/stream.ogg",
     "alt": "Radio Metronom",
 }
+_RADIO_STAR_SEBES = {
+    "image": "images/parteneri/radio_star_sebes_logo.jpg",
+    "link": "https://radiostarsebes.ro/",
+    "alt": "Radio Star Sebeș",
+}
 _STRIP_PARTNER_PLACEMENTS = (
     (
         _RADIO_SOMES,
         {
-            "pt": ("P1.1", "P1.11", "P1.21", "P1.31", "P3.1", "P3.11", "P3.21", "P3.31"),
-            "servicii": ("S1.1", "S1.11", "S1.21", "S1.31", "S7.1", "S7.11", "S7.21", "S7.31"),
+            "pt": ("P1.1", "P1.16", "P1.31", "P3.1", "P3.16", "P3.31"),
+            "servicii": ("S1.1", "S1.16", "S1.31", "S7.1", "S7.16", "S7.31"),
         },
     ),
     (
         _RADIO_METRONOM,
         {
-            "pt": ("P1.6", "P1.16", "P1.26", "P1.36", "P3.6", "P3.16", "P3.26", "P3.36"),
-            "servicii": ("S1.6", "S1.16", "S1.26", "S1.36", "S7.6", "S7.16", "S7.26", "S7.36"),
+            "pt": ("P1.6", "P1.21", "P1.36", "P3.6", "P3.21", "P3.36"),
+            "servicii": ("S1.6", "S1.21", "S1.36", "S7.6", "S7.21", "S7.36"),
+        },
+    ),
+    (
+        _RADIO_STAR_SEBES,
+        {
+            "pt": ("P1.11", "P1.26", "P3.11", "P3.26"),
+            "servicii": ("S1.11", "S1.26", "S7.11", "S7.26"),
         },
     ),
 )
@@ -214,7 +227,8 @@ def pub_slot_live_creative(
     Cu material: imagine/video client + link client (dacă e setat).
     Pe .ro, sloturile Campanii (A5.3 / P4.3 / TDR.3 / IL.L1) = afiș + link hartă.
     Pe .ro, A5.1 / A5.2 = casete EU-Adopt (pierdute / abuz) — nu catalog PUB.
-    Pe .ro, Radio Someș pe *.1 / *.11 / *.21 / *.31; Radio Metronom pe *.6 / *.16 / *.26 / *.36 (P1/P3/S1/S7).
+    Pe .ro, radiouri pe bandă (4 goale între ele): Someș *.1/*.16/*.31,
+    Metronom *.6/*.21/*.36, Star Sebeș *.11/*.26 (P1/P3/S1/S7).
     """
     from .views import _pt_pub_slot_parse_note
 

@@ -54,39 +54,41 @@ class PubSlotDefaultsTests(SimpleTestCase):
         )
         somes = (
             "P1.1",
-            "P1.11",
-            "P1.21",
+            "P1.16",
             "P1.31",
             "P3.1",
-            "P3.11",
-            "P3.21",
+            "P3.16",
             "P3.31",
             "S1.1",
-            "S1.11",
-            "S1.21",
+            "S1.16",
             "S1.31",
             "S7.1",
-            "S7.11",
-            "S7.21",
+            "S7.16",
             "S7.31",
         )
         metronom = (
             "P1.6",
-            "P1.16",
-            "P1.26",
+            "P1.21",
             "P1.36",
             "P3.6",
-            "P3.16",
-            "P3.26",
+            "P3.21",
             "P3.36",
             "S1.6",
-            "S1.16",
-            "S1.26",
+            "S1.21",
             "S1.36",
             "S7.6",
-            "S7.16",
-            "S7.26",
+            "S7.21",
             "S7.36",
+        )
+        star = (
+            "P1.11",
+            "P1.26",
+            "P3.11",
+            "P3.26",
+            "S1.11",
+            "S1.26",
+            "S7.11",
+            "S7.26",
         )
         for code in somes:
             section = "pt" if code.startswith("P") else "servicii"
@@ -104,6 +106,13 @@ class PubSlotDefaultsTests(SimpleTestCase):
             self.assertIn("radio_metronom_logo", creative.get("img") or "", code)
             self.assertEqual(creative.get("link"), "http://metronom-fm.ro:8000/stream.ogg", code)
             self.assertIn("/pub/go/", creative.get("href") or "", code)
+        for code in star:
+            section = "pt" if code.startswith("P") else "servicii"
+            creative = pub_slot_live_creative(section, code, note=note, market="ro")
+            self.assertTrue(creative.get("is_strip_partner"), code)
+            self.assertIn("radio_star_sebes_logo", creative.get("img") or "", code)
+            self.assertEqual(creative.get("link"), "https://radiostarsebes.ro/", code)
+            self.assertIn("/pub/go/", creative.get("href") or "", code)
         for section, neighbor in (("pt", "P1.2"), ("pt", "P3.3"), ("servicii", "S1.2"), ("servicii", "S7.7")):
             other = pub_slot_live_creative(section, neighbor, note=None, market="ro")
             self.assertFalse(other.get("is_strip_partner"), neighbor)
@@ -118,8 +127,10 @@ class PubSlotDefaultsTests(SimpleTestCase):
         for section, code, host in (
             ("pt", "P1.1", "radiosomes.ro"),
             ("pt", "P3.6", "metronom-fm.ro"),
-            ("servicii", "S1.21", "radiosomes.ro"),
-            ("servicii", "S7.16", "metronom-fm.ro"),
+            ("pt", "P1.11", "radiostarsebes.ro"),
+            ("servicii", "S1.16", "radiosomes.ro"),
+            ("servicii", "S7.21", "metronom-fm.ro"),
+            ("servicii", "S7.26", "radiostarsebes.ro"),
         ):
             creative = pub_slot_live_creative(section, code, note=None, market="ro")
             response = client.get(creative["href"])
