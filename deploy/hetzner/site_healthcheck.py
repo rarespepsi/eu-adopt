@@ -36,6 +36,28 @@ _DEFAULT_EXTRA_BASES = (
     "https://cazareamea.ro",
 )
 
+# Host-uri EU: nu trebuie să servească app-ul Cazareamea (regresie nginx catch-all).
+_EU_ADOPT_BASES = (
+    "https://euadopt.com",
+    "https://euadopt.de",
+    "https://euadopt.fr",
+    "https://euadopt.es",
+)
+_EU_HOME_MARKERS = ("page-home-v2", "hero-v2")
+_CAZAREA_FORBIDDEN_ON_EU = ("cazareamea", "Cazarea Mea", "cazarea mea")
+_EU_SERVER_NAMES_REQUIRED = (
+    "euadopt.com",
+    "euadopt.de",
+    "euadopt.fr",
+    "euadopt.es",
+)
+_NGINX_EU_ENABLED = Path(
+    os.environ.get("EUADOPT_NGINX_EU_ENABLED", "/etc/nginx/sites-enabled/eu-adopt")
+)
+_NGINX_CAZAREA_ENABLED = Path(
+    os.environ.get("EUADOPT_NGINX_CAZAREA_ENABLED", "/etc/nginx/sites-enabled/cazareamea")
+)
+
 
 def extra_base_urls() -> list[str]:
     raw = (os.environ.get("EUADOPT_HEALTHCHECK_EXTRA_BASE_URLS") or "").strip()
@@ -240,22 +262,92 @@ def run_smoke() -> list[str]:
 def run_extra_sites_check() -> list[str]:
     """
     Smoke minim pe hub Eu (.com/.de/.fr/.es) + Cazareamea.
-    Prinde regresii tip nginx catch-all greșit (400 Bad Request pe host).
+    Prinde regresii tip nginx catch-all greșit (400 Bad Request pe host)
+    și rutare EU → Cazareamea (pagină greșită cu 200).
     """
     fails: list[str] = []
+    eu_set = {u.rstrip("/") for u in _EU_ADOPT_BASES}
     for base in extra_base_urls():
-        code, body, loc = http_get_url(base + "/", follow=True)
+        base_n = base.rstrip("/")
+        code, body, loc = http_get_url(base_n + "/", follow=True)
         if code in (301, 302) and loc:
             # un redirect HTTPS/apex e OK dacă destinația tot pe același host-ish
-            code2, body2, _ = http_get_url(loc if loc.startswith("http") else base + loc, follow=True)
+            code2, body2, _ = http_get_url(loc if loc.startswith("http") else base_n + loc, follow=True)
             code, body = code2, body2
         low = (body or "").lower()
         if code != 200:
-            fails.append(f"extra_site HTTP {code} {base}/ :: {str(body)[:120]}")
+            fails.append(f"extra_site HTTP {code} {base_n}/ :: {str(body)[:120]}")
             continue
         if "bad request" in low and "<h1>bad request" in low:
-            fails.append(f"extra_site Bad Request page on {base}/")
+            fails.append(f"extra_site Bad Request page on {base_n}/")
             continue
+        if base_n in eu_set:
+            for bad in _CAZAREA_FORBIDDEN_ON_EU:
+                if bad.lower() in low:
+                    fails.append(
+                        f"extra_site EU host served Cazareamea content on {base_n}/ "
+                        f"(marker={bad!r}) — check nginx default_server / server_name"
+                    )
+                    break
+            missing = [m for m in _EU_HOME_MARKERS if m not in (body or "")]
+            if missing:
+                fails.append(
+                    f"extra_site EU home missing {missing} on {base_n}/ "
+                    "(not EU-Adopt app?)"
+                )
+    return fails
+
+
+def run_nginx_eu_vhost_guard() -> list[str]:
+    """
+    Guard pe Hetzner: eu-adopt e default_server SSL, symlink enabled→available,
+    domeniile EU sunt în server_name, cazareamea nu e default_server.
+    Skip graceful dacă /etc/nginx nu e citibil (ex. check local fără nginx).
+    """
+    fails: list[str] = []
+    if not _NGINX_EU_ENABLED.exists() and not Path("/etc/nginx/sites-available/eu-adopt").exists():
+        # Mediu fără nginx local (dev PC) — nu eșuează deploy-ul de pe laptop
+        return []
+    try:
+        eu_path = _NGINX_EU_ENABLED
+        if not eu_path.exists():
+            fails.append("nginx_vhost: sites-enabled/eu-adopt missing")
+            return fails
+        if not eu_path.is_symlink():
+            fails.append(
+                "nginx_vhost: sites-enabled/eu-adopt is not a symlink "
+                "(copie separată → riscul regresiei catch-all); "
+                "rulează deploy/hetzner/repair_eu_nginx_catchall.sh"
+            )
+        eu_text = eu_path.read_text(encoding="utf-8", errors="replace")
+    except OSError as e:
+        fails.append(f"nginx_vhost: cannot read eu-adopt config: {e}")
+        return fails
+
+    if "default_server" not in eu_text:
+        fails.append(
+            "nginx_vhost: eu-adopt has no default_server on SSL — "
+            "unknown Host may fall through to another vhost (ex. cazareamea)"
+        )
+    for name in _EU_SERVER_NAMES_REQUIRED:
+        if name not in eu_text:
+            fails.append(f"nginx_vhost: server_name missing {name} in eu-adopt")
+
+    if _NGINX_CAZAREA_ENABLED.exists():
+        try:
+            caz_text = _NGINX_CAZAREA_ENABLED.read_text(encoding="utf-8", errors="replace")
+        except OSError as e:
+            fails.append(f"nginx_vhost: cannot read cazareamea config: {e}")
+            return fails
+        # default_server pe cazareamea = regresia clasică
+        if re.search(r"listen\s+[^\n;]*443[^\n;]*default_server", caz_text):
+            fails.append(
+                "nginx_vhost: cazareamea is SSL default_server — "
+                "EU unknown/mis-matched Host can route to :8001; "
+                "rulează deploy/hetzner/repair_eu_nginx_catchall.sh"
+            )
+        if "euadopt.com" in caz_text or "eu-adopt.ro" in caz_text:
+            fails.append("nginx_vhost: cazareamea server_name unexpectedly lists EU-Adopt hosts")
     return fails
 
 
@@ -350,6 +442,10 @@ def main() -> int:
     fails.extend(extra_fails)
     report.append(f"extra_site_fails={len(extra_fails)}")
     report.append(f"extra_sites={','.join(extra_base_urls())}")
+
+    nginx_fails = run_nginx_eu_vhost_guard()
+    fails.extend(nginx_fails)
+    report.append(f"nginx_vhost_fails={len(nginx_fails)}")
 
     phone_fails = run_phone_source_check()
     fails.extend(phone_fails)

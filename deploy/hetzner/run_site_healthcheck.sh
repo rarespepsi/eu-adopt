@@ -167,11 +167,46 @@ do_rollback() {
   TARGET="$(read_expected_sha)"
   BEFORE="$(sudo -u euadopt git -C "${APP_DIR}" rev-parse HEAD 2>/dev/null || echo unknown)"
 
+  # Dacă eșuează guard-ul nginx / extra_site EU→cazareamea: repară vhost înainte de rollback git
+  if grep -qE 'nginx_vhost:|extra_site EU host served Cazareamea|extra_site Bad Request|extra_site EU home missing' "${REPORT}"; then
+    REPAIR_NGX="${APP_DIR}/deploy/hetzner/repair_eu_nginx_catchall.sh"
+    if [[ -x "${REPAIR_NGX}" ]] || [[ -f "${REPAIR_NGX}" ]]; then
+      log "nginx_eu_catchall_repair: attempting ${REPAIR_NGX}"
+      if bash "${REPAIR_NGX}" >> "${LOG}" 2>&1; then
+        log "nginx_eu_catchall_repair: OK — recheck"
+        NGX_RECHECK="$(mktemp "${STATE_DIR}/hc_ngx_recheck.XXXXXX")"
+        chmod 644 "${NGX_RECHECK}" 2>/dev/null || true
+        if sudo -u euadopt env \
+          EUADOPT_APP_DIR="${APP_DIR}" \
+          EUADOPT_EXPECTED_RELEASE="${EXPECTED}" \
+          EUADOPT_HEALTHCHECK_LAST_JSON="${LAST_JSON}" \
+          EUADOPT_HEALTHCHECK_BASE_URL="${EUADOPT_HEALTHCHECK_BASE_URL:-https://eu-adopt.ro}" \
+          bash -lc "cd '${APP_DIR}' && source venv/bin/activate && python '${PY}' check" \
+          > "${NGX_RECHECK}" 2>&1
+        then
+          cat "${NGX_RECHECK}" >> "${LOG}"
+          log "result=OK after nginx_eu_catchall_repair"
+          echo "=== $(date -Iseconds) site_healthcheck END exit=0 (nginx repaired) ==="
+          rm -f "${REPORT}" "${NGX_RECHECK}"
+          exit 0
+        fi
+        cat "${NGX_RECHECK}" >> "${LOG}"
+        # înlocuiește raportul cu recheck (tot FAIL) pentru mail/rollback
+        mv -f "${NGX_RECHECK}" "${REPORT}"
+        log "nginx_eu_catchall_repair: still FAIL after repair"
+      else
+        log "nginx_eu_catchall_repair: script failed"
+      fi
+    else
+      log "nginx_eu_catchall_repair: script missing"
+    fi
+  fi
+
   if [[ "${AUTO_REPAIR}" != "1" ]]; then
     BODY="$(mktemp "${STATE_DIR}/hc_mail.XXXXXX")"
     chmod 644 "${BODY}" 2>/dev/null || true
     {
-      echo "EU-Adopt healthcheck FAIL (auto-repair OFF)"
+      echo "EU-Adopt healthcheck FAIL (no auto-repair)"
       echo
       cat "${REPORT}"
     } > "${BODY}"
