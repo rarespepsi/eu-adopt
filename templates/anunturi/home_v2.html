@@ -9,7 +9,7 @@
 {% block body_class %}page-home-v2{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/home_v2.css' %}?v=20260915-hero-mid-distinct" type="text/css" media="all" />
+<link rel="stylesheet" href="{% static 'css/home_v2.css' %}?v=20260916-hero-blur-only" type="text/css" media="all" />
 <style>
 	.home-welcome-overlay-backdrop {
 		position: fixed;
@@ -143,8 +143,8 @@
 		<div class="home-v2-center">
 			<div id="A1">
 				{% if user.is_staff %}<span class="slot-marker home-slot-badge" aria-hidden="true">A1</span>{% endif %}
-				<header class="hero-v2 hero-v2--strip5">
-					{# Blur doar pe fundalul casetei A1; în față: siglă | poză | text | poză | siglă #}
+				<header class="hero-v2 hero-v2--blur-strip">
+					{# Fundal: o poză pe tot A1, blurată + rotație; față: doar sigle + Susține/Hai #}
 					<div class="hero-v2-bg" aria-hidden="true">
 						{% for hero_path in hero_slider_images %}
 						<div class="hero-v2-slide">
@@ -156,29 +156,15 @@
 						</div>
 						{% endfor %}
 					</div>
-					<div class="hero-v2-inner hero-v2-inner--strip5">
+					<div class="hero-v2-inner hero-v2-inner--blur-strip">
 						<div class="hero-v2-logo">
 							<button type="button" class="hero-v2-site-note-btn" id="home-a1-open-site-note" aria-haspopup="dialog" aria-expanded="false" aria-controls="home-a1-site-note" title="Ghid scurt al paginilor EU-Adopt">
 								<img src="{% static 'images/logo-final-cu-stele.png' %}" alt="EU Adopt" class="hero-v2-logo-img" />
 							</button>
 						</div>
-						<div class="hero-v2-mid-photo hero-v2-mid-photo--left" aria-hidden="true">
-							{% for mid_path in hero_mid_left_images %}
-							<img src="{% static mid_path %}" alt="" class="hero-v2-mid-photo-img hero-v2-mid-slide" onerror="this.src='{% static 'images/pets/charlie-400x200.jpg' %}';" />
-							{% empty %}
-							<img src="{% static 'images/pets/chester1-600x240.jpg' %}" alt="" class="hero-v2-mid-photo-img" />
-							{% endfor %}
-						</div>
 						<div class="hero-v2-cta-duo">
 							<a href="{% url 'donatii_generale' %}?sursa=home_sustine" class="hero-v2-cta-sustine" title="{% if eu_site_active %}{{ eu_ui.home_cta_support }}{% else %}Susține EU-Adopt{% endif %}">{% if eu_site_active %}{{ eu_ui.home_cta_support }}{% else %}Susține EU-Adopt{% endif %}</a>
 							<a href="{% url 'pets_all' %}" class="hero-v2-cta-animale" title="{% if eu_site_active %}{{ eu_ui.home_cta_pets_title }}{% else %}Vezi prietenii tăi{% endif %}">{% if eu_site_active %}{{ eu_ui.home_cta_pets }}{% else %}Hai la noi!{% endif %}</a>
-						</div>
-						<div class="hero-v2-mid-photo hero-v2-mid-photo--right" aria-hidden="true">
-							{% for mid_path in hero_mid_right_images %}
-							<img src="{% static mid_path %}" alt="" class="hero-v2-mid-photo-img hero-v2-mid-slide" onerror="this.src='{% static 'images/pets/cindy1-600x240.jpg' %}';" />
-							{% empty %}
-							<img src="{% static 'images/pets/cindy1-600x240.jpg' %}" alt="" class="hero-v2-mid-photo-img" />
-							{% endfor %}
 						</div>
 						<div class="hero-v2-transport">
 							<a href="{% url 'donatii_generale' %}?sursa=home_autocar" class="hero-v2-transport-badge" title="Donații — continuă către autocar și cuști">
