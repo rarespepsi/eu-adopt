@@ -58,8 +58,20 @@
 		<article class="contact-card contact-card-partner" role="listitem">
 			<h2>{% if eu_site_active %}{{ eu_ui.contact_partner_h }}{% else %}Partener cauză animale{% endif %}</h2>
 			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_partner_name }}{% else %}Denumire:{% endif %}</strong> {{ eu_partner_ngo.legal_name }}</p>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_partner_cui }}{% else %}CUI/CIF:{% endif %}</strong> {{ eu_partner_ngo.cui }}</p>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_partner_hq }}{% else %}Sediu:{% endif %}</strong> {{ eu_partner_ngo.address }}</p>
 			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_partner_locality }}{% else %}Localitate:{% endif %}</strong> {{ eu_partner_ngo.locality }}</p>
 			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_partner_county }}{% else %}Județ:{% endif %}</strong> {{ eu_partner_ngo.county }}</p>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_phone }}{% else %}Telefon:{% endif %}</strong>
+				{% if eu_site_active %}
+				<a href="{{ euadopt_whatsapp_url }}" target="_blank" rel="noopener noreferrer">{{ eu_ui.contact_whatsapp }}</a>
+				· <a href="{{ euadopt_phone_tel }}">{{ euadopt_phone_display }}</a>
+				{% else %}
+				<a href="{{ euadopt_phone_tel }}">{{ euadopt_phone_display }}</a>
+				· <a href="{{ euadopt_whatsapp_url }}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+				{% endif %}
+			</p>
+			<p><strong>{% if eu_site_active %}{{ eu_ui.contact_legal_email }}{% else %}E-mail:{% endif %}</strong> <a href="mailto:{{ eu_partner_ngo.email }}">{{ eu_partner_ngo.email }}</a></p>
 			<p class="contact-legal-note">{{ eu_legal_details_note }}</p>
 		</article>
 

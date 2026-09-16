@@ -1,0 +1,8 @@
+<ul>
+	<li>Denumire: {{ eu_partner_ngo.legal_name }}</li>
+	<li>CUI/CIF: {{ eu_partner_ngo.cui }}</li>
+	<li>Sediu: {{ eu_partner_ngo.address }}</li>
+	<li>E-mail contact: <a href="mailto:{{ eu_partner_ngo.email }}">{{ eu_partner_ngo.email }}</a></li>
+	<li>Telefon: <a href="{{ euadopt_phone_tel }}">{{ euadopt_phone_display }}</a> · WhatsApp: <a href="{{ euadopt_whatsapp_url }}" target="_blank" rel="noopener noreferrer">{{ euadopt_phone_display }}</a></li>
+</ul>
+<p class="legal-details-note">{{ eu_legal_details_note }}</p>

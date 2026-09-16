@@ -72,6 +72,8 @@ _EN: dict[str, str] = {
     "contact_legal_email": "General email:",
     "contact_partner_h": "Animal-cause partner",
     "contact_partner_name": "Name:",
+    "contact_partner_cui": "Tax ID (CUI/CIF):",
+    "contact_partner_hq": "Registered office:",
     "contact_partner_locality": "Locality:",
     "contact_partner_county": "County:",
     "contact_whatsapp": "WhatsApp",
@@ -425,7 +427,8 @@ _EN: dict[str, str] = {
     "don_partner_badge": "Animal-cause partner",
     "don_partner_blurb": (
         "Asociația Suflet și Caracter is our designated partner for animal causes. "
-        "We publish the name and locality on this site; for other details (company ID, full address, IBAN) email contact@eu-adopt.ro."
+        "We publish the name, tax ID (CUI/CIF) and registered office on this site; "
+        "the bank IBAN is available on request after the account is opened (contact@eu-adopt.ro)."
     ),
     "don_iban_on_request": "Bank details",
     "don_iban_on_request_p": "On request — email contact@eu-adopt.ro.",

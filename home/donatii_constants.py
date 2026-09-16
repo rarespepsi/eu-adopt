@@ -13,31 +13,35 @@ EUADOPT_PLATFORM_OPERATOR = {
 }
 
 EUADOPT_LEGAL_DETAILS_NOTE = (
-    "Pentru date suplimentare (inclusiv despre partenerul pentru cauze animale), "
-    "scrieți la contact@eu-adopt.ro."
+    "IBAN-ul partenerului pentru donații și alte detalii bancare — la cerere, "
+    "la contact@eu-adopt.ro (cont bancar în curs de deschidere)."
 )
 
-# Partener cauză animale — pe site: doar denumire + localitate + județ.
+# Partener cauză animale / beneficiar donații (asociație).
 EUADOPT_PARTNER_NGO = {
     "name": "Suflet și Caracter",
     "legal_name": "Asociația Suflet și Caracter",
+    "cui": "42080757",
+    "address": "Strada Bistriței nr. 10, Bl. F24, Piatra Neamț, jud. Neamț",
     "locality": "Piatra Neamț",
     "county": "Neamț",
     "location_display": "Piatra Neamț, jud. Neamț",
+    # Aceeași persoană / canale de contact ca operatorul platformei.
+    "email": EUADOPT_PLATFORM_OPERATOR["email"],
     "badge": "Partener cauză animale",
     "blurb": (
         "Asociația Suflet și Caracter este partenerul desemnat pentru cauzele animale "
-        "pe această platformă. Pe site publicăm denumirea și localitatea; "
-        "pentru alte date (CUI, sediu complet, IBAN) — contact@eu-adopt.ro."
+        "pe această platformă. Pe site publicăm denumirea, CUI/CIF și sediul; "
+        "IBAN-ul bancar — la cerere, după deschiderea contului (contact@eu-adopt.ro)."
     ),
     "url": "https://eu-adopt.ro/donatii/",
 }
 
-# Beneficiar donații / PDF-uri orientative (fără CUI/IBAN pe site până la activare).
+# Beneficiar donații / PDF-uri (IBAN gol până la deschiderea contului la bancă).
 EUADOPT_DONATION_ORG = {
     "name": EUADOPT_PARTNER_NGO["legal_name"],
-    "cui": "",
-    "address": EUADOPT_PARTNER_NGO["location_display"],
+    "cui": EUADOPT_PARTNER_NGO["cui"],
+    "address": EUADOPT_PARTNER_NGO["address"],
     "iban": "",
     "bank": "",
     "email_contact": EUADOPT_PLATFORM_OPERATOR["email"],

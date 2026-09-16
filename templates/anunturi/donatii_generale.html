@@ -41,7 +41,7 @@
 		<aside class="donatii-gen-brand-card" aria-label="{% if eu_site_active %}{{ eu_ui.don_partner_aria }}{% else %}Partener pentru cauza animalelor{% endif %}">
 			<div class="donatii-gen-brand-mark" aria-hidden="true"><span class="donatii-gen-brand-heart">&#9829;</span></div>
 			<p class="donatii-gen-brand-name">{{ donatii_partner.legal_name }}</p>
-			<p class="donatii-gen-brand-legal">{{ donatii_partner.location_display }}</p>
+			<p class="donatii-gen-brand-legal">CUI/CIF {{ donatii_partner.cui }} · {{ donatii_partner.address }}</p>
 			<p class="donatii-gen-brand-badge">{% if eu_site_active %}{{ eu_ui.don_partner_badge }}{% else %}{{ donatii_partner.badge }}{% endif %}</p>
 			<p class="donatii-gen-brand-blurb">{% if eu_site_active %}{{ eu_ui.don_partner_blurb }}{% else %}{{ donatii_partner.blurb }}{% endif %}</p>
 		</aside>
@@ -132,8 +132,8 @@
 			{{ eu_ui.don_info_contact }} <a href="{% url 'contact' %}">Contact</a>.
 			{% else %}
 			<strong>Important:</strong> documentele PDF sunt <strong>orientative</strong>; verifică cu specialist fiscal sau juridic înainte de depunere sau semnare.
-			Beneficiar: <strong>{{ donatii_partner.legal_name }}</strong>, {{ donatii_partner.location_display }}.
-			IBAN și date complete — la cerere: <a href="mailto:{{ eu_platform_operator.email }}">{{ eu_platform_operator.email }}</a>.
+			Beneficiar: <strong>{{ donatii_partner.legal_name }}</strong>, CUI/CIF {{ donatii_partner.cui }}, {{ donatii_partner.address }}.
+			IBAN — la cerere (cont bancar în curs de deschidere): <a href="mailto:{{ eu_platform_operator.email }}">{{ eu_platform_operator.email }}</a>.
 			Pentru întrebări: <a href="{% url 'contact' %}">Contact</a>.
 			{% endif %}
 		</div>
