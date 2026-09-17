@@ -37,9 +37,9 @@ Aceleași reguli de populare pentru ambele. Diferă doar șablonul email invita�
 | Regulă | Detaliu |
 |--------|---------|
 | SMS | Ecran păstrat; cod afișat pe pagină (fără text „pentru test”) |
-| Animale ONG | Min **2**, max **5** (toate speciile, `is_published=True`) |
+| Animale ONG | Min **1**, max **nelimitat** (toate speciile, `is_published=True`; `POPULATION_ANIMAL_MAX=0`) |
 | Meniu ONG | Redus: Acasă, Prietenul tău, MyPet, Contact, Cont — fără Shop, Transport, Servicii, I Love |
-| Banner | Sub navbar: progres populare (ex. „1/2 animale minime”) |
+| Banner | Sub navbar: progres populare (ex. „0/1 animale minime”) |
 | Invitații | Add USER — valuri, max 30/zi, cooldown 14 zile |
 
 ### 2.3 Acces permis (populare)
@@ -65,7 +65,7 @@ Shop, Transport, I Love, cereri adopție, promovare plătită, magazin colaborat
 3. Pilot 5–10 organizații / 1 județ  
 4. Valuri ~20/zi (max 30/zi)  
 5. Poll inbox; respect „nu contacta”  
-6. Succes = cont creat + ≥2 animale publicate  
+6. Succes = cont creat + ≥1 animal publicat  
 
 ---
 

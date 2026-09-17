@@ -19,7 +19,7 @@ def is_population_onboarding_enabled() -> bool:
 
 
 def population_animal_min() -> int:
-    return int(getattr(settings, "POPULATION_ANIMAL_MIN", 2))
+    return int(getattr(settings, "POPULATION_ANIMAL_MIN", 1))
 
 
 def population_animal_max() -> int:

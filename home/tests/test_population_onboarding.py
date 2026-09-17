@@ -234,14 +234,14 @@ class PopulationUnlimitedOrgAndPfDogsTests(TestCase):
         self.assertTrue(ok)
         self.assertFalse(population_at_max_animals(org))
 
-    def test_pf_max_10_dogs_allows_cats(self):
-        from django.core.exceptions import ValidationError
-
+    def test_pf_unlimited_dogs_and_cats(self):
         pf = User.objects.create_user(username="pf_dogs", password="x")
         AccountProfile.objects.filter(user=pf).update(role=AccountProfile.ROLE_PF)
-        for i in range(10):
+        for i in range(11):
             AnimalListing.objects.create(owner=pf, name=f"D{i}", species="dog", is_published=True)
-        with self.assertRaises(ValidationError):
-            AnimalListing.objects.create(owner=pf, name="D11", species="dog", is_published=True)
         cat = AnimalListing.objects.create(owner=pf, name="C1", species="cat", is_published=True)
         self.assertTrue(cat.pk)
+        self.assertEqual(
+            AnimalListing.objects.filter(owner=pf, species="dog").count(),
+            11,
+        )

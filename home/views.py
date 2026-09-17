@@ -9495,10 +9495,11 @@ def mypet_add_view(request):
                     _AP.objects.filter(user_id=user.pk).values_list("role", flat=True).first()
                 )
                 if _role == _AP.ROLE_PF:
-                    _lim = int(getattr(_pf_settings, "PF_MAX_DOG_LISTINGS", 10) or 10)
-                    _n = AnimalListing.objects.filter(owner=user, species="dog").count()
-                    if _n >= _lim:
-                        error = f"Limită persoană fizică: maxim {_lim} câini."
+                    _lim = int(getattr(_pf_settings, "PF_MAX_DOG_LISTINGS", 0) or 0)
+                    if _lim > 0:
+                        _n = AnimalListing.objects.filter(owner=user, species="dog").count()
+                        if _n >= _lim:
+                            error = f"Limită persoană fizică: maxim {_lim} câini."
         if not error:
             try:
                 listing = AnimalListing.objects.create(

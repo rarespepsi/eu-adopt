@@ -338,8 +338,8 @@ class AnimalListing(models.Model):
     """
     Anunț/postare animal (bază pentru MyPet).
 
-    Regula PF: maxim 10 câini (pisici și alte specii fără acest plafon).
-    ONG / asociații: fără plafon de număr (în populare poate rămâne un minim de publicare).
+    PF / ONG: fără plafon maxim de număr (PF_MAX_DOG_LISTINGS=0).
+    În populare ONG poate rămâne un minim de publicare (implicit 1).
     """
 
     SPECIES_CHOICES = [
@@ -479,7 +479,9 @@ class AnimalListing(models.Model):
 
         from django.conf import settings as dj_settings
 
-        limit = int(getattr(dj_settings, "PF_MAX_DOG_LISTINGS", 10) or 10)
+        limit = int(getattr(dj_settings, "PF_MAX_DOG_LISTINGS", 0) or 0)
+        if limit <= 0:
+            return
         qs = AnimalListing.objects.filter(owner=self.owner, species="dog")
         if self.pk:
             qs = qs.exclude(pk=self.pk)

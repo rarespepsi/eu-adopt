@@ -138,7 +138,8 @@ PUBLICITATE_TEMP_SUPERUSER_ONLY = _pub_superonly not in ("0", "false", "no", "of
 PROMO_A2_PRELAUNCH_MAX_PER_USER = int(_os.environ.get("EUADOPT_PROMO_A2_MAX_PER_USER", "1") or "1")
 COLLAB_PRELAUNCH_MAX_OFFERS_PER_USER = int(_os.environ.get("EUADOPT_COLLAB_MAX_OFFERS_PER_USER", "0") or "0")
 # PF: maxim câini publicabili (pisici / altele fără acest plafon).
-PF_MAX_DOG_LISTINGS = int(_os.environ.get("EUADOPT_PF_MAX_DOGS", "10") or "10")
+# 0 = fără plafon (PF poate publica oricâți câini).
+PF_MAX_DOG_LISTINGS = int(_os.environ.get("EUADOPT_PF_MAX_DOGS", "0") or "0")
 PROMO_A2_BASE_PRICE_LEI = 10
 # Adopție simplă (formular email pe fișă). Independent de pre-lansare.
 # 1 = forțat on · 0 = forțat off · gol = ca soft-lock (comportament vechi populare).
@@ -285,7 +286,7 @@ elif _population_on in ("1", "true", "yes", "on"):
     POPULATION_ONBOARDING_ENABLED = True
 else:
     POPULATION_ONBOARDING_ENABLED = PRELAUNCH_MODE
-POPULATION_ANIMAL_MIN = int(os.environ.get("EUADOPT_POPULATION_ANIMAL_MIN", "2") or "2")
+POPULATION_ANIMAL_MIN = int(os.environ.get("EUADOPT_POPULATION_ANIMAL_MIN", "1") or "1")
 # 0 = nelimitat pentru ONG / asociații (adăpost).
 POPULATION_ANIMAL_MAX = int(os.environ.get("EUADOPT_POPULATION_ANIMAL_MAX", "0") or "0")
 _population_superuser_only = os.environ.get("EUADOPT_POPULATION_SUPERUSER_ONLY", "").strip().lower()
