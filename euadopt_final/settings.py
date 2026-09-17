@@ -328,7 +328,7 @@ _fb_auto = os.environ.get("EUADOPT_FACEBOOK_AUTO_POST", "").strip().lower()
 FACEBOOK_AUTO_POST_ENABLED = _fb_auto in ("1", "true", "yes", "on")
 FACEBOOK_PAGE_ID = os.environ.get("EUADOPT_FACEBOOK_PAGE_ID", "970069896196143").strip() or "970069896196143"
 FACEBOOK_PAGE_ACCESS_TOKEN = os.environ.get("EUADOPT_FACEBOOK_PAGE_ACCESS_TOKEN", "").strip()
-FACEBOOK_MAX_POSTS_PER_DAY = int(os.environ.get("EUADOPT_FACEBOOK_MAX_POSTS_PER_DAY", "20") or "20")
+FACEBOOK_MAX_POSTS_PER_DAY = int(os.environ.get("EUADOPT_FACEBOOK_MAX_POSTS_PER_DAY", "10") or "10")
 FACEBOOK_GRAPH_API_VERSION = os.environ.get("EUADOPT_FACEBOOK_GRAPH_API_VERSION", "v21.0").strip() or "v21.0"
 # Alias RO + piețe DE/FR/ES/COM (Page token sau System User token — aceeași cheie env)
 FACEBOOK_PAGE_ID_RO = os.environ.get("EUADOPT_FACEBOOK_PAGE_ID_RO", "").strip() or FACEBOOK_PAGE_ID

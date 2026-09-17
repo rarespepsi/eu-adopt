@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # După golirea backlog-ului Facebook pe piețele Eu (de/fr/es/com),
-# coboară EUADOPT_FACEBOOK_MAX_POSTS_PER_DAY la TARGET (implicit 15).
-# Până atunci lasă CLEARING_CAP (implicit 40) ca să se golească coada.
+# coboară EUADOPT_FACEBOOK_MAX_POSTS_PER_DAY la TARGET (implicit 10).
+# Până atunci lasă CLEARING_CAP (implicit 15) ca să se golească coada.
 # Rulează ca root (scrie .env + restart). Fără secrete în stdout.
 set -euo pipefail
 
 APP_DIR="${EUADOPT_APP_DIR:-/opt/eu-adopt}"
 ENV_FILE="${APP_DIR}/.env"
-TARGET_CAP="${EUADOPT_FACEBOOK_TARGET_CAP_AFTER_BACKLOG:-15}"
-CLEARING_CAP="${EUADOPT_FACEBOOK_CLEARING_CAP:-40}"
+TARGET_CAP="${EUADOPT_FACEBOOK_TARGET_CAP_AFTER_BACKLOG:-10}"
+CLEARING_CAP="${EUADOPT_FACEBOOK_CLEARING_CAP:-15}"
 
 if [[ ! -f "${ENV_FILE}" ]]; then
   echo "skip: missing ${ENV_FILE}"
