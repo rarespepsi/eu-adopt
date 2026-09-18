@@ -147,12 +147,17 @@ def pet_copy_location_display(pet) -> str:
     Text scurt în caseta fișă (oraș / județ, fără stradă și fără dubluri).
     Adresa completă rămâne în pet_copy_location_text (la Copiază).
     """
-    _addr, city, county = _pet_location_parts(pet)
+    addr, city, county = _pet_location_parts(pet)
     if city and county:
         if _loc_norm(city) == _loc_norm(county):
             return city
         return f"{city}, {county}"
-    return city or county or ""
+    if city or county:
+        return city or county
+    # fără oraș în fișă: nu umple caseta cu strada — butonul Copiază rămâne vizibil
+    if addr:
+        return "Locație"
+    return ""
 
 
 def adoption_pet_public_email_lines(pet) -> list[str]:

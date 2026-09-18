@@ -1300,8 +1300,9 @@
 				}
 			}
 
-			/* Mobil landscape (același prag ca PT): 3 coloane + scroll vertical; Adopt + QR în flux sub caseta din dreapta */
-			@media (max-width: 767.98px) and (orientation: landscape) {
+			/* Mobil landscape (telefon + landscape lat cu înălțime mică): 3 coloane + trio loc/QR/adopt */
+			@media (max-width: 767.98px) and (orientation: landscape),
+			       (orientation: landscape) and (max-height: 500px) and (hover: none) and (pointer: coarse) {
 				body.page-pet-single #main_content {
 					height: auto !important;
 					min-height: calc(100dvh - var(--nav-height, 64px)) !important;
@@ -1375,11 +1376,11 @@
 				.pet-adopt-qr-inline {
 					display: flex !important;
 					flex-direction: row !important;
-					flex-wrap: wrap !important;
-					align-items: flex-start !important;
-					justify-content: center !important;
-					gap: 8px !important;
-					margin-top: 0.4rem !important;
+					flex-wrap: nowrap !important;
+					align-items: stretch !important;
+					justify-content: flex-start !important;
+					gap: 6px !important;
+					margin-top: 0.35rem !important;
 					width: 100% !important;
 					box-sizing: border-box !important;
 				}
@@ -1396,38 +1397,130 @@
 					right: auto !important;
 					bottom: auto !important;
 					left: auto !important;
-					width: min(124px, 36vw) !important;
+					width: auto !important;
 					height: auto !important;
 					max-height: none !important;
-					flex-shrink: 0 !important;
+					flex: 1 1 0 !important;
+					min-width: 0 !important;
 					margin: 0 !important;
 					backdrop-filter: none !important;
 					-webkit-backdrop-filter: none !important;
 				}
 				.pet-adopt-qr-inline .pet-adopt-stack {
-					width: min(124px, 36vw) !important;
+					display: flex !important;
+					flex-direction: column !important;
 				}
 				.pet-adopt-qr-inline .pet-adopt-stack .pet-adopt-corner {
 					width: 100% !important;
+					flex: 1 1 auto !important;
 				}
 				.pet-adopt-qr-inline .pet-owner-su-link {
 					width: 100% !important;
-					font-size: 0.68rem !important;
+					font-size: 0.62rem !important;
 				}
 				.pet-adopt-qr-inline .pet-adopt-corner {
-					min-height: 96px !important;
+					min-height: 0 !important;
 					display: flex !important;
 					align-items: center !important;
 					justify-content: center !important;
-					font-size: 0.78rem !important;
+					font-size: 0.72rem !important;
+					padding: 6px 4px !important;
+				}
+				.pet-adopt-qr-inline .pet-qr-corner {
+					display: flex !important;
+					flex-direction: column !important;
+					align-items: center !important;
+					justify-content: center !important;
+					padding: 4px !important;
+					gap: 2px !important;
+				}
+				.pet-adopt-qr-inline .pet-qr-corner__title,
+				.pet-adopt-qr-inline .pet-qr-corner__hint {
+					font-size: 0.5rem !important;
+					line-height: 1.1 !important;
 				}
 				.pet-adopt-qr-inline .pet-qr-corner__img {
-					width: min(108px, 32vw) !important;
-					height: min(108px, 32vw) !important;
+					width: min(88px, 22vw) !important;
+					height: min(88px, 22vw) !important;
+					flex: 0 0 auto !important;
 				}
+				/* Trio Locație | QR | Adopt — un rând, butoane vizibile */
 				.pet-loc-qr-pair {
-					margin-top: 0.35rem !important;
+					display: flex !important;
+					flex-direction: row !important;
+					flex-wrap: nowrap !important;
+					align-items: stretch !important;
+					justify-content: flex-start !important;
+					gap: 0.28rem !important;
+					margin-top: 0.3rem !important;
+					width: 100% !important;
+					max-width: 100% !important;
+					box-sizing: border-box !important;
 				}
+				.pet-loc-qr-pair .pet-copy-loc {
+					justify-content: flex-start !important;
+					padding: 0.28rem 0.32rem !important;
+					gap: 0.12rem !important;
+					min-width: 0 !important;
+					overflow: hidden !important;
+				}
+				.pet-loc-qr-pair .pet-copy-loc__title {
+					font-size: 0.5rem !important;
+					margin: 0 !important;
+					line-height: 1.1 !important;
+				}
+				.pet-loc-qr-pair .pet-copy-loc__text {
+					font-size: 0.62rem !important;
+					line-height: 1.15 !important;
+					margin: 0 !important;
+					max-height: 2.4em !important;
+					overflow: hidden !important;
+					flex: 0 1 auto !important;
+				}
+				.pet-loc-qr-pair .pet-copy-loc__btn {
+					flex: 0 0 auto !important;
+					margin-top: auto !important;
+					padding: 0.22rem 0.28rem !important;
+					font-size: 0.62rem !important;
+				}
+				.pet-loc-qr-pair .pet-qr-corner {
+					display: flex !important;
+					flex-direction: column !important;
+					align-items: center !important;
+					justify-content: center !important;
+					padding: 3px !important;
+					gap: 1px !important;
+					min-width: 0 !important;
+				}
+				.pet-loc-qr-pair .pet-qr-corner__title,
+				.pet-loc-qr-pair .pet-qr-corner__hint {
+					font-size: 0.48rem !important;
+					line-height: 1.05 !important;
+					margin: 0 !important;
+				}
+				.pet-loc-qr-pair .pet-qr-corner__img {
+					flex: 1 1 auto !important;
+					min-height: 52px !important;
+					width: auto !important;
+					max-width: 92% !important;
+					object-fit: contain !important;
+				}
+				.pet-loc-qr-pair .pet-adopt-corner {
+					padding: 4px 3px !important;
+					font-size: 0.68rem !important;
+				}
+				.pet-loc-qr-pair .pet-adopt-corner__label-full,
+				.pet-adopt-qr-inline .pet-adopt-corner__label-full {
+					display: none !important;
+				}
+				.pet-loc-qr-pair .pet-adopt-corner__label-short,
+				.pet-adopt-qr-inline .pet-adopt-corner__label-short {
+					display: inline !important;
+				}
+			}
+
+			.pet-adopt-corner__label-short {
+				display: none;
 			}
 
 			/* Tabletă portrait: fișa mai jos și elemente mai lizibile */
@@ -1771,7 +1864,7 @@
 			}
 
 			/* === Desk: trio Locație | QR | Adopt(+@user sub) — lipit stânga, fără fixed === */
-			@media (min-width: 821px) {
+			@media (min-width: 821px) and (hover: hover) and (pointer: fine) {
 				body.page-pet-single .mypet-fisa-col-traits {
 					padding-left: 0 !important;
 					padding-right: 0.2rem !important;
@@ -1835,6 +1928,27 @@
 				}
 				body.page-pet-single:has(#petLocQrPair) .mypet-fisa-wrap {
 					padding-bottom: 0.5rem !important;
+				}
+			}
+
+			/* Landscape touch (după desk): forțează text scurt + QR mare + Copiază vizibil */
+			@media (orientation: landscape) and (max-height: 500px) and (hover: none) and (pointer: coarse),
+			       (max-width: 767.98px) and (orientation: landscape) {
+				body.page-pet-single #petLocQrPair .pet-adopt-corner__label-full {
+					display: none !important;
+				}
+				body.page-pet-single #petLocQrPair .pet-adopt-corner__label-short {
+					display: inline !important;
+				}
+				body.page-pet-single #petLocQrPair .pet-copy-loc__btn {
+					display: block !important;
+					flex: 0 0 auto !important;
+					visibility: visible !important;
+					opacity: 1 !important;
+				}
+				body.page-pet-single #petLocQrPair .pet-qr-corner__img {
+					min-height: 56px !important;
+					max-width: 94% !important;
 				}
 			}
 		</style>
@@ -2102,7 +2216,7 @@
 														{% if pet_adopt_demo_listing %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_demo_message|escape }}" aria-disabled="true"{% elif pet_adopt_inactive_populare %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_inactive_message|escape }}" aria-disabled="true"{% endif %}
 														aria-label="{% if pet_adopt_demo_listing %}{% if eu_site_active %}DEMO{% else %}Demonstrativ DEMO{% endif %}{% elif eu_site_active %}{{ eu_ui.pet_want_adopt }}{% else %}Vreau să adopt{% endif %}"
 													>
-														<span class="pet-adopt-corner__label">{% if pet_adopt_demo_listing %}DEMO{% elif eu_site_active %}{{ eu_ui.pet_want_adopt }}{% else %}VREAU SĂ ADOPT{% endif %}</span>
+														<span class="pet-adopt-corner__label">{% if pet_adopt_demo_listing %}DEMO{% elif eu_site_active %}<span class="pet-adopt-corner__label-full">{{ eu_ui.pet_want_adopt }}</span><span class="pet-adopt-corner__label-short">ADOPT</span>{% else %}<span class="pet-adopt-corner__label-full">VREAU SĂ ADOPT</span><span class="pet-adopt-corner__label-short">ADOPT</span>{% endif %}</span>
 														{% if pet_adopt_demo_listing %}<span class="pet-adopt-corner__note">{% if eu_site_active %}{{ eu_ui.pet_adopt_demo_note }}{% else %}Doar demonstrativ{% endif %}</span>{% elif pet_adopt_inactive_populare %}<span class="pet-adopt-corner__note">{% if eu_site_active %}{{ eu_ui.pet_adopt_inactive_note }}{% else %}Temporar inactiv{% endif %}</span>{% endif %}
 													</div>
 													{% endif %}
@@ -2140,7 +2254,7 @@
 														{% if pet_adopt_demo_listing %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_demo_message|escape }}" aria-disabled="true"{% elif pet_adopt_inactive_populare %}data-adopt-inactive="1" data-adopt-inactive-msg="{{ pet_adopt_inactive_message|escape }}" aria-disabled="true"{% endif %}
 														aria-label="{% if pet_adopt_demo_listing %}{% if eu_site_active %}DEMO{% else %}Demonstrativ DEMO{% endif %}{% elif eu_site_active %}{{ eu_ui.pet_want_adopt }}{% else %}Vreau să adopt{% endif %}"
 													>
-														<span class="pet-adopt-corner__label">{% if pet_adopt_demo_listing %}DEMO{% elif eu_site_active %}{{ eu_ui.pet_want_adopt }}{% else %}VREAU SĂ ADOPT{% endif %}</span>
+														<span class="pet-adopt-corner__label">{% if pet_adopt_demo_listing %}DEMO{% elif eu_site_active %}<span class="pet-adopt-corner__label-full">{{ eu_ui.pet_want_adopt }}</span><span class="pet-adopt-corner__label-short">ADOPT</span>{% else %}<span class="pet-adopt-corner__label-full">VREAU SĂ ADOPT</span><span class="pet-adopt-corner__label-short">ADOPT</span>{% endif %}</span>
 														{% if pet_adopt_demo_listing %}<span class="pet-adopt-corner__note">{% if eu_site_active %}{{ eu_ui.pet_adopt_demo_note }}{% else %}Doar demonstrativ{% endif %}</span>{% elif pet_adopt_inactive_populare %}<span class="pet-adopt-corner__note">{% if eu_site_active %}{{ eu_ui.pet_adopt_inactive_note }}{% else %}Temporar inactiv{% endif %}</span>{% endif %}
 													</div>
 													{% endif %}
@@ -2629,7 +2743,14 @@
 					qr.style.height = h + "px";
 					qr.style.aspectRatio = "1 / 1";
 					if (img) {
-						var s = Math.max(36, h - 42);
+						var chrome = 42;
+						try {
+							if (window.matchMedia("(orientation: landscape) and (max-height: 500px)").matches
+								|| window.matchMedia("(max-width: 767.98px) and (orientation: landscape)").matches) {
+								chrome = 16;
+							}
+						} catch (eL) {}
+						var s = Math.max(40, h - chrome);
 						img.style.width = s + "px";
 						img.style.height = s + "px";
 					}
