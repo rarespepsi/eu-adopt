@@ -19,6 +19,8 @@ Rulează **proactiv** la începutul conversației pe laptop dacă mesajul userul
 
 **Nu** repeta rezumatul în fiecare mesaj din aceeași conversație — o dată la început e suficient (sau când user cere din nou).
 
+Poate rula **în paralel** cu raportul mail Zoho (`ZOHO_INBOX_DIMINEATA.mdc`) — același trigger de deschidere sesiune.
+
 ---
 
 ## Pași obligatorii (în paralel când e posibil)

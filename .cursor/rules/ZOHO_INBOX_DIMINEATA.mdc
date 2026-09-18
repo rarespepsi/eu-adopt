@@ -1,0 +1,82 @@
+---
+description: Dimineața la deschidere chat — raport INBOX Zoho + mutare în foldere EU_*
+alwaysApply: true
+---
+
+# ZOHO INBOX — RAPORT DIMINEAȚA + CLASARE
+
+**Decizie utilizator (18 sep 2026):** după ce agentul **citește** mailurile noi, dă **raport** (ce a venit, unde trebuie răspuns), apoi **mută** în folderele Zoho. Rulează la **fiecare deschidere de dimineață** / start sesiune.
+
+---
+
+## Când rulează (trigger)
+
+**Proactiv**, o dată la început de conversație (sau la cerere „raport mail” / „inbox”), dacă:
+
+- salut / deschidere („bună”, „dimineața”, „revin”, „continuăm”);
+- **prima** interacțiune din chat nou;
+- user cere explicit inbox / mail / raport Zoho.
+
+**Nu** repeta în fiecare mesaj din aceeași sesiune — o dată la start e suficient (sau când user cere din nou).
+
+Poate rula **în paralel** cu rezumatul handoff (`LAPTOP_DIMINEATA_REZUMAT.mdc`).
+
+---
+
+## Foldere Zoho (contact@eu-adopt.ro)
+
+| Folder | Conținut |
+|--------|----------|
+| `EU_Media_Radio_TV` | radio / TV / parteneriate media |
+| `EU_Primarii_CJ` | primării, CJ, ASPA, invitații instituționale |
+| `EU_Colaboratori` | magazine / ONG / parteneri serviciu (ex. Paws, Ludus) |
+| `EU_Utilizatori_Site` | suport utilizatori (ex. campanii, Serbacov) |
+| `EU_Bounce` | undelivered / mailer-daemon |
+| `EU_Rapoarte_Intern` | rapoarte automate EU-Adopt (invitații etc.) |
+| `INBOX` | doar ce e nou / neclasificat / de citit azi |
+
+---
+
+## Pași obligatorii
+
+1. **SSH Hetzner** + script (preferat):
+   - `scripts/zoho_inbox_morning_triage.py` pe server (`/opt/eu-adopt` după deploy), **sau**
+   - echivalent scp + `python` cu Django settings (IMAP din `STAFF_INVITE_IMAP_*`).
+2. Scriptul: listează INBOX → clasifică → **raportează** → **mută** în `EU_*`.
+3. **Raport către user** (română, scurt), format:
+
+```
+## Mail Zoho — raport
+- **Inbox înainte:** N mesaje
+- **De răspuns:** (bullets: cine + subiect + tip Media/Primărie/Colaborator/Site)
+- **Info / fără răspuns:** bounce, rapoarte interne, CC
+- **Mutate:** Media x · Primării y · … · Inbox rămas z
+```
+
+4. Dacă inbox e **gol**: un rând „Inbox gol — nimic de raportat.”
+
+---
+
+## Reguli clasare (nu amesteca)
+
+- **Primării înainte de Media** (evită false match: „maria” în „primaria”).
+- Bounce / mailer-daemon → `EU_Bounce` (nu cere răspuns user).
+- Raport invitații de la `contact@eu-adopt.ro` → `EU_Rapoarte_Intern`.
+- Mesaje neclare → **lasă în INBOX** și marchează „verifică manual” în raport.
+- **Nu șterge** mailuri; doar mută.
+- Mailuri **acord / formular parteneriat**: anunță userul; nu trimite răspuns fără OK (`PARTENERIATE_MEDIA_FORMULARE.mdc`).
+- Status DB (`partner` / `replied`): vezi `INBOX_MAIL_REDIRECT_SI_ACTIVI.mdc` — nu propune re-outreach.
+
+---
+
+## Ce NU face agentul la dimineață
+
+- Nu răspunde automat la parteneri / primării fără cerere + (dacă e cazul) draft OK.
+- Nu modifică site-ul doar din acest ritual (tot `1977` + OK pentru editări repo).
+- Nu comite scripturi `_tmp_*` pe main fără nevoie; scriptul stabil e `scripts/zoho_inbox_morning_triage.py`.
+
+---
+
+## Rezumat
+
+**Deschidere sesiune → citește Zoho INBOX → raport (unde răspunzi) → mută în EU_*. O dată pe sesiune.**
