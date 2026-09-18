@@ -80,11 +80,21 @@ def send_mail_text_and_html(
         raise
 
 
-def pet_copy_location_text(pet) -> str:
-    """
-    Locație publică RO de copiat (fișă + mail) în formularul Transport:
-    adresă adăpost (dacă există), oraș, județ, România.
-    """
+def _loc_norm(s: str) -> str:
+    return " ".join((s or "").casefold().replace("ă", "a").replace("â", "a")
+                    .replace("î", "i").replace("ș", "s").replace("ş", "s")
+                    .replace("ț", "t").replace("ţ", "t").split())
+
+
+def _loc_already_mentioned(haystack: str, needle: str) -> bool:
+    h, n = _loc_norm(haystack), _loc_norm(needle)
+    if not n:
+        return True
+    return n in h
+
+
+def _pet_location_parts(pet) -> tuple[str, str, str]:
+    """Returnează (adresă_stradă, oraș, județ) din pet + profil owner."""
     city = (getattr(pet, "city", None) or "").strip()
     county = (getattr(pet, "county", None) or "").strip()
     addr = ""
@@ -100,15 +110,49 @@ def pet_copy_location_text(pet) -> str:
                 city = (getattr(prof, "company_oras", None) or getattr(prof, "oras", None) or "").strip()
             if not county:
                 county = (getattr(prof, "company_judet", None) or getattr(prof, "judet", None) or "").strip()
-    lines = []
+    return addr, city, county
+
+
+def pet_copy_location_text(pet) -> str:
+    """
+    Locație publică RO de copiat (fișă + mail) în formularul Transport:
+    adresă adăpost (dacă există), oraș, județ, România — fără dubluri.
+    """
+    addr, city, county = _pet_location_parts(pet)
+    lines: list[str] = []
     if addr:
         lines.append(addr)
-    loc = ", ".join(x for x in (city, county) if x)
-    if loc:
-        lines.append(loc)
-    if lines:
+    blob = "\n".join(lines)
+    loc_bits: list[str] = []
+    for part in (city, county):
+        if not part:
+            continue
+        if _loc_already_mentioned(blob, part):
+            continue
+        if any(_loc_norm(p) == _loc_norm(part) for p in loc_bits):
+            continue
+        loc_bits.append(part)
+    if loc_bits:
+        lines.append(", ".join(loc_bits))
+    blob = "\n".join(lines)
+    if lines and not (
+        _loc_already_mentioned(blob, "România") or _loc_already_mentioned(blob, "Romania")
+    ):
         lines.append("România")
     return "\n".join(lines)
+
+
+def pet_copy_location_display(pet) -> str:
+    """
+    Text scurt în caseta fișă (oraș / județ, fără stradă și fără dubluri).
+    Adresa completă rămâne în pet_copy_location_text (la Copiază).
+    """
+    _addr, city, county = _pet_location_parts(pet)
+    if city and county:
+        if _loc_norm(city) == _loc_norm(county):
+            return city
+        return f"{city}, {county}"
+    return city or county or ""
 
 
 def adoption_pet_public_email_lines(pet) -> list[str]:

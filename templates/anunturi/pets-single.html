@@ -862,8 +862,24 @@
 				flex: 0 0 auto;
 				display: flex;
 				flex-direction: column;
-				justify-content: center;
+				justify-content: flex-start;
+				gap: 0.2rem;
 				overflow: hidden;
+				padding: 0.35rem 0.45rem 0.4rem;
+			}
+			.pet-loc-qr-pair .pet-copy-loc__title {
+				margin: 0;
+				font-size: 0.58rem;
+			}
+			.pet-loc-qr-pair .pet-copy-loc__text {
+				margin: 0;
+				font-size: 0.72rem;
+				line-height: 1.2;
+				flex: 0 0 auto;
+			}
+			.pet-loc-qr-pair .pet-copy-loc__btn {
+				margin-top: 0.15rem;
+				flex: 0 0 auto;
 			}
 			.pet-loc-qr-pair .pet-qr-corner {
 				position: static !important;
@@ -1769,10 +1785,6 @@
 					max-width: 100% !important;
 					padding: 0 !important;
 				}
-				/* Doar Copiază locația — puțin mai sus; QR + Adopt neschimbate */
-				body.page-pet-single #petLocQrPair .pet-copy-loc {
-					transform: translateY(-10px);
-				}
 				body.page-pet-single #petLocQrPair #petAdoptStack.pet-adopt-stack,
 				body.page-pet-single #petLocQrPair .pet-adopt-stack {
 					position: static !important;
@@ -2050,10 +2062,11 @@
 											</div>
 											{% endif %}
 											{% if pet_copy_location %}
+											{{ pet_copy_location|json_script:"pet-copy-loc-full" }}
 											<div class="pet-loc-qr-pair" id="petLocQrPair">
 												<div class="pet-copy-loc" id="petCopyLoc" aria-label="{% if eu_site_active %}{{ eu_ui.pet_copy_loc_aria }}{% else %}Locația PET de copiat pentru Transport{% endif %}">
 													<p class="pet-copy-loc__title">{% if eu_site_active %}{{ eu_ui.pet_copy_loc_title }}{% else %}Copie locația PET{% endif %}</p>
-													<p class="pet-copy-loc__text" id="petCopyLocText">{{ pet_copy_location }}</p>
+													<p class="pet-copy-loc__text" id="petCopyLocText">{{ pet_copy_location_display|default:pet_copy_location }}</p>
 													<button type="button" class="pet-copy-loc__btn" id="petCopyLocBtn" data-copied="{% if eu_site_active %}{{ eu_ui.pet_copy_loc_done }}{% else %}Copiat{% endif %}">{% if eu_site_active %}{{ eu_ui.pet_copy_loc_btn }}{% else %}Copiază{% endif %}</button>
 												</div>
 												<div class="pet-qr-corner" id="petQrCorner" aria-label="{% if eu_site_active %}{{ eu_ui.pet_qr_aria }}{% else %}Cod QR fișă{% endif %}">
@@ -2517,8 +2530,13 @@
 				var textEl = document.getElementById("petCopyLocText");
 				if (!btn || !textEl) return;
 				var original = btn.textContent;
+				var fullEl = document.getElementById("pet-copy-loc-full");
+				var fullText = "";
+				if (fullEl) {
+					try { fullText = JSON.parse(fullEl.textContent || '""'); } catch (e) { fullText = ""; }
+				}
 				btn.addEventListener("click", function() {
-					var t = (textEl.textContent || "").trim();
+					var t = (fullText || textEl.textContent || "").trim();
 					if (!t) return;
 					function ok() {
 						btn.textContent = btn.getAttribute("data-copied") || "Copied";

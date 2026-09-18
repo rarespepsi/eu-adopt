@@ -5372,7 +5372,7 @@ def render_dog_profile(request, listing: AnimalListing):
     """
     _sync_animal_adoption_state(listing)
     from home.eu_countries import country_label as eu_country_label
-    from home.mail_helpers import pet_copy_location_text
+    from home.mail_helpers import pet_copy_location_display, pet_copy_location_text
 
     eu_en = bool(getattr(request, "eu_site_active", False))
     ccode = (listing.country or "RO").strip().upper() or "RO"
@@ -5541,6 +5541,7 @@ def render_dog_profile(request, listing: AnimalListing):
             else ""
         ),
         "pet_copy_location": pet_copy_location_text(listing),
+        "pet_copy_location_display": pet_copy_location_display(listing),
     }
     from home.org_trust_badge import user_has_org_trust_badge
 
