@@ -2574,6 +2574,20 @@
 					var h = Math.ceil(loc.getBoundingClientRect().height);
 					if (!h || h < 88) h = 88;
 					if (h > 200) h = 200;
+					/* 3 pătrate pe rând: limadă după lățimea coloanei (nu ies din cadru) */
+					var pairW = pair.clientWidth || pair.getBoundingClientRect().width || 0;
+					var gapPx = 5;
+					try {
+						var cs = window.getComputedStyle(pair);
+						var g = parseFloat(cs.columnGap || cs.gap || "0");
+						if (!isNaN(g) && g > 0) gapPx = g;
+					} catch (eGap) {}
+					var nBoxes = stack ? 3 : 2;
+					if (pairW > 40) {
+						var maxSide = Math.floor((pairW - gapPx * (nBoxes - 1)) / nBoxes);
+						if (maxSide > 0 && h > maxSide) h = maxSide;
+					}
+					if (h < 72) h = 72;
 					loc.style.maxWidth = "none";
 					loc.style.width = h + "px";
 					loc.style.height = h + "px";
@@ -2582,7 +2596,7 @@
 					qr.style.height = h + "px";
 					qr.style.aspectRatio = "1 / 1";
 					if (img) {
-						var s = Math.max(40, h - 42);
+						var s = Math.max(36, h - 42);
 						img.style.width = s + "px";
 						img.style.height = s + "px";
 					}
