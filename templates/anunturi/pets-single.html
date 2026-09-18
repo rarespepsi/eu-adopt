@@ -1286,9 +1286,17 @@
 					bottom: auto !important;
 					left: auto !important;
 				}
+				/* Portrait: Locație | QR | Adopt pe un singur rând */
 				.pet-loc-qr-pair {
-					flex-wrap: wrap !important;
-					justify-content: center !important;
+					display: flex !important;
+					flex-direction: row !important;
+					flex-wrap: nowrap !important;
+					justify-content: flex-start !important;
+					align-items: stretch !important;
+					gap: 0.28rem !important;
+					width: 100% !important;
+					max-width: 100% !important;
+					box-sizing: border-box !important;
 				}
 			}
 
@@ -2605,11 +2613,14 @@
 						if (!isNaN(g) && g > 0) gapPx = g;
 					} catch (eGap) {}
 					var nBoxes = stack ? 3 : 2;
+					var maxSide = 0;
 					if (pairW > 40) {
-						var maxSide = Math.floor((pairW - gapPx * (nBoxes - 1)) / nBoxes);
+						maxSide = Math.floor((pairW - gapPx * (nBoxes - 1)) / nBoxes);
 						if (maxSide > 0 && h > maxSide) h = maxSide;
 					}
-					if (h < 72) h = 72;
+					var minH = 64;
+					if (maxSide > 0) minH = Math.min(minH, maxSide);
+					if (h < minH) h = minH;
 					loc.style.maxWidth = "none";
 					loc.style.width = h + "px";
 					loc.style.height = h + "px";
