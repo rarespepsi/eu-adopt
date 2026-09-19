@@ -1,0 +1,87 @@
+---
+description: Regulă master handoff — la task terminat sau pauză: main, deploy Hetzner, verificare live, AGENT_HANDOFF_LATEST.md.
+alwaysApply: true
+---
+
+# REGULĂ MASTER — EU-Adopt mobil: GĂSEȘTE DESKTOP + LIVE PE SITE
+
+**Proiect:** `rarespepsi/eu-adopt` · branch `main` · producție `https://eu-adopt.ro` · deploy **DOAR Hetzner**.
+
+---
+
+## A) LA FIECARE TASK TERMINAT (user vrea să vadă pe site)
+
+După orice modificare aprobată (`1977` + OK explicit pentru editări site):
+
+### 1. COD
+
+- Doar fișiere proiect (fără `.env`, exports, backup, secrete).
+- **Transport mobil:** doar `transport.html`, `transport.css`, `transport_bulina.html` dacă e cazul.
+- Crește `?v=` cache în `transport.html` la CSS/JS atins.
+
+### 2. GIT — obligatoriu pe `main` (ca desktop să găsească)
+
+```bash
+git status
+git add <fișiere relevante>
+git commit -m "handoff: <rezumat scurt>"
+git push origin main
+```
+
+- Dacă `main` refuză: push branch + PR → spune URL PR + SHA; încearcă merge pe `main` dacă userul a cerut live.
+- Notează **SHA commit final**.
+
+### 3. DEPLOY HETZNER — obligatoriu pentru live pe telefon
+
+- **Preferat** (de pe mediu cu SSH la server):
+  ```bash
+  ssh root@178.104.31.52 "bash /opt/eu-adopt/deploy/hetzner/deploy_update.sh"
+  ```
+- Sau dacă rulezi pe laptop user (Remote Control / This PC):
+  ```powershell
+  .\scripts\deploy_hetzner_from_pc.ps1
+  ```
+- După deploy: confirmă service activ și SHA pe server.
+
+### 4. VERIFICARE LIVE (obligatoriu)
+
+```bash
+curl -sI https://eu-adopt.ro/transport/ | head -5
+```
+
+Spune userului: **„Live: da · SHA … · testează https://eu-adopt.ro/transport/ (refresh forțat)”**
+
+### 5. HANDOFF pentru agent laptop (obligatoriu)
+
+Actualizează `docs/AGENT_HANDOFF_LATEST.md`:
+
+- dată/oră RO, ce s-a făcut, fișiere, SHA, push main da/nu, deploy da/nu, URL test
+- secțiune **„Pentru agent laptop”**: `git pull origin main` · `git log -3` · citește handoff
+
+Commit + push handoff pe același `main` (sau același commit).
+
+### 6. MESAJ FINAL către user (scurt)
+
+**„Gata · SHA … · live pe eu-adopt.ro · handoff în docs/AGENT_HANDOFF_LATEST.md”**
+
+---
+
+## B) LA PAUZĂ (~5 min / „pauză” / „revin”)
+
+Chiar dacă taskul nu e gata: pașii **2–5** minimal (commit ce există, push main, handoff; deploy doar dacă ceva e gata de testat live).
+
+---
+
+## C) REGULI PROIECT
+
+- Fără `1977` + OK explicit = **nu edita** site.
+- Nu atinge HOME, PT, Servicii, navbar etc. fără `1977` + OK.
+- Nu `push --force`, nu Render, nu secrete.
+
+---
+
+## D) DACĂ DEPLOY NU MERGE din cloud
+
+Spune clar: **„Push main OK · SHA … · deploy BLOCAT — laptop trebuie pornit; user rulează deploy seara sau activează SSH în cloud env.”**
+
+Tot scrie handoff + SHA ca desktop să continue.
