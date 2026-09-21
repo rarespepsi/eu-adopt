@@ -106,6 +106,84 @@ def _species_ro(listing) -> str:
     return (getattr(listing, "species", "") or "Animal").strip() or "Animal"
 
 
+# Text colaboratori + hashtag-uri — pe toate postările FB automate (RO).
+FACEBOOK_COLLAB_CTA = (
+    "Pe EU-Adopt, adopțiile din județul tău nu se opresc la anunț: adoptatorul e îndrumat la tine "
+    "— pentru vaccinări, consultații, grooming, hrană.\n"
+    "Cont nou colaborator: https://eu-adopt.ro/signup/colaborator/"
+)
+
+FACEBOOK_HASHTAGS_BASE = (
+    "#EUAdopt",
+    "#adopție",
+    "#animale",
+    "#cabinetveterinar",
+    "#medicveterinar",
+    "#grooming",
+    "#petshop",
+)
+
+
+def _hashtag_token(raw: str) -> str:
+    """Județ / etichetă → #FărăSpații (păstrează diacritice uzuale FB)."""
+    s = (raw or "").strip()
+    if not s:
+        return ""
+    s = "".join(ch for ch in s if ch.isalnum() or ch in (" ", "-", "_"))
+    s = s.replace(" ", "").replace("-", "").replace("_", "")
+    return f"#{s}" if s else ""
+
+
+def facebook_outbound_hashtags(
+    *,
+    kind: str = "",
+    species: str = "",
+    county: str = "",
+    pierdut_kind: str = "",
+) -> str:
+    tags: list[str] = list(FACEBOOK_HASHTAGS_BASE)
+    k = (kind or "").strip().lower()
+    if k == "campanie":
+        tags.extend(["#sterilizare", "#campanie"])
+    elif k == "pierdut":
+        pk = (pierdut_kind or "").strip().lower()
+        tags.append("#găsit" if pk in ("gasit", "găsit", "found") else "#pierdut")
+    elif k == "presentare":
+        tags.extend(["#Adaposturi", "#Primarii", "#Adoptii"])
+    sp = (species or "").strip().lower()
+    if sp in ("dog", "câine", "caine"):
+        tags.append("#câine")
+    elif sp in ("cat", "pisică", "pisica"):
+        tags.append("#pisică")
+    jud = _hashtag_token(county)
+    if jud and jud not in tags:
+        tags.append(jud)
+    # dedupe păstrând ordinea
+    seen: set[str] = set()
+    out: list[str] = []
+    for t in tags:
+        if t and t not in seen:
+            seen.add(t)
+            out.append(t)
+    return " ".join(out)
+
+
+def append_facebook_collab_footer(
+    body: str,
+    *,
+    kind: str = "",
+    species: str = "",
+    county: str = "",
+    pierdut_kind: str = "",
+) -> str:
+    """Adaugă CTA colaboratori + hashtag-uri la finalul mesajului FB."""
+    base = (body or "").rstrip()
+    tags = facebook_outbound_hashtags(
+        kind=kind, species=species, county=county, pierdut_kind=pierdut_kind
+    )
+    return f"{base}\n\n{FACEBOOK_COLLAB_CTA}\n\n{tags}"
+
+
 def build_animal_message(listing) -> tuple[str, str, str]:
     name = (listing.name or "Prieten").strip()
     species = _species_ro(listing)
@@ -123,12 +201,18 @@ def build_animal_message(listing) -> tuple[str, str, str]:
     lines.append("")
     lines.append("Vezi detalii pe eu-adopt.ro:")
     lines.append(link)
+    msg = append_facebook_collab_footer(
+        "\n".join(lines),
+        kind="animal",
+        species=getattr(listing, "species", "") or "",
+        county=county,
+    )
     img = ""
     for attr in ("photo_1", "photo_2", "photo_3"):
         img = absolute_media_url(getattr(listing, attr, None))
         if img:
             break
-    return "\n".join(lines), link, img
+    return msg, link, img
 
 
 def build_campanie_message(camp) -> tuple[str, str, str]:
@@ -145,8 +229,13 @@ def build_campanie_message(camp) -> tuple[str, str, str]:
     lines.append("")
     lines.append("Detalii pe harta Campanii:")
     lines.append(link)
+    msg = append_facebook_collab_footer(
+        "\n".join(lines),
+        kind="campanie",
+        county=(getattr(camp, "judet", "") or "").strip(),
+    )
     img = absolute_media_url(getattr(camp, "photo", None))
-    return "\n".join(lines), link, img
+    return msg, link, img
 
 
 def _species_label_lf(row) -> str:
@@ -167,8 +256,9 @@ def build_pierdut_message(row) -> tuple[str, str, str]:
         headline = "🔎 Animal PIERDUT"
     species = _species_label_lf(row)
     name = (getattr(row, "name", "") or "").strip()
+    county = (getattr(row, "judet", "") or "").strip()
     loc = ", ".join(
-        p for p in ((getattr(row, "localitate", "") or "").strip(), (getattr(row, "judet", "") or "").strip()) if p
+        p for p in ((getattr(row, "localitate", "") or "").strip(), county) if p
     )
     path = reverse("animale_pierdute_judet", kwargs={"judet_slug": row.judet_slug})
     link = site_base_url() + path
@@ -184,9 +274,15 @@ def build_pierdut_message(row) -> tuple[str, str, str]:
     lines.append("")
     lines.append("Anunț pe eu-adopt.ro:")
     lines.append(link)
+    msg = append_facebook_collab_footer(
+        "\n".join(lines),
+        kind="pierdut",
+        species=getattr(row, "species", "") or "",
+        county=county,
+        pierdut_kind=kind,
+    )
     img = absolute_media_url(getattr(row, "photo", None))
-    return "\n".join(lines), link, img
-
+    return msg, link, img
 
 def translate_facebook_message(text: str, *, target_lang: str) -> str:
     """
@@ -230,6 +326,7 @@ def _gemini_translate_fb(text: str, target_lang: str) -> str | None:
     system = (
         f"You translate Facebook posts for the EU-Adopt pet adoption platform into {lang_name}. "
         "Rules: preserve meaning and tone; keep ALL URLs and links exactly unchanged; "
+        "keep ALL hashtags (#...) exactly unchanged (do not translate or remove them); "
         "do not invent facts, ages, places, or medical claims; keep emoji; "
         "return ONLY the translated post text, no commentary."
     )

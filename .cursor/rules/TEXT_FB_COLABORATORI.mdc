@@ -1,0 +1,26 @@
+---
+description: Text Facebook colaboratori EU-Adopt — mesaj + link signup colaborator
+alwaysApply: false
+---
+
+# TEXT FACEBOOK — COLABORATORI (MEMORAT)
+
+**Decizie utilizator (21 sep 2026):** când cere textul pentru comentarii Facebook către cabinete / saloane / magazine, **dă exact** varianta de mai jos (fără reformulare, dacă nu cere altfel).
+
+**Auto-postări FB (21 sep 2026, `1977`+OK):** același CTA + hashtag-uri de bază se adaugă automat la finalul tuturor mesajelor outbound (`build_animal_message`, `build_campanie_message`, `build_pierdut_message`, `presentare_repost_message`) via `append_facebook_collab_footer` în `home/facebook_page_post.py`.
+
+## Text oficial
+
+```
+Pe EU-Adopt, adopțiile din județul tău nu se opresc la anunț: adoptatorul e îndrumat la tine — pentru vaccinări, consultații, grooming, hrană.
+Cont nou colaborator: https://eu-adopt.ro/signup/colaborator/
+```
+
+## Link
+
+- **Cont nou colaborator:** https://eu-adopt.ro/signup/colaborator/
+- **Nu** folosi `/login/` în acest mesaj (decizie: link direct user nou colaborator).
+
+## Trigger
+
+User: „text colaboratori”, „mesaj facebook colaboratori”, „textul pentru cabinete”, „dă-mi textul memorat” etc. → răspunde cu blocul de mai sus.

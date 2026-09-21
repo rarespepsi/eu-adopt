@@ -58,7 +58,9 @@ def reel_by_key(key: str) -> PresentareReel | None:
 
 
 def presentare_repost_message(reel: PresentareReel) -> str:
-    return (
+    from home.facebook_page_post import append_facebook_collab_footer
+
+    body = (
         "Dragi prieteni din teren —\n\n"
         "Adăposturi și ONG-uri, cabinete veterinare, saloane de grooming, magazine, "
         "hoteluri pentru animale, transportatori și primării:\n\n"
@@ -67,9 +69,9 @@ def presentare_repost_message(reel: PresentareReel) -> str:
         f"Video: {reel.reel_url}\n"
         f"Platformă: {SITE}\n\n"
         "Împreună le dăm animalelor fără stăpân o șansă reală.\n"
-        "Echipa EU-Adopt\n\n"
-        "#EUAdopt #Adaposturi #Primarii #CabineteVeterinare #Grooming #Adoptii"
+        "Echipa EU-Adopt"
     )
+    return append_facebook_collab_footer(body, kind="presentare")
 
 
 def post_presentare_reel(reel: PresentareReel, *, market: str = "ro"):

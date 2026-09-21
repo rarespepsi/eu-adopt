@@ -11,10 +11,16 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from home.facebook_page_post import (
+    FACEBOOK_COLLAB_CTA,
+    append_facebook_collab_footer,
+    build_animal_message,
+    build_campanie_message,
+    build_pierdut_message,
     enqueue_animal,
     enqueue_backfill,
     enqueue_campanie,
     enqueue_pierdut,
+    facebook_outbound_hashtags,
     flush_pending,
     process_delivery,
     process_outbound_row,
@@ -30,6 +36,88 @@ from home.models import (
 )
 
 User = get_user_model()
+
+
+class FacebookCollabFooterTests(TestCase):
+    """CTA colaboratori + hashtag-uri pe toate tipurile de mesaj FB auto."""
+
+    def setUp(self):
+        self.user = User.objects.create_user("fb_cta", "fbcta@test.local", "x")
+
+    def test_hashtags_base_and_kinds(self):
+        base = facebook_outbound_hashtags(kind="animal", species="dog", county="Neamț")
+        self.assertIn("#EUAdopt", base)
+        self.assertIn("#cabinetveterinar", base)
+        self.assertIn("#câine", base)
+        self.assertIn("#Neamț", base)
+        camp = facebook_outbound_hashtags(kind="campanie", county="Cluj")
+        self.assertIn("#sterilizare", camp)
+        self.assertIn("#campanie", camp)
+        lost = facebook_outbound_hashtags(kind="pierdut", pierdut_kind="pierdut")
+        self.assertIn("#pierdut", lost)
+        found = facebook_outbound_hashtags(kind="pierdut", pierdut_kind="gasit")
+        self.assertIn("#găsit", found)
+        pre = facebook_outbound_hashtags(kind="presentare")
+        self.assertIn("#Adaposturi", pre)
+
+    def test_append_footer_includes_cta_and_signup(self):
+        out = append_facebook_collab_footer("Salut", kind="animal", county="Iași")
+        self.assertIn(FACEBOOK_COLLAB_CTA, out)
+        self.assertIn("signup/colaborator/", out)
+        self.assertTrue(out.startswith("Salut\n\n"))
+
+    def test_animal_message_has_collab_footer(self):
+        listing = AnimalListing.objects.create(
+            owner=self.user,
+            name="Rex",
+            species="dog",
+            age_label="2 ani",
+            city="Roman",
+            county="Neamț",
+            is_published=True,
+        )
+        msg, _link, _img = build_animal_message(listing)
+        self.assertIn(FACEBOOK_COLLAB_CTA, msg)
+        self.assertIn("#EUAdopt", msg)
+        self.assertIn("#câine", msg)
+        self.assertIn("#Neamț", msg)
+
+    def test_campanie_message_has_collab_footer(self):
+        photo = SimpleUploadedFile("c.jpg", b"\xff\xd8\xff\xd9", content_type="image/jpeg")
+        camp = CampanieSterilizare.objects.create(
+            user=self.user,
+            judet="Neamț",
+            judet_slug="neamt",
+            localitate="Roman",
+            species_dogs=True,
+            species_cats=False,
+            date_start=date.today(),
+            date_end=date.today() + timedelta(days=3),
+            photo=photo,
+        )
+        msg, _link, _img = build_campanie_message(camp)
+        self.assertIn(FACEBOOK_COLLAB_CTA, msg)
+        self.assertIn("#sterilizare", msg)
+        self.assertIn("#Neamț", msg)
+
+    def test_pierdut_message_has_collab_footer(self):
+        photo = SimpleUploadedFile("lf.jpg", b"\xff\xd8\xff\xd9", content_type="image/jpeg")
+        row = LostFoundAnimal.objects.create(
+            user=self.user,
+            kind=LostFoundAnimal.KIND_LOST,
+            species="cat",
+            name="Miti",
+            judet="Cluj",
+            judet_slug="cluj",
+            localitate="Cluj-Napoca",
+            description="Pisică pierdută.",
+            photo=photo,
+        )
+        msg, _link, _img = build_pierdut_message(row)
+        self.assertIn(FACEBOOK_COLLAB_CTA, msg)
+        self.assertIn("#pierdut", msg)
+        self.assertIn("#pisică", msg)
+        self.assertIn("#Cluj", msg)
 
 
 @override_settings(

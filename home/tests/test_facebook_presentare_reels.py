@@ -27,3 +27,15 @@ class PresentareReelsTests(SimpleTestCase):
         msg = presentare_repost_message(PRESENTARE_REELS[0])
         self.assertIn('eu-adopt.ro', msg)
         self.assertIn(PRESENTARE_REELS[0].reel_url, msg)
+
+    def test_message_has_collab_cta_and_hashtags(self):
+        from home.facebook_page_post import FACEBOOK_COLLAB_CTA
+
+        msg = presentare_repost_message(PRESENTARE_REELS[0])
+        self.assertIn(FACEBOOK_COLLAB_CTA, msg)
+        self.assertIn('signup/colaborator/', msg)
+        self.assertIn('#EUAdopt', msg)
+        self.assertIn('#Adaposturi', msg)
+        self.assertIn('#Primarii', msg)
+        self.assertIn('#Adoptii', msg)
+        self.assertIn('#cabinetveterinar', msg)
