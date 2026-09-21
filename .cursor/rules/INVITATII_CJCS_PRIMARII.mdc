@@ -1,0 +1,24 @@
+---
+description: Invitații primării din lista CJ Caraș-Severin — text + prioritate undă
+alwaysApply: false
+---
+
+# PRIMĂRII CJ CARAȘ-SEVERIN — LISTĂ + TEXT INVITAȚIE
+
+**Decizie utilizator (21 sep 2026, `1977`+OK):**
+
+1. **Import** adrese din lista trimisă de CJ Caraș-Severin (`cjcs@cjcs.ro`) în `StaffOnboardingLead`.
+2. **Marker notes:** `[SURSA:CJCS_LISTA_202609]`
+3. **Text individual** pe șablonul UAT public, **fără** sigle/antet PDF de la CJCS.
+4. **Prima frază** (doar pe lead-urile cu marker):
+
+> La recomandarea Consiliului Județean Caraș-Severin și în baza adreselor de e-mail primite de la acesta, vă transmitem invitația de a folosi gratuit platforma EU-Adopt.
+
+5. Restul = textul UAT existent (ca informarea tip Cluj / invitația primării).
+6. **Undă:** cât timp există lead-uri `never` cu marker → unda UAT (AM/PM dacă `UAT_ONLY`) trimite **doar** lotul CS; restul cozii UAT e în pauză. Nu forța peste plafonul zilnic Zoho.
+7. **„nu contacta” / „NU CONTACTA”:** IMAP → `invite_mail_status=do_not_contact`; **rămân în DB**, fără retrimitere (`staff_invite_can_send` terminal).
+
+## Cod
+
+- `home/staff_onboarding_invite.py` — `CJCS_LISTA_NOTE_MARKER`, `CJCS_INVITE_OPENING`
+- `home/staff_invite_daily_wave.py` — `pick_uat_leads_for_daily_wave` prioritate CS

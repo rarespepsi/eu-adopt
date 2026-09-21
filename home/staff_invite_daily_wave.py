@@ -256,25 +256,39 @@ def pick_leads_for_daily_wave(
 
 
 def pick_uat_leads_for_daily_wave(*, wave_limit: int) -> list[StaffOnboardingLead]:
-    """CJ → PMB → municipii → orașe → comune; doar never-sent, fără grupă A/B."""
-    from django.db.models import Case, IntegerField, Value, When
+    """CJ → PMB → municipii → orașe → comune; doar never-sent, fără grupă A/B.
+
+    Dacă există lot marker CJ Caraș-Severin (lista 2026-09), unda UAT trimite
+    doar pe acel lot — oprește temporar restul cozii UAT până e epuizat.
+    """
+    from django.db.models import Case, IntegerField, Q, Value, When
+
+    from home.staff_onboarding_invite import CJCS_LISTA_NOTE_MARKER
 
     whens = [
         When(uat_category=key, then=Value(i))
         for i, key in enumerate(StaffOnboardingLead.UAT_SEND_ORDER)
     ]
-    qs = (
-        StaffOnboardingLead.objects.filter(
-            imported_user__isnull=True,
-            account_kind=StaffOnboardingLead.KIND_ADAPOST,
-            uat_category__in=StaffOnboardingLead.UAT_SEND_ORDER,
-            invite_mail_status=StaffOnboardingLead.INVITE_NEVER,
-        )
-        .annotate(
-            _uat_ord=Case(*whens, default=Value(99), output_field=IntegerField()),
-        )
-        .order_by("_uat_ord", "judet", "oras", "pk")
+    base = StaffOnboardingLead.objects.filter(
+        imported_user__isnull=True,
+        account_kind=StaffOnboardingLead.KIND_ADAPOST,
+        uat_category__in=StaffOnboardingLead.UAT_SEND_ORDER,
+        invite_mail_status=StaffOnboardingLead.INVITE_NEVER,
     )
+    cs_q = Q(notes__contains=CJCS_LISTA_NOTE_MARKER) | Q(
+        invite_staff_notes__contains=CJCS_LISTA_NOTE_MARKER
+    )
+    if base.filter(cs_q).exists():
+        qs = base.filter(cs_q)
+        logger.info(
+            "staff_invite_uat_wave: prioritate lot CJCS (%s) — restul UAT în pauză",
+            CJCS_LISTA_NOTE_MARKER,
+        )
+    else:
+        qs = base
+    qs = qs.annotate(
+        _uat_ord=Case(*whens, default=Value(99), output_field=IntegerField()),
+    ).order_by("_uat_ord", "judet", "oras", "pk")
     picked: list[StaffOnboardingLead] = []
     seen: set[int] = set()
     _append_pickable_leads(qs, picked=picked, wave_limit=wave_limit, seen=seen, keep_order=True)

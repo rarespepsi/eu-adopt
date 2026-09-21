@@ -195,3 +195,44 @@ class StaffInviteUatWaveTests(TestCase):
             is_public_shelter=True,
         )
         self.assertEqual(staff_invite_template_key(lead), "uat_public")
+
+    def test_cjcs_marker_pauses_other_uat_and_adds_opening(self):
+        from home.staff_invite_daily_wave import pick_uat_leads_for_daily_wave
+        from home.staff_onboarding_invite import (
+            CJCS_INVITE_OPENING,
+            CJCS_LISTA_NOTE_MARKER,
+            staff_invite_subject_body,
+        )
+
+        other = StaffOnboardingLead.objects.create(
+            email="primaria.alba@example.com",
+            display_name="Primăria Alba",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_ADPUB,
+            uat_category=StaffOnboardingLead.UAT_COMUNA,
+            judet="Alba",
+            invite_mail_status=StaffOnboardingLead.INVITE_NEVER,
+        )
+        cs = StaffOnboardingLead.objects.create(
+            email="primaria.testcs@example.com",
+            display_name="Primăria Test CS",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_ADPUB,
+            uat_category=StaffOnboardingLead.UAT_COMUNA,
+            judet="Caraș-Severin",
+            notes=f"{CJCS_LISTA_NOTE_MARKER} test",
+            invite_mail_status=StaffOnboardingLead.INVITE_NEVER,
+        )
+        picked = pick_uat_leads_for_daily_wave(wave_limit=10)
+        self.assertEqual([p.pk for p in picked], [cs.pk])
+        self.assertNotIn(other.pk, [p.pk for p in picked])
+
+        from django.test import RequestFactory
+
+        req = RequestFactory().get("/", HTTP_HOST="eu-adopt.ro")
+        _subj, body, _key = staff_invite_subject_body(req, cs)
+        self.assertIn(CJCS_INVITE_OPENING.strip(), body)
+        self.assertIn("signup", body.lower())
+        _subj2, body2, _ = staff_invite_subject_body(req, other)
+        self.assertNotIn("Caraș-Severin", body2.split("\n\n")[1] if "\n\n" in body2 else "")
+        self.assertNotIn(CJCS_INVITE_OPENING.strip(), body2)

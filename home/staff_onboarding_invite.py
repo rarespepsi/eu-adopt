@@ -611,6 +611,20 @@ def _invite_footer_block() -> str:
     )
 
 
+# Marker pe notes — invitații primării din lista CJ Caraș-Severin (21 sep 2026).
+CJCS_LISTA_NOTE_MARKER = "[SURSA:CJCS_LISTA_202609]"
+
+CJCS_INVITE_OPENING = (
+    "La recomandarea Consiliului Județean Caraș-Severin și în baza adreselor "
+    "de e-mail primite de la acesta, vă transmitem invitația de a folosi "
+    "gratuit platforma EU-Adopt.\n\n"
+)
+
+
+def lead_has_cjcs_lista_marker(lead: StaffOnboardingLead) -> bool:
+    return CJCS_LISTA_NOTE_MARKER in ((lead.notes or "") + (lead.invite_staff_notes or ""))
+
+
 def _invite_uat_public_body(lead: StaffOnboardingLead, org_line: str, signup_url: str) -> str:
     cat = (lead.uat_category or "").strip()
     forward_line = ""
@@ -619,8 +633,10 @@ def _invite_uat_public_body(lead: StaffOnboardingLead, org_line: str, signup_url
             "Rugăm Consiliile Județene să transmită această informare primăriilor din județ, "
             "pentru ca acestea și/sau operatorii serviciului să poată folosi platforma.\n\n"
         )
+    opening = CJCS_INVITE_OPENING if lead_has_cjcs_lista_marker(lead) else ""
     return (
         f"Stimată Doamnă / Stimate Domn{org_line},\n\n"
+        + opening
         + _invite_middle_block("uat_public", org_line)
         + f"Contul se creează aici (link personal):\n{signup_url}\n\n"
         + forward_line
