@@ -24,20 +24,17 @@
   var touchDevice =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;
-  var phoneMode = (window.innerWidth || document.documentElement.clientWidth || 0) <= 767.98;
-  var landscapeTouchPhone = false;
+  // Telefon portrait: scroll pe pagină. Loturile următoare vin la apropierea de capăt,
+  // fără touchmove preventDefault și fără a bloca tap-ul.
+  var portraitPageScroll = false;
   try {
-    landscapeTouchPhone =
+    portraitPageScroll =
       touchDevice &&
-      window.matchMedia("(orientation: landscape) and (max-height: 34em)").matches;
-  } catch (eLand) {
-    landscapeTouchPhone = false;
-  }
-
-  // Portrait touch: lot inițial fără auto-load. Landscape touch: scroll P2 + p2-more activ.
-  if ((phoneMode || touchDevice) && !landscapeTouchPhone) {
-    sentinel.setAttribute("hidden", "");
-    return;
+      window.matchMedia(
+        "(max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse)"
+      ).matches;
+  } catch (ePort) {
+    portraitPageScroll = false;
   }
 
   function isPhone() {
@@ -98,6 +95,7 @@
   }
 
   function scrollMargin() {
+    if (portraitPageScroll) return 640;
     return isPhone() ? 24 : 400;
   }
 
@@ -114,7 +112,7 @@
 
   function sentinelNearVisibleEdge() {
     if (!sentinel || !sentinel.isConnected || !hasMore) return false;
-    if (isPhone() && !phoneCanLoad()) return false;
+    if (isPhone() && !portraitPageScroll && !phoneCanLoad()) return false;
     var margin = scrollMargin();
     var r = sentinel.getBoundingClientRect();
     var root = pickIoRoot();
@@ -166,12 +164,13 @@
   }
 
   function loadMore() {
-    if (loading || !hasMore || Date.now() < tapNavUntil) return;
-    if (isPhone() && !phoneCanLoad()) return;
+    if (loading || !hasMore) return;
+    if (!portraitPageScroll && Date.now() < tapNavUntil) return;
+    if (isPhone() && !portraitPageScroll && !phoneCanLoad()) return;
     var chainMax = maxAutoChainAllowed();
-    if (!userScrolledSinceChain && autoChainCount >= chainMax) return;
-    loading = true;
+    if (!portraitPageScroll && !userScrolledSinceChain && autoChainCount >= chainMax) return;
     abortFetch();
+    loading = true;
     fetchAbort = typeof AbortController !== "undefined" ? new AbortController() : null;
     var fetchOpts = { credentials: "same-origin", cache: "no-store", headers: { Accept: "application/json" } };
     if (fetchAbort) fetchOpts.signal = fetchAbort.signal;
@@ -216,7 +215,14 @@
         fetchAbort = null;
       })
       .then(function (ok) {
-        if (!ok || !hasMore || isPhone()) return;
+        if (!ok || !hasMore) return;
+        if (portraitPageScroll) {
+          requestAnimationFrame(function () {
+            if (!loading && hasMore && sentinelNearVisibleEdge()) loadMore();
+          });
+          return;
+        }
+        if (isPhone()) return;
         requestAnimationFrame(function () {
           setupIo();
           if (!loading && hasMore && sentinelNearVisibleEdge()) {
@@ -253,7 +259,21 @@
     scheduleScrollProbe();
   }
 
-  if (isPhone()) {
+  function onPortraitScroll() {
+    if (!hasMore || loading) return;
+    clearTimeout(scrollProbeT);
+    scrollProbeT = setTimeout(function () {
+      scrollProbeT = null;
+      if (!loading && hasMore && sentinelNearVisibleEdge()) loadMore();
+    }, 160);
+  }
+
+  if (portraitPageScroll) {
+    window.addEventListener("scroll", onPortraitScroll, { passive: true });
+    requestAnimationFrame(function () {
+      requestAnimationFrame(onPortraitScroll);
+    });
+  } else if (isPhone()) {
     document.addEventListener(
       "touchstart",
       function () {

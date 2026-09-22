@@ -1380,18 +1380,10 @@
 {% block extra_js %}
 <script>
 (function () {
-  var v = "pt387-match-desktop";
+  var v = "pt388-portrait-all-pets";
   var touch =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;
-  function isPtTabletPortrait() {
-    return (
-      "matchMedia" in window &&
-      window.matchMedia(
-        "(min-width: 768px) and (max-width: 64em) and (orientation: portrait) and (hover: none) and (pointer: coarse)"
-      ).matches
-    );
-  }
   function loadJs(name) {
     var s = document.createElement("script");
     s.src = "{% static 'js/' %}" + name + "?v=" + v;
@@ -1427,9 +1419,7 @@
     loadJs("pt-p2-more.js");
     loadJs("pt-desktop-ui.js");
   } else if ("matchMedia" in window && window.matchMedia("(orientation: portrait)").matches) {
-    if (isPtTabletPortrait()) {
-      loadJs("pt-p2-more.js");
-    }
+    loadJs("pt-p2-more.js");
     loadJs("pt-portrait-ui.js");
   } else if (
     "matchMedia" in window &&
