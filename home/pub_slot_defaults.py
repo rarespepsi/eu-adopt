@@ -79,7 +79,7 @@ _RADIO_STAR_SEBES = {
 }
 _RADIO_SON = {
     "image": "images/parteneri/radio_son_logo.jpg",
-    "link": "https://www.radioson.ro",
+    "link": "https://www.radioson.ro/asculta-live.html",
     "alt": "Radio SON",
 }
 _STRIP_PARTNER_PLACEMENTS = (
