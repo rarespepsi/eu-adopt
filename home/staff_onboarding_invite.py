@@ -10,6 +10,7 @@ import re
 import secrets
 import time
 from datetime import timedelta
+from pathlib import Path
 from typing import Any
 from urllib.parse import quote
 
@@ -24,6 +25,8 @@ from home.mail_helpers import _message_id_domain
 from home.models import StaffOnboardingLead, StaffOnboardingInviteLog
 from home.staff_onboarding_csv import is_placeholder_lead_email
 from home.staff_onboarding_invite_inbound import staff_invite_reply_to_address
+
+logger = logging.getLogger(__name__)
 
 STAFF_INVITE_GET_PARAM = "inv"
 STAFF_LEAD_INVITE_MAX_SENDS_DEFAULT = 3
@@ -620,9 +623,44 @@ CJCS_INVITE_OPENING = (
     "gratuit platforma EU-Adopt.\n\n"
 )
 
+# Marker pe notes — invitații primării din lista CJ Vrancea (22–23 sep 2026).
+CJVN_LISTA_NOTE_MARKER = "[SURSA:CJVN_LISTA_202609]"
+
+CJVN_INVITE_OPENING = (
+    "La recomandarea Consiliului Județean Vrancea și în baza adreselor "
+    "de e-mail primite de la acesta, vă transmitem invitația de a folosi "
+    "gratuit platforma EU-Adopt.\n\n"
+)
+
+CJVN_DORESC_CONT_BLOCK = (
+    "Dacă nu aveți timpul sau resursele necesare pentru a completa înregistrarea, "
+    "vă rugăm să ne transmiteți o persoană de contact, un număr de telefon și o "
+    "adresă de e-mail, scriind clar în mesaj «DORESC CONT». Vom crea noi contul "
+    "pentru dumneavoastră.\n\n"
+)
+
+CJVN_ATTACH_RELPATH = Path("static") / "staff_invite" / "CJ_Vrancea_Adresa_raspuns_EUAdopt.pdf"
+CJVN_ATTACH_FILENAME = "Adresa_raspuns_EUAdopt_CJ_Vrancea.pdf"
+
 
 def lead_has_cjcs_lista_marker(lead: StaffOnboardingLead) -> bool:
     return CJCS_LISTA_NOTE_MARKER in ((lead.notes or "") + (lead.invite_staff_notes or ""))
+
+
+def lead_has_cjvn_lista_marker(lead: StaffOnboardingLead) -> bool:
+    return CJVN_LISTA_NOTE_MARKER in ((lead.notes or "") + (lead.invite_staff_notes or ""))
+
+
+def staff_invite_attachments_for_lead(lead: StaffOnboardingLead) -> list[tuple[str, bytes, str]]:
+    """Atașamente invitație (ex. scrisoare CJ Vrancea pe lotul marker)."""
+    if not lead_has_cjvn_lista_marker(lead):
+        return []
+    base = Path(getattr(settings, "BASE_DIR", ".") or ".")
+    path = base / CJVN_ATTACH_RELPATH
+    if not path.is_file():
+        logger.warning("staff_invite: lipsește atașament CJVN %s", path)
+        return []
+    return [(CJVN_ATTACH_FILENAME, path.read_bytes(), "application/pdf")]
 
 
 def _invite_uat_public_body(lead: StaffOnboardingLead, org_line: str, signup_url: str) -> str:
@@ -633,7 +671,12 @@ def _invite_uat_public_body(lead: StaffOnboardingLead, org_line: str, signup_url
             "Rugăm Consiliile Județene să transmită această informare primăriilor din județ, "
             "pentru ca acestea și/sau operatorii serviciului să poată folosi platforma.\n\n"
         )
-    opening = CJCS_INVITE_OPENING if lead_has_cjcs_lista_marker(lead) else ""
+    if lead_has_cjcs_lista_marker(lead):
+        opening = CJCS_INVITE_OPENING
+    elif lead_has_cjvn_lista_marker(lead):
+        opening = CJVN_INVITE_OPENING + CJVN_DORESC_CONT_BLOCK
+    else:
+        opening = ""
     return (
         f"Stimată Doamnă / Stimate Domn{org_line},\n\n"
         + opening
@@ -872,6 +915,8 @@ def _staff_invite_send_smtp(from_email: str, to_email: str, subject: str, body: 
         reply_to=[reply_to],
         headers=headers,
     )
+    for fname, content, mime in staff_invite_attachments_for_lead(lead):
+        msg.attach(fname, content, mime)
     msg.send(fail_silently=False)
     return msg_id
 

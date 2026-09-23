@@ -1,0 +1,20 @@
+---
+description: Invitații primării din lista CJ Vrancea — text + DORESC CONT + ataș PDF + undă
+alwaysApply: false
+---
+
+# PRIMĂRII CJ VRANCEA — LISTĂ + TEXT INVITAȚIE
+
+**Decizie utilizator (23 sep 2026, `1977`+OK):**
+
+1. **Import** adrese din lista PDF CJ Vrancea (`contact@cjvrancea.ro`, Adresa 201/27846) în `StaffOnboardingLead` — **ambele** emailuri când UAT-ul are 2.
+2. **Marker notes:** `[SURSA:CJVN_LISTA_202609]`
+3. **Text:** deschidere recomandare CJ Vrancea + bloc **DORESC CONT** + șablon UAT public.
+4. **Atașament:** `static/staff_invite/CJ_Vrancea_Adresa_raspuns_EUAdopt.pdf` pe fiecare invitație din lot.
+5. **Undă:** după epuizarea lotului CS, cât există `never` cu marker CJVN → unda UAT trimite **doar** lotul VN; restul UAT în pauză. Fără forțare peste plafonul Zoho.
+6. **Mulțumire CJ / credentiale DORESC CONT:** agentul **arată draftul** și așteaptă accept înainte de trimitere — vezi `DORESC_CONT_PRIMARII.mdc`.
+
+## Cod
+
+- `home/staff_onboarding_invite.py` — `CJVN_*`, `staff_invite_attachments_for_lead`
+- `home/staff_invite_daily_wave.py` — prioritate CS → apoi VN

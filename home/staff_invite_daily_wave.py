@@ -260,10 +260,11 @@ def pick_uat_leads_for_daily_wave(*, wave_limit: int) -> list[StaffOnboardingLea
 
     Dacă există lot marker CJ Caraș-Severin (lista 2026-09), unda UAT trimite
     doar pe acel lot — oprește temporar restul cozii UAT până e epuizat.
+    Apoi, același mecanism pentru lotul CJ Vrancea.
     """
     from django.db.models import Case, IntegerField, Q, Value, When
 
-    from home.staff_onboarding_invite import CJCS_LISTA_NOTE_MARKER
+    from home.staff_onboarding_invite import CJCS_LISTA_NOTE_MARKER, CJVN_LISTA_NOTE_MARKER
 
     whens = [
         When(uat_category=key, then=Value(i))
@@ -278,11 +279,20 @@ def pick_uat_leads_for_daily_wave(*, wave_limit: int) -> list[StaffOnboardingLea
     cs_q = Q(notes__contains=CJCS_LISTA_NOTE_MARKER) | Q(
         invite_staff_notes__contains=CJCS_LISTA_NOTE_MARKER
     )
+    vn_q = Q(notes__contains=CJVN_LISTA_NOTE_MARKER) | Q(
+        invite_staff_notes__contains=CJVN_LISTA_NOTE_MARKER
+    )
     if base.filter(cs_q).exists():
         qs = base.filter(cs_q)
         logger.info(
             "staff_invite_uat_wave: prioritate lot CJCS (%s) — restul UAT în pauză",
             CJCS_LISTA_NOTE_MARKER,
+        )
+    elif base.filter(vn_q).exists():
+        qs = base.filter(vn_q)
+        logger.info(
+            "staff_invite_uat_wave: prioritate lot CJVN (%s) — restul UAT în pauză",
+            CJVN_LISTA_NOTE_MARKER,
         )
     else:
         qs = base
