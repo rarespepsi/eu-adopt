@@ -24,15 +24,15 @@
   var touchDevice =
     ("matchMedia" in window && window.matchMedia("(hover: none), (pointer: coarse)").matches) ||
     "ontouchstart" in window;
-  // Telefon portrait: scroll pe pagină. Loturile următoare vin la apropierea de capăt,
-  // fără touchmove preventDefault și fără a bloca tap-ul.
+  // Telefon portrait: loturi noi la apropierea de capăt (scroll pagină sau container).
+  // Detecție lată: touch + portrait + lățime telefon — fără hover/pointer (unele browsere mint).
   var portraitPageScroll = false;
   try {
+    var w0 = window.innerWidth || document.documentElement.clientWidth || 0;
     portraitPageScroll =
       touchDevice &&
-      window.matchMedia(
-        "(max-width: 767.98px) and (orientation: portrait) and (hover: none) and (pointer: coarse)"
-      ).matches;
+      w0 <= 767.98 &&
+      window.matchMedia("(orientation: portrait)").matches;
   } catch (ePort) {
     portraitPageScroll = false;
   }
@@ -43,6 +43,7 @@
   }
 
   function markUserBusy(ms) {
+    if (portraitPageScroll) return;
     var until = Date.now() + ms;
     if (until > userBusyUntil) userBusyUntil = until;
     if (until > tapNavUntil) tapNavUntil = until;
@@ -80,10 +81,16 @@
   function finish() {
     hasMore = false;
     sentinel.setAttribute("hidden", "");
-    if (io) io.disconnect();
+    if (io) {
+      try {
+        io.disconnect();
+      } catch (eF) {}
+      io = null;
+    }
   }
 
   function pickIoRoot() {
+    if (portraitPageScroll) return null;
     if (isPhone()) return null;
     try {
       var oy = window.getComputedStyle(scrollEl).overflowY;
@@ -95,19 +102,31 @@
   }
 
   function scrollMargin() {
-    if (portraitPageScroll) return 640;
+    if (portraitPageScroll) return 900;
     return isPhone() ? 24 : 400;
   }
 
   function maxAutoChainAllowed() {
+    if (portraitPageScroll) return 6;
     return isPhone() ? 0 : maxAutoChain;
   }
 
   function currentScrollTop() {
-    if (isPhone()) {
-      return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    var mw = document.getElementById("main_wrap");
+    var mc = document.getElementById("main_content");
+    var tops = [
+      window.pageYOffset || 0,
+      document.documentElement ? document.documentElement.scrollTop : 0,
+      document.body ? document.body.scrollTop : 0,
+      scrollEl ? scrollEl.scrollTop : 0,
+      mw ? mw.scrollTop : 0,
+      mc ? mc.scrollTop : 0,
+    ];
+    var max = 0;
+    for (var i = 0; i < tops.length; i++) {
+      if (tops[i] > max) max = tops[i];
     }
-    return scrollEl.scrollTop;
+    return max;
   }
 
   function sentinelNearVisibleEdge() {
@@ -135,22 +154,22 @@
   }
 
   function setupIo() {
-    if (isPhone()) return;
+    if (isPhone() && !portraitPageScroll) return;
     if (io) {
       try {
         io.disconnect();
       } catch (e) {}
       io = null;
     }
-    if (!hasMore) return;
+    if (!hasMore || typeof IntersectionObserver === "undefined") return;
     io = new IntersectionObserver(
       function (entries) {
-        if (Date.now() < tapNavUntil) return;
+        if (!portraitPageScroll && Date.now() < tapNavUntil) return;
         for (var i = 0; i < entries.length; i++) {
           if (entries[i].isIntersecting) loadMore();
         }
       },
-      { root: pickIoRoot(), rootMargin: scrollMargin() + "px", threshold: 0 }
+      { root: pickIoRoot(), rootMargin: scrollMargin() + "px 0px", threshold: 0 }
     );
     io.observe(sentinel);
   }
@@ -180,9 +199,11 @@
       })
       .then(function (data) {
         if (!data || !data.ok) throw new Error("p2-more");
-        if (isPhone() && Date.now() < userBusyUntil) throw new Error("aborted-user");
+        if (isPhone() && !portraitPageScroll && Date.now() < userBusyUntil) {
+          throw new Error("aborted-user");
+        }
         var html = data.html || "";
-        if (isPhone()) {
+        if (isPhone() && !portraitPageScroll) {
           return new Promise(function (resolve) {
             requestAnimationFrame(function () {
               if (Date.now() < userBusyUntil) {
@@ -218,7 +239,13 @@
         if (!ok || !hasMore) return;
         if (portraitPageScroll) {
           requestAnimationFrame(function () {
-            if (!loading && hasMore && sentinelNearVisibleEdge()) loadMore();
+            setupIo();
+            if (!loading && hasMore && sentinelNearVisibleEdge()) {
+              if (autoChainCount < maxAutoChainAllowed()) {
+                autoChainCount++;
+                loadMore();
+              }
+            }
           });
           return;
         }
@@ -238,9 +265,9 @@
 
   function scheduleScrollProbe() {
     if (!hasMore || loading) return;
-    if (isPhone() && !phoneUserScrolledDown) return;
+    if (isPhone() && !portraitPageScroll && !phoneUserScrolledDown) return;
     clearTimeout(scrollProbeT);
-    var wait = isPhone() ? 750 : 180;
+    var wait = portraitPageScroll ? 120 : isPhone() ? 750 : 180;
     scrollProbeT = setTimeout(function () {
       scrollProbeT = null;
       if (!loading && hasMore && sentinelNearVisibleEdge()) loadMore();
@@ -250,8 +277,8 @@
   function onScroll() {
     lastScrollAt = Date.now();
     var st = currentScrollTop();
-    if (isPhone() && st > 220) phoneUserScrolledDown = true;
-    if (Math.abs(st - lastScrollTop) > 12) {
+    if (isPhone() && st > 120) phoneUserScrolledDown = true;
+    if (Math.abs(st - lastScrollTop) > 8) {
       userScrolledSinceChain = true;
       autoChainCount = 0;
     }
@@ -260,18 +287,48 @@
   }
 
   function onPortraitScroll() {
-    if (!hasMore || loading) return;
+    lastScrollAt = Date.now();
+    phoneUserScrolledDown = true;
+    userScrolledSinceChain = true;
+    if (!hasMore || loading) {
+      scheduleScrollProbe();
+      return;
+    }
     clearTimeout(scrollProbeT);
     scrollProbeT = setTimeout(function () {
       scrollProbeT = null;
       if (!loading && hasMore && sentinelNearVisibleEdge()) loadMore();
-    }, 160);
+    }, 100);
+  }
+
+  function bindPortraitScrollTargets() {
+    var opts = { passive: true, capture: true };
+    var targets = [
+      window,
+      document,
+      document.documentElement,
+      document.body,
+      document.getElementById("main_wrap"),
+      document.getElementById("main_content"),
+      document.getElementById("PW"),
+      scrollEl,
+    ];
+    for (var i = 0; i < targets.length; i++) {
+      var t = targets[i];
+      if (!t || !t.addEventListener) continue;
+      t.addEventListener("scroll", onPortraitScroll, opts);
+    }
+    document.addEventListener("touchmove", onPortraitScroll, { passive: true });
   }
 
   if (portraitPageScroll) {
-    window.addEventListener("scroll", onPortraitScroll, { passive: true });
+    bindPortraitScrollTargets();
+    setupIo();
     requestAnimationFrame(function () {
-      requestAnimationFrame(onPortraitScroll);
+      requestAnimationFrame(function () {
+        onPortraitScroll();
+        if (hasMore && sentinelNearVisibleEdge()) loadMore();
+      });
     });
   } else if (isPhone()) {
     document.addEventListener(
@@ -307,7 +364,7 @@
     userScrolledSinceChain = true;
     ioResizeT = setTimeout(function () {
       ioResizeT = null;
-      if (hasMore && !isPhone()) setupIo();
+      if (hasMore && (!isPhone() || portraitPageScroll)) setupIo();
     }, 350);
   });
 })();

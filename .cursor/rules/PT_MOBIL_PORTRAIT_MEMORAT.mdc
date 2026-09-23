@@ -26,7 +26,7 @@ alwaysApply: true
 | `templates/anunturi/pt.html` | CSS portrait inline + încărcare JS condiționată |
 | `static/js/pt-portrait-ui.js` | Filtre + match modal (touch portrait only) |
 | `static/js/pt-desktop-ui.js` | **Nu rulează pe touch** (`if (touchDevice) return`) |
-| `static/js/pt-p2-more.js` | Se încarcă pe portrait: la scroll pe pagină aduce loturile următoare (lista completă) |
+| `static/js/pt-p2-more.js` | Se încarcă pe portrait: IntersectionObserver + scroll multi-țintă aduce loturile următoare (lista completă) |
 | `static/js/pt-pet-rotation.js` | **Nu se încarcă pe touch** |
 | `static/css/pt-v2.css` | Bază desktop; **fără** `@media max-width` mobil |
 
@@ -55,7 +55,7 @@ alwaysApply: true
 
 - **Model:** scroll pe **pagină** (`window` / `document`) — `#main_wrap`, `#main_content`, `#PW` au `height: auto`, `overflow: visible`.
 - **NU** scroll intern în `.pt-p2-scroll` pe portrait.
-- Lista completă: primul lot rămâne 24; `pt-p2-more.js` încarcă restul când utilizatorul se apropie de capătul grilei (scroll pe pagină). Fără `touchmove` + `preventDefault`. Confirmat 22 sep 2026 (`1977`).
+- Lista completă: primul lot rămâne 24; `pt-p2-more.js` încarcă restul când utilizatorul se apropie de capătul grilei. Portrait: IntersectionObserver (viewport) + scroll pe `window`/`#main_wrap`/`.pt-p2-scroll` (nu doar `window`). Fără `touchmove` + `preventDefault` pe document. Fix 23 sep 2026 (`1977`) — cache `pt389-portrait-load-fix`.
 
 ### Ce NU reintroduce (cauză scroll mort, tap-uri OK)
 
