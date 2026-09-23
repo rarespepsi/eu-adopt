@@ -627,6 +627,9 @@ CJ_LISTA_DORESC_CONT_BLOCK = (
     "pentru dumneavoastră.\n\n"
 )
 
+# Marker pe notes — retrimitere după invitație anterioară (fără scrisoare CJ).
+CJ_REINVITE_NOTE_MARKER = "[CJ_REINVITE"
+
 
 def _cj_lista_opening(judet_label: str) -> str:
     return (
@@ -634,6 +637,18 @@ def _cj_lista_opening(judet_label: str) -> str:
         "de e-mail primite de la acesta, vă transmitem invitația de a folosi "
         "gratuit platforma EU-Adopt.\n\n"
     )
+
+
+def _cj_lista_revenim_opening(judet_label: str) -> str:
+    return (
+        f"Revenim către dumneavoastră cu invitația de a folosi gratuit platforma "
+        f"EU-Adopt, având recomandarea Consiliului Județean {judet_label} și baza "
+        "de date cu adresele de contact primită de la acesta.\n\n"
+    )
+
+
+def lead_has_cj_reinvite_marker(lead: StaffOnboardingLead) -> bool:
+    return CJ_REINVITE_NOTE_MARKER in _lead_notes_blob(lead)
 
 
 # (marker, județ în text, include DORESC CONT, attach relative path, attach filename)
@@ -723,7 +738,10 @@ def _invite_uat_public_body(lead: StaffOnboardingLead, org_line: str, signup_url
     lot = lead_cj_lista_lot(lead)
     if lot:
         _marker, judet_label, include_dorese, _rel, _fname = lot
-        opening = _cj_lista_opening(judet_label)
+        if lead_has_cj_reinvite_marker(lead):
+            opening = _cj_lista_revenim_opening(judet_label)
+        else:
+            opening = _cj_lista_opening(judet_label)
         if include_dorese:
             opening += CJ_LISTA_DORESC_CONT_BLOCK
     else:

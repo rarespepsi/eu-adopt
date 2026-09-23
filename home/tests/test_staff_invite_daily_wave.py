@@ -339,3 +339,28 @@ class StaffInviteUatWaveTests(TestCase):
         )
         picked2 = pick_uat_leads_for_daily_wave(wave_limit=5)
         self.assertEqual(picked2[0].pk, vn.pk)
+
+    def test_cj_reinvite_uses_revenim_opening(self):
+        from home.staff_onboarding_invite import (
+            CJOLT_LISTA_NOTE_MARKER,
+            CJ_REINVITE_NOTE_MARKER,
+            staff_invite_subject_body,
+        )
+        from django.test import RequestFactory
+
+        lead = StaffOnboardingLead.objects.create(
+            email="primaria.revenim@example.com",
+            display_name="Primăria Revenim",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_ADPUB,
+            uat_category=StaffOnboardingLead.UAT_COMUNA,
+            judet="Olt",
+            notes=f"{CJOLT_LISTA_NOTE_MARKER}\n{CJ_REINVITE_NOTE_MARKER} 2026-09-23] test",
+            invite_mail_status=StaffOnboardingLead.INVITE_SENT,
+        )
+        req = RequestFactory().get("/", HTTP_HOST="eu-adopt.ro")
+        _s, body, _ = staff_invite_subject_body(req, lead)
+        self.assertIn("Revenim către dumneavoastră", body)
+        self.assertIn("Consiliului Județean Olt", body)
+        self.assertIn("baza de date", body)
+        self.assertNotIn("vă transmitem invitația de a folosi\ngratuit", body)
