@@ -1,0 +1,20 @@
+---
+description: Invitații primării din lista CJ Sălaj — DORESC CONT + PDF + undă
+alwaysApply: false
+---
+
+# PRIMĂRII CJ SĂLAJ
+
+**Decizie utilizator (23 sep 2026, `1977`+OK):** același flux ca Vrancea / Olt / Argeș.
+
+| Lot | Marker | PDF ataș | Sursă |
+|-----|--------|----------|--------|
+| **Sălaj** | `[SURSA:CJSJ_LISTA_202609]` | `static/staff_invite/CJ_Salaj_Adresa_15608.pdf` | `patrimoniu@cjsj.ro` Nr. 15608/22.09.2026 |
+
+**Undă prioritate:** CS → VN → Olt → Argeș → **Sălaj**.
+
+**Text:** recomandare CJ Sălaj + DORESC CONT + șablon UAT.
+
+**Mulțumire CJ:** draft + accept înainte de trimis (`DORESC_CONT_PRIMARII.mdc`).
+
+**Emailuri:** `database/exports/cj_salaj_uat_emails_20260923.txt`

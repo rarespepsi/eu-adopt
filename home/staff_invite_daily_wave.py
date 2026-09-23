@@ -258,8 +258,8 @@ def pick_leads_for_daily_wave(
 def pick_uat_leads_for_daily_wave(*, wave_limit: int) -> list[StaffOnboardingLead]:
     """CJ → PMB → municipii → orașe → comune; doar never-sent, fără grupă A/B.
 
-    Loturi marker CJ (CS → VN → Olt → Argeș): unda UAT trimite doar pe primul
-    lot cu `never` rămas — restul cozii UAT e în pauză până e epuizat.
+    Loturi marker CJ (CS → VN → Olt → Argeș → Sălaj): unda UAT trimite doar pe
+    primul lot cu `never` rămas — restul cozii UAT e în pauză până e epuizat.
     """
     from django.db.models import Case, IntegerField, Q, Value, When
 

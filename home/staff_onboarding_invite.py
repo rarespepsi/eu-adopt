@@ -619,6 +619,7 @@ CJCS_LISTA_NOTE_MARKER = "[SURSA:CJCS_LISTA_202609]"
 CJVN_LISTA_NOTE_MARKER = "[SURSA:CJVN_LISTA_202609]"
 CJOLT_LISTA_NOTE_MARKER = "[SURSA:CJOLT_LISTA_202609]"
 CJAG_LISTA_NOTE_MARKER = "[SURSA:CJAG_LISTA_202609]"
+CJSJ_LISTA_NOTE_MARKER = "[SURSA:CJSJ_LISTA_202609]"
 
 CJ_LISTA_DORESC_CONT_BLOCK = (
     "Dacă nu aveți timpul sau resursele necesare pentru a completa înregistrarea, "
@@ -674,6 +675,13 @@ _CJ_LISTA_LOTS: list[tuple[str, str, bool, Path | None, str | None]] = [
         True,
         Path("static") / "staff_invite" / "CJ_Arges_Raspuns_22372.pdf",
         "Raspuns_CJ_Arges_Nr_22372.pdf",
+    ),
+    (
+        CJSJ_LISTA_NOTE_MARKER,
+        "Sălaj",
+        True,
+        Path("static") / "staff_invite" / "CJ_Salaj_Adresa_15608.pdf",
+        "Adresa_CJ_Salaj_Nr_15608.pdf",
     ),
 ]
 

@@ -12,7 +12,7 @@ alwaysApply: false
 | **Olt** | `[SURSA:CJOLT_LISTA_202609]` | `static/staff_invite/CJ_Olt_Raspuns_9584.pdf` | `consilii.locale@cjolt.ro` Nr. 9584 |
 | **Argeș** | `[SURSA:CJAG_LISTA_202609]` | `static/staff_invite/CJ_Arges_Raspuns_22372.pdf` | `registratura@cjarges.ro` Nr. 22372 |
 
-**Undă prioritate:** CS → VN → **Olt** → **Argeș** (primul lot cu `never` blochează restul UAT).
+**Undă prioritate:** CS → VN → **Olt** → **Argeș** → Sălaj (primul lot cu `never` blochează restul UAT).
 
 **Text:** recomandare CJ + DORESC CONT + șablon UAT.
 
