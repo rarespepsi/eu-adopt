@@ -614,53 +614,102 @@ def _invite_footer_block() -> str:
     )
 
 
-# Marker pe notes — invitații primării din lista CJ Caraș-Severin (21 sep 2026).
+# Loturi CJ — liste UAT primării (marker pe notes). Prioritate undă = ordinea din listă.
 CJCS_LISTA_NOTE_MARKER = "[SURSA:CJCS_LISTA_202609]"
-
-CJCS_INVITE_OPENING = (
-    "La recomandarea Consiliului Județean Caraș-Severin și în baza adreselor "
-    "de e-mail primite de la acesta, vă transmitem invitația de a folosi "
-    "gratuit platforma EU-Adopt.\n\n"
-)
-
-# Marker pe notes — invitații primării din lista CJ Vrancea (22–23 sep 2026).
 CJVN_LISTA_NOTE_MARKER = "[SURSA:CJVN_LISTA_202609]"
+CJOLT_LISTA_NOTE_MARKER = "[SURSA:CJOLT_LISTA_202609]"
+CJAG_LISTA_NOTE_MARKER = "[SURSA:CJAG_LISTA_202609]"
 
-CJVN_INVITE_OPENING = (
-    "La recomandarea Consiliului Județean Vrancea și în baza adreselor "
-    "de e-mail primite de la acesta, vă transmitem invitația de a folosi "
-    "gratuit platforma EU-Adopt.\n\n"
-)
-
-CJVN_DORESC_CONT_BLOCK = (
+CJ_LISTA_DORESC_CONT_BLOCK = (
     "Dacă nu aveți timpul sau resursele necesare pentru a completa înregistrarea, "
     "vă rugăm să ne transmiteți o persoană de contact, un număr de telefon și o "
     "adresă de e-mail, scriind clar în mesaj «DORESC CONT». Vom crea noi contul "
     "pentru dumneavoastră.\n\n"
 )
 
-CJVN_ATTACH_RELPATH = Path("static") / "staff_invite" / "CJ_Vrancea_Adresa_raspuns_EUAdopt.pdf"
-CJVN_ATTACH_FILENAME = "Adresa_raspuns_EUAdopt_CJ_Vrancea.pdf"
+
+def _cj_lista_opening(judet_label: str) -> str:
+    return (
+        f"La recomandarea Consiliului Județean {judet_label} și în baza adreselor "
+        "de e-mail primite de la acesta, vă transmitem invitația de a folosi "
+        "gratuit platforma EU-Adopt.\n\n"
+    )
+
+
+# (marker, județ în text, include DORESC CONT, attach relative path, attach filename)
+_CJ_LISTA_LOTS: list[tuple[str, str, bool, Path | None, str | None]] = [
+    (CJCS_LISTA_NOTE_MARKER, "Caraș-Severin", False, None, None),
+    (
+        CJVN_LISTA_NOTE_MARKER,
+        "Vrancea",
+        True,
+        Path("static") / "staff_invite" / "CJ_Vrancea_Adresa_raspuns_EUAdopt.pdf",
+        "Adresa_raspuns_EUAdopt_CJ_Vrancea.pdf",
+    ),
+    (
+        CJOLT_LISTA_NOTE_MARKER,
+        "Olt",
+        True,
+        Path("static") / "staff_invite" / "CJ_Olt_Raspuns_9584.pdf",
+        "Raspuns_CJ_Olt_Nr_9584.pdf",
+    ),
+    (
+        CJAG_LISTA_NOTE_MARKER,
+        "Argeș",
+        True,
+        Path("static") / "staff_invite" / "CJ_Arges_Raspuns_22372.pdf",
+        "Raspuns_CJ_Arges_Nr_22372.pdf",
+    ),
+]
+
+# Compat API (teste / importuri existente)
+CJCS_INVITE_OPENING = _cj_lista_opening("Caraș-Severin")
+CJVN_INVITE_OPENING = _cj_lista_opening("Vrancea")
+CJVN_DORESC_CONT_BLOCK = CJ_LISTA_DORESC_CONT_BLOCK
+CJVN_ATTACH_RELPATH = _CJ_LISTA_LOTS[1][3]
+CJVN_ATTACH_FILENAME = _CJ_LISTA_LOTS[1][4]
+
+
+def _lead_notes_blob(lead: StaffOnboardingLead) -> str:
+    return (lead.notes or "") + (lead.invite_staff_notes or "")
+
+
+def lead_cj_lista_lot(
+    lead: StaffOnboardingLead,
+) -> tuple[str, str, bool, Path | None, str | None] | None:
+    blob = _lead_notes_blob(lead)
+    for lot in _CJ_LISTA_LOTS:
+        if lot[0] in blob:
+            return lot
+    return None
 
 
 def lead_has_cjcs_lista_marker(lead: StaffOnboardingLead) -> bool:
-    return CJCS_LISTA_NOTE_MARKER in ((lead.notes or "") + (lead.invite_staff_notes or ""))
+    return CJCS_LISTA_NOTE_MARKER in _lead_notes_blob(lead)
 
 
 def lead_has_cjvn_lista_marker(lead: StaffOnboardingLead) -> bool:
-    return CJVN_LISTA_NOTE_MARKER in ((lead.notes or "") + (lead.invite_staff_notes or ""))
+    return CJVN_LISTA_NOTE_MARKER in _lead_notes_blob(lead)
+
+
+def cj_lista_priority_markers() -> list[str]:
+    return [lot[0] for lot in _CJ_LISTA_LOTS]
 
 
 def staff_invite_attachments_for_lead(lead: StaffOnboardingLead) -> list[tuple[str, bytes, str]]:
-    """Atașamente invitație (ex. scrisoare CJ Vrancea pe lotul marker)."""
-    if not lead_has_cjvn_lista_marker(lead):
+    """Atașamente invitație (scrisoare CJ pe loturile cu PDF)."""
+    lot = lead_cj_lista_lot(lead)
+    if not lot:
+        return []
+    _marker, _judet, _dorese, rel, fname = lot
+    if not rel or not fname:
         return []
     base = Path(getattr(settings, "BASE_DIR", ".") or ".")
-    path = base / CJVN_ATTACH_RELPATH
+    path = base / rel
     if not path.is_file():
-        logger.warning("staff_invite: lipsește atașament CJVN %s", path)
+        logger.warning("staff_invite: lipsește atașament CJ %s", path)
         return []
-    return [(CJVN_ATTACH_FILENAME, path.read_bytes(), "application/pdf")]
+    return [(fname, path.read_bytes(), "application/pdf")]
 
 
 def _invite_uat_public_body(lead: StaffOnboardingLead, org_line: str, signup_url: str) -> str:
@@ -671,10 +720,12 @@ def _invite_uat_public_body(lead: StaffOnboardingLead, org_line: str, signup_url
             "Rugăm Consiliile Județene să transmită această informare primăriilor din județ, "
             "pentru ca acestea și/sau operatorii serviciului să poată folosi platforma.\n\n"
         )
-    if lead_has_cjcs_lista_marker(lead):
-        opening = CJCS_INVITE_OPENING
-    elif lead_has_cjvn_lista_marker(lead):
-        opening = CJVN_INVITE_OPENING + CJVN_DORESC_CONT_BLOCK
+    lot = lead_cj_lista_lot(lead)
+    if lot:
+        _marker, judet_label, include_dorese, _rel, _fname = lot
+        opening = _cj_lista_opening(judet_label)
+        if include_dorese:
+            opening += CJ_LISTA_DORESC_CONT_BLOCK
     else:
         opening = ""
     return (

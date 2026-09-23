@@ -1,0 +1,19 @@
+---
+description: Invitații primării din liste CJ Olt + Argeș — ca Vrancea (DORESC CONT + PDF + undă)
+alwaysApply: false
+---
+
+# PRIMĂRII CJ OLT + ARGEȘ
+
+**Decizie utilizator (23 sep 2026, `1977`+OK):** același flux ca Vrancea.
+
+| Lot | Marker | PDF ataș | Surse mail |
+|-----|--------|----------|------------|
+| **Olt** | `[SURSA:CJOLT_LISTA_202609]` | `static/staff_invite/CJ_Olt_Raspuns_9584.pdf` | `consilii.locale@cjolt.ro` Nr. 9584 |
+| **Argeș** | `[SURSA:CJAG_LISTA_202609]` | `static/staff_invite/CJ_Arges_Raspuns_22372.pdf` | `registratura@cjarges.ro` Nr. 22372 |
+
+**Undă prioritate:** CS → VN → **Olt** → **Argeș** (primul lot cu `never` blochează restul UAT).
+
+**Text:** recomandare CJ + DORESC CONT + șablon UAT.
+
+**Mulțumire CJ:** draft + accept înainte de trimis (`DORESC_CONT_PRIMARII.mdc`).

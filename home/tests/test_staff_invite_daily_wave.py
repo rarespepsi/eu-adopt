@@ -283,3 +283,59 @@ class StaffInviteUatWaveTests(TestCase):
         self.assertGreater(len(atts[0][1]), 1000)
         atts_other = staff_invite_attachments_for_lead(other)
         self.assertEqual(atts_other, [])
+
+    def test_cjolt_and_cjag_markers_in_priority_after_vn(self):
+        from home.staff_invite_daily_wave import pick_uat_leads_for_daily_wave
+        from home.staff_onboarding_invite import (
+            CJAG_LISTA_NOTE_MARKER,
+            CJOLT_LISTA_NOTE_MARKER,
+            CJVN_LISTA_NOTE_MARKER,
+            staff_invite_attachments_for_lead,
+            staff_invite_subject_body,
+        )
+
+        olt = StaffOnboardingLead.objects.create(
+            email="primaria.testolt@example.com",
+            display_name="Primăria Test Olt",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_ADPUB,
+            uat_category=StaffOnboardingLead.UAT_COMUNA,
+            judet="Olt",
+            notes=f"{CJOLT_LISTA_NOTE_MARKER} test",
+            invite_mail_status=StaffOnboardingLead.INVITE_NEVER,
+        )
+        ag = StaffOnboardingLead.objects.create(
+            email="primaria.testag@example.com",
+            display_name="Primăria Test AG",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_ADPUB,
+            uat_category=StaffOnboardingLead.UAT_COMUNA,
+            judet="Argeș",
+            notes=f"{CJAG_LISTA_NOTE_MARKER} test",
+            invite_mail_status=StaffOnboardingLead.INVITE_NEVER,
+        )
+        # Fără VN: Olt are prioritate față de Argeș
+        picked = pick_uat_leads_for_daily_wave(wave_limit=5)
+        self.assertEqual(picked[0].pk, olt.pk)
+        self.assertNotIn(ag.pk, [p.pk for p in picked])
+
+        from django.test import RequestFactory
+
+        req = RequestFactory().get("/", HTTP_HOST="eu-adopt.ro")
+        _s, body, _ = staff_invite_subject_body(req, olt)
+        self.assertIn("Consiliului Județean Olt", body)
+        self.assertIn("DORESC CONT", body)
+        self.assertEqual(len(staff_invite_attachments_for_lead(olt)), 1)
+
+        vn = StaffOnboardingLead.objects.create(
+            email="primaria.testvn2@example.com",
+            display_name="Primăria Test VN2",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_ADPUB,
+            uat_category=StaffOnboardingLead.UAT_COMUNA,
+            judet="Vrancea",
+            notes=f"{CJVN_LISTA_NOTE_MARKER} test",
+            invite_mail_status=StaffOnboardingLead.INVITE_NEVER,
+        )
+        picked2 = pick_uat_leads_for_daily_wave(wave_limit=5)
+        self.assertEqual(picked2[0].pk, vn.pk)
