@@ -40,27 +40,53 @@ def dec(s):
     return "".join(out)
 
 
+def _from_domain(frm: str) -> str:
+    """Extrage domeniul din From (după @, până la > sau spațiu)."""
+    f = (frm or "").casefold()
+    m = re.search(r"@([a-z0-9._-]+\.[a-z]{2,})", f)
+    return (m.group(1) if m else "").rstrip(">")
+
+
 def classify(frm: str, subj: str) -> str | None:
     f = (frm or "").casefold()
     s = (subj or "").casefold()
     blob = f"{f} {s}"
+    domain = _from_domain(frm)
 
     if "mailer-daemon@" in f or "undelivered mail" in s or "delivery status" in s:
         return "EU_Bounce"
+
+    # DMARC / rapoarte automate / alerte Zoho — fără răspuns uman
+    if (
+        "dmarc" in f
+        or "dmarc" in s
+        or "noreply-dmarc" in f
+        or "dmarcreport@" in f
+        or ("report domain:" in s and "eu-adopt" in s)
+        or ("outgoing blocked" in s and "zoho" in blob)
+        or ("noreply@zoho" in f and "blocked" in s)
+    ):
+        return "EU_Rapoarte_Intern"
+
     if "contact@eu-adopt.ro" in f and (
         "invitații" in s or "invitatii" in s or "[eu-adopt]" in s
     ):
         return "EU_Rapoarte_Intern"
 
-    # Primării înainte de Media (evită „maria” în „primaria”)
+    # Primării / CJ înainte de Media (evită „maria” în „primaria”)
+    # Orice domeniu tipic CJ: cjarges.ro, cjvrancea.ro, cjsj.ro, cjvalcea.ro, cjolt.ro, …
+    if domain.startswith("cj") and domain.endswith(".ro"):
+        return "EU_Primarii_CJ"
+    if re.search(r"@cj[a-z0-9-]*\.ro\b", f):
+        return "EU_Primarii_CJ"
+
     prim_hints = (
         "primaria",
         "primăria",
         "primar",
         "consiliul județean",
         "consiliul judetean",
-        "cjolt",
-        "cjilfov",
+        "registratura",
         "aspa",
         "protectia animalelor",
         "protecția animalelor",
@@ -72,6 +98,9 @@ def classify(frm: str, subj: str) -> str | None:
         "platforma gratuita eu-adopt",
         "invitație eu-adopt",
         "invitatie eu-adopt",
+        "listă uat",
+        "lista uat",
+        "adrese de email primarii",
     )
     if any(h in blob for h in prim_hints):
         return "EU_Primarii_CJ"
@@ -137,6 +166,19 @@ def needs_reply(dest: str | None, frm: str, subj: str) -> str:
             return "DA — răspuns media / partener"
         return "verifică — media nouă"
     if dest == "EU_Primarii_CJ":
+        if any(
+            x in s
+            for x in (
+                "raspuns",
+                "răspuns",
+                "adresa",
+                "confirm",
+                "listă",
+                "lista",
+                "uat",
+            )
+        ) or s.startswith("re:"):
+            return "DA — răspuns / confirmare primărie sau CJ"
         return "DA — răspuns primărie/CJ dacă e cerere"
     if dest == "EU_Colaboratori":
         return "DA — răspuns colaborator"
@@ -176,8 +218,20 @@ host = (settings.STAFF_INVITE_IMAP_HOST or "").strip() or "imap.zoho.eu"
 port = int(getattr(settings, "STAFF_INVITE_IMAP_PORT", 993) or 993)
 user = (settings.STAFF_INVITE_IMAP_USER or "").strip()
 pw = (settings.STAFF_INVITE_IMAP_PASSWORD or "").strip()
-M = imaplib.IMAP4_SSL(host, port)
-M.login(user, pw)
+M = None
+_last_err = None
+for _attempt in range(1, 5):
+    try:
+        M = imaplib.IMAP4_SSL(host, port, timeout=90)
+        M.login(user, pw)
+        break
+    except Exception as exc:
+        _last_err = exc
+        import time as _time
+
+        _time.sleep(4 * _attempt)
+if M is None:
+    raise SystemExit(f"IMAP login failed: {_last_err}")
 for name in FOLDERS:
     ensure_folder(M, name)
 
