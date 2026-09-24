@@ -386,6 +386,51 @@ class StaffInviteUatWaveTests(TestCase):
         self.assertIn("DORESC CONT", body)
         self.assertEqual(len(staff_invite_attachments_for_lead(sj)), 1)
 
+    def test_cjvl_valcea_marker_after_cjsj(self):
+        from home.staff_invite_daily_wave import pick_uat_leads_for_daily_wave
+        from home.staff_onboarding_invite import (
+            CJSJ_LISTA_NOTE_MARKER,
+            CJVL_LISTA_NOTE_MARKER,
+            staff_invite_attachments_for_lead,
+            staff_invite_subject_body,
+        )
+        from django.test import RequestFactory
+
+        vl = StaffOnboardingLead.objects.create(
+            email="primaria.testvl@example.com",
+            display_name="Primăria Test VL",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_ADPUB,
+            uat_category=StaffOnboardingLead.UAT_COMUNA,
+            judet="Vâlcea",
+            notes=f"{CJVL_LISTA_NOTE_MARKER} test",
+            invite_mail_status=StaffOnboardingLead.INVITE_NEVER,
+        )
+        sj = StaffOnboardingLead.objects.create(
+            email="primaria.testsj2@example.com",
+            display_name="Primăria Test SJ2",
+            account_kind=StaffOnboardingLead.KIND_ADAPOST,
+            collaborator_subtype=StaffOnboardingLead.COLLAB_ADPUB,
+            uat_category=StaffOnboardingLead.UAT_COMUNA,
+            judet="Sălaj",
+            notes=f"{CJSJ_LISTA_NOTE_MARKER} test",
+            invite_mail_status=StaffOnboardingLead.INVITE_NEVER,
+        )
+        picked = pick_uat_leads_for_daily_wave(wave_limit=5)
+        self.assertEqual(picked[0].pk, sj.pk)
+        self.assertNotIn(vl.pk, [p.pk for p in picked])
+
+        sj.invite_mail_status = StaffOnboardingLead.INVITE_SENT
+        sj.save(update_fields=["invite_mail_status", "updated_at"])
+        picked2 = pick_uat_leads_for_daily_wave(wave_limit=5)
+        self.assertEqual(picked2[0].pk, vl.pk)
+
+        req = RequestFactory().get("/", HTTP_HOST="eu-adopt.ro")
+        _s, body, _ = staff_invite_subject_body(req, vl)
+        self.assertIn("Consiliului Județean Vâlcea", body)
+        self.assertIn("DORESC CONT", body)
+        self.assertEqual(len(staff_invite_attachments_for_lead(vl)), 1)
+
     def test_cj_reinvite_uses_revenim_opening(self):
         from home.staff_onboarding_invite import (
             CJOLT_LISTA_NOTE_MARKER,

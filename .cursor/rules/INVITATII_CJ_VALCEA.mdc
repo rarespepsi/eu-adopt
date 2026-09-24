@@ -1,0 +1,18 @@
+---
+description: Invitații primării din lista CJ Vâlcea — DORESC CONT + PDF + undă
+alwaysApply: false
+---
+
+# PRIMĂRII CJ VÂLCEA
+
+**Decizie utilizator (24 sep 2026):** același flux ca Vrancea / Olt / Argeș / Sălaj.
+
+| Lot | Marker | PDF ataș | Sursă |
+|-----|--------|----------|--------|
+| **Vâlcea** | `[SURSA:CJVL_LISTA_202609]` | `static/staff_invite/CJ_Valcea_Adresa_19329.pdf` | `consiliu@cjvalcea.ro` Nr. 19329/17.09.2026 |
+
+**Undă prioritate:** CS → VN → Olt → Argeș → Sălaj → **Vâlcea**.
+
+**Text:** recomandare CJ Vâlcea + DORESC CONT + șablon UAT.
+
+**Emailuri:** `database/exports/cj_valcea_uat_emails_20260924.txt`
