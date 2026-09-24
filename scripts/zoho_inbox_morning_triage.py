@@ -69,7 +69,11 @@ def classify(frm: str, subj: str) -> str | None:
         return "EU_Rapoarte_Intern"
 
     if "contact@eu-adopt.ro" in f and (
-        "invitații" in s or "invitatii" in s or "[eu-adopt]" in s
+        "invitații" in s
+        or "invitatii" in s
+        or "[eu-adopt]" in s
+        or "smtp probe" in s
+        or s.startswith("eu-adopt smtp")
     ):
         return "EU_Rapoarte_Intern"
 
@@ -214,93 +218,97 @@ def move_uid(M, uid: bytes, dest: str) -> bool:
     return True
 
 
-host = (settings.STAFF_INVITE_IMAP_HOST or "").strip() or "imap.zoho.eu"
-port = int(getattr(settings, "STAFF_INVITE_IMAP_PORT", 993) or 993)
-user = (settings.STAFF_INVITE_IMAP_USER or "").strip()
-pw = (settings.STAFF_INVITE_IMAP_PASSWORD or "").strip()
-M = None
-_last_err = None
-for _attempt in range(1, 5):
-    try:
-        M = imaplib.IMAP4_SSL(host, port, timeout=90)
-        M.login(user, pw)
-        break
-    except Exception as exc:
-        _last_err = exc
-        import time as _time
+def main() -> None:
+    host = (settings.STAFF_INVITE_IMAP_HOST or "").strip() or "imap.zoho.eu"
+    port = int(getattr(settings, "STAFF_INVITE_IMAP_PORT", 993) or 993)
+    user = (settings.STAFF_INVITE_IMAP_USER or "").strip()
+    pw = (settings.STAFF_INVITE_IMAP_PASSWORD or "").strip()
+    M = None
+    _last_err = None
+    for _attempt in range(1, 5):
+        try:
+            M = imaplib.IMAP4_SSL(host, port, timeout=90)
+            M.login(user, pw)
+            break
+        except Exception as exc:
+            _last_err = exc
+            import time as _time
 
-        _time.sleep(4 * _attempt)
-if M is None:
-    raise SystemExit(f"IMAP login failed: {_last_err}")
-for name in FOLDERS:
-    ensure_folder(M, name)
+            _time.sleep(4 * _attempt)
+    if M is None:
+        raise SystemExit(f"IMAP login failed: {_last_err}")
+    for name in FOLDERS:
+        ensure_folder(M, name)
 
-typ, _ = M.select("INBOX")
-typ, data = M.uid("SEARCH", None, "ALL")
-uids = (data[0] or b"").split()
+    typ, _ = M.select("INBOX")
+    typ, data = M.uid("SEARCH", None, "ALL")
+    uids = (data[0] or b"").split()
 
-print(f"## Raport INBOX Zoho ({len(uids)} mesaje)")
-print("")
+    print(f"## Raport INBOX Zoho ({len(uids)} mesaje)")
+    print("")
 
-rows = []
-moved = {k: 0 for k in FOLDERS}
-kept = 0
-errors = 0
+    rows = []
+    moved = {k: 0 for k in FOLDERS}
+    kept = 0
+    errors = 0
 
-for uid in uids:
-    typ, msgdata = M.uid("FETCH", uid, "(BODY.PEEK[HEADER.FIELDS (FROM SUBJECT DATE)])")
-    if typ != "OK" or not msgdata or not isinstance(msgdata[0], tuple):
-        continue
-    msg = email.message_from_bytes(msgdata[0][1])
-    frm = dec(msg.get("From", ""))
-    subj = dec(msg.get("Subject", ""))
-    date_s = dec(msg.get("Date", ""))[:28]
-    dest = classify(frm, subj)
-    act = needs_reply(dest, frm, subj)
-    rows.append((date_s, frm, subj, dest or "INBOX", act))
-    if dest:
-        if move_uid(M, uid, dest):
-            moved[dest] += 1
+    for uid in uids:
+        typ, msgdata = M.uid("FETCH", uid, "(BODY.PEEK[HEADER.FIELDS (FROM SUBJECT DATE)])")
+        if typ != "OK" or not msgdata or not isinstance(msgdata[0], tuple):
+            continue
+        msg = email.message_from_bytes(msgdata[0][1])
+        frm = dec(msg.get("From", ""))
+        subj = dec(msg.get("Subject", ""))
+        date_s = dec(msg.get("Date", ""))[:28]
+        dest = classify(frm, subj)
+        act = needs_reply(dest, frm, subj)
+        rows.append((date_s, frm, subj, dest or "INBOX", act))
+        if dest:
+            if move_uid(M, uid, dest):
+                moved[dest] += 1
+            else:
+                errors += 1
+                kept += 1
         else:
-            errors += 1
             kept += 1
+
+    try:
+        M.expunge()
+    except Exception:
+        pass
+
+    if not rows:
+        print("- Inbox gol. Nimic de raportat.")
     else:
-        kept += 1
+        print("| Data | De la | Subiect | Folder | Răspuns? |")
+        print("|------|-------|---------|--------|----------|")
+        for date_s, frm, subj, dest, act in rows:
+            print(
+                f"| {date_s.replace('|','/')} | {frm[:42].replace('|','/')} | {subj[:48].replace('|','/')} | {dest} | {act} |"
+            )
 
-try:
-    M.expunge()
-except Exception:
-    pass
+    print("")
+    print("### Mutări")
+    for k, v in moved.items():
+        if v:
+            print(f"- {k}: {v}")
+    print(f"- rămase în INBOX (neclasificate / erori): {kept}")
+    if errors:
+        print(f"- erori mutare: {errors}")
 
-if not rows:
-    print("- Inbox gol. Nimic de raportat.")
-else:
-    print("| Data | De la | Subiect | Folder | Răspuns? |")
-    print("|------|-------|---------|--------|----------|")
-    for date_s, frm, subj, dest, act in rows:
-        print(
-            f"| {date_s.replace('|','/')} | {frm[:42].replace('|','/')} | {subj[:48].replace('|','/')} | {dest} | {act} |"
-        )
+    print("")
+    print("### Unde trebuie să răspunzi")
+    urgent = [r for r in rows if r[4].startswith("DA")]
+    if not urgent:
+        print("- nimic urgent din acest batch")
+    else:
+        for date_s, frm, subj, dest, act in urgent:
+            print(f"- [{dest}] {frm[:40]} — {subj[:55]}")
 
-print("")
-print("### Mutări")
-for k, v in moved.items():
-    if v:
-        print(f"- {k}: {v}")
-print(f"- rămase în INBOX (neclasificate / erori): {kept}")
-if errors:
-    print(f"- erori mutare: {errors}")
+    M.logout()
+    print("")
+    print("DONE")
 
-# acțiuni prioritare
-print("")
-print("### Unde trebuie să răspunzi")
-urgent = [r for r in rows if r[4].startswith("DA")]
-if not urgent:
-    print("- nimic urgent din acest batch")
-else:
-    for date_s, frm, subj, dest, act in urgent:
-        print(f"- [{dest}] {frm[:40]} — {subj[:55]}")
 
-M.logout()
-print("")
-print("DONE")
+if __name__ == "__main__":
+    main()
