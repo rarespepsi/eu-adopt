@@ -1,0 +1,17 @@
+---
+description: Invitații primării CJ Giurgiu + Galați — DORESC CONT + PDF + undă
+alwaysApply: false
+---
+
+# PRIMĂRII CJ GIURGIU + GALAȚI
+
+**Decizie utilizator (25 sep 2026, `1977`+OK):** același flux ca Vrancea / Olt / Argeș / Sălaj / Vâlcea.
+
+| Lot | Marker | PDF ataș | Sursă |
+|-----|--------|----------|--------|
+| **Giurgiu** | `[SURSA:CJGR_LISTA_202609]` | `static/staff_invite/CJ_Giurgiu_Adresa_20886.pdf` | `cjgiurgiu@gmail.com` Nr. 20886/24.09.2026 + docx emailuri |
+| **Galați** | `[SURSA:CJGL_LISTA_202609]` | `static/staff_invite/CJ_Galati_Adresa_9804.pdf` | `informatii@cjgalati.ro` Nr. 9804/24.09.2026; lista UAT de pe https://cjgalati.ro/adrese-utile/ |
+
+**Undă prioritate:** … → Sălaj → Vâlcea → **Giurgiu** → **Galați**.
+
+**Emailuri:** `database/exports/cj_giurgiu_uat_emails_20260925.txt`, `database/exports/cj_galati_uat_emails_20260925.txt`
