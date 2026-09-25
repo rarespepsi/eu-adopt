@@ -9,8 +9,11 @@ from django.urls import reverse
 
 ALLOWED_PREFIX = "animals/"
 VALID_SIZES = frozenset({320, 400, 600, 1200})
-# v2 = smart cover crop (înlocuiește thumbnail-ul vechi care doar micșora imaginea)
-THUMB_VERSION = "v2"
+# v3 = smart cover + letterbox la ratio extreme (poze foarte late/înalte, ex. Winshow)
+THUMB_VERSION = "v3"
+# max/min ≥ prag → pad la pătrat (păstrează tot animalul) în loc de cover agresiv
+EXTREME_ASPECT_RATIO = 1.45
+LETTERBOX_FILL = (245, 245, 245)
 
 
 def _safe_media_relpath(rel: str) -> str | None:
@@ -101,6 +104,38 @@ def smart_cover_square(im, focus_x: float, focus_y: float):
     return im.crop((left, top, left + side, top + side))
 
 
+def is_extreme_aspect(w: int, h: int, threshold: float = EXTREME_ASPECT_RATIO) -> bool:
+    """True dacă poza e foarte lată sau foarte înaltă (cover ar tăia subiectul)."""
+    if w <= 0 or h <= 0:
+        return False
+    return (max(w, h) / float(min(w, h))) >= float(threshold)
+
+
+def letterbox_square(im, fill=LETTERBOX_FILL):
+    """Pătrat cu imaginea întreagă centrată + benzi (fără crop)."""
+    from PIL import Image
+
+    w, h = im.size
+    side = max(w, h)
+    if side <= 0:
+        return im
+    out = Image.new("RGB", (side, side), fill)
+    out.paste(im, ((side - w) // 2, (side - h) // 2))
+    return out
+
+
+def square_for_thumb(im, focus_x: float | None = None, focus_y: float | None = None):
+    """
+    Pătrat pentru thumb: letterbox la ratio extreme, altfel smart cover.
+    """
+    w, h = im.size
+    if is_extreme_aspect(w, h):
+        return letterbox_square(im)
+    if focus_x is None or focus_y is None:
+        focus_x, focus_y = estimate_subject_focus(im)
+    return smart_cover_square(im, focus_x, focus_y)
+
+
 def _build_thumb(source: Path, dest: Path, max_side: int) -> None:
     from PIL import Image, ImageOps
 
@@ -115,8 +150,7 @@ def _build_thumb(source: Path, dest: Path, max_side: int) -> None:
             im = background
         elif im.mode != "RGB":
             im = im.convert("RGB")
-        fx, fy = estimate_subject_focus(im)
-        im = smart_cover_square(im, fx, fy)
+        im = square_for_thumb(im)
         # Pătrat exact max_side (sau mai mic dacă sursa e mică)
         out_side = min(max_side, im.size[0])
         im = im.resize((out_side, out_side), Image.Resampling.LANCZOS)

@@ -1,5 +1,5 @@
 """
-Regenerează / curăță thumbnails poze animale (smart crop v2).
+Regenerează / curăță thumbnails poze animale (smart crop + letterbox v3).
 
   python manage.py rebuild_pet_thumbs --clear-only
   python manage.py rebuild_pet_thumbs --warm --limit 200
@@ -29,7 +29,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--clear-only",
             action="store_true",
-            help="Șterge doar cache-ul .thumbs (v2 + optional v1 legacy).",
+            help="Șterge doar cache-ul .thumbs (versiunea curentă + optional legacy).",
         )
         parser.add_argument(
             "--clear-legacy",
