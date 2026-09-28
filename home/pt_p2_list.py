@@ -9,6 +9,22 @@ from .models import AnimalListing
 from .pet_age_bands import AGE_LABELS_ORDERED, BAND_CHOICES_UI, BAND_FILTER_GET_VALUES, build_age_band_filter_q
 
 
+
+def _pt_listings_dogs_cats_then_others(qs, limit=200):
+    """Câini și pisici întâi; celelalte specii rămân la coada căutării."""
+    from django.db.models import Q
+
+    primary = Q(species__iexact="dog") | Q(species__iexact="cat")
+    dogs_cats = list(qs.filter(primary).order_by("-created_at")[:limit])
+    others = list(qs.exclude(primary).order_by("-created_at")[:limit])
+    return dogs_cats + others
+
+
+def _pt_other_species_tail(listing) -> int:
+    species = (getattr(listing, "species", "") or "").strip().lower()
+    return 0 if species in ("dog", "cat") else 1
+
+
 def _adoption_state_label(state: str) -> str:
     from django.utils.translation import get_language
 
@@ -247,7 +263,7 @@ def pt_pets_page_context(request):
 
     p2_list = []
     if not filter_active:
-        db_pets = list(qs_base.order_by("-created_at")[:200])
+        db_pets = _pt_listings_dogs_cats_then_others(qs_base)
         if db_pets:
             for listing in db_pets:
                 p2_list.append(_pt_p2_pet_dict_from_listing(listing))
@@ -285,7 +301,7 @@ def pt_pets_page_context(request):
         if selected_species:
             qs = qs.filter(species__iexact=selected_species)
 
-        db_candidates = list(qs.order_by("-created_at")[:200])
+        db_candidates = _pt_listings_dogs_cats_then_others(qs)
         if db_candidates:
             if selected_traits:
                 scored = []
@@ -296,7 +312,13 @@ def pt_pets_page_context(request):
                             match_count += 1
                     scored.append((listing, match_count))
 
-                scored.sort(key=lambda x: (x[1], x[0].created_at), reverse=True)
+                scored.sort(
+                    key=lambda x: (
+                        _pt_other_species_tail(x[0]),
+                        -x[1],
+                        -(x[0].created_at.timestamp() if x[0].created_at else 0),
+                    )
+                )
                 positive = [obj for obj, cnt in scored if cnt > 0]
                 ordered = positive if positive else [obj for obj, _ in scored]
             else:

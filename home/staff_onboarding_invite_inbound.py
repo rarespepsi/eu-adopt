@@ -757,6 +757,7 @@ def poll_imap_inbox(
         "no_lead": 0,
         "errors": 0,
         "redirects": 0,
+        "cj_lista_created": 0,
         "mode": mode,
     }
 
@@ -808,6 +809,16 @@ def poll_imap_inbox(
                 kind_preview = classify_inbound(
                     parseaddr(from_h)[1] or from_h, subj, body, headers
                 )
+
+                if mode == "unseen" and kind_preview != StaffOnboardingInviteInbound.KIND_BOUNCE:
+                    try:
+                        from home.staff_invite_cj_lista_import import maybe_import_cj_lista_message
+
+                        info = maybe_import_cj_lista_message(msg) or {}
+                        stats["cj_lista_created"] += int(info.get("created") or 0)
+                    except Exception:
+                        logger.exception("staff_invite_cj_lista_import")
+
                 if mode == "bounce_backlog" and kind_preview != StaffOnboardingInviteInbound.KIND_BOUNCE:
                     stats["skipped_non_bounce"] += 1
                     continue

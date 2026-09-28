@@ -5,6 +5,7 @@ Trimiterea SMTP este dezactivată implicit (mod tehnic); activare: EUADOPT_STAFF
 """
 from __future__ import annotations
 
+import json
 import logging
 import re
 import secrets
@@ -623,6 +624,8 @@ CJSJ_LISTA_NOTE_MARKER = "[SURSA:CJSJ_LISTA_202609]"
 CJVL_LISTA_NOTE_MARKER = "[SURSA:CJVL_LISTA_202609]"
 CJGR_LISTA_NOTE_MARKER = "[SURSA:CJGR_LISTA_202609]"
 CJGL_LISTA_NOTE_MARKER = "[SURSA:CJGL_LISTA_202609]"
+CJMS_LISTA_NOTE_MARKER = "[SURSA:CJMS_LISTA_202609]"
+CJBT_LISTA_NOTE_MARKER = "[SURSA:CJBT_LISTA_202609]"
 
 CJ_LISTA_DORESC_CONT_BLOCK = (
     "Dacă nu aveți timpul sau resursele necesare pentru a completa înregistrarea, "
@@ -707,6 +710,14 @@ _CJ_LISTA_LOTS: list[tuple[str, str, bool, Path | None, str | None]] = [
         Path("static") / "staff_invite" / "CJ_Galati_Adresa_9804.pdf",
         "Adresa_CJ_Galati_Nr_9804.pdf",
     ),
+    (CJMS_LISTA_NOTE_MARKER, "Mureș", True, None, None),
+    (
+        CJBT_LISTA_NOTE_MARKER,
+        "Botoșani",
+        True,
+        Path("static") / "staff_invite" / "CJ_Botosani_Adresa_19086.pdf",
+        "Adresa_CJ_Botosani_Nr_19086.pdf",
+    ),
 ]
 
 # Compat API (teste / importuri existente)
@@ -721,11 +732,45 @@ def _lead_notes_blob(lead: StaffOnboardingLead) -> str:
     return (lead.notes or "") + (lead.invite_staff_notes or "")
 
 
+
+def _dynamic_cj_lista_lots() -> list[tuple[str, str, bool, Path | None, str | None]]:
+    """Loturi adăugate automat din răspunsurile CJ (manifest pe disc)."""
+    path = Path(getattr(settings, "BASE_DIR", ".") or ".") / "static" / "staff_invite" / "cj_lots" / "manifest.json"
+    if not path.is_file():
+        return []
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        logger.exception("cj_lots manifest")
+        return []
+    lots: list[tuple[str, str, bool, Path | None, str | None]] = []
+    for item in data.get("lots") or []:
+        marker = str(item.get("marker") or "").strip()
+        judet = str(item.get("judet") or "").strip()
+        if not marker or not judet:
+            continue
+        rel = str(item.get("pdf_rel") or "").strip()
+        fname = str(item.get("pdf_name") or "").strip()
+        lots.append((marker, judet, True, Path(rel) if rel else None, fname or None))
+    return lots
+
+
+def _all_cj_lista_lots() -> list[tuple[str, str, bool, Path | None, str | None]]:
+    seen: set[str] = set()
+    out: list[tuple[str, str, bool, Path | None, str | None]] = []
+    for lot in list(_CJ_LISTA_LOTS) + _dynamic_cj_lista_lots():
+        if lot[0] in seen:
+            continue
+        seen.add(lot[0])
+        out.append(lot)
+    return out
+
+
 def lead_cj_lista_lot(
     lead: StaffOnboardingLead,
 ) -> tuple[str, str, bool, Path | None, str | None] | None:
     blob = _lead_notes_blob(lead)
-    for lot in _CJ_LISTA_LOTS:
+    for lot in _all_cj_lista_lots():
         if lot[0] in blob:
             return lot
     return None
@@ -740,7 +785,7 @@ def lead_has_cjvn_lista_marker(lead: StaffOnboardingLead) -> bool:
 
 
 def cj_lista_priority_markers() -> list[str]:
-    return [lot[0] for lot in _CJ_LISTA_LOTS]
+    return [lot[0] for lot in _all_cj_lista_lots()]
 
 
 def staff_invite_attachments_for_lead(lead: StaffOnboardingLead) -> list[tuple[str, bytes, str]]:
