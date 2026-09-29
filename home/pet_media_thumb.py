@@ -9,9 +9,9 @@ from django.urls import reverse
 
 ALLOWED_PREFIX = "animals/"
 VALID_SIZES = frozenset({320, 400, 600, 1200})
-# v3 = smart cover + letterbox la ratio extreme (poze foarte late/înalte, ex. Winshow)
-THUMB_VERSION = "v3"
-# max/min ≥ prag → pad la pătrat (păstrează tot animalul) în loc de cover agresiv
+# v4 = letterbox pe toate thumb-urile (animal întreg în caseta pătrată, fără crop)
+THUMB_VERSION = "v4"
+# păstrat pentru teste / compat; v4 nu mai folosește cover după ratio
 EXTREME_ASPECT_RATIO = 1.45
 LETTERBOX_FILL = (245, 245, 245)
 
@@ -126,14 +126,11 @@ def letterbox_square(im, fill=LETTERBOX_FILL):
 
 def square_for_thumb(im, focus_x: float | None = None, focus_y: float | None = None):
     """
-    Pătrat pentru thumb: letterbox la ratio extreme, altfel smart cover.
+    Pătrat pentru thumb: mereu letterbox (animalul întreg, benzi gri).
+    focus_x/focus_y păstrate în semnătură pentru compat; nefolosite.
     """
-    w, h = im.size
-    if is_extreme_aspect(w, h):
-        return letterbox_square(im)
-    if focus_x is None or focus_y is None:
-        focus_x, focus_y = estimate_subject_focus(im)
-    return smart_cover_square(im, focus_x, focus_y)
+    del focus_x, focus_y
+    return letterbox_square(im)
 
 
 def _build_thumb(source: Path, dest: Path, max_side: int) -> None:

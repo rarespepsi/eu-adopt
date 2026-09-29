@@ -59,15 +59,20 @@ class SmartCropHelpersTests(SimpleTestCase):
         # mijloc pe banda imaginii = culoarea sursei
         self.assertEqual(out.getpixel((102, 102)), (30, 90, 40))
 
-    def test_square_for_thumb_letterboxes_extreme(self):
-        im = Image.new("RGB", (204, 122), color=(50, 50, 50))
-        out = square_for_thumb(im)
-        self.assertEqual(out.size, (204, 204))
+    def test_square_for_thumb_always_letterboxes(self):
+        # extreme + 4:3 — ambele letterbox (fără crop)
+        extreme = square_for_thumb(Image.new("RGB", (204, 122), color=(50, 50, 50)))
+        self.assertEqual(extreme.size, (204, 204))
+        normal = square_for_thumb(Image.new("RGB", (400, 300), color=(80, 80, 80)))
+        self.assertEqual(normal.size, (400, 400))
+        # colțuri = fill gri
+        self.assertEqual(normal.getpixel((0, 0)), (245, 245, 245))
+        self.assertEqual(normal.getpixel((200, 200)), (80, 80, 80))
 
 
 class PetMediaThumbViewTests(TestCase):
-    def test_generates_square_smart_thumb(self):
-        # 4:3 — smart cover (nu letterbox)
+    def test_generates_square_letterbox_thumb(self):
+        # 4:3 — letterbox (nu crop)
         buf = io.BytesIO()
         Image.new("RGB", (800, 600), color=(120, 80, 40)).save(buf, format="JPEG")
         buf.seek(0)
@@ -88,6 +93,8 @@ class PetMediaThumbViewTests(TestCase):
                 with Image.open(thumb_path) as im:
                     self.assertEqual(im.size[0], im.size[1])
                     self.assertLessEqual(max(im.size), 400)
+                    # benzi gri = letterbox
+                    self.assertEqual(im.getpixel((0, 0)), (245, 245, 245))
 
     def test_extreme_landscape_letterbox_thumb(self):
         buf = io.BytesIO()
