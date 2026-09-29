@@ -1,5 +1,5 @@
 """
-Regenerează / curăță thumbnails poze animale (letterbox v4 — animal întreg).
+Regenerează / curăță thumbnails poze animale (smart cover v5 — umple caseta).
 
   python manage.py rebuild_pet_thumbs --clear-only
   python manage.py rebuild_pet_thumbs --warm --limit 200
