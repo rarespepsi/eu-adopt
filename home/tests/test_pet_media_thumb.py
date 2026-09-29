@@ -91,8 +91,9 @@ class PetMediaThumbViewTests(TestCase):
                 with Image.open(thumb_path) as im:
                     self.assertEqual(im.size[0], im.size[1])
                     self.assertLessEqual(max(im.size), 400)
-                    # fără benzi gri letterbox
-                    self.assertEqual(im.getpixel((0, 0)), (120, 80, 40))
+                    # fără benzi gri letterbox (JPEG poate schimba ±1 pe canal)
+                    px = im.getpixel((0, 0))
+                    self.assertTrue(all(abs(a - b) <= 2 for a, b in zip(px, (120, 80, 40))), px)
 
     def test_extreme_landscape_cover_thumb(self):
         buf = io.BytesIO()
@@ -113,7 +114,8 @@ class PetMediaThumbViewTests(TestCase):
                 with Image.open(thumb_path) as im:
                     self.assertEqual(im.size[0], im.size[1])
                     self.assertEqual(im.size[0], 122)  # side = min(orig) cover
-                    self.assertEqual(im.getpixel((0, 0)), (40, 120, 60))
+                    px = im.getpixel((0, 0))
+                    self.assertTrue(all(abs(a - b) <= 2 for a, b in zip(px, (40, 120, 60))), px)
 
     def test_unknown_size_404(self):
         with self.settings(MEDIA_ROOT=tempfile.gettempdir()):
