@@ -710,7 +710,13 @@ _CJ_LISTA_LOTS: list[tuple[str, str, bool, Path | None, str | None]] = [
         Path("static") / "staff_invite" / "CJ_Galati_Adresa_9804.pdf",
         "Adresa_CJ_Galati_Nr_9804.pdf",
     ),
-    (CJMS_LISTA_NOTE_MARKER, "Mureș", True, None, None),
+    (
+        CJMS_LISTA_NOTE_MARKER,
+        "Mureș",
+        True,
+        Path("static") / "staff_invite" / "CJ_Mures_Adresa_26000.pdf",
+        "Adresa_CJ_Mures_Nr_26000.pdf",
+    ),
     (
         CJBT_LISTA_NOTE_MARKER,
         "Botoșani",
