@@ -2801,7 +2801,7 @@ def logout_view(request):
 
 
 def login_view(request):
-    """Pagina de autentificare – acceptă email sau username."""
+    """Pagina de autentificare – email sau username, ambele case-insensitive."""
     from django.contrib.auth import authenticate, login as auth_login
     from django.contrib.auth import get_user_model
     from home.auth_rate_limit import bump_login_attempt, is_login_rate_limited
@@ -2818,11 +2818,14 @@ def login_view(request):
                 error = "Completează Email/Utilizator și parola."
             else:
                 User = get_user_model()
+                # Email și username: ambele case-insensitive (iexact → username canonic din DB)
                 username = login_value
                 if "@" in login_value:
-                    user_by_email = User.objects.filter(email__iexact=login_value).first()
-                    if user_by_email:
-                        username = user_by_email.username
+                    user_match = User.objects.filter(email__iexact=login_value).first()
+                else:
+                    user_match = User.objects.filter(username__iexact=login_value).first()
+                if user_match:
+                    username = user_match.username
                 user = authenticate(request, username=username, password=password)
                 if user is not None:
                     from home.population_onboarding import user_may_login_during_population
