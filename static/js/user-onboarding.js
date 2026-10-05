@@ -20,14 +20,9 @@
 	if (!payload || !payload.page_key || !payload.storage_key) return;
 
 	var storageKey = payload.storage_key;
-	try {
-		if (localStorage.getItem(storageKey) === "1") return;
-	} catch (_e2) {}
-
 	var root = document.getElementById("eu-user-onboard");
 	if (!root) return;
 
-	var backdrop = root.querySelector(".eu-user-onboard__backdrop");
 	var banner = root.querySelector(".eu-user-onboard__banner");
 	var tour = root.querySelector(".eu-user-onboard__tour");
 	var tourStepEl = root.querySelector(".eu-user-onboard__tour-step");
@@ -35,7 +30,7 @@
 	var titleEl = root.querySelector(".eu-user-onboard__title");
 	var textEl = root.querySelector(".eu-user-onboard__text");
 	var hintEl = root.querySelector(".eu-user-onboard__hint");
-	var btnSkip = root.querySelector("[data-onboard-skip]");
+	var btnSkips = root.querySelectorAll("[data-onboard-skip]");
 	var btnTour = root.querySelector("[data-onboard-tour]");
 	var btnNext = root.querySelector("[data-onboard-next]");
 	var btnDone = root.querySelector("[data-onboard-done]");
@@ -44,17 +39,6 @@
 	var stepIndex = 0;
 	var highlightEl = null;
 	var dismissed = false;
-
-	if (titleEl) titleEl.textContent = payload.banner_title || "Sfat";
-	if (textEl) textEl.textContent = payload.banner_text || "";
-	if (hintEl) {
-		if (payload.site_guide_hint) {
-			hintEl.textContent = payload.site_guide_hint;
-			hintEl.hidden = false;
-		} else {
-			hintEl.hidden = true;
-		}
-	}
 
 	function clearHighlight() {
 		if (highlightEl) {
@@ -83,15 +67,39 @@
 		}).catch(function () {});
 	}
 
-	function dismissAll() {
-		if (dismissed) return;
-		dismissed = true;
+	function hideOverlay() {
 		clearHighlight();
 		root.classList.remove("is-active");
 		if (banner) banner.hidden = true;
 		if (tour) tour.hidden = true;
+	}
+
+	function dismissAll() {
+		if (dismissed) return;
+		dismissed = true;
+		hideOverlay();
 		markSeenLocal();
 		markSeenServer();
+	}
+
+	// localStorage deja „văzut”, dar serverul încă a randează nota → ascunde + sync DB
+	try {
+		if (localStorage.getItem(storageKey) === "1") {
+			hideOverlay();
+			markSeenServer();
+			return;
+		}
+	} catch (_e2) {}
+
+	if (titleEl) titleEl.textContent = payload.banner_title || "Sfat";
+	if (textEl) textEl.textContent = payload.banner_text || "";
+	if (hintEl) {
+		if (payload.site_guide_hint) {
+			hintEl.textContent = payload.site_guide_hint;
+			hintEl.hidden = false;
+		} else {
+			hintEl.hidden = true;
+		}
 	}
 
 	function positionTourNear(el) {
@@ -151,7 +159,9 @@
 	root.classList.add("is-active");
 	if (banner) banner.hidden = false;
 
-	if (btnSkip) btnSkip.addEventListener("click", dismissAll);
+	for (var i = 0; i < btnSkips.length; i++) {
+		btnSkips[i].addEventListener("click", dismissAll);
+	}
 	if (btnTour) btnTour.addEventListener("click", startTour);
 	if (btnNext) {
 		btnNext.addEventListener("click", function () {
