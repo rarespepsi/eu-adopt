@@ -9,11 +9,14 @@ from django.urls import reverse
 
 ALLOWED_PREFIX = "animals/"
 VALID_SIZES = frozenset({320, 400, 600, 1200})
-# v5 = smart cover pe toate thumb-urile (umple caseta pătrată, fără benzi letterbox)
-THUMB_VERSION = "v5"
-# păstrat pentru helper/teste (letterbox_square rămâne disponibil, nefolosit în v5)
+# v6 = smart cover + tăiere benzi negre/letterbox din sursă (înainte de crop)
+THUMB_VERSION = "v6"
+# păstrat pentru helper/teste (letterbox_square rămâne disponibil, nefolosit în v6)
 EXTREME_ASPECT_RATIO = 1.45
 LETTERBOX_FILL = (245, 245, 245)
+# margini aproape negre (pillar/letterbox din surse FB/phone)
+DARK_BORDER_LUMA_MAX = 28
+DARK_BORDER_FRAC = 0.90
 
 
 def _safe_media_relpath(rel: str) -> str | None:
@@ -42,12 +45,61 @@ def pet_thumb_url_for(image_field, size: int = 400) -> str:
         size = 400
     if size not in VALID_SIZES:
         size = 400
-    return reverse("pet_media_thumb", kwargs={"size": size, "relpath": rel})
+    # ?v= bustă cache browser (thumb URL e immutable pe disc)
+    return reverse("pet_media_thumb", kwargs={"size": size, "relpath": rel}) + f"?v={THUMB_VERSION}"
 
 
 def _thumb_cache_path(media_root: Path, size: int, rel: str) -> Path:
     safe_name = rel.replace("/", "__")
     return media_root / ".thumbs" / THUMB_VERSION / str(size) / f"{safe_name}.jpg"
+
+
+def trim_dark_letterbox(
+    im,
+    *,
+    luma_max: int = DARK_BORDER_LUMA_MAX,
+    frac: float = DARK_BORDER_FRAC,
+):
+    """
+    Taie benzi aproape negre de pe margini (letterbox/pillarbox în fișierul sursă).
+    Fără schimbare dacă nu există benzi clare.
+    """
+    g = im.convert("L")
+    w, h = g.size
+    if w < 16 or h < 16:
+        return im
+    px = g.load()
+
+    def col_dark(x: int) -> bool:
+        dark = sum(1 for y in range(h) if px[x, y] <= luma_max)
+        return (dark / float(h)) >= frac
+
+    def row_dark(y: int) -> bool:
+        dark = sum(1 for x in range(w) if px[x, y] <= luma_max)
+        return (dark / float(w)) >= frac
+
+    left = 0
+    while left < w - 1 and col_dark(left):
+        left += 1
+    right = w - 1
+    while right > left and col_dark(right):
+        right -= 1
+    top = 0
+    while top < h - 1 and row_dark(top):
+        top += 1
+    bottom = h - 1
+    while bottom > top and row_dark(bottom):
+        bottom -= 1
+
+    cw, ch = right - left + 1, bottom - top + 1
+    if cw < 12 or ch < 12:
+        return im
+    if left == 0 and top == 0 and right == w - 1 and bottom == h - 1:
+        return im
+    removed = (w * h) - (cw * ch)
+    if removed < max(24, int(0.02 * w * h)):
+        return im
+    return im.crop((left, top, right + 1, bottom + 1))
 
 
 def estimate_subject_focus(im) -> tuple[float, float]:
@@ -147,6 +199,7 @@ def _build_thumb(source: Path, dest: Path, max_side: int) -> None:
             im = background
         elif im.mode != "RGB":
             im = im.convert("RGB")
+        im = trim_dark_letterbox(im)
         im = square_for_thumb(im)
         # Pătrat exact max_side (sau mai mic dacă sursa e mică)
         out_side = min(max_side, im.size[0])

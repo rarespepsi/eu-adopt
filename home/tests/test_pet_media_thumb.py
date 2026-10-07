@@ -14,6 +14,7 @@ from home.pet_media_thumb import (
     pet_media_thumb_view,
     smart_cover_square,
     square_for_thumb,
+    trim_dark_letterbox,
 )
 
 
@@ -66,6 +67,21 @@ class SmartCropHelpersTests(SimpleTestCase):
         normal = square_for_thumb(Image.new("RGB", (400, 300), color=(80, 80, 80)))
         self.assertEqual(normal.size, (300, 300))
         self.assertEqual(normal.getpixel((0, 0)), (80, 80, 80))
+
+    def test_trim_dark_letterbox_right_bar(self):
+        # ca MIKKI: conținut stânga + bandă neagră dreapta
+        im = Image.new("RGB", (231, 100), color=(0, 0, 0))
+        for y in range(100):
+            for x in range(80):
+                im.putpixel((x, y), (160, 150, 120))
+        out = trim_dark_letterbox(im)
+        self.assertEqual(out.size, (80, 100))
+        self.assertNotEqual(out.getpixel((out.size[0] - 1, 50)), (0, 0, 0))
+
+    def test_trim_dark_letterbox_noop_clean(self):
+        im = Image.new("RGB", (200, 150), color=(90, 100, 80))
+        out = trim_dark_letterbox(im)
+        self.assertEqual(out.size, (200, 150))
 
 
 class PetMediaThumbViewTests(TestCase):
