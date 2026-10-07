@@ -10,7 +10,7 @@
 {% block body_class %}page-pt page-animale{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt387-strip-thanks" type="text/css" media="screen" />
+<link rel="stylesheet" href="{% static 'css/pt-v2.css' %}?v=pt388-p4-campanii-fill" type="text/css" media="screen" />
 <link rel="stylesheet" href="{% static 'css/eu-org-trust-badge.css' %}?v=2" type="text/css" media="screen" />
 <style>
 	/* PT: strat CSS unic (fără layer mobil dedicat). */
@@ -33,6 +33,55 @@
 			overflow-y: auto !important;
 			overflow-x: hidden !important;
 			-webkit-overflow-scrolling: touch;
+		}
+		/* P4 desktop: filtre + butoane mai înalte, lipite de sterilizări; P4.3 umple jos */
+		body.page-pt #PW .pt-p4-inner {
+			gap: 0 !important;
+			padding: 2px !important;
+		}
+		body.page-pt #PW .pt-p4-box-filters {
+			flex: 1.35 1 0 !important;
+			min-height: 0 !important;
+			align-items: stretch !important;
+			justify-content: flex-start !important;
+			border-radius: 0.45rem 0.45rem 0 0 !important;
+		}
+		body.page-pt #PW .pt-p4-box-filters .pet-filters-box,
+		body.page-pt #PW .pt-p4-box-filters #P3 {
+			height: 100% !important;
+			min-height: 0 !important;
+			justify-content: space-between !important;
+		}
+		body.page-pt #PW .pt-p4-mobile-sticky {
+			flex: 1.85 1 0 !important;
+			min-height: 0 !important;
+			gap: 0 !important;
+		}
+		body.page-pt #PW .pt-p4-match-sustine-stack.pt-p4-box {
+			flex: 0.95 1 0 !important;
+			height: auto !important;
+			min-height: clamp(5.75rem, 16vh, 8.75rem) !important;
+			max-height: none !important;
+			border-radius: 0 !important;
+		}
+		body.page-pt #PW .pt-p4-box-ads {
+			flex: 1.35 1 0 !important;
+			min-height: 0 !important;
+			border-radius: 0 0 0.45rem 0.45rem !important;
+		}
+		body.page-pt #PW .pt-p43-desktop-wrap,
+		body.page-pt #PW .pt-p43-desktop-wrap > .pt-p43-desktop-slot {
+			flex: 1 1 0 !important;
+			min-height: 0 !important;
+			height: 100% !important;
+		}
+		/* Afiș Campanii: umple caseta (fără benzi teal goale) */
+		body.page-pt #PW .pt-p43-desktop-slot .pub-live-cover--campanie {
+			background: #0a4a55 !important;
+		}
+		body.page-pt #PW .pt-p43-desktop-slot .pub-live-cover--campanie img {
+			object-fit: cover !important;
+			object-position: center center !important;
 		}
 	}
 	#PW .pt-strip-item--p1 img,
