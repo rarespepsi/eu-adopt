@@ -106,7 +106,7 @@ class PubSlotDefaultsTests(SimpleTestCase):
             creative = pub_slot_live_creative(section, code, note=note, market="ro")
             self.assertTrue(creative.get("is_strip_partner"), code)
             self.assertIn("radio_metronom_logo", creative.get("img") or "", code)
-            self.assertEqual(creative.get("link"), "http://metronom-fm.ro:8000/stream.ogg", code)
+            self.assertEqual(creative.get("link"), "https://metronom-fm.ro/", code)
             self.assertIn("/pub/go/", creative.get("href") or "", code)
         for code in star:
             section = "pt" if code.startswith("P") else "servicii"

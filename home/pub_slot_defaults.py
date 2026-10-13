@@ -69,7 +69,8 @@ _RADIO_SOMES = {
 }
 _RADIO_METRONOM = {
     "image": "images/parteneri/radio_metronom_logo.png",
-    "link": "http://metronom-fm.ro:8000/stream.ogg",
+    # Mount vechi /stream.ogg e 404 pe Icecast; pagina oficială are player (+ /stream proxy).
+    "link": "https://metronom-fm.ro/",
     "alt": "Radio Metronom",
 }
 _RADIO_STAR_SEBES = {
