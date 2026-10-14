@@ -201,8 +201,21 @@
 		min-height: 0;
 	}
 	.adp-dir-card__placeholder {
-		font-size: 2.2rem;
-		opacity: 0.45;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+		padding: 0.4rem 0.35rem;
+		box-sizing: border-box;
+		text-align: center;
+		font-size: clamp(0.72rem, 2.4vw, 0.95rem);
+		font-weight: 800;
+		line-height: 1.2;
+		color: #1b5e20;
+		opacity: 0.92;
+		word-break: break-word;
+		hyphens: auto;
 	}
 	.adp-dir-card__label {
 		background: rgba(33, 33, 33, 0.82);
@@ -281,7 +294,7 @@
 				{% if row.logo_url %}
 				<img src="{{ row.logo_url }}" alt="" />
 				{% else %}
-				<span class="adp-dir-card__placeholder" aria-hidden="true">🏠</span>
+				<span class="adp-dir-card__placeholder">{{ row.name }}</span>
 				{% endif %}
 			</div>
 			<div class="adp-dir-card__label">
