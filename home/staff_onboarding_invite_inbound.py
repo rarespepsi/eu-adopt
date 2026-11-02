@@ -34,6 +34,15 @@ _BOUNCE_SUBJ = re.compile(
     re.I,
 )
 _OPT_OUT_RE = re.compile(r"nu\s*contacta|nu\s*ma\s*contact|stop\s*contact|unsubscribe", re.I)
+# Confirmare registratură / portal (număr de înregistrare) — oprește retrimiterile
+_REGISTRY_ACK_RE = re.compile(
+    r"(alocare\s+num[aă]r\s+de\s+registru|cerere\s+(?:a\s+fost\s+)?înregistrat|"
+    r"cerere\s+(?:a\s+fost\s+)?inregistrat|înregistrat[ăa]?\s+cu\s+num[aă]rul|"
+    r"inregistrat[ăa]?\s+cu\s+numarul|num[aă]r(?:ul)?\s+(?:de\s+)?"
+    r"(?:registru|înregistrare|inregistrare)|nr\.?\s*(?:registru|înregistrare|"
+    r"inregistrare)\s*[:\-]?\s*\d|rezolvare\s+cerere\s+nr)",
+    re.I,
+)
 # NDR Zoho/Yahoo: Final-Recipient: rfc822; user@domain
 _BOUNCE_RECIPIENT_RE = re.compile(
     r"(?:Final-Recipient|Original-Recipient|X-Failed-Recipients)\s*:\s*"
@@ -341,6 +350,12 @@ def apply_bounce_email_redirect(
     return out
 
 
+def is_registry_registration_ack(subject: str = "", body: str = "") -> bool:
+    """True dacă mesajul e confirmare de registratură / portal cu număr de înregistrare."""
+    blob = f"{subject or ''}\n{body or ''}"
+    return bool(_REGISTRY_ACK_RE.search(blob))
+
+
 def classify_inbound(from_email: str, subject: str, body: str, headers: dict[str, str]) -> str:
     """reply | bounce | opt_out | unknown"""
     subj = subject or ""
@@ -359,6 +374,44 @@ def classify_inbound(from_email: str, subject: str, body: str, headers: dict[str
     if from_l and not _BOUNCE_FROM.search(from_l):
         return StaffOnboardingInviteInbound.KIND_REPLY
     return StaffOnboardingInviteInbound.KIND_UNKNOWN
+
+
+def _resolve_lead_by_sender_domain(from_email: str) -> StaffOnboardingLead | None:
+    """
+    notificari@primarie3.ro / registratura@… → lead-ul către care am trimis pe același domeniu.
+    Preferă lead-ul cu ultima trimitere reușită.
+    """
+    em = (from_email or "").strip().lower()
+    if "@" not in em:
+        return None
+    domain = em.split("@", 1)[1]
+    if not domain or domain in {
+        "gmail.com",
+        "yahoo.com",
+        "yahoo.ro",
+        "outlook.com",
+        "hotmail.com",
+        "icloud.com",
+        "mail.zoho.eu",
+        "google.com",
+    }:
+        return None
+    log = (
+        StaffOnboardingInviteLog.objects.filter(
+            outcome=StaffOnboardingInviteLog.OUTCOME_SENT,
+            to_email__iendswith="@" + domain,
+        )
+        .order_by("-sent_at")
+        .select_related("lead")
+        .first()
+    )
+    if log and log.lead_id:
+        return log.lead
+    return (
+        StaffOnboardingLead.objects.filter(email__iendswith="@" + domain)
+        .order_by("-invite_email_last_sent_at", "-pk")
+        .first()
+    )
 
 
 def resolve_lead_for_inbound(
@@ -402,7 +455,13 @@ def resolve_lead_for_inbound(
             )
             if log and log.lead_id:
                 return log.lead
-    return _match_lead_by_from(from_email)
+    lead = _match_lead_by_from(from_email)
+    if lead:
+        return lead
+    # Confirmare registratură de pe alt From (notificari@, noreply.portal@) — același domeniu
+    if is_registry_registration_ack(subject, body):
+        return _resolve_lead_by_sender_domain(from_email)
+    return None
 
 
 def _append_inbound_note(lead: StaffOnboardingLead, line: str) -> None:
@@ -417,6 +476,7 @@ def apply_inbound_to_lead(
     *,
     from_email: str = "",
     subject: str = "",
+    body: str = "",
     now=None,
 ) -> bool:
     """Actualizează lead; returnează True dacă s-a schimbat starea."""
@@ -436,16 +496,27 @@ def apply_inbound_to_lead(
         lead.save(update_fields=["invite_mail_status", "updated_at"])
         return True
     if kind == StaffOnboardingInviteInbound.KIND_REPLY:
-        if lead.invite_mail_status in (
+        registry = is_registry_registration_ack(subject, body)
+        changed = False
+        fields: list[str] = []
+        if lead.invite_mail_status not in (
             StaffOnboardingLead.INVITE_REPLIED,
             StaffOnboardingLead.INVITE_DO_NOT_CONTACT,
             StaffOnboardingLead.INVITE_SIGNED_UP,
         ):
-            return False
-        lead.invite_mail_status = StaffOnboardingLead.INVITE_REPLIED
-        lead.invite_replied_at = now
-        lead.save(update_fields=["invite_mail_status", "invite_replied_at", "updated_at"])
-        return True
+            lead.invite_mail_status = StaffOnboardingLead.INVITE_REPLIED
+            lead.invite_replied_at = now
+            fields.extend(["invite_mail_status", "invite_replied_at"])
+            changed = True
+        # Orice confirmare cu număr de înregistrare: nu mai retrimite (max 1)
+        if registry and (lead.invite_max_sends is None or lead.invite_max_sends > 1):
+            lead.invite_max_sends = 1
+            fields.append("invite_max_sends")
+            changed = True
+        if changed:
+            fields.append("updated_at")
+            lead.save(update_fields=list(dict.fromkeys(fields)))
+        return changed
     return False
 
 
@@ -488,7 +559,9 @@ def _try_lead_email_redirect(
         return False, redirect_info
 
     if kind == StaffOnboardingInviteInbound.KIND_BOUNCE:
-        applied = apply_inbound_to_lead(lead, kind, from_email=from_addr, subject=subject)
+        applied = apply_inbound_to_lead(
+            lead, kind, from_email=from_addr, subject=subject, body=body
+        )
         if applied:
             _append_inbound_note(
                 lead,
@@ -498,7 +571,11 @@ def _try_lead_email_redirect(
         return applied, redirect_info
 
     applied = apply_inbound_to_lead(
-        lead, StaffOnboardingInviteInbound.KIND_REPLY, from_email=from_addr, subject=subject
+        lead,
+        StaffOnboardingInviteInbound.KIND_REPLY,
+        from_email=from_addr,
+        subject=subject,
+        body=body,
     )
     if applied:
         _append_inbound_note(
@@ -566,21 +643,27 @@ def process_inbound_email(
                 from_addr=from_addr,
             )
             if not applied and not redirect_info and kind == StaffOnboardingInviteInbound.KIND_BOUNCE:
-                applied = apply_inbound_to_lead(lead, kind, from_email=from_addr, subject=subject)
+                applied = apply_inbound_to_lead(
+                    lead, kind, from_email=from_addr, subject=subject, body=body
+                )
                 if applied:
                     _append_inbound_note(
                         lead,
                         f"[INBOUND {timezone.now():%Y-%m-%d %H:%M}] {kind} de la {from_addr}: {subject[:80]}",
                     )
             elif not applied and not redirect_info and kind == StaffOnboardingInviteInbound.KIND_REPLY:
-                applied = apply_inbound_to_lead(lead, kind, from_email=from_addr, subject=subject)
+                applied = apply_inbound_to_lead(
+                    lead, kind, from_email=from_addr, subject=subject, body=body
+                )
                 if applied:
-                    _append_inbound_note(
-                        lead,
-                        f"[INBOUND {timezone.now():%Y-%m-%d %H:%M}] {kind} de la {from_addr}: {subject[:80]}",
-                    )
+                    note = f"[INBOUND {timezone.now():%Y-%m-%d %H:%M}] {kind} de la {from_addr}: {subject[:80]}"
+                    if is_registry_registration_ack(subject, body):
+                        note += " [REGISTRATURA — stop retrimiteri]"
+                    _append_inbound_note(lead, note)
         else:
-            applied = apply_inbound_to_lead(lead, kind, from_email=from_addr, subject=subject)
+            applied = apply_inbound_to_lead(
+                lead, kind, from_email=from_addr, subject=subject, body=body
+            )
             if applied:
                 _append_inbound_note(
                     lead,

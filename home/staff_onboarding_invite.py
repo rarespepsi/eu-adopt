@@ -262,10 +262,15 @@ def staff_invite_allows_signup_path(request, now=None) -> bool:
 
 
 def staff_invite_max_sends(lead: StaffOnboardingLead) -> int:
+    """Plafon trimiteri. UAT (CJ/PMB/primării): maxim 1 — registratura deschide dosar la fiecare mail."""
     n = lead.invite_max_sends
     if n is None or n < 1:
-        return STAFF_LEAD_INVITE_MAX_SENDS_DEFAULT
-    return int(n)
+        n = STAFF_LEAD_INVITE_MAX_SENDS_DEFAULT
+    else:
+        n = int(n)
+    if (lead.uat_category or "").strip() in StaffOnboardingLead.UAT_SEND_ORDER:
+        return min(n, 1)
+    return n
 
 
 def staff_invite_max_per_day() -> int:

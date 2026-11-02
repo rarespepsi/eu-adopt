@@ -1,0 +1,25 @@
+---
+description: Invitații UAT + confirmări registratură — maxim 1 trimitere, stop resend
+alwaysApply: true
+---
+
+# INVITAȚII — UAT MAX 1 + STOP LA NUMĂR DE ÎNREGISTRARE
+
+**Decizie (2 nov 2026):** primăriile / UAT și orice destinatar care răspunde cu **număr de înregistrare** (registratură / portal) nu mai primesc retrimiteri.
+
+## Reguli
+
+1. **UAT** (`uat_category` ∈ CJ / PMB / municipiu / oraș / comună): plafon efectiv **1 invitație** (`staff_invite_max_sends` → `min(n, 1)`).
+2. **Confirmare registratură** (subiect/corp: „Cerere înregistrată”, „Alocare număr de registru”, „înregistrată cu numărul …”, etc.):
+   - lead → `invite_mail_status = replied`
+   - `invite_max_sends = 1`
+   - potrivire și pe From diferit de lead (ex. `notificari@primarie3.ro`) via **domeniu** + ultimul `InviteLog` sent
+3. Cod: `home/staff_onboarding_invite.py` (`staff_invite_max_sends`), `home/staff_onboarding_invite_inbound.py` (`is_registry_registration_ack`, resolve pe domeniu).
+
+## De ce
+
+Sector 3 a deschis **două** dosare (399053 + 407630) pentru același tip de invitație — fiecare mail = solicitare nouă în registratură.
+
+## Agent
+
+La inbox dimineața: dacă apare confirmare cu nr. registru → verifică lead-ul e `replied` / max 1; nu propune retrimitere.
