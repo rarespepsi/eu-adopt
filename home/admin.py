@@ -276,6 +276,7 @@ class TransportOperatorProfileAdmin(admin.ModelAdmin):
         "approval_status",
         "transport_national",
         "transport_international",
+        "covers_whole_judet",
         "max_caini",
         "max_pisici",
         "block_count",
@@ -286,8 +287,18 @@ class TransportOperatorProfileAdmin(admin.ModelAdmin):
     )
     # Bife + status editabile din listă → Salvează, fără să deschizi formularul complet
     list_display_links = ("user",)
-    list_editable = ("approval_status", "transport_national", "transport_international")
-    list_filter = ("approval_status", "transport_national", "transport_international")
+    list_editable = (
+        "approval_status",
+        "transport_national",
+        "transport_international",
+        "covers_whole_judet",
+    )
+    list_filter = (
+        "approval_status",
+        "transport_national",
+        "transport_international",
+        "covers_whole_judet",
+    )
     search_fields = ("user__email", "user__username", "user__first_name", "user__last_name")
     raw_id_fields = ("user",)
     readonly_fields = ("created_at", "updated_at", "rating_sum", "rating_count")

@@ -1647,6 +1647,11 @@ class TransportOperatorProfile(models.Model):
     )
     transport_national = models.BooleanField("TRANSPORT NAȚIONAL", default=False)
     transport_international = models.BooleanField("TRANSPORT INTERNATIONAL", default=False)
+    covers_whole_judet = models.BooleanField(
+        "Acoperă tot județul",
+        default=False,
+        help_text="Dacă e bifat: eligibil pentru orice localitate din județul din profil (nu doar orașul).",
+    )
     max_caini = models.PositiveSmallIntegerField("Capacitate max. câini / cursă", default=1)
     max_pisici = models.PositiveSmallIntegerField("Capacitate max. pisici / cursă", default=1)
     block_count = models.PositiveSmallIntegerField("Număr blocări", default=0)

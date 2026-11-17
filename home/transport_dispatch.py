@@ -71,8 +71,13 @@ def _transporter_is_eligible(
     except Exception:
         return False
     cj = _norm(prof.company_judet or prof.judet or "")
+    if not cj or _norm(tvr.judet) != cj:
+        return False
+    # Tot județul (ex. Taxi Pet → orice localitate din Alba)
+    if getattr(top, "covers_whole_judet", False):
+        return True
     co = _norm(prof.company_oras or prof.oras or "")
-    return _norm(tvr.judet) == cj and _norm(tvr.oras) == co
+    return _norm(tvr.oras) == co
 
 
 def eligible_transporter_users(tvr: TransportVeterinaryRequest) -> List[User]:
